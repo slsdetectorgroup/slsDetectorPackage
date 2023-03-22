@@ -48,6 +48,10 @@ void qTabAdvanced::SetupWidgetWindow() {
         lblDiscardBits->setEnabled(true);
         spinDiscardBits->setEnabled(true);
         break;
+    case slsDetectorDefs::JUNGFRAU:
+        lblNumStoragecells->setEnabled(true);
+        spinNumStoragecells->setEnabled(true);
+        break;
     default:
         break;
     }

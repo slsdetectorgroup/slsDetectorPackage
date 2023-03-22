@@ -480,7 +480,6 @@ void DataProcessor::PadMissingPackets(sls_receiver_header header, char *data) {
                 memset(data + (pnum * dsize), 0xFF, dsize + 2);
             break;
         case CHIPTESTBOARD:
-        case MOENCH:
             if (pnum == (pperFrame - 1))
                 memset(data + (pnum * dsize), 0xFF, corrected_dsize);
             else

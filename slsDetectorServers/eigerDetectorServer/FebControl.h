@@ -119,5 +119,7 @@ int Feb_Control_PrintCorrectedValues();
 // adcs
 int Feb_Control_GetLeftFPGATemp();
 int Feb_Control_GetRightFPGATemp();
+int64_t Feb_Control_GetFrontLeftFirmwareVersion();
+int64_t Feb_Control_GetFrontRightFirmwareVersion();
 int64_t Feb_Control_GetMeasuredPeriod();
 int64_t Feb_Control_GetSubMeasuredPeriod();

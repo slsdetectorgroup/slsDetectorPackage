@@ -90,8 +90,10 @@ class Module : public virtual slsDetectorDefs {
     void setHostname(const std::string &hostname, const bool initialChecks);
 
     int64_t getFirmwareVersion() const;
+    int64_t getFrontEndFirmwareVersion(const fpgaPosition fpgaPosition) const;
     std::string getControlServerLongVersion() const;
     std::string getStopServerLongVersion() const;
+    void throwDeprecatedServerVersion() const;
     std::string getDetectorServerVersion() const;
     std::string getHardwareVersion() const;
     std::string getKernelVersion() const;
@@ -279,7 +281,7 @@ class Module : public virtual slsDetectorDefs {
      * ************************************************/
     bool getUseReceiverFlag() const;
     std::string getReceiverHostname() const;
-    void setReceiverHostname(const std::string &receiver,
+    void setReceiverHostname(const std::string &hostname, const int port,
                              const bool initialChecks);
     int getReceiverPort() const;
     int setReceiverPort(int port_number);
@@ -388,7 +390,7 @@ class Module : public virtual slsDetectorDefs {
 
     /**************************************************
      *                                                *
-     *    Jungfrau Specific                           *
+     *    Jungfrau/Moench Specific                    *
      *                                                *
      * ************************************************/
     double getChipVersion() const;
@@ -490,7 +492,7 @@ class Module : public virtual slsDetectorDefs {
 
     /**************************************************
      *                                                *
-     *    CTB / Moench Specific                       *
+     *    CTB  Specific                               *
      *                                                *
      * ************************************************/
     int getNumberOfAnalogSamples() const;
@@ -501,12 +503,6 @@ class Module : public virtual slsDetectorDefs {
     void setADCEnableMask(uint32_t mask);
     uint32_t getTenGigaADCEnableMask() const;
     void setTenGigaADCEnableMask(uint32_t mask);
-
-    /**************************************************
-     *                                                *
-     *    CTB Specific                                *
-     *                                                *
-     * ************************************************/
     int getNumberOfDigitalSamples() const;
     void setNumberOfDigitalSamples(int value);
     readoutMode getReadoutMode() const;

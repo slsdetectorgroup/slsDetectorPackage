@@ -107,7 +107,7 @@ TEST_CASE("adcvpp", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+    if (det_type == defs::CHIPTESTBOARD) {
         auto prev_val = det.getADCVpp(false);
         {
             std::ostringstream oss;
@@ -132,14 +132,14 @@ TEST_CASE("adcvpp", "[.cmd]") {
     }
 }
 
-/* CTB/ Moench Specific */
+/* CTB Specific */
 
 TEST_CASE("samples", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+    if (det_type == defs::CHIPTESTBOARD) {
         auto prev_asamples = det.getNumberOfAnalogSamples();
         Result<int> prev_dsamples = 0;
         if (det_type == defs::CHIPTESTBOARD) {
@@ -186,7 +186,7 @@ TEST_CASE("asamples", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+    if (det_type == defs::CHIPTESTBOARD) {
         auto prev_val = det.getNumberOfAnalogSamples();
         {
             std::ostringstream oss;
@@ -216,7 +216,7 @@ TEST_CASE("adcclk", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+    if (det_type == defs::CHIPTESTBOARD) {
         auto prev_val = det.getADCClock();
         {
             std::ostringstream oss;
@@ -247,7 +247,7 @@ TEST_CASE("runclk", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+    if (det_type == defs::CHIPTESTBOARD) {
         auto prev_val = det.getRUNClock();
         {
             std::ostringstream oss;
@@ -277,7 +277,7 @@ TEST_CASE("syncclk", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+    if (det_type == defs::CHIPTESTBOARD) {
         REQUIRE_NOTHROW(proxy.Call("syncclk", {}, -1, GET));
     } else {
         // clock index might work
@@ -290,7 +290,7 @@ TEST_CASE("adcpipeline", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+    if (det_type == defs::CHIPTESTBOARD) {
         auto prev_val = det.getADCPipeline();
         {
             std::ostringstream oss;
@@ -325,7 +325,7 @@ TEST_CASE("v_limit", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+    if (det_type == defs::CHIPTESTBOARD) {
         auto prev_val = det.getVoltage(defs::V_LIMIT);
         {
             std::ostringstream oss;
@@ -363,7 +363,7 @@ TEST_CASE("adcenable", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+    if (det_type == defs::CHIPTESTBOARD) {
         auto prev_val = det.getADCEnableMask();
         {
             std::ostringstream oss;
@@ -393,7 +393,7 @@ TEST_CASE("adcenable10g", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+    if (det_type == defs::CHIPTESTBOARD) {
         auto prev_val = det.getTenGigaADCEnableMask();
         {
             std::ostringstream oss;

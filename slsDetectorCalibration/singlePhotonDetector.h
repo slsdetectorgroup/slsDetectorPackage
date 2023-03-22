@@ -174,8 +174,9 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
                 clusterSizeY = clusterSize;
             else
                 clusterSizeY = 1;
-            for (int ip = 0; ip < nx * ny; ip++)
+            for (int ip = 0; ip < nx * ny; ip++) {
                 (clusters + ip)->set_cluster_size(clusterSize, clusterSizeY);
+	    }
             // cluster=new single_photon_hit(clusterSize,clusterSizeY);
         }
         return clusterSize;
@@ -533,6 +534,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
 		      (clusters + nph)->print();
 		      cout << max << " " <<  val[iy * nx + ix] << endl;
 		    }
+		    //else (clusters + nph)->print();
                     good = 1;
                     if (eMin > 0 && tot < eMin)
                         good = 0;

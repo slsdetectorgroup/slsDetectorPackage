@@ -352,6 +352,36 @@ class JungfrauData : public GeneralData {
     };
 };
 
+class MoenchData : public GeneralData {
+
+  public:
+    MoenchData() {
+        detType = slsDetectorDefs::MOENCH;
+        headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
+        dataSize = 6400;
+        packetSize = headerSizeinPacket + dataSize;
+        framesPerFile = MOENCH_MAX_FRAMES_PER_FILE;
+        fifoDepth = 1000;
+        standardheader = true;
+        maxRowsPerReadout = 400;
+        UpdateImageSize();
+    };
+
+    void SetNumberofInterfaces(const int n) {
+        numUDPInterfaces = n;
+        UpdateImageSize();
+    };
+
+  private:
+    void UpdateImageSize() {
+        nPixelsX = (400);
+        nPixelsY = (400) / numUDPInterfaces;
+        imageSize = int(nPixelsX * nPixelsY * GetPixelDepth());
+        packetsPerFrame = imageSize / dataSize;
+        udpSocketBufferSize = (1000 * 1024 * 1024) / numUDPInterfaces;
+    };
+};
+
 class Mythen3Data : public GeneralData {
   private:
     int ncounters{0};
@@ -562,70 +592,6 @@ class ChipTestBoardData : public GeneralData {
 
         LOG(logDEBUG1) << "Total Number of Channels:" << nPixelsX
                        << " Databytes: " << imageSize;
-    };
-};
-
-class MoenchData : public GeneralData {
-
-  private:
-    const int NUM_BYTES_PER_ANALOG_CHANNEL = 2;
-
-  public:
-    MoenchData() {
-        detType = slsDetectorDefs::MOENCH;
-        headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
-        frameIndexMask = 0xFFFFFF;
-        framesPerFile = MOENCH_MAX_FRAMES_PER_FILE;
-        fifoDepth = 2500;
-        standardheader = true;
-        UpdateImageSize();
-    };
-
-    void SetNumberOfAnalogSamples(int n) {
-        nAnalogSamples = n;
-        UpdateImageSize();
-    };
-
-    void SetOneGigaAdcEnableMask(int n) {
-        adcEnableMaskOneGiga = n;
-        UpdateImageSize();
-    };
-
-    void SetTenGigaAdcEnableMask(int n) {
-        adcEnableMaskTenGiga = n;
-        UpdateImageSize();
-    };
-
-    void SetTenGigaEnable(bool tg) {
-        tengigaEnable = tg;
-        UpdateImageSize();
-    };
-
-  private:
-    void UpdateImageSize() {
-        uint32_t adcEnableMask =
-            (tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga);
-
-        // count number of channels in x, each adc has 25 channels each
-        int nchanTop = __builtin_popcount(adcEnableMask & 0xF0F0F0F0) * 25;
-        int nchanBot = __builtin_popcount(adcEnableMask & 0x0F0F0F0F) * 25;
-        nPixelsX = nchanTop > 0 ? nchanTop : nchanBot;
-
-        // if both top and bottom adcs enabled, rows = 2
-        int nrows = 1;
-        if (nchanTop > 0 && nchanBot > 0) {
-            nrows = 2;
-        }
-        nPixelsY = nAnalogSamples / 25 * nrows;
-        LOG(logINFO) << "Number of Pixels: [" << nPixelsX << ", " << nPixelsY
-                     << "]";
-
-        dataSize = tengigaEnable ? 8144 : UDP_PACKET_DATA_BYTES;
-        packetSize = headerSizeinPacket + dataSize;
-        imageSize = nPixelsX * nPixelsY * NUM_BYTES_PER_ANALOG_CHANNEL;
-        packetsPerFrame = ceil((double)imageSize / (double)dataSize);
-
-        LOG(logDEBUG) << "Databytes: " << imageSize;
     };
 };
 

@@ -73,8 +73,8 @@ void Module::setHostname(const std::string &hostname,
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.close();
     try {
-        initialDetectorServerChecks();
         checkDetectorVersionCompatibility();
+        initialDetectorServerChecks();
         LOG(logINFO) << "Module Version Compatibility - Success";
     } catch (const RuntimeError &e) {
         if (!initialChecks) {
@@ -92,10 +92,35 @@ int64_t Module::getFirmwareVersion() const {
     return sendToDetector<int64_t>(F_GET_FIRMWARE_VERSION);
 }
 
+int64_t
+Module::getFrontEndFirmwareVersion(const fpgaPosition fpgaPosition) const {
+    return sendToDetector<int64_t>(F_GET_FRONTEND_FIRMWARE_VERSION,
+                                   fpgaPosition);
+}
+
 std::string Module::getControlServerLongVersion() const {
-    char retval[MAX_STR_LENGTH]{};
-    sendToDetector(F_GET_SERVER_VERSION, nullptr, retval);
-    return retval;
+    try {
+        char retval[MAX_STR_LENGTH]{};
+        sendToDetector(F_GET_SERVER_VERSION, nullptr, retval);
+        return retval;
+    }
+    // throw with old server version (sends 8 bytes)
+    catch (RuntimeError &e) {
+        std::string emsg = std::string(e.what());
+        if (emsg.find(F_GET_SERVER_VERSION) && emsg.find("8 bytes")) {
+            throwDeprecatedServerVersion();
+        }
+        throw;
+    }
+}
+
+void Module::throwDeprecatedServerVersion() const {
+    uint64_t res = sendToDetectorStop<int64_t>(F_GET_SERVER_VERSION);
+    std::cout << std::endl;
+    std::ostringstream os;
+    os << "Detector Server (Control) version (0x" << std::hex << res
+       << ") is incompatible with this client. Please update detector server!";
+    throw RuntimeError(os.str());
 }
 
 std::string Module::getStopServerLongVersion() const {
@@ -155,7 +180,7 @@ slsDetectorDefs::detectorType Module::getDetectorType() const {
 }
 
 void Module::updateNumberOfChannels() {
-    if (shm()->detType == CHIPTESTBOARD || shm()->detType == MOENCH) {
+    if (shm()->detType == CHIPTESTBOARD) {
         std::array<int, 2> retvals{};
         sendToDetector(F_GET_NUM_CHANNELS, nullptr, retvals);
         shm()->nChan.x = retvals[0];
@@ -1224,7 +1249,7 @@ std::string Module::printReceiverConfiguration() {
     os << "\n\nModule " << moduleIndex << "\nReceiver Hostname:\t"
        << getReceiverHostname();
 
-    if (shm()->detType == JUNGFRAU) {
+    if (shm()->detType == JUNGFRAU || shm()->detType == MOENCH) {
         os << "\nNumber of Interfaces:\t" << getNumberofUDPInterfacesFromShm()
            << "\nSelected Interface:\t" << getSelectedUDPInterface();
     }
@@ -1234,14 +1259,15 @@ std::string Module::printReceiverConfiguration() {
        << getDestinationUDPIP() << "\nDestination UDP MAC:\t"
        << getDestinationUDPMAC();
 
-    if (shm()->detType == JUNGFRAU) {
+    if (shm()->detType == JUNGFRAU || shm()->detType == MOENCH) {
         os << "\nSource UDP IP2:\t" << getSourceUDPIP2()
            << "\nSource UDP MAC2:\t" << getSourceUDPMAC2()
            << "\nDestination UDP IP2:\t" << getDestinationUDPIP2()
            << "\nDestination UDP MAC2:\t" << getDestinationUDPMAC2();
     }
     os << "\nDestination UDP Port:\t" << getDestinationUDPPort();
-    if (shm()->detType == JUNGFRAU || shm()->detType == EIGER) {
+    if (shm()->detType == JUNGFRAU || shm()->detType == MOENCH ||
+        shm()->detType == EIGER) {
         os << "\nDestination UDP Port2:\t" << getDestinationUDPPort2();
     }
     os << "\n";
@@ -1303,30 +1329,33 @@ std::string Module::getReceiverHostname() const {
     return std::string(shm()->rxHostname);
 }
 
-void Module::setReceiverHostname(const std::string &receiverIP,
+void Module::setReceiverHostname(const std::string &hostname, const int port,
                                  const bool initialChecks) {
-    LOG(logDEBUG1) << "Setting up Receiver hostname with " << receiverIP;
+    {
+        std::ostringstream oss;
+        oss << "Setting up Receiver hostname with " << hostname;
+        if (port != 0) {
+            oss << " at port " << port;
+        }
+        LOG(logDEBUG1) << oss.str();
+    }
 
     if (getRunStatus() == RUNNING) {
         throw RuntimeError("Cannot set receiver hostname. Acquisition already "
                            "running. Stop it first.");
     }
 
-    if (receiverIP == "none") {
+    if (hostname == "none") {
         memset(shm()->rxHostname, 0, MAX_STR_LENGTH);
         strcpy_safe(shm()->rxHostname, "none");
         shm()->useReceiverFlag = false;
         return;
     }
 
-    // start updating
-    std::string host = receiverIP;
-    auto res = split(host, ':');
-    if (res.size() > 1) {
-        host = res[0];
-        shm()->rxTCPPort = std::stoi(res[1]);
+    strcpy_safe(shm()->rxHostname, hostname.c_str());
+    if (port != 0) {
+        shm()->rxTCPPort = port;
     }
-    strcpy_safe(shm()->rxHostname, host.c_str());
     shm()->useReceiverFlag = true;
 
     try {
@@ -1790,7 +1819,7 @@ void Module::setTop(bool value) {
     sendToDetector(F_SET_TOP, static_cast<int>(value), nullptr);
 }
 
-// Jungfrau Specific
+// Jungfrau/Moench Specific
 double Module::getChipVersion() const {
     return (sendToDetector<int>(F_GET_CHIP_VERSION)) / 10.00;
 }
@@ -2302,7 +2331,7 @@ void Module::setDigitalPulsing(const bool enable) {
     sendToDetector(F_SET_DIGITAL_PULSING, static_cast<int>(enable), nullptr);
 }
 
-// CTB / Moench Specific
+// CTB Specific
 int Module::getNumberOfAnalogSamples() const {
     return sendToDetector<int>(F_GET_NUM_ANALOG_SAMPLES);
 }
@@ -2537,8 +2566,6 @@ void Module::setPatternBitMask(uint64_t mask) {
 
 void Module::startPattern() { sendToDetector(F_START_PATTERN); }
 
-// Moench
-
 std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
     // TODO, refactor this function with a more robust sending.
     // Now assuming whitespace separated key value
@@ -2631,8 +2658,8 @@ void Module::programFPGA(std::vector<char> buffer,
                          const bool forceDeleteNormalFile) {
     switch (shm()->detType) {
     case JUNGFRAU:
-    case CHIPTESTBOARD:
     case MOENCH:
+    case CHIPTESTBOARD:
         sendProgram(true, buffer, F_PROGRAM_FPGA, "Update Firmware", "",
                     forceDeleteNormalFile);
         break;
@@ -2652,8 +2679,8 @@ void Module::updateDetectorServer(std::vector<char> buffer,
                                   const std::string &serverName) {
     switch (shm()->detType) {
     case JUNGFRAU:
-    case CHIPTESTBOARD:
     case MOENCH:
+    case CHIPTESTBOARD:
         sendProgram(true, buffer, F_UPDATE_DETECTOR_SERVER,
                     "Update Detector Server (no tftp)", serverName);
         break;
@@ -2673,8 +2700,8 @@ void Module::updateDetectorServer(std::vector<char> buffer,
 void Module::updateKernel(std::vector<char> buffer) {
     switch (shm()->detType) {
     case JUNGFRAU:
-    case CHIPTESTBOARD:
     case MOENCH:
+    case CHIPTESTBOARD:
         sendProgram(true, buffer, F_UPDATE_KERNEL, "Update Kernel");
         break;
     case MYTHEN3:

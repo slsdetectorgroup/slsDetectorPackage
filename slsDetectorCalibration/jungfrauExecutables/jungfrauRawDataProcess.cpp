@@ -10,8 +10,7 @@
 
 #define RAWDATA
 
-#ifndef JFSTRX
-#ifndef JFSTRXOLD
+#if !defined JFSTRX && !defined JFSTRXOLD && !defined JFSTRXCHIP1 && !defined JFSTRXCHIP6
 #ifndef MODULE
 #include "jungfrauHighZSingleChipData.h"
 #endif
@@ -19,9 +18,12 @@
 #include "jungfrauModuleData.h"
 #endif
 #endif
-#endif
+
 #ifdef JFSTRX
 #include "jungfrauLGADStrixelsData.h"
+#endif
+#if defined JFSTRXCHIP1 || defined JFSTRXCHIP6
+#include "jungfrauLGADStrixelsDataSingleChip.h"
 #endif
 #ifdef JFSTRXOLD
 #include "jungfrauStrixelsHalfModuleOldDesign.h"
@@ -56,15 +58,14 @@ int main(int argc, char *argv[]) {
 
     int fifosize = 1000;
     int nthreads = 10;
-    int csize = 3;
+    int csize = 3; //3
     int nsigma = 5;
     int nped = 10000;
 
     int cf = 0;
 
 
-#ifndef JFSTRX
-#ifndef JFSTRXOLD
+#if !defined JFSTRX && !defined JFSTRXOLD && !defined JFSTRXCHIP1 && !defined JFSTRXCHIP6
 #ifndef MODULE
     jungfrauHighZSingleChipData *decoder = new jungfrauHighZSingleChipData();
     int nx = 256, ny = 256;
@@ -72,17 +73,26 @@ int main(int argc, char *argv[]) {
 #ifdef MODULE
     jungfrauModuleData *decoder = new jungfrauModuleData();
     int nx = 1024, ny = 512;
+#endif
+#endif
 
-#endif
-#endif
-#endif
 #ifdef JFSTRX
-    cout << "bbb" << endl;
+    cout << "Jungfrau strixel full module readout" << endl;
     jungfrauLGADStrixelsData *decoder = new jungfrauLGADStrixelsData();
     int nx = 1024/5, ny = 512*5;
 #endif
+#ifdef JFSTRXCHIP1
+    std::cout << "Jungfrau strixel LGAD single chip 1" << std::endl;
+    jungfrauLGADStrixelsDataSingleChip *decoder = new jungfrauLGADStrixelsDataSingleChip(1);
+    int nx = 256/3, ny = 256*5;
+#endif
+#ifdef JFSTRXCHIP6
+    std::cout << "Jungfrau strixel LGAD single chip 6" << std::endl;
+    jungfrauLGADStrixelsDataSingleChip *decoder = new jungfrauLGADStrixelsDataSingleChip(6);
+    int nx = 256/3, ny = 256*5;
+#endif
 #ifdef JFSTRXOLD
-    cout << "ccc" << endl;
+    std::cout << "Jungfrau strixels old design" << std::endl;
     jungfrauStrixelsHalfModuleOldDesign *decoder = new jungfrauStrixelsHalfModuleOldDesign();
     int nx = 1024*3, ny = 512/3;
 #endif
@@ -180,7 +190,7 @@ int main(int argc, char *argv[]) {
     uint32_t nnx, nny;
 
     singlePhotonDetector *filter = new singlePhotonDetector(
-        decoder, csize, nsigma, 1, NULL, nped, 200, -1, -1, gainmap, NULL);
+        decoder, 3, nsigma, 1, NULL, nped, 200, -1, -1, gainmap, NULL);
 
     if (gainfname) {
 
@@ -211,6 +221,8 @@ int main(int argc, char *argv[]) {
     // multiThreadedAnalogDetector(filter,nthreads,fifosize);
     multiThreadedCountingDetector *mt =
         new multiThreadedCountingDetector(filter, nthreads, fifosize);
+    mt->setClusterSize(csize,csize);
+
 #ifndef ANALOG
     mt->setDetectorMode(ePhotonCounting);
     cout << "Counting!" << endl;

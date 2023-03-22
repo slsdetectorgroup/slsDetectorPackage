@@ -349,9 +349,10 @@ int ClientInterface::setup_receiver(Interface &socket) {
                 retvals[1] = r;
             }
         }
+
         impl()->setUDPPortNumber(arg.udp_dstport);
         impl()->setUDPPortNumber2(arg.udp_dstport2);
-        if (detType == JUNGFRAU || detType == GOTTHARD2) {
+        if (detType == JUNGFRAU || detType == MOENCH || detType == GOTTHARD2) {
             impl()->setNumberofUDPInterfaces(arg.udpInterfaces);
         }
         impl()->setUDPSocketBufferSize(0);
@@ -366,7 +367,8 @@ int ClientInterface::setup_receiver(Interface &socket) {
             impl()->setNumberOfAdditionalStorageCells(
                 arg.additionalStorageCells);
         }
-        if (detType == MOENCH || detType == CHIPTESTBOARD) {
+
+        if (detType == CHIPTESTBOARD) {
             impl()->setNumberofAnalogSamples(arg.analogSamples);
         }
         if (detType == CHIPTESTBOARD) {
@@ -386,7 +388,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
             impl()->setQuad(arg.quad == 0 ? false : true);
             impl()->setThresholdEnergy(arg.thresholdEnergyeV[0]);
         }
-        if (detType == EIGER || detType == JUNGFRAU) {
+        if (detType == EIGER || detType == JUNGFRAU || detType == MOENCH) {
             impl()->setReadNRows(arg.readNRows);
         }
         if (detType == MYTHEN3) {
@@ -400,14 +402,12 @@ int ClientInterface::setup_receiver(Interface &socket) {
             impl()->setDynamicRange(arg.dynamicRange);
         }
         impl()->setTimingMode(arg.timMode);
-        if (detType == EIGER || detType == MOENCH || detType == CHIPTESTBOARD ||
+        if (detType == EIGER || detType == CHIPTESTBOARD ||
             detType == MYTHEN3) {
             impl()->setTenGigaEnable(arg.tenGiga);
         }
         if (detType == CHIPTESTBOARD) {
             impl()->setReadoutMode(arg.roMode);
-        }
-        if (detType == CHIPTESTBOARD || detType == MOENCH) {
             impl()->setADCEnableMask(arg.adcMask);
             impl()->setTenGigaADCEnableMask(arg.adc10gMask);
         }
@@ -444,8 +444,8 @@ void ClientInterface::setDetectorType(detectorType arg) {
     case GOTTHARD:
     case EIGER:
     case CHIPTESTBOARD:
-    case MOENCH:
     case JUNGFRAU:
+    case MOENCH:
     case MYTHEN3:
     case GOTTHARD2:
         break;
@@ -564,7 +564,7 @@ int ClientInterface::set_burst_mode(Interface &socket) {
 int ClientInterface::set_num_analog_samples(Interface &socket) {
     auto value = socket.Receive<int>();
     LOG(logDEBUG1) << "Setting num analog samples to " << value;
-    if (detType != CHIPTESTBOARD && detType != MOENCH) {
+    if (detType != CHIPTESTBOARD) {
         functionNotImplemented();
     }
     try {
@@ -912,8 +912,7 @@ int ClientInterface::get_overwrite(Interface &socket) {
 
 int ClientInterface::enable_tengiga(Interface &socket) {
     auto val = socket.Receive<int>();
-    if (detType != EIGER && detType != CHIPTESTBOARD && detType != MOENCH &&
-        detType != MYTHEN3)
+    if (detType != EIGER && detType != CHIPTESTBOARD && detType != MYTHEN3)
         functionNotImplemented();
 
     if (val >= 0) {
@@ -1353,7 +1352,7 @@ int ClientInterface::set_read_n_rows(Interface &socket) {
     auto arg = socket.Receive<int>();
     if (arg >= 0) {
         verifyIdle(socket);
-        if (detType != EIGER && detType != JUNGFRAU) {
+        if (detType != EIGER && detType != JUNGFRAU && detType != MOENCH) {
             throw RuntimeError("Could not set number of rows. Not implemented "
                                "for this detector");
         }
@@ -1436,7 +1435,7 @@ MacAddr ClientInterface::setUdpIp2(IpAddr arg) {
 int ClientInterface::set_udp_ip2(Interface &socket) {
     auto arg = socket.Receive<IpAddr>();
     verifyIdle(socket);
-    if (detType != JUNGFRAU && detType != GOTTHARD2) {
+    if (detType != JUNGFRAU && detType != MOENCH && detType != GOTTHARD2) {
         throw RuntimeError(
             "UDP Destination IP2 not implemented for this detector");
     }
@@ -1455,7 +1454,8 @@ int ClientInterface::set_udp_port(Interface &socket) {
 int ClientInterface::set_udp_port2(Interface &socket) {
     auto arg = socket.Receive<int>();
     verifyIdle(socket);
-    if (detType != JUNGFRAU && detType != EIGER && detType != GOTTHARD2) {
+    if (detType != JUNGFRAU && detType != MOENCH && detType != EIGER &&
+        detType != GOTTHARD2) {
         throw RuntimeError(
             "UDP Destination Port2 not implemented for this detector");
     }
@@ -1468,7 +1468,7 @@ int ClientInterface::set_num_interfaces(Interface &socket) {
     auto arg = socket.Receive<int>();
     arg = (arg > 1 ? 2 : 1);
     verifyIdle(socket);
-    if (detType != JUNGFRAU && detType != GOTTHARD2) {
+    if (detType != JUNGFRAU && detType != MOENCH && detType != GOTTHARD2) {
         throw RuntimeError(
             "Number of interfaces not implemented for this detector");
     }
@@ -1728,7 +1728,7 @@ int ClientInterface::get_receiver_roi(Interface &socket) {
 
 int ClientInterface::set_receiver_roi(Interface &socket) {
     auto arg = socket.Receive<ROI>();
-    if (detType == CHIPTESTBOARD || detType == MOENCH)
+    if (detType == CHIPTESTBOARD)
         functionNotImplemented();
     LOG(logDEBUG1) << "Set Receiver ROI: " << ToString(arg);
     verifyIdle(socket);
@@ -1744,7 +1744,7 @@ int ClientInterface::set_receiver_roi(Interface &socket) {
 
 int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
     auto arg = socket.Receive<ROI>();
-    if (detType == CHIPTESTBOARD || detType == MOENCH)
+    if (detType == CHIPTESTBOARD)
         functionNotImplemented();
     LOG(logDEBUG1) << "Set Receiver ROI Metadata: " << ToString(arg);
     verifyIdle(socket);

@@ -516,11 +516,343 @@
      <property name="frameShadow">
       <enum>QFrame::Plain</enum>
      </property>
-     <layout class="QGridLayout" name="gridLayout_5">
-      <item row="5" column="2">
-       <widget class="QDoubleSpinBox" name="spinPeriod">
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="0" column="0">
+       <widget class="QLabel" name="lblTimingMode">
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Timing Mode of the detector. &lt;/p&gt;&lt;p&gt; #timing#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Timing Mode:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="comboTimingMode">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>Timing Mode of the detector. 
+ #timing#</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>Auto</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Trigger Exposure Series</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Gated with fixed number</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Burst Trigger</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Trigger Gated</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="lblBurstMode">
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Burst modes&lt;/p&gt;&lt;p&gt;#burstmode#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Burst Mode:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="comboBurstMode">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Burst modes&lt;/p&gt;&lt;p&gt; #burstmode#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>Burst Internal</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Burst External</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Continuous Internal</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Continuous External</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="minimumSize">
+         <size>
+          <width>170</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of measurements (not in real time) that will be acquired. &lt;/p&gt;&lt;p&gt; #only in gui#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Number of Measurements:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="2">
+       <widget class="QSpinBox" name="spinNumMeasurements">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of measurements (not in real time) that will be acquired. &lt;/p&gt;&lt;p&gt; #only in gui#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="statusTip">
+         <string/>
+        </property>
+        <property name="whatsThis">
+         <string/>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::LeftToRight</enum>
+        </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
+        <property name="frame">
+         <bool>true</bool>
+        </property>
+        <property name="buttonSymbols">
+         <enum>QAbstractSpinBox::PlusMinus</enum>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>-1</number>
+        </property>
+        <property name="maximum">
+         <number>2000000000</number>
+        </property>
+        <property name="value">
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="lblNumFrames">
         <property name="enabled">
          <bool>false</bool>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of frames per hardware/software trigger that will be acquired &lt;/p&gt;&lt;p&gt; #frames#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Number of  Frames:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="2">
+       <widget class="QSpinBox" name="spinNumFrames">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of frames per hardware/software trigger that will be acquired &lt;/p&gt;&lt;p&gt; #frames#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="statusTip">
+         <string/>
+        </property>
+        <property name="whatsThis">
+         <string/>
+        </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="buttonSymbols">
+         <enum>QAbstractSpinBox::PlusMinus</enum>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>-1</number>
+        </property>
+        <property name="maximum">
+         <number>2000000000</number>
+        </property>
+        <property name="value">
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="lblExpTime">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;nobr&gt;
+Exposure Time of a frame.
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+ #exptime#
+&lt;/nobr&gt;</string>
+        </property>
+        <property name="text">
+         <string>Exposure Time:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QDoubleSpinBox" name="spinExpTime">
+        <property name="enabled">
+         <bool>true</bool>
         </property>
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -548,9 +880,9 @@
         </property>
         <property name="toolTip">
          <string>&lt;nobr&gt;
-Frame period between exposures. 
+Exposure Time of a frame.
 &lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
- #period#
+ #exptime#
 &lt;/nobr&gt;</string>
         </property>
         <property name="styleSheet">
@@ -575,271 +907,11 @@ Frame period between exposures.
          <double>2000000000.000000000000000</double>
         </property>
         <property name="value">
-         <double>0.000000000000000</double>
+         <double>1.000000000000000</double>
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
-       <widget class="QStackedWidget" name="stackedLblSamplesGates">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>171</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>171</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <family>Cantarell</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="currentIndex">
-         <number>0</number>
-        </property>
-        <widget class="QWidget" name="pageLblSamples">
-         <property name="font">
-          <font>
-           <family>Cantarell</family>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <layout class="QGridLayout" name="gridLblTrigger_2">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="lblNumSamples">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="font">
-             <font>
-              <family>Cantarell</family>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of analog samples.&lt;/p&gt;&lt;p&gt;#asamples#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Number of Samples:</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="pageLblGates">
-         <property name="font">
-          <font>
-           <family>Cantarell</family>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <layout class="QGridLayout" name="gridLblBurst_2">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="lblNumGates">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="font">
-             <font>
-              <family>Cantarell</family>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of external gates.&lt;/p&gt;&lt;p&gt;#gates#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Number of Gates:</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLabel" name="label_5">
-        <property name="minimumSize">
-         <size>
-          <width>170</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <family>Cantarell</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of measurements (not in real time) that will be acquired. &lt;/p&gt;&lt;p&gt; #only in gui#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>Number of Measurements:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="1">
-       <widget class="QStackedWidget" name="stackedLblDelayBurstPeriod">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>171</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>171</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <family>Cantarell</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="currentIndex">
-         <number>0</number>
-        </property>
-        <widget class="QWidget" name="pageLblDelay">
-         <property name="font">
-          <font>
-           <family>Cantarell</family>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <layout class="QGridLayout" name="gridLblDelay">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="lblDelay">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="font">
-             <font>
-              <family>Cantarell</family>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The Delay between Trigger Edge and Start of Exposure ( or Readout). &lt;/p&gt;&lt;p&gt;#delay#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Delay After Trigger:</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="pageLblBurstPeriod">
-         <property name="font">
-          <font>
-           <family>Cantarell</family>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <layout class="QGridLayout" name="gridLblBurstPeriod">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item row="0" column="1">
-           <widget class="QLabel" name="lblBurstPeriod">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="font">
-             <font>
-              <family>Cantarell</family>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Burst period between bursts&lt;/p&gt;&lt;p&gt;#burstperiod#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Burst Period:</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </widget>
-      </item>
-      <item row="4" column="3">
+      <item row="4" column="2">
        <widget class="QComboBox" name="comboExpUnit">
         <property name="enabled">
          <bool>true</bool>
@@ -913,7 +985,285 @@ Exposure Time of a frame.
         </item>
        </widget>
       </item>
-      <item row="6" column="2" colspan="2">
+      <item row="5" column="0">
+       <widget class="QLabel" name="lblPeriod">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;nobr&gt;
+Frame period between exposures. 
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+ #period#
+&lt;/nobr&gt;</string>
+        </property>
+        <property name="text">
+         <string>Acquisition Period:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QDoubleSpinBox" name="spinPeriod">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>170</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;nobr&gt;
+Frame period between exposures. 
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+ #period#
+&lt;/nobr&gt;</string>
+        </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="buttonSymbols">
+         <enum>QAbstractSpinBox::PlusMinus</enum>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
+        <property name="decimals">
+         <number>9</number>
+        </property>
+        <property name="minimum">
+         <double>-1.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>2000000000.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="2">
+       <widget class="QComboBox" name="comboPeriodUnit">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>70</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;nobr&gt;
+Frame period between exposures. 
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+ #period#
+&lt;/nobr&gt;</string>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::LeftToRight</enum>
+        </property>
+        <property name="currentIndex">
+         <number>2</number>
+        </property>
+        <item>
+         <property name="text">
+          <string>hr</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>min</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>s</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>ms</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>us</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>ns</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QStackedWidget" name="stackedLblTriggerBurst">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="QWidget" name="pageLblTrigger">
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <layout class="QGridLayout" name="gridLblTrigger">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="lblNumTriggers">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="font">
+             <font>
+              <family>Cantarell</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of Triggers to be expected.&lt;/p&gt;&lt;p&gt; #triggers#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Number of Triggers:</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="pageLblBurst">
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <layout class="QGridLayout" name="gridLblBurst">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="lblNumBursts">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="font">
+             <font>
+              <family>Cantarell</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of bursts to be expected.&lt;/p&gt;&lt;p&gt;#bursts#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Number of Bursts:</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+      <item row="6" column="1">
        <widget class="QStackedWidget" name="stackedSpinTriggerBurst">
         <property name="maximumSize">
          <size>
@@ -1110,50 +1460,24 @@ Exposure Time of a frame.
         </widget>
        </widget>
       </item>
-      <item row="5" column="1">
-       <widget class="QLabel" name="lblPeriod">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="font">
-         <font>
-          <family>Cantarell</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>&lt;nobr&gt;
-Frame period between exposures. 
-&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
- #period#
-&lt;/nobr&gt;</string>
-        </property>
-        <property name="text">
-         <string>Acquisition Period:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="2" colspan="2">
-       <widget class="QSpinBox" name="spinNumFrames">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
+      <item row="7" column="0">
+       <widget class="QStackedWidget" name="stackedLblDelayBurstPeriod">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="minimumSize">
          <size>
-          <width>0</width>
-          <height>25</height>
+          <width>171</width>
+          <height>32</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>16777215</width>
-          <height>25</height>
+          <width>171</width>
+          <height>32</height>
          </size>
         </property>
         <property name="font">
@@ -1162,58 +1486,100 @@ Frame period between exposures.
           <pointsize>10</pointsize>
          </font>
         </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of frames per hardware/software trigger that will be acquired &lt;/p&gt;&lt;p&gt; #frames#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <property name="currentIndex">
+         <number>0</number>
         </property>
-        <property name="statusTip">
-         <string/>
-        </property>
-        <property name="whatsThis">
-         <string/>
-        </property>
-        <property name="styleSheet">
-         <string notr="true"/>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-        </property>
-        <property name="buttonSymbols">
-         <enum>QAbstractSpinBox::PlusMinus</enum>
-        </property>
-        <property name="keyboardTracking">
-         <bool>false</bool>
-        </property>
-        <property name="suffix">
-         <string/>
-        </property>
-        <property name="minimum">
-         <number>-1</number>
-        </property>
-        <property name="maximum">
-         <number>2000000000</number>
-        </property>
-        <property name="value">
-         <number>1</number>
-        </property>
+        <widget class="QWidget" name="pageLblDelay">
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <layout class="QGridLayout" name="gridLblDelay">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="lblDelay">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="font">
+             <font>
+              <family>Cantarell</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The Delay between Trigger Edge and Start of Exposure ( or Readout). &lt;/p&gt;&lt;p&gt;#delay#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Delay After Trigger:</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="pageLblBurstPeriod">
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <layout class="QGridLayout" name="gridLblBurstPeriod">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item row="0" column="1">
+           <widget class="QLabel" name="lblBurstPeriod">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="font">
+             <font>
+              <family>Cantarell</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Burst period between bursts&lt;/p&gt;&lt;p&gt;#burstperiod#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Burst Period:</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QLabel" name="lblBurstMode">
-        <property name="font">
-         <font>
-          <family>Cantarell</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Burst modes&lt;/p&gt;&lt;p&gt;#burstmode#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>Burst Mode:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="2">
+      <item row="7" column="1">
        <widget class="QStackedWidget" name="stackedSpinDelayBurstPeriod">
         <property name="minimumSize">
          <size>
@@ -1405,426 +1771,7 @@ Frame period between exposures.
         </widget>
        </widget>
       </item>
-      <item row="4" column="2">
-       <widget class="QDoubleSpinBox" name="spinExpTime">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>170</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <family>Cantarell</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>&lt;nobr&gt;
-Exposure Time of a frame.
-&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
- #exptime#
-&lt;/nobr&gt;</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true"/>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-        </property>
-        <property name="buttonSymbols">
-         <enum>QAbstractSpinBox::PlusMinus</enum>
-        </property>
-        <property name="keyboardTracking">
-         <bool>false</bool>
-        </property>
-        <property name="decimals">
-         <number>9</number>
-        </property>
-        <property name="minimum">
-         <double>-1.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>2000000000.000000000000000</double>
-        </property>
-        <property name="value">
-         <double>1.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="3">
-       <widget class="QComboBox" name="comboPeriodUnit">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>70</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <family>Cantarell</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>&lt;nobr&gt;
-Frame period between exposures. 
-&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
- #period#
-&lt;/nobr&gt;</string>
-        </property>
-        <property name="layoutDirection">
-         <enum>Qt::LeftToRight</enum>
-        </property>
-        <property name="currentIndex">
-         <number>2</number>
-        </property>
-        <item>
-         <property name="text">
-          <string>hr</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>min</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>s</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>ms</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>us</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>ns</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="8" column="2" colspan="2">
-       <widget class="QStackedWidget" name="stackedSpinSamplesGates">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>30</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <family>Cantarell</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="currentIndex">
-         <number>0</number>
-        </property>
-        <widget class="QWidget" name="pageSpinSamples">
-         <property name="font">
-          <font>
-           <family>Cantarell</family>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_10">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QSpinBox" name="spinNumSamples">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <family>Cantarell</family>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of analog samples.&lt;/p&gt;&lt;p&gt;#asamples#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="statusTip">
-             <string/>
-            </property>
-            <property name="whatsThis">
-             <string/>
-            </property>
-            <property name="styleSheet">
-             <string notr="true"/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-            </property>
-            <property name="buttonSymbols">
-             <enum>QAbstractSpinBox::PlusMinus</enum>
-            </property>
-            <property name="keyboardTracking">
-             <bool>false</bool>
-            </property>
-            <property name="suffix">
-             <string/>
-            </property>
-            <property name="minimum">
-             <number>-1</number>
-            </property>
-            <property name="maximum">
-             <number>2000000000</number>
-            </property>
-            <property name="value">
-             <number>1</number>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="pageSpinGates">
-         <property name="font">
-          <font>
-           <family>Cantarell</family>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_11">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QSpinBox" name="spinNumGates">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <family>Cantarell</family>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of external gates.&lt;/p&gt;&lt;p&gt;#gates#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="statusTip">
-             <string/>
-            </property>
-            <property name="whatsThis">
-             <string/>
-            </property>
-            <property name="styleSheet">
-             <string notr="true"/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-            </property>
-            <property name="buttonSymbols">
-             <enum>QAbstractSpinBox::PlusMinus</enum>
-            </property>
-            <property name="keyboardTracking">
-             <bool>false</bool>
-            </property>
-            <property name="suffix">
-             <string/>
-            </property>
-            <property name="minimum">
-             <number>-1</number>
-            </property>
-            <property name="maximum">
-             <number>2000000000</number>
-            </property>
-            <property name="value">
-             <number>1</number>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLabel" name="lblExpTime">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="font">
-         <font>
-          <family>Cantarell</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>&lt;nobr&gt;
-Exposure Time of a frame.
-&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
- #exptime#
-&lt;/nobr&gt;</string>
-        </property>
-        <property name="text">
-         <string>Exposure Time:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2" colspan="2">
-       <widget class="QComboBox" name="comboTimingMode">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <family>Cantarell</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>Timing Mode of the detector. 
- #timing#</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>Auto</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Trigger Exposure Series</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Gated with fixed number</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Burst Trigger</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Trigger Gated</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="7" column="3">
+      <item row="7" column="2">
        <widget class="QStackedWidget" name="stackedComboDelayBurstPeriod">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -2046,8 +1993,8 @@ Exposure Time of a frame.
         </widget>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QLabel" name="lblNumFrames">
+      <item row="8" column="0">
+       <widget class="QLabel" name="lblNumGates">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -2058,134 +2005,18 @@ Exposure Time of a frame.
          </font>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of frames per hardware/software trigger that will be acquired &lt;/p&gt;&lt;p&gt; #frames#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of external gates.&lt;/p&gt;&lt;p&gt;#gates#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>Number of  Frames:</string>
+         <string>Number of Gates:</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
-       <widget class="QStackedWidget" name="stackedLblTriggerBurst">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+      <item row="8" column="1" colspan="2">
+       <widget class="QSpinBox" name="spinNumGates">
+        <property name="enabled">
+         <bool>false</bool>
         </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <family>Cantarell</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="currentIndex">
-         <number>0</number>
-        </property>
-        <widget class="QWidget" name="pageLblTrigger">
-         <property name="font">
-          <font>
-           <family>Cantarell</family>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <layout class="QGridLayout" name="gridLblTrigger">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="lblNumTriggers">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="font">
-             <font>
-              <family>Cantarell</family>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of Triggers to be expected.&lt;/p&gt;&lt;p&gt; #triggers#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Number of Triggers:</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="pageLblBurst">
-         <property name="font">
-          <font>
-           <family>Cantarell</family>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <layout class="QGridLayout" name="gridLblBurst">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="lblNumBursts">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="font">
-             <font>
-              <family>Cantarell</family>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of bursts to be expected.&lt;/p&gt;&lt;p&gt;#bursts#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Number of Bursts:</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </widget>
-      </item>
-      <item row="2" column="2" colspan="2">
-       <widget class="QSpinBox" name="spinNumMeasurements">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -2211,7 +2042,7 @@ Exposure Time of a frame.
          </font>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of measurements (not in real time) that will be acquired. &lt;/p&gt;&lt;p&gt; #only in gui#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of external gates.&lt;/p&gt;&lt;p&gt;#gates#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="statusTip">
          <string/>
@@ -2219,14 +2050,11 @@ Exposure Time of a frame.
         <property name="whatsThis">
          <string/>
         </property>
-        <property name="layoutDirection">
-         <enum>Qt::LeftToRight</enum>
-        </property>
         <property name="styleSheet">
          <string notr="true"/>
         </property>
-        <property name="frame">
-         <bool>true</bool>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
         </property>
         <property name="buttonSymbols">
          <enum>QAbstractSpinBox::PlusMinus</enum>
@@ -2248,74 +2076,7 @@ Exposure Time of a frame.
         </property>
        </widget>
       </item>
-      <item row="1" column="2" colspan="2">
-       <widget class="QComboBox" name="comboBurstMode">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <family>Cantarell</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Burst modes&lt;/p&gt;&lt;p&gt; #burstmode#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>Burst Internal</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Burst External</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Continuous Internal</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Continuous External</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLabel" name="lblTimingMode">
-        <property name="font">
-         <font>
-          <family>Cantarell</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Timing Mode of the detector. &lt;/p&gt;&lt;p&gt; #timing#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>Timing Mode:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="2">
+      <item row="9" column="1">
        <spacer name="verticalSpacer">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
@@ -2489,8 +2250,6 @@ Exposure Time of a frame.
   <tabstop>comboDelayUnit</tabstop>
   <tabstop>spinBurstPeriod</tabstop>
   <tabstop>comboBurstPeriodUnit</tabstop>
-  <tabstop>spinNumSamples</tabstop>
-  <tabstop>spinNumGates</tabstop>
  </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>

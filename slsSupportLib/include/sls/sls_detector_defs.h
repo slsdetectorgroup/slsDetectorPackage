@@ -48,7 +48,7 @@
 #define SLS_DETECTOR_HEADER_VERSION      0x2
 #define SLS_DETECTOR_JSON_HEADER_VERSION 0x4
 
-// ctb/ moench 1g udp (read from fifo)
+// ctb 1g udp (read from fifo)
 #define UDP_PACKET_DATA_BYTES (1344)
 
 /** maximum trim en */
@@ -404,7 +404,7 @@ typedef struct {
     enum clockIndex { ADC_CLOCK, DBIT_CLOCK, RUN_CLOCK, SYNC_CLOCK };
 
     /**
-     * read out mode (ctb, moench)
+     * read out mode (ctb)
      */
     enum readoutMode { ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL };
 
@@ -444,6 +444,11 @@ typedef struct {
     };
 
     enum portPosition { LEFT, RIGHT, TOP, BOTTOM };
+
+    /**
+     * eiger fpga position
+     */
+    enum fpgaPosition { FRONT_LEFT, FRONT_RIGHT };
 
 #ifdef __cplusplus
     enum class streamingInterface {
@@ -632,6 +637,13 @@ struct detParameters {
             nChipY = 1;
             nDacs = 8;
             break;
+        case slsDetectorDefs::detectorType::MOENCH:
+            nChanX = 400;
+            nChanY = 400;
+            nChipX = 1;
+            nChipY = 1;
+            nDacs = 8;
+            break;
         case slsDetectorDefs::detectorType::JUNGFRAU:
             nChanX = 256;
             nChanY = 256;
@@ -645,13 +657,6 @@ struct detParameters {
             nChipX = 1;
             nChipY = 1;
             nDacs = 24;
-            break;
-        case slsDetectorDefs::detectorType::MOENCH:
-            nChanX = 32;
-            nChanY = 1;
-            nChipX = 1;
-            nChipY = 1;
-            nDacs = 8;
             break;
         case slsDetectorDefs::detectorType::EIGER:
             nChanX = 256;

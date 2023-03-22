@@ -22,7 +22,7 @@ enum quadrant {
 
 #include <iostream>
 #include <stdio.h>
-using namespace std;
+//using namespace std;
 
 //#ifdef MYROOT1
 //: public TObject
@@ -128,7 +128,7 @@ class slsInterpolation {
                         nSubPixelsY * nPixelsY);
             delete[] gm;
         } else
-            cout << "Could not allocate float image " << endl;
+	  std::cout << "Could not allocate float image " << std::endl;
         return NULL;
     }
 
@@ -323,7 +323,7 @@ class slsInterpolation {
                 if (ix > 1)
                     sumR += cl[ix + iy * 3];
                 if (iy < 1)
-                    sumB = cl[ix + iy * 3];
+		  sumB = cl[ix + iy * 3]; //???? not "+="? VH
                 if (iy > 1)
                     sumT += cl[ix + iy * 3];
             }
@@ -472,13 +472,13 @@ class slsInterpolation {
                 val = cl[ix + 3 * iy];
                 sum += val;
                 if (iy == 0)
-                    l += val;
-                if (iy == 2)
-                    r += val;
-                if (ix == 0)
                     b += val;
-                if (ix == 2)
+                if (iy == 2)
                     t += val;
+                if (ix == 0)
+                    l += val;
+                if (ix == 2)
+                    r += val;
             }
         }
         if (sum > 0) {
@@ -524,6 +524,185 @@ class slsInterpolation {
             cli[ix] = cl[ix];
 
         return calcEta3X(cli, etax, etay, sum);
+    }
+
+    /************************************************/
+    /* Additional strixel eta functions by Viktoria */
+    /************************************************/
+    //Etax: only central row, etay: only central column
+    static int calcEta1x3( double* cl, double& etax, double& etay, double& toth, double& totv ) {
+      double l, r, t, b;
+      //sum = cl[0] + cl[1] + cl[2] + cl[3] + cl[4] + cl[5] + cl[6] + cl[7] + cl[8];
+      toth = cl[3] + cl[4] + cl[5];
+      if (toth > 0) {
+	l = cl[3];
+	r = cl[5];
+      }
+      etax = (-l + r) / toth;
+      totv = cl[1] + cl[4] + cl[7];
+      if (toth > 0) {
+	b = cl[1];
+	t = cl[7];
+      }
+      etay = (-b + t) / totv;
+      return -1;
+    }
+
+    static int calcEta1x3( int* cl, double& etax, double& etay, double& toth, double& totv ) {
+      double cli[9];
+      for ( int ix = 0; ix != 9; ++ix )
+	cli[ix] = cl[ix];
+      return calcEta1x3( cli, etax, etay, toth , totv );
+    }
+
+    //Eta 1x2 essentially the same as etaL, but we also return toth and totv
+    static int calcEta1x2(double totquad, int corner, double sDum[2][2],
+			  double &etax, double &etay, double& toth, double& totv) {
+        double t, r;
+        if (totquad > 0) {
+            switch (corner) {
+            case TOP_LEFT:
+                t = sDum[1][1];
+                r = sDum[0][1];
+                toth = sDum[0][1] + sDum[0][0];
+                totv = sDum[0][1] + sDum[1][1];
+                break;
+            case TOP_RIGHT:
+                t = sDum[1][0];
+                r = sDum[0][1];
+                toth = sDum[0][1] + sDum[0][0];
+                totv = sDum[1][0] + sDum[0][0];
+                break;
+            case BOTTOM_LEFT:
+                r = sDum[1][1];
+                t = sDum[1][1];
+                toth = sDum[1][0] + sDum[1][1];
+                totv = sDum[0][1] + sDum[1][1];
+                break;
+            case BOTTOM_RIGHT:
+                t = sDum[1][0];
+                r = sDum[1][1];
+                toth = sDum[1][0] + sDum[1][1];
+                totv = sDum[1][0] + sDum[0][0];
+                break;
+            default:
+                etax = -1000;
+                etay = -1000;
+                return 0;
+            }
+            // etax=r/totquad;
+            // etay=t/totquad;
+            etax = r / toth;
+            etay = t / totv;
+        }
+        return 0;
+    }
+
+    static int calcEta1x2( double *cl, double &etax, double &etay, double &sum,
+			   double &totquad, double sDum[2][2], double& toth, double& totv ) {
+        int corner = calcQuad( cl, sum, totquad, sDum );
+        calcEta1x2( totquad, corner, sDum, etax, etay, toth, totv );
+        return corner;
+    }
+
+    static int calcEta1x2( int *cl, double &etax, double &etay, double &sum,
+			 double &totquad, double sDum[2][2], double& toth, double& totv ) {
+        int corner = calcQuad( cl, sum, totquad, sDum );
+        calcEta1x2( totquad, corner, sDum, etax, etay, toth , totv );
+        return corner;
+    }
+
+    //Two functions to calculate 2x3 or 3x2 eta
+    static int calcEta2x3( double* cl, double totquad, int corner, double& etax, double& etay, double& tot6 ) {
+      double t, b, r;
+      if (totquad > 0) {
+	switch (corner) {
+	case TOP_LEFT:
+	case BOTTOM_LEFT:
+	  t = cl[6] + cl[7];
+	  b = cl[0] + cl[1];
+	  r = cl[1] + cl[4] + cl[7];
+	  tot6 = cl[0] + cl[1] + cl[3] + cl[4] + cl[6] + cl[7];
+	  break;
+	case TOP_RIGHT:
+	case BOTTOM_RIGHT:
+	  t = cl[7] + cl[8];
+	  b = cl[1] + cl[2];
+	  r = cl[2] + cl[5] + cl[8];
+	  tot6 = cl[1] + cl[2] + cl[4] + cl[5] + cl[7] + cl[8];
+	  break;
+	default:
+	  etax = -1000;
+	  etay = -1000;
+	  return -1;
+	}
+	etax = r / tot6;
+	etay = (-b + t) / tot6;
+      }
+      return -1;
+    }
+
+    static int calcEta3x2( double* cl, double totquad, int corner, double& etax, double& etay, double& tot6 ) {
+      double t, l, r;
+      if (totquad > 0) {
+	switch (corner) {
+	case TOP_LEFT:
+	case TOP_RIGHT:
+	  l = cl[3] + cl[6];
+	  r = cl[5] + cl[8];
+	  t = cl[6] + cl[7] + cl[8];
+	  tot6 = cl[3] + cl[4] + cl[5] + cl[6] + cl[7] + cl[8];
+	  break;
+	case BOTTOM_LEFT:
+	case BOTTOM_RIGHT:
+	  l = cl[0] + cl[3];
+	  r = cl[2] + cl[5];
+	  t = cl[3] + cl[4] + cl[5];
+	  tot6 = cl[0] + cl[1] + cl[2] + cl[3] + cl[4] + cl[5];
+	  break;
+	default:
+	  etax = -1000;
+	  etay = -1000;
+	  return -1;
+	}
+	etax = (-l + r) / tot6;
+	etay = t / tot6;
+      }
+      return -1;
+    }
+
+    //overload including both eta2x3 and eta3x2
+    //ornt (orientation of long side (3) of eta) decides which eta is chosen
+    enum orientation {
+      HORIZONTAL_ORIENTATION = 0,
+      VERTICAL_ORIENTATION = 1, 
+      UNDEFINED_ORIENTATION = -1
+    };
+    static int calcEta2x3( int ornt, double* cl, double& etax, double& etay, double& tot6 ) {
+      double sum{};
+      double totquad{};
+      double sDum[2][2]{};
+      int corner = calcQuad( cl, sum, totquad, sDum );
+      switch (ornt) {
+      case HORIZONTAL_ORIENTATION:
+	calcEta3x2( cl, totquad, corner, etax, etay, tot6 );
+	break;
+      case VERTICAL_ORIENTATION:
+	calcEta2x3( cl, totquad, corner, etax, etay, tot6 );
+	break;
+      default:
+	etax = -1000;
+	etay = -1000;
+	return -1;
+      }
+      return corner;
+    }
+
+    static int calcEta2x3( int strxo, int* cl, double& etax, double& etay, double& tot6 ) {
+      double cli[9]{};
+      for ( int ix = 0; ix != 9; ++ix )
+	cli[ix] = cl[ix];
+      return calcEta2x3( strxo, cli, etax, etay, tot6 );
     }
 
     /* static int calcMyEta(double totquad, int quad, double *cl, double &etax,

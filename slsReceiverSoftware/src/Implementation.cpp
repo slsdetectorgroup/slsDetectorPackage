@@ -114,8 +114,8 @@ void Implementation::setDetectorType(const detectorType d) {
     case GOTTHARD:
     case EIGER:
     case JUNGFRAU:
-    case CHIPTESTBOARD:
     case MOENCH:
+    case CHIPTESTBOARD:
     case MYTHEN3:
     case GOTTHARD2:
         LOG(logINFO) << " ***** " << ToString(d) << " Receiver *****";
@@ -139,11 +139,11 @@ void Implementation::setDetectorType(const detectorType d) {
     case JUNGFRAU:
         generalData = new JungfrauData();
         break;
-    case CHIPTESTBOARD:
-        generalData = new ChipTestBoardData();
-        break;
     case MOENCH:
         generalData = new MoenchData();
+        break;
+    case CHIPTESTBOARD:
+        generalData = new ChipTestBoardData();
         break;
     case MYTHEN3:
         generalData = new Mythen3Data();
@@ -226,7 +226,7 @@ const slsDetectorDefs::xy Implementation::GetPortGeometry() const {
     xy portGeometry{1, 1};
     if (generalData->detType == EIGER)
         portGeometry.x = generalData->numUDPInterfaces;
-    else if (generalData->detType == JUNGFRAU)
+    else if (generalData->detType == JUNGFRAU || generalData->detType == MOENCH)
         portGeometry.y = generalData->numUDPInterfaces;
     return portGeometry;
 }
@@ -415,7 +415,7 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
                         portFullRoi.xmin += nPortDim.x;
                         portFullRoi.xmax += nPortDim.x;
                     }
-                    // top bottom (jungfrau)
+                    // top bottom (jungfrau or moench)
                     else {
                         portFullRoi.ymin += nPortDim.y;
                         portFullRoi.ymax += nPortDim.y;
@@ -1132,7 +1132,7 @@ int Implementation::getUDPSocketBufferSize() const {
 
 void Implementation::setUDPSocketBufferSize(const int s) {
     size_t listSize = listener.size();
-    if ((generalData->detType == JUNGFRAU ||
+    if ((generalData->detType == JUNGFRAU || generalData->detType == MOENCH ||
          generalData->detType == GOTTHARD2) &&
         (int)listSize != generalData->numUDPInterfaces) {
         throw RuntimeError("Number of Interfaces " +

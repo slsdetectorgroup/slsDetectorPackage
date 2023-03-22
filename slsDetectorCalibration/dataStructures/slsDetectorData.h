@@ -219,6 +219,7 @@ void slsDetectorData<dataType>::setDataMap(int **dMap) {
             }
         }
     }
+    /* //commented this part because it causes out-of-bound issues if nx or ny are larger than dataMap bounds (single-chip readout of strixel with groups of different pitches) VH 2023-02-24
     for (iy = 0; iy < ny; iy++) {
         for (ix = 0; ix < nx; ix++) {
             ip = dataMap[iy][ix] / sizeof(dataType);
@@ -226,7 +227,7 @@ void slsDetectorData<dataType>::setDataMap(int **dMap) {
             ymap[ip] = iy;
         }
     }
-
+     */
     // cout << "nx:" <<nx << " ny:" << ny << endl;
 }
 

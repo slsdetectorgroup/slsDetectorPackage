@@ -44,14 +44,12 @@ class single_photon_hit {
         // fwrite((void*)this, 1, 3*sizeof(int)+4*sizeof(double)+sizeof(quad),
         // myFile);  // if (fwrite((void*)this, 1,
         // sizeof(int)+2*sizeof(int16_t), myFile))
-#ifdef OLDFORMAT
-        if (fwrite((void *)&iframe, 1, sizeof(int), myFile)) {
-        };
-#endif
 #ifndef WRITE_QUAD
         // printf("no quad ");
-        if (fwrite((void *)&x, sizeof(int16_t), 2, myFile))
+        if ( fwrite( (void*)&x, sizeof(int16_t), 1, myFile ) ) {
+	  if ( fwrite( (void*)&y, sizeof(int16_t), 1, myFile ) )
             return fwrite((void *)data, sizeof(int), dx * dy, myFile);
+	}
 #endif
 #ifdef WRITE_QUAD
         //  printf("quad ");
@@ -109,14 +107,27 @@ class single_photon_hit {
         // fread((void*)this, 1,  3*sizeof(int)+4*sizeof(double)+sizeof(quad),
         // myFile);
 
-#ifdef OLDFORMAT
-        if (fread((void *)&iframe, 1, sizeof(int), myFile)) {
-        }
-#endif
 #ifndef WRITE_QUAD
-        // printf( "no quad \n");
+        //printf( "no quad \n");
+	//This reads two values of size int16_t into x
+	//If x is located next to y (int16_t distance), this reads the values into x and y
+	//How can I be sure, this is always the case?
+	//If, e.g., the memory is padded after int16_t x, do we read the padding instead of y?
+	//How can I be sure the memory is packed and y follows right after x with no padding?
+	//Anyway, this is dangerous if anyone, at any point, changes the order of variable declaration,
+	//or uses another architecture (64 bit vs 32 bit for instance).
+	/*
         if (fread((void *)&x, sizeof(int16_t), 2, myFile))
             return fread((void *)data, sizeof(int), dx * dy, myFile);
+	*/
+	
+	//Suggestion
+	if ( fread( (void*)&x, sizeof(int16_t), 1, myFile) ) {     //reads x
+	  if ( fread( (void*)&y, sizeof(int16_t), 1, myFile ) )    //reads y
+	  return fread( (void*)data, sizeof(int), dx*dy, myFile ); //reads and returns data
+	}
+	
+	
 #endif
 #ifdef WRITE_QUAD
         int qq[4];
@@ -217,7 +228,7 @@ class single_photon_hit {
         // int ix, iy;
 
       printf("***************\n");
-      printf("** %d %d **\n",x,y);
+      printf("** %d %d ** %d %d **\n", x, y, dx, dy);
         for (int iy = 0; iy < dy; iy++) {
             for (int ix = 0; ix < dx; ix++) {
                 printf("%d \t", data[ix + iy * dx]);
@@ -261,10 +272,11 @@ class single_photon_hit {
        x within the cluster (center is (0,0)) \param iy coordinate y within the
        cluster (center is (0,0)) \returns value of the cluster element
   */
-    double get_data(int ix, int iy = 0) {
-        return data[(iy + dy / 2) * dx + ix + dx / 2];
+    //Why not make these const? VH
+    double get_data(int ix, int iy = 0) const {
+      return data[(iy + dy / 2) * dx + ix + dx / 2]; //NOTE: those are int divisions
     };
-    int *get_cluster() { return data; };
+    int *get_cluster() const { return data; };
 
     int iframe; /**< frame number */
     double

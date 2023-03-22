@@ -19,7 +19,7 @@ using namespace std;
 
 class multiThreadedCountingDetector : public multiThreadedAnalogDetector {
   public:
-    multiThreadedCountingDetector(singlePhotonDetector *d, int n, int fs = 1000)
+ multiThreadedCountingDetector(singlePhotonDetector *d, int n, int fs = 1000)
         : multiThreadedAnalogDetector(d, n, fs){};
     // virtual
     // ~multiThreadedCountingDetector{multiThreadedAnalogDetector::~multiThreadedAnalogDetector();};
@@ -32,6 +32,11 @@ class multiThreadedCountingDetector : public multiThreadedAnalogDetector {
     virtual void setEnergyRange(double emi, double ema) {
         for (int i = 0; i < nThreads; i++)
             (dets[i])->setEnergyRange(emi, ema);
+    };
+    virtual void setClusterSize(int sizex, int sizey) {
+        for (int i = 0; i < nThreads; i++)
+	  ((dets[i]))->setClusterSize(sizex, sizey);
+	//std::cout << "+++++++++++++ sizex " << sizex << std::endl;
     };
 };
 

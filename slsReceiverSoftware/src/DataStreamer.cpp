@@ -157,7 +157,6 @@ void DataStreamer::ProcessAnImage(sls_detector_header header, size_t size,
                                   char *data) {
 
     uint64_t fnum = header.frameNumber;
-
     LOG(logDEBUG1) << "DataStreamer " << index << ": fnum:" << fnum;
 
     // shortframe gotthard

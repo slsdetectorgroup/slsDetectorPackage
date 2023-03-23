@@ -44,8 +44,8 @@ This document describes the differences between v7.0.1 and v7.0.0
         detector server was from a previous release. The hostname command would 
         hang as well as the API did not match.
 
-        Fixed that it will throw an exception about incompatible server with the
-        detector server version in the message.
+        Fixed that ithe hostname command will throw an exception about 
+        incompatible server with the detector server version in the message.
 
 
 2  On-board Detector Server Compatibility

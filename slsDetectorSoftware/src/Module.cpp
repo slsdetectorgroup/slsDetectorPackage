@@ -73,8 +73,8 @@ void Module::setHostname(const std::string &hostname,
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.close();
     try {
-        initialDetectorServerChecks();
         checkDetectorVersionCompatibility();
+        initialDetectorServerChecks();
         LOG(logINFO) << "Module Version Compatibility - Success";
     } catch (const RuntimeError &e) {
         if (!initialChecks) {
@@ -93,9 +93,28 @@ int64_t Module::getFirmwareVersion() const {
 }
 
 std::string Module::getControlServerLongVersion() const {
-    char retval[MAX_STR_LENGTH]{};
-    sendToDetector(F_GET_SERVER_VERSION, nullptr, retval);
-    return retval;
+    try {
+        char retval[MAX_STR_LENGTH]{};
+        sendToDetector(F_GET_SERVER_VERSION, nullptr, retval);
+        return retval;
+    }
+    // throw with old server version (sends 8 bytes)
+    catch (RuntimeError &e) {
+        std::string emsg = std::string(e.what());
+        if (emsg.find(F_GET_SERVER_VERSION) && emsg.find("8 bytes")) {
+            throwDeprecatedServerVersion();
+        }
+        throw;
+    }
+}
+
+void Module::throwDeprecatedServerVersion() const {
+    uint64_t res = sendToDetectorStop<int64_t>(F_GET_SERVER_VERSION);
+    std::cout << std::endl;
+    std::ostringstream os;
+    os << "Detector Server (Control) version (0x" << std::hex << res
+       << ") is incompatible with this client. Please update detector server!";
+    throw RuntimeError(os.str());
 }
 
 std::string Module::getStopServerLongVersion() const {

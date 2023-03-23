@@ -28,6 +28,11 @@ This document describes the differences between v7.0.1 and v7.0.0
         Compilation issues from 7.0.0 fixed.
 
     
+    *   Arping error
+        Cmdline: rx_arping
+        API: setRxArping/ getRxArping
+        Even if arping was successful, it gave an error. Fixed.
+
 
 
 2  On-board Detector Server Compatibility

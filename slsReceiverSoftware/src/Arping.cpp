@@ -5,9 +5,9 @@
 
 #include <chrono>
 #include <signal.h>
+#include <sys/wait.h>
 #include <thread>
 #include <unistd.h>
-#include<sys/wait.h>
 
 namespace sls {
 
@@ -17,9 +17,7 @@ namespace sls {
 #define gettid() syscall(SYS_gettid)
 #endif
 
-void func(int signum) {
-    wait(NULL);
-}
+void func(int signum) { wait(NULL); }
 
 Arping::Arping() {}
 
@@ -122,7 +120,8 @@ std::string Arping::ExecuteCommands() {
         FILE *sysFile = popen(cmd.c_str(), "r");
         if (sysFile == NULL) {
             std::ostringstream os;
-            os << "Could not Arping (" << cmd << " ) : Popen fail (" << strerror(errno) << ')';
+            os << "Could not Arping (" << cmd << " ) : Popen fail ("
+               << strerror(errno) << ')';
             return os.str();
         }
 
@@ -134,7 +133,7 @@ std::string Arping::ExecuteCommands() {
         // check exit status of command
         if (pclose(sysFile)) {
             std::ostringstream os;
-            os << "Could not arping (" << cmd << ") : " <<  strerror(errno);
+            os << "Could not arping (" << cmd << ") : " << strerror(errno);
             return os.str();
         } else {
             LOG(logDEBUG) << output;

@@ -10,4 +10,4 @@
 #define APIMOENCH    "7.0.0 0x230222"
 #define APIEIGER     "7.0.0 0x230222"
 #define APIRECEIVER  "7.0.0 0x230222"
-#define APILIB "7.0.1 0x230323"
+#define APILIB       "7.0.1 0x230323"

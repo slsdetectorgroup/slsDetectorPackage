@@ -283,6 +283,10 @@ void AD7689_Set(uint32_t codata) {
     value &= ~AD7689_ClkMask;
     bus_w(addr, value);
 
+    // data in down
+    value &= ~AD7689_DigMask;
+    bus_w(addr, value);
+
     AD7689_EndConvPulse();
 }
 

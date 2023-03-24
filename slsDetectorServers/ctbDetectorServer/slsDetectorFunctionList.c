@@ -538,7 +538,6 @@ void setupDetector() {
     AD7689_SetDefines(ADC_SPI_REG, ADC_SPI_SLOW_VAL_REG,
                       ADC_SPI_SLOW_SRL_CNV_MSK, ADC_SPI_SLOW_SRL_CLK_MSK,
                       ADC_SPI_SLOW_SRL_DT_MSK, ADC_SPI_SLOW_SRL_DT_OFST);
-    AD7689_Disable();
     AD7689_Configure();
 
     // dacs

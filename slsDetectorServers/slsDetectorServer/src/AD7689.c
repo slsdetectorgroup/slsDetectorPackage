@@ -97,6 +97,12 @@
 #define AD7689_INT_MAX_STEPS  (0xFFFF + 1)
 #define AD7689_TMP_C_FOR_1_MV (25.00 / 283.00)
 
+
+#define AD7689_SLEEP(x)  for (int i = 0; i!= x; ++i) ;
+#define AD7689_40NS_SLEEP   (1)
+#define AD7689_2US_SLEEP    (50)
+
+
 // Definitions from the fpga
 uint32_t AD7689_Reg = 0x0;
 uint32_t AD7689_ROReg = 0x0;
@@ -120,7 +126,7 @@ void AD7689_SetDefines(uint32_t reg, uint32_t roreg, uint32_t cmsk,
 
 int AD7689_GetTemperature() {
     AD7689_Set(
-        // read back
+        // don't read back config reg
         AD7689_CFG_RB_MSK |
         // disable sequencer (different from config)
         AD7689_CFG_SEQ_DSBLE_VAL |
@@ -162,7 +168,7 @@ int AD7689_GetChannel(int ichan) {
     }
 
     AD7689_Set(
-        // read back
+        // don't read back config reg
         AD7689_CFG_RB_MSK |
         // disable sequencer (different from config)
         AD7689_CFG_SEQ_DSBLE_VAL |
@@ -198,16 +204,19 @@ int AD7689_GetChannel(int ichan) {
 void AD7689_Configure() {
     LOG(logINFOBLUE, ("Configuring AD7689 (Slow ADCs): \n"));
 
+    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) & ~(AD7689_CnvMask) & ~AD7689_ClkMask &
+                       ~(AD7689_DigMask)));
+
     // from power up, 3 invalid conversions
     LOG(logINFO,
         ("\tConfiguring %d x due to invalid conversions from power up\n",
          AD7689_NUM_INVALID_CONVERSIONS));
     for (int i = 0; i < AD7689_NUM_INVALID_CONVERSIONS; ++i) {
         AD7689_Set(
-            // read back
+            // don't read back config reg
             AD7689_CFG_RB_MSK |
-            // scan sequence IN0-IN7 then temperature sensor
-            AD7689_CFG_SEQ_SCN_WTH_TMP_VAL |
+            // disable sequencer (different from config)
+            AD7689_CFG_SEQ_DSBLE_VAL |
             // Internal reference. REF = 2.5V buffered output. Temperature
             // sensor enabled.
             AD7689_CFG_REF_INT_2500MV_VAL |
@@ -222,24 +231,23 @@ void AD7689_Configure() {
     }
 }
 
-void AD7689_Disable() {
-    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) & ~(AD7689_CnvMask) & ~AD7689_ClkMask &
-                       ~(AD7689_DigMask)));
-}
-
-void AD7689_SPIConvPulse() {
-
-    const int sleep_count = 200;
-
+void AD7689_ConvPulse(int x) {
+    
     // conv bit high
-    bus_w(AD7689_Reg, (((bus_r(AD7689_Reg) | AD7689_CnvMask) &~AD7689_ClkMask) &~AD7689_DigMask));
-    //apprx 20ns required before rising edge of conv bit
-    for (int i = 0; i!= sleep_count; ++i) ;
+    AD7689_SLEEP(AD7689_40NS_SLEEP);
+    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) | AD7689_CnvMask));
+    AD7689_SLEEP(x);
 
     // conv bit low
     bus_w(AD7689_Reg, (bus_r(AD7689_Reg) &~AD7689_CnvMask));
-    //apprx 10ns required before rising edge of conv bit
-    for (int i = 0; i!= sleep_count; ++i) ;   
+}
+
+void AD7689_StartConvPulse() {
+    AD7689_ConvPulse(AD7689_40NS_SLEEP);
+}
+
+void AD7689_EndConvPulse() {
+    AD7689_ConvPulse(AD7689_2US_SLEEP);
 }
 
 void AD7689_Set(uint32_t codata) {
@@ -247,14 +255,13 @@ void AD7689_Set(uint32_t codata) {
     LOG(logDEBUG2,
         ("\tSetting Slow ADC SPI Register. Writing 0x%04x to Config Reg\n", codata));
     
-    // crucial to reset when nBits(14) < nData(16)
-    AD7689_SPIConvPulse();
+    AD7689_StartConvPulse();
 
     uint32_t addr = AD7689_Reg;
-    // reading after conv pulse
     uint32_t value = bus_r(addr);
     int nBits = AD7689_ADC_CFG_NUMBITS;
 
+    // trailing edge
     for (int i = 0; i != nBits; ++i) {
 
         // clk down
@@ -276,25 +283,18 @@ void AD7689_Set(uint32_t codata) {
     value &= ~AD7689_ClkMask;
     bus_w(addr, value);
 
-    // crucial to reset when nBits(14) < nData(16)
-    AD7689_SPIConvPulse();
+    AD7689_EndConvPulse();
 }
 
 uint32_t AD7689_Get() {
     LOG(logDEBUG2, ("\tGetting Slow ADC SPI Register.\n"));
                                 
-    AD7689_SPIConvPulse();
-
     uint32_t addr = AD7689_Reg;
-    // reading after conv pulse
     uint32_t value = bus_r(addr);
     int nBits = AD7689_ADC_DATA_NUMBITS;
 
-    // clk down
-    value &= ~AD7689_ClkMask;
-    bus_w(addr, value);
-
     uint32_t retval = 0;
+    // rising edge
     for (int i = 0; i != nBits; ++i) {
 
         // clk up

@@ -97,11 +97,11 @@
 #define AD7689_INT_MAX_STEPS  (0xFFFF + 1)
 #define AD7689_TMP_C_FOR_1_MV (25.00 / 283.00)
 
-
-#define AD7689_SLEEP(x)  for (int i = 0; i!= x; ++i) ;
-#define AD7689_40NS_SLEEP   (1)
-#define AD7689_2US_SLEEP    (50)
-
+#define AD7689_SLEEP(x)                                                        \
+    for (int i = 0; i != x; ++i)                                               \
+        ;
+#define AD7689_40NS_SLEEP (1) //~450ns
+#define AD7689_4US_SLEEP  (100)
 
 // Definitions from the fpga
 uint32_t AD7689_Reg = 0x0;
@@ -196,15 +196,15 @@ int AD7689_GetChannel(int ichan) {
            AD7689_INT_REF_MIN_MV, AD7689_INT_REF_MAX_MV,
            regval, &retval);*/
 
-    LOG(logINFO, ("\tRead slow adc [%d]: %d uV (reg: %d)\n", ichan,
-                  retval, regval));
+    LOG(logINFO,
+        ("\tRead slow adc [%d]: %d uV (reg: %d)\n", ichan, retval, regval));
     return retval;
 }
 
 void AD7689_Configure() {
     LOG(logINFOBLUE, ("Configuring AD7689 (Slow ADCs): \n"));
 
-    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) & ~(AD7689_CnvMask) & ~AD7689_ClkMask &
+    bus_w(AD7689_Reg, ((bus_r(AD7689_Reg) | AD7689_CnvMask) & ~AD7689_ClkMask &
                        ~(AD7689_DigMask)));
 
     // from power up, 3 invalid conversions
@@ -229,39 +229,39 @@ void AD7689_Configure() {
             // overwrite configuration
             AD7689_CFG_CFG_OVRWRTE_VAL);
     }
+
+    // bring the conv back up
+    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) | AD7689_CnvMask));
 }
 
-void AD7689_ConvPulse(int x) {
-    
-    // conv bit high
-    AD7689_SLEEP(AD7689_40NS_SLEEP);
-    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) | AD7689_CnvMask));
-    AD7689_SLEEP(x);
+void AD7689_ConvPulse() {
 
     // conv bit low
-    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) &~AD7689_CnvMask));
-}
+    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) & ~AD7689_CnvMask));
+    AD7689_SLEEP(AD7689_40NS_SLEEP);
 
-void AD7689_StartConvPulse() {
-    AD7689_ConvPulse(AD7689_40NS_SLEEP);
-}
+    // conv bit high
+    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) | AD7689_CnvMask));
+    AD7689_SLEEP(AD7689_4US_SLEEP);
 
-void AD7689_EndConvPulse() {
-    AD7689_ConvPulse(AD7689_2US_SLEEP);
+    // conv bit low
+    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) & ~AD7689_CnvMask));
 }
 
 void AD7689_Set(uint32_t codata) {
-    
+
     LOG(logDEBUG2,
-        ("\tSetting Slow ADC SPI Register. Writing 0x%04x to Config Reg\n", codata));
-    
-    AD7689_StartConvPulse();
+        ("\tSetting Slow ADC SPI Register. Writing 0x%04x to Config Reg\n",
+         codata));
+
+    AD7689_ConvPulse();
 
     uint32_t addr = AD7689_Reg;
     uint32_t value = bus_r(addr);
     int nBits = AD7689_ADC_CFG_NUMBITS;
 
-    // trailing edge
+    // adc picks up at rising edge
+    // so we write at falling edge
     for (int i = 0; i != nBits; ++i) {
 
         // clk down
@@ -269,9 +269,21 @@ void AD7689_Set(uint32_t codata) {
         bus_w(addr, value);
 
         // write data (push out each bit from msb)
-        value = ((value & ~AD7689_DigMask) + // unset bit
-                   (((codata >> (nBits - 1 - i)) & 0x1) // set bit if needed
-                    << AD7689_DigOffset)); 
+        value = ((value & ~AD7689_DigMask) +          // unset bit
+                 (((codata >> (nBits - 1 - i)) & 0x1) // set bit if needed
+                  << AD7689_DigOffset));
+        bus_w(addr, value);
+
+        // clk up
+        value |= AD7689_ClkMask;
+        bus_w(addr, value);
+    }
+
+    // remaining clock for data bits (2)
+    for (int i = 0; i != (AD7689_ADC_DATA_NUMBITS - nBits); ++i) {
+
+        // clk down
+        value &= ~AD7689_ClkMask;
         bus_w(addr, value);
 
         // clk up
@@ -287,18 +299,37 @@ void AD7689_Set(uint32_t codata) {
     value &= ~AD7689_DigMask;
     bus_w(addr, value);
 
-    AD7689_EndConvPulse();
+    // data available only at the next conv pulse (n - 2)
+    // repeat conv pulse and clocking procedure
+    AD7689_ConvPulse();
+
+    for (int i = 0; i != AD7689_ADC_DATA_NUMBITS; ++i) {
+
+        // clk down
+        value &= ~AD7689_ClkMask;
+        bus_w(addr, value);
+
+        // clk up
+        value |= AD7689_ClkMask;
+        bus_w(addr, value);
+    }
+
+    // clk down
+    value &= ~AD7689_ClkMask;
+    bus_w(addr, value);
 }
 
 uint32_t AD7689_Get() {
     LOG(logDEBUG2, ("\tGetting Slow ADC SPI Register.\n"));
-                                
+
+    AD7689_ConvPulse();
+
     uint32_t addr = AD7689_Reg;
     uint32_t value = bus_r(addr);
     int nBits = AD7689_ADC_DATA_NUMBITS;
 
     uint32_t retval = 0;
-    // rising edge
+    // sample at rising edge
     for (int i = 0; i != nBits; ++i) {
 
         // clk up
@@ -312,6 +343,10 @@ uint32_t AD7689_Get() {
         value &= ~AD7689_ClkMask;
         bus_w(addr, value);
     }
+
+    // bring the conv back up
+    value |= AD7689_CnvMask;
+    bus_w(addr, value);
 
     LOG(logDEBUG2, ("Read From SPI Register: 0x%08x\n", retval));
     return retval;

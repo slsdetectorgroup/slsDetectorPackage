@@ -23,8 +23,6 @@ int AD7689_GetTemperature();
 int AD7689_GetChannel(int ichan);
 
 void AD7689_Configure();
-void AD7689_ConvPulse(int x);
-void AD7689_StartConvPulse();
-void AD7689_EndConvPulse();
+void AD7689_ConvPulse();
 void AD7689_Set(uint32_t codata);
 uint32_t AD7689_Get();

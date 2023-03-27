@@ -230,21 +230,27 @@ void AD7689_Configure() {
             AD7689_CFG_CFG_OVRWRTE_VAL);
     }
 
-    // bring the conv back up
-    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) | AD7689_CnvMask));
+    AD7689_SetConvBit();
 }
 
-void AD7689_ConvPulse() {
-
-    // conv bit low
-    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) & ~AD7689_CnvMask));
+void AD7689_SetConvBit() {
+    // min time before rising edge of conv bit (40 ns, practically 450ns)
     AD7689_SLEEP(AD7689_40NS_SLEEP);
 
     // conv bit high
     bus_w(AD7689_Reg, (bus_r(AD7689_Reg) | AD7689_CnvMask));
-    AD7689_SLEEP(AD7689_4US_SLEEP);
 
-    // conv bit low
+    // min time for conv pulse (3.3us)
+    AD7689_SLEEP(AD7689_4US_SLEEP);
+}
+
+void AD7689_ConvPulse() {
+    // clear conv bit
+    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) & ~AD7689_CnvMask));
+
+    AD7689_SetConvBit();
+
+    // clear conv bit
     bus_w(AD7689_Reg, (bus_r(AD7689_Reg) & ~AD7689_CnvMask));
 }
 
@@ -344,9 +350,7 @@ uint32_t AD7689_Get() {
         bus_w(addr, value);
     }
 
-    // bring the conv back up
-    value |= AD7689_CnvMask;
-    bus_w(addr, value);
+    AD7689_SetConvBit();
 
     LOG(logDEBUG2, ("Read From SPI Register: 0x%08x\n", retval));
     return retval;

@@ -58,3 +58,5 @@ set_target_properties(tests PROPERTIES
 include(CTest)
 include(Catch)
 catch_discover_tests(tests)
+
+configure_file(scripts/test_simulators.py ${CMAKE_BINARY_DIR}/bin/test_simulators.py COPYONLY)

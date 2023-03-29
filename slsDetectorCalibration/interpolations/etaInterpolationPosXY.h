@@ -14,8 +14,8 @@ class etaInterpolationPosXY : public virtual etaInterpolationBase {
                           int nb = -1, int nby = -1, double emin = 1,
                           double emax = 0)
         : etaInterpolationBase(nx, ny, ns, nsy, nb, nby, emin, emax){
-              //  cout << "epxy " << nb << " " << emin << " " << emax << endl;
-              //  cout << nbeta << " " << etamin << " " << etamax << endl;
+              //  std::cout << "epxy " << nb << " " << emin << " " << emax << std::endl;
+              //  std::cout << nbeta << " " << etamin << " " << etamax << std::endl;
           };
 
     etaInterpolationPosXY(etaInterpolationPosXY *orig)
@@ -32,14 +32,14 @@ class etaInterpolationPosXY : public virtual etaInterpolationBase {
 
         ///*Eta Distribution Rebinning*///
         // double bsize=1./nSubPixels; //precision
-        // cout<<"nPixelsX = "<<nPixelsX<<" nPixelsY = "<<nPixelsY<<" nSubPixels
+        // std::cout<<"nPixelsX = "<<nPixelsX<<" nPixelsY = "<<nPixelsY<<" nSubPixels
         // = "<<nSubPixels<<endl;
         double tot_eta = 0;
         double tot_eta_x = 0;
         double tot_eta_y = 0;
         for (int ip = 0; ip < nbetaX * nbetaY; ip++)
             tot_eta += heta[ip];
-        cout << "total eta entries is :" << tot_eta << endl;
+        std::cout << "total eta entries is :" << tot_eta << std::endl;
         if (tot_eta <= 0) {
             ok = 0;
             return;
@@ -57,7 +57,7 @@ class etaInterpolationPosXY : public virtual etaInterpolationBase {
 
             for (int iby = 0; iby < nbetaY; iby++) {
                 etay = etamin + iby * etastepY;
-                // cout << etax << endl;
+                // std::cout << etax << std::endl;
 
                 // tot_eta_x+=hx[iby];
                 if (etay >= 0 && etay <= 1)
@@ -90,7 +90,7 @@ class etaInterpolationPosXY : public virtual etaInterpolationBase {
 
             for (int ibx = 0; ibx < nbetaX; ibx++) {
                 etax = etamin + ibx * etastepX;
-                // cout << etax << endl;
+                // std::cout << etax << std::endl;
                 if (etax >= 0 && etax <= 1)
                     hx[ibx] = heta[ibx + ib * nbetaX];
                 else {
@@ -178,7 +178,7 @@ class eta2InterpolationPosXY : public virtual eta2InterpolationBase,
         : etaInterpolationBase(nx, ny, ns, nsy, nb, nby, emin, emax),
           eta2InterpolationBase(nx, ny, ns, nsy, nb, nby, emin, emax),
           etaInterpolationPosXY(nx, ny, ns, nsy, nb, nby, emin, emax){
-              //  cout << "e2pxy " << nb << " " << emin << " " << emax << endl;
+              //  std::cout << "e2pxy " << nb << " " << emin << " " << emax << std::endl;
           };
 
     eta2InterpolationPosXY(eta2InterpolationPosXY *orig)
@@ -198,8 +198,8 @@ class eta3InterpolationPosXY : public virtual eta3InterpolationBase,
         : etaInterpolationBase(nx, ny, ns, nsy, nb, nby, emin, emax),
           eta3InterpolationBase(nx, ny, ns, nsy, nb, nby, emin, emax),
           etaInterpolationPosXY(nx, ny, ns, nsy, nb, nby, emin, emax){
-              //   cout << "e3pxy " << nbeta << " " << etamin << " " << etamax
-              //   << " " << nSubPixels<< endl;
+              //   std::cout << "e3pxy " << nbeta << " " << etamin << " " << etamax
+              //   << " " << nSubPixels<< std::endl;
           };
 
     eta3InterpolationPosXY(eta3InterpolationPosXY *orig)

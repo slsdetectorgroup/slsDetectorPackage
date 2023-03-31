@@ -298,8 +298,8 @@ template <class dataType> class analogDetector {
             if (gmap)
                 delete[] gmap;
             gmap = new double[nnx * nny];
-            for (iy = 0; iy < nny; ++iy) {
-                for (ix = 0; ix < nnx; ++ix) {
+            for (iy = 0; iy < static_cast<int>(nny); ++iy) {
+                for (ix = 0; ix < static_cast<int>(nnx); ++ix) {
                     gmap[iy * nnx + ix] = gm[iy * nnx + ix];
                     // cout << gmap[iy*nnx+ix] << " " ;
                 }

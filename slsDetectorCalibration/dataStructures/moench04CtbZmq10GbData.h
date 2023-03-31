@@ -54,28 +54,28 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 #endif
 #endif
 
-      cout << "off is " << off << endl;
+    cout << "off is " << off << endl;
 	  
-	  if (off>0)
+	if (off>0)
 	    cout << "M04 RAW DATA NEW " << endl;
-	  else
+	else
 	    cout << "M04 ZMQ DATA NEW " << endl;
 	    
-            int adc_nr[32] = {9,  8,  11, 10, 13, 12, 15, 14, 1,  0,  3,
-                              2,  5,  4,  7,  6,  23, 22, 21, 20, 19, 18,
-                              17, 16, 31, 30, 29, 28, 27, 26, 25, 24};
+    int adc_nr[32] = {9,  8,  11, 10, 13, 12, 15, 14, 1,  0,  3,
+                        2,  5,  4,  7,  6,  23, 22, 21, 20, 19, 18,
+                        17, 16, 31, 30, 29, 28, 27, 26, 25, 24};
 
-           
+    
 
-            int row, col;
+    int row, col;
 
-            // int isample;
-            int iadc;
-            // int ix, iy;
+    // int isample;
+    int iadc;
+    // int ix, iy;
 
-            // int npackets=40;
-            int i;
-            // int adc4(0);
+    // int npackets=40;
+    int i;
+    // int adc4(0);
 
             for (int is = 0; is < aSamples; is++) {
 

@@ -1485,7 +1485,24 @@ int getADC(enum ADCINDEX ind) {
 int getSlowADC(int ichan) {
     LOG(logDEBUG1, ("Getting slow adc channel %d\n", ichan));
 
-    bus_w(ADC_SPI_SLOW_CNFG_REG, ADC_SPI_SLOW_CNFG_VAL);
+    // configure for channel
+    bus_w(ADC_SPI_SLOW_CNFG_REG,
+        // don't read back config reg
+        ADC_SPI_SLOW_CFG_RB_MSK |
+        // disable sequencer (different from config)
+        ADC_SPI_SLOW_CFG_SEQ_DSBLE_VAL |
+        // Internal reference. REF = 2.5V buffered output. Temperature sensor
+        // enabled.
+        ADC_SPI_SLOW_CFG_REF_INT_2500MV_VAL |
+        // full bandwidth of low pass filter
+        ADC_SPI_SLOW_CFG_BW_FULL_VAL |
+        // specific channel (different from config)
+        ((ichan << ADC_SPI_SLOW_CFG_IN_OFST) & ADC_SPI_SLOW_CFG_IN_MSK) |
+        // input channel configuration (unipolar. inx to gnd)
+        ADC_SPI_SLOW_CFG_INCC_UNPLR_IN_GND_VAL |
+        // overwrite configuration
+        ADC_SPI_SLOW_CFG_CFG_OVRWRTE_VAL);
+
 
     // start converting
     bus_w(ADC_SLOW_CTRL_REG, bus_r(ADC_SLOW_CTRL_REG) | ADC_SLOW_CTRL_STRT_MSK);
@@ -1503,7 +1520,50 @@ int getSlowADC(int ichan) {
 }
 
 int getSlowADCTemperature() {
-    return 0;
+    LOG(logDEBUG1, ("Getting slow adc channel %d\n", ichan));
+
+    // configure for channel
+    bus_w(ADC_SPI_SLOW_CNFG_REG,
+        // don't read back config reg
+        ADC_SPI_SLOW_CFG_RB_MSK |
+        // disable sequencer (different from config)
+        ADC_SPI_SLOW_CFG_SEQ_DSBLE_VAL |
+        // Internal reference. REF = 2.5V buffered output. Temperature sensor
+        // enabled.
+        ADC_SPI_SLOW_CFG_REF_INT_2500MV_VAL |
+        // full bandwidth of low pass filter
+        ADC_SPI_SLOW_CFG_BW_FULL_VAL |
+        // all channels
+        ADC_SPI_SLOW_CFG_IN_MSK |
+        // temp sensor
+        ADC_SPI_SLOW_CFG_INCC_TMP_VAL |
+        // overwrite configuration
+        ADC_SPI_SLOW_CFG_CFG_OVRWRTE_VAL);
+
+    // start converting
+    bus_w(ADC_SLOW_CTRL_REG, bus_r(ADC_SLOW_CTRL_REG) | ADC_SLOW_CTRL_STRT_MSK);
+
+    // wait for it to be done
+    volatile int done = (bus_r(ADC_SLOW_CTRL_REG & ADC_SLOW_CTRL_DONE_MSK) >> ADC_SLOW_CTRL_DONE_OFST);
+    while (!done) {
+        done = (bus_r(ADC_SLOW_CTRL_REG & ADC_SLOW_CTRL_DONE_MSK) >> ADC_SLOW_CTRL_DONE_OFST);
+    }
+
+    // readout
+    int regval = bus_r(ADC_SPI_SLOW_DATA_REG);
+
+    // value in mV FIXME: page 17? reference voltage temperature coefficient or
+    // t do with -40 to 85 °C
+    int retval = 0;
+    ConvertToDifferentRange(0, AD7689_INT_MAX_STEPS, AD7689_INT_REF_MIN_MV,
+                            AD7689_INT_REF_MAX_MV, regval, &retval);
+    LOG(logDEBUG1, ("voltage read for temp: %d mV\n", retval));
+
+    // value in °C
+    double tempValue = AD7689_TMP_C_FOR_1_MV * (double)retval;
+    LOG(logINFO, ("\tTemp slow adc : %f °C (reg: %d)\n", tempValue, regval));
+    
+    return tempValue;
 }
 
 int setHighVoltage(int val) {

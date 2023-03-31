@@ -626,9 +626,85 @@
 /* Slow ADC SPI Value RO register */
 #define ADC_SPI_SLOW_DATA_REG (0x93 << MEM_MAP_SHIFT)
 
+
 /* Slow ADC SPI Value Config register */
-#define ADC_SPI_SLOW_CNFG_REG (0x94 << MEM_MAP_SHIFT)
-#define ADC_SPI_SLOW_CNFG_VAL  (0x00001FFF)
+#define ADC_SPI_SLOW_CFG_REG (0x94 << MEM_MAP_SHIFT)
+/** Read back CFG Register */
+#define ADC_SPI_SLOW_CFG_RB_OFST (2)
+#define ADC_SPI_SLOW_CFG_RB_MSK  (0x00000001 << ADC_SPI_SLOW_CFG_RB_OFST)
+
+/** Channel sequencer */
+#define ADC_SPI_SLOW_CFG_SEQ_OFST (3)
+#define ADC_SPI_SLOW_CFG_SEQ_MSK  (0x00000003 << ADC_SPI_SLOW_CFG_SEQ_OFST)
+#define ADC_SPI_SLOW_CFG_SEQ_DSBLE_VAL                                               \
+    ((0x0 << ADC_SPI_SLOW_CFG_SEQ_OFST) & ADC_SPI_SLOW_CFG_SEQ_MSK)
+#define ADC_SPI_SLOW_CFG_SEQ_UPDTE_DRNG_SQNCE_VAL                                    \
+    ((0x1 << ADC_SPI_SLOW_CFG_SEQ_OFST) & ADC_SPI_SLOW_CFG_SEQ_MSK)
+#define ADC_SPI_SLOW_CFG_SEQ_SCN_WTH_TMP_VAL                                         \
+    ((0x2 << ADC_SPI_SLOW_CFG_SEQ_OFST) & ADC_SPI_SLOW_CFG_SEQ_MSK)
+#define ADC_SPI_SLOW_CFG_SEQ_SCN_WTHT_TMP_VAL                                        \
+    ((0x3 << ADC_SPI_SLOW_CFG_SEQ_OFST) & ADC_SPI_SLOW_CFG_SEQ_MSK)
+
+/** Reference/ buffer selection */
+#define ADC_SPI_SLOW_CFG_REF_OFST (5)
+#define ADC_SPI_SLOW_CFG_REF_MSK  (0x00000007 << ADC_SPI_SLOW_CFG_REF_OFST)
+/** Internal reference. REF = 2.5V buffered output. Temperature sensor enabled.
+ */
+#define ADC_SPI_SLOW_CFG_REF_INT_2500MV_VAL                                          \
+    ((0x0 << ADC_SPI_SLOW_CFG_REF_OFST) & ADC_SPI_SLOW_CFG_REF_OFST)
+/** Internal reference. REF = 4.096V buffered output. Temperature sensor
+ * enabled. */
+#define ADC_SPI_SLOW_CFG_REF_INT_4096MV_VAL                                          \
+    ((0x1 << ADC_SPI_SLOW_CFG_REF_OFST) & ADC_SPI_SLOW_CFG_REF_MSK)
+/** External reference. Temperature sensor enabled. Internal buffer disabled. */
+#define ADC_SPI_SLOW_CFG_REF_EXT_TMP_VAL                                             \
+    ((0x2 << ADC_SPI_SLOW_CFG_REF_OFST) & ADC_SPI_SLOW_CFG_REF_MSK)
+/** External reference. Temperature sensor enabled. Internal buffer enabled. */
+#define ADC_SPI_SLOW_CFG_REF_EXT_TMP_INTBUF_VAL                                      \
+    ((0x3 << ADC_SPI_SLOW_CFG_REF_OFST) & ADC_SPI_SLOW_CFG_REF_MSK)
+/** External reference. Temperature sensor disabled. Internal buffer disabled.
+ */
+#define ADC_SPI_SLOW_CFG_REF_EXT_VAL                                                 \
+    ((0x6 << ADC_SPI_SLOW_CFG_REF_OFST) & ADC_SPI_SLOW_CFG_REF_MSK)
+/** External reference. Temperature sensor disabled. Internal buffer enabled. */
+#define ADC_SPI_SLOW_CFG_REF_EXT_INTBUF_VAL                                          \
+    ((0x7 << ADC_SPI_SLOW_CFG_REF_OFST) & ADC_SPI_SLOW_CFG_REF_MSK)
+
+/** bandwidth of low pass filter */
+#define ADC_SPI_SLOW_CFG_BW_OFST (8)
+#define ADC_SPI_SLOW_CFG_BW_MSK  (0x00000001 << ADC_SPI_SLOW_CFG_REF_OFST)
+#define ADC_SPI_SLOW_CFG_BW_ONE_FOURTH_VAL                                           \
+    ((0x0 << ADC_SPI_SLOW_CFG_BW_OFST) & ADC_SPI_SLOW_CFG_BW_MSK)
+#define ADC_SPI_SLOW_CFG_BW_FULL_VAL ((0x1 << ADC_SPI_SLOW_CFG_BW_OFST) & ADC_SPI_SLOW_CFG_BW_MSK)
+
+/** input channel selection IN0 - IN7 */
+#define ADC_SPI_SLOW_CFG_IN_OFST (9)
+#define ADC_SPI_SLOW_CFG_IN_MSK  (0x00000007 << ADC_SPI_SLOW_CFG_IN_OFST)
+
+/** input channel configuration */
+#define ADC_SPI_SLOW_CFG_INCC_OFST (12)
+#define ADC_SPI_SLOW_CFG_INCC_MSK  (0x00000007 << ADC_SPI_SLOW_CFG_INCC_OFST)
+#define ADC_SPI_SLOW_CFG_INCC_BPLR_DFFRNTL_PRS_VAL                                   \
+    ((0x0 << ADC_SPI_SLOW_CFG_INCC_OFST) & ADC_SPI_SLOW_CFG_INCC_MSK)
+#define ADC_SPI_SLOW_CFG_INCC_BPLR_IN_COM_VAL                                        \
+    ((0x2 << ADC_SPI_SLOW_CFG_INCC_OFST) & ADC_SPI_SLOW_CFG_INCC_MSK)
+#define ADC_SPI_SLOW_CFG_INCC_TMP_VAL                                                \
+    ((0x3 << ADC_SPI_SLOW_CFG_INCC_OFST) & ADC_SPI_SLOW_CFG_INCC_MSK)
+#define ADC_SPI_SLOW_CFG_INCC_UNPLR_DFFRNTL_PRS_VAL                                  \
+    ((0x4 << ADC_SPI_SLOW_CFG_INCC_OFST) & ADC_SPI_SLOW_CFG_INCC_MSK)
+#define ADC_SPI_SLOW_CFG_INCC_UNPLR_IN_COM_VAL                                       \
+    ((0x6 << ADC_SPI_SLOW_CFG_INCC_OFST) & ADC_SPI_SLOW_CFG_INCC_MSK)
+#define ADC_SPI_SLOW_CFG_INCC_UNPLR_IN_GND_VAL                                       \
+    ((0x7 << ADC_SPI_SLOW_CFG_INCC_OFST) & ADC_SPI_SLOW_CFG_INCC_MSK)
+
+/** configuration update */
+#define ADC_SPI_SLOW_CFG_CFG_OFST (15)
+#define ADC_SPI_SLOW_CFG_CFG_MSK  (0x00000001 << ADC_SPI_SLOW_CFG_CFG_OFST)
+#define ADC_SPI_SLOW_CFG_CFG_NO_UPDATE_VAL                                           \
+    ((0x0 << ADC_SPI_SLOW_CFG_CFG_OFST) & ADC_SPI_SLOW_CFG_CFG_MSK)
+#define ADC_SPI_SLOW_CFG_CFG_OVRWRTE_VAL                                             \
+    ((0x1 << ADC_SPI_SLOW_CFG_CFG_OFST) & ADC_SPI_SLOW_CFG_CFG_MSK)
+
 
 /* Slow ADC SPI Value Control register */
 #define ADC_SLOW_CTRL_REG (0x95 << MEM_MAP_SHIFT)

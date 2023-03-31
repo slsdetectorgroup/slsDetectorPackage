@@ -1555,8 +1555,11 @@ int getSlowADCTemperature() {
     // value in mV FIXME: page 17? reference voltage temperature coefficient or
     // t do with -40 to 85 °C
     int retval = 0;
-    ConvertToDifferentRange(0, AD7689_INT_MAX_STEPS, AD7689_INT_REF_MIN_MV,
-                            AD7689_INT_REF_MAX_MV, regval, &retval);
+    int maxSteps = 0xFFFF + 1;
+    int minmv = 0;
+    int maxmv = 2500;
+    ConvertToDifferentRange(0, maxSteps, minmv,
+                            maxmv, regval, &retval);
     LOG(logDEBUG1, ("voltage read for temp: %d mV\n", retval));
 
     // value in °C

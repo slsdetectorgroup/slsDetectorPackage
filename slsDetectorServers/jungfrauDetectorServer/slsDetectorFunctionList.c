@@ -1736,38 +1736,38 @@ int setDetectorPosition(int pos[]) {
     detPos[2] = outerPos[X];
     detPos[3] = outerPos[Y];
 
-    // row
+    // row [Y]
     // outer
     uint32_t addr = COORD_ROW_REG;
     bus_w(addr,
           (bus_r(addr) & ~COORD_ROW_OUTER_MSK) |
-              ((outerPos[X] << COORD_ROW_OUTER_OFST) & COORD_ROW_OUTER_MSK));
+              ((outerPos[Y] << COORD_ROW_OUTER_OFST) & COORD_ROW_OUTER_MSK));
     if (((bus_r(addr) & COORD_ROW_OUTER_MSK) >> COORD_ROW_OUTER_OFST) !=
-        outerPos[X])
-        ret = FAIL;
-    // inner
-    bus_w(addr,
-          (bus_r(addr) & ~COORD_ROW_INNER_MSK) |
-              ((innerPos[X] << COORD_ROW_INNER_OFST) & COORD_ROW_INNER_MSK));
-    if (((bus_r(addr) & COORD_ROW_INNER_MSK) >> COORD_ROW_INNER_OFST) !=
-        innerPos[X])
-        ret = FAIL;
-
-    // col
-    // outer
-    addr = COORD_COL_REG;
-    bus_w(addr,
-          (bus_r(addr) & ~COORD_COL_OUTER_MSK) |
-              ((outerPos[Y] << COORD_COL_OUTER_OFST) & COORD_COL_OUTER_MSK));
-    if (((bus_r(addr) & COORD_COL_OUTER_MSK) >> COORD_COL_OUTER_OFST) !=
         outerPos[Y])
         ret = FAIL;
     // inner
     bus_w(addr,
-          (bus_r(addr) & ~COORD_COL_INNER_MSK) |
-              ((innerPos[Y] << COORD_COL_INNER_OFST) & COORD_COL_INNER_MSK));
-    if (((bus_r(addr) & COORD_COL_INNER_MSK) >> COORD_COL_INNER_OFST) !=
+          (bus_r(addr) & ~COORD_ROW_INNER_MSK) |
+              ((innerPos[Y] << COORD_ROW_INNER_OFST) & COORD_ROW_INNER_MSK));
+    if (((bus_r(addr) & COORD_ROW_INNER_MSK) >> COORD_ROW_INNER_OFST) !=
         innerPos[Y])
+        ret = FAIL;
+
+    // col [X]
+    // outer
+    addr = COORD_COL_REG;
+    bus_w(addr,
+          (bus_r(addr) & ~COORD_COL_OUTER_MSK) |
+              ((outerPos[X] << COORD_COL_OUTER_OFST) & COORD_COL_OUTER_MSK));
+    if (((bus_r(addr) & COORD_COL_OUTER_MSK) >> COORD_COL_OUTER_OFST) !=
+        outerPos[X])
+        ret = FAIL;
+    // inner
+    bus_w(addr,
+          (bus_r(addr) & ~COORD_COL_INNER_MSK) |
+              ((innerPos[X] << COORD_COL_INNER_OFST) & COORD_COL_INNER_MSK));
+    if (((bus_r(addr) & COORD_COL_INNER_MSK) >> COORD_COL_INNER_OFST) !=
+        innerPos[X])
         ret = FAIL;
 
     if (ret == OK) {

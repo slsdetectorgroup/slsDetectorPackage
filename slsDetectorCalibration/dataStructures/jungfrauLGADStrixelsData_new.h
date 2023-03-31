@@ -49,7 +49,32 @@ namespace strixelSingleChip {
   constexpr int nc_strixel = 2*gr + 1 + g1_ncols; //group 1 is the "longest" group in x and has one extra square pixel
   constexpr int nr_strixel = 2*gr + g1_nrows + g2_nrows + g3_nrows;
 
+  //chip and group boundaries in ASIC coordinates (pixels at both bounds are included in the group)
+  //y does NOT take into account the shifts for M408!
+  constexpr int c1g1_xstart = 256 + gr + 1;          //266
+  constexpr int c1g2_xstart = 256 + gr + 3;          //268
+  constexpr int c1g3_xstart = 256 + gr + 2;          //267
+  constexpr int c1_xend     = 255 + 256 - gr;        //502
+  constexpr int c1g1_ystart = gr;                    //  9
+  constexpr int c1g1_yend   = 63;                    // 63
+  constexpr int c1g2_ystart = c1g1_yend + 1;         // 64
+  constexpr int c1g2_yend   = c1g1_yend + 64;        //127
+  constexpr int c1g3_ystart = c1g2_yend + 1;         //128
+  constexpr int c1g3_yend   = c1g2_yend + 2*64 - gr; //246
 
+  constexpr int c6_xstart   = 256 + 256 + gr;        //521
+  constexpr int c6g1_xend   = 255 + 2*256 - gr - 1;  //757
+  constexpr int c6g2_xend   = 256 + 2*256 - gr - 3;  //755
+  constexpr int c6g3_xend   = 256 + 2*256 - gr - 2;  //756
+  constexpr int c6g3_ystart = 256 + gr;              //265
+  constexpr int c6g3_yend   = 255 + 2*64;            //383
+  constexpr int c6g2_ystart = c6g3_yend + 1;         //384
+  constexpr int c6g2_yend   = c6g3_yend + 64;        //447
+  constexpr int c6g1_ystart = c6g2_yend + 1;         //448
+  constexpr int c6g1_yend   = c6g2_yend + 64 - gr;   //502
+
+  //y shift due to faulty bonding (relevant for M408)
+  constexpr int bond_shift_y = 0; //CHANGE IF YOU CHANGE MODULE!
 
 }
 
@@ -69,12 +94,10 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
     int mchip;
     int chip_x0;
     int chip_y0;
+    int x0, y0, x1, y1, shifty;
 
-    void remapGroup( const int group ) {
-      int ix, iy=0;
-      int x0, y0, x1, y1, shifty;
+    int getMultiplicator( const int group ) {
       int multiplicator;
-      int shiftx;
       switch (group) {
       default:
       case 1:
@@ -87,16 +110,20 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 	multiplicator = 4;
 	break;
       }
+      return multiplicator;
+    }
 
-       if ( mchip == 1 ) {
+    void setMappingShifts( const int group ) {
+
+      if ( mchip == 1 ) {
         
 	chip_x0=256;
-	chip_y0=1;  //because of bump bonding issues(+1 row)  on M408 
+	chip_y0=bond_shift_y;  //because of bump bonding issues(+1 row)  on M408 
 	
 	switch (group) {
 	default:
 	case 1:
-	  x0 = 10+chip_x0;  //9 gr + 1 sq pixel 
+	  x0 = 10+chip_x0;  //9 gr + 1 sq pixel
 	  x1 = 246+chip_x0;
 	  y0 = 9+chip_y0;
 	  y1 = 64+chip_y0;
@@ -114,7 +141,7 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 	  x1 = 247+chip_x0;
 	  y0 = 128+chip_y0;
 	  y1 = 247+chip_y0;
-	  shifty = g2_nrows+g1_nrows;
+ 	  shifty = g2_nrows+g1_nrows;
 	  break;
 	}
       }
@@ -122,7 +149,7 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
       if ( mchip == 6 ) {
 
 	chip_x0=512;
-	chip_y0=255;  //should be 256 but is 255 because of bump bonding issues (+1 row) on M408
+	chip_y0=256-bond_shift_y;  //should be 256 but is 255 because of bump bonding issues (+1 row) on M408
 	
 	switch (group) {
 	default:
@@ -157,6 +184,15 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 	  break;
 	}
       }
+
+    }
+
+    void remapGroup( const int group ) {
+      int multiplicator = getMultiplicator(group);
+      int shiftx;
+      int ix, iy=0;
+
+      setMappingShifts(group);
      
       //remapping loop
       for ( int ipy=y0; ipy<=y1;ipy++) {
@@ -165,13 +201,53 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 	  ix = int ((ipx-x0)/multiplicator);
 	  for ( int m=0; m<multiplicator;m++ ) {
 	    if ( (ipx-x0)%multiplicator==m ) iy=(ipy-y0)*multiplicator +m + shifty;
-	  
-
 	  }
 	  
 	  //	  if (iy< 40)	  cout << iy << "  " << ix <<endl;
 	  	  dataMap[iy][ix] = sizeof(header) + (nc_rawimg * ipy + ipx) * 2;
 	  	  groupmap[iy][ix]=group-1;
+	}
+      } 
+
+    }
+
+    void remapROI( uint16_t xmin, uint16_t xmax, uint16_t ymin, uint16_t ymax ) {
+      //determine group and chip selected by ROI
+      int group;
+      if ( ymax <= c1g1_yend+bond_shift_y ) { group = 1; mchip = 1; }
+      else if ( ymax <= c1g2_yend+bond_shift_y ) { group = 2; mchip = 1; }
+      else if ( ymax <= c1g3_yend+bond_shift_y ) { group = 3; mchip = 1; }
+      else if ( ymax <= c6g3_yend-bond_shift_y ) { group = 3; mchip = 6; }
+      else if ( ymax <= c6g2_yend-bond_shift_y ) { group = 2; mchip = 6; }
+      else if ( ymax <= c6g1_yend-bond_shift_y ) { group = 1; mchip = 6; }
+      int multiplicator = getMultiplicator(group);
+      setMappingShifts(group);
+
+      std::cout << "group: " << group << ", m: " << multiplicator << ", x0: " << x0 << ", x1: " << x1 << ", y0: " << y0 << ", y1: " << y1 << std::endl;
+
+      //get ROI raw image number of columns
+      int nc_roi = xmax - xmin + 1;
+      std::cout << "nc_roi = " << nc_roi << std::endl;
+
+      //make sure loop bounds are correct
+      if (y0<ymin) std::cout << "Error ymin" << std::endl;
+      if (y1>ymax) std::cout << "Error ymax - normal for G3 since ROI only 64 row" << std::endl;
+      if (x0<xmin) std::cout << "Error xmin" << std::endl;
+      if (x1>xmax) std::cout << "Error xmax" << std::endl;
+
+      //remapping loop
+      int ix, iy=0;
+      for ( int ipy=y0; ipy<=y1; ++ipy) {
+	for ( int ipx=x0; ipx<=x1; ++ipx ) {
+
+	  ix = int ((ipx-x0-xmin)/multiplicator);
+	  for ( int m=0; m<multiplicator;m++ ) {
+	    if ( (ipx-x0-xmin)%multiplicator==m ) iy=(ipy-y0-ymin)*multiplicator +m + shifty;
+	  }
+	  
+	  //	  if (iy< 40)	  cout << iy << "  " << ix <<endl;
+	  dataMap[iy][ix] = sizeof(header) + (nc_roi * (ipy-ymin) + (ipx-xmin)) * 2;
+	  groupmap[iy][ix]=group-1;
 	}
       } 
 
@@ -184,14 +260,13 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
     using header = sls::defs::sls_receiver_header;
 
     
-    jungfrauLGADStrixelsData()
+ jungfrauLGADStrixelsData( uint16_t xmin=0, uint16_t xmax=0, uint16_t ymin=0, uint16_t ymax=0 )
       : slsDetectorData<uint16_t>( /*nc_strixel*/g1_ncols, /*nr_strixel*/ 2*g1_nrows+2*g2_nrows+2*g3_nrows,
 				   g1_ncols*  (2*g1_nrows+2*g2_nrows+2*g3_nrows) * 2 + sizeof(header) ) {
       std::cout << "Jungfrau strixels 2X single chip with full module data " << std::endl;
 
-      
 
-      
+           
       //Fill all strixels with dummy values
       for (int ix = 0; ix != g1_ncols; ++ix) {
 	for (int iy = 0; iy != 2*g1_nrows+2*g2_nrows+2*g3_nrows; ++iy) {
@@ -200,20 +275,27 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 	}
       }
 
-      cout << "sizeofheader = "<<sizeof(header)<<endl;
-std::cout << "Jungfrau strixels 2X single chip with full module data " << std::endl;
+      std::cout << "sizeofheader = "<<sizeof(header)<<std::endl;
+      std::cout << "Jungfrau strixels 2X single chip with full module data " << std::endl;
 
-      mchip = 1;
-      remapGroup(1);
-  
+      if (xmin<xmax && ymin<ymax) {
 
-      remapGroup(2);
-      remapGroup(3);
+	dataSize=(xmax-xmin+1)*(ymax-ymin+1)*2 + sizeof(header);
+	std::cout << "datasize " << dataSize << std::endl;
+	remapROI( xmin, xmax, ymin, ymax );
+      
+      } else {
 
-      mchip = 6;
-      remapGroup(1);
-      remapGroup(2);
-      remapGroup(3);
+	mchip = 1;
+	remapGroup(1);
+	remapGroup(2);
+	remapGroup(3);
+	
+	mchip = 6;
+	remapGroup(1);
+	remapGroup(2);
+	remapGroup(3);
+      }
 	
       iframe = 0;
       std::cout << "data struct created" << std::endl;
@@ -298,12 +380,13 @@ std::cout << "Jungfrau strixels 2X single chip with full module data " << std::e
         np = 0;
         int pn;
 
-        //  cout << dataSize << endl;
+	//std::cout << dataSize << std::endl;
         if (ff >= 0)
             fnum = ff;
 
         if (filebin.is_open()) {
             if (filebin.read(data, dataSize)) {
+	      std::cout << "*";
                 ff = getFrameNumber(data);
                 np = getPacketNumber(data);
                 return data;

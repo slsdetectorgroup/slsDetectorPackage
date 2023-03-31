@@ -21,14 +21,14 @@ class etaInterpolationBase : public slsInterpolation {
                          double emax = 0)
         : slsInterpolation(nx, ny, ns, nsy), hhx(NULL), hhy(NULL), heta(NULL),
           nbetaX(nb), nbetaY(nby), etamin(emin), etamax(emax) {
-        // cout << "eb " << nb << " " << emin << " " << emax << endl;
-        // cout << nb << " " << etamin << " " << etamax << endl;
+        // std::cout << "eb " << nb << " " << emin << " " << emax << std::endl;
+        // std::cout << nb << " " << etamin << " " << etamax << std::endl;
         if (nbetaX <= 0) {
-            // cout << "aaa:" <<endl;
+            // std::cout << "aaa:" <<endl;
             nbetaX = nSubPixelsX * 10;
         }
         if (nbetaY <= 0) {
-            // cout << "aaa:" <<endl;
+            // std::cout << "aaa:" <<endl;
             nbetaY = nSubPixelsY * 10;
         }
         if (etamin >= etamax) {
@@ -145,9 +145,9 @@ class etaInterpolationBase : public slsInterpolation {
         uint32_t nny;
         float *gm = ReadFromTiff(imgname, nnx, nny);
         /* if (nnx!=nny) { */
-        /*   cout << "different number of bins in x " << nnx << "  and y " <<
-         * nny<< " !"<< endl; */
-        /*   cout << "Aborting read"<< endl; */
+        /*   std::cout << "different number of bins in x " << nnx << "  and y " <<
+         * nny<< " !"<< std::endl; */
+        /*   std::cout << "Aborting read"<< std::endl; */
         /*   return 0; */
         /* } */
         nbetaX = nnx;
@@ -254,12 +254,12 @@ class etaInterpolationBase : public slsInterpolation {
             if (ibx >= 0 && ibx < nSubPixelsX && iby >= 0 &&
                 iby < nSubPixelsY) {
                 //
-                // if (ibx>0 && iby>0) cout << ibx << " " << iby << " " << ii <<
-                // endl;
+                // if (ibx>0 && iby>0) std::cout << ibx << " " << iby << " " << ii <<
+                // std::endl;
                 ftest[ibx + iby * nSubPixelsX] += heta[ii];
             } else
-                cout << "Bad interpolation " << ii << " " << ibx << " " << iby
-                     << endl;
+                std::cout << "Bad interpolation " << ii << " " << ibx << " " << iby
+                     << std::endl;
         }
 
         sprintf(tit, "/scratch/ftest_%d.tiff", ind);
@@ -282,7 +282,7 @@ class etaInterpolationBase : public slsInterpolation {
         }
         sprintf(tit, "/scratch/eta_bad_%d.tiff", ind);
         WriteToTiff(etah, tit, nbetaX, nbetaY);
-        // cout << "Index: " << ind << "\t Bad bins: "<< nbad << endl;
+        // std::cout << "Index: " << ind << "\t Bad bins: "<< nbad << std::endl;
         // int ibx=0, iby=0;
 
         delete[] ftest;
@@ -330,9 +330,9 @@ class etaInterpolationBase : public slsInterpolation {
             }
         }
 
-        //  cout << endl << endl;
+        //  std::cout << std::endl << std::endl;
         for (ipy = 0; ipy < nSubPixelsY; ipy++) {
-            cout.width(5);
+            std::cout.width(5);
             // flat_y[ipy]=p_tot_y[ipy];//avg/nSubPixels;
             for (ipx = 0; ipx < nSubPixelsX; ipx++) {
 
@@ -353,19 +353,19 @@ class etaInterpolationBase : public slsInterpolation {
                 //"   ";
             }
 
-            /* cout << "** "  << setprecision(4) <<  flat_y[ipy]; */
-            // cout << "\n";
+            /* std::cout << "** "  << setprecision(4) <<  flat_y[ipy]; */
+            // std::cout << "\n";
         }
-        /* cout << "**" << endl; cout.width(5); */
+        /* std::cout << "**" << std::endl; std::cout.width(5); */
         /* for (ipx=0; ipx<nSubPixels; ipx++) { */
-        /*   cout  << setprecision(4) <<  flat_x[ipx] << " "; */
+        /*   std::cout  << setprecision(4) <<  flat_x[ipx] << " "; */
         /* } */
-        // cout << "**" << endl; cout.width(5);
-        // cout << "Min diff: " << mindiff/sqrt(avg) << " Max diff: " <<
-        // maxdiff/sqrt(avg) << " Nbad: " << nbad << endl;
+        // std::cout << "**" << std::endl; std::cout.width(5);
+        // std::cout << "Min diff: " << mindiff/sqrt(avg) << " Max diff: " <<
+        // maxdiff/sqrt(avg) << " Nbad: " << nbad << std::endl;
 
-        //   cout << "Bad pixels: " <<
-        //   100.*(float)nbad/((float)(nSubPixels*nSubPixels)) << " %" << endl;
+        //   std::cout << "Bad pixels: " <<
+        //   100.*(float)nbad/((float)(nSubPixels*nSubPixels)) << " %" << std::endl;
         delete[] p_tot_x;
         delete[] p_tot_y;
         delete[] p_tot;

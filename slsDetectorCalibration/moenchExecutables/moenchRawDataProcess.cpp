@@ -86,17 +86,10 @@ int main(int argc, char *argv[]) {
     
 #endif
 
-
-    int nx = 400, ny = 400;
-
+    //Read detector size from decoder
+    int nx , ny;
     decoder->getDetectorSize(nx, ny);
-#ifdef CORR
-    int ncol_cm = CM_ROWS;
-    double xt_ghost = C_GHOST;
-#endif
-    moench03CommonMode *cm = NULL;
-    moench03GhostSummation *gs;
-    double *gainmap = NULL;
+
     //float *gm;
 
     int ff, np;
@@ -171,8 +164,15 @@ int main(int argc, char *argv[]) {
 
     uint32_t nnx, nny;
 
+
+    moench03CommonMode *cm = nullptr;
+    moench03GhostSummation *gs = nullptr;
+    double *gainmap = nullptr;
+
 #ifdef CORR
-    cout << "Applying common mode  " << ncol_cm << endl;
+    int ncol_cm = CM_ROWS;
+    double xt_ghost = C_GHOST;
+    std::cout << "Applying common mode  " << ncol_cm << endl;
     cm = new moench03CommonMode(ncol_cm);
 
     // cout << "Applying ghost corrections " << xt_ghost << endl;

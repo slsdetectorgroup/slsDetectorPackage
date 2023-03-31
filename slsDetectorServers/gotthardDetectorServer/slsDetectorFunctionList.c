@@ -275,7 +275,7 @@ void getServerVersion(char *version) { strcpy(version, APIGOTTHARD); }
 
 u_int64_t getFirmwareVersion() {
 #ifdef VIRTUAL
-    return 0;
+    return 1;
 #endif
     return ((bus_r(FPGA_VERSION_REG) & FPGA_VERSION_MSK) >> FPGA_VERSION_OFST);
 }

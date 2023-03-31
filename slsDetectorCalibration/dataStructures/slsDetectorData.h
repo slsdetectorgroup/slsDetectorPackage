@@ -198,19 +198,18 @@ template <typename dataType> slsDetectorData<dataType>::~slsDetectorData() {
 template <typename dataType>
 void slsDetectorData<dataType>::setDataMap(int **dMap) {
 
-    int ip = 0;
-    int ix, iy;
+    // int ip = 0;
     if (dMap == NULL) {
-        for (iy = 0; iy < ny; iy++) {
-            for (ix = 0; ix < nx; ix++) {
+        for (int iy = 0; iy < ny; iy++) {
+            for (int ix = 0; ix < nx; ix++) {
                 dataMap[iy][ix] = (iy * nx + ix) * sizeof(dataType);
             }
         }
     } else {
         // cout << "set dmap "<< dataMap << " " << dMap << endl;
-        for (iy = 0; iy < ny; iy++) {
+        for (int iy = 0; iy < ny; iy++) {
             // cout << iy << endl;
-            for (ix = 0; ix < nx; ix++) {
+            for (int ix = 0; ix < nx; ix++) {
                 dataMap[iy][ix] = dMap[iy][ix];
                 // cout << ix << " " << iy << endl;
                 /*ip=dataMap[ix][iy]/sizeof(dataType);
@@ -220,8 +219,8 @@ void slsDetectorData<dataType>::setDataMap(int **dMap) {
         }
     }
     /* //commented this part because it causes out-of-bound issues if nx or ny are larger than dataMap bounds (single-chip readout of strixel with groups of different pitches) VH 2023-02-24
-    for (iy = 0; iy < ny; iy++) {
-        for (ix = 0; ix < nx; ix++) {
+    for (int iy = 0; iy < ny; iy++) {
+        for (int ix = 0; ix < nx; ix++) {
             ip = dataMap[iy][ix] / sizeof(dataType);
             xmap[ip] = ix;
             ymap[ip] = iy;
@@ -293,7 +292,6 @@ template <typename dataType>
 dataType **slsDetectorData<dataType>::getData(char *ptr, int dsize) {
     int el = dsize / sizeof(dataType);
     // dataType **data;
-    int ix, iy;
     // data=new dataType*[ny];
     // for(int i = 0; i < ny; i++) {
     //   data[i]=new dataType[nx];
@@ -303,6 +301,7 @@ dataType **slsDetectorData<dataType>::getData(char *ptr, int dsize) {
         dsize = dataSize;
 
     for (int ip = 0; ip < (el); ip++) {
+        int ix, iy;
         getPixel(ip, ix, iy);
         if (ix >= 0 && ix < nx && iy >= 0 && iy < ny) {
             // data[iy][ix]=getChannel(ptr,ix,iy);

@@ -5,7 +5,6 @@
 #include "sharedMemory.h"
 #include "sls/versionAPI.h"
 
-#include "AD7689.h"     // slow adcs
 #include "ALTERA_PLL.h" // pll
 #include "INA226.h"     // i2c
 #include "LTC2620.h"    // dacs
@@ -533,12 +532,6 @@ void setupDetector() {
                       ADC_SPI_SRL_DT_OTPT_OFST);
     AD9257_Disable();
     AD9257_Configure();
-
-    // slow adcs
-    AD7689_SetDefines(ADC_SPI_REG, ADC_SPI_SLOW_VAL_REG,
-                      ADC_SPI_SLOW_SRL_CNV_MSK, ADC_SPI_SLOW_SRL_CLK_MSK,
-                      ADC_SPI_SLOW_SRL_DT_MSK, ADC_SPI_SLOW_SRL_DT_OFST);
-    AD7689_Configure();
 
     // dacs
     LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK,
@@ -1472,7 +1465,7 @@ int getADC(enum ADCINDEX ind) {
         // slow adcs
     case S_TMP:
         LOG(logDEBUG1, ("Reading Slow ADC Temperature\n"));
-        return AD7689_GetTemperature();
+        return getSlowADCTemperature();
     case S_ADC0:
     case S_ADC1:
     case S_ADC2:
@@ -1482,11 +1475,35 @@ int getADC(enum ADCINDEX ind) {
     case S_ADC6:
     case S_ADC7:
         LOG(logDEBUG1, ("Reading Slow ADC Channel %d\n", (int)ind - S_ADC0));
-        return AD7689_GetChannel((int)ind - S_ADC0);
+        return getSlowADC((int)ind - S_ADC0);
     default:
         LOG(logERROR, ("Adc Index %d not defined \n", (int)ind));
         return -1;
     }
+}
+
+int getSlowADC(int ichan) {
+    LOG(logDEBUG1, ("Getting slow adc channel %d\n", ichan));
+
+    bus_w(ADC_SPI_SLOW_CNFG_REG, ADC_SPI_SLOW_CNFG_VAL);
+
+    // start converting
+    bus_w(ADC_SLOW_CTRL_REG, bus_r(ADC_SLOW_CTRL_REG) | ADC_SLOW_CTRL_STRT_MSK);
+
+    // wait for it to be done
+    volatile int done = (bus_r(ADC_SLOW_CTRL_REG & ADC_SLOW_CTRL_DONE_MSK) >> ADC_SLOW_CTRL_DONE_OFST);
+    while (!done) {
+        done = (bus_r(ADC_SLOW_CTRL_REG & ADC_SLOW_CTRL_DONE_MSK) >> ADC_SLOW_CTRL_DONE_OFST);
+    }
+
+    // readout
+    int retval = bus_r(ADC_SPI_SLOW_DATA_REG);
+    return retval;
+
+}
+
+int getSlowADCTemperature() {
+    return 0;
 }
 
 int setHighVoltage(int val) {

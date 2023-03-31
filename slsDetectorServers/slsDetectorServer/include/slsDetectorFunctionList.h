@@ -387,6 +387,10 @@ int getADC(enum ADCINDEX ind, int *value);
 #else
 int getADC(enum ADCINDEX ind);
 #endif
+#ifdef CHIPTESTBOARDD
+int getSlowADC(int ichan);
+int getSlowADCTemperature();
+#endif
 
 int setHighVoltage(int val);
 

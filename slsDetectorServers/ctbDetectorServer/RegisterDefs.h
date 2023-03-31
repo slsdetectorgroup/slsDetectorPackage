@@ -184,12 +184,6 @@
 #define POWER_STATUS_ALRT_OFST (27)
 #define POWER_STATUS_ALRT_MSK  (0x0000001F << POWER_STATUS_ALRT_OFST)
 
-/* DAC Value Out RO register */
-//#define DAC_VAL_OUT_REG                     (0x2A << MEM_MAP_SHIFT)
-
-/* Slow ADC SPI Value RO register */
-#define ADC_SPI_SLOW_VAL_REG (0x2B << MEM_MAP_SHIFT)
-
 /* FIFO Digital In Status RO register */
 #define FIFO_DIN_STATUS_REG            (0x3B << MEM_MAP_SHIFT)
 #define FIFO_DIN_STATUS_FIFO_FULL_OFST (30)
@@ -228,12 +222,6 @@
 #define ADC_SPI_SRL_DT_OTPT_MSK   (0x00000001 << ADC_SPI_SRL_DT_OTPT_OFST)
 #define ADC_SPI_SRL_CS_OTPT_OFST  (2)
 #define ADC_SPI_SRL_CS_OTPT_MSK   (0x0000000F << ADC_SPI_SRL_CS_OTPT_OFST)
-#define ADC_SPI_SLOW_SRL_DT_OFST  (8)
-#define ADC_SPI_SLOW_SRL_DT_MSK   (0x00000001 << ADC_SPI_SLOW_SRL_DT_OFST)
-#define ADC_SPI_SLOW_SRL_CLK_OFST (9)
-#define ADC_SPI_SLOW_SRL_CLK_MSK  (0x00000001 << ADC_SPI_SLOW_SRL_CLK_OFST)
-#define ADC_SPI_SLOW_SRL_CNV_OFST (10)
-#define ADC_SPI_SLOW_SRL_CNV_MSK  (0x00000001 << ADC_SPI_SLOW_SRL_CNV_OFST)
 
 /* ADC Offset RW register */
 #define ADC_OFFSET_REG (0x42 << MEM_MAP_SHIFT)
@@ -633,6 +621,22 @@
 /* Pattern Wait Timer 5 64 bit RW register. t = PWT1 x T run clock */
 #define PATTERN_WAIT_TIMER_5_LSB_REG (0x91 << MEM_MAP_SHIFT)
 #define PATTERN_WAIT_TIMER_5_MSB_REG (0x92 << MEM_MAP_SHIFT)
+
+
+/* Slow ADC SPI Value RO register */
+#define ADC_SPI_SLOW_DATA_REG (0x93 << MEM_MAP_SHIFT)
+
+/* Slow ADC SPI Value Config register */
+#define ADC_SPI_SLOW_CNFG_REG (0x94 << MEM_MAP_SHIFT)
+#define ADC_SPI_SLOW_CNFG_VAL  (0x00001FFF)
+
+/* Slow ADC SPI Value Control register */
+#define ADC_SLOW_CTRL_REG (0x95 << MEM_MAP_SHIFT)
+
+#define ADC_SLOW_CTRL_STRT_OFST (0)
+#define ADC_SLOW_CTRL_STRT_MSK  (0x00000001 << ADC_SPI_SLOW_CTRL_STRT_OFST)
+#define ADC_SLOW_CTRL_DONE_OFST (1)
+#define ADC_SLOW_CTRL_DONE_MSK  (0x00000001 << ADC_SPI_SLOW_CTRL_DONE_OFST)
 
 /** I2C Control register */
 #define I2C_TRANSFER_COMMAND_FIFO_REG (0x100 << MEM_MAP_SHIFT)

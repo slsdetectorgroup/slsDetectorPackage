@@ -1486,22 +1486,22 @@ int getSlowADC(int ichan) {
     LOG(logDEBUG1, ("Getting slow adc channel %d\n", ichan));
 
     // configure for channel
-    bus_w(ADC_SPI_SLOW_CNFG_REG,
+    bus_w(ADC_SLOW_CFG_REG,
         // don't read back config reg
-        ADC_SPI_SLOW_CFG_RB_MSK |
+        ADC_SLOW_CFG_RB_MSK |
         // disable sequencer (different from config)
-        ADC_SPI_SLOW_CFG_SEQ_DSBLE_VAL |
+        ADC_SLOW_CFG_SEQ_DSBLE_VAL |
         // Internal reference. REF = 2.5V buffered output. Temperature sensor
         // enabled.
-        ADC_SPI_SLOW_CFG_REF_INT_2500MV_VAL |
+        ADC_SLOW_CFG_REF_INT_2500MV_VAL |
         // full bandwidth of low pass filter
-        ADC_SPI_SLOW_CFG_BW_FULL_VAL |
+        ADC_SLOW_CFG_BW_FULL_VAL |
         // specific channel (different from config)
-        ((ichan << ADC_SPI_SLOW_CFG_IN_OFST) & ADC_SPI_SLOW_CFG_IN_MSK) |
+        ((ichan << ADC_SLOW_CFG_IN_OFST) & ADC_SLOW_CFG_IN_MSK) |
         // input channel configuration (unipolar. inx to gnd)
-        ADC_SPI_SLOW_CFG_INCC_UNPLR_IN_GND_VAL |
+        ADC_SLOW_CFG_INCC_UNPLR_IN_GND_VAL |
         // overwrite configuration
-        ADC_SPI_SLOW_CFG_CFG_OVRWRTE_VAL);
+        ADC_SLOW_CFG_CFG_OVRWRTE_VAL);
 
 
     // start converting
@@ -1514,31 +1514,31 @@ int getSlowADC(int ichan) {
     }
 
     // readout
-    int retval = bus_r(ADC_SPI_SLOW_DATA_REG);
+    int retval = bus_r(ADC_SLOW_DATA_REG);
     return retval;
 
 }
 
 int getSlowADCTemperature() {
-    LOG(logDEBUG1, ("Getting slow adc channel %d\n", ichan));
+    LOG(logDEBUG1, ("Getting slow adc temperature\n"));
 
     // configure for channel
-    bus_w(ADC_SPI_SLOW_CNFG_REG,
+    bus_w(ADC_SLOW_CFG_REG,
         // don't read back config reg
-        ADC_SPI_SLOW_CFG_RB_MSK |
+        ADC_SLOW_CFG_RB_MSK |
         // disable sequencer (different from config)
-        ADC_SPI_SLOW_CFG_SEQ_DSBLE_VAL |
+        ADC_SLOW_CFG_SEQ_DSBLE_VAL |
         // Internal reference. REF = 2.5V buffered output. Temperature sensor
         // enabled.
-        ADC_SPI_SLOW_CFG_REF_INT_2500MV_VAL |
+        ADC_SLOW_CFG_REF_INT_2500MV_VAL |
         // full bandwidth of low pass filter
-        ADC_SPI_SLOW_CFG_BW_FULL_VAL |
+        ADC_SLOW_CFG_BW_FULL_VAL |
         // all channels
-        ADC_SPI_SLOW_CFG_IN_MSK |
+        ADC_SLOW_CFG_IN_MSK |
         // temp sensor
-        ADC_SPI_SLOW_CFG_INCC_TMP_VAL |
+        ADC_SLOW_CFG_INCC_TMP_VAL |
         // overwrite configuration
-        ADC_SPI_SLOW_CFG_CFG_OVRWRTE_VAL);
+        ADC_SLOW_CFG_CFG_OVRWRTE_VAL);
 
     // start converting
     bus_w(ADC_SLOW_CTRL_REG, bus_r(ADC_SLOW_CTRL_REG) | ADC_SLOW_CTRL_STRT_MSK);
@@ -1550,7 +1550,7 @@ int getSlowADCTemperature() {
     }
 
     // readout
-    int regval = bus_r(ADC_SPI_SLOW_DATA_REG);
+    int regval = bus_r(ADC_SLOW_DATA_REG);
 
     // value in mV FIXME: page 17? reference voltage temperature coefficient or
     // t do with -40 to 85 °C
@@ -1563,7 +1563,8 @@ int getSlowADCTemperature() {
     LOG(logDEBUG1, ("voltage read for temp: %d mV\n", retval));
 
     // value in °C
-    double tempValue = AD7689_TMP_C_FOR_1_MV * (double)retval;
+    double tempCFor1mv = (25.00 / 283.00);
+    double tempValue = tempCFor1mv * (double)retval;
     LOG(logINFO, ("\tTemp slow adc : %f °C (reg: %d)\n", tempValue, regval));
     
     return tempValue;

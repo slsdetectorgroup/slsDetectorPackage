@@ -220,7 +220,7 @@ template <class dataType> class analogDetector {
        clone. Must be virtual!
        \returns a clone of the original analog detector
      */
-    virtual analogDetector *Clone() { return new analogDetector(this); }
+    virtual analogDetector *Clone() = 0;
 
     /**
        Gives an id to the structure. For debugging purposes in case of
@@ -298,8 +298,8 @@ template <class dataType> class analogDetector {
             if (gmap)
                 delete[] gmap;
             gmap = new double[nnx * nny];
-            for (iy = 0; iy < nny; ++iy) {
-                for (ix = 0; ix < nnx; ++ix) {
+            for (iy = 0; iy < static_cast<int>(nny); ++iy) {
+                for (ix = 0; ix < static_cast<int>(nnx); ++ix) {
                     gmap[iy * nnx + ix] = gm[iy * nnx + ix];
                     // cout << gmap[iy*nnx+ix] << " " ;
                 }
@@ -1096,6 +1096,8 @@ template <class dataType> class analogDetector {
         thr = t;
         return thr;
     };
+
+    virtual int setClusterSize(int n = -1) = 0;
 
     /**
        gets threshold value for conversion into number of photons

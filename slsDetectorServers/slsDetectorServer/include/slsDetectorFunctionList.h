@@ -82,8 +82,10 @@ u_int64_t getFirmwareVersion();
 uint64_t getFrontEndFirmwareVersion(enum fpgaPosition fpgaPosition);
 #endif
 u_int64_t getFirmwareAPIVersion();
-#ifndef EIGERD
 void getHardwareVersion(char *version);
+#ifdef EIGERD
+int getHardwareVersionNumber();
+#else
 u_int16_t getHardwareVersionNumber();
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD)

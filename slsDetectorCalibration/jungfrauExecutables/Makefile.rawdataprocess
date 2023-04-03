@@ -14,7 +14,19 @@ jungfrauRawDataProcess:  jungfrauRawDataProcess.cpp  $(INCS) clean
 			 g++ -o jungfrauRawDataProcess  jungfrauRawDataProcess.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL  -DMODULE
 
 jungfrauRawDataProcessStrx:  jungfrauRawDataProcess.cpp  $(INCS) clean
-			 g++ -o jungfrauRawDataProcessStrx  jungfrauRawDataProcess.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL -DJFSTRX 
+			 g++ -o jungfrauRawDataProcessStrx  jungfrauRawDataProcess.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL -DJFSTRX
+
+jungfrauRawDataProcessStrxChip1:  jungfrauRawDataProcess.cpp  $(INCS) clean
+			 g++ -o jungfrauRawDataProcessStrxChip1  jungfrauRawDataProcess.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL -DJFSTRXCHIP1
+
+jungfrauRawDataProcessStrxChip6:  jungfrauRawDataProcess.cpp  $(INCS) clean
+			 g++ -o jungfrauRawDataProcessStrxChip6  jungfrauRawDataProcess.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL -DJFSTRXCHIP6
+
+jungfrauRawDataProcessStrxChip1Aldo:  jungfrauRawDataProcess.cpp  $(INCS) clean
+			 g++ -o jungfrauRawDataProcessStrxChip1Aldo  jungfrauRawDataProcess.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL -DJFSTRXCHIP1 -DALDO
+
+jungfrauRawDataProcessStrxChip6Aldo:  jungfrauRawDataProcess.cpp  $(INCS) clean
+			 g++ -o jungfrauRawDataProcessStrxChip6Aldo  jungfrauRawDataProcess.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL -DJFSTRXCHIP6 -DALDO
 
 jungfrauRawDataProcessStrxAldo:  jungfrauRawDataProcess.cpp  $(INCS) clean
 			 g++ -o jungfrauRawDataProcessStrxAldo  jungfrauRawDataProcess.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL -DJFSTRX -DALDO

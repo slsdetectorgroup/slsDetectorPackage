@@ -230,7 +230,8 @@ class Detector(CppDetectorApi):
     @element
     def hardwareversion(self):
         """
-        [Jungfrau][Moench][Gotthard2][Myhten3][Gotthard][Ctb] Hardware version of detector.
+        [Jungfrau][Moench][Gotthard2][Myhten3][Gotthard][Ctb] Hardware version of detector. \n
+        [Eiger] Hardware version of front FPGA on detector.
         """
         return self.getHardwareVersion()
 
@@ -1890,17 +1891,18 @@ class Detector(CppDetectorApi):
     def versions(self):
         version_list = {'type': self.type,
                 'package': self.packageversion, 
-                'client': self.clientversion,
-                'detectorserver': self.detectorserverversion,
-                'kernel': self.kernelversion}
-
+                'client': self.clientversion}
+                
         if self.type == detectorType.EIGER:
             version_list ['firmware (Beb)'] = self.firmwareversion
             version_list ['firmware(Febl)'] = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_LEFT)
             version_list ['firmware (Febr)'] = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_RIGHT)
         else:
             version_list ['firmware'] = self.firmwareversion
-            version_list ['hardware'] = self.hardwareversion
+
+        version_list ['detectorserver'] = self.detectorserverversion
+        version_list ['kernel'] = self.kernelversion
+        version_list ['hardware'] = self.hardwareversion
 
         if self.use_receiver:
             version_list ['receiver'] = self.rx_version

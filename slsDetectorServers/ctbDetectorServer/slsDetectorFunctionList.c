@@ -331,7 +331,7 @@ void getServerVersion(char *version) { strcpy(version, APICTB); }
 
 uint64_t getFirmwareVersion() {
 #ifdef VIRTUAL
-    return 0;
+    return REQRD_FRMWR_VRSN;
 #endif
     return ((bus_r(FPGA_VERSION_REG) & FPGA_VERSION_BRD_RVSN_MSK) >>
             FPGA_VERSION_BRD_RVSN_OFST);

@@ -732,8 +732,14 @@ int get_firmware_version(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
     retval = getFirmwareVersion();
-    LOG(logDEBUG1,
-        ("firmware version retval: 0x%llx\n", (long long int)retval));
+    if (retval == 0) {
+        ret = FAIL;
+        strcpy(mess, "Could not get firmware version\n");
+        LOG(logERROR, (mess));
+    } else {
+        LOG(logDEBUG1,
+            ("firmware version retval: 0x%llx\n", (long long int)retval));
+    }
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -10138,12 +10144,8 @@ int get_hardware_version(int file_des) {
     memset(mess, 0, sizeof(mess));
     char retvals[MAX_STR_LENGTH];
     memset(retvals, 0, MAX_STR_LENGTH);
-#ifdef EIGERD
-    functionNotImplemented();
-#else
     getHardwareVersion(retvals);
     LOG(logDEBUG1, ("hardware version retval: %s\n", retvals));
-#endif
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 
@@ -10171,9 +10173,15 @@ int get_frontend_firmware_version(int file_des) {
     }
     if (ret == OK) {
         retval = getFrontEndFirmwareVersion(arg);
-        LOG(logDEBUG1,
-            ("Front %s version retval: 0x%llx\n",
-             (arg == FRONT_LEFT ? "left" : "right"), (long long int)retval));
+        if (retval == 0) {
+            ret = FAIL;
+            strcpy(mess, "Could not get febl/r firmware version\n");
+            LOG(logERROR, (mess));
+        } else {
+            LOG(logDEBUG1, ("Front %s version retval: 0x%llx\n",
+                            (arg == FRONT_LEFT ? "left" : "right"),
+                            (long long int)retval));
+        }
     }
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));

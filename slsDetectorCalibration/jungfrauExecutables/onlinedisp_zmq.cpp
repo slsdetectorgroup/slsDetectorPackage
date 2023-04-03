@@ -7,17 +7,23 @@ sls::zmqHeader zHeader;
 #define NPRO 50
 #define NPRI 50
 
-//#define JFSTRX
+#define JFSTRX
 #ifdef JFSTRX
-#include "jungfrauLGADStrixelsData.h"
-#else
-#include "jungfrauModuleData.h"
+#include "jungfrauLGADStrixelsData_new.h"
+#include "sls/sls_detector_defs.h"
+#include "slsDetectorData.h"
+using header = sls::defs::sls_receiver_header;
 #endif
-
 
 
 int main(int argc, char* argv[]) 
 {
+
+
+
+
+
+
   goout=1;
   hasallpede=false;
   dophotonmap=true;  if ((argc<3)) {printf("USAGE: command photon_energy_(peakinADC) [rx_ip]  [port] \n"); return -1  ;}
@@ -43,9 +49,19 @@ int main(int argc, char* argv[])
 #ifdef JFSTRX
     cout << "JFSTRX" << endl;
     jungfrauLGADStrixelsData *decoder = new jungfrauLGADStrixelsData();
-    nx = 1024/5; ny= 512*5;
+
+    decoder->getDetectorSize(nx,ny);
+
+    
+    
+
+    cout<<    decoder->dataMap[22][22] <<endl;
+
+
 #else
     nx = 1024; ny= 512;
+
+
 #endif
 
 
@@ -57,7 +73,7 @@ int main(int argc, char* argv[])
  
   HDraw_every=20;
   fixranges=false;
-
+  int group;
   
   hchptr = (short*) malloc(NCH*sizeof(short)); 
 
@@ -80,29 +96,85 @@ int main(int argc, char* argv[])
   char hname[100];
 
 
+#ifdef JFSTRX
+  int nxx=79; int nyy=165;
+  his1000= new TH2F("his1000","2d, chip 1 group 1 (25um) pede corr.",nxx,-0.5,nxx-0.5,nyy,-0.5,nyy-0.5);
+  his1060= new TH2F("his1060","2d,  chip 6 group 1 (25um) pede corr.",nxx,-0.5,nxx-0.5,nyy,-0.5,nyy-0.5);
+  nxx=47; nyy=320; //320;
+  his1001= new TH2F("his1001","2d, chip 1 group 2 (15um) pede corr.",nxx,-0.5,nxx-0.5,nyy,-0.5,nyy-0.5);
+  his1061= new TH2F("his1061","2d, chip 6 group 2 (15um) pede corr.",nxx,-0.5,nxx-0.5,nyy,-0.5,nyy-0.5);
+  nxx=59; nyy=476; //476;
+  his1002= new TH2F("his1002","2d, chip 1 group 3 (18.75um) pede corr.",nxx,-0.5,nxx-0.5,nyy,-0.5,nyy-0.5);
+  his1062= new TH2F("his1002","2d, chip 6 group 3 (18.75um) pede corr.",nxx,-0.5,nxx-0.5,nyy,-0.5,nyy-0.5);
 
+  his1000->SetOption("colz");
+  his1001->SetOption("colz");
+  his1002->SetOption("colz");
+  his1060->SetOption("colz");
+  his1061->SetOption("colz");
+  his1062->SetOption("colz");
+
+#else
   his1000= new TH2F("his1000","2d , ev. pede corrected",nx,-0.5,nx-0.5,ny,-0.5,ny-0.5);
   his1000->SetOption("colz");
+#endif
+
   his2000= new TH2F("his2000","2d gain ",nx,-0.5,nx-0.5,ny,-0.5,ny-0.5);
   his2000->GetZaxis()->SetRangeUser(0,4);
 
   if (dophotonmap) {
-    his3000= new TH2F("his3000"," photon map  ",nx,-0.5,nx-0.5,ny,-0.5,ny-0.5);
+    his3000= new TH2F("his3000"," photon map  ",1024,-0.5,1024-0.5,512,-0.5,512-0.5);
   }
   else {
-    his3000= new TH2F("his3000"," raw adc  ",nx,-0.5,nx-0.5,ny,-0.5,ny-0.5);
+    his3000= new TH2F("his3000"," raw adc  ",1024,-0.5,1024-0.5,512,-0.5,512-0.5);
   }
  
-  his4500= new TH2F("his45000","L vs R",101,-50,500,101,-50,500);
+  his4500= new TH2F("his4500","T vs B",101,-500,MAX_POS,101,-500,MAX_POS);
   hchip=new TH1I*[8];
+#ifdef JFSTRX
+  for (i=0;i<8;i++) {
+    if(i<3)
+      sprintf(hname,"%d_hchip1group%d",i,i+1);
+    else if (i>4)
+      sprintf(hname,"%d_hchip6group%d",i, i-4);
+    else
+      sprintf(hname,"%d_",i);
+    hchip[i] = new TH1I(hname,hname,NBIN,MIN_POS,MAX_POS);
+  }
+#else
   for (i=0;i<8;i++) {
     sprintf(hname,"hchip%d",i);
     hchip[i] = new TH1I(hname,hname,NBIN,MIN_POS,MAX_POS);
   }
+#endif
 
   cout <<"end of histo booking" <<endl;
   if  (A2==NULL)  A2 = new TCanvas("A2","Plotting Canvas gain",150,10,500,250);
-  if  (A3==NULL)  A3 = new TCanvas("A3","Plotting Canvas ADC",150,360,1200,550);
+  if  (A3==NULL)  {
+#ifdef JFSTRX
+    A3 = new TCanvas("A3","Plotting Canvas ADC",150,360,1200,750);
+    p1 = new TPad("p1","p1",0.01,0.5,0.49,1.);
+    p1->Draw();
+    p2 = new TPad("p2","p2",0.51,0.75,0.99,0.97);
+    p2->Draw();
+    p3 = new TPad("p3","p3",0.01,0.25,0.49,0.47);
+    p3->Draw();
+    p4 = new TPad("p4","p4",0.51,0.53,0.99,0.75);
+    p4->Draw();
+    p5 = new TPad("p5","p5",0.01,0.03,0.49,0.25);
+    p5->Draw();
+    p6 = new TPad("p6","p6",0.51,0.,0.99,0.5);
+    p6->Draw();
+    //A3->Divide(2,3);
+
+    // TVirtualPad* g=A3->cd(1);
+    // g->SetCanvasSize( g->GetWw(), 2*g->GetWw());
+    //  g=A3->cd(6);
+    // g->SetCanvasSize( g->GetWw(), 2*g->GetWw());
+#else
+    A3 = new TCanvas("A3","Plotting Canvas ADC",150,360,1200,550);
+#endif
+    }
   if  (A4==NULL)  A4 = new TCanvas("A4","Plotting Canvas PHs",750,300,1000,800);
   A4->Clear();
   A4->Divide(4,2,0.005,0.005);
@@ -131,7 +203,14 @@ int main(int argc, char* argv[])
     }
 
     {
-
+     
+       
+      memcpy(&croi, &zHeader.detSpec1, 8);  
+      ROIxmin=croi.xmin;
+      ROIxmax=croi.xmax;
+      ROIymin=croi.ymin;
+      ROIymax=croi.ymax;
+      cout<<" ROIymin "<<  ROIymin<<endl;
       framesinstream++;
       running++;
      
@@ -143,7 +222,19 @@ int main(int argc, char* argv[])
  
       npacket=0;
       if  (show2Ds)  {
+#ifdef JFSTRX
 	his1000->Reset(); 
+	his1001->Reset(); 
+	his1002->Reset();
+	his1060->Reset(); 
+	his1061->Reset(); 
+	his1062->Reset();
+#else
+
+	his1000->Reset(); 
+#endif
+
+
 	his2000->Reset(); 
 	if (!dophotonmap) his3000->Reset(); //FOR RAW ADC DISPLAY 
       }
@@ -187,10 +278,28 @@ int main(int argc, char* argv[])
 	  if (fill1Ds) {
 	    if (((i%1024)<1004)&&((i%1024)>20)&&((i/1024)>20)) { //skip the pix near guardring for PH plots
 	      ichip= i/(256*256*4)*4+((i/256)%4)  ;
-	   
+#ifdef JFSTRX
+	      int new_ichip=0;
+	      //exclude border rows of each group
+	      if (ichip==1) {
+		if (i<=(1024*(64-2))) new_ichip=0; //chip 1 group 1
+		if (i>(1024*(64+6))&&(i<=(1024*(64*2-4)))) new_ichip=1; //chip 1 group 2
+		if (i>(1024*(64*2+5))) new_ichip=2; //chip 1 group 3
+	      }
+
+	      if (ichip==6) {
+		if (i<=(1024*(256+2*64-5))) new_ichip=7; //chip 6 group 3
+		if (i>(1024*(256+2*64+4))&&(i<=(1024*(256+64*3-6)))) new_ichip=6; //chip 6 group 2
+		if (i>(1024*(256+64*3-4))) new_ichip=5; //chip 6 group 1
+	      }
+
+	      hchip[new_ichip]->Fill(adcpedecorr,1);
+
+#else	   
 	      hchip[ichip]->Fill(adcpedecorr,1);
+#endif
 	    
-	      if (((i%256)<253)&&((i%256)>2)) his4500->Fill(adcpedecorrold,adcpedecorr,1);
+	      //	      if (((i%256)<253)&&((i%256)>2)) his4500->Fill(adcpedecorrold,adcpedecorr,1);
 	      adcpedecorrold=adcpedecorr;
 	    
 	    
@@ -200,33 +309,110 @@ int main(int argc, char* argv[])
 
 	
 
-	  if ((show2Ds)) {
-	    factor=2.0;
-	    value=adcpedecorr;
-	    if ((i%256==0)||(i%256==255)) value=int(value/factor);
-	    if ((i/1024==255)||(i/1024==256)||(i/1024==767)||(i/1024==768)) value=int(value/factor);
-
-	    his1000->Fill(float(i%1024),float(int (i/1024)),value);
-
-	    if (!dophotonmap) his3000->Fill(float(i%1024),float(int (i/1024)) ,adcvalue);
 	  
-	    his2000->Fill(float(i%1024),float(int (i/1024)) ,gain);
-
-	    value=(int)(hchptr[i]);
-	 
-	    if ((i%256==0)||(i%256==255)) value=int(value/factor);
-	    if ((i/1024==255)||(i/1024==256)||(i/1024==767)||(i/1024==768)) value=int(value/factor);
-	    if (dophotonmap) his3000->Fill(float(i%1024),float(int (i/1024)),float(value));
-
-	  }
 	}//   for (i=0 ;i<NCH-0;i++)
+
+
+	if ((show2Ds)) {
+	  for (ipx=0;ipx<nx;ipx++){
+	    for (ipy=0;ipy<ny;ipy++){
+	    // for (ipx=0;ipx<nx;ipx++){
+#ifdef JFSTRX
+
+	      //cout<<i<< " cdcsdcvsvcsc  " << group << "  " << (decoder->dataMap[ipy][ipx])/2 << endl; 
+	      i=int (((decoder->dataMap[ipy][ipx])-sizeof(header)) /2);
+	      group=(decoder->groupmap[ipy][ipx]);
+	     
+	      //     cout<<i<< "  "<<ipx<<"  "<<ipy<< "  " << group <<endl; 
+
+  
+
+
+#else	      
+	      i=ipx+ipy*1024;
+#endif
+
+
+
+		value= ((image_data[i]) & 0x3fff) -fpeded[i];
+#ifndef JFSTRX
+		if ((i%256==0)||(i%256==255)) value=int(value/factor);
+		if ((i/1024==255)||(i/1024==256)||(i/1024==767)||(i/1024==768)) value=int(value/factor);
+#endif
+
+		//	        his1000->Fill(float(ipx),float(ipy),value);
+		//	if ((ipy>165)&&(ipy<320+165)){ his1000->Fill(float(ipx)*5/3.0,float(ipy),value);}
+		//	else  { his1000->Fill(float(ipx),float(ipy),value);}
+
+#ifdef JFSTRX
+		static const int mc1g1y_start = 0;
+		static const int mc1g2y_start = g1_nrows;
+		static const int mc1g3y_start = g1_nrows+g2_nrows;
+
+		static const int mc6g3y_start = g1_nrows+g2_nrows+g3_nrows;
+		static const int mc6g2y_start = mc6g3y_start + g3_nrows;
+		static const int mc6g1y_start = mc6g3y_start  + g3_nrows + g2_nrows;
+
+		if (group==0) {
+		  if (ipy<165){
+		    his1000->Fill(float(ipx),float(ipy-mc1g1y_start),value);}
+		  if (ipy>=mc6g1y_start){
+		    his1060->Fill(float(ipx),float(ipy-mc6g1y_start),value);}
+		}
+		if (group==1) {
+		  if (ipy<(165+320)){ 
+		    his1001->Fill(float(ipx),float(ipy-mc1g2y_start),value);}
+		  if ( (ipy>=mc6g2y_start) && (ipy<mc6g1y_start) ){his4500->Fill(value,oldvalue,1.0);
+		    oldvalue=value;
+		    his1061->Fill(float(ipx),float(ipy-mc6g2y_start),value);}
+		}
+		if (group==2) {
+		  if (ipy<(165+320+476))
+		    his1002->Fill(float(ipx),float(ipy-mc1g3y_start),value);
+		  if ( (ipy>=mc6g3y_start) && (ipy<mc6g2y_start) )
+		    his1062->Fill(float(ipx),float(ipy-mc6g3y_start),value);
+		}
+	 
+#else
+
+	his1000->Fill(float(ipx),float(ipy),value);
+	
+
+
+#endif
+
+	
+
+	his2000->Fill(float(ipx),float(ipy) ,gain);
+
+		// if (!dophotonmap)his3000->Fill(float(ipx),float(ipy) ,value);
+		// value=(int)(hchptr[i]);
+		// if (dophotonmap) his3000->Fill(float(ipx),float(ipy),float(value));
+		
+	    }// for ipx
+	  } //for ipy
+
+	  for (ipx=0;ipx<1024;ipx++){
+	    for (ipy=0;ipy<512;ipy++){
+	      i=ipx+ipy*1024;
+	      value= ((image_data[i]) & 0x3fff) -fpeded[i];
+	      if (!dophotonmap)his3000->Fill(float(ipx),float(ipy) ,value);
+	      value=(int)(hchptr[i]);
+	      if (dophotonmap) his3000->Fill(float(ipx),float(ipy),float(value));
+	    }
+	  }
+
+	}// endo of show2d 
+	   	  	  
+
+
       }// /end of do something 
    
 
 
       if   ((show2Ds)) {
 
-	for (ipx=0;ipx<NCH;ipx++) hchptr[(ipx)]=0;
+	for (i=0;i<NCH;i++) hchptr[(i)]=0;
 
 
 
@@ -419,10 +605,31 @@ void SetRanges() {
 
 void axisreset(){
   fixranges=false;
+#ifdef JFSTRX
+  his1000->GetXaxis()->UnZoom();
+  his1000->GetYaxis()->UnZoom();
+  his1000->GetZaxis()->UnZoom();
+  his1001->GetXaxis()->UnZoom();
+  his1001->GetYaxis()->UnZoom();
+  his1001->GetZaxis()->UnZoom();
+  his1002->GetXaxis()->UnZoom();
+  his1002->GetYaxis()->UnZoom();
+  his1002->GetZaxis()->UnZoom();
+  his1060->GetXaxis()->UnZoom();
+  his1060->GetYaxis()->UnZoom();
+  his1060->GetZaxis()->UnZoom();
+  his1061->GetXaxis()->UnZoom();
+  his1061->GetYaxis()->UnZoom();
+  his1061->GetZaxis()->UnZoom();
+  his1062->GetXaxis()->UnZoom();
+  his1062->GetYaxis()->UnZoom();
+  his1062->GetZaxis()->UnZoom();
+#else
   his1000->GetXaxis()->UnZoom();
 
   his1000->GetYaxis()->UnZoom();
   his1000->GetZaxis()->UnZoom();
+#endif
   his2000->GetXaxis()->UnZoom();
   his2000->GetYaxis()->UnZoom();
 
@@ -540,7 +747,6 @@ void Plot1DHistos(void){
 
 void Plot2DHistos(void){
   gStyle->SetOptStat(0);
-  A3->cd();
 
   //  if (bw_flag) LoadPaletteBW(1.0);
 
@@ -553,8 +759,24 @@ void Plot2DHistos(void){
   }
 
   his1000->SetMinimum(-200);
-  his1000->Draw();
 
+#ifdef JFSTRX
+  p5->cd();
+  his1000->Draw("colz");
+  p3->cd();
+  his1001->Draw("colz");
+  p1->cd();
+  his1002->Draw("colz");
+  p2->cd();
+  his1060->Draw("colz");
+  p4->cd();
+  his1061->Draw("colz");
+  p6->cd();
+  his1062->Draw("colz");
+#else
+  A3->cd();
+  his1000->Draw("colz");
+#endif
   A3->Update();
   A2->cd();
   // if (bw_flag)  LoadPaletteFalse();
@@ -565,9 +787,16 @@ void Plot2DHistos(void){
   A2->Update(); 
   A5->cd();
 
-  his3000->GetXaxis()->SetRange(his1000->GetXaxis()->GetFirst(),his1000->GetXaxis()->GetLast());
-  his3000->GetYaxis()->SetRange(his1000->GetYaxis()->GetFirst(),his1000->GetYaxis()->GetLast());
+  //his3000->GetXaxis()->SetRange(his1000->GetXaxis()->GetFirst(),his1000->GetXaxis()->GetLast());
+  //his3000->GetYaxis()->SetRange(his1000->GetYaxis()->GetFirst(),his1000->GetYaxis()->GetLast());
   his3000->Draw("colz");
+
+  box = new TBox(ROIxmin,ROIymin,ROIxmax,ROIymax);
+  box->SetLineColor(kRed);
+  
+  box->SetFillStyle(0);
+  box->SetLineWidth(2);
+  box->Draw();
   A5->Update();
  
   A6->cd();

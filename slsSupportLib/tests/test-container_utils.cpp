@@ -136,6 +136,23 @@ TEST_CASE("compare a vector of arrays", "[support]") {
     CHECK(minusOneIfDifferent(vec1) == arr);
 }
 
+TEST_CASE("check if vector has duplicates") {
+    std::vector<int> vec{1, 0, 2, 5, 3, 1, 8, 6};
+    REQUIRE(hasDuplicates(vec) == true);
+}
+
+TEST_CASE("check for duplicates in vector of pairs") {
+    std::vector<std::pair<std::string, int>> vec;
+    vec.emplace_back("localhost", 1954);
+    REQUIRE(hasDuplicates(vec) == false);
+
+    vec.emplace_back("localhost", 1800);
+    REQUIRE(hasDuplicates(vec) == false);
+
+    vec.emplace_back("localhost", 1954);
+    REQUIRE(hasDuplicates(vec) == true);
+}
+
 TEST_CASE("remove duplicates from vector") {
     std::vector<int> v{5, 6, 5, 3};
     auto r = removeDuplicates(v);

@@ -56,6 +56,7 @@ using namespace sls;
 #include "TMath.h"
 #include "TFile.h"
 #include "TStyle.h"
+#include "TBox.h"
 #include "TSystem.h"
 #include "TTimer.h"
 #include "TProfile.h"
@@ -81,7 +82,7 @@ using namespace sls;
 #define OFFSET 0
 #define NBIN 500  
 #define MIN_POS  -500.5   // 400.5   
-#define MAX_POS 3499.5   //-100.5
+#define MAX_POS 8499.5   //-100.5
 
 
 #define NCH 524288
@@ -92,7 +93,7 @@ int portnum;
 FILE * sfilefd;
 
 short* hchptr; // photon counted map "histogram"
-int value;
+int value,oldvalue;
 float factor=1.84;
 int npacket=0;
 int totalnpacket=0;
@@ -105,6 +106,7 @@ struct hostent      *server;
  
 int i=0;
 int ipx=0;
+int ipy=0;
 bool haveconnection;
 
 
@@ -112,6 +114,12 @@ TStyle *gStyle;
 TApplication* rootapp;
 TCanvas *A2;
 TCanvas *A3;
+TPad *p1;
+TPad *p2;
+TPad *p3;
+TPad *p4;
+TPad *p5;
+TPad *p6;
 TCanvas *A4;
 TCanvas *A5;
 TCanvas *A6;
@@ -139,6 +147,18 @@ bool fill1Ds;
 bool pede_flag;
 bool dophotonmap;
 
+      typedef struct {
+        uint16_t xmin;
+     	uint16_t xmax;
+     	uint16_t ymin;
+     	uint16_t ymax;
+      } receriverRoi_compact;   
+     receriverRoi_compact croi;
+TBox *box;
+uint16_t ROIxmin;
+uint16_t ROIxmax;
+uint16_t ROIymin;
+uint16_t ROIymax;     
 int nx, ny;
 int nframes;
 int goout;
@@ -154,7 +174,8 @@ int frameIndex_old;
 char pedefilename[128];
 int  framenum,bunchid;
 
-TH2F* his1000;
+TH2F* his1000;TH2F* his1001;TH2F* his1002;
+TH2F* his1060;TH2F* his1061;TH2F* his1062;
 TH2F* his2000;
 TH2F* his3000;
 TH2F* his4500;

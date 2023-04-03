@@ -116,14 +116,8 @@ TEST_CASE("detectorserverversion", "[.cmd]") {
 TEST_CASE("hardwareversion", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::EIGER) {
-        REQUIRE_NOTHROW(proxy.Call("hardwareversion", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("hardwareversion", {"0"}, -1, PUT));
-    } else {
-        REQUIRE_THROWS(proxy.Call("hardwareversion", {"0"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("hardwareversion", {}, -1, GET));
-    }
+    REQUIRE_NOTHROW(proxy.Call("hardwareversion", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("hardwareversion", {"0"}, -1, PUT));
 }
 
 TEST_CASE("kernelversion", "[.cmd]") {
@@ -519,7 +513,7 @@ TEST_CASE("gappixels", "[.cmd]") {
 
     // test eiger(quad or full module only)
     bool gapPixelTest = false;
-    if (det_type == defs:: || det_type == defs::MOENCH)
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH)
         gapPixelTest = true;
     else if (det_type == defs::EIGER) {
         bool quad = det.getQuad().squash(false);

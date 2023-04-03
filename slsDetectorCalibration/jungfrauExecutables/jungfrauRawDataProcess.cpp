@@ -10,8 +10,7 @@
 
 #define RAWDATA
 
-#ifndef JFSTRX
-#ifndef JFSTRXOLD
+#if !defined JFSTRX && !defined JFSTRXOLD && !defined JFSTRXCHIP1 && !defined JFSTRXCHIP6
 #ifndef MODULE
 #include "jungfrauHighZSingleChipData.h"
 #endif
@@ -19,9 +18,12 @@
 #include "jungfrauModuleData.h"
 #endif
 #endif
-#endif
+
 #ifdef JFSTRX
-#include "jungfrauLGADStrixelsData.h"
+#include "jungfrauLGADStrixelsData_new.h"
+#endif
+#if defined JFSTRXCHIP1 || defined JFSTRXCHIP6
+#include "jungfrauLGADStrixelsDataSingleChip.h"
 #endif
 #ifdef JFSTRXOLD
 #include "jungfrauStrixelsHalfModuleOldDesign.h"
@@ -56,52 +58,11 @@ int main(int argc, char *argv[]) {
 
     int fifosize = 1000;
     int nthreads = 10;
-    int csize = 3;
+    int csize = 3; //3
     int nsigma = 5;
     int nped = 10000;
 
     int cf = 0;
-
-
-#ifndef JFSTRX
-#ifndef JFSTRXOLD
-#ifndef MODULE
-    jungfrauHighZSingleChipData *decoder = new jungfrauHighZSingleChipData();
-    int nx = 256, ny = 256;
-#endif
-#ifdef MODULE
-    jungfrauModuleData *decoder = new jungfrauModuleData();
-    int nx = 1024, ny = 512;
-
-#endif
-#endif
-#endif
-#ifdef JFSTRX
-    cout << "bbb" << endl;
-    jungfrauLGADStrixelsData *decoder = new jungfrauLGADStrixelsData();
-    int nx = 1024/5, ny = 512*5;
-#endif
-#ifdef JFSTRXOLD
-    cout << "ccc" << endl;
-    jungfrauStrixelsHalfModuleOldDesign *decoder = new jungfrauStrixelsHalfModuleOldDesign();
-    int nx = 1024*3, ny = 512/3;
-#endif
-
-
-    decoder->getDetectorSize(nx, ny);
-
-
-
-
-
-    cout << "Detector size is " << nx << " " << ny << endl;
-
-
-
-
-
-
-
 
     double *gainmap = NULL;
     //float *gm;
@@ -144,6 +105,83 @@ int main(int argc, char *argv[]) {
         nframes = atoi(argv[9]);
     }
 
+    char ffname[10000];
+    char fname[10000];
+    char imgfname[10000];
+    char cfname[10000];
+
+
+    //Define decoders...
+#if !defined JFSTRX && !defined JFSTRXOLD && !defined JFSTRXCHIP1 && !defined JFSTRXCHIP6
+#ifndef MODULE
+    jungfrauHighZSingleChipData *decoder = new jungfrauHighZSingleChipData();
+    int nx = 256, ny = 256;
+#endif
+#ifdef MODULE
+    jungfrauModuleData *decoder = new jungfrauModuleData();
+    int nx = 1024, ny = 512;
+#endif
+#endif
+
+#ifdef JFSTRX
+    cout << "Jungfrau strixel full module readout" << endl;
+    //ROI
+    uint16_t xxmin=0;
+    uint16_t xxmax=0;
+    uint16_t yymin=0;
+    uint16_t yymax=0;
+
+#ifndef ALDO
+    using header = sls::defs::sls_receiver_header;
+    //check if there is a roi in the header
+    typedef struct {
+      uint16_t xmin;
+      uint16_t xmax;
+      uint16_t ymin;
+      uint16_t ymax;
+    } receiverRoi_compact;
+    receiverRoi_compact croi;
+    sprintf(ffname, "%s/%s.%s", indir, fformat, fext);
+    sprintf(fname, (const char*)ffname, runmin);
+    std::cout << "Reading header of file " << fname << " to check for ROI " << std::endl; 
+    filebin.open((const char *)(fname), ios::in | ios::binary);
+    if (filebin.is_open()) {
+      header hbuffer;
+      std::cout << "sizeof(header) = " << sizeof(header) << std::endl;
+      if ( filebin.read( (char *)&hbuffer, sizeof(header) ) ) {
+	memcpy(&croi, &hbuffer.detHeader.detSpec1, 8);
+	std::cout << "Read ROI [" << croi.xmin << ", " << croi.xmax << ", " << croi.ymin << ", " << croi.ymax << "]" << std::endl;
+      } else
+	std::cout << "reading error" << std::endl;
+      filebin.close();
+    } else
+      std::cout << "Could not open " << fname << " for reading " << std::endl;
+#endif
+
+    jungfrauLGADStrixelsData *decoder = new jungfrauLGADStrixelsData( croi.xmin, croi.xmax, croi.ymin, croi.ymax );
+    int nx = 1024/3, ny = 512*5;
+#endif
+#ifdef JFSTRXCHIP1
+    std::cout << "Jungfrau strixel LGAD single chip 1" << std::endl;
+    jungfrauLGADStrixelsDataSingleChip *decoder = new jungfrauLGADStrixelsDataSingleChip(1);
+    int nx = 256/3, ny = 256*5;
+#endif
+#ifdef JFSTRXCHIP6
+    std::cout << "Jungfrau strixel LGAD single chip 6" << std::endl;
+    jungfrauLGADStrixelsDataSingleChip *decoder = new jungfrauLGADStrixelsDataSingleChip(6);
+    int nx = 256/3, ny = 256*5;
+#endif
+#ifdef JFSTRXOLD
+    std::cout << "Jungfrau strixels old design" << std::endl;
+    jungfrauStrixelsHalfModuleOldDesign *decoder = new jungfrauStrixelsHalfModuleOldDesign();
+    int nx = 1024*3, ny = 512/3;
+#endif
+
+
+    decoder->getDetectorSize(nx, ny);
+    std::cout << "Detector size is " << nx << " " << ny << std::endl;
+
+
     int xmin = 0, xmax = nx, ymin = 0, ymax = ny;
     if (argc >= 14) {
         xmin = atoi(argv[10]);
@@ -151,43 +189,42 @@ int main(int argc, char *argv[]) {
         ymin = atoi(argv[12]);
         ymax = atoi(argv[13]);
     }
+    std::cout << xmin << " " << xmax << " " << ymin << " " << ymax << " " << std::endl;
 
     char *gainfname = NULL;
     if (argc > 14) {
         gainfname = argv[14];
-        cout << "Gain map file name is: " << gainfname << endl;
+	std::cout << "Gain map file name is: " << gainfname << std::endl;
     }
-
-    char ffname[10000];
-    char fname[10000];
-    char imgfname[10000];
-    char cfname[10000];
 
     std::time_t end_time;
 
     FILE *of = NULL;
-    cout << "input directory is " << indir << endl;
-    cout << "output directory is " << outdir << endl;
-    cout << "input file is " << fformat << endl;
-    cout << "runmin is " << runmin << endl;
-    cout << "runmax is " << runmax << endl;
+    std::cout << "input directory is " << indir << std::endl;
+    std::cout << "output directory is " << outdir << std::endl;
+    std::cout << "input file is " << fformat << std::endl;
+    std::cout << "runmin is " << runmin << std::endl;
+    std::cout << "runmax is " << runmax << std::endl;
     if (pedfile)
-        cout << "pedestal file is " << pedfile << endl;
+      std::cout << "pedestal file is " << pedfile << std::endl;
     if (thr > 0)
-        cout << "threshold is " << thr << endl;
-    cout << "Nframes is " << nframes << endl;
+      std::cout << "threshold is " << thr << std::endl;
+    std::cout << "Nframes is " << nframes << std::endl;
 
+    //std::cout << "HHHEEEEEEEEEEEEEEEEEEEEEEERE!!!!!" << std::endl;
     uint32_t nnx, nny;
 
+
+
     singlePhotonDetector *filter = new singlePhotonDetector(
-        decoder, csize, nsigma, 1, NULL, nped, 200, -1, -1, gainmap, NULL);
+        decoder, 3, nsigma, 1, NULL, nped, 200, -1, -1, gainmap, NULL);
 
     if (gainfname) {
 
         if (filter->readGainMap(gainfname))
-            cout << "using gain map " << gainfname << endl;
+	  std::cout << "using gain map " << gainfname << std::endl;
         else
-            cout << "Could not open gain map " << gainfname << endl;
+	  std::cout << "Could not open gain map " << gainfname << std::endl;
     } else
         thr = 0.15 * thr;
     filter->newDataSet();
@@ -203,7 +240,7 @@ int main(int argc, char *argv[]) {
 
     filter->setROI(xmin, xmax, ymin, ymax);
     std::time(&end_time);
-    cout << std::ctime(&end_time) << endl;
+    std::cout << std::ctime(&end_time) << std::endl;
 
     char *buff;
 
@@ -211,9 +248,11 @@ int main(int argc, char *argv[]) {
     // multiThreadedAnalogDetector(filter,nthreads,fifosize);
     multiThreadedCountingDetector *mt =
         new multiThreadedCountingDetector(filter, nthreads, fifosize);
+    mt->setClusterSize(csize,csize);
+
 #ifndef ANALOG
     mt->setDetectorMode(ePhotonCounting);
-    cout << "Counting!" << endl;
+    std::cout << "Counting!" << std::endl;
     if (thr > 0) {
         cf = 0;
     }
@@ -221,7 +260,7 @@ int main(int argc, char *argv[]) {
 //{
 #ifdef ANALOG
     mt->setDetectorMode(eAnalog);
-    cout << "Analog!" << endl;
+    std::cout << "Analog!" << std::endl;
     cf = 0;
     // thr1=thr;
 #endif
@@ -253,27 +292,29 @@ int main(int argc, char *argv[]) {
 
         if (string(pedfile).find(".tif") == std::string::npos) {
             sprintf(fname, "%s", pedfile);
-            cout << fname << endl;
+	    std::cout << fname << std::endl;
             std::time(&end_time);
-            //cout << "aaa" << std::ctime(&end_time) << endl;
+	    std::cout << "aaa" << std::ctime(&end_time) << std::endl;
 
             mt->setFrameMode(ePedestal);
             // sprintf(fn,fformat,irun);
             filebin.open((const char *)(fname), ios::in | ios::binary);
             //      //open file
             if (filebin.is_open()) {
+	      std::cout << "bbbb" << std::ctime(&end_time) << std::endl;
+	      
                 ff = -1;
                 while (decoder->readNextFrame(filebin, ff, np, buff)) {
 		  // if (np == 40) {
 		  if ((ifr+1) % 100 == 0) {
-		    cout << " ****" << decoder->getValue(buff,20,20);// << endl;
+		    std::cout << " ****" << decoder->getValue(buff,20,20);// << endl;
 		  }
                         mt->pushData(buff);
                         mt->nextThread();
                         mt->popFree(buff);
                         ifr++;
                         if (ifr % 100 == 0) {
-			  cout << " ****" << ifr << " " << ff << " " << np << endl;
+			  std::cout << " ****" << ifr << " " << ff << " " << np << std::endl;
 			} //else
                         //cout << ifr << " " << ff << " " << np << endl;
 			if (ifr>=1000)
@@ -291,8 +332,8 @@ int main(int argc, char *argv[]) {
 		mt->writePedestalRMS(imgfname);
 
             } else
-                cout << "Could not open pedestal file " << fname
-                     << " for reading " << endl;
+	      std::cout << "Could not open pedestal file " << fname
+			<< " for reading " << std::endl;
         } else {
             float *pp = ReadFromTiff(pedfile, nny, nnx);
             if (pp && (int)nnx == nx && (int)nny == ny) {
@@ -301,14 +342,14 @@ int main(int argc, char *argv[]) {
                 }
                 delete[] pp;
                 mt->setPedestal(ped);
-                cout << "Pedestal set from tiff file " << pedfile << endl;
+		std::cout << "Pedestal set from tiff file " << pedfile << std::endl;
             } else {
-                cout << "Could not open pedestal tiff file " << pedfile
-                     << " for reading " << endl;
+	      std::cout << "Could not open pedestal tiff file " << pedfile
+			<< " for reading " << std::endl;
             }
         }
         std::time(&end_time);
-        cout << std::ctime(&end_time) << endl;
+	std::cout << std::ctime(&end_time) << std::endl;
     }
 
     ifr = 0;
@@ -317,7 +358,7 @@ int main(int argc, char *argv[]) {
     mt->setFrameMode(eFrame);
 
     for (int irun = runmin; irun <= runmax; irun++) {
-        cout << "DATA ";
+      std::cout << "DATA ";
         // sprintf(fn,fformat,irun);
         sprintf(ffname, "%s/%s.%s", indir, fformat, fext);
         sprintf(fname, (const char*)ffname, irun);
@@ -325,10 +366,10 @@ int main(int argc, char *argv[]) {
         sprintf(imgfname, (const char*)ffname, irun);
         sprintf(ffname, "%s/%s.clust", outdir, fformat);
         sprintf(cfname, (const char*)ffname, irun);
-        cout << fname << " ";
-        cout << imgfname << endl;
+	std::cout << fname << " ";
+	std::cout << imgfname << std::endl;
         std::time(&end_time);
-        cout << std::ctime(&end_time) << endl;
+	std::cout << std::ctime(&end_time) << std::endl;
         //  cout <<  fname << " " << outfname << " " << imgfname <<  endl;
         filebin.open((const char *)(fname), ios::in | ios::binary);
         //      //open file
@@ -339,10 +380,10 @@ int main(int argc, char *argv[]) {
                     of = fopen(cfname, "w");
                     if (of) {
                         mt->setFilePointer(of);
-                        cout << "file pointer set " << endl;
+			std::cout << "file pointer set " << std::endl;
                     } else {
-                        cout << "Could not open " << cfname << " for writing "
-                             << endl;
+		      std::cout << "Could not open " << cfname << " for writing "
+				<< std::endl;
                         mt->setFilePointer(NULL);
                         return 1;
                     }
@@ -356,7 +397,7 @@ int main(int argc, char *argv[]) {
                     //         //push
 	      
 		  if ((ifr+1) % 100 == 0) {
-		    cout << " ****" << decoder->getValue(buff,20,20);// << endl;
+		    std::cout << " ****" << decoder->getValue(buff,20,20);// << endl;
 		  }
                     mt->pushData(buff);
                     // 	//         //pop
@@ -365,7 +406,7 @@ int main(int argc, char *argv[]) {
 
                     ifr++;
                     if (ifr % 100 == 0)
-		      cout << " " << ifr << " " << ff << endl;
+		      std::cout << " " << ifr << " " << ff << std::endl;
                     if (nframes > 0) {
                         if (ifr % nframes == 0) {
                             sprintf(ffname, "%s/%s_f%05d.tiff", outdir, fformat,
@@ -380,7 +421,7 @@ int main(int argc, char *argv[]) {
                 //     cout << ifr << " " << ff << " " << np << endl;
                 ff = -1;
             }
-            cout << "--" << endl;
+	    std::cout << "--" << std::endl;
             filebin.close();
             while (mt->isBusy()) {
                 ;
@@ -393,7 +434,7 @@ int main(int argc, char *argv[]) {
                     sprintf(ffname, "%s/%s.tiff", outdir, fformat);
                     sprintf(imgfname, (const char*)ffname, irun);
                 }
-                cout << "Writing tiff to " << imgfname << " " << thr1 << endl;
+		std::cout << "Writing tiff to " << imgfname << " " << thr1 << std::endl;
                 mt->writeImage(imgfname, thr1);
                 mt->clearImage();
                 if (of) {
@@ -403,14 +444,14 @@ int main(int argc, char *argv[]) {
                 }
             }
             std::time(&end_time);
-            cout << std::ctime(&end_time) << endl;
+	    std::cout << std::ctime(&end_time) << std::endl;
         } else
-            cout << "Could not open " << fname << " for reading " << endl;
+	  std::cout << "Could not open " << fname << " for reading " << std::endl;
     }
     if (nframes < 0) {
         sprintf(ffname, "%s/%s.tiff", outdir, fformat);
         strcpy(imgfname, ffname);
-        cout << "Writing tiff to " << imgfname << " " << thr1 << endl;
+	std::cout << "Writing tiff to " << imgfname << " " << thr1 << std::endl;
         mt->writeImage(imgfname, thr1);
     }
 

@@ -93,6 +93,7 @@ class Module : public virtual slsDetectorDefs {
     int64_t getFrontEndFirmwareVersion(const fpgaPosition fpgaPosition) const;
     std::string getControlServerLongVersion() const;
     std::string getStopServerLongVersion() const;
+    void throwDeprecatedServerVersion() const;
     std::string getDetectorServerVersion() const;
     std::string getHardwareVersion() const;
     std::string getKernelVersion() const;
@@ -280,7 +281,7 @@ class Module : public virtual slsDetectorDefs {
      * ************************************************/
     bool getUseReceiverFlag() const;
     std::string getReceiverHostname() const;
-    void setReceiverHostname(const std::string &receiver,
+    void setReceiverHostname(const std::string &hostname, const int port,
                              const bool initialChecks);
     int getReceiverPort() const;
     int setReceiverPort(int port_number);

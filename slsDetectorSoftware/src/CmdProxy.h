@@ -1244,7 +1244,8 @@ class CmdProxy {
 
     GET_COMMAND(hardwareversion, getHardwareVersion,
                 "\n\t[Jungfrau][Gotthard2][Myhten3][Gotthard][Ctb][Moench] "
-                "Hardware version of detector.");
+                "Hardware version of detector. \n\t[Eiger] Hardware version of "
+                "front FPGA on detector.");
 
     GET_COMMAND(
         kernelversion, getKernelVersion,

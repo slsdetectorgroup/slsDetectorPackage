@@ -73,8 +73,8 @@ void Module::setHostname(const std::string &hostname,
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.close();
     try {
-        initialDetectorServerChecks();
         checkDetectorVersionCompatibility();
+        initialDetectorServerChecks();
         LOG(logINFO) << "Module Version Compatibility - Success";
     } catch (const RuntimeError &e) {
         if (!initialChecks) {
@@ -99,9 +99,28 @@ Module::getFrontEndFirmwareVersion(const fpgaPosition fpgaPosition) const {
 }
 
 std::string Module::getControlServerLongVersion() const {
-    char retval[MAX_STR_LENGTH]{};
-    sendToDetector(F_GET_SERVER_VERSION, nullptr, retval);
-    return retval;
+    try {
+        char retval[MAX_STR_LENGTH]{};
+        sendToDetector(F_GET_SERVER_VERSION, nullptr, retval);
+        return retval;
+    }
+    // throw with old server version (sends 8 bytes)
+    catch (RuntimeError &e) {
+        std::string emsg = std::string(e.what());
+        if (emsg.find(F_GET_SERVER_VERSION) && emsg.find("8 bytes")) {
+            throwDeprecatedServerVersion();
+        }
+        throw;
+    }
+}
+
+void Module::throwDeprecatedServerVersion() const {
+    uint64_t res = sendToDetectorStop<int64_t>(F_GET_SERVER_VERSION);
+    std::cout << std::endl;
+    std::ostringstream os;
+    os << "Detector Server (Control) version (0x" << std::hex << res
+       << ") is incompatible with this client. Please update detector server!";
+    throw RuntimeError(os.str());
 }
 
 std::string Module::getStopServerLongVersion() const {
@@ -1310,30 +1329,33 @@ std::string Module::getReceiverHostname() const {
     return std::string(shm()->rxHostname);
 }
 
-void Module::setReceiverHostname(const std::string &receiverIP,
+void Module::setReceiverHostname(const std::string &hostname, const int port,
                                  const bool initialChecks) {
-    LOG(logDEBUG1) << "Setting up Receiver hostname with " << receiverIP;
+    {
+        std::ostringstream oss;
+        oss << "Setting up Receiver hostname with " << hostname;
+        if (port != 0) {
+            oss << " at port " << port;
+        }
+        LOG(logDEBUG1) << oss.str();
+    }
 
     if (getRunStatus() == RUNNING) {
         throw RuntimeError("Cannot set receiver hostname. Acquisition already "
                            "running. Stop it first.");
     }
 
-    if (receiverIP == "none") {
+    if (hostname == "none") {
         memset(shm()->rxHostname, 0, MAX_STR_LENGTH);
         strcpy_safe(shm()->rxHostname, "none");
         shm()->useReceiverFlag = false;
         return;
     }
 
-    // start updating
-    std::string host = receiverIP;
-    auto res = split(host, ':');
-    if (res.size() > 1) {
-        host = res[0];
-        shm()->rxTCPPort = std::stoi(res[1]);
+    strcpy_safe(shm()->rxHostname, hostname.c_str());
+    if (port != 0) {
+        shm()->rxTCPPort = port;
     }
-    strcpy_safe(shm()->rxHostname, host.c_str());
     shm()->useReceiverFlag = true;
 
     try {

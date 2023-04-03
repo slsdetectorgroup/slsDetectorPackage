@@ -1509,9 +1509,9 @@ int getSlowADC(int ichan) {
     bus_w(ADC_SLOW_CTRL_REG, bus_r(ADC_SLOW_CTRL_REG) & ~ADC_SLOW_CTRL_STRT_MSK);
 
     // wait for it to be done
-    volatile int done = (bus_r(ADC_SLOW_CTRL_REG & ADC_SLOW_CTRL_DONE_MSK) >> ADC_SLOW_CTRL_DONE_OFST);
+    volatile int done = ((bus_r(ADC_SLOW_CTRL_REG) & ADC_SLOW_CTRL_DONE_MSK) >> ADC_SLOW_CTRL_DONE_OFST);
     while (!done) {
-        done = (bus_r(ADC_SLOW_CTRL_REG & ADC_SLOW_CTRL_DONE_MSK) >> ADC_SLOW_CTRL_DONE_OFST);
+        done = ((bus_r(ADC_SLOW_CTRL_REG) & ADC_SLOW_CTRL_DONE_MSK) >> ADC_SLOW_CTRL_DONE_OFST);
     }
 
     // readout

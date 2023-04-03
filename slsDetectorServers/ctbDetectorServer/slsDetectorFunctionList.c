@@ -1517,17 +1517,11 @@ int getSlowADC(int ichan) {
     // readout
     int regval = bus_r(ADC_SLOW_DATA_REG);
 
-
     // value in uV
     int refMaxuv = 2500 * 1000;
     int regMinuv = 0;
     int maxSteps = 0xFFFF + 1;
     int retval = 0;
-    /*int retval = ((double)(regval - 0) *
-                  (double)(refMaxuv - regMinuv)) /
-                     (double)(maxSteps - 0) +
-                 regMinuv;*/
-
     if (ConvertToDifferentRange(0, maxSteps, regMinuv, refMaxuv, regval, &retval) == FAIL) {
             LOG(logERROR, ("Could not convert slow adc channel (regval:0x%x) to uv\n", regval));
             return -1;
@@ -1563,11 +1557,12 @@ int getSlowADCTemperature() {
 
     // start converting
     bus_w(ADC_SLOW_CTRL_REG, bus_r(ADC_SLOW_CTRL_REG) | ADC_SLOW_CTRL_STRT_MSK);
+    bus_w(ADC_SLOW_CTRL_REG, bus_r(ADC_SLOW_CTRL_REG) & ~ADC_SLOW_CTRL_STRT_MSK);
 
     // wait for it to be done
-    volatile int done = (bus_r(ADC_SLOW_CTRL_REG & ADC_SLOW_CTRL_DONE_MSK) >> ADC_SLOW_CTRL_DONE_OFST);
+    volatile int done = ((bus_r(ADC_SLOW_CTRL_REG) & ADC_SLOW_CTRL_DONE_MSK) >> ADC_SLOW_CTRL_DONE_OFST);
     while (!done) {
-        done = (bus_r(ADC_SLOW_CTRL_REG & ADC_SLOW_CTRL_DONE_MSK) >> ADC_SLOW_CTRL_DONE_OFST);
+        done = ((bus_r(ADC_SLOW_CTRL_REG) & ADC_SLOW_CTRL_DONE_MSK) >> ADC_SLOW_CTRL_DONE_OFST);
     }
 
     // readout

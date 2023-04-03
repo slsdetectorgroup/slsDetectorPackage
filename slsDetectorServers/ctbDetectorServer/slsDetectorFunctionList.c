@@ -1522,6 +1522,7 @@ int getSlowADC(int ichan) {
     int refMaxuv = 2500 * 1000;
     int regMinuv = 0;
     int maxSteps = 0xFFFF + 1;
+    int retval = 0;
     /*int retval = ((double)(regval - 0) *
                   (double)(refMaxuv - regMinuv)) /
                      (double)(maxSteps - 0) +

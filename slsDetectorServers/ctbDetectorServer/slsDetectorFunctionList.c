@@ -1574,8 +1574,11 @@ int getSlowADCTemperature() {
     int maxSteps = 0xFFFF + 1;
     int minmv = 0;
     int maxmv = 2500;
-    ConvertToDifferentRange(0, maxSteps, minmv,
-                            maxmv, regval, &retval);
+    if (ConvertToDifferentRange(0, maxSteps, minmv,
+                            maxmv, regval, &retval) == FAIL) {
+        LOG(logERROR, ("Could not convert slow adc temp (regval:0x%x) to uv\n", regval));
+        return -1;
+    }
     LOG(logDEBUG1, ("voltage read for temp: %d mV\n", retval));
 
     // value in °C

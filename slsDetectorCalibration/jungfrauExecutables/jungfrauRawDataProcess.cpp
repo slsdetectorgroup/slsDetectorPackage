@@ -151,6 +151,10 @@ int main(int argc, char *argv[]) {
       if ( filebin.read( (char *)&hbuffer, sizeof(header) ) ) {
 	memcpy(&croi, &hbuffer.detHeader.detSpec1, 8);
 	std::cout << "Read ROI [" << croi.xmin << ", " << croi.xmax << ", " << croi.ymin << ", " << croi.ymax << "]" << std::endl;
+	xxmin = croi.xmin;
+	xxmax = croi.xmax;
+	yymin = croi.ymin;
+	yymax = croi.ymax;
       } else
 	std::cout << "reading error" << std::endl;
       filebin.close();
@@ -158,7 +162,7 @@ int main(int argc, char *argv[]) {
       std::cout << "Could not open " << fname << " for reading " << std::endl;
 #endif
 
-    jungfrauLGADStrixelsData *decoder = new jungfrauLGADStrixelsData( croi.xmin, croi.xmax, croi.ymin, croi.ymax );
+    jungfrauLGADStrixelsData *decoder = new jungfrauLGADStrixelsData( xxmin, xxmax, yymin, yymax );
     int nx = 1024/3, ny = 512*5;
 #endif
 #ifdef JFSTRXCHIP1

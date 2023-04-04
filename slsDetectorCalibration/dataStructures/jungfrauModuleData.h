@@ -110,9 +110,13 @@ class jungfrauModuleData : public slsDetectorData<uint16_t> {
     /* 	unsigned char frameNumber[3]; */
     /* 	unsigned char bunchid[8]; */
     /* }; */
-
+    
     int getFrameNumber(char *buff) {
-        return ((header *)buff)->bunchNumber;
+    #ifdef ALDO
+    return ((header *)buff)->bunchNumber; 
+    #else 
+    return ((header *)buff)->detHeader.frameNumber;
+    #endif 
     };
   
     /**

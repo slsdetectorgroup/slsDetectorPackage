@@ -99,19 +99,8 @@ int main(int argc, char *argv[]) {
 
 
     decoder->getDetectorSize(nx, ny);
-
-
-
-
-
+    
     cout << "Detector size is " << nx << " " << ny << endl;
-
-
-
-
-
-
-
 
     double *gainmap = NULL;
     //float *gm;
@@ -253,10 +242,10 @@ int main(int argc, char *argv[]) {
 
     if (pedfile) {
 
-      if (string(pedfile).find(".dat") != std::string::npos) {
+      if (string(pedfile).find(".raw") != std::string::npos) {
 	pos1=string(pedfile).rfind("/");
 	strcpy(froot,pedfile+pos1);
-	pos=string(froot).find(".dat");
+	pos=string(froot).find(".raw");
 	froot[pos]='\0';
       }
 

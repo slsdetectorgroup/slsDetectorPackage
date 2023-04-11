@@ -128,15 +128,21 @@ def startNormalTests(d, fp):
         Log(Fore.RED, 'Normal tests failed') 
         raise
 
+def parseCommandLine():
+    # command line argument for rx_hostname and settingsdir
+    if len(sys.argv) != 3:
+        raise RuntimeException('No argument for rx_hostname or settingsdir. Expected [script_name] [rx_hostname] [settingsdir(rel or abs)]')
+    if sys.argv[1] == 'localhost':
+        raise RuntimeException('Cannot use localhost for rx_hostname for the tests (fails for rx_arping for eg.)')
+    #rx_hostname = sys.argv[1]
+    #settingsdir = sys.argv[2]
+    return [sys.argv[1], sys.argv[2]]
 
 
-# command line argument for rx_hostname and settingsdir
-if len(sys.argv) != 3:
-    raise RuntimeException('No argument for rx_hostname or settingsdir. Expected [script_name] [rx_hostname] [settingsdir(rel or abs)]')
-if sys.argv[1] == 'localhost':
-    raise RuntimeException('Cannot use localhost for rx_hostname for the tests (fails for rx_arping for eg.)')
-rx_hostname = sys.argv[1]
-settingsdir = sys.argv[2]
+# parse cmd line for rx_hostname and settingsdir
+(rx_hostname, settingsdir) = parseCommandLine()
+Log(Fore.WHITE, 'rx_hostname: ' + rx_hostname + '\nsettingsdir: \'' + settingsdir + '\'')
+
 
 # handle zombies (else killing slsReceivers will fail)
 # dont care about child process success

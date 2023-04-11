@@ -16,6 +16,9 @@ colorama.init(autoreset=True)
 class RuntimeException (Exception):
     def __init__ (self, message):
         super().__init__(Fore.RED + message)
+    
+def Log(color, message):
+    print('\n' + color + message, flush=True)
 
 def checkIfProcessRunning(processName):
     '''
@@ -34,25 +37,28 @@ def checkIfProcessRunning(processName):
 
 def killProcess(name):
     if checkIfProcessRunning(name):
+        Log(Fore.GREEN, 'killing ' + name)
         p = subprocess.run(['killall', name])
         if p.returncode != 0:
             raise RuntimeException('error in killall ' + name)
 
-def cleanup(name):
+def cleanup(name, d):
     '''
     kill both servers and receivers
     '''
+    Log(Fore.GREEN, 'Cleaning up...')
     killProcess(name + 'DetectorServer_virtual')
     killProcess('slsReceiver')
     killProcess('slsMultiReceiver')
+    d.freeSharedMemory()
 
 def startProcessInBackground(name):
     try:
         # in background and dont print output
         p = subprocess.Popen(name.split(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) 
-        print(Fore.GREEN + 'Starting up ' + name + ' ...')
+        Log(Fore.GREEN, 'Starting up ' + name + ' ...')
     except:
-        print(Fore.RED + 'Could not start ' + name)
+        Log(Fore.RED, 'Could not start ' + name)
         raise
 
 def startServer(name):
@@ -61,7 +67,7 @@ def startServer(name):
     if name == 'eiger':
         startProcessInBackground(name + 'DetectorServer_virtual -p' + str(HALFMOD2_TCP_CNTRL_PORTNO))
     tStartup = 6
-    print('Takes {} seconds... Please be patient'.format(tStartup))
+    Log(Fore.WHITE, 'Takes ' + str(tStartup) + ' seconds... Please be patient')
     time.sleep(tStartup)
 
 def startReceiver(name):
@@ -96,22 +102,35 @@ def loadConfig(name, rx_hostname, settingsdir):
         if d.type == detectorType.JUNGFRAU or d.type == detectorType.MOENCH:
             d.powerchip = 1
     except:
-        print(Fore.RED + 'Could not load config for ' + name)
+        Log(Fore.RED, 'Could not load config for ' + name)
         raise
 
-def startCmdTests(name):
+def startCmdTests(name, fp):
     try:
-        p = subprocess.run(["tests", "--abort", "[.cmd]"])
+        p = subprocess.run(['tests', '--abort', '[.cmd]'], stdout=fp, stderr=fp)
         if p.returncode != 0:
             raise Exception 
     except:
-        print(Fore.RED + "tests failed for " + name) 
+        Log(Fore.RED, 'Cmd tests failed for ' + name) 
+        raise
+
+def startNormalTests(d, fp):
+    try:
+        #fname = '/tmp/slsDetectorPackage_virtual_test_normal.txt'
+        #print(Fore.BLUE + 'Normal tests -> ' + fname)
+        Log(Fore.BLUE, '\nNormal tests')
+        #with open(fname, 'w') as fp:
+        p = subprocess.run(['tests', '--abort' ], stdout=fp, stderr=fp)
+        if p.returncode != 0:
+            raise Exception 
+        d.freeSharedMemory()
+    except:
+        Log(Fore.RED, 'Normal tests failed') 
         raise
 
 
-#print('Nargs:{}, args:{}'.format(len(sys.argv), str(sys.argv)))
 
-# argument for rx_hostname
+# command line argument for rx_hostname and settingsdir
 if len(sys.argv) != 3:
     raise RuntimeException('No argument for rx_hostname or settingsdir. Expected [script_name] [rx_hostname] [settingsdir(rel or abs)]')
 if sys.argv[1] == 'localhost':
@@ -119,26 +138,58 @@ if sys.argv[1] == 'localhost':
 rx_hostname = sys.argv[1]
 settingsdir = sys.argv[2]
 
+# handle zombies (else killing slsReceivers will fail)
+# dont care about child process success
+signal.signal(signal.SIGCHLD, signal.SIG_IGN)
+
 servers = [
-     "eiger",
-     "jungfrau",
-     "mythen3",
-     "gotthard2",
-     "gotthard",
-     "ctb",
-     "moench",
+     'eiger',
+     'jungfrau',
+     'mythen3',
+     'gotthard2',
+     'gotthard',
+     'ctb',
+     'moench',
 ]
-for server in servers:
-    try:
-        print(Fore.BLUE + 'Starting tests for {}'.format(server))
-        cleanup(server)
-        startServer(server)
-        startReceiver(server)
-        loadConfig(server, rx_hostname, settingsdir)
-        startCmdTests(server)
-        #start normal tests for one? if not detector type dependent
-        cleanup(server)
-    except:
-        cleanup(server)
-        raise
-print(Fore.GREEN + 'Passed all tests for virtual detectors {} Yayyyy! :) '.format(servers))
+
+# redirect to file
+original_stdout = sys.stdout
+original_stderr = sys.stderr
+fname = '/tmp/slsDetectorPackage_virtual_test.txt'
+Log(Fore.BLUE, 'Tests -> ' + fname)
+with open(fname, 'w') as fp:
+    sys.stdout = fp
+    sys.stderr = fp
+
+    d = Detector()
+    # TODO: redirect d object print out also to file
+    startNormalTests(d, fp)
+
+    for server in servers:
+        try:
+            # print to terminal for progress
+            sys.stdout = original_stdout
+            sys.stderr = original_stderr
+            Log(Fore.BLUE, server + ' tests')
+            sys.stdout = fp
+            sys.stderr = fp
+            
+            # cmd tests for det
+            Log(Fore.BLUE, 'Cmd Tests for ' + server)
+            cleanup(server, d)
+            startServer(server)
+            startReceiver(server)
+            loadConfig(server, rx_hostname, settingsdir)
+            startCmdTests(server, fp)
+            cleanup(server, d)
+        except:
+            cleanup(server, d)
+            raise
+
+
+    Log(Fore.GREEN, 'Passed all tests for virtual detectors \n' + str(servers))
+
+# redirect to terminal
+sys.stdout = original_stdout
+sys.stderr = original_stderr
+Log(Fore.GREEN, 'Passed all tests for virtual detectors \n' + str(servers) + '\nYayyyy! :) ')

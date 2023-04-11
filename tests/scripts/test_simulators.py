@@ -10,17 +10,12 @@ from slsdet import Detector, detectorType, detectorSettings
 from slsdet.defines import DEFAULT_TCP_CNTRL_PORTNO, DEFAULT_TCP_RX_PORTNO, DEFAULT_UDP_DST_PORTNO
 HALFMOD2_TCP_CNTRL_PORTNO=1955
 HALFMOD2_TCP_RX_PORTNO=1957
-HALFMOD2_TCP_RX_PORTNO=1957
-import shlex
 
 colorama.init(autoreset=True)
 
 class RuntimeException (Exception):
     def __init__ (self, message):
         super().__init__(Fore.RED + message)
-
-def handler(signum, frame):
-        pid, status = os.waitpid(-1, os.WNOHANG)
 
 def checkIfProcessRunning(processName):
     '''
@@ -54,7 +49,7 @@ def cleanup(name):
 def startProcessInBackground(name):
     try:
         # in background and dont print output
-        p = subprocess.Popen(shlex.split(name), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) 
+        p = subprocess.Popen(name.split(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) 
         print(Fore.GREEN + 'Starting up ' + name + ' ...')
     except:
         print(Fore.RED + 'Could not start ' + name)
@@ -124,8 +119,6 @@ if sys.argv[1] == 'localhost':
 rx_hostname = sys.argv[1]
 settingsdir = sys.argv[2]
 
-# handle zombies
-signal.signal(signal.SIGCHLD, handler)   
 servers = [
      "eiger",
      "jungfrau",

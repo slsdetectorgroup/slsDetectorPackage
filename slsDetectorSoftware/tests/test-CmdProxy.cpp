@@ -1207,10 +1207,10 @@ TEST_CASE("dbitphase", "[.cmd]") {
         }
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("dbitphase", {"20", "deg"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "dbitphase 20 deg\n");
+            proxy.Call("dbitphase", {"23", "deg"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "dbitphase 23 deg\n");
             proxy.Call("dbitphase", {"deg"}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "dbitphase 20 deg\n");
+            REQUIRE(oss2.str() == "dbitphase 23 deg\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setDBITPhase(prev_val[i], {i});

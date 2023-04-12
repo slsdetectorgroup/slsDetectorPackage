@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 
     if (argc < 5) {
         cout << "Usage is " << argv[0]
-             << "indir outdir fname(no extension) fextension [runmin] [runmax] [pedfile (raw or tiff)] [threshold] "
+             << "indir outdir fname(with formatting, no extension) fextension [runmin] [runmax] [pedfile (raw or tiff)] [threshold] "
                 "[nframes] [xmin xmax ymin ymax] [gainmap]"
              << endl;
         cout << "threshold <0 means analog; threshold=0 means cluster finder; "

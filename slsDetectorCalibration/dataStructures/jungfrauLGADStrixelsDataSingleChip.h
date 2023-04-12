@@ -69,7 +69,7 @@ class jungfrauLGADStrixelsDataSingleChip : public slsDetectorData<uint16_t> {
     int mchip;
 
     void remapGroup( const int group ) {
-      int ix, iy;
+      int ix, iy=0;
       int x0, y0, x1, y1, shifty;
       int multiplicator;
 

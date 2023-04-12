@@ -236,7 +236,10 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
         } else if (ymax <= c6g1_yend - bond_shift_y) {
             group = 1;
             mchip = 6;
-        }
+        } else { //to fix compiler warning
+	  group = -1;
+	  mchip = -1;
+	}
         int multiplicator = getMultiplicator(group);
         setMappingShifts(group);
 
@@ -315,14 +318,13 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
         } else {
 
             mchip = 1;
-            remapGroup(1);
-            remapGroup(2);
-            remapGroup(3);
+	    for (int group=1; group!=4; ++group)
+	      remapGroup(group);
 
             mchip = 6;
-            remapGroup(1);
-            remapGroup(2);
-            remapGroup(3);
+	    for (int group=1; group!=4; ++group)
+	      remapGroup(group);
+
         }
 
         iframe = 0;

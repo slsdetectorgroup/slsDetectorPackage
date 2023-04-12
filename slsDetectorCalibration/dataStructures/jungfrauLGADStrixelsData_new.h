@@ -74,7 +74,7 @@ namespace strixelSingleChip {
   constexpr int c6g1_yend   = c6g2_yend + 64 - gr;   //502
 
   //y shift due to faulty bonding (relevant for M408)
-  constexpr int bond_shift_y = 0; //CHANGE IF YOU CHANGE MODULE!
+  constexpr int bond_shift_y = 1; //CHANGE IF YOU CHANGE MODULE!
 
 }
 
@@ -126,21 +126,21 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 	  x0 = 10+chip_x0;  //9 gr + 1 sq pixel
 	  x1 = 246+chip_x0;
 	  y0 = 9+chip_y0;
-	  y1 = 64+chip_y0;
+	  y1 = 63+chip_y0;
 	  shifty = 0;
 	  break;
 	case 2:
 	  x0 = 12+chip_x0;
 	  x1 = 247+chip_x0;
 	  y0 = 64+chip_y0;
-	  y1 = 128+chip_y0;
+	  y1 = 127+chip_y0;
 	  shifty = g1_nrows;
 	  break;
 	case 3:
 	  x0 = 11+chip_x0;
 	  x1 = 247+chip_x0;
 	  y0 = 128+chip_y0;
-	  y1 = 247+chip_y0;
+	  y1 = 246+chip_y0;
  	  shifty = g2_nrows+g1_nrows;
 	  break;
 	}
@@ -240,9 +240,9 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
       for ( int ipy=y0; ipy<=y1; ++ipy) {
 	for ( int ipx=x0; ipx<=x1; ++ipx ) {
 
-	  ix = int ((ipx-x0-xmin)/multiplicator);
+	  ix = int ((ipx-x0/*-xmin*/)/multiplicator);
 	  for ( int m=0; m<multiplicator;m++ ) {
-	    if ( (ipx-x0-xmin)%multiplicator==m ) iy=(ipy-y0-ymin)*multiplicator +m + shifty;
+	    if ( (ipx-x0/*-xmin*/)%multiplicator==m ) iy=(ipy-y0/*-ymin*/)*multiplicator +m + shifty;
 	  }
 	  
 	  //	  if (iy< 40)	  cout << iy << "  " << ix <<endl;

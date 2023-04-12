@@ -6,6 +6,8 @@
 
 set(JUNGFRAU_EXECUTABLES)
 
+find_package(fmt REQUIRED)
+
 # jungfrauRawDataProcess
 add_executable(jungfrauRawDataProcess jungfrauRawDataProcess.cpp)
 target_compile_definitions(jungfrauRawDataProcess PRIVATE MODULE)
@@ -68,6 +70,7 @@ foreach(exe ${JUNGFRAU_EXECUTABLES})
         ../../slsSupportLib/include/
         ../../slsReceiverSoftware/include/
         ../tiffio/include
+        ${fmt_INCLUDE_DIRS}
     )
 
     target_link_libraries(${exe} 
@@ -75,6 +78,7 @@ foreach(exe ${JUNGFRAU_EXECUTABLES})
         slsSupportStatic
         pthread 
         tiffio
+        fmt::fmt
           #-L/usr/lib64/
         #-lm  -lstdc++  -lrt
 

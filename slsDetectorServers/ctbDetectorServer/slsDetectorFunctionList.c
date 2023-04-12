@@ -1487,31 +1487,33 @@ int getSlowADC(int ichan) {
 
     // configure for channel
     bus_w(ADC_SLOW_CFG_REG,
-        // don't read back config reg
-        ADC_SLOW_CFG_RB_MSK |
-        // disable sequencer (different from config)
-        ADC_SLOW_CFG_SEQ_DSBLE_VAL |
-        // Internal reference. REF = 2.5V buffered output. Temperature sensor
-        // enabled.
-        ADC_SLOW_CFG_REF_INT_2500MV_VAL |
-        // full bandwidth of low pass filter
-        ADC_SLOW_CFG_BW_FULL_VAL |
-        // specific channel (different from config)
-        ((ichan << ADC_SLOW_CFG_IN_OFST) & ADC_SLOW_CFG_IN_MSK) |
-        // input channel configuration (unipolar. inx to gnd)
-        ADC_SLOW_CFG_INCC_UNPLR_IN_GND_VAL |
-        // overwrite configuration
-        ADC_SLOW_CFG_CFG_OVRWRTE_VAL);
-
+          // don't read back config reg
+          ADC_SLOW_CFG_RB_MSK |
+              // disable sequencer (different from config)
+              ADC_SLOW_CFG_SEQ_DSBLE_VAL |
+              // Internal reference. REF = 2.5V buffered output. Temperature
+              // sensor enabled.
+              ADC_SLOW_CFG_REF_INT_2500MV_VAL |
+              // full bandwidth of low pass filter
+              ADC_SLOW_CFG_BW_FULL_VAL |
+              // specific channel (different from config)
+              ((ichan << ADC_SLOW_CFG_IN_OFST) & ADC_SLOW_CFG_IN_MSK) |
+              // input channel configuration (unipolar. inx to gnd)
+              ADC_SLOW_CFG_INCC_UNPLR_IN_GND_VAL |
+              // overwrite configuration
+              ADC_SLOW_CFG_CFG_OVRWRTE_VAL);
 
     // start converting
     bus_w(ADC_SLOW_CTRL_REG, bus_r(ADC_SLOW_CTRL_REG) | ADC_SLOW_CTRL_STRT_MSK);
-    bus_w(ADC_SLOW_CTRL_REG, bus_r(ADC_SLOW_CTRL_REG) & ~ADC_SLOW_CTRL_STRT_MSK);
+    bus_w(ADC_SLOW_CTRL_REG,
+          bus_r(ADC_SLOW_CTRL_REG) & ~ADC_SLOW_CTRL_STRT_MSK);
 
     // wait for it to be done
-    volatile int done = ((bus_r(ADC_SLOW_CTRL_REG) & ADC_SLOW_CTRL_DONE_MSK) >> ADC_SLOW_CTRL_DONE_OFST);
+    volatile int done = ((bus_r(ADC_SLOW_CTRL_REG) & ADC_SLOW_CTRL_DONE_MSK) >>
+                         ADC_SLOW_CTRL_DONE_OFST);
     while (!done) {
-        done = ((bus_r(ADC_SLOW_CTRL_REG) & ADC_SLOW_CTRL_DONE_MSK) >> ADC_SLOW_CTRL_DONE_OFST);
+        done = ((bus_r(ADC_SLOW_CTRL_REG) & ADC_SLOW_CTRL_DONE_MSK) >>
+                ADC_SLOW_CTRL_DONE_OFST);
     }
 
     // readout
@@ -1522,16 +1524,18 @@ int getSlowADC(int ichan) {
     int regMinuv = 0;
     int maxSteps = 0xFFFF + 1;
     int retval = 0;
-    if (ConvertToDifferentRange(0, maxSteps, regMinuv, refMaxuv, regval, &retval) == FAIL) {
-            LOG(logERROR, ("Could not convert slow adc channel (regval:0x%x) to uv\n", regval));
-            return -1;
+    if (ConvertToDifferentRange(0, maxSteps, regMinuv, refMaxuv, regval,
+                                &retval) == FAIL) {
+        LOG(logERROR,
+            ("Could not convert slow adc channel (regval:0x%x) to uv\n",
+             regval));
+        return -1;
     }
 
     LOG(logINFO,
         ("\tRead slow adc [%d]: %d uV (reg: 0x%x)\n", ichan, retval, regval));
 
     return retval;
-
 }
 
 int getSlowADCTemperature() {
@@ -1539,30 +1543,33 @@ int getSlowADCTemperature() {
 
     // configure for channel
     bus_w(ADC_SLOW_CFG_REG,
-        // don't read back config reg
-        ADC_SLOW_CFG_RB_MSK |
-        // disable sequencer (different from config)
-        ADC_SLOW_CFG_SEQ_DSBLE_VAL |
-        // Internal reference. REF = 2.5V buffered output. Temperature sensor
-        // enabled.
-        ADC_SLOW_CFG_REF_INT_2500MV_VAL |
-        // full bandwidth of low pass filter
-        ADC_SLOW_CFG_BW_FULL_VAL |
-        // all channels
-        ADC_SLOW_CFG_IN_MSK |
-        // temp sensor
-        ADC_SLOW_CFG_INCC_TMP_VAL |
-        // overwrite configuration
-        ADC_SLOW_CFG_CFG_OVRWRTE_VAL);
+          // don't read back config reg
+          ADC_SLOW_CFG_RB_MSK |
+              // disable sequencer (different from config)
+              ADC_SLOW_CFG_SEQ_DSBLE_VAL |
+              // Internal reference. REF = 2.5V buffered output. Temperature
+              // sensor enabled.
+              ADC_SLOW_CFG_REF_INT_2500MV_VAL |
+              // full bandwidth of low pass filter
+              ADC_SLOW_CFG_BW_FULL_VAL |
+              // all channels
+              ADC_SLOW_CFG_IN_MSK |
+              // temp sensor
+              ADC_SLOW_CFG_INCC_TMP_VAL |
+              // overwrite configuration
+              ADC_SLOW_CFG_CFG_OVRWRTE_VAL);
 
     // start converting
     bus_w(ADC_SLOW_CTRL_REG, bus_r(ADC_SLOW_CTRL_REG) | ADC_SLOW_CTRL_STRT_MSK);
-    bus_w(ADC_SLOW_CTRL_REG, bus_r(ADC_SLOW_CTRL_REG) & ~ADC_SLOW_CTRL_STRT_MSK);
+    bus_w(ADC_SLOW_CTRL_REG,
+          bus_r(ADC_SLOW_CTRL_REG) & ~ADC_SLOW_CTRL_STRT_MSK);
 
     // wait for it to be done
-    volatile int done = ((bus_r(ADC_SLOW_CTRL_REG) & ADC_SLOW_CTRL_DONE_MSK) >> ADC_SLOW_CTRL_DONE_OFST);
+    volatile int done = ((bus_r(ADC_SLOW_CTRL_REG) & ADC_SLOW_CTRL_DONE_MSK) >>
+                         ADC_SLOW_CTRL_DONE_OFST);
     while (!done) {
-        done = ((bus_r(ADC_SLOW_CTRL_REG) & ADC_SLOW_CTRL_DONE_MSK) >> ADC_SLOW_CTRL_DONE_OFST);
+        done = ((bus_r(ADC_SLOW_CTRL_REG) & ADC_SLOW_CTRL_DONE_MSK) >>
+                ADC_SLOW_CTRL_DONE_OFST);
     }
 
     // readout
@@ -1574,9 +1581,10 @@ int getSlowADCTemperature() {
     int maxSteps = 0xFFFF + 1;
     int minmv = 0;
     int maxmv = 2500;
-    if (ConvertToDifferentRange(0, maxSteps, minmv,
-                            maxmv, regval, &retval) == FAIL) {
-        LOG(logERROR, ("Could not convert slow adc temp (regval:0x%x) to uv\n", regval));
+    if (ConvertToDifferentRange(0, maxSteps, minmv, maxmv, regval, &retval) ==
+        FAIL) {
+        LOG(logERROR,
+            ("Could not convert slow adc temp (regval:0x%x) to uv\n", regval));
         return -1;
     }
     LOG(logDEBUG1, ("voltage read for temp: %d mV\n", retval));
@@ -1585,7 +1593,7 @@ int getSlowADCTemperature() {
     double tempCFor1mv = (25.00 / 283.00);
     double tempValue = tempCFor1mv * (double)retval;
     LOG(logINFO, ("\tTemp slow adc : %f °C (reg: %d)\n", tempValue, regval));
-    
+
     return tempValue;
 }
 

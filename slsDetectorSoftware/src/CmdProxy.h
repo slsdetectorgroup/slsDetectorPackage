@@ -1438,10 +1438,9 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         filterresistor, getFilterResistor, setFilterResistor, StringTo<int>,
-        "[value] [Gotthard2][Jungfrau][Moench] Set filter resistor. Increasing "
-        "values "
-        "for increasing resistance.\n\t[Gotthard2] Options: [0|1|2|3]. Default "
-        "is 0.\n\t[Jungfrau][Moench] Options: [0|1]. Default is 1.");
+        "[value] [Gotthard2][Jungfrau] Set filter resistor. Increasing "
+        "values for increasing resistance.\n\t[Gotthard2] Options: [0|1|2|3]. "
+        "Default is 0.\n\t[Jungfrau] Options: [0|1]. Default is 1.");
 
     INTEGER_COMMAND_VEC_ID(dbitpipeline, getDBITPipeline, setDBITPipeline,
                            StringTo<int>,
@@ -1957,9 +1956,8 @@ class CmdProxy {
 
     /* Jungfrau Specific */
 
-    GET_COMMAND(
-        chipversion, getChipVersion,
-        "\n\t[Jungfrau][Moench] Returns chip version. Can be 1.0 or 1.1");
+    GET_COMMAND(chipversion, getChipVersion,
+                "\n\t[Jungfrau] Returns chip version. Can be 1.0 or 1.1");
 
     INTEGER_COMMAND_VEC_ID(
         temp_threshold, getThresholdTemperature, setThresholdTemperature,
@@ -2026,11 +2024,10 @@ class CmdProxy {
         "Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, "
         "you can damage the detector!!!");
 
-    INTEGER_COMMAND_VEC_ID(
-        filtercells, getNumberOfFilterCells, setNumberOfFilterCells,
-        StringTo<int>,
-        "[0-12]\n\t[Jungfrau][Moench] Set Filter Cell. Only for "
-        "chipv1.1. Advanced user Command");
+    INTEGER_COMMAND_VEC_ID(filtercells, getNumberOfFilterCells,
+                           setNumberOfFilterCells, StringTo<int>,
+                           "[0-12]\n\t[Jungfrau] Set Filter Cell. Only for "
+                           "chipv1.1. Advanced user Command");
 
     /* Gotthard Specific */
     TIME_GET_COMMAND(exptimel, getExptimeLeft,

@@ -45,8 +45,6 @@
 #define DEFAULT_TX_UDP_PORT           (0x7e9a)
 #define DEFAULT_TMP_THRSHLD           (65 * 1000) // milli degree Celsius
 #define DEFAULT_FLIP_ROWS             (0)
-#define DEFAULT_FILTER_RESISTOR       (1) // higher resistor
-#define DEFAULT_FILTER_CELL           (0)
 
 #define HIGHVOLTAGE_MIN     (60)
 #define HIGHVOLTAGE_MAX     (200)
@@ -73,31 +71,8 @@
 #define GAIN_VAL_MSK  (0x3 << GAIN_VAL_OFST)
 
 // pipeline
-#define ADC_PORT_INVERT_VAL        (0x5A5A5A5A)
-#define ADC_PORT_INVERT_BOARD2_VAL (0x453b2a9c)
-
-// 2.0 pcb (chipv1.1)
-#define SAMPLE_ADC_FULL_SPEED_CHIP11                                           \
-    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_0_VAL + SAMPLE_DECMT_FACTOR_FULL_VAL) // 0x0000
-#define SAMPLE_ADC_HALF_SPEED_CHIP11                                           \
-    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_1_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_1_VAL + SAMPLE_DECMT_FACTOR_HALF_VAL) // 0x1110
-#define SAMPLE_ADC_QUARTER_SPEED_CHIP11                                        \
-    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_3_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_2_VAL + SAMPLE_DECMT_FACTOR_QUARTER_VAL) // 0x2230
-
-#define ADC_PHASE_FULL_SPEED_CHIP11    (160)
-#define ADC_PHASE_HALF_SPEED_CHIP11    (160)
-#define ADC_PHASE_QUARTER_SPEED_CHIP11 (160)
-
-#define DBIT_PHASE_FULL_SPEED_CHIP11    (80)
-#define DBIT_PHASE_HALF_SPEED_CHIP11    (135)
-#define DBIT_PHASE_QUARTER_SPEED_CHIP11 (135)
-
-#define ADC_OFST_FULL_SPEED_VAL_CHIP11    (0x10)
-#define ADC_OFST_HALF_SPEED_VAL_CHIP11    (0x08)
-#define ADC_OFST_QUARTER_SPEED_VAL_CHIP11 (0x04)
+#define ADC_PORT_INVERT_VAL        (0x0)
+#define ADC_PORT_INVERT_BOARD2_VAL (0x0)
 
 // 2.0 pcb (chipv1.0)
 #define SAMPLE_ADC_FULL_SPEED_CHIP10                                           \
@@ -118,9 +93,7 @@
 #define DBIT_PHASE_HALF_SPEED_CHIP10    (175)
 #define DBIT_PHASE_QUARTER_SPEED_CHIP10 (175)
 
-#define ADC_OFST_FULL_SPEED_VAL_CHIP10    (0x10)
-#define ADC_OFST_HALF_SPEED_VAL_CHIP10    (0x08)
-#define ADC_OFST_QUARTER_SPEED_VAL_CHIP10 (0x04)
+#define ADC_OFST_VAL (0x10)
 
 // 1.0 pcb (2 resistor network)
 #define SAMPLE_ADC_HALF_SPEED_BOARD2                                           \
@@ -136,8 +109,7 @@
 #define DBIT_PHASE_HALF_SPEED_BOARD2    (150)
 #define DBIT_PHASE_QUARTER_SPEED_BOARD2 (150)
 
-#define ADC_OFST_HALF_SPEED_BOARD2_VAL    (0x10)
-#define ADC_OFST_QUARTER_SPEED_BOARD2_VAL (0x08)
+#define ADC_OFST_BOARD2_VAL (0x10)
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

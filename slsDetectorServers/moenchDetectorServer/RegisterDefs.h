@@ -99,19 +99,6 @@
 #define TEMPERATURE_POLARITY_BIT            (11)
 #define TEMPERATURE_POLARITY_MSK            (0x00000001 << TEMPERATURE_POLARITY_BIT)
 
-/* Config Status Register for chip 1.1 */
-#define CONFIG_V11_STATUS_REG               (0x1D << MEM_MAP_SHIFT)
-
-#define CONFIG_V11_STATUS_FLTR_CLL_OFST         (0) 
-#define CONFIG_V11_STATUS_FLTR_CLL_MSK          (0x00000FFF << CONFIG_V11_STATUS_FLTR_CLL_OFST)
-// CSM mode = high current (100%), low current (16%)
-#define CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST    (19) 
-#define CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK     (0x00000001 << CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST)
-#define CONFIG_V11_STATUS_FLTR_RSSTR_SMLR_OFST  (21) 
-#define CONFIG_V11_STATUS_FLTR_RSSTR_SMLR_MSK   (0x00000001 << CONFIG_V11_STATUS_FLTR_RSSTR_SMLR_OFST)
-#define CONFIG_V11_STATUS_AUTO_MODE_OVRRD_OFST  (23) 
-#define CONFIG_V11_STATUS_AUTO_MODE_OVRRD_MSK   (0x00000001 << CONFIG_V11_STATUS_AUTO_MODE_OVRRD_OFST)
-
 /* Get Frames from Start 64 bit register (frames from last reset using
  * CONTROL_CRST) */
 #define FRAMES_FROM_START_LSB_REG           (0x22 << MEM_MAP_SHIFT)
@@ -251,19 +238,6 @@
 #define PLL_CNTRL_ADDR_OFST                 (16)
 #define PLL_CNTRL_ADDR_MSK                  (0x0000003F << PLL_CNTRL_ADDR_OFST)
 
-/* Config Register for chip 1.1 */
-#define CONFIG_V11_REG                      (0x58 << MEM_MAP_SHIFT)
-
-#define CONFIG_V11_FLTR_CLL_OFST            (0) 
-#define CONFIG_V11_FLTR_CLL_MSK             (0x00000FFF << CONFIG_V11_FLTR_CLL_OFST)
-// CSM mode = high current (100%), low current (16%)
-#define CONFIG_V11_CRRNT_SRC_LOW_OFST       (19) 
-#define CONFIG_V11_CRRNT_SRC_LOW_MSK        (0x00000001 << CONFIG_V11_CRRNT_SRC_LOW_OFST)
-#define CONFIG_V11_FLTR_RSSTR_SMLR_OFST     (21) 
-#define CONFIG_V11_FLTR_RSSTR_SMLR_MSK      (0x00000001 << CONFIG_V11_FLTR_RSSTR_SMLR_OFST)
-#define CONFIG_V11_AUTO_MODE_OVRRD_OFST     (23) 
-#define CONFIG_V11_AUTO_MODE_OVRRD_MSK      (0x00000001 << CONFIG_V11_AUTO_MODE_OVRRD_OFST)
-
 /* Sample Register */
 #define SAMPLE_REG                          (0x59 << MEM_MAP_SHIFT)
 
@@ -314,12 +288,6 @@
 #define SAMPLE_DECMT_FACTOR_HALF_VAL        ((0x1 << SAMPLE_DGTL_DECMT_FACTOR_OFST) & SAMPLE_DGTL_DECMT_FACTOR_MSK)
 #define SAMPLE_DECMT_FACTOR_QUARTER_VAL     ((0x2 << SAMPLE_DGTL_DECMT_FACTOR_OFST) & SAMPLE_DGTL_DECMT_FACTOR_MSK)
 
-/** Current Source Column 0 (0 - 31)) */
-#define CRRNT_SRC_COL_LSB_REG               (0x5A << MEM_MAP_SHIFT)
-
-/** Current Source Column 1 (32 - 63) */
-#define CRRNT_SRC_COL_MSB_REG               (0x5B << MEM_MAP_SHIFT)
-
 /** Vref Comp Mod Register */
 #define EXT_DAQ_CTRL_REG                    (0x5C << MEM_MAP_SHIFT)
 
@@ -344,8 +312,6 @@
 #define DAQ_FIX_GAIN_STG_2_VAL              ((0x3 << DAQ_FIX_GAIN_OFST) & DAQ_FIX_GAIN_MSK)
 #define DAQ_CMP_RST_OFST                    (4)
 #define DAQ_CMP_RST_MSK                     (0x00000001 << DAQ_CMP_RST_OFST)
-#define DAQ_CHIP11_VRSN_OFST                (7)
-#define DAQ_CHIP11_VRSN_MSK                 (0x00000001 << DAQ_CHIP11_VRSN_OFST)
 #define DAQ_FRCE_SWTCH_GAIN_OFST            (12)
 #define DAQ_FRCE_SWTCH_GAIN_MSK             (0x00000003 << DAQ_FRCE_SWTCH_GAIN_OFST)
 #define DAQ_FRCE_GAIN_STG_0_VAL             ((0x0 << DAQ_FRCE_SWTCH_GAIN_OFST) & DAQ_FRCE_SWTCH_GAIN_MSK)

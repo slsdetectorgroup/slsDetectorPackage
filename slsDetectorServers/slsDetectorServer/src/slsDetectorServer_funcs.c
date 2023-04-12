@@ -1841,7 +1841,7 @@ int acquire(int blocking, int file_des) {
     }
     // only set
     if (Server_VerifyLock() == OK) {
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
         // chipv1.1 has to be configured before acquisition
         if (getChipVersion() == 11 && !isChipConfigured()) {
             ret = FAIL;
@@ -1874,55 +1874,57 @@ int acquire(int blocking, int file_des) {
 #ifdef EIGERD
             // check for hardware mac and hardware ip
             if (udpDetails[0].srcmac != getDetectorMAC()) {
-            ret = FAIL;
-            uint64_t sourcemac = getDetectorMAC();
-            char src_mac[MAC_ADDRESS_SIZE];
-            getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
-            sprintf(mess,
+                ret = FAIL;
+                uint64_t sourcemac = getDetectorMAC();
+                char src_mac[MAC_ADDRESS_SIZE];
+                getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
+                sprintf(
+                    mess,
                     "Invalid udp source mac address for this detector. Must be "
                     "same as hardware detector mac address %s\n",
                     src_mac);
-            LOG(logERROR, (mess));
-        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                   (udpDetails[0].srcip != getDetectorIP())) {
-            ret = FAIL;
-            uint32_t sourceip = getDetectorIP();
-            char src_ip[INET_ADDRSTRLEN];
-            getIpAddressinString(src_ip, sourceip);
-            sprintf(mess,
+                LOG(logERROR, (mess));
+            } else if (!enableTenGigabitEthernet(GET_FLAG) &&
+                       (udpDetails[0].srcip != getDetectorIP())) {
+                ret = FAIL;
+                uint32_t sourceip = getDetectorIP();
+                char src_ip[INET_ADDRSTRLEN];
+                getIpAddressinString(src_ip, sourceip);
+                sprintf(
+                    mess,
                     "Invalid udp source ip address for this detector. Must be "
                     "same as hardware detector ip address %s in 1G readout "
                     "mode \n",
                     src_ip);
-            LOG(logERROR, (mess));
-        } else
+                LOG(logERROR, (mess));
+            } else
 #endif
-            if (configured == FAIL) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because ");
-            strcat(mess, configureMessage);
-            LOG(logERROR, (mess));
-        } else if (sharedMemory_getScanStatus() == RUNNING) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because a scan is "
-                         "already running!\n");
-            LOG(logERROR, (mess));
-        } else {
-            memset(scanErrMessage, 0, MAX_STR_LENGTH);
-            sharedMemory_setScanStop(0);
-            sharedMemory_setScanStatus(IDLE); // if it was error
-            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
-                               &blocking)) {
+                if (configured == FAIL) {
                 ret = FAIL;
-                strcpy(mess, "Could not start acquisition thread!\n");
+                strcpy(mess, "Could not start acquisition because ");
+                strcat(mess, configureMessage);
+                LOG(logERROR, (mess));
+            } else if (sharedMemory_getScanStatus() == RUNNING) {
+                ret = FAIL;
+                strcpy(mess, "Could not start acquisition because a scan is "
+                             "already running!\n");
                 LOG(logERROR, (mess));
             } else {
-                // only does not wait for non blocking and scan
-                if (blocking || !scan) {
-                    pthread_join(pthread_tid, NULL);
+                memset(scanErrMessage, 0, MAX_STR_LENGTH);
+                sharedMemory_setScanStop(0);
+                sharedMemory_setScanStatus(IDLE); // if it was error
+                if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                                   &blocking)) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not start acquisition thread!\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    // only does not wait for non blocking and scan
+                    if (blocking || !scan) {
+                        pthread_join(pthread_tid, NULL);
+                    }
                 }
             }
-        }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -7764,11 +7766,11 @@ int get_filter_resistor(int file_des) {
 
     LOG(logDEBUG1, ("Getting filter resistor\n"));
 
-#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
     if (getChipVersion() == 10) {
         ret = FAIL;
         strcpy(mess, "Could not get filter cell. Not available for this chip "
@@ -7793,7 +7795,7 @@ int set_filter_resistor(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting filter resistor: %u\n", arg));
 
-#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -7807,7 +7809,7 @@ int set_filter_resistor(int file_des) {
                 arg, ASIC_FILTER_MAX_RES_VALUE);
             LOG(logERROR, (mess));
         }
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
         else if (getChipVersion() == 10) {
             ret = FAIL;
             strcpy(mess, "Could not set filter cell. Not available for this "
@@ -7821,9 +7823,8 @@ int set_filter_resistor(int file_des) {
                 strcpy(mess, "Could not set filter resistor.\n");
                 LOG(logERROR, (mess));
             }
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
-            // jungfrau/moench might take time to update status register if
-            // acquiring
+#if defined(GOTTHARD2D)
+            // jungfrau might take time to update status register if acquiring
             int retval = getFilterResistor();
             LOG(logDEBUG1, ("filter resistor retval: %u\n", retval));
             validate(&ret, mess, arg, retval, "set filter resistor", DEC);
@@ -8534,7 +8535,7 @@ int get_chip_version(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     retval = getChipVersion();
@@ -8827,7 +8828,7 @@ int get_num_filter_cells(int file_des) {
 
     LOG(logDEBUG1, ("Getting number of filter cellsn"));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
@@ -8854,7 +8855,7 @@ int set_num_filter_cells(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting number of filter cells: %u\n", (int)arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set

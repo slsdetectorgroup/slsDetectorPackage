@@ -540,12 +540,12 @@ class Detector {
      * mode.*/
     void setParallelMode(bool value, Positions pos = {});
 
-    /** [Gotthard2][Jungfrau][Moench] */
+    /** [Gotthard2][Jungfrau] */
     Result<int> getFilterResistor(Positions pos = {}) const;
 
-    /** [Gotthard2][Jungfrau][Moench] Set filter resistor. Increasing values for
+    /** [Gotthard2][Jungfrau] Set filter resistor. Increasing values for
      * increasing resistance.\n[Gotthard2] Options: [0|1|2|3]. Default is
-     * 0.\n[Jungfrau][Moench] Options: [0|1]. Default is 1.*/
+     * 0.\n[Jungfrau] Options: [0|1]. Default is 1.*/
     void setFilterResistor(int value, Positions pos = {});
 
     /** [Gotthard2][Jungfrau][Moench] */
@@ -1250,7 +1250,7 @@ class Detector {
      *                                                *
      * ************************************************/
 
-    /** [Jungfrau][Moench] */
+    /** [Jungfrau] */
     Result<double> getChipVersion(Positions pos = {}) const;
 
     /** [Jungfrau][Moench] */
@@ -1339,10 +1339,10 @@ class Detector {
      */
     void setGainMode(const defs::gainMode mode, Positions pos = {});
 
-    /** [Jungfrau][Moench] Advanced */
+    /** [Jungfrau] Advanced */
     Result<int> getNumberOfFilterCells(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Advanced Options[0-12], only for chip v1.1
+    /** [Jungfrau] Advanced Options[0-12], only for chip v1.1
      */
     void setNumberOfFilterCells(int cell, Positions pos = {});
 

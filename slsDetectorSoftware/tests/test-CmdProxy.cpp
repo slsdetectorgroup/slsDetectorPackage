@@ -1604,7 +1604,7 @@ TEST_CASE("filterresistor", "[.cmd]") {
 
     // only for chipv1.1
     bool chip11 = false;
-    if ((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) &&
+    if (det_type == defs::JUNGFRAU &&
         det.getChipVersion().squash() * 10 == 11) {
         chip11 = true;
     }
@@ -1773,11 +1773,14 @@ TEST_CASE("currentsource", "[.cmd]") {
             REQUIRE_THROWS(proxy.Call("currentsource",
                                       {"1", "fix", "42", "normal"}, -1, PUT));
         }
-        // jungfrau/moench
+        // jungfrau
         else {
-            int chipVersion = det.getChipVersion().tsquash(
+            int chipVersion = 10;
+            if (det_type == defs::JUNGFRAU) {
+                chipVersion = det.getChipVersion().tsquash(
                                   "inconsistent chip versions to test") *
                               10;
+            }
             if (chipVersion == 10) {
                 REQUIRE_THROWS(proxy.Call("currentsource", {"1"}, -1, PUT));
                 REQUIRE_THROWS(

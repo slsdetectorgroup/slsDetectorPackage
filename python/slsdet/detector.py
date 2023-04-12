@@ -2415,7 +2415,7 @@ class Detector(CppDetectorApi):
     @element
     def chipversion(self):
         """
-        [Jungfrau][Moench] Chip version of module. Can be 1.0 or 1.1.
+        [Jungfrau] Chip version of module. Can be 1.0 or 1.1.
 
         Example
         -------
@@ -2724,14 +2724,14 @@ class Detector(CppDetectorApi):
     @element
     def filterresistor(self):
         """
-        [Gotthard2][Jungfrau][Moench] Set filter resistor. Increasing values for increasing "
+        [Gotthard2][Jungfrau] Set filter resistor. Increasing values for increasing "
         "resistance.
         
         Note
         ----
         Advanced user command.
         [Gotthard2] Default is 0. Options: 0-3.
-        [Jungfrau][Moench] Default is 1. Options: 0-1.
+        [Jungfrau] Default is 1. Options: 0-1.
         """
         return self.getFilterResistor()
 
@@ -2743,11 +2743,11 @@ class Detector(CppDetectorApi):
     @element
     def filtercells(self):
         """
-        [Jungfrau][Moench] Set filter capacitor. 
+        [Jungfrau] Set filter capacitor. 
         
         Note
         ----
-        [Jungfrau][Moench] Options: 0-12. Default: 0. Advanced user command. Only for chipv1.1.
+        [Jungfrau] Options: 0-12. Default: 0. Advanced user command. Only for chipv1.1.
         """
         return self.getNumberOfFilterCells()
 

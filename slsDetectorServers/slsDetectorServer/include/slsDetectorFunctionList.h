@@ -95,7 +95,7 @@ u_int16_t getHardwareSerialNumber();
     defined(MYTHEN3D) || defined(GOTTHARDD)
 int isHardwareVersion_1_0();
 #endif
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
 int getChipVersion();
 void setChipVersion(int version);
 #endif
@@ -513,8 +513,10 @@ int setReadNRows(int value);
 int getReadNRows();
 void initReadoutConfiguration();
 int powerChip(int on);
+#ifndef MOENCHD
 int isChipConfigured();
 void configureChip();
+#endif
 int autoCompDisable(int on);
 int setComparatorDisableTime(int64_t val);
 int64_t getComparatorDisableTime();
@@ -533,10 +535,12 @@ int setTemperatureEvent(int val);
 void alignDeserializer();
 int getFlipRows();
 void setFlipRows(int arg);
+#ifndef MOENCHD
 int setFilterResistor(int value);
 int getFilterResistor();
 int getNumberOfFilterCells();
 void setNumberOfFilterCells(int iCell);
+#endif
 void disableCurrentSource();
 void enableCurrentSource(int fix, uint64_t select, int normal);
 int getCurrentSource();

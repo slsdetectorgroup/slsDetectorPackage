@@ -465,7 +465,7 @@ TEST_CASE("filtercells", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    if (det_type == defs::JUNGFRAU) {
         // chip version 1.1
         if (det.getChipVersion().squash() * 10 == 11) {
             auto prev_val = det.getNumberOfFilterCells();

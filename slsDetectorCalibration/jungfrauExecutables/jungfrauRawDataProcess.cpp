@@ -38,21 +38,21 @@
 #include <sys/stat.h>
 
 #include <ctime>
-using namespace std;
+//using namespace std;
 
 int main(int argc, char *argv[]) {
 
     if (argc < 5) {
-        cout << "Usage is " << argv[0]
-             << "indir outdir fname(with formatting, no extension) fextension [runmin] [runmax] [pedfile (raw or tiff)] [threshold] "
+      std::cout << "Usage is " << argv[0]
+		<< "indir outdir fname(with formatting, no extension) fextension [runmin] [runmax] [pedfile (raw or tiff)] [threshold] "
                 "[nframes] [xmin xmax ymin ymax] [gainmap]"
-             << endl;
-        cout << "threshold <0 means analog; threshold=0 means cluster finder; "
+		<< std::endl;
+      std::cout << "threshold <0 means analog; threshold=0 means cluster finder; "
                 "threshold>0 means photon counting"
-             << endl;
-        cout << "nframes <0 means sum everything; nframes=0 means one file per "
+		<< std::endl;
+      std::cout << "nframes <0 means sum everything; nframes=0 means one file per "
                 "run; nframes>0 means one file every nframes"
-             << endl;
+		<< std::endl;
         return 1;
     }
 
@@ -235,9 +235,9 @@ int main(int argc, char *argv[]) {
     //int dsize = decoder->getDataSize();
 
     if (thr > 0) {
-        cout << "threshold is " << thr << endl;
-        filter->setThreshold(thr);
-        cf = 0;
+      std::cout << "threshold is " << thr << std::endl;
+      filter->setThreshold(thr);
+      cf = 0;
 
     } else
         cf = 1;
@@ -291,71 +291,71 @@ int main(int argc, char *argv[]) {
 	froot[pos]='\0';
       }
 
-        cout << "PEDESTAL " << endl;
-	// sprintf(imgfname, "%s/pedestals.tiff", outdir);
+      std::cout << "PEDESTAL " << std::endl;
+      // sprintf(imgfname, "%s/pedestals.tiff", outdir);
 
-        if (string(pedfile).find(".tif") == std::string::npos) {
-            sprintf(fname, "%s", pedfile);
-	    std::cout << fname << std::endl;
-            std::time(&end_time);
-	    std::cout << "aaa" << std::ctime(&end_time) << std::endl;
-
-            mt->setFrameMode(ePedestal);
-            // sprintf(fn,fformat,irun);
-            filebin.open((const char *)(fname), ios::in | ios::binary);
-            //      //open file
-            if (filebin.is_open()) {
-	      std::cout << "bbbb" << std::ctime(&end_time) << std::endl;
-	      
-                ff = -1;
-                while (decoder->readNextFrame(filebin, ff, np, buff)) {
-		  // if (np == 40) {
-		  if ((ifr+1) % 100 == 0) {
-		    std::cout << " ****" << decoder->getValue(buff,20,20);// << endl;
-		  }
-                        mt->pushData(buff);
-                        mt->nextThread();
-                        mt->popFree(buff);
-                        ifr++;
-                        if (ifr % 100 == 0) {
-			  std::cout << " ****" << ifr << " " << ff << " " << np << std::endl;
-			} //else
-                        //cout << ifr << " " << ff << " " << np << endl;
-			if (ifr>=1000)
-			  break;
-                    ff = -1;
-                }
-                filebin.close();
-                while (mt->isBusy()) {
-                    ;
-                }
-
-		sprintf(imgfname, "%s/%s_ped.tiff", outdir, froot);
-		mt->writePedestal(imgfname);
-		sprintf(imgfname, "%s/%s_rms.tiff", outdir, froot);
-		mt->writePedestalRMS(imgfname);
-
-            } else
-	      std::cout << "Could not open pedestal file " << fname
-			<< " for reading " << std::endl;
-        } else {
-            float *pp = ReadFromTiff(pedfile, nny, nnx);
-            if (pp && (int)nnx == nx && (int)nny == ny) {
-                for (int i = 0; i < nx * ny; i++) {
-                    ped[i] = pp[i];
-                }
-                delete[] pp;
-                mt->setPedestal(ped);
-		std::cout << "Pedestal set from tiff file " << pedfile << std::endl;
-            } else {
-	      std::cout << "Could not open pedestal tiff file " << pedfile
-			<< " for reading " << std::endl;
-            }
-        }
-        std::time(&end_time);
-	std::cout << std::ctime(&end_time) << std::endl;
+      if (string(pedfile).find(".tif") == std::string::npos) {
+	sprintf(fname, "%s", pedfile);
+	std::cout << fname << std::endl;
+	std::time(&end_time);
+	std::cout << "aaa" << std::ctime(&end_time) << std::endl;
+	
+	mt->setFrameMode(ePedestal);
+	// sprintf(fn,fformat,irun);
+	filebin.open((const char *)(fname), ios::in | ios::binary);
+	//      //open file
+	if (filebin.is_open()) {
+	  std::cout << "bbbb" << std::ctime(&end_time) << std::endl;
+	  
+	  ff = -1;
+	  while (decoder->readNextFrame(filebin, ff, np, buff)) {
+	    // if (np == 40) {
+	    if ((ifr+1) % 100 == 0) {
+	      std::cout << " ****" << decoder->getValue(buff,20,20);// << endl;
+	    }
+	    mt->pushData(buff);
+	    mt->nextThread();
+	    mt->popFree(buff);
+	    ifr++;
+	    if (ifr % 100 == 0) {
+	      std::cout << " ****" << ifr << " " << ff << " " << np << std::endl;
+	    } //else
+	    //cout << ifr << " " << ff << " " << np << endl;
+	    if (ifr>=1000)
+	      break;
+	    ff = -1;
+	  }
+	  filebin.close();
+	  while (mt->isBusy()) {
+	    ;
+	  }
+	  
+	  sprintf(imgfname, "%s/%s_ped.tiff", outdir, froot);
+	  mt->writePedestal(imgfname);
+	  sprintf(imgfname, "%s/%s_rms.tiff", outdir, froot);
+	  mt->writePedestalRMS(imgfname);
+	  
+	} else
+	  std::cout << "Could not open pedestal file " << fname
+		    << " for reading " << std::endl;
+      } else {
+	float *pp = ReadFromTiff(pedfile, nny, nnx);
+	if (pp && (int)nnx == nx && (int)nny == ny) {
+	  for (int i = 0; i < nx * ny; i++) {
+	    ped[i] = pp[i];
+	  }
+	  delete[] pp;
+	  mt->setPedestal(ped);
+	  std::cout << "Pedestal set from tiff file " << pedfile << std::endl;
+	} else {
+	  std::cout << "Could not open pedestal tiff file " << pedfile
+		    << " for reading " << std::endl;
+	}
+      }
+      std::time(&end_time);
+      std::cout << std::ctime(&end_time) << std::endl;
     }
-
+    
     ifr = 0;
     int ifile = 0;
 
@@ -363,101 +363,101 @@ int main(int argc, char *argv[]) {
 
     for (int irun = runmin; irun <= runmax; irun++) {
       std::cout << "DATA ";
-        // sprintf(fn,fformat,irun);
-        sprintf(ffname, "%s/%s.%s", indir, fformat, fext);
-        sprintf(fname, (const char*)ffname, irun);
-        sprintf(ffname, "%s/%s.tiff", outdir, fformat);
-        sprintf(imgfname, (const char*)ffname, irun);
-        sprintf(ffname, "%s/%s.clust", outdir, fformat);
-        sprintf(cfname, (const char*)ffname, irun);
-	std::cout << fname << " ";
-	std::cout << imgfname << std::endl;
-        std::time(&end_time);
+      // sprintf(fn,fformat,irun);
+      sprintf(ffname, "%s/%s.%s", indir, fformat, fext);
+      sprintf(fname, (const char*)ffname, irun);
+      sprintf(ffname, "%s/%s.tiff", outdir, fformat);
+      sprintf(imgfname, (const char*)ffname, irun);
+      sprintf(ffname, "%s/%s.clust", outdir, fformat);
+      sprintf(cfname, (const char*)ffname, irun);
+      std::cout << fname << " ";
+      std::cout << imgfname << std::endl;
+      std::time(&end_time);
+      std::cout << std::ctime(&end_time) << std::endl;
+      //  cout <<  fname << " " << outfname << " " << imgfname <<  endl;
+      filebin.open((const char *)(fname), ios::in | ios::binary);
+      //      //open file
+      ifile = 0;
+      if (filebin.is_open()) {
+	if (thr <= 0 && cf != 0) { // cluster finder
+	  if (of == NULL) {
+	    of = fopen(cfname, "w");
+	    if (of) {
+	      mt->setFilePointer(of);
+	      std::cout << "file pointer set " << std::endl;
+	    } else {
+	      std::cout << "Could not open " << cfname << " for writing "
+			<< std::endl;
+	      mt->setFilePointer(NULL);
+	      return 1;
+	    }
+	  }
+	}
+	//     //while read frame
+	ff = -1;
+	ifr = 0;
+	while (decoder->readNextFrame(filebin, ff, np, buff)) {
+	  //  if (np == 40) {
+	  //         //push
+	  
+	  if ((ifr+1) % 100 == 0) {
+	    std::cout << " ****" << decoder->getValue(buff,20,20);// << endl;
+	  }
+	  mt->pushData(buff);
+	  // 	//         //pop
+	  mt->nextThread();
+	  mt->popFree(buff);
+	  
+	  ifr++;
+	  if (ifr % 100 == 0)
+	    std::cout << " " << ifr << " " << ff << std::endl;
+	  if (nframes > 0) {
+	    if (ifr % nframes == 0) {
+	      sprintf(ffname, "%s/%s_f%05d.tiff", outdir, fformat,
+		      ifile);
+	      sprintf(imgfname, (const char*)ffname, irun);
+	      mt->writeImage(imgfname, thr1);
+	      mt->clearImage();
+	      ifile++;
+	    }
+	  }
+	  // } else
+	  //     cout << ifr << " " << ff << " " << np << endl;
+	  ff = -1;
+	}
+	std::cout << "--" << std::endl;
+	filebin.close();
+	while (mt->isBusy()) {
+	  ;
+	}
+	if (nframes >= 0) {
+	  if (nframes > 0) {
+	    sprintf(ffname, "%s/%s_f%05d.tiff", outdir, fformat, ifile);
+	    sprintf(imgfname, (const char*)ffname, irun);
+	  } else {
+	    sprintf(ffname, "%s/%s.tiff", outdir, fformat);
+	    sprintf(imgfname, (const char*)ffname, irun);
+	  }
+	  std::cout << "Writing tiff to " << imgfname << " " << thr1 << std::endl;
+	  mt->writeImage(imgfname, thr1);
+	  mt->clearImage();
+	  if (of) {
+	    fclose(of);
+	    of = NULL;
+	    mt->setFilePointer(NULL);
+	  }
+	}
+	std::time(&end_time);
 	std::cout << std::ctime(&end_time) << std::endl;
-        //  cout <<  fname << " " << outfname << " " << imgfname <<  endl;
-        filebin.open((const char *)(fname), ios::in | ios::binary);
-        //      //open file
-        ifile = 0;
-        if (filebin.is_open()) {
-            if (thr <= 0 && cf != 0) { // cluster finder
-                if (of == NULL) {
-                    of = fopen(cfname, "w");
-                    if (of) {
-                        mt->setFilePointer(of);
-			std::cout << "file pointer set " << std::endl;
-                    } else {
-		      std::cout << "Could not open " << cfname << " for writing "
-				<< std::endl;
-                        mt->setFilePointer(NULL);
-                        return 1;
-                    }
-                }
-            }
-            //     //while read frame
-            ff = -1;
-            ifr = 0;
-            while (decoder->readNextFrame(filebin, ff, np, buff)) {
-              //  if (np == 40) {
-                    //         //push
-	      
-		  if ((ifr+1) % 100 == 0) {
-		    std::cout << " ****" << decoder->getValue(buff,20,20);// << endl;
-		  }
-                    mt->pushData(buff);
-                    // 	//         //pop
-                    mt->nextThread();
-                    mt->popFree(buff);
-
-                    ifr++;
-                    if (ifr % 100 == 0)
-		      std::cout << " " << ifr << " " << ff << std::endl;
-                    if (nframes > 0) {
-                        if (ifr % nframes == 0) {
-                            sprintf(ffname, "%s/%s_f%05d.tiff", outdir, fformat,
-                                    ifile);
-                            sprintf(imgfname, (const char*)ffname, irun);
-                            mt->writeImage(imgfname, thr1);
-                            mt->clearImage();
-                            ifile++;
-                        }
-                    }
-                // } else
-                //     cout << ifr << " " << ff << " " << np << endl;
-                ff = -1;
-            }
-	    std::cout << "--" << std::endl;
-            filebin.close();
-            while (mt->isBusy()) {
-                ;
-            }
-            if (nframes >= 0) {
-                if (nframes > 0) {
-                    sprintf(ffname, "%s/%s_f%05d.tiff", outdir, fformat, ifile);
-                    sprintf(imgfname, (const char*)ffname, irun);
-                } else {
-                    sprintf(ffname, "%s/%s.tiff", outdir, fformat);
-                    sprintf(imgfname, (const char*)ffname, irun);
-                }
-		std::cout << "Writing tiff to " << imgfname << " " << thr1 << std::endl;
-                mt->writeImage(imgfname, thr1);
-                mt->clearImage();
-                if (of) {
-                    fclose(of);
-                    of = NULL;
-                    mt->setFilePointer(NULL);
-                }
-            }
-            std::time(&end_time);
-	    std::cout << std::ctime(&end_time) << std::endl;
-        } else
-	  std::cout << "Could not open " << fname << " for reading " << std::endl;
+      } else
+	std::cout << "Could not open " << fname << " for reading " << std::endl;
     }
     if (nframes < 0) {
-        sprintf(ffname, "%s/%s.tiff", outdir, fformat);
-        strcpy(imgfname, ffname);
-	std::cout << "Writing tiff to " << imgfname << " " << thr1 << std::endl;
-        mt->writeImage(imgfname, thr1);
+      sprintf(ffname, "%s/%s.tiff", outdir, fformat);
+      strcpy(imgfname, ffname);
+      std::cout << "Writing tiff to " << imgfname << " " << thr1 << std::endl;
+      mt->writeImage(imgfname, thr1);
     }
-
+    
     return 0;
 }

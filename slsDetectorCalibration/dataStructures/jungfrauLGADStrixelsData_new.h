@@ -193,7 +193,7 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 
     void remapGroup(const int group) {
         int multiplicator = getMultiplicator(group);
-        int shiftx;
+        //int shiftx;
         int ix, iy = 0;
 
         setMappingShifts(group);
@@ -398,15 +398,15 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
     };
 
     char *readNextFrame(std::ifstream &filebin, int &ff, int &np, char *data) {
-        char *retval = 0;
-        int nd;
-        int fnum = -1;
+      //char *retval = 0;
+      //int nd;
+      //int fnum = -1;
         np = 0;
-        int pn;
+        //int pn;
 
         // std::cout << dataSize << std::endl;
         if (ff >= 0)
-            fnum = ff;
+          //  fnum = ff;
 
         if (filebin.is_open()) {
             if (filebin.read(data, dataSize)) {

@@ -10,7 +10,6 @@ add_executable(ctbDetectorServer_virtual
     ../slsDetectorServer/src/commonServerFunctions.c
     ../slsDetectorServer/src/communication_funcs_UDP.c
     ../slsDetectorServer/src/UDPPacketHeaderGenerator.c
-    ../slsDetectorServer/src/AD7689.c
     ../slsDetectorServer/src/AD9257.c
     ../slsDetectorServer/src/ALTERA_PLL.c
     ../slsDetectorServer/src/I2C.c

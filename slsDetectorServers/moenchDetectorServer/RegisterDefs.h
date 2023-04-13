@@ -35,18 +35,9 @@
 #define RUNMACHINE_BUSY_OFST                (17)
 #define RUNMACHINE_BUSY_MSK                 (0x00000001 << RUNMACHINE_BUSY_OFST)
 
-/* Look at me register */
-#define LOOK_AT_ME_REG                      (0x03 << MEM_MAP_SHIFT) // Not used in firmware or software
-
 /* System Status register */
 #define SYSTEM_STATUS_REG                   (0x04 << MEM_MAP_SHIFT) // Not used in software
 
-#define DDR3_CAL_DONE_OFST                  (0) // Not used in software
-#define DDR3_CAL_DONE_MSK                   (0x00000001 << DDR3_CAL_DONE_OFST) // Not used in software
-#define DDR3_CAL_FAIL_OFST                  (1)         // Not used in software
-#define DDR3_CAL_FAIL_MSK                   (0x00000001 << DDR3_CAL_FAIL_OFST) // Not used in software
-#define DDR3_INIT_DONE_OFST                 (2)        // Not used in software
-#define DDR3_INIT_DONE_MSK                  (0x00000001 << DDR3_INIT_DONE_OFST) // Not used in software
 #define RECONFIG_PLL_LCK_OFST               (3)       // Not used in software
 #define RECONFIG_PLL_LCK_MSK                (0x00000001 << RECONFIG_PLL_LCK_OFST)               // Not used in software
 #define PLL_A_LCK_OFST                      (4)                            // Not used in software
@@ -402,6 +393,14 @@ Time before end of exposure when comparator is disabled */
 
 #define MOD_ID_OFST                         (0)
 #define MOD_ID_MSK                          (0x0000FFFF << MOD_ID_OFST)
+
+/* ASIC Control Register */
+#define ASIC_CTRL_REG                       (0x7F << MEM_MAP_SHIFT)
+
+#define ASIC_CTRL_POLARITY_INTRFCE_OFST     (0)
+#define ASIC_CTRL_POLARITY_INTRFCE_MSK      (0x00000001 << ASIC_CTRL_POLARITY_INTRFCE_OFST)
+#define ASIC_CTRL_PARALLEL_RD_OFST          (1)
+#define ASIC_CTRL_PARALLEL_RD_MSK           (0x00000001 << ASIC_CTRL_PARALLEL_RD_OFST)
 
 /* ADC 0 Deserializer Control */
 #define ADC_DSRLZR_0_REG                    (0xF0 << MEM_MAP_SHIFT)

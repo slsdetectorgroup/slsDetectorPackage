@@ -41,6 +41,18 @@
 #include <ctime>
 #include <fmt/core.h>
 
+//Create file name string according to slsDetectorPackage format
+//   dir:     directory
+//   fname:   fileprefix (without extension)
+//   fext:    file extension (e.g. "raw")
+//   mindex:  module index ("d0" in standard)
+//   findex:  file index for one acquisition ("f0")
+//   aindex:  acquisition index (i.e. "run number")
+std::string createFileName( const std::string dir, const std::string fprefix = "run", const std::string fext="raw", int mindex=0, int findex=0, int aindex=0 ) {
+  std::string filename = fmt::format("{:s}{:s}_d{:d}_f{:d}_{:d}.{:s}", dir, fprefix, mindex, findex, aindex, fext);
+  return filename;
+}
+
 int main(int argc, char *argv[]) {
 
     if (argc < 5) {

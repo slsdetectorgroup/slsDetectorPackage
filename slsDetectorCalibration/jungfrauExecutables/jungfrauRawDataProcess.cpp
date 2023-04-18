@@ -59,15 +59,11 @@ std::string createFileName( const std::string dir, std::string fprefix="run", st
   return filename;
 }
 
-std::string getRootString( const std::string filepath, const std::string fext ) {
-  std::string froot{};
-  if ( filepath.find(fext) != std::string::npos ) {
-    auto pos1 = filepath.find_last_of("/");
-    auto pos2 = filepath.find(fext);
-    froot = filepath.substr( pos1, pos2 );
-  } else
-    std::cout << "Could not extract root of filepath " << filepath << "    Wrong extension " << fext << " given." <<std::endl;
-  return froot;
+std::string getRootString( const std::string filepath ) {
+  size_t pos1 = filepath.find_last_of("/");
+  size_t pos2 = filepath.find_last_of(".");
+  std::cout << "pos1 " << pos1 << " pos2 " << pos2 << " size " << filepath.length() << std::endl;
+  return filepath.substr( pos1+1, pos2-pos1-1 );
 }
 
 int main(int argc, char *argv[]) {
@@ -326,11 +322,7 @@ int main(int argc, char *argv[]) {
 
     if (pedfile.length()!=0) {
 
-      std::string froot{};
-      if ( pedfile.find(".dat") != std::string::npos )
-        froot = getRootString( pedfile, ".dat" );
-      if ( pedfile.find(".raw") != std::string::npos )
-        froot = getRootString( pedfile, ".raw" );
+      std::string froot = getRootString( pedfile );
 
       std::cout << "PEDESTAL " << std::endl;
         // sprintf(imgfname, "%s/pedestals.tiff", outdir);
@@ -374,9 +366,10 @@ int main(int argc, char *argv[]) {
                     ;
                 }
 
-		auto imgfname = createFileName( outdir, fprefix, "ped", "tiff");
+		std::cout << "froot " << froot << std::endl;
+		auto imgfname = createFileName( outdir, froot, "ped", "tiff");
                 mt->writePedestal(imgfname.c_str());
-		imgfname = createFileName( outdir, fprefix, "rms", "tiff");
+		imgfname = createFileName( outdir, froot, "rms", "tiff");
                 mt->writePedestalRMS(imgfname.c_str());
 
             } else

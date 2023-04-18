@@ -339,14 +339,14 @@ int main(int argc, char *argv[]) {
 	  std::string fname = pedfile;
             std::cout << fname << std::endl;
             std::time(&end_time);
-            std::cout << "aaa" << std::ctime(&end_time) << std::endl;
+            std::cout << "aaa " << std::ctime(&end_time) << std::endl;
 
             mt->setFrameMode(ePedestal);
             // sprintf(fn,fformat,irun);
-            filebin.open(fname, ios::in | ios::binary);
+            filebin.open(fname.c_str(), ios::in | ios::binary);
             //      //open file
             if (filebin.is_open()) {
-                std::cout << "bbbb" << std::ctime(&end_time) << std::endl;
+                std::cout << "bbbb " << std::ctime(&end_time) << std::endl;
 
                 ff = -1;
                 while (decoder->readNextFrame(filebin, ff, np, buff)) {
@@ -364,7 +364,7 @@ int main(int argc, char *argv[]) {
                         std::cout << " ****" << ifr << " " << ff << " " << np
                                   << std::endl;
                     } // else
-                    // cout << ifr << " " << ff << " " << np << endl;
+                    //std::cout << ifr << " " << ff << " " << np << std::endl;
                     if (ifr >= 1000)
                         break;
                     ff = -1;
@@ -481,7 +481,7 @@ int main(int argc, char *argv[]) {
                     }
                 }
                 // } else
-                //     cout << ifr << " " << ff << " " << np << endl;
+                //std::cout << ifr << " " << ff << " " << np << std::endl;
                 ff = -1;
             }
             std::cout << "--" << std::endl;

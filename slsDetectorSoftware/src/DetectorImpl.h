@@ -84,7 +84,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     virtual ~DetectorImpl();
 
-    template <class CT> struct NonDeduced { using type = CT; };
+    template <class CT> struct NonDeduced {
+        using type = CT;
+    };
     template <typename RT, typename... CT>
     Result<RT> Parallel(RT (Module::*somefunc)(CT...),
                         std::vector<int> positions,
@@ -278,7 +280,13 @@ class DetectorImpl : public virtual slsDetectorDefs {
     int acquire();
 
     /** also takes care of master and slave for multi module mythen */
-    void startAcquisition(bool blocking, std::vector<int> positions);
+    void startAcquisition(const bool blocking, std::vector<int> positions);
+
+    /** also takes care of master and slave for multi module mythen */
+    void sendSoftwareTrigger(const bool block, std::vector<int> positions);
+
+    /** also takes care of master and slave for multi module mythen */
+    void stopDetector(std::vector<int> positions);
 
     /**
      * Combines data from all readouts and gives it to the gui
@@ -368,8 +376,11 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @param nPixelsy number of pixels in Y axis (updated)
      * @returns total data bytes for updated image
      */
-    int InsertGapPixels(char *image, char *&gpImage, bool quadEnable, int dr,
+    int insertGapPixels(char *image, char *&gpImage, bool quadEnable, int dr,
                         int &nPixelsx, int &nPixelsy);
+
+    void getMasterSlaveList(std::vector<int> positions,
+                            std::vector<int> &master, std::vector<int> &slaves);
 
     void printProgress(double progress);
 

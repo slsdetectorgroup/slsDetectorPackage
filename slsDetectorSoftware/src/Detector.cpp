@@ -857,7 +857,7 @@ void Detector::stopDetector(Positions pos) {
             throw RuntimeError(
                 "Could not stop detector. Returned error status.");
         }
-        pimpl->Parallel(&Module::stopAcquisition, pos);
+        pimpl->stopDetector(pos);
         status = getDetectorStatus().squash(defs::runStatus::RUNNING);
         ++retries;
 
@@ -916,7 +916,7 @@ void Detector::setNextFrameNumber(uint64_t value, Positions pos) {
 }
 
 void Detector::sendSoftwareTrigger(const bool block, Positions pos) {
-    pimpl->Parallel(&Module::sendSoftwareTrigger, pos, block);
+    pimpl->sendSoftwareTrigger(block, pos);
 }
 
 Result<defs::scanParameters> Detector::getScan(Positions pos) const {

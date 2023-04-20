@@ -1319,7 +1319,7 @@ void DetectorImpl::sendSoftwareTrigger(const bool block,
         std::vector<int> slaves;
         getMasterSlaveList(positions, master, slaves);
         if (!slaves.empty())
-            Parallel(&Module::sendSoftwareTrigger, slaves, block);
+            Parallel(&Module::sendSoftwareTrigger, slaves, false);
         if (!master.empty())
             Parallel(&Module::sendSoftwareTrigger, master, block);
     }

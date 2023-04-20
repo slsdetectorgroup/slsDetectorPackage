@@ -31,7 +31,7 @@ This document describes the differences between v7.x.x and v7.0.0
 - moench being made compatible with jungfrau 2.0 boards (jungfrau structure, away from ctb)
 - eiger febl and feb in versions
 - fix ctb slow adcs
-- jungfrau sync, slaves first for start acq, send software trigger; master first for stop acq
+-() jungfrau sync, slaves first for start acq, send software trigger; master first for stop acq, set/get timing jungfrau does not give error when syc enabled get sync during blocking acquire (for trigger or stop) will get stuck as it should ask the stop server) in 7.0.2
 
 
 
@@ -40,7 +40,7 @@ This document describes the differences between v7.x.x and v7.0.0
 
 
     Eiger       7.0.0
-    Jungfrau    7.0.0
+    Jungfrau    7.0.2
     Mythen3     7.0.0
     Gotthard2   7.0.0
     Gotthard    7.0.0

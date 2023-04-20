@@ -19,36 +19,8 @@ This document describes the differences between v7.0.1 and v7.0.0
 1 Resolved Issues
 =================
 
-
-    Receiver
-    --------
-
-
-    *   HDF5 Compilation
-        Compilation issues from 7.0.0 fixed.
-
-    
-    *   Arping error
-        Cmdline: rx_arping
-        API: setRxArping/ getRxArping
-        Even if arping was successful, it gave an error. Fixed.
-
-
-
-    Client
-    ------
-
-    
-    *   Detector Server Version from previous Releases
-        Hostname command would hang with 7.0.0 client if the detector server
-        was from a previous release (eg. 6.1.2). In this case, the user cannot
-        get the detector server version.
-        
-        Fixed that the hostname command will throw an exception about 
-        incompatible server with its version in the message. Now, the user can 
-        get the version number without having to telnet or ssh to the detector.
-        With this info, one can then update to matching client for that server
-        and start the detector updation process.
+    - row and col for multi mod junngfrau single interface (gui)
+    - jungfrau multi mod sync mode (start, trigger, stop)
 
 
 2  On-board Detector Server Compatibility

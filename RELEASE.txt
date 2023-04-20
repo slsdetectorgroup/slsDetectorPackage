@@ -21,6 +21,7 @@ This document describes the differences between v7.0.1 and v7.0.0
 
     - row and col for multi mod junngfrau single interface (gui)
     - jungfrau multi mod sync mode (start, trigger, stop)
+    - set/get timing jungfrau does not give error when syc enabled
 
 
 2  On-board Detector Server Compatibility
@@ -28,7 +29,7 @@ This document describes the differences between v7.0.1 and v7.0.0
 
 
     Eiger       7.0.0
-    Jungfrau    7.0.0
+    Jungfrau    7.0.2
     Mythen3     7.0.0
     Gotthard2   7.0.0
     Gotthard    7.0.0

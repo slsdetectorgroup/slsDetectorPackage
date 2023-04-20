@@ -1449,7 +1449,7 @@ void setTiming(enum timingMode arg) {
 }
 
 enum timingMode getTiming() {
-    if (bus_r(EXT_SIGNAL_REG) == EXT_SIGNAL_MSK)
+    if ((bus_r(EXT_SIGNAL_REG) & EXT_SIGNAL_MSK) >> EXT_SIGNAL_OFST)
         return TRIGGER_EXPOSURE;
     return AUTO_TIMING;
 }

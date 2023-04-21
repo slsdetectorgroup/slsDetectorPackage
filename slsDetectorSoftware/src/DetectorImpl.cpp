@@ -1269,7 +1269,7 @@ void DetectorImpl::startAcquisition(const bool blocking,
         if (shm()->detType == defs::MYTHEN3) {
             handleSynchronization = true;
         }
-        if ((shm()->detType == defs::JUNGFRAU) &&
+        if ((shm()->detType == defs::JUNGFRAU || shm()->detType == defs::MOENCH) &&
             (Parallel(&Module::getSynchronizationFromStopServer, positions)
                  .tsquash("Inconsistent synchronization among modules"))) {
             handleSynchronization = true;
@@ -1307,7 +1307,7 @@ void DetectorImpl::sendSoftwareTrigger(const bool block,
                                        std::vector<int> positions) {
     bool handleSynchronization = false;
     // multi module sync enabled jungfrau
-    if (size() > 1 && (shm()->detType == defs::JUNGFRAU) &&
+    if (size() > 1 && (shm()->detType == defs::JUNGFRAU || shm()->detType == defs::MOENCH) &&
         (Parallel(&Module::getSynchronizationFromStopServer, positions)
              .tsquash("Inconsistent synchronization among modules"))) {
         handleSynchronization = true;
@@ -1333,7 +1333,7 @@ void DetectorImpl::stopDetector(std::vector<int> positions) {
 
     bool handleSynchronization = false;
     // multi module sync enabled jungfrau
-    if (size() > 1 && (shm()->detType == defs::JUNGFRAU) &&
+    if (size() > 1 && (shm()->detType == defs::JUNGFRAU || shm()->detType == defs::MOENCH) &&
         (Parallel(&Module::getSynchronizationFromStopServer, positions)
              .tsquash("Inconsistent synchronization among modules"))) {
         handleSynchronization = true;

@@ -22,6 +22,7 @@ This document describes the differences between v7.0.1 and v7.0.0
     - row and col for multi mod junngfrau single interface (gui)
     - jungfrau multi mod sync mode (start, trigger, stop)
     - set/get timing jungfrau does not give error when syc enabled
+    - switching between 1 and 2 interfaces did not set gui/client zmq port properly. Resulted in dummy streaming forever.
 
 
 2  On-board Detector Server Compatibility

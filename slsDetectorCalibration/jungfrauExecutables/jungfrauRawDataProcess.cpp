@@ -135,14 +135,7 @@ int main(int argc, char *argv[]) {
     if (argc >= 10) {
         nframes = atoi(argv[9]);
     }
-
     
-    //char ffname[10000];
-    //char fname[10000];
-    //char imgfname[10000];
-    //char cfname[10000];
-    
-
     // Define decoders...
 #if !defined JFSTRX && !defined JFSTRXOLD && !defined JFSTRXCHIP1 &&           \
     !defined JFSTRXCHIP6
@@ -175,10 +168,6 @@ int main(int argc, char *argv[]) {
         uint16_t ymax;
       } receiverRoi_compact;
       receiverRoi_compact croi;
-      /*
-	sprintf(ffname, "%s/%s.%s", indir, fformat, fext);
-	sprintf(fname, (const char *)ffname, runmin);
-      */
       std::string fsuffix{};
       auto filename = createFileName( indir, fprefix, fsuffix, fext, runmin );
       std::cout << "Reading header of file " << filename << " to check for ROI "
@@ -289,8 +278,6 @@ int main(int argc, char *argv[]) {
 
     char *buff;
 
-    // multiThreadedAnalogDetector *mt=new
-    // multiThreadedAnalogDetector(filter,nthreads,fifosize);
     multiThreadedCountingDetector *mt =
         new multiThreadedCountingDetector(filter, nthreads, fifosize);
     mt->setClusterSize(csize, csize);
@@ -318,17 +305,11 @@ int main(int argc, char *argv[]) {
 
     int ifr = 0;
 
-    //char froot[1000];
-    //double *ped = new double[nx * ny]; //, *ped1;
-
-    //int pos, pos1;
-
     if (pedfilename.length()!=0) {
 
-      std::string froot = getRootString( pedfilename );
+      std::string froot = getRootString(pedfilename);
 
       std::cout << "PEDESTAL " << std::endl;
-        // sprintf(imgfname, "%s/pedestals.tiff", outdir);
 
         if (pedfilename.find(".tif") == std::string::npos) {
 	  std::string fname = pedfilename;
@@ -337,7 +318,7 @@ int main(int argc, char *argv[]) {
 	  std::cout << "aaa " << std::ctime(&end_time) << std::endl;
 
 	  mt->setFrameMode(ePedestal);
-	  // sprintf(fn,fformat,irun);
+
 	  ifstream pedefile(fname, ios::in | ios::binary);
 	  //      //open file
 	  if (pedefile.is_open()) {
@@ -349,7 +330,7 @@ int main(int argc, char *argv[]) {
 	      if ((ifr + 1) % 100 == 0) {
 		std::cout
 		  << " ****"
-		  << decoder->getValue(buff, 20, 20); // << endl;
+		  << decoder->getValue(buff, 20, 20); // << std::endl;
 	      }
 	      mt->pushData(buff);
 	      mt->nextThread();
@@ -379,7 +360,6 @@ int main(int argc, char *argv[]) {
 	    std::cout << "Could not open pedestal file " << fname
 		      << " for reading " << std::endl;
         } else {
-	  //double *ped = new double[nx * ny]; //, *ped1;
 	  std::vector<double> ped(nx * ny);
 	  float *pp = ReadFromTiff(pedfilename.c_str(), nny, nnx);
 	  if (pp && (int)nnx == nx && (int)nny == ny) {
@@ -408,15 +388,6 @@ int main(int argc, char *argv[]) {
     
     for (int irun = runmin; irun <= runmax; irun++) {
         std::cout << "DATA ";
-        // sprintf(fn,fformat,irun);
-	/*
-        sprintf(ffname, "%s/%s.%s", indir, fformat, fext);
-        sprintf(fname, (const char *)ffname, irun);
-        sprintf(ffname, "%s/%s.tiff", outdir, fformat);
-        sprintf(imgfname, (const char *)ffname, irun);
-        sprintf(ffname, "%s/%s.clust", outdir, fformat);
-        sprintf(cfname, (const char *)ffname, irun);
-	*/
 	std::string fsuffix{};
 	auto fname = createFileName( indir, fprefix, fsuffix, fext, irun );
 	auto imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", irun );
@@ -425,7 +396,7 @@ int main(int argc, char *argv[]) {
         std::cout << imgfname << std::endl;
         std::time(&end_time);
         std::cout << std::ctime(&end_time) << std::endl;
-        //  cout <<  fname << " " << outfname << " " << imgfname <<  endl;
+        //  std::cout <<  fname << " " << outfname << " " << imgfname <<  std::endl;
         ifstream filebin(fname, ios::in | ios::binary);
         //      //open file
         ifile = 0;
@@ -453,7 +424,7 @@ int main(int argc, char *argv[]) {
 
                 if ((ifr + 1) % 100 == 0) {
                     std::cout << " ****"
-                              << decoder->getValue(buff, 20, 20); // << endl;
+                              << decoder->getValue(buff, 20, 20); // << std::endl;
                 }
                 mt->pushData(buff);
                 // 	//         //pop
@@ -465,11 +436,6 @@ int main(int argc, char *argv[]) {
                     std::cout << " " << ifr << " " << ff << std::endl;
                 if (nframes > 0) {
                     if (ifr % nframes == 0) {
-		      /*
-                        sprintf(ffname, "%s/%s_f%05d.tiff", outdir, fformat,
-                                ifile);
-                        sprintf(imgfname, (const char *)ffname, irun);
-		      */
 		      imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", irun, 0, 0, ifile );
 		      mt->writeImage(imgfname.c_str(), thr1);
                         mt->clearImage();
@@ -486,16 +452,8 @@ int main(int argc, char *argv[]) {
                 ;
             }
             if (nframes >= 0) {
-                if (nframes > 0) {
-		  /*
-                    sprintf(ffname, "%s/%s_f%05d.tiff", outdir, fformat, ifile);
-                    sprintf(imgfname, (const char *)ffname, irun);
-		  */
+                if (nframes > 0)
 		  imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", irun, 0, 0, ifile );
-                } /*else {
-                    sprintf(ffname, "%s/%s.tiff", outdir, fformat);
-                    sprintf(imgfname, (const char *)ffname, irun);
-		    }*/
                 std::cout << "Writing tiff to " << imgfname << " " << thr1
                           << std::endl;
                 mt->writeImage(imgfname.c_str(), thr1);
@@ -513,10 +471,6 @@ int main(int argc, char *argv[]) {
                       << std::endl;
     }
     if (nframes < 0) {
-      /*
-        sprintf(ffname, "%s/%s.tiff", outdir, fformat);
-        strcpy(imgfname, ffname);
-      */
       auto imgfname = createFileName( outdir, fprefix, "sum", "tiff", -1, 0, 0, -1 );
         std::cout << "Writing tiff to " << imgfname << " " << thr1 << std::endl;
         mt->writeImage(imgfname.c_str(), thr1);

@@ -42,8 +42,7 @@
 #define RECONFIG_PLL_LCK_MSK                (0x00000001 << RECONFIG_PLL_LCK_OFST)               // Not used in software
 #define PLL_A_LCK_OFST                      (4)                            // Not used in software
 #define PLL_A_LCK_MSK                       (0x00000001 << PLL_A_LCK_OFST) // Not used in software
-#define DD3_PLL_LCK_OFST                    (5)                            // Not used in software
-#define DD3_PLL_LCK_MSK                     (0x00000001 << DD3_PLL_LCK_OFST) // Not used in software
+
 
 /* Module Control Board Serial Number Register */
 #define MOD_SERIAL_NUM_REG                  (0x0A << MEM_MAP_SHIFT)
@@ -201,8 +200,6 @@
 #define CONTROL_CORE_RST_MSK                (0x00000001 << CONTROL_CORE_RST_OFST)
 #define CONTROL_PERIPHERAL_RST_OFST         (11) // DDR3 HMem Ctrlr, GBE, Temp
 #define CONTROL_PERIPHERAL_RST_MSK          (0x00000001 << CONTROL_PERIPHERAL_RST_OFST) // DDR3 HMem Ctrlr, GBE, Temp
-#define CONTROL_DDR3_MEM_RST_OFST           (12) // only PHY, not DDR3 PLL ,Not used in software
-#define CONTROL_DDR3_MEM_RST_MSK            (0x00000001 << CONTROL_DDR3_MEM_RST_OFST) // only PHY, not DDR3 PLL ,Not used in software
 #define CONTROL_ACQ_FIFO_CLR_OFST           (14)
 #define CONTROL_ACQ_FIFO_CLR_MSK            (0x00000001 << CONTROL_ACQ_FIFO_CLR_OFST)
 #define CONTROL_MASTER_OFST                 (15)
@@ -397,10 +394,10 @@ Time before end of exposure when comparator is disabled */
 /* ASIC Control Register */
 #define ASIC_CTRL_REG                       (0x7F << MEM_MAP_SHIFT)
 
-#define ASIC_CTRL_POLARITY_INTRFCE_OFST     (0)
-#define ASIC_CTRL_POLARITY_INTRFCE_MSK      (0x00000001 << ASIC_CTRL_POLARITY_INTRFCE_OFST)
-#define ASIC_CTRL_PARALLEL_RD_OFST          (1)
+#define ASIC_CTRL_PARALLEL_RD_OFST          (0)
 #define ASIC_CTRL_PARALLEL_RD_MSK           (0x00000001 << ASIC_CTRL_PARALLEL_RD_OFST)
+#define ASIC_CTRL_CLK_PLRTY_INTRFCE_OFST    (1)
+#define ASIC_CTRL_CLK_PLRTY_INTRFCE_MSK     (0x00000001 << ASIC_CTRL_CLK_PLRTY_INTRFCE_OFST)
 
 /* ADC 0 Deserializer Control */
 #define ADC_DSRLZR_0_REG                    (0xF0 << MEM_MAP_SHIFT)

@@ -41,9 +41,17 @@
 #include <ctime>
 #include <fmt/core.h>
 
+std::string getRootString( const std::string filepath ) {
+  size_t pos1 = filepath.find_last_of("/");
+  size_t pos2 = filepath.find_last_of(".");
+  std::cout << "pos1 " << pos1 << " pos2 " << pos2 << " size " << filepath.length() << std::endl;
+  return filepath.substr( pos1+1, pos2-pos1-1 );
+}
+
 //Create file name string according to slsDetectorPackage format
 //   dir:     directory
-//   fname:   fileprefix (without extension)
+//   fprefix:   fileprefix (without extension)
+//   fsuffix:   filesuffix (for output files, e.g. "ped")
 //   fext:    file extension (e.g. "raw")
 //   mindex:  module index ("d0" in standard)
 //   findex:  file index for one acquisition ("f0")
@@ -53,17 +61,10 @@ std::string createFileName( const std::string dir, std::string fprefix="run", st
   if (outfilecounter >= 0)
     filename = fmt::format("{:s}/{:s}_d{:d}_f{:d}_{:d}_f{:05d}.{:s}", dir, fprefix, mindex, findex, aindex, outfilecounter, fext);
   else if (fsuffix.length()!=0)
-    filename = fmt::format("{:s}/{:s}_d{:d}_{:s}.{:s}", dir, fprefix, mindex, fsuffix, fext);
+    filename = fmt::format("{:s}/{:s}_{:s}.{:s}", dir, fprefix, fsuffix, fext);
   else
     filename = fmt::format("{:s}/{:s}_d{:d}_f{:d}_{:d}.{:s}", dir, fprefix, mindex, findex, aindex, fext);
   return filename;
-}
-
-std::string getRootString( const std::string filepath ) {
-  size_t pos1 = filepath.find_last_of("/");
-  size_t pos2 = filepath.find_last_of(".");
-  std::cout << "pos1 " << pos1 << " pos2 " << pos2 << " size " << filepath.length() << std::endl;
-  return filepath.substr( pos1+1, pos2-pos1-1 );
 }
 
 int main(int argc, char *argv[]) {
@@ -100,7 +101,7 @@ int main(int argc, char *argv[]) {
     int ff, np;
     // cout << " data size is " << dsize;
 
-    ifstream filebin;
+    //ifstream filebin;
     std::string indir(argv[1]);
     std::string outdir(argv[2]);
     std::string fprefix(argv[3]);
@@ -118,9 +119,9 @@ int main(int argc, char *argv[]) {
         runmax = atoi(argv[6]);
     }
 
-    std::string pedfile{};
+    std::string pedfilename{};
     if (argc >= 8) {
-        pedfile = argv[7];
+        pedfilename = argv[7];
     }
     double thr = 0;
     double thr1 = 1;
@@ -164,40 +165,42 @@ int main(int argc, char *argv[]) {
     uint16_t yymax = 0;
 
 #ifndef ALDO
-    using header = sls::defs::sls_receiver_header;
-    // check if there is a roi in the header
-    typedef struct {
+    { //THIS SCOPE IS IMPORTANT! (To ensure proper destruction of ifstream)
+      using header = sls::defs::sls_receiver_header;
+      // check if there is a roi in the header
+      typedef struct {
         uint16_t xmin;
         uint16_t xmax;
         uint16_t ymin;
         uint16_t ymax;
-    } receiverRoi_compact;
-    receiverRoi_compact croi;
-    /*
-    sprintf(ffname, "%s/%s.%s", indir, fformat, fext);
-    sprintf(fname, (const char *)ffname, runmin);
-    */
-    std::string fsuffix{};
-    auto fname = createFileName( indir, fprefix, fsuffix, fext, runmin );
-    std::cout << "Reading header of file " << fname << " to check for ROI "
-              << std::endl;
-    filebin.open(fname, ios::in | ios::binary);
-    if (filebin.is_open()) {
+      } receiverRoi_compact;
+      receiverRoi_compact croi;
+      /*
+	sprintf(ffname, "%s/%s.%s", indir, fformat, fext);
+	sprintf(fname, (const char *)ffname, runmin);
+      */
+      std::string fsuffix{};
+      auto filename = createFileName( indir, fprefix, fsuffix, fext, runmin );
+      std::cout << "Reading header of file " << filename << " to check for ROI "
+		<< std::endl;
+      ifstream firstfile(filename, ios::in | ios::binary);
+      if (firstfile.is_open()) {
         header hbuffer;
         std::cout << "sizeof(header) = " << sizeof(header) << std::endl;
-        if (filebin.read((char *)&hbuffer, sizeof(header))) {
-            memcpy(&croi, &hbuffer.detHeader.detSpec1, 8);
-            std::cout << "Read ROI [" << croi.xmin << ", " << croi.xmax << ", "
-                      << croi.ymin << ", " << croi.ymax << "]" << std::endl;
-            xxmin = croi.xmin;
-            xxmax = croi.xmax;
-            yymin = croi.ymin;
-            yymax = croi.ymax;
+        if (firstfile.read((char *)&hbuffer, sizeof(header))) {
+	  memcpy(&croi, &hbuffer.detHeader.detSpec1, 8);
+	  std::cout << "Read ROI [" << croi.xmin << ", " << croi.xmax << ", "
+		    << croi.ymin << ", " << croi.ymax << "]" << std::endl;
+	  xxmin = croi.xmin;
+	  xxmax = croi.xmax;
+	  yymin = croi.ymin;
+	  yymax = croi.ymax;
         } else
-            std::cout << "reading error" << std::endl;
-        filebin.close();
-    } else
-        std::cout << "Could not open " << fname << " for reading " << std::endl;
+	  std::cout << "reading error" << std::endl;
+        firstfile.close();
+      } else
+        std::cout << "Could not open " << filename << " for reading " << std::endl;
+    } //end of protective scope
 #endif
 
     jungfrauLGADStrixelsData *decoder =
@@ -249,8 +252,8 @@ int main(int argc, char *argv[]) {
     std::cout << "input file prefix is " << fprefix << std::endl;
     std::cout << "runmin is " << runmin << std::endl;
     std::cout << "runmax is " << runmax << std::endl;
-    if (pedfile.length()!=0)
-        std::cout << "pedestal file is " << pedfile << std::endl;
+    if (pedfilename.length()!=0)
+        std::cout << "pedestal file is " << pedfilename << std::endl;
     if (thr > 0)
         std::cout << "threshold is " << thr << std::endl;
     std::cout << "Nframes is " << nframes << std::endl;
@@ -320,77 +323,77 @@ int main(int argc, char *argv[]) {
 
     //int pos, pos1;
 
-    if (pedfile.length()!=0) {
+    if (pedfilename.length()!=0) {
 
-      std::string froot = getRootString( pedfile );
+      std::string froot = getRootString( pedfilename );
 
       std::cout << "PEDESTAL " << std::endl;
         // sprintf(imgfname, "%s/pedestals.tiff", outdir);
 
-        if (pedfile.find(".tif") == std::string::npos) {
-	  std::string fname = pedfile;
-            std::cout << fname << std::endl;
-            std::time(&end_time);
-            std::cout << "aaa " << std::ctime(&end_time) << std::endl;
+        if (pedfilename.find(".tif") == std::string::npos) {
+	  std::string fname = pedfilename;
+	  std::cout << fname << std::endl;
+	  std::time(&end_time);
+	  std::cout << "aaa " << std::ctime(&end_time) << std::endl;
 
-            mt->setFrameMode(ePedestal);
-            // sprintf(fn,fformat,irun);
-            filebin.open(fname.c_str(), ios::in | ios::binary);
-            //      //open file
-            if (filebin.is_open()) {
-                std::cout << "bbbb " << std::ctime(&end_time) << std::endl;
+	  mt->setFrameMode(ePedestal);
+	  // sprintf(fn,fformat,irun);
+	  ifstream pedefile(fname, ios::in | ios::binary);
+	  //      //open file
+	  if (pedefile.is_open()) {
+	    std::cout << "bbbb " << std::ctime(&end_time) << std::endl;
+	    
+	    ff = -1;
+	    while (decoder->readNextFrame(pedefile, ff, np, buff)) {
+	      // if (np == 40) {
+	      if ((ifr + 1) % 100 == 0) {
+		std::cout
+		  << " ****"
+		  << decoder->getValue(buff, 20, 20); // << endl;
+	      }
+	      mt->pushData(buff);
+	      mt->nextThread();
+	      mt->popFree(buff);
+	      ifr++;
+	      if (ifr % 100 == 0) {
+		std::cout << " ****" << ifr << " " << ff << " " << np
+			  << std::endl;
+	      } // else
+	      //std::cout << ifr << " " << ff << " " << np << std::endl;
+	      if (ifr >= 1000)
+		break;
+	      ff = -1;
+	    }
+	    pedefile.close();
+	    while (mt->isBusy()) {
+	      ;
+	    }
 
-                ff = -1;
-                while (decoder->readNextFrame(filebin, ff, np, buff)) {
-                    // if (np == 40) {
-                    if ((ifr + 1) % 100 == 0) {
-                        std::cout
-                            << " ****"
-                            << decoder->getValue(buff, 20, 20); // << endl;
-                    }
-                    mt->pushData(buff);
-                    mt->nextThread();
-                    mt->popFree(buff);
-                    ifr++;
-                    if (ifr % 100 == 0) {
-                        std::cout << " ****" << ifr << " " << ff << " " << np
-                                  << std::endl;
-                    } // else
-                    //std::cout << ifr << " " << ff << " " << np << std::endl;
-                    if (ifr >= 1000)
-                        break;
-                    ff = -1;
-                }
-                filebin.close();
-                while (mt->isBusy()) {
-                    ;
-                }
+	    std::cout << "froot " << froot << std::endl;
+	    auto imgfname = createFileName( outdir, froot, "ped", "tiff");
+	    mt->writePedestal(imgfname.c_str());
+	    imgfname = createFileName( outdir, froot, "rms", "tiff");
+	    mt->writePedestalRMS(imgfname.c_str());
 
-		std::cout << "froot " << froot << std::endl;
-		auto imgfname = createFileName( outdir, froot, "ped", "tiff");
-                mt->writePedestal(imgfname.c_str());
-		imgfname = createFileName( outdir, froot, "rms", "tiff");
-                mt->writePedestalRMS(imgfname.c_str());
-
-            } else
-                std::cout << "Could not open pedestal file " << fname
-                          << " for reading " << std::endl;
+	  } else
+	    std::cout << "Could not open pedestal file " << fname
+		      << " for reading " << std::endl;
         } else {
 	  //double *ped = new double[nx * ny]; //, *ped1;
 	  std::vector<double> ped(nx * ny);
-	  float *pp = ReadFromTiff(pedfile.c_str(), nny, nnx);
-            if (pp && (int)nnx == nx && (int)nny == ny) {
-                for (int i = 0; i < nx * ny; i++) {
-                    ped[i] = pp[i];
-                }
-                delete[] pp;
-                mt->setPedestal(ped.data());
-                std::cout << "Pedestal set from tiff file " << pedfile
-                          << std::endl;
-            } else {
-                std::cout << "Could not open pedestal tiff file " << pedfile
-                          << " for reading " << std::endl;
-            }
+	  float *pp = ReadFromTiff(pedfilename.c_str(), nny, nnx);
+	  if (pp && (int)nnx == nx && (int)nny == ny) {
+	    for (int i = 0; i < nx * ny; i++) {
+	      ped[i] = pp[i];
+	    }
+	    delete[] pp;
+	    mt->setPedestal(ped.data());
+	    std::cout << "Pedestal set from tiff file " << pedfilename
+		      << std::endl;
+	  } else {
+	    std::cout << "Could not open pedestal tiff file " << pedfilename
+		      << " for reading " << std::endl;
+	  }
         }
         std::time(&end_time);
         std::cout << std::ctime(&end_time) << std::endl;
@@ -402,7 +405,7 @@ int main(int argc, char *argv[]) {
     mt->setFrameMode(eFrame);
 
     FILE *of = NULL;
-
+    
     for (int irun = runmin; irun <= runmax; irun++) {
         std::cout << "DATA ";
         // sprintf(fn,fformat,irun);
@@ -423,7 +426,7 @@ int main(int argc, char *argv[]) {
         std::time(&end_time);
         std::cout << std::ctime(&end_time) << std::endl;
         //  cout <<  fname << " " << outfname << " " << imgfname <<  endl;
-        filebin.open(fname, ios::in | ios::binary);
+        ifstream filebin(fname, ios::in | ios::binary);
         //      //open file
         ifile = 0;
         if (filebin.is_open()) {

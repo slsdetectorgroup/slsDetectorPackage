@@ -130,6 +130,7 @@ int main(int argc, char *argv[]) {
 	  std::string line{};
 	  std::getline(inputs, line);
 	  filenames.push_back(line);
+	  std::cout << line << '\n';
 	}
 	std::cout << "---- Reached end of txt-file. ----" << std::endl;
 	if (filenames.size()>0) {
@@ -396,17 +397,17 @@ int main(int argc, char *argv[]) {
     //NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS!
     for (unsigned int ifile = 0; ifile != filenames.size(); ++ifile) {
       std::cout << "DATA ";
-      //std::string fname(argv[iargc]);
+      std::string fname = filenames[ifile];
       std::string fsuffix{};
       std::string fprefix = getRootString(filenames[ifile]);
       std::string imgfname = createFileName( outdir, fprefix, fsuffix, "tiff" );
       std::string cfname = createFileName( outdir, fprefix, fsuffix, "clust" );
-      std::cout << filenames[ifile] << " ";
+      std::cout << fname << " ";
       std::cout << imgfname << std::endl;
       std::time(&end_time);
       std::cout << std::ctime(&end_time) << std::endl;
 
-      ifstream filebin(filenames[ifile], ios::in | ios::binary);
+      ifstream filebin(fname, ios::in | ios::binary);
       //      //open file
       ifile = 0;
       if (filebin.is_open()) {
@@ -457,9 +458,11 @@ int main(int argc, char *argv[]) {
 	}
 	std::cout << "--" << std::endl;
 	filebin.close();
+	std::cout << "--" << std::endl;
 	while (mt->isBusy()) {
 	  ;
 	}
+	std::cout << "--" << std::endl;
 	if (nframes >= 0) {
 	  if (nframes > 0)
 	    imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ifile );

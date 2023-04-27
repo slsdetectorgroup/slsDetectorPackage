@@ -41,7 +41,7 @@
 #include <ctime>
 #include <fmt/core.h>
 
-std::string getRootString( const std::string filepath ) {
+std::string getRootString( const std::string& filepath ) {
   size_t pos1 = filepath.find_last_of("/");
   size_t pos2 = filepath.find_last_of(".");
   std::cout << "pos1 " << pos1 << " pos2 " << pos2 << " size " << filepath.length() << std::endl;
@@ -56,15 +56,14 @@ std::string getRootString( const std::string filepath ) {
 //   mindex:  module index ("d0" in standard)
 //   findex:  file index for one acquisition ("f0")
 //   aindex:  acquisition index (i.e. "run number")
-std::string createFileName( const std::string dir, std::string fprefix="run", std::string fsuffix="", std::string fext="raw", int aindex=0, int mindex=0, int findex=0, int outfilecounter=-1 ) {
+std::string createFileName( const std::string& dir, std::string fprefix="run", std::string fsuffix="", std::string fext="raw", int aindex=0, int mindex=0, int findex=0, int outfilecounter=-1 ) {
   std::string filename{};
   if (outfilecounter >= 0)
-    filename = fmt::format("{:s}/{:s}_d{:d}_f{:d}_{:d}_f{:05d}.{:s}", dir, fprefix, mindex, findex, aindex, outfilecounter, fext);
+    return fmt::format("{:s}/{:s}_d{:d}_f{:d}_{:d}_f{:05d}.{:s}", dir, fprefix, mindex, findex, aindex, outfilecounter, fext);
   else if (fsuffix.length()!=0)
-    filename = fmt::format("{:s}/{:s}_{:s}.{:s}", dir, fprefix, fsuffix, fext);
+    return fmt::format("{:s}/{:s}_{:s}.{:s}", dir, fprefix, fsuffix, fext);
   else
-    filename = fmt::format("{:s}/{:s}_d{:d}_f{:d}_{:d}.{:s}", dir, fprefix, mindex, findex, aindex, fext);
-  return filename;
+    return fmt::format("{:s}/{:s}_d{:d}_f{:d}_{:d}.{:s}", dir, fprefix, mindex, findex, aindex, fext);
 }
 
 int main(int argc, char *argv[]) {

@@ -2,7 +2,6 @@
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 #module add CBFlib/0.9.5
 
-
 INCDIR=-I. -I../ -I../interpolations  -I../interpolations/etaVEL  -I../dataStructures  -I../../slsSupportLib/include/ -I../../slsReceiverSoftware/include/ -I../tiffio/include -I/afs/psi/project/sls_det_software/conda/envs/pyclang_fmt/include/
 
 LDFLAG= ../tiffio/src/tiffIO.cpp  -L/afs/psi/project/sls_det_software/conda/envs/pyclang_fmt/lib/ -L/usr/lib64/ -lpthread -lm  -lstdc++   -pthread -lrt    -ltiff -O3  -std=c++11 -lfmt

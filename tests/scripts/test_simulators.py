@@ -44,7 +44,7 @@ def killProcess(name):
 
 def cleanup(name, d):
     '''
-    kill both servers and receivers
+    kill both servers, receivers and clean shared memory
     '''
     Log(Fore.GREEN, 'Cleaning up...')
     killProcess(name + 'DetectorServer_virtual')
@@ -116,10 +116,7 @@ def startCmdTests(name, fp):
 
 def startNormalTests(d, fp):
     try:
-        #fname = '/tmp/slsDetectorPackage_virtual_test_normal.txt'
-        #print(Fore.BLUE + 'Normal tests -> ' + fname)
         Log(Fore.BLUE, '\nNormal tests')
-        #with open(fname, 'w') as fp:
         p = subprocess.run(['tests', '--abort' ], stdout=fp, stderr=fp)
         if p.returncode != 0:
             raise Exception 
@@ -134,8 +131,6 @@ def parseCommandLine():
         raise RuntimeException('No argument for rx_hostname or settingsdir. Expected [script_name] [rx_hostname] [settingsdir(rel or abs)]')
     if sys.argv[1] == 'localhost':
         raise RuntimeException('Cannot use localhost for rx_hostname for the tests (fails for rx_arping for eg.)')
-    #rx_hostname = sys.argv[1]
-    #settingsdir = sys.argv[2]
     return [sys.argv[1], sys.argv[2]]
 
 
@@ -168,7 +163,7 @@ with open(fname, 'w') as fp:
     sys.stderr = fp
 
     d = Detector()
-    # TODO: redirect d object print out also to file
+    # TODO: redirect Detector object print out also to file
     startNormalTests(d, fp)
 
     for server in servers:

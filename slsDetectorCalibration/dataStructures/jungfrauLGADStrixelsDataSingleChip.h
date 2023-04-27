@@ -69,7 +69,7 @@ class jungfrauLGADStrixelsDataSingleChip : public slsDetectorData<uint16_t> {
     int mchip;
 
     void remapGroup( const int group ) {
-      int ix, iy;
+      int ix, iy=0;
       int x0, y0, x1, y1, shifty;
       int multiplicator;
 
@@ -261,15 +261,15 @@ class jungfrauLGADStrixelsDataSingleChip : public slsDetectorData<uint16_t> {
     };
 
     char *readNextFrame(std::ifstream &filebin, int &ff, int &np,char *data) {
-        char *retval = 0;
-        int nd;
-        int fnum = -1;
+      //char *retval = 0;
+      //int nd;
+      //int fnum = -1;
         np = 0;
-        int pn;
+        //int pn;
 
         //  cout << dataSize << endl;
         if (ff >= 0)
-            fnum = ff;
+	  // fnum = ff;
 
         if (filebin.is_open()) {
             if (filebin.read(data, dataSize)) {

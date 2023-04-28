@@ -41,7 +41,7 @@
 #include <ctime>
 #include <fmt/core.h>
 
-std::string getRootString( const std::string filepath ) {
+std::string getRootString( const std::string& filepath ) {
   size_t pos1;
   if (filepath.find("/") == std::string::npos )
     pos1 = 0;
@@ -57,15 +57,13 @@ std::string getRootString( const std::string filepath ) {
 //   fprefix:   fileprefix (without extension)
 //   fsuffix:   filesuffix (for output files, e.g. "ped")
 //   fext:    file extension (e.g. "raw")
-std::string createFileName( const std::string dir, std::string fprefix="run", std::string fsuffix="", std::string fext="raw", int outfilecounter=-1 ) {
-  std::string filename{};
+std::string createFileName( const std::string& dir, const std::string& fprefix="run", const std::string& fsuffix="", const std::string& fext="raw", int outfilecounter=-1 ) {
   if (outfilecounter >= 0)
-    filename = fmt::format("{:s}/{:s}_{:s}_f{:05d}.{:s}", dir, fprefix, fsuffix, outfilecounter, fext);
+    return fmt::format("{:s}/{:s}_{:s}_f{:05d}.{:s}", dir, fprefix, fsuffix, outfilecounter, fext);
   else if (fsuffix.length()!=0)
-    filename = fmt::format("{:s}/{:s}_{:s}.{:s}", dir, fprefix, fsuffix, fext);
+    return fmt::format("{:s}/{:s}_{:s}.{:s}", dir, fprefix, fsuffix, fext);
   else
-    filename = fmt::format("{:s}/{:s}.{:s}", dir, fprefix, fext);
-  return filename;
+    return fmt::format("{:s}/{:s}.{:s}", dir, fprefix, fext);
 }
 
 
@@ -104,9 +102,9 @@ int main(int argc, char *argv[]) {
     int ff, np;
     // cout << " data size is " << dsize;
 
-    std::string txtfilename(argv[1]);
-    std::string outdir(argv[2]);
-    std::string pedfilename(argv[3]);
+    const std::string txtfilename(argv[1]);
+    const std::string outdir(argv[2]);
+    const std::string pedfilename(argv[3]);
 
     int xmin = atoi(argv[4]);
     int xmax = atoi(argv[5]);
@@ -321,7 +319,7 @@ int main(int argc, char *argv[]) {
       std::cout << "PEDESTAL " << std::endl;
 
         if (pedfilename.find(".tif") == std::string::npos) {
-	  std::string fname = pedfilename;
+	  const std::string fname(pedfilename);
 	  std::cout << fname << std::endl;
 	  std::time(&end_time);
 	  std::cout << "aaa " << std::ctime(&end_time) << std::endl;
@@ -399,11 +397,11 @@ int main(int argc, char *argv[]) {
     //NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS!
     for (unsigned int ifile = 0; ifile != filenames.size(); ++ifile) {
       std::cout << "DATA ";
-      std::string fname(filenames[ifile]);
-      std::string fsuffix{};
-      std::string fprefix = getRootString(fname);
-      std::string imgfname = createFileName( outdir, fprefix, fsuffix, "tiff" );
-      std::string cfname = createFileName( outdir, fprefix, fsuffix, "clust" );
+      const std::string fname(filenames[ifile]);
+      const std::string fsuffix{};
+      const std::string fprefix( getRootString(fname) );
+      std::string imgfname( createFileName( outdir, fprefix, fsuffix, "tiff" ) );
+      const std::string cfname( createFileName( outdir, fprefix, fsuffix, "clust" ) );
       std::cout << fname << " ";
       std::cout << imgfname << std::endl;
       std::time(&end_time);
@@ -484,8 +482,8 @@ int main(int argc, char *argv[]) {
     }
     if (nframes < 0) {
       //std::string fname(argv[10]);
-      auto fprefix = getRootString(filenames[0]); //This might by a non-ideal name choice for that file
-      auto imgfname = createFileName( outdir, fprefix, "sum", "tiff" );
+      std::string fprefix( getRootString(filenames[0]) ); //This might by a non-ideal name choice for that file
+      std::string imgfname( createFileName( outdir, fprefix, "sum", "tiff" ) );
       std::cout << "Writing tiff to " << imgfname << " " << thr1 << std::endl;
       mt->writeImage(imgfname.c_str(), thr1);
     }

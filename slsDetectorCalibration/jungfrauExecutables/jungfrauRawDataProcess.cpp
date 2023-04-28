@@ -56,7 +56,7 @@ std::string getRootString( const std::string& filepath ) {
 //   mindex:  module index ("d0" in standard)
 //   findex:  file index for one acquisition ("f0")
 //   aindex:  acquisition index (i.e. "run number")
-std::string createFileName( const std::string& dir, std::string fprefix="run", std::string fsuffix="", std::string fext="raw", int aindex=0, int mindex=0, int findex=0, int outfilecounter=-1 ) {
+std::string createFileName( const std::string& dir, const std::string& fprefix="run", const std::string& fsuffix="", const std::string& fext="raw", int aindex=0, int mindex=0, int findex=0, int outfilecounter=-1 ) {
   std::string filename{};
   if (outfilecounter >= 0)
     return fmt::format("{:s}/{:s}_d{:d}_f{:d}_{:d}_f{:05d}.{:s}", dir, fprefix, mindex, findex, aindex, outfilecounter, fext);

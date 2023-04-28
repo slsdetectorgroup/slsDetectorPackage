@@ -126,22 +126,23 @@ int main(int argc, char *argv[]) {
       ifstream inputs( txtfilename, std::ios::in );
       if (inputs.is_open()) {
 	std::cout << "Reading imput filenames from txt-file ..." << std::endl;
+	std::string line{};
 	while (!inputs.eof()) {
-	  std::string line{};
 	  std::getline(inputs, line);
-	  filenames.push_back(line);
+	  filenames.emplace_back(line);
 	  std::cout << line << '\n';
 	}
+	inputs.close();
 	std::cout << "---- Reached end of txt-file. ----" << std::endl;
-	if (filenames.size()>0) {
-	  std::cout << filenames.size() << " filenames found in " << txtfilename << std::endl;
-	  std::cout << "The files will be processed in the same order as found in the txt-file." << std::endl;
-	} else {
-	  std::cout << "No files found in txt-file!" << std::endl;
-	  return 1;
-	}
       } else
 	std::cout << "Could not open " << txtfilename << std::endl;
+      if (filenames.size()>0) {
+	std::cout << filenames.size() << " filenames found in " << txtfilename << std::endl;
+	std::cout << "The files will be processed in the same order as found in the txt-file." << std::endl;
+      } else {
+	std::cout << "No files found in txt-file!" << std::endl;
+	return 1;
+      }
     }
     
     // Define decoders...
@@ -176,10 +177,10 @@ int main(int argc, char *argv[]) {
         uint16_t ymax;
       } receiverRoi_compact;
       receiverRoi_compact croi;
-      //std::string filepath(argv[9]); //This is a problem if the input files have different ROIs!
+      std::string filepath(filenames[0]); //This is a problem if the input files have different ROIs!
       std::cout << "Reading header of file " << filenames[0] << " to check for ROI "
 		<< std::endl;
-      ifstream firstfile(filenames[0], ios::in | ios::binary);
+      ifstream firstfile(filepath, ios::in | ios::binary);
       if (firstfile.is_open()) {
         header hbuffer;
         std::cout << "sizeof(header) = " << sizeof(header) << std::endl;
@@ -195,7 +196,7 @@ int main(int argc, char *argv[]) {
 	  std::cout << "reading error" << std::endl;
         firstfile.close();
       } else
-        std::cout << "Could not open " << filenames[0] << " for reading " << std::endl;
+        std::cout << "Could not open " << filepath << " for reading " << std::endl;
     } //end of protective scope
 #endif
 
@@ -393,13 +394,14 @@ int main(int argc, char *argv[]) {
     mt->setFrameMode(eFrame);
 
     FILE *of = NULL;
+    ifstream filebin{};
     
     //NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS!
     for (unsigned int ifile = 0; ifile != filenames.size(); ++ifile) {
       std::cout << "DATA ";
-      std::string fname = filenames[ifile];
+      std::string fname(filenames[ifile]);
       std::string fsuffix{};
-      std::string fprefix = getRootString(filenames[ifile]);
+      std::string fprefix = getRootString(fname);
       std::string imgfname = createFileName( outdir, fprefix, fsuffix, "tiff" );
       std::string cfname = createFileName( outdir, fprefix, fsuffix, "clust" );
       std::cout << fname << " ";
@@ -407,9 +409,9 @@ int main(int argc, char *argv[]) {
       std::time(&end_time);
       std::cout << std::ctime(&end_time) << std::endl;
 
-      ifstream filebin(fname, ios::in | ios::binary);
+      filebin.open(fname, ios::in | ios::binary);
       //      //open file
-      ifile = 0;
+      ioutfile = 0;
       if (filebin.is_open()) {
 	if (thr <= 0 && cf != 0) { // cluster finder
 	  if (of == NULL) {
@@ -458,14 +460,12 @@ int main(int argc, char *argv[]) {
 	}
 	std::cout << "--" << std::endl;
 	filebin.close();
-	std::cout << "--" << std::endl;
 	while (mt->isBusy()) {
 	  ;
 	}
-	std::cout << "--" << std::endl;
 	if (nframes >= 0) {
 	  if (nframes > 0)
-	    imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ifile );
+	    imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ioutfile );
 	  std::cout << "Writing tiff to " << imgfname << " " << thr1
 		    << std::endl;
 	  mt->writeImage(imgfname.c_str(), thr1);
@@ -479,7 +479,7 @@ int main(int argc, char *argv[]) {
 	std::time(&end_time);
 	std::cout << std::ctime(&end_time) << std::endl;
       } else
-	std::cout << "Could not open " << filenames[ifile] << " for reading "
+	std::cout << "Could not open " << fname << " for reading "
 		  << std::endl;
     }
     if (nframes < 0) {

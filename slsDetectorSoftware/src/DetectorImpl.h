@@ -84,9 +84,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     virtual ~DetectorImpl();
 
-    template <class CT> struct NonDeduced {
-        using type = CT;
-    };
+    template <class CT> struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
     Result<RT> Parallel(RT (Module::*somefunc)(CT...),
                         std::vector<int> positions,
@@ -280,13 +278,13 @@ class DetectorImpl : public virtual slsDetectorDefs {
     int acquire();
 
     /** also takes care of master and slave for multi module mythen */
-    void startAcquisition(const bool blocking, std::vector<int> positions);
+    void startAcquisition(const bool blocking, Positions pos);
 
     /** also takes care of master and slave for multi module mythen */
-    void sendSoftwareTrigger(const bool block, std::vector<int> positions);
+    void sendSoftwareTrigger(const bool block, Positions pos);
 
     /** also takes care of master and slave for multi module mythen */
-    void stopDetector(std::vector<int> positions);
+    void stopDetector(Positions pos);
 
     /**
      * Combines data from all readouts and gives it to the gui

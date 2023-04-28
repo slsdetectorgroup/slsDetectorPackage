@@ -9,5 +9,5 @@
 #define APIMOENCH    "developer 0x230224"
 #define APIRECEIVER  "developer 0x230224"
 #define APIEIGER     "developer 0x230224"
-#define APIJUNGFRAU "developer 0x230421"
-#define APILIB "developer 0x230421"
+#define APIJUNGFRAU  "developer 0x230421"
+#define APILIB       "developer 0x230421"

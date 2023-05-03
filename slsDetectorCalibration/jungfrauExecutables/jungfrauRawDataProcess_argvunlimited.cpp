@@ -41,42 +41,43 @@
 #include <ctime>
 #include <fmt/core.h>
 
-
-std::string getRootString( const std::string& filepath ) {
-  size_t pos1 = filepath.find_last_of("/");
+std::string getRootString( const std::string filepath ) {
+  size_t pos1;
+  if (filepath.find("/") == std::string::npos )
+    pos1 = 0;
+  else
+    pos1 = filepath.find_last_of("/")+1;
   size_t pos2 = filepath.find_last_of(".");
-  std::cout << "pos1 " << pos1 << " pos2 " << pos2 << " size " << filepath.length() << std::endl;
-  return filepath.substr( pos1+1, pos2-pos1-1 );
+  //std::cout << "pos1 " << pos1 << " pos2 " << pos2 << " size " << filepath.length() << std::endl;
+  return filepath.substr( pos1, pos2-pos1 );
 }
 
-//Create file name string according to slsDetectorPackage format
+//Create file name string
 //   dir:     directory
 //   fprefix:   fileprefix (without extension)
 //   fsuffix:   filesuffix (for output files, e.g. "ped")
 //   fext:    file extension (e.g. "raw")
-//   mindex:  module index ("d0" in standard)
-//   findex:  file index for one acquisition ("f0")
-//   aindex:  acquisition index (i.e. "run number")
-
-std::string createFileName( const std::string& dir, const std::string& fprefix="run", const std::string& fsuffix="", const std::string& fext="raw", int aindex=0, int mindex=0, int findex=0, int outfilecounter=-1 ) {
+std::string createFileName( const std::string dir, std::string fprefix="run", std::string fsuffix="", std::string fext="raw", int outfilecounter=-1 ) {
   std::string filename{};
   if (outfilecounter >= 0)
-    filename = fmt::format("{:s}/{:s}_d{:d}_f{:d}_{:d}_f{:05d}.{:s}", dir, fprefix, mindex, findex, aindex, outfilecounter, fext);
+    filename = fmt::format("{:s}/{:s}_{:s}_f{:05d}.{:s}", dir, fprefix, fsuffix, outfilecounter, fext);
   else if (fsuffix.length()!=0)
     filename = fmt::format("{:s}/{:s}_{:s}.{:s}", dir, fprefix, fsuffix, fext);
   else
-    filename = fmt::format("{:s}/{:s}_d{:d}_f{:d}_{:d}.{:s}", dir, fprefix, mindex, findex, aindex, fext);
+    filename = fmt::format("{:s}/{:s}.{:s}", dir, fprefix, fext);
   return filename;
 }
 
+
+//NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS!
 int main(int argc, char *argv[]) {
 
-    if (argc < 5) {
+    if (argc < 10) {
         std::cout
             << "Usage is " << argv[0]
-            << "indir outdir fprefix(excluding slsDetector standard suffixes and extension) fextension "
-               "[runmin] [runmax] [pedfile (raw or tiff)] [threshold] "
-               "[nframes] [xmin xmax ymin ymax] [gainmap]"
+            << "outdir [pedfile (raw or tiff)] [xmin xmax ymin ymax] "
+               "[threshold] [nframes] [full file path and names (with bash wildcards)] "
+	       " NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS! "
             << std::endl;
         std::cout
             << "threshold <0 means analog; threshold=0 means cluster finder; "
@@ -103,40 +104,20 @@ int main(int argc, char *argv[]) {
     int ff, np;
     // cout << " data size is " << dsize;
 
-    //ifstream filebin;
-    std::string indir(argv[1]);
-    std::string outdir(argv[2]);
-    std::string fprefix(argv[3]);
-    std::string fext(argv[4]);
-    int runmin = 0;
+    std::string outdir(argv[1]);
+    std::string pedfilename(argv[2]);
 
-    // cout << "argc is " << argc << endl;
-    if (argc >= 6) {
-        runmin = atoi(argv[5]);
-    }
+    int xmin = atoi(argv[3]);
+    int xmax = atoi(argv[4]);
+    int ymin = atoi(argv[5]);
+    int ymax = atoi(argv[6]);
 
-    int runmax = runmin;
-
-    if (argc >= 7) {
-        runmax = atoi(argv[6]);
-    }
-
-    std::string pedfilename{};
-    if (argc >= 8) {
-        pedfilename = argv[7];
-    }
     double thr = 0;
     double thr1 = 1;
-
-    if (argc >= 9) {
-        thr = atof(argv[8]);
-    }
+    thr = atof(argv[7]);
 
     int nframes = 0;
-
-    if (argc >= 10) {
-        nframes = atoi(argv[9]);
-    }
+    nframes = atoi(argv[8]);
     
     // Define decoders...
 #if !defined JFSTRX && !defined JFSTRXOLD && !defined JFSTRXCHIP1 &&           \
@@ -170,11 +151,10 @@ int main(int argc, char *argv[]) {
         uint16_t ymax;
       } receiverRoi_compact;
       receiverRoi_compact croi;
-      std::string fsuffix{};
-      auto filename = createFileName( indir, fprefix, fsuffix, fext, runmin );
-      std::cout << "Reading header of file " << filename << " to check for ROI "
+      std::string filepath(argv[9]); //This is a problem if the input files have different ROIs!
+      std::cout << "Reading header of file " << filepath << " to check for ROI "
 		<< std::endl;
-      ifstream firstfile(filename, ios::in | ios::binary);
+      ifstream firstfile(filepath, ios::in | ios::binary);
       if (firstfile.is_open()) {
         header hbuffer;
         std::cout << "sizeof(header) = " << sizeof(header) << std::endl;
@@ -190,7 +170,7 @@ int main(int argc, char *argv[]) {
 	  std::cout << "reading error" << std::endl;
         firstfile.close();
       } else
-        std::cout << "Could not open " << filename << " for reading " << std::endl;
+        std::cout << "Could not open " << filepath << " for reading " << std::endl;
     } //end of protective scope
 #endif
 
@@ -220,41 +200,41 @@ int main(int argc, char *argv[]) {
     decoder->getDetectorSize(nx, ny);
     std::cout << "Detector size is " << nx << " " << ny << std::endl;
 
-    int xmin = 0, xmax = nx, ymin = 0, ymax = ny;
-    if (argc >= 14) {
-        xmin = atoi(argv[10]);
-        xmax = atoi(argv[11]);
-        ymin = atoi(argv[12]);
-        ymax = atoi(argv[13]);
+
+    if ( xmin == xmax ) {
+      xmin = 0;
+      xmax = nx;
+    }
+    if ( ymin == ymax ) {
+      ymin = 0;
+      ymax = ny;
     }
     std::cout << xmin << " " << xmax << " " << ymin << " " << ymax << " "
               << std::endl;
 
+    /*
     char *gainfname = NULL;
     if (argc > 14) {
         gainfname = argv[14];
         std::cout << "Gain map file name is: " << gainfname << std::endl;
     }
+    */
 
     std::time_t end_time;
 
-    std::cout << "input directory is " << indir << std::endl;
     std::cout << "output directory is " << outdir << std::endl;
-    std::cout << "input file prefix is " << fprefix << std::endl;
-    std::cout << "runmin is " << runmin << std::endl;
-    std::cout << "runmax is " << runmax << std::endl;
     if (pedfilename.length()!=0)
         std::cout << "pedestal file is " << pedfilename << std::endl;
     if (thr > 0)
         std::cout << "threshold is " << thr << std::endl;
     std::cout << "Nframes is " << nframes << std::endl;
 
-    // std::cout << "HHHEEEEEEEEEEEEEEEEEEEEEEERE!!!!!" << std::endl;
     uint32_t nnx, nny;
 
     singlePhotonDetector *filter = new singlePhotonDetector(
         decoder, 3, nsigma, 1, NULL, nped, 200, -1, -1, gainmap, NULL);
 
+    /*
     if (gainfname) {
 
         if (filter->readGainMap(gainfname))
@@ -262,7 +242,8 @@ int main(int argc, char *argv[]) {
         else
             std::cout << "Could not open gain map " << gainfname << std::endl;
     } else
-        thr = 0.15 * thr;
+    */
+    thr = 0.15 * thr;
     filter->newDataSet();
     // int dsize = decoder->getDataSize();
 
@@ -307,7 +288,7 @@ int main(int argc, char *argv[]) {
 
     int ifr = 0;
 
-    if (pedfilename.length()!=0) {
+    if (pedfilename.length()>1) {
 
       std::string froot = getRootString(pedfilename);
 
@@ -388,94 +369,98 @@ int main(int argc, char *argv[]) {
 
     FILE *of = NULL;
     
-    for (int irun = runmin; irun <= runmax; irun++) {
-        std::cout << "DATA ";
-	std::string fsuffix{};
-	auto fname = createFileName( indir, fprefix, fsuffix, fext, irun );
-	auto imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", irun );
-	auto cfname = createFileName( outdir, fprefix, fsuffix, "clust", irun );
-        std::cout << fname << " ";
-        std::cout << imgfname << std::endl;
-        std::time(&end_time);
-        std::cout << std::ctime(&end_time) << std::endl;
-        //  std::cout <<  fname << " " << outfname << " " << imgfname <<  std::endl;
-        ifstream filebin(fname, ios::in | ios::binary);
-        //      //open file
-        ifile = 0;
-        if (filebin.is_open()) {
-            if (thr <= 0 && cf != 0) { // cluster finder
-                if (of == NULL) {
-		  of = fopen(cfname.c_str(), "w");
-                    if (of) {
-                        mt->setFilePointer(of);
-                        std::cout << "file pointer set " << std::endl;
-                    } else {
-                        std::cout << "Could not open " << cfname
-                                  << " for writing " << std::endl;
-                        mt->setFilePointer(NULL);
-                        return 1;
-                    }
-                }
-            }
-            //     //while read frame
-            ff = -1;
-            ifr = 0;
-            while (decoder->readNextFrame(filebin, ff, np, buff)) {
-                //  if (np == 40) {
-                //         //push
+    //NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS!
+    for (int iargc = 9; iargc != argc; ++iargc) {
+      std::cout << "DATA ";
+      std::string fname(argv[iargc]);
+      std::string fsuffix{};
+      std::string fprefix = getRootString(fname);
+      std::string imgfname = createFileName( outdir, fprefix, fsuffix, "tiff" );
+      std::string cfname = createFileName( outdir, fprefix, fsuffix, "clust" );
+      std::cout << fname << " ";
+      std::cout << imgfname << std::endl;
+      std::time(&end_time);
+      std::cout << std::ctime(&end_time) << std::endl;
 
-                if ((ifr + 1) % 100 == 0) {
-                    std::cout << " ****"
-                              << decoder->getValue(buff, 20, 20); // << std::endl;
-                }
-                mt->pushData(buff);
-                // 	//         //pop
-                mt->nextThread();
-                mt->popFree(buff);
-
-                ifr++;
-                if (ifr % 100 == 0)
-                    std::cout << " " << ifr << " " << ff << std::endl;
-                if (nframes > 0) {
-                    if (ifr % nframes == 0) {
-		      imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", irun, 0, 0, ifile );
-		      mt->writeImage(imgfname.c_str(), thr1);
-                        mt->clearImage();
-                        ifile++;
-                    }
-                }
-                // } else
-                //std::cout << ifr << " " << ff << " " << np << std::endl;
-                ff = -1;
-            }
-            std::cout << "--" << std::endl;
-            filebin.close();
-            while (mt->isBusy()) {
-                ;
-            }
-            if (nframes >= 0) {
-                if (nframes > 0)
-		  imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", irun, 0, 0, ifile );
-                std::cout << "Writing tiff to " << imgfname << " " << thr1
-                          << std::endl;
-                mt->writeImage(imgfname.c_str(), thr1);
-                mt->clearImage();
-                if (of) {
-                    fclose(of);
-                    of = NULL;
-                    mt->setFilePointer(NULL);
-                }
-            }
-            std::time(&end_time);
-            std::cout << std::ctime(&end_time) << std::endl;
-        } else
-            std::cout << "Could not open " << fname << " for reading "
-                      << std::endl;
+      ifstream filebin(fname, ios::in | ios::binary);
+      //      //open file
+      ifile = 0;
+      if (filebin.is_open()) {
+	if (thr <= 0 && cf != 0) { // cluster finder
+	  if (of == NULL) {
+	    of = fopen(cfname.c_str(), "w");
+	    if (of) {
+	      mt->setFilePointer(of);
+	      std::cout << "file pointer set " << std::endl;
+	    } else {
+	      std::cout << "Could not open " << cfname
+			<< " for writing " << std::endl;
+	      mt->setFilePointer(NULL);
+	      return 1;
+	    }
+	  }
+	}
+	//     //while read frame
+	ff = -1;
+	ifr = 0;
+	while (decoder->readNextFrame(filebin, ff, np, buff)) {
+	  //  if (np == 40) {
+	  //         //push
+	  
+	  if ((ifr + 1) % 100 == 0) {
+	    std::cout << " ****"
+		      << decoder->getValue(buff, 20, 20); // << std::endl;
+	  }
+	  mt->pushData(buff);
+	  // 	//         //pop
+	  mt->nextThread();
+	  mt->popFree(buff);
+	  
+	  ifr++;
+	  if (ifr % 100 == 0)
+	    std::cout << " " << ifr << " " << ff << std::endl;
+	  if (nframes > 0) {
+	    if (ifr % nframes == 0) {
+	      imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ifile );
+	      mt->writeImage(imgfname.c_str(), thr1);
+	      mt->clearImage();
+	      ifile++;
+	    }
+	  }
+	  // } else
+	  //std::cout << ifr << " " << ff << " " << np << std::endl;
+	  ff = -1;
+	}
+	std::cout << "--" << std::endl;
+	filebin.close();
+	while (mt->isBusy()) {
+	  ;
+	}
+	if (nframes >= 0) {
+	  if (nframes > 0)
+	    imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ifile );
+	  std::cout << "Writing tiff to " << imgfname << " " << thr1
+		    << std::endl;
+	  mt->writeImage(imgfname.c_str(), thr1);
+	  mt->clearImage();
+	  if (of) {
+	    fclose(of);
+	    of = NULL;
+	    mt->setFilePointer(NULL);
+	  }
+	}
+	std::time(&end_time);
+	std::cout << std::ctime(&end_time) << std::endl;
+      } else
+	std::cout << "Could not open " << fname << " for reading "
+		  << std::endl;
     }
     if (nframes < 0) {
-      auto imgfname = createFileName( outdir, fprefix, "sum", "tiff", -1, 0, 0, -1 );
-        std::cout << "Writing tiff to " << imgfname << " " << thr1 << std::endl;
-        mt->writeImage(imgfname.c_str(), thr1);
+      std::string fname(argv[10]);
+      auto fprefix = getRootString(fname); //This might by a non-ideal name choice for that file
+      auto imgfname = createFileName( outdir, fprefix, "sum", "tiff" );
+      std::cout << "Writing tiff to " << imgfname << " " << thr1 << std::endl;
+      mt->writeImage(imgfname.c_str(), thr1);
     }
 
     return 0;

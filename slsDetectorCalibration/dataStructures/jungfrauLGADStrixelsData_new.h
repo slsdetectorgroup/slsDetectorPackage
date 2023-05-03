@@ -193,7 +193,7 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 
     void remapGroup(const int group) {
         int multiplicator = getMultiplicator(group);
-        int shiftx;
+        //int shiftx;
         int ix, iy = 0;
 
         setMappingShifts(group);
@@ -236,7 +236,10 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
         } else if (ymax <= c6g1_yend - bond_shift_y) {
             group = 1;
             mchip = 6;
-        }
+        } else { //to fix compiler warning
+	  group = -1;
+	  mchip = -1;
+	}
         int multiplicator = getMultiplicator(group);
         setMappingShifts(group);
 
@@ -315,14 +318,13 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
         } else {
 
             mchip = 1;
-            remapGroup(1);
-            remapGroup(2);
-            remapGroup(3);
+	    for (int group=1; group!=4; ++group)
+	      remapGroup(group);
 
             mchip = 6;
-            remapGroup(1);
-            remapGroup(2);
-            remapGroup(3);
+	    for (int group=1; group!=4; ++group)
+	      remapGroup(group);
+
         }
 
         iframe = 0;
@@ -352,11 +354,10 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
     */
 
     int getFrameNumber(char *buff) {
-#ifdef ALDO                                   // VH
-        return ((header *)buff)->bunchNumber; // VH
-#else                                         // VH
+#ifdef ALDO                                      // VH
+        return ((jf_header *)buff)->bunchNumber; // VH
+#endif                                           // VH
         return ((header *)buff)->detHeader.frameNumber;
-#endif                                        // VH
     };
 
     /**
@@ -374,9 +375,8 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
         // return fakePacketNumber; //VH //TODO: Keep in mind in case of bugs!
         // //This is definitely bad!
         return 1000;
-#else  // VH
-        return ((header *)buff)->detHeader.packetNumber;
 #endif // VH
+        return ((header *)buff)->detHeader.packetNumber;
     };
 
     char *readNextFrame(std::ifstream &filebin) {
@@ -400,15 +400,15 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
     };
 
     char *readNextFrame(std::ifstream &filebin, int &ff, int &np, char *data) {
-        char *retval = 0;
-        int nd;
-        int fnum = -1;
+      //char *retval = 0;
+      //int nd;
+      //int fnum = -1;
         np = 0;
-        int pn;
+        //int pn;
 
-        // std::cout << dataSize << std::endl;
-        if (ff >= 0)
-            fnum = ff;
+        //std::cout << dataSize << std::endl;
+        //if (ff >= 0) {
+          //  fnum = ff; }
 
         if (filebin.is_open()) {
             if (filebin.read(data, dataSize)) {
@@ -417,7 +417,10 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
                 np = getPacketNumber(data);
                 return data;
             }
-        }
+	    std::cout << "#";
+        } else {
+	  std::cout << "File not open" << std::endl;
+	}
         return NULL;
     };
 

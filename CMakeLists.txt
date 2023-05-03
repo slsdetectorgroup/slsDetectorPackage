@@ -55,6 +55,7 @@ option(SLS_BUILD_EXAMPLES "examples" OFF)
 option(SLS_TUNE_LOCAL "tune to local machine" OFF)
 option(SLS_DEVEL_HEADERS "install headers for devel" OFF)
 option(SLS_USE_MOENCH "compile zmq and post processing for Moench" OFF)
+option(SLS_USE_JUNGFRAU "compile post processing for Jungfrau" OFF)
 
 #Convenience option to switch off defaults when building Moench binaries only
 option(SLS_BUILD_ONLY_MOENCH "compile only Moench" OFF)
@@ -66,6 +67,18 @@ if(SLS_BUILD_ONLY_MOENCH)
     set(SLS_USE_RECEIVER OFF CACHE BOOL "Disabled for MOENCH_ONLY" FORCE)
     set(SLS_USE_RECEIVER_BINARIES OFF CACHE BOOL "Disabled for MOENCH_ONLY" FORCE)
     set(SLS_USE_MOENCH ON CACHE BOOL "Enable" FORCE)
+endif()
+
+#Convenience option to switch off defaults when building Jungfrau binaries only
+option(SLS_BUILD_ONLY_JUNGFRAU "compile only Jungfrau" OFF)
+if(SLS_BUILD_ONLY_JUNGFRAU)
+    message(STATUS "Build JUNGFRAU binaries only!")
+    set(SLS_BUILD_SHARED_LIBRARIES OFF CACHE BOOL "Disabled for JUNGFRAU_ONLY" FORCE)
+    set(SLS_USE_TEXTCLIENT OFF CACHE BOOL "Disabled for JUNGFRAU_ONLY" FORCE)
+    set(SLS_USE_DETECTOR OFF CACHE BOOL "Disabled for JUNGFRAU_ONLY" FORCE)
+    set(SLS_USE_RECEIVER OFF CACHE BOOL "Disabled for JUNGFRAU_ONLY" FORCE)
+    set(SLS_USE_RECEIVER_BINARIES OFF CACHE BOOL "Disabled for JUNGFRAU_ONLY" FORCE)
+    set(SLS_USE_JUNGFRAU ON CACHE BOOL "Enable" FORCE)
 endif()
 
 
@@ -263,6 +276,11 @@ if(SLS_USE_MOENCH)
     add_subdirectory(slsDetectorCalibration/tiffio)
     add_subdirectory(slsDetectorCalibration/moenchExecutables)
 endif(SLS_USE_MOENCH)
+
+if(SLS_USE_JUNGFRAU)
+    add_subdirectory(slsDetectorCalibration/tiffio)
+    add_subdirectory(slsDetectorCalibration/jungfrauExecutables)
+endif(SLS_USE_JUNGFRAU)
 
 if(SLS_MASTER_PROJECT)
     set(CMAKE_INSTALL_DIR "share/cmake/${PROJECT_NAME}")

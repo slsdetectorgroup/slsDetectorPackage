@@ -377,8 +377,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     int insertGapPixels(char *image, char *&gpImage, bool quadEnable, int dr,
                         int &nPixelsx, int &nPixelsy);
 
-    void getMasterSlaveList(std::vector<int> positions,
-                            std::vector<int> &master, std::vector<int> &slaves);
+    bool handleSynchronization(Positions pos);
+    void getMasterSlaveList(std::vector<int> positions, std::vector<int> & masters, std::vector<int>& slaves);
 
     void printProgress(double progress);
 

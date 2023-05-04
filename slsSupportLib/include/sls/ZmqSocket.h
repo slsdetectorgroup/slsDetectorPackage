@@ -13,6 +13,7 @@
 #include "sls/sls_detector_exceptions.h"
 
 #include <map>
+#include <array>
 #include <memory>
 
 // Selective suppression of  warning in gcc,
@@ -84,7 +85,7 @@ struct zmqHeader {
     /** additional json header */
     std::map<std::string, std::string> addJsonHeader;
     /** (xmin, xmax, ymin, ymax) roi only in files written */
-    int rx_roi[4]{};
+    std::array<int,4> rx_roi{};
 };
 
 class ZmqSocket {

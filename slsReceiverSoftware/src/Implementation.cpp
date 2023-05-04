@@ -216,7 +216,8 @@ void Implementation::SetupDataStreamer(int i) {
     dataStreamer[i]->SetNumberofPorts(numPorts);
     dataStreamer[i]->SetQuadEnable(quadEnable);
     dataStreamer[i]->SetNumberofTotalFrames(numberOfTotalFrames);
-    dataStreamer[i]->SetReceiverROI(portRois[i]);
+    dataStreamer[i]->SetReceiverROI(
+        portRois[i].completeRoi() ? GetMaxROIPerPort() : portRois[i]);
 }
 
 slsDetectorDefs::xy Implementation::getDetectorSize() const {
@@ -232,9 +233,21 @@ const slsDetectorDefs::xy Implementation::GetPortGeometry() const {
     return portGeometry;
 }
 
-const slsDetectorDefs::xy Implementation::GetPortMaxPixels() const {
-    slsDetectorDefs::ROI portFullRoi{0, generalData->nPixelsX - 1, 0,
-                                     generalData->nPixelsY - 1};
+const slsDetectorDefs::ROI Implementation::GetMaxROIPerPort() const {
+    slsDetectorDefs::ROI portFullRoi{0, (int)generalData->nPixelsX - 1, 0,
+                                     (int)generalData->nPixelsY - 1};
+    if (generalData->numUDPInterfaces == 2 &&
+        generalData->detType != slsDetectorDefs::GOTTHARD2) {
+        // left right (eiger)
+        if (GetPortGeometry().x == 2) {
+            portFullRoi.xmax /= 2;
+        }
+        // top bottom (jungfrau)
+        else {
+            portFullRoi.ymax /= 2;
+        }
+    }
+    return portFullRoi;
 }
 
 void Implementation::setDetectorSize(const slsDetectorDefs::xy size) {
@@ -464,8 +477,10 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
         listener[i]->SetNoRoi(portRois[i].noRoi());
     for (size_t i = 0; i != dataProcessor.size(); ++i)
         dataProcessor[i]->SetReceiverROI(portRois[i]);
-    for (size_t i = 0; i != dataStreamer.size(); ++i)
-        dataStreamer[i]->SetReceiverROI(portRois[i]);
+    for (size_t i = 0; i != dataStreamer.size(); ++i) {
+        dataStreamer[i]->SetReceiverROI(
+            portRois[i].completeRoi() ? GetMaxROIPerPort() : portRois[i]);
+    }
     LOG(logINFO) << "receiver roi: " << ToString(receiverRoi);
     if (generalData->numUDPInterfaces == 2 &&
         generalData->detType != slsDetectorDefs::GOTTHARD2) {

@@ -712,6 +712,9 @@ void DetectorImpl::readFrameFromReceiver() {
                         << "\n\tcoordX: " << coordX << "\n\tcoordY: " << coordY
                         << "\n\tflipRows: " << flipRows
                         << "\n\tcompleteImage: " << completeImage;
+
+                    LOG(logINFOBLUE)
+                        << "rx_roi:" << sls::ToString(zHeader.rx_roi);
                 }
 
                 // DATA

@@ -120,6 +120,7 @@ int main(int argc, char *argv[]) {
 
     //Get vector of filenames from input txt-file
     std::vector<std::string> filenames{};
+    filenames.reserve(512); //There is a very nasty bug somewhere that gets "covered" by this (otherwise threads get stuck, if the package is compiled with address sanitizer, the threads do not get stuck regardless of this line)
     { //Safety scope for ifstream
       ifstream inputs( txtfilename, std::ios::in );
       if (inputs.is_open()) {
@@ -128,7 +129,7 @@ int main(int argc, char *argv[]) {
 	while (!inputs.eof()) {
 	  std::getline(inputs, line);
 	  filenames.emplace_back(line);
-	  std::cout << line << '\n';
+	  std::cout << line << " line.max_size() " << line.max_size() << " filenames.capacity() " << filenames.capacity() << '\n';
 	}
 	inputs.close();
 	std::cout << "---- Reached end of txt-file. ----" << std::endl;
@@ -141,6 +142,12 @@ int main(int argc, char *argv[]) {
 	std::cout << "No files found in txt-file!" << std::endl;
 	return 1;
       }
+    }
+
+    std::cout << "###############" << std::endl;
+
+    for ( unsigned int i=0; i!=filenames.size(); ++i) {
+      std::cout << i << " " << filenames[i] << std::endl;
     }
     
     // Define decoders...
@@ -178,7 +185,7 @@ int main(int argc, char *argv[]) {
       std::string filepath(filenames[0]); //This is a problem if the input files have different ROIs!
       std::cout << "Reading header of file " << filenames[0] << " to check for ROI "
 		<< std::endl;
-      ifstream firstfile(filepath, ios::in | ios::binary);
+      std::ifstream firstfile(filepath.c_str(), ios::in | ios::binary);
       if (firstfile.is_open()) {
         header hbuffer;
         std::cout << "sizeof(header) = " << sizeof(header) << std::endl;
@@ -326,7 +333,7 @@ int main(int argc, char *argv[]) {
 
 	  mt->setFrameMode(ePedestal);
 
-	  ifstream pedefile(fname, ios::in | ios::binary);
+	  std::ifstream pedefile(fname, ios::in | ios::binary);
 	  //      //open file
 	  if (pedefile.is_open()) {
 	    std::cout << "bbbb " << std::ctime(&end_time) << std::endl;
@@ -392,12 +399,13 @@ int main(int argc, char *argv[]) {
     mt->setFrameMode(eFrame);
 
     FILE *of = NULL;
-    ifstream filebin{};
+    std::ifstream filebin{};
     
     //NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS!
     for (unsigned int ifile = 0; ifile != filenames.size(); ++ifile) {
       std::cout << "DATA ";
-      const std::string fname(filenames[ifile]);
+      const std::string filename = filenames[ifile];
+      std::string fname(filename);
       const std::string fsuffix{};
       const std::string fprefix( getRootString(fname) );
       std::string imgfname( createFileName( outdir, fprefix, fsuffix, "tiff" ) );
@@ -407,7 +415,7 @@ int main(int argc, char *argv[]) {
       std::time(&end_time);
       std::cout << std::ctime(&end_time) << std::endl;
 
-      filebin.open(fname, ios::in | ios::binary);
+      filebin.open(fname.c_str(), ios::in | ios::binary);
       //      //open file
       ioutfile = 0;
       if (filebin.is_open()) {
@@ -449,18 +457,20 @@ int main(int argc, char *argv[]) {
 	      imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ioutfile );
 	      mt->writeImage(imgfname.c_str(), thr1);
 	      mt->clearImage();
-	      ioutfile++;
+	      ++ioutfile;
 	    }
 	  }
 	  // } else
 	  //std::cout << ifr << " " << ff << " " << np << std::endl;
 	  ff = -1;
 	}
-	std::cout << "--" << std::endl;
+	std::cout << "aa --" << std::endl;
 	filebin.close();
+	std::cout << "bb--" << std::endl;
 	while (mt->isBusy()) {
 	  ;
 	}
+	std::cout << "cc--" << std::endl;
 	if (nframes >= 0) {
 	  if (nframes > 0)
 	    imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ioutfile );

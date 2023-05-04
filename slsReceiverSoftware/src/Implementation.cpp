@@ -216,6 +216,7 @@ void Implementation::SetupDataStreamer(int i) {
     dataStreamer[i]->SetNumberofPorts(numPorts);
     dataStreamer[i]->SetQuadEnable(quadEnable);
     dataStreamer[i]->SetNumberofTotalFrames(numberOfTotalFrames);
+    dataStreamer[i]->SetReceiverROI(portRois[i]);
 }
 
 slsDetectorDefs::xy Implementation::getDetectorSize() const {
@@ -229,6 +230,11 @@ const slsDetectorDefs::xy Implementation::GetPortGeometry() const {
     else if (generalData->detType == JUNGFRAU)
         portGeometry.y = generalData->numUDPInterfaces;
     return portGeometry;
+}
+
+const slsDetectorDefs::xy Implementation::GetPortMaxPixels() const {
+    slsDetectorDefs::ROI portFullRoi{0, generalData->nPixelsX - 1, 0,
+                                     generalData->nPixelsY - 1};
 }
 
 void Implementation::setDetectorSize(const slsDetectorDefs::xy size) {
@@ -458,6 +464,8 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
         listener[i]->SetNoRoi(portRois[i].noRoi());
     for (size_t i = 0; i != dataProcessor.size(); ++i)
         dataProcessor[i]->SetReceiverROI(portRois[i]);
+    for (size_t i = 0; i != dataStreamer.size(); ++i)
+        dataStreamer[i]->SetReceiverROI(portRois[i]);
     LOG(logINFO) << "receiver roi: " << ToString(receiverRoi);
     if (generalData->numUDPInterfaces == 2 &&
         generalData->detType != slsDetectorDefs::GOTTHARD2) {

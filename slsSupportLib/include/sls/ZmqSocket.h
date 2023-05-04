@@ -83,6 +83,8 @@ struct zmqHeader {
     bool completeImage{false};
     /** additional json header */
     std::map<std::string, std::string> addJsonHeader;
+    /** (xmin, xmax, ymin, ymax) roi only in files written */
+    int rx_roi[4]{};
 };
 
 class ZmqSocket {

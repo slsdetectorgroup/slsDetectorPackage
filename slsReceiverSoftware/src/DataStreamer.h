@@ -38,6 +38,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     void SetNumberofTotalFrames(uint64_t value);
     void
     SetAdditionalJsonHeader(const std::map<std::string, std::string> &json);
+    void SetReceiverROI(ROI roi);
 
     void ResetParametersforNewAcquisition(const std::string &fname);
     /**
@@ -92,6 +93,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     uint64_t fileIndex{0};
     bool flipRows{false};
     std::map<std::string, std::string> additionalJsonHeader;
+    ROI receiverRoi{};
 
     /** Used by streamer thread to update local copy (reduce number of locks
      * during streaming) */

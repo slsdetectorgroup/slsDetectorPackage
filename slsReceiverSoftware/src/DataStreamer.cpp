@@ -56,6 +56,15 @@ void DataStreamer::SetAdditionalJsonHeader(
     isAdditionalJsonUpdated = true;
 }
 
+void DataStreamer::SetReceiverROI(ROI roi) {
+    receiverRoi = roi;
+    if (receiverRoi.completeRoi()) {
+        receiverRoi.xmin = receiverRoi.ymin = 0;
+        receiverRoi.xmax = generalData->nPixelsX;
+        receiverRoi.ymax = generalData->nPixelsY;
+    }
+}
+
 void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
     StopRunning();
     startedFlag = false;
@@ -249,6 +258,7 @@ int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size,
         isAdditionalJsonUpdated = false;
     }
     zHeader.addJsonHeader = localAdditionalJsonHeader;
+    zHeader.rx_roi = receiverRoi;
 
     return zmqSocket->SendHeader(index, zHeader);
 }

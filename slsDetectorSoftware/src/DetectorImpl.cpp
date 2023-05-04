@@ -1256,9 +1256,30 @@ int DetectorImpl::acquire() {
     return OK;
 }
 
-void DetectorImpl::getMasterSlaveList(std::vector<int> positions,
-                                      std::vector<int> &master,
-                                      std::vector<int> &slaves) {
+bool DetectorImpl::handleSynchronization(Positions pos) {
+    bool handleSync = false;
+    // multi module m3 or multi module sync enabled jungfrau
+    if (size() > 1) {
+        switch (shm()->detType) {
+            case defs::MYTHEN3:
+            case defs::GOTTHARD2:
+            case defs::GOTTHARD:
+                handleSync = true;
+                break;
+            case defs::JUNGFRAU:
+                if (Parallel(&Module::getSynchronizationFromStopServer, pos)
+                 .tsquash("Inconsistent synchronization among modules")) {
+                    handleSync = true;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    return handleSync;
+}
+
+void DetectorImpl::getMasterSlaveList(std::vector<int> positions, std::vector<int> & masters, std::vector<int>& slaves) {
     // expand positions list
     if (positions.empty() || (positions.size() == 1 && positions[0] == -1)) {
         positions.resize(modules.size());
@@ -1269,71 +1290,42 @@ void DetectorImpl::getMasterSlaveList(std::vector<int> positions,
     auto is_master = Parallel(&Module::isMaster, positions);
     for (size_t i : positions) {
         if (is_master[i])
-            master.push_back(i);
+            masters.push_back(i);
         else
             slaves.push_back(i);
     }
 }
 
 void DetectorImpl::startAcquisition(const bool blocking, Positions pos) {
-    bool handleSynchronization = false;
-    // multi module m3 or multi module sync enabled jungfrau
-    if (size() > 1) {
-        if (shm()->detType == defs::MYTHEN3) {
-            handleSynchronization = true;
-        }
-        if ((shm()->detType == defs::JUNGFRAU) &&
-            (Parallel(&Module::getSynchronizationFromStopServer, pos)
-                 .tsquash("Inconsistent synchronization among modules"))) {
-            handleSynchronization = true;
-        }
-    }
 
     // slaves first
-    if (handleSynchronization) {
-        std::vector<int> master;
+    if (handleSynchronization(pos)) {
+        std::vector<int> masters;
         std::vector<int> slaves;
-        getMasterSlaveList(pos, master, slaves);
-
+        getMasterSlaveList(pos, masters, slaves);
         if (!slaves.empty()) {
             Parallel(&Module::startAcquisition, slaves);
         }
-        if (!master.empty()) {
-            if (blocking) {
-                Parallel(&Module::startAndReadAll, master);
-            } else {
-                Parallel(&Module::startAcquisition, master);
-            }
+        if (!masters.empty()) {
+            Parallel((blocking? &Module::startAndReadAll : &Module::startAcquisition), pos);
         }
     }
     // all in parallel
     else {
-        if (blocking) {
-            Parallel(&Module::startAndReadAll, pos);
-        } else {
-            Parallel(&Module::startAcquisition, pos);
-        }
+        Parallel((blocking? &Module::startAndReadAll : &Module::startAcquisition), pos);
     }
 }
 
 void DetectorImpl::sendSoftwareTrigger(const bool block, Positions pos) {
-    bool handleSynchronization = false;
-    // multi module sync enabled jungfrau
-    if (size() > 1 && (shm()->detType == defs::JUNGFRAU) &&
-        (Parallel(&Module::getSynchronizationFromStopServer, pos)
-             .tsquash("Inconsistent synchronization among modules"))) {
-        handleSynchronization = true;
-    }
-
     // slaves first
-    if (handleSynchronization) {
-        std::vector<int> master;
+    if (handleSynchronization(pos)) {
+        std::vector<int> masters;
         std::vector<int> slaves;
-        getMasterSlaveList(pos, master, slaves);
+        getMasterSlaveList(pos, masters, slaves);
         if (!slaves.empty())
             Parallel(&Module::sendSoftwareTrigger, slaves, false);
-        if (!master.empty())
-            Parallel(&Module::sendSoftwareTrigger, master, block);
+        if (!masters.empty())
+            Parallel(&Module::sendSoftwareTrigger, masters, block);
     }
     // all in parallel
     else {
@@ -1342,27 +1334,13 @@ void DetectorImpl::sendSoftwareTrigger(const bool block, Positions pos) {
 }
 
 void DetectorImpl::stopDetector(Positions pos) {
-
-    bool handleSynchronization = false;
-    // multi module sync enabled jungfrau
-    if (size() > 1) {
-        if (shm()->detType == defs::MYTHEN3) {
-            handleSynchronization = true;
-        }
-        if ((shm()->detType == defs::JUNGFRAU) &&
-            (Parallel(&Module::getSynchronizationFromStopServer, pos)
-                 .tsquash("Inconsistent synchronization among modules"))) {
-            handleSynchronization = true;
-        }
-    }
-
-    // master first
-    if (handleSynchronization) {
-        std::vector<int> master;
+    // masters first
+    if (handleSynchronization(pos)) {
+        std::vector<int> masters;
         std::vector<int> slaves;
-        getMasterSlaveList(pos, master, slaves);
-        if (!master.empty())
-            Parallel(&Module::stopAcquisition, master);
+        getMasterSlaveList(pos, masters, slaves);
+        if (!masters.empty())
+            Parallel(&Module::stopAcquisition, masters);
         if (!slaves.empty())
             Parallel(&Module::stopAcquisition, slaves);
     }

@@ -1261,25 +1261,27 @@ bool DetectorImpl::handleSynchronization(Positions pos) {
     // multi module m3 or multi module sync enabled jungfrau
     if (size() > 1) {
         switch (shm()->detType) {
-            case defs::MYTHEN3:
-            case defs::GOTTHARD2:
-            case defs::GOTTHARD:
+        case defs::MYTHEN3:
+        case defs::GOTTHARD2:
+        case defs::GOTTHARD:
+            handleSync = true;
+            break;
+        case defs::JUNGFRAU:
+            if (Parallel(&Module::getSynchronizationFromStopServer, pos)
+                    .tsquash("Inconsistent synchronization among modules")) {
                 handleSync = true;
-                break;
-            case defs::JUNGFRAU:
-                if (Parallel(&Module::getSynchronizationFromStopServer, pos)
-                 .tsquash("Inconsistent synchronization among modules")) {
-                    handleSync = true;
-                }
-                break;
-            default:
-                break;
+            }
+            break;
+        default:
+            break;
         }
     }
     return handleSync;
 }
 
-void DetectorImpl::getMasterSlaveList(std::vector<int> positions, std::vector<int> & masters, std::vector<int>& slaves) {
+void DetectorImpl::getMasterSlaveList(std::vector<int> positions,
+                                      std::vector<int> &masters,
+                                      std::vector<int> &slaves) {
     // expand positions list
     if (positions.empty() || (positions.size() == 1 && positions[0] == -1)) {
         positions.resize(modules.size());
@@ -1307,12 +1309,16 @@ void DetectorImpl::startAcquisition(const bool blocking, Positions pos) {
             Parallel(&Module::startAcquisition, slaves);
         }
         if (!masters.empty()) {
-            Parallel((blocking? &Module::startAndReadAll : &Module::startAcquisition), pos);
+            Parallel((blocking ? &Module::startAndReadAll
+                               : &Module::startAcquisition),
+                     pos);
         }
     }
     // all in parallel
     else {
-        Parallel((blocking? &Module::startAndReadAll : &Module::startAcquisition), pos);
+        Parallel(
+            (blocking ? &Module::startAndReadAll : &Module::startAcquisition),
+            pos);
     }
 }
 

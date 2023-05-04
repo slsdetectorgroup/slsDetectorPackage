@@ -378,7 +378,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
                         int &nPixelsx, int &nPixelsy);
 
     bool handleSynchronization(Positions pos);
-    void getMasterSlaveList(std::vector<int> positions, std::vector<int> & masters, std::vector<int>& slaves);
+    void getMasterSlaveList(std::vector<int> positions,
+                            std::vector<int> &masters,
+                            std::vector<int> &slaves);
 
     void printProgress(double progress);
 

@@ -234,20 +234,8 @@ const slsDetectorDefs::xy Implementation::GetPortGeometry() const {
 }
 
 const slsDetectorDefs::ROI Implementation::GetMaxROIPerPort() const {
-    slsDetectorDefs::ROI portFullRoi{0, (int)generalData->nPixelsX - 1, 0,
+    return slsDetectorDefs::ROI{0, (int)generalData->nPixelsX - 1, 0,
                                      (int)generalData->nPixelsY - 1};
-    if (generalData->numUDPInterfaces == 2 &&
-        generalData->detType != slsDetectorDefs::GOTTHARD2) {
-        // left right (eiger)
-        if (GetPortGeometry().x == 2) {
-            portFullRoi.xmax /= 2;
-        }
-        // top bottom (jungfrau)
-        else {
-            portFullRoi.ymax /= 2;
-        }
-    }
-    return portFullRoi;
 }
 
 void Implementation::setDetectorSize(const slsDetectorDefs::xy size) {

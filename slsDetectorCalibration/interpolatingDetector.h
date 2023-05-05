@@ -51,6 +51,7 @@ class interpolatingDetector : public singlePhotonDetector {
         // cout << "**"<< xmin << " " << xmax << " " << ymin << " " << ymax <<
         // endl;
         fi = new pthread_mutex_t;
+        pthread_mutex_init(fi, NULL);
     };
 
     interpolatingDetector(interpolatingDetector *orig)

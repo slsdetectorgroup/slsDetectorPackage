@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
 
     //Get vector of filenames from input txt-file
     std::vector<std::string> filenames{};
-    filenames.reserve(512); //There is a very nasty bug somewhere that gets "covered" by this (otherwise threads get stuck, if the package is compiled with address sanitizer, the threads do not get stuck regardless of this line)
+    //filenames.reserve(512); //There is a very nasty bug somewhere that gets "covered" by this (otherwise threads get stuck, if the package is compiled with address sanitizer, the threads do not get stuck regardless of this line)
     { //Safety scope for ifstream
       ifstream inputs( txtfilename, std::ios::in );
       if (inputs.is_open()) {

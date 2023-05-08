@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
 
     //Get vector of filenames from input txt-file
     std::vector<std::string> filenames{};
-    //filenames.reserve(512); //There is a very nasty bug somewhere that gets "covered" by this (otherwise threads get stuck, if the package is compiled with address sanitizer, the threads do not get stuck regardless of this line)
+    //filenames.reserve(512);
     { //Safety scope for ifstream
       ifstream inputs( txtfilename, std::ios::in );
       if (inputs.is_open()) {
@@ -145,10 +145,6 @@ int main(int argc, char *argv[]) {
     }
 
     std::cout << "###############" << std::endl;
-
-    for ( unsigned int i=0; i!=filenames.size(); ++i) {
-      std::cout << i << " " << filenames[i] << std::endl;
-    }
     
     // Define decoders...
 #if !defined JFSTRX && !defined JFSTRXOLD && !defined JFSTRXCHIP1 &&           \
@@ -491,7 +487,6 @@ int main(int argc, char *argv[]) {
 		  << std::endl;
     }
     if (nframes < 0) {
-      //std::string fname(argv[10]);
       std::string fprefix( getRootString(filenames[0]) ); //This might by a non-ideal name choice for that file
       std::string imgfname( createFileName( outdir, fprefix, "sum", "tiff" ) );
       std::cout << "Writing tiff to " << imgfname << " " << thr1 << std::endl;

@@ -282,6 +282,7 @@ class Implementation : private virtual slsDetectorDefs {
     void SetupFifoStructure();
 
     const xy GetPortGeometry() const;
+    const ROI GetMaxROIPerPort() const;
     void ResetParametersforNewAcquisition();
     void CreateUDPSockets();
     void SetupWriter();

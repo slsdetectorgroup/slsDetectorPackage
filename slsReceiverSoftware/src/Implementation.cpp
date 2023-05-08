@@ -235,7 +235,7 @@ const slsDetectorDefs::xy Implementation::GetPortGeometry() const {
 
 const slsDetectorDefs::ROI Implementation::GetMaxROIPerPort() const {
     return slsDetectorDefs::ROI{0, (int)generalData->nPixelsX - 1, 0,
-                                     (int)generalData->nPixelsY - 1};
+                                (int)generalData->nPixelsY - 1};
 }
 
 void Implementation::setDetectorSize(const slsDetectorDefs::xy size) {

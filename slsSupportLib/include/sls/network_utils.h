@@ -2,6 +2,7 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 #include <array>
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <cstdint>

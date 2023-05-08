@@ -1253,6 +1253,7 @@ bool DetectorImpl::handleSynchronization(Positions pos) {
             handleSync = true;
             break;
         case defs::JUNGFRAU:
+        case defs::MOENCH:
             if (Parallel(&Module::getSynchronizationFromStopServer, pos)
                     .tsquash("Inconsistent synchronization among modules")) {
                 handleSync = true;

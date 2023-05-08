@@ -4,6 +4,7 @@
 #include <array>
 #include <iostream>
 #include <string>
+#include <cstdint>
 
 namespace sls {
 

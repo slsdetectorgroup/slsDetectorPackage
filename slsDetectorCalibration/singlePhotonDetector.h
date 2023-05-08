@@ -63,7 +63,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
           quad(UNDEFINED_QUADRANT), tot(0), quadTot(0) {
 
         fm = new pthread_mutex_t;
-        pthread_mutex_init(fm, NULL);
+	pthread_mutex_init(fm, NULL);
 
         eventMask = new eventType *[ny];
         //  val=new double*[ny];

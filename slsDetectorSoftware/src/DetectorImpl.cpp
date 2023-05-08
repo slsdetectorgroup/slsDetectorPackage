@@ -769,7 +769,7 @@ void DetectorImpl::readFrameFromReceiver() {
             int nDetActualPixelsY = nDetPixelsY;
 
             if (gapPixels) {
-                int n = InsertGapPixels(multiframe.get(), multigappixels,
+                int n = insertGapPixels(multiframe.get(), multigappixels,
                                         quadEnable, dynamicRange,
                                         nDetActualPixelsX, nDetActualPixelsY);
                 callbackImage = multigappixels;
@@ -808,7 +808,7 @@ void DetectorImpl::readFrameFromReceiver() {
     delete[] multigappixels;
 }
 
-int DetectorImpl::InsertGapPixels(char *image, char *&gpImage, bool quadEnable,
+int DetectorImpl::insertGapPixels(char *image, char *&gpImage, bool quadEnable,
                                   int dr, int &nPixelsx, int &nPixelsy) {
 
     LOG(logDEBUG) << "Insert Gap pixels:"
@@ -1256,42 +1256,103 @@ int DetectorImpl::acquire() {
     return OK;
 }
 
-void DetectorImpl::startAcquisition(bool blocking, std::vector<int> positions) {
-    // handle Mythen3 synchronization
-    if (shm()->detType == defs::MYTHEN3 && size() > 1) {
-        std::vector<int> master;
-        std::vector<int> slaves;
-        if (positions.empty() ||
-            (positions.size() == 1 && positions[0] == -1)) {
-            positions.resize(modules.size());
-            std::iota(begin(positions), end(positions), 0);
+bool DetectorImpl::handleSynchronization(Positions pos) {
+    bool handleSync = false;
+    // multi module m3 or multi module sync enabled jungfrau
+    if (size() > 1) {
+        switch (shm()->detType) {
+        case defs::MYTHEN3:
+        case defs::GOTTHARD2:
+        case defs::GOTTHARD:
+            handleSync = true;
+            break;
+        case defs::JUNGFRAU:
+            if (Parallel(&Module::getSynchronizationFromStopServer, pos)
+                    .tsquash("Inconsistent synchronization among modules")) {
+                handleSync = true;
+            }
+            break;
+        default:
+            break;
         }
-        // could be all slaves in positions
-        slaves.reserve(positions.size());
-        auto is_master = Parallel(&Module::isMaster, positions);
-        for (size_t i : positions) {
-            if (is_master[i])
-                master.push_back(i);
-            else
-                slaves.push_back(i);
-        }
+    }
+    return handleSync;
+}
 
+void DetectorImpl::getMasterSlaveList(std::vector<int> positions,
+                                      std::vector<int> &masters,
+                                      std::vector<int> &slaves) {
+    // expand positions list
+    if (positions.empty() || (positions.size() == 1 && positions[0] == -1)) {
+        positions.resize(modules.size());
+        std::iota(begin(positions), end(positions), 0);
+    }
+    // could be all slaves in positions
+    slaves.reserve(positions.size());
+    auto is_master = Parallel(&Module::isMaster, positions);
+    for (size_t i : positions) {
+        if (is_master[i])
+            masters.push_back(i);
+        else
+            slaves.push_back(i);
+    }
+}
+
+void DetectorImpl::startAcquisition(const bool blocking, Positions pos) {
+
+    // slaves first
+    if (handleSynchronization(pos)) {
+        std::vector<int> masters;
+        std::vector<int> slaves;
+        getMasterSlaveList(pos, masters, slaves);
         if (!slaves.empty()) {
             Parallel(&Module::startAcquisition, slaves);
         }
-        if (!master.empty()) {
-            if (blocking) {
-                Parallel(&Module::startAndReadAll, master);
-            } else {
-                Parallel(&Module::startAcquisition, master);
-            }
+        if (!masters.empty()) {
+            Parallel((blocking ? &Module::startAndReadAll
+                               : &Module::startAcquisition),
+                     pos);
         }
-    } else {
-        if (blocking) {
-            Parallel(&Module::startAndReadAll, positions);
-        } else {
-            Parallel(&Module::startAcquisition, positions);
-        }
+    }
+    // all in parallel
+    else {
+        Parallel(
+            (blocking ? &Module::startAndReadAll : &Module::startAcquisition),
+            pos);
+    }
+}
+
+void DetectorImpl::sendSoftwareTrigger(const bool block, Positions pos) {
+    // slaves first
+    if (handleSynchronization(pos)) {
+        std::vector<int> masters;
+        std::vector<int> slaves;
+        getMasterSlaveList(pos, masters, slaves);
+        if (!slaves.empty())
+            Parallel(&Module::sendSoftwareTrigger, slaves, false);
+        if (!masters.empty())
+            Parallel(&Module::sendSoftwareTrigger, masters, block);
+    }
+    // all in parallel
+    else {
+        Parallel(&Module::sendSoftwareTrigger, pos, block);
+    }
+}
+
+void DetectorImpl::stopDetector(Positions pos) {
+    // masters first
+    if (handleSynchronization(pos)) {
+        std::vector<int> masters;
+        std::vector<int> slaves;
+        getMasterSlaveList(pos, masters, slaves);
+        if (!masters.empty())
+            Parallel(&Module::stopAcquisition, masters);
+        if (!slaves.empty())
+            Parallel(&Module::stopAcquisition, slaves);
+    }
+    // all in parallel
+    else {
+        Parallel(&Module::stopAcquisition, pos);
     }
 }
 
@@ -1397,7 +1458,8 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     default:
         throw RuntimeError(
             "Unknown detector type. Did the 'hostname' command execute "
-            "successfully? Or use update mode in the detector server side.");
+            "successfully? Or use update mode in the detector server "
+            "side.");
     }
 
     LOG(logINFO) << "This can take awhile. Please be patient.";
@@ -1425,10 +1487,9 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     int dst = mkstemp(destfname); // create temporary file and open it in r/w
     if (dst == -1) {
         fclose(src);
-        throw RuntimeError(
-            std::string(
-                "Could not create destination file in /tmp for programming: ") +
-            destfname);
+        throw RuntimeError(std::string("Could not create destination file "
+                                       "in /tmp for programming: ") +
+                           destfname);
     }
 
     // convert src to dst rawbin
@@ -1480,8 +1541,8 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         }
         // validate pof: read less than footer offset
         if (isPof && dstFilePos < pofFooterOfst) {
-            throw RuntimeError(
-                "Could not convert programming file. EOF before end of flash");
+            throw RuntimeError("Could not convert programming file. EOF "
+                               "before end of flash");
         }
     }
     if (fclose(src) != 0) {

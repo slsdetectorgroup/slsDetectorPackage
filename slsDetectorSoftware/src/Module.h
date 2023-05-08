@@ -129,6 +129,7 @@ class Module : public virtual slsDetectorDefs {
     bool isMaster() const;
     void setMaster(const bool master);
     bool getSynchronization() const;
+    bool getSynchronizationFromStopServer() const;
     void setSynchronization(const bool value);
     std::vector<int> getBadChannels() const;
     void setBadChannels(std::vector<int> list);

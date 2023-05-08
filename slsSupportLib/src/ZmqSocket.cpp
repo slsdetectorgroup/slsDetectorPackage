@@ -254,6 +254,8 @@ int ZmqSocket::SendHeader(int index, zmqHeader header) {
         }
         oss << " } ";
     }
+    oss << ", \"rx_roi\":[" << header.rx_roi[0] << ", " << header.rx_roi[1]
+        << ", " << header.rx_roi[2] << ", " << header.rx_roi[3] << "]";
     oss << "}\n";
     std::string message = oss.str();
     int length = message.length();
@@ -373,6 +375,11 @@ int ZmqSocket::ParseHeader(const int index, int length, char *buff,
             zHeader.addJsonHeader[iter->name.GetString()] =
                 iter->value.GetString();
         }
+    }
+
+    const Value &a = document["rx_roi"].GetArray();
+    for (SizeType i = 0; i != a.Size(); ++i) {
+        zHeader.rx_roi[i] = a[i].GetInt();
     }
 
     return 1;

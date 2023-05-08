@@ -39,7 +39,7 @@ This document describes the differences between v7.x.x and v7.0.0
 
 
     Eiger       7.0.0
-    Jungfrau    7.0.0
+    Jungfrau    7.0.2
     Mythen3     7.0.0
     Gotthard2   7.0.0
     Gotthard    7.0.0

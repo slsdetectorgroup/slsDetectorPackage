@@ -130,7 +130,7 @@ void qTabSettings::SetupWidgetWindow() {
 }
 
 void qTabSettings::SetExportMode(bool exportMode) {
-    if (comboGainMode->isVisible()) {
+    if (comboGainMode->isEnabled()) {
         ShowFixG0(exportMode);
     }
 }

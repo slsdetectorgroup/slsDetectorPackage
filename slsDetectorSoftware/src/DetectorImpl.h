@@ -278,7 +278,13 @@ class DetectorImpl : public virtual slsDetectorDefs {
     int acquire();
 
     /** also takes care of master and slave for multi module mythen */
-    void startAcquisition(bool blocking, std::vector<int> positions);
+    void startAcquisition(const bool blocking, Positions pos);
+
+    /** also takes care of master and slave for multi module mythen */
+    void sendSoftwareTrigger(const bool block, Positions pos);
+
+    /** also takes care of master and slave for multi module mythen */
+    void stopDetector(Positions pos);
 
     /**
      * Combines data from all readouts and gives it to the gui
@@ -379,8 +385,13 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @param nPixelsy number of pixels in Y axis (updated)
      * @returns total data bytes for updated image
      */
-    int InsertGapPixels(char *image, char *&gpImage, bool quadEnable, int dr,
+    int insertGapPixels(char *image, char *&gpImage, bool quadEnable, int dr,
                         int &nPixelsx, int &nPixelsy);
+
+    bool handleSynchronization(Positions pos);
+    void getMasterSlaveList(std::vector<int> positions,
+                            std::vector<int> &masters,
+                            std::vector<int> &slaves);
 
     void printProgress(double progress);
 

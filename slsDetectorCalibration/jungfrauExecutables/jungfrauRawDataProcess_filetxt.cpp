@@ -41,6 +41,7 @@
 #include <ctime>
 #include <fmt/core.h>
 
+
 std::string getRootString( const std::string& filepath ) {
   size_t pos1;
   if (filepath.find("/") == std::string::npos )
@@ -178,10 +179,10 @@ int main(int argc, char *argv[]) {
         uint16_t ymax;
       } receiverRoi_compact;
       receiverRoi_compact croi;
-      std::string filepath(filenames[0]); //This is a problem if the input files have different ROIs!
+      //std::string filepath(argv[9]); //This is a problem if the input files have different ROIs!
       std::cout << "Reading header of file " << filenames[0] << " to check for ROI "
 		<< std::endl;
-      std::ifstream firstfile(filepath.c_str(), ios::in | ios::binary);
+      ifstream firstfile(filenames[0], ios::in | ios::binary);
       if (firstfile.is_open()) {
         header hbuffer;
         std::cout << "sizeof(header) = " << sizeof(header) << std::endl;
@@ -197,7 +198,7 @@ int main(int argc, char *argv[]) {
 	  std::cout << "reading error" << std::endl;
         firstfile.close();
       } else
-        std::cout << "Could not open " << filepath << " for reading " << std::endl;
+        std::cout << "Could not open " << filenames[0] << " for reading " << std::endl;
     } //end of protective scope
 #endif
 
@@ -400,18 +401,16 @@ int main(int argc, char *argv[]) {
     //NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS!
     for (unsigned int ifile = 0; ifile != filenames.size(); ++ifile) {
       std::cout << "DATA ";
-      const std::string filename = filenames[ifile];
-      std::string fname(filename);
-      const std::string fsuffix{};
-      const std::string fprefix( getRootString(fname) );
+      std::string fsuffix{};
+      const std::string fprefix( getRootString(filenames[ifile]) );
       std::string imgfname( createFileName( outdir, fprefix, fsuffix, "tiff" ) );
       const std::string cfname( createFileName( outdir, fprefix, fsuffix, "clust" ) );
-      std::cout << fname << " ";
+      std::cout << filenames[ifile] << " ";
       std::cout << imgfname << std::endl;
       std::time(&end_time);
       std::cout << std::ctime(&end_time) << std::endl;
 
-      filebin.open(fname.c_str(), ios::in | ios::binary);
+      ifstream filebin(filenames[ifile], ios::in | ios::binary);
       //      //open file
       ioutfile = 0;
       if (filebin.is_open()) {
@@ -462,11 +461,11 @@ int main(int argc, char *argv[]) {
 	}
 	std::cout << "aa --" << std::endl;
 	filebin.close();
-	std::cout << "bb--" << std::endl;
+	std::cout << "bb --" << std::endl;
 	while (mt->isBusy()) {
 	  ;
 	}
-	std::cout << "cc--" << std::endl;
+	std::cout << "cc --" << std::endl;
 	if (nframes >= 0) {
 	  if (nframes > 0)
 	    imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ioutfile );
@@ -483,10 +482,11 @@ int main(int argc, char *argv[]) {
 	std::time(&end_time);
 	std::cout << std::ctime(&end_time) << std::endl;
       } else
-	std::cout << "Could not open " << fname << " for reading "
+	std::cout << "Could not open " << filenames[ifile] << " for reading "
 		  << std::endl;
     }
     if (nframes < 0) {
+      //std::string fname(argv[10]);
       std::string fprefix( getRootString(filenames[0]) ); //This might by a non-ideal name choice for that file
       std::string imgfname( createFileName( outdir, fprefix, "sum", "tiff" ) );
       std::cout << "Writing tiff to " << imgfname << " " << thr1 << std::endl;

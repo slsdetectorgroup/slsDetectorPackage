@@ -2,6 +2,7 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #ifndef JUNGFRAUMODULEDATA_H
 #define JUNGFRAUMODULEDATA_H
+#include <cstdint>
 #include "slsDetectorData.h"
 
 //#define VERSION_V2

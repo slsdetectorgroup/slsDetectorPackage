@@ -131,10 +131,24 @@ def startNormalTests(d, fp):
 parser = argparse.ArgumentParser(description = 'automated tests with the virtual detector servers')
 parser.add_argument('rx_hostname', help = 'hostname/ip of the current machine')
 parser.add_argument('settingspath', help = 'Relative or absolut path to the settingspath')
+parser.add_argument('-s', '--servers', help='Detector servers to run', nargs='*')
 args = parser.parse_args()
 if args.rx_hostname == 'localhost':
     raise RuntimeException('Cannot use localhost for rx_hostname for the tests (fails for rx_arping for eg.)')
-# (rx_hostname, settingsdir) = parseCommandLine()
+
+if args.servers is None:
+    servers = [
+        'eiger',
+        'jungfrau',
+        'mythen3',
+        'gotthard2',
+        'gotthard',
+        'ctb',
+        'moench',
+    ]
+else:
+    servers = args.servers
+
 Log(Fore.WHITE, 'rx_hostname: ' + args.rx_hostname + '\settingspath: \'' + args.settingspath + '\'')
 
 
@@ -142,15 +156,6 @@ Log(Fore.WHITE, 'rx_hostname: ' + args.rx_hostname + '\settingspath: \'' + args.
 # dont care about child process success
 signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 
-servers = [
-     'eiger',
-     'jungfrau',
-     'mythen3',
-     'gotthard2',
-     'gotthard',
-     'ctb',
-     'moench',
-]
 
 # redirect to file
 original_stdout = sys.stdout

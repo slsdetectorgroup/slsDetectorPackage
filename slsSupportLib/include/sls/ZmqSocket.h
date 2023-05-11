@@ -12,6 +12,7 @@
 #include "sls/container_utils.h"
 #include "sls/sls_detector_exceptions.h"
 
+#include <array>
 #include <map>
 #include <array>
 #include <memory>
@@ -85,7 +86,7 @@ struct zmqHeader {
     /** additional json header */
     std::map<std::string, std::string> addJsonHeader;
     /** (xmin, xmax, ymin, ymax) roi only in files written */
-    std::array<int,4> rx_roi{};
+    std::array<int, 4> rx_roi{};
 };
 
 class ZmqSocket {

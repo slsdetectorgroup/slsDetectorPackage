@@ -3,6 +3,7 @@
 '''
 This file is used to start up simulators, receivers and run all the tests on them and finally kill the simulators and receivers.
 '''
+import argparse
 import os, sys, subprocess, time, colorama, signal, psutil
 
 from colorama import Fore
@@ -125,18 +126,16 @@ def startNormalTests(d, fp):
         Log(Fore.RED, 'Normal tests failed') 
         raise
 
-def parseCommandLine():
-    # command line argument for rx_hostname and settingsdir
-    if len(sys.argv) != 3:
-        raise RuntimeException('No argument for rx_hostname or settingsdir. Expected [script_name] [rx_hostname] [settingsdir(rel or abs)]')
-    if sys.argv[1] == 'localhost':
-        raise RuntimeException('Cannot use localhost for rx_hostname for the tests (fails for rx_arping for eg.)')
-    return [sys.argv[1], sys.argv[2]]
 
-
-# parse cmd line for rx_hostname and settingsdir
-(rx_hostname, settingsdir) = parseCommandLine()
-Log(Fore.WHITE, 'rx_hostname: ' + rx_hostname + '\nsettingsdir: \'' + settingsdir + '\'')
+# parse cmd line for rx_hostname and settingspath using the argparse library
+parser = argparse.ArgumentParser(description = 'automated tests with the virtual detector servers')
+parser.add_argument('rx_hostname', help = 'hostname/ip of the current machine')
+parser.add_argument('settingspath', help = 'Relative or absolut path to the settingspath')
+args = parser.parse_args()
+if args.rx_hostname == 'localhost':
+    raise RuntimeException('Cannot use localhost for rx_hostname for the tests (fails for rx_arping for eg.)')
+# (rx_hostname, settingsdir) = parseCommandLine()
+Log(Fore.WHITE, 'rx_hostname: ' + args.rx_hostname + '\settingspath: \'' + args.settingspath + '\'')
 
 
 # handle zombies (else killing slsReceivers will fail)
@@ -180,7 +179,7 @@ with open(fname, 'w') as fp:
             cleanup(server, d)
             startServer(server)
             startReceiver(server)
-            loadConfig(server, rx_hostname, settingsdir)
+            loadConfig(server, args.rx_hostname, args.settingspath)
             startCmdTests(server, fp)
             cleanup(server, d)
         except:

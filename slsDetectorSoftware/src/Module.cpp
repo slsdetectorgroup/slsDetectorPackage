@@ -3222,7 +3222,7 @@ slsDetectorDefs::detectorType Module::getDetectorTypeFromShm(int det_id,
                                                              bool verify) {
     if (!shm.exists()) {
         throw SharedMemoryError("Shared memory " + shm.getName() +
-                                "does not exist.\n Corrupted Multi Shared "
+                                " does not exist.\n Corrupted Multi Shared "
                                 "memory. Please free shared memory.");
     }
 

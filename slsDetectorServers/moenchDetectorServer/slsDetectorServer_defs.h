@@ -67,7 +67,7 @@
 #define BIT16_MASK       (0xFFFF)
 
 // pipeline
-#define ADC_PORT_INVERT_VAL (0x0)
+#define ADC_PORT_INVERT_VAL (0x55555555)
 
 #define SAMPLE_ADC_FULL_SPEED                                                  \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL) // 0x0

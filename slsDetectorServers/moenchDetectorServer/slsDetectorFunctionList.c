@@ -49,8 +49,6 @@ enum detectorSettings thisSettings = UNINITIALIZED;
 int highvoltage = 0;
 int dacValues[NDAC] = {};
 int defaultDacValues[] = DEFAULT_DAC_VALS;
-int defaultDacValue_G0[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
-int defaultDacValue_HG0[] = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
 int32_t clkPhase[NUM_CLOCKS] = {};
 int detPos[4] = {};
 
@@ -420,10 +418,6 @@ void initStopServer() {
             initCheckDone = 1;
             return;
         }
-        if (readConfigFile() == FAIL) {
-            initCheckDone = 1;
-            return;
-        }
 #ifdef VIRTUAL
         sharedMemory_setStop(0);
         // temp threshold and reset event (read by stop server)
@@ -481,30 +475,21 @@ void setupDetector() {
     LTC2620_Configure();
     resetToDefaultDacs(0);
 
-    /* Only once at server startup */
-    bus_w(DAQ_REG, 0x0);
 
     LOG(logINFOBLUE, ("Setting Default parameters\n"));
-
-    // get chip version
-    if (readConfigFile() == FAIL) {
-        return;
-    }
 
     if (updateModuleId() == FAIL) {
         return;
     }
 
-    setReadoutSpeed(HALF_SPEED);
+    setReadoutSpeed(DEFAULT_SPEED);
     cleanFifos();
     resetCore();
 
     alignDeserializer();
 
     // delay
-    bus_w(ADC_PORT_INVERT_REG,
-          (isHardwareVersion_1_0() ? ADC_PORT_INVERT_BOARD2_VAL
-                                   : ADC_PORT_INVERT_VAL));
+    bus_w(ADC_PORT_INVERT_REG, ADC_PORT_INVERT_VAL);
 
     initReadoutConfiguration();
 
@@ -537,44 +522,11 @@ int resetToDefaultDacs(int hardReset) {
         for (int i = 0; i < NDAC; ++i) {
             defaultDacValues[i] = vals[i];
         }
-        /* TODO?
-        const int vals_G0[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
-        for (int i = 0; i < NSPECIALDACS; ++i) {
-            defaultDacValue_G0[i] = vals_G0[i];
-        }
-        const int vals_HG0[] = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
-        for (int i = 0; i < NSPECIALDACS; ++i) {
-            defaultDacValue_HG0[i] = vals_HG0[i];
-        }
-        */
     }
 
-    // remember settings
-    enum detectorSettings oldSettings = thisSettings;
-
     // reset dacs to defaults
-    const int specialDacs[] = SPECIALDACINDEX;
     for (int i = 0; i < NDAC; ++i) {
         int value = defaultDacValues[i];
-
-        /* TODO?
-                for (int j = 0; j < NSPECIALDACS; ++j) {
-                    // special dac: replace default value
-                    if (specialDacs[j] == i) {
-                        switch (oldSettings) {
-                        case GAIN0:
-                            value = defaultDacValue_G0[j];
-                            break;
-                        case HIGHGAIN0:
-                            value = defaultDacValue_HG0[j];
-                            break;
-                        default:
-                            break;
-                        }
-                        break;
-                    }
-                }
-        */
         // set to defualt
         setDAC((enum DACINDEX)i, value, 0);
         if (dacValues[i] != value) {
@@ -588,32 +540,6 @@ int resetToDefaultDacs(int hardReset) {
 
 int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
                   int *retval) {
-
-    // settings only for special dacs
-    if (sett != UNDEFINED) {
-        /* TODO?
-        const int specialDacs[] = SPECIALDACINDEX;
-        // find special dac index
-        for (int i = 0; i < NSPECIALDACS; ++i) {
-            if ((int)index == specialDacs[i]) {
-                switch (sett) {
-                case GAIN0:
-                    *retval = defaultDacValue_G0[i];
-                    return OK;
-                case HIGHGAIN0:
-                    *retval = defaultDacValue_HG0[i];
-                    return OK;
-                    // unknown settings
-                default:
-                    return FAIL;
-                }
-            }
-        }
-        */
-        // not a special dac
-        return FAIL;
-    }
-
     if (index < 0 || index >= NDAC)
         return FAIL;
     *retval = defaultDacValues[index];
@@ -622,36 +548,6 @@ int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
 
 int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
     char *dac_names[] = {DAC_NAMES};
-    /*TODO?
-    // settings only for special dacs
-    if (sett != UNDEFINED) {
-        const int specialDacs[] = SPECIALDACINDEX;
-
-        // find special dac index
-        for (int i = 0; i < NSPECIALDACS; ++i) {
-            if ((int)index == specialDacs[i]) {
-                switch (sett) {
-                case GAIN0:
-                    LOG(logINFO, ("Setting Default Dac [%d - %s, gain0]: %d\n",
-                                  (int)index, dac_names[index], value));
-                    defaultDacValue_G0[i] = value;
-                    return OK;
-                case HIGHGAIN0:
-                    LOG(logINFO,
-                        ("Setting Default Dac [%d - %s, highgain0]: %d\n",
-                         (int)index, dac_names[index], value));
-                    defaultDacValue_HG0[i] = value;
-                    return OK;
-                    // unknown settings
-                default:
-                    return FAIL;
-                }
-            }
-        }
-        // not a special dac
-        return FAIL;
-    }
-    */
     if (index < 0 || index >= NDAC)
         return FAIL;
     LOG(logINFO, ("Setting Default Dac [%d - %s]: %d\n", (int)index,
@@ -660,113 +556,6 @@ int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
     return OK;
 }
 
-int readConfigFile() {
-
-    if (initError == FAIL) {
-        return initError;
-    }
-
-    if (ignoreConfigFileFlag) {
-        LOG(logWARNING, ("Ignoring Config file\n"));
-        return OK;
-    }
-
-    const int fileNameSize = 128;
-    char fname[fileNameSize];
-    if (getAbsPath(fname, fileNameSize, CONFIG_FILE) == FAIL) {
-        return FAIL;
-    }
-
-    // file doesnt exist (give warning and assume chipv1.0)
-    if (access(fname, F_OK) != 0) {
-        LOG(logWARNING, ("Could not find config file. Assuming chipv1.0\n"));
-        return OK;
-    }
-
-    // open config file
-    FILE *fd = fopen(fname, "r");
-    if (fd == NULL) {
-
-        sprintf(initErrorMessage,
-                "Could not open on-board detector server config file [%s].\n",
-                CONFIG_FILE);
-        initError = FAIL;
-        LOG(logERROR, ("%s\n\n", initErrorMessage));
-        return FAIL;
-    }
-
-    LOG(logINFOBLUE, ("Reading config file %s\n", CONFIG_FILE));
-
-    // Initialization
-    const size_t LZ = 256;
-    char line[LZ];
-    memset(line, 0, LZ);
-    char command[LZ];
-
-    // keep reading a line
-    while (fgets(line, LZ, fd)) {
-
-        // ignore comments
-        if (line[0] == '#') {
-            LOG(logDEBUG1, ("Ignoring Comment\n"));
-            continue;
-        }
-
-        // ignore empty lines
-        if (strlen(line) <= 1) {
-            LOG(logDEBUG1, ("Ignoring Empty line\n"));
-            continue;
-        }
-
-        // removing leading spaces
-        if (line[0] == ' ' || line[0] == '\t') {
-            int len = strlen(line);
-            // find first valid character
-            int i = 0;
-            for (i = 0; i < len; ++i) {
-                if (line[i] != ' ' && line[i] != '\t') {
-                    break;
-                }
-            }
-            // ignore the line full of spaces (last char \n)
-            if (i >= len - 1) {
-                LOG(logDEBUG1, ("Ignoring line full of spaces\n"));
-                continue;
-            }
-            // copying only valid char
-            char temp[LZ];
-            memset(temp, 0, LZ);
-            memcpy(temp, line + i, strlen(line) - i);
-            memset(line, 0, LZ);
-            memcpy(line, temp, strlen(temp));
-            LOG(logDEBUG1, ("Removing leading spaces.\n"));
-        }
-
-        LOG(logDEBUG1, ("Command to process: (size:%d) %.*s\n", strlen(line),
-                        strlen(line) - 1, line));
-        memset(command, 0, LZ);
-
-        // other commands
-        else {
-            sprintf(initErrorMessage,
-                    "Could not scan command from on-board server "
-                    "config file. Line:[%s].\n",
-                    line);
-            break;
-        }
-
-        memset(line, 0, LZ);
-    }
-    fclose(fd);
-
-    if (strlen(initErrorMessage)) {
-        initError = FAIL;
-        LOG(logERROR, ("%s\n\n", initErrorMessage));
-    } else {
-        LOG(logINFOBLUE, ("Successfully read config file\n"));
-    }
-    return initError;
-}
 
 /* firmware functions (resets) */
 
@@ -813,9 +602,7 @@ int getDynamicRange(int *retval) {
 
 void setADCInvertRegister(uint32_t val) {
     LOG(logINFO, ("Setting ADC Port Invert Reg to 0x%x\n", val));
-    uint32_t defaultValue =
-        (isHardwareVersion_1_0() ? ADC_PORT_INVERT_BOARD2_VAL
-                                 : ADC_PORT_INVERT_VAL);
+    uint32_t defaultValue = ADC_PORT_INVERT_VAL;
     uint32_t changeValue = defaultValue ^ val;
     LOG(logINFO, ("\t default: 0x%x, final:0x%x\n", defaultValue, changeValue));
     bus_w(ADC_PORT_INVERT_REG, changeValue);
@@ -823,8 +610,7 @@ void setADCInvertRegister(uint32_t val) {
 
 uint32_t getADCInvertRegister() {
     uint32_t readValue = bus_r(ADC_PORT_INVERT_REG);
-    int32_t defaultValue = (isHardwareVersion_1_0() ? ADC_PORT_INVERT_BOARD2_VAL
-                                                    : ADC_PORT_INVERT_VAL);
+    int32_t defaultValue = ADC_PORT_INVERT_VAL;
     uint32_t val = defaultValue ^ readValue;
     LOG(logDEBUG1, ("\tread:0x%x, default:0x%x returned:0x%x\n", readValue,
                     defaultValue, val));
@@ -1012,7 +798,6 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     if (sett == UNINITIALIZED)
         return thisSettings;
 
-    int *dacVals = NULL;
     // set settings
     switch (sett) {
     default:
@@ -1021,13 +806,6 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     }
 
     thisSettings = sett;
-    /*TODO?
-        // set special dacs
-        const int specialDacs[] = SPECIALDACINDEX;
-        for (int i = 0; i < NSPECIALDACS; ++i) {
-            setDAC(specialDacs[i], dacVals[i], 0);
-        }
-    */
     return getSettings();
 }
 
@@ -1565,7 +1343,6 @@ void initReadoutConfiguration() {
     LOG(logINFO, ("Initializing Readout Configuration:\n"
                   "\t 1 x 10G mode\n"
                   "\t outer interface is primary\n"
-                  "\t half speed\n"
                   "\t TDMA disabled, 0 as TDMA slot\n"
                   "\t Ethernet overflow disabled\n"
                   "\t Reset Round robin entries\n"));
@@ -1575,9 +1352,6 @@ void initReadoutConfiguration() {
     val &= ~CONFIG_OPRTN_MDE_2_X_10GbE_MSK;
     // outer interface
     val &= ~CONFIG_INNR_PRIMRY_INTRFCE_MSK;
-    // half speed
-    val &= ~CONFIG_READOUT_SPEED_MSK;
-    val |= CONFIG_HALF_SPEED_20MHZ_VAL;
     // tdma disable
     val &= ~CONFIG_TDMA_ENABLE_MSK;
     // tdma slot 0
@@ -1624,7 +1398,6 @@ int setReadoutSpeed(int val) {
     uint32_t adcOfst = 0;
     uint32_t sampleAdcSpeed = 0;
     uint32_t adcPhase = 0;
-    uint32_t config = CONFIG_FULL_SPEED_40MHZ_VAL;
 
     switch (val) {
 
@@ -1634,53 +1407,15 @@ int setReadoutSpeed(int val) {
             return FAIL;
         }
         LOG(logINFO, ("Setting Full Speed (40 MHz):\n"));
-        sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED_CHIP10;
-        adcPhase = ADC_PHASE_FULL_SPEED_CHIP10;
-        adcOfst = ADC_OFST_FULL_SPEED_VAL_CHIP10;
-        config = CONFIG_FULL_SPEED_40MHZ_VAL;
-        break;
-
-    case HALF_SPEED:
-        LOG(logINFO, ("Setting Half Speed (20 MHz):\n"));
-        if (isHardwareVersion_1_0()) {
-            adcOfst = ADC_OFST_HALF_SPEED_BOARD2_VAL;
-            sampleAdcSpeed = SAMPLE_ADC_HALF_SPEED_BOARD2;
-            adcPhase = ADC_PHASE_HALF_SPEED_BOARD2;
-        } else {
-            adcOfst = ADC_OFST_HALF_SPEED_VAL_CHIP10;
-            sampleAdcSpeed = SAMPLE_ADC_HALF_SPEED_CHIP10;
-            adcPhase = ADC_PHASE_HALF_SPEED_CHIP10;
-        }
-        config = CONFIG_HALF_SPEED_20MHZ_VAL;
-        break;
-
-    case QUARTER_SPEED:
-        LOG(logINFO, ("Setting Half Speed (10 MHz):\n"));
-        if (isHardwareVersion_1_0()) {
-            adcOfst = ADC_OFST_BOARD2_VAL;
-            sampleAdcSpeed = SAMPLE_ADC_QUARTER_SPEED_BOARD2;
-            adcPhase = ADC_PHASE_QUARTER_SPEED_BOARD2;
-        } else {
-            adcOfst = ADC_OFST_VAL;
-            sampleAdcSpeed = SAMPLE_ADC_QUARTER_SPEED_CHIP10;
-            adcPhase = ADC_PHASE_QUARTER_SPEED_CHIP10;
-        }
-        config = CONFIG_QUARTER_SPEED_10MHZ_VAL;
+        sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED;
+        adcPhase = ADC_PHASE_FULL_SPEED;
+        adcOfst = ADC_OFST_FULL_SPEED_VAL;
         break;
 
     default:
         LOG(logERROR, ("Unknown speed val %d\n", val));
         return FAIL;
     }
-
-    if (isHardwareVersion_1_0()) {
-        adcOfst = ADC_OFST_BOARD2_VAL;
-    } else {
-        adcOfst = ADC_OFST_VAL;
-    }
-
-    bus_w(CONFIG_REG, (bus_r(CONFIG_REG) & ~CONFIG_READOUT_SPEED_MSK) | config);
-    LOG(logINFO, ("\tSet Config Reg to 0x%x\n", bus_r(CONFIG_REG)));
 
     bus_w(ADC_OFST_REG, (bus_r(ADC_OFST_REG) & ~ADC_OFFSET_MSK));
     bus_w(ADC_OFST_REG, (bus_r(ADC_OFST_REG) |
@@ -1698,22 +1433,7 @@ int setReadoutSpeed(int val) {
 }
 
 int getReadoutSpeed(int *retval) {
-    u_int32_t speed = bus_r(CONFIG_REG) & CONFIG_READOUT_SPEED_MSK;
-    switch (speed) {
-    case CONFIG_FULL_SPEED_40MHZ_VAL:
-        *retval = FULL_SPEED;
-        break;
-    case CONFIG_HALF_SPEED_20MHZ_VAL:
-        *retval = HALF_SPEED;
-        break;
-    case CONFIG_QUARTER_SPEED_10MHZ_VAL:
-        *retval = QUARTER_SPEED;
-        break;
-    default:
-        LOG(logERROR, ("Unknown speed val: %d\n", speed));
-        *retval = -1;
-        return FAIL;
-    }
+    *retval = FULL_SPEED;
     return OK;
 }
 

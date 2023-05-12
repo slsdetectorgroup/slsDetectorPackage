@@ -9332,8 +9332,10 @@ int set_readout_speed(int file_des) {
             switch (arg) {
 #if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)
             case FULL_SPEED:
+#ifndef MOENCHD
             case HALF_SPEED:
             case QUARTER_SPEED:
+#endif
 #elif GOTTHARD2D
             case G2_108MHZ:
             case G2_144MHZ:

@@ -4,8 +4,8 @@
 #include "RegisterDefs.h"
 #include "sls/sls_detector_defs.h"
 
-#define REQRD_FRMWRE_VRSN_BOARD2 0x221130 // 1.0 pcb (version = 010)
-#define REQRD_FRMWRE_VRSN        0x221130 // 2.0 pcb (version = 011)
+#define REQRD_FRMWRE_VRSN_BOARD2 0x444445 // 1.0 pcb (version = 010)
+#define REQRD_FRMWRE_VRSN        0x230513 // 2.0 pcb (version = 011)
 
 #define NUM_HARDWARE_VERSIONS (2)
 #define HARDWARE_VERSION_NUMBERS                                               \
@@ -14,7 +14,6 @@
     { "1.0", "2.0" }
 
 #define ID_FILE            ("detid_moench.txt")
-#define CONFIG_FILE        ("config_moench.txt")
 #define LINKED_SERVER_NAME "moenchDetectorServer"
 
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
@@ -43,6 +42,7 @@
 #define DEFAULT_TX_UDP_PORT           (0x7e9a)
 #define DEFAULT_TMP_THRSHLD           (65 * 1000) // milli degree Celsius
 #define DEFAULT_FLIP_ROWS             (0)
+#define DEFAULT_SPEED                 (FULL_SPEED)
 
 #define HIGHVOLTAGE_MIN     (60)
 #define HIGHVOLTAGE_MAX     (200)
@@ -73,9 +73,8 @@
 
 #define SAMPLE_ADC_FULL_SPEED                                                  \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL) // 0x0
-
 #define ADC_PHASE_FULL_SPEED (160)
-#define ADC_OFST_VAL         (0x10)
+#define ADC_OFST_FULL_SPEED_VAL (0x11)
 
 /* Struct Definitions */
 typedef struct udp_header_struct {
@@ -135,13 +134,7 @@ enum DACINDEX {
 enum MASTERINDEX { MASTER_HARDWARE, OW_MASTER, OW_SLAVE };
 #define MASTER_NAMES "hardware", "master", "slave"
 
-#define NUMSETTINGS     (2)
-#define NSPECIALDACS    (3)
-#define SPECIALDACINDEX {J_VREF_PRECH, J_VREF_DS, J_VREF_COMP};
-#define SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS                                      \
-    { 1450, 480, 420 }
-#define SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS                                   \
-    { 1550, 450, 620 }
+#define NUMSETTINGS     (0)
 
 enum NETWORKINDEX { TXN_FRAME, FLOWCTRL_10G };
 enum CLKINDEX { RUN_CLK, ADC_CLK, NUM_CLOCKS };

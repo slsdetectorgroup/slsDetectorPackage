@@ -147,8 +147,7 @@ void setASICDefaults();
 #ifdef MYTHEN3D
 void setADIFDefaults();
 #endif
-#if defined(GOTTHARD2D) || defined(EIGERD) || defined(JUNGFRAUD) ||            \
-    defined(MOENCHD)
+#if defined(GOTTHARD2D) || defined(EIGERD) || defined(JUNGFRAUD)
 int readConfigFile();
 #endif
 #if defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||            \

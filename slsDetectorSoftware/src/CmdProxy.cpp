@@ -701,16 +701,7 @@ std::string CmdProxy::ReadoutSpeed(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "\n\t[0 or full_speed|1 or half_speed|2 or "
-              "quarter_speed]\n\t\t[Eiger][Jungfrau][Moench] Readout "
-              "speed of chip.\n\t\t[Eiger] Default speed is full_speed."
-              "\n\t\t[Jungfrau][Moench] Default speed is half_speed. "
-              "full_speed "
-              "option only available from v2.0 boards and is recommended to "
-              "set "
-              "number of interfaces to 2. Also overwrites "
-              "adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] "
-              "Readout speed of chip in MHz. Default is 108."
+        os << "\n\t[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t\t[Eiger][Jungfrau][Moench] Readout speed of chip.\n\t\t[Eiger][Moench] Default speed is full_speed.\n\t\t[Jungfrau] Default speed is half_speed. full_speed option only available from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] Readout speed of chip in MHz. Default is 108.\n\t\t[Moench] Only Full speed is implemented."
            << '\n';
     } else {
         defs::detectorType type = det->getDetectorType().squash();

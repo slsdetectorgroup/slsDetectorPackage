@@ -507,9 +507,10 @@ std::vector<defs::speedLevel> Detector::getReadoutSpeedList() const {
     switch (getDetectorType().squash()) {
     case defs::EIGER:
     case defs::JUNGFRAU:
-    case defs::MOENCH:
         return std::vector<defs::speedLevel>{defs::FULL_SPEED, defs::HALF_SPEED,
                                              defs::QUARTER_SPEED};
+    case defs::MOENCH:
+        return std::vector<defs::speedLevel>{defs::FULL_SPEED};
     case defs::GOTTHARD2:
         return std::vector<defs::speedLevel>{defs::G2_108MHZ, defs::G2_144MHZ};
     default:

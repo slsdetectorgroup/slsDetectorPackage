@@ -216,6 +216,8 @@ TEST_CASE("settings", "[.cmd]") {
         sett.push_back("gain0");
         sett.push_back("highgain0");
         break;
+    case defs::MOENCH:
+        break;
     case defs::GOTTHARD:
         sett.push_back("highgain");
         sett.push_back("dynamicgain");

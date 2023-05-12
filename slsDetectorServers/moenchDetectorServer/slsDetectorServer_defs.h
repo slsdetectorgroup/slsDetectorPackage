@@ -69,14 +69,13 @@
 #define GAIN_VAL_MSK  (0x3 << GAIN_VAL_OFST)
 
 // pipeline
-#define ADC_PORT_INVERT_VAL        (0x0)
+#define ADC_PORT_INVERT_VAL (0x0)
 
-#define SAMPLE_ADC_FULL_SPEED                                           \
+#define SAMPLE_ADC_FULL_SPEED                                                  \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL) // 0x0
 
-#define ADC_PHASE_FULL_SPEED    (160)
-#define ADC_OFST_VAL (0x10)
-
+#define ADC_PHASE_FULL_SPEED (160)
+#define ADC_OFST_VAL         (0x10)
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

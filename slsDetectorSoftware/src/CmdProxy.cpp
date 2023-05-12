@@ -800,7 +800,10 @@ std::string CmdProxy::Dbitphase(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_value] [(optional)deg]\n\t[Ctb][Jungfrau] Phase shift of clock to latch digital bits. Absolute phase shift. If deg used, then shift in degrees. \n\t[Ctb]Changing dbitclk also resets dbitphase and sets to previous values."
+        os << "[n_value] [(optional)deg]\n\t[Ctb][Jungfrau] Phase shift of "
+              "clock to latch digital bits. Absolute phase shift. If deg used, "
+              "then shift in degrees. \n\t[Ctb]Changing dbitclk also resets "
+              "dbitphase and sets to previous values."
            << '\n';
     } else {
         auto det_type = det->getDetectorType().squash(defs::GENERIC);

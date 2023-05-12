@@ -448,10 +448,10 @@ void setupDetector() {
 #endif
 
     // altera pll
-    ALTERA_PLL_SetDefines(
-        PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK,
-        PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK,
-        PLL_CNTRL_ADDR_OFST);
+    ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG,
+                          PLL_CNTRL_RCNFG_PRMTR_RST_MSK, PLL_CNTRL_WR_PRMTR_MSK,
+                          PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK,
+                          PLL_CNTRL_ADDR_OFST);
     ALTERA_PLL_ResetPLL();
 
     resetCore();
@@ -509,7 +509,7 @@ void setupDetector() {
     initReadoutConfiguration();
 
     // Initialization of acquistion parameters
-    //setSettings(DEFAULT_SETTINGS);
+    // setSettings(DEFAULT_SETTINGS);
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
     setExpTime(DEFAULT_EXPTIME);
@@ -557,24 +557,24 @@ int resetToDefaultDacs(int hardReset) {
     for (int i = 0; i < NDAC; ++i) {
         int value = defaultDacValues[i];
 
-/* TODO?
-        for (int j = 0; j < NSPECIALDACS; ++j) {
-            // special dac: replace default value
-            if (specialDacs[j] == i) {
-                switch (oldSettings) {
-                case GAIN0:
-                    value = defaultDacValue_G0[j];
-                    break;
-                case HIGHGAIN0:
-                    value = defaultDacValue_HG0[j];
-                    break;
-                default:
-                    break;
+        /* TODO?
+                for (int j = 0; j < NSPECIALDACS; ++j) {
+                    // special dac: replace default value
+                    if (specialDacs[j] == i) {
+                        switch (oldSettings) {
+                        case GAIN0:
+                            value = defaultDacValue_G0[j];
+                            break;
+                        case HIGHGAIN0:
+                            value = defaultDacValue_HG0[j];
+                            break;
+                        default:
+                            break;
+                        }
+                        break;
+                    }
                 }
-                break;
-            }
-        }
-*/
+        */
         // set to defualt
         setDAC((enum DACINDEX)i, value, 0);
         if (dacValues[i] != value) {
@@ -837,23 +837,28 @@ int setNextFrameNumber(uint64_t value) {
     LOG(logINFO,
         ("Setting next frame number: %llu\n", (long long unsigned int)value));
 #ifdef VIRTUAL
-    setU64BitReg(value, SET_NEXT_FRAME_NUMBER_LSB_REG, SET_NEXT_FRAME_NUMBER_MSB_REG);
+    setU64BitReg(value, SET_NEXT_FRAME_NUMBER_LSB_REG,
+                 SET_NEXT_FRAME_NUMBER_MSB_REG);
 #else
     // decrement is for firmware
-    setU64BitReg(value - 1, SET_NEXT_FRAME_NUMBER_LSB_REG, SET_NEXT_FRAME_NUMBER_MSB_REG);
+    setU64BitReg(value - 1, SET_NEXT_FRAME_NUMBER_LSB_REG,
+                 SET_NEXT_FRAME_NUMBER_MSB_REG);
     // need to set it twice for the firmware to catch
-    setU64BitReg(value - 1, SET_NEXT_FRAME_NUMBER_LSB_REG, SET_NEXT_FRAME_NUMBER_MSB_REG);
+    setU64BitReg(value - 1, SET_NEXT_FRAME_NUMBER_LSB_REG,
+                 SET_NEXT_FRAME_NUMBER_MSB_REG);
 #endif
     return OK;
 }
 
 int getNextFrameNumber(uint64_t *retval) {
 #ifdef VIRTUAL
-    *retval = getU64BitReg(SET_NEXT_FRAME_NUMBER_LSB_REG, SET_NEXT_FRAME_NUMBER_MSB_REG);
+    *retval = getU64BitReg(SET_NEXT_FRAME_NUMBER_LSB_REG,
+                           SET_NEXT_FRAME_NUMBER_MSB_REG);
 #else
     // increment is for firmware
-    *retval =
-        (getU64BitReg(GET_NEXT_FRAME_NUMBER_LSB_REG, GET_NEXT_FRAME_NUMBER_MSB_REG) + 1);
+    *retval = (getU64BitReg(GET_NEXT_FRAME_NUMBER_LSB_REG,
+                            GET_NEXT_FRAME_NUMBER_MSB_REG) +
+               1);
 #endif
     return OK;
 }
@@ -1016,19 +1021,17 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     }
 
     thisSettings = sett;
-/*TODO?
-    // set special dacs
-    const int specialDacs[] = SPECIALDACINDEX;
-    for (int i = 0; i < NSPECIALDACS; ++i) {
-        setDAC(specialDacs[i], dacVals[i], 0);
-    }
-*/
+    /*TODO?
+        // set special dacs
+        const int specialDacs[] = SPECIALDACINDEX;
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            setDAC(specialDacs[i], dacVals[i], 0);
+        }
+    */
     return getSettings();
 }
 
-enum detectorSettings getSettings() {
-    return UNDEFINED;
-}
+enum detectorSettings getSettings() { return UNDEFINED; }
 
 /* parameters - dac, adc, hv */
 void setDAC(enum DACINDEX ind, int val, int mV) {
@@ -1679,9 +1682,11 @@ int setReadoutSpeed(int val) {
     bus_w(CONFIG_REG, (bus_r(CONFIG_REG) & ~CONFIG_READOUT_SPEED_MSK) | config);
     LOG(logINFO, ("\tSet Config Reg to 0x%x\n", bus_r(CONFIG_REG)));
 
-    bus_w(ADC_OFST_REG, (bus_r(ADC_OFST_REG) &~ ADC_OFFSET_MSK));
-    bus_w(ADC_OFST_REG, (bus_r(ADC_OFST_REG) | ((adcOfst << ADC_OFFSET_OFST) & ADC_OFFSET_MSK)));
-    LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", ((bus_r(ADC_OFST_REG) & ADC_OFFSET_MSK) >> ADC_OFFSET_OFST)));
+    bus_w(ADC_OFST_REG, (bus_r(ADC_OFST_REG) & ~ADC_OFFSET_MSK));
+    bus_w(ADC_OFST_REG, (bus_r(ADC_OFST_REG) |
+                         ((adcOfst << ADC_OFFSET_OFST) & ADC_OFFSET_MSK)));
+    LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n",
+                  ((bus_r(ADC_OFST_REG) & ADC_OFFSET_MSK) >> ADC_OFFSET_OFST)));
 
     bus_w(SAMPLE_REG, sampleAdcSpeed);
     LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));

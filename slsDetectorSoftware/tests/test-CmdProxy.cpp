@@ -1195,8 +1195,7 @@ TEST_CASE("dbitphase", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||
-        det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD) {
         auto prev_val = det.getDBITPhase();
         {
             std::ostringstream oss1, oss2;
@@ -1225,8 +1224,7 @@ TEST_CASE("maxdbitphaseshift", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||
-        det_type == defs::CHIPTESTBOARD ||
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
         det_type == defs::MYTHEN3 ||   // only because clk index of 0 exists
         det_type == defs::GOTTHARD2) { // only because clk index of 0 exists
         REQUIRE_NOTHROW(proxy.Call("maxdbitphaseshift", {}, -1, GET));

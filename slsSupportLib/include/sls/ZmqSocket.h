@@ -14,7 +14,6 @@
 
 #include <array>
 #include <map>
-#include <array>
 #include <memory>
 
 // Selective suppression of  warning in gcc,

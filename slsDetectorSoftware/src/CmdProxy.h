@@ -1397,10 +1397,9 @@ class CmdProxy {
                 "\n\t[Jungfrau][Moench][CTB] Absolute maximum Phase shift of "
                 "ADC clock.");
 
-    GET_COMMAND(
-        maxdbitphaseshift, getMaxDBITPhaseShift,
-        "\n\t[CTB][Jungfrau] Absolute maximum Phase shift of of the "
-        "clock to latch digital bits.");
+    GET_COMMAND(maxdbitphaseshift, getMaxDBITPhaseShift,
+                "\n\t[CTB][Jungfrau] Absolute maximum Phase shift of of the "
+                "clock to latch digital bits.");
 
     INTEGER_COMMAND_VEC_ID(highvoltage, getHighVoltage, setHighVoltage,
                            StringTo<int>,
@@ -1983,13 +1982,19 @@ class CmdProxy {
         autocompdisable, getAutoComparatorDisable, setAutoComparatorDisable,
         StringTo<int>,
         "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By "
-        "default, the on-chip gain switching is active during the entire exposure.This mode disables the on - chip gain switching comparator automatically after 93.75% (only for chipv1.0) of exposure time (only for longer than 100us). It is possible to set the duration for chipv1.1 using compdisabletime command.\n\tDefault is 0 or this mode disabled(comparator enabled throughout). 1 enables mode. 0 disables mode. ");
+        "default, the on-chip gain switching is active during the entire "
+        "exposure.This mode disables the on - chip gain switching comparator "
+        "automatically after 93.75% (only for chipv1.0) of exposure time (only "
+        "for longer than 100us). It is possible to set the duration for "
+        "chipv1.1 using compdisabletime command.\n\tDefault is 0 or this mode "
+        "disabled(comparator enabled throughout). 1 enables mode. 0 disables "
+        "mode. ");
 
-    TIME_COMMAND(
-        compdisabletime, getComparatorDisableTime, setComparatorDisableTime,
-        "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Time "
-        "before end of exposure when comparator is disabled. It is "
-        "only possible for chipv1.1.");
+    TIME_COMMAND(compdisabletime, getComparatorDisableTime,
+                 setComparatorDisableTime,
+                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Time "
+                 "before end of exposure when comparator is disabled. It is "
+                 "only possible for chipv1.1.");
 
     INTEGER_COMMAND_SET_NOID_GET_ID(
         extrastoragecells, getNumberOfAdditionalStorageCells,

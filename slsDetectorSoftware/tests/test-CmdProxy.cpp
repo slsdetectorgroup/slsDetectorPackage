@@ -1195,7 +1195,7 @@ TEST_CASE("dbitphase", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+    if (det_type == defs::JUNGFRAU ||
         det_type == defs::CHIPTESTBOARD) {
         auto prev_val = det.getDBITPhase();
         {
@@ -1225,7 +1225,7 @@ TEST_CASE("maxdbitphaseshift", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+    if (det_type == defs::JUNGFRAU ||
         det_type == defs::CHIPTESTBOARD ||
         det_type == defs::MYTHEN3 ||   // only because clk index of 0 exists
         det_type == defs::GOTTHARD2) { // only because clk index of 0 exists
@@ -1748,8 +1748,7 @@ TEST_CASE("currentsource", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU ||
-        det_type == defs::MOENCH) {
+    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU) {
         auto prev_val = det.getCurrentSource();
 
         if (det_type == defs::GOTTHARD2) {

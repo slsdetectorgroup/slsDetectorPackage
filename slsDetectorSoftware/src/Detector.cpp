@@ -1704,7 +1704,6 @@ void Detector::setStorageCellDelay(ns value, Positions pos) {
 std::vector<defs::gainMode> Detector::getGainModeList() const {
     switch (getDetectorType().squash()) {
     case defs::JUNGFRAU:
-    case defs::MOENCH:
         return std::vector<defs::gainMode>{
             defs::DYNAMIC, defs::FORCE_SWITCH_G1, defs::FORCE_SWITCH_G2,
             defs::FIX_G1,  defs::FIX_G2,          defs::FIX_G0};

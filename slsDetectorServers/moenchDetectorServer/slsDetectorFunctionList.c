@@ -451,7 +451,7 @@ void setupDetector() {
     ALTERA_PLL_SetDefines(
         PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK,
         PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK,
-        PLL_CNTRL_ADDR_OFST, PLL_CNTRL_DBIT_WR_PRMTR_MSK, DBIT_CLK_INDEX);
+        PLL_CNTRL_ADDR_OFST);
     ALTERA_PLL_ResetPLL();
 
     resetCore();
@@ -509,10 +509,7 @@ void setupDetector() {
     initReadoutConfiguration();
 
     // Initialization of acquistion parameters
-    disableCurrentSource();
-    setSettings(DEFAULT_SETTINGS);
-    setGainMode(DEFAULT_GAINMODE);
-
+    //setSettings(DEFAULT_SETTINGS);
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
     setExpTime(DEFAULT_EXPTIME);
@@ -540,6 +537,7 @@ int resetToDefaultDacs(int hardReset) {
         for (int i = 0; i < NDAC; ++i) {
             defaultDacValues[i] = vals[i];
         }
+        /* TODO?
         const int vals_G0[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
         for (int i = 0; i < NSPECIALDACS; ++i) {
             defaultDacValue_G0[i] = vals_G0[i];
@@ -548,6 +546,7 @@ int resetToDefaultDacs(int hardReset) {
         for (int i = 0; i < NSPECIALDACS; ++i) {
             defaultDacValue_HG0[i] = vals_HG0[i];
         }
+        */
     }
 
     // remember settings
@@ -558,6 +557,7 @@ int resetToDefaultDacs(int hardReset) {
     for (int i = 0; i < NDAC; ++i) {
         int value = defaultDacValues[i];
 
+/* TODO?
         for (int j = 0; j < NSPECIALDACS; ++j) {
             // special dac: replace default value
             if (specialDacs[j] == i) {
@@ -574,7 +574,7 @@ int resetToDefaultDacs(int hardReset) {
                 break;
             }
         }
-
+*/
         // set to defualt
         setDAC((enum DACINDEX)i, value, 0);
         if (dacValues[i] != value) {
@@ -591,6 +591,7 @@ int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
 
     // settings only for special dacs
     if (sett != UNDEFINED) {
+        /* TODO?
         const int specialDacs[] = SPECIALDACINDEX;
         // find special dac index
         for (int i = 0; i < NSPECIALDACS; ++i) {
@@ -608,6 +609,7 @@ int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
                 }
             }
         }
+        */
         // not a special dac
         return FAIL;
     }
@@ -620,10 +622,11 @@ int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
 
 int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
     char *dac_names[] = {DAC_NAMES};
-
+    /*TODO?
     // settings only for special dacs
     if (sett != UNDEFINED) {
         const int specialDacs[] = SPECIALDACINDEX;
+
         // find special dac index
         for (int i = 0; i < NSPECIALDACS; ++i) {
             if ((int)index == specialDacs[i]) {
@@ -648,6 +651,7 @@ int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
         // not a special dac
         return FAIL;
     }
+    */
     if (index < 0 || index >= NDAC)
         return FAIL;
     LOG(logINFO, ("Setting Default Dac [%d - %s]: %d\n", (int)index,
@@ -833,23 +837,23 @@ int setNextFrameNumber(uint64_t value) {
     LOG(logINFO,
         ("Setting next frame number: %llu\n", (long long unsigned int)value));
 #ifdef VIRTUAL
-    setU64BitReg(value, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+    setU64BitReg(value, SET_NEXT_FRAME_NUMBER_LSB_REG, SET_NEXT_FRAME_NUMBER_MSB_REG);
 #else
     // decrement is for firmware
-    setU64BitReg(value - 1, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+    setU64BitReg(value - 1, SET_NEXT_FRAME_NUMBER_LSB_REG, SET_NEXT_FRAME_NUMBER_MSB_REG);
     // need to set it twice for the firmware to catch
-    setU64BitReg(value - 1, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+    setU64BitReg(value - 1, SET_NEXT_FRAME_NUMBER_LSB_REG, SET_NEXT_FRAME_NUMBER_MSB_REG);
 #endif
     return OK;
 }
 
 int getNextFrameNumber(uint64_t *retval) {
 #ifdef VIRTUAL
-    *retval = getU64BitReg(FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+    *retval = getU64BitReg(SET_NEXT_FRAME_NUMBER_LSB_REG, SET_NEXT_FRAME_NUMBER_MSB_REG);
 #else
     // increment is for firmware
     *retval =
-        (getU64BitReg(GET_FRAME_NUMBER_LSB_REG, GET_FRAME_NUMBER_MSB_REG) + 1);
+        (getU64BitReg(GET_NEXT_FRAME_NUMBER_LSB_REG, GET_NEXT_FRAME_NUMBER_MSB_REG) + 1);
 #endif
     return OK;
 }
@@ -1006,132 +1010,24 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     int *dacVals = NULL;
     // set settings
     switch (sett) {
-    case GAIN0:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_HIGH_GAIN_MSK);
-        LOG(logINFO,
-            ("Set settings - Gain 0 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
-        dacVals = defaultDacValue_G0;
-        break;
-    case HIGHGAIN0:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_HIGH_GAIN_MSK);
-        LOG(logINFO,
-            ("Set settings - High Gain 0 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
-        dacVals = defaultDacValue_HG0;
-        break;
     default:
         LOG(logERROR, ("This settings %d is not defined\n", (int)sett));
         return -1;
     }
 
     thisSettings = sett;
-
+/*TODO?
     // set special dacs
     const int specialDacs[] = SPECIALDACINDEX;
     for (int i = 0; i < NSPECIALDACS; ++i) {
         setDAC(specialDacs[i], dacVals[i], 0);
     }
-
+*/
     return getSettings();
 }
 
 enum detectorSettings getSettings() {
-    if (bus_r(DAQ_REG) & DAQ_HIGH_GAIN_MSK)
-        return HIGHGAIN0;
-    return GAIN0;
-}
-
-enum gainMode getGainMode() {
-    uint32_t regval = bus_r(DAQ_REG);
-    uint32_t retval_force = regval & DAQ_FRCE_SWTCH_GAIN_MSK;
-    uint32_t retval_fix = regval & DAQ_FIX_GAIN_MSK;
-    uint32_t retval_cmp_rst = regval & DAQ_CMP_RST_MSK;
-
-    // only one set should be valid
-    if ((retval_force && retval_fix) || (retval_fix && retval_cmp_rst) ||
-        (retval_force && retval_cmp_rst)) {
-        LOG(logERROR, ("undefined gain mode. DAQ reg: 0x%x\n", regval));
-    }
-
-    // dynamic gain, when nothing is set
-    if (retval_force == 0 && retval_fix == 0 && retval_cmp_rst == 0) {
-        return DYNAMIC;
-    }
-
-    switch (retval_force) {
-    case DAQ_FRCE_GAIN_STG_1_VAL:
-        return FORCE_SWITCH_G1;
-    case DAQ_FRCE_GAIN_STG_2_VAL:
-        return FORCE_SWITCH_G2;
-    default:
-        break;
-    }
-
-    switch (retval_fix) {
-    case DAQ_FIX_GAIN_STG_1_VAL:
-        return FIX_G1;
-    case DAQ_FIX_GAIN_STG_2_VAL:
-        return FIX_G2;
-    default:
-        break;
-    }
-
-    if (retval_cmp_rst) {
-        return FIX_G0;
-    }
-
-    LOG(logERROR, ("This gain mode is undefined [DAQ reg: %d]\n", regval));
-    return -1;
-}
-
-void setGainMode(enum gainMode mode) {
-    uint32_t addr = DAQ_REG;
-    uint32_t value = bus_r(addr);
-
-    switch (mode) {
-    case DYNAMIC:
-        value &= ~(DAQ_GAIN_MODE_MASK);
-        bus_w(addr, value);
-        LOG(logINFO,
-            ("Set gain mode - Dynamic Gain [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
-        break;
-    case FORCE_SWITCH_G1:
-        value &= ~(DAQ_GAIN_MODE_MASK);
-        value |= DAQ_FRCE_GAIN_STG_1_VAL;
-        bus_w(addr, value);
-        LOG(logINFO, ("Set gain mode - Force Switch G1 [DAQ Reg:0x%x]\n",
-                      bus_r(DAQ_REG)));
-        break;
-    case FORCE_SWITCH_G2:
-        value &= ~(DAQ_GAIN_MODE_MASK);
-        value |= DAQ_FRCE_GAIN_STG_2_VAL;
-        bus_w(addr, value);
-        LOG(logINFO, ("Set gain mode - Force Switch G2 [DAQ Reg:0x%x]\n",
-                      bus_r(DAQ_REG)));
-        break;
-    case FIX_G1:
-        value &= ~(DAQ_GAIN_MODE_MASK);
-        value |= DAQ_FIX_GAIN_STG_1_VAL;
-        bus_w(addr, value);
-        LOG(logINFO,
-            ("Set gain mode - Fix G1 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
-        break;
-    case FIX_G2:
-        value &= ~(DAQ_GAIN_MODE_MASK);
-        value |= DAQ_FIX_GAIN_STG_2_VAL;
-        bus_w(addr, value);
-        LOG(logINFO,
-            ("Set gain mode - Fix G2 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
-        break;
-    case FIX_G0:
-        value &= ~(DAQ_GAIN_MODE_MASK);
-        value |= DAQ_CMP_RST_MSK;
-        bus_w(addr, value);
-        LOG(logINFO,
-            ("Set gain mode - Fix G0 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
-        break;
-    default:
-        LOG(logERROR, ("This gain mode %d is not defined\n", (int)mode));
-    }
+    return UNDEFINED;
 }
 
 /* parameters - dac, adc, hv */
@@ -1155,14 +1051,6 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     LOG(logINFO, ("Setting DAC %s\n", dac_names[ind]));
     if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK) {
         dacValues[ind] = dacval;
-        if (ind == J_VREF_COMP &&
-            (val >= 0)) { // FIXME: if val == pwr down value, write 0?
-            bus_w(EXT_DAQ_CTRL_REG,
-                  (bus_r(EXT_DAQ_CTRL_REG) &
-                   ~(EXT_DAQ_CTRL_VREF_COMP_MSK)) // reset
-                      | ((val << EXT_DAQ_CTRL_VREF_COMP_OFST) &
-                         EXT_DAQ_CTRL_VREF_COMP_MSK)); // or it with value
-        }
     }
 #endif
 }
@@ -1621,7 +1509,7 @@ int setDetectorPosition(int pos[]) {
 
 int *getDetectorPosition() { return detPos; }
 
-/* moench specific - powerchip, autocompdisable, asictimer, clockdiv, pll,
+/* moench specific - powerchip, clockdiv, pll,
  * flashing fpga */
 
 int setReadNRows(int value) {
@@ -1672,7 +1560,6 @@ int getReadNRows() {
 void initReadoutConfiguration() {
 
     LOG(logINFO, ("Initializing Readout Configuration:\n"
-                  "\t Reset readout Timer\n"
                   "\t 1 x 10G mode\n"
                   "\t outer interface is primary\n"
                   "\t half speed\n"
@@ -1681,8 +1568,6 @@ void initReadoutConfiguration() {
                   "\t Reset Round robin entries\n"));
 
     uint32_t val = 0;
-    // reset readouttimer
-    val &= ~CONFIG_RDT_TMR_MSK;
     // 1 x 10G mode
     val &= ~CONFIG_OPRTN_MDE_2_X_10GbE_MSK;
     // outer interface
@@ -1727,46 +1612,6 @@ int powerChip(int on) {
             CHIP_POWER_STATUS_OFST);
 }
 
-int autoCompDisable(int on) {
-    if (on != -1) {
-        if (on) {
-            LOG(logINFO, ("Auto comp disable mode: on\n"));
-            bus_w(EXT_DAQ_CTRL_REG,
-                  bus_r(EXT_DAQ_CTRL_REG) | EXT_DAQ_CTRL_CMP_LGC_ENBL_MSK);
-        } else {
-            LOG(logINFO, ("Auto comp disable mode: off\n"));
-            bus_w(EXT_DAQ_CTRL_REG,
-                  bus_r(EXT_DAQ_CTRL_REG) & ~EXT_DAQ_CTRL_CMP_LGC_ENBL_MSK);
-        }
-    }
-
-    return ((bus_r(EXT_DAQ_CTRL_REG) & EXT_DAQ_CTRL_CMP_LGC_ENBL_MSK) >>
-            EXT_DAQ_CTRL_CMP_LGC_ENBL_OFST);
-}
-
-int setComparatorDisableTime(int64_t val) {
-    if (val < 0) {
-        LOG(logERROR,
-            ("Invalid comp disable time: %lld ns\n", (long long int)val));
-        return FAIL;
-    }
-    LOG(logINFO, ("Setting comp disable time %lld ns\n", (long long int)val));
-    val *= (1E-3 * CLK_RUN);
-    bus_w(COMP_DSBLE_TIME_REG, val);
-
-    // validate for tolerance
-    int64_t retval = getComparatorDisableTime();
-    val /= (1E-3 * CLK_RUN);
-    if (val != retval) {
-        return FAIL;
-    }
-    return OK;
-}
-
-int64_t getComparatorDisableTime() {
-    return bus_r(COMP_DSBLE_TIME_REG) / (1E-3 * CLK_RUN);
-}
-
 int setReadoutSpeed(int val) {
     // stop state machine if running
     if (runBusy()) {
@@ -1776,7 +1621,6 @@ int setReadoutSpeed(int val) {
     uint32_t adcOfst = 0;
     uint32_t sampleAdcSpeed = 0;
     uint32_t adcPhase = 0;
-    uint32_t dbitPhase = 0;
     uint32_t config = CONFIG_FULL_SPEED_40MHZ_VAL;
 
     switch (val) {
@@ -1789,7 +1633,6 @@ int setReadoutSpeed(int val) {
         LOG(logINFO, ("Setting Full Speed (40 MHz):\n"));
         sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED_CHIP10;
         adcPhase = ADC_PHASE_FULL_SPEED_CHIP10;
-        dbitPhase = DBIT_PHASE_FULL_SPEED_CHIP10;
         adcOfst = ADC_OFST_FULL_SPEED_VAL_CHIP10;
         config = CONFIG_FULL_SPEED_40MHZ_VAL;
         break;
@@ -1800,12 +1643,10 @@ int setReadoutSpeed(int val) {
             adcOfst = ADC_OFST_HALF_SPEED_BOARD2_VAL;
             sampleAdcSpeed = SAMPLE_ADC_HALF_SPEED_BOARD2;
             adcPhase = ADC_PHASE_HALF_SPEED_BOARD2;
-            dbitPhase = DBIT_PHASE_HALF_SPEED_BOARD2;
         } else {
             adcOfst = ADC_OFST_HALF_SPEED_VAL_CHIP10;
             sampleAdcSpeed = SAMPLE_ADC_HALF_SPEED_CHIP10;
             adcPhase = ADC_PHASE_HALF_SPEED_CHIP10;
-            dbitPhase = DBIT_PHASE_HALF_SPEED_CHIP10;
         }
         config = CONFIG_HALF_SPEED_20MHZ_VAL;
         break;
@@ -1816,12 +1657,10 @@ int setReadoutSpeed(int val) {
             adcOfst = ADC_OFST_BOARD2_VAL;
             sampleAdcSpeed = SAMPLE_ADC_QUARTER_SPEED_BOARD2;
             adcPhase = ADC_PHASE_QUARTER_SPEED_BOARD2;
-            dbitPhase = DBIT_PHASE_QUARTER_SPEED_BOARD2;
         } else {
             adcOfst = ADC_OFST_VAL;
             sampleAdcSpeed = SAMPLE_ADC_QUARTER_SPEED_CHIP10;
             adcPhase = ADC_PHASE_QUARTER_SPEED_CHIP10;
-            dbitPhase = DBIT_PHASE_QUARTER_SPEED_CHIP10;
         }
         config = CONFIG_QUARTER_SPEED_10MHZ_VAL;
         break;
@@ -1840,17 +1679,15 @@ int setReadoutSpeed(int val) {
     bus_w(CONFIG_REG, (bus_r(CONFIG_REG) & ~CONFIG_READOUT_SPEED_MSK) | config);
     LOG(logINFO, ("\tSet Config Reg to 0x%x\n", bus_r(CONFIG_REG)));
 
-    bus_w(ADC_OFST_REG, adcOfst);
-    LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", bus_r(ADC_OFST_REG)));
+    bus_w(ADC_OFST_REG, (bus_r(ADC_OFST_REG) &~ ADC_OFFSET_MSK));
+    bus_w(ADC_OFST_REG, (bus_r(ADC_OFST_REG) | ((adcOfst << ADC_OFFSET_OFST) & ADC_OFFSET_MSK)));
+    LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", ((bus_r(ADC_OFST_REG) & ADC_OFFSET_MSK) >> ADC_OFFSET_OFST)));
 
     bus_w(SAMPLE_REG, sampleAdcSpeed);
     LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));
 
     setPhase(ADC_CLK, adcPhase, 0);
     LOG(logINFO, ("\tSet ADC Phase Reg to %d\n", adcPhase));
-
-    setPhase(DBIT_CLK, dbitPhase, 0);
-    LOG(logINFO, ("\tSet DBIT Phase Reg to %d\n", dbitPhase));
 
     return OK;
 }
@@ -1876,7 +1713,7 @@ int getReadoutSpeed(int *retval) {
 }
 
 int setPhase(enum CLKINDEX ind, int val, int degrees) {
-    if (ind != ADC_CLK && ind != DBIT_CLK) {
+    if (ind != ADC_CLK) {
         LOG(logERROR, ("Unknown clock index %d to set phase\n", ind));
         return FAIL;
     }
@@ -1923,8 +1760,7 @@ int setPhase(enum CLKINDEX ind, int val, int degrees) {
     LOG(logDEBUG1, ("[Single Direction] Phase:%d (0x%x). Max Phase shifts:%d\n",
                     phase, phase, maxShift));
 
-    ALTERA_PLL_SetPhaseShift(
-        phase, (ind == ADC_CLK ? ADC_CLK_INDEX : DBIT_CLK_INDEX), 0);
+    ALTERA_PLL_SetPhaseShift(phase, ADC_CLK_INDEX, 0);
 
     clkPhase[ind] = valShift;
 
@@ -1933,7 +1769,7 @@ int setPhase(enum CLKINDEX ind, int val, int degrees) {
 }
 
 int getPhase(enum CLKINDEX ind, int degrees) {
-    if (ind != ADC_CLK && ind != DBIT_CLK) {
+    if (ind != ADC_CLK) {
         LOG(logERROR, ("Unknown clock index %d to get phase\n", ind));
         return -1;
     }
@@ -1947,7 +1783,7 @@ int getPhase(enum CLKINDEX ind, int degrees) {
 }
 
 int getMaxPhase(enum CLKINDEX ind) {
-    if (ind != ADC_CLK && ind != DBIT_CLK) {
+    if (ind != ADC_CLK) {
         LOG(logERROR, ("Unknown clock index %d to get max phase\n", ind));
         return -1;
     }
@@ -1955,7 +1791,7 @@ int getMaxPhase(enum CLKINDEX ind) {
 }
 
 int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval) {
-    if (ind != ADC_CLK && ind != DBIT_CLK) {
+    if (ind != ADC_CLK) {
         LOG(logERROR,
             ("Unknown clock index %d to validate phase in degrees\n", ind));
         return FAIL;
@@ -2091,65 +1927,6 @@ void setFlipRows(int arg) {
     }
 }
 
-void disableCurrentSource() {
-    LOG(logINFO, ("Disabling Current Source\n"));
-
-    bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_ENBL_MSK);
-    LOG(logINFO, ("\tCurrent Source disabled\n"));
-}
-
-void enableCurrentSource(int fix, uint64_t select, int normal) {
-    disableCurrentSource();
-
-    LOG(logINFO, ("Enabling current source [fix:%d, select:%ld, normal:%d]\n",
-                  fix, (long int)select, normal));
-
-    // fix
-    if (fix) {
-        LOG(logINFO, ("\tEnabling fix\n"));
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_CRRNT_SRC_CLMN_FIX_MSK);
-    } else {
-        LOG(logINFO, ("\tDisabling fix\n"));
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_FIX_MSK);
-    }
-
-    // select
-    LOG(logINFO, ("\tSetting selection to %ld\n", (long int)select));
-    bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_SLCT_MSK);
-    bus_w(DAQ_REG, bus_r(DAQ_REG) | ((select << DAQ_CRRNT_SRC_CLMN_SLCT_OFST) &
-                                     DAQ_CRRNT_SRC_CLMN_SLCT_MSK));
-
-    // validating before enabling current source
-    if (getFixCurrentSource() != fix || getSelectCurrentSource() != select) {
-        LOG(logERROR,
-            ("Could not set fix or select parameters for current source.\n"))
-        return;
-    }
-    // not validating normal because the status register might not update during
-    // acquisition
-
-    // enabling current source
-    LOG(logINFO, ("\tEnabling Current Source\n"));
-    bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_CRRNT_SRC_ENBL_MSK);
-}
-
-int getCurrentSource() {
-    return ((bus_r(DAQ_REG) & DAQ_CRRNT_SRC_ENBL_MSK) >>
-            DAQ_CRRNT_SRC_ENBL_OFST);
-}
-
-int getFixCurrentSource() {
-    return ((bus_r(DAQ_REG) & DAQ_CRRNT_SRC_CLMN_FIX_MSK) >>
-            DAQ_CRRNT_SRC_CLMN_FIX_OFST);
-}
-
-int getNormalCurrentSource() { return -1; }
-
-uint64_t getSelectCurrentSource() {
-    return ((bus_r(DAQ_REG) & DAQ_CRRNT_SRC_CLMN_SLCT_MSK) >>
-            DAQ_CRRNT_SRC_CLMN_SLCT_OFST);
-}
-
 int getTenGigaFlowControl() {
     return ((bus_r(CONFIG_REG) & CONFIG_ETHRNT_FLW_CNTRL_MSK) >>
             CONFIG_ETHRNT_FLW_CNTRL_OFST);
@@ -2225,8 +2002,6 @@ int startStateMachine() {
 
     // start state machine
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_START_ACQ_MSK);
-    bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_START_ACQ_MSK);
-
     LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
     return OK;
 }
@@ -2423,9 +2198,6 @@ int stopStateMachine() {
 #endif
     // stop state machine
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STOP_ACQ_MSK);
-    usleep(100);
-    bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_STOP_ACQ_MSK);
-
     LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
     return OK;
 }

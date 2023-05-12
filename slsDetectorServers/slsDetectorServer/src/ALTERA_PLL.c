@@ -127,7 +127,7 @@ uint32_t ALTERA_PLL_Cntrl_Reg = 0x0;
 uint32_t ALTERA_PLL_Param_Reg = 0x0;
 uint32_t ALTERA_PLL_Cntrl_RcnfgPrmtrRstMask = 0x0;
 uint32_t ALTERA_PLL_Cntrl_WrPrmtrMask = 0x0;
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
 uint32_t ALTERA_PLL_Cntrl_DBIT_PLL_WrPrmtrMask = 0x0;
 int ALTERA_PLL_Cntrl_DBIT_ClkIndex = 0;
 
@@ -136,7 +136,7 @@ uint32_t ALTERA_PLL_Cntrl_PLLRstMask = 0x0;
 uint32_t ALTERA_PLL_Cntrl_AddrMask = 0x0;
 int ALTERA_PLL_Cntrl_AddrOfst = 0;
 
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
 void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk,
                            uint32_t wpmsk, uint32_t prmsk, uint32_t amsk,
                            int aofst, uint32_t wd2msk, int clk2Index) {
@@ -201,7 +201,7 @@ void ALTERA_PLL_SetPllReconfigReg(uint32_t reg, uint32_t val,
          reg, val, useSecondWRMask));
 
     uint32_t wrmask = ALTERA_PLL_Cntrl_WrPrmtrMask;
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
     if (useSecondWRMask) {
         wrmask = ALTERA_PLL_Cntrl_DBIT_PLL_WrPrmtrMask;
     }
@@ -252,7 +252,7 @@ void ALTERA_PLL_SetPhaseShift(int32_t phase, int clkIndex, int pos) {
     LOG(logDEBUG1, ("C%d phase word:0x%08x\n", clkIndex, value));
 
     int useSecondWR = 0;
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
     if (clkIndex == ALTERA_PLL_Cntrl_DBIT_ClkIndex) {
         useSecondWR = 1;
     }

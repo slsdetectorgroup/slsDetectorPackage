@@ -1281,7 +1281,7 @@ class CmdProxy {
         "verylowgain, g1_hg, g1_lg, g2_hc_hg, g2_hc_lg, "
         "g2_lc_hg, g2_lc_lg, g4_hg, g4_lg, gain0]"
         "\n\t Detector Settings"
-        "\n\t[Jungfrau][Moench] - [ gain0 | highgain0]"
+        "\n\t[Jungfrau] - [ gain0 | highgain0]"
         "\n\t[Gotthard] - [dynamicgain | highgain | lowgain | "
         "mediumgain | veryhighgain]"
         "\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]"
@@ -1399,7 +1399,7 @@ class CmdProxy {
 
     GET_COMMAND(
         maxdbitphaseshift, getMaxDBITPhaseShift,
-        "\n\t[CTB][Jungfrau][Moench] Absolute maximum Phase shift of of the "
+        "\n\t[CTB][Jungfrau] Absolute maximum Phase shift of of the "
         "clock to latch digital bits.");
 
     INTEGER_COMMAND_VEC_ID(highvoltage, getHighVoltage, setHighVoltage,
@@ -1982,19 +1982,12 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         autocompdisable, getAutoComparatorDisable, setAutoComparatorDisable,
         StringTo<int>,
-        "[0, 1]\n\t[Jungfrau][Moench] Auto comparator disable mode. By "
-        "default, the "
-        "on-chip gain switching is active during the entire exposure.This mode "
-        "disables the on - chip gain switching comparator automatically after "
-        "93.75% (only for chipv1.0) of exposure time (only for longer than "
-        "100us). It is possible to set the duration for chipv1.1 using "
-        "compdisabletime command.\n\tDefault is 0 or this mode "
-        "disabled(comparator enabled throughout). 1 enables mode. 0 disables "
-        "mode. ");
+        "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By "
+        "default, the on-chip gain switching is active during the entire exposure.This mode disables the on - chip gain switching comparator automatically after 93.75% (only for chipv1.0) of exposure time (only for longer than 100us). It is possible to set the duration for chipv1.1 using compdisabletime command.\n\tDefault is 0 or this mode disabled(comparator enabled throughout). 1 enables mode. 0 disables mode. ");
 
     TIME_COMMAND(
         compdisabletime, getComparatorDisableTime, setComparatorDisableTime,
-        "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench] Time "
+        "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Time "
         "before end of exposure when comparator is disabled. It is "
         "only possible for chipv1.1.");
 

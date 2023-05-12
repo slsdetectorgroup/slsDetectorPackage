@@ -334,7 +334,7 @@ int getAllTrimbits();
 enum detectorSettings setSettings(enum detectorSettings sett);
 #endif
 enum detectorSettings getSettings();
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
 enum gainMode getGainMode();
 void setGainMode(enum gainMode mode);
 #endif
@@ -520,11 +520,9 @@ int powerChip(int on);
 #ifndef MOENCHD
 int isChipConfigured();
 void configureChip();
-#endif
 int autoCompDisable(int on);
 int setComparatorDisableTime(int64_t val);
 int64_t getComparatorDisableTime();
-#ifndef MOENCHD
 void configureASICTimer();
 #endif
 int setReadoutSpeed(int val);
@@ -544,13 +542,13 @@ int setFilterResistor(int value);
 int getFilterResistor();
 int getNumberOfFilterCells();
 void setNumberOfFilterCells(int iCell);
-#endif
 void disableCurrentSource();
 void enableCurrentSource(int fix, uint64_t select, int normal);
 int getCurrentSource();
 int getFixCurrentSource();
 int getNormalCurrentSource();
 uint64_t getSelectCurrentSource();
+#endif
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD

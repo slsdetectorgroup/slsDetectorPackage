@@ -28,8 +28,7 @@
 #define DATA_BYTES          (NCHIP * NCHAN * NUM_BYTES_PER_PIXEL)
 #define CLK_RUN             (40) // MHz
 #define CLK_SYNC            (20) // MHz
-#define ADC_CLK_INDEX       (1)
-#define DBIT_CLK_INDEX      (0)
+#define ADC_CLK_INDEX       (0)
 
 /** Default Parameters */
 #define DEFAULT_NUM_FRAMES            (1)
@@ -41,7 +40,6 @@
 #define DEFAULT_HIGH_VOLTAGE          (0)
 #define DEFAULT_TIMING_MODE           (AUTO_TIMING)
 #define DEFAULT_SETTINGS              (GAIN0)
-#define DEFAULT_GAINMODE              (DYNAMIC)
 #define DEFAULT_TX_UDP_PORT           (0x7e9a)
 #define DEFAULT_TMP_THRSHLD           (65 * 1000) // milli degree Celsius
 #define DEFAULT_FLIP_ROWS             (0)
@@ -72,44 +70,13 @@
 
 // pipeline
 #define ADC_PORT_INVERT_VAL        (0x0)
-#define ADC_PORT_INVERT_BOARD2_VAL (0x0)
 
-// 2.0 pcb (chipv1.0)
-#define SAMPLE_ADC_FULL_SPEED_CHIP10                                           \
-    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_1_VAL + SAMPLE_DECMT_FACTOR_FULL_VAL) // 0x0100
-#define SAMPLE_ADC_HALF_SPEED_CHIP10                                           \
-    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_1_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_3_VAL + SAMPLE_DECMT_FACTOR_HALF_VAL) // 0x1310
-#define SAMPLE_ADC_QUARTER_SPEED_CHIP10                                        \
-    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_3_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_6_VAL + SAMPLE_DECMT_FACTOR_QUARTER_VAL) // 0x2630
+#define SAMPLE_ADC_FULL_SPEED                                           \
+    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL) // 0x0
 
-#define ADC_PHASE_FULL_SPEED_CHIP10    (160)
-#define ADC_PHASE_HALF_SPEED_CHIP10    (160)
-#define ADC_PHASE_QUARTER_SPEED_CHIP10 (160)
-
-#define DBIT_PHASE_FULL_SPEED_CHIP10    (125)
-#define DBIT_PHASE_HALF_SPEED_CHIP10    (175)
-#define DBIT_PHASE_QUARTER_SPEED_CHIP10 (175)
-
+#define ADC_PHASE_FULL_SPEED    (160)
 #define ADC_OFST_VAL (0x10)
 
-// 1.0 pcb (2 resistor network)
-#define SAMPLE_ADC_HALF_SPEED_BOARD2                                           \
-    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_3_VAL + SAMPLE_DECMT_FACTOR_HALF_VAL) // 0x1300
-#define SAMPLE_ADC_QUARTER_SPEED_BOARD2                                        \
-    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_1_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_6_VAL + SAMPLE_DECMT_FACTOR_QUARTER_VAL) // 0x2610
-
-#define ADC_PHASE_HALF_SPEED_BOARD2    (110)
-#define ADC_PHASE_QUARTER_SPEED_BOARD2 (220)
-
-#define DBIT_PHASE_HALF_SPEED_BOARD2    (150)
-#define DBIT_PHASE_QUARTER_SPEED_BOARD2 (150)
-
-#define ADC_OFST_BOARD2_VAL (0x10)
 
 /* Struct Definitions */
 typedef struct udp_header_struct {
@@ -178,5 +145,5 @@ enum MASTERINDEX { MASTER_HARDWARE, OW_MASTER, OW_SLAVE };
     { 1550, 450, 620 }
 
 enum NETWORKINDEX { TXN_FRAME, FLOWCTRL_10G };
-enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
+enum CLKINDEX { RUN_CLK, ADC_CLK, NUM_CLOCKS };
 #define CLK_NAMES "run", "adc", "dbit"

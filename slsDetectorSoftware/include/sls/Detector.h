@@ -129,7 +129,7 @@ class Detector {
     /** [Jungfrau][Moench][Gotthard][Gotthard2][Mythen3] */
     Result<defs::detectorSettings> getSettings(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] GAIN0, HIGHGAIN0 \n [Gotthard] DYNAMICGAIN, HIGHGAIN,
+    /** [Jungfrau] GAIN0, HIGHGAIN0 \n [Gotthard] DYNAMICGAIN, HIGHGAIN,
      * LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n [Gotthard2] DYNAMICGAIN,
      * FIXGAIN1, FIXGAIN2 \n [Mythen3] STANDARD, FAST,
      * HIGHGAIN. Also changes vrshaper and vrpreamp \n [Eiger] Use threshold
@@ -389,21 +389,21 @@ class Detector {
      */
     void setADCPhaseInDegrees(int value, Positions pos = {});
 
-    /** [CTB][Jungfrau][Moench] */
+    /** [CTB][Jungfrau] */
     Result<int> getDBITPhase(Positions pos = {}) const;
 
-    /** [CTB][Jungfrau][Moench] Absolute phase shift \n
+    /** [CTB][Jungfrau] Absolute phase shift \n
      * [CTB] changing dbitclk also resets dbitphase and sets to previous values.
      */
     void setDBITPhase(int value, Positions pos = {});
 
-    /** [CTB][Jungfrau][Moench] */
+    /** [CTB][Jungfrau] */
     Result<int> getMaxDBITPhaseShift(Positions pos = {}) const;
 
-    /** [CTB][Jungfrau][Moench] */
+    /** [CTB][Jungfrau] */
     Result<int> getDBITPhaseInDegrees(Positions pos = {}) const;
 
-    /** [CTB][Jungfrau][Moench] Absolute phase shift \n
+    /** [CTB][Jungfrau] Absolute phase shift \n
      * [CTB] changing dbitclk also resets dbitphase and sets to previous values.
      */
     void setDBITPhaseInDegrees(int value, Positions pos = {});
@@ -548,11 +548,11 @@ class Detector {
      * 0.\n[Jungfrau] Options: [0|1]. Default is 1.*/
     void setFilterResistor(int value, Positions pos = {});
 
-    /** [Gotthard2][Jungfrau][Moench] */
+    /** [Gotthard2][Jungfrau] */
     Result<defs::currentSrcParameters>
     getCurrentSource(Positions pos = {}) const;
 
-    /** [Gotthard2][Jungfrau][Moench] Please refer documentation on
+    /** [Gotthard2][Jungfrau] Please refer documentation on
      * currentSrcParameters (sls_detector_defs.h) on the structure and its
      * members */
     void setCurrentSource(defs::currentSrcParameters par, Positions pos = {});
@@ -1279,10 +1279,10 @@ class Detector {
     /** [Jungfrau][Moench] refer to setThresdholdTemperature */
     void resetTemperatureEvent(Positions pos = {});
 
-    /** [Jungfrau][Moench] */
+    /** [Jungfrau] */
     Result<bool> getAutoComparatorDisable(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Advanced
+    /** [Jungfrau] Advanced
      * //TODO naming
      * By default, the on-chip gain switching is active during the
      * entire exposure. This mode disables the on-chip gain switching comparator
@@ -1294,10 +1294,10 @@ class Detector {
      */
     void setAutoComparatorDisable(bool value, Positions pos = {});
 
-    /** [Jungfrau][Moench] */
+    /** [Jungfrau] */
     Result<ns> getComparatorDisableTime(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Time before end of exposure when comparator is
+    /** [Jungfrau] Time before end of exposure when comparator is
      * disabled. It is only possible for chipv1.1.*/
     void setComparatorDisableTime(ns t, Positions pos = {});
 
@@ -1330,10 +1330,10 @@ class Detector {
     /** list of possible gainmode  */
     std::vector<defs::gainMode> getGainModeList() const;
 
-    /** [Jungfrau][Moench]*/
+    /** [Jungfrau]*/
     Result<defs::gainMode> getGainMode(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Options: DYNAMIC, FORCE_SWITCH_G1, FORCE_SWITCH_G2,
+    /** [Jungfrau] Options: DYNAMIC, FORCE_SWITCH_G1, FORCE_SWITCH_G2,
      * FIX_G1, FIX_G2, FIX_G0 \n\CAUTION: Do not use FIX_G0 without caution, you
      * can damage the detector!!!\n
      */

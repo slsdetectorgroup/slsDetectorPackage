@@ -364,7 +364,7 @@ class Detector(CppDetectorApi):
         -----
         
         [Eiger] Use threshold command to load settings
-        [Jungfrau][Moench] GAIN0, HIGHGAIN0 \n
+        [Jungfrau] GAIN0, HIGHGAIN0 \n
         [Gotthard] DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n
         [Gotthard2] DYNAMICGAIN, FIXGAIN1, FIXGAIN2 \n
         [Eiger] settings loaded from file found in settingspath
@@ -2428,7 +2428,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def autocompdisable(self):
-        """[Jungfrau][Moench] Enable or disable auto comparator disable mode. 
+        """[Jungfrau] Enable or disable auto comparator disable mode. 
 
         Note
         -----
@@ -2444,7 +2444,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def compdisabletime(self):
-        """[Jungfrau][Moench] Time before end of exposure when comparator is disabled. 
+        """[Jungfrau] Time before end of exposure when comparator is disabled. 
 
         Note
         -----
@@ -2665,11 +2665,11 @@ class Detector(CppDetectorApi):
     @property
     def gainmode(self):
         """
-        [Jungfrau][Moench] Detector gain mode. Enum: gainMode
+        [Jungfrau] Detector gain mode. Enum: gainMode
         
         Note
         -----
-        [Jungfrau][Moench] DYNAMIC, FORCE_SWITCH_G1, FORCE_SWITCH_G2, FIX_G1, FIX_G2, FIX_G0 \n
+        [Jungfrau] DYNAMIC, FORCE_SWITCH_G1, FORCE_SWITCH_G2, FIX_G1, FIX_G2, FIX_G0 \n
         CAUTION: Do not use FIX_G0 without caution, you can damage the detector!!!
         """
         return element_if_equal(self.getGainMode())
@@ -2682,7 +2682,7 @@ class Detector(CppDetectorApi):
     @element
     def currentsource(self):
         """
-        Pass in a currentSrcParameters object
+        [Gotthard2][Jungfrau] Pass in a currentSrcParameters object
         see python/examples/use_currentsource.py
 
         """
@@ -3173,7 +3173,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def dbitphase(self):
-        """[Ctb][Jungfrau][Moench] Phase shift of clock to latch digital bits. Absolute phase shift.
+        """[Ctb][Jungfrau] Phase shift of clock to latch digital bits. Absolute phase shift.
 
         Note
         -----
@@ -3225,7 +3225,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def maxdbitphaseshift(self):
-        """[CTB][Jungfrau][Moench] Absolute maximum Phase shift of of the clock to latch digital bits.
+        """[CTB][Jungfrau] Absolute maximum Phase shift of of the clock to latch digital bits.
         
         Note
         -----

@@ -66,9 +66,6 @@
 #define MAX_PHASE_SHIFTS (240)
 #define BIT16_MASK       (0xFFFF)
 
-#define GAIN_VAL_OFST (14)
-#define GAIN_VAL_MSK  (0x3 << GAIN_VAL_OFST)
-
 // pipeline
 #define ADC_PORT_INVERT_VAL (0x0)
 

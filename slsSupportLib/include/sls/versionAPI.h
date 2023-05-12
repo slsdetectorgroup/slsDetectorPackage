@@ -10,4 +10,4 @@
 #define APIRECEIVER  "developer 0x230224"
 #define APIEIGER     "developer 0x230224"
 #define APIJUNGFRAU  "developer 0x230512"
-#define APIMOENCH "developer 0x230512"
+#define APIMOENCH    "developer 0x230512"

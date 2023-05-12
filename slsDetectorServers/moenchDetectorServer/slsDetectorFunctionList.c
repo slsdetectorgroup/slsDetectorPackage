@@ -1780,21 +1780,11 @@ void *start_timer(void *arg) {
     {
         const int npixels = (NCHAN * NCHIP);
         const int pixelsPerPacket = dataSize / NUM_BYTES_PER_PIXEL;
-        int dataVal = 0;
-        int gainVal = 0;
         int pixelVal = 0;
         for (int i = 0; i < npixels; ++i) {
             if (i % pixelsPerPacket == 0) {
-                ++dataVal;
+                ++pixelVal;
             }
-            if ((i % 400) < 100) {
-                gainVal = 1;
-            } else if ((i % 400) < 300) {
-                gainVal = 2;
-            } else {
-                gainVal = 3;
-            }
-            pixelVal = (dataVal & ~GAIN_VAL_MSK) | (gainVal << GAIN_VAL_OFST);
 // to debug multi module geometry (row, column) in virtual servers (all pixels
 // in a module set to particular value)
 #ifdef TEST_MOD_GEOMETRY

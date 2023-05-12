@@ -353,11 +353,11 @@ class Detector {
 
     /** [Eiger][Jungfrau][Moench][Gotthard2]
      * [Jungfrau] Options: FULL_SPEED, HALF_SPEED (Default),
-     * QUARTER_SPEED \n [Moench] Options: FULL_SPEED (Default) \n [Eiger] Options: FULL_SPEED (Default), HALF_SPEED,
-     * QUARTER_SPEED \n [Gotthard2] Options: G2_108MHZ (Default), G2_144MHZ \n
-     * [Jungfrau][Moench] FULL_SPEED option only available from v2.0 boards and
-     * is recommended to set number of interfaces to 2. \n Also overwrites
-     * adcphase to recommended default.
+     * QUARTER_SPEED \n [Moench] Options: FULL_SPEED (Default) \n [Eiger]
+     * Options: FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED \n [Gotthard2]
+     * Options: G2_108MHZ (Default), G2_144MHZ \n [Jungfrau][Moench] FULL_SPEED
+     * option only available from v2.0 boards and is recommended to set number
+     * of interfaces to 2. \n Also overwrites adcphase to recommended default.
      */
     void setReadoutSpeed(defs::speedLevel value, Positions pos = {});
 
@@ -529,13 +529,13 @@ class Detector {
     void setExternalSignalFlags(int signalIndex, defs::externalSignalFlag value,
                                 Positions pos = {});
 
-    /** [Eiger][Mythen3][Gotthard2] */
+    /** [Eiger][Mythen3][Gotthard2][Moench] */
     Result<bool> getParallelMode(Positions pos = {}) const;
 
-    /** [Eiger][Mythen3][Gotthard2]
+    /** [Eiger][Mythen3][Gotthard2][Moench]
      * [Mythen3] If exposure time is too short, acquisition will return with an
      * ERROR and take fewer frames than expected \n
-     * [Mythen3][Eiger] Default: Non parallel \n
+     * [Mythen3][Eiger][Moench] Default: Non parallel \n
      * [Gotthard2] Default: Parallel. Non parallel mode works only in continuous
      * mode.*/
     void setParallelMode(bool value, Positions pos = {});

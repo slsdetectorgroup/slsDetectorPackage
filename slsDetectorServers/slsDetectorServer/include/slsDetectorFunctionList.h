@@ -212,7 +212,8 @@ int setExternalSampling(int val);
 #endif
 
 // parameters - readout
-#if defined(EIGERD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
+#if defined(EIGERD) || defined(MYTHEN3D) || defined(GOTTHARD2D) ||             \
+    defined(MOENCHD)
 int setParallelMode(int mode);
 int getParallelMode();
 #endif

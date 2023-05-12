@@ -1428,10 +1428,11 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         parallel, getParallelMode, setParallelMode, StringTo<int>,
-        "[0, 1]\n\t[Eiger][Mythen3][Gotthard2] Enable or disable parallel "
+        "[0, 1]\n\t[Eiger][Mythen3][Gotthard2][Moench] Enable or disable "
+        "parallel "
         "mode.\n\t[Mythen3] If exptime is too short, the "
         "acquisition will return ERROR status and take fewer "
-        "frames than expected.\n\t[Mythen3][Eiger] Default: Non "
+        "frames than expected.\n\t[Mythen3][Eiger][Moench] Default: Non "
         "parallel.\n\t[Gotthard2] Default: Parallel. Non parallel mode works "
         "only in continuous mode.");
 

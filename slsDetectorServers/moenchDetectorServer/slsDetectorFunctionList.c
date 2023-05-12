@@ -475,7 +475,6 @@ void setupDetector() {
     LTC2620_Configure();
     resetToDefaultDacs(0);
 
-
     LOG(logINFOBLUE, ("Setting Default parameters\n"));
 
     if (updateModuleId() == FAIL) {
@@ -510,6 +509,7 @@ void setupDetector() {
         setFlipRows(DEFAULT_FLIP_ROWS);
         setReadNRows(MAX_ROWS_PER_READOUT);
     }
+    setParallelMode(DEFAULT_PARALLEL_ENABLE);
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -555,7 +555,6 @@ int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
     defaultDacValues[index] = value;
     return OK;
 }
-
 
 /* firmware functions (resets) */
 
@@ -615,6 +614,26 @@ uint32_t getADCInvertRegister() {
     LOG(logDEBUG1, ("\tread:0x%x, default:0x%x returned:0x%x\n", readValue,
                     defaultValue, val));
     return val;
+}
+
+/* parameters - readout */
+
+int setParallelMode(int mode) {
+    if (mode < 0)
+        return FAIL;
+    LOG(logINFO, ("Setting %s mode\n", (mode ? "Parallel" : "Non Parallel")));
+    uint32_t addr = ASIC_CTRL_REG;
+    if (mode) {
+        bus_w(addr, bus_r(addr) | ASIC_CTRL_PARALLEL_RD_MSK);
+    } else {
+        bus_w(addr, bus_r(addr) & ~ASIC_CTRL_PARALLEL_RD_MSK);
+    }
+    return OK;
+}
+
+int getParallelMode() {
+    return ((bus_r(ASIC_CTRL_REG) & ASIC_CTRL_PARALLEL_RD_MSK) >>
+            ASIC_CTRL_PARALLEL_RD_OFST);
 }
 
 /* parameters - timer */

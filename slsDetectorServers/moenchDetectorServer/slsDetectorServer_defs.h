@@ -43,6 +43,7 @@
 #define DEFAULT_TMP_THRSHLD           (65 * 1000) // milli degree Celsius
 #define DEFAULT_FLIP_ROWS             (0)
 #define DEFAULT_SPEED                 (FULL_SPEED)
+#define DEFAULT_PARALLEL_ENABLE       (0)
 
 #define HIGHVOLTAGE_MIN     (60)
 #define HIGHVOLTAGE_MAX     (200)
@@ -73,7 +74,7 @@
 
 #define SAMPLE_ADC_FULL_SPEED                                                  \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL) // 0x0
-#define ADC_PHASE_FULL_SPEED (160)
+#define ADC_PHASE_FULL_SPEED    (160)
 #define ADC_OFST_FULL_SPEED_VAL (0x11)
 
 /* Struct Definitions */
@@ -134,7 +135,7 @@ enum DACINDEX {
 enum MASTERINDEX { MASTER_HARDWARE, OW_MASTER, OW_SLAVE };
 #define MASTER_NAMES "hardware", "master", "slave"
 
-#define NUMSETTINGS     (0)
+#define NUMSETTINGS (0)
 
 enum NETWORKINDEX { TXN_FRAME, FLOWCTRL_10G };
 enum CLKINDEX { RUN_CLK, ADC_CLK, NUM_CLOCKS };

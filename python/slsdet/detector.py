@@ -2288,12 +2288,12 @@ class Detector(CppDetectorApi):
     @element
     def parallel(self):
         """
-        [Eiger][Mythen3][Gotthard2] Enable or disable the parallel readout mode of detector. 
+        [Eiger][Mythen3][Gotthard2][Moench] Enable or disable the parallel readout mode of detector. 
         
         Note
         ----
         [Mythen3] If exposure time is too short, acquisition will return with an ERROR and take fewer frames than expected. 
-        [Mythen3][Eiger] Default: Non parallel
+        [Mythen3][Eiger][Moench] Default: Non parallel
         [Gotthard2] Default: parallel. Non parallel mode works only in continuous mode.
         """
         return self.getParallelMode()

@@ -92,12 +92,14 @@ void qTabSettings::SetupWidgetWindow() {
         comboDynamicRange->setEnabled(true);
         lblThreshold->setEnabled(true);
         spinThreshold->setEnabled(true);
-    } else if (detType == slsDetectorDefs::JUNGFRAU ||
-               detType == slsDetectorDefs::MOENCH) {
+    } else if (detType == slsDetectorDefs::JUNGFRAU) {
         lblSpinHV->show();
         spinHV->show();
         lblGainMode->setEnabled(true);
         comboGainMode->setEnabled(true);
+    } else if (detType == slsDetectorDefs::MOENCH) {
+        lblSpinHV->show();
+        spinHV->show();
     } else if (detType == slsDetectorDefs::GOTTHARD) {
         comboHV->show();
         lblComboHV->show();

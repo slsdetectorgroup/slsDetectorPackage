@@ -1427,7 +1427,7 @@ int setReadoutSpeed(int val) {
         }
         LOG(logINFO, ("Setting Full Speed (40 MHz):\n"));
         sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED;
-        adcPhase = ADC_PHASE_FULL_SPEED;
+        adcPhase = ADC_PHASE_DEG_FULL_SPEED;
         adcOfst = ADC_OFST_FULL_SPEED_VAL;
         break;
 
@@ -1445,8 +1445,8 @@ int setReadoutSpeed(int val) {
     bus_w(SAMPLE_REG, sampleAdcSpeed);
     LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));
 
-    setPhase(ADC_CLK, adcPhase, 0);
-    LOG(logINFO, ("\tSet ADC Phase Reg to %d\n", adcPhase));
+    setPhase(ADC_CLK, adcPhase, 1);
+    LOG(logINFO, ("\tSet ADC Phase Reg to %d deg\n", adcPhase));
 
     return OK;
 }

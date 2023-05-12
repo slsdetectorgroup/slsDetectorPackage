@@ -71,8 +71,8 @@
 
 #define SAMPLE_ADC_FULL_SPEED                                                  \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL) // 0x0
-#define ADC_PHASE_FULL_SPEED    (160)
-#define ADC_OFST_FULL_SPEED_VAL (0x11)
+#define ADC_PHASE_DEG_FULL_SPEED    (140)
+#define ADC_OFST_FULL_SPEED_VAL (0xf)
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

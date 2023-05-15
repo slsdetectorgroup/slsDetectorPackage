@@ -472,6 +472,9 @@ void function_table() {
     flist[F_SET_SYNCHRONIZATION] = &set_synchronization;
     flist[F_GET_HARDWARE_VERSION] = &get_hardware_version;
     flist[F_GET_FRONTEND_FIRMWARE_VERSION] = &get_frontend_firmware_version;
+    flist[F_GET_BIT] = &get_bit;
+    flist[F_SET_BIT] = &set_bit;
+    flist[F_CLEAR_BIT] = &clear_bit;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -10185,4 +10188,136 @@ int get_frontend_firmware_version(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
+}
+
+int set_bit(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint32_t args[2] = {-1, -1};
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    uint32_t addr = args[0];
+    int nBit = (int)args[1];
+    LOG(logDEBUG1, ("Setting bit %d of reg 0x%x\n", nBit, addr));
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (nBit < 0 || nBit > 31) {
+            ret = FAIL;
+            sprintf(
+                mess,
+                "Could not set bit. Bit nr %d out of range. Must be  0-31\n",
+                nBit);
+            LOG(logERROR, (mess));
+        } else {
+#ifdef EIGERD
+            ret = setBit(addr, nBit);
+            if (ret == FAIL) {
+#else
+            uint32_t bitmask = (1 << nBit);
+#ifdef GOTTHARDD
+            uint32_t val = readRegister16And32(addr) | bitmask;
+            uint32_t retval = writeRegister16And32(addr, val);
+#else
+            uint32_t val = readRegister(addr) | bitmask;
+            uint32_t retval = writeRegister(addr, val);
+#endif
+            if (!(retval & bitmask)) {
+                ret = FAIL;
+#endif
+                sprintf(mess, "Could not set bit %d.\n", nBit);
+                LOG(logERROR, (mess));
+            }
+        }
+    }
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int clear_bit(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint32_t args[2] = {-1, -1};
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    uint32_t addr = args[0];
+    int nBit = (int)args[1];
+    LOG(logDEBUG1, ("Clearing bit %d of reg 0x%x\n", nBit, addr));
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (nBit < 0 || nBit > 31) {
+            ret = FAIL;
+            sprintf(
+                mess,
+                "Could not clear bit. Bit nr %d out of range. Must be  0-31\n",
+                nBit);
+            LOG(logERROR, (mess));
+        } else {
+#ifdef EIGERD
+            ret = clearBit(addr, nBit);
+            if (ret == FAIL) {
+#else
+            uint32_t bitmask = (1 << nBit);
+#ifdef GOTTHARDD
+            uint32_t val = readRegister16And32(addr) & ~bitmask;
+            uint32_t retval = writeRegister16And32(addr, val);
+#else
+            uint32_t val = readRegister(addr) & ~bitmask;
+            uint32_t retval = writeRegister(addr, val);
+#endif
+            if (retval & bitmask) {
+                ret = FAIL;
+#endif
+                sprintf(mess, "Could not clear bit %d.\n", nBit);
+                LOG(logERROR, (mess));
+            }
+        }
+    }
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_bit(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint32_t args[2] = {-1, -1};
+    int retval = 0;
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    uint32_t addr = args[0];
+    int nBit = (int)args[1];
+    LOG(logDEBUG1, ("Getting bit %d of reg 0x%x\n", nBit, addr));
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (nBit < 0 || nBit > 31) {
+            ret = FAIL;
+            sprintf(
+                mess,
+                "Could not get bit. Bit nr %d out of range. Must be  0-31\n",
+                nBit);
+            LOG(logERROR, (mess));
+        } else {
+#ifdef EIGERD
+            ret = getBit(addr, nBit, &retval);
+            LOG(logDEBUG1, ("retval: %d\n", retval));
+            if (ret == FAIL) {
+#else
+#ifdef GOTTHARDD
+            retval = readRegister16And32(addr);
+#else
+            retval = readRegister(addr);
+#endif
+            LOG(logDEBUG1, ("retval: %d\n", retval));
+            if (retval & (1 << nBit)) {
+                ret = FAIL;
+#endif
+                sprintf(mess, "Could not get bit %d.\n", nBit);
+                LOG(logERROR, (mess));
+            }
+        }
+    }
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }

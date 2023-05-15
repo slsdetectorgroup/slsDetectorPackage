@@ -307,3 +307,6 @@ int get_synchronization(int);
 int set_synchronization(int);
 int get_hardware_version(int);
 int get_frontend_firmware_version(int);
+int get_bit(int);
+int set_bit(int);
+int clear_bit(int);

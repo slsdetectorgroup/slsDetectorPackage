@@ -212,7 +212,6 @@ TEST_CASE("settings", "[.cmd]") {
     std::vector<std::string> sett;
     switch (det_type) {
     case defs::JUNGFRAU:
-    case defs::MOENCH:
         sett.push_back("gain0");
         sett.push_back("highgain0");
         break;

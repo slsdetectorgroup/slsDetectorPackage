@@ -1441,6 +1441,10 @@ class Detector(CppDetectorApi):
 
     @udp_srcip.setter
     def udp_srcip(self, ip):
+        if ip == "auto":
+            if self.type == detectorType.GOTTHARD:
+                raise NotImplementedError('Auto for udp_srcip cannot be used for GotthardI')
+            ip = socket.gethostbyname(self.hostname[0])        
         ip = ut.make_ip(ip)
         ut.set_using_dict(self.setSourceUDPIP, ip)
 
@@ -1467,6 +1471,8 @@ class Detector(CppDetectorApi):
 
     @udp_srcip2.setter
     def udp_srcip2(self, ip):
+        if ip == "auto":
+            ip = socket.gethostbyname(self.hostname)      
         ip = ut.make_ip(ip)
         ut.set_using_dict(self.setSourceUDPIP2, ip)
 

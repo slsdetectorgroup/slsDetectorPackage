@@ -1388,14 +1388,18 @@ int setMaster(enum MASTERINDEX m) {
     char *master_names[] = {MASTER_NAMES};
     LOG(logINFOBLUE, ("Setting up as %s in (%s server)\n", master_names[m],
                       (isControlServer ? "control" : "stop")));
+
+    int prevSync = getSynchronization();
+    setSynchronization(0);
     int retval = -1;
+    int retMaster = OK;
     switch (m) {
     case OW_MASTER:
         bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_MASTER_MSK);
         isMaster(&retval);
         if (retval != 1) {
             LOG(logERROR, ("Could not set master\n"));
-            return FAIL;
+            retMaster = FAIL;
         }
         break;
     case OW_SLAVE:
@@ -1403,15 +1407,16 @@ int setMaster(enum MASTERINDEX m) {
         isMaster(&retval);
         if (retval != 0) {
             LOG(logERROR, ("Could not set slave\n"));
-            return FAIL;
+            retMaster = FAIL;
         }
         break;
     default:
         LOG(logERROR, ("Cannot reset to hardware settings from client. Restart "
                        "detector server.\n"));
-        return FAIL;
+        retMaster = FAIL;
     }
-    return OK;
+    setSynchronization(prevSync);
+    return retMaster;
 }
 
 int isMaster(int *retval) {

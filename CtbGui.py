@@ -263,6 +263,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lineEditFilePath.editingFinished.connect(self.setFilePath)
         self.spinBoxIndex.editingFinished.connect(self.setIndex)
         self.pushButtonStart.clicked.connect(self.acquire)
+        self.pushButtonStop.clicked.connect(self.det.stop)
         self.pushButtonReferesh.clicked.connect(self.plotReferesh)
         self.pushButtonBrowse.clicked.connect(self.browseFile)
 

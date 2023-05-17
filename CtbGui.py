@@ -917,7 +917,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(measurement_Number):
             #self.read_timer.start(20)
             self.det.acquire()
-            if self.radioButtonYesWrite.isChecked():
+            if self.checkBoxFileWrite.isChecked():
                 self.spinBoxIndex.stepUp()
 
     def plotReferesh(self):

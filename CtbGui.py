@@ -259,6 +259,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxPedestalMax.editingFinished.connect(self.setPedestalSubtract)
         self.spinBoxFit.editingFinished.connect(self.setFitADC)
         self.spinBoxPlot.editingFinished.connect(self.setPlotBit)
+        self.checkBoxFileWrite.clicked.connect(self.setFileWrite)
         self.lineEditFileName.editingFinished.connect(self.setFileName)
         self.lineEditFilePath.editingFinished.connect(self.setFilePath)
         self.spinBoxIndex.editingFinished.connect(self.setIndex)
@@ -896,6 +897,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def setPlotBit(self):
         print("plot options")
 
+    def setFileWrite(self):
+        if self.checkBoxFileWrite.isChecked():
+           self.det.fwrite=True
+        else:
+            self.det.fwrite=False
+            
     def setFileName(self):
         print("plot options")
 
@@ -910,7 +917,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(measurement_Number):
             #self.read_timer.start(20)
             self.det.acquire()
-            if self.radioButtonYes.isChecked():
+            if self.radioButtonYesWrite.isChecked():
                 self.spinBoxIndex.stepUp()
 
     def plotReferesh(self):
@@ -1174,6 +1181,10 @@ class MainWindow(QtWidgets.QMainWindow):
             lineEditLoopStop = getattr(self, f"lineEditLoop{i}Stop")
             lineEditLoopStop.setText(hex((self.det.patloop[i])[1]))
 
+        #OUTPUT SETTINGS
+        #self.checkBoxFileWrite.setValue(self.det.fwrite)
+        self.checkBoxFileWrite.setChecked(self.det.fwrite)
+        #self.radioButtonNoWrite.setValue(self.det.fwrite)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

@@ -12819,51 +12819,6 @@
                  <string>Output Settings</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_128">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>50</y>
-                  <width>151</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Save the Output file?</string>
-                </property>
-               </widget>
-               <widget class="QRadioButton" name="radioButtonYes">
-                <property name="geometry">
-                 <rect>
-                  <x>210</x>
-                  <y>50</y>
-                  <width>111</width>
-                  <height>24</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Yes</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QRadioButton" name="radioButtonNo">
-                <property name="geometry">
-                 <rect>
-                  <x>330</x>
-                  <y>50</y>
-                  <width>111</width>
-                  <height>24</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>No</string>
-                </property>
-                <property name="checked">
-                 <bool>false</bool>
-                </property>
-               </widget>
                <widget class="QFrame" name="frameOutput">
                 <property name="geometry">
                  <rect>
@@ -12979,6 +12934,19 @@
                   <string>Browse</string>
                  </property>
                 </widget>
+               </widget>
+               <widget class="QCheckBox" name="checkBoxFileWrite">
+                <property name="geometry">
+                 <rect>
+                  <x>10</x>
+                  <y>50</y>
+                  <width>121</width>
+                  <height>24</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>Save output file</string>
+                </property>
                </widget>
               </widget>
               <widget class="QFrame" name="frame_13">

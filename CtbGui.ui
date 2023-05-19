@@ -12777,7 +12777,7 @@
                  </spacer>
                 </item>
                 <item>
-                 <widget class="QCheckBox" name="chkCompile">
+                 <widget class="QCheckBox" name="checkBoxCompile">
                   <property name="text">
                    <string>Compile</string>
                   </property>

@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import json
 import zmq
 import numpy as np
-
+import posixpath
 
 from functools import partial
 from slsdet import Detector, dacIndex, readoutMode
@@ -896,13 +896,13 @@ class MainWindow(QtWidgets.QMainWindow):
         print("plot options")
 
     def setFileName(self):
-        print("plot options")
+        self.det.fname = self.lineEditFileName.text()
 
     def setFilePath(self):
-        print("plot options")
+        self.det.fpath = self.lineEditFilePath.text()
 
     def setIndex(self):
-        print("plot options")
+        self.det.findex = self.spinBoxIndex.value()
 
     def acquire(self):
         measurement_Number = self.spinBoxMeasurements.value()
@@ -1172,7 +1172,12 @@ class MainWindow(QtWidgets.QMainWindow):
             # For loop stop address
             lineEditLoopStop = getattr(self, f"lineEditLoop{i}Stop")
             lineEditLoopStop.setText(hex((self.det.patloop[i])[1]))
-
+        
+        #OUTPUT SETTINGS
+        self.lineEditFileName.setText(str(self.det.fname))
+        self.lineEditFilePath.setText(str(self.det.fpath))
+        self.spinBoxIndex.setValue(self.det.findex)
+        
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

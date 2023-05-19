@@ -1173,8 +1173,8 @@ class MainWindow(QtWidgets.QMainWindow):
             lineEditLoopStop = getattr(self, f"lineEditLoop{i}Stop")
             lineEditLoopStop.setText(hex((self.det.patloop[i])[1]))
         
-        #OUTPUT SETTINGS
-        self.lineEditFileName.setText(str(self.det.fname))
+        #Output Settings
+        self.lineEditFileName.setText(self.det.fname)
         self.lineEditFilePath.setText(str(self.det.fpath))
         self.spinBoxIndex.setValue(self.det.findex)
         

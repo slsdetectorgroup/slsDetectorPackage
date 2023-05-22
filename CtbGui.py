@@ -699,7 +699,7 @@ class MainWindow(QtWidgets.QMainWindow):
         enableMaskCheckBox.setChecked(False)
 
     def all_0_15(self):
-        for i in range(0, 15):
+        for i in range(0, 16):
             enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
             if enableMaskCheckBox.isChecked():
                 pass
@@ -707,23 +707,23 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.enableMask_Enable(i)
 
     def none_0_15(self):
-        for i in range(0, 15):
+        for i in range(0, 16):
             self.enableMask_Disable(i)
 
     def all_16_31(self):
-        for i in range(16, 31):
+        for i in range(16, 32):
             self.enableMask_Enable(i)
 
     def none_16_31(self):
-        for i in range(16, 31):
+        for i in range(16, 32):
             self.enableMask_Disable(i)
 
     def enable_mask_all(self):
-        for i in range(0, 31):
+        for i in range(0, 32):
             self.enableMask_Enable(i)
 
     def enable_mask_none(self):
-        for i in range(0, 31):
+        for i in range(0, 32):
             self.enableMask_Disable(i)
 
     def ADCEnable(self, i):

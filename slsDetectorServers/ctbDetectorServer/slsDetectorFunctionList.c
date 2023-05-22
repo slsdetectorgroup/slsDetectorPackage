@@ -723,6 +723,10 @@ int getDynamicRange(int *retval) {
 }
 
 int setADCEnableMask(uint32_t mask) {
+    if (mask == 0u) {
+        LOG(logERROR, ("Cannot set 1gb adc mask to 0\n"));
+        return FAIL;
+    }
     LOG(logINFO, ("Setting adcEnableMask 1G to 0x%08x\n", mask));
     adcEnableMask_1g = mask;
     // 1Gb enabled
@@ -737,6 +741,10 @@ int setADCEnableMask(uint32_t mask) {
 uint32_t getADCEnableMask() { return adcEnableMask_1g; }
 
 void setADCEnableMask_10G(uint32_t mask) {
+    if (mask == 0u) {
+        LOG(logERROR, ("Cannot set 10gb adc mask to 0\n"));
+        return;
+    }
     // convert 32 bit mask to 8 bit mask
     uint8_t actualMask = 0;
     if (mask != 0) {

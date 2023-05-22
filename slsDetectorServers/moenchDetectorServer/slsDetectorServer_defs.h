@@ -26,7 +26,6 @@
 #define NUM_BYTES_PER_PIXEL (DYNAMIC_RANGE / 8)
 #define DATA_BYTES          (NCHIP * NCHAN * NUM_BYTES_PER_PIXEL)
 #define CLK_RUN             (40) // MHz
-#define CLK_SYNC            (20) // MHz
 #define ADC_CLK_INDEX       (0)
 
 /** Default Parameters */

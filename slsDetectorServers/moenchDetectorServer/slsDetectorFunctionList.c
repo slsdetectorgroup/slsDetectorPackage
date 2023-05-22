@@ -725,12 +725,12 @@ int setPeriod(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    val *= (1E-3 * CLK_SYNC);
+    val *= (1E-3 * CLK_RUN);
     set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getPeriod();
-    val /= (1E-3 * CLK_SYNC);
+    val /= (1E-3 * CLK_RUN);
     if (val != retval) {
         return FAIL;
     }
@@ -739,7 +739,7 @@ int setPeriod(int64_t val) {
 
 int64_t getPeriod() {
     return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG) /
-           (1E-3 * CLK_SYNC);
+           (1E-3 * CLK_RUN);
 }
 
 int setDelayAfterTrigger(int64_t val) {
@@ -749,12 +749,12 @@ int setDelayAfterTrigger(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
-    val *= (1E-3 * CLK_SYNC);
+    val *= (1E-3 * CLK_RUN);
     set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
-    val /= (1E-3 * CLK_SYNC);
+    val /= (1E-3 * CLK_RUN);
     if (val != retval) {
         return FAIL;
     }
@@ -763,7 +763,7 @@ int setDelayAfterTrigger(int64_t val) {
 
 int64_t getDelayAfterTrigger() {
     return get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) /
-           (1E-3 * CLK_SYNC);
+           (1E-3 * CLK_RUN);
 }
 
 int64_t getNumFramesLeft() {
@@ -776,12 +776,12 @@ int64_t getNumTriggersLeft() {
 
 int64_t getPeriodLeft() {
     return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) /
-           (1E-3 * CLK_SYNC);
+           (1E-3 * CLK_RUN);
 }
 
 int64_t getDelayAfterTriggerLeft() {
     return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) /
-           (1E-3 * CLK_SYNC);
+           (1E-3 * CLK_RUN);
 }
 
 int64_t getFramesFromStart() {
@@ -790,12 +790,12 @@ int64_t getFramesFromStart() {
 
 int64_t getActualTime() {
     return get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) /
-           (1E-3 * CLK_SYNC);
+           (1E-3 * CLK_RUN);
 }
 
 int64_t getMeasurementTime() {
     return get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) /
-           (1E-3 * CLK_SYNC);
+           (1E-3 * CLK_RUN);
 }
 
 /* parameters - channel, chip, module, settings */

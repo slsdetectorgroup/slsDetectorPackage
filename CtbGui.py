@@ -13,7 +13,7 @@ import numpy as np
 
 
 from functools import partial
-from slsdet import Detector, dacIndex, readoutMode
+from slsdet import Detector, dacIndex, readoutMode, runStatus
 from bit_utils import set_bit, remove_bit, bit_is_set
 
 
@@ -32,6 +32,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.socket = self.context.socket(zmq.SUB)
         self.socket.connect(f"tcp://{self.zmqIp}:{self.zmqport}")
         self.socket.subscribe("")
+
+        #To check detector status
+        self.statusTimer = QtCore.QTimer()
+        self.statusTimer.timeout.connect(self.updateDetectorStatus)
+
 
         uic.loadUi("CtbGui.ui", self)
         self.update_field()
@@ -270,6 +275,8 @@ class MainWindow(QtWidgets.QMainWindow):
         #To auto trigger the read
         self.read_timer =  QtCore.QTimer()
         self.read_timer.timeout.connect(self.read_zmq)
+
+
     # For Action options function
     # TODO Only add the components of action option+ functions
     # Function to show info
@@ -908,8 +915,26 @@ class MainWindow(QtWidgets.QMainWindow):
     def acquire(self):
         measurement_Number = self.spinBoxMeasurements.value()
         for i in range(measurement_Number):
-            #self.read_timer.start(20)
-            self.det.acquire()
+            self.det.rx_start()
+            self.statusTimer.start(20)
+            self.det.start()
+
+    def updateDetectorStatus(self):
+        print("in update status")
+        self.labelDetectorStatus.setText(self.det.status.name)
+        self.acqDone = False
+        match self.det.status:
+            case runStatus.RUNNING:
+            case runStatus.WAITING:
+            case runStatus.TRANSMITTING:
+                pass
+            case _:
+                acqDone = True
+
+        if acqDone:
+            self.statusTimer.stop()
+            if self.det.rx_status == runStatus.RUNNING:
+                self.det.rx_stop()
             if self.radioButtonYes.isChecked():
                 self.spinBoxIndex.stepUp()
 
@@ -1174,6 +1199,7 @@ class MainWindow(QtWidgets.QMainWindow):
             lineEditLoopStop = getattr(self, f"lineEditLoop{i}Stop")
             lineEditLoopStop.setText(hex((self.det.patloop[i])[1]))
 
+        self.updateDetectorStatus()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

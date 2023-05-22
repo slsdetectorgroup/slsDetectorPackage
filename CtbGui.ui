@@ -13017,7 +13017,7 @@
                  <rect>
                   <x>210</x>
                   <y>10</y>
-                  <width>491</width>
+                  <width>391</width>
                   <height>31</height>
                  </rect>
                 </property>
@@ -13039,6 +13039,22 @@
                 </property>
                 <property name="text">
                  <string>Stop</string>
+                </property>
+               </widget>
+               <widget class="QLabel" name="labelDetectorStatus">
+                <property name="geometry">
+                 <rect>
+                  <x>612</x>
+                  <y>17</y>
+                  <width>91</width>
+                  <height>21</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>IDLE</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
                 </property>
                </widget>
               </widget>
@@ -13108,7 +13124,7 @@
      <x>0</x>
      <y>0</y>
      <width>1497</width>
-     <height>20</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

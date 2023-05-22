@@ -4205,7 +4205,8 @@ int set_adc_enable_mask(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (arg == 0u) {
             ret = FAIL;
-            sprintf(mess, "Not allowed to set adc mask of 0. \n"));
+            sprintf(mess,
+                    "Not allowed to set adc mask of 0 due to data readout. \n");
             LOG(logERROR, (mess));
         } else {
             ret = setADCEnableMask(arg);
@@ -4264,7 +4265,8 @@ int set_adc_enable_mask_10g(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (arg == 0u) {
             ret = FAIL;
-            sprintf(mess, "Not allowed to set adc mask of 0. \n"));
+            sprintf(mess,
+                    "Not allowed to set adc mask of 0 due to data readout \n");
             LOG(logERROR, (mess));
         } else {
             setADCEnableMask_10G(arg);

@@ -67,6 +67,7 @@ int moduleIndex = -1;
 // Local variables
 int (*flist[NUM_DET_FUNCTIONS])(int);
 pthread_t pthread_tid;
+pthread_t pthread_tid_ctb_1g;
 
 // scan variables
 int scan = 0;
@@ -1917,7 +1918,9 @@ int acquire(int blocking, int file_des) {
                 strcpy(mess, "Could not start acquisition thread!\n");
                 LOG(logERROR, (mess));
             } else {
-                // only does not wait for non blocking and scan
+                // wait for blocking always (scan or not)
+                // non blocking-no scan also wait (for error message)
+                // non blcoking-scan dont wait (there is scanErrorMessage)
                 if (blocking || !scan) {
                     pthread_join(pthread_tid, NULL);
                 }
@@ -1999,18 +2002,43 @@ void *start_state_machine(void *arg) {
             }
             break;
         }
-
-#if defined(CHIPTESTBOARDD)
-        readFrames(&ret, mess);
-        if (ret == FAIL && scan) {
-            sprintf(scanErrMessage, "Cannot scan at %d. ", scanSteps[i]);
-            strcat(scanErrMessage, mess);
-            sharedMemory_setScanStatus(ERROR);
-            break;
+// only 1g real ctb needs to read from fifo
+// to avoid blocking, in another thread
+#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
+        if (!enableTenGigabitEthernet(-1)) {
+            ret = validateUDPSocket();
+            if (ret == FAIL) {
+                strcpy(mess, "UDP socket not created!\n");
+                LOG(logERROR, (mess));
+            } else {
+                if (pthread_create(&pthread_tid_ctb_1g, NULL,
+                                   &start_reading_and_sending_udp_frames,
+                                   NULL)) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not start read frames thread!\n");
+                    LOG(logERROR, (mess));
+                }
+            }
+            // add scan error message
+            if (ret == FAIL) {
+                if (scan) {
+                    sprintf(scanErrMessage, "Cannot scan at %d. ",
+                            scanSteps[i]);
+                    strcat(scanErrMessage, mess);
+                    sharedMemory_setScanStatus(ERROR);
+                }
+                break;
+            }
         }
 #endif
         // blocking or scan
         if (*blocking || times > 1) {
+            // wait to finish reading from fifo (1g real ctb)
+#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
+            if (!enableTenGigabitEthernet(-1)) {
+                pthread_join(pthread_tid_ctb_1g, NULL);
+            }
+#endif
 #ifdef EIGERD
             waitForAcquisitionEnd(&ret, mess);
             if (ret == FAIL && scan) {
@@ -2030,6 +2058,13 @@ void *start_state_machine(void *arg) {
     }
     return NULL;
 }
+
+#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
+void *start_reading_and_sending_udp_frames(void *arg) {
+    readandSendUDPFrames();
+    return NULL;
+}
+#endif
 
 int start_acquisition(int file_des) { return acquire(0, file_des); }
 

@@ -3,9 +3,11 @@
 #module add CBFlib/0.9.5
 
 
-INCDIR=-I. -I../ -I../interpolations  -I../interpolations/etaVEL  -I../dataStructures  -I../../slsSupportLib/include/ -I../../slsReceiverSoftware/include/ -I../tiffio/include
+INCDIR=-I. -I../ -I../interpolations  -I../interpolations/etaVEL  -I../dataStructures  -I../../slsSupportLib/include/ -I../../slsReceiverSoftware/include/ -I../tiffio/include -I/afs/psi/project/sls_det_software/conda/envs/pyclang_fmt/include/
 
-LDFLAG= ../tiffio/src/tiffIO.cpp -L/usr/lib64/ -lpthread -lm  -lstdc++   -pthread -lrt    -ltiff -O3  -std=c++11
+LDFLAG= ../tiffio/src/tiffIO.cpp  -L/afs/psi/project/sls_det_software/conda/envs/pyclang_fmt/lib/ -L/usr/lib64/ -lpthread -lm  -lstdc++   -pthread -lrt    -ltiff -O3  -std=c++11 -lfmt
+#-L/afs/psi/project/sls_det_software/conda/envs/pyclang_fmt/lib/
+#THE ORDER OF LIBRARIES MATTERS!
 
 MAIN=jungfrauClusterFinder.cpp
 

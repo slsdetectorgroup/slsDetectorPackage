@@ -63,6 +63,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
           quad(UNDEFINED_QUADRANT), tot(0), quadTot(0) {
 
         fm = new pthread_mutex_t;
+	pthread_mutex_init(fm, NULL);
 
         eventMask = new eventType *[ny];
         //  val=new double*[ny];
@@ -233,8 +234,8 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
 		  //cout << "add to common mode?" << endl;
                     addToCommonMode(data);
                 }
-                for (iy = ymin; iy < ymax; ++iy) {
-                    for (ix = xmin; ix < xmax; ++ix) {
+                for (int iy = ymin; iy < ymax; ++iy) {
+                    for (int ix = xmin; ix < xmax; ++ix) {
                         if (det->isGood(ix, iy)) {
                             val = subtractPedestal(data, ix, iy, cm);
 
@@ -252,8 +253,8 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
                     }
                 }
 
-                for (iy = ymin; iy < ymax; ++iy) {
-                    for (ix = xmin; ix < xmax; ++ix) {
+                for (int iy = ymin; iy < ymax; ++iy) {
+                    for (int ix = xmin; ix < xmax; ++ix) {
 
                         if (det->isGood(ix, iy)) {
                             eventMask[iy][ix] = PEDESTAL;
@@ -404,8 +405,8 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
 
         double *val = new double[ny * nx];
 
-        for (iy = ymin; iy < ymax; ++iy) {
-            for (ix = xmin; ix < xmax; ++ix) {
+        for (int iy = ymin; iy < ymax; ++iy) {
+            for (int ix = xmin; ix < xmax; ++ix) {
                 if (det->isGood(ix, iy) == 0)
                     continue;
 

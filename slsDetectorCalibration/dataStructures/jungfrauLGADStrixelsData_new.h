@@ -406,9 +406,9 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
         np = 0;
         //int pn;
 
-        // std::cout << dataSize << std::endl;
-        if (ff >= 0)
-          //  fnum = ff;
+        //std::cout << dataSize << std::endl;
+        //if (ff >= 0) {
+          //  fnum = ff; }
 
         if (filebin.is_open()) {
             if (filebin.read(data, dataSize)) {
@@ -417,7 +417,10 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
                 np = getPacketNumber(data);
                 return data;
             }
-        }
+	    std::cout << "#";
+        } else {
+	  std::cout << "File not open" << std::endl;
+	}
         return NULL;
     };
 

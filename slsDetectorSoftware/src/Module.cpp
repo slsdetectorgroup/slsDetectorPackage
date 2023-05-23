@@ -544,8 +544,15 @@ bool Module::getSynchronization() const {
     return sendToDetector<int>(F_GET_SYNCHRONIZATION);
 }
 
+bool Module::getSynchronizationFromStopServer() const {
+    return sendToDetectorStop<int>(F_GET_SYNCHRONIZATION);
+}
+
 void Module::setSynchronization(const bool value) {
     sendToDetector(F_SET_SYNCHRONIZATION, static_cast<int>(value), nullptr);
+    // to deal with virtual servers as well
+    // (get sync from stop server during blocking acquisition)
+    sendToDetectorStop(F_SET_SYNCHRONIZATION, static_cast<int>(value), nullptr);
 }
 
 std::vector<int> Module::getBadChannels() const {
@@ -3215,7 +3222,7 @@ slsDetectorDefs::detectorType Module::getDetectorTypeFromShm(int det_id,
                                                              bool verify) {
     if (!shm.exists()) {
         throw SharedMemoryError("Shared memory " + shm.getName() +
-                                "does not exist.\n Corrupted Multi Shared "
+                                " does not exist.\n Corrupted Multi Shared "
                                 "memory. Please free shared memory.");
     }
 

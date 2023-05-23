@@ -913,6 +913,7 @@ class MainWindow(QtWidgets.QMainWindow):
         print("plot options")
 
     def acquire(self):
+        self.pushButtonStart.setEnabled(False)
         measurement_Number = self.spinBoxMeasurements.value()
         for i in range(measurement_Number):
             self.det.rx_start()
@@ -920,23 +921,25 @@ class MainWindow(QtWidgets.QMainWindow):
             self.det.start()
 
     def updateDetectorStatus(self):
-        print("in update status")
         self.labelDetectorStatus.setText(self.det.status.name)
         self.acqDone = False
         match self.det.status:
             case runStatus.RUNNING:
+                pass
             case runStatus.WAITING:
+                pass
             case runStatus.TRANSMITTING:
                 pass
             case _:
-                acqDone = True
+                self.acqDone = True
 
-        if acqDone:
+        if self.acqDone:
             self.statusTimer.stop()
             if self.det.rx_status == runStatus.RUNNING:
                 self.det.rx_stop()
             if self.radioButtonYes.isChecked():
                 self.spinBoxIndex.stepUp()
+            self.pushButtonStart.setEnabled(True)
 
     def plotReferesh(self):
         self.read_zmq()

@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import json
 import zmq
 import numpy as np
-
+import posixpath
 
 from functools import partial
 from slsdet import Detector, dacIndex, readoutMode
@@ -202,8 +202,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonADC31.clicked.connect(self.colorADC31)
         self.pushButtonAll15.clicked.connect(self.all_0_15)
         self.pushButtonNone15.clicked.connect(self.none_0_15)
-        self.pushButtonAll16.clicked.connect(self.all_16_32)
-        self.pushButtonNone16.clicked.connect(self.none_16_32)
+        self.pushButtonAll16.clicked.connect(self.all_16_31)
+        self.pushButtonNone16.clicked.connect(self.none_16_31)
         self.pushButtonAll.clicked.connect(self.enable_mask_all)
         self.pushButtonNone.clicked.connect(self.enable_mask_none)
 
@@ -226,7 +226,7 @@ class MainWindow(QtWidgets.QMainWindow):
             getattr(self, f"spinBoxLoop{i}").editingFinished.connect(
                 partial(self.setLoop, i)
             )
-        for i in range(3):
+        for i in range(6):
             getattr(self, f"spinBoxWait{i}").editingFinished.connect(
                 partial(self.setWait, i)
             )
@@ -263,6 +263,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lineEditFilePath.editingFinished.connect(self.setFilePath)
         self.spinBoxIndex.editingFinished.connect(self.setIndex)
         self.pushButtonStart.clicked.connect(self.acquire)
+        self.pushButtonStop.clicked.connect(self.det.stop)
         self.pushButtonReferesh.clicked.connect(self.plotReferesh)
         self.pushButtonBrowse.clicked.connect(self.browseFile)
 
@@ -707,44 +708,24 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.enableMask_Enable(i)
 
     def none_0_15(self):
-        for i in range(1, 16):
-            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
-            if enableMaskCheckBox.isChecked():
-                self.enableMask_Disable(i)
-            else:
-                pass
+        for i in range(0, 16):
+            self.enableMask_Disable(i)
 
-    def all_16_32(self):
+    def all_16_31(self):
         for i in range(16, 32):
-            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
-            if enableMaskCheckBox.isChecked():
-                pass
-            else:
-                self.enableMask_Enable(i)
+            self.enableMask_Enable(i)
 
-    def none_16_32(self):
+    def none_16_31(self):
         for i in range(16, 32):
-            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
-            if enableMaskCheckBox.isChecked():
-                self.enableMask_Disable(i)
-            else:
-                pass
+            self.enableMask_Disable(i)
 
     def enable_mask_all(self):
         for i in range(0, 32):
-            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
-            if enableMaskCheckBox.isChecked():
-                pass
-            else:
-                self.enableMask_Enable(i)
+            self.enableMask_Enable(i)
 
     def enable_mask_none(self):
-        for i in range(1, 32):
-            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
-            if enableMaskCheckBox.isChecked():
-                self.enableMask_Disable(i)
-            else:
-                pass
+        for i in range(0, 32):
+            self.enableMask_Disable(i)
 
     def ADCEnable(self, i):
         enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
@@ -896,13 +877,13 @@ class MainWindow(QtWidgets.QMainWindow):
         print("plot options")
 
     def setFileName(self):
-        print("plot options")
+        self.det.fname = self.lineEditFileName.text()
 
     def setFilePath(self):
-        print("plot options")
+        self.det.fpath = self.lineEditFilePath.text()
 
     def setIndex(self):
-        print("plot options")
+        self.det.findex = self.spinBoxIndex.value()
 
     def acquire(self):
         measurement_Number = self.spinBoxMeasurements.value()
@@ -1156,7 +1137,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lineEditStartAddress.setText(hex((self.det.patlimits)[0]))
         self.lineEditStopAddress.setText(hex((self.det.patlimits)[1]))
         # For Wait time and Wait address
-        for i in range(3):
+        for i in range(6):
             lineEditWait = getattr(self, f"lineEditWait{i}Address")
             spinBoxWait = getattr(self, f"spinBoxWait{i}")
             lineEditWait.setText(hex(self.det.patwait[i]))
@@ -1172,7 +1153,12 @@ class MainWindow(QtWidgets.QMainWindow):
             # For loop stop address
             lineEditLoopStop = getattr(self, f"lineEditLoop{i}Stop")
             lineEditLoopStop.setText(hex((self.det.patloop[i])[1]))
-
+        
+        #Output Settings
+        self.lineEditFileName.setText(self.det.fname)
+        self.lineEditFilePath.setText(str(self.det.fpath))
+        self.spinBoxIndex.setValue(self.det.findex)
+        
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

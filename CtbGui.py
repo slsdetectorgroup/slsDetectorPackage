@@ -226,7 +226,7 @@ class MainWindow(QtWidgets.QMainWindow):
             getattr(self, f"spinBoxLoop{i}").editingFinished.connect(
                 partial(self.setLoop, i)
             )
-        for i in range(3):
+        for i in range(6):
             getattr(self, f"spinBoxWait{i}").editingFinished.connect(
                 partial(self.setWait, i)
             )
@@ -1137,7 +1137,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lineEditStartAddress.setText(hex((self.det.patlimits)[0]))
         self.lineEditStopAddress.setText(hex((self.det.patlimits)[1]))
         # For Wait time and Wait address
-        for i in range(3):
+        for i in range(6):
             lineEditWait = getattr(self, f"lineEditWait{i}Address")
             spinBoxWait = getattr(self, f"spinBoxWait{i}")
             lineEditWait.setText(hex(self.det.patwait[i]))

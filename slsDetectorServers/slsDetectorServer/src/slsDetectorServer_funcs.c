@@ -4203,19 +4203,28 @@ int set_adc_enable_mask(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        ret = setADCEnableMask(arg);
-        if (ret == FAIL) {
-            sprintf(mess, "Could not set 1Gb ADC Enable mask to 0x%x.\n", arg);
+        if (arg == 0u) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Not allowed to set adc mask of 0 due to data readout. \n");
             LOG(logERROR, (mess));
         } else {
-            uint32_t retval = getADCEnableMask();
-            if (arg != retval) {
-                ret = FAIL;
-                sprintf(mess,
+            ret = setADCEnableMask(arg);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set 1Gb ADC Enable mask to 0x%x.\n",
+                        arg);
+                LOG(logERROR, (mess));
+            } else {
+                uint32_t retval = getADCEnableMask();
+                if (arg != retval) {
+                    ret = FAIL;
+                    sprintf(
+                        mess,
                         "Could not set 1Gb ADC Enable mask. Set 0x%x, but read "
                         "0x%x\n",
                         arg, retval);
-                LOG(logERROR, (mess));
+                    LOG(logERROR, (mess));
+                }
             }
         }
     }
@@ -4254,15 +4263,22 @@ int set_adc_enable_mask_10g(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        setADCEnableMask_10G(arg);
-        uint32_t retval = getADCEnableMask_10G();
-        if (arg != retval) {
+        if (arg == 0u) {
             ret = FAIL;
             sprintf(mess,
-                    "Could not set 10Gb ADC Enable mask. Set 0x%x, but "
-                    "read 0x%x\n",
-                    arg, retval);
+                    "Not allowed to set adc mask of 0 due to data readout \n");
             LOG(logERROR, (mess));
+        } else {
+            setADCEnableMask_10G(arg);
+            uint32_t retval = getADCEnableMask_10G();
+            if (arg != retval) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set 10Gb ADC Enable mask. Set 0x%x, but "
+                        "read 0x%x\n",
+                        arg, retval);
+                LOG(logERROR, (mess));
+            }
         }
     }
 #endif

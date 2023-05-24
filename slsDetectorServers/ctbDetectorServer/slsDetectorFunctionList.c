@@ -2434,7 +2434,7 @@ uint32_t checkDataInFifo() {
     uint32_t dataPresent = 0;
     if (analogEnable) {
         uint32_t analogFifoEmpty = bus_r(FIFO_EMPTY_REG);
-        LOG(logINFO,
+        LOG(logDEBUG1,
             ("Analog Fifo Empty (32 channels): 0x%08x\n", analogFifoEmpty));
         dataPresent = (~analogFifoEmpty);
     }

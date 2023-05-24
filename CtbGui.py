@@ -39,7 +39,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tabWidget.currentChanged.connect(self.refresh_tab)
         self.connect_ui()
 
-  
 
     # For Action options function
     # TODO Only add the components of action option+ functions
@@ -647,6 +646,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def setPlotBit(self):
         print("plot options")
 
+    def setFileWrite(self):
+        if self.checkBoxFileWrite.isChecked():
+           self.det.fwrite=True
+        else:
+            self.det.fwrite=False
+            
     def setFileName(self):
         self.det.fname = self.lineEditFileName.text()
 
@@ -660,6 +665,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonStart.setEnabled(False)
         measurement_Number = self.spinBoxMeasurements.value()
         for i in range(measurement_Number):
+
             self.read_timer.start(20)
             self.det.rx_start()
             self.statusTimer.start(20)
@@ -964,7 +970,6 @@ class MainWindow(QtWidgets.QMainWindow):
             lineEditLoopStop = getattr(self, f"lineEditLoop{i}Stop")
             lineEditLoopStop.setText(hex((self.det.patloop[i])[1]))
 
-
     def refresh_tab_acquisition(self):
         # Updating values for patterns
         self.spinBoxFrames.setValue(self.det.frames)
@@ -990,6 +995,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxTriggers.setValue(self.det.triggers)
 
         #Output Settings
+        self.checkBoxFileWrite.setChecked(self.det.fwrite)
         self.lineEditFileName.setText(self.det.fname)
         self.lineEditFilePath.setText(str(self.det.fpath))
         self.spinBoxIndex.setValue(self.det.findex)

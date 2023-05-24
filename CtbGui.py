@@ -24,6 +24,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         super(MainWindow, self).__init__()
         self.det = Detector()
+        self.det.rx_zmqstream = 1
         self.zmqIp = self.det.rx_zmqip
         self.zmqport = self.det.rx_zmqport
         self.zmq_stream = self.det.rx_zmqstream
@@ -37,6 +38,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statusTimer = QtCore.QTimer()
         self.statusTimer.timeout.connect(self.updateDetectorStatus)
 
+        #To auto trigger the read
+        self.read_timer =  QtCore.QTimer()
+        self.read_timer.timeout.connect(self.read_zmq)
 
         uic.loadUi("CtbGui.ui", self)
         self.update_field()
@@ -271,10 +275,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonStop.clicked.connect(self.det.stop)
         self.pushButtonReferesh.clicked.connect(self.plotReferesh)
         self.pushButtonBrowse.clicked.connect(self.browseFile)
-
-        #To auto trigger the read
-        self.read_timer =  QtCore.QTimer()
-        self.read_timer.timeout.connect(self.read_zmq)
 
 
     # For Action options function
@@ -916,6 +916,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonStart.setEnabled(False)
         measurement_Number = self.spinBoxMeasurements.value()
         for i in range(measurement_Number):
+            self.read_timer.start(20)
             self.det.rx_start()
             self.statusTimer.start(20)
             self.det.start()
@@ -934,6 +935,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.acqDone = True
 
         if self.acqDone:
+            self.read_timer.stop()
             self.statusTimer.stop()
             if self.det.rx_status == runStatus.RUNNING:
                 self.det.rx_stop()
@@ -967,6 +969,7 @@ class MainWindow(QtWidgets.QMainWindow):
             jsonHeader = json.loads(header)
             print(jsonHeader)
             print(f'Data size: {len(data)}')
+            
             data_array = np.array(np.frombuffer(data, dtype=np.uint16))
 
             # return data_array
@@ -994,12 +997,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     analog_frame[row, col] = pixel_value
                     order_sc[row, col] = i_sc
 
+            '''
             fig, ax = plt.subplots()
             im = ax.imshow(analog_frame)
             ax.invert_yaxis()
             fig.colorbar(im)
             plt.show()
-
+            '''
             
             plot1 = pg.ImageView(self.plotWidget, view=pg.PlotItem())
             plot1.show()

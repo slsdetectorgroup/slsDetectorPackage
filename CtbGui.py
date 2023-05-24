@@ -202,8 +202,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonADC31.clicked.connect(self.colorADC31)
         self.pushButtonAll15.clicked.connect(self.all_0_15)
         self.pushButtonNone15.clicked.connect(self.none_0_15)
-        self.pushButtonAll16.clicked.connect(self.all_16_32)
-        self.pushButtonNone16.clicked.connect(self.none_16_32)
+        self.pushButtonAll16.clicked.connect(self.all_16_31)
+        self.pushButtonNone16.clicked.connect(self.none_16_31)
         self.pushButtonAll.clicked.connect(self.enable_mask_all)
         self.pushButtonNone.clicked.connect(self.enable_mask_none)
 
@@ -708,44 +708,24 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.enableMask_Enable(i)
 
     def none_0_15(self):
-        for i in range(1, 16):
-            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
-            if enableMaskCheckBox.isChecked():
-                self.enableMask_Disable(i)
-            else:
-                pass
+        for i in range(0, 16):
+            self.enableMask_Disable(i)
 
-    def all_16_32(self):
+    def all_16_31(self):
         for i in range(16, 32):
-            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
-            if enableMaskCheckBox.isChecked():
-                pass
-            else:
-                self.enableMask_Enable(i)
+            self.enableMask_Enable(i)
 
-    def none_16_32(self):
+    def none_16_31(self):
         for i in range(16, 32):
-            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
-            if enableMaskCheckBox.isChecked():
-                self.enableMask_Disable(i)
-            else:
-                pass
+            self.enableMask_Disable(i)
 
     def enable_mask_all(self):
         for i in range(0, 32):
-            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
-            if enableMaskCheckBox.isChecked():
-                pass
-            else:
-                self.enableMask_Enable(i)
+            self.enableMask_Enable(i)
 
     def enable_mask_none(self):
-        for i in range(1, 32):
-            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
-            if enableMaskCheckBox.isChecked():
-                self.enableMask_Disable(i)
-            else:
-                pass
+        for i in range(0, 32):
+            self.enableMask_Disable(i)
 
     def ADCEnable(self, i):
         enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")

@@ -28,8 +28,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1463</width>
-         <height>918</height>
+         <width>1467</width>
+         <height>912</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -69,7 +69,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>6</number>
+              <number>5</number>
              </property>
              <widget class="QWidget" name="tab">
               <attribute name="title">
@@ -10801,1261 +10801,11 @@
                 </widget>
                </widget>
               </widget>
-             </widget>
-             <widget class="QWidget" name="tab_6">
-              <attribute name="title">
-               <string>Pattern</string>
-              </attribute>
-              <widget class="QFrame" name="frame_12">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>10</y>
-                 <width>711</width>
-                 <height>71</height>
-                </rect>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Sunken</enum>
-               </property>
-               <widget class="QLabel" name="label">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>10</y>
-                  <width>131</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Number of frames:</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_36">
-                <property name="geometry">
-                 <rect>
-                  <x>360</x>
-                  <y>10</y>
-                  <width>81</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Period (s):</string>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxFrames">
-                <property name="geometry">
-                 <rect>
-                  <x>210</x>
-                  <y>10</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="maximum">
-                 <number>999999999</number>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxTriggers">
-                <property name="geometry">
-                 <rect>
-                  <x>210</x>
-                  <y>40</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="maximum">
-                 <number>999999999</number>
-                </property>
-               </widget>
-               <widget class="QDoubleSpinBox" name="spinBoxPeriod">
-                <property name="geometry">
-                 <rect>
-                  <x>560</x>
-                  <y>10</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="decimals">
-                 <number>4</number>
-                </property>
-                <property name="maximum">
-                 <double>99999.990000000005239</double>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_69">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>40</y>
-                  <width>161</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Number of triggers:</string>
-                </property>
-               </widget>
-               <widget class="QComboBox" name="comboBoxTime">
-                <property name="geometry">
-                 <rect>
-                  <x>627</x>
-                  <y>40</y>
-                  <width>61</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>s</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>ms</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>μs</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>ns</string>
-                 </property>
-                </item>
-               </widget>
-              </widget>
-              <widget class="QFrame" name="frame_15">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>90</y>
-                 <width>711</width>
-                 <height>141</height>
-                </rect>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Sunken</enum>
-               </property>
-               <widget class="QLabel" name="label_76">
-                <property name="geometry">
-                 <rect>
-                  <x>360</x>
-                  <y>110</y>
-                  <width>111</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>DBIT Pipeline:</string>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxADCF">
-                <property name="geometry">
-                 <rect>
-                  <x>210</x>
-                  <y>50</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxDBITF">
-                <property name="geometry">
-                 <rect>
-                  <x>560</x>
-                  <y>50</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="maximum">
-                 <number>1000</number>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxADCPhase">
-                <property name="geometry">
-                 <rect>
-                  <x>210</x>
-                  <y>80</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="maximum">
-                 <number>159</number>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxDBITPhase">
-                <property name="geometry">
-                 <rect>
-                  <x>560</x>
-                  <y>80</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="maximum">
-                 <number>67</number>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_70">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>10</y>
-                  <width>211</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Run Clock Frequency (MHz):</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_71">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>50</y>
-                  <width>191</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>ADC Clock Frequency (MHz):</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_72">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>80</y>
-                  <width>171</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>ADC Clock Phase (a.u.):</string>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxRunF">
-                <property name="geometry">
-                 <rect>
-                  <x>360</x>
-                  <y>10</y>
-                  <width>331</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="maximum">
-                 <number>1000</number>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_75">
-                <property name="geometry">
-                 <rect>
-                  <x>360</x>
-                  <y>80</y>
-                  <width>161</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>DBIT Clock Phase (a.u.):</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_73">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>110</y>
-                  <width>131</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>ADC Pipeline:</string>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxDBITPipeline">
-                <property name="geometry">
-                 <rect>
-                  <x>560</x>
-                  <y>110</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_74">
-                <property name="geometry">
-                 <rect>
-                  <x>360</x>
-                  <y>50</y>
-                  <width>191</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>DBIT Clock Frequency (MHz):</string>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxADCPipeline">
-                <property name="geometry">
-                 <rect>
-                  <x>210</x>
-                  <y>110</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </widget>
-              <widget class="QFrame" name="frame_16">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>240</y>
-                 <width>711</width>
-                 <height>41</height>
-                </rect>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Sunken</enum>
-               </property>
-               <widget class="QLabel" name="label_77">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>10</y>
-                  <width>131</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Start Address: </string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_78">
-                <property name="geometry">
-                 <rect>
-                  <x>360</x>
-                  <y>10</y>
-                  <width>111</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Stop Address:</string>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditStopAddress">
-                <property name="geometry">
-                 <rect>
-                  <x>560</x>
-                  <y>10</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditStartAddress">
-                <property name="geometry">
-                 <rect>
-                  <x>210</x>
-                  <y>10</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </widget>
-              <widget class="QFrame" name="frame_17">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>290</y>
-                 <width>711</width>
-                 <height>191</height>
-                </rect>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Sunken</enum>
-               </property>
-               <widget class="QLabel" name="label_86">
-                <property name="geometry">
-                 <rect>
-                  <x>250</x>
-                  <y>40</y>
-                  <width>111</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Start Address:</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_102">
-                <property name="geometry">
-                 <rect>
-                  <x>480</x>
-                  <y>160</y>
-                  <width>111</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Stop Address:</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_79">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>100</y>
-                  <width>131</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Loop 3 Repetitions:</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_82">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>130</y>
-                  <width>131</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Loop 4 Repetitions:</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_88">
-                <property name="geometry">
-                 <rect>
-                  <x>480</x>
-                  <y>40</y>
-                  <width>111</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Stop Address:</string>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxLoop3">
-                <property name="geometry">
-                 <rect>
-                  <x>150</x>
-                  <y>100</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="maximum">
-                 <number>9999</number>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_81">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>40</y>
-                  <width>131</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Loop 1 Repetitions:</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_83">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>10</y>
-                  <width>131</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Loop 0 Repetitions:</string>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxLoop0">
-                <property name="geometry">
-                 <rect>
-                  <x>150</x>
-                  <y>10</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="maximum">
-                 <number>9999</number>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_87">
-                <property name="geometry">
-                 <rect>
-                  <x>480</x>
-                  <y>10</y>
-                  <width>111</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Stop Address:</string>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxLoop4">
-                <property name="geometry">
-                 <rect>
-                  <x>150</x>
-                  <y>130</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="maximum">
-                 <number>9999</number>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_80">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>70</y>
-                  <width>131</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Loop 2 Repetitions:</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_97">
-                <property name="geometry">
-                 <rect>
-                  <x>250</x>
-                  <y>100</y>
-                  <width>111</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Start Address:</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_85">
-                <property name="geometry">
-                 <rect>
-                  <x>250</x>
-                  <y>10</y>
-                  <width>111</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Start Address:</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_84">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>160</y>
-                  <width>131</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Loop 5 Repetitions:</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_99">
-                <property name="geometry">
-                 <rect>
-                  <x>250</x>
-                  <y>130</y>
-                  <width>111</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Start Address:</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_90">
-                <property name="geometry">
-                 <rect>
-                  <x>480</x>
-                  <y>70</y>
-                  <width>111</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Stop Address:</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_101">
-                <property name="geometry">
-                 <rect>
-                  <x>250</x>
-                  <y>160</y>
-                  <width>111</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Start Address:</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_100">
-                <property name="geometry">
-                 <rect>
-                  <x>480</x>
-                  <y>130</y>
-                  <width>111</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Stop Address:</string>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxLoop5">
-                <property name="geometry">
-                 <rect>
-                  <x>150</x>
-                  <y>160</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="maximum">
-                 <number>9999</number>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxLoop2">
-                <property name="geometry">
-                 <rect>
-                  <x>150</x>
-                  <y>70</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="maximum">
-                 <number>9999</number>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_98">
-                <property name="geometry">
-                 <rect>
-                  <x>480</x>
-                  <y>100</y>
-                  <width>111</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Stop Address:</string>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxLoop1">
-                <property name="geometry">
-                 <rect>
-                  <x>150</x>
-                  <y>40</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="maximum">
-                 <number>9999</number>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_89">
-                <property name="geometry">
-                 <rect>
-                  <x>250</x>
-                  <y>70</y>
-                  <width>111</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Start Address:</string>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditLoop5Stop">
-                <property name="geometry">
-                 <rect>
-                  <x>610</x>
-                  <y>160</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditLoop4Stop">
-                <property name="geometry">
-                 <rect>
-                  <x>610</x>
-                  <y>130</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditLoop3Stop">
-                <property name="geometry">
-                 <rect>
-                  <x>610</x>
-                  <y>100</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditLoop2Stop">
-                <property name="geometry">
-                 <rect>
-                  <x>610</x>
-                  <y>70</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditLoop1Stop">
-                <property name="geometry">
-                 <rect>
-                  <x>610</x>
-                  <y>40</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditLoop0Stop">
-                <property name="geometry">
-                 <rect>
-                  <x>610</x>
-                  <y>10</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditLoop5Start">
-                <property name="geometry">
-                 <rect>
-                  <x>380</x>
-                  <y>160</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditLoop4Start">
-                <property name="geometry">
-                 <rect>
-                  <x>380</x>
-                  <y>130</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditLoop3Start">
-                <property name="geometry">
-                 <rect>
-                  <x>380</x>
-                  <y>100</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditLoop2Start">
-                <property name="geometry">
-                 <rect>
-                  <x>380</x>
-                  <y>70</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditLoop1Start">
-                <property name="geometry">
-                 <rect>
-                  <x>380</x>
-                  <y>40</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditLoop0Start">
-                <property name="geometry">
-                 <rect>
-                  <x>380</x>
-                  <y>10</y>
-                  <width>81</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </widget>
-              <widget class="QFrame" name="frame_18">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>490</y>
-                 <width>711</width>
-                 <height>101</height>
-                </rect>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
-               </property>
-               <widget class="QLabel" name="label_94">
-                <property name="geometry">
-                 <rect>
-                  <x>360</x>
-                  <y>40</y>
-                  <width>161</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Wait Address:</string>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxWait2">
-                <property name="geometry">
-                 <rect>
-                  <x>210</x>
-                  <y>70</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_91">
-                <property name="geometry">
-                 <rect>
-                  <x>360</x>
-                  <y>10</y>
-                  <width>191</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Sunken</enum>
-                </property>
-                <property name="text">
-                 <string>Wait Address:</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_95">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>10</y>
-                  <width>191</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Wait 0 (run clk):</string>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxWait0">
-                <property name="geometry">
-                 <rect>
-                  <x>210</x>
-                  <y>10</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxWait1">
-                <property name="geometry">
-                 <rect>
-                  <x>210</x>
-                  <y>40</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_93">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>40</y>
-                  <width>171</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Wait 1 (run clk):</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_92">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>70</y>
-                  <width>131</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Wait 2 (run clk):</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_96">
-                <property name="geometry">
-                 <rect>
-                  <x>360</x>
-                  <y>70</y>
-                  <width>111</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Wait Address:</string>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditWait0Address">
-                <property name="geometry">
-                 <rect>
-                  <x>560</x>
-                  <y>10</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditWait1Address">
-                <property name="geometry">
-                 <rect>
-                  <x>560</x>
-                  <y>40</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditWait2Address">
-                <property name="geometry">
-                 <rect>
-                  <x>560</x>
-                  <y>70</y>
-                  <width>131</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </widget>
-              <widget class="QFrame" name="frame_19">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>600</y>
-                 <width>711</width>
-                 <height>91</height>
-                </rect>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Sunken</enum>
-               </property>
-               <widget class="QPushButton" name="pushButtonPattern">
-                <property name="geometry">
-                 <rect>
-                  <x>490</x>
-                  <y>50</y>
-                  <width>201</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">background-color: rgb(199, 213, 207);</string>
-                </property>
-                <property name="text">
-                 <string>Browse</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_103">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>8</y>
-                  <width>101</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Compiler:</string>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditPattern">
-                <property name="geometry">
-                 <rect>
-                  <x>210</x>
-                  <y>50</y>
-                  <width>231</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">background-color: rgb(200, 219, 230);</string>
-                </property>
-                <property name="placeholderText">
-                 <string>Pattern File</string>
-                </property>
-               </widget>
-               <widget class="QPushButton" name="pushButtonCompiler">
-                <property name="geometry">
-                 <rect>
-                  <x>490</x>
-                  <y>10</y>
-                  <width>201</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">background-color: rgb(199, 213, 207);</string>
-                </property>
-                <property name="text">
-                 <string>Browse</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_104">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>50</y>
-                  <width>91</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Pattern:</string>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEditCompiler">
-                <property name="geometry">
-                 <rect>
-                  <x>210</x>
-                  <y>10</y>
-                  <width>231</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">background-color: rgb(200, 219, 230);</string>
-                </property>
-                <property name="placeholderText">
-                 <string>Compiler</string>
-                </property>
-               </widget>
-              </widget>
               <widget class="QFrame" name="frame_20">
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>700</y>
+                 <y>590</y>
                  <width>711</width>
                  <height>111</height>
                 </rect>
@@ -12066,7 +10816,7 @@
                <property name="frameShadow">
                 <enum>QFrame::Sunken</enum>
                </property>
-               <widget class="QLabel" name="label_106">
+               <widget class="QLabel" name="label_395">
                 <property name="geometry">
                  <rect>
                   <x>10</x>
@@ -12095,7 +10845,7 @@
                  <number>100000</number>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_105">
+               <widget class="QLabel" name="label_396">
                 <property name="geometry">
                  <rect>
                   <x>10</x>
@@ -12108,7 +10858,7 @@
                  <string>Sample per Frame -</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_107">
+               <widget class="QLabel" name="label_397">
                 <property name="geometry">
                  <rect>
                   <x>360</x>
@@ -12137,7 +10887,7 @@
                  <number>100000</number>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_108">
+               <widget class="QLabel" name="label_398">
                 <property name="geometry">
                  <rect>
                   <x>10</x>
@@ -12176,21 +10926,1902 @@
                 </item>
                </widget>
               </widget>
-              <widget class="QPushButton" name="pushButtonLoad">
+             </widget>
+             <widget class="QWidget" name="tab_6">
+              <attribute name="title">
+               <string>Pattern</string>
+              </attribute>
+              <widget class="QFrame" name="frame_16">
                <property name="geometry">
                 <rect>
-                 <x>510</x>
-                 <y>820</y>
-                 <width>191</width>
-                 <height>31</height>
+                 <x>10</x>
+                 <y>180</y>
+                 <width>711</width>
+                 <height>51</height>
                 </rect>
                </property>
-               <property name="styleSheet">
-                <string notr="true">background-color: rgb(199, 213, 207);</string>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
                </property>
-               <property name="text">
-                <string>Load Pattern</string>
+               <property name="frameShadow">
+                <enum>QFrame::Sunken</enum>
                </property>
+               <layout class="QGridLayout" name="gridLayout_4">
+                <item row="0" column="6">
+                 <widget class="QLabel" name="label_78">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Stop Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <spacer name="horizontalSpacer_8">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>200</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="0" column="5">
+                 <spacer name="horizontalSpacer_9">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Fixed</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>15</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="0" column="7">
+                 <widget class="QLineEdit" name="lineEditStopAddress">
+                  <property name="minimumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
+                 <widget class="QLineEdit" name="lineEditStartAddress">
+                  <property name="minimumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="4">
+                 <spacer name="horizontalSpacer_5">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>10</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_394">
+                  <property name="minimumSize">
+                   <size>
+                    <width>130</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Limits:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QLabel" name="label_77">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Start Address: </string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QFrame" name="frame_17">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>240</y>
+                 <width>711</width>
+                 <height>231</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Sunken</enum>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_5">
+                <item row="5" column="5">
+                 <widget class="QLabel" name="label_101">
+                  <property name="text">
+                   <string>Start Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="2">
+                 <widget class="QLabel" name="label_84">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Repetitions:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="8">
+                 <widget class="QLabel" name="label_100">
+                  <property name="text">
+                   <string>Stop Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QLabel" name="label_83">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Repetitions:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="8">
+                 <widget class="QLabel" name="label_98">
+                  <property name="text">
+                   <string>Stop Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="6">
+                 <widget class="QLineEdit" name="lineEditLoop3Start">
+                  <property name="minimumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="5">
+                 <widget class="QLabel" name="label_97">
+                  <property name="text">
+                   <string>Start Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="2">
+                 <widget class="QLabel" name="label_82">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Repetitions:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="3">
+                 <widget class="QSpinBox" name="spinBoxLoop2">
+                  <property name="minimumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>9999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="6">
+                 <widget class="QLineEdit" name="lineEditLoop4Start">
+                  <property name="minimumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="7">
+                 <spacer name="horizontalSpacer_7">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Fixed</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>15</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="3" column="9">
+                 <widget class="QLineEdit" name="lineEditLoop3Stop">
+                  <property name="minimumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="8">
+                 <widget class="QLabel" name="label_87">
+                  <property name="text">
+                   <string>Stop Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="9">
+                 <widget class="QLineEdit" name="lineEditLoop4Stop">
+                  <property name="minimumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="6">
+                 <widget class="QLineEdit" name="lineEditLoop0Start">
+                  <property name="minimumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="3">
+                 <widget class="QSpinBox" name="spinBoxLoop5">
+                  <property name="minimumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>9999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
+                 <widget class="QLabel" name="label_80">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Repetitions:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QLabel" name="label_81">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Repetitions:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="9">
+                 <widget class="QLineEdit" name="lineEditLoop1Stop">
+                  <property name="minimumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="5">
+                 <widget class="QLabel" name="label_85">
+                  <property name="text">
+                   <string>Start Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="8">
+                 <widget class="QLabel" name="label_102">
+                  <property name="text">
+                   <string>Stop Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="3">
+                 <widget class="QSpinBox" name="spinBoxLoop4">
+                  <property name="minimumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>9999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="9">
+                 <widget class="QLineEdit" name="lineEditLoop2Stop">
+                  <property name="minimumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="5">
+                 <widget class="QLabel" name="label_89">
+                  <property name="text">
+                   <string>Start Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="5">
+                 <widget class="QLabel" name="label_86">
+                  <property name="text">
+                   <string>Start Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="5">
+                 <widget class="QLabel" name="label_99">
+                  <property name="text">
+                   <string>Start Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="9">
+                 <widget class="QLineEdit" name="lineEditLoop5Stop">
+                  <property name="minimumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_405">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 0</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
+                 <widget class="QSpinBox" name="spinBoxLoop0">
+                  <property name="minimumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>9999</number>
+                  </property>
+                  <property name="value">
+                   <number>0</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="6">
+                 <widget class="QLineEdit" name="lineEditLoop1Start">
+                  <property name="minimumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="8">
+                 <widget class="QLabel" name="label_90">
+                  <property name="text">
+                   <string>Stop Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="8">
+                 <widget class="QLabel" name="label_88">
+                  <property name="text">
+                   <string>Stop Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="3">
+                 <widget class="QSpinBox" name="spinBoxLoop3">
+                  <property name="minimumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>9999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="3">
+                 <widget class="QSpinBox" name="spinBoxLoop1">
+                  <property name="minimumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>9999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="6">
+                 <widget class="QLineEdit" name="lineEditLoop2Start">
+                  <property name="minimumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="9">
+                 <widget class="QLineEdit" name="lineEditLoop0Stop">
+                  <property name="minimumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="6">
+                 <widget class="QLineEdit" name="lineEditLoop5Start">
+                  <property name="minimumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>90</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="2">
+                 <widget class="QLabel" name="label_79">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Repetitions:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <spacer name="horizontalSpacer_10">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Fixed</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>15</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="0" column="4">
+                 <spacer name="horizontalSpacer_6">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Fixed</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>15</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_406">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_407">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 2</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_408">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 3</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QLabel" name="label_409">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 4</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="0">
+                 <widget class="QLabel" name="label_410">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 5</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QFrame" name="frame_18">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>480</y>
+                 <width>711</width>
+                 <height>221</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QGridLayout" name="gridLayout">
+                <item row="5" column="6">
+                 <widget class="QLineEdit" name="lineEditWait5Address">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="4">
+                 <spacer name="horizontalSpacer_4">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Fixed</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>70</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="4" column="3">
+                 <widget class="QSpinBox" name="spinBoxWait4">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="6">
+                 <widget class="QLineEdit" name="lineEditWait1Address">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="3">
+                 <widget class="QSpinBox" name="spinBoxWait2">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="5">
+                 <widget class="QLabel" name="label_402">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="3">
+                 <widget class="QSpinBox" name="spinBoxWait5">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="6">
+                 <widget class="QLineEdit" name="lineEditWait4Address">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="5">
+                 <widget class="QLabel" name="label_400">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="3">
+                 <widget class="QSpinBox" name="spinBoxWait3">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="5">
+                 <widget class="QLabel" name="label_399">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="5">
+                 <widget class="QLabel" name="label_91">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Sunken</enum>
+                  </property>
+                  <property name="text">
+                   <string>Wait Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="5">
+                 <widget class="QLabel" name="label_94">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="6">
+                 <widget class="QLineEdit" name="lineEditWait0Address">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="3">
+                 <widget class="QSpinBox" name="spinBoxWait1">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_411">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 0</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
+                 <widget class="QSpinBox" name="spinBoxWait0">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="6">
+                 <widget class="QLineEdit" name="lineEditWait2Address">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="5">
+                 <widget class="QLabel" name="label_96">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait Address:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="6">
+                 <widget class="QLineEdit" name="lineEditWait3Address">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QLabel" name="label_95">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait Time (run clk):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <spacer name="horizontalSpacer_11">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Fixed</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>70</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QLabel" name="label_401">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait Time (run clk):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
+                 <widget class="QLabel" name="label_403">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait Time (run clk):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="2">
+                 <widget class="QLabel" name="label_404">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait Time (run clk):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="2">
+                 <widget class="QLabel" name="label_412">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait Time (run clk):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="2">
+                 <widget class="QLabel" name="label_413">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait Time (run clk):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_414">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_415">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 2</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_416">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 3</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QLabel" name="label_417">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 4</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="0">
+                 <widget class="QLabel" name="label_418">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 5</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QFrame" name="frame_19">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>710</y>
+                 <width>711</width>
+                 <height>91</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Sunken</enum>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_2">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_103">
+                  <property name="text">
+                   <string>Compiler:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLineEdit" name="lineEditCompiler">
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(200, 219, 230);</string>
+                  </property>
+                  <property name="placeholderText">
+                   <string>Compiler</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QPushButton" name="pushButtonCompiler">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(199, 213, 207);</string>
+                  </property>
+                  <property name="text">
+                   <string>Browse</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_104">
+                  <property name="text">
+                   <string>Pattern:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLineEdit" name="lineEditPattern">
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(200, 219, 230);</string>
+                  </property>
+                  <property name="placeholderText">
+                   <string>Pattern File</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QPushButton" name="pushButtonPattern">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(199, 213, 207);</string>
+                  </property>
+                  <property name="text">
+                   <string>Browse</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QFrame" name="frame_15">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>10</y>
+                 <width>711</width>
+                 <height>161</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Sunken</enum>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_6">
+                <item row="1" column="2">
+                 <spacer name="horizontalSpacer">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>10</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="2" column="3">
+                 <widget class="QLabel" name="label_75">
+                  <property name="text">
+                   <string>DBIT Clock Phase (a.u.):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="4">
+                 <widget class="QSpinBox" name="spinBoxDBITF">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>1000</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="3">
+                 <widget class="QLabel" name="label_74">
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>DBIT Clock Frequency (MHz):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_70">
+                  <property name="text">
+                   <string>Run Clock Frequency (MHz):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QSpinBox" name="spinBoxRunF">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="buttonSymbols">
+                   <enum>QAbstractSpinBox::UpDownArrows</enum>
+                  </property>
+                  <property name="maximum">
+                   <number>1000</number>
+                  </property>
+                  <property name="value">
+                   <number>0</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QSpinBox" name="spinBoxADCPhase">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>159</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_71">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>ADC Clock Frequency (MHz):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="4">
+                 <widget class="QSpinBox" name="spinBoxDBITPhase">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>67</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QSpinBox" name="spinBoxADCF">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_72">
+                  <property name="text">
+                   <string>ADC Clock Phase (a.u.):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_73">
+                  <property name="text">
+                   <string>ADC Pipeline:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QSpinBox" name="spinBoxADCPipeline">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="3">
+                 <widget class="QLabel" name="label_76">
+                  <property name="text">
+                   <string>DBIT Pipeline:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="4">
+                 <widget class="QSpinBox" name="spinBoxDBITPipeline">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="horizontalLayoutWidget_2">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>800</y>
+                 <width>711</width>
+                 <height>51</height>
+                </rect>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_3">
+                <item>
+                 <spacer name="horizontalSpacer_13">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>200</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="checkBoxCompile">
+                  <property name="text">
+                   <string>Compile</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_14">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Fixed</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>15</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButtonLoad">
+                  <property name="minimumSize">
+                   <size>
+                    <width>150</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(199, 213, 207);</string>
+                  </property>
+                  <property name="text">
+                   <string>Load Pattern</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </widget>
              <widget class="QWidget" name="tab_7">
@@ -12985,7 +13616,7 @@
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>650</y>
+                 <y>730</y>
                  <width>711</width>
                  <height>51</height>
                 </rect>
@@ -13285,6 +13916,139 @@
                 </property>
                </widget>
               </widget>
+              <widget class="QFrame" name="frame_53">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>650</y>
+                 <width>711</width>
+                 <height>71</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Sunken</enum>
+               </property>
+               <widget class="QLabel" name="label">
+                <property name="geometry">
+                 <rect>
+                  <x>10</x>
+                  <y>10</y>
+                  <width>131</width>
+                  <height>19</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>Number of frames:</string>
+                </property>
+               </widget>
+               <widget class="QLabel" name="label_392">
+                <property name="geometry">
+                 <rect>
+                  <x>360</x>
+                  <y>10</y>
+                  <width>81</width>
+                  <height>19</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>Period (s):</string>
+                </property>
+               </widget>
+               <widget class="QSpinBox" name="spinBoxFrames">
+                <property name="geometry">
+                 <rect>
+                  <x>210</x>
+                  <y>10</y>
+                  <width>131</width>
+                  <height>21</height>
+                 </rect>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+                <property name="maximum">
+                 <number>999999999</number>
+                </property>
+               </widget>
+               <widget class="QSpinBox" name="spinBoxTriggers">
+                <property name="geometry">
+                 <rect>
+                  <x>210</x>
+                  <y>40</y>
+                  <width>131</width>
+                  <height>21</height>
+                 </rect>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+                <property name="maximum">
+                 <number>999999999</number>
+                </property>
+               </widget>
+               <widget class="QDoubleSpinBox" name="spinBoxPeriod">
+                <property name="geometry">
+                 <rect>
+                  <x>560</x>
+                  <y>10</y>
+                  <width>131</width>
+                  <height>21</height>
+                 </rect>
+                </property>
+                <property name="decimals">
+                 <number>4</number>
+                </property>
+                <property name="maximum">
+                 <double>99999.990000000005239</double>
+                </property>
+               </widget>
+               <widget class="QLabel" name="label_393">
+                <property name="geometry">
+                 <rect>
+                  <x>10</x>
+                  <y>40</y>
+                  <width>161</width>
+                  <height>19</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>Number of triggers:</string>
+                </property>
+               </widget>
+               <widget class="QComboBox" name="comboBoxTime">
+                <property name="geometry">
+                 <rect>
+                  <x>627</x>
+                  <y>40</y>
+                  <width>61</width>
+                  <height>21</height>
+                 </rect>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>s</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>ms</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>μs</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>ns</string>
+                 </property>
+                </item>
+               </widget>
+              </widget>
              </widget>
             </widget>
            </item>
@@ -13306,7 +14070,7 @@
      <x>0</x>
      <y>0</y>
      <width>1497</width>
-     <height>25</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

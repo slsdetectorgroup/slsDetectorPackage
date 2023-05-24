@@ -6,7 +6,7 @@ from pyqtgraph import PlotWidget
 import multiprocessing as mp
 from threading import Thread
 from PIL import Image as im
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import json
 import zmq
 import numpy as np
@@ -899,6 +899,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.read_timer.start(20)
             self.det.rx_start()
             self.statusTimer.start(20)
+            self.progressBar.setValue(0)
             self.det.start()
 
     def updateDetectorStatus(self):
@@ -948,6 +949,7 @@ class MainWindow(QtWidgets.QMainWindow):
             header, data = msg
             jsonHeader = json.loads(header)
             print(jsonHeader)
+            self.progressBar.setValue(jsonHeader['progress'])
             print(f'Data size: {len(data)}')
             
             data_array = np.array(np.frombuffer(data, dtype=np.uint16))

@@ -22,260 +22,24 @@ class MainWindow(QtWidgets.QMainWindow):
         pg.setConfigOption("background", (247, 247, 247))
         pg.setConfigOption("foreground", "k")
 
-        super(MainWindow, self).__init__()
         self.det = Detector()
-        self.det.rx_zmqstream = 1
-        self.zmqIp = self.det.rx_zmqip
-        self.zmqport = self.det.rx_zmqport
-        self.zmq_stream = self.det.rx_zmqstream
+        self.setup_zmq()
 
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.SUB)
-        self.socket.connect(f"tcp://{self.zmqIp}:{self.zmqport}")
-        self.socket.subscribe("")
-
-        #To check detector status
-        self.statusTimer = QtCore.QTimer()
-        self.statusTimer.timeout.connect(self.updateDetectorStatus)
-
-        #To auto trigger the read
-        self.read_timer =  QtCore.QTimer()
-        self.read_timer.timeout.connect(self.read_zmq)
-
+        super(MainWindow, self).__init__()
         uic.loadUi("CtbGui.ui", self)
-        self.update_field()
+        self.setup_qtimer()
+        self.refresh_tab_dac()
+        self.refresh_tab_power()
+        self.refresh_tab_sense()
+        self.refresh_tab_signals()
+        self.refresh_tab_adc()
+        self.refresh_tab_pattern()
+        self.refresh_tab_acquisition()
+        self.tabWidget.setCurrentIndex(6)
+        self.tabWidget.currentChanged.connect(self.refresh_tab)
+        self.connect_ui()
 
-        # Plotting the data
-        # For the action options in app
-        # TODO Only add the components of action options
-        # Show info
-        self.actionInfo.triggered.connect(self.showInfo)
-        self.actionOpen.triggered.connect(self.openFile)
-
-        # For DACs tab
-        # TODO Only add the components of DACs tab
-        n_dacs = len(self.det.daclist)
-        for i in range(n_dacs):
-            getattr(self, f"spinBoxDAC{i}").editingFinished.connect(
-                partial(self.setDAC, i)
-            )
-            getattr(self, f"checkBoxDAC{i}").clicked.connect(partial(self.setDAC, i))
-            getattr(self, f"checkBoxDAC{i}mV").clicked.connect(partial(self.setDAC, i))
-
-        self.comboBoxADC.activated.connect(self.setADC)
-        self.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
-        self.checkBoxHighVoltage.clicked.connect(self.setHighVoltage)
-
-        # For Power Supplies tab
-        # TODO Only add the components of Power supplies tab
-        self.spinBoxVA.editingFinished.connect(partial(self.setPower, "A"))
-        self.checkBoxVA.clicked.connect(partial(self.setPower, "A"))
-        self.spinBoxVB.editingFinished.connect(partial(self.setPower, "B"))
-        self.checkBoxVB.clicked.connect(partial(self.setPower, "B"))
-        self.spinBoxVC.editingFinished.connect(partial(self.setPower, "C"))
-        self.checkBoxVC.clicked.connect(partial(self.setPower, "C"))
-        self.spinBoxVD.editingFinished.connect(partial(self.setPower, "D"))
-        self.checkBoxVD.clicked.connect(partial(self.setPower, "D"))
-        self.spinBoxVIO.editingFinished.connect(partial(self.setPower, "IO"))
-        self.checkBoxVIO.clicked.connect(partial(self.setPower, "IO"))
-
-        # For Sense Tab
-        # TODO Only add the components of Sense tab
-        self.pushButtonSense0.clicked.connect(partial(self.updateSense, 0))
-        self.pushButtonSense1.clicked.connect(partial(self.updateSense, 1))
-        self.pushButtonSense2.clicked.connect(partial(self.updateSense, 2))
-        self.pushButtonSense3.clicked.connect(partial(self.updateSense, 3))
-        self.pushButtonSense4.clicked.connect(partial(self.updateSense, 4))
-        self.pushButtonSense5.clicked.connect(partial(self.updateSense, 5))
-        self.pushButtonSense6.clicked.connect(partial(self.updateSense, 6))
-        self.pushButtonSense7.clicked.connect(partial(self.updateSense, 7))
-        self.pushButtonTemp.clicked.connect(self.updateTemperature)
-
-        # For Signals Tab
-        # TODO Only add the components of Signals tab
-        for i in range(64):
-            getattr(self, f"checkBoxBIT{i}DB").clicked.connect(partial(self.dbit, i))
-
-        for i in range(64):
-            getattr(self, f"checkBoxBIT{i}Out").clicked.connect(partial(self.IOout, i))
-
-        self.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
-        self.pushButtonBIT0.clicked.connect(self.colorBIT0)
-        self.pushButtonBIT1.clicked.connect(self.colorBIT1)
-        self.pushButtonBIT2.clicked.connect(self.colorBIT2)
-        self.pushButtonBIT3.clicked.connect(self.colorBIT3)
-        self.pushButtonBIT4.clicked.connect(self.colorBIT4)
-        self.pushButtonBIT5.clicked.connect(self.colorBIT5)
-        self.pushButtonBIT6.clicked.connect(self.colorBIT6)
-        self.pushButtonBIT7.clicked.connect(self.colorBIT7)
-        self.pushButtonBIT8.clicked.connect(self.colorBIT8)
-        self.pushButtonBIT9.clicked.connect(self.colorBIT9)
-        self.pushButtonBIT10.clicked.connect(self.colorBIT10)
-        self.pushButtonBIT11.clicked.connect(self.colorBIT11)
-        self.pushButtonBIT12.clicked.connect(self.colorBIT12)
-        self.pushButtonBIT13.clicked.connect(self.colorBIT13)
-        self.pushButtonBIT14.clicked.connect(self.colorBIT14)
-        self.pushButtonBIT15.clicked.connect(self.colorBIT15)
-        self.pushButtonBIT16.clicked.connect(self.colorBIT16)
-        self.pushButtonBIT17.clicked.connect(self.colorBIT17)
-        self.pushButtonBIT18.clicked.connect(self.colorBIT18)
-        self.pushButtonBIT19.clicked.connect(self.colorBIT19)
-        self.pushButtonBIT20.clicked.connect(self.colorBIT20)
-        self.pushButtonBIT21.clicked.connect(self.colorBIT21)
-        self.pushButtonBIT22.clicked.connect(self.colorBIT22)
-        self.pushButtonBIT23.clicked.connect(self.colorBIT23)
-        self.pushButtonBIT24.clicked.connect(self.colorBIT24)
-        self.pushButtonBIT25.clicked.connect(self.colorBIT25)
-        self.pushButtonBIT26.clicked.connect(self.colorBIT26)
-        self.pushButtonBIT27.clicked.connect(self.colorBIT27)
-        self.pushButtonBIT28.clicked.connect(self.colorBIT28)
-        self.pushButtonBIT29.clicked.connect(self.colorBIT29)
-        self.pushButtonBIT30.clicked.connect(self.colorBIT30)
-        self.pushButtonBIT31.clicked.connect(self.colorBIT31)
-        self.pushButtonBIT32.clicked.connect(self.colorBIT32)
-        self.pushButtonBIT33.clicked.connect(self.colorBIT33)
-        self.pushButtonBIT34.clicked.connect(self.colorBIT34)
-        self.pushButtonBIT35.clicked.connect(self.colorBIT35)
-        self.pushButtonBIT36.clicked.connect(self.colorBIT36)
-        self.pushButtonBIT37.clicked.connect(self.colorBIT37)
-        self.pushButtonBIT38.clicked.connect(self.colorBIT38)
-        self.pushButtonBIT39.clicked.connect(self.colorBIT39)
-        self.pushButtonBIT40.clicked.connect(self.colorBIT40)
-        self.pushButtonBIT41.clicked.connect(self.colorBIT41)
-        self.pushButtonBIT42.clicked.connect(self.colorBIT42)
-        self.pushButtonBIT43.clicked.connect(self.colorBIT43)
-        self.pushButtonBIT44.clicked.connect(self.colorBIT44)
-        self.pushButtonBIT45.clicked.connect(self.colorBIT45)
-        self.pushButtonBIT46.clicked.connect(self.colorBIT46)
-        self.pushButtonBIT47.clicked.connect(self.colorBIT47)
-        self.pushButtonBIT48.clicked.connect(self.colorBIT48)
-        self.pushButtonBIT49.clicked.connect(self.colorBIT49)
-        self.pushButtonBIT50.clicked.connect(self.colorBIT50)
-        self.pushButtonBIT51.clicked.connect(self.colorBIT51)
-        self.pushButtonBIT52.clicked.connect(self.colorBIT52)
-        self.pushButtonBIT53.clicked.connect(self.colorBIT53)
-        self.pushButtonBIT54.clicked.connect(self.colorBIT54)
-        self.pushButtonBIT55.clicked.connect(self.colorBIT55)
-        self.pushButtonBIT56.clicked.connect(self.colorBIT56)
-        self.pushButtonBIT57.clicked.connect(self.colorBIT57)
-        self.pushButtonBIT58.clicked.connect(self.colorBIT58)
-        self.pushButtonBIT59.clicked.connect(self.colorBIT59)
-        self.pushButtonBIT60.clicked.connect(self.colorBIT60)
-        self.pushButtonBIT61.clicked.connect(self.colorBIT61)
-        self.pushButtonBIT62.clicked.connect(self.colorBIT62)
-        self.pushButtonBIT63.clicked.connect(self.colorBIT63)
-
-        # For ADCs Tab
-        # TODO Only add the components of ADCs tab
-        for i in range(32):
-            getattr(self, f"checkBoxADC{i}Inv").clicked.connect(
-                partial(self.ADCInvert, i)
-            )
-
-        for i in range(32):
-            getattr(self, f"checkBoxADC{i}En").clicked.connect(
-                partial(self.ADCEnable, i)
-            )
-
-        self.pushButtonADC0.clicked.connect(self.colorADC0)
-        self.pushButtonADC1.clicked.connect(self.colorADC1)
-        self.pushButtonADC2.clicked.connect(self.colorADC2)
-        self.pushButtonADC3.clicked.connect(self.colorADC3)
-        self.pushButtonADC4.clicked.connect(self.colorADC4)
-        self.pushButtonADC5.clicked.connect(self.colorADC5)
-        self.pushButtonADC6.clicked.connect(self.colorADC6)
-        self.pushButtonADC7.clicked.connect(self.colorADC7)
-        self.pushButtonADC8.clicked.connect(self.colorADC8)
-        self.pushButtonADC9.clicked.connect(self.colorADC9)
-        self.pushButtonADC10.clicked.connect(self.colorADC10)
-        self.pushButtonADC11.clicked.connect(self.colorADC11)
-        self.pushButtonADC12.clicked.connect(self.colorADC12)
-        self.pushButtonADC13.clicked.connect(self.colorADC13)
-        self.pushButtonADC14.clicked.connect(self.colorADC14)
-        self.pushButtonADC15.clicked.connect(self.colorADC15)
-        self.pushButtonADC16.clicked.connect(self.colorADC16)
-        self.pushButtonADC17.clicked.connect(self.colorADC17)
-        self.pushButtonADC18.clicked.connect(self.colorADC18)
-        self.pushButtonADC19.clicked.connect(self.colorADC19)
-        self.pushButtonADC20.clicked.connect(self.colorADC20)
-        self.pushButtonADC21.clicked.connect(self.colorADC21)
-        self.pushButtonADC22.clicked.connect(self.colorADC22)
-        self.pushButtonADC23.clicked.connect(self.colorADC23)
-        self.pushButtonADC24.clicked.connect(self.colorADC24)
-        self.pushButtonADC25.clicked.connect(self.colorADC25)
-        self.pushButtonADC26.clicked.connect(self.colorADC26)
-        self.pushButtonADC27.clicked.connect(self.colorADC27)
-        self.pushButtonADC28.clicked.connect(self.colorADC28)
-        self.pushButtonADC29.clicked.connect(self.colorADC29)
-        self.pushButtonADC30.clicked.connect(self.colorADC30)
-        self.pushButtonADC31.clicked.connect(self.colorADC31)
-        self.pushButtonAll15.clicked.connect(self.all_0_15)
-        self.pushButtonNone15.clicked.connect(self.none_0_15)
-        self.pushButtonAll16.clicked.connect(self.all_16_31)
-        self.pushButtonNone16.clicked.connect(self.none_16_31)
-        self.pushButtonAll.clicked.connect(self.enable_mask_all)
-        self.pushButtonNone.clicked.connect(self.enable_mask_none)
-
-        # For Pattern Tab
-        # TODO Only add the components of Pattern tab
-        self.pushButtonCompiler.clicked.connect(self.setCompiler)
-        self.pushButtonPattern.clicked.connect(self.setPattern)
-        self.spinBoxFrames.editingFinished.connect(self.setFrames)
-        self.spinBoxPeriod.editingFinished.connect(self.setPeriod)
-        self.comboBoxTime.activated.connect(self.setPeriod)
-        self.spinBoxTriggers.editingFinished.connect(self.setTriggers)
-        self.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
-        self.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
-        self.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
-        self.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
-        self.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
-        self.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
-        self.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
-        for i in range(6):
-            getattr(self, f"spinBoxLoop{i}").editingFinished.connect(
-                partial(self.setLoop, i)
-            )
-        for i in range(6):
-            getattr(self, f"spinBoxWait{i}").editingFinished.connect(
-                partial(self.setWait, i)
-            )
-        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
-        self.spinBoxDigital.editingFinished.connect(self.setDigital)
-        self.comboBoxROMode.activated.connect(self.setReadOut)
-        self.pushButtonLoad.clicked.connect(self.loadPattern)
-
-        # For Acquistions Tab
-        # TODO Only add the components of Acquistions tab
-        self.radioButtonNoPlot.clicked.connect(self.plotOptions)
-        self.radioButtonWaveform.clicked.connect(self.plotOptions)
-        self.radioButtonDistribution.clicked.connect(self.plotOptions)
-        self.radioButtonImage.clicked.connect(self.plotOptions)
-        self.comboBoxPlot.activated.connect(self.plotOptions)
-        self.spinBoxSerialOffset.editingFinished.connect(self.setSerialOffset)
-        self.spinBoxNCount.editingFinished.connect(self.setNCounter)
-        self.spinBoxDynamicRange.editingFinished.connect(self.setDynamicRange)
-        self.spinBoxImageX.editingFinished.connect(self.setImageX)
-        self.spinBoxImageY.editingFinished.connect(self.setImageY)
-        self.checkBoxAcquire.clicked.connect(self.setPedestal)
-        self.checkBoxSubtract.clicked.connect(self.setPedestal)
-        self.checkBoxCommonMode.clicked.connect(self.setPedestal)
-        self.pushButtonReset.clicked.connect(self.resetPedestal)
-        self.checkBoxRaw.clicked.connect(self.setRawData)
-        self.spinBoxRawMin.editingFinished.connect(self.setRawData)
-        self.spinBoxRawMax.editingFinished.connect(self.setRawData)
-        self.checkBoxPedestal.clicked.connect(self.setPedestalSubtract)
-        self.spinBoxPedestalMin.editingFinished.connect(self.setPedestalSubtract)
-        self.spinBoxPedestalMax.editingFinished.connect(self.setPedestalSubtract)
-        self.spinBoxFit.editingFinished.connect(self.setFitADC)
-        self.spinBoxPlot.editingFinished.connect(self.setPlotBit)
-        self.lineEditFileName.editingFinished.connect(self.setFileName)
-        self.lineEditFilePath.editingFinished.connect(self.setFilePath)
-        self.spinBoxIndex.editingFinished.connect(self.setIndex)
-        self.pushButtonStart.clicked.connect(self.acquire)
-        self.pushButtonStop.clicked.connect(self.det.stop)
-        self.pushButtonReferesh.clicked.connect(self.plotReferesh)
-        self.pushButtonBrowse.clicked.connect(self.browseFile)
-
+  
 
     # For Action options function
     # TODO Only add the components of action option+ functions
@@ -1024,13 +788,13 @@ class MainWindow(QtWidgets.QMainWindow):
             checkBox.setChecked(True)
 
     # initializing the Out status
-    def set_IO_Out(self, i):
+    def set_IO_Out(self):
         out = self.det.patioctrl
         for i in range(64):
             if bit_is_set(out, i):
                 getattr(self, f"checkBoxBIT{i}Out").setChecked(True)
 
-    def set_ADC_Enable(self, i):
+    def set_ADC_Enable(self):
         if self.det.tengiga:
             adcenable10g = self.det.adcenable10g
             for i in range(32):
@@ -1042,14 +806,32 @@ class MainWindow(QtWidgets.QMainWindow):
                 if bit_is_set(adcenable, i):
                     getattr(self, f"checkBoxADC{i}En").setChecked(True)
 
-    def set_ADC_Inversion(self, i):
+    def set_ADC_Inversion(self):
         adcInversion = self.det.adcinvert
         for i in range(32):
             if bit_is_set(adcInversion, i):
                 getattr(self, f"checkBoxADC{i}Inv").setChecked(True)
 
-    # updating fields with values
-    def update_field(self):
+
+    def refresh_tab(self, tab_index):
+        match tab_index:
+            case 0:
+                self.refresh_tab_dac()
+            case 1:
+                self.refresh_tab_power()
+            case 2:
+                self.refresh_tab_sense()
+            case 3:
+                self.refresh_tab_signals()
+            case 4:
+                self.refresh_tab_adc()
+            case 5:
+                self.refresh_tab_pattern()
+            case 6:
+                self.refresh_tab_acquisition()
+
+
+    def refresh_tab_dac(self):
         # Getting dac Name
         for i, dac_name in enumerate(self.det.getDacNames()):
             getattr(self, f"checkBoxDAC{i}").setText(dac_name)
@@ -1083,6 +865,8 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.checkBoxHighVoltage.setChecked(True)
 
+
+    def refresh_tab_power(self):
         self.labelVA.setText(str(self.det.getVoltage(dacIndex.V_POWER_A)[0]))
         self.labelVB.setText(str(self.det.getVoltage(dacIndex.V_POWER_B)[0]))
         self.labelVC.setText(str(self.det.getVoltage(dacIndex.V_POWER_C)[0]))
@@ -1108,8 +892,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.spinBoxVCHIP.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
 
+
+    def refresh_tab_sense(self):
+        for i in range(8):
+            self.updateSense(i)
+        self.updateTemperature()
+
+
+    def refresh_tab_signals(self):
         # For initializing the Out Status
-        self.set_IO_Out(i)
+        self.set_IO_Out()
 
         # For initializing DBit
         n_bits = self.det.rx_dbitlist
@@ -1120,42 +912,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lineEditBoxIOControl.setText(hex(self.det.patioctrl))
         self.spinBoxDBitOffset.setValue(self.det.rx_dbitoffset)
 
+
+    def refresh_tab_adc(self):
         # Initializing the ADC Enable mask
-        self.set_ADC_Enable(i)
+        self.set_ADC_Enable()
         self.lineEditEnable.setText(hex(self.det.adcenable))
         # Initializing the ADC Inversion Mask
-        self.set_ADC_Inversion(i)
+        self.set_ADC_Inversion()
         self.lineEditInversion.setText(hex(self.det.adcinvert))
-        # Updating values for patterns
-        self.spinBoxFrames.setValue(self.det.frames)
-
-        # Converting to right time unit for period
-        tPeriod = self.det.period
-        if tPeriod < 100e-9:
-            self.comboBoxTime.setCurrentIndex(3)
-            periodTime = tPeriod / 1e-9
-            self.spinBoxPeriod.setValue(periodTime)
-        elif tPeriod < 100e-6:
-            self.comboBoxTime.setCurrentIndex(2)
-            periodTime1 = tPeriod / 1e-6
-            self.spinBoxPeriod.setValue(periodTime1)
-        elif tPeriod < 100e-3:
-            self.comboBoxTime.setCurrentIndex(1)
-            periodTime0 = tPeriod / 1e-3
-            self.spinBoxPeriod.setValue(periodTime0)
-        else:
-            self.comboBoxTime.setCurrentIndex(0)
-            self.spinBoxPeriod.setValue(tPeriod)
-
-        self.spinBoxTriggers.setValue(self.det.triggers)
-        self.spinBoxRunF.setValue(self.det.runclk)
-        self.spinBoxADCF.setValue(self.det.adcclk)
-        self.spinBoxADCPhase.setValue(self.det.adcphase)
-        self.spinBoxADCPipeline.setValue(self.det.adcpipeline)
-        self.spinBoxDBITF.setValue(self.det.dbitclk)
-        self.spinBoxDBITPhase.setValue(self.det.dbitphase)
-        self.spinBoxDBITPipeline.setValue(self.det.dbitpipeline)
-
         # Sample per frame
         self.spinBoxAnalog.setValue(self.det.asamples)
         self.spinBoxDigital.setValue(self.det.dsamples)
@@ -1167,6 +931,16 @@ class MainWindow(QtWidgets.QMainWindow):
             self.comboBoxROMode.setCurrentIndex(1)
         elif self.det.romode == (readoutMode.ANALOG_AND_DIGITAL):
             self.comboBoxROMode.setCurrentIndex(2)
+
+
+    def refresh_tab_pattern(self):
+        self.spinBoxRunF.setValue(self.det.runclk)
+        self.spinBoxADCF.setValue(self.det.adcclk)
+        self.spinBoxADCPhase.setValue(self.det.adcphase)
+        self.spinBoxADCPipeline.setValue(self.det.adcpipeline)
+        self.spinBoxDBITF.setValue(self.det.dbitclk)
+        self.spinBoxDBITPhase.setValue(self.det.dbitphase)
+        self.spinBoxDBITPipeline.setValue(self.det.dbitpipeline)
 
         # TODO yet to decide on hex or int
         self.lineEditStartAddress.setText(hex((self.det.patlimits)[0]))
@@ -1189,12 +963,293 @@ class MainWindow(QtWidgets.QMainWindow):
             lineEditLoopStop = getattr(self, f"lineEditLoop{i}Stop")
             lineEditLoopStop.setText(hex((self.det.patloop[i])[1]))
 
-        self.updateDetectorStatus()
-        
+
+    def refresh_tab_acquisition(self):
+        # Updating values for patterns
+        self.spinBoxFrames.setValue(self.det.frames)
+
+        # Converting to right time unit for period
+        tPeriod = self.det.period
+        if tPeriod < 100e-9:
+            self.comboBoxTime.setCurrentIndex(3)
+            periodTime = tPeriod / 1e-9
+            self.spinBoxPeriod.setValue(periodTime)
+        elif tPeriod < 100e-6:
+            self.comboBoxTime.setCurrentIndex(2)
+            periodTime1 = tPeriod / 1e-6
+            self.spinBoxPeriod.setValue(periodTime1)
+        elif tPeriod < 100e-3:
+            self.comboBoxTime.setCurrentIndex(1)
+            periodTime0 = tPeriod / 1e-3
+            self.spinBoxPeriod.setValue(periodTime0)
+        else:
+            self.comboBoxTime.setCurrentIndex(0)
+            self.spinBoxPeriod.setValue(tPeriod)
+
+        self.spinBoxTriggers.setValue(self.det.triggers)
+
         #Output Settings
         self.lineEditFileName.setText(self.det.fname)
         self.lineEditFilePath.setText(str(self.det.fpath))
         self.spinBoxIndex.setValue(self.det.findex)
+
+        self.updateDetectorStatus()
+        
+
+    def setup_zmq(self):
+        self.det.rx_zmqstream = 1
+        self.zmqIp = self.det.rx_zmqip
+        self.zmqport = self.det.rx_zmqport
+        self.zmq_stream = self.det.rx_zmqstream
+
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.SUB)
+        self.socket.connect(f"tcp://{self.zmqIp}:{self.zmqport}")
+        self.socket.subscribe("")
+
+
+    def setup_qtimer(self):
+        #To check detector status
+        self.statusTimer = QtCore.QTimer()
+        self.statusTimer.timeout.connect(self.updateDetectorStatus)
+
+        #To auto trigger the read
+        self.read_timer =  QtCore.QTimer()
+        self.read_timer.timeout.connect(self.read_zmq)
+
+
+    def connect_ui(self):
+               # Plotting the data
+        # For the action options in app
+        # TODO Only add the components of action options
+        # Show info
+        self.actionInfo.triggered.connect(self.showInfo)
+        self.actionOpen.triggered.connect(self.openFile)
+
+        # For DACs tab
+        # TODO Only add the components of DACs tab
+        n_dacs = len(self.det.daclist)
+        for i in range(n_dacs):
+            getattr(self, f"spinBoxDAC{i}").editingFinished.connect(
+                partial(self.setDAC, i)
+            )
+            getattr(self, f"checkBoxDAC{i}").clicked.connect(partial(self.setDAC, i))
+            getattr(self, f"checkBoxDAC{i}mV").clicked.connect(partial(self.setDAC, i))
+
+        self.comboBoxADC.activated.connect(self.setADC)
+        self.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
+        self.checkBoxHighVoltage.clicked.connect(self.setHighVoltage)
+
+        # For Power Supplies tab
+        # TODO Only add the components of Power supplies tab
+        self.spinBoxVA.editingFinished.connect(partial(self.setPower, "A"))
+        self.checkBoxVA.clicked.connect(partial(self.setPower, "A"))
+        self.spinBoxVB.editingFinished.connect(partial(self.setPower, "B"))
+        self.checkBoxVB.clicked.connect(partial(self.setPower, "B"))
+        self.spinBoxVC.editingFinished.connect(partial(self.setPower, "C"))
+        self.checkBoxVC.clicked.connect(partial(self.setPower, "C"))
+        self.spinBoxVD.editingFinished.connect(partial(self.setPower, "D"))
+        self.checkBoxVD.clicked.connect(partial(self.setPower, "D"))
+        self.spinBoxVIO.editingFinished.connect(partial(self.setPower, "IO"))
+        self.checkBoxVIO.clicked.connect(partial(self.setPower, "IO"))
+
+        # For Sense Tab
+        # TODO Only add the components of Sense tab
+        self.pushButtonSense0.clicked.connect(partial(self.updateSense, 0))
+        self.pushButtonSense1.clicked.connect(partial(self.updateSense, 1))
+        self.pushButtonSense2.clicked.connect(partial(self.updateSense, 2))
+        self.pushButtonSense3.clicked.connect(partial(self.updateSense, 3))
+        self.pushButtonSense4.clicked.connect(partial(self.updateSense, 4))
+        self.pushButtonSense5.clicked.connect(partial(self.updateSense, 5))
+        self.pushButtonSense6.clicked.connect(partial(self.updateSense, 6))
+        self.pushButtonSense7.clicked.connect(partial(self.updateSense, 7))
+        self.pushButtonTemp.clicked.connect(self.updateTemperature)
+
+        # For Signals Tab
+        # TODO Only add the components of Signals tab
+        for i in range(64):
+            getattr(self, f"checkBoxBIT{i}DB").clicked.connect(partial(self.dbit, i))
+
+        for i in range(64):
+            getattr(self, f"checkBoxBIT{i}Out").clicked.connect(partial(self.IOout, i))
+
+        self.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
+        self.pushButtonBIT0.clicked.connect(self.colorBIT0)
+        self.pushButtonBIT1.clicked.connect(self.colorBIT1)
+        self.pushButtonBIT2.clicked.connect(self.colorBIT2)
+        self.pushButtonBIT3.clicked.connect(self.colorBIT3)
+        self.pushButtonBIT4.clicked.connect(self.colorBIT4)
+        self.pushButtonBIT5.clicked.connect(self.colorBIT5)
+        self.pushButtonBIT6.clicked.connect(self.colorBIT6)
+        self.pushButtonBIT7.clicked.connect(self.colorBIT7)
+        self.pushButtonBIT8.clicked.connect(self.colorBIT8)
+        self.pushButtonBIT9.clicked.connect(self.colorBIT9)
+        self.pushButtonBIT10.clicked.connect(self.colorBIT10)
+        self.pushButtonBIT11.clicked.connect(self.colorBIT11)
+        self.pushButtonBIT12.clicked.connect(self.colorBIT12)
+        self.pushButtonBIT13.clicked.connect(self.colorBIT13)
+        self.pushButtonBIT14.clicked.connect(self.colorBIT14)
+        self.pushButtonBIT15.clicked.connect(self.colorBIT15)
+        self.pushButtonBIT16.clicked.connect(self.colorBIT16)
+        self.pushButtonBIT17.clicked.connect(self.colorBIT17)
+        self.pushButtonBIT18.clicked.connect(self.colorBIT18)
+        self.pushButtonBIT19.clicked.connect(self.colorBIT19)
+        self.pushButtonBIT20.clicked.connect(self.colorBIT20)
+        self.pushButtonBIT21.clicked.connect(self.colorBIT21)
+        self.pushButtonBIT22.clicked.connect(self.colorBIT22)
+        self.pushButtonBIT23.clicked.connect(self.colorBIT23)
+        self.pushButtonBIT24.clicked.connect(self.colorBIT24)
+        self.pushButtonBIT25.clicked.connect(self.colorBIT25)
+        self.pushButtonBIT26.clicked.connect(self.colorBIT26)
+        self.pushButtonBIT27.clicked.connect(self.colorBIT27)
+        self.pushButtonBIT28.clicked.connect(self.colorBIT28)
+        self.pushButtonBIT29.clicked.connect(self.colorBIT29)
+        self.pushButtonBIT30.clicked.connect(self.colorBIT30)
+        self.pushButtonBIT31.clicked.connect(self.colorBIT31)
+        self.pushButtonBIT32.clicked.connect(self.colorBIT32)
+        self.pushButtonBIT33.clicked.connect(self.colorBIT33)
+        self.pushButtonBIT34.clicked.connect(self.colorBIT34)
+        self.pushButtonBIT35.clicked.connect(self.colorBIT35)
+        self.pushButtonBIT36.clicked.connect(self.colorBIT36)
+        self.pushButtonBIT37.clicked.connect(self.colorBIT37)
+        self.pushButtonBIT38.clicked.connect(self.colorBIT38)
+        self.pushButtonBIT39.clicked.connect(self.colorBIT39)
+        self.pushButtonBIT40.clicked.connect(self.colorBIT40)
+        self.pushButtonBIT41.clicked.connect(self.colorBIT41)
+        self.pushButtonBIT42.clicked.connect(self.colorBIT42)
+        self.pushButtonBIT43.clicked.connect(self.colorBIT43)
+        self.pushButtonBIT44.clicked.connect(self.colorBIT44)
+        self.pushButtonBIT45.clicked.connect(self.colorBIT45)
+        self.pushButtonBIT46.clicked.connect(self.colorBIT46)
+        self.pushButtonBIT47.clicked.connect(self.colorBIT47)
+        self.pushButtonBIT48.clicked.connect(self.colorBIT48)
+        self.pushButtonBIT49.clicked.connect(self.colorBIT49)
+        self.pushButtonBIT50.clicked.connect(self.colorBIT50)
+        self.pushButtonBIT51.clicked.connect(self.colorBIT51)
+        self.pushButtonBIT52.clicked.connect(self.colorBIT52)
+        self.pushButtonBIT53.clicked.connect(self.colorBIT53)
+        self.pushButtonBIT54.clicked.connect(self.colorBIT54)
+        self.pushButtonBIT55.clicked.connect(self.colorBIT55)
+        self.pushButtonBIT56.clicked.connect(self.colorBIT56)
+        self.pushButtonBIT57.clicked.connect(self.colorBIT57)
+        self.pushButtonBIT58.clicked.connect(self.colorBIT58)
+        self.pushButtonBIT59.clicked.connect(self.colorBIT59)
+        self.pushButtonBIT60.clicked.connect(self.colorBIT60)
+        self.pushButtonBIT61.clicked.connect(self.colorBIT61)
+        self.pushButtonBIT62.clicked.connect(self.colorBIT62)
+        self.pushButtonBIT63.clicked.connect(self.colorBIT63)
+
+        # For ADCs Tab
+        # TODO Only add the components of ADCs tab
+        for i in range(32):
+            getattr(self, f"checkBoxADC{i}Inv").clicked.connect(
+                partial(self.ADCInvert, i)
+            )
+
+        for i in range(32):
+            getattr(self, f"checkBoxADC{i}En").clicked.connect(
+                partial(self.ADCEnable, i)
+            )
+
+        self.pushButtonADC0.clicked.connect(self.colorADC0)
+        self.pushButtonADC1.clicked.connect(self.colorADC1)
+        self.pushButtonADC2.clicked.connect(self.colorADC2)
+        self.pushButtonADC3.clicked.connect(self.colorADC3)
+        self.pushButtonADC4.clicked.connect(self.colorADC4)
+        self.pushButtonADC5.clicked.connect(self.colorADC5)
+        self.pushButtonADC6.clicked.connect(self.colorADC6)
+        self.pushButtonADC7.clicked.connect(self.colorADC7)
+        self.pushButtonADC8.clicked.connect(self.colorADC8)
+        self.pushButtonADC9.clicked.connect(self.colorADC9)
+        self.pushButtonADC10.clicked.connect(self.colorADC10)
+        self.pushButtonADC11.clicked.connect(self.colorADC11)
+        self.pushButtonADC12.clicked.connect(self.colorADC12)
+        self.pushButtonADC13.clicked.connect(self.colorADC13)
+        self.pushButtonADC14.clicked.connect(self.colorADC14)
+        self.pushButtonADC15.clicked.connect(self.colorADC15)
+        self.pushButtonADC16.clicked.connect(self.colorADC16)
+        self.pushButtonADC17.clicked.connect(self.colorADC17)
+        self.pushButtonADC18.clicked.connect(self.colorADC18)
+        self.pushButtonADC19.clicked.connect(self.colorADC19)
+        self.pushButtonADC20.clicked.connect(self.colorADC20)
+        self.pushButtonADC21.clicked.connect(self.colorADC21)
+        self.pushButtonADC22.clicked.connect(self.colorADC22)
+        self.pushButtonADC23.clicked.connect(self.colorADC23)
+        self.pushButtonADC24.clicked.connect(self.colorADC24)
+        self.pushButtonADC25.clicked.connect(self.colorADC25)
+        self.pushButtonADC26.clicked.connect(self.colorADC26)
+        self.pushButtonADC27.clicked.connect(self.colorADC27)
+        self.pushButtonADC28.clicked.connect(self.colorADC28)
+        self.pushButtonADC29.clicked.connect(self.colorADC29)
+        self.pushButtonADC30.clicked.connect(self.colorADC30)
+        self.pushButtonADC31.clicked.connect(self.colorADC31)
+        self.pushButtonAll15.clicked.connect(self.all_0_15)
+        self.pushButtonNone15.clicked.connect(self.none_0_15)
+        self.pushButtonAll16.clicked.connect(self.all_16_31)
+        self.pushButtonNone16.clicked.connect(self.none_16_31)
+        self.pushButtonAll.clicked.connect(self.enable_mask_all)
+        self.pushButtonNone.clicked.connect(self.enable_mask_none)
+
+        # For Pattern Tab
+        # TODO Only add the components of Pattern tab
+        self.pushButtonCompiler.clicked.connect(self.setCompiler)
+        self.pushButtonPattern.clicked.connect(self.setPattern)
+        self.spinBoxFrames.editingFinished.connect(self.setFrames)
+        self.spinBoxPeriod.editingFinished.connect(self.setPeriod)
+        self.comboBoxTime.activated.connect(self.setPeriod)
+        self.spinBoxTriggers.editingFinished.connect(self.setTriggers)
+        self.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
+        self.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
+        self.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
+        self.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
+        self.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
+        self.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
+        self.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
+        for i in range(6):
+            getattr(self, f"spinBoxLoop{i}").editingFinished.connect(
+                partial(self.setLoop, i)
+            )
+        for i in range(6):
+            getattr(self, f"spinBoxWait{i}").editingFinished.connect(
+                partial(self.setWait, i)
+            )
+        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
+        self.spinBoxDigital.editingFinished.connect(self.setDigital)
+        self.comboBoxROMode.activated.connect(self.setReadOut)
+        self.pushButtonLoad.clicked.connect(self.loadPattern)
+
+        # For Acquistions Tab
+        # TODO Only add the components of Acquistions tab
+        self.radioButtonNoPlot.clicked.connect(self.plotOptions)
+        self.radioButtonWaveform.clicked.connect(self.plotOptions)
+        self.radioButtonDistribution.clicked.connect(self.plotOptions)
+        self.radioButtonImage.clicked.connect(self.plotOptions)
+        self.comboBoxPlot.activated.connect(self.plotOptions)
+        self.spinBoxSerialOffset.editingFinished.connect(self.setSerialOffset)
+        self.spinBoxNCount.editingFinished.connect(self.setNCounter)
+        self.spinBoxDynamicRange.editingFinished.connect(self.setDynamicRange)
+        self.spinBoxImageX.editingFinished.connect(self.setImageX)
+        self.spinBoxImageY.editingFinished.connect(self.setImageY)
+        self.checkBoxAcquire.clicked.connect(self.setPedestal)
+        self.checkBoxSubtract.clicked.connect(self.setPedestal)
+        self.checkBoxCommonMode.clicked.connect(self.setPedestal)
+        self.pushButtonReset.clicked.connect(self.resetPedestal)
+        self.checkBoxRaw.clicked.connect(self.setRawData)
+        self.spinBoxRawMin.editingFinished.connect(self.setRawData)
+        self.spinBoxRawMax.editingFinished.connect(self.setRawData)
+        self.checkBoxPedestal.clicked.connect(self.setPedestalSubtract)
+        self.spinBoxPedestalMin.editingFinished.connect(self.setPedestalSubtract)
+        self.spinBoxPedestalMax.editingFinished.connect(self.setPedestalSubtract)
+        self.spinBoxFit.editingFinished.connect(self.setFitADC)
+        self.spinBoxPlot.editingFinished.connect(self.setPlotBit)
+        self.lineEditFileName.editingFinished.connect(self.setFileName)
+        self.lineEditFilePath.editingFinished.connect(self.setFilePath)
+        self.spinBoxIndex.editingFinished.connect(self.setIndex)
+        self.pushButtonStart.clicked.connect(self.acquire)
+        self.pushButtonStop.clicked.connect(self.det.stop)
+        self.pushButtonReferesh.clicked.connect(self.plotReferesh)
+        self.pushButtonBrowse.clicked.connect(self.browseFile)
+
         
 
 if __name__ == "__main__":

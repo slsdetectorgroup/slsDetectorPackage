@@ -6,14 +6,14 @@ from pyqtgraph import PlotWidget
 import multiprocessing as mp
 from threading import Thread
 from PIL import Image as im
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import json
 import zmq
 import numpy as np
 import posixpath
 
 from functools import partial
-from slsdet import Detector, dacIndex, readoutMode
+from slsdet import Detector, dacIndex, readoutMode, runStatus
 from bit_utils import set_bit, remove_bit, bit_is_set
 
 
@@ -24,6 +24,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         super(MainWindow, self).__init__()
         self.det = Detector()
+        self.det.rx_zmqstream = 1
         self.zmqIp = self.det.rx_zmqip
         self.zmqport = self.det.rx_zmqport
         self.zmq_stream = self.det.rx_zmqstream
@@ -32,6 +33,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.socket = self.context.socket(zmq.SUB)
         self.socket.connect(f"tcp://{self.zmqIp}:{self.zmqport}")
         self.socket.subscribe("")
+
+        #To check detector status
+        self.statusTimer = QtCore.QTimer()
+        self.statusTimer.timeout.connect(self.updateDetectorStatus)
+
+        #To auto trigger the read
+        self.read_timer =  QtCore.QTimer()
+        self.read_timer.timeout.connect(self.read_zmq)
 
         uic.loadUi("CtbGui.ui", self)
         self.update_field()
@@ -267,9 +276,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonReferesh.clicked.connect(self.plotReferesh)
         self.pushButtonBrowse.clicked.connect(self.browseFile)
 
-        #To auto trigger the read
-        self.read_timer =  QtCore.QTimer()
-        self.read_timer.timeout.connect(self.read_zmq)
+
     # For Action options function
     # TODO Only add the components of action option+ functions
     # Function to show info
@@ -886,12 +893,36 @@ class MainWindow(QtWidgets.QMainWindow):
         self.det.findex = self.spinBoxIndex.value()
 
     def acquire(self):
+        self.pushButtonStart.setEnabled(False)
         measurement_Number = self.spinBoxMeasurements.value()
         for i in range(measurement_Number):
-            #self.read_timer.start(20)
-            self.det.acquire()
+            self.read_timer.start(20)
+            self.det.rx_start()
+            self.statusTimer.start(20)
+            self.progressBar.setValue(0)
+            self.det.start()
+
+    def updateDetectorStatus(self):
+        self.labelDetectorStatus.setText(self.det.status.name)
+        self.acqDone = False
+        match self.det.status:
+            case runStatus.RUNNING:
+                pass
+            case runStatus.WAITING:
+                pass
+            case runStatus.TRANSMITTING:
+                pass
+            case _:
+                self.acqDone = True
+
+        if self.acqDone:
+            self.read_timer.stop()
+            self.statusTimer.stop()
+            if self.det.rx_status == runStatus.RUNNING:
+                self.det.rx_stop()
             if self.radioButtonYes.isChecked():
                 self.spinBoxIndex.stepUp()
+            self.pushButtonStart.setEnabled(True)
 
     def plotReferesh(self):
         self.read_zmq()
@@ -918,9 +949,12 @@ class MainWindow(QtWidgets.QMainWindow):
             header, data = msg
             jsonHeader = json.loads(header)
             print(jsonHeader)
+            self.progressBar.setValue(jsonHeader['progress'])
             print(f'Data size: {len(data)}')
+            
             data_array = np.array(np.frombuffer(data, dtype=np.uint16))
 
+            # moench analog
             # return data_array
             adc_numbers = [9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 7, 6, 23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28,
                             27, 26, 25, 24]
@@ -946,12 +980,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     analog_frame[row, col] = pixel_value
                     order_sc[row, col] = i_sc
 
+            '''
             fig, ax = plt.subplots()
             im = ax.imshow(analog_frame)
             ax.invert_yaxis()
             fig.colorbar(im)
             plt.show()
-
+            '''
             
             plot1 = pg.ImageView(self.plotWidget, view=pg.PlotItem())
             plot1.show()
@@ -1153,6 +1188,8 @@ class MainWindow(QtWidgets.QMainWindow):
             # For loop stop address
             lineEditLoopStop = getattr(self, f"lineEditLoop{i}Stop")
             lineEditLoopStop.setText(hex((self.det.patloop[i])[1]))
+
+        self.updateDetectorStatus()
         
         #Output Settings
         self.lineEditFileName.setText(self.det.fname)

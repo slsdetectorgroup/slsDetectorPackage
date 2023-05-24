@@ -28,8 +28,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1467</width>
-         <height>912</height>
+         <width>1463</width>
+         <height>918</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -11898,6 +11898,9 @@
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
+                  <property name="maximum">
+                   <number>999999</number>
+                  </property>
                  </widget>
                 </item>
                 <item row="1" column="6">
@@ -11939,6 +11942,9 @@
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
+                  <property name="maximum">
+                   <number>999999</number>
+                  </property>
                  </widget>
                 </item>
                 <item row="5" column="5">
@@ -11970,6 +11976,9 @@
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>999999</number>
                   </property>
                  </widget>
                 </item>
@@ -12024,6 +12033,9 @@
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>999999</number>
                   </property>
                  </widget>
                 </item>
@@ -12108,6 +12120,9 @@
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
+                  <property name="maximum">
+                   <number>999999</number>
+                  </property>
                  </widget>
                 </item>
                 <item row="0" column="0">
@@ -12139,6 +12154,9 @@
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>999999</number>
                   </property>
                  </widget>
                 </item>
@@ -13872,11 +13890,7 @@
      <x>0</x>
      <y>0</y>
      <width>1497</width>
-<<<<<<< HEAD
      <height>25</height>
-=======
-     <height>29</height>
->>>>>>> main
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

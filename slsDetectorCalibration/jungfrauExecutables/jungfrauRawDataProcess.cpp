@@ -42,9 +42,9 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
 
-    if (argc < 5) {
+    if (argc < 6) {
         cout << "Usage is " << argv[0]
-             << "indir outdir fname(no extension) fextension [runmin] [runmax] [pedfile (raw or tiff)] [threshold] "
+             << "indir outdir fname(no extension) fextension csize [runmin] [runmax] [pedfile (raw or tiff)] [threshold]"
                 "[nframes] [xmin xmax ymin ymax] [gainmap]"
              << endl;
         cout << "threshold <0 means analog; threshold=0 means cluster finder; "
@@ -53,6 +53,7 @@ int main(int argc, char *argv[]) {
         cout << "nframes <0 means sum everything; nframes=0 means one file per "
                 "run; nframes>0 means one file every nframes"
              << endl;
+
         return 1;
     }
 
@@ -113,47 +114,48 @@ int main(int argc, char *argv[]) {
     char *outdir = argv[2];
     char *fformat = argv[3];
     char *fext = argv[4];
+    sscanf(argv[5], "%d", &csize);
     int runmin = 0;
 
     // cout << "argc is " << argc << endl;
-    if (argc >= 6) {
-        runmin = atoi(argv[5]);
+    if (argc >= 7) {
+        runmin = atoi(argv[6]);
     }
 
     int runmax = runmin;
 
-    if (argc >= 7) {
-        runmax = atoi(argv[6]);
+    if (argc >= 8) {
+        runmax = atoi(argv[7]);
     }
 
     char *pedfile = NULL;
-    if (argc >= 8) {
-        pedfile = argv[7];
+    if (argc >= 9) {
+        pedfile = argv[8];
     }
     double thr = 0;
     double thr1 = 1;
 
-    if (argc >= 9) {
-        thr = atof(argv[8]);
+    if (argc >= 10) {
+        thr = atof(argv[9]);
     }
 
     int nframes = 0;
 
-    if (argc >= 10) {
-        nframes = atoi(argv[9]);
+    if (argc >= 11) {
+        nframes = atoi(argv[10]);
     }
 
     int xmin = 0, xmax = nx, ymin = 0, ymax = ny;
-    if (argc >= 14) {
-        xmin = atoi(argv[10]);
-        xmax = atoi(argv[11]);
-        ymin = atoi(argv[12]);
-        ymax = atoi(argv[13]);
+    if (argc >= 15) {
+        xmin = atoi(argv[11]);
+        xmax = atoi(argv[12]);
+        ymin = atoi(argv[13]);
+        ymax = atoi(argv[14]);
     }
 
     char *gainfname = NULL;
-    if (argc > 14) {
-        gainfname = argv[14];
+    if (argc > 15) {
+        gainfname = argv[15];
         cout << "Gain map file name is: " << gainfname << endl;
     }
 

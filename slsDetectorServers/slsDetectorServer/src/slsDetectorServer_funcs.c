@@ -7184,7 +7184,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // readout mode
-#ifdef CHIPTESTBOARD
+#ifdef CHIPTESTBOARDD
     i32 = getReadoutMode();
 #else
     i32 = 0;

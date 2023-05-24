@@ -952,6 +952,7 @@ class MainWindow(QtWidgets.QMainWindow):
             
             data_array = np.array(np.frombuffer(data, dtype=np.uint16))
 
+            # moench analog
             # return data_array
             adc_numbers = [9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 7, 6, 23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28,
                             27, 26, 25, 24]

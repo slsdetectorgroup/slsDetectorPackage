@@ -712,9 +712,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 return
             header, data = msg
             jsonHeader = json.loads(header)
-            print(jsonHeader)
+            #print(jsonHeader)
             self.progressBar.setValue(jsonHeader['progress'])
-            print(f'Data size: {len(data)}')
+            #print(f'Data size: {len(data)}')
             
             data_array = np.array(np.frombuffer(data, dtype=np.uint16))
 
@@ -756,9 +756,10 @@ class MainWindow(QtWidgets.QMainWindow):
             plot1.show()
             plot1.setImage(analog_frame)
             
-
+        except zmq.ZMQError as e:
+            pass
         except Exception as e:
-            print(str(e))
+            print(f'Caught exception: {str(e)}')
 
     def showPalette(self, button):
         color = QtWidgets.QColorDialog.getColor()

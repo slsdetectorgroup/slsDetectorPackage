@@ -162,6 +162,9 @@ void resetToHardwareSettings();
 #ifdef EIGERD
 int writeRegister(uint32_t offset, uint32_t data);
 int readRegister(uint32_t offset, uint32_t *retval);
+int setBit(const uint32_t addr, int nBit);
+int clearBit(const uint32_t addr, int nBit);
+int getBit(const uint32_t addr, const int nBit, int *retval);
 #elif GOTTHARDD
 uint32_t writeRegister16And32(uint32_t offset,
                               uint32_t data); // FIXME its not there in ctb

@@ -527,11 +527,15 @@ class MainWindow(QtWidgets.QMainWindow):
             self.lineEditCompiler.setText(response[0])
 
     def setPattern(self):
+        if self.checkBoxCompile.isChecked():
+            filt='Pattern code(*.py *.c)'
+        else:
+            filt='Pattern file(*.pyat *.pat)'
         response = QtWidgets.QFileDialog.getOpenFileName(
             parent=self,
             caption="Select a pattern file",
             directory=os.getcwd(),
-            filter='README (*.pat)'
+            filter=filt
         )
         if response[0]:
             self.lineEditPattern.setText(response[0])
@@ -607,14 +611,18 @@ class MainWindow(QtWidgets.QMainWindow):
         comp=self.checkBoxCompile.isChecked()
         if pattern_file:
             if comp: 
+
                 print("Compiling pattern code to .pat file")
                 compFile=self.lineEditCompiler.text()
                 if compFile:
+                    pattern_file=self.lineEditPattern.text()+"at"
+                    print("Old compiled pattern filed copied to _bck") #this way, if it doesn't compile, it does not load old pyat
+                    os.system('cp '+pattern_file+' '+pattern_file+'_bck')
+                    os.system('rm '+pattern_file)
                     st=compFile+' '+self.lineEditPattern.text()
                     os.system(st)
                     print(st)
-                    pattern_file=self.lineEditPattern.text()+"at"
-                    print(pattern_file)
+
                     self.det.pattern = pattern_file
                 else:
                     print('No compiler selected!!!')

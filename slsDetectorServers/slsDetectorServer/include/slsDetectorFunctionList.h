@@ -679,16 +679,14 @@ int softwareTrigger(int block);
 int startReadOut();
 #endif
 enum runStatus getRunStatus();
-#if defined(CHIPTESTBOARDD)
-void readFrames(int *ret, char *mess);
-#endif
 #ifdef EIGERD
 void waitForAcquisitionEnd(int *ret, char *mess);
 #else
 void waitForAcquisitionEnd();
 #endif
 #if defined(CHIPTESTBOARDD)
-void readandSendUDPFrames(int *ret, char *mess);
+int validateUDPSocket();
+void readandSendUDPFrames();
 void unsetFifoReadStrobes();
 void readSample(int ns);
 uint32_t checkDataInFifo();

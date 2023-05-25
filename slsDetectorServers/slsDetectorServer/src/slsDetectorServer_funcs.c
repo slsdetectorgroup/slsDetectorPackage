@@ -67,6 +67,7 @@ int moduleIndex = -1;
 // Local variables
 int (*flist[NUM_DET_FUNCTIONS])(int);
 pthread_t pthread_tid;
+pthread_t pthread_tid_ctb_1g;
 
 // scan variables
 int scan = 0;
@@ -1920,7 +1921,9 @@ int acquire(int blocking, int file_des) {
                 strcpy(mess, "Could not start acquisition thread!\n");
                 LOG(logERROR, (mess));
             } else {
-                // only does not wait for non blocking and scan
+                // wait for blocking always (scan or not)
+                // non blocking-no scan also wait (for error message)
+                // non blcoking-scan dont wait (there is scanErrorMessage)
                 if (blocking || !scan) {
                     pthread_join(pthread_tid, NULL);
                 }
@@ -2002,18 +2005,43 @@ void *start_state_machine(void *arg) {
             }
             break;
         }
-
-#if defined(CHIPTESTBOARDD)
-        readFrames(&ret, mess);
-        if (ret == FAIL && scan) {
-            sprintf(scanErrMessage, "Cannot scan at %d. ", scanSteps[i]);
-            strcat(scanErrMessage, mess);
-            sharedMemory_setScanStatus(ERROR);
-            break;
+// only 1g real ctb needs to read from fifo
+// to avoid blocking, in another thread
+#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
+        if (!enableTenGigabitEthernet(-1)) {
+            ret = validateUDPSocket();
+            if (ret == FAIL) {
+                strcpy(mess, "UDP socket not created!\n");
+                LOG(logERROR, (mess));
+            } else {
+                if (pthread_create(&pthread_tid_ctb_1g, NULL,
+                                   &start_reading_and_sending_udp_frames,
+                                   NULL)) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not start read frames thread!\n");
+                    LOG(logERROR, (mess));
+                }
+            }
+            // add scan error message
+            if (ret == FAIL) {
+                if (scan) {
+                    sprintf(scanErrMessage, "Cannot scan at %d. ",
+                            scanSteps[i]);
+                    strcat(scanErrMessage, mess);
+                    sharedMemory_setScanStatus(ERROR);
+                }
+                break;
+            }
         }
 #endif
         // blocking or scan
         if (*blocking || times > 1) {
+            // wait to finish reading from fifo (1g real ctb)
+#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
+            if (!enableTenGigabitEthernet(-1)) {
+                pthread_join(pthread_tid_ctb_1g, NULL);
+            }
+#endif
 #ifdef EIGERD
             waitForAcquisitionEnd(&ret, mess);
             if (ret == FAIL && scan) {
@@ -2033,6 +2061,13 @@ void *start_state_machine(void *arg) {
     }
     return NULL;
 }
+
+#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
+void *start_reading_and_sending_udp_frames(void *arg) {
+    readandSendUDPFrames();
+    return NULL;
+}
+#endif
 
 int start_acquisition(int file_des) { return acquire(0, file_des); }
 
@@ -4206,19 +4241,28 @@ int set_adc_enable_mask(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        ret = setADCEnableMask(arg);
-        if (ret == FAIL) {
-            sprintf(mess, "Could not set 1Gb ADC Enable mask to 0x%x.\n", arg);
+        if (arg == 0u) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Not allowed to set adc mask of 0 due to data readout. \n");
             LOG(logERROR, (mess));
         } else {
-            uint32_t retval = getADCEnableMask();
-            if (arg != retval) {
-                ret = FAIL;
-                sprintf(mess,
+            ret = setADCEnableMask(arg);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set 1Gb ADC Enable mask to 0x%x.\n",
+                        arg);
+                LOG(logERROR, (mess));
+            } else {
+                uint32_t retval = getADCEnableMask();
+                if (arg != retval) {
+                    ret = FAIL;
+                    sprintf(
+                        mess,
                         "Could not set 1Gb ADC Enable mask. Set 0x%x, but read "
                         "0x%x\n",
                         arg, retval);
-                LOG(logERROR, (mess));
+                    LOG(logERROR, (mess));
+                }
             }
         }
     }
@@ -4257,15 +4301,22 @@ int set_adc_enable_mask_10g(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        setADCEnableMask_10G(arg);
-        uint32_t retval = getADCEnableMask_10G();
-        if (arg != retval) {
+        if (arg == 0u) {
             ret = FAIL;
             sprintf(mess,
-                    "Could not set 10Gb ADC Enable mask. Set 0x%x, but "
-                    "read 0x%x\n",
-                    arg, retval);
+                    "Not allowed to set adc mask of 0 due to data readout \n");
             LOG(logERROR, (mess));
+        } else {
+            setADCEnableMask_10G(arg);
+            uint32_t retval = getADCEnableMask_10G();
+            if (arg != retval) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set 10Gb ADC Enable mask. Set 0x%x, but "
+                        "read 0x%x\n",
+                        arg, retval);
+                LOG(logERROR, (mess));
+            }
         }
     }
 #endif
@@ -7136,7 +7187,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // readout mode
-#ifdef CHIPTESTBOARD
+#ifdef CHIPTESTBOARDD
     i32 = getReadoutMode();
 #else
     i32 = 0;

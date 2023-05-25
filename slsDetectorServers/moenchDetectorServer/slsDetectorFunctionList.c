@@ -780,8 +780,7 @@ int64_t getPeriodLeft() {
 }
 
 int64_t getDelayAfterTriggerLeft() {
-    return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) /
-           (1E-3 * CLK_RUN);
+    return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) / (1E-3 * CLK_RUN);
 }
 
 int64_t getFramesFromStart() {

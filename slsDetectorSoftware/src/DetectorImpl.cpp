@@ -1298,7 +1298,7 @@ void DetectorImpl::startAcquisition(const bool blocking, Positions pos) {
         if (!masters.empty()) {
             Parallel((blocking ? &Module::startAndReadAll
                                : &Module::startAcquisition),
-                     pos);
+                     masters);
         }
     }
     // all in parallel
@@ -1372,7 +1372,7 @@ void DetectorImpl::processData(bool receiver) {
                     if (fgetc(stdin) == 'q') {
                         LOG(logINFO)
                             << "Caught the command to stop acquisition";
-                        Parallel(&Module::stopAcquisition, {});
+                        stopDetector({});
                     }
                 }
                 // get and print progress

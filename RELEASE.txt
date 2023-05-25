@@ -23,6 +23,11 @@ This document describes the differences between v7.0.1 and v7.0.0
     - jungfrau multi mod sync mode (start, trigger, stop)
     - set/get timing jungfrau does not give error when syc enabled
     - switching between 1 and 2 interfaces did not set gui/client zmq port properly. Resulted in dummy streaming forever.
+    - rx_roi in zmq header for external guis
+    - show fix go in expert mode from any tab (not just settings tab)
+    - if synced, setting master to slave would have changed status to running. workaround found in software
+    - new firmware requirement for fix. if acq stopped in sync mode the slave stays running for next acquisition and framesl is stuck from previous acq.
+
 
 
 2  On-board Detector Server Compatibility

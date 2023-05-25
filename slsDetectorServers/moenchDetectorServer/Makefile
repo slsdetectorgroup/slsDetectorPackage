@@ -36,7 +36,6 @@ $(PROGS): $(OBJS)
 	mkdir -p $(DESTDIR) 
 	$(CC) -o $@ $^ $(CFLAGS)  $(LDLIBS)  
 	mv $(PROGS) $(DESTDIR)
-	cp config_moench.txt $(DESTDIR)
 	cp detid_moench.txt $(DESTDIR)
 	rm *.gdb
 	rm $(main_src)*.o $(md5_dir)*.o

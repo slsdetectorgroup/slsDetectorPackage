@@ -601,12 +601,29 @@ class MainWindow(QtWidgets.QMainWindow):
             self.spinBoxDigital.setDisabled(False)
             self.spinBoxAnalog.setDisabled(False)
 
+
     def loadPattern(self):
         pattern_file = self.lineEditPattern.text()
+        comp=self.checkBoxCompile.isChecked()
         if pattern_file:
-            self.det.parameters = pattern_file
+            if comp: 
+                print("Compiling pattern code to .pat file")
+                compFile=self.lineEditCompiler.text()
+                if compFile:
+                    st=compFile+' '+self.lineEditPattern.text()
+                    os.system(st)
+                    print(st)
+                    pattern_file=self.lineEditPattern.text()+"at"
+                    print(pattern_file)
+                    self.det.pattern = pattern_file
+                else:
+                    print('No compiler selected!!!')
+            else:
+                self.det.pattern = pattern_file
+            
         else:
             print('No pattern file selected!!!')
+
 
     # For Acquistions Tab functions
     # TODO Only add the components of Acquistions tab functions
@@ -690,7 +707,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.statusTimer.stop()
             if self.det.rx_status == runStatus.RUNNING:
                 self.det.rx_stop()
-            if self.radioButtonYes.isChecked():
+            if self.checkBoxFileWrite.isChecked():
                 self.spinBoxIndex.stepUp()
             self.pushButtonStart.setEnabled(True)
 
@@ -969,7 +986,9 @@ class MainWindow(QtWidgets.QMainWindow):
             # For loop stop address
             lineEditLoopStop = getattr(self, f"lineEditLoop{i}Stop")
             lineEditLoopStop.setText(hex((self.det.patloop[i])[1]))
-
+        # For compiler
+        self.lineEditCompiler.setText("python")
+        
     def refresh_tab_acquisition(self):
         # Updating values for patterns
         self.spinBoxFrames.setValue(self.det.frames)

@@ -1268,6 +1268,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxPedestalMax.editingFinished.connect(self.setPedestalSubtract)
         self.spinBoxFit.editingFinished.connect(self.setFitADC)
         self.spinBoxPlot.editingFinished.connect(self.setPlotBit)
+        self.checkBoxFileWrite.clicked.connect(self.setFileWrite)
         self.lineEditFileName.editingFinished.connect(self.setFileName)
         self.lineEditFilePath.editingFinished.connect(self.setFilePath)
         self.spinBoxIndex.editingFinished.connect(self.setIndex)

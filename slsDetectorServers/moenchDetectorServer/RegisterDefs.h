@@ -26,33 +26,28 @@
 #define RUN_BUSY_MSK                        (0x00000001 << RUN_BUSY_OFST)
 #define WAITING_FOR_TRIGGER_OFST            (3)
 #define WAITING_FOR_TRIGGER_MSK             (0x00000001 << WAITING_FOR_TRIGGER_OFST)
-#define DELAYBEFORE_OFST                    (4) // Not used in software
-#define DELAYBEFORE_MSK                     (0x00000001 << DELAYBEFORE_OFST) // Not used in software
-#define DELAYAFTER_OFST                     (5) // Not used in software
-#define DELAYAFTER_MSK                      (0x00000001 << DELAYAFTER_OFST) // Not used in software
+#define DELAYBEFORE_OFST                    (4) // delay before acq and after trigger
+#define DELAYBEFORE_MSK                     (0x00000001 << DELAYBEFORE_OFST)
+#define DELAYAFTER_OFST                     (5) // delay after acq until next frame
+#define DELAYAFTER_MSK                      (0x00000001 << DELAYAFTER_OFST)
+#define EXPOSING_OFST                       (6)
+#define EXPOSING_MSK                        (0x00000001 << EXPOSING_OFST)
 #define STOPPED_OFST                        (15)
 #define STOPPED_MSK                         (0x00000001 << STOPPED_OFST)
+#define FRAME_BUSY_OFST                     (18)
+#define FRAME_BUSY_MSK                      (0x00000001 << FRAME_BUSY_OFST)
+#define ADC_DESERON_OFST                    (19)
+#define ADC_DESERON_MSK                     (0x00000001 << ADC_DESERON_OFST)
 #define RUNMACHINE_BUSY_OFST                (17)
 #define RUNMACHINE_BUSY_MSK                 (0x00000001 << RUNMACHINE_BUSY_OFST)
-
-/* Look at me register */
-#define LOOK_AT_ME_REG                      (0x03 << MEM_MAP_SHIFT) // Not used in firmware or software
 
 /* System Status register */
 #define SYSTEM_STATUS_REG                   (0x04 << MEM_MAP_SHIFT) // Not used in software
 
-#define DDR3_CAL_DONE_OFST                  (0) // Not used in software
-#define DDR3_CAL_DONE_MSK                   (0x00000001 << DDR3_CAL_DONE_OFST) // Not used in software
-#define DDR3_CAL_FAIL_OFST                  (1)         // Not used in software
-#define DDR3_CAL_FAIL_MSK                   (0x00000001 << DDR3_CAL_FAIL_OFST) // Not used in software
-#define DDR3_INIT_DONE_OFST                 (2)        // Not used in software
-#define DDR3_INIT_DONE_MSK                  (0x00000001 << DDR3_INIT_DONE_OFST) // Not used in software
-#define RECONFIG_PLL_LCK_OFST               (3)       // Not used in software
-#define RECONFIG_PLL_LCK_MSK                (0x00000001 << RECONFIG_PLL_LCK_OFST)               // Not used in software
-#define PLL_A_LCK_OFST                      (4)                            // Not used in software
-#define PLL_A_LCK_MSK                       (0x00000001 << PLL_A_LCK_OFST) // Not used in software
-#define DD3_PLL_LCK_OFST                    (5)                            // Not used in software
-#define DD3_PLL_LCK_MSK                     (0x00000001 << DD3_PLL_LCK_OFST) // Not used in software
+#define RECONFIG_PLL_LCK_OFST               (3) 
+#define RECONFIG_PLL_LCK_MSK                (0x00000001 << RECONFIG_PLL_LCK_OFST)
+#define PLL_A_LCK_OFST                      (4)
+#define PLL_A_LCK_MSK                       (0x00000001 << PLL_A_LCK_OFST)
 
 /* Module Control Board Serial Number Register */
 #define MOD_SERIAL_NUM_REG                  (0x0A << MEM_MAP_SHIFT)
@@ -67,8 +62,6 @@
 
 #define API_VERSION_OFST                    (0)
 #define API_VERSION_MSK                     (0x00FFFFFF << API_VERSION_OFST)
-#define API_VERSION_DETECTOR_TYPE_OFST      (24) // Not used in software
-#define API_VERSION_DETECTOR_TYPE_MSK       (0x000000FF << API_VERSION_DETECTOR_TYPE_OFST) // Not used in software
 
 /* Time from Start 64 bit register */
 #define TIME_FROM_START_LSB_REG             (0x10 << MEM_MAP_SHIFT)
@@ -90,7 +83,7 @@
 #define GET_PERIOD_LSB_REG                  (0x18 << MEM_MAP_SHIFT)
 #define GET_PERIOD_MSB_REG                  (0x19 << MEM_MAP_SHIFT)
 
-/** Get Temperature Carlos, incorrectl as get gates */
+/** Get Temperature */
 #define GET_TEMPERATURE_TMP112_REG          (0x1c << MEM_MAP_SHIFT) // (after multiplying by 625) in 10ths of
                             // millidegrees of TMP112
 
@@ -99,27 +92,14 @@
 #define TEMPERATURE_POLARITY_BIT            (11)
 #define TEMPERATURE_POLARITY_MSK            (0x00000001 << TEMPERATURE_POLARITY_BIT)
 
-/* Config Status Register for chip 1.1 */
-#define CONFIG_V11_STATUS_REG               (0x1D << MEM_MAP_SHIFT)
-
-#define CONFIG_V11_STATUS_FLTR_CLL_OFST         (0) 
-#define CONFIG_V11_STATUS_FLTR_CLL_MSK          (0x00000FFF << CONFIG_V11_STATUS_FLTR_CLL_OFST)
-// CSM mode = high current (100%), low current (16%)
-#define CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST    (19) 
-#define CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK     (0x00000001 << CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST)
-#define CONFIG_V11_STATUS_FLTR_RSSTR_SMLR_OFST  (21) 
-#define CONFIG_V11_STATUS_FLTR_RSSTR_SMLR_MSK   (0x00000001 << CONFIG_V11_STATUS_FLTR_RSSTR_SMLR_OFST)
-#define CONFIG_V11_STATUS_AUTO_MODE_OVRRD_OFST  (23) 
-#define CONFIG_V11_STATUS_AUTO_MODE_OVRRD_MSK   (0x00000001 << CONFIG_V11_STATUS_AUTO_MODE_OVRRD_OFST)
-
 /* Get Frames from Start 64 bit register (frames from last reset using
  * CONTROL_CRST) */
 #define FRAMES_FROM_START_LSB_REG           (0x22 << MEM_MAP_SHIFT)
 #define FRAMES_FROM_START_MSB_REG           (0x23 << MEM_MAP_SHIFT)
 
-/* Get Starting Frame Number */
-#define GET_FRAME_NUMBER_LSB_REG            (0x24 << MEM_MAP_SHIFT)
-#define GET_FRAME_NUMBER_MSB_REG            (0x25 << MEM_MAP_SHIFT)
+/* Get Next Frame Number */
+#define GET_NEXT_FRAME_NUMBER_LSB_REG       (0x24 << MEM_MAP_SHIFT)
+#define GET_NEXT_FRAME_NUMBER_MSB_REG       (0x25 << MEM_MAP_SHIFT)
 
 /* Measurement Time 64 bit register (timestamp at a frame start until reset)*/
 #define START_FRAME_TIME_LSB_REG            (0x26 << MEM_MAP_SHIFT)
@@ -154,6 +134,9 @@
 /* ADC offset Register */
 #define ADC_OFST_REG                        (0x42 << MEM_MAP_SHIFT)
 
+#define ADC_OFFSET_OFST                     (0)
+#define ADC_OFFSET_MSK                      (0x0000001F << ADC_OFFSET_OFST)
+
 /* ADC Port Invert Register */
 #define ADC_PORT_INVERT_REG                 (0x43 << MEM_MAP_SHIFT)
 
@@ -178,21 +161,12 @@
 /* Configuration Register */
 #define CONFIG_REG                          (0x4D << MEM_MAP_SHIFT)
 
-// readout timer (from chip) to stabilize (esp in burst acquisition mode) tRDT =
-// (RDT + 1) * 25ns
-#define CONFIG_RDT_TMR_OFST                 (0)
-#define CONFIG_RDT_TMR_MSK                  (0x0000FFFF << CONFIG_RDT_TMR_OFST)
 // if 0, outer is the primary interface
 // bottom via port 0 (outer)
 #define CONFIG_OPRTN_MDE_2_X_10GbE_OFST     (16)
 #define CONFIG_OPRTN_MDE_2_X_10GbE_MSK      (0x00000001 << CONFIG_OPRTN_MDE_2_X_10GbE_OFST) 
 #define CONFIG_INNR_PRIMRY_INTRFCE_OFST     (17)
 #define CONFIG_INNR_PRIMRY_INTRFCE_MSK      (0x00000001 << CONFIG_INNR_PRIMRY_INTRFCE_OFST)
-#define CONFIG_READOUT_SPEED_OFST           (20)
-#define CONFIG_READOUT_SPEED_MSK            (0x00000003 << CONFIG_READOUT_SPEED_OFST)
-#define CONFIG_QUARTER_SPEED_10MHZ_VAL      ((0x0 << CONFIG_READOUT_SPEED_OFST) & CONFIG_READOUT_SPEED_MSK)
-#define CONFIG_HALF_SPEED_20MHZ_VAL         ((0x1 << CONFIG_READOUT_SPEED_OFST) & CONFIG_READOUT_SPEED_MSK)
-#define CONFIG_FULL_SPEED_40MHZ_VAL         ((0x2 << CONFIG_READOUT_SPEED_OFST) & CONFIG_READOUT_SPEED_MSK)
 #define CONFIG_TDMA_ENABLE_OFST             (24)
 #define CONFIG_TDMA_ENABLE_MSK              (0x00000001 << CONFIG_TDMA_ENABLE_OFST)
 #define CONFIG_TDMA_TIMESLOT_OFST           (25) // 1ms
@@ -219,12 +193,10 @@
 #define CONTROL_STOP_ACQ_MSK                (0x00000001 << CONTROL_STOP_ACQ_OFST)
 #define CONTROL_SOFTWARE_TRIGGER_OFST       (2)
 #define CONTROL_SOFTWARE_TRIGGER_MSK        (0x00000001 << CONTROL_SOFTWARE_TRIGGER_OFST)
-#define CONTROL_CORE_RST_OFST               (10)
+#define CONTROL_CORE_RST_OFST               (10) // flow, dac driver, 10GbE
 #define CONTROL_CORE_RST_MSK                (0x00000001 << CONTROL_CORE_RST_OFST)
-#define CONTROL_PERIPHERAL_RST_OFST         (11) // DDR3 HMem Ctrlr, GBE, Temp
-#define CONTROL_PERIPHERAL_RST_MSK          (0x00000001 << CONTROL_PERIPHERAL_RST_OFST) // DDR3 HMem Ctrlr, GBE, Temp
-#define CONTROL_DDR3_MEM_RST_OFST           (12) // only PHY, not DDR3 PLL ,Not used in software
-#define CONTROL_DDR3_MEM_RST_MSK            (0x00000001 << CONTROL_DDR3_MEM_RST_OFST) // only PHY, not DDR3 PLL ,Not used in software
+#define CONTROL_PERIPHERAL_RST_OFST         (11) // 10GBE
+#define CONTROL_PERIPHERAL_RST_MSK          (0x00000001 << CONTROL_PERIPHERAL_RST_OFST)
 #define CONTROL_ACQ_FIFO_CLR_OFST           (14)
 #define CONTROL_ACQ_FIFO_CLR_MSK            (0x00000001 << CONTROL_ACQ_FIFO_CLR_OFST)
 #define CONTROL_MASTER_OFST                 (15)
@@ -246,23 +218,8 @@
 #define PLL_CNTRL_WR_PRMTR_MSK              (0x00000001 << PLL_CNTRL_WR_PRMTR_OFST)
 #define PLL_CNTRL_PLL_RST_OFST              (3)
 #define PLL_CNTRL_PLL_RST_MSK               (0x00000001 << PLL_CNTRL_PLL_RST_OFST)
-#define PLL_CNTRL_DBIT_WR_PRMTR_OFST        (5)
-#define PLL_CNTRL_DBIT_WR_PRMTR_MSK         (0x00000001 << PLL_CNTRL_DBIT_WR_PRMTR_OFST)
 #define PLL_CNTRL_ADDR_OFST                 (16)
 #define PLL_CNTRL_ADDR_MSK                  (0x0000003F << PLL_CNTRL_ADDR_OFST)
-
-/* Config Register for chip 1.1 */
-#define CONFIG_V11_REG                      (0x58 << MEM_MAP_SHIFT)
-
-#define CONFIG_V11_FLTR_CLL_OFST            (0) 
-#define CONFIG_V11_FLTR_CLL_MSK             (0x00000FFF << CONFIG_V11_FLTR_CLL_OFST)
-// CSM mode = high current (100%), low current (16%)
-#define CONFIG_V11_CRRNT_SRC_LOW_OFST       (19) 
-#define CONFIG_V11_CRRNT_SRC_LOW_MSK        (0x00000001 << CONFIG_V11_CRRNT_SRC_LOW_OFST)
-#define CONFIG_V11_FLTR_RSSTR_SMLR_OFST     (21) 
-#define CONFIG_V11_FLTR_RSSTR_SMLR_MSK      (0x00000001 << CONFIG_V11_FLTR_RSSTR_SMLR_OFST)
-#define CONFIG_V11_AUTO_MODE_OVRRD_OFST     (23) 
-#define CONFIG_V11_AUTO_MODE_OVRRD_MSK      (0x00000001 << CONFIG_V11_AUTO_MODE_OVRRD_OFST)
 
 /* Sample Register */
 #define SAMPLE_REG                          (0x59 << MEM_MAP_SHIFT)
@@ -288,80 +245,6 @@
 #define SAMPLE_ADC_DECMT_FACTOR_5_VAL       ((0x5 << SAMPLE_ADC_DECMT_FACTOR_OFST) & SAMPLE_ADC_DECMT_FACTOR_MSK)
 #define SAMPLE_ADC_DECMT_FACTOR_6_VAL       ((0x6 << SAMPLE_ADC_DECMT_FACTOR_OFST) & SAMPLE_ADC_DECMT_FACTOR_MSK)
 #define SAMPLE_ADC_DECMT_FACTOR_7_VAL       ((0x7 << SAMPLE_ADC_DECMT_FACTOR_OFST) & SAMPLE_ADC_DECMT_FACTOR_MSK)
-
-#define SAMPLE_DGTL_SAMPLE_SEL_OFST         (8)
-#define SAMPLE_DGTL_SAMPLE_SEL_MSK          (0x0000000F << SAMPLE_DGTL_SAMPLE_SEL_OFST)
-#define SAMPLE_DGTL_SAMPLE_0_VAL            ((0x0 << SAMPLE_DGTL_SAMPLE_SEL_OFST) & SAMPLE_DGTL_SAMPLE_SEL_MSK)
-#define SAMPLE_DGTL_SAMPLE_1_VAL            ((0x1 << SAMPLE_DGTL_SAMPLE_SEL_OFST) & SAMPLE_DGTL_SAMPLE_SEL_MSK)
-#define SAMPLE_DGTL_SAMPLE_2_VAL            ((0x2 << SAMPLE_DGTL_SAMPLE_SEL_OFST) & SAMPLE_DGTL_SAMPLE_SEL_MSK)
-#define SAMPLE_DGTL_SAMPLE_3_VAL            ((0x3 << SAMPLE_DGTL_SAMPLE_SEL_OFST) & SAMPLE_DGTL_SAMPLE_SEL_MSK)
-#define SAMPLE_DGTL_SAMPLE_4_VAL            ((0x4 << SAMPLE_DGTL_SAMPLE_SEL_OFST) & SAMPLE_DGTL_SAMPLE_SEL_MSK)
-#define SAMPLE_DGTL_SAMPLE_5_VAL            ((0x5 << SAMPLE_DGTL_SAMPLE_SEL_OFST) & SAMPLE_DGTL_SAMPLE_SEL_MSK)
-#define SAMPLE_DGTL_SAMPLE_6_VAL            ((0x6 << SAMPLE_DGTL_SAMPLE_SEL_OFST) & SAMPLE_DGTL_SAMPLE_SEL_MSK)
-#define SAMPLE_DGTL_SAMPLE_7_VAL            ((0x7 << SAMPLE_DGTL_SAMPLE_SEL_OFST) & SAMPLE_DGTL_SAMPLE_SEL_MSK)
-#define SAMPLE_DGTL_SAMPLE_8_VAL            ((0x8 << SAMPLE_DGTL_SAMPLE_SEL_OFST) & SAMPLE_DGTL_SAMPLE_SEL_MSK)
-#define SAMPLE_DGTL_SAMPLE_9_VAL            ((0x9 << SAMPLE_DGTL_SAMPLE_SEL_OFST) & SAMPLE_DGTL_SAMPLE_SEL_MSK)
-#define SAMPLE_DGTL_SAMPLE_10_VAL           ((0xa << SAMPLE_DGTL_SAMPLE_SEL_OFST) & SAMPLE_DGTL_SAMPLE_SEL_MSK)
-#define SAMPLE_DGTL_SAMPLE_11_VAL           ((0xb << SAMPLE_DGTL_SAMPLE_SEL_OFST) & SAMPLE_DGTL_SAMPLE_SEL_MSK)
-#define SAMPLE_DGTL_SAMPLE_12_VAL           ((0xc << SAMPLE_DGTL_SAMPLE_SEL_OFST) & SAMPLE_DGTL_SAMPLE_SEL_MSK)
-#define SAMPLE_DGTL_SAMPLE_13_VAL           ((0xd << SAMPLE_DGTL_SAMPLE_SEL_OFST) & SAMPLE_DGTL_SAMPLE_SEL_MSK)
-#define SAMPLE_DGTL_SAMPLE_14_VAL           ((0xe << SAMPLE_DGTL_SAMPLE_SEL_OFST) & SAMPLE_DGTL_SAMPLE_SEL_MSK)
-#define SAMPLE_DGTL_SAMPLE_15_VAL           ((0xf << SAMPLE_DGTL_SAMPLE_SEL_OFST) & SAMPLE_DGTL_SAMPLE_SEL_MSK)
-
-#define SAMPLE_DGTL_DECMT_FACTOR_OFST       (12)
-#define SAMPLE_DGTL_DECMT_FACTOR_MSK        (0x00000003 << SAMPLE_DGTL_DECMT_FACTOR_OFST)
-#define SAMPLE_DECMT_FACTOR_FULL_VAL        ((0x0 << SAMPLE_DGTL_DECMT_FACTOR_OFST) & SAMPLE_DGTL_DECMT_FACTOR_MSK)
-#define SAMPLE_DECMT_FACTOR_HALF_VAL        ((0x1 << SAMPLE_DGTL_DECMT_FACTOR_OFST) & SAMPLE_DGTL_DECMT_FACTOR_MSK)
-#define SAMPLE_DECMT_FACTOR_QUARTER_VAL     ((0x2 << SAMPLE_DGTL_DECMT_FACTOR_OFST) & SAMPLE_DGTL_DECMT_FACTOR_MSK)
-
-/** Current Source Column 0 (0 - 31)) */
-#define CRRNT_SRC_COL_LSB_REG               (0x5A << MEM_MAP_SHIFT)
-
-/** Current Source Column 1 (32 - 63) */
-#define CRRNT_SRC_COL_MSB_REG               (0x5B << MEM_MAP_SHIFT)
-
-/** Vref Comp Mod Register */
-#define EXT_DAQ_CTRL_REG                    (0x5C << MEM_MAP_SHIFT)
-
-#define EXT_DAQ_CTRL_VREF_COMP_OFST         (0)
-#define EXT_DAQ_CTRL_VREF_COMP_MSK          (0x00000FFF << EXT_DAQ_CTRL_VREF_COMP_OFST)
-#define EXT_DAQ_CTRL_CMP_LGC_ENBL_OFST      (15)
-#define EXT_DAQ_CTRL_CMP_LGC_ENBL_MSK       (0x00000001 << EXT_DAQ_CTRL_CMP_LGC_ENBL_OFST)
-#define EXT_DAQ_CTRL_INPT_DETECT_OFST       (16)
-#define EXT_DAQ_CTRL_INPT_DETECT_MSK        (0x00000007 << EXT_DAQ_CTRL_INPT_DETECT_OFST)
-#define EXT_DAQ_CTRL_INPT_DETECT_ENBL_OFST  (19)
-#define EXT_DAQ_CTRL_INPT_DETECT_ENBL_MSK   (0x00000001 << EXT_DAQ_CTRL_INPT_DETECT_ENBL_OFST)
-
-/** DAQ Register */
-#define DAQ_REG                             (0x5D << MEM_MAP_SHIFT)
-
-// dynamic gain (default)
-#define DAQ_HIGH_GAIN_OFST                  (0)
-#define DAQ_HIGH_GAIN_MSK                   (0x00000001 << DAQ_HIGH_GAIN_OFST)
-#define DAQ_FIX_GAIN_OFST                   (1)
-#define DAQ_FIX_GAIN_MSK                    (0x00000003 << DAQ_FIX_GAIN_OFST)
-#define DAQ_FIX_GAIN_STG_1_VAL              ((0x1 << DAQ_FIX_GAIN_OFST) & DAQ_FIX_GAIN_MSK)
-#define DAQ_FIX_GAIN_STG_2_VAL              ((0x3 << DAQ_FIX_GAIN_OFST) & DAQ_FIX_GAIN_MSK)
-#define DAQ_CMP_RST_OFST                    (4)
-#define DAQ_CMP_RST_MSK                     (0x00000001 << DAQ_CMP_RST_OFST)
-#define DAQ_CHIP11_VRSN_OFST                (7)
-#define DAQ_CHIP11_VRSN_MSK                 (0x00000001 << DAQ_CHIP11_VRSN_OFST)
-#define DAQ_FRCE_SWTCH_GAIN_OFST            (12)
-#define DAQ_FRCE_SWTCH_GAIN_MSK             (0x00000003 << DAQ_FRCE_SWTCH_GAIN_OFST)
-#define DAQ_FRCE_GAIN_STG_0_VAL             ((0x0 << DAQ_FRCE_SWTCH_GAIN_OFST) & DAQ_FRCE_SWTCH_GAIN_MSK)
-#define DAQ_FRCE_GAIN_STG_1_VAL             ((0x1 << DAQ_FRCE_SWTCH_GAIN_OFST) & DAQ_FRCE_SWTCH_GAIN_MSK)
-#define DAQ_FRCE_GAIN_STG_2_VAL             ((0x3 << DAQ_FRCE_SWTCH_GAIN_OFST) & DAQ_FRCE_SWTCH_GAIN_MSK)
-#define DAQ_ELCTRN_CLLCTN_MDE_OFST          (14)
-#define DAQ_ELCTRN_CLLCTN_MDE_MSK           (0x00000001 << DAQ_ELCTRN_CLLCTN_MDE_OFST)
-#define DAQ_G2_CNNT_OFST                    (15)
-#define DAQ_G2_CNNT_MSK                     (0x00000001 << DAQ_G2_CNNT_OFST)
-#define DAQ_CRRNT_SRC_ENBL_OFST             (16)
-#define DAQ_CRRNT_SRC_ENBL_MSK              (0x00000001 << DAQ_CRRNT_SRC_ENBL_OFST)
-#define DAQ_CRRNT_SRC_CLMN_FIX_OFST         (17)
-#define DAQ_CRRNT_SRC_CLMN_FIX_MSK          (0x00000001 << DAQ_CRRNT_SRC_CLMN_FIX_OFST)
-#define DAQ_CRRNT_SRC_CLMN_SLCT_OFST        (20)
-#define DAQ_CRRNT_SRC_CLMN_SLCT_MSK         (0x0000003F << DAQ_CRRNT_SRC_CLMN_SLCT_OFST)
-#define DAQ_GAIN_MODE_MASK                  (DAQ_FRCE_SWTCH_GAIN_MSK | DAQ_FIX_GAIN_MSK | DAQ_CMP_RST_MSK)
 
 /** Chip Power Register */
 #define CHIP_POWER_REG                      (0x5E << MEM_MAP_SHIFT)
@@ -402,13 +285,9 @@
 #define SET_EXPTIME_LSB_REG                 (0x68 << MEM_MAP_SHIFT)
 #define SET_EXPTIME_MSB_REG                 (0x69 << MEM_MAP_SHIFT)
 
-/* Starting Frame number 64 bit register */
-#define FRAME_NUMBER_LSB_REG                (0x6A << MEM_MAP_SHIFT)
-#define FRAME_NUMBER_MSB_REG                (0x6B << MEM_MAP_SHIFT)
-
-/* Comparator disable time (chipv1.1) 32 bit register tT = T x 25 ns
-Time before end of exposure when comparator is disabled */
-#define COMP_DSBLE_TIME_REG                  (0x6C << MEM_MAP_SHIFT)
+/* Set next Frame number 64 bit register */
+#define SET_NEXT_FRAME_NUMBER_LSB_REG       (0x6A << MEM_MAP_SHIFT)
+#define SET_NEXT_FRAME_NUMBER_MSB_REG       (0x6B << MEM_MAP_SHIFT)
 
 
 /* Trigger Delay 32 bit register */
@@ -437,23 +316,39 @@ Time before end of exposure when comparator is disabled */
 #define MOD_ID_OFST                         (0)
 #define MOD_ID_MSK                          (0x0000FFFF << MOD_ID_OFST)
 
+/* ASIC Control Register */
+#define ASIC_CTRL_REG                       (0x7F << MEM_MAP_SHIFT)
+
+#define ASIC_CTRL_PARALLEL_RD_OFST          (0)
+#define ASIC_CTRL_PARALLEL_RD_MSK           (0x00000001 << ASIC_CTRL_PARALLEL_RD_OFST)
+#define ASIC_CTRL_INTRFCE_CLK_PLRTY_OFST    (1)
+#define ASIC_CTRL_INTRFCE_CLK_PLRTY_MSK     (0x00000001 << ASIC_CTRL_INTRFCE_CLK_PLRTY_OFST)
+
 /* ADC 0 Deserializer Control */
 #define ADC_DSRLZR_0_REG                    (0xF0 << MEM_MAP_SHIFT)
+#define ADC_DSRLZR_0_RESET_ALGNMNT_OFST     (30)
+#define ADC_DSRLZR_0_RESET_ALGNMNT_MSK      (0x00000001 << ADC_DSRLZR_0_RESET_ALGNMNT_OFST)
 #define ADC_DSRLZR_0_RFRSH_ALGNMNT_OFST     (31) /* Refresh alignment */
 #define ADC_DSRLZR_0_RFRSH_ALGNMNT_MSK      (0x00000001 << ADC_DSRLZR_0_RFRSH_ALGNMNT_OFST)
 
 /* ADC 0 Deserializer Control */
 #define ADC_DSRLZR_1_REG                    (0xF1 << MEM_MAP_SHIFT)
+#define ADC_DSRLZR_1_RESET_ALGNMNT_OFST     (30)
+#define ADC_DSRLZR_1_RESET_ALGNMNT_MSK      (0x00000001 << ADC_DSRLZR_1_RESET_ALGNMNT_OFST)
 #define ADC_DSRLZR_1_RFRSH_ALGNMNT_OFST     (31)
 #define ADC_DSRLZR_1_RFRSH_ALGNMNT_MSK      (0x00000001 << ADC_DSRLZR_1_RFRSH_ALGNMNT_OFST)
 
 /* ADC 0 Deserializer Control */
 #define ADC_DSRLZR_2_REG                    (0xF2 << MEM_MAP_SHIFT)
+#define ADC_DSRLZR_2_RESET_ALGNMNT_OFST     (30)
+#define ADC_DSRLZR_2_RESET_ALGNMNT_MSK      (0x00000001 << ADC_DSRLZR_2_RESET_ALGNMNT_OFST)
 #define ADC_DSRLZR_2_RFRSH_ALGNMNT_OFST     (31)
 #define ADC_DSRLZR_2_RFRSH_ALGNMNT_MSK      (0x00000001 << ADC_DSRLZR_2_RFRSH_ALGNMNT_OFST)
 
 /* ADC 0 Deserializer Control */
 #define ADC_DSRLZR_3_REG                    (0xF3 << MEM_MAP_SHIFT)
+#define ADC_DSRLZR_3_RESET_ALGNMNT_OFST     (30)
+#define ADC_DSRLZR_3_RESET_ALGNMNT_MSK      (0x00000001 << ADC_DSRLZR_3_RESET_ALGNMNT_OFST)
 #define ADC_DSRLZR_3_RFRSH_ALGNMNT_OFST     (31)
 #define ADC_DSRLZR_3_RFRSH_ALGNMNT_MSK      (0x00000001 << ADC_DSRLZR_3_RFRSH_ALGNMNT_OFST)
 

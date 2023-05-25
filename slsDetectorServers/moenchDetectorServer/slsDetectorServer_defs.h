@@ -4,8 +4,8 @@
 #include "RegisterDefs.h"
 #include "sls/sls_detector_defs.h"
 
-#define REQRD_FRMWRE_VRSN_BOARD2 0x221130 // 1.0 pcb (version = 010)
-#define REQRD_FRMWRE_VRSN        0x221130 // 2.0 pcb (version = 011)
+#define REQRD_FRMWRE_VRSN_BOARD2 0x444445 // 1.0 pcb (version = 010)
+#define REQRD_FRMWRE_VRSN        0x230522 // 2.0 pcb (version = 011)
 
 #define NUM_HARDWARE_VERSIONS (2)
 #define HARDWARE_VERSION_NUMBERS                                               \
@@ -14,7 +14,6 @@
     { "1.0", "2.0" }
 
 #define ID_FILE            ("detid_moench.txt")
-#define CONFIG_FILE        ("config_moench.txt")
 #define LINKED_SERVER_NAME "moenchDetectorServer"
 
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
@@ -27,9 +26,7 @@
 #define NUM_BYTES_PER_PIXEL (DYNAMIC_RANGE / 8)
 #define DATA_BYTES          (NCHIP * NCHAN * NUM_BYTES_PER_PIXEL)
 #define CLK_RUN             (40) // MHz
-#define CLK_SYNC            (20) // MHz
-#define ADC_CLK_INDEX       (1)
-#define DBIT_CLK_INDEX      (0)
+#define ADC_CLK_INDEX       (0)
 
 /** Default Parameters */
 #define DEFAULT_NUM_FRAMES            (1)
@@ -41,12 +38,11 @@
 #define DEFAULT_HIGH_VOLTAGE          (0)
 #define DEFAULT_TIMING_MODE           (AUTO_TIMING)
 #define DEFAULT_SETTINGS              (GAIN0)
-#define DEFAULT_GAINMODE              (DYNAMIC)
 #define DEFAULT_TX_UDP_PORT           (0x7e9a)
 #define DEFAULT_TMP_THRSHLD           (65 * 1000) // milli degree Celsius
 #define DEFAULT_FLIP_ROWS             (0)
-#define DEFAULT_FILTER_RESISTOR       (1) // higher resistor
-#define DEFAULT_FILTER_CELL           (0)
+#define DEFAULT_SPEED                 (FULL_SPEED)
+#define DEFAULT_PARALLEL_ENABLE       (0)
 
 #define HIGHVOLTAGE_MIN     (60)
 #define HIGHVOLTAGE_MAX     (200)
@@ -69,75 +65,13 @@
 #define MAX_PHASE_SHIFTS (240)
 #define BIT16_MASK       (0xFFFF)
 
-#define GAIN_VAL_OFST (14)
-#define GAIN_VAL_MSK  (0x3 << GAIN_VAL_OFST)
-
 // pipeline
-#define ADC_PORT_INVERT_VAL        (0x5A5A5A5A)
-#define ADC_PORT_INVERT_BOARD2_VAL (0x453b2a9c)
+#define ADC_PORT_INVERT_VAL (0x55555555)
 
-// 2.0 pcb (chipv1.1)
-#define SAMPLE_ADC_FULL_SPEED_CHIP11                                           \
-    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_0_VAL + SAMPLE_DECMT_FACTOR_FULL_VAL) // 0x0000
-#define SAMPLE_ADC_HALF_SPEED_CHIP11                                           \
-    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_1_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_1_VAL + SAMPLE_DECMT_FACTOR_HALF_VAL) // 0x1110
-#define SAMPLE_ADC_QUARTER_SPEED_CHIP11                                        \
-    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_3_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_2_VAL + SAMPLE_DECMT_FACTOR_QUARTER_VAL) // 0x2230
-
-#define ADC_PHASE_FULL_SPEED_CHIP11    (160)
-#define ADC_PHASE_HALF_SPEED_CHIP11    (160)
-#define ADC_PHASE_QUARTER_SPEED_CHIP11 (160)
-
-#define DBIT_PHASE_FULL_SPEED_CHIP11    (80)
-#define DBIT_PHASE_HALF_SPEED_CHIP11    (135)
-#define DBIT_PHASE_QUARTER_SPEED_CHIP11 (135)
-
-#define ADC_OFST_FULL_SPEED_VAL_CHIP11    (0x10)
-#define ADC_OFST_HALF_SPEED_VAL_CHIP11    (0x08)
-#define ADC_OFST_QUARTER_SPEED_VAL_CHIP11 (0x04)
-
-// 2.0 pcb (chipv1.0)
-#define SAMPLE_ADC_FULL_SPEED_CHIP10                                           \
-    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_1_VAL + SAMPLE_DECMT_FACTOR_FULL_VAL) // 0x0100
-#define SAMPLE_ADC_HALF_SPEED_CHIP10                                           \
-    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_1_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_3_VAL + SAMPLE_DECMT_FACTOR_HALF_VAL) // 0x1310
-#define SAMPLE_ADC_QUARTER_SPEED_CHIP10                                        \
-    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_3_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_6_VAL + SAMPLE_DECMT_FACTOR_QUARTER_VAL) // 0x2630
-
-#define ADC_PHASE_FULL_SPEED_CHIP10    (160)
-#define ADC_PHASE_HALF_SPEED_CHIP10    (160)
-#define ADC_PHASE_QUARTER_SPEED_CHIP10 (160)
-
-#define DBIT_PHASE_FULL_SPEED_CHIP10    (125)
-#define DBIT_PHASE_HALF_SPEED_CHIP10    (175)
-#define DBIT_PHASE_QUARTER_SPEED_CHIP10 (175)
-
-#define ADC_OFST_FULL_SPEED_VAL_CHIP10    (0x10)
-#define ADC_OFST_HALF_SPEED_VAL_CHIP10    (0x08)
-#define ADC_OFST_QUARTER_SPEED_VAL_CHIP10 (0x04)
-
-// 1.0 pcb (2 resistor network)
-#define SAMPLE_ADC_HALF_SPEED_BOARD2                                           \
-    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_3_VAL + SAMPLE_DECMT_FACTOR_HALF_VAL) // 0x1300
-#define SAMPLE_ADC_QUARTER_SPEED_BOARD2                                        \
-    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_1_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_6_VAL + SAMPLE_DECMT_FACTOR_QUARTER_VAL) // 0x2610
-
-#define ADC_PHASE_HALF_SPEED_BOARD2    (110)
-#define ADC_PHASE_QUARTER_SPEED_BOARD2 (220)
-
-#define DBIT_PHASE_HALF_SPEED_BOARD2    (150)
-#define DBIT_PHASE_QUARTER_SPEED_BOARD2 (150)
-
-#define ADC_OFST_HALF_SPEED_BOARD2_VAL    (0x10)
-#define ADC_OFST_QUARTER_SPEED_BOARD2_VAL (0x08)
+#define SAMPLE_ADC_FULL_SPEED                                                  \
+    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL) // 0x0
+#define ADC_PHASE_DEG_FULL_SPEED    (140)
+#define ADC_OFST_FULL_SPEED_VAL (0xf)
 
 /* Struct Definitions */
 typedef struct udp_header_struct {
@@ -197,14 +131,8 @@ enum DACINDEX {
 enum MASTERINDEX { MASTER_HARDWARE, OW_MASTER, OW_SLAVE };
 #define MASTER_NAMES "hardware", "master", "slave"
 
-#define NUMSETTINGS     (2)
-#define NSPECIALDACS    (3)
-#define SPECIALDACINDEX {J_VREF_PRECH, J_VREF_DS, J_VREF_COMP};
-#define SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS                                      \
-    { 1450, 480, 420 }
-#define SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS                                   \
-    { 1550, 450, 620 }
+#define NUMSETTINGS (0)
 
 enum NETWORKINDEX { TXN_FRAME, FLOWCTRL_10G };
-enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
+enum CLKINDEX { RUN_CLK, ADC_CLK, NUM_CLOCKS };
 #define CLK_NAMES "run", "adc", "dbit"

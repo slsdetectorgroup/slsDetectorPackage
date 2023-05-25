@@ -364,7 +364,7 @@ class Detector(CppDetectorApi):
         -----
         
         [Eiger] Use threshold command to load settings
-        [Jungfrau][Moench] GAIN0, HIGHGAIN0 \n
+        [Jungfrau] GAIN0, HIGHGAIN0 \n
         [Gotthard] DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n
         [Gotthard2] DYNAMICGAIN, FIXGAIN1, FIXGAIN2 \n
         [Eiger] settings loaded from file found in settingspath
@@ -1983,8 +1983,9 @@ class Detector(CppDetectorApi):
         [Jungfrau][Moench] FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED
         [Eiger] FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED
         [Gottthard2] G2_108MHZ (Default), G2_144MHZ
-        [Jungfrau][Moench] FULL_SPEED option only available from v2.0 boards and is recommended to set number of interfaces to 2.  \n
+        [Jungfrau] FULL_SPEED option only available from v2.0 boards and is recommended to set number of interfaces to 2.  \n
         Also overwrites adcphase to recommended default.
+        [Moench] FULL_SPEED (Default)
         """
         return element_if_equal(self.getReadoutSpeed())
 
@@ -2293,12 +2294,12 @@ class Detector(CppDetectorApi):
     @element
     def parallel(self):
         """
-        [Eiger][Mythen3][Gotthard2] Enable or disable the parallel readout mode of detector. 
+        [Eiger][Mythen3][Gotthard2][Moench] Enable or disable the parallel readout mode of detector. 
         
         Note
         ----
         [Mythen3] If exposure time is too short, acquisition will return with an ERROR and take fewer frames than expected. 
-        [Mythen3][Eiger] Default: Non parallel
+        [Mythen3][Eiger][Moench] Default: Non parallel
         [Gotthard2] Default: parallel. Non parallel mode works only in continuous mode.
         """
         return self.getParallelMode()
@@ -2421,7 +2422,7 @@ class Detector(CppDetectorApi):
     @element
     def chipversion(self):
         """
-        [Jungfrau][Moench] Chip version of module. Can be 1.0 or 1.1.
+        [Jungfrau] Chip version of module. Can be 1.0 or 1.1.
 
         Example
         -------
@@ -2434,7 +2435,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def autocompdisable(self):
-        """[Jungfrau][Moench] Enable or disable auto comparator disable mode. 
+        """[Jungfrau] Enable or disable auto comparator disable mode. 
 
         Note
         -----
@@ -2450,7 +2451,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def compdisabletime(self):
-        """[Jungfrau][Moench] Time before end of exposure when comparator is disabled. 
+        """[Jungfrau] Time before end of exposure when comparator is disabled. 
 
         Note
         -----
@@ -2671,11 +2672,11 @@ class Detector(CppDetectorApi):
     @property
     def gainmode(self):
         """
-        [Jungfrau][Moench] Detector gain mode. Enum: gainMode
+        [Jungfrau] Detector gain mode. Enum: gainMode
         
         Note
         -----
-        [Jungfrau][Moench] DYNAMIC, FORCE_SWITCH_G1, FORCE_SWITCH_G2, FIX_G1, FIX_G2, FIX_G0 \n
+        [Jungfrau] DYNAMIC, FORCE_SWITCH_G1, FORCE_SWITCH_G2, FIX_G1, FIX_G2, FIX_G0 \n
         CAUTION: Do not use FIX_G0 without caution, you can damage the detector!!!
         """
         return element_if_equal(self.getGainMode())
@@ -2688,7 +2689,7 @@ class Detector(CppDetectorApi):
     @element
     def currentsource(self):
         """
-        Pass in a currentSrcParameters object
+        [Gotthard2][Jungfrau] Pass in a currentSrcParameters object
         see python/examples/use_currentsource.py
 
         """
@@ -2730,14 +2731,14 @@ class Detector(CppDetectorApi):
     @element
     def filterresistor(self):
         """
-        [Gotthard2][Jungfrau][Moench] Set filter resistor. Increasing values for increasing "
+        [Gotthard2][Jungfrau] Set filter resistor. Increasing values for increasing "
         "resistance.
         
         Note
         ----
         Advanced user command.
         [Gotthard2] Default is 0. Options: 0-3.
-        [Jungfrau][Moench] Default is 1. Options: 0-1.
+        [Jungfrau] Default is 1. Options: 0-1.
         """
         return self.getFilterResistor()
 
@@ -2749,11 +2750,11 @@ class Detector(CppDetectorApi):
     @element
     def filtercells(self):
         """
-        [Jungfrau][Moench] Set filter capacitor. 
+        [Jungfrau] Set filter capacitor. 
         
         Note
         ----
-        [Jungfrau][Moench] Options: 0-12. Default: 0. Advanced user command. Only for chipv1.1.
+        [Jungfrau] Options: 0-12. Default: 0. Advanced user command. Only for chipv1.1.
         """
         return self.getNumberOfFilterCells()
 
@@ -3179,7 +3180,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def dbitphase(self):
-        """[Ctb][Jungfrau][Moench] Phase shift of clock to latch digital bits. Absolute phase shift.
+        """[Ctb][Jungfrau] Phase shift of clock to latch digital bits. Absolute phase shift.
 
         Note
         -----
@@ -3231,7 +3232,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def maxdbitphaseshift(self):
-        """[CTB][Jungfrau][Moench] Absolute maximum Phase shift of of the clock to latch digital bits.
+        """[CTB][Jungfrau] Absolute maximum Phase shift of of the clock to latch digital bits.
         
         Note
         -----

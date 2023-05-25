@@ -212,9 +212,10 @@ TEST_CASE("settings", "[.cmd]") {
     std::vector<std::string> sett;
     switch (det_type) {
     case defs::JUNGFRAU:
-    case defs::MOENCH:
         sett.push_back("gain0");
         sett.push_back("highgain0");
+        break;
+    case defs::MOENCH:
         break;
     case defs::GOTTHARD:
         sett.push_back("highgain");
@@ -1195,8 +1196,7 @@ TEST_CASE("dbitphase", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD) {
         auto prev_val = det.getDBITPhase();
         {
             std::ostringstream oss1, oss2;
@@ -1225,8 +1225,7 @@ TEST_CASE("maxdbitphaseshift", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::CHIPTESTBOARD ||
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
         det_type == defs::MYTHEN3 ||   // only because clk index of 0 exists
         det_type == defs::GOTTHARD2) { // only because clk index of 0 exists
         REQUIRE_NOTHROW(proxy.Call("maxdbitphaseshift", {}, -1, GET));
@@ -1572,7 +1571,7 @@ TEST_CASE("parallel", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD2) {
+        det_type == defs::GOTTHARD2 || det_type == defs::MOENCH) {
         auto prev_val = det.getParallelMode();
         {
             std::ostringstream oss;
@@ -1604,7 +1603,7 @@ TEST_CASE("filterresistor", "[.cmd]") {
 
     // only for chipv1.1
     bool chip11 = false;
-    if ((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) &&
+    if (det_type == defs::JUNGFRAU &&
         det.getChipVersion().squash() * 10 == 11) {
         chip11 = true;
     }
@@ -1748,8 +1747,7 @@ TEST_CASE("currentsource", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU ||
-        det_type == defs::MOENCH) {
+    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU) {
         auto prev_val = det.getCurrentSource();
 
         if (det_type == defs::GOTTHARD2) {
@@ -1773,11 +1771,14 @@ TEST_CASE("currentsource", "[.cmd]") {
             REQUIRE_THROWS(proxy.Call("currentsource",
                                       {"1", "fix", "42", "normal"}, -1, PUT));
         }
-        // jungfrau/moench
+        // jungfrau
         else {
-            int chipVersion = det.getChipVersion().tsquash(
+            int chipVersion = 10;
+            if (det_type == defs::JUNGFRAU) {
+                chipVersion = det.getChipVersion().tsquash(
                                   "inconsistent chip versions to test") *
                               10;
+            }
             if (chipVersion == 10) {
                 REQUIRE_THROWS(proxy.Call("currentsource", {"1"}, -1, PUT));
                 REQUIRE_THROWS(

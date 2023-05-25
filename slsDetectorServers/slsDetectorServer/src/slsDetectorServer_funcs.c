@@ -1732,7 +1732,7 @@ void validate_settings(enum detectorSettings sett) {
     switch (sett) {
 #ifdef EIGERD
     case STANDARD:
-#elif defined(JUNGFRAUD) || defined(MOENCHD)
+#elif defined(JUNGFRAUD)
     case GAIN0:
     case HIGHGAIN0:
 #elif GOTTHARDD
@@ -1845,7 +1845,7 @@ int acquire(int blocking, int file_des) {
     }
     // only set
     if (Server_VerifyLock() == OK) {
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
         // chipv1.1 has to be configured before acquisition
         if (getChipVersion() == 11 && !isChipConfigured()) {
             ret = FAIL;
@@ -4037,7 +4037,7 @@ int auto_comp_disable(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting  Auto comp disable to %d\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // set & get
@@ -5517,7 +5517,8 @@ int set_parallel_mode(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting parallel mode: %u\n", arg));
 
-#if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&          \
+    !defined(MOENCHD)
     functionNotImplemented();
 #else
     // only set
@@ -5548,7 +5549,8 @@ int get_parallel_mode(int file_des) {
 
     LOG(logDEBUG1, ("Getting parallel mode\n"));
 
-#if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&          \
+    !defined(MOENCHD)
     functionNotImplemented();
 #else
     // get only
@@ -5821,7 +5823,7 @@ int set_clock_phase(int file_des) {
             c = ADC_CLK;
             break;
 #endif
-#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD)
         case DBIT_CLOCK:
             c = DBIT_CLK;
             break;
@@ -5927,7 +5929,7 @@ int get_clock_phase(int file_des) {
         c = ADC_CLK;
         break;
 #endif
-#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD)
     case DBIT_CLOCK:
         c = DBIT_CLK;
         break;
@@ -5975,7 +5977,7 @@ int get_max_clock_phase_shift(int file_des) {
         c = ADC_CLK;
         break;
 #endif
-#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD)
     case DBIT_CLOCK:
         c = DBIT_CLK;
         break;
@@ -6697,7 +6699,7 @@ int set_current_source(int file_des) {
                     "normal:%d]\n",
                     enable, fix, (long long int)select, normal));
 
-#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -6770,7 +6772,7 @@ int set_current_source(int file_des) {
         }
 
         if (ret == OK) {
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
             if (enable == 0) {
                 disableCurrentSource();
             } else {
@@ -6797,13 +6799,13 @@ int get_current_source(int file_des) {
 
     LOG(logDEBUG1, ("Getting current source\n"));
 
-#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
     retvals[0] = getCurrentSource();
     LOG(logDEBUG1, ("current source enable retval: %u\n", retvals[0]));
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
     if (retvals[0]) {
         retvals[1] = getFixCurrentSource();
         retvals[2] = getNormalCurrentSource();
@@ -7818,11 +7820,11 @@ int get_filter_resistor(int file_des) {
 
     LOG(logDEBUG1, ("Getting filter resistor\n"));
 
-#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
     if (getChipVersion() == 10) {
         ret = FAIL;
         strcpy(mess, "Could not get filter cell. Not available for this chip "
@@ -7847,7 +7849,7 @@ int set_filter_resistor(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting filter resistor: %u\n", arg));
 
-#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -7861,7 +7863,7 @@ int set_filter_resistor(int file_des) {
                 arg, ASIC_FILTER_MAX_RES_VALUE);
             LOG(logERROR, (mess));
         }
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
         else if (getChipVersion() == 10) {
             ret = FAIL;
             strcpy(mess, "Could not set filter cell. Not available for this "
@@ -7875,9 +7877,8 @@ int set_filter_resistor(int file_des) {
                 strcpy(mess, "Could not set filter resistor.\n");
                 LOG(logERROR, (mess));
             }
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
-            // jungfrau/moench might take time to update status register if
-            // acquiring
+#if defined(GOTTHARD2D)
+            // jungfrau might take time to update status register if acquiring
             int retval = getFilterResistor();
             LOG(logDEBUG1, ("filter resistor retval: %u\n", retval));
             validate(&ret, mess, arg, retval, "set filter resistor", DEC);
@@ -8588,7 +8589,7 @@ int get_chip_version(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     retval = getChipVersion();
@@ -8695,7 +8696,7 @@ int get_gain_mode(int file_des) {
     enum gainMode retval = DYNAMIC;
     LOG(logDEBUG1, ("Getting gain mode\n"));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
@@ -8719,7 +8720,7 @@ int set_gain_mode(int file_des) {
     enum gainMode gainmode = arg;
     LOG(logDEBUG1, ("Setting gain mode %d\n", (int)gainmode));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -8755,7 +8756,7 @@ int get_comp_disable_time(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
@@ -8781,7 +8782,7 @@ int set_comp_disable_time(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting comp disable time %lld ns\n", (long long int)arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -8881,7 +8882,7 @@ int get_num_filter_cells(int file_des) {
 
     LOG(logDEBUG1, ("Getting number of filter cellsn"));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
@@ -8908,7 +8909,7 @@ int set_num_filter_cells(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting number of filter cells: %u\n", (int)arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -9387,8 +9388,10 @@ int set_readout_speed(int file_des) {
             switch (arg) {
 #if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)
             case FULL_SPEED:
+#ifndef MOENCHD
             case HALF_SPEED:
             case QUARTER_SPEED:
+#endif
 #elif GOTTHARD2D
             case G2_108MHZ:
             case G2_144MHZ:

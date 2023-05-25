@@ -95,7 +95,7 @@ u_int16_t getHardwareSerialNumber();
     defined(MYTHEN3D) || defined(GOTTHARDD)
 int isHardwareVersion_1_0();
 #endif
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
 int getChipVersion();
 void setChipVersion(int version);
 #endif
@@ -147,8 +147,7 @@ void setASICDefaults();
 #ifdef MYTHEN3D
 void setADIFDefaults();
 #endif
-#if defined(GOTTHARD2D) || defined(EIGERD) || defined(JUNGFRAUD) ||            \
-    defined(MOENCHD)
+#if defined(GOTTHARD2D) || defined(EIGERD) || defined(JUNGFRAUD)
 int readConfigFile();
 #endif
 #if defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||            \
@@ -216,7 +215,8 @@ int setExternalSampling(int val);
 #endif
 
 // parameters - readout
-#if defined(EIGERD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
+#if defined(EIGERD) || defined(MYTHEN3D) || defined(GOTTHARD2D) ||             \
+    defined(MOENCHD)
 int setParallelMode(int mode);
 int getParallelMode();
 #endif
@@ -337,7 +337,7 @@ int getAllTrimbits();
 enum detectorSettings setSettings(enum detectorSettings sett);
 #endif
 enum detectorSettings getSettings();
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
 enum gainMode getGainMode();
 void setGainMode(enum gainMode mode);
 #endif
@@ -520,12 +520,12 @@ int setReadNRows(int value);
 int getReadNRows();
 void initReadoutConfiguration();
 int powerChip(int on);
+#ifndef MOENCHD
 int isChipConfigured();
 void configureChip();
 int autoCompDisable(int on);
 int setComparatorDisableTime(int64_t val);
 int64_t getComparatorDisableTime();
-#ifndef MOENCHD
 void configureASICTimer();
 #endif
 int setReadoutSpeed(int val);
@@ -540,6 +540,7 @@ int setTemperatureEvent(int val);
 void alignDeserializer();
 int getFlipRows();
 void setFlipRows(int arg);
+#ifndef MOENCHD
 int setFilterResistor(int value);
 int getFilterResistor();
 int getNumberOfFilterCells();
@@ -550,6 +551,7 @@ int getCurrentSource();
 int getFixCurrentSource();
 int getNormalCurrentSource();
 uint64_t getSelectCurrentSource();
+#endif
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD

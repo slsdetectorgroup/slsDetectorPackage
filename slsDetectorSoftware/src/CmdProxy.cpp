@@ -702,15 +702,14 @@ std::string CmdProxy::ReadoutSpeed(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "\n\t[0 or full_speed|1 or half_speed|2 or "
-              "quarter_speed]\n\t\t[Eiger][Jungfrau][Moench] Readout "
-              "speed of chip.\n\t\t[Eiger] Default speed is full_speed."
-              "\n\t\t[Jungfrau][Moench] Default speed is half_speed. "
-              "full_speed "
-              "option only available from v2.0 boards and is recommended to "
-              "set "
-              "number of interfaces to 2. Also overwrites "
+              "quarter_speed]\n\t\t[Eiger][Jungfrau][Moench] Readout speed of "
+              "chip.\n\t\t[Eiger][Moench] Default speed is "
+              "full_speed.\n\t\t[Jungfrau] Default speed is half_speed. "
+              "full_speed option only available from v2.0 boards and is "
+              "recommended to set number of interfaces to 2. Also overwrites "
               "adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] "
-              "Readout speed of chip in MHz. Default is 108."
+              "Readout speed of chip in MHz. Default is 108.\n\t\t[Moench] "
+              "Only Full speed is implemented."
            << '\n';
     } else {
         defs::detectorType type = det->getDetectorType().squash();
@@ -800,8 +799,7 @@ std::string CmdProxy::Dbitphase(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_value] [(optional)deg]\n\t[Ctb][Jungfrau][Moench] Phase "
-              "shift of "
+        os << "[n_value] [(optional)deg]\n\t[Ctb][Jungfrau] Phase shift of "
               "clock to latch digital bits. Absolute phase shift. If deg used, "
               "then shift in degrees. \n\t[Ctb]Changing dbitclk also resets "
               "dbitphase and sets to previous values."
@@ -809,7 +807,7 @@ std::string CmdProxy::Dbitphase(int action) {
     } else {
         auto det_type = det->getDetectorType().squash(defs::GENERIC);
         if (det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
-            det_type == defs::GOTTHARD2) {
+            det_type == defs::GOTTHARD2 || det_type == defs::MOENCH) {
             throw RuntimeError("dbitphase not implemented for this detector");
         }
         if (action == defs::GET_ACTION) {
@@ -1038,8 +1036,7 @@ std::string CmdProxy::CurrentSource(int action) {
         os << "\n\t[0|1]\n\t\t[Gotthard2] Enable or disable current source. "
               "Default "
               "is disabled.\n\t[0|1] [fix|nofix] [select source] [(only for "
-              "chipv1.1)normal|low]\n\t\t[Jungfrau][Moench] Disable or enable "
-              "current "
+              "chipv1.1)normal|low]\n\t\t[Jungfrau] Disable or enable current "
               "source with some parameters. The select source is 0-63 for "
               "chipv1.0 and a 64 bit mask for chipv1.1. To disable, one needs "
               "only one argument '0'."

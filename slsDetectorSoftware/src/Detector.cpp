@@ -191,8 +191,7 @@ std::vector<defs::detectorSettings> Detector::getSettingsList() const {
             defs::VERYHIGHGAIN};
     case defs::JUNGFRAU:
     case defs::MOENCH:
-        return std::vector<defs::detectorSettings>{defs::GAIN0,
-                                                   defs::HIGHGAIN0};
+        return std::vector<defs::detectorSettings>{};
     case defs::GOTTHARD2:
         return std::vector<defs::detectorSettings>{
             defs::DYNAMICGAIN, defs::FIXGAIN1, defs::FIXGAIN2};
@@ -507,9 +506,10 @@ std::vector<defs::speedLevel> Detector::getReadoutSpeedList() const {
     switch (getDetectorType().squash()) {
     case defs::EIGER:
     case defs::JUNGFRAU:
-    case defs::MOENCH:
         return std::vector<defs::speedLevel>{defs::FULL_SPEED, defs::HALF_SPEED,
                                              defs::QUARTER_SPEED};
+    case defs::MOENCH:
+        return std::vector<defs::speedLevel>{defs::FULL_SPEED};
     case defs::GOTTHARD2:
         return std::vector<defs::speedLevel>{defs::G2_108MHZ, defs::G2_144MHZ};
     default:
@@ -1704,7 +1704,6 @@ void Detector::setStorageCellDelay(ns value, Positions pos) {
 std::vector<defs::gainMode> Detector::getGainModeList() const {
     switch (getDetectorType().squash()) {
     case defs::JUNGFRAU:
-    case defs::MOENCH:
         return std::vector<defs::gainMode>{
             defs::DYNAMIC, defs::FORCE_SWITCH_G1, defs::FORCE_SWITCH_G2,
             defs::FIX_G1,  defs::FIX_G2,          defs::FIX_G0};

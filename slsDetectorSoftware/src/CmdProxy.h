@@ -1281,7 +1281,7 @@ class CmdProxy {
         "verylowgain, g1_hg, g1_lg, g2_hc_hg, g2_hc_lg, "
         "g2_lc_hg, g2_lc_lg, g4_hg, g4_lg, gain0]"
         "\n\t Detector Settings"
-        "\n\t[Jungfrau][Moench] - [ gain0 | highgain0]"
+        "\n\t[Jungfrau] - [ gain0 | highgain0]"
         "\n\t[Gotthard] - [dynamicgain | highgain | lowgain | "
         "mediumgain | veryhighgain]"
         "\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]"
@@ -1397,10 +1397,9 @@ class CmdProxy {
                 "\n\t[Jungfrau][Moench][CTB] Absolute maximum Phase shift of "
                 "ADC clock.");
 
-    GET_COMMAND(
-        maxdbitphaseshift, getMaxDBITPhaseShift,
-        "\n\t[CTB][Jungfrau][Moench] Absolute maximum Phase shift of of the "
-        "clock to latch digital bits.");
+    GET_COMMAND(maxdbitphaseshift, getMaxDBITPhaseShift,
+                "\n\t[CTB][Jungfrau] Absolute maximum Phase shift of of the "
+                "clock to latch digital bits.");
 
     INTEGER_COMMAND_VEC_ID(highvoltage, getHighVoltage, setHighVoltage,
                            StringTo<int>,
@@ -1429,19 +1428,19 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         parallel, getParallelMode, setParallelMode, StringTo<int>,
-        "[0, 1]\n\t[Eiger][Mythen3][Gotthard2] Enable or disable parallel "
+        "[0, 1]\n\t[Eiger][Mythen3][Gotthard2][Moench] Enable or disable "
+        "parallel "
         "mode.\n\t[Mythen3] If exptime is too short, the "
         "acquisition will return ERROR status and take fewer "
-        "frames than expected.\n\t[Mythen3][Eiger] Default: Non "
+        "frames than expected.\n\t[Mythen3][Eiger][Moench] Default: Non "
         "parallel.\n\t[Gotthard2] Default: Parallel. Non parallel mode works "
         "only in continuous mode.");
 
     INTEGER_COMMAND_VEC_ID(
         filterresistor, getFilterResistor, setFilterResistor, StringTo<int>,
-        "[value] [Gotthard2][Jungfrau][Moench] Set filter resistor. Increasing "
-        "values "
-        "for increasing resistance.\n\t[Gotthard2] Options: [0|1|2|3]. Default "
-        "is 0.\n\t[Jungfrau][Moench] Options: [0|1]. Default is 1.");
+        "[value] [Gotthard2][Jungfrau] Set filter resistor. Increasing "
+        "values for increasing resistance.\n\t[Gotthard2] Options: [0|1|2|3]. "
+        "Default is 0.\n\t[Jungfrau] Options: [0|1]. Default is 1.");
 
     INTEGER_COMMAND_VEC_ID(dbitpipeline, getDBITPipeline, setDBITPipeline,
                            StringTo<int>,
@@ -1957,9 +1956,8 @@ class CmdProxy {
 
     /* Jungfrau Specific */
 
-    GET_COMMAND(
-        chipversion, getChipVersion,
-        "\n\t[Jungfrau][Moench] Returns chip version. Can be 1.0 or 1.1");
+    GET_COMMAND(chipversion, getChipVersion,
+                "\n\t[Jungfrau] Returns chip version. Can be 1.0 or 1.1");
 
     INTEGER_COMMAND_VEC_ID(
         temp_threshold, getThresholdTemperature, setThresholdTemperature,
@@ -1984,21 +1982,20 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         autocompdisable, getAutoComparatorDisable, setAutoComparatorDisable,
         StringTo<int>,
-        "[0, 1]\n\t[Jungfrau][Moench] Auto comparator disable mode. By "
-        "default, the "
-        "on-chip gain switching is active during the entire exposure.This mode "
-        "disables the on - chip gain switching comparator automatically after "
-        "93.75% (only for chipv1.0) of exposure time (only for longer than "
-        "100us). It is possible to set the duration for chipv1.1 using "
-        "compdisabletime command.\n\tDefault is 0 or this mode "
+        "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By "
+        "default, the on-chip gain switching is active during the entire "
+        "exposure.This mode disables the on - chip gain switching comparator "
+        "automatically after 93.75% (only for chipv1.0) of exposure time (only "
+        "for longer than 100us). It is possible to set the duration for "
+        "chipv1.1 using compdisabletime command.\n\tDefault is 0 or this mode "
         "disabled(comparator enabled throughout). 1 enables mode. 0 disables "
         "mode. ");
 
-    TIME_COMMAND(
-        compdisabletime, getComparatorDisableTime, setComparatorDisableTime,
-        "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench] Time "
-        "before end of exposure when comparator is disabled. It is "
-        "only possible for chipv1.1.");
+    TIME_COMMAND(compdisabletime, getComparatorDisableTime,
+                 setComparatorDisableTime,
+                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Time "
+                 "before end of exposure when comparator is disabled. It is "
+                 "only possible for chipv1.1.");
 
     INTEGER_COMMAND_SET_NOID_GET_ID(
         extrastoragecells, getNumberOfAdditionalStorageCells,
@@ -2026,11 +2023,10 @@ class CmdProxy {
         "Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, "
         "you can damage the detector!!!");
 
-    INTEGER_COMMAND_VEC_ID(
-        filtercells, getNumberOfFilterCells, setNumberOfFilterCells,
-        StringTo<int>,
-        "[0-12]\n\t[Jungfrau][Moench] Set Filter Cell. Only for "
-        "chipv1.1. Advanced user Command");
+    INTEGER_COMMAND_VEC_ID(filtercells, getNumberOfFilterCells,
+                           setNumberOfFilterCells, StringTo<int>,
+                           "[0-12]\n\t[Jungfrau] Set Filter Cell. Only for "
+                           "chipv1.1. Advanced user Command");
 
     /* Gotthard Specific */
     TIME_GET_COMMAND(exptimel, getExptimeLeft,

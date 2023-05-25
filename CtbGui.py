@@ -690,7 +690,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.statusTimer.stop()
             if self.det.rx_status == runStatus.RUNNING:
                 self.det.rx_stop()
-            if self.radioButtonYes.isChecked():
+            if self.checkBoxFileWrite.isChecked():
                 self.spinBoxIndex.stepUp()
             self.pushButtonStart.setEnabled(True)
 
@@ -1249,6 +1249,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxPedestalMax.editingFinished.connect(self.setPedestalSubtract)
         self.spinBoxFit.editingFinished.connect(self.setFitADC)
         self.spinBoxPlot.editingFinished.connect(self.setPlotBit)
+        self.checkBoxFileWrite.clicked.connect(self.setFileWrite)
         self.lineEditFileName.editingFinished.connect(self.setFileName)
         self.lineEditFilePath.editingFinished.connect(self.setFilePath)
         self.spinBoxIndex.editingFinished.connect(self.setIndex)

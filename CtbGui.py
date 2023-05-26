@@ -639,7 +639,6 @@ class MainWindow(QtWidgets.QMainWindow):
             pattern_file += 'at'
         # load
         self.det.pattern = pattern_file
-        QtWidgets.QMessageBox.information(self, "Load Pattern Success", "Pattern loaded successfully", QtWidgets.QMessageBox.Ok)
             
 
 

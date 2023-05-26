@@ -11,6 +11,7 @@ import json
 import zmq
 import numpy as np
 import posixpath
+from pathlib import Path
 
 from functools import partial
 from slsdet import Detector, dacIndex, readoutMode, runStatus
@@ -608,29 +609,38 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def loadPattern(self):
         pattern_file = self.lineEditPattern.text()
-        comp=self.checkBoxCompile.isChecked()
-        if pattern_file:
-            if comp: 
+        if not pattern_file:
+            QtWidgets.QMessageBox.warning(self, "Pattern Fail", "No pattern file selected. Please select one.", QtWidgets.QMessageBox.Ok)
+            return
+        # compile
+        if self.checkBoxCompile.isChecked():
+            compilerFile = self.lineEditCompiler.text()
+            if not compilerFile:
+                QtWidgets.QMessageBox.warning(self, "Compile Fail", "No compiler selected. Please select one.", QtWidgets.QMessageBox.Ok)
+                return
 
-                print("Compiling pattern code to .pat file")
-                compFile=self.lineEditCompiler.text()
-                if compFile:
-                    pattern_file=self.lineEditPattern.text()+"at"
-                    print("Old compiled pattern filed copied to _bck") #this way, if it doesn't compile, it does not load old pyat
-                    os.system('cp '+pattern_file+' '+pattern_file+'_bck')
-                    os.system('rm '+pattern_file)
-                    st=compFile+' '+self.lineEditPattern.text()
-                    os.system(st)
-                    print(st)
+            # if old compile file exists, backup and remove to ensure old copy not loaded
+            oldFile = Path(pattern_file + 'at')
+            if oldFile.is_file():
+                print("Moving old compiled pattern file to _bck") 
+                exit_status = os.system('mv '+ str(oldFile) + ' ' + str(oldFile) + '_bkup')
+                if exit_status != 0:
+                    retval = QtWidgets.QMessageBox.question(self, "Backup Fail", "Could not make a backup of old compiled code. Proceed anyway to compile and overwrite?", QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+                    if retval == QtWidgets.QMessageBox.No:              
+                        return
 
-                    self.det.pattern = pattern_file
-                else:
-                    print('No compiler selected!!!')
-            else:
-                self.det.pattern = pattern_file
+            compileCommand = compilerFile + ' ' + pattern_file
+            print(compileCommand)
+            print("Compiling pattern code to .pat file")
+            exit_status = os.system(compileCommand)
+            if exit_status != 0:
+                QtWidgets.QMessageBox.warning(self, "Compile Fail", "Could not compile pattern.", QtWidgets.QMessageBox.Ok)
+                return
+            pattern_file += 'at'
+        # load
+        self.det.pattern = pattern_file
+        QtWidgets.QMessageBox.information(self, "Load Pattern Success", "Pattern loaded successfully", QtWidgets.QMessageBox.Ok)
             
-        else:
-            print('No pattern file selected!!!')
 
 
     # For Acquistions Tab functions
@@ -994,8 +1004,6 @@ class MainWindow(QtWidgets.QMainWindow):
             # For loop stop address
             lineEditLoopStop = getattr(self, f"lineEditLoop{i}Stop")
             lineEditLoopStop.setText(hex((self.det.patloop[i])[1]))
-        # For compiler
-        self.lineEditCompiler.setText("python")
         
     def refresh_tab_acquisition(self):
         # Updating values for patterns

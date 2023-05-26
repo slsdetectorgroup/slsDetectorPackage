@@ -842,9 +842,16 @@ class CmdProxy {
         {"temp_fpgafr", &CmdProxy::temp_fpgafr},
         {"temp_slowadc", &CmdProxy::temp_slowadc},
 
+        /* lists */
+        {"daclist", &CmdProxy::DacList},
+        {"dacname", &CmdProxy::DacName},
+        {"dacindex", &CmdProxy::DacIndex},
+        {"adclist", &CmdProxy::AdcList},
+        {"adcname", &CmdProxy::AdcName},
+        {"adcindex", &CmdProxy::AdcIndex},
+
         /* dacs */
         {"dac", &CmdProxy::Dac},
-        {"daclist", &CmdProxy::DacList},
         {"dacvalues", &CmdProxy::DacValues},
         {"resetdacs", &CmdProxy::ResetDacs},
         {"defaultdac", &CmdProxy::DefaultDac},
@@ -1142,9 +1149,15 @@ class CmdProxy {
     std::string CurrentSource(int action);
     /** temperature */
     std::string TemperatureValues(int action);
+    /* list */
+    std::string DacList(int action);
+    std::string DacName(int action);
+    std::string DacIndex(int action);
+    std::string AdcList(int action);
+    std::string AdcName(int action);
+    std::string AdcIndex(int action);
     /* dacs */
     std::string Dac(int action);
-    std::string DacList(int action);
     std::string DacValues(int action);
     std::string ResetDacs(int action);
     std::string DefaultDac(int action);

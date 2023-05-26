@@ -2231,11 +2231,51 @@ defs::dacIndex Detector::getDacIndex(const std::string &name) {
     return StringTo<defs::dacIndex>(name);
 }
 
+void Detector::setDacName(defs::dacIndex i, const std::string& name) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named dacs only for CTB");
+    pimpl->setCtbDacName(i, name);
+}
+
 std::string Detector::getDacName(defs::dacIndex i) {
     auto type = getDetectorType().squash();
     if (type == defs::CHIPTESTBOARD)
         return pimpl->getCtbDacName(i);
     return ToString(i);
+}
+
+void Detector::setAdcNames(const std::vector<std::string> names) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named adcs only for CTB");
+    pimpl->setCtbAdcNames(names);
+}
+
+std::vector<std::string> Detector::getAdcNames() const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named adcs only for CTB");
+    return pimpl->getCtbAdcNames();
+}
+
+int Detector::getAdcIndex(const std::string &name) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named adcs only for CTB");
+    auto names = getAdcNames();
+    auto it = std::find(names.begin(), names.end(), name);
+    if (it == names.end())
+        throw RuntimeError("Adcname not found");
+    return (it - names.begin());
+}
+
+void Detector::setAdcName(const int index, const std::string& name) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named adcs only for CTB");
+    pimpl->setCtbAdcName(index, name);
+}
+
+std::string Detector::getAdcName(int i) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named adcs only for CTB");
+    return pimpl->getCtbAdcName(i);
 }
 
 // Pattern

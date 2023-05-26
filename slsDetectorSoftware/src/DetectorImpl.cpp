@@ -2001,4 +2001,24 @@ std::string DetectorImpl::getCtbDacName(defs::dacIndex i) const {
     return ctb_shm()->getDacName(static_cast<int>(i));
 }
 
+void DetectorImpl::setCtbDacName(const int index, const std::string &name) {
+    ctb_shm()->setDacName(index, name);
+}
+
+std::vector<std::string> DetectorImpl::getCtbAdcNames() const {
+    return ctb_shm()->getAdcNames();
+}
+
+void DetectorImpl::setCtbAdcNames(const std::vector<std::string> &names) {
+    ctb_shm()->setAdcNames(names);
+}
+
+std::string DetectorImpl::getCtbAdcName(int i) const {
+    return ctb_shm()->getAdcName(i);
+}
+
+void DetectorImpl::setCtbAdcName(const int index, const std::string &name) {
+    ctb_shm()->setAdcName(index, name);
+}
+
 } // namespace sls

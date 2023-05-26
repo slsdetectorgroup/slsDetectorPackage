@@ -328,7 +328,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
     std::vector<std::string> getCtbDacNames() const;
     std::string getCtbDacName(defs::dacIndex i) const;
     void setCtbDacNames(const std::vector<std::string> &names);
+    void setCtbDacName(const int index, const std::string &name);
 
+    std::vector<std::string> getCtbAdcNames() const;
+    std::string getCtbAdcName(int i) const;
+    void setCtbAdcNames(const std::vector<std::string> &names);
+    void setCtbAdcName(const int index, const std::string &name);
   private:
     /**
      * Creates/open shared memory, initializes detector structure and members

@@ -1929,14 +1929,73 @@ TEST_CASE("temp_fpga", "[.cmd]") {
     }
 }
 
-/* dacs */
+/* list */
 
 TEST_CASE("daclist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("daclist", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("daclist", {}, -1, PUT));
+    auto det_type = det.getDetectorType().squash();
+    
+    std::vector<std::string> names;
+    for (int iarg = 0; iarg != 18; ++iarg) {
+        names.push_back("a");
+    }
+    
+    if (det_type != defs::CHIPTESTBOARD) {
+        auto prev = det.getDacNames()[0];
+
+        REQUIRE_THROWS(proxy.Call("daclist", {"a", "s", "d"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("daclist", names, 0, PUT, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("daclist", {}, 0, GET, oss));
+            REQUIRE(oss.str() == std::string("daclist ") + ToString(names));
+        }
+        det.setDacNames(prev,{0});
+    
+    } else {
+        REQUIRE_THROWS(proxy.Call("daclist", names, -1, PUT));
+    }
 }
+
+TEST_CASE("adclist", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("adclist", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("adclist", {}, -1, PUT));
+    auto det_type = det.getDetectorType().squash();
+    
+    std::vector<std::string> names;
+    for (int iarg = 0; iarg != 32; ++iarg) {
+        names.push_back("a");
+    }
+    
+    if (det_type != defs::CHIPTESTBOARD) {
+        auto prev = det.getAdcNames()[0];
+
+        REQUIRE_THROWS(proxy.Call("adclist", {"a", "s", "d"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("adclist", names, 0, PUT, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("adclist", {}, 0, GET, oss));
+            REQUIRE(oss.str() == std::string("adclist ") + ToString(names));
+        }
+        det.setAdcNames(prev,{0});
+    
+    } else {
+        REQUIRE_THROWS(proxy.Call("adclist", names, -1, PUT));
+    }
+}
+
+/* dacs */
 
 TEST_CASE("dacvalues", "[.cmd]") {
     Detector det;

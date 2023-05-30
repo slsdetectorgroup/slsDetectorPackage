@@ -10,8 +10,8 @@
 namespace sls {
 
 TEST_CASE("Default construction") {
-    static_assert(sizeof(CtbConfig) == 360,
-                  "Size of CtbConfig does not match"); // 18*20
+    static_assert(sizeof(CtbConfig) == ((18 + 32) * 20),
+                  "Size of CtbConfig does not match");
 
     CtbConfig c;
     auto names = c.getDacNames();

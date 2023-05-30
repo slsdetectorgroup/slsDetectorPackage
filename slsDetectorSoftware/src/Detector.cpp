@@ -2231,7 +2231,7 @@ defs::dacIndex Detector::getDacIndex(const std::string &name) {
     return StringTo<defs::dacIndex>(name);
 }
 
-void Detector::setDacName(defs::dacIndex i, const std::string& name) {
+void Detector::setDacName(defs::dacIndex i, const std::string &name) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named dacs only for CTB");
     pimpl->setCtbDacName(i, name);
@@ -2266,7 +2266,7 @@ int Detector::getAdcIndex(const std::string &name) {
     return (it - names.begin());
 }
 
-void Detector::setAdcName(const int index, const std::string& name) {
+void Detector::setAdcName(const int index, const std::string &name) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named adcs only for CTB");
     pimpl->setCtbAdcName(index, name);

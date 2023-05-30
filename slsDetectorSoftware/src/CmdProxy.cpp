@@ -1132,7 +1132,9 @@ std::string CmdProxy::DacList(const int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == slsDetectorDefs::HELP_ACTION) {
-        os << "\n\t[dacname1 dacname2 .. dacname18] \n\t\t[ChipTestBoard] Set the list of dac names for this detector.\n\t\t[All] Gets the list of dac names for every dac for this detector."
+        os << "\n\t[dacname1 dacname2 .. dacname18] \n\t\t[ChipTestBoard] Set "
+              "the list of dac names for this detector.\n\t\t[All] Gets the "
+              "list of dac names for every dac for this detector."
            << '\n';
     } else if (action == slsDetectorDefs::GET_ACTION) {
         if (!args.empty()) {
@@ -1164,9 +1166,9 @@ std::string CmdProxy::DacName(const int action) {
               "the dac at the given position to the given name."
            << '\n';
         return os.str();
-    } 
+    }
     if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
-            throw RuntimeError("Named Dacs only allowed for CTB.");
+        throw RuntimeError("Named Dacs only allowed for CTB.");
     }
     defs::dacIndex index = static_cast<defs::dacIndex>(StringTo<int>(args[0]));
     if (action == slsDetectorDefs::GET_ACTION) {
@@ -1198,9 +1200,9 @@ std::string CmdProxy::DacIndex(const int action) {
               "the dac index for the given name."
            << '\n';
         return os.str();
-    } 
+    }
     if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
-            throw RuntimeError("Named Dacs only allowed for CTB.");
+        throw RuntimeError("Named Dacs only allowed for CTB.");
     }
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() != 1) {
@@ -1209,7 +1211,7 @@ std::string CmdProxy::DacIndex(const int action) {
         auto t = det->getDacIndex(args[0]);
         os << ToString(static_cast<int>(t)) << '\n';
     } else if (action == slsDetectorDefs::PUT_ACTION) {
-            throw RuntimeError("Cannot set dac index");
+        throw RuntimeError("Cannot set dac index");
     } else {
         throw RuntimeError("Unknown action");
     }
@@ -1224,9 +1226,9 @@ std::string CmdProxy::AdcList(const int action) {
               "the list of adc names for this board."
            << '\n';
         return os.str();
-    } 
+    }
     if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
-            throw RuntimeError("Named Adcs only allowed for CTB.");
+        throw RuntimeError("Named Adcs only allowed for CTB.");
     }
     if (action == slsDetectorDefs::GET_ACTION) {
         if (!args.empty()) {
@@ -1254,9 +1256,9 @@ std::string CmdProxy::AdcName(const int action) {
               "the adc at the given position to the given name."
            << '\n';
         return os.str();
-    } 
+    }
     if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
-            throw RuntimeError("Named Adcs only allowed for CTB.");
+        throw RuntimeError("Named Adcs only allowed for CTB.");
     }
     int index = StringTo<int>(args[0]);
     if (action == slsDetectorDefs::GET_ACTION) {
@@ -1288,9 +1290,9 @@ std::string CmdProxy::AdcIndex(const int action) {
               "the adc index for the given name."
            << '\n';
         return os.str();
-    } 
+    }
     if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
-            throw RuntimeError("Named Adcs only allowed for CTB.");
+        throw RuntimeError("Named Adcs only allowed for CTB.");
     }
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() != 1) {
@@ -1299,7 +1301,7 @@ std::string CmdProxy::AdcIndex(const int action) {
         auto t = det->getAdcIndex(args[0]);
         os << ToString(t) << '\n';
     } else if (action == slsDetectorDefs::PUT_ACTION) {
-            throw RuntimeError("Cannot set adc index");
+        throw RuntimeError("Cannot set adc index");
     } else {
         throw RuntimeError("Unknown action");
     }

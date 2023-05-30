@@ -59,7 +59,8 @@ void CtbConfig::setDacName(size_t index, const std::string &name) {
 
 void CtbConfig::setDacNames(const std::vector<std::string> &names) {
     if (names.size() != num_dacs) {
-        throw RuntimeError("Dac names need to be of size " + std::to_string(num_dacs));
+        throw RuntimeError("Dac names need to be of size " +
+                           std::to_string(num_dacs));
     }
     for (size_t i = 0; i != num_dacs; ++i) {
         setDacName(i, names[i]);
@@ -88,7 +89,8 @@ void CtbConfig::setAdcName(size_t index, const std::string &name) {
 
 void CtbConfig::setAdcNames(const std::vector<std::string> &names) {
     if (names.size() != num_adcs) {
-        throw RuntimeError("Adc names need to be of size " + std::to_string(num_adcs));
+        throw RuntimeError("Adc names need to be of size " +
+                           std::to_string(num_adcs));
     }
     for (size_t i = 0; i != num_adcs; ++i) {
         setAdcName(i, names[i]);

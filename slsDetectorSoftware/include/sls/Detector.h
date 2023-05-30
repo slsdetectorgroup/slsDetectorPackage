@@ -1729,7 +1729,7 @@ class Detector {
     defs::dacIndex getDacIndex(const std::string &name);
 
     /** [CTB] */
-    void setDacName(defs::dacIndex i, const std::string& name);
+    void setDacName(defs::dacIndex i, const std::string &name);
 
     std::string getDacName(defs::dacIndex i);
 
@@ -1741,9 +1741,9 @@ class Detector {
 
     /** [CTB] */
     int getAdcIndex(const std::string &name);
-    
+
     /** [CTB] */
-    void setAdcName(const int i, const std::string& name);
+    void setAdcName(const int i, const std::string &name);
 
     /** [CTB] */
     std::string getAdcName(int i);

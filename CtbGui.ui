@@ -69,7 +69,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>5</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="tab">
               <attribute name="title">
@@ -1186,19 +1186,6 @@
                 </property>
                 <property name="maximum">
                  <number>200</number>
-                </property>
-               </widget>
-               <widget class="QLabel" name="labelHighVoltage">
-                <property name="geometry">
-                 <rect>
-                  <x>520</x>
-                  <y>730</y>
-                  <width>31</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>0</string>
                 </property>
                </widget>
                <widget class="QComboBox" name="comboBoxADC">

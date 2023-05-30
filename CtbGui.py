@@ -28,8 +28,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         super(MainWindow, self).__init__()
         uic.loadUi("CtbGui.ui", self)
-        self.setup_qtimer()
-        self.refresh_tab_dac()
+        self.setup_ui()
         self.refresh_tab_power()
         self.refresh_tab_sense()
         self.refresh_tab_signals()
@@ -39,6 +38,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tabWidget.setCurrentIndex(6)
         self.tabWidget.currentChanged.connect(self.refresh_tab)
         self.connect_ui()
+        self.refresh_tab_dac()
 
 
     # For Action options function
@@ -64,24 +64,19 @@ class MainWindow(QtWidgets.QMainWindow):
     # For the DACs tab functions
     # TODO Only add DACs tab functions
     def setDAC(self, i):
+        print (f"Setting dac {i}")
         checkBoxDac = getattr(self, f"checkBoxDAC{i}")
         checkBoxmV = getattr(self, f"checkBoxDAC{i}mV")
         spinBoxDac = getattr(self, f"spinBoxDAC{i}")
         dac = getattr(dacIndex, f"DAC_{i}")
-        dacLabel = getattr(self, f"labelDAC{i}")
+        labelDac = getattr(self, f"labelDAC{i}")
 
+        value = -100
         if checkBoxDac.isChecked():
-            if checkBoxmV.isChecked():
-                self.det.setDAC(dac, spinBoxDac.value(), True)
-                dacLabel.setText(str(self.det.getDAC(dac, True)[0]))
-            else:
-                self.det.setDAC(dac, spinBoxDac.value())
-                dacLabel.setText(str(self.det.getDAC(dac)[0]))
-            spinBoxDac.setDisabled(False)
-        else:
-            self.det.setDAC(dac, -100)
-            spinBoxDac.setDisabled(True)
-            dacLabel.setText(str(self.det.getDAC(dac)[0]))
+            value = spinBoxDac.value()
+
+        self.det.setDAC(dac, value, checkBoxmV.isChecked())
+        self.getDAC(i)
 
     # TODO yet to implement the ADC and HV
     def setADC(self):
@@ -96,7 +91,6 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 self.det.setHighVoltage(0)
                 self.spinBoxHighVoltage.setDisabled(True)
-            self.labelHighVoltage.setText(str(self.det.getHighVoltage()[0]))
         except Exception as e:
             print(e)
 
@@ -808,15 +802,35 @@ class MainWindow(QtWidgets.QMainWindow):
             # get the RGB Values
             print(color.getRgb())
 
-    # Getting the checkbox status
-    def getDac(self, i):
+
+    def getDAC(self, i):
+        print(f"getting dac {i}")
         checkBox = getattr(self, f"checkBoxDAC{i}")
+        checkBoxmV = getattr(self, f"checkBoxDAC{i}mV")
         spinBox = getattr(self, f"spinBoxDAC{i}")
+        label = getattr(self, f"labelDAC{i}")
         dac = getattr(dacIndex, f"DAC_{i}")
+
+        checkBox.clicked.disconnect()
+        checkBoxmV.clicked.disconnect()
+        spinBox.editingFinished.disconnect()
+
         if (self.det.getDAC(dac)[0]) == -100:
+            checkBox.setChecked(False)
             spinBox.setDisabled(True)
         else:
             checkBox.setChecked(True)
+            spinBox.setDisabled(False)
+        checkBox.setText(self.det.getDacName(dac))
+        if checkBoxmV.isChecked():
+            label.setText(str(self.det.getDAC(dac, True)[0]))
+        else:
+            label.setText(str(self.det.getDAC(dac)[0]))
+
+        checkBox.clicked.connect(partial(self.setDAC, i))
+        checkBoxmV.clicked.connect(partial(self.setDAC, i))
+        spinBox.editingFinished.connect(partial(self.setDAC, i))
+
 
     def getPower(self, i):
         spinBox = getattr(self, f"spinBoxV{i}")
@@ -873,6 +887,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def refresh_tab_dac(self):
+        '''
         # Getting dac Name
         for i, dac_name in enumerate(self.det.getDacNames()):
             getattr(self, f"checkBoxDAC{i}").setText(dac_name)
@@ -881,25 +896,22 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(18):
             dac = getattr(dacIndex, f"DAC_{i}")
             getattr(self, f"labelDAC{i}").setText(str(self.det.getDAC(dac)[0]))
+        '''
+        #update adc vpp
         self.labelADC.setText(str(self.det.getDAC(dacIndex.ADC_VPP)[0]))
-        self.labelHighVoltage.setText(str(self.det.getHighVoltage()[0]))
 
-        # Getting dac values
+       # update checbox and spinbox enable
         for i in range(18):
-            dac = getattr(dacIndex, f"DAC_{i}")
-            getattr(self, f"spinBoxDAC{i}").setValue(self.det.getDAC(dac)[0])
-            self.getDac(i)
-        self.spinBoxDAC0.setValue(self.det.getDAC(dacIndex.DAC_0)[0])
-        self.getDac(0)
+            self.getDAC(i)
 
-        # Setting ADC VPP
+        # Getting ADC VPP
         self.labelADC.setText(f'Mode: {str(self.det.getDAC(dacIndex.ADC_VPP)[0])}')
         adcVPP = self.det.getDAC(dacIndex.ADC_VPP)
         for i in adcVPP:
             if (self.det.getDAC(dacIndex.ADC_VPP)[0]) == i:
                 self.comboBoxADC.setCurrentIndex(i)
 
-        # Setting High voltage
+        # Getting High voltage
         self.spinBoxHighVoltage.setValue(self.det.getHighVoltage()[0])
         if (self.det.getHighVoltage()[0]) == 0:
             self.spinBoxHighVoltage.setDisabled(True)
@@ -1049,7 +1061,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.socket.subscribe("")
 
 
-    def setup_qtimer(self):
+    def setup_ui(self):
         #To check detector status
         self.statusTimer = QtCore.QTimer()
         self.statusTimer.timeout.connect(self.updateDetectorStatus)
@@ -1057,6 +1069,11 @@ class MainWindow(QtWidgets.QMainWindow):
         #To auto trigger the read
         self.read_timer =  QtCore.QTimer()
         self.read_timer.timeout.connect(self.read_zmq)
+
+        # Getting dac values for spinboxes (only for modifying)
+        for i in range(18):
+            dac = getattr(dacIndex, f"DAC_{i}")
+            getattr(self, f"spinBoxDAC{i}").setValue(self.det.getDAC(dac)[0])
 
 
     def connect_ui(self):

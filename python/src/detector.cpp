@@ -1647,9 +1647,32 @@ void init_det(py::module &m) {
                        (defs::dacIndex(Detector::*)(const std::string &)) &
                            Detector::getDacIndex,
                        py::arg());
+    CppDetectorApi.def(
+        "setDacName",
+        (void (Detector::*)(defs::dacIndex, const std::string &)) &
+            Detector::setDacName,
+        py::arg(), py::arg());
     CppDetectorApi.def("getDacName",
                        (std::string(Detector::*)(defs::dacIndex)) &
                            Detector::getDacName,
+                       py::arg());
+    CppDetectorApi.def("setAdcNames",
+                       (void (Detector::*)(const std::vector<std::string>)) &
+                           Detector::setAdcNames,
+                       py::arg());
+    CppDetectorApi.def("getAdcNames",
+                       (std::vector<std::string>(Detector::*)() const) &
+                           Detector::getAdcNames);
+    CppDetectorApi.def("getAdcIndex",
+                       (int (Detector::*)(const std::string &)) &
+                           Detector::getAdcIndex,
+                       py::arg());
+    CppDetectorApi.def("setAdcName",
+                       (void (Detector::*)(const int, const std::string &)) &
+                           Detector::setAdcName,
+                       py::arg(), py::arg());
+    CppDetectorApi.def("getAdcName",
+                       (std::string(Detector::*)(int)) & Detector::getAdcName,
                        py::arg());
     CppDetectorApi.def(
         "setPattern",

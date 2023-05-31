@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1497</width>
-    <height>978</height>
+    <height>962</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,8 +28,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1467</width>
-         <height>912</height>
+         <width>1463</width>
+         <height>918</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1143,7 +1143,7 @@
                  <string>mV</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="labelADC">
+               <widget class="QLabel" name="labelADCVpp">
                 <property name="geometry">
                  <rect>
                   <x>520</x>
@@ -1188,7 +1188,7 @@
                  <number>200</number>
                 </property>
                </widget>
-               <widget class="QComboBox" name="comboBoxADC">
+               <widget class="QComboBox" name="comboBoxADCVpp">
                 <property name="geometry">
                  <rect>
                   <x>190</x>
@@ -14043,7 +14043,7 @@
      <x>0</x>
      <y>0</y>
      <width>1497</width>
-     <height>29</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

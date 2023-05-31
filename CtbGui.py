@@ -29,7 +29,6 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__()
         uic.loadUi("CtbGui.ui", self)
         self.setup_ui()
-        self.refresh_tab_power()
         self.refresh_tab_sense()
         self.refresh_tab_signals()
         self.refresh_tab_adc()
@@ -39,6 +38,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tabWidget.currentChanged.connect(self.refresh_tab)
         self.connect_ui()
         self.refresh_tab_dac()
+        self.refresh_tab_power()
 
 
     # For Action options function
@@ -64,7 +64,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # DACs tab functions
     def getDAC(self, i):
-        #print(f"getting dac {i}")
         checkBox = getattr(self, f"checkBoxDAC{i}")
         checkBoxmV = getattr(self, f"checkBoxDAC{i}mV")
         spinBox = getattr(self, f"spinBoxDAC{i}")
@@ -95,7 +94,6 @@ class MainWindow(QtWidgets.QMainWindow):
         spinBox.editingFinished.connect(partial(self.setDAC, i))
 
     def setDAC(self, i):
-        #print (f"Setting dac {i}")
         checkBoxDac = getattr(self, f"checkBoxDAC{i}")
         checkBoxmV = getattr(self, f"checkBoxDAC{i}mV")
         spinBox = getattr(self, f"spinBoxDAC{i}")
@@ -108,17 +106,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.det.setDAC(dac, value, checkBoxmV.isChecked())
         self.getDAC(i)
 
-    def getADC(self):
+    def getADCVpp(self):
         retval = self.det.adcvpp
-        self.labelADC.setText(f'Mode: {str(retval)}')
+        self.labelADCVpp.setText(f'Mode: {str(retval)}')
 
-        self.comboBoxADC.activated.disconnect()
-        self.comboBoxADC.setCurrentIndex(retval)
-        self.comboBoxADC.activated.connect(self.setADC)
+        self.comboBoxADCVpp.activated.disconnect()
+        self.comboBoxADCVpp.setCurrentIndex(retval)
+        self.comboBoxADCVpp.activated.connect(self.setADCVpp)
 
-    def setADC(self):
-        self.det.adcvpp = self.comboBoxADC.currentIndex()
-        self.getADC()
+    def setADCVpp(self):
+        self.det.adcvpp = self.comboBoxADCVpp.currentIndex()
+        self.getADCVpp()
 
     def getHighVoltage(self):
         retval = self.det.highvoltage
@@ -146,8 +144,30 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.warning(self, "High Voltage Fail", str(e), QtWidgets.QMessageBox.Ok)
         self.getHighVoltage()
 
-    # For Power Supplies Tab functions
+    # Power Supplies Tab functions
     # TODO Only add the components of Power Supplies tab functions
+    def getPower(self, i):
+        spinBox = getattr(self, f"spinBoxV{i}")
+        checkBox = getattr(self, f"checkBoxV{i}")
+        power = getattr(dacIndex, f"V_POWER_{i}")
+        label = getattr(self, f"labelV{i}")
+
+        spinBox.editingFinished.disconnect()
+        checkBox.clicked.disconnect()
+
+        retval = self.det.getVoltage(power)[0]
+        if retval:
+            self.checkBox.setChecked(True)  
+        if self.checkBox.isChecked():
+            self.spinBox.setEnabled(True)
+        #checkBox.setText(self.det.getPowerName(power))
+        label.setText(str(retval))
+
+        spinBox.editingFinished.connect(partial(self.setPower, {i}))
+        checkBox.clicked.connect(partial(self.setPower, {i}))
+
+
+
     def setPower(self, i):
         checkBox = getattr(self, f"checkBoxV{i}")
         spinBox = getattr(self, f"spinBoxV{i}")
@@ -915,7 +935,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(18):
             self.getDAC(i)
 
-        self.getADC()
+        self.getADCVpp()
         self.getHighVoltage()
 
     def refresh_tab_power(self):
@@ -927,22 +947,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.labelVCHIP.setText(str(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0]))
 
         # Updating values for Power Supply
-        self.spinBoxVA.setValue(self.det.getVoltage(dacIndex.V_POWER_A)[0])
         self.getPower("A")
-
-        self.spinBoxVB.setValue(self.det.getVoltage(dacIndex.V_POWER_B)[0])
         self.getPower("B")
-
-        self.spinBoxVC.setValue(self.det.getVoltage(dacIndex.V_POWER_C)[0])
         self.getPower("C")
-
-        self.spinBoxVD.setValue(self.det.getVoltage(dacIndex.V_POWER_D)[0])
         self.getPower("D")
-
-        self.spinBoxVIO.setValue(self.det.getVoltage(dacIndex.V_POWER_IO)[0])
         self.getPower("IO")
-
-        self.spinBoxVCHIP.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
 
 
     def refresh_tab_sense(self):
@@ -1073,6 +1082,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.read_timer =  QtCore.QTimer()
         self.read_timer.timeout.connect(self.read_zmq)
 
+        # Dac Tab
         # Getting dac values for spinboxes (only for modifying)
         for i in range(18):
             dac = getattr(dacIndex, f"DAC_{i}")
@@ -1081,6 +1091,18 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.det.highvoltage == 0:
             self.spinBoxHighVoltage.setDisabled(True)
             self.checkBoxHighVoltage.setChecked(False)
+
+        # Power Tab
+        # Getting power values for spinboxes (only for modifying)
+        for i in ('A', 'B', 'C', 'D', 'IO', 'CHIP'):
+            dac = getattr(dacIndex, f"V_POWER_{i}")
+            spinBox = getattr(self, f"spinBoxV{i}")
+            checkBox = getattr(self, f"checkBoxV{i}")
+            retval = self.det.getVoltage(dac)[0]
+            spinBox.setValue(retval)
+            if retval == 0:
+                checkBox.setChecked(False)
+
 
 
     def connect_ui(self):
@@ -1092,7 +1114,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionOpen.triggered.connect(self.openFile)
 
         # For DACs tab
-        # TODO Only add the components of DACs tab
         n_dacs = len(self.det.daclist)
         for i in range(n_dacs):
             getattr(self, f"spinBoxDAC{i}").editingFinished.connect(
@@ -1101,22 +1122,16 @@ class MainWindow(QtWidgets.QMainWindow):
             getattr(self, f"checkBoxDAC{i}").clicked.connect(partial(self.setDAC, i))
             getattr(self, f"checkBoxDAC{i}mV").clicked.connect(partial(self.setDAC, i))
 
-        self.comboBoxADC.activated.connect(self.setADC)
+        self.comboBoxADCVpp.activated.connect(self.setADCVpp)
         self.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
         self.checkBoxHighVoltage.clicked.connect(self.setHighVoltage)
 
         # For Power Supplies tab
-        # TODO Only add the components of Power supplies tab
-        self.spinBoxVA.editingFinished.connect(partial(self.setPower, "A"))
-        self.checkBoxVA.clicked.connect(partial(self.setPower, "A"))
-        self.spinBoxVB.editingFinished.connect(partial(self.setPower, "B"))
-        self.checkBoxVB.clicked.connect(partial(self.setPower, "B"))
-        self.spinBoxVC.editingFinished.connect(partial(self.setPower, "C"))
-        self.checkBoxVC.clicked.connect(partial(self.setPower, "C"))
-        self.spinBoxVD.editingFinished.connect(partial(self.setPower, "D"))
-        self.checkBoxVD.clicked.connect(partial(self.setPower, "D"))
-        self.spinBoxVIO.editingFinished.connect(partial(self.setPower, "IO"))
-        self.checkBoxVIO.clicked.connect(partial(self.setPower, "IO"))
+        for i in ('A', 'B', 'C', 'D', 'IO', 'CHIP'):
+            spinbox = getattr(self, f"spinBoxV{i}")
+            checkBox = getattr(self, f"checkBoxV{i}")
+            spinBox.editingFinished.connect(partial(self.setPower, {i}))
+            checkBox.clicked.connect(partial(self.setPower, {i}))
 
         # For Sense Tab
         # TODO Only add the components of Sense tab

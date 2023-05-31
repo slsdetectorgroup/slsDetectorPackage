@@ -145,8 +145,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getHighVoltage()
 
     # Power Supplies Tab functions
-    # TODO Only add the components of Power Supplies tab functions
     def getPower(self, i):
+        print(f"getpower{i}")
         spinBox = getattr(self, f"spinBoxV{i}")
         checkBox = getattr(self, f"checkBoxV{i}")
         power = getattr(dacIndex, f"V_POWER_{i}")
@@ -157,32 +157,32 @@ class MainWindow(QtWidgets.QMainWindow):
 
         retval = self.det.getVoltage(power)[0]
         if retval:
-            self.checkBox.setChecked(True)  
-        if self.checkBox.isChecked():
-            self.spinBox.setEnabled(True)
+            checkBox.setChecked(True)  
+        if checkBox.isChecked():
+            spinBox.setEnabled(True)
+        else:
+            spinBox.setDisabled(True)
         #checkBox.setText(self.det.getPowerName(power))
         label.setText(str(retval))
 
-        spinBox.editingFinished.connect(partial(self.setPower, {i}))
-        checkBox.clicked.connect(partial(self.setPower, {i}))
-
-
+        spinBox.editingFinished.connect(partial(self.setPower, i))
+        checkBox.clicked.connect(partial(self.setPower, i))
 
     def setPower(self, i):
+        print(f"setpower{i}")
         checkBox = getattr(self, f"checkBoxV{i}")
         spinBox = getattr(self, f"spinBoxV{i}")
         power = getattr(dacIndex, f"V_POWER_{i}")
-        label = getattr(self, f"labelV{i}")
+
+        value = 0
+        if checkBox.isChecked():
+            value = spinBox.value()
         try:
-            if checkBox.isChecked():
-                self.det.setVoltage(power, spinBox.value())
-                spinBox.setDisabled(False)
-            else:
-                self.det.setVoltage(power, 0)
-                spinBox.setDisabled(True)
-            label.setText(str(self.det.getVoltage(power)[0]))
+            self.det.setVoltage(power, value)
         except Exception as e:
-            print(e)
+            QtWidgets.QMessageBox.warning(self, "Power Fail", str(e), QtWidgets.QMessageBox.Ok)
+        self.getPower(i)
+
 
     # For Sense Tab functions
     # TODO Only add the components of Sense tab functions
@@ -877,16 +877,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 
-    def getPower(self, i):
-        spinBox = getattr(self, f"spinBoxV{i}")
-        dac = getattr(dacIndex, f"V_POWER_{i}")
-        checkBox = getattr(self, f"checkBoxV{i}")
-
-        if (self.det.getVoltage(dac)[0]) == 0:
-            spinBox.setDisabled(True)
-        else:
-            checkBox.setChecked(True)
-
     # initializing the Out status
     def set_IO_Out(self):
         out = self.det.patioctrl
@@ -939,20 +929,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getHighVoltage()
 
     def refresh_tab_power(self):
-        self.labelVA.setText(str(self.det.getVoltage(dacIndex.V_POWER_A)[0]))
-        self.labelVB.setText(str(self.det.getVoltage(dacIndex.V_POWER_B)[0]))
-        self.labelVC.setText(str(self.det.getVoltage(dacIndex.V_POWER_C)[0]))
-        self.labelVD.setText(str(self.det.getVoltage(dacIndex.V_POWER_D)[0]))
-        self.labelVIO.setText(str(self.det.getVoltage(dacIndex.V_POWER_IO)[0]))
-        self.labelVCHIP.setText(str(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0]))
+        for i in ('A', 'B', 'C', 'D', 'IO'):
+            self.getPower(i)
 
-        # Updating values for Power Supply
-        self.getPower("A")
-        self.getPower("B")
-        self.getPower("C")
-        self.getPower("D")
-        self.getPower("IO")
-
+        #not getting vchip,why?
 
     def refresh_tab_sense(self):
         for i in range(8):
@@ -1094,7 +1074,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Power Tab
         # Getting power values for spinboxes (only for modifying)
-        for i in ('A', 'B', 'C', 'D', 'IO', 'CHIP'):
+        for i in ('A', 'B', 'C', 'D', 'IO'):
             dac = getattr(dacIndex, f"V_POWER_{i}")
             spinBox = getattr(self, f"spinBoxV{i}")
             checkBox = getattr(self, f"checkBoxV{i}")
@@ -1102,6 +1082,7 @@ class MainWindow(QtWidgets.QMainWindow):
             spinBox.setValue(retval)
             if retval == 0:
                 checkBox.setChecked(False)
+                spinBox.setDisabled(True)
 
 
 
@@ -1127,11 +1108,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.checkBoxHighVoltage.clicked.connect(self.setHighVoltage)
 
         # For Power Supplies tab
-        for i in ('A', 'B', 'C', 'D', 'IO', 'CHIP'):
-            spinbox = getattr(self, f"spinBoxV{i}")
+        for i in ('A', 'B', 'C', 'D', 'IO'):
+            spinBox = getattr(self, f"spinBoxV{i}")
             checkBox = getattr(self, f"checkBoxV{i}")
-            spinBox.editingFinished.connect(partial(self.setPower, {i}))
-            checkBox.clicked.connect(partial(self.setPower, {i}))
+            spinBox.editingFinished.connect(partial(self.setPower, i))
+            checkBox.clicked.connect(partial(self.setPower, i))
+
 
         # For Sense Tab
         # TODO Only add the components of Sense tab

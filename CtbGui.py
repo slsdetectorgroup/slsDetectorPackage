@@ -61,38 +61,90 @@ class MainWindow(QtWidgets.QMainWindow):
         if response[0]:
             print(response[0])
 
-    # For the DACs tab functions
-    # TODO Only add DACs tab functions
+
+    # DACs tab functions
+    def getDAC(self, i):
+        #print(f"getting dac {i}")
+        checkBox = getattr(self, f"checkBoxDAC{i}")
+        checkBoxmV = getattr(self, f"checkBoxDAC{i}mV")
+        spinBox = getattr(self, f"spinBoxDAC{i}")
+        label = getattr(self, f"labelDAC{i}")
+        dac = getattr(dacIndex, f"DAC_{i}")
+
+        checkBox.clicked.disconnect()
+        checkBoxmV.clicked.disconnect()
+        spinBox.editingFinished.disconnect()
+
+        if (self.det.getDAC(dac)[0]) == -100:
+            checkBox.setChecked(False)
+            spinBox.setDisabled(True)
+            checkBoxmV.setDisabled(True)
+        else:
+            checkBox.setChecked(True)
+            spinBox.setEnabled(True)
+            checkBoxmV.setEnabled(True)
+
+        checkBox.setText(self.det.getDacName(dac))
+        if checkBoxmV.isChecked():
+            label.setText(str(self.det.getDAC(dac, True)[0]))
+        else:
+            label.setText(str(self.det.getDAC(dac)[0]))
+
+        checkBox.clicked.connect(partial(self.setDAC, i))
+        checkBoxmV.clicked.connect(partial(self.setDAC, i))
+        spinBox.editingFinished.connect(partial(self.setDAC, i))
+
     def setDAC(self, i):
-        print (f"Setting dac {i}")
+        #print (f"Setting dac {i}")
         checkBoxDac = getattr(self, f"checkBoxDAC{i}")
         checkBoxmV = getattr(self, f"checkBoxDAC{i}mV")
-        spinBoxDac = getattr(self, f"spinBoxDAC{i}")
+        spinBox = getattr(self, f"spinBoxDAC{i}")
         dac = getattr(dacIndex, f"DAC_{i}")
-        labelDac = getattr(self, f"labelDAC{i}")
 
         value = -100
         if checkBoxDac.isChecked():
-            value = spinBoxDac.value()
+            value = spinBox.value()
 
         self.det.setDAC(dac, value, checkBoxmV.isChecked())
         self.getDAC(i)
 
-    # TODO yet to implement the ADC and HV
+    def getADC(self):
+        retval = self.det.adcvpp
+        self.labelADC.setText(f'Mode: {str(retval)}')
+
+        self.comboBoxADC.activated.disconnect()
+        self.comboBoxADC.setCurrentIndex(retval)
+        self.comboBoxADC.activated.connect(self.setADC)
+
     def setADC(self):
-        self.det.setDAC(dacIndex.ADC_VPP, self.comboBoxADC.currentIndex())
-        self.labelADC.setText(f'Mode: {str(self.det.getDAC(dacIndex.ADC_VPP)[0])}')
+        self.det.adcvpp = self.comboBoxADC.currentIndex()
+        self.getADC()
+
+    def getHighVoltage(self):
+        retval = self.det.highvoltage
+        self.labelHighVoltage.setText(str(retval))
+
+        self.spinBoxHighVoltage.editingFinished.disconnect()
+        self.checkBoxHighVoltage.clicked.disconnect()
+
+        self.spinBoxHighVoltage.setValue(retval)
+        if retval:
+            self.checkBoxHighVoltage.setChecked(True)
+        if self.checkBoxHighVoltage.isChecked():
+            self.spinBoxHighVoltage.setEnabled(True)
+
+        self.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
+        self.checkBoxHighVoltage.clicked.connect(self.setHighVoltage)
 
     def setHighVoltage(self):
+        value = 0
+        if self.checkBoxHighVoltage.isChecked():
+            value = self.spinBoxHighVoltage.value()
         try:
-            if self.checkBoxHighVoltage.isChecked():
-                self.det.setHighVoltage(self.spinBoxHighVoltage.value())
-                self.spinBoxHighVoltage.setDisabled(False)
-            else:
-                self.det.setHighVoltage(0)
-                self.spinBoxHighVoltage.setDisabled(True)
+            self.det.highvoltage = value
         except Exception as e:
-            print(e)
+            QtWidgets.QMessageBox.warning(self, "High Voltage Fail", str(e), QtWidgets.QMessageBox.Ok)
+        self.getHighVoltage()
 
     # For Power Supplies Tab functions
     # TODO Only add the components of Power Supplies tab functions
@@ -803,33 +855,6 @@ class MainWindow(QtWidgets.QMainWindow):
             print(color.getRgb())
 
 
-    def getDAC(self, i):
-        print(f"getting dac {i}")
-        checkBox = getattr(self, f"checkBoxDAC{i}")
-        checkBoxmV = getattr(self, f"checkBoxDAC{i}mV")
-        spinBox = getattr(self, f"spinBoxDAC{i}")
-        label = getattr(self, f"labelDAC{i}")
-        dac = getattr(dacIndex, f"DAC_{i}")
-
-        checkBox.clicked.disconnect()
-        checkBoxmV.clicked.disconnect()
-        spinBox.editingFinished.disconnect()
-
-        if (self.det.getDAC(dac)[0]) == -100:
-            checkBox.setChecked(False)
-            spinBox.setDisabled(True)
-        else:
-            checkBox.setChecked(True)
-            spinBox.setDisabled(False)
-        checkBox.setText(self.det.getDacName(dac))
-        if checkBoxmV.isChecked():
-            label.setText(str(self.det.getDAC(dac, True)[0]))
-        else:
-            label.setText(str(self.det.getDAC(dac)[0]))
-
-        checkBox.clicked.connect(partial(self.setDAC, i))
-        checkBoxmV.clicked.connect(partial(self.setDAC, i))
-        spinBox.editingFinished.connect(partial(self.setDAC, i))
 
 
     def getPower(self, i):
@@ -887,37 +912,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def refresh_tab_dac(self):
-        '''
-        # Getting dac Name
-        for i, dac_name in enumerate(self.det.getDacNames()):
-            getattr(self, f"checkBoxDAC{i}").setText(dac_name)
-
-        # Getting dac values for label
-        for i in range(18):
-            dac = getattr(dacIndex, f"DAC_{i}")
-            getattr(self, f"labelDAC{i}").setText(str(self.det.getDAC(dac)[0]))
-        '''
-        #update adc vpp
-        self.labelADC.setText(str(self.det.getDAC(dacIndex.ADC_VPP)[0]))
-
-       # update checbox and spinbox enable
         for i in range(18):
             self.getDAC(i)
 
-        # Getting ADC VPP
-        self.labelADC.setText(f'Mode: {str(self.det.getDAC(dacIndex.ADC_VPP)[0])}')
-        adcVPP = self.det.getDAC(dacIndex.ADC_VPP)
-        for i in adcVPP:
-            if (self.det.getDAC(dacIndex.ADC_VPP)[0]) == i:
-                self.comboBoxADC.setCurrentIndex(i)
-
-        # Getting High voltage
-        self.spinBoxHighVoltage.setValue(self.det.getHighVoltage()[0])
-        if (self.det.getHighVoltage()[0]) == 0:
-            self.spinBoxHighVoltage.setDisabled(True)
-        else:
-            self.checkBoxHighVoltage.setChecked(True)
-
+        self.getADC()
+        self.getHighVoltage()
 
     def refresh_tab_power(self):
         self.labelVA.setText(str(self.det.getVoltage(dacIndex.V_POWER_A)[0]))
@@ -967,6 +966,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def refresh_tab_adc(self):
+        # Getting adc Name
+        for i, adc_name in enumerate(self.det.getAdcNames()):
+            getattr(self, f"labelADC{i}").setText(adc_name)
+
         # Initializing the ADC Enable mask
         self.set_ADC_Enable()
         self.lineEditEnable.setText(hex(self.det.adcenable))
@@ -1074,6 +1077,10 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(18):
             dac = getattr(dacIndex, f"DAC_{i}")
             getattr(self, f"spinBoxDAC{i}").setValue(self.det.getDAC(dac)[0])
+
+        if self.det.highvoltage == 0:
+            self.spinBoxHighVoltage.setDisabled(True)
+            self.checkBoxHighVoltage.setChecked(False)
 
 
     def connect_ui(self):

@@ -1265,6 +1265,19 @@
                  <string>V</string>
                 </property>
                </widget>
+               <widget class="QLabel" name="labelHighVoltage">
+                <property name="geometry">
+                 <rect>
+                  <x>520</x>
+                  <y>730</y>
+                  <width>71</width>
+                  <height>19</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
               </widget>
              </widget>
              <widget class="QWidget" name="tab_2">

@@ -142,6 +142,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.det.highvoltage = value
         except Exception as e:
             QtWidgets.QMessageBox.warning(self, "High Voltage Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
         self.getHighVoltage()
 
     # Power Supplies Tab functions
@@ -168,6 +169,7 @@ class MainWindow(QtWidgets.QMainWindow):
         spinBox.editingFinished.connect(partial(self.setPower, i))
         checkBox.clicked.connect(partial(self.setPower, i))
 
+    #TODO: handle multiple events when pressing enter (twice)
     def setPower(self, i):
         checkBox = getattr(self, f"checkBoxV{i}")
         spinBox = getattr(self, f"spinBoxV{i}")
@@ -183,6 +185,8 @@ class MainWindow(QtWidgets.QMainWindow):
             pass
         self.getPower(i)
 
+    def getVChip(self):
+        self.labelVCHIP.setText(str(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0]))
 
     # For Sense Tab functions
     # TODO Only add the components of Sense tab functions
@@ -932,7 +936,8 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in ('A', 'B', 'C', 'D', 'IO'):
             self.getPower(i)
 
-        #not getting vchip,why?
+        # TODO: was not getting vchip earlier, why?
+        self.getVChip()
 
     def refresh_tab_sense(self):
         for i in range(8):
@@ -1085,7 +1090,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 spinBox.setDisabled(True)
 
 
-
     def connect_ui(self):
                # Plotting the data
         # For the action options in app
@@ -1113,7 +1117,6 @@ class MainWindow(QtWidgets.QMainWindow):
             checkBox = getattr(self, f"checkBoxV{i}")
             spinBox.editingFinished.connect(partial(self.setPower, i))
             checkBox.clicked.connect(partial(self.setPower, i))
-
 
         # For Sense Tab
         # TODO Only add the components of Sense tab

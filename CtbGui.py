@@ -146,7 +146,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Power Supplies Tab functions
     def getPower(self, i):
-        print(f"getpower{i}")
         spinBox = getattr(self, f"spinBoxV{i}")
         checkBox = getattr(self, f"checkBoxV{i}")
         power = getattr(dacIndex, f"V_POWER_{i}")
@@ -156,6 +155,7 @@ class MainWindow(QtWidgets.QMainWindow):
         checkBox.clicked.disconnect()
 
         retval = self.det.getVoltage(power)[0]
+        spinBox.setValue(retval)
         if retval:
             checkBox.setChecked(True)  
         if checkBox.isChecked():
@@ -169,7 +169,6 @@ class MainWindow(QtWidgets.QMainWindow):
         checkBox.clicked.connect(partial(self.setPower, i))
 
     def setPower(self, i):
-        print(f"setpower{i}")
         checkBox = getattr(self, f"checkBoxV{i}")
         spinBox = getattr(self, f"spinBoxV{i}")
         power = getattr(dacIndex, f"V_POWER_{i}")
@@ -181,6 +180,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.det.setVoltage(power, value)
         except Exception as e:
             QtWidgets.QMessageBox.warning(self, "Power Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
         self.getPower(i)
 
 

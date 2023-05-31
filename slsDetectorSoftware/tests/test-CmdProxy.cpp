@@ -1929,14 +1929,192 @@ TEST_CASE("temp_fpga", "[.cmd]") {
     }
 }
 
-/* dacs */
+/* list */
 
 TEST_CASE("daclist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
-    REQUIRE_NOTHROW(proxy.Call("daclist", {}, -1, GET));
-    REQUIRE_THROWS(proxy.Call("daclist", {}, -1, PUT));
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        REQUIRE_NOTHROW(proxy.Call("daclist", {}, -1, GET));
+
+        auto prev = det.getDacNames();
+        REQUIRE_THROWS(proxy.Call("daclist", {"a", "s", "d"}, -1, PUT));
+
+        std::vector<std::string> names;
+        for (int iarg = 0; iarg != 18; ++iarg) {
+            names.push_back("a");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("daclist", names, -1, PUT, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("daclist", {}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("daclist ") + ToString(names) + '\n');
+        }
+        det.setDacNames(prev);
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("daclist", {"a", "b"}, -1, PUT));
+        REQUIRE_NOTHROW(proxy.Call("daclist", {}, -1, GET));
+    }
 }
+
+TEST_CASE("adclist", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        auto prev = det.getAdcNames();
+
+        REQUIRE_THROWS(proxy.Call("adclist", {"a", "s", "d"}, -1, PUT));
+
+        std::vector<std::string> names;
+        for (int iarg = 0; iarg != 32; ++iarg) {
+            names.push_back("a");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("adclist", names, -1, PUT, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("adclist", {}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("adclist ") + ToString(names) + '\n');
+        }
+        det.setAdcNames(prev);
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("adclist", {"a", "b"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("adclist", {}, -1, GET));
+    }
+}
+
+TEST_CASE("dacname", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        defs::dacIndex ind = static_cast<defs::dacIndex>(2);
+        std::string str_dac_index = "2";
+        auto prev = det.getDacName(ind);
+
+        // 1 arg throw
+        REQUIRE_THROWS(proxy.Call("dacname", {"2", "3", "bname"}, -1, PUT));
+        // invalid index
+        REQUIRE_THROWS(proxy.Call("dacname", {"18", "bname"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(
+                proxy.Call("dacname", {str_dac_index, "bname"}, -1, PUT, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(
+                proxy.Call("dacname", {str_dac_index}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("dacname ") + str_dac_index + " bname\n");
+        }
+        det.setDacName(ind, prev);
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("dacname", {"2", "b"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("dacname", {"2"}, -1, GET));
+    }
+}
+
+TEST_CASE("adcname", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        int ind = 2;
+        std::string str_adc_index = "2";
+        auto prev = det.getAdcName(ind);
+
+        // 1 arg throw
+        REQUIRE_THROWS(proxy.Call("adcname", {"2", "3", "bname"}, -1, PUT));
+        // invalid index
+        REQUIRE_THROWS(proxy.Call("adcname", {"32", "bname"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(
+                proxy.Call("adcname", {str_adc_index, "bname"}, -1, PUT, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(
+                proxy.Call("adcname", {str_adc_index}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("adcname ") + str_adc_index + " bname\n");
+        }
+        det.setAdcName(ind, prev);
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("adcname", {"2", "b"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("adcname", {"2"}, -1, GET));
+    }
+}
+
+TEST_CASE("dacindex", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        defs::dacIndex ind = static_cast<defs::dacIndex>(2);
+        std::string str_dac_index = "2";
+
+        // 1 arg throw
+        REQUIRE_THROWS(proxy.Call("dacindex", {"2", "2"}, -1, PUT));
+        // invalid index
+        REQUIRE_THROWS(proxy.Call("dacindex", {"18"}, -1, PUT));
+        auto dacname = det.getDacName(ind);
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("dacindex", {dacname}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("dacindex ") + str_dac_index + '\n');
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("dacindex", {"2"}, -1, GET));
+    }
+}
+
+TEST_CASE("adcindex", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        int ind = 2;
+        std::string str_adc_index = "2";
+
+        // 1 arg throw
+        REQUIRE_THROWS(proxy.Call("adcindex", {"2", "2"}, -1, PUT));
+        // invalid index
+        REQUIRE_THROWS(proxy.Call("adcindex", {"32"}, -1, PUT));
+        auto adcname = det.getAdcName(ind);
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("adcindex", {adcname}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("adcindex ") + str_adc_index + '\n');
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("adcindex", {"2"}, -1, GET));
+    }
+}
+
+/* dacs */
 
 TEST_CASE("dacvalues", "[.cmd]") {
     Detector det;

@@ -1721,12 +1721,33 @@ class Detector {
     /** [CTB] Default is enabled. */
     void setLEDEnable(bool enable, Positions pos = {});
 
+    /** [CTB] */
     void setDacNames(const std::vector<std::string> names);
 
     std::vector<std::string> getDacNames() const;
 
     defs::dacIndex getDacIndex(const std::string &name);
+
+    /** [CTB] */
+    void setDacName(defs::dacIndex i, const std::string &name);
+
     std::string getDacName(defs::dacIndex i);
+
+    /** [CTB] */
+    void setAdcNames(const std::vector<std::string> names);
+
+    /** [CTB] */
+    std::vector<std::string> getAdcNames() const;
+
+    /** [CTB] */
+    int getAdcIndex(const std::string &name);
+
+    /** [CTB] */
+    void setAdcName(const int i, const std::string &name);
+
+    /** [CTB] */
+    std::string getAdcName(int i);
+
     ///@}
 
     /** @name Pattern */

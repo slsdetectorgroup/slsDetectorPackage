@@ -28,8 +28,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1463</width>
-         <height>918</height>
+         <width>1467</width>
+         <height>912</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -69,7 +69,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>1</number>
+              <number>3</number>
              </property>
              <widget class="QWidget" name="tab">
               <attribute name="title">
@@ -3813,6 +3813,9 @@
                 </property>
                </widget>
                <widget class="QCheckBox" name="checkBoxBIT0Plot">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
                 <property name="geometry">
                  <rect>
                   <x>240</x>
@@ -4407,6 +4410,9 @@
                 </property>
                </widget>
                <widget class="QPushButton" name="pushButtonBIT0">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
                 <property name="geometry">
                  <rect>
                   <x>300</x>
@@ -5340,7 +5346,7 @@
                  <string>Out</string>
                 </property>
                </widget>
-               <widget class="QCheckBox" name="checkBoxBIT52lot">
+               <widget class="QCheckBox" name="checkBoxBIT52Plot">
                 <property name="geometry">
                  <rect>
                   <x>580</x>
@@ -7716,25 +7722,6 @@
                   <string>DBit Offset:</string>
                  </property>
                 </widget>
-                <widget class="QLineEdit" name="lineEditBoxIOControl">
-                 <property name="geometry">
-                  <rect>
-                   <x>190</x>
-                   <y>10</y>
-                   <width>221</width>
-                   <height>31</height>
-                  </rect>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">background-color: rgb(255, 255, 255);</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                 </property>
-                 <property name="readOnly">
-                  <bool>true</bool>
-                 </property>
-                </widget>
                 <widget class="QSpinBox" name="spinBoxDBitOffset">
                  <property name="geometry">
                   <rect>
@@ -7749,6 +7736,22 @@
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+                <widget class="QLabel" name="labelPatIOCntrl">
+                 <property name="geometry">
+                  <rect>
+                   <x>200</x>
+                   <y>18</y>
+                   <width>211</width>
+                   <height>21</height>
+                  </rect>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
                  </property>
                 </widget>
                </widget>
@@ -14021,7 +14024,7 @@
      <x>0</x>
      <y>0</y>
      <width>1497</width>
-     <height>25</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

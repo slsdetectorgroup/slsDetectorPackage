@@ -15,7 +15,7 @@ from pathlib import Path
 
 from functools import partial
 from slsdet import Detector, dacIndex, readoutMode, runStatus
-from bit_utils import set_bit, remove_bit, bit_is_set
+from bit_utils import set_bit, remove_bit, bit_is_set, manipulate_bit
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -29,7 +29,6 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__()
         uic.loadUi("CtbGui.ui", self)
         self.setup_ui()
-        self.refresh_tab_adc()
         self.refresh_tab_pattern()
         self.refresh_tab_acquisition()
         self.tabWidget.setCurrentIndex(6)
@@ -39,6 +38,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.refresh_tab_power()
         self.refresh_tab_sense()
         self.refresh_tab_signals()
+        self.refresh_tab_adc()
 
 
     # For Action options function
@@ -203,17 +203,19 @@ class MainWindow(QtWidgets.QMainWindow):
         sense0 = self.det.getTemperature(dacIndex.SLOW_ADC_TEMP)
         self.labelTemp_2.setText(f'{str(sense0[0])} °C')
 
-    # For Signals Tab functions
+    # Signals Tab functions
     def getDigitalBitEnable(self, i, dbitList):
         checkBox = getattr(self, f"checkBoxBIT{i}DB")
-        checkBoxPlot = getattr(self, f"checkBoxBIT{i}Plot")
         checkBox.clicked.disconnect()
-        checkBoxPlot.clicked.disconnect()
         checkBox.setChecked(i in list(dbitList))
-        # enable plot option only if in dblist
-        checkBoxPlot.setEnabled(checkBox.isChecked())
         checkBox.clicked.connect(partial(self.setDigitalBitEnable, i))
-        checkBoxPlot.clicked.connect(partial(self.setBitPlot, i))
+
+        # enable plot option only if in dblist (also enables color)
+        checkBoxPlot = getattr(self, f"checkBoxBIT{i}Plot")
+        checkBoxPlot.setEnabled(checkBox.isChecked())
+        pushButton = getattr(self, f"pushButtonBIT{i}")
+        pushButton.setEnabled(checkBox.isChecked())
+
         
     def updateDigitalBitEnable(self):
         retval = self.det.rx_dbitlist       
@@ -236,7 +238,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def getIOOutReg(self):
         retval = self.det.patioctrl
         self.lineEditPatIOCtrl.editingFinished.disconnect()
-        self.lineEditPatIOCtrl.setText("0x{:016x}".format(self.det.patioctrl))
+        self.lineEditPatIOCtrl.setText("0x{:016x}".format(retval))
         self.lineEditPatIOCtrl.editingFinished.connect(self.setIOOutReg)
         return retval
 
@@ -258,12 +260,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def setIOout(self, i):
         checkBox = getattr(self, f"checkBoxBIT{i}Out")
         out = self.det.patioctrl
-        if checkBox.isChecked():
-            mask = set_bit(out, i)
-            self.det.patioctrl = mask
-        else:
-            mask = remove_bit(out, i)
-            self.det.patioctrl = mask
+        mask = manipulate_bit(checkBox.isChecked(), out, i)
+        self.det.patioctrl = mask
 
         retval = self.getIOOutReg()
         self.updateCheckBoxIOOut(i, retval)
@@ -289,172 +287,164 @@ class MainWindow(QtWidgets.QMainWindow):
         pushButton = getattr(self, f"pushButtonBIT{i}")
         self.showPalette(pushButton)
 
-    # For ADCs Tab functions
-    # TODO Only add the components of ADCs tab functions
-    def colorADC0(self):
-        self.showPalette(self.pushButtonADC0)
+    # ADCs Tab functions
+    def updateADCNames(self):
+        for i, adc_name in enumerate(self.det.getAdcNames()):
+            getattr(self, f"labelADC{i}").setText(adc_name)    
 
-    def colorADC1(self):
-        self.showPalette(self.pushButtonADC1)
+    def getADCInvReg(self):
+        retval = self.det.adcinvert
+        self.lineEditADCInversion.editingFinished.disconnect()
+        self.lineEditADCInversion.setText("0x{:08x}".format(retval))
+        self.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
+        return retval
 
-    def colorADC2(self):
-        self.showPalette(self.pushButtonADC2)
+    def setADCInvReg(self):
+        self.det.adcinvert = int(self.lineEditADCInversion.text(), 16)
+        self.updateADCInv()
 
-    def colorADC3(self):
-        self.showPalette(self.pushButtonADC3)
+    def updateCheckBoxADCInv(self, i, inv):
+        checkBox = getattr(self, f"checkBoxADC{i}Inv")
+        checkBox.clicked.disconnect()
+        checkBox.setChecked(bit_is_set(inv, i))
+        checkBox.clicked.connect(partial(self.setADCInv, i))
 
-    def colorADC4(self):
-        self.showPalette(self.pushButtonADC4)
+    def updateADCInv(self):
+        retval = self.getADCInvReg()
+        for i in range(32):
+            self.updateCheckBoxADCInv(i, retval)
 
-    def colorADC5(self):
-        self.showPalette(self.pushButtonADC5)
+    def setADCInv(self, i):
+        checkBox = getattr(self, f"checkBoxADC{i}Inv")
+        out = self.det.adcinvert
+        mask = manipulate_bit(checkBox.isChecked(), out, i)
+        self.det.adcinvert = mask
 
-    def colorADC6(self):
-        self.showPalette(self.pushButtonADC6)
+        retval = self.getADCInvReg()
+        self.updateCheckBoxADCInv(i, retval)
 
-    def colorADC7(self):
-        self.showPalette(self.pushButtonADC7)
-
-    def colorADC8(self):
-        self.showPalette(self.pushButtonADC8)
-
-    def colorADC9(self):
-        self.showPalette(self.pushButtonADC9)
-
-    def colorADC10(self):
-        self.showPalette(self.pushButtonADC10)
-
-    def colorADC11(self):
-        self.showPalette(self.pushButtonADC11)
-
-    def colorADC12(self):
-        self.showPalette(self.pushButtonADC12)
-
-    def colorADC13(self):
-        self.showPalette(self.pushButtonADC13)
-
-    def colorADC14(self):
-        self.showPalette(self.pushButtonADC14)
-
-    def colorADC15(self):
-        self.showPalette(self.pushButtonADC15)
-
-    def colorADC16(self):
-        self.showPalette(self.pushButtonADC16)
-
-    def colorADC17(self):
-        self.showPalette(self.pushButtonADC17)
-
-    def colorADC18(self):
-        self.showPalette(self.pushButtonADC18)
-
-    def colorADC19(self):
-        self.showPalette(self.pushButtonADC19)
-
-    def colorADC20(self):
-        self.showPalette(self.pushButtonADC20)
-
-    def colorADC21(self):
-        self.showPalette(self.pushButtonADC21)
-
-    def colorADC22(self):
-        self.showPalette(self.pushButtonADC22)
-
-    def colorADC23(self):
-        self.showPalette(self.pushButtonADC23)
-
-    def colorADC24(self):
-        self.showPalette(self.pushButtonADC24)
-
-    def colorADC25(self):
-        self.showPalette(self.pushButtonADC25)
-
-    def colorADC26(self):
-        self.showPalette(self.pushButtonADC26)
-
-    def colorADC27(self):
-        self.showPalette(self.pushButtonADC27)
-
-    def colorADC28(self):
-        self.showPalette(self.pushButtonADC28)
-
-    def colorADC29(self):
-        self.showPalette(self.pushButtonADC29)
-
-    def colorADC30(self):
-        self.showPalette(self.pushButtonADC30)
-
-    def colorADC31(self):
-        self.showPalette(self.pushButtonADC31)
-
-    def enableMask_Enable(self, i):
-        enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
+    def getADCEnableReg(self):
+        retval = self.det.adcenable
         if self.det.tengiga:
-            enableMask = set_bit(self.det.adcenable10g, i)
-            self.det.adcenable10g = enableMask
-            self.lineEditEnable.setText(hex(self.det.adcenable10g))
-        else:
-            enableMask = set_bit(self.det.adcenable, i)
-            self.det.adcenable = enableMask
-            self.lineEditEnable.setText(hex(self.det.adcenable))
-        enableMaskCheckBox.setChecked(True)
+            retval = self.det.adcenable10g   
+        self.lineEditADCEnable.editingFinished.disconnect()
+        self.lineEditADCEnable.setText("0x{:08x}".format(retval))
+        self.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
+        return retval
 
-    def enableMask_Disable(self, i):
-        enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
+    def setADCEnableReg(self):
+        mask = int(self.lineEditADCInversion.text(), 16)
         if self.det.tengiga:
-            enableMask = remove_bit(self.det.adcenable10g, i)
+            self.det.adcenable10g = mask
+        else:
+            self.det.adcenable = mask
+        self.updateADCEnable()
+
+    def updateCheckBoxADCEnable(self, i, mask):
+        # check box if enabled in mask
+        checkBox = getattr(self, f"checkBoxADC{i}En")
+        checkBox.clicked.disconnect()
+        checkBox.setChecked(bit_is_set(mask, i))
+        checkBox.clicked.connect(partial(self.setADCEnable, i))
+
+        # enable plot option only if in mask (also enables color)
+        checkBoxPlot = getattr(self, f"checkBoxADC{i}Plot")
+        checkBoxPlot.setEnabled(checkBox.isChecked())
+        pushButton = getattr(self, f"pushButtonADC{i}")
+        pushButton.setEnabled(checkBox.isChecked())
+
+    def updateADCEnable(self):
+        retval = self.getADCEnableReg()
+        for i in range(32):
+            self.updateCheckBoxADCEnable(i, retval)
+
+    def setADCEnable(self, i):
+        checkBox = getattr(self, f"checkBoxADC{i}En")
+        if self.det.tengiga:
+            enableMask = manipulate_bit(checkBox.isChecked(), self.det.adcenable10g, i)
             self.det.adcenable10g = enableMask
-            self.lineEditEnable.setText(hex(self.det.adcenable10g))
         else:
-            enableMask = remove_bit(self.det.adcenable, i)
+            enableMask = manipulate_bit(checkBox.isChecked(), self.det.adcenable, i)
             self.det.adcenable = enableMask
-            self.lineEditEnable.setText(hex(self.det.adcenable))
-        enableMaskCheckBox.setChecked(False)
 
-    def all_0_15(self):
-        for i in range(0, 16):
-            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
-            if enableMaskCheckBox.isChecked():
-                pass
-            else:
-                self.enableMask_Enable(i)
+        retval = self.getADCEnableReg()
+        self.updateCheckBoxADCEnable(i, retval)
 
-    def none_0_15(self):
-        for i in range(0, 16):
-            self.enableMask_Disable(i)
+    def setADCEnableRange(self, enable, start_bit_nr, end_bit_nr):
+        mask = self.getADCEnableReg()
+        retval = 0
+        for i in range(start_bit_nr, end_bit_nr + 1):
+            retval |= manipulate_bit(enable, mask, i)
+        self.lineEditADCEnable.setText("0x{:08x}".format(retval))
 
-    def all_16_31(self):
-        for i in range(16, 32):
-            self.enableMask_Enable(i)
+    def setADCPlot(self, i):
+        pushButton = getattr(self, f"pushButtonADC{i}")
+        checkBox = getattr(self, f"checkBoxADC{i}Plot")
+        pushButton.clicked.disconnect()
+        # enable color pick only if plot enabled
+        pushButton.setEnabled(checkBox.isChecked())
+        pushButton.clicked.connect(partial(self.selectADCColor, i))
+        #TODO: enable plotting for this bit
 
-    def none_16_31(self):
-        for i in range(16, 32):
-            self.enableMask_Disable(i)
+    def selectADCColor(self, i):
+        pushButton = getattr(self, f"pushButtonADC{i}")
+        self.showPalette(pushButton)
 
-    def enable_mask_all(self):
-        for i in range(0, 32):
-            self.enableMask_Enable(i)
+    def getAnalog(self):
+        self.spinBoxAnalog.editingFinished.disconnect()
+        self.spinBoxAnalog.setValue(self.det.asamples)
+        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
 
-    def enable_mask_none(self):
-        for i in range(0, 32):
-            self.enableMask_Disable(i)
+    def setAnalog(self):
+        self.det.asamples = self.spinBoxAnalog.value()
+        self.getAnalog()
 
-    def ADCEnable(self, i):
-        enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
-        if enableMaskCheckBox.isChecked():
-            self.enableMask_Enable(i)
+    def getDigital(self):
+        self.spinBoxDigital.editingFinished.disconnect()
+        self.spinBoxDigital.setValue(self.det.dsamples)
+        self.spinBoxDigital.editingFinished.connect(self.setDigital)
+
+    def setDigital(self):
+        self.det.dsamples = self.spinBoxDigital.value()
+        self.getDigital()
+
+    def getReadout(self):
+        self.comboBoxROMode.activated.disconnect
+        self.spinBoxAnalog.editingFinished.disconnect()
+        self.spinBoxDigital.editingFinished.disconnect()
+
+        romode = self.det.romode
+        self.comboBoxROMode.setCurrentIndex(romode.value)
+        match romode:
+            case readoutMode.ANALOG_ONLY:
+                self.spinBoxAnalog.setEnabled(True)
+                self.labelAnalog.setEnabled(True)
+                self.spinBoxDigital.setDisabled(True)
+                self.labelDigital.setDisabled(True)
+            case readoutMode.DIGITAL_ONLY:
+                self.spinBoxAnalog.setDisabled(True)
+                self.labelAnalog.setDisabled(True)
+                self.spinBoxDigital.setEnabled(True)
+                self.labelDigital.setEnabled(True)
+            case _:
+                self.spinBoxAnalog.setEnabled(True)
+                self.labelAnalog.setEnabled(True)
+                self.spinBoxDigital.setEnabled(True)
+                self.labelDigital.setEnabled(True)
+
+        self.comboBoxROMode.activated.connect(self.setReadOut)
+        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
+        self.spinBoxDigital.editingFinished.connect(self.setDigital)
+
+    def setReadOut(self):
+        if self.comboBoxROMode.currentIndex() == 0:
+            self.det.romode = readoutMode.ANALOG_ONLY
+        elif self.comboBoxROMode.currentIndex() == 1:
+            self.det.romode = readoutMode.DIGITAL_ONLY
         else:
-            self.enableMask_Disable(i)
+            self.det.romode = readoutMode.ANALOG_AND_DIGITAL
+        self.getReadout()
 
-    def ADCInvert(self, i):
-        invertCheckBox = getattr(self, f"checkBoxADC{i}Inv")
-        if invertCheckBox.isChecked():
-            inversionMask = set_bit(self.det.adcinvert, i)
-            self.det.adcinvert = inversionMask
-        else:
-            inversionMask = remove_bit(self.det.adcinvert, i)
-            self.det.adcinvert = inversionMask
-        self.lineEditInversion.setText(hex(self.det.adcinvert))
 
     # For Pattern Tab functions
     # TODO Only add the components of Pattern tab functions
@@ -527,25 +517,6 @@ class MainWindow(QtWidgets.QMainWindow):
         waitSpinBox = getattr(self, f"spinBoxWait{i}").value()
         self.det.patwaittime[i] = waitSpinBox
 
-    def setAnalog(self):
-        self.det.asamples = self.spinBoxAnalog.value()
-
-    def setDigital(self):
-        self.det.dsamples = self.spinBoxDigital.value()
-
-    def setReadOut(self):
-        if self.comboBoxROMode.currentIndex() == 0:
-            self.det.romode = readoutMode.ANALOG_ONLY
-            self.spinBoxDigital.setDisabled(True)
-            self.spinBoxAnalog.setDisabled(False)
-        elif self.comboBoxROMode.currentIndex() == 1:
-            self.det.romode = readoutMode.DIGITAL_ONLY
-            self.spinBoxAnalog.setDisabled(True)
-            self.spinBoxDigital.setDisabled(False)
-        else:
-            self.det.romode = readoutMode.ANALOG_AND_DIGITAL
-            self.spinBoxDigital.setDisabled(False)
-            self.spinBoxAnalog.setDisabled(False)
 
 
     def loadPattern(self):
@@ -745,29 +716,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def showPalette(self, button):
         color = QtWidgets.QColorDialog.getColor()
         if color.isValid():
-            button.setStyleSheet("background-color: %s" % color.name())
+            #button.setStyleSheet("background-color: %s" % color.name())
+            button.setStyleSheet(":enabled {background-color: %s" % color.name() 
+            + "} :disabled {background-color: grey}")
             # get the RGB Values
-            print(color.getRgb())
-
-
-
-    def set_ADC_Enable(self):
-        if self.det.tengiga:
-            adcenable10g = self.det.adcenable10g
-            for i in range(32):
-                if bit_is_set(adcenable10g, i):
-                    getattr(self, f"checkBoxADC{i}En").setChecked(True)
-        else:
-            adcenable = self.det.adcenable
-            for i in range(32):
-                if bit_is_set(adcenable, i):
-                    getattr(self, f"checkBoxADC{i}En").setChecked(True)
-
-    def set_ADC_Inversion(self):
-        adcInversion = self.det.adcinvert
-        for i in range(32):
-            if bit_is_set(adcInversion, i):
-                getattr(self, f"checkBoxADC{i}Inv").setChecked(True)
+            #print(color.getRgb())
 
 
     def refresh_tab(self, tab_index):
@@ -815,28 +768,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def refresh_tab_adc(self):
-        # Getting adc Name
-        for i, adc_name in enumerate(self.det.getAdcNames()):
-            getattr(self, f"labelADC{i}").setText(adc_name)
-
-        # Initializing the ADC Enable mask
-        self.set_ADC_Enable()
-        self.lineEditEnable.setText(hex(self.det.adcenable))
-        # Initializing the ADC Inversion Mask
-        self.set_ADC_Inversion()
-        self.lineEditInversion.setText(hex(self.det.adcinvert))
-        # Sample per frame
-        self.spinBoxAnalog.setValue(self.det.asamples)
-        self.spinBoxDigital.setValue(self.det.dsamples)
-        if self.det.romode == (readoutMode.ANALOG_ONLY):
-            self.spinBoxDigital.setDisabled(True)
-            self.comboBoxROMode.setCurrentIndex(0)
-        elif self.det.romode == (readoutMode.DIGITAL_ONLY):
-            self.spinBoxAnalog.setDisabled(True)
-            self.comboBoxROMode.setCurrentIndex(1)
-        elif self.det.romode == (readoutMode.ANALOG_AND_DIGITAL):
-            self.comboBoxROMode.setCurrentIndex(2)
-
+        self.updateADCNames()
+        self.updateADCInv()
+        self.updateADCEnable()
+        self.getAnalog()
+        self.getDigital()
+        self.getReadout()
 
     def refresh_tab_pattern(self):
         self.spinBoxRunF.setValue(self.det.runclk)
@@ -954,6 +891,15 @@ class MainWindow(QtWidgets.QMainWindow):
             #pushButton.setStyleSheet("background-color:#aa0000;");
             pushButton.setStyleSheet("background-color:grey;");
 
+        # Adc Tab
+        for i in range(32):
+            pushButton = getattr(self, f"pushButtonADC{i}")
+            checkBox = getattr(self, f"checkBoxADC{i}Plot")
+            checkBox.setDisabled(True)
+            pushButton.setDisabled(True)
+            # TODO: default set of colors at startup (when not disabled)
+            #pushButton.setStyleSheet("background-color:#aa0000;");
+            pushButton.setStyleSheet("background-color:grey;");
 
     def connect_ui(self):
                # Plotting the data
@@ -998,55 +944,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
 
         # For ADCs Tab
-        # TODO Only add the components of ADCs tab
         for i in range(32):
-            getattr(self, f"checkBoxADC{i}Inv").clicked.connect(
-                partial(self.ADCInvert, i)
-            )
+            getattr(self, f"checkBoxADC{i}Inv").clicked.connect(partial(self.setADCEnable, i))
+            getattr(self, f"checkBoxADC{i}En").clicked.connect(partial(self.setADCInv, i))
+            getattr(self, f"checkBoxADC{i}Plot").clicked.connect(partial(self.setADCPlot, i))
+            getattr(self, f"pushButtonADC{i}").clicked.connect(partial(self.selectADCColor, i))
+        self.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
+        self.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
+        self.pushButtonAll15.clicked.connect(partial(self.setADCEnableRange, 1, 0, 15))
+        self.pushButtonNone15.clicked.connect(partial(self.setADCEnableRange, 0, 0, 15))
+        self.pushButtonAll16.clicked.connect(partial(self.setADCEnableRange, 1, 16, 31))
+        self.pushButtonNone16.clicked.connect(partial(self.setADCEnableRange, 0, 16, 31))
+        self.pushButtonAll.clicked.connect(partial(self.setADCEnableRange, 1, 0, 31))
+        # Cannot set adcmask to 0 anyway
+        #self.pushButtonNone.clicked.connect(partial(self.setADCEnableRange, 0, 0, 31))
+        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
+        self.spinBoxDigital.editingFinished.connect(self.setDigital)
+        self.comboBoxROMode.activated.connect(self.setReadOut)
 
-        for i in range(32):
-            getattr(self, f"checkBoxADC{i}En").clicked.connect(
-                partial(self.ADCEnable, i)
-            )
-
-        self.pushButtonADC0.clicked.connect(self.colorADC0)
-        self.pushButtonADC1.clicked.connect(self.colorADC1)
-        self.pushButtonADC2.clicked.connect(self.colorADC2)
-        self.pushButtonADC3.clicked.connect(self.colorADC3)
-        self.pushButtonADC4.clicked.connect(self.colorADC4)
-        self.pushButtonADC5.clicked.connect(self.colorADC5)
-        self.pushButtonADC6.clicked.connect(self.colorADC6)
-        self.pushButtonADC7.clicked.connect(self.colorADC7)
-        self.pushButtonADC8.clicked.connect(self.colorADC8)
-        self.pushButtonADC9.clicked.connect(self.colorADC9)
-        self.pushButtonADC10.clicked.connect(self.colorADC10)
-        self.pushButtonADC11.clicked.connect(self.colorADC11)
-        self.pushButtonADC12.clicked.connect(self.colorADC12)
-        self.pushButtonADC13.clicked.connect(self.colorADC13)
-        self.pushButtonADC14.clicked.connect(self.colorADC14)
-        self.pushButtonADC15.clicked.connect(self.colorADC15)
-        self.pushButtonADC16.clicked.connect(self.colorADC16)
-        self.pushButtonADC17.clicked.connect(self.colorADC17)
-        self.pushButtonADC18.clicked.connect(self.colorADC18)
-        self.pushButtonADC19.clicked.connect(self.colorADC19)
-        self.pushButtonADC20.clicked.connect(self.colorADC20)
-        self.pushButtonADC21.clicked.connect(self.colorADC21)
-        self.pushButtonADC22.clicked.connect(self.colorADC22)
-        self.pushButtonADC23.clicked.connect(self.colorADC23)
-        self.pushButtonADC24.clicked.connect(self.colorADC24)
-        self.pushButtonADC25.clicked.connect(self.colorADC25)
-        self.pushButtonADC26.clicked.connect(self.colorADC26)
-        self.pushButtonADC27.clicked.connect(self.colorADC27)
-        self.pushButtonADC28.clicked.connect(self.colorADC28)
-        self.pushButtonADC29.clicked.connect(self.colorADC29)
-        self.pushButtonADC30.clicked.connect(self.colorADC30)
-        self.pushButtonADC31.clicked.connect(self.colorADC31)
-        self.pushButtonAll15.clicked.connect(self.all_0_15)
-        self.pushButtonNone15.clicked.connect(self.none_0_15)
-        self.pushButtonAll16.clicked.connect(self.all_16_31)
-        self.pushButtonNone16.clicked.connect(self.none_16_31)
-        self.pushButtonAll.clicked.connect(self.enable_mask_all)
-        self.pushButtonNone.clicked.connect(self.enable_mask_none)
 
         # For Pattern Tab
         # TODO Only add the components of Pattern tab
@@ -1071,9 +986,7 @@ class MainWindow(QtWidgets.QMainWindow):
             getattr(self, f"spinBoxWait{i}").editingFinished.connect(
                 partial(self.setWait, i)
             )
-        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
-        self.spinBoxDigital.editingFinished.connect(self.setDigital)
-        self.comboBoxROMode.activated.connect(self.setReadOut)
+
         self.pushButtonLoad.clicked.connect(self.loadPattern)
 
         # For Acquistions Tab

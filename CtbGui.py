@@ -206,9 +206,14 @@ class MainWindow(QtWidgets.QMainWindow):
     # For Signals Tab functions
     def getDigitalBitEnable(self, i, dbitList):
         checkBox = getattr(self, f"checkBoxBIT{i}DB")
+        checkBoxPlot = getattr(self, f"checkBoxBIT{i}Plot")
         checkBox.clicked.disconnect()
+        checkBoxPlot.clicked.disconnect()
         checkBox.setChecked(i in list(dbitList))
+        # enable plot option only if in dblist
+        checkBoxPlot.setEnabled(checkBox.isChecked())
         checkBox.clicked.connect(partial(self.setDigitalBitEnable, i))
+        checkBoxPlot.clicked.connect(partial(self.setBitPlot, i))
         
     def updateDigitalBitEnable(self):
         retval = self.det.rx_dbitlist       
@@ -275,11 +280,12 @@ class MainWindow(QtWidgets.QMainWindow):
         pushButton = getattr(self, f"pushButtonBIT{i}")
         checkBox = getattr(self, f"checkBoxBIT{i}Plot")
         pushButton.clicked.disconnect()
+        # enable color pick only if plot enabled
         pushButton.setEnabled(checkBox.isChecked())
-        pushButton.clicked.connect(partial(self.seletBitColor, i))
+        pushButton.clicked.connect(partial(self.selectBitColor, i))
         #TODO: enable plotting for this bit
 
-    def seletBitColor(self, i):
+    def selectBitColor(self, i):
         pushButton = getattr(self, f"pushButtonBIT{i}")
         self.showPalette(pushButton)
 
@@ -941,6 +947,8 @@ class MainWindow(QtWidgets.QMainWindow):
         # Signals Tab
         for i in range(64):
             pushButton = getattr(self, f"pushButtonBIT{i}")
+            checkBox = getattr(self, f"checkBoxBIT{i}Plot")
+            checkBox.setDisabled(True)
             pushButton.setDisabled(True)
             # TODO: default set of colors at startup (when not disabled)
             #pushButton.setStyleSheet("background-color:#aa0000;");
@@ -985,10 +993,9 @@ class MainWindow(QtWidgets.QMainWindow):
             getattr(self, f"checkBoxBIT{i}DB").clicked.connect(partial(self.setDigitalBitEnable, i))
             getattr(self, f"checkBoxBIT{i}Out").clicked.connect(partial(self.setIOout, i))
             getattr(self, f"checkBoxBIT{i}Plot").clicked.connect(partial(self.setBitPlot, i))
-            getattr(self, f"pushButtonBIT{i}").clicked.connect(partial(self.seletBitColor, i))
+            getattr(self, f"pushButtonBIT{i}").clicked.connect(partial(self.selectBitColor, i))
         self.lineEditPatIOCtrl.editingFinished.connect(self.setIOOutReg)
         self.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
-
 
         # For ADCs Tab
         # TODO Only add the components of ADCs tab

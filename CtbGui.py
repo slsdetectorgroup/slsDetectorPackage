@@ -230,8 +230,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def getIOOutReg(self):
         retval = self.det.patioctrl
-        self.labelPatIOCntrl.setText("0x{:016x}".format(self.det.patioctrl))
+        self.lineEditPatIOCtrl.editingFinished.disconnect()
+        self.lineEditPatIOCtrl.setText("0x{:016x}".format(self.det.patioctrl))
+        self.lineEditPatIOCtrl.editingFinished.connect(self.setIOOutReg)
         return retval
+
+    def setIOOutReg(self):
+        self.det.patioctrl = int(self.lineEditPatIOCtrl.text(), 16)
+        self.updateIOOut()
 
     def updateCheckBoxIOOut(self, i, out):
         checkBox = getattr(self, f"checkBoxBIT{i}Out")
@@ -270,9 +276,10 @@ class MainWindow(QtWidgets.QMainWindow):
         checkBox = getattr(self, f"checkBoxBIT{i}Plot")
         pushButton.clicked.disconnect()
         pushButton.setEnabled(checkBox.isChecked())
-        pushButton.clicked.connect(partial(self.colorBit, i))
+        pushButton.clicked.connect(partial(self.seletBitColor, i))
+        #TODO: enable plotting for this bit
 
-    def colorBit(self, i):
+    def seletBitColor(self, i):
         pushButton = getattr(self, f"pushButtonBIT{i}")
         self.showPalette(pushButton)
 
@@ -935,9 +942,9 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(64):
             pushButton = getattr(self, f"pushButtonBIT{i}")
             pushButton.setDisabled(True)
-            pushButton.setPalette(#aa0000)
-
-
+            # TODO: default set of colors at startup (when not disabled)
+            #pushButton.setStyleSheet("background-color:#aa0000;");
+            pushButton.setStyleSheet("background-color:grey;");
 
 
     def connect_ui(self):
@@ -978,7 +985,8 @@ class MainWindow(QtWidgets.QMainWindow):
             getattr(self, f"checkBoxBIT{i}DB").clicked.connect(partial(self.setDigitalBitEnable, i))
             getattr(self, f"checkBoxBIT{i}Out").clicked.connect(partial(self.setIOout, i))
             getattr(self, f"checkBoxBIT{i}Plot").clicked.connect(partial(self.setBitPlot, i))
-            getattr(self, f"pushButtonBIT{i}").clicked.connect(partial(self.colorBit, i))
+            getattr(self, f"pushButtonBIT{i}").clicked.connect(partial(self.seletBitColor, i))
+        self.lineEditPatIOCtrl.editingFinished.connect(self.setIOOutReg)
         self.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
 
 

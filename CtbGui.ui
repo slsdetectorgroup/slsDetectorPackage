@@ -28,8 +28,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1467</width>
-         <height>912</height>
+         <width>1463</width>
+         <height>918</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -7690,7 +7690,7 @@
                  <property name="geometry">
                   <rect>
                    <x>20</x>
-                   <y>10</y>
+                   <y>18</y>
                    <width>141</width>
                    <height>31</height>
                   </rect>
@@ -7738,20 +7738,17 @@
                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                  </property>
                 </widget>
-                <widget class="QLabel" name="labelPatIOCntrl">
+                <widget class="QLineEdit" name="lineEditPatIOCtrl">
                  <property name="geometry">
                   <rect>
-                   <x>200</x>
-                   <y>18</y>
-                   <width>211</width>
-                   <height>21</height>
+                   <x>190</x>
+                   <y>20</y>
+                   <width>221</width>
+                   <height>28</height>
                   </rect>
                  </property>
-                 <property name="text">
-                  <string/>
-                 </property>
                  <property name="alignment">
-                  <set>Qt::AlignCenter</set>
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                  </property>
                 </widget>
                </widget>
@@ -14024,7 +14021,7 @@
      <x>0</x>
      <y>0</y>
      <width>1497</width>
-     <height>29</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

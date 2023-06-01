@@ -955,6 +955,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def refresh_tab_adc(self):
+        # Getting adc Name
+        for i, adc_name in enumerate(self.det.getAdcNames()):
+            getattr(self, f"labelADC{i}").setText(adc_name)
+
         # Initializing the ADC Enable mask
         self.set_ADC_Enable()
         self.lineEditEnable.setText(hex(self.det.adcenable))

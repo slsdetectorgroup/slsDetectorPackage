@@ -69,7 +69,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>6</number>
+              <number>5</number>
              </property>
              <widget class="QWidget" name="tab">
               <attribute name="title">
@@ -10904,8 +10904,8 @@
                 <rect>
                  <x>10</x>
                  <y>260</y>
-                 <width>711</width>
-                 <height>301</height>
+                 <width>401</width>
+                 <height>271</height>
                 </rect>
                </property>
                <property name="frameShape">
@@ -10915,18 +10915,8 @@
                 <enum>QFrame::Sunken</enum>
                </property>
                <layout class="QGridLayout" name="gridLayout_5">
-                <item row="1" column="3">
-                 <widget class="QLabel" name="label_107">
-                  <property name="text">
-                   <string>Start Address</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignCenter</set>
-                  </property>
-                 </widget>
-                </item>
                 <item row="6" column="0">
-                 <widget class="QLabel" name="label_408">
+                 <widget class="QLabel" name="label_410">
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
@@ -10940,34 +10930,12 @@
                    </size>
                   </property>
                   <property name="text">
-                   <string>Loop 3</string>
+                   <string>Loop 5</string>
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="6">
-                 <widget class="QSpinBox" name="spinBoxLoop0WaitTime">
-                  <property name="minimumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="maximum">
-                   <number>999999</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="5" column="0">
-                 <widget class="QLabel" name="label_407">
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_405">
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
@@ -10981,65 +10949,11 @@
                    </size>
                   </property>
                   <property name="text">
-                   <string>Loop 2</string>
+                   <string>Loop 0</string>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="6">
-                 <widget class="QLabel" name="label_128">
-                  <property name="text">
-                   <string>Wait Time</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignCenter</set>
-                  </property>
-                 </widget>
-                </item>
-                <item row="5" column="4">
-                 <widget class="QLineEdit" name="lineEditLoop2Stop">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="8" column="3">
-                 <widget class="QLineEdit" name="lineEditLoop5Start">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="2">
+                <item row="2" column="1">
                  <widget class="QSpinBox" name="spinBoxLoop1Repetition">
                   <property name="minimumSize">
                    <size>
@@ -11061,95 +10975,7 @@
                   </property>
                  </widget>
                 </item>
-                <item row="5" column="6">
-                 <widget class="QSpinBox" name="spinBoxLoop2WaitTime">
-                  <property name="minimumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="maximum">
-                   <number>999999</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="7" column="2">
-                 <widget class="QSpinBox" name="spinBoxLoop4Repetition">
-                  <property name="minimumSize">
-                   <size>
-                    <width>110</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>110</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="maximum">
-                   <number>9999</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="4">
-                 <widget class="QLineEdit" name="lineEditLoop0Stop">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>0x1fff</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="0">
-                 <widget class="QLabel" name="label_405">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>50</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>Loop 0</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="0">
+                <item row="2" column="0">
                  <widget class="QLabel" name="label_406">
                   <property name="minimumSize">
                    <size>
@@ -11168,7 +10994,7 @@
                   </property>
                  </widget>
                 </item>
-                <item row="5" column="3">
+                <item row="3" column="2">
                  <widget class="QLineEdit" name="lineEditLoop2Start">
                   <property name="minimumSize">
                    <size>
@@ -11190,209 +11016,7 @@
                   </property>
                  </widget>
                 </item>
-                <item row="4" column="4">
-                 <widget class="QLineEdit" name="lineEditLoop1Stop">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="7" column="4">
-                 <widget class="QLineEdit" name="lineEditLoop4Stop">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="1">
-                 <spacer name="horizontalSpacer_2">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeType">
-                   <enum>QSizePolicy::Fixed</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="8" column="0">
-                 <widget class="QLabel" name="label_410">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>50</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>Loop 5</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="5" column="2">
-                 <widget class="QSpinBox" name="spinBoxLoop2Repetition">
-                  <property name="minimumSize">
-                   <size>
-                    <width>110</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>110</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="maximum">
-                   <number>9999</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="8" column="4">
-                 <widget class="QLineEdit" name="lineEditLoop5Stop">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="6" column="6">
-                 <widget class="QSpinBox" name="spinBoxLoop3WaitTime">
-                  <property name="minimumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="maximum">
-                   <number>999999</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="6" column="4">
-                 <widget class="QLineEdit" name="lineEditLoop3Stop">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="3">
-                 <spacer name="verticalSpacer_3">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>40</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="4" column="6">
-                 <widget class="QSpinBox" name="spinBoxLoop1WaitTime">
-                  <property name="minimumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="maximum">
-                   <number>999999</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="6" column="3">
+                <item row="4" column="2">
                  <widget class="QLineEdit" name="lineEditLoop3Start">
                   <property name="minimumSize">
                    <size>
@@ -11414,7 +11038,139 @@
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="3">
+                <item row="6" column="3">
+                 <widget class="QLineEdit" name="lineEditLoop5Stop">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="3">
+                 <widget class="QLineEdit" name="lineEditLoop1Stop">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="1">
+                 <widget class="QSpinBox" name="spinBoxLoop5Repetition">
+                  <property name="minimumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>9999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="0">
+                 <widget class="QLabel" name="label_409">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 4</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="3">
+                 <widget class="QLineEdit" name="lineEditLoop0Stop">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="1">
+                 <widget class="QSpinBox" name="spinBoxLoop3Repetition">
+                  <property name="minimumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>9999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
                  <widget class="QLineEdit" name="lineEditLoop0Start">
                   <property name="minimumSize">
                    <size>
@@ -11439,8 +11195,8 @@
                   </property>
                  </widget>
                 </item>
-                <item row="4" column="3">
-                 <widget class="QLineEdit" name="lineEditLoop1Start">
+                <item row="5" column="3">
+                 <widget class="QLineEdit" name="lineEditLoop4Stop">
                   <property name="minimumSize">
                    <size>
                     <width>80</width>
@@ -11461,150 +11217,7 @@
                   </property>
                  </widget>
                 </item>
-                <item row="9" column="3">
-                 <spacer name="verticalSpacer">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>40</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="7" column="3">
-                 <widget class="QLineEdit" name="lineEditLoop4Start">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="2">
-                 <widget class="QLabel" name="label_106">
-                  <property name="text">
-                   <string>Repetitions</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignCenter</set>
-                  </property>
-                 </widget>
-                </item>
-                <item row="8" column="6">
-                 <widget class="QSpinBox" name="spinBoxLoop5WaitTime">
-                  <property name="minimumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="maximum">
-                   <number>999999</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="8" column="2">
-                 <widget class="QSpinBox" name="spinBoxLoop5Repetition">
-                  <property name="minimumSize">
-                   <size>
-                    <width>110</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>110</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="maximum">
-                   <number>9999</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="7" column="0">
-                 <widget class="QLabel" name="label_409">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>50</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>Loop 4</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="3">
-                 <spacer name="verticalSpacer_2">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>40</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="6" column="2">
-                 <widget class="QSpinBox" name="spinBoxLoop3Repetition">
-                  <property name="minimumSize">
-                   <size>
-                    <width>110</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>110</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="maximum">
-                   <number>9999</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="2">
+                <item row="1" column="1">
                  <widget class="QSpinBox" name="spinBoxLoop0Repetition">
                   <property name="minimumSize">
                    <size>
@@ -11629,7 +11242,29 @@
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="4">
+                <item row="3" column="1">
+                 <widget class="QSpinBox" name="spinBoxLoop2Repetition">
+                  <property name="minimumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>9999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
                  <widget class="QLabel" name="label_108">
                   <property name="text">
                    <string>Stop Address</string>
@@ -11639,17 +11274,39 @@
                   </property>
                  </widget>
                 </item>
-                <item row="7" column="6">
-                 <widget class="QSpinBox" name="spinBoxLoop4WaitTime">
+                <item row="3" column="3">
+                 <widget class="QLineEdit" name="lineEditLoop2Stop">
                   <property name="minimumSize">
                    <size>
-                    <width>125</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>125</width>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="1">
+                 <widget class="QSpinBox" name="spinBoxLoop4Repetition">
+                  <property name="minimumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>110</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -11657,22 +11314,73 @@
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="maximum">
-                   <number>999999</number>
+                   <number>9999</number>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="5">
-                 <widget class="QLabel" name="label_133">
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_407">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
                   <property name="text">
-                   <string>Wait Address</string>
+                   <string>Loop 2</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="2">
+                 <widget class="QLineEdit" name="lineEditLoop4Start">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLabel" name="label_106">
+                  <property name="text">
+                   <string>Repetitions</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="5">
-                 <widget class="QLineEdit" name="lineEditLoop0Wait">
+                <item row="0" column="2">
+                 <widget class="QLabel" name="label_107">
+                  <property name="text">
+                   <string>Start Address</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
+                 <widget class="QLineEdit" name="lineEditLoop1Start">
                   <property name="minimumSize">
                    <size>
                     <width>80</width>
@@ -11693,8 +11401,27 @@
                   </property>
                  </widget>
                 </item>
-                <item row="4" column="5">
-                 <widget class="QLineEdit" name="lineEditLoop1Wait">
+                <item row="4" column="0">
+                 <widget class="QLabel" name="label_408">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 3</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="2">
+                 <widget class="QLineEdit" name="lineEditLoop5Start">
                   <property name="minimumSize">
                    <size>
                     <width>80</width>
@@ -11715,74 +11442,8 @@
                   </property>
                  </widget>
                 </item>
-                <item row="5" column="5">
-                 <widget class="QLineEdit" name="lineEditLoop2Wait">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="6" column="5">
-                 <widget class="QLineEdit" name="lineEditLoop3Wait">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="7" column="5">
-                 <widget class="QLineEdit" name="lineEditLoop4Wait">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="8" column="5">
-                 <widget class="QLineEdit" name="lineEditLoop5Wait">
+                <item row="4" column="3">
+                 <widget class="QLineEdit" name="lineEditLoop3Stop">
                   <property name="minimumSize">
                    <size>
                     <width>80</width>
@@ -11809,7 +11470,7 @@
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>580</y>
+                 <y>550</y>
                  <width>711</width>
                  <height>111</height>
                 </rect>
@@ -12202,7 +11863,7 @@
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>710</y>
+                 <y>680</y>
                  <width>711</width>
                  <height>51</height>
                 </rect>
@@ -12442,6 +12103,422 @@
                    </size>
                   </property>
                  </spacer>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QFrame" name="frame_21">
+               <property name="geometry">
+                <rect>
+                 <x>430</x>
+                 <y>260</y>
+                 <width>291</width>
+                 <height>271</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Sunken</enum>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_8">
+                <item row="5" column="2">
+                 <widget class="QSpinBox" name="spinBoxLoop4WaitTime">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>999999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
+                 <widget class="QSpinBox" name="spinBoxLoop1WaitTime">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>999999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_418">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait 0</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="0">
+                 <widget class="QLabel" name="label_417">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait 5</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="2">
+                 <widget class="QSpinBox" name="spinBoxLoop2WaitTime">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>999999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="1">
+                 <widget class="QLineEdit" name="lineEditLoop3Wait">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QLineEdit" name="lineEditLoop2Wait">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QLabel" name="label_423">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait 3</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QLabel" name="label_139">
+                  <property name="text">
+                   <string>Time</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="1">
+                 <widget class="QLineEdit" name="lineEditLoop5Wait">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="2">
+                 <widget class="QSpinBox" name="spinBoxLoop5WaitTime">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>999999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="0">
+                 <widget class="QLabel" name="label_421">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait 4</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QLineEdit" name="lineEditLoop1Wait">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_420">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait 1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLineEdit" name="lineEditLoop0Wait">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLabel" name="label_141">
+                  <property name="text">
+                   <string>Address</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="2">
+                 <widget class="QSpinBox" name="spinBoxLoop3WaitTime">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>999999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="1">
+                 <widget class="QLineEdit" name="lineEditLoop4Wait">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QSpinBox" name="spinBoxLoop0WaitTime">
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>999999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_422">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Wait 2</string>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </widget>

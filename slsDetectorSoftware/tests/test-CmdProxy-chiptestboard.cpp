@@ -183,7 +183,7 @@ TEST_CASE("signallist", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("signallist", {"a", "s", "d"}, -1, PUT));
 
         std::vector<std::string> names;
-        for (int iarg = 0; iarg != 63; ++iarg) {
+        for (int iarg = 0; iarg != 64; ++iarg) {
             names.push_back("a");
         }
         {

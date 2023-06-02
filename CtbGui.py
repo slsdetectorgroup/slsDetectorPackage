@@ -29,7 +29,6 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__()
         uic.loadUi("CtbGui.ui", self)
         self.setup_ui()
-        self.refresh_tab_pattern()
         self.refresh_tab_acquisition()
         self.tabWidget.setCurrentIndex(6)
         self.tabWidget.currentChanged.connect(self.refresh_tab)
@@ -39,6 +38,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.refresh_tab_sense()
         self.refresh_tab_signals()
         self.refresh_tab_adc()
+        self.refresh_tab_pattern()
 
 
     # For Action options function
@@ -445,9 +445,141 @@ class MainWindow(QtWidgets.QMainWindow):
             self.det.romode = readoutMode.ANALOG_AND_DIGITAL
         self.getReadout()
 
+    # Pattern Tab functions
+    def getRunFrequency(self):
+        self.spinBoxRunF.editingFinished.disconnect()
+        self.spinBoxRunF.setValue(self.det.runclk)
+        self.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
 
-    # For Pattern Tab functions
-    # TODO Only add the components of Pattern tab functions
+    def setRunFrequency(self):
+        self.det.runclk = self.spinBoxRunF.value()
+        self.getRunFrequency()
+
+    def getADCFrequency(self):
+        self.spinBoxADCF.editingFinished.disconnect()
+        self.spinBoxADCF.setValue(self.det.adcclk)
+        self.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
+
+    def setADCFrequency(self):
+        self.det.adcclk = self.spinBoxADCF.value()
+        self.getADCFrequency()
+
+    def getADCPhase(self):
+        self.spinBoxADCPhase.editingFinished.disconnect()
+        self.spinBoxADCPhase.setValue(self.det.adcclk)
+        self.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
+
+    def setADCPhase(self):
+        self.det.adcphase = self.spinBoxADCPhase.value()
+        self.getADCPhase()
+
+    def getADCPipeline(self):
+        self.spinBoxADCPipeline.editingFinished.disconnect()
+        self.spinBoxADCPipeline.setValue(self.det.adcpipeline)
+        self.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
+
+    def setADCPipeline(self):
+        self.det.adcpipeline = self.spinBoxADCPipeline.value()
+        self.getADCPipeline()
+
+    def getDBITFrequency(self):
+        self.spinBoxDBITF.editingFinished.disconnect()
+        self.spinBoxDBITF.setValue(self.det.dbitclk)
+        self.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
+
+    def setDBITFrequency(self):
+        self.det.dbitclk = self.spinBoxDBITF.value()
+        self.getDBITFrequency()
+
+    def getDBITPhase(self):
+        self.spinBoxDBITPhase.editingFinished.disconnect()
+        self.spinBoxDBITPhase.setValue(self.det.dbitphase)
+        self.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
+
+    def setDBITPhase(self):
+        self.det.dbitphase = self.spinBoxDBITPhase.value()
+        self.getDBITPhase()
+
+    def getDBITPipeline(self):
+        self.spinBoxDBITPipeline.editingFinished.disconnect()
+        self.spinBoxDBITPipeline.setValue(self.det.dbitpipeline)
+        self.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
+
+    def setDBITPipeline(self):
+        self.det.dbitpipeline = self.spinBoxDBITPipeline.value()
+        self.getDBITPipeline()
+
+    def getPatLimitAddress(self):
+        retval = self.det.patlimits
+        self.lineEditStartAddress.editingFinished.disconnect()
+        self.lineEditStopAddress.editingFinished.disconnect()
+        self.lineEditStartAddress.setText("0x{:04x}".format(retval[0]))
+        self.lineEditStopAddress.setText("0x{:04x}".format(retval[1]))
+        self.lineEditStartAddress.editingFinished.connect(self.setPatLimitAddress)
+        self.lineEditStopAddress.editingFinished.connect(self.setPatLimitAddress)
+
+    def setPatLimitAddress(self):
+        start = int(self.lineEditStartAddress.text(), 16)
+        stop = int(self.lineEditStopAddress.text(), 16)
+        self.det.patlimits = [start, stop]
+        self.getPatLimitAddress()
+
+    def getPatLoopStartStopAddress(self, level):
+        retval = self.det.patloop[level]
+        lineEditStart = getattr(self, f"lineEditLoop{level}Start")
+        lineEditStop = getattr(self, f"lineEditLoop{level}Stop")
+        lineEditStart.editingFinished.disconnect()
+        lineEditStop.editingFinished.disconnect()
+        lineEditStart.setText("0x{:04x}".format(retval[0]))
+        lineEditStop.setText("0x{:04x}".format(retval[1]))
+        lineEditStart.editingFinished.connect(partial(self.setPatLoopStartStopAddress, level))
+        lineEditStop.editingFinished.connect(partial(self.setPatLoopStartStopAddress, level))
+
+    def setPatLoopStartStopAddress(self, level):
+        lineEditStart = getattr(self, f"lineEditLoop{level}Start")
+        lineEditStop = getattr(self, f"lineEditLoop{level}Stop")
+        start = int(lineEditStart.text(), 16)
+        stop = int(lineEditStop.text(), 16)
+        self.det.patloop[level] = [start, stop]
+        self.getPatLoopStartStopAddress(level)
+
+    def getPatLoopWaitAddress(self, level):
+        retval = self.det.patwait[level]
+        lineEdit = getattr(self, f"lineEditLoop{level}Wait")
+        lineEdit.editingFinished.disconnect()
+        lineEdit.setText("0x{:04x}".format(retval))
+        lineEdit.editingFinished.connect(partial(self.setPatLoopWaitAddress, level))
+
+    def setPatLoopWaitAddress(self, level):
+        lineEdit = getattr(self, f"lineEditLoop{level}Wait")
+        addr = int(lineEdit.text(), 16)
+        self.det.patwait[level] = addr
+        self.getPatLoopWaitAddress(level)
+
+    def getPatLoopRepetition(self, level):
+        retval = self.det.patnloop[level]
+        spinBox = getattr(self, f"spinBoxLoop{level}Repetition")
+        spinBox.editingFinished.disconnect()
+        spinBox.setValue(retval)
+        spinBox.editingFinished.connect(partial(self.setPatLoopRepetition, level))
+
+    def setPatLoopRepetition(self, level):
+        spinBox = getattr(self, f"spinBoxLoop{level}Repetition")
+        self.det.patnloop[level] = spinBox.value()
+        self.getPatLoopRepetition(level)
+
+    def getPatLoopWaitTime(self, level):
+        retval = self.det.patwaittime[level]
+        spinBox = getattr(self, f"spinBoxLoop{level}WaitTime")
+        spinBox.editingFinished.disconnect()
+        spinBox.setValue(retval)
+        spinBox.editingFinished.connect(partial(self.setPatLoopWaitTime, level))
+
+    def setPatLoopWaitTime(self, level):
+        spinBox = getattr(self, f"spinBoxLoop{level}WaitTime")
+        self.det.patwaittime[level] = spinBox.value()
+        self.getPatLoopWaitTime(level)
+
     def setCompiler(self):
         response = QtWidgets.QFileDialog.getOpenFileName(
             parent=self,
@@ -458,7 +590,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if response[0]:
             self.lineEditCompiler.setText(response[0])
 
-    def setPattern(self):
+    def setPatternFile(self):
         if self.checkBoxCompile.isChecked():
             filt='Pattern code(*.py *.c)'
         else:
@@ -470,57 +602,10 @@ class MainWindow(QtWidgets.QMainWindow):
             filter=filt
         )
         if response[0]:
-            self.lineEditPattern.setText(response[0])
-
-    def setFrames(self):
-        self.det.frames = self.spinBoxFrames.value()
-
-    def setPeriod(self):
-        if self.comboBoxTime.currentIndex() == 0:
-            self.det.period = self.spinBoxPeriod.value()
-        elif self.comboBoxTime.currentIndex() == 1:
-            self.det.period = self.spinBoxPeriod.value() * (1e-3)
-        elif self.comboBoxTime.currentIndex() == 2:
-            self.det.period = self.spinBoxPeriod.value() * (1e-6)
-        else:
-            self.det.period = self.spinBoxPeriod.value() * (1e-9)
-
-    def setTriggers(self):
-        self.det.triggers = self.spinBoxTriggers.value()
-
-    def setRunFrequency(self):
-        self.det.runclk = self.spinBoxRunF.value()
-
-    def setADCFrequency(self):
-        self.det.adcclk = self.spinBoxADCF.value()
-
-    def setADCPhase(self):
-        self.det.adcphase = self.spinBoxADCPhase.value()
-
-    def setADCPipeline(self):
-        self.det.adcpipeline = self.spinBoxADCPipeline.value()
-
-    def setDBITFrequency(self):
-        self.det.dbitclk = self.spinBoxDBITF.value()
-
-    def setDBITPhase(self):
-        self.det.dbitphase = self.spinBoxDBITPhase.value()
-
-    def setDBITPipeline(self):
-        self.det.dbitpipeline = self.spinBoxDBITPipeline.value()
-
-    def setLoop(self, i):
-        loopSpinBox = getattr(self, f"spinBoxLoop{i}").value()
-        self.det.patnloop[i] = loopSpinBox
-
-    def setWait(self, i):
-        waitSpinBox = getattr(self, f"spinBoxWait{i}").value()
-        self.det.patwaittime[i] = waitSpinBox
-
-
+            self.lineEditPatternFile.setText(response[0])
 
     def loadPattern(self):
-        pattern_file = self.lineEditPattern.text()
+        pattern_file = self.lineEditPatternFile.text()
         if not pattern_file:
             QtWidgets.QMessageBox.warning(self, "Pattern Fail", "No pattern file selected. Please select one.", QtWidgets.QMessageBox.Ok)
             return
@@ -549,12 +634,26 @@ class MainWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.warning(self, "Compile Fail", "Could not compile pattern.", QtWidgets.QMessageBox.Ok)
                 return
             pattern_file += 'at'
-        # load
+        # load pattern
         self.det.pattern = pattern_file
             
+    # Acquistions Tab functions
+    def setFrames(self):
+        self.det.frames = self.spinBoxFrames.value()
 
+    def setPeriod(self):
+        if self.comboBoxTime.currentIndex() == 0:
+            self.det.period = self.spinBoxPeriod.value()
+        elif self.comboBoxTime.currentIndex() == 1:
+            self.det.period = self.spinBoxPeriod.value() * (1e-3)
+        elif self.comboBoxTime.currentIndex() == 2:
+            self.det.period = self.spinBoxPeriod.value() * (1e-6)
+        else:
+            self.det.period = self.spinBoxPeriod.value() * (1e-9)
 
-    # For Acquistions Tab functions
+    def setTriggers(self):
+        self.det.triggers = self.spinBoxTriggers.value()
+
     # TODO Only add the components of Acquistions tab functions
     def plotOptions(self):
         print("plot options")
@@ -785,34 +884,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getReadout()
 
     def refresh_tab_pattern(self):
-        self.spinBoxRunF.setValue(self.det.runclk)
-        self.spinBoxADCF.setValue(self.det.adcclk)
-        self.spinBoxADCPhase.setValue(self.det.adcphase)
-        self.spinBoxADCPipeline.setValue(self.det.adcpipeline)
-        self.spinBoxDBITF.setValue(self.det.dbitclk)
-        self.spinBoxDBITPhase.setValue(self.det.dbitphase)
-        self.spinBoxDBITPipeline.setValue(self.det.dbitpipeline)
-
-        # TODO yet to decide on hex or int
-        self.lineEditStartAddress.setText(hex((self.det.patlimits)[0]))
-        self.lineEditStopAddress.setText(hex((self.det.patlimits)[1]))
-        # For Wait time and Wait address
+        self.getRunFrequency()
+        self.getADCFrequency()
+        self.getADCPhase()
+        self.getADCPipeline()
+        self.getDBITFrequency()
+        self.getDBITPhase()
+        self.getDBITPipeline()
+        self.getPatLimitAddress()
         for i in range(6):
-            lineEditWait = getattr(self, f"lineEditWait{i}Address")
-            spinBoxWait = getattr(self, f"spinBoxWait{i}")
-            lineEditWait.setText(hex(self.det.patwait[i]))
-            spinBoxWait.setValue(self.det.patwaittime[i])
+            self.getPatLoopStartStopAddress(i)
+            self.getPatLoopWaitAddress(i)
+            self.getPatLoopRepetition(i)
+            self.getPatLoopWaitTime(i)
 
-        for i in range(6):
-            # For Loop repetitions
-            spinBoxLoop = getattr(self, f"spinBoxLoop{i}")
-            spinBoxLoop.setValue(self.det.patnloop[i])
-            # For Loop start address
-            lineEditLoopStart = getattr(self, f"lineEditLoop{i}Start")
-            lineEditLoopStart.setText(hex((self.det.patloop[i])[0]))
-            # For loop stop address
-            lineEditLoopStop = getattr(self, f"lineEditLoop{i}Stop")
-            lineEditLoopStop.setText(hex((self.det.patloop[i])[1]))
         
     def refresh_tab_acquisition(self):
         # Updating values for patterns
@@ -967,15 +1052,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDigital.editingFinished.connect(self.setDigital)
         self.comboBoxROMode.activated.connect(self.setReadOut)
 
-
         # For Pattern Tab
-        # TODO Only add the components of Pattern tab
-        self.pushButtonCompiler.clicked.connect(self.setCompiler)
-        self.pushButtonPattern.clicked.connect(self.setPattern)
-        self.spinBoxFrames.editingFinished.connect(self.setFrames)
-        self.spinBoxPeriod.editingFinished.connect(self.setPeriod)
-        self.comboBoxTime.activated.connect(self.setPeriod)
-        self.spinBoxTriggers.editingFinished.connect(self.setTriggers)
         self.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
         self.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
         self.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
@@ -983,18 +1060,37 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
         self.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
         self.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
+        self.lineEditStartAddress.editingFinished.connect(self.setPatLimitAddress)
+        self.lineEditStopAddress.editingFinished.connect(self.setPatLimitAddress)
         for i in range(6):
-            getattr(self, f"spinBoxLoop{i}").editingFinished.connect(
-                partial(self.setLoop, i)
+            getattr(self, f"lineEditLoop{i}Start").editingFinished.connect(
+                partial(self.setPatLoopStartStopAddress, i)
             )
-        for i in range(6):
-            getattr(self, f"spinBoxWait{i}").editingFinished.connect(
-                partial(self.setWait, i)
+            getattr(self, f"lineEditLoop{i}Stop").editingFinished.connect(
+                partial(self.setPatLoopStartStopAddress, i)
             )
-
+            getattr(self, f"lineEditLoop{i}Wait").editingFinished.connect(
+                partial(self.setPatLoopWaitAddress, i)
+            )
+            getattr(self, f"spinBoxLoop{i}Repetition").editingFinished.connect(
+                partial(self.setPatLoopRepetition, i)
+            )
+            getattr(self, f"spinBoxLoop{i}WaitTime").editingFinished.connect(
+                partial(self.setPatLoopWaitTime, i)
+            )
+        self.pushButtonCompiler.clicked.connect(self.setCompiler)
+        self.pushButtonPatternFile.clicked.connect(self.setPatternFile)
         self.pushButtonLoad.clicked.connect(self.loadPattern)
 
+
         # For Acquistions Tab
+        self.spinBoxFrames.editingFinished.connect(self.setFrames)
+        self.spinBoxPeriod.editingFinished.connect(self.setPeriod)
+        self.comboBoxTime.activated.connect(self.setPeriod)
+        self.spinBoxTriggers.editingFinished.connect(self.setTriggers)
+
+
+
         # TODO Only add the components of Acquistions tab
         self.radioButtonNoPlot.clicked.connect(self.plotOptions)
         self.radioButtonWaveform.clicked.connect(self.plotOptions)

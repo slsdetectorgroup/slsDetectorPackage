@@ -69,7 +69,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>3</number>
+              <number>5</number>
              </property>
              <widget class="QWidget" name="tab">
               <attribute name="title">
@@ -10964,13 +10964,13 @@
                  <widget class="QLineEdit" name="lineEditStopAddress">
                   <property name="minimumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -10986,13 +10986,13 @@
                  <widget class="QLineEdit" name="lineEditStartAddress">
                   <property name="minimumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -11130,13 +11130,13 @@
                  <widget class="QLineEdit" name="lineEditLoop3Start">
                   <property name="minimumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -11175,7 +11175,7 @@
                  </widget>
                 </item>
                 <item row="2" column="3">
-                 <widget class="QSpinBox" name="spinBoxLoop2">
+                 <widget class="QSpinBox" name="spinBoxLoop2Repetition">
                   <property name="minimumSize">
                    <size>
                     <width>110</width>
@@ -11200,13 +11200,13 @@
                  <widget class="QLineEdit" name="lineEditLoop4Start">
                   <property name="minimumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -11224,7 +11224,7 @@
                    <enum>Qt::Horizontal</enum>
                   </property>
                   <property name="sizeType">
-                   <enum>QSizePolicy::Fixed</enum>
+                   <enum>QSizePolicy::Expanding</enum>
                   </property>
                   <property name="sizeHint" stdset="0">
                    <size>
@@ -11238,13 +11238,13 @@
                  <widget class="QLineEdit" name="lineEditLoop3Stop">
                   <property name="minimumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -11267,13 +11267,13 @@
                  <widget class="QLineEdit" name="lineEditLoop4Stop">
                   <property name="minimumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -11289,13 +11289,13 @@
                  <widget class="QLineEdit" name="lineEditLoop0Start">
                   <property name="minimumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -11311,7 +11311,7 @@
                  </widget>
                 </item>
                 <item row="5" column="3">
-                 <widget class="QSpinBox" name="spinBoxLoop5">
+                 <widget class="QSpinBox" name="spinBoxLoop5Repetition">
                   <property name="minimumSize">
                    <size>
                     <width>110</width>
@@ -11374,13 +11374,13 @@
                  <widget class="QLineEdit" name="lineEditLoop1Stop">
                   <property name="minimumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -11407,7 +11407,7 @@
                  </widget>
                 </item>
                 <item row="4" column="3">
-                 <widget class="QSpinBox" name="spinBoxLoop4">
+                 <widget class="QSpinBox" name="spinBoxLoop4Repetition">
                   <property name="minimumSize">
                    <size>
                     <width>110</width>
@@ -11432,13 +11432,13 @@
                  <widget class="QLineEdit" name="lineEditLoop2Stop">
                   <property name="minimumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -11475,13 +11475,13 @@
                  <widget class="QLineEdit" name="lineEditLoop5Stop">
                   <property name="minimumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -11507,7 +11507,7 @@
                  </widget>
                 </item>
                 <item row="0" column="3">
-                 <widget class="QSpinBox" name="spinBoxLoop0">
+                 <widget class="QSpinBox" name="spinBoxLoop0Repetition">
                   <property name="minimumSize">
                    <size>
                     <width>110</width>
@@ -11535,13 +11535,13 @@
                  <widget class="QLineEdit" name="lineEditLoop1Start">
                   <property name="minimumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -11568,7 +11568,7 @@
                  </widget>
                 </item>
                 <item row="3" column="3">
-                 <widget class="QSpinBox" name="spinBoxLoop3">
+                 <widget class="QSpinBox" name="spinBoxLoop3Repetition">
                   <property name="minimumSize">
                    <size>
                     <width>110</width>
@@ -11590,7 +11590,7 @@
                  </widget>
                 </item>
                 <item row="1" column="3">
-                 <widget class="QSpinBox" name="spinBoxLoop1">
+                 <widget class="QSpinBox" name="spinBoxLoop1Repetition">
                   <property name="minimumSize">
                    <size>
                     <width>110</width>
@@ -11615,13 +11615,13 @@
                  <widget class="QLineEdit" name="lineEditLoop2Start">
                   <property name="minimumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -11637,15 +11637,18 @@
                  <widget class="QLineEdit" name="lineEditLoop0Stop">
                   <property name="minimumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
+                  </property>
+                  <property name="text">
+                   <string>0x1fff</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -11659,13 +11662,13 @@
                  <widget class="QLineEdit" name="lineEditLoop5Start">
                   <property name="minimumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>90</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -11702,7 +11705,7 @@
                    <enum>Qt::Horizontal</enum>
                   </property>
                   <property name="sizeType">
-                   <enum>QSizePolicy::Fixed</enum>
+                   <enum>QSizePolicy::Expanding</enum>
                   </property>
                   <property name="sizeHint" stdset="0">
                    <size>
@@ -11718,7 +11721,7 @@
                    <enum>Qt::Horizontal</enum>
                   </property>
                   <property name="sizeType">
-                   <enum>QSizePolicy::Fixed</enum>
+                   <enum>QSizePolicy::Expanding</enum>
                   </property>
                   <property name="sizeHint" stdset="0">
                    <size>
@@ -11812,16 +11815,16 @@
                </property>
                <layout class="QGridLayout" name="gridLayout">
                 <item row="5" column="6">
-                 <widget class="QLineEdit" name="lineEditWait5Address">
+                 <widget class="QLineEdit" name="lineEditLoop5Wait">
                   <property name="minimumSize">
                    <size>
-                    <width>125</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>125</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -11850,7 +11853,7 @@
                  </spacer>
                 </item>
                 <item row="4" column="3">
-                 <widget class="QSpinBox" name="spinBoxWait4">
+                 <widget class="QSpinBox" name="spinBoxLoop4WaitTime">
                   <property name="minimumSize">
                    <size>
                     <width>125</width>
@@ -11872,16 +11875,16 @@
                  </widget>
                 </item>
                 <item row="1" column="6">
-                 <widget class="QLineEdit" name="lineEditWait1Address">
+                 <widget class="QLineEdit" name="lineEditLoop1Wait">
                   <property name="minimumSize">
                    <size>
-                    <width>125</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>125</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -11894,7 +11897,7 @@
                  </widget>
                 </item>
                 <item row="2" column="3">
-                 <widget class="QSpinBox" name="spinBoxWait2">
+                 <widget class="QSpinBox" name="spinBoxLoop2WaitTime">
                   <property name="minimumSize">
                    <size>
                     <width>125</width>
@@ -11929,7 +11932,7 @@
                  </widget>
                 </item>
                 <item row="5" column="3">
-                 <widget class="QSpinBox" name="spinBoxWait5">
+                 <widget class="QSpinBox" name="spinBoxLoop5WaitTime">
                   <property name="minimumSize">
                    <size>
                     <width>125</width>
@@ -11951,16 +11954,16 @@
                  </widget>
                 </item>
                 <item row="4" column="6">
-                 <widget class="QLineEdit" name="lineEditWait4Address">
+                 <widget class="QLineEdit" name="lineEditLoop4Wait">
                   <property name="minimumSize">
                    <size>
-                    <width>125</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>125</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -11986,7 +11989,7 @@
                  </widget>
                 </item>
                 <item row="3" column="3">
-                 <widget class="QSpinBox" name="spinBoxWait3">
+                 <widget class="QSpinBox" name="spinBoxLoop3WaitTime">
                   <property name="minimumSize">
                    <size>
                     <width>125</width>
@@ -12050,16 +12053,16 @@
                  </widget>
                 </item>
                 <item row="0" column="6">
-                 <widget class="QLineEdit" name="lineEditWait0Address">
+                 <widget class="QLineEdit" name="lineEditLoop0Wait">
                   <property name="minimumSize">
                    <size>
-                    <width>125</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>125</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -12072,7 +12075,7 @@
                  </widget>
                 </item>
                 <item row="1" column="3">
-                 <widget class="QSpinBox" name="spinBoxWait1">
+                 <widget class="QSpinBox" name="spinBoxLoop1WaitTime">
                   <property name="minimumSize">
                    <size>
                     <width>125</width>
@@ -12107,7 +12110,7 @@
                  </widget>
                 </item>
                 <item row="0" column="3">
-                 <widget class="QSpinBox" name="spinBoxWait0">
+                 <widget class="QSpinBox" name="spinBoxLoop0WaitTime">
                   <property name="minimumSize">
                    <size>
                     <width>125</width>
@@ -12129,16 +12132,16 @@
                  </widget>
                 </item>
                 <item row="2" column="6">
-                 <widget class="QLineEdit" name="lineEditWait2Address">
+                 <widget class="QLineEdit" name="lineEditLoop2Wait">
                   <property name="minimumSize">
                    <size>
-                    <width>125</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>125</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -12164,16 +12167,16 @@
                  </widget>
                 </item>
                 <item row="3" column="6">
-                 <widget class="QLineEdit" name="lineEditWait3Address">
+                 <widget class="QLineEdit" name="lineEditLoop3Wait">
                   <property name="minimumSize">
                    <size>
-                    <width>125</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>125</width>
+                    <width>80</width>
                     <height>31</height>
                    </size>
                   </property>
@@ -12412,7 +12415,7 @@
                  </widget>
                 </item>
                 <item row="1" column="1">
-                 <widget class="QLineEdit" name="lineEditPattern">
+                 <widget class="QLineEdit" name="lineEditPatternFile">
                   <property name="styleSheet">
                    <string notr="true">background-color: rgb(200, 219, 230);</string>
                   </property>
@@ -12422,7 +12425,7 @@
                  </widget>
                 </item>
                 <item row="1" column="2">
-                 <widget class="QPushButton" name="pushButtonPattern">
+                 <widget class="QPushButton" name="pushButtonPatternFile">
                   <property name="minimumSize">
                    <size>
                     <width>0</width>

@@ -2021,4 +2021,52 @@ void DetectorImpl::setCtbAdcName(const int index, const std::string &name) {
     ctb_shm()->setAdcName(index, name);
 }
 
+std::vector<std::string> DetectorImpl::getCtbSignalNames() const {
+    return ctb_shm()->getSignalNames();
+}
+
+void DetectorImpl::setCtbSignalNames(const std::vector<std::string> &names) {
+    ctb_shm()->setSignalNames(names);
+}
+
+std::string DetectorImpl::getCtbSignalName(int i) const {
+    return ctb_shm()->getSignalName(i);
+}
+
+void DetectorImpl::setCtbSignalName(const int index, const std::string &name) {
+    ctb_shm()->setSignalName(index, name);
+}
+
+std::vector<std::string> DetectorImpl::getCtbPowerNames() const {
+    return ctb_shm()->getPowerNames();
+}
+
+void DetectorImpl::setCtbPowerNames(const std::vector<std::string> &names) {
+    ctb_shm()->setPowerNames(names);
+}
+
+std::string DetectorImpl::getCtbPowerName(int i) const {
+    return ctb_shm()->getPowerName(i);
+}
+
+void DetectorImpl::setCtbPowerName(const int index, const std::string &name) {
+    ctb_shm()->setPowerName(index, name);
+}
+
+std::vector<std::string> DetectorImpl::getCtbSenseNames() const {
+    return ctb_shm()->getSenseNames();
+}
+
+void DetectorImpl::setCtbSenseNames(const std::vector<std::string> &names) {
+    ctb_shm()->setSenseNames(names);
+}
+
+std::string DetectorImpl::getCtbSenseName(int i) const {
+    return ctb_shm()->getSenseName(i);
+}
+
+void DetectorImpl::setCtbSenseName(const int index, const std::string &name) {
+    ctb_shm()->setSenseName(index, name);
+}
+
 } // namespace sls

@@ -17,6 +17,15 @@ CtbConfig::CtbConfig() {
     for (size_t i = 0; i != num_adcs; ++i) {
         setAdcName(i, "adc" + ToString(i));
     }
+    for (size_t i = 0; i != num_signals; ++i) {
+        setSignalName(i, "signal" + ToString(i));
+    }
+    for (size_t i = 0; i != num_powers; ++i) {
+        setPowerName(i, "power" + ToString(i));
+    }
+    for (size_t i = 0; i != num_senses; ++i) {
+        setSenseName(i, "sense" + ToString(i));
+    }
 }
 
 void CtbConfig::check_dac_index(size_t i) const {
@@ -35,12 +44,36 @@ void CtbConfig::check_adc_index(size_t i) const {
     }
 }
 
+void CtbConfig::check_signal_index(size_t i) const {
+    if (!(i < num_signals)) {
+        std::ostringstream oss;
+        oss << "Signal index is too large.Needs to be below " << num_signals;
+        throw RuntimeError(oss.str());
+    }
+}
+
+void CtbConfig::check_power_index(size_t i) const {
+    if (!(i < num_powers)) {
+        std::ostringstream oss;
+        oss << "Power index is too large.Needs to be below " << num_powers;
+        throw RuntimeError(oss.str());
+    }
+}
+
+void CtbConfig::check_sense_index(size_t i) const {
+    if (!(i < num_senses)) {
+        std::ostringstream oss;
+        oss << "Sense index is too large.Needs to be below " << num_senses;
+        throw RuntimeError(oss.str());
+    }
+}
+
 void CtbConfig::check_size(const std::string &name) const {
 
     if (name.empty())
         throw RuntimeError("Name needs to be at least one character");
 
-    // dac/adc name_length -1 to account for \0 termination
+    // name_length -1 to account for \0 termination
     if (!(name.size() < (name_length - 1))) {
         std::ostringstream oss;
         oss << "Length of name needs to be less than " << name_length - 1
@@ -108,6 +141,97 @@ std::vector<std::string> CtbConfig::getAdcNames() const {
         names.push_back(getAdcName(i));
     return names;
 }
+
+void CtbConfig::setSignalName(size_t index, const std::string &name) {
+    check_signal_index(index);
+    check_size(name);
+    char *dst = &signalnames[index * name_length];
+    memset(dst, '\0', name_length);
+    memcpy(dst, &name[0], name.size());
+}
+
+void CtbConfig::setSignalNames(const std::vector<std::string> &names) {
+    if (names.size() != num_signals) {
+        throw RuntimeError("Signal names need to be of size " +
+                           std::to_string(num_signals));
+    }
+    for (size_t i = 0; i != num_signals; ++i) {
+        setSignalName(i, names[i]);
+    }
+}
+
+std::string CtbConfig::getSignalName(size_t index) const {
+    check_signal_index(index);
+    return signalnames + index * name_length;
+}
+
+std::vector<std::string> CtbConfig::getSignalNames() const {
+    std::vector<std::string> names;
+    for (size_t i = 0; i != num_signals; ++i)
+        names.push_back(getSignalName(i));
+    return names;
+}
+
+void CtbConfig::setPowerName(size_t index, const std::string &name) {
+    check_power_index(index);
+    check_size(name);
+    char *dst = &powernames[index * name_length];
+    memset(dst, '\0', name_length);
+    memcpy(dst, &name[0], name.size());
+}
+
+void CtbConfig::setPowerNames(const std::vector<std::string> &names) {
+    if (names.size() != num_powers) {
+        throw RuntimeError("Power names need to be of size " +
+                           std::to_string(num_powers));
+    }
+    for (size_t i = 0; i != num_powers; ++i) {
+        setPowerName(i, names[i]);
+    }
+}
+
+std::string CtbConfig::getPowerName(size_t index) const {
+    check_power_index(index);
+    return powernames + index * name_length;
+}
+
+std::vector<std::string> CtbConfig::getPowerNames() const {
+    std::vector<std::string> names;
+    for (size_t i = 0; i != num_powers; ++i)
+        names.push_back(getPowerName(i));
+    return names;
+}
+
+void CtbConfig::setSenseName(size_t index, const std::string &name) {
+    check_sense_index(index);
+    check_size(name);
+    char *dst = &sensenames[index * name_length];
+    memset(dst, '\0', name_length);
+    memcpy(dst, &name[0], name.size());
+}
+
+void CtbConfig::setSenseNames(const std::vector<std::string> &names) {
+    if (names.size() != num_senses) {
+        throw RuntimeError("Sense names need to be of size " +
+                           std::to_string(num_senses));
+    }
+    for (size_t i = 0; i != num_senses; ++i) {
+        setSenseName(i, names[i]);
+    }
+}
+
+std::string CtbConfig::getSenseName(size_t index) const {
+    check_sense_index(index);
+    return sensenames + index * name_length;
+}
+
+std::vector<std::string> CtbConfig::getSenseNames() const {
+    std::vector<std::string> names;
+    for (size_t i = 0; i != num_senses; ++i)
+        names.push_back(getSenseName(i));
+    return names;
+}
+
 
 const char *CtbConfig::shm_tag() { return shm_tag_; }
 

@@ -2225,7 +2225,7 @@ defs::dacIndex Detector::getDacIndex(const std::string &name) {
         auto names = getDacNames();
         auto it = std::find(names.begin(), names.end(), name);
         if (it == names.end())
-            throw RuntimeError("Dacname not found");
+            throw RuntimeError("Dac name not found");
         return static_cast<defs::dacIndex>(it - names.begin());
     }
     return StringTo<defs::dacIndex>(name);
@@ -2262,7 +2262,7 @@ int Detector::getAdcIndex(const std::string &name) {
     auto names = getAdcNames();
     auto it = std::find(names.begin(), names.end(), name);
     if (it == names.end())
-        throw RuntimeError("Adcname not found");
+        throw RuntimeError("Adc name not found");
     return (it - names.begin());
 }
 
@@ -2276,6 +2276,108 @@ std::string Detector::getAdcName(int i) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named adcs only for CTB");
     return pimpl->getCtbAdcName(i);
+}
+
+void Detector::setSignalNames(const std::vector<std::string> names) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named signals only for CTB");
+    pimpl->setCtbSignalNames(names);
+}
+
+std::vector<std::string> Detector::getSignalNames() const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named signals only for CTB");
+    return pimpl->getCtbSignalNames();
+}
+
+int Detector::getSignalIndex(const std::string &name) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named signals only for CTB");
+    auto names = getSignalNames();
+    auto it = std::find(names.begin(), names.end(), name);
+    if (it == names.end())
+        throw RuntimeError("Signalname not found");
+    return (it - names.begin());
+}
+
+void Detector::setSignalName(const int index, const std::string &name) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named signals only for CTB");
+    pimpl->setCtbSignalName(index, name);
+}
+
+std::string Detector::getSignalName(int i) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named signals only for CTB");
+    return pimpl->getCtbSignalName(i);
+}
+
+void Detector::setPowerNames(const std::vector<std::string> names) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named powers only for CTB");
+    pimpl->setCtbPowerNames(names);
+}
+
+std::vector<std::string> Detector::getPowerNames() const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named powers only for CTB");
+    return pimpl->getCtbPowerNames();
+}
+
+int Detector::getPowerIndex(const std::string &name) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named powers only for CTB");
+    auto names = getPowerNames();
+    auto it = std::find(names.begin(), names.end(), name);
+    if (it == names.end())
+        throw RuntimeError("Power name not found");
+    return (it - names.begin());
+}
+
+void Detector::setPowerName(const int index, const std::string &name) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named powers only for CTB");
+    pimpl->setCtbPowerName(index, name);
+}
+
+std::string Detector::getPowerName(int i) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named powers only for CTB");
+    return pimpl->getCtbPowerName(i);
+}
+
+void Detector::setSenseNames(const std::vector<std::string> names) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named senses only for CTB");
+    pimpl->setCtbSenseNames(names);
+}
+
+std::vector<std::string> Detector::getSenseNames() const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named senses only for CTB");
+    return pimpl->getCtbSenseNames();
+}
+
+int Detector::getSenseIndex(const std::string &name) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named senses only for CTB");
+    auto names = getSenseNames();
+    auto it = std::find(names.begin(), names.end(), name);
+    if (it == names.end())
+        throw RuntimeError("Sense name not found");
+    return (it - names.begin());
+}
+
+void Detector::setSenseName(const int index, const std::string &name) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named senses only for CTB");
+    pimpl->setCtbSenseName(index, name);
+}
+
+std::string Detector::getSenseName(int i) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named senses only for CTB");
+    return pimpl->getCtbSenseName(i);
 }
 
 // Pattern

@@ -524,6 +524,95 @@ namespace sls {
         return os.str();                                                       \
     }
 
+#define CTB_NAMED_LIST(CMDNAME, GETFCN, SETFCN, HLPSTR)                        \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION) {                          \
+            os << HLPSTR << '\n';                                              \
+            return os.str();                                                   \
+        }                                                                      \
+        if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {          \
+            throw RuntimeError(cmd + " only allowed for CTB.");            \
+        }                                                                      \
+        if (det_id != -1) {                                                    \
+            throw RuntimeError("Cannot configure " + cmd + " at module level");\
+        }                                                                      \
+        if (action == slsDetectorDefs::GET_ACTION) {                           \
+            if (!args.empty()) {                                               \
+                WrongNumberOfParameters(0);                                    \
+            }                                                                  \
+            auto t = det->GETFCN();                                            \
+            os << ToString(t) << '\n';                                         \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            det->SETFCN(args);                                                 \
+            os << ToString(args) << '\n';                                                \
+        } else {                                                               \
+            throw RuntimeError("Unknown action");                              \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+#define CTB_SINGLE_NAME(CMDNAME, GETFCN, SETFCN, HLPSTR)                        \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION) {                          \
+            os << HLPSTR << '\n';                                              \
+            return os.str();                                                   \
+        }                                                                      \
+        if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {          \
+            throw RuntimeError(cmd + " only allowed for CTB.");            \
+        }                                                                      \
+        if (det_id != -1) {                                                    \
+            throw RuntimeError("Cannot configure " + cmd + " at module level");\
+        }                                                                      \
+        if (action == slsDetectorDefs::GET_ACTION) {                           \
+            if (args.size() != 1) {                                            \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+            auto t = det->GETFCN(StringTo<int>(args[0]));                      \
+            os << args[0] << ' ' << ToString(t) << '\n';                       \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            if (args.size() != 2) {                                            \
+                WrongNumberOfParameters(2);                                    \
+            }                                                                  \
+            det->SETFCN(StringTo<int>(args[0]), args[1]);                                                 \
+            os << ToString(args) << '\n';                                                \
+        } else {                                                               \
+            throw RuntimeError("Unknown action");                              \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+#define CTB_GET_INDEX(CMDNAME, GETFCN, HLPSTR)                                 \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION) {                          \
+            os << HLPSTR << '\n';                                              \
+            return os.str();                                                   \
+        }                                                                      \
+        if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {          \
+            throw RuntimeError(cmd + " only allowed for CTB.");            \
+        }                                                                      \
+        if (det_id != -1) {                                                    \
+            throw RuntimeError("Cannot configure " + cmd + " at module level");\
+        }                                                                      \
+        if (action == slsDetectorDefs::GET_ACTION) {                           \
+            if (args.size() != 1) {                                            \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+            auto t = det->GETFCN(args[0]);                                            \
+            os << ToString(t) << '\n';                                         \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            throw RuntimeError("Cannot put");                                  \
+        } else {                                                               \
+            throw RuntimeError("Unknown action");                              \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
 class CmdProxy {
   public:
     explicit CmdProxy(Detector *ptr) : det(ptr) {}
@@ -846,9 +935,18 @@ class CmdProxy {
         {"daclist", &CmdProxy::DacList},
         {"dacname", &CmdProxy::DacName},
         {"dacindex", &CmdProxy::DacIndex},
-        {"adclist", &CmdProxy::AdcList},
-        {"adcname", &CmdProxy::AdcName},
-        {"adcindex", &CmdProxy::AdcIndex},
+        {"adclist", &CmdProxy::adclist},
+        {"adcname", &CmdProxy::adcname},
+        {"adcindex", &CmdProxy::adcindex},
+        {"signallist", &CmdProxy::signallist},
+        {"signalname", &CmdProxy::signalname},
+        {"signalindex", &CmdProxy::signalindex},
+        {"powerlist", &CmdProxy::powerlist},
+        {"powername", &CmdProxy::powername},
+        {"powerindex", &CmdProxy::powerindex},
+        {"senselist", &CmdProxy::senselist},
+        {"sensename", &CmdProxy::sensename},
+        {"senseindex", &CmdProxy::senseindex},
 
         /* dacs */
         {"dac", &CmdProxy::Dac},
@@ -1153,9 +1251,6 @@ class CmdProxy {
     std::string DacList(int action);
     std::string DacName(int action);
     std::string DacIndex(int action);
-    std::string AdcList(int action);
-    std::string AdcName(int action);
-    std::string AdcIndex(int action);
     /* dacs */
     std::string Dac(int action);
     std::string DacValues(int action);
@@ -1517,6 +1612,55 @@ class CmdProxy {
     GET_IND_COMMAND(temp_slowadc, getTemperature,
                     slsDetectorDefs::SLOW_ADC_TEMP, " °C",
                     "[n_value]\n\t[Ctb]Temperature of the slow adc");
+
+    /* lists */
+    CTB_NAMED_LIST(adclist, getAdcNames, setAdcNames,
+                    "[adcname1 adcname2 .. adcname32] \n\t\t[ChipTestBoard] Set "
+              "the list of adc names for this board.");
+
+    CTB_SINGLE_NAME(adcname, getAdcName, setAdcName,
+                    "[0-31][name] \n\t\t[ChipTestBoard] Set "
+              "the adc at the given position to the given name.");
+
+    CTB_GET_INDEX(adcindex, getAdcIndex,
+                    "[name] \n\t\t[ChipTestBoard] Get "
+              "the adc index for the given name.");
+
+    CTB_NAMED_LIST(signallist, getSignalNames, setSignalNames,
+                    "[signalname1 signalname2 .. signalname63] \n\t\t[ChipTestBoard] Set "
+              "the list of signal names for this board.");
+
+    CTB_SINGLE_NAME(signalname, getSignalName, setSignalName,
+                    "[0-31][name] \n\t\t[ChipTestBoard] Set "
+              "the signal at the given position to the given name.");
+
+    CTB_GET_INDEX(signalindex, getSignalIndex,
+                    "[name] \n\t\t[ChipTestBoard] Get "
+              "the signal index for the given name.");
+
+    CTB_NAMED_LIST(powerlist, getPowerNames, setPowerNames,
+                    "[powername1 powername2 .. powername4] \n\t\t[ChipTestBoard] Set "
+              "the list of power names for this board.");
+
+    CTB_SINGLE_NAME(powername, getPowerName, setPowerName,
+                    "[0-31][name] \n\t\t[ChipTestBoard] Set "
+              "the power at the given position to the given name.");
+
+    CTB_GET_INDEX(powerindex, getPowerIndex,
+                    "[name] \n\t\t[ChipTestBoard] Get "
+              "the power index for the given name.");
+
+    CTB_NAMED_LIST(senselist, getSenseNames, setSenseNames,
+                    "[sensename1 sensename2 .. sensename7] \n\t\t[ChipTestBoard] Set "
+              "the list of sense names for this board.");
+
+    CTB_SINGLE_NAME(sensename, getSenseName, setSenseName,
+                    "[0-31][name] \n\t\t[ChipTestBoard] Set "
+              "the sense at the given position to the given name.");
+
+    CTB_GET_INDEX(senseindex, getSenseIndex,
+                    "[name] \n\t\t[ChipTestBoard] Get "
+              "the sense index for the given name.");
 
     /* dacs */
 

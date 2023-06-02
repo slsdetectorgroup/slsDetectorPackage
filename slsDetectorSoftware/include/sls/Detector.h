@@ -1748,6 +1748,51 @@ class Detector {
     /** [CTB] */
     std::string getAdcName(int i);
 
+    /** [CTB] */
+    void setSignalNames(const std::vector<std::string> names);
+
+    /** [CTB] */
+    std::vector<std::string> getSignalNames() const;
+
+    /** [CTB] */
+    int getSignalIndex(const std::string &name);
+
+    /** [CTB] */
+    void setSignalName(const int i, const std::string &name);
+
+    /** [CTB] */
+    std::string getSignalName(int i);
+
+    /** [CTB] */
+    void setPowerNames(const std::vector<std::string> names);
+
+    /** [CTB] */
+    std::vector<std::string> getPowerNames() const;
+
+    /** [CTB] */
+    int getPowerIndex(const std::string &name);
+
+    /** [CTB] */
+    void setPowerName(const int i, const std::string &name);
+
+    /** [CTB] */
+    std::string getPowerName(int i);
+
+        /** [CTB] */
+    void setSenseNames(const std::vector<std::string> names);
+
+    /** [CTB] */
+    std::vector<std::string> getSenseNames() const;
+
+    /** [CTB] */
+    int getSenseIndex(const std::string &name);
+
+    /** [CTB] */
+    void setSenseName(const int i, const std::string &name);
+
+    /** [CTB] */
+    std::string getSenseName(int i);
+    
     ///@}
 
     /** @name Pattern */

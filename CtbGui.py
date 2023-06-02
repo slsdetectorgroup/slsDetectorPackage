@@ -29,7 +29,6 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__()
         uic.loadUi("CtbGui.ui", self)
         self.setup_ui()
-        self.refresh_tab_acquisition()
         self.tabWidget.setCurrentIndex(6)
         self.tabWidget.currentChanged.connect(self.refresh_tab)
         self.connect_ui()
@@ -39,6 +38,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.refresh_tab_signals()
         self.refresh_tab_adc()
         self.refresh_tab_pattern()
+        self.refresh_tab_acquisition()
 
 
     # For Action options function
@@ -638,88 +638,183 @@ class MainWindow(QtWidgets.QMainWindow):
         self.det.pattern = pattern_file
             
     # Acquistions Tab functions
+    def plotOptions(self):
+        print("plot options - Not implemented yet")
+        # TODO: Implement no plot, waveform, distribution, image and image type
+
+    def setSerialOffset(self):
+        print("plot options - Not implemented yet")
+        #TODO:
+
+    def setNCounter(self):
+        print("plot options - Not implemented yet")
+        #TODO:
+
+    def setDynamicRange(self):
+        print("plot options - Not implemented yet")
+        #TODO:
+
+    def setImageX(self):
+        print("plot options - Not implemented yet")
+        #TODO:
+
+    def setImageY(self):
+        print("plot options - Not implemented yet")
+        #TODO:
+
+    def setPedestal(self):
+        print("plot options - Not implemented yet")
+        #TODO: acquire, subtract, common mode
+        
+    def resetPedestal(self):
+        print("plot options - Not implemented yet")
+        #TODO:
+
+    def setRawData(self):
+        print("plot options - Not implemented yet")
+        #TODO: raw data, min, max
+        
+    def setPedestalSubtract(self):
+        print("plot options - Not implemented yet")
+        #TODO: pedestal, min, max
+
+    def setFitADC(self):
+        print("plot options - Not implemented yet")
+        #TODO:
+        
+    def setPlotBit(self):
+        print("plot options - Not implemented yet")
+        #TODO:
+
+    def plotReferesh(self):
+        self.read_zmq()
+        
+    def getFileWrite(self):
+        self.checkBoxFileWrite.clicked.disconnect()
+        self.checkBoxFileWrite.setChecked(self.det.fwrite)
+        self.checkBoxFileWrite.clicked.connect(self.setFileWrite)
+
+    def setFileWrite(self):
+        self.det.fwrite = self.checkBoxFileWrite.isChecked()
+        self.getFileWrite()
+
+    def getFileName(self):
+        self.lineEditFileName.editingFinished.disconnect()
+        self.lineEditFileName.setText(self.det.fname)
+        self.lineEditFileName.editingFinished.connect(self.setFileName)
+
+    def setFileName(self):
+        self.det.fname = self.lineEditFileName.text()
+        self.getFileName()
+
+    def getFilePath(self):
+        self.lineEditFilePath.editingFinished.disconnect()
+        self.lineEditFilePath.setText(self.det.fname)
+        self.lineEditFilePath.editingFinished.connect(self.setFilePath)
+
+    def setFilePath(self):
+        self.det.fname = self.lineEditFilePath.text()
+        self.getFilePath()
+
+    def browseFilePath(self):
+        response = QtWidgets.QFileDialog.getSaveFileName(
+            parent=self,
+            caption="Select Path to Save Output File",
+            directory=os.getcwd(),
+            # filter='README (*.md *.ui)'
+        )
+        if response[0]:
+            self.lineEditFilePath.setText(response[0])
+
+    def getAccquisitionIndex(self):
+        self.spinBoxAcquisitionIndex.editingFinished.disconnect()
+        self.spinBoxAcquisitionIndex.setValue(self.det.findex)
+        self.spinBoxAcquisitionIndex.editingFinished.connect(self.setAccquisitionIndex)
+
+    def setAccquisitionIndex(self):
+        self.det.findex = self.spinBoxAcquisitionIndex.value()
+        self.getAccquisitionIndex()
+
+    def getFrames(self):
+        self.spinBoxFrames.editingFinished.disconnect()
+        self.spinBoxFrames.setValue(self.det.frames)
+        self.spinBoxFrames.editingFinished.connect(self.setFrames)
+
     def setFrames(self):
         self.det.frames = self.spinBoxFrames.value()
+        self.getFrames()
+    
+    def getPeriod(self):
+        self.spinBoxPeriod.editingFinished.disconnect()
+        self.comboBoxPeriod.activated.disconnect()
+
+        # Converting to right time unit for period
+        tPeriod = self.det.period
+        if tPeriod < 100e-9:
+            self.comboBoxPeriod.setCurrentIndex(3)
+            self.spinBoxPeriod.setValue(tPeriod / 1e-9)
+        elif tPeriod < 100e-6:
+            self.comboBoxPeriod.setCurrentIndex(2)
+            self.spinBoxPeriod.setValue(tPeriod / 1e-6)
+        elif tPeriod < 100e-3:
+            self.comboBoxPeriod.setCurrentIndex(1)
+            self.spinBoxPeriod.setValue(tPeriod / 1e-3)
+        else:
+            self.comboBoxPeriod.setCurrentIndex(0)
+            self.spinBoxPeriod.setValue(tPeriod)
+
+        self.spinBoxPeriod.editingFinished.connect(self.setPeriod)
+        self.comboBoxPeriod.activated.connect(self.setPeriod)
 
     def setPeriod(self):
-        if self.comboBoxTime.currentIndex() == 0:
+        if self.comboBoxPeriod.currentIndex() == 0:
             self.det.period = self.spinBoxPeriod.value()
-        elif self.comboBoxTime.currentIndex() == 1:
+        elif self.comboBoxPeriod.currentIndex() == 1:
             self.det.period = self.spinBoxPeriod.value() * (1e-3)
-        elif self.comboBoxTime.currentIndex() == 2:
+        elif self.comboBoxPeriod.currentIndex() == 2:
             self.det.period = self.spinBoxPeriod.value() * (1e-6)
         else:
             self.det.period = self.spinBoxPeriod.value() * (1e-9)
 
+        self.getPeriod()
+
+    def getTriggers(self):
+        self.spinBoxTriggers.editingFinished.disconnect()
+        self.spinBoxTriggers.setValue(self.det.triggers)
+        self.spinBoxTriggers.editingFinished.connect(self.setTriggers)
+
     def setTriggers(self):
         self.det.triggers = self.spinBoxTriggers.value()
+        self.getTriggers()
 
-    # TODO Only add the components of Acquistions tab functions
-    def plotOptions(self):
-        print("plot options")
+    def getDetectorStatus(self):
+        self.labelDetectorStatus.setText(self.det.status.name)
 
-    def setSerialOffset(self):
-        print("SerialOffSet")
-
-    def setNCounter(self):
-        print("plot options")
-
-    def setDynamicRange(self):
-        print("plot options")
-
-    def setImageX(self):
-        print("plot options")
-
-    def setImageY(self):
-        print("plot options")
-
-    def setPedestal(self):
-        print("plot options")
-
-    def resetPedestal(self):
-        print("plot options")
-
-    def setRawData(self):
-        print("plot options")
-
-    def setPedestalSubtract(self):
-        print("plot options")
-
-    def setFitADC(self):
-        print("plot options")
-
-    def setPlotBit(self):
-        print("plot options")
-
-    def setFileWrite(self):
-        if self.checkBoxFileWrite.isChecked():
-           self.det.fwrite=True
-        else:
-            self.det.fwrite=False
-            
-    def setFileName(self):
-        self.det.fname = self.lineEditFileName.text()
-
-    def setFilePath(self):
-        self.det.fpath = self.lineEditFilePath.text()
-
-    def setIndex(self):
-        self.det.findex = self.spinBoxIndex.value()
-
+    def updateCurrentMeasurement(self):
+        self.labelCurrentMeasurement.setText(str(self.currentMeasurement))
+    
+    def stopAcquisition(self):
+        self.det.stop()
+        self.stoppedFlag = True
+        
     def acquire(self):
         self.pushButtonStart.setEnabled(False)
-        measurement_Number = self.spinBoxMeasurements.value()
-        for i in range(measurement_Number):
+        self.stoppedFlag = False
+        self.currentMeasurement = 0
+        self.read_timer.start(20)
+        self.statusTimer.start(20)
+        self.startMeasurement()
 
-            self.read_timer.start(20)
-            self.det.rx_start()
-            self.statusTimer.start(20)
-            self.progressBar.setValue(0)
-            self.det.start()
+    def startMeasurement(self):
+        #print(f"Meausrement {self.currentMeasurement}")
+        self.updateCurrentMeasurement()
+        self.det.rx_start()
+        self.progressBar.setValue(0)
+        self.det.start()
 
-    def updateDetectorStatus(self):
-        self.labelDetectorStatus.setText(self.det.status.name)
-        self.acqDone = False
+    def checkEndofAcquisition(self):
+        self.getDetectorStatus()
+        measurementDone = False
         match self.det.status:
             case runStatus.RUNNING:
                 pass
@@ -728,33 +823,27 @@ class MainWindow(QtWidgets.QMainWindow):
             case runStatus.TRANSMITTING:
                 pass
             case _:
-                self.acqDone = True
+                measurementDone = True
 
-        if self.acqDone:
-            self.read_timer.stop()
-            self.statusTimer.stop()
+        numMeasurments = self.spinBoxMeasurements.value()
+        if measurementDone:
             if self.det.rx_status == runStatus.RUNNING:
                 self.det.rx_stop()
             if self.checkBoxFileWrite.isChecked():
                 self.spinBoxIndex.stepUp()
-            self.pushButtonStart.setEnabled(True)
+            # next measurement
+            self.currentMeasurement += 1
+            if self.currentMeasurement < numMeasurments and not self.stoppedFlag:
+                self.startMeasurement()
+            else:
+                self.read_timer.stop()
+                self.statusTimer.stop()
+                self.pushButtonStart.setEnabled(True)
 
-    def plotReferesh(self):
-        self.read_zmq()
 
-    def browseFile(self):
-        response = QtWidgets.QFileDialog.getSaveFileName(
-            parent=self,
-            caption="Select a file to save the Output",
-            directory=os.getcwd(),
-            # filter='README (*.md *.ui)'
-        )
-        if response[0]:
-            self.lineEditFilePath.setText(response[0])
 
     # For other functios
-    # TODO Add other functions which will be reused  
-    #Reading data from zmq and decoding it.
+    #Reading data from zmq and decoding it
     def read_zmq(self):
         try:
             msg = self.socket.recv_multipart(flags=zmq.NOBLOCK)
@@ -769,6 +858,7 @@ class MainWindow(QtWidgets.QMainWindow):
             
             data_array = np.array(np.frombuffer(data, dtype=np.uint16))
 
+            '''
             # moench analog
             # return data_array
             adc_numbers = [9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 7, 6, 23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28,
@@ -794,6 +884,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     pixel_value = data_array[index_min]
                     analog_frame[row, col] = pixel_value
                     order_sc[row, col] = i_sc
+            '''
 
             '''
             fig, ax = plt.subplots()
@@ -802,10 +893,11 @@ class MainWindow(QtWidgets.QMainWindow):
             fig.colorbar(im)
             plt.show()
             '''
-            
+            '''
             plot1 = pg.ImageView(self.plotWidget, view=pg.PlotItem())
             plot1.show()
             plot1.setImage(analog_frame)
+            '''
             
         except zmq.ZMQError as e:
             pass
@@ -829,7 +921,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.setActiveColor(button, color.name())
             # get the RGB Values
             #print(color.getRgb())
-
 
     def refresh_tab(self, tab_index):
         match tab_index:
@@ -900,36 +991,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
         
     def refresh_tab_acquisition(self):
-        # Updating values for patterns
-        self.spinBoxFrames.setValue(self.det.frames)
-
-        # Converting to right time unit for period
-        tPeriod = self.det.period
-        if tPeriod < 100e-9:
-            self.comboBoxTime.setCurrentIndex(3)
-            periodTime = tPeriod / 1e-9
-            self.spinBoxPeriod.setValue(periodTime)
-        elif tPeriod < 100e-6:
-            self.comboBoxTime.setCurrentIndex(2)
-            periodTime1 = tPeriod / 1e-6
-            self.spinBoxPeriod.setValue(periodTime1)
-        elif tPeriod < 100e-3:
-            self.comboBoxTime.setCurrentIndex(1)
-            periodTime0 = tPeriod / 1e-3
-            self.spinBoxPeriod.setValue(periodTime0)
-        else:
-            self.comboBoxTime.setCurrentIndex(0)
-            self.spinBoxPeriod.setValue(tPeriod)
-
-        self.spinBoxTriggers.setValue(self.det.triggers)
-
-        #Output Settings
-        self.checkBoxFileWrite.setChecked(self.det.fwrite)
-        self.lineEditFileName.setText(self.det.fname)
-        self.lineEditFilePath.setText(str(self.det.fpath))
-        self.spinBoxIndex.setValue(self.det.findex)
-
-        self.updateDetectorStatus()
+        self.getFileWrite()
+        self.getFileName()
+        self.getFilePath()
+        self.getAccquisitionIndex()
+        self.getFrames()
+        self.getTriggers()
+        self.getPeriod()
+        self.getDetectorStatus()
         
 
     def setup_zmq(self):
@@ -947,7 +1016,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def setup_ui(self):
         #To check detector status
         self.statusTimer = QtCore.QTimer()
-        self.statusTimer.timeout.connect(self.updateDetectorStatus)
+        self.statusTimer.timeout.connect(self.checkEndofAcquisition)
 
         #To auto trigger the read
         self.read_timer =  QtCore.QTimer()
@@ -1084,14 +1153,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
         # For Acquistions Tab
-        self.spinBoxFrames.editingFinished.connect(self.setFrames)
-        self.spinBoxPeriod.editingFinished.connect(self.setPeriod)
-        self.comboBoxTime.activated.connect(self.setPeriod)
-        self.spinBoxTriggers.editingFinished.connect(self.setTriggers)
-
-
-
-        # TODO Only add the components of Acquistions tab
         self.radioButtonNoPlot.clicked.connect(self.plotOptions)
         self.radioButtonWaveform.clicked.connect(self.plotOptions)
         self.radioButtonDistribution.clicked.connect(self.plotOptions)
@@ -1114,15 +1175,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxPedestalMax.editingFinished.connect(self.setPedestalSubtract)
         self.spinBoxFit.editingFinished.connect(self.setFitADC)
         self.spinBoxPlot.editingFinished.connect(self.setPlotBit)
+        self.pushButtonReferesh.clicked.connect(self.plotReferesh)
+
         self.checkBoxFileWrite.clicked.connect(self.setFileWrite)
         self.lineEditFileName.editingFinished.connect(self.setFileName)
         self.lineEditFilePath.editingFinished.connect(self.setFilePath)
-        self.spinBoxIndex.editingFinished.connect(self.setIndex)
+        self.pushButtonFilePath.clicked.connect(self.browseFilePath)
+        self.spinBoxAcquisitionIndex.editingFinished.connect(self.setAccquisitionIndex)
+        self.spinBoxFrames.editingFinished.connect(self.setFrames)
+        self.spinBoxPeriod.editingFinished.connect(self.setPeriod)
+        self.comboBoxPeriod.activated.connect(self.setPeriod)
+        self.spinBoxTriggers.editingFinished.connect(self.setTriggers)
         self.pushButtonStart.clicked.connect(self.acquire)
-        self.pushButtonStop.clicked.connect(self.det.stop)
-        self.pushButtonReferesh.clicked.connect(self.plotReferesh)
-        self.pushButtonBrowse.clicked.connect(self.browseFile)
-
+        self.pushButtonStop.clicked.connect(self.stopAcquisition)
         
 
 if __name__ == "__main__":

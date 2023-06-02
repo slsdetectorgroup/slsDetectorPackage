@@ -28,8 +28,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1463</width>
-         <height>918</height>
+         <width>1467</width>
+         <height>912</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -69,7 +69,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>4</number>
+              <number>3</number>
              </property>
              <widget class="QWidget" name="tab">
               <attribute name="title">
@@ -4421,6 +4421,9 @@
                   <height>16</height>
                  </rect>
                 </property>
+                <property name="styleSheet">
+                 <string notr="true"/>
+                </property>
                 <property name="text">
                  <string/>
                 </property>
@@ -7677,9 +7680,6 @@
                   <height>111</height>
                  </rect>
                 </property>
-                <property name="styleSheet">
-                 <string notr="true">background-color: rgb(231, 243, 255);</string>
-                </property>
                 <property name="frameShape">
                  <enum>QFrame::StyledPanel</enum>
                 </property>
@@ -10700,9 +10700,6 @@
                   <height>111</height>
                  </rect>
                 </property>
-                <property name="styleSheet">
-                 <string notr="true">background-color: rgb(231, 243, 255);</string>
-                </property>
                 <property name="frameShape">
                  <enum>QFrame::StyledPanel</enum>
                 </property>
@@ -10713,7 +10710,7 @@
                  <property name="geometry">
                   <rect>
                    <x>20</x>
-                   <y>10</y>
+                   <y>20</y>
                    <width>141</width>
                    <height>31</height>
                   </rect>
@@ -10748,8 +10745,8 @@
                 <widget class="QLineEdit" name="lineEditADCInversion">
                  <property name="geometry">
                   <rect>
-                   <x>230</x>
-                   <y>10</y>
+                   <x>220</x>
+                   <y>20</y>
                    <width>221</width>
                    <height>31</height>
                   </rect>
@@ -10767,7 +10764,7 @@
                 <widget class="QLineEdit" name="lineEditADCEnable">
                  <property name="geometry">
                   <rect>
-                   <x>230</x>
+                   <x>220</x>
                    <y>60</y>
                    <width>221</width>
                    <height>31</height>
@@ -10791,7 +10788,7 @@
                  <x>10</x>
                  <y>590</y>
                  <width>711</width>
-                 <height>111</height>
+                 <height>121</height>
                 </rect>
                </property>
                <property name="frameShape">
@@ -10803,17 +10800,46 @@
                <widget class="QLabel" name="labelAnalog">
                 <property name="geometry">
                  <rect>
-                  <x>10</x>
+                  <x>360</x>
                   <y>30</y>
-                  <width>81</width>
+                  <width>111</width>
                   <height>31</height>
                  </rect>
                 </property>
                 <property name="text">
-                 <string>Analog:</string>
+                 <string>Analog Samples:</string>
                 </property>
                </widget>
                <widget class="QSpinBox" name="spinBoxDigital">
+                <property name="geometry">
+                 <rect>
+                  <x>490</x>
+                  <y>70</y>
+                  <width>201</width>
+                  <height>31</height>
+                 </rect>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+                <property name="maximum">
+                 <number>100000</number>
+                </property>
+               </widget>
+               <widget class="QLabel" name="labelDigital">
+                <property name="geometry">
+                 <rect>
+                  <x>360</x>
+                  <y>70</y>
+                  <width>111</width>
+                  <height>31</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>Digital Samples:</string>
+                </property>
+               </widget>
+               <widget class="QSpinBox" name="spinBoxAnalog">
                 <property name="geometry">
                  <rect>
                   <x>490</x>
@@ -10829,86 +10855,44 @@
                  <number>100000</number>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_396">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>10</y>
-                  <width>201</width>
-                  <height>19</height>
-                 </rect>
-                </property>
+              </widget>
+              <widget class="QComboBox" name="comboBoxROMode">
+               <property name="geometry">
+                <rect>
+                 <x>150</x>
+                 <y>620</y>
+                 <width>191</width>
+                 <height>29</height>
+                </rect>
+               </property>
+               <item>
                 <property name="text">
-                 <string>Sample per Frame -</string>
+                 <string>ANALOG</string>
                 </property>
-               </widget>
-               <widget class="QLabel" name="labelDigital">
-                <property name="geometry">
-                 <rect>
-                  <x>360</x>
-                  <y>30</y>
-                  <width>81</width>
-                  <height>31</height>
-                 </rect>
-                </property>
+               </item>
+               <item>
                 <property name="text">
-                 <string>Digital:</string>
+                 <string>DIGITAL</string>
                 </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxAnalog">
-                <property name="geometry">
-                 <rect>
-                  <x>150</x>
-                  <y>30</y>
-                  <width>191</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="maximum">
-                 <number>100000</number>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_398">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>70</y>
-                  <width>181</width>
-                  <height>31</height>
-                 </rect>
-                </property>
+               </item>
+               <item>
                 <property name="text">
-                 <string>Read Out Mode: </string>
+                 <string>ANALOG_AND_DIGITAL</string>
                 </property>
-               </widget>
-               <widget class="QComboBox" name="comboBoxROMode">
-                <property name="geometry">
-                 <rect>
-                  <x>150</x>
-                  <y>70</y>
-                  <width>191</width>
-                  <height>29</height>
-                 </rect>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>ANALOG</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>DIGITAL</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>ANALOG_AND_DIGITAL</string>
-                 </property>
-                </item>
-               </widget>
+               </item>
+              </widget>
+              <widget class="QLabel" name="label_398">
+               <property name="geometry">
+                <rect>
+                 <x>20</x>
+                 <y>620</y>
+                 <width>121</width>
+                 <height>31</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Read Out Mode: </string>
+               </property>
               </widget>
              </widget>
              <widget class="QWidget" name="tab_6">
@@ -14027,7 +14011,7 @@
      <x>0</x>
      <y>0</y>
      <width>1497</width>
-     <height>25</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

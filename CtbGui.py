@@ -16,7 +16,7 @@ from pathlib import Path
 from functools import partial
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 from bit_utils import set_bit, remove_bit, bit_is_set, manipulate_bit
-
+import random
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -713,12 +713,21 @@ class MainWindow(QtWidgets.QMainWindow):
         except Exception as e:
             print(f'Caught exception: {str(e)}')
 
+    def getRandomColor(self):
+        '''
+        Returns a random color range (except white) in format string eg. "#aabbcc"
+        '''
+        randomColor = random.randrange(0, 0xffffaa, 0xaa)
+        return "#{:06x}".format(randomColor)
+
+    def setActiveColor(self, button, str_color):
+        button.setStyleSheet(":enabled {background-color: %s" % str_color 
+            + "} :disabled {background-color: grey}")
+
     def showPalette(self, button):
         color = QtWidgets.QColorDialog.getColor()
         if color.isValid():
-            #button.setStyleSheet("background-color: %s" % color.name())
-            button.setStyleSheet(":enabled {background-color: %s" % color.name() 
-            + "} :disabled {background-color: grey}")
+            self.setActiveColor(button, color.name())
             # get the RGB Values
             #print(color.getRgb())
 
@@ -887,9 +896,7 @@ class MainWindow(QtWidgets.QMainWindow):
             checkBox = getattr(self, f"checkBoxBIT{i}Plot")
             checkBox.setDisabled(True)
             pushButton.setDisabled(True)
-            # TODO: default set of colors at startup (when not disabled)
-            #pushButton.setStyleSheet("background-color:#aa0000;");
-            pushButton.setStyleSheet("background-color:grey;");
+            self.setActiveColor(pushButton, self.getRandomColor())
 
         # Adc Tab
         for i in range(32):
@@ -897,9 +904,7 @@ class MainWindow(QtWidgets.QMainWindow):
             checkBox = getattr(self, f"checkBoxADC{i}Plot")
             checkBox.setDisabled(True)
             pushButton.setDisabled(True)
-            # TODO: default set of colors at startup (when not disabled)
-            #pushButton.setStyleSheet("background-color:#aa0000;");
-            pushButton.setStyleSheet("background-color:grey;");
+            self.setActiveColor(pushButton, self.getRandomColor())
 
     def connect_ui(self):
                # Plotting the data

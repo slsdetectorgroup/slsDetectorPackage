@@ -69,7 +69,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>2</number>
+              <number>5</number>
              </property>
              <widget class="QWidget" name="tab">
               <attribute name="title">
@@ -11273,7 +11273,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -11337,7 +11337,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -11401,7 +11401,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -11465,7 +11465,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -11573,7 +11573,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -11662,7 +11662,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -11726,7 +11726,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -11847,7 +11847,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -11952,7 +11952,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -12036,7 +12036,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -12119,7 +12119,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -12183,7 +12183,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -12750,7 +12750,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -12878,7 +12878,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -13093,7 +13093,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -13157,7 +13157,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -13250,7 +13250,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -13358,7 +13358,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -13444,7 +13444,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -13540,7 +13540,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="readOnly">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>

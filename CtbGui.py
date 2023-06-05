@@ -280,7 +280,14 @@ class MainWindow(QtWidgets.QMainWindow):
         return retval
 
     def setIOOutReg(self):
-        self.det.patioctrl = int(self.lineEditPatIOCtrl.text(), 16)
+        self.lineEditPatIOCtrl.editingFinished.disconnect()
+        try:
+            self.det.patioctrl = int(self.lineEditPatIOCtrl.text(), 16)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "IO Out Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.lineEditPatIOCtrl.editingFinished.connect(self.setIOOutReg)
         self.updateIOOut()
 
     def updateCheckBoxIOOut(self, i, out):
@@ -337,7 +344,14 @@ class MainWindow(QtWidgets.QMainWindow):
         return retval
 
     def setADCInvReg(self):
-        self.det.adcinvert = int(self.lineEditADCInversion.text(), 16)
+        self.lineEditADCInversion.editingFinished.disconnect()
+        try:
+            self.det.adcinvert = int(self.lineEditADCInversion.text(), 16)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "ADC Inversion Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
         self.updateADCInv()
 
     def updateCheckBoxADCInv(self, i, inv):
@@ -370,11 +384,18 @@ class MainWindow(QtWidgets.QMainWindow):
         return retval
 
     def setADCEnableReg(self):
-        mask = int(self.lineEditADCEnable.text(), 16)
-        if self.det.tengiga:
-            self.det.adcenable10g = mask
-        else:
-            self.det.adcenable = mask
+        self.lineEditADCEnable.editingFinished.disconnect()
+        try:
+            mask = int(self.lineEditADCEnable.text(), 16)
+            if self.det.tengiga:
+                self.det.adcenable10g = mask
+            else:
+                self.det.adcenable = mask
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "ADC Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
         self.updateADCEnable()
 
     def updateCheckBoxADCEnable(self, i, mask):
@@ -558,9 +579,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lineEditStopAddress.editingFinished.connect(self.setPatLimitAddress)
 
     def setPatLimitAddress(self):
-        start = int(self.lineEditStartAddress.text(), 16)
-        stop = int(self.lineEditStopAddress.text(), 16)
-        self.det.patlimits = [start, stop]
+        self.lineEditStartAddress.editingFinished.disconnect()
+        self.lineEditStopAddress.editingFinished.disconnect()      
+        try: 
+            start = int(self.lineEditStartAddress.text(), 16)
+            stop = int(self.lineEditStopAddress.text(), 16)
+            self.det.patlimits = [start, stop]
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Pattern Limit Address Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.lineEditStartAddress.editingFinished.connect(self.setPatLimitAddress)
+        self.lineEditStopAddress.editingFinished.connect(self.setPatLimitAddress)
         self.getPatLimitAddress()
 
     def getPatLoopStartStopAddress(self, level):
@@ -577,9 +607,18 @@ class MainWindow(QtWidgets.QMainWindow):
     def setPatLoopStartStopAddress(self, level):
         lineEditStart = getattr(self, f"lineEditLoop{level}Start")
         lineEditStop = getattr(self, f"lineEditLoop{level}Stop")
-        start = int(lineEditStart.text(), 16)
-        stop = int(lineEditStop.text(), 16)
-        self.det.patloop[level] = [start, stop]
+        lineEditStart.editingFinished.disconnect()
+        lineEditStop.editingFinished.disconnect()
+        try:
+            start = int(lineEditStart.text(), 16)
+            stop = int(lineEditStop.text(), 16)
+            self.det.patloop[level] = [start, stop]
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Pattern Loop Start Stop Address Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        lineEditStart.editingFinished.connect(partial(self.setPatLoopStartStopAddress, level))
+        lineEditStop.editingFinished.connect(partial(self.setPatLoopStartStopAddress, level))
         self.getPatLoopStartStopAddress(level)
 
     def getPatLoopWaitAddress(self, level):
@@ -591,8 +630,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def setPatLoopWaitAddress(self, level):
         lineEdit = getattr(self, f"lineEditLoop{level}Wait")
-        addr = int(lineEdit.text(), 16)
-        self.det.patwait[level] = addr
+        lineEdit.editingFinished.disconnect()
+        try:
+            addr = int(lineEdit.text(), 16)
+            self.det.patwait[level] = addr
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Pattern Wait Address Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        lineEdit.editingFinished.connect(partial(self.setPatLoopWaitAddress, level))
         self.getPatLoopWaitAddress(level)
 
     def getPatLoopRepetition(self, level):
@@ -832,6 +878,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def updateCurrentMeasurement(self):
         self.labelCurrentMeasurement.setText(str(self.currentMeasurement))
+        #print(f"Meausrement {self.currentMeasurement}")
     
     def stopAcquisition(self):
         self.det.stop()
@@ -846,7 +893,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.startMeasurement()
 
     def startMeasurement(self):
-        #print(f"Meausrement {self.currentMeasurement}")
         self.updateCurrentMeasurement()
         self.det.rx_start()
         self.progressBar.setValue(0)

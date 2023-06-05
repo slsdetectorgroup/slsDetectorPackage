@@ -227,10 +227,9 @@ class MainWindow(QtWidgets.QMainWindow):
         bitList = self.det.rx_dbitlist
         if checkBox.isChecked():
             bitList.append(i)
-            self.det.rx_dbitlist = bitList
         else:
             bitList.remove(i)
-            self.det.rx_dbitlist = bitList
+        self.det.rx_dbitlist = bitList
         
         retval = self.det.rx_dbitlist       
         self.getDigitalBitEnable(i, retval)
@@ -435,6 +434,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.comboBoxROMode.activated.connect(self.setReadOut)
         self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
         self.spinBoxDigital.editingFinished.connect(self.setDigital)
+        self.getAnalog()
+        self.getDigital()
 
     def setReadOut(self):
         if self.comboBoxROMode.currentIndex() == 0:
@@ -466,7 +467,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def getADCPhase(self):
         self.spinBoxADCPhase.editingFinished.disconnect()
-        self.spinBoxADCPhase.setValue(self.det.adcclk)
+        self.spinBoxADCPhase.setValue(self.det.adcphase)
         self.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
 
     def setADCPhase(self):
@@ -709,11 +710,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def getFilePath(self):
         self.lineEditFilePath.editingFinished.disconnect()
-        self.lineEditFilePath.setText(self.det.fname)
+        self.lineEditFilePath.setText(str(self.det.fpath))
         self.lineEditFilePath.editingFinished.connect(self.setFilePath)
 
     def setFilePath(self):
-        self.det.fname = self.lineEditFilePath.text()
+        self.det.fpath = Path(self.lineEditFilePath.text())
         self.getFilePath()
 
     def browseFilePath(self):
@@ -725,6 +726,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         if response[0]:
             self.lineEditFilePath.setText(response[0])
+            self.setFilePath()
 
     def getAccquisitionIndex(self):
         self.spinBoxAcquisitionIndex.editingFinished.disconnect()
@@ -1104,8 +1106,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # For ADCs Tab
         for i in range(32):
-            getattr(self, f"checkBoxADC{i}Inv").clicked.connect(partial(self.setADCEnable, i))
-            getattr(self, f"checkBoxADC{i}En").clicked.connect(partial(self.setADCInv, i))
+            getattr(self, f"checkBoxADC{i}Inv").clicked.connect(partial(self.setADCInv, i))
+            getattr(self, f"checkBoxADC{i}En").clicked.connect(partial(self.setADCEnable, i))
             getattr(self, f"checkBoxADC{i}Plot").clicked.connect(partial(self.setADCPlot, i))
             getattr(self, f"pushButtonADC{i}").clicked.connect(partial(self.selectADCColor, i))
         self.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)

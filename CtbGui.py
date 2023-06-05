@@ -62,7 +62,27 @@ class MainWindow(QtWidgets.QMainWindow):
             print(response[0])
 
 
+
     # DACs tab functions
+
+    # called only at setup (not unchecked automatically)
+    def getDACTristate(self, i):
+        checkBox = getattr(self, f"checkBoxDAC{i}")
+        dac = getattr(dacIndex, f"DAC_{i}")
+        checkBox.clicked.disconnect()
+        if (self.det.getDAC(dac)[0]) == -100:
+            checkBox.setChecked(False)
+        else:
+            checkBox.setChecked(True)
+        checkBox.clicked.connect(partial(self.setDACTristate, i))
+
+    def setDACTristate(self, i):
+        checkBox = getattr(self, f"checkBoxDAC{i}")
+        if not checkBox.isChecked():
+            self.setDAC(i)
+        self.getDAC(i)
+
+
     def getDAC(self, i):
         checkBox = getattr(self, f"checkBoxDAC{i}")
         checkBoxmV = getattr(self, f"checkBoxDAC{i}mV")
@@ -74,14 +94,16 @@ class MainWindow(QtWidgets.QMainWindow):
         checkBoxmV.clicked.disconnect()
         spinBox.editingFinished.disconnect()
 
-        if (self.det.getDAC(dac)[0]) == -100:
-            checkBox.setChecked(False)
-            spinBox.setDisabled(True)
-            checkBoxmV.setDisabled(True)
-        else:
+        # do not uncheck automatically
+        if (self.det.getDAC(dac)[0]) != -100:
             checkBox.setChecked(True)
+            
+        if checkBox.isChecked():
             spinBox.setEnabled(True)
             checkBoxmV.setEnabled(True)
+        else:
+            spinBox.setDisabled(True)
+            checkBoxmV.setDisabled(True)
 
         checkBox.setText(self.det.getDacName(dac))
         if checkBoxmV.isChecked():
@@ -89,7 +111,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             label.setText(str(self.det.getDAC(dac)[0]))
 
-        checkBox.clicked.connect(partial(self.setDAC, i))
+        checkBox.clicked.connect(partial(self.setDACTristate, i))
         checkBoxmV.clicked.connect(partial(self.setDAC, i))
         spinBox.editingFinished.connect(partial(self.setDAC, i))
 
@@ -944,6 +966,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def refresh_tab_dac(self):
         for i in range(18):
+            self.getDACTristate(i)
             self.getDAC(i)
 
         self.getADCVpp()
@@ -1076,7 +1099,7 @@ class MainWindow(QtWidgets.QMainWindow):
             getattr(self, f"spinBoxDAC{i}").editingFinished.connect(
                 partial(self.setDAC, i)
             )
-            getattr(self, f"checkBoxDAC{i}").clicked.connect(partial(self.setDAC, i))
+            getattr(self, f"checkBoxDAC{i}").clicked.connect(partial(self.setDACTristate, i))
             getattr(self, f"checkBoxDAC{i}mV").clicked.connect(partial(self.setDAC, i))
 
         self.comboBoxADCVpp.activated.connect(self.setADCVpp)

@@ -78,7 +78,6 @@ TEST_CASE("dacindex", "[.cmd]") {
     }
 }
 
-
 TEST_CASE("adclist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -110,7 +109,6 @@ TEST_CASE("adclist", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("adclist", {}, -1, GET));
     }
 }
-
 
 TEST_CASE("adcname", "[.cmd]") {
     Detector det;
@@ -171,7 +169,6 @@ TEST_CASE("adcindex", "[.cmd]") {
     }
 }
 
-
 TEST_CASE("signallist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -204,7 +201,6 @@ TEST_CASE("signallist", "[.cmd]") {
     }
 }
 
-
 TEST_CASE("signalname", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -221,8 +217,8 @@ TEST_CASE("signalname", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("signalname", {"64", "bname"}, -1, PUT));
         {
             std::ostringstream oss;
-            REQUIRE_NOTHROW(
-                proxy.Call("signalname", {str_signal_index, "bname"}, -1, PUT, oss));
+            REQUIRE_NOTHROW(proxy.Call(
+                "signalname", {str_signal_index, "bname"}, -1, PUT, oss));
         }
         {
             std::ostringstream oss;
@@ -255,7 +251,8 @@ TEST_CASE("signalindex", "[.cmd]") {
         auto signalname = det.getSignalName(ind);
         {
             std::ostringstream oss;
-            REQUIRE_NOTHROW(proxy.Call("signalindex", {signalname}, -1, GET, oss));
+            REQUIRE_NOTHROW(
+                proxy.Call("signalindex", {signalname}, -1, GET, oss));
             REQUIRE(oss.str() ==
                     std::string("signalindex ") + str_signal_index + '\n');
         }
@@ -263,7 +260,6 @@ TEST_CASE("signalindex", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("signalindex", {"2"}, -1, GET));
     }
 }
-
 
 TEST_CASE("powerlist", "[.cmd]") {
     Detector det;
@@ -297,7 +293,6 @@ TEST_CASE("powerlist", "[.cmd]") {
     }
 }
 
-
 TEST_CASE("powername", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -314,8 +309,8 @@ TEST_CASE("powername", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("powername", {"5", "bname"}, -1, PUT));
         {
             std::ostringstream oss;
-            REQUIRE_NOTHROW(
-                proxy.Call("powername", {str_power_index, "bname"}, -1, PUT, oss));
+            REQUIRE_NOTHROW(proxy.Call("powername", {str_power_index, "bname"},
+                                       -1, PUT, oss));
         }
         {
             std::ostringstream oss;
@@ -348,7 +343,8 @@ TEST_CASE("powerindex", "[.cmd]") {
         auto powername = det.getPowerName(ind);
         {
             std::ostringstream oss;
-            REQUIRE_NOTHROW(proxy.Call("powerindex", {powername}, -1, GET, oss));
+            REQUIRE_NOTHROW(
+                proxy.Call("powerindex", {powername}, -1, GET, oss));
             REQUIRE(oss.str() ==
                     std::string("powerindex ") + str_power_index + '\n');
         }
@@ -356,7 +352,6 @@ TEST_CASE("powerindex", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("powerindex", {"2"}, -1, GET));
     }
 }
-
 
 TEST_CASE("senselist", "[.cmd]") {
     Detector det;
@@ -390,7 +385,6 @@ TEST_CASE("senselist", "[.cmd]") {
     }
 }
 
-
 TEST_CASE("sensename", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -407,8 +401,8 @@ TEST_CASE("sensename", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("sensename", {"8", "bname"}, -1, PUT));
         {
             std::ostringstream oss;
-            REQUIRE_NOTHROW(
-                proxy.Call("sensename", {str_sense_index, "bname"}, -1, PUT, oss));
+            REQUIRE_NOTHROW(proxy.Call("sensename", {str_sense_index, "bname"},
+                                       -1, PUT, oss));
         }
         {
             std::ostringstream oss;
@@ -441,7 +435,8 @@ TEST_CASE("senseindex", "[.cmd]") {
         auto sensename = det.getSenseName(ind);
         {
             std::ostringstream oss;
-            REQUIRE_NOTHROW(proxy.Call("senseindex", {sensename}, -1, GET, oss));
+            REQUIRE_NOTHROW(
+                proxy.Call("senseindex", {sensename}, -1, GET, oss));
             REQUIRE(oss.str() ==
                     std::string("senseindex ") + str_sense_index + '\n');
         }
@@ -449,7 +444,6 @@ TEST_CASE("senseindex", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("senseindex", {"2"}, -1, GET));
     }
 }
-
 
 /* dacs */
 

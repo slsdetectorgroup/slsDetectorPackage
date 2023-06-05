@@ -1218,7 +1218,6 @@ std::string CmdProxy::DacIndex(const int action) {
     return os.str();
 }
 
-
 /* dacs */
 std::string CmdProxy::Dac(int action) {
     std::ostringstream os;

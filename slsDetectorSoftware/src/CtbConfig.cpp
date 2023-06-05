@@ -232,7 +232,6 @@ std::vector<std::string> CtbConfig::getSenseNames() const {
     return names;
 }
 
-
 const char *CtbConfig::shm_tag() { return shm_tag_; }
 
 } // namespace sls

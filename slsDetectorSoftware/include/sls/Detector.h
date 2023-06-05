@@ -1778,7 +1778,7 @@ class Detector {
     /** [CTB] */
     std::string getPowerName(int i);
 
-        /** [CTB] */
+    /** [CTB] */
     void setSenseNames(const std::vector<std::string> names);
 
     /** [CTB] */
@@ -1792,7 +1792,7 @@ class Detector {
 
     /** [CTB] */
     std::string getSenseName(int i);
-    
+
     ///@}
 
     /** @name Pattern */

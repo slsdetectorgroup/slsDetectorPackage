@@ -69,7 +69,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>5</number>
+              <number>2</number>
              </property>
              <widget class="QWidget" name="tab">
               <attribute name="title">
@@ -2246,7 +2246,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT0</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_2">
+               <widget class="QLabel" name="labelBIT1">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2264,7 +2264,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT1</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_3">
+               <widget class="QLabel" name="labelBIT2">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2282,7 +2282,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT2</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_4">
+               <widget class="QLabel" name="labelBIT3">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2300,7 +2300,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT3</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_5">
+               <widget class="QLabel" name="labelBIT4">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2318,7 +2318,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT4</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_6">
+               <widget class="QLabel" name="labelBIT5">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2336,7 +2336,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT5</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_7">
+               <widget class="QLabel" name="labelBIT6">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2354,7 +2354,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT6</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_8">
+               <widget class="QLabel" name="labelBIT7">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2372,7 +2372,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT7</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_9">
+               <widget class="QLabel" name="labelBIT8">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2390,7 +2390,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT8</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_10">
+               <widget class="QLabel" name="labelBIT9">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2408,7 +2408,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT9</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_11">
+               <widget class="QLabel" name="labelBIT10">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2426,7 +2426,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT10</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_12">
+               <widget class="QLabel" name="labelBIT11">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2444,7 +2444,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT11</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_13">
+               <widget class="QLabel" name="labelBIT12">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2462,7 +2462,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT12</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_14">
+               <widget class="QLabel" name="labelBIT13">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2480,7 +2480,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT13</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_15">
+               <widget class="QLabel" name="labelBIT14">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2498,7 +2498,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT14</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_16">
+               <widget class="QLabel" name="labelBIT15">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2516,7 +2516,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT15</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_17">
+               <widget class="QLabel" name="labelBIT16">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2534,7 +2534,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT16</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_18">
+               <widget class="QLabel" name="labelBIT17">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2552,7 +2552,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT17</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_19">
+               <widget class="QLabel" name="labelBIT18">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2570,7 +2570,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT18</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_20">
+               <widget class="QLabel" name="labelBIT19">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2588,7 +2588,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT19</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_21">
+               <widget class="QLabel" name="labelBIT28">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2606,7 +2606,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT28</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_22">
+               <widget class="QLabel" name="labelBIT32">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2624,7 +2624,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT32</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_23">
+               <widget class="QLabel" name="labelBIT22">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2642,7 +2642,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT22</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_24">
+               <widget class="QLabel" name="labelBIT30">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2660,7 +2660,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT30</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_25">
+               <widget class="QLabel" name="labelBIT26">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2678,7 +2678,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT26</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_26">
+               <widget class="QLabel" name="labelBIT23">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2696,7 +2696,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT23</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_27">
+               <widget class="QLabel" name="labelBIT24">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2714,7 +2714,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT24</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_28">
+               <widget class="QLabel" name="labelBIT21">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2732,7 +2732,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT21</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_29">
+               <widget class="QLabel" name="labelBIT20">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2750,7 +2750,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT20</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_30">
+               <widget class="QLabel" name="labelBIT31">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2768,7 +2768,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT31</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_31">
+               <widget class="QLabel" name="labelBIT29">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2786,7 +2786,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT29</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_32">
+               <widget class="QLabel" name="labelBIT27">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -2804,7 +2804,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT27</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_33">
+               <widget class="QLabel" name="labelBIT25">
                 <property name="geometry">
                  <rect>
                   <x>20</x>
@@ -5263,7 +5263,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>DB List</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_34">
+               <widget class="QLabel" name="labelBIT39">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -5281,7 +5281,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT39</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_35">
+               <widget class="QLabel" name="labelBIT61">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -5423,7 +5423,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>DB List</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_37">
+               <widget class="QLabel" name="labelBIT44">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -5511,7 +5511,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>Plot</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_38">
+               <widget class="QLabel" name="labelBIT42">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -5669,7 +5669,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>Out</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_39">
+               <widget class="QLabel" name="labelBIT49">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -5705,7 +5705,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>Plot</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_40">
+               <widget class="QLabel" name="labelBIT41">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -5759,7 +5759,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>DB List</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_41">
+               <widget class="QLabel" name="labelBIT63">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -5899,7 +5899,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <bool>false</bool>
                 </property>
                </widget>
-               <widget class="QLabel" name="labelBIT0_2">
+               <widget class="QLabel" name="labelBIT33">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -5917,7 +5917,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT33</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_42">
+               <widget class="QLabel" name="labelBIT45">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -6021,7 +6021,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>Out</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_43">
+               <widget class="QLabel" name="labelBIT43">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -6073,7 +6073,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>Out</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_44">
+               <widget class="QLabel" name="labelBIT38">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -6091,7 +6091,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT38</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_45">
+               <widget class="QLabel" name="labelBIT40">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -6143,7 +6143,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <bool>false</bool>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_46">
+               <widget class="QLabel" name="labelBIT53">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -6215,7 +6215,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>Out</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_47">
+               <widget class="QLabel" name="labelBIT36">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -6373,7 +6373,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>Plot</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_49">
+               <widget class="QLabel" name="labelBIT34">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -6409,7 +6409,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>Out</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_50">
+               <widget class="QLabel" name="labelBIT35">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -6481,7 +6481,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>Out</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_51">
+               <widget class="QLabel" name="labelBIT56">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -6515,7 +6515,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <bool>false</bool>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_52">
+               <widget class="QLabel" name="labelBIT52">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -6641,7 +6641,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>Out</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_53">
+               <widget class="QLabel" name="labelBIT51">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -6695,7 +6695,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>DB List</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_54">
+               <widget class="QLabel" name="labelBIT62">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -6731,7 +6731,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>Out</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_55">
+               <widget class="QLabel" name="labelBIT47">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -6785,7 +6785,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>Plot</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_56">
+               <widget class="QLabel" name="labelBIT58">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -6907,7 +6907,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>DB List</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_57">
+               <widget class="QLabel" name="labelBIT50">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -6943,7 +6943,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>DB List</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_58">
+               <widget class="QLabel" name="labelBIT59">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -7051,7 +7051,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>DB List</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_59">
+               <widget class="QLabel" name="labelBIT48">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -7139,7 +7139,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>Plot</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_60">
+               <widget class="QLabel" name="labelBIT37">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -7157,7 +7157,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT37</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_61">
+               <widget class="QLabel" name="labelBIT60">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -7193,7 +7193,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>DB List</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_62">
+               <widget class="QLabel" name="labelBIT46">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -7381,7 +7381,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <bool>false</bool>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_63">
+               <widget class="QLabel" name="labelBIT54">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -7415,7 +7415,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <bool>false</bool>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_64">
+               <widget class="QLabel" name="labelBIT57">
                 <property name="geometry">
                  <rect>
                   <x>370</x>
@@ -7433,7 +7433,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>BIT57</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_65">
+               <widget class="QLabel" name="labelBIT55">
                 <property name="geometry">
                  <rect>
                   <x>370</x>

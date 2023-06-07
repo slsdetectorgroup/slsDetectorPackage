@@ -168,6 +168,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getHighVoltage()
 
     # Power Supplies Tab functions
+    def updatePowerNames(self):
+        retval = self.det.getPowerNames()
+        getattr(self, f"checkBoxVA").setText(retval[0])  
+        getattr(self, f"checkBoxVB").setText(retval[1])  
+        getattr(self, f"checkBoxVC").setText(retval[2])  
+        getattr(self, f"checkBoxVD").setText(retval[3])  
+        getattr(self, f"checkBoxVIO").setText(retval[4])  
+
     def getPower(self, i):
         spinBox = getattr(self, f"spinBoxV{i}")
         checkBox = getattr(self, f"checkBoxV{i}")
@@ -215,6 +223,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.labelVCHIP.setText(str(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0]))
 
     # Sense Tab functions
+    def updateSenseNames(self):
+        for i, name in enumerate(self.det.getSenseNames()):
+            getattr(self, f"labelSense{i}").setText(name)    
+
     def updateSense(self, i):
         slowADC = getattr(dacIndex, f"SLOW_ADC{i}")
         label = getattr(self, f"labelSense{i}_2")
@@ -226,6 +238,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.labelTemp_2.setText(f'{str(sense0[0])} °C')
 
     # Signals Tab functions
+    def updateSignalNames(self):
+        for i, name in enumerate(self.det.getSignalNames()):
+            getattr(self, f"labelBIT{i}").setText(name)    
+
     def getDigitalBitEnable(self, i, dbitList):
         checkBox = getattr(self, f"checkBoxBIT{i}DB")
         checkBox.clicked.disconnect()
@@ -973,23 +989,22 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getHighVoltage()
 
     def refresh_tab_power(self):
+        self.updatePowerNames()
         for i in ('A', 'B', 'C', 'D', 'IO'):
             self.getPower(i)
-
-        # TODO: was not getting vchip earlier, why?
         self.getVChip()
 
     def refresh_tab_sense(self):
+        self.updateSenseNames()
         for i in range(8):
             self.updateSense(i)
         self.updateTemperature()
 
-
     def refresh_tab_signals(self):
+        self.updateSignalNames()
         self.updateDigitalBitEnable()
         self.updateIOOut()
         self.getDBitOffset()
-
 
     def refresh_tab_adc(self):
         self.updateADCNames()
@@ -1013,7 +1028,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.getPatLoopWaitAddress(i)
             self.getPatLoopRepetition(i)
             self.getPatLoopWaitTime(i)
-
         
     def refresh_tab_acquisition(self):
         self.getFileWrite()
@@ -1024,7 +1038,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getTriggers()
         self.getPeriod()
         self.getDetectorStatus()
-        
 
     def setup_zmq(self):
         self.det.rx_zmqstream = 1

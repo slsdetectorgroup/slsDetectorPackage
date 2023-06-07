@@ -10,7 +10,7 @@
 namespace sls {
 
 TEST_CASE("Default construction") {
-    static_assert(sizeof(CtbConfig) == ((18 + 32) * 20),
+    static_assert(sizeof(CtbConfig) == ((18 + 32 + 64 + 5 + 8) * 20),
                   "Size of CtbConfig does not match");
 
     CtbConfig c;

@@ -112,7 +112,7 @@ class MainWindow(QtWidgets.QMainWindow):
             label.setText(str(self.det.getDAC(dac)[0]))
 
         checkBox.clicked.connect(partial(self.setDACTristate, i))
-        checkBoxmV.clicked.connect(partial(self.setDAC, i))
+        checkBoxmV.clicked.connect(partial(self.getDAC, i))
         spinBox.editingFinished.connect(partial(self.setDAC, i))
 
     def setDAC(self, i):
@@ -1100,7 +1100,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 partial(self.setDAC, i)
             )
             getattr(self, f"checkBoxDAC{i}").clicked.connect(partial(self.setDACTristate, i))
-            getattr(self, f"checkBoxDAC{i}mV").clicked.connect(partial(self.setDAC, i))
+            getattr(self, f"checkBoxDAC{i}mV").clicked.connect(partial(self.getDAC, i))
 
         self.comboBoxADCVpp.activated.connect(self.setADCVpp)
         self.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)

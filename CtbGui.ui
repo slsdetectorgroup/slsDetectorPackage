@@ -28,8 +28,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1467</width>
-         <height>912</height>
+         <width>1463</width>
+         <height>918</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -53,8 +53,8 @@
           <property name="lineWidth">
            <number>0</number>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
+          <layout class="QGridLayout" name="gridLayout_7">
+           <item row="0" column="0" rowspan="2">
             <widget class="QTabWidget" name="tabWidget">
              <property name="minimumSize">
               <size>
@@ -15004,8 +15004,11 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
              </widget>
             </widget>
            </item>
-           <item>
-            <widget class="PlotWidget" name="plotWidget" native="true"/>
+           <item row="0" column="1">
+            <widget class="PlotWidget" name="analogPlot" native="true"/>
+           </item>
+           <item row="1" column="1">
+            <widget class="PlotWidget" name="digitalPlot" native="true"/>
            </item>
           </layout>
          </widget>
@@ -15022,7 +15025,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
      <x>0</x>
      <y>0</y>
      <width>1497</width>
-     <height>29</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

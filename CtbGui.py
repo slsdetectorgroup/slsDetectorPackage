@@ -954,33 +954,14 @@ class MainWindow(QtWidgets.QMainWindow):
             digital_frame = np.zeros((400, 400))
             analog_frame = np.zeros((400, 400))
 
-            if self.romode.value in [0, 2]:
-                adc_numbers = [9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 7, 6, 23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28,
-                                27, 26, 25, 24]
 
-                n_pixels_per_sc = 5000
 
-                sc_width = 25
-                order_sc = np.zeros((400, 400))
-
-                for n_pixel in range(n_pixels_per_sc):
-                    for i_sc, adc_nr in enumerate(adc_numbers):
-                        # ANALOG
-                        col = ((adc_nr % 16) * sc_width) + (n_pixel % sc_width)
-                        if i_sc < 16:
-                            row = 199 - int(n_pixel / sc_width)
-                        else:
-                            row = 200 + int(n_pixel / sc_width)
-
-                        index_min = n_pixel * 32 + i_sc
-
-                        pixel_value = data_array[index_min]
-                        analog_frame[row, col] = pixel_value
-                        order_sc[row, col] = i_sc
-
-            plot1 = pg.ImageView(self.plotWidget, view=pg.PlotItem())
+            plot1 = pg.ImageView(self.analogPlot, view=pg.PlotItem())
             plot1.show()
-            plot1.setImage(analog_frame)                                         
+            plot1.setImage(analog_frame)   
+            plot2 = pg.ImageView(self.digitalPlot, view=pg.PlotItem())
+            plot2.show()
+            plot2.setImage(digital_frame)                                        
             
         except zmq.ZMQError as e:
             pass

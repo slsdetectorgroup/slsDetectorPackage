@@ -236,7 +236,7 @@ class MainWindow(QtWidgets.QMainWindow):
         checkBoxPlot = getattr(self, f"checkBoxBIT{i}Plot")
         checkBoxPlot.setEnabled(checkBox.isChecked())
         pushButton = getattr(self, f"pushButtonBIT{i}")
-        pushButton.setEnabled(checkBox.isChecked())
+        pushButton.setEnabled(checkBoxPlot.isEnabled() and checkBoxPlot.isChecked())
 
         
     def updateDigitalBitEnable(self):
@@ -372,7 +372,7 @@ class MainWindow(QtWidgets.QMainWindow):
         checkBoxPlot = getattr(self, f"checkBoxADC{i}Plot")
         checkBoxPlot.setEnabled(checkBox.isChecked())
         pushButton = getattr(self, f"pushButtonADC{i}")
-        pushButton.setEnabled(checkBox.isChecked())
+        pushButton.setEnabled(checkBoxPlot.isEnabled() and checkBoxPlot.isChecked())
 
     def updateADCEnable(self):
         retval = self.getADCEnableReg()

@@ -802,14 +802,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getFilePath()
 
     def browseFilePath(self):
-        response = QtWidgets.QFileDialog.getSaveFileName(
-            parent=self,
-            caption="Select Path to Save Output File",
-            directory=os.getcwd(),
+        response = QtWidgets.QFileDialog.getExistingDirectory(
+            parent = self,
+            caption = "Select Path to Save Output File",
+            directory = os.getcwd(),
+            options = (QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontResolveSymlinks)
             # filter='README (*.md *.ui)'
         )
-        if response[0]:
-            self.lineEditFilePath.setText(response[0])
+        if response:
+            self.lineEditFilePath.setText(response)
             self.setFilePath()
 
     def getAccquisitionIndex(self):

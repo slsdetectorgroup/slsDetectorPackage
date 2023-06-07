@@ -69,7 +69,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>0</number>
+              <number>5</number>
              </property>
              <widget class="QWidget" name="tab">
               <attribute name="title">
@@ -7945,6 +7945,11 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <height>28</height>
                   </rect>
                  </property>
+                 <property name="font">
+                  <font>
+                   <family>Monospace</family>
+                  </font>
+                 </property>
                  <property name="alignment">
                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                  </property>
@@ -10949,6 +10954,11 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <height>31</height>
                   </rect>
                  </property>
+                 <property name="font">
+                  <font>
+                   <family>Monospace</family>
+                  </font>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true">background-color: rgb(255, 255, 255);</string>
                  </property>
@@ -10967,6 +10977,11 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <width>221</width>
                    <height>31</height>
                   </rect>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Monospace</family>
+                  </font>
                  </property>
                  <property name="styleSheet">
                   <string notr="true">background-color: rgb(255, 255, 255);</string>
@@ -11212,6 +11227,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <height>31</height>
                    </size>
                   </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
@@ -11233,6 +11290,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <width>80</width>
                     <height>31</height>
                    </size>
+                  </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -11256,6 +11355,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <height>31</height>
                    </size>
                   </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
@@ -11277,6 +11418,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <width>80</width>
                     <height>31</height>
                    </size>
+                  </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -11341,6 +11524,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <height>31</height>
                    </size>
                   </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string/>
                   </property>
@@ -11388,6 +11613,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <height>31</height>
                    </size>
                   </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string/>
                   </property>
@@ -11412,6 +11679,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <width>80</width>
                     <height>31</height>
                    </size>
+                  </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -11492,6 +11801,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <height>31</height>
                    </size>
                   </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
@@ -11555,6 +11906,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <height>31</height>
                    </size>
                   </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
@@ -11597,6 +11990,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <height>31</height>
                    </size>
                   </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
@@ -11638,6 +12073,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <height>31</height>
                    </size>
                   </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
@@ -11659,6 +12136,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <width>80</width>
                     <height>31</height>
                    </size>
+                  </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -12182,6 +12701,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <height>31</height>
                    </size>
                   </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
                   <property name="text">
                    <string/>
                   </property>
@@ -12270,6 +12831,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <width>80</width>
                     <height>31</height>
                    </size>
+                  </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -12444,6 +13047,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <height>31</height>
                    </size>
                   </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
@@ -12465,6 +13110,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <width>80</width>
                     <height>31</height>
                    </size>
+                  </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -12516,6 +13203,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <width>80</width>
                     <height>31</height>
                    </size>
+                  </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -12580,6 +13309,51 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <height>31</height>
                    </size>
                   </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
@@ -12620,6 +13394,51 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <width>80</width>
                     <height>31</height>
                    </size>
+                  </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string/>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -12674,6 +13493,48 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                     <width>80</width>
                     <height>31</height>
                    </size>
+                  </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

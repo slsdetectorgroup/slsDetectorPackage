@@ -354,7 +354,7 @@ class MainWindow(QtWidgets.QMainWindow):
         return retval
 
     def setADCEnableReg(self):
-        mask = int(self.lineEditADCInversion.text(), 16)
+        mask = int(self.lineEditADCEnable.text(), 16)
         if self.det.tengiga:
             self.det.adcenable10g = mask
         else:

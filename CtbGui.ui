@@ -28,8 +28,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1463</width>
-         <height>918</height>
+         <width>1467</width>
+         <height>912</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -69,7 +69,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>5</number>
+              <number>6</number>
              </property>
              <widget class="QWidget" name="tab">
               <attribute name="title">
@@ -13627,7 +13627,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                </widget>
                <widget class="QLabel" name="label_110">
                 <property name="enabled">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <property name="geometry">
                  <rect>
@@ -13643,7 +13643,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                </widget>
                <widget class="QRadioButton" name="radioButtonNoPlot">
                 <property name="enabled">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <property name="geometry">
                  <rect>
@@ -13657,12 +13657,12 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>No Plot</string>
                 </property>
                 <property name="checked">
-                 <bool>true</bool>
+                 <bool>false</bool>
                 </property>
                </widget>
                <widget class="QRadioButton" name="radioButtonWaveform">
                 <property name="enabled">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <property name="geometry">
                  <rect>
@@ -13674,6 +13674,9 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 </property>
                 <property name="text">
                  <string>Waveform</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
                 </property>
                </widget>
                <widget class="QRadioButton" name="radioButtonDistribution">
@@ -13694,7 +13697,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                </widget>
                <widget class="QRadioButton" name="radioButtonImage">
                 <property name="enabled">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <property name="geometry">
                  <rect>
@@ -13728,6 +13731,16 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 </property>
                 <item>
                  <property name="text">
+                  <string>Nonsense image (Test)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Moench 04</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
                   <string>Serializer</string>
                  </property>
                 </item>
@@ -13738,12 +13751,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 </item>
                 <item>
                  <property name="text">
-                  <string>Moench 04-Analog</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Moench 04-Digital</string>
+                  <string/>
                  </property>
                 </item>
                </widget>
@@ -15005,10 +15013,10 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="PlotWidget" name="analogPlot" native="true"/>
+            <widget class="PlotWidget" name="plotWidgetAnalog" native="true"/>
            </item>
            <item row="1" column="1">
-            <widget class="PlotWidget" name="digitalPlot" native="true"/>
+            <widget class="PlotWidget" name="plotWidgetDigital" native="true"/>
            </item>
           </layout>
          </widget>
@@ -15025,7 +15033,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
      <x>0</x>
      <y>0</y>
      <width>1497</width>
-     <height>25</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

@@ -2,7 +2,7 @@ import time
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 import sys, os
 import pyqtgraph as pg
-from pyqtgraph import PlotWidget
+from pyqtgraph import PlotWidget, GraphicsLayoutWidget
 import multiprocessing as mp
 from threading import Thread
 from PIL import Image as im
@@ -39,8 +39,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.refresh_tab_adc()
         self.refresh_tab_pattern()
         self.refresh_tab_acquisition()
-        # always keep plotting (else dummy plot for next acquisition)
-        self.read_timer.start(20)
+
+        # also refreshes timer to start plotting 
+        self.plotOptions()
 
 
     # For Action options function
@@ -258,7 +259,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         
     def updateDigitalBitEnable(self):
-        retval = self.det.rx_dbitlist       
+        retval = self.det.rx_dbitlist    
+        self.rx_dbitlist = list(retval)
+        self.nDbitEnabled = len(list(retval)) 
         for i in range(64):
             self.getDigitalBitEnable(i, retval)
 
@@ -314,7 +317,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def getDBitOffset(self):
         self.spinBoxDBitOffset.editingFinished.disconnect()
-        self.spinBoxDBitOffset.setValue(self.det.rx_dbitoffset)
+        self.rx_dbitoffset = self.det.rx_dbitoffset
+        self.spinBoxDBitOffset.setValue(self.rx_dbitoffset)
         self.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
 
     def setDbitOffset(self):
@@ -382,6 +386,7 @@ class MainWindow(QtWidgets.QMainWindow):
             retval = self.det.adcenable10g   
         self.lineEditADCEnable.editingFinished.disconnect()
         self.lineEditADCEnable.setText("0x{:08x}".format(retval))
+        self.nADCEnabled = bin(int(self.lineEditADCEnable.text(), 16)).count('1')
         self.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
         return retval
 
@@ -452,7 +457,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def getAnalog(self):
         self.spinBoxAnalog.editingFinished.disconnect()
-        self.spinBoxAnalog.setValue(self.det.asamples)
+        self.asamples = self.det.asamples
+        self.spinBoxAnalog.setValue(self.asamples)
         self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
 
     def setAnalog(self):
@@ -461,7 +467,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def getDigital(self):
         self.spinBoxDigital.editingFinished.disconnect()
-        self.spinBoxDigital.setValue(self.det.dsamples)
+        self.dsamples = self.det.dsamples
+        self.spinBoxDigital.setValue(self.dsamples)
         self.spinBoxDigital.editingFinished.connect(self.setDigital)
 
     def setDigital(self):
@@ -726,8 +733,60 @@ class MainWindow(QtWidgets.QMainWindow):
             
     # Acquistions Tab functions
     def plotOptions(self):
-        print("plot options - Not implemented yet")
-        # TODO: Implement no plot, waveform, distribution, image and image type
+        self.comboBoxPlot.currentIndexChanged.disconnect()
+        
+        if self.radioButtonNoPlot.isChecked():
+            # disable image widgets
+            self.plotWidgetAnalog.clear()
+            self.plotWidgetDigital.clear()
+            self.comboBoxPlot.setDisabled(True)
+            if hasattr(self, 'imageViewAnalog'):
+                self.imageViewAnalog.close()   
+            if hasattr(self, 'imageViewDigital'):
+                self.imageViewDigital.close()
+
+            # disable plotting
+            self.read_timer.stop()
+
+        elif self.radioButtonWaveform.isChecked():
+            # disable image widgets
+            self.plotWidgetAnalog.clear()
+            self.plotWidgetDigital.clear()
+            self.comboBoxPlot.setDisabled(True)
+            if hasattr(self, 'imageViewAnalog'):
+                self.imageViewAnalog.close()
+            if hasattr(self, 'imageViewDigital'):
+                self.imageViewDigital.close()
+            # enable waveform legend and labels
+            self.plotWidgetAnalog.setLabel('left',"<span style=\"color:black;font-size:14px\">Output [ADC]</span>")
+            self.plotWidgetAnalog.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Digital Sample [#]</span>")
+            self.plotWidgetAnalog.addLegend()
+            self.plotWidgetDigital.setLabel('left',"<span style=\"color:black;font-size:14px\">Digital Bit</span>")
+            self.plotWidgetDigital.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Digital Sample [#]</span>")
+            self.plotWidgetDigital.addLegend()
+            
+            # enable plotting
+            self.read_timer.start(20)
+
+        elif self.radioButtonImage.isChecked():
+            # enable image widgets
+            self.plotWidgetAnalog.clear()
+            self.plotWidgetDigital.clear()
+            self.comboBoxPlot.setEnabled(True)
+            self.imageViewAnalog = pg.ImageView(self.plotWidgetAnalog, view=pg.PlotItem())
+            self.imageViewAnalog.show()
+            self.imageViewDigital = pg.ImageView(self.plotWidgetDigital, view=pg.PlotItem())
+            self.imageViewDigital.show()
+
+            # enable plotting
+            self.read_timer.start(20)
+
+            if self.comboBoxPlot.currentIndex() >= 1:
+                QtWidgets.QMessageBox.warning(self, "Not Implemented Yet", "Sorry, this is not implemented yet.", QtWidgets.QMessageBox.Ok)
+                self.comboBoxPlot.setCurrentIndex(0)
+                
+        self.comboBoxPlot.currentIndexChanged.connect(self.plotOptions)
+
 
     def setSerialOffset(self):
         print("plot options - Not implemented yet")
@@ -891,6 +950,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonStart.setEnabled(False)
         self.stoppedFlag = False
         self.currentMeasurement = 0
+
+        # some functions that must be updated for local values
+        self.getAnalog()
+        self.getDigital()
+        self.getReadout()
+        self.getDBitOffset()
+        self.getADCEnableReg()
+        self.updateDigitalBitEnable()
+
         self.statusTimer.start(20)
         self.startMeasurement()
 
@@ -936,33 +1004,81 @@ class MainWindow(QtWidgets.QMainWindow):
         try:
             msg = self.socket.recv_multipart(flags=zmq.NOBLOCK)
             if len(msg) != 2:
-                if len(msg) == 1:
-                    print("got end of acquisition")
-                else:
+                if len(msg) != 1:
                     print(f'len(msg) = {len(msg)}')
                 return
             header, data = msg
             jsonHeader = json.loads(header)
             #print(jsonHeader)
             self.progressBar.setValue(int(jsonHeader['progress']))
+            #print(f"image size:{int(jsonHeader['size'])}")
             #print(f'Data size: {len(data)}')
             
-            data_array = np.array(np.frombuffer(data, dtype=np.uint16))
 
             
-            # moench analog
-            digital_frame = np.zeros((400, 400))
-            analog_frame = np.zeros((400, 400))
+            self.plotWidgetAnalog.clear()
+            self.plotWidgetDigital.clear()
+            analog_array = np.array(np.frombuffer(data, dtype=np.uint16))
+            dbitoffset = self.rx_dbitoffset
+            if self.romode.value == 2:
+                dbitoffset += self.nADCEnabled * 2 * self.asamples
+            #print(f"dbitoffset: {dbitoffset}")
+            digital_array = np.array(np.frombuffer(data, offset = dbitoffset, dtype=np.uint8))
 
+            # waveform
+            if self.radioButtonWaveform.isChecked():
+                # analog
+                if self.romode.value in [0, 2]:
+                    for i in range(32):
+                        checkBox = getattr(self, f"checkBoxADC{i}Plot")
+                        if checkBox.isChecked():
+                            waveform = np.zeros(self.asamples)
+                            for iSample in range(self.asamples):
+                                # all adc for 1 sample together
+                                waveform[iSample] = analog_array[iSample * self.nADCEnabled + i]
+                            pushButton = getattr(self, f"pushButtonADC{i}")
+                            pen = pg.mkPen(color = pushButton.palette().color(QtGui.QPalette.Window), width = 1)
+                            self.plotWidgetAnalog.plot(waveform, pen=pen, name = f"ADC{i}")
+                # digital
+                if self.romode.value in [1, 2]:
+                    offset = 0
+                    for i in range(64):
+                        checkBox = getattr(self, f"checkBoxBIT{i}Plot")
+                        # bits enabled but not plotting
+                        if i in self.rx_dbitlist and not checkBox.isChecked():
+                            offset += self.dsamples
+                        if checkBox.isChecked():
+                            waveform = np.zeros(self.dsamples)
+                            #print(f" createing waveform i:{i} offset:{offset}")
+                            for iSample in range(self.dsamples):
+                                # all samples for digital bit together from slsReceiver
+                                index = (int)(offset / 8)
+                                iBit = offset % 8
+                                #print(f" bit:{iBit} index:{index} iBit:{iBit} offset:{offset}")
+                                bit = (digital_array[index] >> iBit) & 1
+                                waveform[iSample] = bit
+                                offset += 1
+                            pushButton = getattr(self, f"pushButtonBIT{i}")
+                            pen = pg.mkPen(color = pushButton.palette().color(QtGui.QPalette.Window), width = 1)
+                            self.plotWidgetDigital.plot(waveform, pen=pen, name = f"BIT{i}")
+            # image
+            else:           
+                # analog
+                if self.romode.value in [0, 2]:
+                    analog_frame = np.zeros((self.nADCEnabled, self.asamples))
+                    analogIndex = 0
+                    for row in range(self.nADCEnabled):
+                        for col in range(self.asamples):
+                            analog_frame[row, col] = analog_array[analogIndex]
+                            analogIndex += 1
+                    self.imageViewAnalog.setImage(analog_array)   
 
-
-            plot1 = pg.ImageView(self.analogPlot, view=pg.PlotItem())
-            plot1.show()
-            plot1.setImage(analog_frame)   
-            plot2 = pg.ImageView(self.digitalPlot, view=pg.PlotItem())
-            plot2.show()
-            plot2.setImage(digital_frame)                                        
+                # digital
+                if self.romode.value in [1, 2]:
+                    digital_frame = np.zeros((400, 400))
+                    self.imageViewDigital.setImage(digital_frame)   
             
+
         except zmq.ZMQError as e:
             pass
         except Exception as e:
@@ -1124,6 +1240,8 @@ class MainWindow(QtWidgets.QMainWindow):
             checkBox.setDisabled(True)
             pushButton.setDisabled(True)
             self.setActiveColor(pushButton, self.getRandomColor())
+
+
 
     def connect_ui(self):
                # Plotting the data

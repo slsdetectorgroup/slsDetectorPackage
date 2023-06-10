@@ -18,6 +18,9 @@ from slsdet import Detector, dacIndex, readoutMode, runStatus
 from bit_utils import set_bit, remove_bit, bit_is_set, manipulate_bit
 import random
 
+BIT0_31_MASK = 0xFFFFFFFF
+BIT32_63_MASK = 0xFFFFFFFF00000000
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         pg.setConfigOption("background", (247, 247, 247))
@@ -301,19 +304,48 @@ class MainWindow(QtWidgets.QMainWindow):
         checkBox.setChecked(bit_is_set(out, i))
         checkBox.clicked.connect(partial(self.setIOout, i))
 
+        self.checkBoxBIT0_31Out.clicked.disconnect()
+        self.checkBoxBIT32_63Out.clicked.disconnect()
+        self.checkBoxBIT0_31Out.setChecked(out & BIT0_31_MASK)
+        self.checkBoxBIT32_63Out.setChecked(out & BIT32_63_MASK)
+        self.checkBoxBIT0_31Out.clicked.connect(self.setIOoutRange0_31)
+        self.checkBoxBIT32_63Out.clicked.connect(self.setIOoutRange32_63)
+
     def updateIOOut(self):
         retval = self.getIOOutReg()
         for i in range(64):
             self.updateCheckBoxIOOut(i, retval)
-
+        
     def setIOout(self, i):
-        checkBox = getattr(self, f"checkBoxBIT{i}Out")
         out = self.det.patioctrl
+        checkBox = getattr(self, f"checkBoxBIT{i}Out")
         mask = manipulate_bit(checkBox.isChecked(), out, i)
         self.det.patioctrl = mask
 
         retval = self.getIOOutReg()
         self.updateCheckBoxIOOut(i, retval)
+    
+    def setIOoutRange0_31(self):
+        out = self.det.patioctrl
+        if self.checkBoxBIT0_31Out.isChecked():
+            self.det.patioctrl = out | BIT0_31_MASK
+        else:
+            self.det.patioctrl = out & ~BIT0_31_MASK
+
+        retval = self.getIOOutReg()
+        for i in range(32):
+            self.updateCheckBoxIOOut(i, retval)
+
+    def setIOoutRange32_63(self):
+        out = self.det.patioctrl
+        if self.checkBoxBIT32_63Out.isChecked():
+            self.det.patioctrl = out | BIT32_63_MASK
+        else:
+            self.det.patioctrl = out & ~BIT32_63_MASK
+
+        retval = self.getIOOutReg()
+        for i in range(32, 64):
+            self.updateCheckBoxIOOut(i, retval)
 
     def getDBitOffset(self):
         self.spinBoxDBitOffset.editingFinished.disconnect()
@@ -504,6 +536,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDigital.editingFinished.connect(self.setDigital)
         self.getAnalog()
         self.getDigital()
+        #self.showPlot()
 
     def setReadOut(self):
         if self.comboBoxROMode.currentIndex() == 0:
@@ -759,12 +792,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.imageViewDigital.close()
             # enable waveform legend and labels
             self.plotWidgetAnalog.setLabel('left',"<span style=\"color:black;font-size:14px\">Output [ADC]</span>")
-            self.plotWidgetAnalog.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Digital Sample [#]</span>")
+            self.plotWidgetAnalog.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Analog Sample [#]</span>")
             self.plotWidgetAnalog.addLegend()
             self.plotWidgetDigital.setLabel('left',"<span style=\"color:black;font-size:14px\">Digital Bit</span>")
             self.plotWidgetDigital.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Digital Sample [#]</span>")
             self.plotWidgetDigital.addLegend()
-            
+
             # enable plotting
             self.read_timer.start(20)
 
@@ -786,7 +819,27 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.comboBoxPlot.setCurrentIndex(0)
                 
         self.comboBoxPlot.currentIndexChanged.connect(self.plotOptions)
+        #self.showPlot()
 
+    ''' after being able to resize windows
+    def showPlot(self):
+        self.plotWidgetAnalog.hide()
+        self.plotWidgetDigital.hide()
+        # only enable required plot and adc/digital bits enabled
+        if not self.radioButtonNoPlot.isChecked():
+            if self.romode.value in [1, 2] and self.nDbitEnabled > 0:
+                for i in range(64):
+                    checkBox = getattr(self, f"checkBoxBIT{i}Plot")
+                    if checkBox.isChecked():
+                        self.plotWidgetDigital.show()
+                        break
+            if self.romode.value in [0, 2] and self.nADCEnabled > 0:
+                for i in range(32):
+                    checkBox = getattr(self, f"checkBoxADC{i}Plot")
+                    if checkBox.isChecked():
+                        self.plotWidgetAnalog.show()
+                        break   
+    ''' 
 
     def setSerialOffset(self):
         print("plot options - Not implemented yet")
@@ -1241,8 +1294,6 @@ class MainWindow(QtWidgets.QMainWindow):
             pushButton.setDisabled(True)
             self.setActiveColor(pushButton, self.getRandomColor())
 
-
-
     def connect_ui(self):
                # Plotting the data
         # For the action options in app
@@ -1282,6 +1333,8 @@ class MainWindow(QtWidgets.QMainWindow):
             getattr(self, f"checkBoxBIT{i}Out").clicked.connect(partial(self.setIOout, i))
             getattr(self, f"checkBoxBIT{i}Plot").clicked.connect(partial(self.setBitPlot, i))
             getattr(self, f"pushButtonBIT{i}").clicked.connect(partial(self.selectBitColor, i))
+        self.checkBoxBIT0_31Out.clicked.connect(self.setIOoutRange0_31)
+        self.checkBoxBIT32_63Out.clicked.connect(self.setIOoutRange32_63)
         self.lineEditPatIOCtrl.editingFinished.connect(self.setIOOutReg)
         self.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
 

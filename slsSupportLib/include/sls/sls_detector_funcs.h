@@ -280,6 +280,7 @@ enum detFuncs {
     F_GET_BIT,
     F_SET_BIT,
     F_CLEAR_BIT,
+    F_GET_PATTERN_IO_CONTROL,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 512, /**< detector function should not exceed this
@@ -663,6 +664,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_BIT:                         return "F_GET_BIT";                 
     case F_SET_BIT:                         return "F_SET_BIT";                 
     case F_CLEAR_BIT:                       return "F_CLEAR_BIT";               
+    case F_GET_PATTERN_IO_CONTROL:          return "F_GET_PATTERN_IO_CONTROL";
 
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";

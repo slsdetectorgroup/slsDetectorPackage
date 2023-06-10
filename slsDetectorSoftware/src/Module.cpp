@@ -2492,12 +2492,11 @@ Pattern Module::getPattern() {
 void Module::loadDefaultPattern() { sendToDetector(F_LOAD_DEFAULT_PATTERN); }
 
 uint64_t Module::getPatternIOControl() const {
-    return sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL,
-                                    int64_t(GET_FLAG));
+    return sendToDetector<uint64_t>(F_GET_PATTERN_IO_CONTROL);
 }
 
 void Module::setPatternIOControl(uint64_t word) {
-    sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL, word);
+    sendToDetector(F_SET_PATTERN_IO_CONTROL, word, nullptr);
 }
 
 uint64_t Module::getPatternWord(int addr) const {

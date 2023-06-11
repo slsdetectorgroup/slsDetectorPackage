@@ -18,7 +18,7 @@ from slsdet import Detector, dacIndex, readoutMode, runStatus
 from bit_utils import set_bit, remove_bit, bit_is_set, manipulate_bit
 import random
 
-BIT0_31_MASK = 0xFFFFFFFF
+BIT0_31_MASK = 0x00000000FFFFFFFF
 BIT32_63_MASK = 0xFFFFFFFF00000000
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -254,23 +254,20 @@ class MainWindow(QtWidgets.QMainWindow):
         checkBox.setChecked(i in list(dbitList))
         checkBox.clicked.connect(partial(self.setDigitalBitEnable, i))
 
-        # enable plot option only if in dblist (also enables color)
-        checkBoxPlot = getattr(self, f"checkBoxBIT{i}Plot")
-        checkBoxPlot.setEnabled(checkBox.isChecked())
-        pushButton = getattr(self, f"pushButtonBIT{i}")
-        pushButton.setEnabled(checkBoxPlot.isEnabled() and checkBoxPlot.isChecked())
-
-        
     def updateDigitalBitEnable(self):
         retval = self.det.rx_dbitlist    
         self.rx_dbitlist = list(retval)
         self.nDbitEnabled = len(list(retval)) 
         for i in range(64):
             self.getDigitalBitEnable(i, retval)
+            self.getEnableBitPlot(i)
+            self.getEnableBitColor(i)
+        self.getDigitalBitEnableRange(retval)
+        self.getEnableBitPlotRange()
 
     def setDigitalBitEnable(self, i):
-        checkBox = getattr(self, f"checkBoxBIT{i}DB")
         bitList = self.det.rx_dbitlist
+        checkBox = getattr(self, f"checkBoxBIT{i}DB")
         if checkBox.isChecked():
             bitList.append(i)
         else:
@@ -279,6 +276,81 @@ class MainWindow(QtWidgets.QMainWindow):
         
         retval = self.det.rx_dbitlist       
         self.getDigitalBitEnable(i, retval)
+        self.getEnableBitPlot(i)
+        self.getEnableBitColor(i)
+        self.getDigitalBitEnableRange(retval)
+        self.getEnableBitPlotRange()
+
+    def getDigitalBitEnableRange(self, dbitList):
+        self.checkBoxBIT0_31DB.clicked.disconnect()
+        self.checkBoxBIT32_63DB.clicked.disconnect()
+        self.checkBoxBIT0_31DB.setChecked(all(x in list(dbitList) for x in range(32)))
+        self.checkBoxBIT32_63DB.setChecked(all(x in list(dbitList) for x in range(32, 64)))
+        self.checkBoxBIT0_31DB.clicked.connect(self.setDigitalBitEnableRange0_31)
+        self.checkBoxBIT32_63DB.clicked.connect(self.setDigitalBitEnableRange32_63) 
+
+    def setDigitalBitEnableRange0_31(self):
+        bitList = self.det.rx_dbitlist
+        for i in range(32):
+            if self.checkBoxBIT0_31DB.isChecked():
+                if i not in list(bitList):
+                    bitList.append(i)
+            else:
+                if i in list(bitList):
+                    bitList.remove(i)
+        self.det.rx_dbitlist = bitList
+
+        self.updateDigitalBitEnable()
+
+    def setDigitalBitEnableRange32_63(self):
+        bitList = self.det.rx_dbitlist
+        for i in range(32, 64):
+            if self.checkBoxBIT32_63DB.isChecked():
+                if i not in list(bitList):
+                    bitList.append(i)
+            else:
+                if i in list(bitList):
+                    bitList.remove(i)
+        self.det.rx_dbitlist = bitList
+
+        self.updateDigitalBitEnable()
+
+    def getEnableBitPlot(self, i):
+        checkBox = getattr(self, f"checkBoxBIT{i}DB")
+        checkBoxPlot = getattr(self, f"checkBoxBIT{i}Plot")
+        checkBoxPlot.setEnabled(checkBox.isChecked())
+
+    def setEnableBitPlot(self, i):
+        pushButton = getattr(self, f"pushButtonBIT{i}")
+        checkBox = getattr(self, f"checkBoxBIT{i}Plot")
+        pushButton.setEnabled(checkBox.isChecked())
+
+        self.getEnableBitPlotRange()
+
+    def getEnableBitPlotRange(self):
+        self.checkBoxBIT0_31Plot.setEnabled(all(getattr(self, f"checkBoxBIT{i}Plot").isEnabled() for i in range(32)))
+        self.checkBoxBIT32_63Plot.setEnabled(all(getattr(self, f"checkBoxBIT{i}Plot").isEnabled() for i in range(32, 64)))
+
+    def setEnableBitPlotRange0_31(self):
+        enable = self.checkBoxBIT0_31Plot.isChecked()
+        for i in range(32):
+            checkBox = getattr(self, f"checkBoxBIT{i}Plot")
+            checkBox.setChecked(enable)
+
+    def setEnableBitPlotRange32_63(self):
+        enable = self.checkBoxBIT32_63Plot.isChecked()
+        for i in range(32, 64):
+            checkBox = getattr(self, f"checkBoxBIT{i}Plot")
+            checkBox.setChecked(enable)
+
+    def getEnableBitColor(self, i):
+        checkBox = getattr(self, f"checkBoxBIT{i}Plot")
+        pushButton = getattr(self, f"pushButtonBIT{i}")
+        pushButton.setEnabled(checkBox.isEnabled() and checkBox.isChecked())
+
+    def selectBitColor(self, i):
+        pushButton = getattr(self, f"pushButtonBIT{i}")
+        self.showPalette(pushButton)
 
     def getIOOutReg(self):
         retval = self.det.patioctrl
@@ -302,21 +374,15 @@ class MainWindow(QtWidgets.QMainWindow):
         checkBox = getattr(self, f"checkBoxBIT{i}Out")
         checkBox.clicked.disconnect()
         checkBox.setChecked(bit_is_set(out, i))
-        checkBox.clicked.connect(partial(self.setIOout, i))
-
-        self.checkBoxBIT0_31Out.clicked.disconnect()
-        self.checkBoxBIT32_63Out.clicked.disconnect()
-        self.checkBoxBIT0_31Out.setChecked(out & BIT0_31_MASK)
-        self.checkBoxBIT32_63Out.setChecked(out & BIT32_63_MASK)
-        self.checkBoxBIT0_31Out.clicked.connect(self.setIOoutRange0_31)
-        self.checkBoxBIT32_63Out.clicked.connect(self.setIOoutRange32_63)
+        checkBox.clicked.connect(partial(self.setIOOut, i))
 
     def updateIOOut(self):
         retval = self.getIOOutReg()
         for i in range(64):
             self.updateCheckBoxIOOut(i, retval)
+        self.getIOoutRange(retval)
         
-    def setIOout(self, i):
+    def setIOOut(self, i):
         out = self.det.patioctrl
         checkBox = getattr(self, f"checkBoxBIT{i}Out")
         mask = manipulate_bit(checkBox.isChecked(), out, i)
@@ -324,29 +390,34 @@ class MainWindow(QtWidgets.QMainWindow):
 
         retval = self.getIOOutReg()
         self.updateCheckBoxIOOut(i, retval)
-    
-    def setIOoutRange0_31(self):
+        self.getIOoutRange(retval)
+
+    def getIOoutRange(self, out):
+        self.checkBoxBIT0_31Out.clicked.disconnect()
+        self.checkBoxBIT32_63Out.clicked.disconnect()
+        self.checkBoxBIT0_31Out.setChecked((out & BIT0_31_MASK) == BIT0_31_MASK)
+        self.checkBoxBIT32_63Out.setChecked((out & BIT32_63_MASK) == BIT32_63_MASK)
+        self.checkBoxBIT0_31Out.clicked.connect(self.setIOOutRange0_31)
+        self.checkBoxBIT32_63Out.clicked.connect(self.setIOOutRange32_63)
+
+    def setIOOutRange0_31(self):
         out = self.det.patioctrl
         if self.checkBoxBIT0_31Out.isChecked():
             self.det.patioctrl = out | BIT0_31_MASK
-        else:
+        else:   
             self.det.patioctrl = out & ~BIT0_31_MASK
 
-        retval = self.getIOOutReg()
-        for i in range(32):
-            self.updateCheckBoxIOOut(i, retval)
-
-    def setIOoutRange32_63(self):
+        self.updateIOOut()
+        
+    def setIOOutRange32_63(self):
         out = self.det.patioctrl
         if self.checkBoxBIT32_63Out.isChecked():
             self.det.patioctrl = out | BIT32_63_MASK
         else:
             self.det.patioctrl = out & ~BIT32_63_MASK
 
-        retval = self.getIOOutReg()
-        for i in range(32, 64):
-            self.updateCheckBoxIOOut(i, retval)
-
+        self.updateIOOut()
+        
     def getDBitOffset(self):
         self.spinBoxDBitOffset.editingFinished.disconnect()
         self.rx_dbitoffset = self.det.rx_dbitoffset
@@ -355,19 +426,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def setDbitOffset(self):
         self.det.rx_dbitoffset = self.spinBoxDBitOffset.value()
-
-    def setBitPlot(self, i):
-        pushButton = getattr(self, f"pushButtonBIT{i}")
-        checkBox = getattr(self, f"checkBoxBIT{i}Plot")
-        pushButton.clicked.disconnect()
-        # enable color pick only if plot enabled
-        pushButton.setEnabled(checkBox.isChecked())
-        pushButton.clicked.connect(partial(self.selectBitColor, i))
-        #TODO: enable plotting for this bit
-
-    def selectBitColor(self, i):
-        pushButton = getattr(self, f"pushButtonBIT{i}")
-        self.showPalette(pushButton)
 
     # ADCs Tab functions
     def updateADCNames(self):
@@ -1330,11 +1388,15 @@ class MainWindow(QtWidgets.QMainWindow):
         # For Signals Tab
         for i in range(64):
             getattr(self, f"checkBoxBIT{i}DB").clicked.connect(partial(self.setDigitalBitEnable, i))
-            getattr(self, f"checkBoxBIT{i}Out").clicked.connect(partial(self.setIOout, i))
-            getattr(self, f"checkBoxBIT{i}Plot").clicked.connect(partial(self.setBitPlot, i))
+            getattr(self, f"checkBoxBIT{i}Out").clicked.connect(partial(self.setIOOut, i))
+            getattr(self, f"checkBoxBIT{i}Plot").stateChanged.connect(partial(self.setEnableBitPlot, i))
             getattr(self, f"pushButtonBIT{i}").clicked.connect(partial(self.selectBitColor, i))
-        self.checkBoxBIT0_31Out.clicked.connect(self.setIOoutRange0_31)
-        self.checkBoxBIT32_63Out.clicked.connect(self.setIOoutRange32_63)
+        self.checkBoxBIT0_31Out.clicked.connect(self.setIOOutRange0_31)
+        self.checkBoxBIT32_63Out.clicked.connect(self.setIOOutRange32_63)
+        self.checkBoxBIT0_31DB.clicked.connect(self.setDigitalBitEnableRange0_31)
+        self.checkBoxBIT32_63DB.clicked.connect(self.setDigitalBitEnableRange32_63)
+        self.checkBoxBIT0_31Plot.clicked.connect(self.setEnableBitPlotRange0_31)
+        self.checkBoxBIT32_63Plot.clicked.connect(self.setEnableBitPlotRange32_63)
         self.lineEditPatIOCtrl.editingFinished.connect(self.setIOOutReg)
         self.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
 

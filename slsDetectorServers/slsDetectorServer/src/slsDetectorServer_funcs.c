@@ -3365,9 +3365,9 @@ int set_pattern_mask(int file_des) {
             ("Pattern mask: 0x%llx\n", (long long unsigned int)retval64));
         if (retval64 != arg) {
             ret = FAIL;
-            sprintf(mess, "Could not pattern mask. Set 0x%llx, but read 0x%llx\n",
-                        (long long unsigned int)arg,
-                        (long long unsigned int)retval64);
+            sprintf(
+                mess, "Could not pattern mask. Set 0x%llx, but read 0x%llx\n",
+                (long long unsigned int)arg, (long long unsigned int)retval64);
             LOG(logERROR, (mess));
         }
     }
@@ -3414,11 +3414,12 @@ int set_pattern_bit_mask(int file_des) {
             ("Pattern bit mask: 0x%llx\n", (long long unsigned int)retval64));
         if (retval64 != arg) {
             ret = FAIL;
-            sprintf(mess, "Could not pattern bit mask. Set 0x%llx, but read 0x%llx\n",
-                        (long long unsigned int)arg,
-                        (long long unsigned int)retval64);
+            sprintf(mess,
+                    "Could not pattern bit mask. Set 0x%llx, but read 0x%llx\n",
+                    (long long unsigned int)arg,
+                    (long long unsigned int)retval64);
             LOG(logERROR, (mess));
-        }        
+        }
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);

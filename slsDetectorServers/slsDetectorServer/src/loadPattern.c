@@ -63,9 +63,10 @@ int validate_writePatternIOControl(char *message, uint64_t arg) {
     int ret = OK;
     if (retval != arg) {
         ret = FAIL;
-        sprintf(message, "Could not set pattern IO Control. Set 0x%llx, but read 0x%llx\n",
-                    (long long unsigned int)arg,
-                    (long long unsigned int)retval);
+        sprintf(
+            message,
+            "Could not set pattern IO Control. Set 0x%llx, but read 0x%llx\n",
+            (long long unsigned int)arg, (long long unsigned int)retval);
         LOG(logERROR, (message));
     }
     return ret;

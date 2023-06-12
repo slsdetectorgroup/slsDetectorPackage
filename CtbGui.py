@@ -18,17 +18,13 @@ from slsdet import Detector, dacIndex, readoutMode, runStatus
 from bit_utils import set_bit, remove_bit, bit_is_set, manipulate_bit
 import random
 
+from defines import *
 
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         pg.setConfigOption("background", (247, 247, 247))
         pg.setConfigOption("foreground", "k")
-
-        self.BIT0_15_MASK = 0x0000FFFF
-        self.BIT16_31_MASK = 0xFFFF0000
-        self.BIT0_31_MASK = 0x00000000FFFFFFFF
-        self.BIT32_63_MASK = 0xFFFFFFFF00000000
 
         self.det = Detector()
         self.setup_zmq()
@@ -339,6 +335,10 @@ class MainWindow(QtWidgets.QMainWindow):
         pushButton = getattr(self, f"pushButtonBIT{i}")
         self.showPalette(pushButton)
 
+    def getDBitButtonColor(self, i):
+        pushButton = getattr(self, f"pushButtonBIT{i}")
+        return self.getActiveColor(pushButton)
+
     def getIOOutReg(self):
         retval = self.det.patioctrl
         self.lineEditPatIOCtrl.editingFinished.disconnect()
@@ -382,8 +382,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def getIOoutRange(self, out):
         self.checkBoxBIT0_31Out.clicked.disconnect()
         self.checkBoxBIT32_63Out.clicked.disconnect()
-        self.checkBoxBIT0_31Out.setChecked((out & self.BIT0_31_MASK) == self.BIT0_31_MASK)
-        self.checkBoxBIT32_63Out.setChecked((out & self.BIT32_63_MASK) == self.BIT32_63_MASK)
+        self.checkBoxBIT0_31Out.setChecked((out & BIT0_31_MASK) == BIT0_31_MASK)
+        self.checkBoxBIT32_63Out.setChecked((out & BIT32_63_MASK) == BIT32_63_MASK)
         self.checkBoxBIT0_31Out.clicked.connect(partial(self.setIOOutRange, 0, 32))
         self.checkBoxBIT32_63Out.clicked.connect(partial(self.setIOOutRange, 32, 64)) 
 
@@ -474,8 +474,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def getADCEnableRange(self, mask):
         self.checkBoxADC0_15En.clicked.disconnect()
         self.checkBoxADC16_31En.clicked.disconnect()
-        self.checkBoxADC0_15En.setChecked((mask & self.BIT0_15_MASK) == self.BIT0_15_MASK)
-        self.checkBoxADC16_31En.setChecked((mask & self.BIT16_31_MASK) == self.BIT16_31_MASK)
+        self.checkBoxADC0_15En.setChecked((mask & BIT0_15_MASK) == BIT0_15_MASK)
+        self.checkBoxADC16_31En.setChecked((mask & BIT16_31_MASK) == BIT16_31_MASK)
         self.checkBoxADC0_15En.clicked.connect(partial(self.setADCEnableRange, 0, 16))
         self.checkBoxADC16_31En.clicked.connect(partial(self.setADCEnableRange, 16, 32)) 
 
@@ -527,6 +527,10 @@ class MainWindow(QtWidgets.QMainWindow):
         pushButton = getattr(self, f"pushButtonADC{i}")
         self.showPalette(pushButton)
 
+    def getADCButtonColor(self, i):
+        pushButton = getattr(self, f"pushButtonADC{i}")
+        return self.getActiveColor(pushButton)
+
     def getADCInvReg(self):
         retval = self.det.adcinvert
         self.lineEditADCInversion.editingFinished.disconnect()
@@ -570,8 +574,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def getADCInvRange(self, inv):
         self.checkBoxADC0_15Inv.clicked.disconnect()
         self.checkBoxADC16_31Inv.clicked.disconnect()
-        self.checkBoxADC0_15Inv.setChecked((inv & self.BIT0_15_MASK) == self.BIT0_15_MASK)
-        self.checkBoxADC16_31Inv.setChecked((inv & self.BIT16_31_MASK) == self.BIT16_31_MASK)
+        self.checkBoxADC0_15Inv.setChecked((inv & BIT0_15_MASK) == BIT0_15_MASK)
+        self.checkBoxADC16_31Inv.setChecked((inv & BIT16_31_MASK) == BIT16_31_MASK)
         self.checkBoxADC0_15Inv.clicked.connect(partial(self.setADCInvRange, 0, 16))
         self.checkBoxADC16_31Inv.clicked.connect(partial(self.setADCInvRange, 16, 32)) 
 
@@ -1170,11 +1174,11 @@ class MainWindow(QtWidgets.QMainWindow):
             
             self.plotWidgetAnalog.clear()
             self.plotWidgetDigital.clear()
-            analog_array = np.array(np.frombuffer(data, dtype=np.uint16))
+            dbitoffset = self.rx_dbitoffset
+            analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count= self.nADCEnabled * self.asamples))
             dbitoffset = self.rx_dbitoffset
             if self.romode.value == 2:
                 dbitoffset += self.nADCEnabled * 2 * self.asamples
-            #print(f"dbitoffset: {dbitoffset}")
             digital_array = np.array(np.frombuffer(data, offset = dbitoffset, dtype=np.uint8))
 
             # waveform
@@ -1188,20 +1192,24 @@ class MainWindow(QtWidgets.QMainWindow):
                             for iSample in range(self.asamples):
                                 # all adc for 1 sample together
                                 waveform[iSample] = analog_array[iSample * self.nADCEnabled + i]
-                            pushButton = getattr(self, f"pushButtonADC{i}")
-                            pen = pg.mkPen(color = pushButton.palette().color(QtGui.QPalette.Window), width = 1)
+                            pen = pg.mkPen(color = self.getDBitButtonColor(i), width = 1)
                             self.plotWidgetAnalog.plot(waveform, pen=pen, name = f"ADC{i}")
                 # digital
                 if self.romode.value in [1, 2]:
                     offset = 0
-                    for i in range(64):
+                    for i in self.rx_dbitlist:
+                        # where numbits * numsamples is not a multiple of 8
+                        if offset % 8 != 0:
+                            offset += (8 - (offset % 8))
+
                         checkBox = getattr(self, f"checkBoxBIT{i}Plot")
                         # bits enabled but not plotting
-                        if i in self.rx_dbitlist and not checkBox.isChecked():
+                        if not checkBox.isChecked():
                             offset += self.dsamples
+                            continue
+                        # to plot
                         if checkBox.isChecked():
                             waveform = np.zeros(self.dsamples)
-                            #print(f" createing waveform i:{i} offset:{offset}")
                             for iSample in range(self.dsamples):
                                 # all samples for digital bit together from slsReceiver
                                 index = (int)(offset / 8)
@@ -1210,8 +1218,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                 bit = (digital_array[index] >> iBit) & 1
                                 waveform[iSample] = bit
                                 offset += 1
-                            pushButton = getattr(self, f"pushButtonBIT{i}")
-                            pen = pg.mkPen(color = pushButton.palette().color(QtGui.QPalette.Window), width = 1)
+                            pen = pg.mkPen(color = self.getADCButtonColor(i), width = 1)
                             self.plotWidgetDigital.plot(waveform, pen=pen, name = f"BIT{i}")
             # image
             else:           
@@ -1245,6 +1252,9 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         randomColor = random.randrange(0, 0xffffaa, 0xaa)
         return "#{:06x}".format(randomColor)
+
+    def getActiveColor(self, button):
+        return button.palette().color(QtGui.QPalette.Window)
 
     def setActiveColor(self, button, str_color):
         button.setStyleSheet(":enabled {background-color: %s" % str_color 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1497</width>
-    <height>962</height>
+    <height>954</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -54,6 +54,12 @@
            <number>0</number>
           </property>
           <layout class="QGridLayout" name="gridLayout_7">
+           <item row="1" column="1">
+            <widget class="PlotWidget" name="plotWidgetDigital" native="true"/>
+           </item>
+           <item row="0" column="1">
+            <widget class="PlotWidget" name="plotWidgetAnalog" native="true"/>
+           </item>
            <item row="0" column="0" rowspan="2">
             <widget class="QTabWidget" name="tabWidget">
              <property name="minimumSize">
@@ -69,7 +75,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>3</number>
+              <number>4</number>
              </property>
              <widget class="QWidget" name="tab">
               <attribute name="title">
@@ -8114,7 +8120,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <x>10</x>
                  <y>10</y>
                  <width>711</width>
-                 <height>571</height>
+                 <height>501</height>
                 </rect>
                </property>
                <property name="frameShape">
@@ -8127,7 +8133,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>160</x>
-                  <y>10</y>
+                  <y>40</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8145,7 +8151,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>230</x>
-                  <y>10</y>
+                  <y>40</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -8163,7 +8169,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>290</x>
-                  <y>10</y>
+                  <y>40</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -8179,7 +8185,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>10</x>
-                  <y>10</y>
+                  <y>40</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -8197,7 +8203,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>10</y>
+                  <y>40</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8215,7 +8221,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>160</x>
-                  <y>30</y>
+                  <y>60</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8233,7 +8239,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>230</x>
-                  <y>30</y>
+                  <y>60</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -8251,7 +8257,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>290</x>
-                  <y>30</y>
+                  <y>60</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -8267,7 +8273,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>10</x>
-                  <y>30</y>
+                  <y>60</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -8285,7 +8291,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>30</y>
+                  <y>60</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8303,7 +8309,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>160</x>
-                  <y>50</y>
+                  <y>80</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8321,7 +8327,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>230</x>
-                  <y>50</y>
+                  <y>80</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -8339,7 +8345,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>290</x>
-                  <y>50</y>
+                  <y>80</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -8355,7 +8361,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>10</x>
-                  <y>50</y>
+                  <y>80</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -8373,7 +8379,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>50</y>
+                  <y>80</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8391,7 +8397,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>160</x>
-                  <y>70</y>
+                  <y>100</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8409,7 +8415,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>230</x>
-                  <y>70</y>
+                  <y>100</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -8427,7 +8433,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>290</x>
-                  <y>70</y>
+                  <y>100</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -8443,7 +8449,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>10</x>
-                  <y>70</y>
+                  <y>100</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -8461,7 +8467,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>70</y>
+                  <y>100</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8479,7 +8485,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>160</x>
-                  <y>90</y>
+                  <y>120</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8497,7 +8503,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>230</x>
-                  <y>90</y>
+                  <y>120</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -8515,7 +8521,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>290</x>
-                  <y>90</y>
+                  <y>120</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -8531,7 +8537,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>10</x>
-                  <y>90</y>
+                  <y>120</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -8549,7 +8555,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>90</y>
+                  <y>120</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8567,7 +8573,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>160</x>
-                  <y>110</y>
+                  <y>140</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8585,7 +8591,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>230</x>
-                  <y>110</y>
+                  <y>140</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -8603,7 +8609,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>290</x>
-                  <y>110</y>
+                  <y>140</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -8619,7 +8625,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>10</x>
-                  <y>110</y>
+                  <y>140</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -8637,7 +8643,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>110</y>
+                  <y>140</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8655,7 +8661,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>160</x>
-                  <y>130</y>
+                  <y>160</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8673,7 +8679,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>230</x>
-                  <y>130</y>
+                  <y>160</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -8691,7 +8697,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>290</x>
-                  <y>130</y>
+                  <y>160</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -8707,7 +8713,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>10</x>
-                  <y>130</y>
+                  <y>160</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -8725,7 +8731,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>130</y>
+                  <y>160</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8743,7 +8749,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>160</x>
-                  <y>150</y>
+                  <y>180</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8761,7 +8767,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>230</x>
-                  <y>150</y>
+                  <y>180</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -8779,7 +8785,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>290</x>
-                  <y>150</y>
+                  <y>180</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -8795,7 +8801,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>10</x>
-                  <y>150</y>
+                  <y>180</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -8813,7 +8819,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>150</y>
+                  <y>180</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8831,7 +8837,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>160</x>
-                  <y>170</y>
+                  <y>200</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8849,7 +8855,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>230</x>
-                  <y>170</y>
+                  <y>200</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -8867,7 +8873,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>290</x>
-                  <y>170</y>
+                  <y>200</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -8883,7 +8889,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>10</x>
-                  <y>170</y>
+                  <y>200</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -8901,7 +8907,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>170</y>
+                  <y>200</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8919,7 +8925,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>160</x>
-                  <y>190</y>
+                  <y>220</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -8937,7 +8943,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>230</x>
-                  <y>190</y>
+                  <y>220</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -8955,7 +8961,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>290</x>
-                  <y>190</y>
+                  <y>220</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -8971,7 +8977,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>10</x>
-                  <y>190</y>
+                  <y>220</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -8989,7 +8995,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>190</y>
+                  <y>220</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9007,7 +9013,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>160</x>
-                  <y>210</y>
+                  <y>240</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9025,7 +9031,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>230</x>
-                  <y>210</y>
+                  <y>240</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -9043,7 +9049,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>290</x>
-                  <y>210</y>
+                  <y>240</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -9059,7 +9065,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>10</x>
-                  <y>210</y>
+                  <y>240</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -9077,7 +9083,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>210</y>
+                  <y>240</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9095,7 +9101,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>160</x>
-                  <y>230</y>
+                  <y>260</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9113,7 +9119,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>230</x>
-                  <y>230</y>
+                  <y>260</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -9131,7 +9137,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>290</x>
-                  <y>230</y>
+                  <y>260</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -9147,7 +9153,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>10</x>
-                  <y>230</y>
+                  <y>260</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -9165,7 +9171,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>230</y>
+                  <y>260</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9183,7 +9189,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>160</x>
-                  <y>250</y>
+                  <y>280</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9201,7 +9207,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>230</x>
-                  <y>250</y>
+                  <y>280</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -9219,7 +9225,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>290</x>
-                  <y>250</y>
+                  <y>280</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -9235,7 +9241,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>10</x>
-                  <y>250</y>
+                  <y>280</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -9253,7 +9259,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>250</y>
+                  <y>280</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9271,7 +9277,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>160</x>
-                  <y>270</y>
+                  <y>300</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9289,7 +9295,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>230</x>
-                  <y>270</y>
+                  <y>300</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -9307,7 +9313,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>290</x>
-                  <y>270</y>
+                  <y>300</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -9323,7 +9329,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>10</x>
-                  <y>270</y>
+                  <y>300</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -9341,7 +9347,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>270</y>
+                  <y>300</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9359,7 +9365,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>160</x>
-                  <y>290</y>
+                  <y>320</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9377,7 +9383,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>230</x>
-                  <y>290</y>
+                  <y>320</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -9395,7 +9401,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>290</x>
-                  <y>290</y>
+                  <y>320</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -9411,7 +9417,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>10</x>
-                  <y>290</y>
+                  <y>320</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -9429,7 +9435,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>290</y>
+                  <y>320</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9447,7 +9453,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>160</x>
-                  <y>310</y>
+                  <y>340</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9465,7 +9471,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>230</x>
-                  <y>310</y>
+                  <y>340</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -9483,7 +9489,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>290</x>
-                  <y>310</y>
+                  <y>340</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -9499,7 +9505,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>10</x>
-                  <y>310</y>
+                  <y>340</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -9517,7 +9523,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>80</x>
-                  <y>310</y>
+                  <y>340</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9535,7 +9541,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>520</x>
-                  <y>10</y>
+                  <y>40</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9553,7 +9559,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>590</x>
-                  <y>10</y>
+                  <y>40</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -9571,7 +9577,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>650</x>
-                  <y>10</y>
+                  <y>40</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -9587,7 +9593,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>370</x>
-                  <y>10</y>
+                  <y>40</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -9605,7 +9611,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>440</x>
-                  <y>10</y>
+                  <y>40</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9623,7 +9629,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>520</x>
-                  <y>30</y>
+                  <y>60</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9641,7 +9647,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>590</x>
-                  <y>30</y>
+                  <y>60</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -9659,7 +9665,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>650</x>
-                  <y>30</y>
+                  <y>60</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -9675,7 +9681,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>370</x>
-                  <y>30</y>
+                  <y>60</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -9693,7 +9699,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>440</x>
-                  <y>30</y>
+                  <y>60</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9711,7 +9717,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>520</x>
-                  <y>50</y>
+                  <y>80</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9729,7 +9735,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>590</x>
-                  <y>50</y>
+                  <y>80</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -9747,7 +9753,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>650</x>
-                  <y>50</y>
+                  <y>80</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -9763,7 +9769,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>370</x>
-                  <y>50</y>
+                  <y>80</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -9781,7 +9787,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>440</x>
-                  <y>50</y>
+                  <y>80</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9799,7 +9805,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>520</x>
-                  <y>70</y>
+                  <y>100</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9817,7 +9823,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>590</x>
-                  <y>70</y>
+                  <y>100</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -9835,7 +9841,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>650</x>
-                  <y>70</y>
+                  <y>100</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -9851,7 +9857,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>370</x>
-                  <y>70</y>
+                  <y>100</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -9869,7 +9875,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>440</x>
-                  <y>70</y>
+                  <y>100</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9887,7 +9893,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>520</x>
-                  <y>90</y>
+                  <y>120</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9905,7 +9911,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>590</x>
-                  <y>90</y>
+                  <y>120</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -9923,7 +9929,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>650</x>
-                  <y>90</y>
+                  <y>120</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -9939,7 +9945,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>370</x>
-                  <y>90</y>
+                  <y>120</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -9957,7 +9963,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>440</x>
-                  <y>90</y>
+                  <y>120</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9975,7 +9981,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>520</x>
-                  <y>110</y>
+                  <y>140</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -9993,7 +9999,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>590</x>
-                  <y>110</y>
+                  <y>140</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -10011,7 +10017,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>650</x>
-                  <y>110</y>
+                  <y>140</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -10027,7 +10033,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>370</x>
-                  <y>110</y>
+                  <y>140</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -10045,7 +10051,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>440</x>
-                  <y>110</y>
+                  <y>140</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10063,7 +10069,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>520</x>
-                  <y>130</y>
+                  <y>160</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10081,7 +10087,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>590</x>
-                  <y>130</y>
+                  <y>160</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -10099,7 +10105,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>650</x>
-                  <y>130</y>
+                  <y>160</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -10115,7 +10121,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>370</x>
-                  <y>130</y>
+                  <y>160</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -10133,7 +10139,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>440</x>
-                  <y>130</y>
+                  <y>160</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10151,7 +10157,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>520</x>
-                  <y>150</y>
+                  <y>180</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10169,7 +10175,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>590</x>
-                  <y>150</y>
+                  <y>180</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -10187,7 +10193,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>650</x>
-                  <y>150</y>
+                  <y>180</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -10203,7 +10209,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>370</x>
-                  <y>150</y>
+                  <y>180</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -10221,7 +10227,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>440</x>
-                  <y>150</y>
+                  <y>180</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10239,7 +10245,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>520</x>
-                  <y>170</y>
+                  <y>200</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10257,7 +10263,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>590</x>
-                  <y>170</y>
+                  <y>200</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -10275,7 +10281,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>650</x>
-                  <y>170</y>
+                  <y>200</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -10291,7 +10297,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>370</x>
-                  <y>170</y>
+                  <y>200</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -10309,7 +10315,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>440</x>
-                  <y>170</y>
+                  <y>200</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10327,7 +10333,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>520</x>
-                  <y>190</y>
+                  <y>220</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10345,7 +10351,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>590</x>
-                  <y>190</y>
+                  <y>220</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -10363,7 +10369,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>650</x>
-                  <y>190</y>
+                  <y>220</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -10379,7 +10385,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>370</x>
-                  <y>190</y>
+                  <y>220</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -10397,7 +10403,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>440</x>
-                  <y>190</y>
+                  <y>220</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10415,7 +10421,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>520</x>
-                  <y>210</y>
+                  <y>240</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10433,7 +10439,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>590</x>
-                  <y>210</y>
+                  <y>240</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -10451,7 +10457,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>650</x>
-                  <y>210</y>
+                  <y>240</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -10467,7 +10473,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>370</x>
-                  <y>210</y>
+                  <y>240</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -10485,7 +10491,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>440</x>
-                  <y>210</y>
+                  <y>240</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10503,7 +10509,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>520</x>
-                  <y>230</y>
+                  <y>260</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10521,7 +10527,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>590</x>
-                  <y>230</y>
+                  <y>260</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -10539,7 +10545,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>650</x>
-                  <y>230</y>
+                  <y>260</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -10555,7 +10561,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>370</x>
-                  <y>230</y>
+                  <y>260</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -10573,7 +10579,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>440</x>
-                  <y>230</y>
+                  <y>260</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10591,7 +10597,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>520</x>
-                  <y>250</y>
+                  <y>280</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10609,7 +10615,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>590</x>
-                  <y>250</y>
+                  <y>280</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -10627,7 +10633,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>650</x>
-                  <y>250</y>
+                  <y>280</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -10643,7 +10649,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>370</x>
-                  <y>250</y>
+                  <y>280</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -10661,7 +10667,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>440</x>
-                  <y>250</y>
+                  <y>280</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10679,7 +10685,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>520</x>
-                  <y>270</y>
+                  <y>300</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10697,7 +10703,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>590</x>
-                  <y>270</y>
+                  <y>300</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -10715,7 +10721,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>650</x>
-                  <y>270</y>
+                  <y>300</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -10731,7 +10737,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>370</x>
-                  <y>270</y>
+                  <y>300</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -10749,7 +10755,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>440</x>
-                  <y>270</y>
+                  <y>300</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10767,7 +10773,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>520</x>
-                  <y>290</y>
+                  <y>320</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10785,7 +10791,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>590</x>
-                  <y>290</y>
+                  <y>320</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -10803,7 +10809,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>650</x>
-                  <y>290</y>
+                  <y>320</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -10819,7 +10825,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>370</x>
-                  <y>290</y>
+                  <y>320</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -10837,7 +10843,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>440</x>
-                  <y>290</y>
+                  <y>320</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10855,7 +10861,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>520</x>
-                  <y>310</y>
+                  <y>340</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10873,7 +10879,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>590</x>
-                  <y>310</y>
+                  <y>340</y>
                   <width>51</width>
                   <height>16</height>
                  </rect>
@@ -10891,7 +10897,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>650</x>
-                  <y>310</y>
+                  <y>340</y>
                   <width>41</width>
                   <height>16</height>
                  </rect>
@@ -10907,7 +10913,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>370</x>
-                  <y>310</y>
+                  <y>340</y>
                   <width>64</width>
                   <height>16</height>
                  </rect>
@@ -10925,7 +10931,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <property name="geometry">
                  <rect>
                   <x>440</x>
-                  <y>310</y>
+                  <y>340</y>
                   <width>71</width>
                   <height>16</height>
                  </rect>
@@ -10939,114 +10945,12 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <string>Inv</string>
                 </property>
                </widget>
-               <widget class="QPushButton" name="pushButtonAll15">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>350</y>
-                  <width>141</width>
-                  <height>27</height>
-                 </rect>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">background-color: rgb(199, 213, 207);</string>
-                </property>
-                <property name="text">
-                 <string>All 0-15</string>
-                </property>
-               </widget>
-               <widget class="QPushButton" name="pushButtonNone15">
-                <property name="geometry">
-                 <rect>
-                  <x>180</x>
-                  <y>350</y>
-                  <width>151</width>
-                  <height>27</height>
-                 </rect>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">background-color: rgb(199, 213, 207);</string>
-                </property>
-                <property name="text">
-                 <string>None 0-15</string>
-                </property>
-               </widget>
-               <widget class="QPushButton" name="pushButtonNone16">
-                <property name="geometry">
-                 <rect>
-                  <x>540</x>
-                  <y>350</y>
-                  <width>151</width>
-                  <height>27</height>
-                 </rect>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">background-color: rgb(199, 213, 207);</string>
-                </property>
-                <property name="text">
-                 <string>None 16-31</string>
-                </property>
-               </widget>
-               <widget class="QPushButton" name="pushButtonAll16">
-                <property name="geometry">
-                 <rect>
-                  <x>370</x>
-                  <y>350</y>
-                  <width>141</width>
-                  <height>27</height>
-                 </rect>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">background-color: rgb(199, 213, 207);</string>
-                </property>
-                <property name="text">
-                 <string>All 16-31</string>
-                </property>
-               </widget>
-               <widget class="QPushButton" name="pushButtonNone">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="geometry">
-                 <rect>
-                  <x>370</x>
-                  <y>390</y>
-                  <width>321</width>
-                  <height>27</height>
-                 </rect>
-                </property>
-                <property name="toolTip">
-                 <string>Cannot set ADC mask to zero</string>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">background-color: rgb(199, 213, 207);</string>
-                </property>
-                <property name="text">
-                 <string>None</string>
-                </property>
-               </widget>
-               <widget class="QPushButton" name="pushButtonAll">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>390</y>
-                  <width>321</width>
-                  <height>27</height>
-                 </rect>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">background-color: rgb(199, 213, 207);</string>
-                </property>
-                <property name="text">
-                 <string>All</string>
-                </property>
-               </widget>
                <widget class="QFrame" name="frame_8">
                 <property name="geometry">
                  <rect>
-                  <x>10</x>
-                  <y>440</y>
-                  <width>681</width>
+                  <x>20</x>
+                  <y>370</y>
+                  <width>671</width>
                   <height>111</height>
                  </rect>
                 </property>
@@ -11141,12 +11045,156 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </property>
                 </widget>
                </widget>
+               <widget class="QCheckBox" name="checkBoxADC16_31Plot">
+                <property name="geometry">
+                 <rect>
+                  <x>590</x>
+                  <y>20</y>
+                  <width>51</width>
+                  <height>16</height>
+                 </rect>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Plot</string>
+                </property>
+               </widget>
+               <widget class="QCheckBox" name="checkBoxADC0_15Plot">
+                <property name="geometry">
+                 <rect>
+                  <x>230</x>
+                  <y>20</y>
+                  <width>51</width>
+                  <height>16</height>
+                 </rect>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Plot</string>
+                </property>
+               </widget>
+               <widget class="QCheckBox" name="checkBoxADC16_31Inv">
+                <property name="geometry">
+                 <rect>
+                  <x>440</x>
+                  <y>20</y>
+                  <width>71</width>
+                  <height>16</height>
+                 </rect>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Inv</string>
+                </property>
+               </widget>
+               <widget class="QCheckBox" name="checkBoxADC0_15Inv">
+                <property name="geometry">
+                 <rect>
+                  <x>80</x>
+                  <y>20</y>
+                  <width>71</width>
+                  <height>16</height>
+                 </rect>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Inv</string>
+                </property>
+               </widget>
+               <widget class="QCheckBox" name="checkBoxADC16_31En">
+                <property name="geometry">
+                 <rect>
+                  <x>520</x>
+                  <y>20</y>
+                  <width>71</width>
+                  <height>16</height>
+                 </rect>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>En</string>
+                </property>
+               </widget>
+               <widget class="QLabel" name="labelADC0_2">
+                <property name="geometry">
+                 <rect>
+                  <x>10</x>
+                  <y>20</y>
+                  <width>64</width>
+                  <height>16</height>
+                 </rect>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>ADC 0-15</string>
+                </property>
+               </widget>
+               <widget class="QCheckBox" name="checkBoxADC0_15En">
+                <property name="geometry">
+                 <rect>
+                  <x>160</x>
+                  <y>20</y>
+                  <width>71</width>
+                  <height>16</height>
+                 </rect>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>En</string>
+                </property>
+               </widget>
+               <widget class="QLabel" name="labelADC16_2">
+                <property name="geometry">
+                 <rect>
+                  <x>370</x>
+                  <y>20</y>
+                  <width>64</width>
+                  <height>16</height>
+                 </rect>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>ADC 16-31</string>
+                </property>
+               </widget>
               </widget>
               <widget class="QFrame" name="frame_20">
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>590</y>
+                 <y>530</y>
                  <width>711</width>
                  <height>121</height>
                 </rect>
@@ -11160,7 +11208,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                <widget class="QLabel" name="labelAnalog">
                 <property name="geometry">
                  <rect>
-                  <x>360</x>
+                  <x>370</x>
                   <y>30</y>
                   <width>111</width>
                   <height>31</height>
@@ -11173,7 +11221,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                <widget class="QSpinBox" name="spinBoxDigital">
                 <property name="geometry">
                  <rect>
-                  <x>490</x>
+                  <x>500</x>
                   <y>70</y>
                   <width>201</width>
                   <height>31</height>
@@ -11192,7 +11240,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                <widget class="QLabel" name="labelDigital">
                 <property name="geometry">
                  <rect>
-                  <x>360</x>
+                  <x>370</x>
                   <y>70</y>
                   <width>111</width>
                   <height>31</height>
@@ -11205,7 +11253,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                <widget class="QSpinBox" name="spinBoxAnalog">
                 <property name="geometry">
                  <rect>
-                  <x>490</x>
+                  <x>500</x>
                   <y>30</y>
                   <width>201</width>
                   <height>31</height>
@@ -11221,44 +11269,44 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  <number>100000</number>
                 </property>
                </widget>
-              </widget>
-              <widget class="QComboBox" name="comboBoxROMode">
-               <property name="geometry">
-                <rect>
-                 <x>150</x>
-                 <y>620</y>
-                 <width>191</width>
-                 <height>29</height>
-                </rect>
-               </property>
-               <item>
-                <property name="text">
-                 <string>ANALOG</string>
+               <widget class="QLabel" name="label_398">
+                <property name="geometry">
+                 <rect>
+                  <x>20</x>
+                  <y>30</y>
+                  <width>121</width>
+                  <height>31</height>
+                 </rect>
                 </property>
-               </item>
-               <item>
                 <property name="text">
-                 <string>DIGITAL</string>
+                 <string>Read Out Mode: </string>
                 </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>ANALOG_AND_DIGITAL</string>
+               </widget>
+               <widget class="QComboBox" name="comboBoxROMode">
+                <property name="geometry">
+                 <rect>
+                  <x>150</x>
+                  <y>30</y>
+                  <width>191</width>
+                  <height>29</height>
+                 </rect>
                 </property>
-               </item>
-              </widget>
-              <widget class="QLabel" name="label_398">
-               <property name="geometry">
-                <rect>
-                 <x>20</x>
-                 <y>620</y>
-                 <width>121</width>
-                 <height>31</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>Read Out Mode: </string>
-               </property>
+                <item>
+                 <property name="text">
+                  <string>ANALOG</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>DIGITAL</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>ANALOG_AND_DIGITAL</string>
+                 </property>
+                </item>
+               </widget>
               </widget>
              </widget>
              <widget class="QWidget" name="tab_6">
@@ -15158,12 +15206,6 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
               </widget>
              </widget>
             </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="PlotWidget" name="plotWidgetAnalog" native="true"/>
-           </item>
-           <item row="1" column="1">
-            <widget class="PlotWidget" name="plotWidgetDigital" native="true"/>
            </item>
           </layout>
          </widget>

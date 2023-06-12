@@ -10,4 +10,4 @@
 #define APIMOENCH    "developer 0x230525"
 #define APIEIGER     "developer 0x230525"
 #define APIJUNGFRAU  "developer 0x230525"
-#define APICTB "developer 0x230605"
+#define APICTB       "developer 0x230605"

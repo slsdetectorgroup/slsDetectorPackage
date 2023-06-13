@@ -1192,7 +1192,7 @@ class MainWindow(QtWidgets.QMainWindow):
                             for iSample in range(self.asamples):
                                 # all adc for 1 sample together
                                 waveform[iSample] = analog_array[iSample * self.nADCEnabled + i]
-                            pen = pg.mkPen(color = self.getDBitButtonColor(i), width = 1)
+                            pen = pg.mkPen(color = self.getADCButtonColor(i), width = 1)
                             self.plotWidgetAnalog.plot(waveform, pen=pen, name = f"ADC{i}")
                 # digital
                 if self.romode.value in [1, 2]:
@@ -1218,7 +1218,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                 bit = (digital_array[index] >> iBit) & 1
                                 waveform[iSample] = bit
                                 offset += 1
-                            pen = pg.mkPen(color = self.getADCButtonColor(i), width = 1)
+                            pen = pg.mkPen(color = self.getDBitButtonColor(i), width = 1)
                             self.plotWidgetDigital.plot(waveform, pen=pen, name = f"BIT{i}")
             # image
             else:           

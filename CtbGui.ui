@@ -75,7 +75,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>6</number>
+              <number>5</number>
              </property>
              <widget class="QWidget" name="tab">
               <attribute name="title">
@@ -11385,7 +11385,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="maximum">
-                   <number>9999</number>
+                   <number>999999999</number>
                   </property>
                  </widget>
                 </item>
@@ -11682,7 +11682,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="maximum">
-                   <number>9999</number>
+                   <number>999999999</number>
                   </property>
                  </widget>
                 </item>
@@ -11790,7 +11790,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="maximum">
-                   <number>9999</number>
+                   <number>999999999</number>
                   </property>
                  </widget>
                 </item>
@@ -11943,7 +11943,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="maximum">
-                   <number>9999</number>
+                   <number>999999999</number>
                   </property>
                   <property name="value">
                    <number>0</number>
@@ -11968,7 +11968,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="maximum">
-                   <number>9999</number>
+                   <number>999999999</number>
                   </property>
                  </widget>
                 </item>
@@ -12064,7 +12064,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="maximum">
-                   <number>9999</number>
+                   <number>999999999</number>
                   </property>
                  </widget>
                 </item>
@@ -14669,6 +14669,9 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+                <property name="maximum">
+                 <number>999999999</number>
                 </property>
                </widget>
               </widget>

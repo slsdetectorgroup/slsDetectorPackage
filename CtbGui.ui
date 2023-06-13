@@ -54,10 +54,10 @@
            <number>0</number>
           </property>
           <layout class="QGridLayout" name="gridLayout_7">
-           <item row="1" column="1">
+           <item row="1" column="2">
             <widget class="PlotWidget" name="plotWidgetDigital" native="true"/>
            </item>
-           <item row="0" column="1">
+           <item row="0" column="2">
             <widget class="PlotWidget" name="plotWidgetAnalog" native="true"/>
            </item>
            <item row="0" column="0" rowspan="2">
@@ -11317,7 +11317,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>260</y>
+                 <y>240</y>
                  <width>401</width>
                  <height>271</height>
                 </rect>
@@ -12388,7 +12388,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>550</y>
+                 <y>520</y>
                  <width>711</width>
                  <height>111</height>
                 </rect>
@@ -12781,7 +12781,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>680</y>
+                 <y>760</y>
                  <width>711</width>
                  <height>51</height>
                 </rect>
@@ -12827,7 +12827,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </spacer>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="pushButtonLoad">
+                 <widget class="QPushButton" name="pushButtonLoadPattern">
                   <property name="minimumSize">
                    <size>
                     <width>150</width>
@@ -12848,13 +12848,35 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                   </property>
                  </widget>
                 </item>
+                <item>
+                 <widget class="QPushButton" name="pushButtonViewPattern">
+                  <property name="minimumSize">
+                   <size>
+                    <width>150</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(199, 213, 207);</string>
+                  </property>
+                  <property name="text">
+                   <string>View Pattern</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </widget>
               <widget class="QFrame" name="frame_16">
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>190</y>
+                 <y>180</y>
                  <width>711</width>
                  <height>51</height>
                 </rect>
@@ -13112,7 +13134,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                <property name="geometry">
                 <rect>
                  <x>430</x>
-                 <y>260</y>
+                 <y>240</y>
                  <width>291</width>
                  <height>271</height>
                 </rect>
@@ -13777,6 +13799,471 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                   </property>
                   <property name="text">
                    <string>Wait 2</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QFrame" name="frame_9">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>640</y>
+                 <width>711</width>
+                 <height>111</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_9">
+                <item row="2" column="8">
+                 <widget class="QComboBox" name="comboBoxPatLoopColor">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="8">
+                 <widget class="QLabel" name="label_7">
+                  <property name="text">
+                   <string>Color</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="6">
+                 <widget class="QComboBox" name="comboBoxPatLoop">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string> Loop 0</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string> Loop 1</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string> Loop 2</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string> Loop 3</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string> Loop 4</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string> Loop 5</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item row="1" column="9">
+                 <widget class="QComboBox" name="comboBoxPatWaitLineStyle">
+                  <property name="minimumSize">
+                   <size>
+                    <width>70</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>70</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Line Style</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="3">
+                 <spacer name="horizontalSpacer_18">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Fixed</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>25</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLabel" name="label_8">
+                  <property name="text">
+                   <string>Viewer</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="9">
+                 <widget class="QComboBox" name="comboBoxPatLoopLineStyle">
+                  <property name="minimumSize">
+                   <size>
+                    <width>70</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>70</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Line Style</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="9">
+                 <widget class="QLabel" name="label_6">
+                  <property name="text">
+                   <string>Line Style</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="7">
+                 <widget class="QLabel" name="label_413">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="11">
+                 <widget class="QDoubleSpinBox" name="doubleSpinBoxLoopAlphaRect">
+                  <property name="toolTip">
+                   <string>Alpha Rect</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="4">
+                 <spacer name="horizontalSpacer_2">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="1" column="8">
+                 <widget class="QComboBox" name="comboBoxPatWaitColor">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="6">
+                 <widget class="QComboBox" name="comboBoxPatWait">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string> Wait 0</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string> Wait 1</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string> Wait 2</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string> Wait 3</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string> Wait 4</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string> Wait 5</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item row="1" column="11">
+                 <widget class="QDoubleSpinBox" name="doubleSpinBoxWaitAlphaRect">
+                  <property name="toolTip">
+                   <string>Alpha Rect</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="10">
+                 <widget class="QLabel" name="label_5">
+                  <property name="text">
+                   <string>Alpha</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1" colspan="2">
+                 <layout class="QHBoxLayout" name="horizontalLayout_4">
+                  <item>
+                   <widget class="QComboBox" name="comboBoxPatColorSelect">
+                    <property name="minimumSize">
+                     <size>
+                      <width>130</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>16777215</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <item>
+                     <property name="text">
+                      <string> Plot Color 1</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string> Plot Color 2</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_17">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QComboBox" name="comboBoxPatColor">
+                    <property name="minimumSize">
+                     <size>
+                      <width>90</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>90</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="0" column="11">
+                 <widget class="QLabel" name="label_4">
+                  <property name="text">
+                   <string>Alpha Rect</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="10">
+                 <widget class="QDoubleSpinBox" name="doubleSpinBoxWaitAlpha">
+                  <property name="toolTip">
+                   <string>Alpha</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1" colspan="2">
+                 <layout class="QHBoxLayout" name="horizontalLayout_2">
+                  <item>
+                   <widget class="QLabel" name="label_2">
+                    <property name="minimumSize">
+                     <size>
+                      <width>90</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>90</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string>Clock spacing</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QSpinBox" name="spinBoxPatClockSpacing">
+                    <property name="minimumSize">
+                     <size>
+                      <width>50</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>16777215</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="maximum">
+                     <number>999</number>
+                    </property>
+                    <property name="value">
+                     <number>999</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_7">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_16">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>200</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxPatShowClockNumber">
+                    <property name="text">
+                     <string>Clocks #</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="1" column="7">
+                 <widget class="QLabel" name="label_412">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="10">
+                 <widget class="QDoubleSpinBox" name="doubleSpinBoxLoopAlpha">
+                  <property name="toolTip">
+                   <string>Alpha</string>
                   </property>
                  </widget>
                 </item>
@@ -15211,6 +15698,17 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                </layout>
               </widget>
              </widget>
+            </widget>
+           </item>
+           <item row="0" column="1" rowspan="2">
+            <widget class="QFrame" name="framePatternViewer">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QGridLayout" name="gridLayoutPatternViewer"/>
             </widget>
            </item>
           </layout>

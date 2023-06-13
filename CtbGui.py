@@ -19,6 +19,7 @@ from bit_utils import set_bit, remove_bit, bit_is_set, manipulate_bit
 import random
 
 from defines import *
+from plotPattern import PlotPattern
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -45,6 +46,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # also refreshes timer to start plotting 
         self.plotOptions()
+
+        self.getPatViewerColors()
+        self.getPatViewerWaitParameters()
+        self.getPatViewerLoopParameters()
+        self.updatePatViewerParameters()
 
 
     # For Action options function
@@ -382,15 +388,15 @@ class MainWindow(QtWidgets.QMainWindow):
     def getIOoutRange(self, out):
         self.checkBoxBIT0_31Out.clicked.disconnect()
         self.checkBoxBIT32_63Out.clicked.disconnect()
-        self.checkBoxBIT0_31Out.setChecked((out & BIT0_31_MASK) == BIT0_31_MASK)
-        self.checkBoxBIT32_63Out.setChecked((out & BIT32_63_MASK) == BIT32_63_MASK)
+        self.checkBoxBIT0_31Out.setChecked((out & Defines.BIT0_31_MASK) == Defines.BIT0_31_MASK)
+        self.checkBoxBIT32_63Out.setChecked((out & Defines.BIT32_63_MASK) == Defines.BIT32_63_MASK)
         self.checkBoxBIT0_31Out.clicked.connect(partial(self.setIOOutRange, 0, 32))
         self.checkBoxBIT32_63Out.clicked.connect(partial(self.setIOOutRange, 32, 64)) 
 
     def setIOOutRange(self, start_nr, end_nr):
         out = self.det.patioctrl
         checkBox = getattr(self, f"checkBoxBIT{start_nr}_{end_nr - 1}Out")
-        mask = getattr(self, f"BIT{start_nr}_{end_nr - 1}_MASK")
+        mask = getattr(Defines, f"BIT{start_nr}_{end_nr - 1}_MASK")
         if checkBox.isChecked():
             self.det.patioctrl = out | mask
         else:   
@@ -474,8 +480,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def getADCEnableRange(self, mask):
         self.checkBoxADC0_15En.clicked.disconnect()
         self.checkBoxADC16_31En.clicked.disconnect()
-        self.checkBoxADC0_15En.setChecked((mask & BIT0_15_MASK) == BIT0_15_MASK)
-        self.checkBoxADC16_31En.setChecked((mask & BIT16_31_MASK) == BIT16_31_MASK)
+        self.checkBoxADC0_15En.setChecked((mask & Defines.BIT0_15_MASK) == Defines.BIT0_15_MASK)
+        self.checkBoxADC16_31En.setChecked((mask & Defines.BIT16_31_MASK) == Defines.BIT16_31_MASK)
         self.checkBoxADC0_15En.clicked.connect(partial(self.setADCEnableRange, 0, 16))
         self.checkBoxADC16_31En.clicked.connect(partial(self.setADCEnableRange, 16, 32)) 
 
@@ -574,15 +580,15 @@ class MainWindow(QtWidgets.QMainWindow):
     def getADCInvRange(self, inv):
         self.checkBoxADC0_15Inv.clicked.disconnect()
         self.checkBoxADC16_31Inv.clicked.disconnect()
-        self.checkBoxADC0_15Inv.setChecked((inv & BIT0_15_MASK) == BIT0_15_MASK)
-        self.checkBoxADC16_31Inv.setChecked((inv & BIT16_31_MASK) == BIT16_31_MASK)
+        self.checkBoxADC0_15Inv.setChecked((inv & Defines.BIT0_15_MASK) == Defines.BIT0_15_MASK)
+        self.checkBoxADC16_31Inv.setChecked((inv & Defines.BIT16_31_MASK) == Defines.BIT16_31_MASK)
         self.checkBoxADC0_15Inv.clicked.connect(partial(self.setADCInvRange, 0, 16))
         self.checkBoxADC16_31Inv.clicked.connect(partial(self.setADCInvRange, 16, 32)) 
 
     def setADCInvRange(self, start_nr, end_nr):
         out = self.det.adcinvert
         checkBox = getattr(self, f"checkBoxADC{start_nr}_{end_nr - 1}Inv")
-        mask = getattr(self, f"BIT{start_nr}_{end_nr - 1}_MASK")
+        mask = getattr(Defines, f"BIT{start_nr}_{end_nr - 1}_MASK")
         if checkBox.isChecked():
             self.det.adcinvert = out | mask
         else:   
@@ -867,9 +873,139 @@ class MainWindow(QtWidgets.QMainWindow):
         # load pattern
         self.det.pattern = pattern_file
             
+
+    def getPatViewerColors(self):
+        colorLevel = self.comboBoxPatColorSelect.currentIndex()
+        color = self.colors_plot[colorLevel]
+        self.comboBoxPatColor.currentIndexChanged.disconnect()
+        self.comboBoxPatColor.setCurrentIndex(Defines.Colors.index(color))
+        self.comboBoxPatColor.currentIndexChanged.connect(self.updatePatViewerParameters)
+        
+    def getPatViewerWaitParameters(self):
+        waitLevel = self.comboBoxPatWait.currentIndex()
+        color = self.colors_wait[waitLevel]
+        line_style = self.linestyles_wait[waitLevel]
+        alpha = self.alpha_wait[waitLevel]
+        alpha_rect = self.alpha_wait_rect[waitLevel]
+
+        self.comboBoxPatWaitColor.currentIndexChanged.disconnect()
+        self.comboBoxPatWaitLineStyle.currentIndexChanged.disconnect()
+        self.doubleSpinBoxWaitAlpha.editingFinished.disconnect()
+        self.doubleSpinBoxWaitAlphaRect.editingFinished.disconnect()
+
+        self.comboBoxPatWaitColor.setCurrentIndex(Defines.Colors.index(color))
+        self.comboBoxPatWaitLineStyle.setCurrentIndex(Defines.LineStyles.index(line_style))
+        self.doubleSpinBoxWaitAlpha.setValue(alpha)
+        self.doubleSpinBoxWaitAlphaRect.setValue(alpha_rect)
+
+        self.comboBoxPatWaitColor.currentIndexChanged.connect(self.updatePatViewerParameters)
+        self.comboBoxPatWaitLineStyle.currentIndexChanged.connect(self.updatePatViewerParameters)
+        self.doubleSpinBoxWaitAlpha.editingFinished.connect(self.updatePatViewerParameters)
+        self.doubleSpinBoxWaitAlphaRect.editingFinished.connect(self.updatePatViewerParameters)
+         
+    def getPatViewerLoopParameters(self):
+        loopLevel = self.comboBoxPatLoop.currentIndex()
+        color = self.colors_loop[loopLevel]
+        line_style = self.linestyles_loop[loopLevel]
+        alpha = self.alpha_loop[loopLevel]
+        alpha_rect = self.alpha_loop_rect[loopLevel]
+
+        self.comboBoxPatLoopColor.currentIndexChanged.disconnect()
+        self.comboBoxPatLoopLineStyle.currentIndexChanged.disconnect()
+        self.doubleSpinBoxLoopAlpha.editingFinished.disconnect()
+        self.doubleSpinBoxLoopAlphaRect.editingFinished.disconnect()
+
+        self.comboBoxPatLoopColor.setCurrentIndex(Defines.Colors.index(color))
+        self.comboBoxPatLoopLineStyle.setCurrentIndex(Defines.LineStyles.index(line_style))
+        self.doubleSpinBoxLoopAlpha.setValue(alpha)
+        self.doubleSpinBoxLoopAlphaRect.setValue(alpha_rect)
+
+        self.comboBoxPatLoopColor.currentIndexChanged.connect(self.updatePatViewerParameters)
+        self.comboBoxPatLoopLineStyle.currentIndexChanged.connect(self.updatePatViewerParameters)
+        self.doubleSpinBoxLoopAlpha.editingFinished.connect(self.updatePatViewerParameters)
+        self.doubleSpinBoxLoopAlphaRect.editingFinished.connect(self.updatePatViewerParameters)
+
+    # only at start up
+    def updateDefaultPatViewerParameters(self):
+        self.colors_plot = Defines.Colors_plot.copy()
+        self.colors_wait = Defines.Colors_wait.copy()
+        self.linestyles_wait = Defines.Linestyles_wait.copy()
+        self.alpha_wait = Defines.Alpha_wait.copy()
+        self.alpha_wait_rect = Defines.Alpha_wait_rect.copy()
+        self.colors_loop = Defines.Colors_loop.copy()
+        self.linestyles_loop = Defines.Linestyles_loop.copy()
+        self.alpha_loop = Defines.Alpha_loop.copy()
+        self.alpha_loop_rect = Defines.Alpha_loop_rect.copy()
+        self.clock_vertical_lines_spacing = Defines.Clock_vertical_lines_spacing
+        self.show_clocks_number = Defines.Show_clocks_number
+
+        #print('default')
+        #self.printPatViewerParameters()
+
+
+    def updatePatViewerParameters(self):
+        colorLevel = self.comboBoxPatColorSelect.currentIndex()
+        color = self.comboBoxPatColor.currentIndex()
+        #self.colors_plot[colorLevel] = f'tab:{Defines.Colors[color].lower()}'
+        self.colors_plot[colorLevel] = Defines.Colors[color]
+        
+        waitLevel = self.comboBoxPatWait.currentIndex()
+        color = self.comboBoxPatWaitColor.currentIndex()
+        line_style = self.comboBoxPatWaitLineStyle.currentIndex()
+        alpha = self.doubleSpinBoxWaitAlpha.value()
+        alpha_rect = self.doubleSpinBoxWaitAlphaRect.value()
+
+        self.colors_wait[waitLevel] = Defines.Colors[color]
+        self.linestyles_wait[waitLevel] = Defines.LineStyles[line_style]
+        self.alpha_wait[waitLevel] = alpha
+        self.alpha_wait_rect[waitLevel] = alpha_rect
+
+        
+        loopLevel = self.comboBoxPatLoop.currentIndex()
+        color = self.comboBoxPatLoopColor.currentIndex()
+        line_style = self.comboBoxPatLoopLineStyle.currentIndex()
+        alpha = self.doubleSpinBoxLoopAlpha.value()
+        alpha_rect = self.doubleSpinBoxLoopAlphaRect.value()
+
+        self.colors_loop[loopLevel] = Defines.Colors[color]
+        self.linestyles_loop[loopLevel] = Defines.LineStyles[line_style]
+        self.alpha_loop[loopLevel] = alpha
+        self.alpha_loop_rect[loopLevel] = alpha_rect
+
+        self.clock_vertical_lines_spacing = self.spinBoxPatClockSpacing.value()
+        self.show_clocks_number = self.checkBoxPatShowClockNumber.isChecked()
+
+        # for debugging
+        self.printPatViewerParameters()
+
+    def printPatViewerParameters(self):
+        print('Pattern Viewer Parameters:')
+        print(f'\tcolor1: {self.colors_plot[0]}, color2: {self.colors_plot[1]}')
+        print(f"\twait color: {self.colors_wait}")
+        print(f"\twait linestyles: {self.linestyles_wait}")
+        print(f"\twait alpha: {self.alpha_wait}")
+        print(f"\twait alpha rect: {self.alpha_wait_rect}")
+        print(f"\tloop color: {self.colors_loop}")
+        print(f"\tloop linestyles: {self.linestyles_loop}")
+        print(f"\tloop alpha: {self.alpha_loop}")
+        print(f"\tloop alpha rect: {self.alpha_loop_rect}")
+        print(f'\tclock vertical lines spacing: {self.clock_vertical_lines_spacing}')
+        print(f'\tshow clocks number: {self.show_clocks_number}')
+        print('\n')
+
+    def viewPattern(self):
+        pattern_file = self.lineEditPatternFile.text()
+        if not pattern_file:
+            QtWidgets.QMessageBox.warning(self, "Pattern Fail", "No pattern file selected. Please select one.", QtWidgets.QMessageBox.Ok)
+            return
+        p = PlotPattern(pattern_file, self.colors_plot, self.colors_wait, self.linestyles_wait, self.alpha_wait, self.alpha_wait_rect, self.colors_loop, self.linestyles_loop, self.alpha_loop, self.alpha_loop_rect, self.clock_vertical_lines_spacing, self.show_clocks_number)
+        p.patternPlot()
+
+
     # Acquistions Tab functions
     def plotOptions(self):
 
+        self.framePatternViewer.hide()
         # disable image widgets
         self.comboBoxPlot.setDisabled(True)
         if hasattr(self, 'imageViewAnalog'):
@@ -1270,6 +1406,15 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.refresh_tab_pattern()
             case 6:
                 self.refresh_tab_acquisition()
+        
+        if tab_index == 5:
+            self.plotWidgetAnalog.hide()
+            self.plotWidgetDigital.hide()
+            self.framePatternViewer.show()
+        else:
+            self.plotWidgetAnalog.show()
+            self.plotWidgetDigital.show()
+            self.framePatternViewer.hide()           
 
 
     def refresh_tab_dac(self):
@@ -1383,6 +1528,22 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(32):
             pushButton = getattr(self, f"pushButtonADC{i}")
             self.setActiveColor(pushButton, self.getRandomColor())
+        
+        # Pattern Tab
+        for i in range(len(Defines.Colors)):
+            self.comboBoxPatColor.addItem(Defines.Colors[i])
+            self.comboBoxPatWaitColor.addItem(Defines.Colors[i])
+            self.comboBoxPatLoopColor.addItem(Defines.Colors[i])
+        for i in range(len(Defines.LineStyles)):
+            self.comboBoxPatWaitLineStyle.addItem(Defines.LineStyles[i])
+            self.comboBoxPatLoopLineStyle.addItem(Defines.LineStyles[i])       
+        self.updateDefaultPatViewerParameters()
+        self.comboBoxPatColorSelect.setCurrentIndex(0)
+        self.comboBoxPatWait.setCurrentIndex(0)
+        self.comboBoxPatLoop.setCurrentIndex(0)
+        self.spinBoxPatClockSpacing.setValue(self.clock_vertical_lines_spacing)
+        self.checkBoxPatShowClockNumber.setChecked(self.show_clocks_number)
+        # rest gets updated after connecting to slots
 
     def connect_ui(self):
                # Plotting the data
@@ -1479,7 +1640,24 @@ class MainWindow(QtWidgets.QMainWindow):
             )
         self.pushButtonCompiler.clicked.connect(self.setCompiler)
         self.pushButtonPatternFile.clicked.connect(self.setPatternFile)
-        self.pushButtonLoad.clicked.connect(self.loadPattern)
+        self.pushButtonLoadPattern.clicked.connect(self.loadPattern)
+        
+        self.comboBoxPatColorSelect.currentIndexChanged.connect(self.getPatViewerColors)
+        self.comboBoxPatWait.currentIndexChanged.connect(self.getPatViewerWaitParameters)
+        self.comboBoxPatLoop.currentIndexChanged.connect(self.getPatViewerLoopParameters)
+
+        self.comboBoxPatColor.currentIndexChanged.connect(self.updatePatViewerParameters)
+        self.comboBoxPatWaitColor.currentIndexChanged.connect(self.updatePatViewerParameters)
+        self.comboBoxPatLoopColor.currentIndexChanged.connect(self.updatePatViewerParameters)
+        self.comboBoxPatWaitLineStyle.currentIndexChanged.connect(self.updatePatViewerParameters)
+        self.comboBoxPatLoopLineStyle.currentIndexChanged.connect(self.updatePatViewerParameters)
+        self.doubleSpinBoxWaitAlpha.editingFinished.connect(self.updatePatViewerParameters)
+        self.doubleSpinBoxLoopAlpha.editingFinished.connect(self.updatePatViewerParameters)
+        self.doubleSpinBoxWaitAlphaRect.editingFinished.connect(self.updatePatViewerParameters)
+        self.doubleSpinBoxLoopAlphaRect.editingFinished.connect(self.updatePatViewerParameters)
+        self.spinBoxPatClockSpacing.editingFinished.connect(self.updatePatViewerParameters)
+        self.checkBoxPatShowClockNumber.stateChanged.connect(self.updatePatViewerParameters)
+        self.pushButtonViewPattern.clicked.connect(self.viewPattern)
 
 
         # For Acquistions Tab

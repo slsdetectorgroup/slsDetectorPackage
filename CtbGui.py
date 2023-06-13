@@ -20,6 +20,9 @@ import random
 
 from defines import *
 from plotPattern import PlotPattern
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -999,8 +1002,14 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.warning(self, "Pattern Fail", "No pattern file selected. Please select one.", QtWidgets.QMessageBox.Ok)
             return
         p = PlotPattern(pattern_file, self.colors_plot, self.colors_wait, self.linestyles_wait, self.alpha_wait, self.alpha_wait_rect, self.colors_loop, self.linestyles_loop, self.alpha_loop, self.alpha_loop_rect, self.clock_vertical_lines_spacing, self.show_clocks_number)
-        p.patternPlot()
+        
+        plt.close(self.figure)
+        self.gridLayoutPatternViewer.removeWidget(self.canvas)
+        
+        self.figure = p.patternPlot()
 
+        self.canvas = FigureCanvas(self.figure)
+        self.gridLayoutPatternViewer.addWidget(self.canvas)
 
     # Acquistions Tab functions
     def plotOptions(self):
@@ -1544,6 +1553,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxPatClockSpacing.setValue(self.clock_vertical_lines_spacing)
         self.checkBoxPatShowClockNumber.setChecked(self.show_clocks_number)
         # rest gets updated after connecting to slots
+
+        self.figure, self.ax = plt.subplots()
+        self.canvas = FigureCanvas(self.figure)
+        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.gridLayoutPatternViewer.addWidget(self.toolbar)
+        self.gridLayoutPatternViewer.addWidget(self.canvas)
+        self.figure.clear()
+
 
     def connect_ui(self):
                # Plotting the data

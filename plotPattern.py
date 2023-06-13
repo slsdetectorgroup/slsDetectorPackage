@@ -38,12 +38,12 @@ class PlotPattern():
         self.clock_vertical_lines_spacing = clock_vertical_lines_spacing
         self.show_clocks_number = show_clocks_number
 
-        self.colors_plot[0] = f'tab:{colors_plot[0].lower()}'
-        self.colors_plot[1] = f'tab:{colors_plot[1].lower()}'
+        self.colors_plot[0] = f'xkcd:{colors_plot[0].lower()}'
+        self.colors_plot[1] = f'xkcd:{colors_plot[1].lower()}'
         
         for i in range(6):
-            self.colors_wait[i] = f'tab:{colors_wait[i].lower()}'
-            self.colors_loop[i] = f'tab:{colors_loop[i].lower()}'
+            self.colors_wait[i] = f'xkcd:{colors_wait[i].lower()}'
+            self.colors_loop[i] = f'xkcd:{colors_loop[i].lower()}'
 
         ###############################################################################
         # # COLORS AND LINE STYLES
@@ -70,7 +70,7 @@ class PlotPattern():
 
         self.patternPlot()
 
-    def dec2bin(string_num):
+    def dec2bin(self, string_num):
         num = int(string_num)
         mid = []
         while True:
@@ -83,22 +83,22 @@ class PlotPattern():
 
 
     # dec2binary: better than dec2bin
-    def dec2binary(dec_num, width=None):
+    def dec2binary(self, dec_num, width=None):
         return binary_repr(int(dec_num), width=width)
 
 
     # hex2dec
-    def hex2dec(string_num):
+    def hex2dec(self, string_num):
         return str(int(string_num.upper(), 16))
 
 
     # hex2bin
-    def hex2bin(string_num):
+    def hex2bin(self, string_num):
         return self.dec2bin(self.hex2dec(string_num.upper()))
 
 
     # hex2bin
-    def hex2binary(string_num, width=None):
+    def hex2binary(self, string_num, width=None):
         return self.dec2binary(self.hex2dec(string_num.upper()), width=width)
 
 
@@ -620,13 +620,13 @@ class PlotPattern():
         # manager = get_current_fig_manager()
         # manager.window.showMaximized()
 
-        figure = plt.gcf()  # get current figure
-        figure.set_size_inches(20, 10)
-        # when saving, specify the DPI
-        # tight_layout()
-        plt.savefig(Folder+"/"+File_pat+".png", dpi=300)
+        # figure = plt.gcf()  # get current figure
+        # figure.set_size_inches(20, 10)
+        # # when saving, specify the DPI
+        # # tight_layout()
+        # plt.savefig(Folder+"/"+File_pat+".png", dpi=300)
 
-        # Remove the white space around the plot -- only works on Unix (ImageMagick command)
-        os.system(f'mogrify -trim {Folder}/{File_pat}.png')
+        # # Remove the white space around the plot -- only works on Unix (ImageMagick command)
+        # os.system(f'mogrify -trim {Folder}/{File_pat}.png')
 
-        show()
+        return fig2

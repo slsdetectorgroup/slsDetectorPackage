@@ -1012,7 +1012,7 @@ class MainWindow(QtWidgets.QMainWindow):
             return
 
 
-        signalNames = [s.replace('signal', 'BIT') for s in self.det.getSignalNames()]
+        signalNames = elf.det.getSignalNames()
         p = PlotPattern(pattern_file, signalNames, self.colors_plot, self.colors_wait, self.linestyles_wait, self.alpha_wait, self.alpha_wait_rect, self.colors_loop, self.linestyles_loop, self.alpha_loop, self.alpha_loop_rect, self.clock_vertical_lines_spacing, self.show_clocks_number, self.line_width, )
         
         plt.close(self.figure)

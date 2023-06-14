@@ -23,8 +23,9 @@ class Defines():
     Alpha_loop_rect = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
 
     # Display the count of clocks
-    Clock_vertical_lines_spacing = 1
+    Clock_vertical_lines_spacing = 50
     Show_clocks_number = True
+    Line_width = 2.0
 
     Colors = [
         'Blue',

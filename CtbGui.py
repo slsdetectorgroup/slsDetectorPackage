@@ -843,17 +843,17 @@ class MainWindow(QtWidgets.QMainWindow):
         if response[0]:
             self.lineEditPatternFile.setText(response[0])
 
-    def loadPattern(self):
+    def compilePattern(self):
         pattern_file = self.lineEditPatternFile.text()
         if not pattern_file:
             QtWidgets.QMessageBox.warning(self, "Pattern Fail", "No pattern file selected. Please select one.", QtWidgets.QMessageBox.Ok)
-            return
+            return ""
         # compile
         if self.checkBoxCompile.isChecked():
             compilerFile = self.lineEditCompiler.text()
             if not compilerFile:
                 QtWidgets.QMessageBox.warning(self, "Compile Fail", "No compiler selected. Please select one.", QtWidgets.QMessageBox.Ok)
-                return
+                return ""
 
             # if old compile file exists, backup and remove to ensure old copy not loaded
             oldFile = Path(pattern_file + 'at')
@@ -863,7 +863,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 if exit_status != 0:
                     retval = QtWidgets.QMessageBox.question(self, "Backup Fail", "Could not make a backup of old compiled code. Proceed anyway to compile and overwrite?", QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
                     if retval == QtWidgets.QMessageBox.No:              
-                        return
+                        return ""
 
             compileCommand = compilerFile + ' ' + pattern_file
             print(compileCommand)
@@ -871,11 +871,18 @@ class MainWindow(QtWidgets.QMainWindow):
             exit_status = os.system(compileCommand)
             if exit_status != 0:
                 QtWidgets.QMessageBox.warning(self, "Compile Fail", "Could not compile pattern.", QtWidgets.QMessageBox.Ok)
-                return
+                return ""
             pattern_file += 'at'
+        
+        return pattern_file
+
+    def loadPattern(self):
+        pattern_file = self.compilePattern()
+        if not pattern_file:
+            return
         # load pattern
         self.det.pattern = pattern_file
-            
+
 
     def getPatViewerColors(self):
         colorLevel = self.comboBoxPatColorSelect.currentIndex()
@@ -941,6 +948,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.alpha_loop_rect = Defines.Alpha_loop_rect.copy()
         self.clock_vertical_lines_spacing = Defines.Clock_vertical_lines_spacing
         self.show_clocks_number = Defines.Show_clocks_number
+        self.line_width = Defines.Line_width
 
         #print('default')
         #self.printPatViewerParameters()
@@ -977,9 +985,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.clock_vertical_lines_spacing = self.spinBoxPatClockSpacing.value()
         self.show_clocks_number = self.checkBoxPatShowClockNumber.isChecked()
+        self.line_width = self.doubleSpinBoxLineWidth.value()
 
         # for debugging
-        self.printPatViewerParameters()
+        #self.printPatViewerParameters()
 
     def printPatViewerParameters(self):
         print('Pattern Viewer Parameters:')
@@ -994,21 +1003,27 @@ class MainWindow(QtWidgets.QMainWindow):
         print(f"\tloop alpha rect: {self.alpha_loop_rect}")
         print(f'\tclock vertical lines spacing: {self.clock_vertical_lines_spacing}')
         print(f'\tshow clocks number: {self.show_clocks_number}')
+        print(f'\tline width: {self.line_width}')
         print('\n')
 
     def viewPattern(self):
-        pattern_file = self.lineEditPatternFile.text()
+        pattern_file = self.compilePattern()
         if not pattern_file:
-            QtWidgets.QMessageBox.warning(self, "Pattern Fail", "No pattern file selected. Please select one.", QtWidgets.QMessageBox.Ok)
             return
-        p = PlotPattern(pattern_file, self.colors_plot, self.colors_wait, self.linestyles_wait, self.alpha_wait, self.alpha_wait_rect, self.colors_loop, self.linestyles_loop, self.alpha_loop, self.alpha_loop_rect, self.clock_vertical_lines_spacing, self.show_clocks_number)
+
+        p = PlotPattern(pattern_file, self.colors_plot, self.colors_wait, self.linestyles_wait, self.alpha_wait, self.alpha_wait_rect, self.colors_loop, self.linestyles_loop, self.alpha_loop, self.alpha_loop_rect, self.clock_vertical_lines_spacing, self.show_clocks_number, self.line_width)
         
         plt.close(self.figure)
+        #plt.close(self.canvas)
+        #plt.close(self.toolbar)
         self.gridLayoutPatternViewer.removeWidget(self.canvas)
-        
+        self.gridLayoutPatternViewer.removeWidget(self.toolbar)
+
         self.figure = p.patternPlot()
 
         self.canvas = FigureCanvas(self.figure)
+        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.gridLayoutPatternViewer.addWidget(self.toolbar)
         self.gridLayoutPatternViewer.addWidget(self.canvas)
 
     # Acquistions Tab functions
@@ -1552,6 +1567,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.comboBoxPatLoop.setCurrentIndex(0)
         self.spinBoxPatClockSpacing.setValue(self.clock_vertical_lines_spacing)
         self.checkBoxPatShowClockNumber.setChecked(self.show_clocks_number)
+        self.doubleSpinBoxLineWidth.setValue(self.line_width)
+        
         # rest gets updated after connecting to slots
 
         self.figure, self.ax = plt.subplots()
@@ -1674,6 +1691,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.doubleSpinBoxLoopAlphaRect.editingFinished.connect(self.updatePatViewerParameters)
         self.spinBoxPatClockSpacing.editingFinished.connect(self.updatePatViewerParameters)
         self.checkBoxPatShowClockNumber.stateChanged.connect(self.updatePatViewerParameters)
+        self.doubleSpinBoxLineWidth.editingFinished.connect(self.updatePatViewerParameters)        
         self.pushButtonViewPattern.clicked.connect(self.viewPattern)
 
 

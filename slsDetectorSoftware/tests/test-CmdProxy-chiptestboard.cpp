@@ -19,6 +19,434 @@ using test::PUT;
 
 /* dacs */
 
+TEST_CASE("dacname", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        defs::dacIndex ind = static_cast<defs::dacIndex>(2);
+        std::string str_dac_index = "2";
+        auto prev = det.getDacName(ind);
+
+        // 1 arg throw
+        REQUIRE_THROWS(proxy.Call("dacname", {"2", "3", "bname"}, -1, PUT));
+        // invalid index
+        REQUIRE_THROWS(proxy.Call("dacname", {"18", "bname"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(
+                proxy.Call("dacname", {str_dac_index, "bname"}, -1, PUT, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(
+                proxy.Call("dacname", {str_dac_index}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("dacname ") + str_dac_index + " bname\n");
+        }
+        det.setDacName(ind, prev);
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("dacname", {"2", "b"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("dacname", {"2"}, -1, GET));
+    }
+}
+
+TEST_CASE("dacindex", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        defs::dacIndex ind = static_cast<defs::dacIndex>(2);
+        std::string str_dac_index = "2";
+
+        // 1 arg throw
+        REQUIRE_THROWS(proxy.Call("dacindex", {"2", "2"}, -1, PUT));
+        // invalid index
+        REQUIRE_THROWS(proxy.Call("dacindex", {"18"}, -1, PUT));
+        auto dacname = det.getDacName(ind);
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("dacindex", {dacname}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("dacindex ") + str_dac_index + '\n');
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("dacindex", {"2"}, -1, GET));
+    }
+}
+
+TEST_CASE("adclist", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        auto prev = det.getAdcNames();
+
+        REQUIRE_THROWS(proxy.Call("adclist", {"a", "s", "d"}, -1, PUT));
+
+        std::vector<std::string> names;
+        for (int iarg = 0; iarg != 32; ++iarg) {
+            names.push_back("a");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("adclist", names, -1, PUT, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("adclist", {}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("adclist ") + ToString(names) + '\n');
+        }
+        det.setAdcNames(prev);
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("adclist", {"a", "b"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("adclist", {}, -1, GET));
+    }
+}
+
+TEST_CASE("adcname", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        int ind = 2;
+        std::string str_adc_index = "2";
+        auto prev = det.getAdcName(ind);
+
+        // 1 arg throw
+        REQUIRE_THROWS(proxy.Call("adcname", {"2", "3", "bname"}, -1, PUT));
+        // invalid index
+        REQUIRE_THROWS(proxy.Call("adcname", {"32", "bname"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(
+                proxy.Call("adcname", {str_adc_index, "bname"}, -1, PUT, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(
+                proxy.Call("adcname", {str_adc_index}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("adcname ") + str_adc_index + " bname\n");
+        }
+        det.setAdcName(ind, prev);
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("adcname", {"2", "b"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("adcname", {"2"}, -1, GET));
+    }
+}
+
+TEST_CASE("adcindex", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        int ind = 2;
+        std::string str_adc_index = "2";
+
+        // 1 arg throw
+        REQUIRE_THROWS(proxy.Call("adcindex", {"2", "2"}, -1, PUT));
+        // invalid index
+        REQUIRE_THROWS(proxy.Call("adcindex", {"32"}, -1, PUT));
+        auto adcname = det.getAdcName(ind);
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("adcindex", {adcname}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("adcindex ") + str_adc_index + '\n');
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("adcindex", {"2"}, -1, GET));
+    }
+}
+
+TEST_CASE("signallist", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        auto prev = det.getSignalNames();
+
+        REQUIRE_THROWS(proxy.Call("signallist", {"a", "s", "d"}, -1, PUT));
+
+        std::vector<std::string> names;
+        for (int iarg = 0; iarg != 64; ++iarg) {
+            names.push_back("a");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("signallist", names, -1, PUT, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("signallist", {}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("signallist ") + ToString(names) + '\n');
+        }
+        det.setSignalNames(prev);
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("signallist", {"a", "b"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("signallist", {}, -1, GET));
+    }
+}
+
+TEST_CASE("signalname", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        int ind = 2;
+        std::string str_signal_index = "2";
+        auto prev = det.getSignalName(ind);
+
+        // 1 arg throw
+        REQUIRE_THROWS(proxy.Call("signalname", {"2", "3", "bname"}, -1, PUT));
+        // invalid index
+        REQUIRE_THROWS(proxy.Call("signalname", {"64", "bname"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call(
+                "signalname", {str_signal_index, "bname"}, -1, PUT, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(
+                proxy.Call("signalname", {str_signal_index}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("signalname ") + str_signal_index + " bname\n");
+        }
+        det.setSignalName(ind, prev);
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("signalname", {"2", "b"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("signalname", {"2"}, -1, GET));
+    }
+}
+
+TEST_CASE("signalindex", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        int ind = 2;
+        std::string str_signal_index = "2";
+
+        // 1 arg throw
+        REQUIRE_THROWS(proxy.Call("signalindex", {"2", "2"}, -1, PUT));
+        // invalid index
+        REQUIRE_THROWS(proxy.Call("signalindex", {"64"}, -1, PUT));
+        auto signalname = det.getSignalName(ind);
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(
+                proxy.Call("signalindex", {signalname}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("signalindex ") + str_signal_index + '\n');
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("signalindex", {"2"}, -1, GET));
+    }
+}
+
+TEST_CASE("powerlist", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        auto prev = det.getPowerNames();
+
+        REQUIRE_THROWS(proxy.Call("powerlist", {"a", "s", "d"}, -1, PUT));
+
+        std::vector<std::string> names;
+        for (int iarg = 0; iarg != 5; ++iarg) {
+            names.push_back("a");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("powerlist", names, -1, PUT, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("powerlist", {}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("powerlist ") + ToString(names) + '\n');
+        }
+        det.setPowerNames(prev);
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("powerlist", {"a", "b"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("powerlist", {}, -1, GET));
+    }
+}
+
+TEST_CASE("powername", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        int ind = 2;
+        std::string str_power_index = "2";
+        auto prev = det.getPowerName(ind);
+
+        // 1 arg throw
+        REQUIRE_THROWS(proxy.Call("powername", {"2", "3", "bname"}, -1, PUT));
+        // invalid index
+        REQUIRE_THROWS(proxy.Call("powername", {"5", "bname"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("powername", {str_power_index, "bname"},
+                                       -1, PUT, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(
+                proxy.Call("powername", {str_power_index}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("powername ") + str_power_index + " bname\n");
+        }
+        det.setPowerName(ind, prev);
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("powername", {"2", "b"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("powername", {"2"}, -1, GET));
+    }
+}
+
+TEST_CASE("powerindex", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        int ind = 2;
+        std::string str_power_index = "2";
+
+        // 1 arg throw
+        REQUIRE_THROWS(proxy.Call("powerindex", {"2", "2"}, -1, PUT));
+        // invalid index
+        REQUIRE_THROWS(proxy.Call("powerindex", {"5"}, -1, PUT));
+        auto powername = det.getPowerName(ind);
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(
+                proxy.Call("powerindex", {powername}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("powerindex ") + str_power_index + '\n');
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("powerindex", {"2"}, -1, GET));
+    }
+}
+
+TEST_CASE("senselist", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        auto prev = det.getSenseNames();
+
+        REQUIRE_THROWS(proxy.Call("senselist", {"a", "s", "d"}, -1, PUT));
+
+        std::vector<std::string> names;
+        for (int iarg = 0; iarg != 8; ++iarg) {
+            names.push_back("a");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("senselist", names, -1, PUT, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("senselist", {}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("senselist ") + ToString(names) + '\n');
+        }
+        det.setSenseNames(prev);
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("senselist", {"a", "b"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("senselist", {}, -1, GET));
+    }
+}
+
+TEST_CASE("sensename", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        int ind = 2;
+        std::string str_sense_index = "2";
+        auto prev = det.getSenseName(ind);
+
+        // 1 arg throw
+        REQUIRE_THROWS(proxy.Call("sensename", {"2", "3", "bname"}, -1, PUT));
+        // invalid index
+        REQUIRE_THROWS(proxy.Call("sensename", {"8", "bname"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("sensename", {str_sense_index, "bname"},
+                                       -1, PUT, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(
+                proxy.Call("sensename", {str_sense_index}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("sensename ") + str_sense_index + " bname\n");
+        }
+        det.setSenseName(ind, prev);
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("sensename", {"2", "b"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("sensename", {"2"}, -1, GET));
+    }
+}
+
+TEST_CASE("senseindex", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        int ind = 2;
+        std::string str_sense_index = "2";
+
+        // 1 arg throw
+        REQUIRE_THROWS(proxy.Call("senseindex", {"2", "2"}, -1, PUT));
+        // invalid index
+        REQUIRE_THROWS(proxy.Call("senseindex", {"8"}, -1, PUT));
+        auto sensename = det.getSenseName(ind);
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(
+                proxy.Call("senseindex", {sensename}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("senseindex ") + str_sense_index + '\n');
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("senseindex", {"2"}, -1, GET));
+    }
+}
+
+/* dacs */
+
 TEST_CASE("dac", "[.cmd][.dacs]") {
     // dac 0 to dac 17
 
@@ -86,7 +514,7 @@ TEST_CASE("dac", "[.cmd][.dacs]") {
         REQUIRE_THROWS(proxy.Call("dac", {"vicin"}, -1, GET));
         REQUIRE_THROWS(proxy.Call("dac", {"vipre_out"}, -1, GET));
         // gotthard2
-        REQUIRE_THROWS(proxy.Call("dac", {"vref_h_adc"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vref_h_Signal"}, -1, GET));
         REQUIRE_THROWS(proxy.Call("dac", {"vb_comp_fe"}, -1, GET));
         REQUIRE_THROWS(proxy.Call("dac", {"vb_comp_adc"}, -1, GET));
         REQUIRE_THROWS(proxy.Call("dac", {"vcom_cds"}, -1, GET));

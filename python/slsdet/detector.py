@@ -1766,7 +1766,7 @@ class Detector(CppDetectorApi):
     @property
     def daclist(self):
         """
-        List of enums/names for every dac for this detector.
+        List of enums/names for every dac for this detector
         :setter: Only implemented for Chiptestboard
         
         """
@@ -1779,7 +1779,7 @@ class Detector(CppDetectorApi):
     @property
     def adclist(self):
         """
-        List of names for every adc for this detector.
+        List of names for every adc for this board. 32 adcs
         :setter: Only implemented for Chiptestboard
         
         """
@@ -1789,7 +1789,45 @@ class Detector(CppDetectorApi):
     def adclist(self, value):
         self.setAdcNames(value)
 
+    @property
+    def signallist(self):
+        """
+        List of names for every io signal for this board. 64 signals
+        :setter: Only implemented for Chiptestboard
+        
+        """
+        return self.getSignalNames()
 
+    @signallist.setter
+    def signallist(self, value):
+        self.setSignalNames(value)
+
+    @property
+    def powerlist(self):
+        """
+        List of names for every power supply for this board. 5 power supply
+        :setter: Only implemented for Chiptestboard
+        
+        """
+        return self.getPowerNames()
+
+    @powerlist.setter
+    def powerlist(self, value):
+        self.setPowerNames(value)
+
+    @property
+    def senselist(self):
+        """
+        List of names for every sense for this board. 8 sense
+        :setter: Only implemented for Chiptestboard
+        
+        """
+        return self.getSenseNames()
+
+    @senselist.setter
+    def senselist(self, value):
+        self.setSenseNames(value)
+        
     @property
     def dacvalues(self):
         """Gets the dac values for every dac for this detector."""

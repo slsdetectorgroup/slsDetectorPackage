@@ -335,6 +335,21 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setCtbAdcNames(const std::vector<std::string> &names);
     void setCtbAdcName(const int index, const std::string &name);
 
+    std::vector<std::string> getCtbSignalNames() const;
+    std::string getCtbSignalName(int i) const;
+    void setCtbSignalNames(const std::vector<std::string> &names);
+    void setCtbSignalName(const int index, const std::string &name);
+
+    std::vector<std::string> getCtbPowerNames() const;
+    std::string getCtbPowerName(int i) const;
+    void setCtbPowerNames(const std::vector<std::string> &names);
+    void setCtbPowerName(const int index, const std::string &name);
+
+    std::vector<std::string> getCtbSenseNames() const;
+    std::string getCtbSenseName(int i) const;
+    void setCtbSenseNames(const std::vector<std::string> &names);
+    void setCtbSenseName(const int index, const std::string &name);
+
   private:
     /**
      * Creates/open shared memory, initializes detector structure and members

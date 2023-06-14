@@ -1014,17 +1014,20 @@ class MainWindow(QtWidgets.QMainWindow):
         p = PlotPattern(pattern_file, self.colors_plot, self.colors_wait, self.linestyles_wait, self.alpha_wait, self.alpha_wait_rect, self.colors_loop, self.linestyles_loop, self.alpha_loop, self.alpha_loop_rect, self.clock_vertical_lines_spacing, self.show_clocks_number, self.line_width)
         
         plt.close(self.figure)
-        #plt.close(self.canvas)
-        #plt.close(self.toolbar)
         self.gridLayoutPatternViewer.removeWidget(self.canvas)
+        self.canvas.close()
         self.gridLayoutPatternViewer.removeWidget(self.toolbar)
+        self.toolbar.close()
 
-        self.figure = p.patternPlot()
-
-        self.canvas = FigureCanvas(self.figure)
-        self.toolbar = NavigationToolbar(self.canvas, self)
-        self.gridLayoutPatternViewer.addWidget(self.toolbar)
-        self.gridLayoutPatternViewer.addWidget(self.canvas)
+        try:
+            self.figure = p.patternPlot()
+            self.canvas = FigureCanvas(self.figure)
+            self.toolbar = NavigationToolbar(self.canvas, self)
+            self.gridLayoutPatternViewer.addWidget(self.toolbar)
+            self.gridLayoutPatternViewer.addWidget(self.canvas)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Pattern Viewer Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
 
     # Acquistions Tab functions
     def plotOptions(self):

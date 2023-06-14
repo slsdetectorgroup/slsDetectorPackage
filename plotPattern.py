@@ -49,8 +49,6 @@ class PlotPattern():
         if self.verbose:
             self.printPatViewerParameters()
 
-        self.patternPlot()
-
     def printPatViewerParameters(self):
         print('Pattern Viewer Parameters:')
         print(f'\tcolor1: {self.colors_plot[0]}, color2: {self.colors_plot[1]}')
@@ -161,6 +159,9 @@ class PlotPattern():
         for k in range(nlines_pat):
             # content of line
             words_line = lines_pat[k].split()
+            #print(f'words_line:{words_line}')
+            if len(words_line) < 2:
+                continue
             if words_line[0] == "patword":
                 # print words_line from b0 to b63
                 bits = self.hex2binary(words_line[-1], 64)[::-1]
@@ -185,7 +186,7 @@ class PlotPattern():
                 if self.verbose:
                     print(bits)
                 # convert string bits to decimal array
-                out_bits = array(list(map(str, bits)), dtype="uint16")
+                self.out_bits = array(list(map(str, bits)), dtype="uint16")
 
             if self.verbose:
                 print(words_line)
@@ -306,15 +307,19 @@ class PlotPattern():
                 nloop5 = int(words_line[2])
                 if self.verbose:
                     print("loop 5 times:", nloop5)
-        # print(out_bits)
+
+        # no patioctrl commands read
+        if not hasattr(self, 'out_bits'):
+            raise Exception("No patioctrl command found in pattern file")
+        # print(self.out_bits)
 
         # internal counter
         avail_index = []
         avail_name = []
         # Remove non-used bits
         for i in range(64):
-            # if out_bits[0][i] == 1:
-            if out_bits[i] == 1:
+            # if self.out_bits[0][i] == 1:
+            if self.out_bits[i] == 1:
                 avail_index.append(i)
                 avail_name.append(table[i][1])
         if self.verbose:

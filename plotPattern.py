@@ -20,9 +20,10 @@ import os
 import argparse
 
 class PlotPattern():
-    def __init__(self, pattern, colors_plot, colors_wait, linestyles_wait, alpha_wait, alpha_wait_rect, colors_loop, linestyles_loop, alpha_loop, alpha_loop_rect, clock_vertical_lines_spacing, show_clocks_number, line_width):
+    def __init__(self, pattern, signalNames, colors_plot, colors_wait, linestyles_wait, alpha_wait, alpha_wait_rect, colors_loop, linestyles_loop, alpha_loop, alpha_loop_rect, clock_vertical_lines_spacing, show_clocks_number, line_width):
         
         self.pattern = pattern
+        self.signalNames = signalNames
         self.verbose = False
         # TODO: send alias
 
@@ -80,52 +81,6 @@ class PlotPattern():
         # global definition
         # base = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F]
         self.base = [str(x) for x in range(10)] + [chr(x) for x in range(ord('A'), ord('A')+6)]
-
-        #TODO: parser.add_argument('-a', '--alias', help = "Alias name")
-
-
-        # Look at the alias file and generate the lookup table for pin names
-        # Create a 64 bit look up table
-        table = []
-        for i in range(64):
-            # for special bit
-            if i+1 == 59:
-                table.append([str(i+1), "external_trigger"])
-            elif i+1 == 63:
-                table.append([str(i+1), "adc_enable"])
-            elif i+1 == 62:
-                table.append([str(i+1), "dbit_enable"])
-            else:
-                table.append([str(i+1), ""])
-
-
-        # Loop all lines
-        try:
-            #with open(Folder + "/" + File_alias + ".alias") as f:
-            with open("/doesntexist.alias") as f:
-                lines = f.readlines()
-                f.close()
-                nlines = len(lines)
-        except:
-            nlines = 0
-
-        if nlines > 0:
-            for i in range(nlines):
-                # whether the line is bit definition
-                if lines[i][0:3] == "BIT":
-                    # split words
-                    words = lines[i].split()
-                    bit_num = int(words[0][3:])
-                    table[bit_num][0] = words[0][3:]
-                    table[bit_num][1] = words[1]
-        else:
-            for i in range(64):
-                table[i][0] = i
-                table[i][1] = f'BIT#{i}'
-
-        if self.verbose:
-            print(table)
-
 
         # Load the pattern and get all lines
         # Loop all lines
@@ -321,7 +276,7 @@ class PlotPattern():
             # if self.out_bits[0][i] == 1:
             if self.out_bits[i] == 1:
                 avail_index.append(i)
-                avail_name.append(table[i][1])
+                avail_name.append(self.signalNames[i])
         if self.verbose:
             print(avail_index)
             print(avail_name)

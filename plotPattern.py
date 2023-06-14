@@ -10,7 +10,7 @@ Changes:
     - 2017-09-25 All can be plotted
     - 2017-09-22 Can be plotted but the loop and wait not work yet
 
-@author: zhang_j1
+@author: Jiaguo Zhang and Julian Heymes
 """
 import matplotlib.pyplot as plt
 from numpy import *

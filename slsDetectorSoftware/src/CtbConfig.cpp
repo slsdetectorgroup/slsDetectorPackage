@@ -21,10 +21,10 @@ CtbConfig::CtbConfig() {
         setSignalName(i, "BIT" + ToString(i));
     }
     setPowerName(0, "VA");
-    setPowerName(0, "VB");
-    setPowerName(0, "VC");
-    setPowerName(0, "VD");
-    setPowerName(0, "VIO");
+    setPowerName(1, "VB");
+    setPowerName(2, "VC");
+    setPowerName(3, "VD");
+    setPowerName(4, "VIO");
     for (size_t i = 0; i != num_senses; ++i) {
         setSenseName(i, "SENSE" + ToString(i));
     }

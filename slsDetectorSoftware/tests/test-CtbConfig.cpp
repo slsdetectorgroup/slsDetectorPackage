@@ -14,12 +14,37 @@ TEST_CASE("Default construction") {
                   "Size of CtbConfig does not match");
 
     CtbConfig c;
-    auto names = c.getDacNames();
-    REQUIRE(names.size() == 18);
-    REQUIRE(names[0] == "dac0");
-    REQUIRE(names[1] == "dac1");
-    REQUIRE(names[2] == "dac2");
-    REQUIRE(names[3] == "dac3");
+    auto dacnames = c.getDacNames();
+    REQUIRE(dacnames.size() == 18);
+    REQUIRE(dacnames[0] == "DAC0");
+    REQUIRE(dacnames[1] == "DAC1");
+    REQUIRE(dacnames[2] == "DAC2");
+    REQUIRE(dacnames[3] == "DAC3");
+    auto adcnames = c.getAdcNames();
+    REQUIRE(adcnames.size() == 32);
+    REQUIRE(adcnames[0] == "ADC0");
+    REQUIRE(adcnames[1] == "ADC1");
+    REQUIRE(adcnames[2] == "ADC2");
+    REQUIRE(adcnames[3] == "ADC3");
+    auto powernames = c.getPowerNames();
+    REQUIRE(powernames.size() == 5);
+    REQUIRE(powernames[0] == "VA");
+    REQUIRE(powernames[1] == "VB");
+    REQUIRE(powernames[2] == "VC");
+    REQUIRE(powernames[3] == "VD");
+    REQUIRE(powernames[4] == "VIO");
+    auto signalnames = c.getSignalNames();
+    REQUIRE(signalnames.size() == 64);
+    REQUIRE(signalnames[0] == "BIT0");
+    REQUIRE(signalnames[1] == "BIT1");
+    REQUIRE(signalnames[2] == "BIT2");
+    REQUIRE(signalnames[3] == "BIT3");
+    auto sensenames = c.getSenseNames();
+    REQUIRE(sensenames.size() == 8);
+    REQUIRE(sensenames[0] == "SENSE0");
+    REQUIRE(sensenames[1] == "SENSE1");
+    REQUIRE(sensenames[2] == "SENSE2");
+    REQUIRE(sensenames[3] == "SENSE3");
 }
 
 TEST_CASE("Set and get a single dac name") {

@@ -343,12 +343,7 @@ class MainWindow(QtWidgets.QMainWindow):
             bitList.remove(i)
         self.det.rx_dbitlist = bitList
         
-        retval = self.det.rx_dbitlist       
-        self.getDigitalBitEnable(i, retval)
-        self.getEnableBitPlot(i)
-        self.getEnableBitColor(i)
-        self.getDigitalBitEnableRange(retval)
-        self.getEnableBitPlotRange()
+        self.updateDigitalBitEnable()
 
     def getDigitalBitEnableRange(self, dbitList):
         self.checkBoxBIT0_31DB.stateChanged.disconnect()
@@ -385,8 +380,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getEnableBitPlotRange()
 
     def getEnableBitPlotRange(self):
+        self.checkBoxBIT0_31Plot.stateChanged.disconnect()
+        self.checkBoxBIT32_63Plot.stateChanged.disconnect()
         self.checkBoxBIT0_31Plot.setEnabled(all(getattr(self, f"checkBoxBIT{i}Plot").isEnabled() for i in range(32)))
         self.checkBoxBIT32_63Plot.setEnabled(all(getattr(self, f"checkBoxBIT{i}Plot").isEnabled() for i in range(32, 64)))
+        self.checkBoxBIT0_31Plot.setChecked(all(getattr(self, f"checkBoxBIT{i}Plot").isChecked() for i in range(32)))
+        self.checkBoxBIT32_63Plot.setChecked(all(getattr(self, f"checkBoxBIT{i}Plot").isChecked() for i in range(32, 64)))
+        self.checkBoxBIT0_31Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 0, 32))
+        self.checkBoxBIT32_63Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 32, 64)) 
 
     def setEnableBitPlotRange(self, start_nr, end_nr):
         checkBox = getattr(self, f"checkBoxBIT{start_nr}_{end_nr - 1}Plot")
@@ -537,12 +538,7 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.warning(self, "ADC Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
 
-        retval = self.getADCEnableReg()
-        self.getADCEnable(i, retval)
-        self.getADCEnablePlot(i)
-        self.getADCEnableColor(i)
-        self.getADCEnableRange(retval)
-        self.getADCEnablePlotRange()
+        self.updateADCEnable()
 
     def getADCEnableRange(self, mask):
         self.checkBoxADC0_15En.stateChanged.disconnect()
@@ -581,9 +577,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getADCEnablePlotRange()
 
     def getADCEnablePlotRange(self):
+        self.checkBoxADC0_15Plot.stateChanged.disconnect()
+        self.checkBoxADC16_31Plot.stateChanged.disconnect()
         self.checkBoxADC0_15Plot.setEnabled(all(getattr(self, f"checkBoxADC{i}Plot").isEnabled() for i in range(16)))
         self.checkBoxADC16_31Plot.setEnabled(all(getattr(self, f"checkBoxADC{i}Plot").isEnabled() for i in range(16, 32)))
-
+        self.checkBoxADC0_15Plot.setChecked(all(getattr(self, f"checkBoxADC{i}Plot").isChecked() for i in range(16)))
+        self.checkBoxADC16_31Plot.setChecked(all(getattr(self, f"checkBoxADC{i}Plot").isChecked() for i in range(16, 32)))
+        self.checkBoxADC0_15Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 0, 16))
+        self.checkBoxADC16_31Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 16, 32)) 
+   
     def setADCEnablePlotRange(self, start_nr, end_nr):
         checkBox = getattr(self, f"checkBoxADC{start_nr}_{end_nr - 1}Plot")
         enable = checkBox.isChecked()

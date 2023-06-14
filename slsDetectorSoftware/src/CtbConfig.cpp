@@ -12,19 +12,21 @@ namespace sls {
 
 CtbConfig::CtbConfig() {
     for (size_t i = 0; i != num_dacs; ++i) {
-        setDacName(i, "dac" + ToString(i));
+        setDacName(i, "DAC" + ToString(i));
     }
     for (size_t i = 0; i != num_adcs; ++i) {
-        setAdcName(i, "adc" + ToString(i));
+        setAdcName(i, "ADC" + ToString(i));
     }
     for (size_t i = 0; i != num_signals; ++i) {
-        setSignalName(i, "signal" + ToString(i));
+        setSignalName(i, "BIT" + ToString(i));
     }
-    for (size_t i = 0; i != num_powers; ++i) {
-        setPowerName(i, "power" + ToString(i));
-    }
+    setPowerName(0, "VA");
+    setPowerName(0, "VB");
+    setPowerName(0, "VC");
+    setPowerName(0, "VD");
+    setPowerName(0, "VIO");
     for (size_t i = 0; i != num_senses; ++i) {
-        setSenseName(i, "sense" + ToString(i));
+        setSenseName(i, "SENSE" + ToString(i));
     }
 }
 

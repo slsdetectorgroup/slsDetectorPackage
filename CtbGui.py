@@ -869,59 +869,46 @@ class MainWindow(QtWidgets.QMainWindow):
             
     # Acquistions Tab functions
     def plotOptions(self):
-        self.comboBoxPlot.currentIndexChanged.disconnect()
+
+        # disable image widgets
+        self.comboBoxPlot.setDisabled(True)
+        if hasattr(self, 'imageViewAnalog'):
+            self.imageViewAnalog.close()   
+        if hasattr(self, 'imageViewDigital'):
+            self.imageViewDigital.close()
+        self.plotWidgetAnalog.clear()
+        self.plotWidgetDigital.clear()
+
+        # disable plotting
+        self.read_timer.stop()
         
-        if self.radioButtonNoPlot.isChecked():
-            # disable image widgets
-            self.plotWidgetAnalog.clear()
-            self.plotWidgetDigital.clear()
-            self.comboBoxPlot.setDisabled(True)
-            if hasattr(self, 'imageViewAnalog'):
-                self.imageViewAnalog.close()   
-            if hasattr(self, 'imageViewDigital'):
-                self.imageViewDigital.close()
-
-            # disable plotting
-            self.read_timer.stop()
-
-        elif self.radioButtonWaveform.isChecked():
-            # disable image widgets
-            self.plotWidgetAnalog.clear()
-            self.plotWidgetDigital.clear()
-            self.comboBoxPlot.setDisabled(True)
-            if hasattr(self, 'imageViewAnalog'):
-                self.imageViewAnalog.close()
-            if hasattr(self, 'imageViewDigital'):
-                self.imageViewDigital.close()
-            # enable waveform legend and labels
+        if self.radioButtonWaveform.isChecked():
             self.plotWidgetAnalog.setLabel('left',"<span style=\"color:black;font-size:14px\">Output [ADC]</span>")
             self.plotWidgetAnalog.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Analog Sample [#]</span>")
-            self.plotWidgetAnalog.addLegend()
+            self.plotWidgetAnalog.addLegend(colCount = 4)
             self.plotWidgetDigital.setLabel('left',"<span style=\"color:black;font-size:14px\">Digital Bit</span>")
             self.plotWidgetDigital.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Digital Sample [#]</span>")
-            self.plotWidgetDigital.addLegend()
-
-            # enable plotting
-            self.read_timer.start(20)
+            self.plotWidgetDigital.addLegend(colCount = 4)
 
         elif self.radioButtonImage.isChecked():
-            # enable image widgets
-            self.plotWidgetAnalog.clear()
-            self.plotWidgetDigital.clear()
             self.comboBoxPlot.setEnabled(True)
+
             self.imageViewAnalog = pg.ImageView(self.plotWidgetAnalog, view=pg.PlotItem())
             self.imageViewAnalog.show()
             self.imageViewDigital = pg.ImageView(self.plotWidgetDigital, view=pg.PlotItem())
             self.imageViewDigital.show()
 
-            # enable plotting
-            self.read_timer.start(20)
-
+            self.comboBoxPlot.currentIndexChanged.disconnect()
             if self.comboBoxPlot.currentIndex() >= 1:
                 QtWidgets.QMessageBox.warning(self, "Not Implemented Yet", "Sorry, this is not implemented yet.", QtWidgets.QMessageBox.Ok)
                 self.comboBoxPlot.setCurrentIndex(0)
+            self.comboBoxPlot.currentIndexChanged.connect(self.plotOptions)
                 
-        self.comboBoxPlot.currentIndexChanged.connect(self.plotOptions)
+                
+        # enable plotting
+        if not self.radioButtonNoPlot.isChecked():
+            self.read_timer.start(20)
+        
         #self.showPlot()
 
     ''' after being able to resize windows

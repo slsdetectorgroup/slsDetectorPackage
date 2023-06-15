@@ -6,7 +6,7 @@ from pyqtgraph import PlotWidget
 import multiprocessing as mp
 from threading import Thread
 from PIL import Image as im
-#import matplotlib.pyplot as plt
+
 import json
 import zmq
 import numpy as np
@@ -39,6 +39,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.refresh_tab_adc()
         self.refresh_tab_pattern()
         self.refresh_tab_acquisition()
+        # always keep plotting (else dummy plot for next acquisition)
+        self.read_timer.start(20)
 
 
     # For Action options function
@@ -132,9 +134,9 @@ class MainWindow(QtWidgets.QMainWindow):
         retval = self.det.adcvpp
         self.labelADCVpp.setText(f'Mode: {str(retval)}')
 
-        self.comboBoxADCVpp.activated.disconnect()
+        self.comboBoxADCVpp.currentIndexChanged.disconnect()
         self.comboBoxADCVpp.setCurrentIndex(retval)
-        self.comboBoxADCVpp.activated.connect(self.setADCVpp)
+        self.comboBoxADCVpp.currentIndexChanged.connect(self.setADCVpp)
 
     def setADCVpp(self):
         self.det.adcvpp = self.comboBoxADCVpp.currentIndex()
@@ -442,7 +444,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # enable color pick only if plot enabled
         pushButton.setEnabled(checkBox.isChecked())
         pushButton.clicked.connect(partial(self.selectADCColor, i))
-        #TODO: enable plotting for this bit
+
 
     def selectADCColor(self, i):
         pushButton = getattr(self, f"pushButtonADC{i}")
@@ -467,13 +469,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getDigital()
 
     def getReadout(self):
-        self.comboBoxROMode.activated.disconnect
+        self.comboBoxROMode.currentIndexChanged.disconnect()
         self.spinBoxAnalog.editingFinished.disconnect()
         self.spinBoxDigital.editingFinished.disconnect()
 
-        romode = self.det.romode
-        self.comboBoxROMode.setCurrentIndex(romode.value)
-        match romode:
+        self.romode = self.det.romode
+        self.comboBoxROMode.setCurrentIndex(self.romode.value)
+        match self.romode:
             case readoutMode.ANALOG_ONLY:
                 self.spinBoxAnalog.setEnabled(True)
                 self.labelAnalog.setEnabled(True)
@@ -490,7 +492,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.spinBoxDigital.setEnabled(True)
                 self.labelDigital.setEnabled(True)
 
-        self.comboBoxROMode.activated.connect(self.setReadOut)
+        self.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
         self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
         self.spinBoxDigital.editingFinished.connect(self.setDigital)
         self.getAnalog()
@@ -833,7 +835,7 @@ class MainWindow(QtWidgets.QMainWindow):
     
     def getPeriod(self):
         self.spinBoxPeriod.editingFinished.disconnect()
-        self.comboBoxPeriod.activated.disconnect()
+        self.comboBoxPeriod.currentIndexChanged.disconnect()
 
         # Converting to right time unit for period
         tPeriod = self.det.period
@@ -851,7 +853,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.spinBoxPeriod.setValue(tPeriod)
 
         self.spinBoxPeriod.editingFinished.connect(self.setPeriod)
-        self.comboBoxPeriod.activated.connect(self.setPeriod)
+        self.comboBoxPeriod.currentIndexChanged.connect(self.setPeriod)
 
     def setPeriod(self):
         if self.comboBoxPeriod.currentIndex() == 0:
@@ -889,7 +891,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonStart.setEnabled(False)
         self.stoppedFlag = False
         self.currentMeasurement = 0
-        self.read_timer.start(20)
         self.statusTimer.start(20)
         self.startMeasurement()
 
@@ -923,7 +924,6 @@ class MainWindow(QtWidgets.QMainWindow):
             if self.currentMeasurement < numMeasurments and not self.stoppedFlag:
                 self.startMeasurement()
             else:
-                self.read_timer.stop()
                 self.statusTimer.stop()
                 self.pushButtonStart.setEnabled(True)
 
@@ -932,64 +932,63 @@ class MainWindow(QtWidgets.QMainWindow):
     # For other functios
     #Reading data from zmq and decoding it
     def read_zmq(self):
+        #print("in readzmq")
         try:
             msg = self.socket.recv_multipart(flags=zmq.NOBLOCK)
             if len(msg) != 2:
-                print(f'len(msg) = {len(msg)}')
+                if len(msg) == 1:
+                    print("got end of acquisition")
+                else:
+                    print(f'len(msg) = {len(msg)}')
                 return
             header, data = msg
             jsonHeader = json.loads(header)
             #print(jsonHeader)
-            self.progressBar.setValue(jsonHeader['progress'])
+            self.progressBar.setValue(int(jsonHeader['progress']))
             #print(f'Data size: {len(data)}')
             
             data_array = np.array(np.frombuffer(data, dtype=np.uint16))
 
-            '''
+            
             # moench analog
-            # return data_array
-            adc_numbers = [9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 7, 6, 23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28,
-                            27, 26, 25, 24]
-
-            n_pixels_per_sc = 5000
-
-            sc_width = 25
+            digital_frame = np.zeros((400, 400))
             analog_frame = np.zeros((400, 400))
-            order_sc = np.zeros((400, 400))
 
-            for n_pixel in range(n_pixels_per_sc):
-                for i_sc, adc_nr in enumerate(adc_numbers):
-                    # ANALOG
-                    col = ((adc_nr % 16) * sc_width) + (n_pixel % sc_width)
-                    if i_sc < 16:
-                        row = 199 - int(n_pixel / sc_width)
-                    else:
-                        row = 200 + int(n_pixel / sc_width)
+            if self.romode.value in [0, 2]:
+                adc_numbers = [9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 7, 6, 23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28,
+                                27, 26, 25, 24]
 
-                    index_min = n_pixel * 32 + i_sc
+                n_pixels_per_sc = 5000
 
-                    pixel_value = data_array[index_min]
-                    analog_frame[row, col] = pixel_value
-                    order_sc[row, col] = i_sc
-            '''
+                sc_width = 25
+                order_sc = np.zeros((400, 400))
 
-            '''
-            fig, ax = plt.subplots()
-            im = ax.imshow(analog_frame)
-            ax.invert_yaxis()
-            fig.colorbar(im)
-            plt.show()
-            '''
-            '''
+                for n_pixel in range(n_pixels_per_sc):
+                    for i_sc, adc_nr in enumerate(adc_numbers):
+                        # ANALOG
+                        col = ((adc_nr % 16) * sc_width) + (n_pixel % sc_width)
+                        if i_sc < 16:
+                            row = 199 - int(n_pixel / sc_width)
+                        else:
+                            row = 200 + int(n_pixel / sc_width)
+
+                        index_min = n_pixel * 32 + i_sc
+
+                        pixel_value = data_array[index_min]
+                        analog_frame[row, col] = pixel_value
+                        order_sc[row, col] = i_sc
+
             plot1 = pg.ImageView(self.plotWidget, view=pg.PlotItem())
             plot1.show()
-            plot1.setImage(analog_frame)
-            '''
+            plot1.setImage(analog_frame)                                         
             
         except zmq.ZMQError as e:
             pass
         except Exception as e:
             print(f'Caught exception: {str(e)}')
+
+
+
 
     def getRandomColor(self):
         '''
@@ -1162,7 +1161,7 @@ class MainWindow(QtWidgets.QMainWindow):
             getattr(self, f"checkBoxDAC{i}").clicked.connect(partial(self.setDACTristate, i))
             getattr(self, f"checkBoxDAC{i}mV").clicked.connect(partial(self.getDAC, i))
 
-        self.comboBoxADCVpp.activated.connect(self.setADCVpp)
+        self.comboBoxADCVpp.currentIndexChanged.connect(self.setADCVpp)
         self.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
         self.checkBoxHighVoltage.clicked.connect(self.setHighVoltage)
 
@@ -1204,7 +1203,7 @@ class MainWindow(QtWidgets.QMainWindow):
         #self.pushButtonNone.clicked.connect(partial(self.setADCEnableRange, 0, 0, 31))
         self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
         self.spinBoxDigital.editingFinished.connect(self.setDigital)
-        self.comboBoxROMode.activated.connect(self.setReadOut)
+        self.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
 
         # For Pattern Tab
         self.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
@@ -1242,7 +1241,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.radioButtonWaveform.clicked.connect(self.plotOptions)
         self.radioButtonDistribution.clicked.connect(self.plotOptions)
         self.radioButtonImage.clicked.connect(self.plotOptions)
-        self.comboBoxPlot.activated.connect(self.plotOptions)
+        self.comboBoxPlot.currentIndexChanged.connect(self.plotOptions)
         self.spinBoxSerialOffset.editingFinished.connect(self.setSerialOffset)
         self.spinBoxNCount.editingFinished.connect(self.setNCounter)
         self.spinBoxDynamicRange.editingFinished.connect(self.setDynamicRange)
@@ -1269,7 +1268,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxAcquisitionIndex.editingFinished.connect(self.setAccquisitionIndex)
         self.spinBoxFrames.editingFinished.connect(self.setFrames)
         self.spinBoxPeriod.editingFinished.connect(self.setPeriod)
-        self.comboBoxPeriod.activated.connect(self.setPeriod)
+        self.comboBoxPeriod.currentIndexChanged.connect(self.setPeriod)
         self.spinBoxTriggers.editingFinished.connect(self.setTriggers)
         self.pushButtonStart.clicked.connect(self.acquire)
         self.pushButtonStop.clicked.connect(self.stopAcquisition)

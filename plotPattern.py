@@ -14,7 +14,6 @@ Changes:
 """
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.pyplot import *
 from matplotlib.patches import Rectangle
 import os
 import argparse
@@ -289,15 +288,15 @@ class PlotPattern():
         subMat = mat_pat.reshape(int(cnt), int(len(num_bits)))[0:, avail_index]
         # subMat = mat_pat[avail_index]
         timing = np.linspace(0, subMat.shape[0]-1, subMat.shape[0])
-        rcParams['figure.figsize'] = 15, 5
+        plt.rcParams['figure.figsize'] = 15, 5
 
 
         # ============= PLOTTING =============
 
-        rcParams["font.weight"] = "bold"
-        rcParams["axes.labelweight"] = "bold"
-        fig, axs = subplots(nbiteff, sharex='all')
-        subplots_adjust(wspace=0, hspace=0)
+        plt.rcParams["font.weight"] = "bold"
+        plt.rcParams["axes.labelweight"] = "bold"
+        fig, axs = plt.subplots(nbiteff, sharex='all')
+        plt.subplots_adjust(wspace=0, hspace=0)
         # axs[nbiteff - 1].set(xlabel='Timing [clk]')
         for idx, i in enumerate(range(nbiteff)):
 

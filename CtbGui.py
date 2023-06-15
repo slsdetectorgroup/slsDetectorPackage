@@ -2,7 +2,7 @@ import time
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 import sys, os
 import pyqtgraph as pg
-from pyqtgraph import PlotWidget
+from pyqtgraph import PlotWidget, GraphicsLayoutWidget
 import multiprocessing as mp
 from threading import Thread
 from PIL import Image as im
@@ -17,6 +17,9 @@ from functools import partial
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 from bit_utils import set_bit, remove_bit, bit_is_set, manipulate_bit
 import random
+
+from defines import *
+
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -39,8 +42,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.refresh_tab_adc()
         self.refresh_tab_pattern()
         self.refresh_tab_acquisition()
-        # always keep plotting (else dummy plot for next acquisition)
-        self.read_timer.start(20)
+
+        # also refreshes timer to start plotting 
+        self.plotOptions()
 
 
     # For Action options function
@@ -250,21 +254,20 @@ class MainWindow(QtWidgets.QMainWindow):
         checkBox.setChecked(i in list(dbitList))
         checkBox.clicked.connect(partial(self.setDigitalBitEnable, i))
 
-        # enable plot option only if in dblist (also enables color)
-        checkBoxPlot = getattr(self, f"checkBoxBIT{i}Plot")
-        checkBoxPlot.setEnabled(checkBox.isChecked())
-        pushButton = getattr(self, f"pushButtonBIT{i}")
-        pushButton.setEnabled(checkBoxPlot.isEnabled() and checkBoxPlot.isChecked())
-
-        
     def updateDigitalBitEnable(self):
-        retval = self.det.rx_dbitlist       
+        retval = self.det.rx_dbitlist    
+        self.rx_dbitlist = list(retval)
+        self.nDbitEnabled = len(list(retval)) 
         for i in range(64):
             self.getDigitalBitEnable(i, retval)
+            self.getEnableBitPlot(i)
+            self.getEnableBitColor(i)
+        self.getDigitalBitEnableRange(retval)
+        self.getEnableBitPlotRange()
 
     def setDigitalBitEnable(self, i):
-        checkBox = getattr(self, f"checkBoxBIT{i}DB")
         bitList = self.det.rx_dbitlist
+        checkBox = getattr(self, f"checkBoxBIT{i}DB")
         if checkBox.isChecked():
             bitList.append(i)
         else:
@@ -273,6 +276,68 @@ class MainWindow(QtWidgets.QMainWindow):
         
         retval = self.det.rx_dbitlist       
         self.getDigitalBitEnable(i, retval)
+        self.getEnableBitPlot(i)
+        self.getEnableBitColor(i)
+        self.getDigitalBitEnableRange(retval)
+        self.getEnableBitPlotRange()
+
+    def getDigitalBitEnableRange(self, dbitList):
+        self.checkBoxBIT0_31DB.clicked.disconnect()
+        self.checkBoxBIT32_63DB.clicked.disconnect()
+        self.checkBoxBIT0_31DB.setChecked(all(x in list(dbitList) for x in range(32)))
+        self.checkBoxBIT32_63DB.setChecked(all(x in list(dbitList) for x in range(32, 64)))
+        self.checkBoxBIT0_31DB.clicked.connect(partial(self.setDigitalBitEnableRange, 0, 32))
+        self.checkBoxBIT32_63DB.clicked.connect(partial(self.setDigitalBitEnableRange, 32, 64)) 
+
+    def setDigitalBitEnableRange(self, start_nr, end_nr):
+        bitList = self.det.rx_dbitlist
+        checkBox = getattr(self, f"checkBoxBIT{start_nr}_{end_nr - 1}DB")
+        for i in range(start_nr, end_nr):
+            if checkBox.isChecked():
+                if i not in list(bitList):
+                    bitList.append(i)
+            else:
+                if i in list(bitList):
+                    bitList.remove(i)
+        self.det.rx_dbitlist = bitList
+
+        self.updateDigitalBitEnable()
+
+    def getEnableBitPlot(self, i):
+        checkBox = getattr(self, f"checkBoxBIT{i}DB")
+        checkBoxPlot = getattr(self, f"checkBoxBIT{i}Plot")
+        checkBoxPlot.setEnabled(checkBox.isChecked())
+
+    def setEnableBitPlot(self, i):
+        pushButton = getattr(self, f"pushButtonBIT{i}")
+        checkBox = getattr(self, f"checkBoxBIT{i}Plot")
+        pushButton.setEnabled(checkBox.isChecked())
+
+        self.getEnableBitPlotRange()
+
+    def getEnableBitPlotRange(self):
+        self.checkBoxBIT0_31Plot.setEnabled(all(getattr(self, f"checkBoxBIT{i}Plot").isEnabled() for i in range(32)))
+        self.checkBoxBIT32_63Plot.setEnabled(all(getattr(self, f"checkBoxBIT{i}Plot").isEnabled() for i in range(32, 64)))
+
+    def setEnableBitPlotRange(self, start_nr, end_nr):
+        checkBox = getattr(self, f"checkBoxBIT{start_nr}_{end_nr - 1}Plot")
+        enable = checkBox.isChecked()
+        for i in range(start_nr, end_nr):
+            checkBox = getattr(self, f"checkBoxBIT{i}Plot")
+            checkBox.setChecked(enable)
+
+    def getEnableBitColor(self, i):
+        checkBox = getattr(self, f"checkBoxBIT{i}Plot")
+        pushButton = getattr(self, f"pushButtonBIT{i}")
+        pushButton.setEnabled(checkBox.isEnabled() and checkBox.isChecked())
+
+    def selectBitColor(self, i):
+        pushButton = getattr(self, f"pushButtonBIT{i}")
+        self.showPalette(pushButton)
+
+    def getDBitButtonColor(self, i):
+        pushButton = getattr(self, f"pushButtonBIT{i}")
+        return self.getActiveColor(pushButton)
 
     def getIOOutReg(self):
         retval = self.det.patioctrl
@@ -296,86 +361,56 @@ class MainWindow(QtWidgets.QMainWindow):
         checkBox = getattr(self, f"checkBoxBIT{i}Out")
         checkBox.clicked.disconnect()
         checkBox.setChecked(bit_is_set(out, i))
-        checkBox.clicked.connect(partial(self.setIOout, i))
+        checkBox.clicked.connect(partial(self.setIOOut, i))
 
     def updateIOOut(self):
         retval = self.getIOOutReg()
         for i in range(64):
             self.updateCheckBoxIOOut(i, retval)
-
-    def setIOout(self, i):
-        checkBox = getattr(self, f"checkBoxBIT{i}Out")
+        self.getIOoutRange(retval)
+        
+    def setIOOut(self, i):
         out = self.det.patioctrl
+        checkBox = getattr(self, f"checkBoxBIT{i}Out")
         mask = manipulate_bit(checkBox.isChecked(), out, i)
         self.det.patioctrl = mask
 
         retval = self.getIOOutReg()
         self.updateCheckBoxIOOut(i, retval)
+        self.getIOoutRange(retval)
 
+    def getIOoutRange(self, out):
+        self.checkBoxBIT0_31Out.clicked.disconnect()
+        self.checkBoxBIT32_63Out.clicked.disconnect()
+        self.checkBoxBIT0_31Out.setChecked((out & BIT0_31_MASK) == BIT0_31_MASK)
+        self.checkBoxBIT32_63Out.setChecked((out & BIT32_63_MASK) == BIT32_63_MASK)
+        self.checkBoxBIT0_31Out.clicked.connect(partial(self.setIOOutRange, 0, 32))
+        self.checkBoxBIT32_63Out.clicked.connect(partial(self.setIOOutRange, 32, 64)) 
+
+    def setIOOutRange(self, start_nr, end_nr):
+        out = self.det.patioctrl
+        checkBox = getattr(self, f"checkBoxBIT{start_nr}_{end_nr - 1}Out")
+        mask = getattr(self, f"BIT{start_nr}_{end_nr - 1}_MASK")
+        if checkBox.isChecked():
+            self.det.patioctrl = out | mask
+        else:   
+            self.det.patioctrl = out & ~mask
+        self.updateIOOut()
+        
     def getDBitOffset(self):
         self.spinBoxDBitOffset.editingFinished.disconnect()
-        self.spinBoxDBitOffset.setValue(self.det.rx_dbitoffset)
+        self.rx_dbitoffset = self.det.rx_dbitoffset
+        self.spinBoxDBitOffset.setValue(self.rx_dbitoffset)
         self.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
 
     def setDbitOffset(self):
         self.det.rx_dbitoffset = self.spinBoxDBitOffset.value()
 
-    def setBitPlot(self, i):
-        pushButton = getattr(self, f"pushButtonBIT{i}")
-        checkBox = getattr(self, f"checkBoxBIT{i}Plot")
-        pushButton.clicked.disconnect()
-        # enable color pick only if plot enabled
-        pushButton.setEnabled(checkBox.isChecked())
-        pushButton.clicked.connect(partial(self.selectBitColor, i))
-        #TODO: enable plotting for this bit
-
-    def selectBitColor(self, i):
-        pushButton = getattr(self, f"pushButtonBIT{i}")
-        self.showPalette(pushButton)
-
     # ADCs Tab functions
     def updateADCNames(self):
         for i, adc_name in enumerate(self.det.getAdcNames()):
             getattr(self, f"labelADC{i}").setText(adc_name)    
-
-    def getADCInvReg(self):
-        retval = self.det.adcinvert
-        self.lineEditADCInversion.editingFinished.disconnect()
-        self.lineEditADCInversion.setText("0x{:08x}".format(retval))
-        self.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
-        return retval
-
-    def setADCInvReg(self):
-        self.lineEditADCInversion.editingFinished.disconnect()
-        try:
-            self.det.adcinvert = int(self.lineEditADCInversion.text(), 16)
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "ADC Inversion Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
-        #TODO: handling double event exceptions
-        self.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
-        self.updateADCInv()
-
-    def updateCheckBoxADCInv(self, i, inv):
-        checkBox = getattr(self, f"checkBoxADC{i}Inv")
-        checkBox.clicked.disconnect()
-        checkBox.setChecked(bit_is_set(inv, i))
-        checkBox.clicked.connect(partial(self.setADCInv, i))
-
-    def updateADCInv(self):
-        retval = self.getADCInvReg()
-        for i in range(32):
-            self.updateCheckBoxADCInv(i, retval)
-
-    def setADCInv(self, i):
-        checkBox = getattr(self, f"checkBoxADC{i}Inv")
-        out = self.det.adcinvert
-        mask = manipulate_bit(checkBox.isChecked(), out, i)
-        self.det.adcinvert = mask
-
-        retval = self.getADCInvReg()
-        self.updateCheckBoxADCInv(i, retval)
-
+       
     def getADCEnableReg(self):
         retval = self.det.adcenable
         if self.det.tengiga:
@@ -400,59 +435,165 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
         self.updateADCEnable()
 
-    def updateCheckBoxADCEnable(self, i, mask):
-        # check box if enabled in mask
+    def getADCEnable(self, i, mask):
         checkBox = getattr(self, f"checkBoxADC{i}En")
         checkBox.clicked.disconnect()
         checkBox.setChecked(bit_is_set(mask, i))
         checkBox.clicked.connect(partial(self.setADCEnable, i))
 
-        # enable plot option only if in mask (also enables color)
-        checkBoxPlot = getattr(self, f"checkBoxADC{i}Plot")
-        checkBoxPlot.setEnabled(checkBox.isChecked())
-        pushButton = getattr(self, f"pushButtonADC{i}")
-        pushButton.setEnabled(checkBoxPlot.isEnabled() and checkBoxPlot.isChecked())
-
     def updateADCEnable(self):
         retval = self.getADCEnableReg()
+        self.nADCEnabled = bin(retval).count('1')
         for i in range(32):
-            self.updateCheckBoxADCEnable(i, retval)
+            self.getADCEnable(i, retval)
+            self.getADCEnablePlot(i)
+            self.getADCEnableColor(i)
+        self.getADCEnableRange(retval)
+        self.getADCEnablePlotRange()
 
     def setADCEnable(self, i):
         checkBox = getattr(self, f"checkBoxADC{i}En")
-        if self.det.tengiga:
-            enableMask = manipulate_bit(checkBox.isChecked(), self.det.adcenable10g, i)
-            self.det.adcenable10g = enableMask
-        else:
-            enableMask = manipulate_bit(checkBox.isChecked(), self.det.adcenable, i)
-            self.det.adcenable = enableMask
+        try:
+            if self.det.tengiga:
+                enableMask = manipulate_bit(checkBox.isChecked(), self.det.adcenable10g, i)
+                self.det.adcenable10g = enableMask
+            else:
+                enableMask = manipulate_bit(checkBox.isChecked(), self.det.adcenable, i)
+                self.det.adcenable = enableMask
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "ADC Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
 
         retval = self.getADCEnableReg()
-        self.updateCheckBoxADCEnable(i, retval)
+        self.getADCEnable(i, retval)
+        self.getADCEnablePlot(i)
+        self.getADCEnableColor(i)
+        self.getADCEnableRange(retval)
+        self.getADCEnablePlotRange()
 
-    def setADCEnableRange(self, enable, start_bit_nr, end_bit_nr):
+    def getADCEnableRange(self, mask):
+        self.checkBoxADC0_15En.clicked.disconnect()
+        self.checkBoxADC16_31En.clicked.disconnect()
+        self.checkBoxADC0_15En.setChecked((mask & BIT0_15_MASK) == BIT0_15_MASK)
+        self.checkBoxADC16_31En.setChecked((mask & BIT16_31_MASK) == BIT16_31_MASK)
+        self.checkBoxADC0_15En.clicked.connect(partial(self.setADCEnableRange, 0, 16))
+        self.checkBoxADC16_31En.clicked.connect(partial(self.setADCEnableRange, 16, 32)) 
+
+    def setADCEnableRange(self, start_nr, end_nr):
         mask = self.getADCEnableReg()
         retval = 0
-        for i in range(start_bit_nr, end_bit_nr + 1):
-            retval |= manipulate_bit(enable, mask, i)
-        self.lineEditADCEnable.setText("0x{:08x}".format(retval))
+        checkBox = getattr(self, f"checkBoxADC{start_nr}_{end_nr - 1}En")
+        for i in range(start_nr, end_nr):
+            mask = manipulate_bit(checkBox.isChecked(), mask, i)
+        try:
+            if self.det.tengiga:
+                self.det.adcenable10g = mask
+            else:
+                self.det.adcenable = mask
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "ADC Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        self.updateADCEnable()
 
-    def setADCPlot(self, i):
+    def getADCEnablePlot(self, i):
+        checkBox = getattr(self, f"checkBoxADC{i}En")
+        checkBoxPlot = getattr(self, f"checkBoxADC{i}Plot")
+        checkBoxPlot.setEnabled(checkBox.isChecked())
+
+    def setADCEnablePlot(self, i):
         pushButton = getattr(self, f"pushButtonADC{i}")
         checkBox = getattr(self, f"checkBoxADC{i}Plot")
-        pushButton.clicked.disconnect()
-        # enable color pick only if plot enabled
         pushButton.setEnabled(checkBox.isChecked())
-        pushButton.clicked.connect(partial(self.selectADCColor, i))
 
+        self.getADCEnablePlotRange()
+
+    def getADCEnablePlotRange(self):
+        self.checkBoxADC0_15Plot.setEnabled(all(getattr(self, f"checkBoxADC{i}Plot").isEnabled() for i in range(16)))
+        self.checkBoxADC16_31Plot.setEnabled(all(getattr(self, f"checkBoxADC{i}Plot").isEnabled() for i in range(16, 32)))
+
+    def setADCEnablePlotRange(self, start_nr, end_nr):
+        checkBox = getattr(self, f"checkBoxADC{start_nr}_{end_nr - 1}Plot")
+        enable = checkBox.isChecked()
+        for i in range(start_nr, end_nr):
+            checkBox = getattr(self, f"checkBoxADC{i}Plot")
+            checkBox.setChecked(enable)
+
+    def getADCEnableColor(self, i):
+        checkBox = getattr(self, f"checkBoxADC{i}Plot")
+        pushButton = getattr(self, f"pushButtonADC{i}")
+        pushButton.setEnabled(checkBox.isEnabled() and checkBox.isChecked())
 
     def selectADCColor(self, i):
         pushButton = getattr(self, f"pushButtonADC{i}")
         self.showPalette(pushButton)
 
+    def getADCButtonColor(self, i):
+        pushButton = getattr(self, f"pushButtonADC{i}")
+        return self.getActiveColor(pushButton)
+
+    def getADCInvReg(self):
+        retval = self.det.adcinvert
+        self.lineEditADCInversion.editingFinished.disconnect()
+        self.lineEditADCInversion.setText("0x{:08x}".format(retval))
+        self.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
+        return retval
+
+    def setADCInvReg(self):
+        self.lineEditADCInversion.editingFinished.disconnect()
+        try:
+            self.det.adcinvert = int(self.lineEditADCInversion.text(), 16)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "ADC Inversion Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
+        self.updateADCInv()
+
+    def getADCInv(self, i, inv):
+        checkBox = getattr(self, f"checkBoxADC{i}Inv")
+        checkBox.clicked.disconnect()
+        checkBox.setChecked(bit_is_set(inv, i))
+        checkBox.clicked.connect(partial(self.setADCInv, i))
+
+    def updateADCInv(self):
+        retval = self.getADCInvReg()
+        for i in range(32):
+            self.getADCInv(i, retval)
+        self.getADCInvRange(retval)
+
+    def setADCInv(self, i):
+        out = self.det.adcinvert
+        checkBox = getattr(self, f"checkBoxADC{i}Inv")
+        mask = manipulate_bit(checkBox.isChecked(), out, i)
+        self.det.adcinvert = mask
+
+        retval = self.getADCInvReg()
+        self.getADCInv(i, retval)
+        self.getADCInvRange(retval)
+
+    def getADCInvRange(self, inv):
+        self.checkBoxADC0_15Inv.clicked.disconnect()
+        self.checkBoxADC16_31Inv.clicked.disconnect()
+        self.checkBoxADC0_15Inv.setChecked((inv & BIT0_15_MASK) == BIT0_15_MASK)
+        self.checkBoxADC16_31Inv.setChecked((inv & BIT16_31_MASK) == BIT16_31_MASK)
+        self.checkBoxADC0_15Inv.clicked.connect(partial(self.setADCInvRange, 0, 16))
+        self.checkBoxADC16_31Inv.clicked.connect(partial(self.setADCInvRange, 16, 32)) 
+
+    def setADCInvRange(self, start_nr, end_nr):
+        out = self.det.adcinvert
+        checkBox = getattr(self, f"checkBoxADC{start_nr}_{end_nr - 1}Inv")
+        mask = getattr(self, f"BIT{start_nr}_{end_nr - 1}_MASK")
+        if checkBox.isChecked():
+            self.det.adcinvert = out | mask
+        else:   
+            self.det.adcinvert = out & ~mask
+
+        self.updateADCInv()
+        
     def getAnalog(self):
         self.spinBoxAnalog.editingFinished.disconnect()
-        self.spinBoxAnalog.setValue(self.det.asamples)
+        self.asamples = self.det.asamples
+        self.spinBoxAnalog.setValue(self.asamples)
         self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
 
     def setAnalog(self):
@@ -461,7 +602,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def getDigital(self):
         self.spinBoxDigital.editingFinished.disconnect()
-        self.spinBoxDigital.setValue(self.det.dsamples)
+        self.dsamples = self.det.dsamples
+        self.spinBoxDigital.setValue(self.dsamples)
         self.spinBoxDigital.editingFinished.connect(self.setDigital)
 
     def setDigital(self):
@@ -497,6 +639,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDigital.editingFinished.connect(self.setDigital)
         self.getAnalog()
         self.getDigital()
+        #self.showPlot()
 
     def setReadOut(self):
         if self.comboBoxROMode.currentIndex() == 0:
@@ -726,8 +869,80 @@ class MainWindow(QtWidgets.QMainWindow):
             
     # Acquistions Tab functions
     def plotOptions(self):
-        print("plot options - Not implemented yet")
-        # TODO: Implement no plot, waveform, distribution, image and image type
+        self.comboBoxPlot.currentIndexChanged.disconnect()
+        
+        if self.radioButtonNoPlot.isChecked():
+            # disable image widgets
+            self.plotWidgetAnalog.clear()
+            self.plotWidgetDigital.clear()
+            self.comboBoxPlot.setDisabled(True)
+            if hasattr(self, 'imageViewAnalog'):
+                self.imageViewAnalog.close()   
+            if hasattr(self, 'imageViewDigital'):
+                self.imageViewDigital.close()
+
+            # disable plotting
+            self.read_timer.stop()
+
+        elif self.radioButtonWaveform.isChecked():
+            # disable image widgets
+            self.plotWidgetAnalog.clear()
+            self.plotWidgetDigital.clear()
+            self.comboBoxPlot.setDisabled(True)
+            if hasattr(self, 'imageViewAnalog'):
+                self.imageViewAnalog.close()
+            if hasattr(self, 'imageViewDigital'):
+                self.imageViewDigital.close()
+            # enable waveform legend and labels
+            self.plotWidgetAnalog.setLabel('left',"<span style=\"color:black;font-size:14px\">Output [ADC]</span>")
+            self.plotWidgetAnalog.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Analog Sample [#]</span>")
+            self.plotWidgetAnalog.addLegend()
+            self.plotWidgetDigital.setLabel('left',"<span style=\"color:black;font-size:14px\">Digital Bit</span>")
+            self.plotWidgetDigital.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Digital Sample [#]</span>")
+            self.plotWidgetDigital.addLegend()
+
+            # enable plotting
+            self.read_timer.start(20)
+
+        elif self.radioButtonImage.isChecked():
+            # enable image widgets
+            self.plotWidgetAnalog.clear()
+            self.plotWidgetDigital.clear()
+            self.comboBoxPlot.setEnabled(True)
+            self.imageViewAnalog = pg.ImageView(self.plotWidgetAnalog, view=pg.PlotItem())
+            self.imageViewAnalog.show()
+            self.imageViewDigital = pg.ImageView(self.plotWidgetDigital, view=pg.PlotItem())
+            self.imageViewDigital.show()
+
+            # enable plotting
+            self.read_timer.start(20)
+
+            if self.comboBoxPlot.currentIndex() >= 1:
+                QtWidgets.QMessageBox.warning(self, "Not Implemented Yet", "Sorry, this is not implemented yet.", QtWidgets.QMessageBox.Ok)
+                self.comboBoxPlot.setCurrentIndex(0)
+                
+        self.comboBoxPlot.currentIndexChanged.connect(self.plotOptions)
+        #self.showPlot()
+
+    ''' after being able to resize windows
+    def showPlot(self):
+        self.plotWidgetAnalog.hide()
+        self.plotWidgetDigital.hide()
+        # only enable required plot and adc/digital bits enabled
+        if not self.radioButtonNoPlot.isChecked():
+            if self.romode.value in [1, 2] and self.nDbitEnabled > 0:
+                for i in range(64):
+                    checkBox = getattr(self, f"checkBoxBIT{i}Plot")
+                    if checkBox.isChecked():
+                        self.plotWidgetDigital.show()
+                        break
+            if self.romode.value in [0, 2] and self.nADCEnabled > 0:
+                for i in range(32):
+                    checkBox = getattr(self, f"checkBoxADC{i}Plot")
+                    if checkBox.isChecked():
+                        self.plotWidgetAnalog.show()
+                        break   
+    ''' 
 
     def setSerialOffset(self):
         print("plot options - Not implemented yet")
@@ -891,6 +1106,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonStart.setEnabled(False)
         self.stoppedFlag = False
         self.currentMeasurement = 0
+
+        # some functions that must be updated for local values
+        self.getAnalog()
+        self.getDigital()
+        self.getReadout()
+        self.getDBitOffset()
+        self.getADCEnableReg()
+        self.updateDigitalBitEnable()
+
         self.statusTimer.start(20)
         self.startMeasurement()
 
@@ -936,52 +1160,84 @@ class MainWindow(QtWidgets.QMainWindow):
         try:
             msg = self.socket.recv_multipart(flags=zmq.NOBLOCK)
             if len(msg) != 2:
-                if len(msg) == 1:
-                    print("got end of acquisition")
-                else:
+                if len(msg) != 1:
                     print(f'len(msg) = {len(msg)}')
                 return
             header, data = msg
             jsonHeader = json.loads(header)
             #print(jsonHeader)
             self.progressBar.setValue(int(jsonHeader['progress']))
+            #print(f"image size:{int(jsonHeader['size'])}")
             #print(f'Data size: {len(data)}')
             
-            data_array = np.array(np.frombuffer(data, dtype=np.uint16))
 
             
-            # moench analog
-            digital_frame = np.zeros((400, 400))
-            analog_frame = np.zeros((400, 400))
+            self.plotWidgetAnalog.clear()
+            self.plotWidgetDigital.clear()
+            dbitoffset = self.rx_dbitoffset
+            analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count= self.nADCEnabled * self.asamples))
+            dbitoffset = self.rx_dbitoffset
+            if self.romode.value == 2:
+                dbitoffset += self.nADCEnabled * 2 * self.asamples
+            digital_array = np.array(np.frombuffer(data, offset = dbitoffset, dtype=np.uint8))
 
-            if self.romode.value in [0, 2]:
-                adc_numbers = [9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 7, 6, 23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28,
-                                27, 26, 25, 24]
+            # waveform
+            if self.radioButtonWaveform.isChecked():
+                # analog
+                if self.romode.value in [0, 2]:
+                    for i in range(32):
+                        checkBox = getattr(self, f"checkBoxADC{i}Plot")
+                        if checkBox.isChecked():
+                            waveform = np.zeros(self.asamples)
+                            for iSample in range(self.asamples):
+                                # all adc for 1 sample together
+                                waveform[iSample] = analog_array[iSample * self.nADCEnabled + i]
+                            pen = pg.mkPen(color = self.getADCButtonColor(i), width = 1)
+                            self.plotWidgetAnalog.plot(waveform, pen=pen, name = f"ADC{i}")
+                # digital
+                if self.romode.value in [1, 2]:
+                    offset = 0
+                    for i in self.rx_dbitlist:
+                        # where numbits * numsamples is not a multiple of 8
+                        if offset % 8 != 0:
+                            offset += (8 - (offset % 8))
 
-                n_pixels_per_sc = 5000
+                        checkBox = getattr(self, f"checkBoxBIT{i}Plot")
+                        # bits enabled but not plotting
+                        if not checkBox.isChecked():
+                            offset += self.dsamples
+                            continue
+                        # to plot
+                        if checkBox.isChecked():
+                            waveform = np.zeros(self.dsamples)
+                            for iSample in range(self.dsamples):
+                                # all samples for digital bit together from slsReceiver
+                                index = (int)(offset / 8)
+                                iBit = offset % 8
+                                #print(f" bit:{iBit} index:{index} iBit:{iBit} offset:{offset}")
+                                bit = (digital_array[index] >> iBit) & 1
+                                waveform[iSample] = bit
+                                offset += 1
+                            pen = pg.mkPen(color = self.getDBitButtonColor(i), width = 1)
+                            self.plotWidgetDigital.plot(waveform, pen=pen, name = f"BIT{i}")
+            # image
+            else:           
+                # analog
+                if self.romode.value in [0, 2]:
+                    analog_frame = np.zeros((self.nADCEnabled, self.asamples))
+                    analogIndex = 0
+                    for row in range(self.nADCEnabled):
+                        for col in range(self.asamples):
+                            analog_frame[row, col] = analog_array[analogIndex]
+                            analogIndex += 1
+                    self.imageViewAnalog.setImage(analog_array)   
 
-                sc_width = 25
-                order_sc = np.zeros((400, 400))
-
-                for n_pixel in range(n_pixels_per_sc):
-                    for i_sc, adc_nr in enumerate(adc_numbers):
-                        # ANALOG
-                        col = ((adc_nr % 16) * sc_width) + (n_pixel % sc_width)
-                        if i_sc < 16:
-                            row = 199 - int(n_pixel / sc_width)
-                        else:
-                            row = 200 + int(n_pixel / sc_width)
-
-                        index_min = n_pixel * 32 + i_sc
-
-                        pixel_value = data_array[index_min]
-                        analog_frame[row, col] = pixel_value
-                        order_sc[row, col] = i_sc
-
-            plot1 = pg.ImageView(self.plotWidget, view=pg.PlotItem())
-            plot1.show()
-            plot1.setImage(analog_frame)                                         
+                # digital
+                if self.romode.value in [1, 2]:
+                    digital_frame = np.zeros((400, 400))
+                    self.imageViewDigital.setImage(digital_frame)   
             
+
         except zmq.ZMQError as e:
             pass
         except Exception as e:
@@ -996,6 +1252,9 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         randomColor = random.randrange(0, 0xffffaa, 0xaa)
         return "#{:06x}".format(randomColor)
+
+    def getActiveColor(self, button):
+        return button.palette().color(QtGui.QPalette.Window)
 
     def setActiveColor(self, button, str_color):
         button.setStyleSheet(":enabled {background-color: %s" % str_color 
@@ -1131,17 +1390,11 @@ class MainWindow(QtWidgets.QMainWindow):
         # Signals Tab
         for i in range(64):
             pushButton = getattr(self, f"pushButtonBIT{i}")
-            checkBox = getattr(self, f"checkBoxBIT{i}Plot")
-            checkBox.setDisabled(True)
-            pushButton.setDisabled(True)
             self.setActiveColor(pushButton, self.getRandomColor())
 
         # Adc Tab
         for i in range(32):
             pushButton = getattr(self, f"pushButtonADC{i}")
-            checkBox = getattr(self, f"checkBoxADC{i}Plot")
-            checkBox.setDisabled(True)
-            pushButton.setDisabled(True)
             self.setActiveColor(pushButton, self.getRandomColor())
 
     def connect_ui(self):
@@ -1180,9 +1433,15 @@ class MainWindow(QtWidgets.QMainWindow):
         # For Signals Tab
         for i in range(64):
             getattr(self, f"checkBoxBIT{i}DB").clicked.connect(partial(self.setDigitalBitEnable, i))
-            getattr(self, f"checkBoxBIT{i}Out").clicked.connect(partial(self.setIOout, i))
-            getattr(self, f"checkBoxBIT{i}Plot").clicked.connect(partial(self.setBitPlot, i))
+            getattr(self, f"checkBoxBIT{i}Out").clicked.connect(partial(self.setIOOut, i))
+            getattr(self, f"checkBoxBIT{i}Plot").stateChanged.connect(partial(self.setEnableBitPlot, i))
             getattr(self, f"pushButtonBIT{i}").clicked.connect(partial(self.selectBitColor, i))
+        self.checkBoxBIT0_31DB.clicked.connect(partial(self.setDigitalBitEnableRange, 0, 32))
+        self.checkBoxBIT32_63DB.clicked.connect(partial(self.setDigitalBitEnableRange, 32, 64)) 
+        self.checkBoxBIT0_31Plot.clicked.connect(partial(self.setEnableBitPlotRange, 0, 32))
+        self.checkBoxBIT32_63Plot.clicked.connect(partial(self.setEnableBitPlotRange, 32, 64)) 
+        self.checkBoxBIT0_31Out.clicked.connect(partial(self.setIOOutRange, 0, 32))
+        self.checkBoxBIT32_63Out.clicked.connect(partial(self.setIOOutRange, 32, 64)) 
         self.lineEditPatIOCtrl.editingFinished.connect(self.setIOOutReg)
         self.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
 
@@ -1190,17 +1449,17 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(32):
             getattr(self, f"checkBoxADC{i}Inv").clicked.connect(partial(self.setADCInv, i))
             getattr(self, f"checkBoxADC{i}En").clicked.connect(partial(self.setADCEnable, i))
-            getattr(self, f"checkBoxADC{i}Plot").clicked.connect(partial(self.setADCPlot, i))
+            getattr(self, f"checkBoxADC{i}Plot").stateChanged.connect(partial(self.setADCEnablePlot, i))
             getattr(self, f"pushButtonADC{i}").clicked.connect(partial(self.selectADCColor, i))
+        self.checkBoxADC0_15En.clicked.connect(partial(self.setADCEnableRange, 0, 16))
+        self.checkBoxADC16_31En.clicked.connect(partial(self.setADCEnableRange, 16, 32)) 
+        self.checkBoxADC0_15Plot.clicked.connect(partial(self.setADCEnablePlotRange, 0, 16))
+        self.checkBoxADC16_31Plot.clicked.connect(partial(self.setADCEnablePlotRange, 16, 32)) 
+        self.checkBoxADC0_15Inv.clicked.connect(partial(self.setADCInvRange, 0, 16))
+        self.checkBoxADC16_31Inv.clicked.connect(partial(self.setADCInvRange, 16, 32)) 
         self.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
         self.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
-        self.pushButtonAll15.clicked.connect(partial(self.setADCEnableRange, 1, 0, 15))
-        self.pushButtonNone15.clicked.connect(partial(self.setADCEnableRange, 0, 0, 15))
-        self.pushButtonAll16.clicked.connect(partial(self.setADCEnableRange, 1, 16, 31))
-        self.pushButtonNone16.clicked.connect(partial(self.setADCEnableRange, 0, 16, 31))
-        self.pushButtonAll.clicked.connect(partial(self.setADCEnableRange, 1, 0, 31))
         # Cannot set adcmask to 0 anyway
-        #self.pushButtonNone.clicked.connect(partial(self.setADCEnableRange, 0, 0, 31))
         self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
         self.spinBoxDigital.editingFinished.connect(self.setDigital)
         self.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)

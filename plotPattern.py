@@ -13,7 +13,7 @@ Changes:
 @author: zhang_j1
 """
 import matplotlib.pyplot as plt
-from numpy import *
+import numpy as np
 from matplotlib.pyplot import *
 from matplotlib.patches import Rectangle
 import os
@@ -68,7 +68,7 @@ class PlotPattern():
 
 
     def dec2binary(self, dec_num, width=None):
-        return binary_repr(int(dec_num), width=width)
+        return np.binary_repr(int(dec_num), width=width)
 
     def hex2dec(self, string_num):
         return str(int(string_num.upper(), 16))
@@ -123,12 +123,12 @@ class PlotPattern():
                 if self.verbose:
                     print("The bits for line-", k+1, "is:", bits)
                 # convert string bits to decimal array
-                num_bits = array(list(map(str, bits)), dtype="uint16")
+                num_bits = np.array(list(map(str, bits)), dtype="uint16")
                 if cnt == 0:
                     mat_pat = num_bits
                 else:
                     # add bits to matrix
-                    mat_pat = concatenate((mat_pat, num_bits), axis=0)
+                    mat_pat = np.concatenate((mat_pat, num_bits), axis=0)
                 cnt = cnt + 1
                 # print("The matrix of pattern:", mat_pat.reshape(int(cnt), int(len(num_bits))))
 
@@ -141,7 +141,7 @@ class PlotPattern():
                 if self.verbose:
                     print(bits)
                 # convert string bits to decimal array
-                self.out_bits = array(list(map(str, bits)), dtype="uint16")
+                self.out_bits = np.array(list(map(str, bits)), dtype="uint16")
 
             if self.verbose:
                 print(words_line)
@@ -288,7 +288,7 @@ class PlotPattern():
         # print(mat_pat.shape)
         subMat = mat_pat.reshape(int(cnt), int(len(num_bits)))[0:, avail_index]
         # subMat = mat_pat[avail_index]
-        timing = linspace(0, subMat.shape[0]-1, subMat.shape[0])
+        timing = np.linspace(0, subMat.shape[0]-1, subMat.shape[0])
         rcParams['figure.figsize'] = 15, 5
 
 
@@ -308,7 +308,7 @@ class PlotPattern():
             axs[idx].plot(x_additional, additional_stuff,
                         "--", drawstyle="steps-post", linewidth=self.line_width, color=self.colors_plot[idx % 2], alpha=0.5)
             axs[idx].yaxis.set_ticks([0.5], minor=False)
-            axs[idx].xaxis.set_ticks(arange(0, len(subMat.T[i]) + 10, self.clock_vertical_lines_spacing))
+            axs[idx].xaxis.set_ticks(np.arange(0, len(subMat.T[i]) + 10, self.clock_vertical_lines_spacing))
 
             axs[idx].yaxis.set_ticklabels([avail_name[i]])
             axs[idx].get_yticklabels()[0].set_color(self.colors_plot[idx % 2])
@@ -538,7 +538,7 @@ class PlotPattern():
                                 linestyle=self.linestyles_loop[5], color=self.colors_loop[5], alpha=self.alpha_loop[5], linewidth=self.line_width)
 
 
-        n_cols = count_nonzero([waittime0 != 0, waittime1 != 0, waittime2 != 0, waittime3 != 0, waittime4 != 0, waittime5 != 0,
+        n_cols = np.count_nonzero([waittime0 != 0, waittime1 != 0, waittime2 != 0, waittime3 != 0, waittime4 != 0, waittime5 != 0,
                                 nloop0 != 0, nloop1 != 0, nloop2 != 0, nloop3 != 0, nloop4 != 0, nloop5 != 0])
         fig.legend(loc="upper center", ncol=n_cols)
         return fig

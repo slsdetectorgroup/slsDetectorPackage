@@ -23,6 +23,8 @@ extern void bus_w(u_int32_t offset, u_int32_t data);
 extern u_int32_t bus_r(u_int32_t offset);
 extern int64_t get64BitReg(int aLSB, int aMSB);
 extern int64_t set64BitReg(int64_t value, int aLSB, int aMSB);
+extern uint64_t getU64BitReg(int aLSB, int aMSB);
+extern void setU64BitReg(uint64_t value, int aLSB, int aMSB);
 
 #ifdef MYTHEN3D
 #define MAX_LEVELS M3_MAX_PATTERN_LEVELS
@@ -48,7 +50,7 @@ void initializePatternWord() {
 #endif
 
 uint64_t validate_readPatternIOControl() {
-    return get64BitReg(PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);
+    return getU64BitReg(PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);
 }
 
 int validate_writePatternIOControl(char *message, uint64_t arg) {
@@ -59,14 +61,21 @@ int validate_writePatternIOControl(char *message, uint64_t arg) {
     LOG(logDEBUG1,
         ("Pattern IO Control retval: 0x%llx\n", (long long int)retval));
     int ret = OK;
-    validate64(&ret, message, arg, retval, "set pattern IO Control", HEX);
+    if (retval != arg) {
+        ret = FAIL;
+        sprintf(
+            message,
+            "Could not set pattern IO Control. Set 0x%llx, but read 0x%llx\n",
+            (long long unsigned int)arg, (long long unsigned int)retval);
+        LOG(logERROR, (message));
+    }
     return ret;
 }
 
 void writePatternIOControl(uint64_t word) {
     LOG(logINFO,
         ("Setting Pattern I/O Control: 0x%llx\n", (long long int)word));
-    set64BitReg(word, PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);
+    setU64BitReg(word, PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);
 }
 #endif
 
@@ -710,20 +719,20 @@ void setPatternLoopAddresses(int level, int startAddr, int stopAddr) {
 
 void setPatternMask(uint64_t mask) {
     LOG(logINFO, ("Setting pattern mask to 0x%llx\n", mask));
-    set64BitReg(mask, PATTERN_MASK_LSB_REG, PATTERN_MASK_MSB_REG);
+    setU64BitReg(mask, PATTERN_MASK_LSB_REG, PATTERN_MASK_MSB_REG);
 }
 
 uint64_t getPatternMask() {
-    return get64BitReg(PATTERN_MASK_LSB_REG, PATTERN_MASK_MSB_REG);
+    return getU64BitReg(PATTERN_MASK_LSB_REG, PATTERN_MASK_MSB_REG);
 }
 
 void setPatternBitMask(uint64_t mask) {
     LOG(logINFO, ("Setting pattern bit mask to 0x%llx\n", mask));
-    set64BitReg(mask, PATTERN_SET_LSB_REG, PATTERN_SET_MSB_REG);
+    setU64BitReg(mask, PATTERN_SET_LSB_REG, PATTERN_SET_MSB_REG);
 }
 
 uint64_t getPatternBitMask() {
-    return get64BitReg(PATTERN_SET_LSB_REG, PATTERN_SET_MSB_REG);
+    return getU64BitReg(PATTERN_SET_LSB_REG, PATTERN_SET_MSB_REG);
 }
 
 #ifdef MYTHEN3D

@@ -97,6 +97,7 @@ int enable_ten_giga(int);
 int validateAndSetAllTrimbits(int arg);
 int set_all_trimbits(int);
 int set_pattern_io_control(int);
+int get_pattern_io_control(int);
 int set_pattern_word(int);
 int set_pattern_loop_addresses(int);
 int set_pattern_loop_cycles(int);

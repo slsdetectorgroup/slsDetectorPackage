@@ -272,6 +272,7 @@ void function_table() {
     flist[F_ENABLE_TEN_GIGA] = &enable_ten_giga;
     flist[F_SET_ALL_TRIMBITS] = &set_all_trimbits;
     flist[F_SET_PATTERN_IO_CONTROL] = &set_pattern_io_control;
+    flist[F_GET_PATTERN_IO_CONTROL] = &get_pattern_io_control;
     flist[F_SET_PATTERN_WORD] = &set_pattern_word;
     flist[F_SET_PATTERN_LOOP_ADDRESSES] = &set_pattern_loop_addresses;
     flist[F_SET_PATTERN_LOOP_CYCLES] = &set_pattern_loop_cycles;
@@ -3154,7 +3155,6 @@ int set_pattern_io_control(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     uint64_t arg = -1;
-    uint64_t retval = -1;
 
     if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
         return printSocketReadError();
@@ -3163,14 +3163,25 @@ int set_pattern_io_control(int file_des) {
 #else
     LOG(logDEBUG1,
         ("Setting Pattern IO Control to 0x%llx\n", (long long int)arg));
-    if (((int64_t)arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        if ((int64_t)arg != GET_FLAG) {
-            ret = validate_writePatternIOControl(mess, arg);
-        }
-        retval = validate_readPatternIOControl();
+    if (Server_VerifyLock() == OK) {
+        ret = validate_writePatternIOControl(mess, arg);
     }
 #endif
-    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT64, NULL, 0);
+}
+
+int get_pattern_io_control(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint64_t retval64 = -1;
+
+#if !defined(CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    LOG(logDEBUG1, ("Getting Pattern IO Control\n"));
+    retval64 = validate_readPatternIOControl();
+#endif
+    return Server_SendResult(file_des, INT64, &retval64, sizeof(retval64));
 }
 
 int set_pattern_word(int file_des) {
@@ -3352,7 +3363,13 @@ int set_pattern_mask(int file_des) {
         uint64_t retval64 = getPatternMask();
         LOG(logDEBUG1,
             ("Pattern mask: 0x%llx\n", (long long unsigned int)retval64));
-        validate64(&ret, mess, arg, retval64, "set Pattern Mask", HEX);
+        if (retval64 != arg) {
+            ret = FAIL;
+            sprintf(
+                mess, "Could not pattern mask. Set 0x%llx, but read 0x%llx\n",
+                (long long unsigned int)arg, (long long unsigned int)retval64);
+            LOG(logERROR, (mess));
+        }
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -3395,7 +3412,14 @@ int set_pattern_bit_mask(int file_des) {
         uint64_t retval64 = getPatternBitMask();
         LOG(logDEBUG1,
             ("Pattern bit mask: 0x%llx\n", (long long unsigned int)retval64));
-        validate64(&ret, mess, arg, retval64, "set Pattern Bit Mask", HEX);
+        if (retval64 != arg) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not pattern bit mask. Set 0x%llx, but read 0x%llx\n",
+                    (long long unsigned int)arg,
+                    (long long unsigned int)retval64);
+            LOG(logERROR, (mess));
+        }
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);

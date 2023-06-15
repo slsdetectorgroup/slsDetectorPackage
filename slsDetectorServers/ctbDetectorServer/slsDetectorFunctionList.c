@@ -1149,7 +1149,7 @@ int checkVLimitCompliant(int mV) {
 }
 
 int checkVLimitDacCompliant(int dac) {
-    if (vLimit > 0) {
+    if (vLimit > 0 && dac != -1 && dac != LTC2620_GetPowerDownValue()) {
         int mv = 0;
         // could not convert
         if (LTC2620_DacToVoltage(dac, &mv) == FAIL)

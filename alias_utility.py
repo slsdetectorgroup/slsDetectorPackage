@@ -12,6 +12,17 @@ def read_alias_file(alias_file):
     return parse_alias_lines(lines_alias)
 
 def parse_alias_lines(lines_alias):
+    bit_names = [None] * 64
+    bit_plots = [None] * 64
+    bit_colors = [None] * 64
+    adc_names = [None] * 32
+    adc_plots = [None] * 32
+    adc_colors = [None] * 32
+    dac_names = [None] * 18
+    sense_names = [None] * 8
+    power_names = [None] * 5
+    pat_file_name = None
+
     for line in lines_alias:
         words = line.split()
         nwords = len(words)
@@ -27,17 +38,6 @@ def parse_alias_lines(lines_alias):
             return                 
         cmd = words[0]
         #print(f'line: {line}')
-
-        bit_names = [None] * 64
-        bit_plots = [None] * 64
-        bit_colors = [None] * 64
-        adc_names = [None] * 32
-        adc_plots = [None] * 32
-        adc_colors = [None] * 32
-        dac_names = [None] * 18
-        sense_names = [None] * 8
-        power_names = [None] * 5
-        pat_file_name = None
 
         if cmd[:3] == "BIT":
             process_alias_bit_or_adc(words, bit_names, bit_plots, bit_colors)
@@ -81,7 +81,8 @@ def parse_alias_lines(lines_alias):
             if not path.is_file():
                 raise Exception("Pattern file provided in alias file does not exist.<br><br>Pattern file:" + pat_file_name)
 
-        return bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, sense_names, power_names, pat_file_name
+    
+    return bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, sense_names, power_names, pat_file_name
 
 
 def process_alias_bit_or_adc(words, names, plots, colors):
@@ -94,4 +95,4 @@ def process_alias_bit_or_adc(words, names, plots, colors):
             colors[i] = words[3]
         if nwords > 4:
             raise Exception("Too many arguments " + str(nwords) + " (expected max: 4) for this type in line <br>" + str(words))
-
+    

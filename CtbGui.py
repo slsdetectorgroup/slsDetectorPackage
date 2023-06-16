@@ -80,10 +80,10 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(64):
             if bit_names[i]:
                 self.det.setSignalName(i, bit_names[i])
-            if bit_plots[i] is not None:
+            if bit_plots[i]:
                 getattr(self, f"checkBoxBIT{i}DB").setChecked(bit_plots[i])
                 getattr(self, f"checkBoxBIT{i}Plot").setChecked(bit_plots[i])
-            if bit_colors[i] is not None:
+            if bit_colors[i]:
                 self.setDBitButtonColor(i, bit_colors[i])
 
         for i in range(32):
@@ -92,7 +92,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if adc_plots[i]:
                 getattr(self, f"checkBoxADC{i}En").setChecked(adc_plots[i])
                 getattr(self, f"checkBoxADC{i}Plot").setChecked(adc_plots[i])
-            if adc_colors[i] is not None:
+            if adc_colors[i]:
                 self.setADCButtonColor(i, adc_colors[i])
 
         for i in range(18):

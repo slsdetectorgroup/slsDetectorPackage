@@ -308,8 +308,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def updateSense(self, i):
         slowADC = getattr(dacIndex, f"SLOW_ADC{i}")
         label = getattr(self, f"labelSense{i}_2")
-        sense0 = self.det.getSlowADC(slowADC)
-        label.setText(str(sense0[0]))
+        sense0 = (self.det.getSlowADC(slowADC))[0] / 1000
+        label.setText(f'{sense0:.2f} mV')
 
     def updateTemperature(self):
         sense0 = self.det.getTemperature(dacIndex.SLOW_ADC_TEMP)
@@ -1328,9 +1328,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.stoppedFlag = True
         
     def acquire(self):
-        self.pushButtonStart.setEnabled(False)
         self.stoppedFlag = False
         self.currentMeasurement = 0
+        self.pushButtonStart.hide()
+        self.pushButtonStop.show()
 
         # some functions that must be updated for local values
         self.getAnalog()
@@ -1374,8 +1375,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.startMeasurement()
             else:
                 self.statusTimer.stop()
-                self.pushButtonStart.setEnabled(True)
-
+                self.pushButtonStop.hide()
+                self.pushButtonStart.show()
 
 
     # For other functios
@@ -1645,15 +1646,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxPatClockSpacing.setValue(self.clock_vertical_lines_spacing)
         self.checkBoxPatShowClockNumber.setChecked(self.show_clocks_number)
         self.doubleSpinBoxLineWidth.setValue(self.line_width)
-        
         # rest gets updated after connecting to slots
 
+        # Acquisition Tab
+        self.setActiveColor(self.pushButtonStop, "red")
+        self.pushButtonStop.hide()
+
+        # plot area
         self.figure, self.ax = plt.subplots()
         self.canvas = FigureCanvas(self.figure)
         self.toolbar = NavigationToolbar(self.canvas, self)
         self.gridLayoutPatternViewer.addWidget(self.toolbar)
         self.gridLayoutPatternViewer.addWidget(self.canvas)
         self.figure.clear()
+
 
 
     def connect_ui(self):

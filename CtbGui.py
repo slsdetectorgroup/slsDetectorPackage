@@ -25,6 +25,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 import argparse
+import alias_utility 
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -67,102 +68,55 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.alias_file is not None:
             self.loadAliasFile()
 
+
     def loadAliasFile(self):
         print(f'Loading Alias file: {self.alias_file}')
-        pathAlias = Path(self.alias_file)
-        if not pathAlias.is_file():
-            QtWidgets.QMessageBox.warning(self, "Alias File Fail", "Alias file does not exist. <br> " + self.alias_file, QtWidgets.QMessageBox.Ok)
-            return 
-        
-        with open(self.alias_file) as fp:
-            lines_alias = fp.readlines()
-        fp.close()
-        for line in lines_alias:
-            words = line.split()
-            nwords = len(words)
-            if nwords == 0:
-                continue
-            if words[0][0:1] == '#':
-                continue
-            if nwords == 1:
-                QtWidgets.QMessageBox.warning(self, "Alias File Fail", "Require atleast 2 arguments in line:<br>" + line + "<br>File: " + self.alias_file, QtWidgets.QMessageBox.Ok)
-                return                 
-            cmd = words[0]
-            #print(f'line: {line}')
+        try:
+            bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, sense_names, power_names, pat_file_name = alias_utility.read_alias_file(self.alias_file)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Alias File Fail", e + "<br> " + self.alias_file, QtWidgets.QMessageBox.Ok)
+            return
 
-            if cmd[:3] == "BIT":
-                i = int(words[0][3:])
-                self.det.setSignalName(i, words[1])
-                if nwords > 2:
-                    plotEnable = bool(int(words[2]))
-                    getattr(self, f"checkBoxBIT{i}DB").setChecked(plotEnable)
-                    getattr(self, f"checkBoxBIT{i}Plot").setChecked(plotEnable)
-                    if nwords > 3:
-                        self.setDBitButtonColor(i, words[3])
-                    if nwords > 4:
-                        QtWidgets.QMessageBox.warning(self, "Alias File Fail", "Too many arguments " + str(nwords) + " (expected max: 4) for digital bit in line <br>" + line + "<br>File: " + self.alias_file, QtWidgets.QMessageBox.Ok)
-                        return  
+        for i in range(64):
+            if bit_names[i]:
+                self.det.setSignalName(i, bit_names[i])
+            if bit_plots[i] is not None:
+                getattr(self, f"checkBoxBIT{i}DB").setChecked(bit_plots[i])
+                getattr(self, f"checkBoxBIT{i}Plot").setChecked(bit_plots[i])
+            if bit_colors[i] is not None:
+                self.setDBitButtonColor(i, bit_colors[i])
 
-            elif cmd[:3] == "ADC":
-                i = int(words[0][3:])
-                self.det.setAdcName(i, words[1])
-                if nwords > 2:
-                    plotEnable = bool(int(words[2]))
-                    getattr(self, f"checkBoxADC{i}En").setChecked(plotEnable)
-                    getattr(self, f"checkBoxADC{i}Plot").setChecked(plotEnable)
-                    if nwords > 3:
-                        self.setADCButtonColor(i, words[3])
-                    if nwords > 4:
-                        QtWidgets.QMessageBox.warning(self, "Alias File Fail", "Too many arguments " + str(nwords) + " (expected max: 4) for Adc in line <br>" + line + "<br>File: " + self.alias_file, QtWidgets.QMessageBox.Ok)
-                        return  
+        for i in range(32):
+            if adc_names[i]:
+                self.det.setAdcName(i, adc_names[i])
+            if adc_plots[i]:
+                getattr(self, f"checkBoxADC{i}En").setChecked(adc_plots[i])
+                getattr(self, f"checkBoxADC{i}Plot").setChecked(adc_plots[i])
+            if adc_colors[i] is not None:
+                self.setADCButtonColor(i, adc_colors[i])
 
-            elif cmd[:5] == "SENSE":
-                i = int(words[0][5:])
-                self.det.setSenseName(i, words[1])
-                if nwords > 2:
-                    QtWidgets.QMessageBox.warning(self, "Alias File Fail", "Too many arguments " + str(nwords) + " (expected: 2) for Sense in line <br>" + line + "<br>File: " + self.alias_file, QtWidgets.QMessageBox.Ok)
-                    return  
-
-            elif cmd[:3] == "DAC":
-                i = int(words[0][3:])
+        for i in range(18):
+            if dac_names[i]:
                 iDac = getattr(dacIndex, f"DAC_{i}")
-                self.det.setDacName(iDac, words[1])
-                if nwords > 2:
-                    QtWidgets.QMessageBox.warning(self, "Alias File Fail", "Too many arguments " + str(nwords) + " (expected: 2) for Dac in line <br>" + line + "<br>File: " + self.alias_file, QtWidgets.QMessageBox.Ok)
-                    return                                                                              
-            elif cmd in ["VA", "VB", "VC", "VD", "VIO"]:
-                match cmd:
-                    case "VA":
-                        i = 0
-                    case "VB":
-                        i = 1
-                    case "VC":
-                        i = 2
-                    case "VD":
-                        i = 3
-                    case "VIO":
-                        i = 4                       
-                self.det.setPowerName(i, words[1])
-                if nwords > 2:
-                    QtWidgets.QMessageBox.warning(self, "Alias File Fail", "Too many arguments for Power(VA-VIO) in line <br>" + line + "<br>File: " + self.alias_file, QtWidgets.QMessageBox.Ok)
-                    return 
+                self.det.setDacName(iDac, dac_names[i])
 
-            elif cmd == "PATFILE":
-                if nwords > 2:
-                    QtWidgets.QMessageBox.warning(self, "Alias File Fail", "Too many arguments for PATFILE in line <br>" + line + "<br>File: " + self.alias_file, QtWidgets.QMessageBox.Ok)
-                    return  
-                pattern_file = Path(words[1])
-                if not pattern_file.is_file():
-                    QtWidgets.QMessageBox.warning(self, "Alias File Fail", "Pattern file provided in alias file does not exist.<br><br>Pattern file:" + words[1] + "<br> Alias file: " + self.alias_file, QtWidgets.QMessageBox.Ok)
-                    return                      
-                self.lineEditPatternFile.setText(words[1])
+        for i in range(8):
+            if sense_names[i]:
+                self.det.setSenseName(i, sense_names[i])
 
-            self.updateSignalNames()
-            self.updateADCNames()
-            self.updateSenseNames()
-            self.updateDACNames()
-            self.updatePowerNames()
-            
+        for i in range(5):
+            if power_names[i]:
+                self.det.setPowerName(i, power_names[i])
+
+        if pat_file_name:
+            self.lineEditPatternFile.setText(pat_file_name)
+
+        self.updateSignalNames()
+        self.updateADCNames()
+        self.updateSenseNames()
+        self.updateDACNames()
+        self.updatePowerNames()
+        
 
     # For Action options function
     # TODO Only add the components of action option+ functions

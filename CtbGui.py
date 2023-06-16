@@ -24,9 +24,18 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
+import argparse
+import alias_utility 
+
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-a', '--alias', help = "Alias file complete path")
+        arglist = parser.parse_args()
+        self.alias_file = arglist.alias
+
         pg.setConfigOption("background", (247, 247, 247))
         pg.setConfigOption("foreground", "k")
 
@@ -35,6 +44,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         super(MainWindow, self).__init__()
         uic.loadUi("CtbGui.ui", self)
+
         self.setup_ui()
         self.tabWidget.setCurrentIndex(6)
         self.tabWidget.currentChanged.connect(self.refresh_tab)
@@ -55,6 +65,58 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getPatViewerLoopParameters()
         self.updatePatViewerParameters()
 
+        if self.alias_file is not None:
+            self.loadAliasFile()
+
+
+    def loadAliasFile(self):
+        print(f'Loading Alias file: {self.alias_file}')
+        try:
+            bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, sense_names, power_names, pat_file_name = alias_utility.read_alias_file(self.alias_file)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Alias File Fail", e + "<br> " + self.alias_file, QtWidgets.QMessageBox.Ok)
+            return
+
+        for i in range(64):
+            if bit_names[i]:
+                self.det.setSignalName(i, bit_names[i])
+            if bit_plots[i] is not None:
+                getattr(self, f"checkBoxBIT{i}DB").setChecked(bit_plots[i])
+                getattr(self, f"checkBoxBIT{i}Plot").setChecked(bit_plots[i])
+            if bit_colors[i] is not None:
+                self.setDBitButtonColor(i, bit_colors[i])
+
+        for i in range(32):
+            if adc_names[i]:
+                self.det.setAdcName(i, adc_names[i])
+            if adc_plots[i]:
+                getattr(self, f"checkBoxADC{i}En").setChecked(adc_plots[i])
+                getattr(self, f"checkBoxADC{i}Plot").setChecked(adc_plots[i])
+            if adc_colors[i] is not None:
+                self.setADCButtonColor(i, adc_colors[i])
+
+        for i in range(18):
+            if dac_names[i]:
+                iDac = getattr(dacIndex, f"DAC_{i}")
+                self.det.setDacName(iDac, dac_names[i])
+
+        for i in range(8):
+            if sense_names[i]:
+                self.det.setSenseName(i, sense_names[i])
+
+        for i in range(5):
+            if power_names[i]:
+                self.det.setPowerName(i, power_names[i])
+
+        if pat_file_name:
+            self.lineEditPatternFile.setText(pat_file_name)
+
+        self.updateSignalNames()
+        self.updateADCNames()
+        self.updateSenseNames()
+        self.updateDACNames()
+        self.updatePowerNames()
+        
 
     # For Action options function
     # TODO Only add the components of action option+ functions
@@ -80,23 +142,25 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # DACs tab functions
 
-    # called only at setup (not unchecked automatically)
+    def updateDACNames(self):
+        for i, name in enumerate(self.det.getDacNames()):
+            getattr(self, f"checkBoxDAC{i}").setText(name)    
+
     def getDACTristate(self, i):
         checkBox = getattr(self, f"checkBoxDAC{i}")
         dac = getattr(dacIndex, f"DAC_{i}")
-        checkBox.clicked.disconnect()
+        checkBox.stateChanged.disconnect()
         if (self.det.getDAC(dac)[0]) == -100:
             checkBox.setChecked(False)
         else:
             checkBox.setChecked(True)
-        checkBox.clicked.connect(partial(self.setDACTristate, i))
+        checkBox.stateChanged.connect(partial(self.setDACTristate, i))
 
     def setDACTristate(self, i):
         checkBox = getattr(self, f"checkBoxDAC{i}")
         if not checkBox.isChecked():
             self.setDAC(i)
         self.getDAC(i)
-
 
     def getDAC(self, i):
         checkBox = getattr(self, f"checkBoxDAC{i}")
@@ -105,8 +169,8 @@ class MainWindow(QtWidgets.QMainWindow):
         label = getattr(self, f"labelDAC{i}")
         dac = getattr(dacIndex, f"DAC_{i}")
 
-        checkBox.clicked.disconnect()
-        checkBoxmV.clicked.disconnect()
+        checkBox.stateChanged.disconnect()
+        checkBoxmV.stateChanged.disconnect()
         spinBox.editingFinished.disconnect()
 
         # do not uncheck automatically
@@ -120,14 +184,13 @@ class MainWindow(QtWidgets.QMainWindow):
             spinBox.setDisabled(True)
             checkBoxmV.setDisabled(True)
 
-        checkBox.setText(self.det.getDacName(dac))
         if checkBoxmV.isChecked():
             label.setText(str(self.det.getDAC(dac, True)[0]))
         else:
             label.setText(str(self.det.getDAC(dac)[0]))
 
-        checkBox.clicked.connect(partial(self.setDACTristate, i))
-        checkBoxmV.clicked.connect(partial(self.getDAC, i))
+        checkBox.stateChanged.connect(partial(self.setDACTristate, i))
+        checkBoxmV.stateChanged.connect(partial(self.getDAC, i))
         spinBox.editingFinished.connect(partial(self.setDAC, i))
 
     def setDAC(self, i):
@@ -160,7 +223,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.labelHighVoltage.setText(str(retval))
 
         self.spinBoxHighVoltage.editingFinished.disconnect()
-        self.checkBoxHighVoltage.clicked.disconnect()
+        self.checkBoxHighVoltage.stateChanged.disconnect()
 
         self.spinBoxHighVoltage.setValue(retval)
         if retval:
@@ -169,7 +232,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.spinBoxHighVoltage.setEnabled(True)
 
         self.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
-        self.checkBoxHighVoltage.clicked.connect(self.setHighVoltage)
+        self.checkBoxHighVoltage.stateChanged.connect(self.setHighVoltage)
 
     def setHighVoltage(self):
         value = 0
@@ -198,7 +261,7 @@ class MainWindow(QtWidgets.QMainWindow):
         label = getattr(self, f"labelV{i}")
 
         spinBox.editingFinished.disconnect()
-        checkBox.clicked.disconnect()
+        checkBox.stateChanged.disconnect()
 
         retval = self.det.getVoltage(power)[0]
         spinBox.setValue(retval)
@@ -212,7 +275,7 @@ class MainWindow(QtWidgets.QMainWindow):
         label.setText(str(retval))
 
         spinBox.editingFinished.connect(partial(self.setPower, i))
-        checkBox.clicked.connect(partial(self.setPower, i))
+        checkBox.stateChanged.connect(partial(self.setPower, i))
 
     #TODO: handle multiple events when pressing enter (twice)
     def setPower(self, i):
@@ -259,9 +322,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def getDigitalBitEnable(self, i, dbitList):
         checkBox = getattr(self, f"checkBoxBIT{i}DB")
-        checkBox.clicked.disconnect()
+        checkBox.stateChanged.disconnect()
         checkBox.setChecked(i in list(dbitList))
-        checkBox.clicked.connect(partial(self.setDigitalBitEnable, i))
+        checkBox.stateChanged.connect(partial(self.setDigitalBitEnable, i))
 
     def updateDigitalBitEnable(self):
         retval = self.det.rx_dbitlist    
@@ -283,20 +346,15 @@ class MainWindow(QtWidgets.QMainWindow):
             bitList.remove(i)
         self.det.rx_dbitlist = bitList
         
-        retval = self.det.rx_dbitlist       
-        self.getDigitalBitEnable(i, retval)
-        self.getEnableBitPlot(i)
-        self.getEnableBitColor(i)
-        self.getDigitalBitEnableRange(retval)
-        self.getEnableBitPlotRange()
+        self.updateDigitalBitEnable()
 
     def getDigitalBitEnableRange(self, dbitList):
-        self.checkBoxBIT0_31DB.clicked.disconnect()
-        self.checkBoxBIT32_63DB.clicked.disconnect()
+        self.checkBoxBIT0_31DB.stateChanged.disconnect()
+        self.checkBoxBIT32_63DB.stateChanged.disconnect()
         self.checkBoxBIT0_31DB.setChecked(all(x in list(dbitList) for x in range(32)))
         self.checkBoxBIT32_63DB.setChecked(all(x in list(dbitList) for x in range(32, 64)))
-        self.checkBoxBIT0_31DB.clicked.connect(partial(self.setDigitalBitEnableRange, 0, 32))
-        self.checkBoxBIT32_63DB.clicked.connect(partial(self.setDigitalBitEnableRange, 32, 64)) 
+        self.checkBoxBIT0_31DB.stateChanged.connect(partial(self.setDigitalBitEnableRange, 0, 32))
+        self.checkBoxBIT32_63DB.stateChanged.connect(partial(self.setDigitalBitEnableRange, 32, 64)) 
 
     def setDigitalBitEnableRange(self, start_nr, end_nr):
         bitList = self.det.rx_dbitlist
@@ -325,8 +383,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getEnableBitPlotRange()
 
     def getEnableBitPlotRange(self):
+        self.checkBoxBIT0_31Plot.stateChanged.disconnect()
+        self.checkBoxBIT32_63Plot.stateChanged.disconnect()
         self.checkBoxBIT0_31Plot.setEnabled(all(getattr(self, f"checkBoxBIT{i}Plot").isEnabled() for i in range(32)))
         self.checkBoxBIT32_63Plot.setEnabled(all(getattr(self, f"checkBoxBIT{i}Plot").isEnabled() for i in range(32, 64)))
+        self.checkBoxBIT0_31Plot.setChecked(all(getattr(self, f"checkBoxBIT{i}Plot").isChecked() for i in range(32)))
+        self.checkBoxBIT32_63Plot.setChecked(all(getattr(self, f"checkBoxBIT{i}Plot").isChecked() for i in range(32, 64)))
+        self.checkBoxBIT0_31Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 0, 32))
+        self.checkBoxBIT32_63Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 32, 64)) 
 
     def setEnableBitPlotRange(self, start_nr, end_nr):
         checkBox = getattr(self, f"checkBoxBIT{start_nr}_{end_nr - 1}Plot")
@@ -348,6 +412,10 @@ class MainWindow(QtWidgets.QMainWindow):
         pushButton = getattr(self, f"pushButtonBIT{i}")
         return self.getActiveColor(pushButton)
 
+    def setDBitButtonColor(self, i, color):
+        pushButton = getattr(self, f"pushButtonBIT{i}")
+        return self.setActiveColor(pushButton, color)
+
     def getIOOutReg(self):
         retval = self.det.patioctrl
         self.lineEditPatIOCtrl.editingFinished.disconnect()
@@ -368,9 +436,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def updateCheckBoxIOOut(self, i, out):
         checkBox = getattr(self, f"checkBoxBIT{i}Out")
-        checkBox.clicked.disconnect()
+        checkBox.stateChanged.disconnect()
         checkBox.setChecked(bit_is_set(out, i))
-        checkBox.clicked.connect(partial(self.setIOOut, i))
+        checkBox.stateChanged.connect(partial(self.setIOOut, i))
 
     def updateIOOut(self):
         retval = self.getIOOutReg()
@@ -389,12 +457,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getIOoutRange(retval)
 
     def getIOoutRange(self, out):
-        self.checkBoxBIT0_31Out.clicked.disconnect()
-        self.checkBoxBIT32_63Out.clicked.disconnect()
+        self.checkBoxBIT0_31Out.stateChanged.disconnect()
+        self.checkBoxBIT32_63Out.stateChanged.disconnect()
         self.checkBoxBIT0_31Out.setChecked((out & Defines.BIT0_31_MASK) == Defines.BIT0_31_MASK)
         self.checkBoxBIT32_63Out.setChecked((out & Defines.BIT32_63_MASK) == Defines.BIT32_63_MASK)
-        self.checkBoxBIT0_31Out.clicked.connect(partial(self.setIOOutRange, 0, 32))
-        self.checkBoxBIT32_63Out.clicked.connect(partial(self.setIOOutRange, 32, 64)) 
+        self.checkBoxBIT0_31Out.stateChanged.connect(partial(self.setIOOutRange, 0, 32))
+        self.checkBoxBIT32_63Out.stateChanged.connect(partial(self.setIOOutRange, 32, 64)) 
 
     def setIOOutRange(self, start_nr, end_nr):
         out = self.det.patioctrl
@@ -446,9 +514,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def getADCEnable(self, i, mask):
         checkBox = getattr(self, f"checkBoxADC{i}En")
-        checkBox.clicked.disconnect()
+        checkBox.stateChanged.disconnect()
         checkBox.setChecked(bit_is_set(mask, i))
-        checkBox.clicked.connect(partial(self.setADCEnable, i))
+        checkBox.stateChanged.connect(partial(self.setADCEnable, i))
 
     def updateADCEnable(self):
         retval = self.getADCEnableReg()
@@ -473,20 +541,15 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.warning(self, "ADC Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
 
-        retval = self.getADCEnableReg()
-        self.getADCEnable(i, retval)
-        self.getADCEnablePlot(i)
-        self.getADCEnableColor(i)
-        self.getADCEnableRange(retval)
-        self.getADCEnablePlotRange()
+        self.updateADCEnable()
 
     def getADCEnableRange(self, mask):
-        self.checkBoxADC0_15En.clicked.disconnect()
-        self.checkBoxADC16_31En.clicked.disconnect()
+        self.checkBoxADC0_15En.stateChanged.disconnect()
+        self.checkBoxADC16_31En.stateChanged.disconnect()
         self.checkBoxADC0_15En.setChecked((mask & Defines.BIT0_15_MASK) == Defines.BIT0_15_MASK)
         self.checkBoxADC16_31En.setChecked((mask & Defines.BIT16_31_MASK) == Defines.BIT16_31_MASK)
-        self.checkBoxADC0_15En.clicked.connect(partial(self.setADCEnableRange, 0, 16))
-        self.checkBoxADC16_31En.clicked.connect(partial(self.setADCEnableRange, 16, 32)) 
+        self.checkBoxADC0_15En.stateChanged.connect(partial(self.setADCEnableRange, 0, 16))
+        self.checkBoxADC16_31En.stateChanged.connect(partial(self.setADCEnableRange, 16, 32)) 
 
     def setADCEnableRange(self, start_nr, end_nr):
         mask = self.getADCEnableReg()
@@ -517,9 +580,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getADCEnablePlotRange()
 
     def getADCEnablePlotRange(self):
+        self.checkBoxADC0_15Plot.stateChanged.disconnect()
+        self.checkBoxADC16_31Plot.stateChanged.disconnect()
         self.checkBoxADC0_15Plot.setEnabled(all(getattr(self, f"checkBoxADC{i}Plot").isEnabled() for i in range(16)))
         self.checkBoxADC16_31Plot.setEnabled(all(getattr(self, f"checkBoxADC{i}Plot").isEnabled() for i in range(16, 32)))
-
+        self.checkBoxADC0_15Plot.setChecked(all(getattr(self, f"checkBoxADC{i}Plot").isChecked() for i in range(16)))
+        self.checkBoxADC16_31Plot.setChecked(all(getattr(self, f"checkBoxADC{i}Plot").isChecked() for i in range(16, 32)))
+        self.checkBoxADC0_15Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 0, 16))
+        self.checkBoxADC16_31Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 16, 32)) 
+   
     def setADCEnablePlotRange(self, start_nr, end_nr):
         checkBox = getattr(self, f"checkBoxADC{start_nr}_{end_nr - 1}Plot")
         enable = checkBox.isChecked()
@@ -539,6 +608,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def getADCButtonColor(self, i):
         pushButton = getattr(self, f"pushButtonADC{i}")
         return self.getActiveColor(pushButton)
+
+    def setADCButtonColor(self, i, color):
+        pushButton = getattr(self, f"pushButtonADC{i}")
+        return self.setActiveColor(pushButton, color)
 
     def getADCInvReg(self):
         retval = self.det.adcinvert
@@ -560,9 +633,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def getADCInv(self, i, inv):
         checkBox = getattr(self, f"checkBoxADC{i}Inv")
-        checkBox.clicked.disconnect()
+        checkBox.stateChanged.disconnect()
         checkBox.setChecked(bit_is_set(inv, i))
-        checkBox.clicked.connect(partial(self.setADCInv, i))
+        checkBox.stateChanged.connect(partial(self.setADCInv, i))
 
     def updateADCInv(self):
         retval = self.getADCInvReg()
@@ -581,12 +654,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getADCInvRange(retval)
 
     def getADCInvRange(self, inv):
-        self.checkBoxADC0_15Inv.clicked.disconnect()
-        self.checkBoxADC16_31Inv.clicked.disconnect()
+        self.checkBoxADC0_15Inv.stateChanged.disconnect()
+        self.checkBoxADC16_31Inv.stateChanged.disconnect()
         self.checkBoxADC0_15Inv.setChecked((inv & Defines.BIT0_15_MASK) == Defines.BIT0_15_MASK)
         self.checkBoxADC16_31Inv.setChecked((inv & Defines.BIT16_31_MASK) == Defines.BIT16_31_MASK)
-        self.checkBoxADC0_15Inv.clicked.connect(partial(self.setADCInvRange, 0, 16))
-        self.checkBoxADC16_31Inv.clicked.connect(partial(self.setADCInvRange, 16, 32)) 
+        self.checkBoxADC0_15Inv.stateChanged.connect(partial(self.setADCInvRange, 0, 16))
+        self.checkBoxADC16_31Inv.stateChanged.connect(partial(self.setADCInvRange, 16, 32)) 
 
     def setADCInvRange(self, start_nr, end_nr):
         out = self.det.adcinvert
@@ -1144,9 +1217,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.read_zmq()
         
     def getFileWrite(self):
-        self.checkBoxFileWrite.clicked.disconnect()
+        self.checkBoxFileWrite.stateChanged.disconnect()
         self.checkBoxFileWrite.setChecked(self.det.fwrite)
-        self.checkBoxFileWrite.clicked.connect(self.setFileWrite)
+        self.checkBoxFileWrite.stateChanged.connect(self.setFileWrite)
 
     def setFileWrite(self):
         self.det.fwrite = self.checkBoxFileWrite.isChecked()
@@ -1447,6 +1520,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def refresh_tab_dac(self):
+        self.updateDACNames()
         for i in range(18):
             self.getDACTristate(i)
             self.getDAC(i)
@@ -1550,14 +1624,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Signals Tab
         for i in range(64):
-            pushButton = getattr(self, f"pushButtonBIT{i}")
-            self.setActiveColor(pushButton, self.getRandomColor())
+            self.setDBitButtonColor(i, self.getRandomColor())
 
         # Adc Tab
         for i in range(32):
-            pushButton = getattr(self, f"pushButtonADC{i}")
-            self.setActiveColor(pushButton, self.getRandomColor())
-        
+            self.setADCButtonColor(i, self.getRandomColor())
+
         # Pattern Tab
         for i in range(len(Defines.Colors)):
             self.comboBoxPatColor.addItem(Defines.Colors[i])
@@ -1598,19 +1670,19 @@ class MainWindow(QtWidgets.QMainWindow):
             getattr(self, f"spinBoxDAC{i}").editingFinished.connect(
                 partial(self.setDAC, i)
             )
-            getattr(self, f"checkBoxDAC{i}").clicked.connect(partial(self.setDACTristate, i))
-            getattr(self, f"checkBoxDAC{i}mV").clicked.connect(partial(self.getDAC, i))
+            getattr(self, f"checkBoxDAC{i}").stateChanged.connect(partial(self.setDACTristate, i))
+            getattr(self, f"checkBoxDAC{i}mV").stateChanged.connect(partial(self.getDAC, i))
 
         self.comboBoxADCVpp.currentIndexChanged.connect(self.setADCVpp)
         self.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
-        self.checkBoxHighVoltage.clicked.connect(self.setHighVoltage)
+        self.checkBoxHighVoltage.stateChanged.connect(self.setHighVoltage)
 
         # For Power Supplies tab
         for i in ('A', 'B', 'C', 'D', 'IO'):
             spinBox = getattr(self, f"spinBoxV{i}")
             checkBox = getattr(self, f"checkBoxV{i}")
             spinBox.editingFinished.connect(partial(self.setPower, i))
-            checkBox.clicked.connect(partial(self.setPower, i))
+            checkBox.stateChanged.connect(partial(self.setPower, i))
 
         # For Sense Tab
         for i in range(8):
@@ -1619,31 +1691,31 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # For Signals Tab
         for i in range(64):
-            getattr(self, f"checkBoxBIT{i}DB").clicked.connect(partial(self.setDigitalBitEnable, i))
-            getattr(self, f"checkBoxBIT{i}Out").clicked.connect(partial(self.setIOOut, i))
+            getattr(self, f"checkBoxBIT{i}DB").stateChanged.connect(partial(self.setDigitalBitEnable, i))
+            getattr(self, f"checkBoxBIT{i}Out").stateChanged.connect(partial(self.setIOOut, i))
             getattr(self, f"checkBoxBIT{i}Plot").stateChanged.connect(partial(self.setEnableBitPlot, i))
             getattr(self, f"pushButtonBIT{i}").clicked.connect(partial(self.selectBitColor, i))
-        self.checkBoxBIT0_31DB.clicked.connect(partial(self.setDigitalBitEnableRange, 0, 32))
-        self.checkBoxBIT32_63DB.clicked.connect(partial(self.setDigitalBitEnableRange, 32, 64)) 
-        self.checkBoxBIT0_31Plot.clicked.connect(partial(self.setEnableBitPlotRange, 0, 32))
-        self.checkBoxBIT32_63Plot.clicked.connect(partial(self.setEnableBitPlotRange, 32, 64)) 
-        self.checkBoxBIT0_31Out.clicked.connect(partial(self.setIOOutRange, 0, 32))
-        self.checkBoxBIT32_63Out.clicked.connect(partial(self.setIOOutRange, 32, 64)) 
+        self.checkBoxBIT0_31DB.stateChanged.connect(partial(self.setDigitalBitEnableRange, 0, 32))
+        self.checkBoxBIT32_63DB.stateChanged.connect(partial(self.setDigitalBitEnableRange, 32, 64)) 
+        self.checkBoxBIT0_31Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 0, 32))
+        self.checkBoxBIT32_63Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 32, 64)) 
+        self.checkBoxBIT0_31Out.stateChanged.connect(partial(self.setIOOutRange, 0, 32))
+        self.checkBoxBIT32_63Out.stateChanged.connect(partial(self.setIOOutRange, 32, 64)) 
         self.lineEditPatIOCtrl.editingFinished.connect(self.setIOOutReg)
         self.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
 
         # For ADCs Tab
         for i in range(32):
-            getattr(self, f"checkBoxADC{i}Inv").clicked.connect(partial(self.setADCInv, i))
-            getattr(self, f"checkBoxADC{i}En").clicked.connect(partial(self.setADCEnable, i))
+            getattr(self, f"checkBoxADC{i}Inv").stateChanged.connect(partial(self.setADCInv, i))
+            getattr(self, f"checkBoxADC{i}En").stateChanged.connect(partial(self.setADCEnable, i))
             getattr(self, f"checkBoxADC{i}Plot").stateChanged.connect(partial(self.setADCEnablePlot, i))
             getattr(self, f"pushButtonADC{i}").clicked.connect(partial(self.selectADCColor, i))
-        self.checkBoxADC0_15En.clicked.connect(partial(self.setADCEnableRange, 0, 16))
-        self.checkBoxADC16_31En.clicked.connect(partial(self.setADCEnableRange, 16, 32)) 
-        self.checkBoxADC0_15Plot.clicked.connect(partial(self.setADCEnablePlotRange, 0, 16))
-        self.checkBoxADC16_31Plot.clicked.connect(partial(self.setADCEnablePlotRange, 16, 32)) 
-        self.checkBoxADC0_15Inv.clicked.connect(partial(self.setADCInvRange, 0, 16))
-        self.checkBoxADC16_31Inv.clicked.connect(partial(self.setADCInvRange, 16, 32)) 
+        self.checkBoxADC0_15En.stateChanged.connect(partial(self.setADCEnableRange, 0, 16))
+        self.checkBoxADC16_31En.stateChanged.connect(partial(self.setADCEnableRange, 16, 32)) 
+        self.checkBoxADC0_15Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 0, 16))
+        self.checkBoxADC16_31Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 16, 32)) 
+        self.checkBoxADC0_15Inv.stateChanged.connect(partial(self.setADCInvRange, 0, 16))
+        self.checkBoxADC16_31Inv.stateChanged.connect(partial(self.setADCInvRange, 16, 32)) 
         self.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
         self.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
         # Cannot set adcmask to 0 anyway
@@ -1711,21 +1783,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDynamicRange.editingFinished.connect(self.setDynamicRange)
         self.spinBoxImageX.editingFinished.connect(self.setImageX)
         self.spinBoxImageY.editingFinished.connect(self.setImageY)
-        self.checkBoxAcquire.clicked.connect(self.setPedestal)
-        self.checkBoxSubtract.clicked.connect(self.setPedestal)
-        self.checkBoxCommonMode.clicked.connect(self.setPedestal)
+        self.checkBoxAcquire.stateChanged.connect(self.setPedestal)
+        self.checkBoxSubtract.stateChanged.connect(self.setPedestal)
+        self.checkBoxCommonMode.stateChanged.connect(self.setPedestal)
         self.pushButtonReset.clicked.connect(self.resetPedestal)
-        self.checkBoxRaw.clicked.connect(self.setRawData)
+        self.checkBoxRaw.stateChanged.connect(self.setRawData)
         self.spinBoxRawMin.editingFinished.connect(self.setRawData)
         self.spinBoxRawMax.editingFinished.connect(self.setRawData)
-        self.checkBoxPedestal.clicked.connect(self.setPedestalSubtract)
+        self.checkBoxPedestal.stateChanged.connect(self.setPedestalSubtract)
         self.spinBoxPedestalMin.editingFinished.connect(self.setPedestalSubtract)
         self.spinBoxPedestalMax.editingFinished.connect(self.setPedestalSubtract)
         self.spinBoxFit.editingFinished.connect(self.setFitADC)
         self.spinBoxPlot.editingFinished.connect(self.setPlotBit)
         self.pushButtonReferesh.clicked.connect(self.plotReferesh)
 
-        self.checkBoxFileWrite.clicked.connect(self.setFileWrite)
+        self.checkBoxFileWrite.stateChanged.connect(self.setFileWrite)
         self.lineEditFileName.editingFinished.connect(self.setFileName)
         self.lineEditFilePath.editingFinished.connect(self.setFilePath)
         self.pushButtonFilePath.clicked.connect(self.browseFilePath)

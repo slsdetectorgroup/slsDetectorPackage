@@ -2001,7 +2001,8 @@ std::string DetectorImpl::getCtbDacName(defs::dacIndex i) const {
     return ctb_shm()->getDacName(static_cast<int>(i));
 }
 
-void DetectorImpl::setCtbDacName(const int index, const std::string &name) {
+void DetectorImpl::setCtbDacName(const defs::dacIndex index,
+                                 const std::string &name) {
     ctb_shm()->setDacName(index, name);
 }
 
@@ -2013,7 +2014,7 @@ void DetectorImpl::setCtbAdcNames(const std::vector<std::string> &names) {
     ctb_shm()->setAdcNames(names);
 }
 
-std::string DetectorImpl::getCtbAdcName(int i) const {
+std::string DetectorImpl::getCtbAdcName(const int i) const {
     return ctb_shm()->getAdcName(i);
 }
 
@@ -2029,7 +2030,7 @@ void DetectorImpl::setCtbSignalNames(const std::vector<std::string> &names) {
     ctb_shm()->setSignalNames(names);
 }
 
-std::string DetectorImpl::getCtbSignalName(int i) const {
+std::string DetectorImpl::getCtbSignalName(const int i) const {
     return ctb_shm()->getSignalName(i);
 }
 
@@ -2045,12 +2046,13 @@ void DetectorImpl::setCtbPowerNames(const std::vector<std::string> &names) {
     ctb_shm()->setPowerNames(names);
 }
 
-std::string DetectorImpl::getCtbPowerName(int i) const {
-    return ctb_shm()->getPowerName(i);
+std::string DetectorImpl::getCtbPowerName(const defs::dacIndex i) const {
+    return ctb_shm()->getPowerName(static_cast<int>(i - defs::V_POWER_A));
 }
 
-void DetectorImpl::setCtbPowerName(const int index, const std::string &name) {
-    ctb_shm()->setPowerName(index, name);
+void DetectorImpl::setCtbPowerName(const defs::dacIndex index,
+                                   const std::string &name) {
+    ctb_shm()->setPowerName(static_cast<int>(index - defs::V_POWER_A), name);
 }
 
 std::vector<std::string> DetectorImpl::getCtbSenseNames() const {
@@ -2061,12 +2063,13 @@ void DetectorImpl::setCtbSenseNames(const std::vector<std::string> &names) {
     ctb_shm()->setSenseNames(names);
 }
 
-std::string DetectorImpl::getCtbSenseName(int i) const {
-    return ctb_shm()->getSenseName(i);
+std::string DetectorImpl::getCtbSenseName(const defs::dacIndex i) const {
+    return ctb_shm()->getSenseName(static_cast<int>(i - defs::SLOW_ADC0));
 }
 
-void DetectorImpl::setCtbSenseName(const int index, const std::string &name) {
-    ctb_shm()->setSenseName(index, name);
+void DetectorImpl::setCtbSenseName(const defs::dacIndex index,
+                                   const std::string &name) {
+    ctb_shm()->setSenseName(static_cast<int>(index - defs::SLOW_ADC0), name);
 }
 
 } // namespace sls

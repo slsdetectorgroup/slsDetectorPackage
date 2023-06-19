@@ -1726,12 +1726,13 @@ class Detector {
 
     std::vector<std::string> getDacNames() const;
 
-    defs::dacIndex getDacIndex(const std::string &name);
+    defs::dacIndex getDacIndex(const std::string &name) const;
 
     /** [CTB] */
-    void setDacName(defs::dacIndex i, const std::string &name);
+    void setDacName(const defs::dacIndex i, const std::string &name);
 
-    std::string getDacName(defs::dacIndex i);
+    /** [CTB] */
+    std::string getDacName(const defs::dacIndex i) const;
 
     /** [CTB] */
     void setAdcNames(const std::vector<std::string> names);
@@ -1740,13 +1741,13 @@ class Detector {
     std::vector<std::string> getAdcNames() const;
 
     /** [CTB] */
-    int getAdcIndex(const std::string &name);
+    int getAdcIndex(const std::string &name) const;
 
     /** [CTB] */
     void setAdcName(const int i, const std::string &name);
 
     /** [CTB] */
-    std::string getAdcName(int i);
+    std::string getAdcName(const int i) const;
 
     /** [CTB] */
     void setSignalNames(const std::vector<std::string> names);
@@ -1755,13 +1756,13 @@ class Detector {
     std::vector<std::string> getSignalNames() const;
 
     /** [CTB] */
-    int getSignalIndex(const std::string &name);
+    int getSignalIndex(const std::string &name) const;
 
     /** [CTB] */
     void setSignalName(const int i, const std::string &name);
 
     /** [CTB] */
-    std::string getSignalName(int i);
+    std::string getSignalName(const int i) const;
 
     /** [CTB] */
     void setPowerNames(const std::vector<std::string> names);
@@ -1770,13 +1771,13 @@ class Detector {
     std::vector<std::string> getPowerNames() const;
 
     /** [CTB] */
-    int getPowerIndex(const std::string &name);
+    defs::dacIndex getPowerIndex(const std::string &name) const;
 
     /** [CTB] */
-    void setPowerName(const int i, const std::string &name);
+    void setPowerName(const defs::dacIndex i, const std::string &name);
 
     /** [CTB] */
-    std::string getPowerName(int i);
+    std::string getPowerName(const defs::dacIndex i) const;
 
     /** [CTB] */
     void setSenseNames(const std::vector<std::string> names);
@@ -1785,13 +1786,13 @@ class Detector {
     std::vector<std::string> getSenseNames() const;
 
     /** [CTB] */
-    int getSenseIndex(const std::string &name);
+    defs::dacIndex getSenseIndex(const std::string &name) const;
 
     /** [CTB] */
-    void setSenseName(const int i, const std::string &name);
+    void setSenseName(const defs::dacIndex i, const std::string &name);
 
     /** [CTB] */
-    std::string getSenseName(int i);
+    std::string getSenseName(const defs::dacIndex i) const;
 
     ///@}
 

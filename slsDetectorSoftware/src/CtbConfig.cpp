@@ -31,41 +31,43 @@ CtbConfig::CtbConfig() {
 }
 
 void CtbConfig::check_dac_index(size_t i) const {
-    if (!(i < num_dacs)) {
+    if (i >= num_dacs) {
         std::ostringstream oss;
-        oss << "DAC index is too large. Needs to be below " << num_dacs;
+        oss << "Invalid DAC index. Options: 0 - " << num_dacs;
         throw RuntimeError(oss.str());
     }
 }
 
 void CtbConfig::check_adc_index(size_t i) const {
-    if (!(i < num_adcs)) {
+    if (i >= num_adcs) {
         std::ostringstream oss;
-        oss << "ADC index is too large.Needs to be below " << num_adcs;
+        oss << "Invalid ADC index. Options: 0 - " << num_adcs;
         throw RuntimeError(oss.str());
     }
 }
 
 void CtbConfig::check_signal_index(size_t i) const {
-    if (!(i < num_signals)) {
+    if (i >= num_signals) {
         std::ostringstream oss;
-        oss << "Signal index is too large.Needs to be below " << num_signals;
+        oss << "Invalid Signal index. Options: 0 - " << num_signals;
         throw RuntimeError(oss.str());
     }
 }
 
 void CtbConfig::check_power_index(size_t i) const {
-    if (!(i < num_powers)) {
+    if (i >= num_powers) {
         std::ostringstream oss;
-        oss << "Power index is too large.Needs to be below " << num_powers;
+        oss << "Invalid Power index. Options: 0 - " << num_signals
+            << " or V_POWER_A - V_POWER_IO";
         throw RuntimeError(oss.str());
     }
 }
 
 void CtbConfig::check_sense_index(size_t i) const {
-    if (!(i < num_senses)) {
+    if (i >= num_senses) {
         std::ostringstream oss;
-        oss << "Sense index is too large.Needs to be below " << num_senses;
+        oss << "Invalid Sense index. Options: 0 - " << num_senses
+            << " or SLOW_ADC0 - SLOW_ADC7";
         throw RuntimeError(oss.str());
     }
 }

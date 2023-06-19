@@ -26,7 +26,7 @@ TEST_CASE("Default construction") {
     REQUIRE(adcnames[1] == "ADC1");
     REQUIRE(adcnames[2] == "ADC2");
     REQUIRE(adcnames[3] == "ADC3");
-    auto powernames = c.getPowerNames();
+    auto powernames = c.getVoltageNames();
     REQUIRE(powernames.size() == 5);
     REQUIRE(powernames[0] == "VA");
     REQUIRE(powernames[1] == "VB");
@@ -39,12 +39,12 @@ TEST_CASE("Default construction") {
     REQUIRE(signalnames[1] == "BIT1");
     REQUIRE(signalnames[2] == "BIT2");
     REQUIRE(signalnames[3] == "BIT3");
-    auto sensenames = c.getSenseNames();
+    auto sensenames = c.getSlowAdcNames();
     REQUIRE(sensenames.size() == 8);
-    REQUIRE(sensenames[0] == "SENSE0");
-    REQUIRE(sensenames[1] == "SENSE1");
-    REQUIRE(sensenames[2] == "SENSE2");
-    REQUIRE(sensenames[3] == "SENSE3");
+    REQUIRE(sensenames[0] == "SLOWADC0");
+    REQUIRE(sensenames[1] == "SLOWADC1");
+    REQUIRE(sensenames[2] == "SLOWADC2");
+    REQUIRE(sensenames[3] == "SLOWADC3");
 }
 
 TEST_CASE("Set and get a single dac name") {

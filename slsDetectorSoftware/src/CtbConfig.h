@@ -8,20 +8,20 @@ class CtbConfig {
     static constexpr size_t num_dacs = 18;
     static constexpr size_t num_adcs = 32;
     static constexpr size_t num_signals = 64;
-    static constexpr size_t num_powers = 5;
-    static constexpr size_t num_senses = 8;
+    static constexpr size_t num_voltages = 5;
+    static constexpr size_t num_slowAdcs = 8;
     static constexpr const char *shm_tag_ = "ctbdacs";
     char dacnames[name_length * num_dacs]{};
     char adcnames[name_length * num_adcs]{};
     char signalnames[name_length * num_signals]{};
-    char powernames[name_length * num_powers]{};
-    char sensenames[name_length * num_senses]{};
+    char voltagenames[name_length * num_voltages]{};
+    char slowAdcnames[name_length * num_slowAdcs]{};
 
     void check_dac_index(size_t i) const;
     void check_adc_index(size_t i) const;
     void check_signal_index(size_t i) const;
-    void check_power_index(size_t i) const;
-    void check_sense_index(size_t i) const;
+    void check_voltage_index(size_t i) const;
+    void check_slow_adc_index(size_t i) const;
     void check_size(const std::string &name) const;
 
   public:
@@ -46,15 +46,15 @@ class CtbConfig {
     std::string getSignalName(size_t index) const;
     std::vector<std::string> getSignalNames() const;
 
-    void setPowerNames(const std::vector<std::string> &names);
-    void setPowerName(size_t index, const std::string &name);
-    std::string getPowerName(size_t index) const;
-    std::vector<std::string> getPowerNames() const;
+    void setVoltageNames(const std::vector<std::string> &names);
+    void setVoltageName(size_t index, const std::string &name);
+    std::string getVoltageName(size_t index) const;
+    std::vector<std::string> getVoltageNames() const;
 
-    void setSenseNames(const std::vector<std::string> &names);
-    void setSenseName(size_t index, const std::string &name);
-    std::string getSenseName(size_t index) const;
-    std::vector<std::string> getSenseNames() const;
+    void setSlowAdcNames(const std::vector<std::string> &names);
+    void setSlowAdcName(size_t index, const std::string &name);
+    std::string getSlowAdcName(size_t index) const;
+    std::vector<std::string> getSlowAdcNames() const;
     static const char *shm_tag();
 };
 

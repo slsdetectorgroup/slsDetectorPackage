@@ -1765,34 +1765,34 @@ class Detector {
     std::string getSignalName(const int i) const;
 
     /** [CTB] */
-    void setPowerNames(const std::vector<std::string> names);
+    void setVoltageNames(const std::vector<std::string> names);
 
     /** [CTB] */
-    std::vector<std::string> getPowerNames() const;
+    std::vector<std::string> getVoltageNames() const;
 
     /** [CTB] */
-    defs::dacIndex getPowerIndex(const std::string &name) const;
+    defs::dacIndex getVoltageIndex(const std::string &name) const;
 
     /** [CTB] */
-    void setPowerName(const defs::dacIndex i, const std::string &name);
+    void setVoltageName(const defs::dacIndex i, const std::string &name);
 
     /** [CTB] */
-    std::string getPowerName(const defs::dacIndex i) const;
+    std::string getVoltageName(const defs::dacIndex i) const;
 
     /** [CTB] */
-    void setSenseNames(const std::vector<std::string> names);
+    void setSlowAdcNames(const std::vector<std::string> names);
 
     /** [CTB] */
-    std::vector<std::string> getSenseNames() const;
+    std::vector<std::string> getSlowAdcNames() const;
 
     /** [CTB] */
-    defs::dacIndex getSenseIndex(const std::string &name) const;
+    defs::dacIndex getSlowAdcIndex(const std::string &name) const;
 
     /** [CTB] */
-    void setSenseName(const defs::dacIndex i, const std::string &name);
+    void setSlowAdcName(const defs::dacIndex i, const std::string &name);
 
     /** [CTB] */
-    std::string getSenseName(const defs::dacIndex i) const;
+    std::string getSlowAdcName(const defs::dacIndex i) const;
 
     ///@}
 

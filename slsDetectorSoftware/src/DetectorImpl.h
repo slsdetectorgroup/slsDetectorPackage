@@ -340,15 +340,15 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setCtbSignalNames(const std::vector<std::string> &names);
     void setCtbSignalName(const int index, const std::string &name);
 
-    std::vector<std::string> getCtbPowerNames() const;
-    std::string getCtbPowerName(const defs::dacIndex i) const;
-    void setCtbPowerNames(const std::vector<std::string> &names);
-    void setCtbPowerName(const defs::dacIndex index, const std::string &name);
+    std::vector<std::string> getCtbVoltageNames() const;
+    std::string getCtbVoltageName(const defs::dacIndex i) const;
+    void setCtbVoltageNames(const std::vector<std::string> &names);
+    void setCtbVoltageName(const defs::dacIndex index, const std::string &name);
 
-    std::vector<std::string> getCtbSenseNames() const;
-    std::string getCtbSenseName(const defs::dacIndex i) const;
-    void setCtbSenseNames(const std::vector<std::string> &names);
-    void setCtbSenseName(const defs::dacIndex index, const std::string &name);
+    std::vector<std::string> getCtbSlowAdcNames() const;
+    std::string getCtbSlowAdcName(const defs::dacIndex i) const;
+    void setCtbSlowAdcNames(const std::vector<std::string> &names);
+    void setCtbSlowAdcName(const defs::dacIndex index, const std::string &name);
 
   private:
     /**

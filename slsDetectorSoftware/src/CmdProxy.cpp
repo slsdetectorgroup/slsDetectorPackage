@@ -1170,29 +1170,27 @@ std::string CmdProxy::DacName(const int action) {
     if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
         throw RuntimeError("Named Dacs only allowed for CTB.");
     }
-    if (det_id != -1) {                                                    
-        throw RuntimeError("Cannot configure " + cmd +                     
-                            " at module level");                           
-    }  
+    if (det_id != -1) {
+        throw RuntimeError("Cannot configure " + cmd +
+                            " at module level");
+    }
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        defs::dacIndex index = static_cast<defs::dacIndex>(StringTo<int>(args[0]));
-        auto t = det->getDacName(index);
-        os << args[0] << ' ' << ToString(t) << '\n';
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (det_id != -1) {
-            throw RuntimeError("Cannot configure dacnames at module level");
+        defs::dacIndex index =
+static_cast<defs::dacIndex>(StringTo<int>(args[0])); auto t =
+det->getDacName(index); os << args[0] << ' ' << ToString(t) << '\n'; } else if
+(action == slsDetectorDefs::PUT_ACTION) { if (det_id != -1) { throw
+RuntimeError("Cannot configure dacnames at module level");
         }
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        defs::dacIndex index = static_cast<defs::dacIndex>(StringTo<int>(args[0]));
-        det->setDacName(index, args[1]);
-        os << ToString(args) << '\n';
-    } else {
-        throw RuntimeError("Unknown action");
+        defs::dacIndex index =
+static_cast<defs::dacIndex>(StringTo<int>(args[0])); det->setDacName(index,
+args[1]); os << ToString(args) << '\n'; } else { throw RuntimeError("Unknown
+action");
     }
     return os.str();
 }
@@ -1209,10 +1207,10 @@ std::string CmdProxy::DacIndex(const int action) {
     if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
         throw RuntimeError("Named Dacs only allowed for CTB.");
     }
-    if (det_id != -1) {                                                    
-        throw RuntimeError("Cannot configure " + cmd +                     
-                            " at module level");                           
-    } 
+    if (det_id != -1) {
+        throw RuntimeError("Cannot configure " + cmd +
+                            " at module level");
+    }
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);

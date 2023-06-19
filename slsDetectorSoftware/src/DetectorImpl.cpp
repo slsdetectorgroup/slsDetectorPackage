@@ -2001,7 +2001,8 @@ std::string DetectorImpl::getCtbDacName(defs::dacIndex i) const {
     return ctb_shm()->getDacName(static_cast<int>(i));
 }
 
-void DetectorImpl::setCtbDacName(const defs::dacIndex index, const std::string &name) {
+void DetectorImpl::setCtbDacName(const defs::dacIndex index,
+                                 const std::string &name) {
     ctb_shm()->setDacName(index, name);
 }
 
@@ -2049,7 +2050,8 @@ std::string DetectorImpl::getCtbPowerName(const defs::dacIndex i) const {
     return ctb_shm()->getPowerName(static_cast<int>(i - defs::V_POWER_A));
 }
 
-void DetectorImpl::setCtbPowerName(const defs::dacIndex index, const std::string &name) {
+void DetectorImpl::setCtbPowerName(const defs::dacIndex index,
+                                   const std::string &name) {
     ctb_shm()->setPowerName(static_cast<int>(index - defs::V_POWER_A), name);
 }
 
@@ -2065,7 +2067,8 @@ std::string DetectorImpl::getCtbSenseName(const defs::dacIndex i) const {
     return ctb_shm()->getSenseName(static_cast<int>(i - defs::SLOW_ADC0));
 }
 
-void DetectorImpl::setCtbSenseName(const defs::dacIndex index, const std::string &name) {
+void DetectorImpl::setCtbSenseName(const defs::dacIndex index,
+                                   const std::string &name) {
     ctb_shm()->setSenseName(static_cast<int>(index - defs::SLOW_ADC0), name);
 }
 

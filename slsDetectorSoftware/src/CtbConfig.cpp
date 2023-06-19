@@ -57,7 +57,8 @@ void CtbConfig::check_signal_index(size_t i) const {
 void CtbConfig::check_power_index(size_t i) const {
     if (i >= num_powers) {
         std::ostringstream oss;
-        oss << "Invalid Power index. Options: 0 - " << num_signals << " or V_POWER_A - V_POWER_IO";
+        oss << "Invalid Power index. Options: 0 - " << num_signals
+            << " or V_POWER_A - V_POWER_IO";
         throw RuntimeError(oss.str());
     }
 }
@@ -65,7 +66,8 @@ void CtbConfig::check_power_index(size_t i) const {
 void CtbConfig::check_sense_index(size_t i) const {
     if (i >= num_senses) {
         std::ostringstream oss;
-        oss << "Invalid Sense index. Options: 0 - " << num_senses << " or SLOW_ADC0 - SLOW_ADC7";
+        oss << "Invalid Sense index. Options: 0 - " << num_senses
+            << " or SLOW_ADC0 - SLOW_ADC7";
         throw RuntimeError(oss.str());
     }
 }

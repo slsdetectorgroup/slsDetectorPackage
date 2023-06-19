@@ -1643,17 +1643,18 @@ void init_det(py::module &m) {
     CppDetectorApi.def("getDacNames",
                        (std::vector<std::string>(Detector::*)() const) &
                            Detector::getDacNames);
-    CppDetectorApi.def("getDacIndex",
-                       (defs::dacIndex(Detector::*)(const std::string &)) &
-                           Detector::getDacIndex,
-                       py::arg());
+    CppDetectorApi.def(
+        "getDacIndex",
+        (defs::dacIndex(Detector::*)(const std::string &) const) &
+            Detector::getDacIndex,
+        py::arg());
     CppDetectorApi.def(
         "setDacName",
-        (void (Detector::*)(defs::dacIndex, const std::string &)) &
+        (void (Detector::*)(const defs::dacIndex, const std::string &)) &
             Detector::setDacName,
         py::arg(), py::arg());
     CppDetectorApi.def("getDacName",
-                       (std::string(Detector::*)(defs::dacIndex)) &
+                       (std::string(Detector::*)(const defs::dacIndex) const) &
                            Detector::getDacName,
                        py::arg());
     CppDetectorApi.def("setAdcNames",
@@ -1664,7 +1665,7 @@ void init_det(py::module &m) {
                        (std::vector<std::string>(Detector::*)() const) &
                            Detector::getAdcNames);
     CppDetectorApi.def("getAdcIndex",
-                       (int (Detector::*)(const std::string &)) &
+                       (int (Detector::*)(const std::string &) const) &
                            Detector::getAdcIndex,
                        py::arg());
     CppDetectorApi.def("setAdcName",
@@ -1672,7 +1673,8 @@ void init_det(py::module &m) {
                            Detector::setAdcName,
                        py::arg(), py::arg());
     CppDetectorApi.def("getAdcName",
-                       (std::string(Detector::*)(int)) & Detector::getAdcName,
+                       (std::string(Detector::*)(const int) const) &
+                           Detector::getAdcName,
                        py::arg());
     CppDetectorApi.def("setSignalNames",
                        (void (Detector::*)(const std::vector<std::string>)) &
@@ -1682,16 +1684,17 @@ void init_det(py::module &m) {
                        (std::vector<std::string>(Detector::*)() const) &
                            Detector::getSignalNames);
     CppDetectorApi.def("getSignalIndex",
-                       (int (Detector::*)(const std::string &)) &
+                       (int (Detector::*)(const std::string &) const) &
                            Detector::getSignalIndex,
                        py::arg());
     CppDetectorApi.def("setSignalName",
                        (void (Detector::*)(const int, const std::string &)) &
                            Detector::setSignalName,
                        py::arg(), py::arg());
-    CppDetectorApi.def(
-        "getSignalName",
-        (std::string(Detector::*)(int)) & Detector::getSignalName, py::arg());
+    CppDetectorApi.def("getSignalName",
+                       (std::string(Detector::*)(const int) const) &
+                           Detector::getSignalName,
+                       py::arg());
     CppDetectorApi.def("setPowerNames",
                        (void (Detector::*)(const std::vector<std::string>)) &
                            Detector::setPowerNames,
@@ -1699,16 +1702,19 @@ void init_det(py::module &m) {
     CppDetectorApi.def("getPowerNames",
                        (std::vector<std::string>(Detector::*)() const) &
                            Detector::getPowerNames);
-    CppDetectorApi.def("getPowerIndex",
-                       (int (Detector::*)(const std::string &)) &
-                           Detector::getPowerIndex,
-                       py::arg());
-    CppDetectorApi.def("setPowerName",
-                       (void (Detector::*)(const int, const std::string &)) &
-                           Detector::setPowerName,
-                       py::arg(), py::arg());
+    CppDetectorApi.def(
+        "getPowerIndex",
+        (defs::dacIndex(Detector::*)(const std::string &) const) &
+            Detector::getPowerIndex,
+        py::arg());
+    CppDetectorApi.def(
+        "setPowerName",
+        (void (Detector::*)(const defs::dacIndex, const std::string &)) &
+            Detector::setPowerName,
+        py::arg(), py::arg());
     CppDetectorApi.def("getPowerName",
-                       (std::string(Detector::*)(int)) & Detector::getPowerName,
+                       (std::string(Detector::*)(const defs::dacIndex) const) &
+                           Detector::getPowerName,
                        py::arg());
     CppDetectorApi.def("setSenseNames",
                        (void (Detector::*)(const std::vector<std::string>)) &
@@ -1717,16 +1723,19 @@ void init_det(py::module &m) {
     CppDetectorApi.def("getSenseNames",
                        (std::vector<std::string>(Detector::*)() const) &
                            Detector::getSenseNames);
-    CppDetectorApi.def("getSenseIndex",
-                       (int (Detector::*)(const std::string &)) &
-                           Detector::getSenseIndex,
-                       py::arg());
-    CppDetectorApi.def("setSenseName",
-                       (void (Detector::*)(const int, const std::string &)) &
-                           Detector::setSenseName,
-                       py::arg(), py::arg());
+    CppDetectorApi.def(
+        "getSenseIndex",
+        (defs::dacIndex(Detector::*)(const std::string &) const) &
+            Detector::getSenseIndex,
+        py::arg());
+    CppDetectorApi.def(
+        "setSenseName",
+        (void (Detector::*)(const defs::dacIndex, const std::string &)) &
+            Detector::setSenseName,
+        py::arg(), py::arg());
     CppDetectorApi.def("getSenseName",
-                       (std::string(Detector::*)(int)) & Detector::getSenseName,
+                       (std::string(Detector::*)(const defs::dacIndex) const) &
+                           Detector::getSenseName,
                        py::arg());
     CppDetectorApi.def(
         "setPattern",

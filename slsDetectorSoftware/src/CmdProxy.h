@@ -571,14 +571,15 @@ namespace sls {
         }                                                                      \
         defs::dacIndex index = defs::DAC_0;                                    \
         if (args.size() > 0) {                                                 \
-            index = static_cast<defs::dacIndex>(StringTo<int>(args[0]) + STARTINDEX);    \
+            index = static_cast<defs::dacIndex>(StringTo<int>(args[0]) +       \
+                                                STARTINDEX);                   \
         }                                                                      \
         if (action == slsDetectorDefs::GET_ACTION) {                           \
             if (args.size() != 1) {                                            \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
             auto t = det->GETFCN(index);                                       \
-            os << args[0] << ' ' << t << '\n';                                  \
+            os << args[0] << ' ' << t << '\n';                                 \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 2) {                                            \
                 WrongNumberOfParameters(2);                                    \
@@ -681,7 +682,6 @@ namespace sls {
         }                                                                      \
         return os.str();                                                       \
     }
-
 
 class CmdProxy {
   public:
@@ -1683,19 +1683,19 @@ class CmdProxy {
 
     /* lists */
 
-    CTB_SINGLE_DACNAME(dacname, getDacName, setDacName, defs::DAC_0, 
-                    "\n\t[0-18][name] \n\t\t[ChipTestBoard] Set "
-              "the dac at the given position to the given name.");
+    CTB_SINGLE_DACNAME(dacname, getDacName, setDacName, defs::DAC_0,
+                       "\n\t[0-18][name] \n\t\t[ChipTestBoard] Set "
+                       "the dac at the given position to the given name.");
 
-    CTB_GET_DACINDEX(dacindex, getDacIndex, defs::DAC_0, 
-                  "\n\t[name] \n\t\t[ChipTestBoard] Get "
-              "the dac index for the given name.");
+    CTB_GET_DACINDEX(dacindex, getDacIndex, defs::DAC_0,
+                     "\n\t[name] \n\t\t[ChipTestBoard] Get "
+                     "the dac index for the given name.");
 
     CTB_NAMED_LIST(adclist, getAdcNames, setAdcNames,
                    "[adcname1 adcname2 .. adcname32] \n\t\t[ChipTestBoard] Set "
                    "the list of adc names for this board.");
 
-    CTB_SINGLE_NAME(adcname, getAdcName, setAdcName, 
+    CTB_SINGLE_NAME(adcname, getAdcName, setAdcName,
                     "[0-31][name] \n\t\t[ChipTestBoard] Set "
                     "the adc at the given position to the given name.");
 
@@ -1721,26 +1721,26 @@ class CmdProxy {
         "[powername1 powername2 .. powername4] \n\t\t[ChipTestBoard] Set "
         "the list of power names for this board.");
 
-    CTB_SINGLE_DACNAME(powername, getPowerName, setPowerName, defs::V_POWER_A, 
-                    "[0-31][name] \n\t\t[ChipTestBoard] Set "
-                    "the power at the given position to the given name.");
+    CTB_SINGLE_DACNAME(powername, getPowerName, setPowerName, defs::V_POWER_A,
+                       "[0-31][name] \n\t\t[ChipTestBoard] Set "
+                       "the power at the given position to the given name.");
 
-    CTB_GET_DACINDEX(powerindex, getPowerIndex, defs::V_POWER_A, 
-                  "[name] \n\t\t[ChipTestBoard] Get "
-                  "the power index for the given name.");
+    CTB_GET_DACINDEX(powerindex, getPowerIndex, defs::V_POWER_A,
+                     "[name] \n\t\t[ChipTestBoard] Get "
+                     "the power index for the given name.");
 
     CTB_NAMED_LIST(
         senselist, getSenseNames, setSenseNames,
         "[sensename1 sensename2 .. sensename7] \n\t\t[ChipTestBoard] Set "
         "the list of sense names for this board.");
 
-    CTB_SINGLE_DACNAME(sensename, getSenseName, setSenseName, defs::SLOW_ADC0, 
-                    "[0-31][name] \n\t\t[ChipTestBoard] Set "
-                    "the sense at the given position to the given name.");
+    CTB_SINGLE_DACNAME(sensename, getSenseName, setSenseName, defs::SLOW_ADC0,
+                       "[0-31][name] \n\t\t[ChipTestBoard] Set "
+                       "the sense at the given position to the given name.");
 
-    CTB_GET_DACINDEX(senseindex, getSenseIndex, defs::SLOW_ADC0, 
-                  "[name] \n\t\t[ChipTestBoard] Get "
-                  "the sense index for the given name.");
+    CTB_GET_DACINDEX(senseindex, getSenseIndex, defs::SLOW_ADC0,
+                     "[name] \n\t\t[ChipTestBoard] Get "
+                     "the sense index for the given name.");
 
     /* dacs */
 

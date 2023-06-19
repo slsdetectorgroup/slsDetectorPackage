@@ -2334,7 +2334,8 @@ defs::dacIndex Detector::getPowerIndex(const std::string &name) const {
     return static_cast<defs::dacIndex>(it - names.begin());
 }
 
-void Detector::setPowerName(const defs::dacIndex index, const std::string &name) {
+void Detector::setPowerName(const defs::dacIndex index,
+                            const std::string &name) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
     pimpl->setCtbPowerName(index, name);
@@ -2368,7 +2369,8 @@ defs::dacIndex Detector::getSenseIndex(const std::string &name) const {
     return static_cast<defs::dacIndex>(it - names.begin());
 }
 
-void Detector::setSenseName(const defs::dacIndex index, const std::string &name) {
+void Detector::setSenseName(const defs::dacIndex index,
+                            const std::string &name) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named senses only for CTB");
     pimpl->setCtbSenseName(index, name);

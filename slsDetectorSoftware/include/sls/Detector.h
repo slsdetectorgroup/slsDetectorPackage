@@ -1786,7 +1786,7 @@ class Detector {
     std::vector<std::string> getSenseNames() const;
 
     /** [CTB] */
-    defs::dacIndex getSenseIndex(const std::string &name) const ;
+    defs::dacIndex getSenseIndex(const std::string &name) const;
 
     /** [CTB] */
     void setSenseName(const defs::dacIndex i, const std::string &name);

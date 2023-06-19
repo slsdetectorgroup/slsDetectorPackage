@@ -57,7 +57,7 @@ void CtbConfig::check_signal_index(size_t i) const {
 void CtbConfig::check_voltage_index(size_t i) const {
     if (i >= num_voltages) {
         std::ostringstream oss;
-        oss << "Invalid Voltage index. Options: 0 - " << num_signals
+        oss << "Invalid Voltage index. Options: 0 - " << num_voltages
             << " or V_POWER_A - V_POWER_IO";
         throw RuntimeError(oss.str());
     }

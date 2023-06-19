@@ -129,7 +129,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>6</number>
+              <number>2</number>
              </property>
              <widget class="QWidget" name="tab">
               <attribute name="title">
@@ -1406,7 +1406,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
              </widget>
              <widget class="QWidget" name="tab_3">
               <attribute name="title">
-               <string>Sense</string>
+               <string>Slow ADCs</string>
               </attribute>
               <widget class="QFrame" name="frame_4">
                <property name="geometry">

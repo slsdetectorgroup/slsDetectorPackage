@@ -1368,7 +1368,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if self.det.rx_status == runStatus.RUNNING:
                 self.det.rx_stop()
             if self.checkBoxFileWrite.isChecked():
-                self.spinBoxIndex.stepUp()
+                self.spinBoxAcquisitionIndex.stepUp()
             # next measurement
             self.currentMeasurement += 1
             if self.currentMeasurement < numMeasurments and not self.stoppedFlag:

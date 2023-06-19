@@ -1157,7 +1157,7 @@ std::string CmdProxy::DacList(const int action) {
     }
     return os.str();
 }
-
+/*
 std::string CmdProxy::DacName(const int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -1170,11 +1170,15 @@ std::string CmdProxy::DacName(const int action) {
     if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
         throw RuntimeError("Named Dacs only allowed for CTB.");
     }
-    defs::dacIndex index = static_cast<defs::dacIndex>(StringTo<int>(args[0]));
+    if (det_id != -1) {                                                    
+        throw RuntimeError("Cannot configure " + cmd +                     
+                            " at module level");                           
+    }  
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
+        defs::dacIndex index = static_cast<defs::dacIndex>(StringTo<int>(args[0]));
         auto t = det->getDacName(index);
         os << args[0] << ' ' << ToString(t) << '\n';
     } else if (action == slsDetectorDefs::PUT_ACTION) {
@@ -1184,6 +1188,7 @@ std::string CmdProxy::DacName(const int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
+        defs::dacIndex index = static_cast<defs::dacIndex>(StringTo<int>(args[0]));
         det->setDacName(index, args[1]);
         os << ToString(args) << '\n';
     } else {
@@ -1204,6 +1209,10 @@ std::string CmdProxy::DacIndex(const int action) {
     if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
         throw RuntimeError("Named Dacs only allowed for CTB.");
     }
+    if (det_id != -1) {                                                    
+        throw RuntimeError("Cannot configure " + cmd +                     
+                            " at module level");                           
+    } 
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
@@ -1217,7 +1226,7 @@ std::string CmdProxy::DacIndex(const int action) {
     }
     return os.str();
 }
-
+*/
 /* dacs */
 std::string CmdProxy::Dac(int action) {
     std::ostringstream os;

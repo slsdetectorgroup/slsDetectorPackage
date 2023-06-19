@@ -2331,7 +2331,7 @@ defs::dacIndex Detector::getPowerIndex(const std::string &name) const {
     auto it = std::find(names.begin(), names.end(), name);
     if (it == names.end())
         throw RuntimeError("Power name not found");
-    return static_cast<defs::dacIndex>(it - names.begin());
+    return static_cast<defs::dacIndex>(it - names.begin() + defs::V_POWER_A);
 }
 
 void Detector::setPowerName(const defs::dacIndex index,
@@ -2366,7 +2366,7 @@ defs::dacIndex Detector::getSenseIndex(const std::string &name) const {
     auto it = std::find(names.begin(), names.end(), name);
     if (it == names.end())
         throw RuntimeError("Sense name not found");
-    return static_cast<defs::dacIndex>(it - names.begin());
+    return static_cast<defs::dacIndex>(it - names.begin() + defs::SLOW_ADC0);
 }
 
 void Detector::setSenseName(const defs::dacIndex index,

@@ -299,7 +299,7 @@ TEST_CASE("powername", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD) {
-        int ind = 2;
+        defs::dacIndex ind = static_cast<defs::dacIndex>(2 + defs::V_POWER_A);
         std::string str_power_index = "2";
         auto prev = det.getPowerName(ind);
 
@@ -333,7 +333,7 @@ TEST_CASE("powerindex", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD) {
-        int ind = 2;
+        defs::dacIndex ind = static_cast<defs::dacIndex>(2 + defs::V_POWER_A);
         std::string str_power_index = "2";
 
         // 1 arg throw
@@ -391,7 +391,7 @@ TEST_CASE("sensename", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD) {
-        int ind = 2;
+        defs::dacIndex ind = static_cast<defs::dacIndex>(2 + defs::SLOW_ADC0);
         std::string str_sense_index = "2";
         auto prev = det.getSenseName(ind);
 
@@ -425,7 +425,7 @@ TEST_CASE("senseindex", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD) {
-        int ind = 2;
+        defs::dacIndex ind = static_cast<defs::dacIndex>(2 + defs::SLOW_ADC0);
         std::string str_sense_index = "2";
 
         // 1 arg throw

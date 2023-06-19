@@ -1157,74 +1157,7 @@ std::string CmdProxy::DacList(const int action) {
     }
     return os.str();
 }
-/*
-std::string CmdProxy::DacName(const int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << "\n\t[0-18][name] \n\t\t[ChipTestBoard] Set "
-              "the dac at the given position to the given name."
-           << '\n';
-        return os.str();
-    }
-    if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
-        throw RuntimeError("Named Dacs only allowed for CTB.");
-    }
-    if (det_id != -1) {
-        throw RuntimeError("Cannot configure " + cmd +
-                            " at module level");
-    }
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (args.size() != 1) {
-            WrongNumberOfParameters(1);
-        }
-        defs::dacIndex index =
-static_cast<defs::dacIndex>(StringTo<int>(args[0])); auto t =
-det->getDacName(index); os << args[0] << ' ' << ToString(t) << '\n'; } else if
-(action == slsDetectorDefs::PUT_ACTION) { if (det_id != -1) { throw
-RuntimeError("Cannot configure dacnames at module level");
-        }
-        if (args.size() != 2) {
-            WrongNumberOfParameters(2);
-        }
-        defs::dacIndex index =
-static_cast<defs::dacIndex>(StringTo<int>(args[0])); det->setDacName(index,
-args[1]); os << ToString(args) << '\n'; } else { throw RuntimeError("Unknown
-action");
-    }
-    return os.str();
-}
 
-std::string CmdProxy::DacIndex(const int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << "\n\t[name] \n\t\t[ChipTestBoard] Get "
-              "the dac index for the given name."
-           << '\n';
-        return os.str();
-    }
-    if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
-        throw RuntimeError("Named Dacs only allowed for CTB.");
-    }
-    if (det_id != -1) {
-        throw RuntimeError("Cannot configure " + cmd +
-                            " at module level");
-    }
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (args.size() != 1) {
-            WrongNumberOfParameters(1);
-        }
-        auto t = det->getDacIndex(args[0]);
-        os << ToString(static_cast<int>(t)) << '\n';
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
-        throw RuntimeError("Cannot set dac index");
-    } else {
-        throw RuntimeError("Unknown action");
-    }
-    return os.str();
-}
-*/
 /* dacs */
 std::string CmdProxy::Dac(int action) {
     std::ostringstream os;

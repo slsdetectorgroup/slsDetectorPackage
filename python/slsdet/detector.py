@@ -1803,30 +1803,30 @@ class Detector(CppDetectorApi):
         self.setSignalNames(value)
 
     @property
-    def powerlist(self):
+    def voltagelist(self):
         """
-        List of names for every power supply for this board. 5 power supply
+        List of names for every voltage for this board. 5 voltage supply
         :setter: Only implemented for Chiptestboard
         
         """
-        return self.getPowerNames()
+        return self.getVoltageNames()
 
-    @powerlist.setter
-    def powerlist(self, value):
-        self.setPowerNames(value)
+    @voltagelist.setter
+    def voltagelist(self, value):
+        self.setVoltageNames(value)
 
     @property
-    def senselist(self):
+    def slowadclist(self):
         """
-        List of names for every sense for this board. 8 sense
+        List of names for every slowadc for this board. 8 slowadc
         :setter: Only implemented for Chiptestboard
         
         """
-        return self.getSenseNames()
+        return self.getSlowAdcNames()
 
-    @senselist.setter
-    def senselist(self, value):
-        self.setSenseNames(value)
+    @slowadclist.setter
+    def slowadclist(self, value):
+        self.setSlowAdcNames(value)
         
     @property
     def dacvalues(self):

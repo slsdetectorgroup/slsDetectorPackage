@@ -1695,47 +1695,47 @@ void init_det(py::module &m) {
                        (std::string(Detector::*)(const int) const) &
                            Detector::getSignalName,
                        py::arg());
-    CppDetectorApi.def("setPowerNames",
+    CppDetectorApi.def("setVoltageNames",
                        (void (Detector::*)(const std::vector<std::string>)) &
-                           Detector::setPowerNames,
+                           Detector::setVoltageNames,
                        py::arg());
-    CppDetectorApi.def("getPowerNames",
+    CppDetectorApi.def("getVoltageNames",
                        (std::vector<std::string>(Detector::*)() const) &
-                           Detector::getPowerNames);
+                           Detector::getVoltageNames);
     CppDetectorApi.def(
-        "getPowerIndex",
+        "getVoltageIndex",
         (defs::dacIndex(Detector::*)(const std::string &) const) &
-            Detector::getPowerIndex,
+            Detector::getVoltageIndex,
         py::arg());
     CppDetectorApi.def(
-        "setPowerName",
+        "setVoltageName",
         (void (Detector::*)(const defs::dacIndex, const std::string &)) &
-            Detector::setPowerName,
+            Detector::setVoltageName,
         py::arg(), py::arg());
-    CppDetectorApi.def("getPowerName",
+    CppDetectorApi.def("getVoltageName",
                        (std::string(Detector::*)(const defs::dacIndex) const) &
-                           Detector::getPowerName,
+                           Detector::getVoltageName,
                        py::arg());
-    CppDetectorApi.def("setSenseNames",
+    CppDetectorApi.def("setSlowAdcNames",
                        (void (Detector::*)(const std::vector<std::string>)) &
-                           Detector::setSenseNames,
+                           Detector::setSlowAdcNames,
                        py::arg());
-    CppDetectorApi.def("getSenseNames",
+    CppDetectorApi.def("getSlowAdcNames",
                        (std::vector<std::string>(Detector::*)() const) &
-                           Detector::getSenseNames);
+                           Detector::getSlowAdcNames);
     CppDetectorApi.def(
-        "getSenseIndex",
+        "getSlowAdcIndex",
         (defs::dacIndex(Detector::*)(const std::string &) const) &
-            Detector::getSenseIndex,
+            Detector::getSlowAdcIndex,
         py::arg());
     CppDetectorApi.def(
-        "setSenseName",
+        "setSlowAdcName",
         (void (Detector::*)(const defs::dacIndex, const std::string &)) &
-            Detector::setSenseName,
+            Detector::setSlowAdcName,
         py::arg(), py::arg());
-    CppDetectorApi.def("getSenseName",
+    CppDetectorApi.def("getSlowAdcName",
                        (std::string(Detector::*)(const defs::dacIndex) const) &
-                           Detector::getSenseName,
+                           Detector::getSlowAdcName,
                        py::arg());
     CppDetectorApi.def(
         "setPattern",

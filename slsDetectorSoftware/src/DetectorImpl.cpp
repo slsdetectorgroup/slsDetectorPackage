@@ -2038,38 +2038,38 @@ void DetectorImpl::setCtbSignalName(const int index, const std::string &name) {
     ctb_shm()->setSignalName(index, name);
 }
 
-std::vector<std::string> DetectorImpl::getCtbPowerNames() const {
-    return ctb_shm()->getPowerNames();
+std::vector<std::string> DetectorImpl::getCtbVoltageNames() const {
+    return ctb_shm()->getVoltageNames();
 }
 
-void DetectorImpl::setCtbPowerNames(const std::vector<std::string> &names) {
-    ctb_shm()->setPowerNames(names);
+void DetectorImpl::setCtbVoltageNames(const std::vector<std::string> &names) {
+    ctb_shm()->setVoltageNames(names);
 }
 
-std::string DetectorImpl::getCtbPowerName(const defs::dacIndex i) const {
-    return ctb_shm()->getPowerName(static_cast<int>(i - defs::V_POWER_A));
+std::string DetectorImpl::getCtbVoltageName(const defs::dacIndex i) const {
+    return ctb_shm()->getVoltageName(static_cast<int>(i - defs::V_POWER_A));
 }
 
-void DetectorImpl::setCtbPowerName(const defs::dacIndex index,
+void DetectorImpl::setCtbVoltageName(const defs::dacIndex index,
                                    const std::string &name) {
-    ctb_shm()->setPowerName(static_cast<int>(index - defs::V_POWER_A), name);
+    ctb_shm()->setVoltageName(static_cast<int>(index - defs::V_POWER_A), name);
 }
 
-std::vector<std::string> DetectorImpl::getCtbSenseNames() const {
-    return ctb_shm()->getSenseNames();
+std::vector<std::string> DetectorImpl::getCtbSlowAdcNames() const {
+    return ctb_shm()->getSlowAdcNames();
 }
 
-void DetectorImpl::setCtbSenseNames(const std::vector<std::string> &names) {
-    ctb_shm()->setSenseNames(names);
+void DetectorImpl::setCtbSlowAdcNames(const std::vector<std::string> &names) {
+    ctb_shm()->setSlowAdcNames(names);
 }
 
-std::string DetectorImpl::getCtbSenseName(const defs::dacIndex i) const {
-    return ctb_shm()->getSenseName(static_cast<int>(i - defs::SLOW_ADC0));
+std::string DetectorImpl::getCtbSlowAdcName(const defs::dacIndex i) const {
+    return ctb_shm()->getSlowAdcName(static_cast<int>(i - defs::SLOW_ADC0));
 }
 
-void DetectorImpl::setCtbSenseName(const defs::dacIndex index,
+void DetectorImpl::setCtbSlowAdcName(const defs::dacIndex index,
                                    const std::string &name) {
-    ctb_shm()->setSenseName(static_cast<int>(index - defs::SLOW_ADC0), name);
+    ctb_shm()->setSlowAdcName(static_cast<int>(index - defs::SLOW_ADC0), name);
 }
 
 } // namespace sls

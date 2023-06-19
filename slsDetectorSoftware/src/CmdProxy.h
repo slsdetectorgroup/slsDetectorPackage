@@ -1011,12 +1011,12 @@ class CmdProxy {
         {"signallist", &CmdProxy::signallist},
         {"signalname", &CmdProxy::signalname},
         {"signalindex", &CmdProxy::signalindex},
-        {"powerlist", &CmdProxy::powerlist},
-        {"powername", &CmdProxy::powername},
-        {"powerindex", &CmdProxy::powerindex},
-        {"senselist", &CmdProxy::senselist},
-        {"sensename", &CmdProxy::sensename},
-        {"senseindex", &CmdProxy::senseindex},
+        {"voltagelist", &CmdProxy::voltagelist},
+        {"voltagename", &CmdProxy::voltagename},
+        {"voltageindex", &CmdProxy::voltageindex},
+        {"slowadclist", &CmdProxy::slowadclist},
+        {"slowadcname", &CmdProxy::slowadcname},
+        {"slowadcindex", &CmdProxy::slowadcindex},
 
         /* dacs */
         {"dac", &CmdProxy::Dac},
@@ -1684,7 +1684,7 @@ class CmdProxy {
     /* lists */
 
     CTB_SINGLE_DACNAME(dacname, getDacName, setDacName, defs::DAC_0,
-                       "\n\t[0-18][name] \n\t\t[ChipTestBoard] Set "
+                       "\n\t[0-17][name] \n\t\t[ChipTestBoard] Set "
                        "the dac at the given position to the given name.");
 
     CTB_GET_DACINDEX(dacindex, getDacIndex, defs::DAC_0,
@@ -1709,7 +1709,7 @@ class CmdProxy {
         "the list of signal names for this board.");
 
     CTB_SINGLE_NAME(signalname, getSignalName, setSignalName,
-                    "[0-31][name] \n\t\t[ChipTestBoard] Set "
+                    "[0-63][name] \n\t\t[ChipTestBoard] Set "
                     "the signal at the given position to the given name.");
 
     CTB_GET_INDEX(signalindex, getSignalIndex,
@@ -1717,30 +1717,30 @@ class CmdProxy {
                   "the signal index for the given name.");
 
     CTB_NAMED_LIST(
-        powerlist, getPowerNames, setPowerNames,
-        "[powername1 powername2 .. powername4] \n\t\t[ChipTestBoard] Set "
-        "the list of power names for this board.");
+        voltagelist, getVoltageNames, setVoltageNames,
+        "[voltagename1 voltagename2 .. voltagename4] \n\t\t[ChipTestBoard] Set "
+        "the list of voltage names for this board.");
 
-    CTB_SINGLE_DACNAME(powername, getPowerName, setPowerName, defs::V_POWER_A,
-                       "[0-31][name] \n\t\t[ChipTestBoard] Set "
-                       "the power at the given position to the given name.");
+    CTB_SINGLE_DACNAME(voltagename, getVoltageName, setVoltageName, defs::V_POWER_A,
+                       "[0-4][name] \n\t\t[ChipTestBoard] Set "
+                       "the voltage at the given position to the given name.");
 
-    CTB_GET_DACINDEX(powerindex, getPowerIndex, defs::V_POWER_A,
+    CTB_GET_DACINDEX(voltageindex, getVoltageIndex, defs::V_POWER_A,
                      "[name] \n\t\t[ChipTestBoard] Get "
-                     "the power index for the given name.");
+                     "the voltage index for the given name.");
 
     CTB_NAMED_LIST(
-        senselist, getSenseNames, setSenseNames,
-        "[sensename1 sensename2 .. sensename7] \n\t\t[ChipTestBoard] Set "
-        "the list of sense names for this board.");
+        slowadclist, getSlowAdcNames, setSlowAdcNames,
+        "[slowadcname1 slowadcname2 .. slowadcname7] \n\t\t[ChipTestBoard] Set "
+        "the list of slowadc names for this board.");
 
-    CTB_SINGLE_DACNAME(sensename, getSenseName, setSenseName, defs::SLOW_ADC0,
-                       "[0-31][name] \n\t\t[ChipTestBoard] Set "
-                       "the sense at the given position to the given name.");
+    CTB_SINGLE_DACNAME(slowadcname, getSlowAdcName, setSlowAdcName, defs::SLOW_ADC0,
+                       "[0-7][name] \n\t\t[ChipTestBoard] Set "
+                       "the slowadc at the given position to the given name.");
 
-    CTB_GET_DACINDEX(senseindex, getSenseIndex, defs::SLOW_ADC0,
+    CTB_GET_DACINDEX(slowadcindex, getSlowAdcIndex, defs::SLOW_ADC0,
                      "[name] \n\t\t[ChipTestBoard] Get "
-                     "the sense index for the given name.");
+                     "the slowadc index for the given name.");
 
     /* dacs */
 

@@ -2312,74 +2312,74 @@ std::string Detector::getSignalName(const int i) const {
     return pimpl->getCtbSignalName(i);
 }
 
-void Detector::setPowerNames(const std::vector<std::string> names) {
+void Detector::setVoltageNames(const std::vector<std::string> names) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
-    pimpl->setCtbPowerNames(names);
+    pimpl->setCtbVoltageNames(names);
 }
 
-std::vector<std::string> Detector::getPowerNames() const {
+std::vector<std::string> Detector::getVoltageNames() const {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
-    return pimpl->getCtbPowerNames();
+    return pimpl->getCtbVoltageNames();
 }
 
-defs::dacIndex Detector::getPowerIndex(const std::string &name) const {
+defs::dacIndex Detector::getVoltageIndex(const std::string &name) const {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
-    auto names = getPowerNames();
+    auto names = getVoltageNames();
     auto it = std::find(names.begin(), names.end(), name);
     if (it == names.end())
-        throw RuntimeError("Power name not found");
+        throw RuntimeError("Voltage name not found");
     return static_cast<defs::dacIndex>(it - names.begin() + defs::V_POWER_A);
 }
 
-void Detector::setPowerName(const defs::dacIndex index,
+void Detector::setVoltageName(const defs::dacIndex index,
                             const std::string &name) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
-    pimpl->setCtbPowerName(index, name);
+    pimpl->setCtbVoltageName(index, name);
 }
 
-std::string Detector::getPowerName(const defs::dacIndex i) const {
+std::string Detector::getVoltageName(const defs::dacIndex i) const {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
-    return pimpl->getCtbPowerName(i);
+    return pimpl->getCtbVoltageName(i);
 }
 
-void Detector::setSenseNames(const std::vector<std::string> names) {
+void Detector::setSlowAdcNames(const std::vector<std::string> names) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
-        throw RuntimeError("Named senses only for CTB");
-    pimpl->setCtbSenseNames(names);
+        throw RuntimeError("Named SlowAdcs only for CTB");
+    pimpl->setCtbSlowAdcNames(names);
 }
 
-std::vector<std::string> Detector::getSenseNames() const {
+std::vector<std::string> Detector::getSlowAdcNames() const {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
-        throw RuntimeError("Named senses only for CTB");
-    return pimpl->getCtbSenseNames();
+        throw RuntimeError("Named SlowAdcs only for CTB");
+    return pimpl->getCtbSlowAdcNames();
 }
 
-defs::dacIndex Detector::getSenseIndex(const std::string &name) const {
+defs::dacIndex Detector::getSlowAdcIndex(const std::string &name) const {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
-        throw RuntimeError("Named senses only for CTB");
-    auto names = getSenseNames();
+        throw RuntimeError("Named SlowAdcs only for CTB");
+    auto names = getSlowAdcNames();
     auto it = std::find(names.begin(), names.end(), name);
     if (it == names.end())
-        throw RuntimeError("Sense name not found");
+        throw RuntimeError("SlowAdc name not found");
     return static_cast<defs::dacIndex>(it - names.begin() + defs::SLOW_ADC0);
 }
 
-void Detector::setSenseName(const defs::dacIndex index,
+void Detector::setSlowAdcName(const defs::dacIndex index,
                             const std::string &name) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
-        throw RuntimeError("Named senses only for CTB");
-    pimpl->setCtbSenseName(index, name);
+        throw RuntimeError("Named SlowAdcs only for CTB");
+    pimpl->setCtbSlowAdcName(index, name);
 }
 
-std::string Detector::getSenseName(const defs::dacIndex i) const {
+std::string Detector::getSlowAdcName(const defs::dacIndex i) const {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
-        throw RuntimeError("Named senses only for CTB");
-    return pimpl->getCtbSenseName(i);
+        throw RuntimeError("Named SlowAdcs only for CTB");
+    return pimpl->getCtbSlowAdcName(i);
 }
 
 // Pattern

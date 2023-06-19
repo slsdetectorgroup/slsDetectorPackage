@@ -72,7 +72,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def loadAliasFile(self):
         print(f'Loading Alias file: {self.alias_file}')
         try:
-            bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, sense_names, power_names, pat_file_name = alias_utility.read_alias_file(self.alias_file)
+            bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, slowadc_names, voltage_names, pat_file_name = alias_utility.read_alias_file(self.alias_file)
         except Exception as e:
             QtWidgets.QMessageBox.warning(self, "Alias File Fail", e + "<br> " + self.alias_file, QtWidgets.QMessageBox.Ok)
             return
@@ -101,21 +101,21 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.det.setDacName(iDac, dac_names[i])
 
         for i in range(8):
-            if sense_names[i]:
-                self.det.setSenseName(i, sense_names[i])
+            if slowadc_names[i]:
+                self.det.setSlowAdcName(i, slowadc_names[i])
 
         for i in range(5):
-            if power_names[i]:
-                self.det.setPowerName(i, power_names[i])
+            if voltage_names[i]:
+                self.det.setVoltageName(i, voltage_names[i])
 
         if pat_file_name:
             self.lineEditPatternFile.setText(pat_file_name)
 
         self.updateSignalNames()
         self.updateADCNames()
-        self.updateSenseNames()
+        self.updateSlowAdcNames()
         self.updateDACNames()
-        self.updatePowerNames()
+        self.updateVoltageNames()
         
 
     # For Action options function
@@ -246,24 +246,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getHighVoltage()
 
     # Power Supplies Tab functions
-    def updatePowerNames(self):
-        retval = self.det.getPowerNames()
+    def updateVoltageNames(self):
+        retval = self.det.getVoltageNames()
         getattr(self, f"checkBoxVA").setText(retval[0])  
         getattr(self, f"checkBoxVB").setText(retval[1])  
         getattr(self, f"checkBoxVC").setText(retval[2])  
         getattr(self, f"checkBoxVD").setText(retval[3])  
         getattr(self, f"checkBoxVIO").setText(retval[4])  
 
-    def getPower(self, i):
+    def getVoltage(self, i):
         spinBox = getattr(self, f"spinBoxV{i}")
         checkBox = getattr(self, f"checkBoxV{i}")
-        power = getattr(dacIndex, f"V_POWER_{i}")
+        voltage = getattr(dacIndex, f"V_POWER_{i}")
         label = getattr(self, f"labelV{i}")
 
         spinBox.editingFinished.disconnect()
         checkBox.stateChanged.disconnect()
 
-        retval = self.det.getVoltage(power)[0]
+        retval = self.det.getVoltage(voltage)[0]
         spinBox.setValue(retval)
         if retval:
             checkBox.setChecked(True)  
@@ -271,49 +271,49 @@ class MainWindow(QtWidgets.QMainWindow):
             spinBox.setEnabled(True)
         else:
             spinBox.setDisabled(True)
-        #checkBox.setText(self.det.getPowerName(power))
+        #checkBox.setText(self.det.getVoltageName(voltage))
         label.setText(str(retval))
 
-        spinBox.editingFinished.connect(partial(self.setPower, i))
-        checkBox.stateChanged.connect(partial(self.setPower, i))
+        spinBox.editingFinished.connect(partial(self.setVoltage, i))
+        checkBox.stateChanged.connect(partial(self.setVoltage, i))
 
     #TODO: handle multiple events when pressing enter (twice)
-    def setPower(self, i):
+    def setVoltage(self, i):
         checkBox = getattr(self, f"checkBoxV{i}")
         spinBox = getattr(self, f"spinBoxV{i}")
-        power = getattr(dacIndex, f"V_POWER_{i}")
+        voltage = getattr(dacIndex, f"V_POWER_{i}")
         spinBox.editingFinished.disconnect()
 
         value = 0
         if checkBox.isChecked():
             value = spinBox.value()
         try:
-            self.det.setVoltage(power, value)
+            self.det.setVoltage(voltage, value)
         except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "Power Fail", str(e), QtWidgets.QMessageBox.Ok)
+            QtWidgets.QMessageBox.warning(self, "Voltage Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
 
         # TODO: (properly) disconnecting and connecting to handle multiple events (out of focus and pressing enter).
-        spinBox.editingFinished.connect(partial(self.setPower, i))
-        self.getPower(i)
+        spinBox.editingFinished.connect(partial(self.setVoltage, i))
+        self.getVoltage(i)
 
     def getVChip(self):
         self.labelVCHIP.setText(str(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0]))
 
     # Sense Tab functions
-    def updateSenseNames(self):
-        for i, name in enumerate(self.det.getSenseNames()):
-            getattr(self, f"labelSense{i}").setText(name)    
+    def updateSlowAdcNames(self):
+        for i, name in enumerate(self.det.getSlowAdcNames()):
+            getattr(self, f"labelSlowAdc{i}").setText(name)    
 
-    def updateSense(self, i):
-        slowADC = getattr(dacIndex, f"SLOW_ADC{i}")
-        label = getattr(self, f"labelSense{i}_2")
-        sense0 = (self.det.getSlowADC(slowADC))[0] / 1000
-        label.setText(f'{sense0:.2f} mV')
+    def updateSlowAdc(self, i):
+        slowADCIndex = getattr(dacIndex, f"SLOW_ADC{i}")
+        label = getattr(self, f"labelSlowAdcValue{i}")
+        slowadc = (self.det.getSlowADC(slowADCIndex))[0] / 1000
+        label.setText(f'{slowadc:.2f} mV')
 
     def updateTemperature(self):
-        sense0 = self.det.getTemperature(dacIndex.SLOW_ADC_TEMP)
-        self.labelTemp_2.setText(f'{str(sense0[0])} °C')
+        slowadc = self.det.getTemperature(dacIndex.SLOW_ADC_TEMP)
+        self.labelTempValue.setText(f'{str(slowadc[0])} °C')
 
     # Signals Tab functions
     def updateSignalNames(self):
@@ -1530,15 +1530,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getHighVoltage()
 
     def refresh_tab_power(self):
-        self.updatePowerNames()
+        self.updateVoltageNames()
         for i in ('A', 'B', 'C', 'D', 'IO'):
-            self.getPower(i)
+            self.getVoltage(i)
         self.getVChip()
 
     def refresh_tab_sense(self):
-        self.updateSenseNames()
+        self.updateSlowAdcNames()
         for i in range(8):
-            self.updateSense(i)
+            self.updateSlowAdc(i)
         self.updateTemperature()
 
     def refresh_tab_signals(self):
@@ -1612,7 +1612,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.checkBoxHighVoltage.setChecked(False)
 
         # Power Tab
-        # Getting power values for spinboxes (only for modifying)
+        # Getting voltage values for spinboxes (only for modifying)
         for i in ('A', 'B', 'C', 'D', 'IO'):
             dac = getattr(dacIndex, f"V_POWER_{i}")
             spinBox = getattr(self, f"spinBoxV{i}")
@@ -1687,12 +1687,12 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in ('A', 'B', 'C', 'D', 'IO'):
             spinBox = getattr(self, f"spinBoxV{i}")
             checkBox = getattr(self, f"checkBoxV{i}")
-            spinBox.editingFinished.connect(partial(self.setPower, i))
-            checkBox.stateChanged.connect(partial(self.setPower, i))
+            spinBox.editingFinished.connect(partial(self.setVoltage, i))
+            checkBox.stateChanged.connect(partial(self.setVoltage, i))
 
         # For Sense Tab
         for i in range(8):
-            getattr(self, f"pushButtonSense{i}").clicked.connect(partial(self.updateSense, i))
+            getattr(self, f"pushButtonSlowAdc{i}").clicked.connect(partial(self.updateSlowAdc, i))
         self.pushButtonTemp.clicked.connect(self.updateTemperature)
 
         # For Signals Tab

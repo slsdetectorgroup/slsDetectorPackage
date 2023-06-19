@@ -58,8 +58,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>748</width>
-         <height>888</height>
+         <width>746</width>
+         <height>886</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1425,14 +1425,14 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_11">
                 <item row="0" column="0">
-                 <widget class="QLabel" name="labelSense0">
+                 <widget class="QLabel" name="labelSlowAdc0">
                   <property name="text">
                    <string>SENSE 0:</string>
                   </property>
                  </widget>
                 </item>
                 <item row="0" column="2">
-                 <widget class="QLabel" name="labelSense0_2">
+                 <widget class="QLabel" name="labelSlowAdcValue0">
                   <property name="text">
                    <string>***</string>
                   </property>
@@ -1442,7 +1442,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </widget>
                 </item>
                 <item row="0" column="4">
-                 <widget class="QPushButton" name="pushButtonSense0">
+                 <widget class="QPushButton" name="pushButtonSlowAdc0">
                   <property name="minimumSize">
                    <size>
                     <width>150</width>
@@ -1470,7 +1470,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </widget>
                 </item>
                 <item row="1" column="2">
-                 <widget class="QLabel" name="labelSense1_2">
+                 <widget class="QLabel" name="labelSlowAdcValue1">
                   <property name="text">
                    <string>***</string>
                   </property>
@@ -1480,7 +1480,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </widget>
                 </item>
                 <item row="3" column="2">
-                 <widget class="QLabel" name="labelSense3_2">
+                 <widget class="QLabel" name="labelSlowAdcValue3">
                   <property name="text">
                    <string>***</string>
                   </property>
@@ -1490,7 +1490,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </widget>
                 </item>
                 <item row="3" column="4">
-                 <widget class="QPushButton" name="pushButtonSense3">
+                 <widget class="QPushButton" name="pushButtonSlowAdc3">
                   <property name="minimumSize">
                    <size>
                     <width>150</width>
@@ -1509,14 +1509,14 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </widget>
                 </item>
                 <item row="4" column="0">
-                 <widget class="QLabel" name="labelSense4">
+                 <widget class="QLabel" name="labelSlowAdc4">
                   <property name="text">
                    <string>SENSE 4:</string>
                   </property>
                  </widget>
                 </item>
                 <item row="8" column="2">
-                 <widget class="QLabel" name="labelTemp_2">
+                 <widget class="QLabel" name="labelTempValue">
                   <property name="text">
                    <string>***</string>
                   </property>
@@ -1526,7 +1526,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </widget>
                 </item>
                 <item row="4" column="4">
-                 <widget class="QPushButton" name="pushButtonSense4">
+                 <widget class="QPushButton" name="pushButtonSlowAdc4">
                   <property name="minimumSize">
                    <size>
                     <width>150</width>
@@ -1558,14 +1558,14 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </spacer>
                 </item>
                 <item row="5" column="0">
-                 <widget class="QLabel" name="labelSense5">
+                 <widget class="QLabel" name="labelSlowAdc5">
                   <property name="text">
                    <string>SENSE 5:</string>
                   </property>
                  </widget>
                 </item>
                 <item row="5" column="2">
-                 <widget class="QLabel" name="labelSense5_2">
+                 <widget class="QLabel" name="labelSlowAdcValue5">
                   <property name="text">
                    <string>***</string>
                   </property>
@@ -1575,7 +1575,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </widget>
                 </item>
                 <item row="5" column="4">
-                 <widget class="QPushButton" name="pushButtonSense5">
+                 <widget class="QPushButton" name="pushButtonSlowAdc5">
                   <property name="minimumSize">
                    <size>
                     <width>150</width>
@@ -1594,14 +1594,14 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </widget>
                 </item>
                 <item row="6" column="0">
-                 <widget class="QLabel" name="labelSense6">
+                 <widget class="QLabel" name="labelSlowAdc6">
                   <property name="text">
                    <string>SENSE 6:</string>
                   </property>
                  </widget>
                 </item>
                 <item row="6" column="2">
-                 <widget class="QLabel" name="labelSense6_2">
+                 <widget class="QLabel" name="labelSlowAdcValue6">
                   <property name="text">
                    <string>***</string>
                   </property>
@@ -1611,14 +1611,14 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </widget>
                 </item>
                 <item row="1" column="0">
-                 <widget class="QLabel" name="labelSense1">
+                 <widget class="QLabel" name="labelSlowAdc1">
                   <property name="text">
                    <string>SENSE 1:</string>
                   </property>
                  </widget>
                 </item>
                 <item row="1" column="4">
-                 <widget class="QPushButton" name="pushButtonSense1">
+                 <widget class="QPushButton" name="pushButtonSlowAdc1">
                   <property name="minimumSize">
                    <size>
                     <width>150</width>
@@ -1637,14 +1637,14 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </widget>
                 </item>
                 <item row="2" column="0">
-                 <widget class="QLabel" name="labelSense2">
+                 <widget class="QLabel" name="labelSlowAdc2">
                   <property name="text">
                    <string>SENSE 2:</string>
                   </property>
                  </widget>
                 </item>
                 <item row="4" column="2">
-                 <widget class="QLabel" name="labelSense4_2">
+                 <widget class="QLabel" name="labelSlowAdcValue4">
                   <property name="text">
                    <string>***</string>
                   </property>
@@ -1654,7 +1654,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </widget>
                 </item>
                 <item row="2" column="2">
-                 <widget class="QLabel" name="labelSense2_2">
+                 <widget class="QLabel" name="labelSlowAdcValue2">
                   <property name="text">
                    <string>***</string>
                   </property>
@@ -1664,7 +1664,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </widget>
                 </item>
                 <item row="2" column="4">
-                 <widget class="QPushButton" name="pushButtonSense2">
+                 <widget class="QPushButton" name="pushButtonSlowAdc2">
                   <property name="minimumSize">
                    <size>
                     <width>150</width>
@@ -1683,14 +1683,14 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </widget>
                 </item>
                 <item row="3" column="0">
-                 <widget class="QLabel" name="labelSense3">
+                 <widget class="QLabel" name="labelSlowAdc3">
                   <property name="text">
                    <string>SENSE 3:</string>
                   </property>
                  </widget>
                 </item>
                 <item row="6" column="4">
-                 <widget class="QPushButton" name="pushButtonSense6">
+                 <widget class="QPushButton" name="pushButtonSlowAdc6">
                   <property name="minimumSize">
                    <size>
                     <width>150</width>
@@ -1709,14 +1709,14 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </widget>
                 </item>
                 <item row="7" column="0">
-                 <widget class="QLabel" name="labelSense7">
+                 <widget class="QLabel" name="labelSlowAdc7">
                   <property name="text">
                    <string>SENSE 7:</string>
                   </property>
                  </widget>
                 </item>
                 <item row="7" column="2">
-                 <widget class="QLabel" name="labelSense7_2">
+                 <widget class="QLabel" name="labelSlowAdcValue7">
                   <property name="text">
                    <string>***</string>
                   </property>
@@ -1726,7 +1726,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                  </widget>
                 </item>
                 <item row="7" column="4">
-                 <widget class="QPushButton" name="pushButtonSense7">
+                 <widget class="QPushButton" name="pushButtonSlowAdc7">
                   <property name="minimumSize">
                    <size>
                     <width>150</width>
@@ -15147,7 +15147,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
      <x>0</x>
      <y>0</y>
      <width>1332</width>
-     <height>25</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -15172,7 +15172,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
    <property name="minimumSize">
     <size>
      <width>535</width>
-     <height>66</height>
+     <height>76</height>
     </size>
    </property>
    <property name="maximumSize">

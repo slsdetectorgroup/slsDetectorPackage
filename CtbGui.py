@@ -1316,22 +1316,41 @@ class MainWindow(QtWidgets.QMainWindow):
         self.det.triggers = self.spinBoxTriggers.value()
         self.getTriggers()
 
-    def getDetectorStatus(self):
-        self.labelDetectorStatus.setText(self.det.status.name)
+    def updateDetectorStatus(self, status):
+        self.labelDetectorStatus.setText(status.name)
 
     def updateCurrentMeasurement(self):
         self.labelCurrentMeasurement.setText(str(self.currentMeasurement))
         #print(f"Meausrement {self.currentMeasurement}")
     
+    def updateCurrentFrame(self, val):
+        self.labelCurrentFrame.setText(str(val))
+
+    def updateAcquiredFrames(self, val):
+        self.labelAcquiredFrames.setText(str(val))
+
+    def toggleAcquire(self):
+        if self.pushButtonStart.isChecked():
+            self.acquire()
+        else:
+            self.stopAcquisition()
+
+    def toggleButton(self, started):
+        if started:
+            self.pushButtonStart.setChecked(True)
+            self.pushButtonStart.setText('Stop')
+        else:        
+            self.pushButtonStart.setChecked(False)
+            self.pushButtonStart.setText('Start')
+
     def stopAcquisition(self):
         self.det.stop()
         self.stoppedFlag = True
         
     def acquire(self):
         self.stoppedFlag = False
+        self.toggleButton(True)
         self.currentMeasurement = 0
-        self.pushButtonStart.hide()
-        self.pushButtonStop.show()
 
         # some functions that must be updated for local values
         self.getAnalog()
@@ -1340,20 +1359,26 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getDBitOffset()
         self.getADCEnableReg()
         self.updateDigitalBitEnable()
-
-        self.statusTimer.start(20)
         self.startMeasurement()
 
     def startMeasurement(self):
         self.updateCurrentMeasurement()
-        self.det.rx_start()
+        self.updateCurrentFrame(0)
+        self.updateAcquiredFrames(0)
         self.progressBar.setValue(0)
+
+        self.det.rx_start()
         self.det.start()
+        self.checkEndofAcquisition()
 
     def checkEndofAcquisition(self):
-        self.getDetectorStatus()
+        caught = self.det.rx_framescaught
+        self.updateAcquiredFrames(caught)
+        status = self.det.status
+        self.updateDetectorStatus(status)
         measurementDone = False
-        match self.det.status:
+        #print(f'status:{val}')
+        match status:
             case runStatus.RUNNING:
                 pass
             case runStatus.WAITING:
@@ -1362,6 +1387,13 @@ class MainWindow(QtWidgets.QMainWindow):
                 pass
             case _:
                 measurementDone = True
+        
+        # check for 500ms for no packets
+        # needs more time for 1g streaming out done
+        if measurementDone:
+            time.sleep(Defines.Time_Wait_For_Packets)
+            if self.det.rx_framescaught != caught:
+                measurementDone = False
 
         numMeasurments = self.spinBoxMeasurements.value()
         if measurementDone:
@@ -1375,8 +1407,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.startMeasurement()
             else:
                 self.statusTimer.stop()
-                self.pushButtonStop.hide()
-                self.pushButtonStart.show()
+                self.toggleButton(False)
+        else:
+            self.statusTimer.start(100)
 
 
     # For other functios
@@ -1393,6 +1426,7 @@ class MainWindow(QtWidgets.QMainWindow):
             jsonHeader = json.loads(header)
             #print(jsonHeader)
             self.progressBar.setValue(int(jsonHeader['progress']))
+            self.updateCurrentFrame(jsonHeader['frameIndex'])
             #print(f"image size:{int(jsonHeader['size'])}")
             #print(f'Data size: {len(data)}')
             
@@ -1583,7 +1617,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getFrames()
         self.getTriggers()
         self.getPeriod()
-        self.getDetectorStatus()
+        self.updateDetectorStatus(self.det.status)
 
     def setup_zmq(self):
         self.det.rx_zmqstream = 1
@@ -1654,8 +1688,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # rest gets updated after connecting to slots
 
         # Acquisition Tab
-        self.setActiveColor(self.pushButtonStop, "red")
-        self.pushButtonStop.hide()
+        self.toggleButton(False)
 
         # plot area
         self.figure, self.ax = plt.subplots()
@@ -1817,8 +1850,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxPeriod.editingFinished.connect(self.setPeriod)
         self.comboBoxPeriod.currentIndexChanged.connect(self.setPeriod)
         self.spinBoxTriggers.editingFinished.connect(self.setTriggers)
-        self.pushButtonStart.clicked.connect(self.acquire)
-        self.pushButtonStop.clicked.connect(self.stopAcquisition)
+        self.pushButtonStart.clicked.connect(self.toggleAcquire)
         
 
 if __name__ == "__main__":

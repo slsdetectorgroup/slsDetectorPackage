@@ -6,6 +6,11 @@ class Defines():
     BIT0_31_MASK = 0x00000000FFFFFFFF
     BIT32_63_MASK = 0xFFFFFFFF00000000
 
+    Time_Wait_For_Packets = 0.5
+
+
+    # pattern viewer defines
+
     # pattern plot
     Colors_plot  = ['Blue', 'Orange']
 

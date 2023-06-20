@@ -539,5 +539,6 @@ class PlotPattern():
 
         n_cols = np.count_nonzero([waittime0 != 0, waittime1 != 0, waittime2 != 0, waittime3 != 0, waittime4 != 0, waittime5 != 0,
                                 nloop0 != 0, nloop1 != 0, nloop2 != 0, nloop3 != 0, nloop4 != 0, nloop5 != 0])
-        fig.legend(loc="upper center", ncol=n_cols)
+        if n_cols > 0:
+            fig.legend(loc="upper center", ncol=n_cols)
         return fig

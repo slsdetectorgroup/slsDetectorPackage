@@ -1400,17 +1400,13 @@ class MainWindow(QtWidgets.QMainWindow):
             
             self.plotWidgetAnalog.clear()
             self.plotWidgetDigital.clear()
-            dbitoffset = self.rx_dbitoffset
-            analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count= self.nADCEnabled * self.asamples))
-            dbitoffset = self.rx_dbitoffset
-            if self.romode.value == 2:
-                dbitoffset += self.nADCEnabled * 2 * self.asamples
-            digital_array = np.array(np.frombuffer(data, offset = dbitoffset, dtype=np.uint8))
+            
 
             # waveform
             if self.radioButtonWaveform.isChecked():
                 # analog
                 if self.romode.value in [0, 2]:
+                    analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count= self.nADCEnabled * self.asamples))
                     for i in range(32):
                         checkBox = getattr(self, f"checkBoxADC{i}Plot")
                         if checkBox.isChecked():
@@ -1422,6 +1418,10 @@ class MainWindow(QtWidgets.QMainWindow):
                             self.plotWidgetAnalog.plot(waveform, pen=pen, name = f"ADC{i}")
                 # digital
                 if self.romode.value in [1, 2]:
+                    dbitoffset = self.rx_dbitoffset
+                    if self.romode.value == 2:
+                        dbitoffset += self.nADCEnabled * 2 * self.asamples
+                    digital_array = np.array(np.frombuffer(data, offset = dbitoffset, dtype=np.uint8))
                     offset = 0
                     for i in self.rx_dbitlist:
                         # where numbits * numsamples is not a multiple of 8
@@ -1450,6 +1450,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:           
                 # analog
                 if self.romode.value in [0, 2]:
+                    analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count= self.nADCEnabled * self.asamples))
                     analog_frame = np.zeros((self.nADCEnabled, self.asamples))
                     analogIndex = 0
                     for row in range(self.nADCEnabled):
@@ -1460,6 +1461,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
                 # digital
                 if self.romode.value in [1, 2]:
+                    dbitoffset = self.rx_dbitoffset
+                    if self.romode.value == 2:
+                        dbitoffset += self.nADCEnabled * 2 * self.asamples
+                    digital_array = np.array(np.frombuffer(data, offset = dbitoffset, dtype=np.uint8))
                     digital_frame = np.zeros((400, 400))
                     self.imageViewDigital.setImage(digital_frame)   
             

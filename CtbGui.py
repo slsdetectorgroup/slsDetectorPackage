@@ -276,6 +276,12 @@ class MainWindow(QtWidgets.QMainWindow):
         spinBox.editingFinished.connect(partial(self.setVoltage, i))
         checkBox.stateChanged.connect(partial(self.setVoltage, i))
 
+    def getCurrent(self, i):
+        label = getattr(self, f"labelI{i}")
+        currentIndex = getattr(dacIndex, f"I_POWER_{i}")
+        retval = self.det.getMeasuredCurrent(currentIndex)[0]
+        label.setText(f'{str(retval)} mA')
+
     #TODO: handle multiple events when pressing enter (twice)
     def setVoltage(self, i):
         checkBox = getattr(self, f"checkBoxV{i}")
@@ -295,9 +301,10 @@ class MainWindow(QtWidgets.QMainWindow):
         # TODO: (properly) disconnecting and connecting to handle multiple events (out of focus and pressing enter).
         spinBox.editingFinished.connect(partial(self.setVoltage, i))
         self.getVoltage(i)
+        self.getCurrent(i)
 
     def getVChip(self):
-        self.labelVCHIP.setText(f"{str(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])} mV")
+        self.spinBoxVChip.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
 
     # Sense Tab functions
     def updateSlowAdcNames(self):
@@ -1573,6 +1580,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updateVoltageNames()
         for i in ('A', 'B', 'C', 'D', 'IO'):
             self.getVoltage(i)
+            self.getCurrent(i)
         self.getVChip()
 
     def refresh_tab_sense(self):

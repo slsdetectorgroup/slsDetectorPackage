@@ -306,6 +306,23 @@ class MainWindow(QtWidgets.QMainWindow):
     def getVChip(self):
         self.spinBoxVChip.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
 
+    def getPowerChip(self):
+        self.pushButtonPowerChip.clicked.disconnect()
+        if self.det.powerchip:
+            self.pushButtonPowerChip.setChecked(True)
+            self.pushButtonPowerChip.setText('Power off chip')
+        else:        
+            self.pushButtonPowerChip.setChecked(False)
+            self.pushButtonPowerChip.setText('Power off chip')
+        self.pushButtonPowerChip.clicked.connect(self.setPowerChip)
+
+    def setPowerChip(self):
+        if self.pushButtonPowerChip.isChecked():
+            self.det.powerchip = True
+        else:
+            self.det.powerchip = False
+        self.getPowerChip()
+
     # Sense Tab functions
     def updateSlowAdcNames(self):
         for i, name in enumerate(self.det.getSlowAdcNames()):
@@ -1341,7 +1358,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.stopAcquisition()
 
-    def toggleButton(self, started):
+    def toggleStartButton(self, started):
         if started:
             self.pushButtonStart.setChecked(True)
             self.pushButtonStart.setText('Stop')
@@ -1355,7 +1372,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
     def acquire(self):
         self.stoppedFlag = False
-        self.toggleButton(True)
+        self.toggleStartButton(True)
         self.currentMeasurement = 0
 
         # some functions that must be updated for local values
@@ -1413,7 +1430,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.startMeasurement()
             else:
                 self.statusTimer.stop()
-                self.toggleButton(False)
+                self.toggleStartButton(False)
         else:
             self.statusTimer.start(Defines.Time_Status_Refresh_ms)
 
@@ -1582,6 +1599,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.getVoltage(i)
             self.getCurrent(i)
         self.getVChip()
+        self.getPowerChip()
 
     def refresh_tab_sense(self):
         self.updateSlowAdcNames()
@@ -1697,7 +1715,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # rest gets updated after connecting to slots
 
         # Acquisition Tab
-        self.toggleButton(False)
+        self.toggleStartButton(False)
 
         # plot area
         self.figure, self.ax = plt.subplots()
@@ -1736,6 +1754,7 @@ class MainWindow(QtWidgets.QMainWindow):
             checkBox = getattr(self, f"checkBoxV{i}")
             spinBox.editingFinished.connect(partial(self.setVoltage, i))
             checkBox.stateChanged.connect(partial(self.setVoltage, i))
+        self.pushButtonPowerChip.clicked.connect(self.setPowerChip)
 
         # For Sense Tab
         for i in range(8):

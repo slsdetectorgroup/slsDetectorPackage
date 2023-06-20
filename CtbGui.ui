@@ -58,8 +58,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>748</width>
-         <height>888</height>
+         <width>746</width>
+         <height>886</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1478,6 +1478,32 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                   </property>
                   <property name="maximum">
                    <number>2468</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="3" colspan="2">
+                 <widget class="QPushButton" name="pushButtonPowerChip">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>200</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton {background-color: rgb(85, 170, 127);} 
+QPushButton:checked{background-color: red;}</string>
+                  </property>
+                  <property name="text">
+                   <string>Power on chip</string>
+                  </property>
+                  <property name="checkable">
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>
@@ -15240,7 +15266,7 @@ QPushButton:checked{background-color: red;}</string>
      <x>0</x>
      <y>0</y>
      <width>1332</width>
-     <height>25</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

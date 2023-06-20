@@ -263,16 +263,15 @@ class MainWindow(QtWidgets.QMainWindow):
         spinBox.editingFinished.disconnect()
         checkBox.stateChanged.disconnect()
 
-        retval = self.det.getVoltage(voltage)[0]
-        spinBox.setValue(retval)
-        if retval:
+        retval = self.det.getMeasuredVoltage(voltage)[0]
+        #spinBox.setValue(retval)
+        if retval > 1:
             checkBox.setChecked(True)  
         if checkBox.isChecked():
             spinBox.setEnabled(True)
         else:
             spinBox.setDisabled(True)
-        #checkBox.setText(self.det.getVoltageName(voltage))
-        label.setText(str(retval))
+        label.setText(f'{str(retval)} mV')
 
         spinBox.editingFinished.connect(partial(self.setVoltage, i))
         checkBox.stateChanged.connect(partial(self.setVoltage, i))
@@ -298,7 +297,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getVoltage(i)
 
     def getVChip(self):
-        self.labelVCHIP.setText(str(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0]))
+        self.labelVCHIP.setText(f"{str(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])} mV")
 
     # Sense Tab functions
     def updateSlowAdcNames(self):

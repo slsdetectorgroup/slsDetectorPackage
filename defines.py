@@ -6,7 +6,9 @@ class Defines():
     BIT0_31_MASK = 0x00000000FFFFFFFF
     BIT32_63_MASK = 0xFFFFFFFF00000000
 
-    Time_Wait_For_Packets = 0.5
+    Time_Wait_For_Packets_ms = 0.5
+    Time_Status_Refresh_ms  = 100
+    Time_Plot_Refresh_ms = 20
 
 
     # pattern viewer defines

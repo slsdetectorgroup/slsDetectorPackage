@@ -1145,7 +1145,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 
         # enable plotting
         if not self.radioButtonNoPlot.isChecked():
-            self.read_timer.start(20)
+            self.read_timer.start(Defines.Time_Plot_Refresh_ms)
         
         #self.showPlot()
 
@@ -1391,7 +1391,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # check for 500ms for no packets
         # needs more time for 1g streaming out done
         if measurementDone:
-            time.sleep(Defines.Time_Wait_For_Packets)
+            time.sleep(Defines.Time_Wait_For_Packets_ms)
             if self.det.rx_framescaught != caught:
                 measurementDone = False
 
@@ -1409,7 +1409,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.statusTimer.stop()
                 self.toggleButton(False)
         else:
-            self.statusTimer.start(100)
+            self.statusTimer.start(Defines.Time_Status_Refresh_ms)
 
 
     # For other functios

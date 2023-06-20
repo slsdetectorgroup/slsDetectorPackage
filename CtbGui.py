@@ -1393,8 +1393,8 @@ class MainWindow(QtWidgets.QMainWindow):
             jsonHeader = json.loads(header)
             #print(jsonHeader)
             self.progressBar.setValue(int(jsonHeader['progress']))
-            print(f"image size:{int(jsonHeader['size'])}")
-            print(f'Data size: {len(data)}')
+            #print(f"image size:{int(jsonHeader['size'])}")
+            #print(f'Data size: {len(data)}')
             
 
             

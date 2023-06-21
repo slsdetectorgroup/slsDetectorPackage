@@ -1166,7 +1166,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="suffix">
-                   <string>mV</string>
+                   <string> mV</string>
                   </property>
                   <property name="maximum">
                    <number>2468</number>
@@ -1194,7 +1194,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="suffix">
-                   <string>mV</string>
+                   <string> mV</string>
                   </property>
                   <property name="maximum">
                    <number>2468</number>
@@ -1225,7 +1225,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <string/>
                   </property>
                   <property name="suffix">
-                   <string>mV</string>
+                   <string> mV</string>
                   </property>
                   <property name="minimum">
                    <number>0</number>
@@ -1314,7 +1314,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="suffix">
-                   <string>mV</string>
+                   <string> mV</string>
                   </property>
                   <property name="maximum">
                    <number>2468</number>
@@ -1368,7 +1368,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="suffix">
-                   <string>mV</string>
+                   <string> mV</string>
                   </property>
                   <property name="maximum">
                    <number>2468</number>
@@ -1474,7 +1474,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="suffix">
-                   <string>mV</string>
+                   <string> mV</string>
                   </property>
                   <property name="maximum">
                    <number>2468</number>

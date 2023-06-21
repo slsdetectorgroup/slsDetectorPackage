@@ -277,6 +277,7 @@ class MainWindow(QtWidgets.QMainWindow):
         checkBox.stateChanged.connect(partial(self.setVoltage, i))
 
         self.getPowerOffEnable()
+        self.getVChip()
 
     #TODO: handle multiple events when pressing enter (twice)
     def setVoltage(self, i):
@@ -321,12 +322,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def powerOff(self):
         for i in ('A', 'B', 'C', 'D', 'IO'):
+            # set all voltages to 0
             checkBox = getattr(self, f"checkBoxV{i}")
             checkBox.stateChanged.disconnect()
             checkBox.setChecked(False)
             checkBox.stateChanged.connect(partial(self.setVoltage, i))
             self.setVoltage(i)
-            self.getVoltage(i)
 
     # Sense Tab functions
     def updateSlowAdcNames(self):
@@ -1603,7 +1604,6 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in ('A', 'B', 'C', 'D', 'IO'):
             self.getVoltage(i)
             self.getCurrent(i)
-        self.getVChip()
 
     def refresh_tab_sense(self):
         self.updateSlowAdcNames()

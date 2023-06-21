@@ -257,13 +257,13 @@ class MainWindow(QtWidgets.QMainWindow):
     def getVoltage(self, i):
         spinBox = getattr(self, f"spinBoxV{i}")
         checkBox = getattr(self, f"checkBoxV{i}")
-        voltage = getattr(dacIndex, f"V_POWER_{i}")
+        voltageIndex = getattr(dacIndex, f"V_POWER_{i}")
         label = getattr(self, f"labelV{i}")
 
         spinBox.editingFinished.disconnect()
         checkBox.stateChanged.disconnect()
 
-        retval = self.det.getMeasuredVoltage(voltage)[0]
+        retval = self.det.getMeasuredVoltage(voltageIndex)[0]
         #spinBox.setValue(retval)
         if retval > 1:
             checkBox.setChecked(True)  
@@ -276,24 +276,20 @@ class MainWindow(QtWidgets.QMainWindow):
         spinBox.editingFinished.connect(partial(self.setVoltage, i))
         checkBox.stateChanged.connect(partial(self.setVoltage, i))
 
-    def getCurrent(self, i):
-        label = getattr(self, f"labelI{i}")
-        currentIndex = getattr(dacIndex, f"I_POWER_{i}")
-        retval = self.det.getMeasuredCurrent(currentIndex)[0]
-        label.setText(f'{str(retval)} mA')
+        self.getPowerOffEnable()
 
     #TODO: handle multiple events when pressing enter (twice)
     def setVoltage(self, i):
         checkBox = getattr(self, f"checkBoxV{i}")
         spinBox = getattr(self, f"spinBoxV{i}")
-        voltage = getattr(dacIndex, f"V_POWER_{i}")
+        voltageIndex = getattr(dacIndex, f"V_POWER_{i}")
         spinBox.editingFinished.disconnect()
 
         value = 0
         if checkBox.isChecked():
             value = spinBox.value()
         try:
-            self.det.setVoltage(voltage, value)
+            self.det.setVoltage(voltageIndex, value)
         except Exception as e:
             QtWidgets.QMessageBox.warning(self, "Voltage Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
@@ -303,25 +299,34 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getVoltage(i)
         self.getCurrent(i)
 
+    def getCurrent(self, i):
+        label = getattr(self, f"labelI{i}")
+        currentIndex = getattr(dacIndex, f"I_POWER_{i}")
+        retval = self.det.getMeasuredCurrent(currentIndex)[0]
+        label.setText(f'{str(retval)} mA')
+
     def getVChip(self):
         self.spinBoxVChip.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
 
-    def getPowerChip(self):
-        self.pushButtonPowerChip.clicked.disconnect()
-        if self.det.powerchip:
-            self.pushButtonPowerChip.setChecked(True)
-            self.pushButtonPowerChip.setText('Power off chip')
-        else:        
-            self.pushButtonPowerChip.setChecked(False)
-            self.pushButtonPowerChip.setText('Power off chip')
-        self.pushButtonPowerChip.clicked.connect(self.setPowerChip)
+    def getPowerOffEnable(self):
+        self.pushButtonPowerOff.clicked.disconnect()
+        self.pushButtonPowerOff.setDisabled(True)
+        for i in ('A', 'B', 'C', 'D', 'IO'):
+            voltageIndex = getattr(dacIndex, f"V_POWER_{i}")
+            voltage = self.det.getMeasuredVoltage(voltageIndex)[0]
+            if voltage > 1:
+                self.pushButtonPowerOff.setEnabled(True)
+                break
+        self.pushButtonPowerOff.clicked.connect(self.powerOff)
 
-    def setPowerChip(self):
-        if self.pushButtonPowerChip.isChecked():
-            self.det.powerchip = True
-        else:
-            self.det.powerchip = False
-        self.getPowerChip()
+    def powerOff(self):
+        for i in ('A', 'B', 'C', 'D', 'IO'):
+            checkBox = getattr(self, f"checkBoxV{i}")
+            checkBox.stateChanged.disconnect()
+            checkBox.setChecked(False)
+            checkBox.stateChanged.connect(partial(self.setVoltage, i))
+            self.setVoltage(i)
+            self.getVoltage(i)
 
     # Sense Tab functions
     def updateSlowAdcNames(self):
@@ -1599,7 +1604,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.getVoltage(i)
             self.getCurrent(i)
         self.getVChip()
-        self.getPowerChip()
 
     def refresh_tab_sense(self):
         self.updateSlowAdcNames()
@@ -1754,7 +1758,7 @@ class MainWindow(QtWidgets.QMainWindow):
             checkBox = getattr(self, f"checkBoxV{i}")
             spinBox.editingFinished.connect(partial(self.setVoltage, i))
             checkBox.stateChanged.connect(partial(self.setVoltage, i))
-        self.pushButtonPowerChip.clicked.connect(self.setPowerChip)
+        self.pushButtonPowerOff.clicked.connect(self.powerOff)
 
         # For Sense Tab
         for i in range(8):

@@ -276,7 +276,6 @@ class MainWindow(QtWidgets.QMainWindow):
         spinBox.editingFinished.connect(partial(self.setVoltage, i))
         checkBox.stateChanged.connect(partial(self.setVoltage, i))
 
-        self.getPowerOffEnable()
         self.getVChip()
 
     #TODO: handle multiple events when pressing enter (twice)
@@ -308,17 +307,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def getVChip(self):
         self.spinBoxVChip.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
-
-    def getPowerOffEnable(self):
-        self.pushButtonPowerOff.clicked.disconnect()
-        self.pushButtonPowerOff.setDisabled(True)
-        for i in ('A', 'B', 'C', 'D', 'IO'):
-            voltageIndex = getattr(dacIndex, f"V_POWER_{i}")
-            voltage = self.det.getMeasuredVoltage(voltageIndex)[0]
-            if voltage > 1:
-                self.pushButtonPowerOff.setEnabled(True)
-                break
-        self.pushButtonPowerOff.clicked.connect(self.powerOff)
 
     def powerOff(self):
         for i in ('A', 'B', 'C', 'D', 'IO'):

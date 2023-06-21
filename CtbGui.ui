@@ -1484,7 +1484,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <item row="5" column="3" colspan="2">
                  <widget class="QPushButton" name="pushButtonPowerOff">
                   <property name="enabled">
-                   <bool>false</bool>
+                   <bool>true</bool>
                   </property>
                   <property name="minimumSize">
                    <size>

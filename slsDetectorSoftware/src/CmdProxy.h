@@ -1224,6 +1224,7 @@ class CmdProxy {
 
         /* Pattern */
         {"pattern", &CmdProxy::Pattern},
+        {"patfname", &CmdProxy::patfname},
         {"savepattern", &CmdProxy::savepattern},
         {"defaultpattern", &CmdProxy::defaultpattern},
         {"patioctrl", &CmdProxy::patioctrl},
@@ -1721,7 +1722,8 @@ class CmdProxy {
         "[voltagename1 voltagename2 .. voltagename4] \n\t\t[ChipTestBoard] Set "
         "the list of voltage names for this board.");
 
-    CTB_SINGLE_DACNAME(voltagename, getVoltageName, setVoltageName, defs::V_POWER_A,
+    CTB_SINGLE_DACNAME(voltagename, getVoltageName, setVoltageName,
+                       defs::V_POWER_A,
                        "[0-4][name] \n\t\t[ChipTestBoard] Set "
                        "the voltage at the given position to the given name.");
 
@@ -1734,7 +1736,8 @@ class CmdProxy {
         "[slowadcname1 slowadcname2 .. slowadcname7] \n\t\t[ChipTestBoard] Set "
         "the list of slowadc names for this board.");
 
-    CTB_SINGLE_DACNAME(slowadcname, getSlowAdcName, setSlowAdcName, defs::SLOW_ADC0,
+    CTB_SINGLE_DACNAME(slowadcname, getSlowAdcName, setSlowAdcName,
+                       defs::SLOW_ADC0,
                        "[0-7][name] \n\t\t[ChipTestBoard] Set "
                        "the slowadc at the given position to the given name.");
 
@@ -2472,6 +2475,11 @@ class CmdProxy {
                            "[0, 1]\n\t[Ctb] Switches on/off all LEDs.");
 
     /* Pattern */
+
+    GET_COMMAND(patfname, getPatterFileName,
+                "\n\t[Ctb][Mythen3] Gets the pattern file name including "
+                "path of the last pattern uploaded. Returns an empty if "
+                "nothing was uploaded or via a server default file");
 
     EXECUTE_SET_COMMAND_NOID_1ARG(
         savepattern, savePattern,

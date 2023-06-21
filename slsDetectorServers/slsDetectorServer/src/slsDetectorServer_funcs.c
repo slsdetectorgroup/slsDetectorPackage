@@ -397,6 +397,7 @@ void function_table() {
     flist[F_GET_VETO] = &get_veto;
     flist[F_SET_VETO] = &set_veto;
     flist[F_SET_PATTERN] = &set_pattern;
+    flist[F_GET_PATTERN_FILE_NAME] = &get_pattern_file;
     flist[F_GET_SCAN] = &get_scan;
     flist[F_SET_SCAN] = &set_scan;
     flist[F_GET_SCAN_ERROR_MESSAGE] = &get_scan_error_message;
@@ -1879,57 +1880,59 @@ int acquire(int blocking, int file_des) {
 #ifdef EIGERD
             // check for hardware mac and hardware ip
             if (udpDetails[0].srcmac != getDetectorMAC()) {
-            ret = FAIL;
-            uint64_t sourcemac = getDetectorMAC();
-            char src_mac[MAC_ADDRESS_SIZE];
-            getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
-            sprintf(mess,
+                ret = FAIL;
+                uint64_t sourcemac = getDetectorMAC();
+                char src_mac[MAC_ADDRESS_SIZE];
+                getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
+                sprintf(
+                    mess,
                     "Invalid udp source mac address for this detector. Must be "
                     "same as hardware detector mac address %s\n",
                     src_mac);
-            LOG(logERROR, (mess));
-        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                   (udpDetails[0].srcip != getDetectorIP())) {
-            ret = FAIL;
-            uint32_t sourceip = getDetectorIP();
-            char src_ip[INET_ADDRSTRLEN];
-            getIpAddressinString(src_ip, sourceip);
-            sprintf(mess,
+                LOG(logERROR, (mess));
+            } else if (!enableTenGigabitEthernet(GET_FLAG) &&
+                       (udpDetails[0].srcip != getDetectorIP())) {
+                ret = FAIL;
+                uint32_t sourceip = getDetectorIP();
+                char src_ip[INET_ADDRSTRLEN];
+                getIpAddressinString(src_ip, sourceip);
+                sprintf(
+                    mess,
                     "Invalid udp source ip address for this detector. Must be "
                     "same as hardware detector ip address %s in 1G readout "
                     "mode \n",
                     src_ip);
-            LOG(logERROR, (mess));
-        } else
+                LOG(logERROR, (mess));
+            } else
 #endif
-            if (configured == FAIL) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because ");
-            strcat(mess, configureMessage);
-            LOG(logERROR, (mess));
-        } else if (sharedMemory_getScanStatus() == RUNNING) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because a scan is "
-                         "already running!\n");
-            LOG(logERROR, (mess));
-        } else {
-            memset(scanErrMessage, 0, MAX_STR_LENGTH);
-            sharedMemory_setScanStop(0);
-            sharedMemory_setScanStatus(IDLE); // if it was error
-            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
-                               &blocking)) {
+                if (configured == FAIL) {
                 ret = FAIL;
-                strcpy(mess, "Could not start acquisition thread!\n");
+                strcpy(mess, "Could not start acquisition because ");
+                strcat(mess, configureMessage);
+                LOG(logERROR, (mess));
+            } else if (sharedMemory_getScanStatus() == RUNNING) {
+                ret = FAIL;
+                strcpy(mess, "Could not start acquisition because a scan is "
+                             "already running!\n");
                 LOG(logERROR, (mess));
             } else {
-                // wait for blocking always (scan or not)
-                // non blocking-no scan also wait (for error message)
-                // non blcoking-scan dont wait (there is scanErrorMessage)
-                if (blocking || !scan) {
-                    pthread_join(pthread_tid, NULL);
+                memset(scanErrMessage, 0, MAX_STR_LENGTH);
+                sharedMemory_setScanStop(0);
+                sharedMemory_setScanStatus(IDLE); // if it was error
+                if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                                   &blocking)) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not start acquisition thread!\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    // wait for blocking always (scan or not)
+                    // non blocking-no scan also wait (for error message)
+                    // non blcoking-scan dont wait (there is scanErrorMessage)
+                    if (blocking || !scan) {
+                        pthread_join(pthread_tid, NULL);
+                    }
                 }
             }
-        }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -7604,6 +7607,8 @@ int set_veto(int file_des) {
 int set_pattern(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
+    char args[MAX_STR_LENGTH];
+    memset(args, 0, MAX_STR_LENGTH);
 
 #if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
     functionNotImplemented();
@@ -7617,16 +7622,39 @@ int set_pattern(int file_des) {
             free(pat);
         return printSocketReadError();
     }
+    if (receiveData(file_des, args, MAX_STR_LENGTH, OTHER) < 0) {
+        if (pat != NULL)
+            free(pat);
+        return printSocketReadError();
+    }
 
     if (Server_VerifyLock() == OK) {
-        LOG(logINFO, ("Setting Pattern from structure\n"));
-        ret = loadPattern(mess, logINFO, pat);
+        LOG(logDEBUG1, ("Setting Pattern from structure\n"));
+        ret = loadPattern(mess, logINFO, pat, args);
     }
     if (pat != NULL)
         free(pat);
 #endif
 
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_pattern_file(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    char retvals[MAX_STR_LENGTH];
+    memset(retvals, 0, MAX_STR_LENGTH);
+
+    LOG(logDEBUG1, ("Getting pattern file name\n"));
+
+#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    // get only
+    strcpy(retvals, getPatternFileName());
+    LOG(logDEBUG1, ("pattern file name retval: %s\n", retvals));
+#endif
+    return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 
 int get_pattern(int file_des) {

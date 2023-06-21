@@ -309,15 +309,15 @@ TEST_CASE("voltagename", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("voltagename", {"5", "bname"}, -1, PUT));
         {
             std::ostringstream oss;
-            REQUIRE_NOTHROW(proxy.Call("voltagename", {str_voltage_index, "bname"},
-                                       -1, PUT, oss));
+            REQUIRE_NOTHROW(proxy.Call(
+                "voltagename", {str_voltage_index, "bname"}, -1, PUT, oss));
         }
         {
             std::ostringstream oss;
             REQUIRE_NOTHROW(
                 proxy.Call("voltagename", {str_voltage_index}, -1, GET, oss));
-            REQUIRE(oss.str() ==
-                    std::string("voltagename ") + str_voltage_index + " bname\n");
+            REQUIRE(oss.str() == std::string("voltagename ") +
+                                     str_voltage_index + " bname\n");
         }
         det.setVoltageName(ind, prev);
 
@@ -401,15 +401,15 @@ TEST_CASE("slowadcname", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("slowadcname", {"8", "bname"}, -1, PUT));
         {
             std::ostringstream oss;
-            REQUIRE_NOTHROW(proxy.Call("slowadcname", {str_slowadc_index, "bname"},
-                                       -1, PUT, oss));
+            REQUIRE_NOTHROW(proxy.Call(
+                "slowadcname", {str_slowadc_index, "bname"}, -1, PUT, oss));
         }
         {
             std::ostringstream oss;
             REQUIRE_NOTHROW(
                 proxy.Call("slowadcname", {str_slowadc_index}, -1, GET, oss));
-            REQUIRE(oss.str() ==
-                    std::string("slowadcname ") + str_slowadc_index + " bname\n");
+            REQUIRE(oss.str() == std::string("slowadcname ") +
+                                     str_slowadc_index + " bname\n");
         }
         det.setSlowAdcName(ind, prev);
 

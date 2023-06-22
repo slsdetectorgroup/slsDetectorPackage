@@ -2335,7 +2335,7 @@ defs::dacIndex Detector::getVoltageIndex(const std::string &name) const {
 }
 
 void Detector::setVoltageName(const defs::dacIndex index,
-                            const std::string &name) {
+                              const std::string &name) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
     pimpl->setCtbVoltageName(index, name);
@@ -2370,7 +2370,7 @@ defs::dacIndex Detector::getSlowAdcIndex(const std::string &name) const {
 }
 
 void Detector::setSlowAdcName(const defs::dacIndex index,
-                            const std::string &name) {
+                              const std::string &name) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named SlowAdcs only for CTB");
     pimpl->setCtbSlowAdcName(index, name);
@@ -2384,16 +2384,20 @@ std::string Detector::getSlowAdcName(const defs::dacIndex i) const {
 
 // Pattern
 
+Result<std::string> Detector::getPatterFileName(Positions pos) const {
+    return pimpl->Parallel(&Module::getPatterFileName, pos);
+}
+
 void Detector::setPattern(const std::string &fname, Positions pos) {
     Pattern pat;
     pat.load(fname);
     pat.validate();
-    setPattern(pat, pos);
+    pimpl->Parallel(&Module::setPattern, pos, pat, fname);
 }
 
 void Detector::setPattern(const Pattern &pat, Positions pos) {
     pat.validate();
-    pimpl->Parallel(&Module::setPattern, pos, pat);
+    pimpl->Parallel(&Module::setPattern, pos, pat, "");
 }
 
 void Detector::savePattern(const std::string &fname) {

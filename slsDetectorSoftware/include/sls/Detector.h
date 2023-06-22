@@ -1803,6 +1803,10 @@ class Detector {
      *    Pattern                                     *
      *                                                *
      * ************************************************/
+    /** [CTB][Mythen3] Gets the pattern file name including path of the last
+     * pattern uploaded. \n Returns an empty if nothing was uploaded or via a
+     * server default file*/
+    Result<std::string> getPatterFileName(Positions pos = {}) const;
 
     /** [CTB][Mythen3]  Loads ASCII pattern file directly to server
      * (instead of executing line by line)*/

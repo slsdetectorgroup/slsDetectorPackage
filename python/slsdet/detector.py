@@ -3412,6 +3412,13 @@ class Detector(CppDetectorApi):
         fname = ut.make_string_path(fname)
         ut.set_using_dict(self.setPattern, fname)
 
+    @property
+    def patfname(self):
+        """
+        [Ctb][Mythen3] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default
+        file
+        """
+        return self.getPatterFileName()
 
     @property
     @element

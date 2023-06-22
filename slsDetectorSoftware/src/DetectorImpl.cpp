@@ -2051,7 +2051,7 @@ std::string DetectorImpl::getCtbVoltageName(const defs::dacIndex i) const {
 }
 
 void DetectorImpl::setCtbVoltageName(const defs::dacIndex index,
-                                   const std::string &name) {
+                                     const std::string &name) {
     ctb_shm()->setVoltageName(static_cast<int>(index - defs::V_POWER_A), name);
 }
 
@@ -2068,7 +2068,7 @@ std::string DetectorImpl::getCtbSlowAdcName(const defs::dacIndex i) const {
 }
 
 void DetectorImpl::setCtbSlowAdcName(const defs::dacIndex index,
-                                   const std::string &name) {
+                                     const std::string &name) {
     ctb_shm()->setSlowAdcName(static_cast<int>(index - defs::SLOW_ADC0), name);
 }
 

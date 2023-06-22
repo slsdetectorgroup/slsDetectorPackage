@@ -46,7 +46,7 @@ class MainWindow(QtWidgets.QMainWindow):
         uic.loadUi("CtbGui.ui", self)
 
         self.setup_ui()
-        self.tabWidget.setCurrentIndex(6)
+        self.tabWidget.setCurrentIndex(7)
         self.tabWidget.currentChanged.connect(self.refresh_tab)
         self.connect_ui()
         self.refresh_tab_dac()
@@ -123,8 +123,8 @@ class MainWindow(QtWidgets.QMainWindow):
     # Function to show info
     def showInfo(self):
         msg = QtWidgets.QMessageBox()
-        msg.setWindowTitle("Info about CTB")
-        msg.setText("This Gui is for chip test board.\n Current Phase: Development")
+        msg.setWindowTitle("About")
+        msg.setText("This Gui is for Chip Test Boards.\n Current Phase: Development")
         x = msg.exec_()
 
     # Function to open file
@@ -689,129 +689,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.updateADCInv()
         
-    def getAnalog(self):
-        self.spinBoxAnalog.editingFinished.disconnect()
-        self.asamples = self.det.asamples
-        self.spinBoxAnalog.setValue(self.asamples)
-        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
-
-    def setAnalog(self):
-        self.det.asamples = self.spinBoxAnalog.value()
-        self.getAnalog()
-
-    def getDigital(self):
-        self.spinBoxDigital.editingFinished.disconnect()
-        self.dsamples = self.det.dsamples
-        self.spinBoxDigital.setValue(self.dsamples)
-        self.spinBoxDigital.editingFinished.connect(self.setDigital)
-
-    def setDigital(self):
-        self.det.dsamples = self.spinBoxDigital.value()
-        self.getDigital()
-
-    def getReadout(self):
-        self.comboBoxROMode.currentIndexChanged.disconnect()
-        self.spinBoxAnalog.editingFinished.disconnect()
-        self.spinBoxDigital.editingFinished.disconnect()
-
-        self.romode = self.det.romode
-        self.comboBoxROMode.setCurrentIndex(self.romode.value)
-        match self.romode:
-            case readoutMode.ANALOG_ONLY:
-                self.spinBoxAnalog.setEnabled(True)
-                self.labelAnalog.setEnabled(True)
-                self.spinBoxDigital.setDisabled(True)
-                self.labelDigital.setDisabled(True)
-            case readoutMode.DIGITAL_ONLY:
-                self.spinBoxAnalog.setDisabled(True)
-                self.labelAnalog.setDisabled(True)
-                self.spinBoxDigital.setEnabled(True)
-                self.labelDigital.setEnabled(True)
-            case _:
-                self.spinBoxAnalog.setEnabled(True)
-                self.labelAnalog.setEnabled(True)
-                self.spinBoxDigital.setEnabled(True)
-                self.labelDigital.setEnabled(True)
-
-        self.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
-        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
-        self.spinBoxDigital.editingFinished.connect(self.setDigital)
-        self.getAnalog()
-        self.getDigital()
-        #self.showPlot()
-
-    def setReadOut(self):
-        if self.comboBoxROMode.currentIndex() == 0:
-            self.det.romode = readoutMode.ANALOG_ONLY
-        elif self.comboBoxROMode.currentIndex() == 1:
-            self.det.romode = readoutMode.DIGITAL_ONLY
-        else:
-            self.det.romode = readoutMode.ANALOG_AND_DIGITAL
-        self.getReadout()
-
     # Pattern Tab functions
-    def getRunFrequency(self):
-        self.spinBoxRunF.editingFinished.disconnect()
-        self.spinBoxRunF.setValue(self.det.runclk)
-        self.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
-
-    def setRunFrequency(self):
-        self.det.runclk = self.spinBoxRunF.value()
-        self.getRunFrequency()
-
-    def getADCFrequency(self):
-        self.spinBoxADCF.editingFinished.disconnect()
-        self.spinBoxADCF.setValue(self.det.adcclk)
-        self.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
-
-    def setADCFrequency(self):
-        self.det.adcclk = self.spinBoxADCF.value()
-        self.getADCFrequency()
-
-    def getADCPhase(self):
-        self.spinBoxADCPhase.editingFinished.disconnect()
-        self.spinBoxADCPhase.setValue(self.det.adcphase)
-        self.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
-
-    def setADCPhase(self):
-        self.det.adcphase = self.spinBoxADCPhase.value()
-        self.getADCPhase()
-
-    def getADCPipeline(self):
-        self.spinBoxADCPipeline.editingFinished.disconnect()
-        self.spinBoxADCPipeline.setValue(self.det.adcpipeline)
-        self.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
-
-    def setADCPipeline(self):
-        self.det.adcpipeline = self.spinBoxADCPipeline.value()
-        self.getADCPipeline()
-
-    def getDBITFrequency(self):
-        self.spinBoxDBITF.editingFinished.disconnect()
-        self.spinBoxDBITF.setValue(self.det.dbitclk)
-        self.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
-
-    def setDBITFrequency(self):
-        self.det.dbitclk = self.spinBoxDBITF.value()
-        self.getDBITFrequency()
-
-    def getDBITPhase(self):
-        self.spinBoxDBITPhase.editingFinished.disconnect()
-        self.spinBoxDBITPhase.setValue(self.det.dbitphase)
-        self.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
-
-    def setDBITPhase(self):
-        self.det.dbitphase = self.spinBoxDBITPhase.value()
-        self.getDBITPhase()
-
-    def getDBITPipeline(self):
-        self.spinBoxDBITPipeline.editingFinished.disconnect()
-        self.spinBoxDBITPipeline.setValue(self.det.dbitpipeline)
-        self.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
-
-    def setDBITPipeline(self):
-        self.det.dbitpipeline = self.spinBoxDBITPipeline.value()
-        self.getDBITPipeline()
 
     def getPatLimitAddress(self):
         retval = self.det.patlimits
@@ -1122,7 +1000,7 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.warning(self, "Pattern Viewer Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
 
-    # Acquistions Tab functions
+    # Plot Tab functions
     def plotOptions(self):
 
         self.framePatternViewer.hide()
@@ -1234,6 +1112,132 @@ class MainWindow(QtWidgets.QMainWindow):
     def plotReferesh(self):
         self.read_zmq()
         
+
+    # Acquisition Tab functions
+
+    def getReadout(self):
+        self.comboBoxROMode.currentIndexChanged.disconnect()
+        self.spinBoxAnalog.editingFinished.disconnect()
+        self.spinBoxDigital.editingFinished.disconnect()
+
+        self.romode = self.det.romode
+        self.comboBoxROMode.setCurrentIndex(self.romode.value)
+        match self.romode:
+            case readoutMode.ANALOG_ONLY:
+                self.spinBoxAnalog.setEnabled(True)
+                self.labelAnalog.setEnabled(True)
+                self.spinBoxDigital.setDisabled(True)
+                self.labelDigital.setDisabled(True)
+            case readoutMode.DIGITAL_ONLY:
+                self.spinBoxAnalog.setDisabled(True)
+                self.labelAnalog.setDisabled(True)
+                self.spinBoxDigital.setEnabled(True)
+                self.labelDigital.setEnabled(True)
+            case _:
+                self.spinBoxAnalog.setEnabled(True)
+                self.labelAnalog.setEnabled(True)
+                self.spinBoxDigital.setEnabled(True)
+                self.labelDigital.setEnabled(True)
+
+        self.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
+        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
+        self.spinBoxDigital.editingFinished.connect(self.setDigital)
+        self.getAnalog()
+        self.getDigital()
+        #self.showPlot()
+
+    def setReadOut(self):
+        if self.comboBoxROMode.currentIndex() == 0:
+            self.det.romode = readoutMode.ANALOG_ONLY
+        elif self.comboBoxROMode.currentIndex() == 1:
+            self.det.romode = readoutMode.DIGITAL_ONLY
+        else:
+            self.det.romode = readoutMode.ANALOG_AND_DIGITAL
+        self.getReadout()
+
+    def getRunFrequency(self):
+        self.spinBoxRunF.editingFinished.disconnect()
+        self.spinBoxRunF.setValue(self.det.runclk)
+        self.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
+
+    def setRunFrequency(self):
+        self.det.runclk = self.spinBoxRunF.value()
+        self.getRunFrequency()
+
+    def getAnalog(self):
+        self.spinBoxAnalog.editingFinished.disconnect()
+        self.asamples = self.det.asamples
+        self.spinBoxAnalog.setValue(self.asamples)
+        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
+
+    def setAnalog(self):
+        self.det.asamples = self.spinBoxAnalog.value()
+        self.getAnalog()
+
+    def getDigital(self):
+        self.spinBoxDigital.editingFinished.disconnect()
+        self.dsamples = self.det.dsamples
+        self.spinBoxDigital.setValue(self.dsamples)
+        self.spinBoxDigital.editingFinished.connect(self.setDigital)
+
+    def setDigital(self):
+        self.det.dsamples = self.spinBoxDigital.value()
+        self.getDigital()
+
+    def getADCFrequency(self):
+        self.spinBoxADCF.editingFinished.disconnect()
+        self.spinBoxADCF.setValue(self.det.adcclk)
+        self.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
+
+    def setADCFrequency(self):
+        self.det.adcclk = self.spinBoxADCF.value()
+        self.getADCFrequency()
+
+    def getADCPhase(self):
+        self.spinBoxADCPhase.editingFinished.disconnect()
+        self.spinBoxADCPhase.setValue(self.det.adcphase)
+        self.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
+
+    def setADCPhase(self):
+        self.det.adcphase = self.spinBoxADCPhase.value()
+        self.getADCPhase()
+
+    def getADCPipeline(self):
+        self.spinBoxADCPipeline.editingFinished.disconnect()
+        self.spinBoxADCPipeline.setValue(self.det.adcpipeline)
+        self.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
+
+    def setADCPipeline(self):
+        self.det.adcpipeline = self.spinBoxADCPipeline.value()
+        self.getADCPipeline()
+
+    def getDBITFrequency(self):
+        self.spinBoxDBITF.editingFinished.disconnect()
+        self.spinBoxDBITF.setValue(self.det.dbitclk)
+        self.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
+
+    def setDBITFrequency(self):
+        self.det.dbitclk = self.spinBoxDBITF.value()
+        self.getDBITFrequency()
+
+    def getDBITPhase(self):
+        self.spinBoxDBITPhase.editingFinished.disconnect()
+        self.spinBoxDBITPhase.setValue(self.det.dbitphase)
+        self.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
+
+    def setDBITPhase(self):
+        self.det.dbitphase = self.spinBoxDBITPhase.value()
+        self.getDBITPhase()
+
+    def getDBITPipeline(self):
+        self.spinBoxDBITPipeline.editingFinished.disconnect()
+        self.spinBoxDBITPipeline.setValue(self.det.dbitpipeline)
+        self.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
+
+    def setDBITPipeline(self):
+        self.det.dbitpipeline = self.spinBoxDBITPipeline.value()
+        self.getDBITPipeline()
+
     def getFileWrite(self):
         self.checkBoxFileWrite.stateChanged.disconnect()
         self.checkBoxFileWrite.setChecked(self.det.fwrite)
@@ -1553,6 +1557,7 @@ class MainWindow(QtWidgets.QMainWindow):
             #print(color.getRgb())
 
     def refresh_tab(self, tab_index):
+        patternViewer = False
         match tab_index:
             case 0:
                 self.refresh_tab_dac()
@@ -1566,10 +1571,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.refresh_tab_adc()
             case 5:
                 self.refresh_tab_pattern()
-            case 6:
+                patternViewer = True
+            case 7:
                 self.refresh_tab_acquisition()
         
-        if tab_index == 5:
+        if patternViewer:
             self.plotWidgetAnalog.hide()
             self.plotWidgetDigital.hide()
             self.framePatternViewer.show()
@@ -1610,18 +1616,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updateADCNames()
         self.updateADCInv()
         self.updateADCEnable()
-        self.getAnalog()
-        self.getDigital()
-        self.getReadout()
 
     def refresh_tab_pattern(self):
-        self.getRunFrequency()
-        self.getADCFrequency()
-        self.getADCPhase()
-        self.getADCPipeline()
-        self.getDBITFrequency()
-        self.getDBITPhase()
-        self.getDBITPipeline()
         self.getPatLimitAddress()
         for i in range(6):
             self.getPatLoopStartStopAddress(i)
@@ -1630,6 +1626,16 @@ class MainWindow(QtWidgets.QMainWindow):
             self.getPatLoopWaitTime(i)
         
     def refresh_tab_acquisition(self):
+        self.getReadout()
+        self.getRunFrequency()
+        self.getAnalog()
+        self.getDigital()
+        self.getADCFrequency()
+        self.getADCPhase()
+        self.getADCPipeline()
+        self.getDBITFrequency()
+        self.getDBITPhase()
+        self.getDBITPipeline()
         self.getFileWrite()
         self.getFileName()
         self.getFilePath()
@@ -1785,18 +1791,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
         self.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
         # Cannot set adcmask to 0 anyway
-        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
-        self.spinBoxDigital.editingFinished.connect(self.setDigital)
-        self.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
+
 
         # For Pattern Tab
-        self.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
-        self.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
-        self.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
-        self.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
-        self.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
-        self.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
-        self.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
         self.lineEditStartAddress.editingFinished.connect(self.setPatLimitAddress)
         self.lineEditStopAddress.editingFinished.connect(self.setPatLimitAddress)
         for i in range(6):
@@ -1839,6 +1836,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
         # For Acquistions Tab
+        self.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
+        self.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
+        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
+        self.spinBoxDigital.editingFinished.connect(self.setDigital)
+        self.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
+        self.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
+        self.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
+        self.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
+        self.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
+        self.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
+        
         self.radioButtonNoPlot.clicked.connect(self.plotOptions)
         self.radioButtonWaveform.clicked.connect(self.plotOptions)
         self.radioButtonDistribution.clicked.connect(self.plotOptions)

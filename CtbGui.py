@@ -46,7 +46,7 @@ class MainWindow(QtWidgets.QMainWindow):
         uic.loadUi("CtbGui.ui", self)
 
         self.setup_ui()
-        self.tabWidget.setCurrentIndex(6)
+        self.tabWidget.setCurrentIndex(7)
         self.tabWidget.currentChanged.connect(self.refresh_tab)
         self.connect_ui()
         self.refresh_tab_dac()
@@ -123,8 +123,8 @@ class MainWindow(QtWidgets.QMainWindow):
     # Function to show info
     def showInfo(self):
         msg = QtWidgets.QMessageBox()
-        msg.setWindowTitle("Info about CTB")
-        msg.setText("This Gui is for chip test board.\n Current Phase: Development")
+        msg.setWindowTitle("About")
+        msg.setText("This Gui is for Chip Test Boards.\n Current Phase: Development")
         x = msg.exec_()
 
     # Function to open file

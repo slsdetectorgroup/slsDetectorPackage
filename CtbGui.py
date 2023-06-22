@@ -689,66 +689,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.updateADCInv()
         
-    def getAnalog(self):
-        self.spinBoxAnalog.editingFinished.disconnect()
-        self.asamples = self.det.asamples
-        self.spinBoxAnalog.setValue(self.asamples)
-        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
-
-    def setAnalog(self):
-        self.det.asamples = self.spinBoxAnalog.value()
-        self.getAnalog()
-
-    def getDigital(self):
-        self.spinBoxDigital.editingFinished.disconnect()
-        self.dsamples = self.det.dsamples
-        self.spinBoxDigital.setValue(self.dsamples)
-        self.spinBoxDigital.editingFinished.connect(self.setDigital)
-
-    def setDigital(self):
-        self.det.dsamples = self.spinBoxDigital.value()
-        self.getDigital()
-
-    def getReadout(self):
-        self.comboBoxROMode.currentIndexChanged.disconnect()
-        self.spinBoxAnalog.editingFinished.disconnect()
-        self.spinBoxDigital.editingFinished.disconnect()
-
-        self.romode = self.det.romode
-        self.comboBoxROMode.setCurrentIndex(self.romode.value)
-        match self.romode:
-            case readoutMode.ANALOG_ONLY:
-                self.spinBoxAnalog.setEnabled(True)
-                self.labelAnalog.setEnabled(True)
-                self.spinBoxDigital.setDisabled(True)
-                self.labelDigital.setDisabled(True)
-            case readoutMode.DIGITAL_ONLY:
-                self.spinBoxAnalog.setDisabled(True)
-                self.labelAnalog.setDisabled(True)
-                self.spinBoxDigital.setEnabled(True)
-                self.labelDigital.setEnabled(True)
-            case _:
-                self.spinBoxAnalog.setEnabled(True)
-                self.labelAnalog.setEnabled(True)
-                self.spinBoxDigital.setEnabled(True)
-                self.labelDigital.setEnabled(True)
-
-        self.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
-        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
-        self.spinBoxDigital.editingFinished.connect(self.setDigital)
-        self.getAnalog()
-        self.getDigital()
-        #self.showPlot()
-
-    def setReadOut(self):
-        if self.comboBoxROMode.currentIndex() == 0:
-            self.det.romode = readoutMode.ANALOG_ONLY
-        elif self.comboBoxROMode.currentIndex() == 1:
-            self.det.romode = readoutMode.DIGITAL_ONLY
-        else:
-            self.det.romode = readoutMode.ANALOG_AND_DIGITAL
-        self.getReadout()
-
     # Pattern Tab functions
     def getRunFrequency(self):
         self.spinBoxRunF.editingFinished.disconnect()
@@ -1122,7 +1062,7 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.warning(self, "Pattern Viewer Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
 
-    # Acquistions Tab functions
+    # Plot Tab functions
     def plotOptions(self):
 
         self.framePatternViewer.hide()
@@ -1234,6 +1174,69 @@ class MainWindow(QtWidgets.QMainWindow):
     def plotReferesh(self):
         self.read_zmq()
         
+
+    # Acquisition Tab functions
+
+    def getAnalog(self):
+        self.spinBoxAnalog.editingFinished.disconnect()
+        self.asamples = self.det.asamples
+        self.spinBoxAnalog.setValue(self.asamples)
+        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
+
+    def setAnalog(self):
+        self.det.asamples = self.spinBoxAnalog.value()
+        self.getAnalog()
+
+    def getDigital(self):
+        self.spinBoxDigital.editingFinished.disconnect()
+        self.dsamples = self.det.dsamples
+        self.spinBoxDigital.setValue(self.dsamples)
+        self.spinBoxDigital.editingFinished.connect(self.setDigital)
+
+    def setDigital(self):
+        self.det.dsamples = self.spinBoxDigital.value()
+        self.getDigital()
+
+    def getReadout(self):
+        self.comboBoxROMode.currentIndexChanged.disconnect()
+        self.spinBoxAnalog.editingFinished.disconnect()
+        self.spinBoxDigital.editingFinished.disconnect()
+
+        self.romode = self.det.romode
+        self.comboBoxROMode.setCurrentIndex(self.romode.value)
+        match self.romode:
+            case readoutMode.ANALOG_ONLY:
+                self.spinBoxAnalog.setEnabled(True)
+                self.labelAnalog.setEnabled(True)
+                self.spinBoxDigital.setDisabled(True)
+                self.labelDigital.setDisabled(True)
+            case readoutMode.DIGITAL_ONLY:
+                self.spinBoxAnalog.setDisabled(True)
+                self.labelAnalog.setDisabled(True)
+                self.spinBoxDigital.setEnabled(True)
+                self.labelDigital.setEnabled(True)
+            case _:
+                self.spinBoxAnalog.setEnabled(True)
+                self.labelAnalog.setEnabled(True)
+                self.spinBoxDigital.setEnabled(True)
+                self.labelDigital.setEnabled(True)
+
+        self.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
+        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
+        self.spinBoxDigital.editingFinished.connect(self.setDigital)
+        self.getAnalog()
+        self.getDigital()
+        #self.showPlot()
+
+    def setReadOut(self):
+        if self.comboBoxROMode.currentIndex() == 0:
+            self.det.romode = readoutMode.ANALOG_ONLY
+        elif self.comboBoxROMode.currentIndex() == 1:
+            self.det.romode = readoutMode.DIGITAL_ONLY
+        else:
+            self.det.romode = readoutMode.ANALOG_AND_DIGITAL
+        self.getReadout()
+
     def getFileWrite(self):
         self.checkBoxFileWrite.stateChanged.disconnect()
         self.checkBoxFileWrite.setChecked(self.det.fwrite)
@@ -1553,6 +1556,7 @@ class MainWindow(QtWidgets.QMainWindow):
             #print(color.getRgb())
 
     def refresh_tab(self, tab_index):
+        patternViewer = False
         match tab_index:
             case 0:
                 self.refresh_tab_dac()
@@ -1566,10 +1570,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.refresh_tab_adc()
             case 5:
                 self.refresh_tab_pattern()
-            case 6:
+                patternViewer = True
+            case 7:
                 self.refresh_tab_acquisition()
         
-        if tab_index == 5:
+        if patternViewer:
             self.plotWidgetAnalog.hide()
             self.plotWidgetDigital.hide()
             self.framePatternViewer.show()
@@ -1610,9 +1615,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updateADCNames()
         self.updateADCInv()
         self.updateADCEnable()
-        self.getAnalog()
-        self.getDigital()
-        self.getReadout()
 
     def refresh_tab_pattern(self):
         self.getRunFrequency()
@@ -1630,6 +1632,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.getPatLoopWaitTime(i)
         
     def refresh_tab_acquisition(self):
+        self.getAnalog()
+        self.getDigital()
+        self.getReadout()
         self.getFileWrite()
         self.getFileName()
         self.getFilePath()

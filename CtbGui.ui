@@ -135,7 +135,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>3</number>
+              <number>5</number>
              </property>
              <widget class="QWidget" name="tabDac">
               <attribute name="title">
@@ -11470,9 +11470,9 @@ QPushButton:disabled{background-color: grey;}</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>240</y>
+                 <y>20</y>
                  <width>401</width>
-                 <height>271</height>
+                 <height>321</height>
                 </rect>
                </property>
                <property name="frameShape">
@@ -11482,8 +11482,8 @@ QPushButton:disabled{background-color: grey;}</string>
                 <enum>QFrame::Sunken</enum>
                </property>
                <layout class="QGridLayout" name="gridLayout_5">
-                <item row="6" column="0">
-                 <widget class="QLabel" name="label_410">
+                <item row="5" column="0">
+                 <widget class="QLabel" name="label_408">
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
@@ -11497,30 +11497,100 @@ QPushButton:disabled{background-color: grey;}</string>
                    </size>
                   </property>
                   <property name="text">
-                   <string>Loop 5</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="label_405">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>50</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>Loop 0</string>
+                   <string>Loop 3</string>
                   </property>
                  </widget>
                 </item>
                 <item row="2" column="1">
+                 <widget class="QSpinBox" name="spinBoxLoop0Repetition">
+                  <property name="minimumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>999999999</number>
+                  </property>
+                  <property name="value">
+                   <number>0</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="2">
+                 <widget class="QLineEdit" name="lineEditLoop4Start">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
                  <widget class="QSpinBox" name="spinBoxLoop1Repetition">
                   <property name="minimumSize">
                    <size>
@@ -11542,26 +11612,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="0">
-                 <widget class="QLabel" name="label_406">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>50</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>Loop 1</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="2">
+                <item row="4" column="2">
                  <widget class="QLineEdit" name="lineEditLoop2Start">
                   <property name="minimumSize">
                    <size>
@@ -11625,7 +11676,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                  </widget>
                 </item>
-                <item row="4" column="2">
+                <item row="5" column="2">
                  <widget class="QLineEdit" name="lineEditLoop3Start">
                   <property name="minimumSize">
                    <size>
@@ -11689,7 +11740,227 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                  </widget>
                 </item>
+                <item row="4" column="3">
+                 <widget class="QLineEdit" name="lineEditLoop2Stop">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
                 <item row="6" column="3">
+                 <widget class="QLineEdit" name="lineEditLoop4Stop">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="1">
+                 <widget class="QSpinBox" name="spinBoxLoop3Repetition">
+                  <property name="minimumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>999999999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="0">
+                 <widget class="QLabel" name="label_409">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 4</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="1">
+                 <widget class="QSpinBox" name="spinBoxLoop5Repetition">
+                  <property name="minimumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>110</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>999999999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
+                 <widget class="QLabel" name="label_108">
+                  <property name="text">
+                   <string>Stop Address</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="0">
+                 <widget class="QLabel" name="label_410">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 5</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="3">
                  <widget class="QLineEdit" name="lineEditLoop5Stop">
                   <property name="minimumSize">
                    <size>
@@ -11753,8 +12024,8 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="3">
-                 <widget class="QLineEdit" name="lineEditLoop1Stop">
+                <item row="5" column="3">
+                 <widget class="QLineEdit" name="lineEditLoop3Stop">
                   <property name="minimumSize">
                    <size>
                     <width>80</width>
@@ -11817,30 +12088,8 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                  </widget>
                 </item>
-                <item row="6" column="1">
-                 <widget class="QSpinBox" name="spinBoxLoop5Repetition">
-                  <property name="minimumSize">
-                   <size>
-                    <width>110</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>110</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="maximum">
-                   <number>999999999</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="5" column="0">
-                 <widget class="QLabel" name="label_409">
+                <item row="4" column="0">
+                 <widget class="QLabel" name="label_407">
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
@@ -11854,11 +12103,95 @@ QPushButton:disabled{background-color: grey;}</string>
                    </size>
                   </property>
                   <property name="text">
-                   <string>Loop 4</string>
+                   <string>Loop 2</string>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="3">
+                <item row="0" column="1">
+                 <widget class="QLabel" name="label_106">
+                  <property name="text">
+                   <string>Repetitions</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="2">
+                 <widget class="QLineEdit" name="lineEditLoop5Start">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QLabel" name="label_107">
+                  <property name="text">
+                   <string>Start Address</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="3">
                  <widget class="QLineEdit" name="lineEditLoop0Stop">
                   <property name="minimumSize">
                    <size>
@@ -11925,8 +12258,91 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                  </widget>
                 </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_406">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Loop 1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="3">
+                 <widget class="QLineEdit" name="lineEditLoop1Stop">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="palette">
+                   <palette>
+                    <active>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </active>
+                    <inactive>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>36</red>
+                        <green>31</green>
+                        <blue>49</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </inactive>
+                    <disabled>
+                     <colorrole role="Text">
+                      <brush brushstyle="SolidPattern">
+                       <color alpha="255">
+                        <red>146</red>
+                        <green>149</green>
+                        <blue>149</blue>
+                       </color>
+                      </brush>
+                     </colorrole>
+                    </disabled>
+                   </palette>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Monospace</family>
+                   </font>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="readOnly">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
                 <item row="4" column="1">
-                 <widget class="QSpinBox" name="spinBoxLoop3Repetition">
+                 <widget class="QSpinBox" name="spinBoxLoop2Repetition">
                   <property name="minimumSize">
                    <size>
                     <width>110</width>
@@ -11947,7 +12363,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="2">
+                <item row="2" column="2">
                  <widget class="QLineEdit" name="lineEditLoop0Start">
                   <property name="minimumSize">
                    <size>
@@ -12014,192 +12430,26 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                  </widget>
                 </item>
-                <item row="5" column="3">
-                 <widget class="QLineEdit" name="lineEditLoop4Stop">
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_405">
                   <property name="minimumSize">
                    <size>
-                    <width>80</width>
-                    <height>31</height>
+                    <width>0</width>
+                    <height>0</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>80</width>
-                    <height>31</height>
+                    <width>50</width>
+                    <height>16777215</height>
                    </size>
                   </property>
-                  <property name="palette">
-                   <palette>
-                    <active>
-                     <colorrole role="Text">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>36</red>
-                        <green>31</green>
-                        <blue>49</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </active>
-                    <inactive>
-                     <colorrole role="Text">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>36</red>
-                        <green>31</green>
-                        <blue>49</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </inactive>
-                    <disabled>
-                     <colorrole role="Text">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>146</red>
-                        <green>149</green>
-                        <blue>149</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </disabled>
-                   </palette>
-                  </property>
-                  <property name="font">
-                   <font>
-                    <family>Monospace</family>
-                   </font>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="readOnly">
-                   <bool>false</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QSpinBox" name="spinBoxLoop0Repetition">
-                  <property name="minimumSize">
-                   <size>
-                    <width>110</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>110</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="maximum">
-                   <number>999999999</number>
-                  </property>
-                  <property name="value">
-                   <number>0</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="1">
-                 <widget class="QSpinBox" name="spinBoxLoop2Repetition">
-                  <property name="minimumSize">
-                   <size>
-                    <width>110</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>110</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="maximum">
-                   <number>999999999</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="3">
-                 <widget class="QLabel" name="label_108">
                   <property name="text">
-                   <string>Stop Address</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignCenter</set>
+                   <string>Loop 0</string>
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="3">
-                 <widget class="QLineEdit" name="lineEditLoop2Stop">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="palette">
-                   <palette>
-                    <active>
-                     <colorrole role="Text">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>36</red>
-                        <green>31</green>
-                        <blue>49</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </active>
-                    <inactive>
-                     <colorrole role="Text">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>36</red>
-                        <green>31</green>
-                        <blue>49</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </inactive>
-                    <disabled>
-                     <colorrole role="Text">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>146</red>
-                        <green>149</green>
-                        <blue>149</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </disabled>
-                   </palette>
-                  </property>
-                  <property name="font">
-                   <font>
-                    <family>Monospace</family>
-                   </font>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="readOnly">
-                   <bool>false</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="5" column="1">
+                <item row="6" column="1">
                  <widget class="QSpinBox" name="spinBoxLoop4Repetition">
                   <property name="minimumSize">
                    <size>
@@ -12221,110 +12471,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="0">
-                 <widget class="QLabel" name="label_407">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>50</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>Loop 2</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="5" column="2">
-                 <widget class="QLineEdit" name="lineEditLoop4Start">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="palette">
-                   <palette>
-                    <active>
-                     <colorrole role="Text">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>36</red>
-                        <green>31</green>
-                        <blue>49</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </active>
-                    <inactive>
-                     <colorrole role="Text">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>36</red>
-                        <green>31</green>
-                        <blue>49</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </inactive>
-                    <disabled>
-                     <colorrole role="Text">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>146</red>
-                        <green>149</green>
-                        <blue>149</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </disabled>
-                   </palette>
-                  </property>
-                  <property name="font">
-                   <font>
-                    <family>Monospace</family>
-                   </font>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="readOnly">
-                   <bool>false</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QLabel" name="label_106">
-                  <property name="text">
-                   <string>Repetitions</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignCenter</set>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="2">
-                 <widget class="QLabel" name="label_107">
-                  <property name="text">
-                   <string>Start Address</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignCenter</set>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="2">
+                <item row="3" column="2">
                  <widget class="QLineEdit" name="lineEditLoop1Start">
                   <property name="minimumSize">
                    <size>
@@ -12388,8 +12535,8 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                  </widget>
                 </item>
-                <item row="4" column="0">
-                 <widget class="QLabel" name="label_408">
+                <item row="8" column="0">
+                 <widget class="QLabel" name="label_419">
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
@@ -12403,12 +12550,12 @@ QPushButton:disabled{background-color: grey;}</string>
                    </size>
                   </property>
                   <property name="text">
-                   <string>Loop 3</string>
+                   <string>Limits:</string>
                   </property>
                  </widget>
                 </item>
-                <item row="6" column="2">
-                 <widget class="QLineEdit" name="lineEditLoop5Start">
+                <item row="8" column="2">
+                 <widget class="QLineEdit" name="lineEditStartAddress">
                   <property name="minimumSize">
                    <size>
                     <width>80</width>
@@ -12463,6 +12610,9 @@ QPushButton:disabled{background-color: grey;}</string>
                     <family>Monospace</family>
                    </font>
                   </property>
+                  <property name="text">
+                   <string/>
+                  </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
@@ -12471,8 +12621,8 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                  </widget>
                 </item>
-                <item row="4" column="3">
-                 <widget class="QLineEdit" name="lineEditLoop3Stop">
+                <item row="8" column="3">
+                 <widget class="QLineEdit" name="lineEditStopAddress">
                   <property name="minimumSize">
                    <size>
                     <width>80</width>
@@ -12541,7 +12691,7 @@ QPushButton:disabled{background-color: grey;}</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>520</y>
+                 <y>360</y>
                  <width>711</width>
                  <height>111</height>
                 </rect>
@@ -12636,305 +12786,11 @@ QPushButton:disabled{background-color: grey;}</string>
                 </item>
                </layout>
               </widget>
-              <widget class="QFrame" name="frame_15">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>10</y>
-                 <width>711</width>
-                 <height>161</height>
-                </rect>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Sunken</enum>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_6">
-                <item row="0" column="1">
-                 <widget class="QSpinBox" name="spinBoxRunF">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="minimumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="buttonSymbols">
-                   <enum>QAbstractSpinBox::UpDownArrows</enum>
-                  </property>
-                  <property name="maximum">
-                   <number>1000</number>
-                  </property>
-                  <property name="value">
-                   <number>0</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="label_71">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="minimumSize">
-                   <size>
-                    <width>200</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>ADC Clock Frequency (MHz):</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QSpinBox" name="spinBoxADCF">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="minimumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="4">
-                 <widget class="QSpinBox" name="spinBoxDBITF">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="minimumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="maximum">
-                   <number>1000</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="0">
-                 <widget class="QLabel" name="label_73">
-                  <property name="text">
-                   <string>ADC Pipeline:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="3">
-                 <widget class="QLabel" name="label_74">
-                  <property name="minimumSize">
-                   <size>
-                    <width>200</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>DBIT Clock Frequency (MHz):</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="1">
-                 <widget class="QSpinBox" name="spinBoxADCPhase">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="minimumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="maximum">
-                   <number>159</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="3">
-                 <widget class="QLabel" name="label_75">
-                  <property name="text">
-                   <string>DBIT Clock Phase (a.u.):</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="4">
-                 <widget class="QSpinBox" name="spinBoxDBITPhase">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="minimumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="maximum">
-                   <number>67</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="1">
-                 <widget class="QSpinBox" name="spinBoxADCPipeline">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="minimumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="3">
-                 <widget class="QLabel" name="label_76">
-                  <property name="text">
-                   <string>DBIT Pipeline:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="4">
-                 <widget class="QSpinBox" name="spinBoxDBITPipeline">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="minimumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>125</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="2">
-                 <spacer name="horizontalSpacer">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeType">
-                   <enum>QSizePolicy::Expanding</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>10</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="2" column="0">
-                 <widget class="QLabel" name="label_72">
-                  <property name="text">
-                   <string>ADC Clock Phase (a.u.):</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_70">
-                  <property name="text">
-                   <string>Run Clock Frequency (MHz):</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
               <widget class="QWidget" name="horizontalLayoutWidget_2">
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>790</y>
+                 <y>710</y>
                  <width>711</width>
                  <height>51</height>
                 </rect>
@@ -13041,271 +12897,13 @@ QPushButton:disabled{background-color: grey;}</string>
                 </item>
                </layout>
               </widget>
-              <widget class="QFrame" name="frame_16">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>180</y>
-                 <width>711</width>
-                 <height>51</height>
-                </rect>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Sunken</enum>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_4">
-                <item row="0" column="2">
-                 <spacer name="horizontalSpacer_8">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeType">
-                   <enum>QSizePolicy::Expanding</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="0" column="4">
-                 <widget class="QLineEdit" name="lineEditStartAddress">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="palette">
-                   <palette>
-                    <active>
-                     <colorrole role="Text">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>36</red>
-                        <green>31</green>
-                        <blue>49</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </active>
-                    <inactive>
-                     <colorrole role="Text">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>36</red>
-                        <green>31</green>
-                        <blue>49</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </inactive>
-                    <disabled>
-                     <colorrole role="Text">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>146</red>
-                        <green>149</green>
-                        <blue>149</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </disabled>
-                   </palette>
-                  </property>
-                  <property name="font">
-                   <font>
-                    <family>Monospace</family>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="readOnly">
-                   <bool>false</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QLabel" name="label_419">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>50</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>Limits:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="7">
-                 <widget class="QLabel" name="label_78">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>Stop Address:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="0">
-                 <spacer name="horizontalSpacer_9">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeType">
-                   <enum>QSizePolicy::Fixed</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>15</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="0" column="5">
-                 <spacer name="horizontalSpacer_5">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeType">
-                   <enum>QSizePolicy::Expanding</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="0" column="8">
-                 <widget class="QLineEdit" name="lineEditStopAddress">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="palette">
-                   <palette>
-                    <active>
-                     <colorrole role="Text">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>36</red>
-                        <green>31</green>
-                        <blue>49</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </active>
-                    <inactive>
-                     <colorrole role="Text">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>36</red>
-                        <green>31</green>
-                        <blue>49</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </inactive>
-                    <disabled>
-                     <colorrole role="Text">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>146</red>
-                        <green>149</green>
-                        <blue>149</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </disabled>
-                   </palette>
-                  </property>
-                  <property name="font">
-                   <font>
-                    <family>Monospace</family>
-                   </font>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="readOnly">
-                   <bool>false</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="3">
-                 <widget class="QLabel" name="label_77">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>Start Address: </string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="9">
-                 <spacer name="horizontalSpacer_6">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeType">
-                   <enum>QSizePolicy::Fixed</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-               </layout>
-              </widget>
               <widget class="QFrame" name="frame_21">
                <property name="geometry">
                 <rect>
                  <x>430</x>
-                 <y>240</y>
+                 <y>20</y>
                  <width>291</width>
-                 <height>271</height>
+                 <height>281</height>
                 </rect>
                </property>
                <property name="frameShape">
@@ -13977,9 +13575,9 @@ QPushButton:disabled{background-color: grey;}</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>640</y>
+                 <y>490</y>
                  <width>711</width>
-                 <height>151</height>
+                 <height>211</height>
                 </rect>
                </property>
                <property name="frameShape">
@@ -13989,24 +13587,30 @@ QPushButton:disabled{background-color: grey;}</string>
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QGridLayout" name="gridLayout_9">
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_8">
+                <item row="2" column="1">
+                 <widget class="QLabel" name="label_413">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
                   <property name="maximumSize">
                    <size>
-                    <width>100</width>
-                    <height>20</height>
+                    <width>50</width>
+                    <height>16777215</height>
                    </size>
                   </property>
                   <property name="text">
-                   <string>Viewer</string>
+                   <string>:</string>
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="2">
-                 <widget class="QLabel" name="label_7">
+                <item row="0" column="4">
+                 <widget class="QLabel" name="label_5">
                   <property name="maximumSize">
                    <size>
-                    <width>80</width>
+                    <width>100</width>
                     <height>20</height>
                    </size>
                   </property>
@@ -14016,7 +13620,7 @@ QPushButton:disabled{background-color: grey;}</string>
                    </font>
                   </property>
                   <property name="text">
-                   <string>Color</string>
+                   <string>Alpha</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -14044,49 +13648,11 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="3">
-                 <widget class="QComboBox" name="comboBoxPatWaitLineStyle">
-                  <property name="minimumSize">
-                   <size>
-                    <width>70</width>
-                    <height>30</height>
-                   </size>
-                  </property>
+                <item row="0" column="2">
+                 <widget class="QLabel" name="label_7">
                   <property name="maximumSize">
                    <size>
-                    <width>70</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="toolTip">
-                   <string>Line Style</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="1">
-                 <widget class="QLabel" name="label_413">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>50</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="3">
-                 <widget class="QLabel" name="label_6">
-                  <property name="maximumSize">
-                   <size>
-                    <width>70</width>
+                    <width>80</width>
                     <height>20</height>
                    </size>
                   </property>
@@ -14096,10 +13662,23 @@ QPushButton:disabled{background-color: grey;}</string>
                    </font>
                   </property>
                   <property name="text">
-                   <string>Line style</string>
+                   <string>Color</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_8">
+                  <property name="maximumSize">
+                   <size>
+                    <width>100</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Viewer</string>
                   </property>
                  </widget>
                 </item>
@@ -14114,7 +13693,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   <property name="maximumSize">
                    <size>
                     <width>100</width>
-                    <height>16777215</height>
+                    <height>32</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -14126,147 +13705,6 @@ QPushButton:disabled{background-color: grey;}</string>
                   <property name="singleStep">
                    <double>0.010000000000000</double>
                   </property>
-                 </widget>
-                </item>
-                <item row="2" column="5">
-                 <widget class="QDoubleSpinBox" name="doubleSpinBoxLoopAlphaRect">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="toolTip">
-                   <string>Alpha Rect</string>
-                  </property>
-                  <property name="maximum">
-                   <double>1.000000000000000</double>
-                  </property>
-                  <property name="singleStep">
-                   <double>0.010000000000000</double>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QLabel" name="label_412">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>50</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="4">
-                 <widget class="QDoubleSpinBox" name="doubleSpinBoxWaitAlpha">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>31</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="toolTip">
-                   <string>Alpha</string>
-                  </property>
-                  <property name="maximum">
-                   <double>1.000000000000000</double>
-                  </property>
-                  <property name="singleStep">
-                   <double>0.010000000000000</double>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="2">
-                 <widget class="QComboBox" name="comboBoxPatWaitColor">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>30</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="2">
-                 <widget class="QComboBox" name="comboBoxPatLoopColor">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>30</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QComboBox" name="comboBoxPatWait">
-                  <property name="minimumSize">
-                   <size>
-                    <width>100</width>
-                    <height>30</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <item>
-                   <property name="text">
-                    <string> Wait 0</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string> Wait 1</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string> Wait 2</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string> Wait 3</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string> Wait 4</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string> Wait 5</string>
-                   </property>
-                  </item>
                  </widget>
                 </item>
                 <item row="2" column="0">
@@ -14274,13 +13712,13 @@ QPushButton:disabled{background-color: grey;}</string>
                   <property name="minimumSize">
                    <size>
                     <width>100</width>
-                    <height>30</height>
+                    <height>32</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
                     <width>100</width>
-                    <height>16777215</height>
+                    <height>32</height>
                    </size>
                   </property>
                   <item>
@@ -14315,12 +13753,121 @@ QPushButton:disabled{background-color: grey;}</string>
                   </item>
                  </widget>
                 </item>
+                <item row="1" column="1">
+                 <widget class="QLabel" name="label_412">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="4">
+                 <widget class="QDoubleSpinBox" name="doubleSpinBoxWaitAlpha">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>100</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Alpha</string>
+                  </property>
+                  <property name="maximum">
+                   <double>1.000000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>0.010000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QComboBox" name="comboBoxPatWait">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>100</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string> Wait 0</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string> Wait 1</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string> Wait 2</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string> Wait 3</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string> Wait 4</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string> Wait 5</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item row="1" column="3">
+                 <widget class="QComboBox" name="comboBoxPatWaitLineStyle">
+                  <property name="minimumSize">
+                   <size>
+                    <width>70</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>70</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Line Style</string>
+                  </property>
+                 </widget>
+                </item>
                 <item row="1" column="5">
                  <widget class="QDoubleSpinBox" name="doubleSpinBoxWaitAlphaRect">
                   <property name="maximumSize">
                    <size>
                     <width>100</width>
-                    <height>16777215</height>
+                    <height>32</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -14334,18 +13881,34 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                  </widget>
                 </item>
+                <item row="2" column="2">
+                 <widget class="QComboBox" name="comboBoxPatLoopColor">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
                 <item row="2" column="3">
                  <widget class="QComboBox" name="comboBoxPatLoopLineStyle">
                   <property name="minimumSize">
                    <size>
                     <width>70</width>
-                    <height>30</height>
+                    <height>32</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
                     <width>70</width>
-                    <height>16777215</height>
+                    <height>32</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -14353,11 +13916,30 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="4">
-                 <widget class="QLabel" name="label_5">
+                <item row="2" column="5">
+                 <widget class="QDoubleSpinBox" name="doubleSpinBoxLoopAlphaRect">
                   <property name="maximumSize">
                    <size>
                     <width>100</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Alpha Rect</string>
+                  </property>
+                  <property name="maximum">
+                   <double>1.000000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>0.010000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
+                 <widget class="QLabel" name="label_6">
+                  <property name="maximumSize">
+                   <size>
+                    <width>70</width>
                     <height>20</height>
                    </size>
                   </property>
@@ -14367,47 +13949,89 @@ QPushButton:disabled{background-color: grey;}</string>
                    </font>
                   </property>
                   <property name="text">
-                   <string>Alpha</string>
+                   <string>Line style</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="0" colspan="6">
-                 <layout class="QHBoxLayout" name="horizontalLayout_4">
+                <item row="1" column="2">
+                 <widget class="QComboBox" name="comboBoxPatWaitColor">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QComboBox" name="comboBoxPatColorSelect">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>100</width>
+                    <height>32</height>
+                   </size>
+                  </property>
                   <item>
-                   <spacer name="horizontalSpacer_17">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                     <enum>QSizePolicy::Expanding</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>0</height>
-                     </size>
-                    </property>
-                   </spacer>
+                   <property name="text">
+                    <string> Plot color 1</string>
+                   </property>
                   </item>
+                  <item>
+                   <property name="text">
+                    <string> Plot color 2</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item row="3" column="2">
+                 <widget class="QComboBox" name="comboBoxPatColor">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="2" colspan="4">
+                 <layout class="QHBoxLayout" name="horizontalLayout_4">
                   <item>
                    <widget class="QLabel" name="label_2">
                     <property name="minimumSize">
                      <size>
-                      <width>90</width>
+                      <width>100</width>
                       <height>0</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>90</width>
+                      <width>100</width>
                       <height>16777215</height>
                      </size>
                     </property>
                     <property name="text">
-                     <string>Clock spacing</string>
+                     <string>Clock spacing:</string>
                     </property>
                    </widget>
                   </item>
@@ -14415,14 +14039,14 @@ QPushButton:disabled{background-color: grey;}</string>
                    <widget class="QSpinBox" name="spinBoxPatClockSpacing">
                     <property name="minimumSize">
                      <size>
-                      <width>50</width>
-                      <height>31</height>
+                      <width>70</width>
+                      <height>32</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
                       <width>16777215</width>
-                      <height>16777215</height>
+                      <height>32</height>
                      </size>
                     </property>
                     <property name="maximum">
@@ -14434,7 +14058,7 @@ QPushButton:disabled{background-color: grey;}</string>
                    </widget>
                   </item>
                   <item>
-                   <spacer name="horizontalSpacer_16">
+                   <spacer name="horizontalSpacer_17">
                     <property name="orientation">
                      <enum>Qt::Horizontal</enum>
                     </property>
@@ -14443,7 +14067,7 @@ QPushButton:disabled{background-color: grey;}</string>
                     </property>
                     <property name="sizeHint" stdset="0">
                      <size>
-                      <width>200</width>
+                      <width>40</width>
                       <height>0</height>
                      </size>
                     </property>
@@ -14455,22 +14079,6 @@ QPushButton:disabled{background-color: grey;}</string>
                      <string>Clocks Number</string>
                     </property>
                    </widget>
-                  </item>
-                  <item>
-                   <spacer name="horizontalSpacer_18">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                     <enum>QSizePolicy::Expanding</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>200</width>
-                      <height>0</height>
-                     </size>
-                    </property>
-                   </spacer>
                   </item>
                   <item>
                    <spacer name="horizontalSpacer_2">
@@ -14509,69 +14117,17 @@ QPushButton:disabled{background-color: grey;}</string>
                     <property name="minimumSize">
                      <size>
                       <width>0</width>
-                      <height>31</height>
+                      <height>32</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>16777215</width>
+                      <height>32</height>
                      </size>
                     </property>
                     <property name="toolTip">
                      <string>Alpha Rect</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <spacer name="horizontalSpacer_19">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                     <enum>QSizePolicy::Expanding</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>200</width>
-                      <height>0</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item>
-                   <widget class="QComboBox" name="comboBoxPatColorSelect">
-                    <property name="minimumSize">
-                     <size>
-                      <width>100</width>
-                      <height>30</height>
-                     </size>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>100</width>
-                      <height>16777215</height>
-                     </size>
-                    </property>
-                    <item>
-                     <property name="text">
-                      <string> Plot color 1</string>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string> Plot color 2</string>
-                     </property>
-                    </item>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QComboBox" name="comboBoxPatColor">
-                    <property name="minimumSize">
-                     <size>
-                      <width>80</width>
-                      <height>30</height>
-                     </size>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>80</width>
-                      <height>16777215</height>
-                     </size>
                     </property>
                    </widget>
                   </item>
@@ -15075,9 +14631,9 @@ QPushButton:disabled{background-color: grey;}</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>150</y>
+                 <y>300</y>
                  <width>711</width>
-                 <height>221</height>
+                 <height>181</height>
                 </rect>
                </property>
                <property name="frameShape">
@@ -15091,7 +14647,7 @@ QPushButton:disabled{background-color: grey;}</string>
                  <widget class="QLabel" name="label_127">
                   <property name="font">
                    <font>
-                    <pointsize>13</pointsize>
+                    <pointsize>11</pointsize>
                    </font>
                   </property>
                   <property name="frameShadow">
@@ -15221,9 +14777,9 @@ QPushButton:disabled{background-color: grey;}</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>390</y>
+                 <y>490</y>
                  <width>711</width>
-                 <height>81</height>
+                 <height>101</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -15257,13 +14813,13 @@ QPushButton:disabled{background-color: grey;}</string>
                   <property name="minimumSize">
                    <size>
                     <width>120</width>
-                    <height>31</height>
+                    <height>32</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
                     <width>16777215</width>
-                    <height>16777215</height>
+                    <height>32</height>
                    </size>
                   </property>
                   <property name="alignment">
@@ -15314,13 +14870,13 @@ QPushButton:disabled{background-color: grey;}</string>
                   <property name="minimumSize">
                    <size>
                     <width>120</width>
-                    <height>31</height>
+                    <height>32</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
                     <width>150</width>
-                    <height>16777215</height>
+                    <height>32</height>
                    </size>
                   </property>
                   <property name="decimals">
@@ -15385,13 +14941,13 @@ QPushButton:disabled{background-color: grey;}</string>
                   <property name="minimumSize">
                    <size>
                     <width>120</width>
-                    <height>31</height>
+                    <height>32</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
                     <width>16777215</width>
-                    <height>16777215</height>
+                    <height>32</height>
                    </size>
                   </property>
                   <property name="alignment">
@@ -15408,9 +14964,9 @@ QPushButton:disabled{background-color: grey;}</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>560</y>
+                 <y>680</y>
                  <width>711</width>
-                 <height>91</height>
+                 <height>81</height>
                 </rect>
                </property>
                <property name="frameShape">
@@ -15658,9 +15214,9 @@ QPushButton:checked{background-color: red;}</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>490</y>
+                 <y>600</y>
                  <width>711</width>
-                 <height>51</height>
+                 <height>71</height>
                 </rect>
                </property>
                <property name="frameShape">
@@ -15695,7 +15251,13 @@ QPushButton:checked{background-color: red;}</string>
                   <property name="minimumSize">
                    <size>
                     <width>120</width>
-                    <height>31</height>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>32</height>
                    </size>
                   </property>
                   <property name="alignment">
@@ -15749,7 +15311,7 @@ QPushButton:checked{background-color: red;}</string>
                  <x>10</x>
                  <y>10</y>
                  <width>711</width>
-                 <height>121</height>
+                 <height>71</height>
                 </rect>
                </property>
                <property name="frameShape">
@@ -15758,108 +15320,432 @@ QPushButton:checked{background-color: red;}</string>
                <property name="frameShadow">
                 <enum>QFrame::Sunken</enum>
                </property>
-               <widget class="QLabel" name="labelAnalog">
-                <property name="geometry">
-                 <rect>
-                  <x>370</x>
-                  <y>30</y>
-                  <width>111</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Analog Samples:</string>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxDigital">
-                <property name="geometry">
-                 <rect>
-                  <x>500</x>
-                  <y>70</y>
-                  <width>201</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>100000</number>
-                </property>
-               </widget>
-               <widget class="QLabel" name="labelDigital">
-                <property name="geometry">
-                 <rect>
-                  <x>370</x>
-                  <y>70</y>
-                  <width>111</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Digital Samples:</string>
-                </property>
-               </widget>
-               <widget class="QSpinBox" name="spinBoxAnalog">
-                <property name="geometry">
-                 <rect>
-                  <x>500</x>
-                  <y>30</y>
-                  <width>201</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>100000</number>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_398">
-                <property name="geometry">
-                 <rect>
-                  <x>20</x>
-                  <y>30</y>
-                  <width>121</width>
-                  <height>31</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>Read Out Mode: </string>
-                </property>
-               </widget>
-               <widget class="QComboBox" name="comboBoxROMode">
-                <property name="geometry">
-                 <rect>
-                  <x>150</x>
-                  <y>30</y>
-                  <width>191</width>
-                  <height>29</height>
-                 </rect>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>ANALOG</string>
-                 </property>
+               <layout class="QGridLayout" name="gridLayout_19">
+                <item row="1" column="5">
+                 <widget class="QSpinBox" name="spinBoxRunF">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="buttonSymbols">
+                   <enum>QAbstractSpinBox::UpDownArrows</enum>
+                  </property>
+                  <property name="maximum">
+                   <number>1000</number>
+                  </property>
+                  <property name="value">
+                   <number>0</number>
+                  </property>
+                 </widget>
                 </item>
-                <item>
-                 <property name="text">
-                  <string>DIGITAL</string>
-                 </property>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_398">
+                  <property name="text">
+                   <string>Read Out Mode: </string>
+                  </property>
+                 </widget>
                 </item>
-                <item>
-                 <property name="text">
-                  <string>ANALOG_AND_DIGITAL</string>
-                 </property>
+                <item row="1" column="2">
+                 <widget class="QComboBox" name="comboBoxROMode">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>ANALOG</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>DIGITAL</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>ANALOG_AND_DIGITAL</string>
+                   </property>
+                  </item>
+                 </widget>
                 </item>
-               </widget>
+                <item row="1" column="4">
+                 <widget class="QLabel" name="label_70">
+                  <property name="text">
+                   <string>Run Clock Frequency (MHz):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="3">
+                 <spacer name="horizontalSpacer_24">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QFrame" name="frame_15">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>90</y>
+                 <width>711</width>
+                 <height>201</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Sunken</enum>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_6">
+                <item row="2" column="3">
+                 <widget class="QLabel" name="label_74">
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>DBIT Clock Frequency (MHz):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_71">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>ADC Clock Frequency (MHz):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="4">
+                 <widget class="QSpinBox" name="spinBoxDBITPhase">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>67</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="3">
+                 <widget class="QLabel" name="label_76">
+                  <property name="text">
+                   <string>DBIT Pipeline:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QSpinBox" name="spinBoxADCF">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="1">
+                 <widget class="QSpinBox" name="spinBoxADCPipeline">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QLabel" name="label_73">
+                  <property name="text">
+                   <string>ADC Pipeline:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_72">
+                  <property name="text">
+                   <string>ADC Clock Phase (a.u.):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="3">
+                 <widget class="QLabel" name="label_75">
+                  <property name="text">
+                   <string>DBIT Clock Phase (a.u.):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
+                 <spacer name="horizontalSpacer">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>10</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="2" column="4">
+                 <widget class="QSpinBox" name="spinBoxDBITF">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>1000</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="4">
+                 <widget class="QSpinBox" name="spinBoxDBITPipeline">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QSpinBox" name="spinBoxADCPhase">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>159</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="labelAnalog">
+                  <property name="text">
+                   <string>Analog Samples:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QSpinBox" name="spinBoxAnalog">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="minimum">
+                   <number>1</number>
+                  </property>
+                  <property name="maximum">
+                   <number>100000</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
+                 <widget class="QLabel" name="labelDigital">
+                  <property name="text">
+                   <string>Digital Samples:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="4">
+                 <widget class="QSpinBox" name="spinBoxDigital">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="minimum">
+                   <number>1</number>
+                  </property>
+                  <property name="maximum">
+                   <number>100000</number>
+                  </property>
+                  <property name="value">
+                   <number>1</number>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </widget>
             </widget>

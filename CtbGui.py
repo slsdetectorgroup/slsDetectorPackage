@@ -972,6 +972,7 @@ class MainWindow(QtWidgets.QMainWindow):
             return
         # load pattern
         self.det.pattern = pattern_file
+        self.lineEditPatternFile.setText(self.det.patfname[0])
 
 
     def getPatViewerColors(self):
@@ -1704,6 +1705,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxPatClockSpacing.setValue(self.clock_vertical_lines_spacing)
         self.checkBoxPatShowClockNumber.setChecked(self.show_clocks_number)
         self.doubleSpinBoxLineWidth.setValue(self.line_width)
+        self.lineEditPatternFile.setText(self.det.patfname[0])
         # rest gets updated after connecting to slots
 
         # Acquisition Tab

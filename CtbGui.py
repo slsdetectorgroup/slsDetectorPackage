@@ -30,7 +30,7 @@ import signal
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    signalAcquire = QtCore.pyqtSignal()
+    signalShortcutAcquire = QtCore.pyqtSignal()
 
     def __init__(self, *args, **kwargs):
 
@@ -71,8 +71,11 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.alias_file is not None:
             self.loadAliasFile()
 
-        self.signalAcquire.connect(self.pushButtonStart.click)
+        self.signalShortcutAcquire.connect(self.pushButtonStart.click)
         signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+        self.showPatternViewer(False)
+
         
 
     def loadAliasFile(self):
@@ -982,11 +985,11 @@ class MainWindow(QtWidgets.QMainWindow):
         print('\n')
 
     def viewPattern(self):
+        self.showPatternViewer(True)
         pattern_file = self.compilePattern()
         if not pattern_file:
             return
-
-
+        
         signalNames = self.det.getSignalNames()
         p = PlotPattern(pattern_file, signalNames, self.colors_plot, self.colors_wait, self.linestyles_wait, self.alpha_wait, self.alpha_wait_rect, self.colors_loop, self.linestyles_loop, self.alpha_loop, self.alpha_loop_rect, self.clock_vertical_lines_spacing, self.show_clocks_number, self.line_width, )
         
@@ -1049,27 +1052,22 @@ class MainWindow(QtWidgets.QMainWindow):
         if not self.radioButtonNoPlot.isChecked():
             self.read_timer.start(Defines.Time_Plot_Refresh_ms)
         
-        #self.showPlot()
 
-    ''' after being able to resize windows
-    def showPlot(self):
-        self.plotWidgetAnalog.hide()
-        self.plotWidgetDigital.hide()
-        # only enable required plot and adc/digital bits enabled
-        if not self.radioButtonNoPlot.isChecked():
-            if self.romode.value in [1, 2] and self.nDbitEnabled > 0:
-                for i in range(64):
-                    checkBox = getattr(self, f"checkBoxBIT{i}Plot")
-                    if checkBox.isChecked():
-                        self.plotWidgetDigital.show()
-                        break
-            if self.romode.value in [0, 2] and self.nADCEnabled > 0:
-                for i in range(32):
-                    checkBox = getattr(self, f"checkBoxADC{i}Plot")
-                    if checkBox.isChecked():
-                        self.plotWidgetAnalog.show()
-                        break   
-    ''' 
+    def showPatternViewer(self, enable):
+        if enable:
+            self.framePatternViewer.show()
+            self.plotWidgetAnalog.hide()
+            self.plotWidgetDigital.hide()  
+        else:
+            self.framePatternViewer.hide()
+            self.plotWidgetAnalog.hide()
+            self.plotWidgetDigital.hide()
+
+            if self.romode.value in [0, 2]:
+                self.plotWidgetAnalog.show()
+            if self.romode.value in [1, 2]:
+                self.plotWidgetDigital.show()
+
 
     def setSerialOffset(self):
         print("plot options - Not implemented yet")
@@ -1150,7 +1148,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDigital.editingFinished.connect(self.setDigital)
         self.getAnalog()
         self.getDigital()
-        #self.showPlot()
 
     def setReadOut(self):
         if self.comboBoxROMode.currentIndex() == 0:
@@ -1359,6 +1356,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def toggleAcquire(self):
         if self.pushButtonStart.isChecked():
+            self.showPatternViewer(False)
             self.acquire()
         else:
             self.stopAcquisition()
@@ -1563,7 +1561,6 @@ class MainWindow(QtWidgets.QMainWindow):
             #print(color.getRgb())
 
     def refresh_tab(self, tab_index):
-        patternViewer = False
         match tab_index:
             case 0:
                 self.refresh_tab_dac()
@@ -1577,19 +1574,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.refresh_tab_adc()
             case 5:
                 self.refresh_tab_pattern()
-                patternViewer = True
             case 7:
                 self.refresh_tab_acquisition()
-        
-        if patternViewer:
-            self.plotWidgetAnalog.hide()
-            self.plotWidgetDigital.hide()
-            self.framePatternViewer.show()
-        else:
-            self.plotWidgetAnalog.show()
-            self.plotWidgetDigital.show()
-            self.framePatternViewer.hide()           
-
 
     def refresh_tab_dac(self):
         self.updateDACNames()
@@ -1735,13 +1721,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def keyPressEvent(self, event):
         if event.modifiers() & QtCore.Qt.ShiftModifier:
             if event.key() == QtCore.Qt.Key_Return:
-                self.signalAcquire.emit()
+                self.signalShortcutAcquire.emit()
 
 
     def connect_ui(self):
-               # Plotting the data
-        # For the action options in app
-        # TODO Only add the components of action options
         # Show info
         self.actionInfo.triggered.connect(self.showInfo)
         self.actionOpen.triggered.connect(self.openFile)

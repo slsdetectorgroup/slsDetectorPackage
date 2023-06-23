@@ -26,9 +26,12 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 
 import argparse
 import alias_utility 
+import signal
 
 
 class MainWindow(QtWidgets.QMainWindow):
+    signalAcquire = QtCore.pyqtSignal()
+
     def __init__(self, *args, **kwargs):
 
         parser = argparse.ArgumentParser()
@@ -68,6 +71,9 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.alias_file is not None:
             self.loadAliasFile()
 
+        self.signalAcquire.connect(self.pushButtonStart.click)
+        signal.signal(signal.SIGINT, signal.SIG_DFL)
+        
 
     def loadAliasFile(self):
         print(f'Loading Alias file: {self.alias_file}')
@@ -1725,6 +1731,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.gridLayoutPatternViewer.addWidget(self.canvas)
         self.figure.clear()
 
+
+    def keyPressEvent(self, event):
+        if event.modifiers() & QtCore.Qt.ShiftModifier:
+            if event.key() == QtCore.Qt.Key_Return:
+                self.signalAcquire.emit()
 
 
     def connect_ui(self):

@@ -135,7 +135,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>5</number>
+              <number>7</number>
              </property>
              <widget class="QWidget" name="tabDac">
               <attribute name="title">
@@ -16198,6 +16198,9 @@ QPushButton:disabled{background-color: grey;}</string>
                      </colorrole>
                     </disabled>
                    </palette>
+                  </property>
+                  <property name="toolTip">
+                   <string>Shift + Enter is the keyboard shortcut to start/stop acquisition from any tab</string>
                   </property>
                   <property name="styleSheet">
                    <string notr="true">QPushButton {background-color: rgb(85, 170, 127);} 

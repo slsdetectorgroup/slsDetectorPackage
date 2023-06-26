@@ -15716,9 +15716,9 @@ QPushButton:disabled{background-color: grey;}</string>
                      </widget>
                     </item>
                     <item row="0" column="0">
-                     <widget class="QRadioButton" name="radioButtonOverlap">
+                     <widget class="QRadioButton" name="radioButtonOverlay">
                       <property name="text">
-                       <string>Overlap</string>
+                       <string>Overlay</string>
                       </property>
                      </widget>
                     </item>

@@ -1053,6 +1053,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.plotWidgetDigital.setLabel('left',"<span style=\"color:black;font-size:14px\">Digital Bit</span>")
             self.plotWidgetDigital.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Digital Sample [#]</span>")
             self.plotWidgetDigital.addLegend(colCount = 4)
+            self.stackedWidgetPlotType.setCurrentIndex(0)
+
 
         elif self.radioButtonImage.isChecked():
             self.comboBoxPlot.setEnabled(True)
@@ -1067,10 +1069,16 @@ class MainWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.warning(self, "Not Implemented Yet", "Sorry, this is not implemented yet.", QtWidgets.QMessageBox.Ok)
                 self.comboBoxPlot.setCurrentIndex(0)
             self.comboBoxPlot.currentIndexChanged.connect(self.plotOptions)
+            self.stackedWidgetPlotType.setCurrentIndex(2)
                 
                 
+        if self.radioButtonNoPlot.isChecked():
+            self.labelPlotOptions.hide()
+            self.stackedWidgetPlotType.hide()
         # enable plotting
-        if not self.radioButtonNoPlot.isChecked():
+        else:
+            self.labelPlotOptions.show()
+            self.stackedWidgetPlotType.show()
             self.read_timer.start(Defines.Time_Plot_Refresh_ms)
         
 
@@ -1409,14 +1417,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.startMeasurement()
 
     def startMeasurement(self):
-        self.updateCurrentMeasurement()
-        self.updateCurrentFrame(0)
-        self.updateAcquiredFrames(0)
-        self.progressBar.setValue(0)
+        try:
+            self.updateCurrentMeasurement()
+            self.updateCurrentFrame(0)
+            self.updateAcquiredFrames(0)
+            self.progressBar.setValue(0)
 
-        self.det.rx_start()
-        self.det.start()
-        self.checkEndofAcquisition()
+            self.det.rx_start()
+            self.det.start()
+            self.checkEndofAcquisition()
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Acquire Fail", str(e), QtWidgets.QMessageBox.Ok)
+            self.checkEndofAcquisition()
 
     def checkEndofAcquisition(self):
         caught = self.det.rx_framescaught
@@ -1448,6 +1460,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.det.rx_stop()
             if self.checkBoxFileWrite.isChecked():
                 self.spinBoxAcquisitionIndex.stepUp()
+                self.setAccquisitionIndex()
             # next measurement
             self.currentMeasurement += 1
             if self.currentMeasurement < numMeasurments and not self.stoppedFlag:
@@ -1498,6 +1511,8 @@ class MainWindow(QtWidgets.QMainWindow):
                             pen = pg.mkPen(color = self.getADCButtonColor(i), width = 1)
                             legendName = getattr(self, f"labelADC{i}").text()
                             self.plotWidgetAnalog.plot(waveform, pen=pen, name = legendName)
+                            # TODO: stripe for analog? but without proper y axis not integrated for now
+                            
                 # digital
                 if self.romode.value in [1, 2]:
                     dbitoffset = self.rx_dbitoffset
@@ -1505,6 +1520,7 @@ class MainWindow(QtWidgets.QMainWindow):
                         dbitoffset += self.nADCEnabled * 2 * self.asamples
                     digital_array = np.array(np.frombuffer(data, offset = dbitoffset, dtype=np.uint8))
                     offset = 0
+                    irow = 0
                     for i in self.rx_dbitlist:
                         # where numbits * numsamples is not a multiple of 8
                         if offset % 8 != 0:
@@ -1528,7 +1544,11 @@ class MainWindow(QtWidgets.QMainWindow):
                                 offset += 1
                             pen = pg.mkPen(color = self.getDBitButtonColor(i), width = 1)
                             legendName = getattr(self, f"labelBIT{i}").text()
-                            self.plotWidgetDigital.plot(waveform, pen=pen, name = legendName)
+                            p = self.plotWidgetDigital.plot(waveform, pen=pen, name = legendName, stepMode = "left")
+                            # TODO: left axis does not show 0 to 1, but keeps increasing
+                            if self.radioButtonStripe.isChecked():
+                                p.setY(irow * 2)
+                                irow += 1
             # image
             else:           
                 # analog

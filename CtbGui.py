@@ -1409,14 +1409,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.startMeasurement()
 
     def startMeasurement(self):
-        self.updateCurrentMeasurement()
-        self.updateCurrentFrame(0)
-        self.updateAcquiredFrames(0)
-        self.progressBar.setValue(0)
+        try:
+            self.updateCurrentMeasurement()
+            self.updateCurrentFrame(0)
+            self.updateAcquiredFrames(0)
+            self.progressBar.setValue(0)
 
-        self.det.rx_start()
-        self.det.start()
-        self.checkEndofAcquisition()
+            self.det.rx_start()
+            self.det.start()
+            self.checkEndofAcquisition()
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Acquire Fail", str(e), QtWidgets.QMessageBox.Ok)
+            self.checkEndofAcquisition()
 
     def checkEndofAcquisition(self):
         caught = self.det.rx_framescaught
@@ -1448,6 +1452,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.det.rx_stop()
             if self.checkBoxFileWrite.isChecked():
                 self.spinBoxAcquisitionIndex.stepUp()
+                self.setAccquisitionIndex()
             # next measurement
             self.currentMeasurement += 1
             if self.currentMeasurement < numMeasurments and not self.stoppedFlag:

@@ -1528,7 +1528,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                 offset += 1
                             pen = pg.mkPen(color = self.getDBitButtonColor(i), width = 1)
                             legendName = getattr(self, f"labelBIT{i}").text()
-                            self.plotWidgetDigital.plot(waveform, pen=pen, name = legendName)
+                            self.plotWidgetDigital.plot(waveform, pen=pen, name = legendName, stepMode = "left")
             # image
             else:           
                 # analog

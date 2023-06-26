@@ -1511,6 +1511,8 @@ class MainWindow(QtWidgets.QMainWindow):
                             pen = pg.mkPen(color = self.getADCButtonColor(i), width = 1)
                             legendName = getattr(self, f"labelADC{i}").text()
                             self.plotWidgetAnalog.plot(waveform, pen=pen, name = legendName)
+                            # TODO: stripe for analog? but without proper y axis not integrated for now
+                            
                 # digital
                 if self.romode.value in [1, 2]:
                     dbitoffset = self.rx_dbitoffset
@@ -1543,6 +1545,7 @@ class MainWindow(QtWidgets.QMainWindow):
                             pen = pg.mkPen(color = self.getDBitButtonColor(i), width = 1)
                             legendName = getattr(self, f"labelBIT{i}").text()
                             p = self.plotWidgetDigital.plot(waveform, pen=pen, name = legendName, stepMode = "left")
+                            # TODO: left axis does not show 0 to 1, but keeps increasing
                             if self.radioButtonStripe.isChecked():
                                 p.setY(irow * 2)
                                 irow += 1

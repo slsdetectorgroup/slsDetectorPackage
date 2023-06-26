@@ -805,56 +805,77 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         if response[0]:
             self.lineEditCompiler.setText(response[0])
-
-    def setPatternFile(self):
-        if self.checkBoxCompile.isChecked():
-            filt='Pattern code(*.py *.c)'
-        else:
-            filt='Pattern file(*.pyat *.pat)'
+    
+    def setUncompiledPatternFile(self):
+        filt='Pattern code(*.py *.c)'
+        folder = os.path.dirname(self.det.patfname[0])
+        if not folder:
+            folder = os.getcwd()
         response = QtWidgets.QFileDialog.getOpenFileName(
             parent=self,
-            caption="Select a pattern file",
-            directory=os.getcwd(),
+            caption="Select an uncompiled pattern file",
+            directory=folder,
+            filter=filt
+        )
+        if response[0]:
+            self.lineEditUncompiled.setText(response[0])
+
+    def setPatternFile(self):
+        filt='Pattern file(*.pyat *.pat)'
+        folder = os.path.dirname(self.det.patfname[0])
+        if not folder:
+            folder = os.getcwd()
+        response = QtWidgets.QFileDialog.getOpenFileName(
+            parent=self,
+            caption="Select a compiled pattern file",
+            directory=folder,
             filter=filt
         )
         if response[0]:
             self.lineEditPatternFile.setText(response[0])
 
     def compilePattern(self):
-        pattern_file = self.lineEditPatternFile.text()
-        if not pattern_file:
-            QtWidgets.QMessageBox.warning(self, "Pattern Fail", "No pattern file selected. Please select one.", QtWidgets.QMessageBox.Ok)
+        compilerFile = self.lineEditCompiler.text()
+        if not compilerFile:
+            QtWidgets.QMessageBox.warning(self, "Compile Fail", "No compiler selected. Please select one.", QtWidgets.QMessageBox.Ok)
             return ""
-        # compile
-        if self.checkBoxCompile.isChecked():
-            compilerFile = self.lineEditCompiler.text()
-            if not compilerFile:
-                QtWidgets.QMessageBox.warning(self, "Compile Fail", "No compiler selected. Please select one.", QtWidgets.QMessageBox.Ok)
-                return ""
 
-            # if old compile file exists, backup and remove to ensure old copy not loaded
-            oldFile = Path(pattern_file + 'at')
-            if oldFile.is_file():
-                print("Moving old compiled pattern file to _bck") 
-                exit_status = os.system('mv '+ str(oldFile) + ' ' + str(oldFile) + '_bkup')
-                if exit_status != 0:
-                    retval = QtWidgets.QMessageBox.question(self, "Backup Fail", "Could not make a backup of old compiled code. Proceed anyway to compile and overwrite?", QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
-                    if retval == QtWidgets.QMessageBox.No:              
-                        return ""
+        pattern_file = self.lineEditUncompiled.text()
 
-            compileCommand = compilerFile + ' ' + pattern_file
-            print(compileCommand)
-            print("Compiling pattern code to .pat file")
-            exit_status = os.system(compileCommand)
+        # if old compile file exists, backup and remove to ensure old copy not loaded
+        oldFile = Path(pattern_file + 'at')
+        if oldFile.is_file():
+            print("Moving old compiled pattern file to _bck") 
+            exit_status = os.system('mv '+ str(oldFile) + ' ' + str(oldFile) + '_bkup')
             if exit_status != 0:
-                QtWidgets.QMessageBox.warning(self, "Compile Fail", "Could not compile pattern.", QtWidgets.QMessageBox.Ok)
-                return ""
-            pattern_file += 'at'
+                retval = QtWidgets.QMessageBox.question(self, "Backup Fail", "Could not make a backup of old compiled code. Proceed anyway to compile and overwrite?", QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+                if retval == QtWidgets.QMessageBox.No:              
+                    return ""
+
+        compileCommand = compilerFile + ' ' + pattern_file
+        print(compileCommand)
+        print("Compiling pattern code to .pat file")
+        exit_status = os.system(compileCommand)
+        if exit_status != 0:
+            QtWidgets.QMessageBox.warning(self, "Compile Fail", "Could not compile pattern.", QtWidgets.QMessageBox.Ok)
+            return ""
+        pattern_file += 'at'
         
         return pattern_file
 
+    def getCompiledPatFname(self):
+        if self.checkBoxCompile.isChecked():
+            pattern_file = self.compilePattern()
+        # pat name from pattern field
+        else:
+            pattern_file = self.lineEditPatternFile.text()
+            if not pattern_file:
+                QtWidgets.QMessageBox.warning(self, "Pattern Fail", "No pattern file selected. Please select one.", QtWidgets.QMessageBox.Ok)
+                return ""
+        return pattern_file
+
     def loadPattern(self):
-        pattern_file = self.compilePattern()
+        pattern_file = self.getCompiledPatFname()
         if not pattern_file:
             return
         # load pattern
@@ -986,7 +1007,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def viewPattern(self):
         self.showPatternViewer(True)
-        pattern_file = self.compilePattern()
+        pattern_file = self.getCompiledPatFname()
         if not pattern_file:
             return
         
@@ -1807,6 +1828,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 partial(self.setPatLoopWaitTime, i)
             )
         self.pushButtonCompiler.clicked.connect(self.setCompiler)
+        self.pushButtonUncompiled.clicked.connect(self.setUncompiledPatternFile)
         self.pushButtonPatternFile.clicked.connect(self.setPatternFile)
         self.pushButtonLoadPattern.clicked.connect(self.loadPattern)
         

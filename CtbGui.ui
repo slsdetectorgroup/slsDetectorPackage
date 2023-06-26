@@ -135,7 +135,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>7</number>
+              <number>5</number>
              </property>
              <widget class="QWidget" name="tabDac">
               <attribute name="title">
@@ -13804,7 +13804,7 @@ QPushButton:disabled{background-color: grey;}</string>
                  <x>10</x>
                  <y>350</y>
                  <width>711</width>
-                 <height>111</height>
+                 <height>141</height>
                 </rect>
                </property>
                <property name="frameShape">
@@ -13814,10 +13814,25 @@ QPushButton:disabled{background-color: grey;}</string>
                 <enum>QFrame::Sunken</enum>
                </property>
                <layout class="QGridLayout" name="gridLayout_2">
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_103">
+                <item row="2" column="2">
+                 <widget class="QPushButton" name="pushButtonPatternFile">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>36</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>31</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(199, 213, 207);</string>
+                  </property>
                   <property name="text">
-                   <string>Compiler:</string>
+                   <string>Browse</string>
                   </property>
                  </widget>
                 </item>
@@ -13856,14 +13871,14 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="label_104">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_103">
                   <property name="text">
-                   <string>Pattern:</string>
+                   <string>Compiler:</string>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="1">
+                <item row="2" column="1">
                  <widget class="QLineEdit" name="lineEditPatternFile">
                   <property name="styleSheet">
                    <string notr="true">background-color: rgb(200, 219, 230);</string>
@@ -13873,8 +13888,32 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                  </widget>
                 </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_104">
+                  <property name="text">
+                   <string>Pattern:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLineEdit" name="lineEditUncompiled">
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(200, 219, 230);</string>
+                  </property>
+                  <property name="placeholderText">
+                   <string>Uncompiled Pattern File</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_105">
+                  <property name="text">
+                   <string>Uncompiled Pattern:</string>
+                  </property>
+                 </widget>
+                </item>
                 <item row="1" column="2">
-                 <widget class="QPushButton" name="pushButtonPatternFile">
+                 <widget class="QPushButton" name="pushButtonUncompiled">
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
@@ -13901,7 +13940,7 @@ QPushButton:disabled{background-color: grey;}</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>710</y>
+                 <y>740</y>
                  <width>711</width>
                  <height>51</height>
                 </rect>
@@ -14686,7 +14725,7 @@ QPushButton:disabled{background-color: grey;}</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>480</y>
+                 <y>510</y>
                  <width>711</width>
                  <height>211</height>
                 </rect>

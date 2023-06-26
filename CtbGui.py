@@ -841,7 +841,7 @@ class MainWindow(QtWidgets.QMainWindow):
             return ""
 
         pattern_file = self.lineEditUncompiled.text()
-        
+
         # if old compile file exists, backup and remove to ensure old copy not loaded
         oldFile = Path(pattern_file + 'at')
         if oldFile.is_file():

@@ -1053,6 +1053,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.plotWidgetDigital.setLabel('left',"<span style=\"color:black;font-size:14px\">Digital Bit</span>")
             self.plotWidgetDigital.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Digital Sample [#]</span>")
             self.plotWidgetDigital.addLegend(colCount = 4)
+            self.stackedWidgetPlotType.setCurrentIndex(0)
+
 
         elif self.radioButtonImage.isChecked():
             self.comboBoxPlot.setEnabled(True)
@@ -1067,10 +1069,16 @@ class MainWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.warning(self, "Not Implemented Yet", "Sorry, this is not implemented yet.", QtWidgets.QMessageBox.Ok)
                 self.comboBoxPlot.setCurrentIndex(0)
             self.comboBoxPlot.currentIndexChanged.connect(self.plotOptions)
+            self.stackedWidgetPlotType.setCurrentIndex(2)
                 
                 
+        if self.radioButtonNoPlot.isChecked():
+            self.labelPlotOptions.hide()
+            self.stackedWidgetPlotType.hide()
         # enable plotting
-        if not self.radioButtonNoPlot.isChecked():
+        else:
+            self.labelPlotOptions.show()
+            self.stackedWidgetPlotType.show()
             self.read_timer.start(Defines.Time_Plot_Refresh_ms)
         
 
@@ -1510,6 +1518,7 @@ class MainWindow(QtWidgets.QMainWindow):
                         dbitoffset += self.nADCEnabled * 2 * self.asamples
                     digital_array = np.array(np.frombuffer(data, offset = dbitoffset, dtype=np.uint8))
                     offset = 0
+                    irow = 0
                     for i in self.rx_dbitlist:
                         # where numbits * numsamples is not a multiple of 8
                         if offset % 8 != 0:
@@ -1533,7 +1542,10 @@ class MainWindow(QtWidgets.QMainWindow):
                                 offset += 1
                             pen = pg.mkPen(color = self.getDBitButtonColor(i), width = 1)
                             legendName = getattr(self, f"labelBIT{i}").text()
-                            self.plotWidgetDigital.plot(waveform, pen=pen, name = legendName, stepMode = "left")
+                            p = self.plotWidgetDigital.plot(waveform, pen=pen, name = legendName, stepMode = "left")
+                            if self.radioButtonStripe.isChecked():
+                                p.setY(irow * 2)
+                                irow += 1
             # image
             else:           
                 # analog

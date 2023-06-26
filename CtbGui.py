@@ -805,27 +805,39 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         if response[0]:
             self.lineEditCompiler.setText(response[0])
-
-    def setPatternFile(self):
-        if self.checkBoxCompile.isChecked():
-            filt='Pattern code(*.py *.c)'
-        else:
-            filt='Pattern file(*.pyat *.pat)'
+    
+    def setUncompiledPatternFile(self):
+        filt='Pattern code(*.py *.c)'
+        folder = os.path.dirname(self.det.patfname[0])
+        if not folder:
+            folder = os.getcwd()
         response = QtWidgets.QFileDialog.getOpenFileName(
             parent=self,
-            caption="Select a pattern file",
-            directory=os.getcwd(),
+            caption="Select an uncompiled pattern file",
+            directory=folder,
+            filter=filt
+        )
+        if response[0]:
+            self.lineEditUncompiled.setText(response[0])
+
+    def setPatternFile(self):
+        filt='Pattern file(*.pyat *.pat)'
+        folder = os.path.dirname(self.det.patfname[0])
+        if not folder:
+            folder = os.getcwd()
+        response = QtWidgets.QFileDialog.getOpenFileName(
+            parent=self,
+            caption="Select a compiled pattern file",
+            directory=folder,
             filter=filt
         )
         if response[0]:
             self.lineEditPatternFile.setText(response[0])
 
     def compilePattern(self):
-        pattern_file = self.lineEditPatternFile.text()
-        if not pattern_file:
-            QtWidgets.QMessageBox.warning(self, "Pattern Fail", "No pattern file selected. Please select one.", QtWidgets.QMessageBox.Ok)
-            return ""
-        # compile
+
+        pattern_file = self.lineEditUncompiled.text()
+
         if self.checkBoxCompile.isChecked():
             compilerFile = self.lineEditCompiler.text()
             if not compilerFile:
@@ -853,8 +865,19 @@ class MainWindow(QtWidgets.QMainWindow):
         
         return pattern_file
 
+    def getCompiledPatFname(self):
+        if self.checkBoxCompile.isChecked():
+            pattern_file = self.compilePattern()
+        # pat name from pattern field
+        else:
+            if not pattern_file:
+                QtWidgets.QMessageBox.warning(self, "Pattern Fail", "No pattern file selected. Please select one.", QtWidgets.QMessageBox.Ok)
+                return ""
+            pattern_file = self.lineEditPatternFile.text()
+        return pattern_file
+
     def loadPattern(self):
-        pattern_file = self.compilePattern()
+        pattern_file = self.getCompiledPatFname()
         if not pattern_file:
             return
         # load pattern
@@ -986,7 +1009,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def viewPattern(self):
         self.showPatternViewer(True)
-        pattern_file = self.compilePattern()
+        pattern_file = self.getCompiledPatFname()
         if not pattern_file:
             return
         
@@ -1807,6 +1830,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 partial(self.setPatLoopWaitTime, i)
             )
         self.pushButtonCompiler.clicked.connect(self.setCompiler)
+        self.pushButtonUncompiled.clicked.connect(self.setUncompiledPatternFile)
         self.pushButtonPatternFile.clicked.connect(self.setPatternFile)
         self.pushButtonLoadPattern.clicked.connect(self.loadPattern)
         

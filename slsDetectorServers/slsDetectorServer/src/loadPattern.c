@@ -32,6 +32,8 @@ extern void setU64BitReg(uint64_t value, int aLSB, int aMSB);
 #define MAX_LEVELS MAX_PATTERN_LEVELS
 #endif
 
+char clientPatternfile[MAX_STR_LENGTH];
+
 void initializePatternAddresses() {
     LOG(logDEBUG1, ("Setting default Loop and Wait Addresses(0x%x)\n",
                     MAX_PATTERN_LENGTH - 1));
@@ -747,10 +749,15 @@ void startPattern() {
 }
 #endif
 
+char *getPatternFileName() { return clientPatternfile; }
+
 int loadPattern(char *message, enum TLogLevel printLevel,
-                patternParameters *pat) {
+                patternParameters *pat, char *patfname) {
     LOG(logINFOBLUE, ("Loading Pattern from structure\n"));
     int ret = OK;
+    memset(clientPatternfile, 0, MAX_STR_LENGTH);
+    memcpy(clientPatternfile, patfname, MAX_STR_LENGTH);
+    printf("Client Pattern File:%s\n", clientPatternfile);
 #ifdef MYTHEN3D
     trimmingPrint = printLevel;
 #endif

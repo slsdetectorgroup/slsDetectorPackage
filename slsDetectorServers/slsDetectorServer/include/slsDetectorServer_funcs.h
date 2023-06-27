@@ -226,6 +226,7 @@ int get_gate_delay_all_gates(int);
 int get_veto(int);
 int set_veto(int);
 int set_pattern(int);
+int get_pattern_file(int);
 int get_scan(int);
 int set_scan(int);
 int get_scan_error_message(int);

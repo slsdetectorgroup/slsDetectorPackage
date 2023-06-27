@@ -1738,6 +1738,11 @@ void init_det(py::module &m) {
                            Detector::getSlowAdcName,
                        py::arg());
     CppDetectorApi.def(
+        "getPatterFileName",
+        (Result<std::string>(Detector::*)(sls::Positions) const) &
+            Detector::getPatterFileName,
+        py::arg() = Positions{});
+    CppDetectorApi.def(
         "setPattern",
         (void (Detector::*)(const std::string &, sls::Positions)) &
             Detector::setPattern,

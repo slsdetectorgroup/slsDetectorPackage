@@ -397,6 +397,7 @@ void function_table() {
     flist[F_GET_VETO] = &get_veto;
     flist[F_SET_VETO] = &set_veto;
     flist[F_SET_PATTERN] = &set_pattern;
+    flist[F_GET_PATTERN_FILE_NAME] = &get_pattern_file;
     flist[F_GET_SCAN] = &get_scan;
     flist[F_SET_SCAN] = &set_scan;
     flist[F_GET_SCAN_ERROR_MESSAGE] = &get_scan_error_message;
@@ -7604,6 +7605,8 @@ int set_veto(int file_des) {
 int set_pattern(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
+    char args[MAX_STR_LENGTH];
+    memset(args, 0, MAX_STR_LENGTH);
 
 #if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
     functionNotImplemented();
@@ -7617,16 +7620,39 @@ int set_pattern(int file_des) {
             free(pat);
         return printSocketReadError();
     }
+    if (receiveData(file_des, args, MAX_STR_LENGTH, OTHER) < 0) {
+        if (pat != NULL)
+            free(pat);
+        return printSocketReadError();
+    }
 
     if (Server_VerifyLock() == OK) {
-        LOG(logINFO, ("Setting Pattern from structure\n"));
-        ret = loadPattern(mess, logINFO, pat);
+        LOG(logDEBUG1, ("Setting Pattern from structure\n"));
+        ret = loadPattern(mess, logINFO, pat, args);
     }
     if (pat != NULL)
         free(pat);
 #endif
 
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_pattern_file(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    char retvals[MAX_STR_LENGTH];
+    memset(retvals, 0, MAX_STR_LENGTH);
+
+    LOG(logDEBUG1, ("Getting pattern file name\n"));
+
+#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    // get only
+    strcpy(retvals, getPatternFileName());
+    LOG(logDEBUG1, ("pattern file name retval: %s\n", retvals));
+#endif
+    return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 
 int get_pattern(int file_des) {

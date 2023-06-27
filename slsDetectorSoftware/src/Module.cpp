@@ -2478,9 +2478,23 @@ void Module::setLEDEnable(bool enable) {
 }
 
 // Pattern
+std::string Module::getPatterFileName() const {
+    char retval[MAX_STR_LENGTH]{};
+    sendToDetector(F_GET_PATTERN_FILE_NAME, nullptr, retval);
+    return retval;
+}
 
-void Module::setPattern(const Pattern &pat) {
-    sendToDetector(F_SET_PATTERN, pat.data(), pat.size(), nullptr, 0);
+void Module::setPattern(const Pattern &pat, const std::string &fname) {
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_SET_PATTERN);
+    client.Send(pat.data(), pat.size());
+    char args[MAX_STR_LENGTH]{};
+    strcpy_safe(args, fname.c_str());
+    client.Send(args);
+    if (client.Receive<int>() == FAIL) {
+        throw DetectorError("Detector " + std::to_string(moduleIndex) +
+                            " returned error: " + client.readErrorMessage());
+    }
 }
 
 Pattern Module::getPattern() {

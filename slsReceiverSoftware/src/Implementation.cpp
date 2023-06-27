@@ -946,7 +946,8 @@ void Implementation::StartMasterWriter() {
             masterAttributes.analogSamples = generalData->nAnalogSamples;
             masterAttributes.digital =
                 (generalData->readoutType == DIGITAL_ONLY ||
-                 generalData->readoutType == ANALOG_AND_DIGITAL)
+                 generalData->readoutType == ANALOG_AND_DIGITAL ||
+                 generalData->readoutType == DIGITAL_AND_TRANSCEIVER)
                     ? 1
                     : 0;
             masterAttributes.digitalSamples = generalData->nDigitalSamples;
@@ -955,6 +956,13 @@ void Implementation::StartMasterWriter() {
             for (auto &i : ctbDbitList) {
                 masterAttributes.dbitlist |= (1 << i);
             }
+            masterAttributes.transceiverSamples = generalData->nTransceiverSamples;
+            masterAttributes.transceiverMask = generalData->transceiverMask;
+            masterAttributes.transceiver =
+                (generalData->readoutType == TRANSCEIVER_ONLY ||
+                 generalData->readoutType == DIGITAL_AND_TRANSCEIVER)
+                    ? 1
+                    : 0;
             masterAttributes.detectorRoi = generalData->detectorRoi;
             masterAttributes.counterMask = generalData->counterMask;
             masterAttributes.exptimeArray[0] = acquisitionTime1;
@@ -1509,6 +1517,20 @@ void Implementation::setNumberofDigitalSamples(const uint32_t i) {
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
+uint32_t Implementation::getNumberofTransceiverSamples() const {
+    return generalData->nTransceiverSamples;
+}
+
+void Implementation::setNumberofTransceiverSamples(const uint32_t i) {
+    if (generalData->nTransceiverSamples != i) {
+        generalData->SetNumberOfTransceiverSamples(i);
+        SetupFifoStructure();
+    }
+    LOG(logINFO) << "Number of Transceiver Samples: "
+                 << generalData->nTransceiverSamples;
+    LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
+}
+
 uint32_t Implementation::getCounterMask() const {
     return generalData->counterMask;
 }
@@ -1716,6 +1738,20 @@ void Implementation::setDbitOffset(const int s) {
     for (const auto &it : dataProcessor)
         it->SetCtbDbitOffset(ctbDbitOffset);
     LOG(logINFO) << "Dbit offset: " << ctbDbitOffset;
+}
+
+uint32_t Implementation::getTransceiverEnableMask() const {
+    return generalData->transceiverMask;
+}
+
+void Implementation::setTransceiverEnableMask(uint32_t mask) {
+    if (generalData->transceiverMask != mask) {
+        generalData->SetTransceiverEnableMask(mask);
+        SetupFifoStructure();
+    }
+    LOG(logINFO) << "Transceiver Enable Mask: 0x" << std::hex
+                 << generalData->transceiverMask << std::dec;
+    LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
 /**************************************************

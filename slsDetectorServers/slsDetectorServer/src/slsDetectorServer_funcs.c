@@ -1870,13 +1870,23 @@ int acquire(int blocking, int file_des) {
                     getNumAnalogSamples());
             LOG(logERROR, (mess));
         } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                    getReadoutMode() == DIGITAL_ONLY) &&
+                    getReadoutMode() == DIGITAL_ONLY ||
+                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
                    (getNumDigitalSamples() <= 0)) {
             ret = FAIL;
             sprintf(mess,
                     "Could not start acquisition. Invalid number of digital "
                     "samples: %d.\n",
                     getNumDigitalSamples());
+            LOG(logERROR, (mess));
+        }  else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
+                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                   (getNumTransceiverSamples() <= 0)) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not start acquisition. Invalid number of transceiver "
+                    "samples: %d.\n",
+                    getNumTransceiverSamples());
             LOG(logERROR, (mess));
         } else
 #endif
@@ -7375,6 +7385,27 @@ int get_receiver_parameters(int file_des) {
     n += sendData(file_des, &i64, sizeof(i64), INT64);
     if (n < 0)
         return printSocketReadError();
+
+    // transceiver samples
+#ifdef CHIPTESTBOARDD
+    i32 = getNumTransceiverSamples();
+#else
+    i32 = 0;
+#endif
+    n += sendData(file_des, &i32, sizeof(i32), INT32);
+    if (n < 0)
+        return printSocketReadError();
+
+        // transceiver mask
+#if defined(CHIPTESTBOARDD)
+    u32 = getTransceiverEnableMask();
+#else
+    u32 = 0;
+#endif
+    n += sendData(file_des, &u32, sizeof(u32), INT32);
+    if (n < 0)
+        return printSocketReadError();
+
 
     LOG(logINFO, ("Sent %d bytes for receiver parameters\n", n));
 

@@ -665,8 +665,8 @@ int updateDatabytesandAllocateRAM() {
                  "Probable cause: Memory Leak.\n"));
             return FAIL;
         }
+        LOG(logINFO, ("\tDigital RAM allocated to %d bytes\n", digitalDataBytes));
     }
-    LOG(logINFO, ("\tDigital RAM allocated to %d bytes\n", digitalDataBytes));
     if (transceiverDataBytes) {
         transceiverData = malloc(transceiverDataBytes);
         // cannot malloc
@@ -676,9 +676,8 @@ int updateDatabytesandAllocateRAM() {
                  "Probable cause: Memory Leak.\n"));
             return FAIL;
         }
+        LOG(logINFO, ("\tTransceiver RAM allocated to %d bytes\n", transceiverDataBytes));
     }
-    LOG(logINFO,
-        ("\tTransceiver RAM allocated to %d bytes\n", transceiverDataBytes));
     return OK;
 }
 

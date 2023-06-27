@@ -87,6 +87,8 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
         << std::endl
         << "gates:" << r.gates << std::endl
         << "scanParams:" << ToString(r.scanParams) << std::endl
+        << "transceiverSamples:" << r.transceiverSamples << std::endl
+        << "transceiverMask:" << r.transceiverMask << std::endl
         << ']';
     return oss.str();
 }

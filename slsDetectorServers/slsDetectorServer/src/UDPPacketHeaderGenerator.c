@@ -21,11 +21,14 @@ extern const enum detectorType myDetectorType;
 
 extern int analogDataBytes;
 extern int digitalDataBytes;
+extern int transceiverDataBytes;
 extern char *analogData;
 extern char *digitalData;
+extern char *transceiverData;
 
 int analogOffset = 0;
 int digitalOffset = 0;
+int transceiverOffset = 0;
 uint32_t udpPacketNumber = 0;
 uint64_t udpFrameNumber = 0;
 
@@ -51,6 +54,7 @@ void createUDPPacketHeader(char *buffer, uint16_t id) {
     // reset offset
     analogOffset = 0;
     digitalOffset = 0;
+    transceiverOffset = 0;
     // reset frame number
     udpFrameNumber = 0;
 }
@@ -58,20 +62,21 @@ void createUDPPacketHeader(char *buffer, uint16_t id) {
 int fillUDPPacket(char *buffer) {
     LOG(logDEBUG2,
         ("Analog (databytes:%d, offset:%d)\n Digital (databytes:%d "
-         "offset:%d)\n",
-         analogDataBytes, analogOffset, digitalDataBytes, digitalOffset));
+         "offset:%d)\n\n Transceiver (databytes:%d offset:%d)\n",
+         analogDataBytes, analogOffset, digitalDataBytes, digitalOffset, transceiverDataBytes, transceiverOffset));
     // reached end of data for one frame
-    if (analogOffset >= analogDataBytes && digitalOffset >= digitalDataBytes) {
+    if (analogOffset >= analogDataBytes && digitalOffset >= digitalDataBytes && transceiverOffset >= transceiverDataBytes) {
         // reset offset
         analogOffset = 0;
         digitalOffset = 0;
+        transceiverOffset = 0;
         return 0;
     }
 
     sls_detector_header *header = (sls_detector_header *)(buffer);
 
     // update frame number, starts at 1 (reset packet number)
-    if (analogOffset == 0 && digitalOffset == 0) {
+    if (analogOffset == 0 && digitalOffset == 0 && transceiverOffset == 0) {
         ++udpFrameNumber;
         header->frameNumber = udpFrameNumber;
         udpPacketNumber = -1;
@@ -117,11 +122,25 @@ int fillUDPPacket(char *buffer) {
         freeBytes -= digitalBytes;
     }
 
+    // transceiver data
+    int transceiverBytes = 0;
+    if (freeBytes && transceiverOffset < transceiverDataBytes) {
+        // bytes to copy
+        transceiverBytes = ((transceiverOffset + freeBytes) <= transceiverDataBytes)
+                           ? freeBytes
+                           : (transceiverDataBytes - transceiverOffset);
+        // copy
+        memcpy(buffer + sizeof(sls_detector_header) + analogBytes + digitalBytes,
+               transceiverData + transceiverOffset, transceiverBytes);
+        // increment offset
+        transceiverOffset += transceiverBytes;
+        // decrement free bytes
+        freeBytes -= transceiverBytes;
+    }
+
     // pad data
     if (freeBytes) {
-        memset(buffer + sizeof(sls_detector_header) + analogBytes +
-                   digitalBytes,
-               0, freeBytes);
+        memset(buffer + sizeof(sls_detector_header) + analogBytes + digitalBytes + transceiverBytes, 0, freeBytes);
         LOG(logDEBUG1, ("Padding %d bytes for fnum:%lld pnum:%d\n", freeBytes,
                         (long long int)udpFrameNumber, udpPacketNumber));
     }

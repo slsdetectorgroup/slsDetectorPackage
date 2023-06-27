@@ -58,11 +58,13 @@ class GeneralData {
     bool tengigaEnable{false};
     uint32_t nAnalogSamples{0};
     uint32_t nDigitalSamples{0};
+    uint32_t nTransceiverSamples{0};
     slsDetectorDefs::readoutMode readoutType{slsDetectorDefs::ANALOG_ONLY};
     uint32_t adcEnableMaskOneGiga{BIT32_MASK};
     uint32_t adcEnableMaskTenGiga{BIT32_MASK};
     slsDetectorDefs::ROI detectorRoi{};
     uint32_t counterMask{0};
+    uint32_t transceiverMask{0};
 
     GeneralData(){};
     virtual ~GeneralData(){};
@@ -132,12 +134,26 @@ class GeneralData {
         return 0;
     };
 
+    virtual int GetNumberOfDigitalDatabytes() {
+        ThrowGenericError("GetNumberOfDigitalDatabytes");
+        return 0;
+    };
+
+    virtual int GetNumberOfTransceiverDatabytes() {
+        ThrowGenericError("GetNumberOfTransceiverDatabytes");
+        return 0;
+    };
+
     virtual void SetNumberOfAnalogSamples(int n) {
         ThrowGenericError("SetNumberOfAnalogSamples");
     };
 
     virtual void SetNumberOfDigitalSamples(int n) {
         ThrowGenericError("SetNumberOfDigitalSamples");
+    };
+
+    virtual void SetNumberOfTransceiverSamples(int n) {
+        ThrowGenericError("SetNumberOfTransceiverSamples");
     };
 
     virtual void SetOneGigaAdcEnableMask(int n) {
@@ -151,6 +167,11 @@ class GeneralData {
     virtual void SetReadoutMode(slsDetectorDefs::readoutMode r) {
         ThrowGenericError("SetReadoutMode");
     };
+
+    virtual void SetTransceiverEnableMask(int n) {
+        ThrowGenericError("SetTransceiverEnableMask");
+    };
+
 };
 
 class GotthardData : public GeneralData {
@@ -507,7 +528,10 @@ class ChipTestBoardData : public GeneralData {
   private:
     const int NCHAN_DIGITAL = 64;
     const int NUM_BYTES_PER_ANALOG_CHANNEL = 2;
+    const int NUM_BYTES_PER_TRANSCEIVER_CHANNEL = 8;
     int nAnalogBytes = 0;
+    int nDigitalBytes = 0;
+    int nTransceiverBytes = 0;
 
   public:
     /** Constructor */
@@ -527,6 +551,10 @@ class ChipTestBoardData : public GeneralData {
   public:
     int GetNumberOfAnalogDatabytes() { return nAnalogBytes; };
 
+    int GetNumberOfDigitalDatabytes() { return nDigitalBytes; };
+
+    int GetNumberOfTransceiverDatabytes() { return nTransceiverBytes; };
+
     void SetNumberOfAnalogSamples(int n) {
         nAnalogSamples = n;
         UpdateImageSize();
@@ -537,6 +565,11 @@ class ChipTestBoardData : public GeneralData {
         UpdateImageSize();
     };
 
+    void SetNumberOfTransceiverSamples(int n) {
+        nTransceiverSamples = n;
+        UpdateImageSize();
+    };
+
     void SetOneGigaAdcEnableMask(int n) {
         adcEnableMaskOneGiga = n;
         UpdateImageSize();
@@ -544,6 +577,11 @@ class ChipTestBoardData : public GeneralData {
 
     void SetTenGigaAdcEnableMask(int n) {
         adcEnableMaskTenGiga = n;
+        UpdateImageSize();
+    };
+
+    void SetTransceiverEnableMask(int n) {
+        transceiverMask = n;
         UpdateImageSize();
     };
 
@@ -560,8 +598,9 @@ class ChipTestBoardData : public GeneralData {
   private:
     void UpdateImageSize() {
         nAnalogBytes = 0;
-        int nDigitalBytes = 0;
-        int nAnalogChans = 0, nDigitalChans = 0;
+        nDigitalBytes = 0;
+        nTransceiverBytes = 0;
+        int nAnalogChans = 0, nDigitalChans = 0, nTransceiverChans = 0;
 
         // analog channels (normal, analog/digital readout)
         if (readoutType == slsDetectorDefs::ANALOG_ONLY ||
@@ -577,17 +616,25 @@ class ChipTestBoardData : public GeneralData {
         }
         // digital channels
         if (readoutType == slsDetectorDefs::DIGITAL_ONLY ||
-            readoutType == slsDetectorDefs::ANALOG_AND_DIGITAL) {
+            readoutType == slsDetectorDefs::ANALOG_AND_DIGITAL ||
+            readoutType == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
             nDigitalChans = NCHAN_DIGITAL;
             nDigitalBytes = (sizeof(uint64_t) * nDigitalSamples);
             LOG(logDEBUG1) << "Number of Digital Channels:" << nDigitalChans
                            << " Databytes: " << nDigitalBytes;
         }
-
-        nPixelsX = nAnalogChans + nDigitalChans;
+        // transceiver channels
+        if (readoutType == slsDetectorDefs::TRANSCEIVER_ONLY ||
+            readoutType == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
+            nTransceiverChans = __builtin_popcount(transceiverMask);;
+            nTransceiverBytes = nTransceiverChans * NUM_BYTES_PER_TRANSCEIVER_CHANNEL * nTransceiverSamples;
+            LOG(logDEBUG1) << "Number of Transceiver Channels:" << nTransceiverChans
+                           << " Databytes: " << nTransceiverBytes;
+        }
+        nPixelsX = nAnalogChans + nDigitalChans + nTransceiverChans;
         dataSize = tengigaEnable ? 8144 : UDP_PACKET_DATA_BYTES;
         packetSize = headerSizeinPacket + dataSize;
-        imageSize = nAnalogBytes + nDigitalBytes;
+        imageSize = nAnalogBytes + nDigitalBytes + nTransceiverBytes;
         packetsPerFrame = ceil((double)imageSize / (double)dataSize);
 
         LOG(logDEBUG1) << "Total Number of Channels:" << nPixelsX

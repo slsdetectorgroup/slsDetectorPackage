@@ -52,7 +52,8 @@ class NamedVoltages:
         # Populate the voltages
         for i,name in enumerate(self._voltagenames):
             #name, enum, low, high, default, detector
-            setattr(self, name, Voltage(name, dacIndex(i), 1000, detector))
+            k = dacIndex(i + int(dacIndex.V_POWER_A))
+            setattr(self, name, Voltage(name, k, 0, detector))
 
         self._frozen = True
 

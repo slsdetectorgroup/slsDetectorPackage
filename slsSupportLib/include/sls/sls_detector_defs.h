@@ -406,7 +406,13 @@ typedef struct {
     /**
      * read out mode (ctb)
      */
-    enum readoutMode { ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL };
+    enum readoutMode {
+        ANALOG_ONLY,
+        DIGITAL_ONLY,
+        ANALOG_AND_DIGITAL,
+        TRANSCEIVER_ONLY,
+        DIGITAL_TRANSCEIVER
+    };
 
     /** chip speed */
     enum speedLevel {

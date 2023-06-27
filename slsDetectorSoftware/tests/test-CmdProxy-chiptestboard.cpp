@@ -846,6 +846,36 @@ TEST_CASE("adcenable10g", "[.cmd]") {
     }
 }
 
+TEST_CASE("transceiverenable", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        auto prev_val = det.getTransceiverEnableMask();
+        {
+            std::ostringstream oss;
+            proxy.Call("transceiverenable", {"0x3"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "transceiverenable 0x3\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("transceiverenable", {"0xf"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "transceiverenable 0xf\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("transceiverenable", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "transceiverenable 0xf\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTransceiverEnableMask(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("transceiverenable", {}, -1, GET));
+    }
+}
+
 /* CTB Specific */
 
 TEST_CASE("dsamples", "[.cmd]") {
@@ -878,6 +908,36 @@ TEST_CASE("dsamples", "[.cmd]") {
     }
 }
 
+TEST_CASE("tsamples", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        auto prev_val = det.getNumberOfTransceiverSamples();
+        {
+            std::ostringstream oss;
+            proxy.Call("tsamples", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "tsamples 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("tsamples", {"450"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "tsamples 450\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("tsamples", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "tsamples 450\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setNumberOfTransceiverSamples(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("tsamples", {}, -1, GET));
+    }
+}
+
 TEST_CASE("romode", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -886,8 +946,10 @@ TEST_CASE("romode", "[.cmd]") {
         auto prev_romode = det.getReadoutMode();
         auto prev_asamples = det.getNumberOfAnalogSamples();
         auto prev_dsamples = det.getNumberOfDigitalSamples();
+        auto prev_tsamples = det.getNumberOfTransceiverSamples();
         det.setNumberOfAnalogSamples(5000);
         det.setNumberOfDigitalSamples(5000);
+        det.setNumberOfTransceiverSamples(5000);
         {
             std::ostringstream oss;
             proxy.Call("romode", {"digital"}, -1, PUT, oss);
@@ -908,10 +970,21 @@ TEST_CASE("romode", "[.cmd]") {
             proxy.Call("romode", {}, -1, GET, oss);
             REQUIRE(oss.str() == "romode analog\n");
         }
+        {
+            std::ostringstream oss;
+            proxy.Call("romode", {"transceiver"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "romode transceiver\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("romode", {"digital_transceiver"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "romode digital_transceiver\n");
+        }
         for (int i = 0; i != det.size(); ++i) {
             det.setReadoutMode(prev_romode[i], {i});
             det.setNumberOfAnalogSamples(prev_asamples[i], {i});
             det.setNumberOfDigitalSamples(prev_dsamples[i], {i});
+            det.setNumberOfTransceiverSamples(prev_tsamples[i], {i});
         }
     } else {
         REQUIRE_THROWS(proxy.Call("romode", {}, -1, GET));

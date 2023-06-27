@@ -315,3 +315,7 @@ int get_frontend_firmware_version(int);
 int get_bit(int);
 int set_bit(int);
 int clear_bit(int);
+int get_num_transceiver_samples(int);
+int set_num_transceiver_samples(int);
+int get_transceiver_enable(int);
+int set_transceiver_enable(int);

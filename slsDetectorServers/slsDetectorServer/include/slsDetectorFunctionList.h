@@ -206,6 +206,8 @@ int setADCEnableMask(uint32_t mask);
 uint32_t getADCEnableMask();
 void setADCEnableMask_10G(uint32_t mask);
 uint32_t getADCEnableMask_10G();
+int setTransceiverEnableMask(uint32_t mask);
+uint32_t getTransceiverEnableMask();
 void setADCInvertRegister(uint32_t val);
 uint32_t getADCInvertRegister();
 #endif
@@ -287,6 +289,8 @@ int getNumAnalogSamples();
 #ifdef CHIPTESTBOARDD
 int setNumDigitalSamples(int val);
 int getNumDigitalSamples();
+int setNumTransceiverSamples(int val);
+int getNumTransceiverSamples();
 #endif
 #ifdef MYTHEN3D
 void setCounterMask(uint32_t arg);

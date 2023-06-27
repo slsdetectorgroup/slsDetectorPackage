@@ -50,15 +50,18 @@ pthread_t pthread_virtual_tid;
 int dataBytes = 0;
 int analogDataBytes = 0;
 int digitalDataBytes = 0;
+int transceiverDataBytes = 0;
 char *analogData = 0;
 char *digitalData = 0;
+char *transceiverData = 0;
 char volatile *analogDataPtr = 0;
 char volatile *digitalDataPtr = 0;
+char volatile *transceiverDataPtr = 0;
 char udpPacketData[UDP_PACKET_DATA_BYTES + sizeof(sls_detector_header)];
 uint32_t adcEnableMask_1g = BIT32_MSK;
-
 // 10g readout
 uint8_t adcEnableMask_10g = 0xFF;
+uint32_t transceiverMask = DEFAULT_TRANSCEIVER_MASK;
 
 int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkFrequency[NUM_CLOCKS] = {40, 20, 20, 200};
@@ -68,8 +71,10 @@ int vLimit = 0;
 int highvoltage = 0;
 int analogEnable = 1;
 int digitalEnable = 0;
+int transceiverEnable = 0;
 int naSamples = 1;
 int ndSamples = 1;
+int ntSamples = 1;
 int detPos[2] = {0, 0};
 
 int isInitCheckDone() { return initCheckDone; }
@@ -468,6 +473,7 @@ void setupDetector() {
     dataBytes = 0;
     analogDataBytes = 0;
     digitalDataBytes = 0;
+    transceiverDataBytes = 0;
     if (analogData) {
         free(analogData);
         analogData = 0;
@@ -476,8 +482,13 @@ void setupDetector() {
         free(digitalData);
         digitalData = 0;
     }
+    if (transceiverData) {
+        free(transceiverData);
+        transceiverData = 0;
+    }
     analogDataPtr = 0;
     digitalDataPtr = 0;
+    transceiverData = 0;
     {
         for (int i = 0; i < NUM_CLOCKS; ++i) {
             clkPhase[i] = 0;
@@ -493,10 +504,13 @@ void setupDetector() {
     highvoltage = 0;
     adcEnableMask_1g = BIT32_MSK;
     adcEnableMask_10g = 0xFF;
+    transceiverMask = DEFAULT_TRANSCEIVER_MASK;
     analogEnable = 1;
     digitalEnable = 0;
+    transceiverEnable = 0;
     naSamples = 1;
     ndSamples = 1;
+    ntSamples = 1;
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
     initializePatternWord();
@@ -575,6 +589,7 @@ void setupDetector() {
     setNumAnalogSamples(DEFAULT_NUM_SAMPLES);
     setNumDigitalSamples(
         DEFAULT_NUM_SAMPLES); // update databytes and allocate ram
+    setNumTransceiverSamples(DEFAULT_NUM_SAMPLES);
     setNumFrames(DEFAULT_NUM_FRAMES);
     setExpTime(DEFAULT_EXPTIME);
     setNumTriggers(DEFAULT_NUM_CYCLES);
@@ -583,6 +598,8 @@ void setupDetector() {
     setTiming(DEFAULT_TIMING_MODE);
     setADCEnableMask(BIT32_MSK);
     setADCEnableMask_10G(BIT32_MSK);
+    setTranceiverEnableMask(DEFAULT_TRANSCEIVER_MASK);
+
     if (setReadoutMode(ANALOG_ONLY) == FAIL) {
         strcpy(initErrorMessage,
                "Could not set readout mode to analog only.\n");
@@ -596,18 +613,22 @@ int updateDatabytesandAllocateRAM() {
 
     int oldAnalogDataBytes = analogDataBytes;
     int oldDigitalDataBytes = digitalDataBytes;
+    int oldTranceiverDataBytes = transceiverDataBytes;
     updateDataBytes();
 
     // update only if change in databytes
     if (analogDataBytes == oldAnalogDataBytes &&
-        digitalDataBytes == oldDigitalDataBytes) {
-        LOG(logDEBUG1, ("RAM size (Analog:%d, Digital:%d) already allocated. "
-                        "Nothing to be done.\n",
-                        analogDataBytes, digitalDataBytes));
+        digitalDataBytes == oldDigitalDataBytes &&
+        transceiverDataBytes == oldTranceiverDataBytes) {
+        LOG(logDEBUG1,
+            ("RAM size (Analog:%d, Digital:%d, Transceiver:%d) already "
+             "allocated. Nothing to be done.\n",
+             analogDataBytes, digitalDataBytes, transceiverDataBytes));
         return OK;
     }
     // Zero databytes
-    if (analogDataBytes == 0 && digitalDataBytes == 0) {
+    if (analogDataBytes == 0 && digitalDataBytes == 0 &&
+        transceiverDataBytes == 0) {
         LOG(logERROR, ("Can not allocate RAM for 0 bytes.\n"));
         return FAIL;
     }
@@ -619,6 +640,10 @@ int updateDatabytesandAllocateRAM() {
     if (digitalData) {
         free(digitalData);
         digitalData = 0;
+    }
+    if (transceiverDataBytes) {
+        free(transceiverDataBytes);
+        transceiverDataBytes = 0;
     }
     // allocate RAM
     if (analogDataBytes) {
@@ -641,15 +666,28 @@ int updateDatabytesandAllocateRAM() {
             return FAIL;
         }
     }
-
     LOG(logINFO, ("\tDigital RAM allocated to %d bytes\n", digitalDataBytes));
+
+    if (transceiverDataBytes) {
+        transceiverData = malloc(transceiverDataBytes);
+        // cannot malloc
+        if (transceiverData == NULL) {
+            LOG(logERROR,
+                ("Can not allocate transceiver data RAM for even 1 frame. "
+                 "Probable cause: Memory Leak.\n"));
+            return FAIL;
+        }
+    }
+    LOG(logINFO,
+        ("\tTransceiver RAM allocated to %d bytes\n", transceiverDataBytes));
     return OK;
 }
 
 void updateDataBytes() {
-    int nachans = 0, ndchans = 0;
+    int nachans = 0, ndchans = 0, ntchans = 0;
     analogDataBytes = 0;
     digitalDataBytes = 0;
+    transceiverDataBytes = 0;
 
     // analog
     if (analogEnable) {
@@ -672,10 +710,20 @@ void updateDataBytes() {
         LOG(logINFO, ("\t#Digital Channels:%d, Databytes:%d\n", ndchans,
                       digitalDataBytes));
     }
-
+    // transceiver
+    if (transceiverEnable) {
+        for (int ichan = 0; ichan < NCHAN_TRANSCEIVER; ++ichan) {
+            if (transceiverMask & (1 << ichan))
+                ++ntchans;
+        }
+        transceiverDataBytes =
+            ntchans * (NBITS_PER_TRANSCEIVER / 8) * ntSamples;
+        LOG(logINFO, ("\t#Transceiver Channels:%d, Databytes:%d\n", ntchans,
+                      transceiverDataBytes));
+    }
     // total
-    int nchans = nachans + ndchans;
-    dataBytes = analogDataBytes + digitalDataBytes;
+    int nchans = nachans + ndchans + ntchans;
+    dataBytes = analogDataBytes + digitalDataBytes + transceiverDataBytes;
 
     LOG(logINFO,
         ("\t#Total Channels:%d, Total Databytes:%d\n", nchans, dataBytes));
@@ -723,10 +771,6 @@ int getDynamicRange(int *retval) {
 }
 
 int setADCEnableMask(uint32_t mask) {
-    if (mask == 0u) {
-        LOG(logERROR, ("Cannot set 1gb adc mask to 0\n"));
-        return FAIL;
-    }
     LOG(logINFO, ("Setting adcEnableMask 1G to 0x%08x\n", mask));
     adcEnableMask_1g = mask;
     // 1Gb enabled
@@ -792,6 +836,20 @@ uint32_t getADCEnableMask_10G() {
     return retval;
 }
 
+int setTransceiverEnableMask(uint32_t mask) {
+    LOG(logINFO, ("Setting transceivermask to 0x%08x\n", mask));
+    transceiverMask = mask;
+    // 1Gb enabled
+    if (!enableTenGigabitEthernet(-1)) {
+        if (updateDatabytesandAllocateRAM() == FAIL) {
+            return FAIL;
+        }
+    }
+    return OK;
+}
+
+uint32_t getTransceiverEnableMask() { return transceiverMask; }
+
 void setADCInvertRegister(uint32_t val) {
     LOG(logINFO, ("Setting ADC Port Invert Reg to 0x%x\n", val));
     bus_w(ADC_PORT_INVERT_REG, val);
@@ -829,6 +887,7 @@ int setExternalSampling(int val) {
 int setReadoutMode(enum readoutMode mode) {
     analogEnable = 0;
     digitalEnable = 0;
+    transceiverEnable = 0;
     switch (mode) {
     case ANALOG_ONLY:
         LOG(logINFO, ("Setting Analog Only Readout\n"));
@@ -843,6 +902,15 @@ int setReadoutMode(enum readoutMode mode) {
         analogEnable = 1;
         digitalEnable = 1;
         break;
+    case TRANSCEIVER_ONLY:
+        LOG(logINFO, ("Setting Transceiver Only Readout\n"));
+        transceiverEnable = 1;
+        break;
+    case DIGITAL_TRANSCEIVER:
+        LOG(logINFO, ("Setting Digital & Transceiver Readout\n"));
+        digitalEnable = 1;
+        transceiverEnable = 1;
+        break;
     default:
         LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", mode));
         return FAIL;
@@ -850,28 +918,32 @@ int setReadoutMode(enum readoutMode mode) {
 
     uint32_t addr = CONFIG_REG;
     uint32_t addr_readout_10g = READOUT_10G_ENABLE_REG;
-    //  default: analog only
-    bus_w(addr, bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK) &
-                    (~CONFIG_ENBLE_DGTL_OTPT_MSK));
+
+    bus_w(addr, (bus_r(addr) | CONFIG_DSBL_ANLG_OTPT_MSK) &
+                    (~CONFIG_ENBLE_DGTL_OTPT_MSK) &
+                    (~CONFIG_ENBLE_TRNSCVR_OTPT_MSK));
     bus_w(addr_readout_10g, bus_r(addr_readout_10g) &
                                 (~READOUT_10G_ENABLE_ANLG_MSK) &
-                                ~(READOUT_10G_ENABLE_DGTL_MSK));
-    bus_w(addr_readout_10g,
-          bus_r(addr_readout_10g) |
-              ((adcEnableMask_10g << READOUT_10G_ENABLE_ANLG_OFST) &
-               READOUT_10G_ENABLE_ANLG_MSK));
-
-    // disable analog (digital only)
-    if (!analogEnable) {
-        bus_w(addr, bus_r(addr) | CONFIG_DSBL_ANLG_OTPT_MSK);
+                                ~(READOUT_10G_ENABLE_DGTL_MSK) &
+                                ~(READOUT_10G_ENABLE_TRNSCVR_MSK));
+    if (analogEnable) {
+        bus_w(addr, bus_r(addr) & ~(CONFIG_DSBL_ANLG_OTPT_MSK));
         bus_w(addr_readout_10g,
-              bus_r(addr_readout_10g) & (~READOUT_10G_ENABLE_ANLG_MSK));
+              bus_r(addr_readout_10g) |
+                  ((adcEnableMask_10g << READOUT_10G_ENABLE_ANLG_OFST) &
+                   READOUT_10G_ENABLE_ANLG_MSK));
     }
-    // enable digital (analog and digital)
     if (digitalEnable) {
         bus_w(addr, bus_r(addr) | CONFIG_ENBLE_DGTL_OTPT_MSK);
         bus_w(addr_readout_10g,
               bus_r(addr_readout_10g) | READOUT_10G_ENABLE_DGTL_MSK);
+    }
+    if (transceiverEnable) {
+        bus_w(addr, bus_r(addr) | CONFIG_ENBLE_TRNSCVR_OTPT_MSK);
+        bus_w(addr_readout_10g,
+              bus_r(addr_readout_10g) |
+                  ((transceiverMask << READOUT_10G_ENABLE_TRNSCVR_OFST) &
+                   READOUT_10G_ENABLE_TRNSCVR_MSK));
     }
 
     // 1Gb
@@ -893,23 +965,40 @@ int setReadoutMode(enum readoutMode mode) {
                            adcEnableMask_10g));
             return FAIL;
         }
+        // validate transceivermask for 10g
+        if (transceiverEnable &&
+            transceiverMask != ((bus_r(READOUT_10G_ENABLE_REG) &
+                                 READOUT_10G_ENABLE_TRNSCVR_MSK) >>
+                                READOUT_10G_ENABLE_TRNSCVR_OFST)) {
+            LOG(logERROR, ("Setting readout mode failed. Could not set 10g "
+                           "transceiver enable mask to 0x%x\n.",
+                           transceiverMask));
+            return FAIL;
+        }
     }
     return OK;
 }
 
 int getReadoutMode() {
-    if (analogEnable && digitalEnable) {
+    if (analogEnable && digitalEnable && !transceiverEnable) {
         LOG(logDEBUG1, ("Getting readout: Analog & Digita\n"));
         return ANALOG_AND_DIGITAL;
-    } else if (analogEnable && !digitalEnable) {
+    } else if (analogEnable && !digitalEnable && !transceiverEnable) {
         LOG(logDEBUG1, ("Getting readout: Analog Only\n"));
         return ANALOG_ONLY;
-    } else if (!analogEnable && digitalEnable) {
+    } else if (!analogEnable && digitalEnable && !transceiverEnable) {
         LOG(logDEBUG1, ("Getting readout: Digital Only\n"));
         return DIGITAL_ONLY;
+    } else if (!analogEnable && !digitalEnable && transceiverEnable) {
+        LOG(logDEBUG1, ("Getting readout: Transceiver Only\n"));
+        return TRANSCEIVER_ONLY;
+    } else if (!analogEnable && digitalEnable && transceiverEnable) {
+        LOG(logDEBUG1, ("Getting readout: Digital & Transceiver\n"));
+        return DIGITAL_TRANSCEIVER;
     } else {
-        LOG(logERROR,
-            ("Read unknown readout (Both digital and analog are disabled)\n"));
+        LOG(logERROR, ("Read unknown readout (analog enable:%d digital "
+                       "enable:%d transceiver enable:%d)\n",
+                       analogEnable, digitalEnable, transceiverEnable));
         return -1;
     }
 }
@@ -993,6 +1082,28 @@ int setNumDigitalSamples(int val) {
 }
 
 int getNumDigitalSamples() { return ndSamples; }
+
+int setNumTransceiverSamples(int val) {
+    if (val < 0) {
+        LOG(logERROR, ("Invalid transceiver samples: %d\n", val));
+        return FAIL;
+    }
+    LOG(logINFO, ("Setting number of transceiver samples %d\n", val));
+    ntSamples = val;
+    uint32_t addr = SAMPLES_TRANSCEIVER_REG;
+    bus_w(addr, bus_r(addr) & ~SAMPLES_DIGITAL_MSK);
+    bus_w(addr, bus_r(addr) | ((val << SAMPLES_TRANSCEIVER_OFST) &
+                               SAMPLES_TRANSCEIVER_MSK));
+    // 1Gb
+    if (!enableTenGigabitEthernet(-1)) {
+        if (updateDatabytesandAllocateRAM() == FAIL) {
+            return FAIL;
+        }
+    }
+    return OK;
+}
+
+int getNumTransceiverSamples() { return ntSamples; }
 
 int setExpTime(int64_t val) {
     if (val < 0) {
@@ -2524,7 +2635,6 @@ int getTotalNumberOfChannels() {
 
 void getNumberOfChannels(int *nchanx, int *nchany) {
     int nachans = 0, ndchans = 0;
-    // analog channels (normal, analog/digital readout)
     if (analogEnable) {
         uint32_t mask =
             enableTenGigabitEthernet(-1) ? adcEnableMask_10g : adcEnableMask_1g;
@@ -2539,12 +2649,19 @@ void getNumberOfChannels(int *nchanx, int *nchany) {
         LOG(logDEBUG1, ("Analog Channels: %d\n", nachans));
     }
 
-    // digital channels (digital, analog/digital readout)
     if (digitalEnable) {
         ndchans = 64;
         LOG(logDEBUG, ("Digital Channels: %d\n", ndchans));
     }
-    *nchanx = nachans + ndchans;
+    if (transceiverEnable) {
+        for (int ich = 0; ich < NCHAN_TRANSCEIVER; ++ich) {
+            if ((transceiverMask & (1 << ich)) != 0U)
+                ++ntchans;
+        }
+
+        LOG(logDEBUG1, ("Transceiver Channels: %d\n", ntchans));
+    }
+    *nchanx = nachans + ndchans + ntchans;
     LOG(logDEBUG, ("Total #Channels: %d\n", *nchanx));
     *nchany = 1;
 }

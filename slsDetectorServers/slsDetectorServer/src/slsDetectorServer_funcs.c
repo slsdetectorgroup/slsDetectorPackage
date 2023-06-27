@@ -478,7 +478,10 @@ void function_table() {
     flist[F_GET_BIT] = &get_bit;
     flist[F_SET_BIT] = &set_bit;
     flist[F_CLEAR_BIT] = &clear_bit;
-
+    flist[F_GET_NUM_TRANSCEIVER_SAMPLES] = &get_num_transceiver_samples;
+    flist[F_SET_NUM_TRANSCEIVER_SAMPLES] = &set_num_transceiver_samples;
+    flist[F_GET_TRANSCEIVER_ENABLE_MASK] = &get_transceiver_enable;
+    flist[F_SET_TRANSCEIVER_ENABLE_MASK] = &set_transceiver_enable;
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
         LOG(logERROR, ("The last detector function enum has reached its "
@@ -1880,57 +1883,59 @@ int acquire(int blocking, int file_des) {
 #ifdef EIGERD
             // check for hardware mac and hardware ip
             if (udpDetails[0].srcmac != getDetectorMAC()) {
-            ret = FAIL;
-            uint64_t sourcemac = getDetectorMAC();
-            char src_mac[MAC_ADDRESS_SIZE];
-            getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
-            sprintf(mess,
+                ret = FAIL;
+                uint64_t sourcemac = getDetectorMAC();
+                char src_mac[MAC_ADDRESS_SIZE];
+                getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
+                sprintf(
+                    mess,
                     "Invalid udp source mac address for this detector. Must be "
                     "same as hardware detector mac address %s\n",
                     src_mac);
-            LOG(logERROR, (mess));
-        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                   (udpDetails[0].srcip != getDetectorIP())) {
-            ret = FAIL;
-            uint32_t sourceip = getDetectorIP();
-            char src_ip[INET_ADDRSTRLEN];
-            getIpAddressinString(src_ip, sourceip);
-            sprintf(mess,
+                LOG(logERROR, (mess));
+            } else if (!enableTenGigabitEthernet(GET_FLAG) &&
+                       (udpDetails[0].srcip != getDetectorIP())) {
+                ret = FAIL;
+                uint32_t sourceip = getDetectorIP();
+                char src_ip[INET_ADDRSTRLEN];
+                getIpAddressinString(src_ip, sourceip);
+                sprintf(
+                    mess,
                     "Invalid udp source ip address for this detector. Must be "
                     "same as hardware detector ip address %s in 1G readout "
                     "mode \n",
                     src_ip);
-            LOG(logERROR, (mess));
-        } else
+                LOG(logERROR, (mess));
+            } else
 #endif
-            if (configured == FAIL) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because ");
-            strcat(mess, configureMessage);
-            LOG(logERROR, (mess));
-        } else if (sharedMemory_getScanStatus() == RUNNING) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because a scan is "
-                         "already running!\n");
-            LOG(logERROR, (mess));
-        } else {
-            memset(scanErrMessage, 0, MAX_STR_LENGTH);
-            sharedMemory_setScanStop(0);
-            sharedMemory_setScanStatus(IDLE); // if it was error
-            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
-                               &blocking)) {
+                if (configured == FAIL) {
                 ret = FAIL;
-                strcpy(mess, "Could not start acquisition thread!\n");
+                strcpy(mess, "Could not start acquisition because ");
+                strcat(mess, configureMessage);
+                LOG(logERROR, (mess));
+            } else if (sharedMemory_getScanStatus() == RUNNING) {
+                ret = FAIL;
+                strcpy(mess, "Could not start acquisition because a scan is "
+                             "already running!\n");
                 LOG(logERROR, (mess));
             } else {
-                // wait for blocking always (scan or not)
-                // non blocking-no scan also wait (for error message)
-                // non blcoking-scan dont wait (there is scanErrorMessage)
-                if (blocking || !scan) {
-                    pthread_join(pthread_tid, NULL);
+                memset(scanErrMessage, 0, MAX_STR_LENGTH);
+                sharedMemory_setScanStop(0);
+                sharedMemory_setScanStatus(IDLE); // if it was error
+                if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                                   &blocking)) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not start acquisition thread!\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    // wait for blocking always (scan or not)
+                    // non blocking-no scan also wait (for error message)
+                    // non blcoking-scan dont wait (there is scanErrorMessage)
+                    if (blocking || !scan) {
+                        pthread_join(pthread_tid, NULL);
+                    }
                 }
             }
-        }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -4266,28 +4271,19 @@ int set_adc_enable_mask(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (arg == 0u) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Not allowed to set adc mask of 0 due to data readout. \n");
+        ret = setADCEnableMask(arg);
+        if (ret == FAIL) {
+            sprintf(mess, "Could not set 1Gb ADC Enable mask to 0x%x.\n", arg);
             LOG(logERROR, (mess));
         } else {
-            ret = setADCEnableMask(arg);
-            if (ret == FAIL) {
-                sprintf(mess, "Could not set 1Gb ADC Enable mask to 0x%x.\n",
-                        arg);
-                LOG(logERROR, (mess));
-            } else {
-                uint32_t retval = getADCEnableMask();
-                if (arg != retval) {
-                    ret = FAIL;
-                    sprintf(
-                        mess,
+            uint32_t retval = getADCEnableMask();
+            if (arg != retval) {
+                ret = FAIL;
+                sprintf(mess,
                         "Could not set 1Gb ADC Enable mask. Set 0x%x, but read "
                         "0x%x\n",
                         arg, retval);
-                    LOG(logERROR, (mess));
-                }
+                LOG(logERROR, (mess));
             }
         }
     }
@@ -10423,5 +10419,114 @@ int get_bit(int file_des) {
             }
         }
     }
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int get_num_transceiver_samples(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+#if !defined(CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    // get only
+    retval = getNumTransceiverSamples();
+    LOG(logDEBUG1, ("retval num transceiver samples %d\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_num_transceiver_samples(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting number of transceiver samples %d\n", arg));
+
+#if !defined(CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        ret = setNumTransceiverSamples(arg);
+        if (ret == FAIL) {
+            sprintf(
+                mess,
+                "Could not set number of transceiver samples to %d. Could not "
+                "allocate RAM\n",
+                arg);
+            LOG(logERROR, (mess));
+        } else {
+            int retval = getNumTransceiverSamples();
+            LOG(logDEBUG1, ("retval num transceiver samples %d\n", retval));
+            validate(&ret, mess, arg, retval,
+                     "set number of transceiver samples", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int set_transceiver_enable(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint32_t arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting Transceiver Enable Mask to %u\n", arg));
+
+#if (!defined(CHIPTESTBOARDD))
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg > MAX_TRANSCEIVER_MASK) {
+            ret = FAIL;
+            sprintf(mess, "Invalid Transceiver Mask. Max: 0x%x\n",
+                    MAX_TRANSCEIVER_MASK);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setTransceiverEnableMask(arg);
+            if (ret == FAIL) {
+                sprintf(mess,
+                        "Could not set Transceiver Enable mask to 0x%x.\n",
+                        arg);
+                LOG(logERROR, (mess));
+            } else {
+                uint32_t retval = getTransceiverEnableMask();
+                if (arg != retval) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Could not set Transceiver Enable mask. Set 0x%x, "
+                            "but read "
+                            "0x%x\n",
+                            arg, retval);
+                    LOG(logERROR, (mess));
+                }
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_transceiver_enable(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint32_t retval = -1;
+
+    LOG(logDEBUG1, ("Getting Transceiver Enable Mask \n"));
+
+#if (!defined(CHIPTESTBOARDD))
+    functionNotImplemented();
+#else
+    // get
+    retval = getTransceiverEnableMask();
+    LOG(logDEBUG1, ("Transceiver Enable Mask retval: %u\n", retval));
+#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }

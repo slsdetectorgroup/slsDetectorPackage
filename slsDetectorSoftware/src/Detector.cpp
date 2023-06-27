@@ -2091,6 +2091,13 @@ void Detector::setTenGigaADCEnableMask(uint32_t mask, Positions pos) {
     pimpl->Parallel(&Module::setTenGigaADCEnableMask, pos, mask);
 }
 
+Result<uint32_t> Detector::getTransceiverEnableMask(Positions pos) const {
+    return pimpl->Parallel(&Module::getTransceiverEnableMask, pos);
+}
+
+void Detector::setTransceiverEnableMask(uint32_t mask, Positions pos) {
+    pimpl->Parallel(&Module::setTransceiverEnableMask, pos, mask);
+}
 // CTB Specific
 
 Result<int> Detector::getNumberOfDigitalSamples(Positions pos) const {
@@ -2101,12 +2108,18 @@ void Detector::setNumberOfDigitalSamples(int value, Positions pos) {
     pimpl->Parallel(&Module::setNumberOfDigitalSamples, pos, value);
 }
 
+Result<int> Detector::getNumberOfTransceiverSamples(Positions pos) const {
+    return pimpl->Parallel(&Module::getNumberOfTransceiverSamples, pos);
+}
+
+void Detector::setNumberOfTransceiverSamples(int value, Positions pos) {
+    pimpl->Parallel(&Module::setNumberOfTransceiverSamples, pos, value);
+}
+
 Result<defs::readoutMode> Detector::getReadoutMode(Positions pos) const {
     return pimpl->Parallel(&Module::getReadoutMode, pos);
 }
 
-/** Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL \n
- * Default: ANALOG_ONLY */
 void Detector::setReadoutMode(defs::readoutMode value, Positions pos) {
     pimpl->Parallel(&Module::setReadoutMode, pos, value);
 }

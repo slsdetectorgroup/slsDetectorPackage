@@ -1182,7 +1182,7 @@ class CmdProxy {
         {"apulse", &CmdProxy::apulse},
         {"dpulse", &CmdProxy::dpulse},
 
-        /* CTB/ Moench Specific */
+        /* CTB Specific */
         {"samples", &CmdProxy::Samples},
         {"asamples", &CmdProxy::asamples},
         {"adcclk", &CmdProxy::adcclk},
@@ -1192,9 +1192,9 @@ class CmdProxy {
         {"v_limit", &CmdProxy::v_limit},
         {"adcenable", &CmdProxy::adcenable},
         {"adcenable10g", &CmdProxy::adcenable10g},
-
-        /* CTB Specific */
+        {"transceiverenable", &CmdProxy::transceiverenable},
         {"dsamples", &CmdProxy::dsamples},
+        {"tsamples", &CmdProxy::tsamples},
         {"romode", &CmdProxy::romode},
         {"dbitclk", &CmdProxy::dbitclk},
         {"adcvpp", &CmdProxy::AdcVpp},
@@ -2381,7 +2381,10 @@ class CmdProxy {
         "ADC channel. However, if any of a consecutive 4 bits are enabled, the "
         "complete 4 bits are enabled.");
 
-    /* CTB Specific */
+    INTEGER_COMMAND_HEX(transceiverenable, getTransceiverEnableMask,
+                        setTransceiverEnableMask, StringTo<uint32_t>,
+                        "[bitmask]\n\t[Ctb] Transceiver Enable Mask. Enable "
+                        "for each 4 Transceiver channel.");
 
     INTEGER_COMMAND_VEC_ID(
         dsamples, getNumberOfDigitalSamples, setNumberOfDigitalSamples,
@@ -2389,10 +2392,15 @@ class CmdProxy {
         "[n_value]\n\t[CTB] Number of digital samples expected.");
 
     INTEGER_COMMAND_VEC_ID(
+        tsamples, setNumberOfTransceiverSamples, getNumberOfTransceiverSamples,
+        StringTo<int>,
+        "[n_value]\n\t[CTB] Number of transceiver samples expected.");
+
+    INTEGER_COMMAND_VEC_ID(
         romode, getReadoutMode, setReadoutMode,
         StringTo<slsDetectorDefs::readoutMode>,
-        "[analog|digital|analog_digital]\n\t[CTB] Readout mode. "
-        "Default is analog.");
+        "[analog|digital|analog_digital|transceiver|digital_transceiver]\n\t["
+        "CTB] Readout mode. Default is analog.");
 
     INTEGER_COMMAND_VEC_ID(
         dbitclk, getDBITClock, setDBITClock, StringTo<int>,

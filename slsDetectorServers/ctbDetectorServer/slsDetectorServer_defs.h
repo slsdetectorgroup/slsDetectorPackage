@@ -18,9 +18,11 @@
 #define CTRL_SRVR_INIT_TIME_US (2 * 1000 * 1000)
 
 /* Hardware Definitions */
-#define NCHAN                   (36)
+#define NCHAN                   (40)
 #define NCHAN_ANALOG            (32)
 #define NCHAN_DIGITAL           (64)
+#define NCHAN_TRANSCEIVER       (4)
+#define NBITS_PER_TRANSCEIVER   (64)
 #define NCHIP                   (1)
 #define NDAC                    (24)
 #define NPWR                    (6)
@@ -52,6 +54,8 @@
 #define DEFAULT_ADC_CLK               (40)  // 20
 #define DEFAULT_SYNC_CLK              (40)  // 20
 #define DEFAULT_DBIT_CLK              (200)
+#define DEFAULT_TRANSCEIVER_MASK      (0x3)
+#define MAX_TRANSCEIVER_MASK          (0xF)
 
 #define UDP_HEADER_MAX_FRAME_VALUE (0xFFFFFFFFFFFF)
 

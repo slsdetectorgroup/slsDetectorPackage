@@ -504,8 +504,12 @@ class Module : public virtual slsDetectorDefs {
     void setADCEnableMask(uint32_t mask);
     uint32_t getTenGigaADCEnableMask() const;
     void setTenGigaADCEnableMask(uint32_t mask);
+    uint32_t getTransceiverEnableMask() const;
+    void setTransceiverEnableMask(uint32_t mask);    
     int getNumberOfDigitalSamples() const;
     void setNumberOfDigitalSamples(int value);
+    int getNumberOfTransceiverSamples() const;
+    void setNumberOfTransceiverSamples(int value);
     readoutMode getReadoutMode() const;
     void setReadoutMode(const readoutMode mode);
     int getExternalSamplingSource();

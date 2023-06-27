@@ -49,7 +49,7 @@ class MainWindow(QtWidgets.QMainWindow):
         uic.loadUi("CtbGui.ui", self)
 
         self.setup_ui()
-        self.tabWidget.setCurrentIndex(7)
+        self.tabWidget.setCurrentIndex(6)
         self.tabWidget.currentChanged.connect(self.refresh_tab)
         self.connect_ui()
         self.refresh_tab_dac()
@@ -1685,7 +1685,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.refresh_tab_adc()
             case 5:
                 self.refresh_tab_pattern()
-            case 7:
+            case 6:
                 self.refresh_tab_acquisition()
 
     def refresh_tab_dac(self):

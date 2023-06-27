@@ -2392,7 +2392,7 @@ class CmdProxy {
         "[n_value]\n\t[CTB] Number of digital samples expected.");
 
     INTEGER_COMMAND_VEC_ID(
-        tsamples, setNumberOfTransceiverSamples, getNumberOfTransceiverSamples,
+        tsamples, getNumberOfTransceiverSamples, setNumberOfTransceiverSamples,
         StringTo<int>,
         "[n_value]\n\t[CTB] Number of transceiver samples expected.");
 

@@ -598,7 +598,7 @@ void setupDetector() {
     setTiming(DEFAULT_TIMING_MODE);
     setADCEnableMask(BIT32_MSK);
     setADCEnableMask_10G(BIT32_MSK);
-    setTranceiverEnableMask(DEFAULT_TRANSCEIVER_MASK);
+    setTransceiverEnableMask(DEFAULT_TRANSCEIVER_MASK);
 
     if (setReadoutMode(ANALOG_ONLY) == FAIL) {
         strcpy(initErrorMessage,
@@ -641,9 +641,9 @@ int updateDatabytesandAllocateRAM() {
         free(digitalData);
         digitalData = 0;
     }
-    if (transceiverDataBytes) {
-        free(transceiverDataBytes);
-        transceiverDataBytes = 0;
+    if (transceiverData) {
+        free(transceiverData);
+        transceiverData = 0;
     }
     // allocate RAM
     if (analogDataBytes) {
@@ -667,7 +667,6 @@ int updateDatabytesandAllocateRAM() {
         }
     }
     LOG(logINFO, ("\tDigital RAM allocated to %d bytes\n", digitalDataBytes));
-
     if (transceiverDataBytes) {
         transceiverData = malloc(transceiverDataBytes);
         // cannot malloc
@@ -2520,7 +2519,6 @@ void readSample(int ns) {
         for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
             ;
 
-        // wait as it is connected directly to fifo running on a different clock
         if (!(ns % 1000)) {
             LOG(logDEBUG1,
                 ("Reading sample ns:%d of %d DEmtpy:%d DFull:%d Status:0x%x\n",
@@ -2539,6 +2537,49 @@ void readSample(int ns) {
             get64BitReg(FIFO_DIN_LSB_REG, FIFO_DIN_MSB_REG);
         digitalDataPtr += 8;
     }
+
+    // read transceivers
+    if (transceiverEnable && ns < ntSamples) {
+
+        // read strobe
+        bus_w(addr, bus_r(addr) | DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK);
+        bus_w(addr, bus_r(addr) & (~DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK));
+
+        // wait for 1 us to latch different clocks of read and read strobe
+        for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
+            ;
+
+        if (!(ns % 1000)) {
+            LOG(logDEBUG1,
+                ("Reading sample ns:%d of %d TEmtpy:%d Status:0x%x\n", ns,
+                 ndSamples,
+                 ((bus_r(FIFO_TIN_STATUS_REG) &
+                   FIFO_TIN_STATUS_FIFO_EMPTY_ALL_MSK) >>
+                  FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST),
+                 bus_r(STATUS_REG)));
+        }
+
+        // loop through all channels
+        for (int ich = 0; ich < NCHAN_TRANSCEIVER; ++ich) {
+
+            // if channel is in enable mask
+            if ((1 << ich) & (transceiverMask)) {
+
+                // unselect channel
+                bus_w(addr, bus_r(addr) & ~(DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK));
+
+                // select channel
+                bus_w(addr, bus_r(addr) |
+                                ((ich << DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_OFST) &
+                                 DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK));
+
+                // read fifo and write it to current position of data pointer
+                *((uint64_t *)transceiverDataPtr) =
+                    get64BitReg(FIFO_TIN_LSB_REG, FIFO_TIN_MSB_REG);
+                transceiverDataPtr += 8;
+            }
+        }
+    }
 }
 
 uint32_t checkDataInFifo() {
@@ -2555,6 +2596,13 @@ uint32_t checkDataInFifo() {
              FIFO_DIN_STATUS_FIFO_EMPTY_OFST);
         LOG(logINFO, ("Digital Fifo Empty: %d\n", digitalFifoEmpty));
         dataPresent = (digitalFifoEmpty ? 0 : 1);
+    }
+    if (!dataPresent && transceiverEnable) {
+        int transceiverFifoEmpty = ((bus_r(FIFO_TIN_STATUS_REG) &
+                                     FIFO_TIN_STATUS_FIFO_EMPTY_ALL_MSK) >>
+                                    FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST);
+        LOG(logINFO, ("Transceiver Fifo Empty: %d\n", transceiverFifoEmpty));
+        dataPresent = ~(transceiverFifoEmpty);
     }
     LOG(logDEBUG2, ("Data in Fifo :0x%x\n", dataPresent));
     return dataPresent;
@@ -2634,7 +2682,7 @@ int getTotalNumberOfChannels() {
 }
 
 void getNumberOfChannels(int *nchanx, int *nchany) {
-    int nachans = 0, ndchans = 0;
+    int nachans = 0, ndchans = 0, ntchans = 0;
     if (analogEnable) {
         uint32_t mask =
             enableTenGigabitEthernet(-1) ? adcEnableMask_10g : adcEnableMask_1g;

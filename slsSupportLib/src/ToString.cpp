@@ -327,7 +327,7 @@ std::string ToString(const defs::readoutMode s) {
         return std::string("analog_digital");
     case defs::TRANSCEIVER_ONLY:
         return std::string("transceiver");
-    case defs::DIGITAL_TRANSCEIVER:
+    case defs::DIGITAL_AND_TRANSCEIVER:
         return std::string("digital_transceiver");
     default:
         return std::string("Unknown");
@@ -796,7 +796,7 @@ template <> defs::readoutMode StringTo(const std::string &s) {
     if (s == "transceiver")
         return defs::TRANSCEIVER_ONLY;
     if (s == "digital_transceiver")
-        return defs::DIGITAL_TRANSCEIVER;
+        return defs::DIGITAL_AND_TRANSCEIVER;
     throw RuntimeError("Unknown readout mode " + s);
 }
 

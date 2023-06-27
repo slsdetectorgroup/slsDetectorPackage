@@ -411,7 +411,7 @@ typedef struct {
         DIGITAL_ONLY,
         ANALOG_AND_DIGITAL,
         TRANSCEIVER_ONLY,
-        DIGITAL_TRANSCEIVER
+        DIGITAL_AND_TRANSCEIVER
     };
 
     /** chip speed */

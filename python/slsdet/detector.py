@@ -3204,7 +3204,7 @@ class Detector(CppDetectorApi):
         
         Note
         ------
-        Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL, TRANSCEIVER_ONLY, DIGITAL_TRANSCEIVER
+        Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL, TRANSCEIVER_ONLY, DIGITAL_AND_TRANSCEIVER
         Default: ANALOG_ONLY
 
         Example

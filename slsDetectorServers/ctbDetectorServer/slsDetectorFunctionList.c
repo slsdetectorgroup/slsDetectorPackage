@@ -905,7 +905,7 @@ int setReadoutMode(enum readoutMode mode) {
         LOG(logINFO, ("Setting Transceiver Only Readout\n"));
         transceiverEnable = 1;
         break;
-    case DIGITAL_TRANSCEIVER:
+    case DIGITAL_AND_TRANSCEIVER:
         LOG(logINFO, ("Setting Digital & Transceiver Readout\n"));
         digitalEnable = 1;
         transceiverEnable = 1;
@@ -993,7 +993,7 @@ int getReadoutMode() {
         return TRANSCEIVER_ONLY;
     } else if (!analogEnable && digitalEnable && transceiverEnable) {
         LOG(logDEBUG1, ("Getting readout: Digital & Transceiver\n"));
-        return DIGITAL_TRANSCEIVER;
+        return DIGITAL_AND_TRANSCEIVER;
     } else {
         LOG(logERROR, ("Read unknown readout (analog enable:%d digital "
                        "enable:%d transceiver enable:%d)\n",
@@ -2541,14 +2541,6 @@ void readSample(int ns) {
     // read transceivers
     if (transceiverEnable && ns < ntSamples) {
 
-        // read strobe
-        bus_w(addr, bus_r(addr) | DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK);
-        bus_w(addr, bus_r(addr) & (~DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK));
-
-        // wait for 1 us to latch different clocks of read and read strobe
-        for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
-            ;
-
         if (!(ns % 1000)) {
             LOG(logDEBUG1,
                 ("Reading sample ns:%d of %d TEmtpy:%d Status:0x%x\n", ns,
@@ -2565,18 +2557,33 @@ void readSample(int ns) {
             // if channel is in enable mask
             if ((1 << ich) & (transceiverMask)) {
 
-                // unselect channel
-                bus_w(addr, bus_r(addr) & ~(DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK));
+                uint32_t mask = FIFO_TIN_STATUS_FIFO_EMPTY_1_MSK << ich;
+                int offset = FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST + ich;
 
-                // select channel
-                bus_w(addr, bus_r(addr) |
-                                ((ich << DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_OFST) &
-                                 DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK));
+                // if fifo not empty
+                if (!((bus_r(FIFO_TIN_STATUS_REG) & mask) >> offset)) {
 
-                // read fifo and write it to current position of data pointer
-                *((uint64_t *)transceiverDataPtr) =
-                    get64BitReg(FIFO_TIN_LSB_REG, FIFO_TIN_MSB_REG);
-                transceiverDataPtr += 8;
+                    // unselect channel
+                    bus_w(addr, bus_r(addr) & ~(DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK));
+
+                    // select channel
+                    bus_w(addr, bus_r(addr) |
+                                    ((ich << DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_OFST) &
+                                    DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK));
+
+                    // read strobe
+                    bus_w(addr, bus_r(addr) | DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK);
+                    bus_w(addr, bus_r(addr) & (~DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK));
+
+                    // wait for 1 us to latch different clocks of read and read strobe
+                    for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
+                        ;
+
+                    // read fifo and write it to current position of data pointer
+                    *((uint64_t *)transceiverDataPtr) =
+                        get64BitReg(FIFO_TIN_LSB_REG, FIFO_TIN_MSB_REG);
+                    transceiverDataPtr += 8;
+                }
             }
         }
     }
@@ -2602,7 +2609,7 @@ uint32_t checkDataInFifo() {
                                      FIFO_TIN_STATUS_FIFO_EMPTY_ALL_MSK) >>
                                     FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST);
         LOG(logINFO, ("Transceiver Fifo Empty: %d\n", transceiverFifoEmpty));
-        dataPresent = ~(transceiverFifoEmpty);
+        dataPresent = (transceiverFifoEmpty == 0xF ? 0 : 1);
     }
     LOG(logDEBUG2, ("Data in Fifo :0x%x\n", dataPresent));
     return dataPresent;
@@ -2644,6 +2651,7 @@ int readFrameFromFifo() {
     // point the data pointer to the starting position of data
     analogDataPtr = analogData;
     digitalDataPtr = digitalData;
+    transceiverDataPtr = transceiverData;
 
     // no data for this frame
     if (checkFifoForEndOfAcquisition() == FAIL) {
@@ -2651,7 +2659,11 @@ int readFrameFromFifo() {
     }
 
     // read Sample
-    int maxSamples = (naSamples > ndSamples) ? naSamples : ndSamples;
+    int maxSamples = naSamples;
+    if (ndSamples > maxSamples)
+        maxSamples = ndSamples;
+    if (ntSamples > maxSamples)
+        maxSamples = ntSamples;
     while (ns < maxSamples) {
         // chceck if no data in fifo, return ns?//FIXME: ask Anna
         readSample(ns);

@@ -1671,7 +1671,7 @@ class Detector {
     Result<defs::readoutMode> getReadoutMode(Positions pos = {}) const;
 
     /** [CTB] Options: ANALOG_ONLY (default), DIGITAL_ONLY, ANALOG_AND_DIGITAL,
-     * TRANSCEIVER_ONLY, DIGITAL_TRANSCEIVER
+     * TRANSCEIVER_ONLY, DIGITAL_AND_TRANSCEIVER
      */
     void setReadoutMode(defs::readoutMode value, Positions pos = {});
 

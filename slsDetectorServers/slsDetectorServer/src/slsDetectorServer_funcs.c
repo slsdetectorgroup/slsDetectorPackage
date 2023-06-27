@@ -5649,6 +5649,8 @@ int set_readout_mode(int file_des) {
         case ANALOG_ONLY:
         case DIGITAL_ONLY:
         case ANALOG_AND_DIGITAL:
+        case TRANSCEIVER_ONLY:
+        case DIGITAL_AND_TRANSCEIVER:
             break;
         default:
             modeNotImplemented("Readout mode", (int)arg);

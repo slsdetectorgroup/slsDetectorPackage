@@ -64,8 +64,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>746</width>
-         <height>886</height>
+         <width>748</width>
+         <height>888</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -135,7 +135,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>6</number>
+              <number>7</number>
              </property>
              <widget class="QWidget" name="tabDac">
               <attribute name="title">
@@ -16737,7 +16737,7 @@ QPushButton:checked{background-color: red;}</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="maximum">
-                   <number>67</number>
+                   <number>9999</number>
                   </property>
                  </widget>
                 </item>
@@ -16770,6 +16770,9 @@ QPushButton:checked{background-color: red;}</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="maximum">
+                   <number>1000</number>
                   </property>
                  </widget>
                 </item>
@@ -16912,7 +16915,7 @@ QPushButton:checked{background-color: red;}</string>
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
                   <property name="maximum">
-                   <number>159</number>
+                   <number>9999</number>
                   </property>
                  </widget>
                 </item>
@@ -17015,7 +17018,7 @@ QPushButton:checked{background-color: red;}</string>
      <x>0</x>
      <y>0</y>
      <width>1332</width>
-     <height>29</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

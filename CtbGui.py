@@ -1179,12 +1179,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getDigital()
 
     def setReadOut(self):
-        if self.comboBoxROMode.currentIndex() == 0:
-            self.det.romode = readoutMode.ANALOG_ONLY
-        elif self.comboBoxROMode.currentIndex() == 1:
-            self.det.romode = readoutMode.DIGITAL_ONLY
-        else:
-            self.det.romode = readoutMode.ANALOG_AND_DIGITAL
+        self.comboBoxROMode.currentIndexChanged.disconnect()
+        try:
+            if self.comboBoxROMode.currentIndex() == 0:
+                self.det.romode = readoutMode.ANALOG_ONLY
+            elif self.comboBoxROMode.currentIndex() == 1:
+                self.det.romode = readoutMode.DIGITAL_ONLY
+            else:
+                self.det.romode = readoutMode.ANALOG_AND_DIGITAL
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Readout Mode Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
         self.getReadout()
 
     def getRunFrequency(self):
@@ -1193,7 +1200,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
 
     def setRunFrequency(self):
-        self.det.runclk = self.spinBoxRunF.value()
+        self.spinBoxRunF.editingFinished.disconnect()
+        try:
+            self.det.runclk = self.spinBoxRunF.value()
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Run Frequency Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
         self.getRunFrequency()
 
     def getAnalog(self):
@@ -1203,7 +1217,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
 
     def setAnalog(self):
-        self.det.asamples = self.spinBoxAnalog.value()
+        self.spinBoxAnalog.editingFinished.disconnect()
+        try:
+            self.det.asamples = self.spinBoxAnalog.value()
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Digital Samples Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
         self.getAnalog()
 
     def getDigital(self):
@@ -1213,7 +1234,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDigital.editingFinished.connect(self.setDigital)
 
     def setDigital(self):
-        self.det.dsamples = self.spinBoxDigital.value()
+        self.spinBoxDigital.editingFinished.disconnect()
+        try:
+            self.det.dsamples = self.spinBoxDigital.value()
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Digital Samples Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.spinBoxDigital.editingFinished.connect(self.setDigital)
         self.getDigital()
 
     def getADCFrequency(self):
@@ -1222,7 +1250,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
 
     def setADCFrequency(self):
-        self.det.adcclk = self.spinBoxADCF.value()
+        self.spinBoxADCF.editingFinished.disconnect()
+        try:
+            self.det.adcclk = self.spinBoxADCF.value()
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "ADC Frequency Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
         self.getADCFrequency()
 
     def getADCPhase(self):
@@ -1231,7 +1266,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
 
     def setADCPhase(self):
-        self.det.adcphase = self.spinBoxADCPhase.value()
+        self.spinBoxADCPhase.editingFinished.disconnect()
+        try:
+            self.det.adcphase = self.spinBoxADCPhase.value()
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "ADC Phase Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
         self.getADCPhase()
 
     def getADCPipeline(self):
@@ -1240,7 +1282,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
 
     def setADCPipeline(self):
-        self.det.adcpipeline = self.spinBoxADCPipeline.value()
+        self.spinBoxADCPipeline.editingFinished.disconnect()
+        try:
+            self.det.adcpipeline = self.spinBoxADCPipeline.value()
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "ADC Pipeline Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
         self.getADCPipeline()
 
     def getDBITFrequency(self):
@@ -1249,7 +1298,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
 
     def setDBITFrequency(self):
-        self.det.dbitclk = self.spinBoxDBITF.value()
+        self.spinBoxDBITF.editingFinished.disconnect()
+        try:
+            self.det.dbitclk = self.spinBoxDBITF.value()
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "DBit Frequency Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
         self.getDBITFrequency()
 
     def getDBITPhase(self):
@@ -1258,7 +1314,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
 
     def setDBITPhase(self):
-        self.det.dbitphase = self.spinBoxDBITPhase.value()
+        self.spinBoxDBITPhase.editingFinished.disconnect()
+        try:
+            self.det.dbitphase = self.spinBoxDBITPhase.value()
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "DBit Phase Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
         self.getDBITPhase()
 
     def getDBITPipeline(self):
@@ -1267,7 +1330,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
 
     def setDBITPipeline(self):
-        self.det.dbitpipeline = self.spinBoxDBITPipeline.value()
+        self.spinBoxDBITPipeline.editingFinished.disconnect()
+        try:
+            self.det.dbitpipeline = self.spinBoxDBITPipeline.value()
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "DBit Pipeline Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
         self.getDBITPipeline()
 
     def getFileWrite(self):

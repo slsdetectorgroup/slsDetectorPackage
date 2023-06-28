@@ -171,7 +171,6 @@ class GeneralData {
     virtual void SetTransceiverEnableMask(int n) {
         ThrowGenericError("SetTransceiverEnableMask");
     };
-
 };
 
 class GotthardData : public GeneralData {
@@ -626,9 +625,13 @@ class ChipTestBoardData : public GeneralData {
         // transceiver channels
         if (readoutType == slsDetectorDefs::TRANSCEIVER_ONLY ||
             readoutType == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
-            nTransceiverChans = __builtin_popcount(transceiverMask);;
-            nTransceiverBytes = nTransceiverChans * NUM_BYTES_PER_TRANSCEIVER_CHANNEL * nTransceiverSamples;
-            LOG(logDEBUG1) << "Number of Transceiver Channels:" << nTransceiverChans
+            nTransceiverChans = __builtin_popcount(transceiverMask);
+            ;
+            nTransceiverBytes = nTransceiverChans *
+                                NUM_BYTES_PER_TRANSCEIVER_CHANNEL *
+                                nTransceiverSamples;
+            LOG(logDEBUG1) << "Number of Transceiver Channels:"
+                           << nTransceiverChans
                            << " Databytes: " << nTransceiverBytes;
         }
         nPixelsX = nAnalogChans + nDigitalChans + nTransceiverChans;

@@ -510,7 +510,8 @@ void DataProcessor::RearrangeDbitData(size_t &size, char *data) {
     const int numDigitalSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
 
     // ceil as numResult8Bits could be decimal
-    const int numResult8Bits = ceil((numDigitalSamples * ctbDbitList.size()) / 8.00);
+    const int numResult8Bits =
+        ceil((numDigitalSamples * ctbDbitList.size()) / 8.00);
     std::vector<uint8_t> result(numResult8Bits);
     uint8_t *dest = &result[0];
 
@@ -542,7 +543,8 @@ void DataProcessor::RearrangeDbitData(size_t &size, char *data) {
     // copy back to memory and update size
     memcpy(data + nAnalogDataBytes, result.data(),
            numResult8Bits * sizeof(uint8_t));
-    size = numResult8Bits * sizeof(uint8_t) + nAnalogDataBytes + ctbDbitOffset + nTransceiverDataBytes;
+    size = numResult8Bits * sizeof(uint8_t) + nAnalogDataBytes + ctbDbitOffset +
+           nTransceiverDataBytes;
 }
 
 void DataProcessor::CropImage(size_t &size, char *data) {

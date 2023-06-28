@@ -665,7 +665,8 @@ int updateDatabytesandAllocateRAM() {
                  "Probable cause: Memory Leak.\n"));
             return FAIL;
         }
-        LOG(logINFO, ("\tDigital RAM allocated to %d bytes\n", digitalDataBytes));
+        LOG(logINFO,
+            ("\tDigital RAM allocated to %d bytes\n", digitalDataBytes));
     }
     if (transceiverDataBytes) {
         transceiverData = malloc(transceiverDataBytes);
@@ -676,7 +677,8 @@ int updateDatabytesandAllocateRAM() {
                  "Probable cause: Memory Leak.\n"));
             return FAIL;
         }
-        LOG(logINFO, ("\tTransceiver RAM allocated to %d bytes\n", transceiverDataBytes));
+        LOG(logINFO, ("\tTransceiver RAM allocated to %d bytes\n",
+                      transceiverDataBytes));
     }
     return OK;
 }
@@ -2563,22 +2565,27 @@ void readSample(int ns) {
                 if (!((bus_r(FIFO_TIN_STATUS_REG) & mask) >> offset)) {
 
                     // unselect channel
-                    bus_w(addr, bus_r(addr) & ~(DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK));
+                    bus_w(addr,
+                          bus_r(addr) & ~(DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK));
 
                     // select channel
-                    bus_w(addr, bus_r(addr) |
-                                    ((ich << DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_OFST) &
-                                    DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK));
+                    bus_w(addr,
+                          bus_r(addr) |
+                              ((ich << DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_OFST) &
+                               DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK));
 
                     // read strobe
                     bus_w(addr, bus_r(addr) | DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK);
-                    bus_w(addr, bus_r(addr) & (~DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK));
+                    bus_w(addr,
+                          bus_r(addr) & (~DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK));
 
-                    // wait for 1 us to latch different clocks of read and read strobe
+                    // wait for 1 us to latch different clocks of read and read
+                    // strobe
                     for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
                         ;
 
-                    // read fifo and write it to current position of data pointer
+                    // read fifo and write it to current position of data
+                    // pointer
                     *((uint64_t *)transceiverDataPtr) =
                         get64BitReg(FIFO_TIN_LSB_REG, FIFO_TIN_MSB_REG);
                     transceiverDataPtr += 8;

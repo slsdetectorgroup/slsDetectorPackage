@@ -575,14 +575,16 @@ void MasterAttributes::WriteHDF5DbitList(H5::H5File *fd, H5::Group *group) {
     dataset.write(&dbitlist, H5::PredType::STD_U64LE);
 }
 
-void MasterAttributes::WriteHDF5TransceiverMask(H5::H5File *fd, H5::Group *group) {
+void MasterAttributes::WriteHDF5TransceiverMask(H5::H5File *fd,
+                                                H5::Group *group) {
     H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-    H5::DataSet dataset =
-        group->createDataSet("Transceiver Mask", H5::PredType::NATIVE_INT, dataspace);
+    H5::DataSet dataset = group->createDataSet(
+        "Transceiver Mask", H5::PredType::NATIVE_INT, dataspace);
     dataset.write(&transceiverMask, H5::PredType::NATIVE_INT);
 }
 
-void MasterAttributes::WriteHDF5TransceiverFlag(H5::H5File *fd, H5::Group *group) {
+void MasterAttributes::WriteHDF5TransceiverFlag(H5::H5File *fd,
+                                                H5::Group *group) {
     H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
     H5::DataSet dataset = group->createDataSet(
         "Transceiver Flag", H5::PredType::NATIVE_INT, dataspace);
@@ -590,7 +592,7 @@ void MasterAttributes::WriteHDF5TransceiverFlag(H5::H5File *fd, H5::Group *group
 }
 
 void MasterAttributes::WriteHDF5TransceiverSamples(H5::H5File *fd,
-                                              H5::Group *group) {
+                                                   H5::Group *group) {
     H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
     H5::DataSet dataset = group->createDataSet(
         "Transceiver Samples", H5::PredType::NATIVE_INT, dataspace);

@@ -60,12 +60,13 @@ void createUDPPacketHeader(char *buffer, uint16_t id) {
 }
 
 int fillUDPPacket(char *buffer) {
-    LOG(logDEBUG2,
-        ("Analog (databytes:%d, offset:%d)\n Digital (databytes:%d "
-         "offset:%d)\n\n Transceiver (databytes:%d offset:%d)\n",
-         analogDataBytes, analogOffset, digitalDataBytes, digitalOffset, transceiverDataBytes, transceiverOffset));
+    LOG(logDEBUG2, ("Analog (databytes:%d, offset:%d)\n Digital (databytes:%d "
+                    "offset:%d)\n\n Transceiver (databytes:%d offset:%d)\n",
+                    analogDataBytes, analogOffset, digitalDataBytes,
+                    digitalOffset, transceiverDataBytes, transceiverOffset));
     // reached end of data for one frame
-    if (analogOffset >= analogDataBytes && digitalOffset >= digitalDataBytes && transceiverOffset >= transceiverDataBytes) {
+    if (analogOffset >= analogDataBytes && digitalOffset >= digitalDataBytes &&
+        transceiverOffset >= transceiverDataBytes) {
         // reset offset
         analogOffset = 0;
         digitalOffset = 0;
@@ -126,11 +127,13 @@ int fillUDPPacket(char *buffer) {
     int transceiverBytes = 0;
     if (freeBytes && transceiverOffset < transceiverDataBytes) {
         // bytes to copy
-        transceiverBytes = ((transceiverOffset + freeBytes) <= transceiverDataBytes)
-                           ? freeBytes
-                           : (transceiverDataBytes - transceiverOffset);
+        transceiverBytes =
+            ((transceiverOffset + freeBytes) <= transceiverDataBytes)
+                ? freeBytes
+                : (transceiverDataBytes - transceiverOffset);
         // copy
-        memcpy(buffer + sizeof(sls_detector_header) + analogBytes + digitalBytes,
+        memcpy(buffer + sizeof(sls_detector_header) + analogBytes +
+                   digitalBytes,
                transceiverData + transceiverOffset, transceiverBytes);
         // increment offset
         transceiverOffset += transceiverBytes;
@@ -140,7 +143,9 @@ int fillUDPPacket(char *buffer) {
 
     // pad data
     if (freeBytes) {
-        memset(buffer + sizeof(sls_detector_header) + analogBytes + digitalBytes + transceiverBytes, 0, freeBytes);
+        memset(buffer + sizeof(sls_detector_header) + analogBytes +
+                   digitalBytes + transceiverBytes,
+               0, freeBytes);
         LOG(logDEBUG1, ("Padding %d bytes for fnum:%lld pnum:%d\n", freeBytes,
                         (long long int)udpFrameNumber, udpPacketNumber));
     }

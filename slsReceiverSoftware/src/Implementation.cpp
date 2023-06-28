@@ -956,7 +956,8 @@ void Implementation::StartMasterWriter() {
             for (auto &i : ctbDbitList) {
                 masterAttributes.dbitlist |= (1 << i);
             }
-            masterAttributes.transceiverSamples = generalData->nTransceiverSamples;
+            masterAttributes.transceiverSamples =
+                generalData->nTransceiverSamples;
             masterAttributes.transceiverMask = generalData->transceiverMask;
             masterAttributes.transceiver =
                 (generalData->readoutType == TRANSCEIVER_ONLY ||

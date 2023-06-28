@@ -1894,57 +1894,59 @@ int acquire(int blocking, int file_des) {
 #ifdef EIGERD
             // check for hardware mac and hardware ip
             if (udpDetails[0].srcmac != getDetectorMAC()) {
-            ret = FAIL;
-            uint64_t sourcemac = getDetectorMAC();
-            char src_mac[MAC_ADDRESS_SIZE];
-            getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
-            sprintf(mess,
+                ret = FAIL;
+                uint64_t sourcemac = getDetectorMAC();
+                char src_mac[MAC_ADDRESS_SIZE];
+                getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
+                sprintf(
+                    mess,
                     "Invalid udp source mac address for this detector. Must be "
                     "same as hardware detector mac address %s\n",
                     src_mac);
-            LOG(logERROR, (mess));
-        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                   (udpDetails[0].srcip != getDetectorIP())) {
-            ret = FAIL;
-            uint32_t sourceip = getDetectorIP();
-            char src_ip[INET_ADDRSTRLEN];
-            getIpAddressinString(src_ip, sourceip);
-            sprintf(mess,
+                LOG(logERROR, (mess));
+            } else if (!enableTenGigabitEthernet(GET_FLAG) &&
+                       (udpDetails[0].srcip != getDetectorIP())) {
+                ret = FAIL;
+                uint32_t sourceip = getDetectorIP();
+                char src_ip[INET_ADDRSTRLEN];
+                getIpAddressinString(src_ip, sourceip);
+                sprintf(
+                    mess,
                     "Invalid udp source ip address for this detector. Must be "
                     "same as hardware detector ip address %s in 1G readout "
                     "mode \n",
                     src_ip);
-            LOG(logERROR, (mess));
-        } else
+                LOG(logERROR, (mess));
+            } else
 #endif
-            if (configured == FAIL) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because ");
-            strcat(mess, configureMessage);
-            LOG(logERROR, (mess));
-        } else if (sharedMemory_getScanStatus() == RUNNING) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because a scan is "
-                         "already running!\n");
-            LOG(logERROR, (mess));
-        } else {
-            memset(scanErrMessage, 0, MAX_STR_LENGTH);
-            sharedMemory_setScanStop(0);
-            sharedMemory_setScanStatus(IDLE); // if it was error
-            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
-                               &blocking)) {
+                if (configured == FAIL) {
                 ret = FAIL;
-                strcpy(mess, "Could not start acquisition thread!\n");
+                strcpy(mess, "Could not start acquisition because ");
+                strcat(mess, configureMessage);
+                LOG(logERROR, (mess));
+            } else if (sharedMemory_getScanStatus() == RUNNING) {
+                ret = FAIL;
+                strcpy(mess, "Could not start acquisition because a scan is "
+                             "already running!\n");
                 LOG(logERROR, (mess));
             } else {
-                // wait for blocking always (scan or not)
-                // non blocking-no scan also wait (for error message)
-                // non blcoking-scan dont wait (there is scanErrorMessage)
-                if (blocking || !scan) {
-                    pthread_join(pthread_tid, NULL);
+                memset(scanErrMessage, 0, MAX_STR_LENGTH);
+                sharedMemory_setScanStop(0);
+                sharedMemory_setScanStatus(IDLE); // if it was error
+                if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                                   &blocking)) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not start acquisition thread!\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    // wait for blocking always (scan or not)
+                    // non blocking-no scan also wait (for error message)
+                    // non blcoking-scan dont wait (there is scanErrorMessage)
+                    if (blocking || !scan) {
+                        pthread_join(pthread_tid, NULL);
+                    }
                 }
             }
-        }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -8228,7 +8230,7 @@ int get_bursts_left(int file_des) {
 int start_readout(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-#ifndef MYTHEN3D
+#if defined(MYTHEN3D) || defined(CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     if (Server_VerifyLock() == OK) {
@@ -8259,6 +8261,25 @@ int start_readout(int file_des) {
 #endif
                 LOG(logERROR, (mess));
             }
+// only 1g real ctb needs to read from fifo
+// to avoid blocking, in another thread
+#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
+            if (!enableTenGigabitEthernet(-1)) {
+                ret = validateUDPSocket();
+                if (ret == FAIL) {
+                    strcpy(mess, "UDP socket not created!\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    if (pthread_create(&pthread_tid_ctb_1g, NULL,
+                                       &start_reading_and_sending_udp_frames,
+                                       NULL)) {
+                        ret = FAIL;
+                        strcpy(mess, "Could not start read frames thread!\n");
+                        LOG(logERROR, (mess));
+                    }
+                }
+            }
+#endif
         }
     }
 #endif

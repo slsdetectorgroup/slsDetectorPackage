@@ -681,7 +681,7 @@ int softwareTrigger();
 #if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)
 int softwareTrigger(int block);
 #endif
-#if defined(EIGERD) || defined(MYTHEN3D)
+#if defined(EIGERD) || defined(MYTHEN3D) || defined(CHIPTESTBOARDD)
 int startReadOut();
 #endif
 enum runStatus getRunStatus();

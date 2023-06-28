@@ -2238,6 +2238,17 @@ int startStateMachine() {
     return OK;
 }
 
+int startReadOut() {
+    LOG(logINFOBLUE, ("Starting Readout\n"));
+#ifdef VIRTUAL
+    return startStateMachine();
+#endif
+    cleanFifos();
+    bus_w(0x202, 1);
+    usleep(1);
+    return OK;
+}
+
 #ifdef VIRTUAL
 void *start_timer(void *arg) {
     if (!isControlServer) {

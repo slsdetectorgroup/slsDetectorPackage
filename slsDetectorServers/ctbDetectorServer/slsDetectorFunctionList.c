@@ -2566,16 +2566,12 @@ void readSample(int ns) {
 
     // read transceivers
     if (transceiverEnable && ns < ntSamples) {
+        uint32_t addr = FIFO_TIN_STATUS_REG;
 
-        if (!(ns % 1000)) {
-            LOG(logDEBUG1,
-                ("Reading sample ns:%d of %d TEmtpy:0x%x Status:0x%x\n", ns,
-                 ndSamples,
-                 ((bus_r(FIFO_TIN_STATUS_REG) &
-                   FIFO_TIN_STATUS_FIFO_EMPTY_ALL_MSK) >>
-                  FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST),
-                 bus_r(STATUS_REG)));
-        }
+        // if (!(ns % 1000)) {
+        LOG(logDEBUG1, ("Reading sample ns:%d of %d TReg:0x%x Status:0x%x\n",
+                        ns, ndSamples, bus_r(addr), bus_r(STATUS_REG)));
+        // }
 
         // loop through all channels
         for (int ich = 0; ich < NCHAN_TRANSCEIVER; ++ich) {
@@ -2583,11 +2579,14 @@ void readSample(int ns) {
             // if channel is in enable mask
             if ((1 << ich) & (transceiverMask)) {
 
-                uint32_t mask = FIFO_TIN_STATUS_FIFO_EMPTY_1_MSK << ich;
                 int offset = FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST + ich;
+                uint32_t mask = (1 << offset);
+                int empty = ((bus_r(addr) & mask) >> offset);
 
                 // if fifo not empty
-                if (!((bus_r(FIFO_TIN_STATUS_REG) & mask) >> offset)) {
+                if (!empty) {
+                    LOG(logINFOBLUE,
+                        ("ns:%d Transceiver Fifo %d NOT Empty\n", ns, ich));
 
                     // unselect channel
                     bus_w(addr,

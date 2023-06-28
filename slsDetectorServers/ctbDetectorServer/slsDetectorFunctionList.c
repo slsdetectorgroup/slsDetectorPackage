@@ -2299,6 +2299,7 @@ void *start_timer(void *arg) {
             srcOffset += dataSize;
 
             sendUDPPacket(0, 0, packetData, packetSize);
+            // LOG(logINFOBLUE, ("packetsize:%d\n", packetSize));
         }
         LOG(logINFO, ("Sent frame: %d [%lld]\n", iframes, frameNr + iframes));
         clock_gettime(CLOCK_REALTIME, &end);

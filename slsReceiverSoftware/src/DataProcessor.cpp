@@ -496,9 +496,10 @@ void DataProcessor::PadMissingPackets(sls_receiver_header header, char *data) {
 /** ctb specific */
 void DataProcessor::RearrangeDbitData(size_t &size, char *data) {
     int nAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
+    int nDigitalDataBytes = generalData->GetNumberOfDigitalDatabytes();
     int nTransceiverDataBytes = generalData->GetNumberOfTransceiverDatabytes();
     // TODO! (Erik) Refactor and add tests
-    int ctbDigitalDataBytes = size - nAnalogDataBytes - ctbDbitOffset;
+    int ctbDigitalDataBytes = nDigitalDataBytes - ctbDbitOffset;
 
     // no digital data
     if (ctbDigitalDataBytes == 0) {
@@ -509,10 +510,13 @@ void DataProcessor::RearrangeDbitData(size_t &size, char *data) {
 
     const int numDigitalSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
 
-    // ceil as numResult8Bits could be decimal
-    const int numResult8Bits =
-        ceil((numDigitalSamples * ctbDbitList.size()) / 8.00);
-    std::vector<uint8_t> result(numResult8Bits);
+    // const int numResult8Bits = ceil((numDigitalSamples * ctbDbitList.size())
+    // / 8.00);
+    int numBitsPerDbit = numDigitalSamples;
+    if ((numBitsPerDbit % 8) != 0)
+        numBitsPerDbit += (8 - (numDigitalSamples % 8));
+    const int totalNumBytes = (numBitsPerDbit / 8) * ctbDbitList.size();
+    std::vector<uint8_t> result(totalNumBytes);
     uint8_t *dest = &result[0];
 
     auto *source = (uint64_t *)(data + nAnalogDataBytes + ctbDbitOffset);
@@ -542,9 +546,14 @@ void DataProcessor::RearrangeDbitData(size_t &size, char *data) {
 
     // copy back to memory and update size
     memcpy(data + nAnalogDataBytes, result.data(),
-           numResult8Bits * sizeof(uint8_t));
-    size = numResult8Bits * sizeof(uint8_t) + nAnalogDataBytes + ctbDbitOffset +
+           totalNumBytes * sizeof(uint8_t));
+    size = totalNumBytes * sizeof(uint8_t) + nAnalogDataBytes + ctbDbitOffset +
            nTransceiverDataBytes;
+    LOG(logDEBUG) << "totalNumBytes: " << totalNumBytes
+                  << " nAnalogDataBytes:" << nAnalogDataBytes
+                  << " ctbDbitOffset:" << ctbDbitOffset
+                  << " nTransceiverDataBytes:" << nTransceiverDataBytes
+                  << " size:" << size;
 }
 
 void DataProcessor::CropImage(size_t &size, char *data) {

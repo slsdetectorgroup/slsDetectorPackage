@@ -2614,6 +2614,9 @@ void readSample(int ns) {
                     *((uint64_t *)transceiverDataPtr) =
                         get64BitReg(FIFO_TIN_LSB_REG, FIFO_TIN_MSB_REG);
                     transceiverDataPtr += 8;
+                } else {
+                    LOG(logINFOBLUE,
+                        ("ns:%d Transceiver Fifo %d Empty\n", ns, ich));
                 }
             }
         }
@@ -2695,9 +2698,9 @@ int readFrameFromFifo() {
     transceiverDataPtr = transceiverData;
 
     // no data for this frame
-    if (checkFifoForEndOfAcquisition() == FAIL) {
+    /*if (checkFifoForEndOfAcquisition() == FAIL) {
         return FAIL;
-    }
+    }*/
 
     // read Sample
     int maxSamples = naSamples;

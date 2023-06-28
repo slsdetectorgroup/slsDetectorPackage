@@ -64,8 +64,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>746</width>
-         <height>886</height>
+         <width>748</width>
+         <height>888</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -15810,7 +15810,7 @@ QPushButton:disabled{background-color: grey;}</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>300</y>
+                 <y>360</y>
                  <width>711</width>
                  <height>181</height>
                 </rect>
@@ -15956,7 +15956,7 @@ QPushButton:disabled{background-color: grey;}</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>490</y>
+                 <y>550</y>
                  <width>711</width>
                  <height>101</height>
                 </rect>
@@ -16143,7 +16143,7 @@ QPushButton:disabled{background-color: grey;}</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>680</y>
+                 <y>740</y>
                  <width>711</width>
                  <height>81</height>
                 </rect>
@@ -16396,7 +16396,7 @@ QPushButton:checked{background-color: red;}</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>600</y>
+                 <y>660</y>
                  <width>711</width>
                  <height>71</height>
                 </rect>
@@ -16560,17 +16560,27 @@ QPushButton:checked{background-color: red;}</string>
                   </property>
                   <item>
                    <property name="text">
-                    <string>ANALOG</string>
+                    <string>Analog</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>DIGITAL</string>
+                    <string>Digital</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>ANALOG_AND_DIGITAL</string>
+                    <string>Analog and Digital</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Transceiver</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Digital and Transceiver</string>
                    </property>
                   </item>
                  </widget>
@@ -16601,7 +16611,7 @@ QPushButton:checked{background-color: red;}</string>
                <property name="geometry">
                 <rect>
                  <x>10</x>
-                 <y>90</y>
+                 <y>150</y>
                  <width>711</width>
                  <height>201</height>
                 </rect>
@@ -16929,6 +16939,81 @@ QPushButton:checked{background-color: red;}</string>
                    <number>1</number>
                   </property>
                  </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QFrame" name="frame_13">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>90</y>
+                 <width>711</width>
+                 <height>51</height>
+                </rect>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_24">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="labelTransceiver">
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Transceiver Samples:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QSpinBox" name="spinBoxTransceiver">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>125</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>125</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="minimum">
+                   <number>1</number>
+                  </property>
+                  <property name="maximum">
+                   <number>100000</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <spacer name="horizontalSpacer_16">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
                 </item>
                </layout>
               </widget>
@@ -17534,7 +17619,7 @@ QPushButton:checked{background-color: red;}</string>
      <x>0</x>
      <y>0</y>
      <width>1332</width>
-     <height>29</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -17576,7 +17661,7 @@ QPushButton:checked{background-color: red;}</string>
    </attribute>
    <widget class="QWidget" name="dockWidgetContent">
     <layout class="QGridLayout" name="gridLayout_7">
-     <item row="0" column="0" rowspan="2">
+     <item row="0" column="0" rowspan="3">
       <widget class="QFrame" name="framePatternViewer">
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
@@ -17589,6 +17674,9 @@ QPushButton:checked{background-color: red;}</string>
      </item>
      <item row="0" column="1">
       <widget class="PlotWidget" name="plotWidgetAnalog" native="true"/>
+     </item>
+     <item row="2" column="1">
+      <widget class="PlotWidget" name="plotWidgetTransceiver" native="true"/>
      </item>
      <item row="1" column="1">
       <widget class="PlotWidget" name="plotWidgetDigital" native="true"/>

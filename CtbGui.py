@@ -510,6 +510,76 @@ class MainWindow(QtWidgets.QMainWindow):
         self.det.rx_dbitoffset = self.spinBoxDBitOffset.value()
 
     # Transceivers Tab functions
+    def getTransceiverEnableReg(self):
+        retval = self.det.transceiverenable
+        self.lineEditTransceiverMask.editingFinished.disconnect()
+        self.lineEditTransceiverMask.setText("0x{:08x}".format(retval))
+        self.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
+        return retval
+
+    def setTransceiverEnableReg(self):
+        self.lineEditTransceiverMask.editingFinished.disconnect()
+        try:
+            mask = int(self.lineEditTransceiverMask.text(), 16)
+            self.det.transceiverenable = mask
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Transceiver Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
+        self.updateTransceiverEnable()
+
+    def getTransceiverEnable(self, i, mask):
+        checkBox = getattr(self, f"checkBoxTransceiver{i}")
+        checkBox.stateChanged.disconnect()
+        checkBox.setChecked(bit_is_set(mask, i))
+        checkBox.stateChanged.connect(partial(self.setTransceiverEnable, i))
+
+    def updateTransceiverEnable(self):
+        retval = self.getTransceiverEnableReg()
+        self.nTransceiverEnabled = bin(retval).count('1')
+        for i in range(4):
+            self.getTransceiverEnable(i, retval)
+            self.getTransceiverEnablePlot(i)
+            self.getTransceiverEnableColor(i)
+
+    def setTransceiverEnable(self, i):
+        checkBox = getattr(self, f"checkBoxTransceiver{i}")
+        try:
+            enableMask = manipulate_bit(checkBox.isChecked(), self.det.transceiverenable, i)
+            self.det.transceiverenable = enableMask
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Transceiver Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+
+        self.updateADCEnable()
+
+    def getTransceiverEnablePlot(self, i):
+        checkBox = getattr(self, f"checkBoxTransceiver{i}")
+        checkBoxPlot = getattr(self, f"checkBoxTransceiver{i}Plot")
+        checkBoxPlot.setEnabled(checkBox.isChecked())
+
+    def setTransceiverEnablePlot(self, i):
+        pushButton = getattr(self, f"pushButtonTransceiver{i}")
+        checkBox = getattr(self, f"checkBoxTransceiver{i}Plot")
+        pushButton.setEnabled(checkBox.isChecked())
+
+    def getTransceiverEnableColor(self, i):
+        checkBox = getattr(self, f"checkBoxTransceiver{i}Plot")
+        pushButton = getattr(self, f"pushButtonTransceiver{i}")
+        pushButton.setEnabled(checkBox.isEnabled() and checkBox.isChecked())
+
+    def selectTransceiverColor(self, i):
+        pushButton = getattr(self, f"pushButtonTransceiver{i}")
+        self.showPalette(pushButton)
+
+    def getTransceiverButtonColor(self, i):
+        pushButton = getattr(self, f"pushButtonTransceiver{i}")
+        return self.getActiveColor(pushButton)
+
+    def setTransceiverButtonColor(self, i, color):
+        pushButton = getattr(self, f"pushButtonTransceiver{i}")
+        return self.setActiveColor(pushButton, color)
 
 
     # ADCs Tab functions
@@ -1043,8 +1113,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.imageViewAnalog.close()   
         if hasattr(self, 'imageViewDigital'):
             self.imageViewDigital.close()
+        if hasattr(self, 'imageViewTransceiver'):
+            self.imageViewTransceiver.close()
         self.plotWidgetAnalog.clear()
         self.plotWidgetDigital.clear()
+        self.plotWidgetTransceiver.clear()
 
         # disable plotting
         self.read_timer.stop()
@@ -1056,6 +1129,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.plotWidgetDigital.setLabel('left',"<span style=\"color:black;font-size:14px\">Digital Bit</span>")
             self.plotWidgetDigital.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Digital Sample [#]</span>")
             self.plotWidgetDigital.addLegend(colCount = 4)
+            self.plotWidgetTransceiver.setLabel('left',"<span style=\"color:black;font-size:14px\">Transceiver Bit</span>")
+            self.plotWidgetTransceiver.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Transceiver Sample [#]</span>")
+            self.plotWidgetTransceiver.addLegend(colCount = 4)
             self.stackedWidgetPlotType.setCurrentIndex(0)
 
 
@@ -1066,6 +1142,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.imageViewAnalog.show()
             self.imageViewDigital = pg.ImageView(self.plotWidgetDigital, view=pg.PlotItem())
             self.imageViewDigital.show()
+            self.imageViewTransceiver = pg.ImageView(self.plotWidgetTransceiver, view=pg.PlotItem())
+            self.imageViewTransceiver.show()
 
             self.comboBoxPlot.currentIndexChanged.disconnect()
             if self.comboBoxPlot.currentIndex() >= 1:
@@ -1090,15 +1168,19 @@ class MainWindow(QtWidgets.QMainWindow):
             self.framePatternViewer.show()
             self.plotWidgetAnalog.hide()
             self.plotWidgetDigital.hide()  
+            self.plotWidgetTransceiver.hide()  
         else:
             self.framePatternViewer.hide()
             self.plotWidgetAnalog.hide()
             self.plotWidgetDigital.hide()
+            self.plotWidgetTransceiver.hide()
 
             if self.romode.value in [0, 2]:
                 self.plotWidgetAnalog.show()
-            if self.romode.value in [1, 2]:
+            if self.romode.value in [1, 2, 4]:
                 self.plotWidgetDigital.show()
+            if self.romode.value in [3, 4]:
+                self.plotWidgetTransceiver.show()
 
 
     def setSerialOffset(self):
@@ -1155,6 +1237,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.comboBoxROMode.currentIndexChanged.disconnect()
         self.spinBoxAnalog.editingFinished.disconnect()
         self.spinBoxDigital.editingFinished.disconnect()
+        self.spinBoxTransceiver.editingFinished.disconnect()
 
         self.romode = self.det.romode
         self.comboBoxROMode.setCurrentIndex(self.romode.value)
@@ -1164,20 +1247,41 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.labelAnalog.setEnabled(True)
                 self.spinBoxDigital.setDisabled(True)
                 self.labelDigital.setDisabled(True)
+                self.labelTransceiver.setDisabled(True)
+                self.spinBoxTransceiver.setDisabled(True)
             case readoutMode.DIGITAL_ONLY:
                 self.spinBoxAnalog.setDisabled(True)
                 self.labelAnalog.setDisabled(True)
                 self.spinBoxDigital.setEnabled(True)
                 self.labelDigital.setEnabled(True)
-            case _:
+                self.labelTransceiver.setDisabled(True)
+                self.spinBoxTransceiver.setDisabled(True)
+            case readoutMode.ANALOG_AND_DIGITAL:
                 self.spinBoxAnalog.setEnabled(True)
                 self.labelAnalog.setEnabled(True)
                 self.spinBoxDigital.setEnabled(True)
                 self.labelDigital.setEnabled(True)
+                self.labelTransceiver.setDisabled(True)
+                self.spinBoxTransceiver.setDisabled(True)
+            case readoutMode.TRANSCEIVER_ONLY:
+                self.spinBoxAnalog.setDisabled(True)
+                self.labelAnalog.setDisabled(True)
+                self.spinBoxDigital.setDisabled(True)
+                self.labelDigital.setDisabled(True)
+                self.labelTransceiver.setEnabled(True)
+                self.spinBoxTransceiver.setEnabled(True)
+            case _:
+                self.spinBoxAnalog.setDisabled(True)
+                self.labelAnalog.setDisabled(True)
+                self.spinBoxDigital.setEnabled(True)
+                self.labelDigital.setEnabled(True)
+                self.labelTransceiver.setEnabled(True)
+                self.spinBoxTransceiver.setEnabled(True)
 
         self.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
         self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
         self.spinBoxDigital.editingFinished.connect(self.setDigital)
+        self.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
         self.getAnalog()
         self.getDigital()
 
@@ -1188,8 +1292,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.det.romode = readoutMode.ANALOG_ONLY
             elif self.comboBoxROMode.currentIndex() == 1:
                 self.det.romode = readoutMode.DIGITAL_ONLY
-            else:
+            elif self.comboBoxROMode.currentIndex() == 2:
                 self.det.romode = readoutMode.ANALOG_AND_DIGITAL
+            elif self.comboBoxROMode.currentIndex() == 3:
+                self.det.romode = readoutMode.TRANSCEIVER_ONLY
+            else:
+                self.det.romode = readoutMode.DIGITAL_AND_TRANSCEIVER
         except Exception as e:
             QtWidgets.QMessageBox.warning(self, "Readout Mode Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
@@ -1212,6 +1320,23 @@ class MainWindow(QtWidgets.QMainWindow):
         #TODO: handling double event exceptions
         self.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
         self.getRunFrequency()
+
+    def getTransceiver(self):
+        self.spinBoxTransceiver.editingFinished.disconnect()
+        self.tsamples = self.det.tsamples
+        self.spinBoxTransceiver.setValue(self.tsamples)
+        self.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
+
+    def setTransceiver(self):
+        self.spinBoxTransceiver.editingFinished.disconnect()
+        try:
+            self.det.tsamples = self.spinBoxTransceiver.value()
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Transceiver Samples Fail", str(e), QtWidgets.QMessageBox.Ok)
+            pass
+        #TODO: handling double event exceptions
+        self.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
+        self.getTransceiver()
 
     def getAnalog(self):
         self.spinBoxAnalog.editingFinished.disconnect()
@@ -1481,12 +1606,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.currentMeasurement = 0
 
         # some functions that must be updated for local values
+        self.getTransceiver()
         self.getAnalog()
         self.getDigital()
         self.getReadout()
         self.getDBitOffset()
         self.getADCEnableReg()
         self.updateDigitalBitEnable()
+        self.getTransceiverEnableReg()
         self.startMeasurement()
 
     def startMeasurement(self):
@@ -1567,6 +1694,7 @@ class MainWindow(QtWidgets.QMainWindow):
             
             self.plotWidgetAnalog.clear()
             self.plotWidgetDigital.clear()
+            self.plotWidgetTransceiver.clear()
             
 
             # waveform
@@ -1584,14 +1712,16 @@ class MainWindow(QtWidgets.QMainWindow):
                             pen = pg.mkPen(color = self.getADCButtonColor(i), width = 1)
                             legendName = getattr(self, f"labelADC{i}").text()
                             self.plotWidgetAnalog.plot(waveform, pen=pen, name = legendName)
-                            # TODO: stripe for analog? but without proper y axis not integrated for now
                             
                 # digital
-                if self.romode.value in [1, 2]:
+                if self.romode.value in [1, 2, 4]:
                     dbitoffset = self.rx_dbitoffset
                     if self.romode.value == 2:
                         dbitoffset += self.nADCEnabled * 2 * self.asamples
                     digital_array = np.array(np.frombuffer(data, offset = dbitoffset, dtype=np.uint8))
+                    nbitsPerDBit = self.dsamples
+                    if nbitsPerDBit % 8 != 0:
+                        nbitsPerDBit += (8 - (self.dsamples % 8))
                     offset = 0
                     irow = 0
                     for i in self.rx_dbitlist:
@@ -1602,7 +1732,7 @@ class MainWindow(QtWidgets.QMainWindow):
                         checkBox = getattr(self, f"checkBoxBIT{i}Plot")
                         # bits enabled but not plotting
                         if not checkBox.isChecked():
-                            offset += self.dsamples
+                            offset += nbitsPerDBit
                             continue
                         # to plot
                         if checkBox.isChecked():
@@ -1611,7 +1741,6 @@ class MainWindow(QtWidgets.QMainWindow):
                                 # all samples for digital bit together from slsReceiver
                                 index = (int)(offset / 8)
                                 iBit = offset % 8
-                                #print(f" bit:{iBit} index:{index} iBit:{iBit} offset:{offset}")
                                 bit = (digital_array[index] >> iBit) & 1
                                 waveform[iSample] = bit
                                 offset += 1
@@ -1622,6 +1751,28 @@ class MainWindow(QtWidgets.QMainWindow):
                             if self.radioButtonStripe.isChecked():
                                 p.setY(irow * 2)
                                 irow += 1
+
+                # transceiver
+                if self.romode.value in [3, 4]:  
+                    transceiverOffset = 0     
+                    if self.romode.value == 4:
+                        nbitsPerDBit = self.dsamples
+                        if self.dsamples % 8 != 0:
+                            nbitsPerDBit += (8 - (self.dsamples % 8))
+                        transceiverOffset += self.nDbitEnabled * (nbitsPerDBit // 8)
+                        #print(f'transceiverOffset:{transceiverOffset}')
+                        trans_array = np.array(np.frombuffer(data, offset = transceiverOffset, dtype=np.uint16))
+                        for i in range(4):
+                            checkBox = getattr(self, f"checkBoxTransceiver{i}Plot")
+                            if checkBox.isChecked():
+                                waveform = np.zeros(self.tsamples * 4)
+                                for iSample in range(self.tsamples * 4):
+                                    waveform[iSample] = trans_array[iSample * self.nTransceiverEnabled + i]
+                                pen = pg.mkPen(color = self.getTransceiverButtonColor(i), width = 1)
+                                legendName = getattr(self, f"labelTransceiver{i}").text()
+                                self.plotWidgetTransceiver.plot(waveform, pen=pen, name = legendName)
+                        
+
             # image
             else:           
                 # analog
@@ -1739,6 +1890,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def refresh_tab_acquisition(self):
         self.getReadout()
         self.getRunFrequency()
+        self.getTransceiver()
         self.getAnalog()
         self.getDigital()
         self.getADCFrequency()
@@ -1896,7 +2048,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # For Transceiver Tab
         for i in range(4):
             getattr(self, f"checkBoxTransceiver{i}").stateChanged.connect(partial(self.setTransceiverEnable, i))
-            getattr(self, f"checkBoxTransceiver{i}Plot").stateChanged.connect(partial(self.setEnableTransceiverPlot, i))
+            getattr(self, f"checkBoxTransceiver{i}Plot").stateChanged.connect(partial(self.setTransceiverEnablePlot, i))
             getattr(self, f"pushButtonTransceiver{i}").clicked.connect(partial(self.selectTransceiverColor, i))
         self.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
 
@@ -1961,6 +2113,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # For Acquistions Tab
         self.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
         self.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
+        self.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
         self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
         self.spinBoxDigital.editingFinished.connect(self.setDigital)
         self.spinBoxADCF.editingFinished.connect(self.setADCFrequency)

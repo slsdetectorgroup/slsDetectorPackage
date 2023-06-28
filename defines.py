@@ -10,6 +10,7 @@ class Defines():
     Time_Status_Refresh_ms  = 100
     Time_Plot_Refresh_ms = 20
 
+    Acquisition_Tab_Index = 7
 
     # pattern viewer defines
 

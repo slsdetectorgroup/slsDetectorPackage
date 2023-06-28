@@ -49,7 +49,7 @@ class MainWindow(QtWidgets.QMainWindow):
         uic.loadUi("CtbGui.ui", self)
 
         self.setup_ui()
-        self.tabWidget.setCurrentIndex(6)
+        self.tabWidget.setCurrentIndex(Defines.Acquisition_Tab_Index)
         self.tabWidget.currentChanged.connect(self.refresh_tab)
         self.connect_ui()
         self.refresh_tab_dac()
@@ -508,6 +508,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def setDbitOffset(self):
         self.det.rx_dbitoffset = self.spinBoxDBitOffset.value()
+
+    # Transceivers Tab functions
+
 
     # ADCs Tab functions
     def updateADCNames(self):
@@ -1680,12 +1683,14 @@ class MainWindow(QtWidgets.QMainWindow):
             case 2:
                 self.refresh_tab_sense()
             case 3:
-                self.refresh_tab_signals()
+                self.refresh_tab_transceiver()
             case 4:
-                self.refresh_tab_adc()
+                self.refresh_tab_signals()
             case 5:
-                self.refresh_tab_pattern()
+                self.refresh_tab_adc()
             case 6:
+                self.refresh_tab_pattern()
+            case 7:
                 self.refresh_tab_acquisition()
 
     def refresh_tab_dac(self):
@@ -1714,6 +1719,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updateDigitalBitEnable()
         self.updateIOOut()
         self.getDBitOffset()
+
+    def refresh_tab_transceiver(self):
+        self.updateTransceiverEnable()
 
     def refresh_tab_adc(self):
         self.updateADCNames()
@@ -1794,6 +1802,10 @@ class MainWindow(QtWidgets.QMainWindow):
         # Signals Tab
         for i in range(64):
             self.setDBitButtonColor(i, self.getRandomColor())
+        
+        # Transceiver Tab
+        for i in range(4):
+            self.setTransceiverButtonColor(i, self.getRandomColor())
 
         # Adc Tab
         for i in range(32):
@@ -1881,6 +1893,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lineEditPatIOCtrl.editingFinished.connect(self.setIOOutReg)
         self.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
 
+        # For Transceiver Tab
+        for i in range(4):
+            getattr(self, f"checkBoxTransceiver{i}").stateChanged.connect(partial(self.setTransceiverEnable, i))
+            getattr(self, f"checkBoxTransceiver{i}Plot").stateChanged.connect(partial(self.setEnableTransceiverPlot, i))
+            getattr(self, f"pushButtonTransceiver{i}").clicked.connect(partial(self.selectTransceiverColor, i))
+        self.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
+
         # For ADCs Tab
         for i in range(32):
             getattr(self, f"checkBoxADC{i}Inv").stateChanged.connect(partial(self.setADCInv, i))
@@ -1895,8 +1914,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.checkBoxADC16_31Inv.stateChanged.connect(partial(self.setADCInvRange, 16, 32)) 
         self.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
         self.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
-        # Cannot set adcmask to 0 anyway
-
 
         # For Pattern Tab
         self.lineEditStartAddress.editingFinished.connect(self.setPatLimitAddress)

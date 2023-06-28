@@ -2545,7 +2545,7 @@ void readSample(int ns) {
 
         if (!(ns % 1000)) {
             LOG(logDEBUG1,
-                ("Reading sample ns:%d of %d TEmtpy:%d Status:0x%x\n", ns,
+                ("Reading sample ns:%d of %d TEmtpy:0x%x Status:0x%x\n", ns,
                  ndSamples,
                  ((bus_r(FIFO_TIN_STATUS_REG) &
                    FIFO_TIN_STATUS_FIFO_EMPTY_ALL_MSK) >>
@@ -2599,24 +2599,34 @@ void readSample(int ns) {
 uint32_t checkDataInFifo() {
     uint32_t dataPresent = 0;
     if (analogEnable) {
-        uint32_t analogFifoEmpty = bus_r(FIFO_EMPTY_REG);
+        uint32_t fifoEmtpy = bus_r(FIFO_EMPTY_REG);
         LOG(logDEBUG1,
-            ("Analog Fifo Empty (32 channels): 0x%08x\n", analogFifoEmpty));
-        dataPresent = (~analogFifoEmpty);
+            ("Analog Fifo Empty (32 channels): 0x%08x\n", fifoEmtpy));
+        dataPresent = (~fifoEmtpy);
     }
     if (!dataPresent && digitalEnable) {
-        int digitalFifoEmpty =
+        int fifoEmtpy =
             ((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_EMPTY_MSK) >>
              FIFO_DIN_STATUS_FIFO_EMPTY_OFST);
-        LOG(logINFO, ("Digital Fifo Empty: %d\n", digitalFifoEmpty));
-        dataPresent = (digitalFifoEmpty ? 0 : 1);
+        LOG(logINFO, ("Digital Fifo Empty: %d\n", fifoEmtpy));
+        dataPresent = (fifoEmtpy ? 0 : 1);
     }
     if (!dataPresent && transceiverEnable) {
-        int transceiverFifoEmpty = ((bus_r(FIFO_TIN_STATUS_REG) &
-                                     FIFO_TIN_STATUS_FIFO_EMPTY_ALL_MSK) >>
-                                    FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST);
-        LOG(logINFO, ("Transceiver Fifo Empty: %d\n", transceiverFifoEmpty));
-        dataPresent = (transceiverFifoEmpty == 0xF ? 0 : 1);
+        int fifoEmtpy = 1;
+        for (int ich = 0; ich != 4; ++ich) {
+            if ((1 << ich) & (transceiverMask)) {
+                uint32_t mask = FIFO_TIN_STATUS_FIFO_EMPTY_1_MSK << ich;
+                int offset = FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST + ich;
+                int iFifoEmpty =
+                    ((bus_r(FIFO_TIN_STATUS_REG) & mask) >> offset);
+                if (iFifoEmpty == 0) {
+                    fifoEmtpy = 0;
+                }
+            }
+        }
+        LOG(logINFO, ("Transceiver Fifo Empty: %d reg:0x%x\n", fifoEmtpy,
+                      bus_r(FIFO_TIN_STATUS_REG)));
+        dataPresent = (fifoEmtpy ? 0 : 1);
     }
     LOG(logDEBUG2, ("Data in Fifo :0x%x\n", dataPresent));
     return dataPresent;

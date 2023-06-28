@@ -2244,7 +2244,7 @@ int startReadOut() {
     return startStateMachine();
 #endif
     cleanFifos();
-    bus_w(0x202, 1);
+    bus_w(0x202 << MEM_MAP_SHIFT, 2);
     usleep(1);
     return OK;
 }

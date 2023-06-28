@@ -10440,36 +10440,31 @@ int get_bit(int file_des) {
         return printSocketReadError();
     uint32_t addr = args[0];
     int nBit = (int)args[1];
-    LOG(logDEBUG1, ("Getting bit %d of reg 0x%x\n", nBit, addr));
+    LOG(logINFOBLUE, ("Getting bit %d of reg 0x%x\n", nBit, addr));
 
-    // only set
-    if (Server_VerifyLock() == OK) {
-        if (nBit < 0 || nBit > 31) {
-            ret = FAIL;
-            sprintf(
-                mess,
+    if (nBit < 0 || nBit > 31) {
+        ret = FAIL;
+        sprintf(mess,
                 "Could not get bit. Bit nr %d out of range. Must be  0-31\n",
                 nBit);
-            LOG(logERROR, (mess));
-        } else {
+        LOG(logERROR, (mess));
+    } else {
 #ifdef EIGERD
-            ret = getBit(addr, nBit, &retval);
-            LOG(logDEBUG1, ("retval: %d\n", retval));
-            if (ret == FAIL) {
+        ret = getBit(addr, nBit, &retval);
+        LOG(logDEBUG1, ("retval: %d\n", retval));
+        if (ret == FAIL) {
+            sprintf(mess, "Could not get bit %d.\n", nBit);
+            LOG(logERROR, (mess));
+        }
 #else
 #ifdef GOTTHARDD
-            retval = readRegister16And32(addr);
+        uint32_t regval = readRegister16And32(addr);
 #else
-            retval = readRegister(addr);
+        uint32_t regval = readRegister(addr);
 #endif
-            LOG(logDEBUG1, ("retval: %d\n", retval));
-            if (retval & (1 << nBit)) {
-                ret = FAIL;
+        retval = (regval & (1 << nBit)) >> nBit;
+        LOG(logDEBUG1, ("regval: 0x%x bit value:0%d\n", regval, retval));
 #endif
-                sprintf(mess, "Could not get bit %d.\n", nBit);
-                LOG(logERROR, (mess));
-            }
-        }
     }
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }

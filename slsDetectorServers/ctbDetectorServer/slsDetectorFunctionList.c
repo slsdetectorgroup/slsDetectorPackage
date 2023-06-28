@@ -2256,7 +2256,7 @@ int startReadOut() {
 
     cleanFifos();
     uint32_t addr = 0x202 << MEM_MAP_SHIFT;
-    bus_w(addr, bus_r(addr) | (1 << 1));
+    bus_w(addr, bus_r(addr) | (1 << 2));
     LOG(logINFOBLUE, ("Writing to reg 0x202\n"))
     usleep(1);
     return OK;

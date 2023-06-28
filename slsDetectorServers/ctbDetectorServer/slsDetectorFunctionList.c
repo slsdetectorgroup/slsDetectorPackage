@@ -2243,8 +2243,21 @@ int startReadOut() {
 #ifdef VIRTUAL
     return startStateMachine();
 #endif
+    int send_to_10g = enableTenGigabitEthernet(-1);
+    // 1 giga udp
+    if (send_to_10g == 0) {
+        // create udp socket
+        if (createUDPSocket(0) != OK) {
+            return FAIL;
+        }
+        // update header with modId, detType and version. Reset offset and fnum
+        createUDPPacketHeader(udpPacketData, getHardwareSerialNumber());
+    }
+
     cleanFifos();
-    bus_w(0x202 << MEM_MAP_SHIFT, 2);
+    uint32_t addr = 0x202 << MEM_MAP_SHIFT;
+    bus_w(addr, bus_r(addr) | (1 << 1));
+    LOG(logINFOBLUE, ("Writing to reg 0x202\n"))
     usleep(1);
     return OK;
 }

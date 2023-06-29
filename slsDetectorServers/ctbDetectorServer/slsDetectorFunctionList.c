@@ -946,34 +946,37 @@ int setReadoutMode(enum readoutMode mode) {
                    READOUT_10G_ENABLE_TRNSCVR_MSK));
     }
 
-    // 1Gb
-    if (!enableTenGigabitEthernet(-1)) {
-        if (updateDatabytesandAllocateRAM() == FAIL) {
-            return FAIL;
+    if (isControlServer) {
+        // 1Gb
+        if (!enableTenGigabitEthernet(-1)) {
+            if (updateDatabytesandAllocateRAM() == FAIL) {
+                return FAIL;
+            }
         }
-    }
 
-    // 10Gb
-    else {
-        // validate adcenablemask for 10g
-        if (analogEnable &&
-            adcEnableMask_10g != ((bus_r(READOUT_10G_ENABLE_REG) &
-                                   READOUT_10G_ENABLE_ANLG_MSK) >>
-                                  READOUT_10G_ENABLE_ANLG_OFST)) {
-            LOG(logERROR, ("Setting readout mode failed. Could not set 10g adc "
-                           "enable mask to 0x%x\n.",
-                           adcEnableMask_10g));
-            return FAIL;
-        }
-        // validate transceivermask for 10g
-        if (transceiverEnable &&
-            transceiverMask != ((bus_r(READOUT_10G_ENABLE_REG) &
-                                 READOUT_10G_ENABLE_TRNSCVR_MSK) >>
-                                READOUT_10G_ENABLE_TRNSCVR_OFST)) {
-            LOG(logERROR, ("Setting readout mode failed. Could not set 10g "
-                           "transceiver enable mask to 0x%x\n.",
-                           transceiverMask));
-            return FAIL;
+        // 10Gb
+        else {
+            // validate adcenablemask for 10g
+            if (analogEnable &&
+                adcEnableMask_10g != ((bus_r(READOUT_10G_ENABLE_REG) &
+                                       READOUT_10G_ENABLE_ANLG_MSK) >>
+                                      READOUT_10G_ENABLE_ANLG_OFST)) {
+                LOG(logERROR,
+                    ("Setting readout mode failed. Could not set 10g adc "
+                     "enable mask to 0x%x\n.",
+                     adcEnableMask_10g));
+                return FAIL;
+            }
+            // validate transceivermask for 10g
+            if (transceiverEnable &&
+                transceiverMask != ((bus_r(READOUT_10G_ENABLE_REG) &
+                                     READOUT_10G_ENABLE_TRNSCVR_MSK) >>
+                                    READOUT_10G_ENABLE_TRNSCVR_OFST)) {
+                LOG(logERROR, ("Setting readout mode failed. Could not set 10g "
+                               "transceiver enable mask to 0x%x\n.",
+                               transceiverMask));
+                return FAIL;
+            }
         }
     }
     return OK;
@@ -2209,6 +2212,7 @@ int startStateMachine() {
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
     return OK;
 #endif
+
     int send_to_10g = enableTenGigabitEthernet(-1);
     // 1 giga udp
     if (send_to_10g == 0) {
@@ -2235,6 +2239,17 @@ int startStateMachine() {
                            ~CONTROL_STRT_EXPSR_MSK);
 
     LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
+
+    // TODO:  Matternhorn Specific
+    uint32_t addr = 0x202 << MEM_MAP_SHIFT;
+    bus_w(addr, bus_r(addr) | (1 << 1));
+    LOG(logINFOBLUE, ("Writing 1 to reg 0x202\n"))
+    usleep(1);
+    cleanFifos();
+    bus_w(addr, bus_r(addr) | (1 << 2));
+    LOG(logINFOBLUE, ("Writing 2 to reg 0x202\n"))
+    usleep(1);
+
     return OK;
 }
 
@@ -2255,9 +2270,6 @@ int startReadOut() {
     }
 
     cleanFifos();
-    uint32_t addr = 0x202 << MEM_MAP_SHIFT;
-    bus_w(addr, bus_r(addr) | (1 << 2));
-    LOG(logINFOBLUE, ("Writing to reg 0x202\n"))
     usleep(1);
     return OK;
 }
@@ -2372,6 +2384,7 @@ int stopStateMachine() {
 }
 
 enum runStatus getRunStatus() {
+
     LOG(logDEBUG1, ("Getting status\n"));
     // scan error or running
     if (sharedMemory_getScanStatus() == ERROR) {
@@ -2427,6 +2440,7 @@ enum runStatus getRunStatus() {
 
         // 1g might still be transmitting or reading from fifo (not virtual)
         if (!enableTenGigabitEthernet(-1) && checkDataInFifo()) {
+            LOG(logINFOBLUE, ("Status: Transmitting (Data in Fifo)\n"));
             return TRANSMITTING;
         }
 
@@ -2481,11 +2495,14 @@ void waitForAcquisitionEnd() {
 
 void unsetFifoReadStrobes() {
     bus_w(DUMMY_REG, bus_r(DUMMY_REG) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK) &
-                         (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
+                         (~DUMMY_DGTL_FIFO_RD_STRBE_MSK) &
+                         (~DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK));
 }
 
-void readSample(int ns) {
+int readSample(int ns) {
+    int sampleRead = 0;
     uint32_t addr = DUMMY_REG;
+    LOG(logDEBUG1, ("sample :%d\n", ns));
 
     // read adcs
     if (analogEnable && ns < naSamples) {
@@ -2531,6 +2548,7 @@ void readSample(int ns) {
 
                 // increment pointer to data out destination
                 analogDataPtr += 2;
+                sampleRead = 1;
             }
         }
     }
@@ -2562,16 +2580,18 @@ void readSample(int ns) {
         *((uint64_t *)digitalDataPtr) =
             get64BitReg(FIFO_DIN_LSB_REG, FIFO_DIN_MSB_REG);
         digitalDataPtr += 8;
+        sampleRead = 1;
     }
 
     // read transceivers
     if (transceiverEnable && ns < ntSamples) {
-        uint32_t addr = FIFO_TIN_STATUS_REG;
+        uint32_t tStatusAddr = FIFO_TIN_STATUS_REG;
 
-        // if (!(ns % 1000)) {
-        LOG(logDEBUG1, ("Reading sample ns:%d of %d TReg:0x%x Status:0x%x\n",
-                        ns, ndSamples, bus_r(addr), bus_r(STATUS_REG)));
-        // }
+        if (!(ns % 1000)) {
+            LOG(logDEBUG1,
+                ("Reading sample ns:%d of %d TReg:0x%x Status:0x%x\n", ns,
+                 ntSamples, bus_r(tStatusAddr), bus_r(STATUS_REG)));
+        }
 
         // loop through all channels
         for (int ich = 0; ich < NCHAN_TRANSCEIVER; ++ich) {
@@ -2581,11 +2601,11 @@ void readSample(int ns) {
 
                 int offset = FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST + ich;
                 uint32_t mask = (1 << offset);
-                int empty = ((bus_r(addr) & mask) >> offset);
+                int empty = ((bus_r(tStatusAddr) & mask) >> offset);
 
                 // if fifo not empty
                 if (!empty) {
-                    LOG(logINFOBLUE,
+                    LOG(logDEBUG1,
                         ("ns:%d Transceiver Fifo %d NOT Empty\n", ns, ich));
 
                     // unselect channel
@@ -2600,6 +2620,7 @@ void readSample(int ns) {
 
                     // read strobe
                     bus_w(addr, bus_r(addr) | DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK);
+                    usleep(5 * 1000);
                     bus_w(addr,
                           bus_r(addr) & (~DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK));
 
@@ -2613,13 +2634,13 @@ void readSample(int ns) {
                     *((uint64_t *)transceiverDataPtr) =
                         get64BitReg(FIFO_TIN_LSB_REG, FIFO_TIN_MSB_REG);
                     transceiverDataPtr += 8;
-                } else {
-                    LOG(logINFOBLUE,
-                        ("ns:%d Transceiver Fifo %d Empty\n", ns, ich));
+                    sampleRead = 1;
                 }
             }
         }
     }
+    LOG(logDEBUG1, ("sample read:%d\n", sampleRead));
+    return sampleRead;
 }
 
 uint32_t checkDataInFifo() {
@@ -2634,7 +2655,7 @@ uint32_t checkDataInFifo() {
         int fifoEmtpy =
             ((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_EMPTY_MSK) >>
              FIFO_DIN_STATUS_FIFO_EMPTY_OFST);
-        LOG(logINFO, ("Digital Fifo Empty: %d\n", fifoEmtpy));
+        LOG(logDEBUG1, ("Digital Fifo Empty: %d\n", fifoEmtpy));
         dataPresent = (fifoEmtpy ? 0 : 1);
     }
     if (!dataPresent && transceiverEnable) {
@@ -2650,11 +2671,11 @@ uint32_t checkDataInFifo() {
                 }
             }
         }
-        LOG(logINFO, ("Transceiver Fifo Empty: %d reg:0x%x\n", fifoEmtpy,
-                      bus_r(FIFO_TIN_STATUS_REG)));
+        LOG(logDEBUG1, ("Transceiver Fifo Empty: %d reg:0x%x\n", fifoEmtpy,
+                        bus_r(FIFO_TIN_STATUS_REG)));
         dataPresent = (fifoEmtpy ? 0 : 1);
     }
-    LOG(logDEBUG2, ("Data in Fifo :0x%x\n", dataPresent));
+    LOG(logDEBUG1, ("Data in Fifo :0x%x\n", dataPresent));
     return dataPresent;
 }
 
@@ -2697,6 +2718,10 @@ int readFrameFromFifo() {
     transceiverDataPtr = transceiverData;
 
     // no data for this frame
+    if (!checkDataInFifo()) {
+        return FAIL;
+    }
+    // for startacquistiion
     /*if (checkFifoForEndOfAcquisition() == FAIL) {
         return FAIL;
     }*/
@@ -2709,7 +2734,10 @@ int readFrameFromFifo() {
         maxSamples = ntSamples;
     while (ns < maxSamples) {
         // chceck if no data in fifo, return ns?//FIXME: ask Anna
-        readSample(ns);
+        if (!readSample(ns)) {
+            LOG(logWARNING, ("No more samples to read\n"));
+            return OK;
+        }
         ns++;
     }
 

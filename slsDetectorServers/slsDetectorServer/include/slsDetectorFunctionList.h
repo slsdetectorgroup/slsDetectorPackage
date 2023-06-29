@@ -694,7 +694,7 @@ void waitForAcquisitionEnd();
 int validateUDPSocket();
 void readandSendUDPFrames();
 void unsetFifoReadStrobes();
-void readSample(int ns);
+int readSample(int ns);
 uint32_t checkDataInFifo();
 int checkFifoForEndOfAcquisition();
 int readFrameFromFifo();

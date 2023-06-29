@@ -2433,6 +2433,7 @@ slsDetectorDefs::readoutMode Module::getReadoutMode() const {
 void Module::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
     auto arg = static_cast<uint32_t>(mode); // TODO! unit?
     sendToDetector(F_SET_READOUT_MODE, arg, nullptr);
+    sendToDetectorStop(F_SET_READOUT_MODE, arg, nullptr);
     // update #nchan, as it depends on #samples, adcmask,
     if (shm()->detType == CHIPTESTBOARD) {
         updateNumberOfChannels();

@@ -1626,6 +1626,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toggleStartButton(True)
         self.currentMeasurement = 0
 
+        # ensure zmq streaming is enabled
+        if self.det.rx_zmqstream == 0:
+            self.det.rx_zmqstream = 1
+
         # some functions that must be updated for local values
         self.getTransceiver()
         self.getAnalog()

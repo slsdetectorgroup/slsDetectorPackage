@@ -31,6 +31,8 @@ import signal
 
 class MainWindow(QtWidgets.QMainWindow):
     signalShortcutAcquire = QtCore.pyqtSignal()
+    signalShortcutTabUp = QtCore.pyqtSignal()
+    signalShortcutTabDown = QtCore.pyqtSignal()
 
     def __init__(self, *args, **kwargs):
 
@@ -73,6 +75,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.loadAliasFile()
 
         self.signalShortcutAcquire.connect(self.pushButtonStart.click)
+        self.signalShortcutTabUp.connect(partial(self.changeTabIndex, True))
+        self.signalShortcutTabDown.connect(partial(self.changeTabIndex, False))
+        # to catch the ctrl + c to abort
         signal.signal(signal.SIGINT, signal.SIG_DFL)
 
         self.showPatternViewer(False)
@@ -135,6 +140,12 @@ class MainWindow(QtWidgets.QMainWindow):
         msg = QtWidgets.QMessageBox()
         msg.setWindowTitle("About")
         msg.setText("This Gui is for Chip Test Boards.\n Current Phase: Development")
+        x = msg.exec_()
+
+    def showKeyBoardShortcuts(self):
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowTitle("Keyboard Shortcuts")
+        msg.setText("Start Acquisition (from any tab): Shift + Return<br>Move Tab Right : Ctrl + '+'<br>Move Tab Left : Ctrl + '-'<br>")
         x = msg.exec_()
 
     # Function to open file
@@ -2013,11 +2024,28 @@ class MainWindow(QtWidgets.QMainWindow):
         if event.modifiers() & QtCore.Qt.ShiftModifier:
             if event.key() == QtCore.Qt.Key_Return:
                 self.signalShortcutAcquire.emit()
-
+        if event.modifiers() & QtCore.Qt.ControlModifier:
+            if event.key() == QtCore.Qt.Key_Plus:
+                self.signalShortcutTabUp.emit()
+            if event.key() == QtCore.Qt.Key_Minus:
+                self.signalShortcutTabDown.emit()
+    
+    def changeTabIndex(self, up):
+        ind = self.tabWidget.currentIndex()
+        if up:
+            ind += 1
+            if ind == Defines.Max_Tabs:
+                ind = 0
+        else:
+            ind -= 1
+            if ind == -1:
+                ind = Defines.Max_Tabs -1
+        self.tabWidget.setCurrentIndex(ind)
 
     def connect_ui(self):
         # Show info
         self.actionInfo.triggered.connect(self.showInfo)
+        self.actionKeyboardShortcuts.triggered.connect(self.showKeyBoardShortcuts)
         self.actionOpen.triggered.connect(self.openFile)
 
         # For DACs tab

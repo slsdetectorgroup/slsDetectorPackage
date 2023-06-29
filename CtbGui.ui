@@ -17635,6 +17635,7 @@ QPushButton:checked{background-color: red;}</string>
      <string>Help</string>
     </property>
     <addaction name="actionInfo"/>
+    <addaction name="actionKeyboardShortcuts"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuHelp"/>
@@ -17705,6 +17706,11 @@ QPushButton:checked{background-color: red;}</string>
   <action name="actionInfo">
    <property name="text">
     <string>Info</string>
+   </property>
+  </action>
+  <action name="actionKeyboardShortcuts">
+   <property name="text">
+    <string>Keyboard Shortcuts</string>
    </property>
   </action>
  </widget>

@@ -11,6 +11,7 @@ class Defines():
     Time_Plot_Refresh_ms = 20
 
     Acquisition_Tab_Index = 7
+    Max_Tabs = 9
 
     class Matterhorn():
         nRows = 48

@@ -17653,6 +17653,9 @@ QPushButton:checked{background-color: red;}</string>
      <height>524287</height>
     </size>
    </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
    <property name="allowedAreas">
     <set>Qt::RightDockWidgetArea</set>
    </property>

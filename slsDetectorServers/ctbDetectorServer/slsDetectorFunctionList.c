@@ -2720,7 +2720,7 @@ int readFrameFromFifo() {
     transceiverDataPtr = transceiverData;
 
     // no data for this frame
-    if (!checkDataInFifo()) {
+    if (!checkDataInFifo() || getRunStatus() == STOPPED) {
         return FAIL;
     }
     // for startacquistiion
@@ -2729,10 +2729,12 @@ int readFrameFromFifo() {
     }*/
 
     // read Sample
-    int maxSamples = naSamples;
-    if (ndSamples > maxSamples)
+    int maxSamples = 0;
+    if (analogEnable && naSamples > maxSamples)
+        maxSamples = naSamples;
+    if (digitalEnable && ndSamples > maxSamples)
         maxSamples = ndSamples;
-    if (ntSamples > maxSamples)
+    if (transceiverEnable && ntSamples > maxSamples)
         maxSamples = ntSamples;
     while (ns < maxSamples) {
         // chceck if no data in fifo, return ns?//FIXME: ask Anna

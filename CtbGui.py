@@ -56,6 +56,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.refresh_tab_power()
         self.refresh_tab_sense()
         self.refresh_tab_signals()
+        self.refresh_tab_transceiver()
         self.refresh_tab_adc()
         self.refresh_tab_pattern()
         self.refresh_tab_acquisition()
@@ -1109,12 +1110,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.framePatternViewer.hide()
         # disable image widgets
         self.comboBoxPlot.setDisabled(True)
-        if hasattr(self, 'imageViewAnalog'):
-            self.imageViewAnalog.close()   
-        if hasattr(self, 'imageViewDigital'):
-            self.imageViewDigital.close()
-        if hasattr(self, 'imageViewTransceiver'):
-            self.imageViewTransceiver.close()
+        self.imageViewAnalog.hide()
+        self.imageViewDigital.hide()
+        self.imageViewTransceiver.hide()
+
+        #if hasattr(self, 'imageViewAnalog'):
+        #    self.imageViewAnalog.close()   
+        #if hasattr(self, 'imageViewDigital'):
+        #    self.imageViewDigital.close()
+        #if hasattr(self, 'imageViewTransceiver'):
+        #    self.imageViewTransceiver.close()
         self.plotWidgetAnalog.clear()
         self.plotWidgetDigital.clear()
         self.plotWidgetTransceiver.clear()
@@ -1138,15 +1143,20 @@ class MainWindow(QtWidgets.QMainWindow):
         elif self.radioButtonImage.isChecked():
             self.comboBoxPlot.setEnabled(True)
 
-            self.imageViewAnalog = pg.ImageView(self.plotWidgetAnalog, view=pg.PlotItem())
+            #self.imageViewAnalog = pg.ImageView(self.plotWidgetAnalog, view=pg.PlotItem())
             self.imageViewAnalog.show()
-            self.imageViewDigital = pg.ImageView(self.plotWidgetDigital, view=pg.PlotItem())
+            #self.imageViewDigital = pg.ImageView(self.plotWidgetDigital, view=pg.PlotItem())
             self.imageViewDigital.show()
-            self.imageViewTransceiver = pg.ImageView(self.plotWidgetTransceiver, view=pg.PlotItem())
+            #self.imageViewTransceiver = pg.ImageView(self.plotWidgetTransceiver, view=pg.PlotItem())
             self.imageViewTransceiver.show()
 
             self.comboBoxPlot.currentIndexChanged.disconnect()
-            if self.comboBoxPlot.currentIndex() >= 1:
+            # matterhorn image
+            if self.comboBoxPlot.currentIndex() == 1:
+                if self.getTransceiverEnableReg() != Defines.Matternhorn.tranceiverEnable:
+                    QtWidgets.QMessageBox.warning(self, "To read Matterhorn image, please set transceiver enable to " + str(Defines.Matternhorn.tranceiverEnable), QtWidgets.QMessageBox.Ok)
+            # other images not implemented yet
+            elif self.comboBoxPlot.currentIndex() > 1:
                 QtWidgets.QMessageBox.warning(self, "Not Implemented Yet", "Sorry, this is not implemented yet.", QtWidgets.QMessageBox.Ok)
                 self.comboBoxPlot.setCurrentIndex(0)
             self.comboBoxPlot.currentIndexChanged.connect(self.plotOptions)
@@ -1625,6 +1635,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.det.rx_start()
             self.det.start()
+            time.sleep(Defines.Time_Wait_For_Packets_ms)
             self.checkEndofAcquisition()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self, "Acquire Fail", str(e), QtWidgets.QMessageBox.Ok)
@@ -1633,10 +1644,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def checkEndofAcquisition(self):
         caught = self.det.rx_framescaught
         self.updateAcquiredFrames(caught)
-        status = self.det.status
+        status = self.det.getDetectorStatus()[0]
         self.updateDetectorStatus(status)
         measurementDone = False
-        #print(f'status:{val}')
+        #print(f'status:{status}')
         match status:
             case runStatus.RUNNING:
                 pass
@@ -1760,41 +1771,39 @@ class MainWindow(QtWidgets.QMainWindow):
                         if self.dsamples % 8 != 0:
                             nbitsPerDBit += (8 - (self.dsamples % 8))
                         transceiverOffset += self.nDbitEnabled * (nbitsPerDBit // 8)
-                        #print(f'transceiverOffset:{transceiverOffset}')
-                        trans_array = np.array(np.frombuffer(data, offset = transceiverOffset, dtype=np.uint16))
-                        for i in range(4):
-                            checkBox = getattr(self, f"checkBoxTransceiver{i}Plot")
-                            if checkBox.isChecked():
-                                waveform = np.zeros(self.tsamples * 4)
-                                for iSample in range(self.tsamples * 4):
-                                    waveform[iSample] = trans_array[iSample * self.nTransceiverEnabled + i]
-                                pen = pg.mkPen(color = self.getTransceiverButtonColor(i), width = 1)
-                                legendName = getattr(self, f"labelTransceiver{i}").text()
-                                self.plotWidgetTransceiver.plot(waveform, pen=pen, name = legendName)
+                    #print(f'transceiverOffset:{transceiverOffset}')
+                    trans_array = np.array(np.frombuffer(data, offset = transceiverOffset, dtype=np.uint16))
+                    for i in range(4):
+                        checkBox = getattr(self, f"checkBoxTransceiver{i}Plot")
+                        if checkBox.isChecked():
+                            waveform = np.zeros(self.tsamples * 4)
+                            for iSample in range(self.tsamples * 4):
+                                waveform[iSample] = trans_array[iSample * self.nTransceiverEnabled + i]
+                            pen = pg.mkPen(color = self.getTransceiverButtonColor(i), width = 1)
+                            legendName = getattr(self, f"labelTransceiver{i}").text()
+                            self.plotWidgetTransceiver.plot(waveform, pen=pen, name = legendName)
                         
 
             # image
-            else:           
-                # analog
-                if self.romode.value in [0, 2]:
-                    analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count= self.nADCEnabled * self.asamples))
-                    analog_frame = np.zeros((self.nADCEnabled, self.asamples))
-                    analogIndex = 0
-                    for row in range(self.nADCEnabled):
-                        for col in range(self.asamples):
-                            analog_frame[row, col] = analog_array[analogIndex]
-                            analogIndex += 1
-                    self.imageViewAnalog.setImage(analog_array)   
-
-                # digital
-                if self.romode.value in [1, 2]:
-                    dbitoffset = self.rx_dbitoffset
-                    if self.romode.value == 2:
-                        dbitoffset += self.nADCEnabled * 2 * self.asamples
-                    digital_array = np.array(np.frombuffer(data, offset = dbitoffset, dtype=np.uint8))
-                    digital_frame = np.zeros((400, 400))
-                    self.imageViewDigital.setImage(digital_frame)   
-            
+            else:
+                # transceiver
+                if self.romode.value in [3, 4]:  
+                    transceiverOffset = 0     
+                    if self.romode.value == 4:
+                        nbitsPerDBit = self.dsamples
+                        if self.dsamples % 8 != 0:
+                            nbitsPerDBit += (8 - (self.dsamples % 8))
+                        transceiverOffset += self.nDbitEnabled * (nbitsPerDBit // 8)
+                    #print(f'transceiverOffset:{transceiverOffset}')
+                    trans_array = np.array(np.frombuffer(data, offset = transceiverOffset, dtype=np.uint16))
+                    trans_frame = np.zeros((Defines.Matterhorn.nRows, Defines.Matterhorn.nCols))
+                    offset = 0
+                    for row in range(Defines.Matterhorn.nRows):
+                        for col in range(Defines.Matterhorn.nHalfCols):
+                            for iTrans in range(Defines.Matterhorn.nTransceivers):
+                                trans_frame[row, iTrans * Defines.Matterhorn.nHalfCols + col] = trans_array[offset + iTrans]
+                            offset += 2
+                    self.imageViewTransceiver.setImage(trans_frame)
 
         except zmq.ZMQError as e:
             pass
@@ -1984,13 +1993,20 @@ class MainWindow(QtWidgets.QMainWindow):
         # Acquisition Tab
         self.toggleStartButton(False)
 
-        # plot area
+        # pattern viewer plot area
         self.figure, self.ax = plt.subplots()
         self.canvas = FigureCanvas(self.figure)
         self.toolbar = NavigationToolbar(self.canvas, self)
         self.gridLayoutPatternViewer.addWidget(self.toolbar)
         self.gridLayoutPatternViewer.addWidget(self.canvas)
         self.figure.clear()
+
+        self.imageViewAnalog = pg.ImageView(self.plotWidgetAnalog, view=pg.PlotItem())
+        #self.imageViewAnalog.show()
+        self.imageViewDigital = pg.ImageView(self.plotWidgetDigital, view=pg.PlotItem())
+        #self.imageViewDigital.show()
+        self.imageViewTransceiver = pg.ImageView(self.plotWidgetTransceiver, view=pg.PlotItem())
+        #self.imageViewTransceiver.show()
 
 
     def keyPressEvent(self, event):

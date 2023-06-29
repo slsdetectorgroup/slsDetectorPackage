@@ -135,7 +135,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>4</number>
+              <number>8</number>
              </property>
              <widget class="QWidget" name="tabDac">
               <attribute name="title">
@@ -17485,7 +17485,7 @@ QPushButton:checked{background-color: red;}</string>
                       </property>
                       <item>
                        <property name="text">
-                        <string>Nonsense image (Test)</string>
+                        <string>Matterhorn</string>
                        </property>
                       </item>
                       <item>

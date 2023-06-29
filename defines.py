@@ -12,6 +12,15 @@ class Defines():
 
     Acquisition_Tab_Index = 7
 
+    class Matterhorn():
+        nRows = 48
+        nHalfCols = 24
+        nCols = 48
+        nTransceivers = 2
+        nSamplesPerRowPerTransceiver = 6
+        tranceiverEnable = 0x3
+
+
     # pattern viewer defines
 
     # pattern plot

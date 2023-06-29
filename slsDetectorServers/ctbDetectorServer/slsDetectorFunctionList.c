@@ -2241,14 +2241,16 @@ int startStateMachine() {
     LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
 
     // TODO:  Matternhorn Specific
-    uint32_t addr = 0x202 << MEM_MAP_SHIFT;
-    bus_w(addr, bus_r(addr) | (1 << 1));
-    LOG(logINFOBLUE, ("Writing 1 to reg 0x202\n"))
-    usleep(1);
-    cleanFifos();
-    bus_w(addr, bus_r(addr) | (1 << 2));
-    LOG(logINFOBLUE, ("Writing 2 to reg 0x202\n"))
-    usleep(1);
+    if (transceiverEnable) {
+        uint32_t addr = 0x202 << MEM_MAP_SHIFT;
+        bus_w(addr, bus_r(addr) | (1 << 1));
+        LOG(logINFOBLUE, ("Writing 1 to reg 0x202\n"))
+        usleep(1);
+        cleanFifos();
+        bus_w(addr, bus_r(addr) | (1 << 2));
+        LOG(logINFOBLUE, ("Writing 2 to reg 0x202\n"))
+        usleep(1);
+    }
 
     return OK;
 }

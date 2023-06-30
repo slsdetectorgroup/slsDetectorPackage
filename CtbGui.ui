@@ -64,8 +64,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>748</width>
-         <height>888</height>
+         <width>746</width>
+         <height>886</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -17437,7 +17437,7 @@ QPushButton:checked{background-color: red;}</string>
                   </property>
                   <widget class="QWidget" name="pageWaveform">
                    <layout class="QGridLayout" name="gridLayout_23">
-                    <item row="0" column="1">
+                    <item row="0" column="2">
                      <widget class="QRadioButton" name="radioButtonStripe">
                       <property name="text">
                        <string>Stripe</string>
@@ -17447,14 +17447,7 @@ QPushButton:checked{background-color: red;}</string>
                       </property>
                      </widget>
                     </item>
-                    <item row="0" column="0">
-                     <widget class="QRadioButton" name="radioButtonOverlay">
-                      <property name="text">
-                       <string>Overlay</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="2">
+                    <item row="0" column="3">
                      <spacer name="horizontalSpacer_8">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
@@ -17466,6 +17459,20 @@ QPushButton:checked{background-color: red;}</string>
                        </size>
                       </property>
                      </spacer>
+                    </item>
+                    <item row="0" column="1">
+                     <widget class="QRadioButton" name="radioButtonOverlay">
+                      <property name="text">
+                       <string>Overlay</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="labelDigitalWaveformOption">
+                      <property name="text">
+                       <string>Digital plot:</string>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </widget>
@@ -17619,7 +17626,7 @@ QPushButton:checked{background-color: red;}</string>
      <x>0</x>
      <y>0</y>
      <width>1332</width>
-     <height>25</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -17665,7 +17672,7 @@ QPushButton:checked{background-color: red;}</string>
    </attribute>
    <widget class="QWidget" name="dockWidgetContent">
     <layout class="QGridLayout" name="gridLayout_7">
-     <item row="0" column="0" rowspan="3">
+     <item row="0" column="0" rowspan="2">
       <widget class="QFrame" name="framePatternViewer">
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
@@ -17676,14 +17683,16 @@ QPushButton:checked{background-color: red;}</string>
        <layout class="QGridLayout" name="gridLayoutPatternViewer"/>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="PlotWidget" name="plotWidgetAnalog" native="true"/>
-     </item>
-     <item row="2" column="1">
-      <widget class="PlotWidget" name="plotWidgetTransceiver" native="true"/>
-     </item>
-     <item row="1" column="1">
-      <widget class="PlotWidget" name="plotWidgetDigital" native="true"/>
+     <item row="0" column="1" rowspan="2">
+      <widget class="QFrame" name="framePlot">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QGridLayout" name="gridLayoutPlot"/>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -17714,14 +17723,6 @@ QPushButton:checked{background-color: red;}</string>
    </property>
   </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>PlotWidget</class>
-   <extends>QWidget</extends>
-   <header>pyqtgraph</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections>
   <connection>

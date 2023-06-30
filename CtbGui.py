@@ -65,11 +65,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # also refreshes timer to start plotting 
         self.plotOptions()
+        self.showPlot()
 
         self.getPatViewerColors()
         self.getPatViewerWaitParameters()
         self.getPatViewerLoopParameters()
         self.updatePatViewerParameters()
+        self.showPatternViewer(False)
 
         if self.alias_file is not None:
             self.loadAliasFile()
@@ -80,7 +82,6 @@ class MainWindow(QtWidgets.QMainWindow):
         # to catch the ctrl + c to abort
         signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-        self.showPatternViewer(False)
 
         
 
@@ -372,6 +373,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.getDigitalBitEnable(i, retval)
             self.getEnableBitPlot(i)
             self.getEnableBitColor(i)
+            self.addSelectedDigitalPlots(i)
         self.getDigitalBitEnableRange(retval)
         self.getEnableBitPlotRange()
 
@@ -419,6 +421,7 @@ class MainWindow(QtWidgets.QMainWindow):
         pushButton.setEnabled(checkBox.isChecked())
 
         self.getEnableBitPlotRange()
+        self.addSelectedDigitalPlots(i)
 
     def getEnableBitPlotRange(self):
         self.checkBoxBIT0_31Plot.stateChanged.disconnect()
@@ -436,6 +439,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(start_nr, end_nr):
             checkBox = getattr(self, f"checkBoxBIT{i}Plot")
             checkBox.setChecked(enable)
+        self.addAllSelectedDigitalPlots()
 
     def getEnableBitColor(self, i):
         checkBox = getattr(self, f"checkBoxBIT{i}Plot")
@@ -445,6 +449,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def selectBitColor(self, i):
         pushButton = getattr(self, f"pushButtonBIT{i}")
         self.showPalette(pushButton)
+        pen = pg.mkPen(color = self.getDbitButtonColor(i), width = 1)
+        self.digitalPlots[i].setPen(pen)
 
     def getDBitButtonColor(self, i):
         pushButton = getattr(self, f"pushButtonBIT{i}")
@@ -554,6 +560,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.getTransceiverEnable(i, retval)
             self.getTransceiverEnablePlot(i)
             self.getTransceiverEnableColor(i)
+            self.addSelectedTransceiverPlots(i)
 
     def setTransceiverEnable(self, i):
         checkBox = getattr(self, f"checkBoxTransceiver{i}")
@@ -564,7 +571,7 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.warning(self, "Transceiver Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
 
-        self.updateADCEnable()
+        self.updateTransceiverEnable()
 
     def getTransceiverEnablePlot(self, i):
         checkBox = getattr(self, f"checkBoxTransceiver{i}")
@@ -575,6 +582,7 @@ class MainWindow(QtWidgets.QMainWindow):
         pushButton = getattr(self, f"pushButtonTransceiver{i}")
         checkBox = getattr(self, f"checkBoxTransceiver{i}Plot")
         pushButton.setEnabled(checkBox.isChecked())
+        self.addSelectedTransceiverPlots(i)
 
     def getTransceiverEnableColor(self, i):
         checkBox = getattr(self, f"checkBoxTransceiver{i}Plot")
@@ -584,6 +592,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def selectTransceiverColor(self, i):
         pushButton = getattr(self, f"pushButtonTransceiver{i}")
         self.showPalette(pushButton)
+        pen = pg.mkPen(color = self.getTransceiverButtonColor(i), width = 1)
+        self.transceiverPlots[i].setPen(pen)
 
     def getTransceiverButtonColor(self, i):
         pushButton = getattr(self, f"pushButtonTransceiver{i}")
@@ -636,6 +646,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.getADCEnable(i, retval)
             self.getADCEnablePlot(i)
             self.getADCEnableColor(i)
+            self.addSelectedAnalogPlots(i)
         self.getADCEnableRange(retval)
         self.getADCEnablePlotRange()
 
@@ -689,6 +700,7 @@ class MainWindow(QtWidgets.QMainWindow):
         pushButton.setEnabled(checkBox.isChecked())
 
         self.getADCEnablePlotRange()
+        self.addSelectedAnalogPlots(i)
 
     def getADCEnablePlotRange(self):
         self.checkBoxADC0_15Plot.stateChanged.disconnect()
@@ -706,6 +718,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(start_nr, end_nr):
             checkBox = getattr(self, f"checkBoxADC{i}Plot")
             checkBox.setChecked(enable)
+        self.addAllSelectedAnalogPlots()
 
     def getADCEnableColor(self, i):
         checkBox = getattr(self, f"checkBoxADC{i}Plot")
@@ -715,6 +728,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def selectADCColor(self, i):
         pushButton = getattr(self, f"pushButtonADC{i}")
         self.showPalette(pushButton)
+        pen = pg.mkPen(color = self.getADCButtonColor(i), width = 1)
+        self.analogPlots[i].setPen(pen)
 
     def getADCButtonColor(self, i):
         pushButton = getattr(self, f"pushButtonADC{i}")
@@ -1116,51 +1131,153 @@ class MainWindow(QtWidgets.QMainWindow):
             pass
 
     # Plot Tab functions
+    def initializeAllAnalogPlots(self):
+        self.plotAnalogWaveform = pg.plot()
+        self.gridLayoutPlot.addWidget(self.plotAnalogWaveform, 0, 0)
+        self.analogPlots = {}
+        waveform = np.zeros(1000)
+        for i in range(32):
+            pen = pg.mkPen(color = self.getADCButtonColor(i), width = 1)
+            legendName = getattr(self, f"labelADC{i}").text()
+            self.analogPlots[i] = self.plotAnalogWaveform.plot(waveform, pen=pen, name = legendName)
+            self.analogPlots[i].hide()
+
+        self.plotAnalogImage = pg.ImageView()
+        #self.plotAnalogImage = setImage(waveform)
+        self.gridLayoutPlot.addWidget(self.plotAnalogImage, 0, 1)
+
+    def addSelectedAnalogPlots(self, i):
+            enable = getattr(self, f"checkBoxADC{i}Plot").isChecked()
+            if enable:
+                self.analogPlots[i].show()
+            if not enable:
+                self.analogPlots[i].hide()
+
+    def addAllSelectedAnalogPlots(self):
+        for i in range(32):
+            self.addSelectedAnalogPlots(i)
+
+    def removeAllAnalogPlots(self):
+        for i in range(32):
+            self.analogPlots[i].hide()
+
+    def initializeAllDigitalPlots(self):
+        self.plotDigitalWaveform = pg.plot()
+        self.gridLayoutPlot.addWidget(self.plotDigitalWaveform, 1, 0)
+        self.digitalPlots = {}
+        waveform = np.zeros(1000)
+        for i in range(64):
+            pen = pg.mkPen(color = self.getDBitButtonColor(i), width = 1)
+            legendName = getattr(self, f"labelBIT{i}").text()
+            self.digitalPlots[i] = self.plotDigitalWaveform.plot(waveform, pen=pen, name = legendName, stepMode = "left")
+            self.digitalPlots[i].hide()
+
+        self.plotDigitalImage = pg.ImageView()
+        #self.plotDigitalImage = setImage(waveform)
+        self.gridLayoutPlot.addWidget(self.plotDigitalImage, 1, 1)
+
+    def addSelectedDigitalPlots(self, i):
+            enable = getattr(self, f"checkBoxBIT{i}Plot").isChecked()
+            if enable:
+                self.digitalPlots[i].show()
+            if not enable:
+                self.digitalPlots[i].hide()
+
+    def addAllSelectedDigitalPlots(self):
+        for i in range(64):
+            self.addSelectedDigitalPlots(i)
+
+    def removeAllDigitalPlots(self):
+        for i in range(64):
+            self.digitalPlots[i].hide()
+
+    def initializeAllTransceiverPlots(self):
+        self.plotTransceiverWaveform = pg.plot()
+        self.gridLayoutPlot.addWidget(self.plotTransceiverWaveform, 2, 0)
+        self.transceiverPlots = {}
+        waveform = np.zeros(1000)
+        for i in range(4):
+            pen = pg.mkPen(color = self.getTransceiverButtonColor(i), width = 1)
+            legendName = getattr(self, f"labelTransceiver{i}").text()
+            self.transceiverPlots[i] = self.plotTransceiverWaveform.plot(waveform, pen=pen, name = legendName)
+            self.transceiverPlots[i].hide()
+
+        self.plotTransceiverImage = pg.ImageView()
+        #self.plotTransceiverImage = setImage(waveform)
+        self.gridLayoutPlot.addWidget(self.plotTransceiverImage, 2, 1)
+
+    def addSelectedTransceiverPlots(self, i):
+            enable = getattr(self, f"checkBoxTransceiver{i}Plot").isChecked()
+            if enable:
+                self.transceiverPlots[i].show()
+            if not enable:
+                self.transceiverPlots[i].hide()
+
+    def addAllSelectedTransceiverPlots(self):
+        for i in range(4):
+            self.addSelectedTransceiverPlots(i)
+
+    def removeAllTransceiverPlots(self):
+        for i in range(4):
+            self.transceiverPlots[i].hide()
+
+    def showPlot(self):
+        self.plotAnalogWaveform.hide()
+        self.plotDigitalWaveform.hide()
+        self.plotTransceiverWaveform.hide()
+        self.plotAnalogImage.hide()
+        self.plotDigitalImage.hide()
+        self.plotTransceiverImage.hide()
+        self.labelDigitalWaveformOption.setDisabled(True)
+        self.radioButtonOverlay.setDisabled(True)
+        self.radioButtonStripe.setDisabled(True)
+
+        if self.romode.value in [0, 2]:
+            if self.radioButtonWaveform.isChecked():
+                self.plotAnalogWaveform.show()
+            elif self.radioButtonImage.isChecked():
+                self.plotAnalogImage.show()
+        if self.romode.value in [1, 2, 4]:
+            if self.radioButtonWaveform.isChecked():
+                self.plotDigitalWaveform.show()
+            elif self.radioButtonImage.isChecked():
+                self.plotDigitalImage.show()
+            self.labelDigitalWaveformOption.setEnabled(True)
+            self.radioButtonOverlay.setEnabled(True)
+            self.radioButtonStripe.setEnabled(True)
+
+        if self.romode.value in [3, 4]:
+            if self.radioButtonWaveform.isChecked():
+                self.plotTransceiverWaveform.show()
+            elif self.radioButtonImage.isChecked():
+                self.plotTransceiverImage.show()
+
     def plotOptions(self):
 
         self.framePatternViewer.hide()
+        self.showPlot()
+
         # disable image widgets
         self.comboBoxPlot.setDisabled(True)
-        self.imageViewAnalog.hide()
-        self.imageViewDigital.hide()
-        self.imageViewTransceiver.hide()
-
-        #if hasattr(self, 'imageViewAnalog'):
-        #    self.imageViewAnalog.close()   
-        #if hasattr(self, 'imageViewDigital'):
-        #    self.imageViewDigital.close()
-        #if hasattr(self, 'imageViewTransceiver'):
-        #    self.imageViewTransceiver.close()
-        self.plotWidgetAnalog.clear()
-        self.plotWidgetDigital.clear()
-        self.plotWidgetTransceiver.clear()
 
         # disable plotting
         self.read_timer.stop()
         
         if self.radioButtonWaveform.isChecked():
-            self.plotWidgetAnalog.setLabel('left',"<span style=\"color:black;font-size:14px\">Output [ADC]</span>")
-            self.plotWidgetAnalog.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Analog Sample [#]</span>")
-            self.plotWidgetAnalog.addLegend(colCount = 4)
-            self.plotWidgetDigital.setLabel('left',"<span style=\"color:black;font-size:14px\">Digital Bit</span>")
-            self.plotWidgetDigital.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Digital Sample [#]</span>")
-            self.plotWidgetDigital.addLegend(colCount = 4)
-            self.plotWidgetTransceiver.setLabel('left',"<span style=\"color:black;font-size:14px\">Transceiver Bit</span>")
-            self.plotWidgetTransceiver.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Transceiver Sample [#]</span>")
-            self.plotWidgetTransceiver.addLegend(colCount = 4)
+            self.plotAnalogWaveform.setLabel('left',"<span style=\"color:black;font-size:14px\">Output [ADC]</span>")
+            self.plotAnalogWaveform.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Analog Sample [#]</span>")
+            self.plotAnalogWaveform.addLegend(colCount = 4)
+            self.plotDigitalWaveform.setLabel('left',"<span style=\"color:black;font-size:14px\">Digital Bit</span>")
+            self.plotDigitalWaveform.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Digital Sample [#]</span>")
+            self.plotDigitalWaveform.addLegend(colCount = 4)
+            self.plotTransceiverWaveform.setLabel('left',"<span style=\"color:black;font-size:14px\">Transceiver Bit</span>")
+            self.plotTransceiverWaveform.setLabel('bottom',"<span style=\"color:black;font-size:14px\">Transceiver Sample [#]</span>")
+            self.plotTransceiverWaveform.addLegend(colCount = 4)
+
             self.stackedWidgetPlotType.setCurrentIndex(0)
 
-
         elif self.radioButtonImage.isChecked():
-            self.comboBoxPlot.setEnabled(True)
-
-            #self.imageViewAnalog = pg.ImageView(self.plotWidgetAnalog, view=pg.PlotItem())
-            self.imageViewAnalog.show()
-            #self.imageViewDigital = pg.ImageView(self.plotWidgetDigital, view=pg.PlotItem())
-            self.imageViewDigital.show()
-            #self.imageViewTransceiver = pg.ImageView(self.plotWidgetTransceiver, view=pg.PlotItem())
-            self.imageViewTransceiver.show()
-
+            self.comboBoxPlot.setEnabled(True)          
             self.comboBoxPlot.currentIndexChanged.disconnect()
             # matterhorn image
             if self.comboBoxPlot.currentIndex() == 1:
@@ -1171,8 +1288,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.warning(self, "Not Implemented Yet", "Sorry, this is not implemented yet.", QtWidgets.QMessageBox.Ok)
                 self.comboBoxPlot.setCurrentIndex(0)
             self.comboBoxPlot.currentIndexChanged.connect(self.plotOptions)
+
             self.stackedWidgetPlotType.setCurrentIndex(2)
-                
                 
         if self.radioButtonNoPlot.isChecked():
             self.labelPlotOptions.hide()
@@ -1187,21 +1304,15 @@ class MainWindow(QtWidgets.QMainWindow):
     def showPatternViewer(self, enable):
         if enable:
             self.framePatternViewer.show()
-            self.plotWidgetAnalog.hide()
-            self.plotWidgetDigital.hide()  
-            self.plotWidgetTransceiver.hide()  
-        else:
-            self.framePatternViewer.hide()
-            self.plotWidgetAnalog.hide()
-            self.plotWidgetDigital.hide()
-            self.plotWidgetTransceiver.hide()
-
-            if self.romode.value in [0, 2]:
-                self.plotWidgetAnalog.show()
-            if self.romode.value in [1, 2, 4]:
-                self.plotWidgetDigital.show()
-            if self.romode.value in [3, 4]:
-                self.plotWidgetTransceiver.show()
+            self.plotAnalogWaveform.hide()
+            self.plotDigitalWaveform.hide()
+            self.plotTransceiverWaveform.hide()
+            self.plotAnalogImage.hide()
+            self.plotDigitalImage.hide()
+            self.plotTransceiverImage.hide()
+        elif self.framePatternViewer.isVisible():
+                self.framePatternViewer.hide()
+                self.showPlot()
 
 
     def setSerialOffset(self):
@@ -1305,6 +1416,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
         self.getAnalog()
         self.getDigital()
+        self.showPlot()
 
     def setReadOut(self):
         self.comboBoxROMode.currentIndexChanged.disconnect()
@@ -1715,13 +1827,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.updateCurrentFrame(jsonHeader['frameIndex'])
             #print(f"image size:{int(jsonHeader['size'])}")
             #print(f'Data size: {len(data)}')
-            
-
-            
-            self.plotWidgetAnalog.clear()
-            self.plotWidgetDigital.clear()
-            self.plotWidgetTransceiver.clear()
-            
+                      
 
             # waveform
             if self.radioButtonWaveform.isChecked():
@@ -1735,10 +1841,8 @@ class MainWindow(QtWidgets.QMainWindow):
                             for iSample in range(self.asamples):
                                 # all adc for 1 sample together
                                 waveform[iSample] = analog_array[iSample * self.nADCEnabled + i]
-                            pen = pg.mkPen(color = self.getADCButtonColor(i), width = 1)
-                            legendName = getattr(self, f"labelADC{i}").text()
-                            self.plotWidgetAnalog.plot(waveform, pen=pen, name = legendName)
-                            
+                            self.analogPlots[i].setData(waveform)
+
                 # digital
                 if self.romode.value in [1, 2, 4]:
                     dbitoffset = self.rx_dbitoffset
@@ -1770,13 +1874,13 @@ class MainWindow(QtWidgets.QMainWindow):
                                 bit = (digital_array[index] >> iBit) & 1
                                 waveform[iSample] = bit
                                 offset += 1
-                            pen = pg.mkPen(color = self.getDBitButtonColor(i), width = 1)
-                            legendName = getattr(self, f"labelBIT{i}").text()
-                            p = self.plotWidgetDigital.plot(waveform, pen=pen, name = legendName, stepMode = "left")
+                            self.digitalPlots[i].setData(waveform)
                             # TODO: left axis does not show 0 to 1, but keeps increasing
                             if self.radioButtonStripe.isChecked():
-                                p.setY(irow * 2)
+                                self.digitalPlots[i].setY(irow * 2)
                                 irow += 1
+                            else:
+                                self.digitalPlots[i].setY(0)
 
                 # transceiver
                 if self.romode.value in [3, 4]:  
@@ -1794,13 +1898,18 @@ class MainWindow(QtWidgets.QMainWindow):
                             waveform = np.zeros(self.tsamples * 4)
                             for iSample in range(self.tsamples * 4):
                                 waveform[iSample] = trans_array[iSample * self.nTransceiverEnabled + i]
-                            pen = pg.mkPen(color = self.getTransceiverButtonColor(i), width = 1)
-                            legendName = getattr(self, f"labelTransceiver{i}").text()
-                            self.plotWidgetTransceiver.plot(waveform, pen=pen, name = legendName)
+                            self.transceiverPlots[i].setData(waveform)
                         
 
             # image
             else:
+
+                # analog fake image
+                if self.romode.value in [0, 2]:  
+                    analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count= self.nADCEnabled * self.asamples))
+                    analog_frame = np.zeros((self.nADCEnabled, self.asamples))
+                    self.plotAnalogImage.setImage(analog_frame)
+
                 # transceiver
                 if self.romode.value in [3, 4]:  
                     transceiverOffset = 0     
@@ -1818,7 +1927,7 @@ class MainWindow(QtWidgets.QMainWindow):
                             for iTrans in range(Defines.Matterhorn.nTransceivers):
                                 trans_frame[row, iTrans * Defines.Matterhorn.nHalfCols + col] = trans_array[offset + iTrans]
                             offset += 2
-                    self.imageViewTransceiver.setImage(trans_frame)
+                    self.plotTransceiverImage.setImage(trans_frame)
 
         except zmq.ZMQError as e:
             pass
@@ -2016,12 +2125,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.gridLayoutPatternViewer.addWidget(self.canvas)
         self.figure.clear()
 
-        self.imageViewAnalog = pg.ImageView(self.plotWidgetAnalog, view=pg.PlotItem())
-        #self.imageViewAnalog.show()
-        self.imageViewDigital = pg.ImageView(self.plotWidgetDigital, view=pg.PlotItem())
-        #self.imageViewDigital.show()
-        self.imageViewTransceiver = pg.ImageView(self.plotWidgetTransceiver, view=pg.PlotItem())
-        #self.imageViewTransceiver.show()
+        # plot 
+        self.initializeAllAnalogPlots()
+        self.initializeAllDigitalPlots()
+        self.initializeAllTransceiverPlots()
 
 
     def keyPressEvent(self, event):

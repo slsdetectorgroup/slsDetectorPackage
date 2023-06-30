@@ -2330,11 +2330,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonStart.clicked.connect(self.toggleAcquire)
 
         # plot
-        self.plotAnalogImage.scene.sigMouseMoved.connect(partial(self.mouseMoved, self.plotAnalogImage))
-        self.plotDigitalImage.scene.sigMouseMoved.connect(partial(self.mouseMoved, self.plotDigitalImage))
-        self.plotTransceiverImage.scene.sigMouseMoved.connect(partial(self.mouseMoved, self.plotTransceiverImage))
+        self.plotAnalogImage.scene.sigMouseMoved.connect(partial(self.showPlotValues, self.plotAnalogImage))
+        self.plotDigitalImage.scene.sigMouseMoved.connect(partial(self.showPlotValues, self.plotDigitalImage))
+        self.plotTransceiverImage.scene.sigMouseMoved.connect(partial(self.showPlotValues, self.plotTransceiverImage))
         
-    def mouseMoved(self, sender, pos):
+    def showPlotValues(self, sender, pos):
         x = sender.getImageItem().mapFromScene(pos).x()
         y = sender.getImageItem().mapFromScene(pos).y()
         val = 0

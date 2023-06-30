@@ -1143,7 +1143,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.analogPlots[i].hide()
 
         self.plotAnalogImage = pg.ImageView()
-        #self.plotAnalogImage = setImage(waveform)
+        self.nAnalogRows = 0
+        self.nAnalogCols = 0
+        self.analog_frame = np.zeros((self.nAnalogRows, self.nAnalogCols))
+        self.plotAnalogImage.setImage(self.analog_frame)
+        self.plotAnalogImage.view.invertY(False)
         self.gridLayoutPlot.addWidget(self.plotAnalogImage, 0, 1)
 
     def addSelectedAnalogPlots(self, i):
@@ -1173,7 +1177,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.digitalPlots[i].hide()
 
         self.plotDigitalImage = pg.ImageView()
-        #self.plotDigitalImage = setImage(waveform)
+        self.nDigitalRows = 0
+        self.nDigitalCols = 0
+        self.digital_frame = np.zeros((self.nDigitalRows, self.nDigitalCols))
+        self.plotDigitalImage.setImage(self.digital_frame)
+        self.plotDigitalImage.view.invertY(False)
         self.gridLayoutPlot.addWidget(self.plotDigitalImage, 1, 1)
 
     def addSelectedDigitalPlots(self, i):
@@ -1203,7 +1211,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.transceiverPlots[i].hide()
 
         self.plotTransceiverImage = pg.ImageView()
-        #self.plotTransceiverImage = setImage(waveform)
+        self.nTransceiverRows = 0
+        self.nTransceiverCols = 0
+        self.transceiver_frame = np.zeros((self.nTransceiverRows, self.nTransceiverCols))
+        self.plotTransceiverImage.setImage(self.transceiver_frame)
+        self.plotTransceiverImage.view.invertY(False)
         self.gridLayoutPlot.addWidget(self.plotTransceiverImage, 2, 1)
 
     def addSelectedTransceiverPlots(self, i):
@@ -1907,8 +1919,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 # analog fake image
                 if self.romode.value in [0, 2]:  
                     analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count= self.nADCEnabled * self.asamples))
-                    analog_frame = np.zeros((self.nADCEnabled, self.asamples))
-                    self.plotAnalogImage.setImage(analog_frame)
+                    self.nAnalogRows = self.nADCEnabled + 1000
+                    self.nAnalogCols = self.asamples
+                    self.analog_frame = np.zeros((self.nAnalogCols, self.nAnalogRows))
+                    self.plotAnalogImage.setImage(self.analog_frame)
 
                 # transceiver
                 if self.romode.value in [3, 4]:  
@@ -1920,14 +1934,16 @@ class MainWindow(QtWidgets.QMainWindow):
                         transceiverOffset += self.nDbitEnabled * (nbitsPerDBit // 8)
                     #print(f'transceiverOffset:{transceiverOffset}')
                     trans_array = np.array(np.frombuffer(data, offset = transceiverOffset, dtype=np.uint16))
-                    trans_frame = np.zeros((Defines.Matterhorn.nRows, Defines.Matterhorn.nCols))
+                    self.nTransceiverRows = Defines.Matterhorn.nRows
+                    self.nTransceiverCols = Defines.Matterhorn.nCols
+                    self.transceiver_frame = np.zeros((self.nTransceiverCols, self.nTransceiverRows))
                     offset = 0
                     for row in range(Defines.Matterhorn.nRows):
                         for col in range(Defines.Matterhorn.nHalfCols):
                             for iTrans in range(Defines.Matterhorn.nTransceivers):
-                                trans_frame[row, iTrans * Defines.Matterhorn.nHalfCols + col] = trans_array[offset + iTrans]
+                                self.transceiver_frame[iTrans * Defines.Matterhorn.nHalfCols + col, row] = trans_array[offset + iTrans]
                             offset += 2
-                    self.plotTransceiverImage.setImage(trans_frame)
+                    self.plotTransceiverImage.setImage(self.transceiver_frame)
 
         except zmq.ZMQError as e:
             pass
@@ -2312,7 +2328,34 @@ class MainWindow(QtWidgets.QMainWindow):
         self.comboBoxPeriod.currentIndexChanged.connect(self.setPeriod)
         self.spinBoxTriggers.editingFinished.connect(self.setTriggers)
         self.pushButtonStart.clicked.connect(self.toggleAcquire)
+
+        # plot
+        self.plotAnalogImage.scene.sigMouseMoved.connect(partial(self.mouseMoved, self.plotAnalogImage))
+        self.plotDigitalImage.scene.sigMouseMoved.connect(partial(self.mouseMoved, self.plotDigitalImage))
+        self.plotTransceiverImage.scene.sigMouseMoved.connect(partial(self.mouseMoved, self.plotTransceiverImage))
         
+    def mouseMoved(self, sender, pos):
+        x = sender.getImageItem().mapFromScene(pos).x()
+        y = sender.getImageItem().mapFromScene(pos).y()
+        val = 0
+        nMaxY = self.nAnalogRows
+        nMaxX = self.nAnalogCols
+        frame = self.analog_frame
+        if sender == self.plotDigitalImage:
+            nMaxY = self.nDigitalRows
+            nMaxX = self.nDigitalCols    
+            frame = self.digital_frame
+        elif sender == self.plotTransceiverImage:
+            nMaxY = self.nTransceiverRows
+            nMaxX = self.nTransceiverCols          
+            frame = self.transceiver_frame
+        if x >= 0 and x < nMaxX and y >= 0 and y < nMaxY:
+            val = frame[int(x), int(y)]
+            message = f'[{x:.2f}, {y:.2f}] = {val:.2f}'
+            sender.setToolTip(message)
+            #print(message)
+        else:
+            sender.setToolTip('')
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

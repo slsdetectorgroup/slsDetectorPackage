@@ -8228,7 +8228,7 @@ int get_bursts_left(int file_des) {
 int start_readout(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-#if !defined(MYTHEN3D)
+#if !defined(MYTHEN3D) && !defined(CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     if (Server_VerifyLock() == OK) {

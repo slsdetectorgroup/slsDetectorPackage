@@ -18,8 +18,8 @@ class Defines():
         nHalfCols = 24
         nCols = 48
         nTransceivers = 2
-        nSamplesPerRowPerTransceiver = 6
         tranceiverEnable = 0x3
+        nPixelsPerTransceiver = 4
 
 
     # pattern viewer defines

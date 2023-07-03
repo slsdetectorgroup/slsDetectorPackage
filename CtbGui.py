@@ -1147,7 +1147,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.nAnalogCols = 0
         self.analog_frame = np.zeros((self.nAnalogRows, self.nAnalogCols))
         self.plotAnalogImage.setImage(self.analog_frame)
-        self.plotAnalogImage.view.invertY(False)
         self.gridLayoutPlot.addWidget(self.plotAnalogImage, 0, 1)
 
     def addSelectedAnalogPlots(self, i):
@@ -1181,7 +1180,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.nDigitalCols = 0
         self.digital_frame = np.zeros((self.nDigitalRows, self.nDigitalCols))
         self.plotDigitalImage.setImage(self.digital_frame)
-        self.plotDigitalImage.view.invertY(False)
         self.gridLayoutPlot.addWidget(self.plotDigitalImage, 1, 1)
 
     def addSelectedDigitalPlots(self, i):
@@ -1215,7 +1213,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.nTransceiverCols = 0
         self.transceiver_frame = np.zeros((self.nTransceiverRows, self.nTransceiverCols))
         self.plotTransceiverImage.setImage(self.transceiver_frame)
-        self.plotTransceiverImage.view.invertY(False)
         self.gridLayoutPlot.addWidget(self.plotTransceiverImage, 2, 1)
 
     def addSelectedTransceiverPlots(self, i):
@@ -1938,11 +1935,15 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.nTransceiverCols = Defines.Matterhorn.nCols
                     self.transceiver_frame = np.zeros((self.nTransceiverCols, self.nTransceiverRows))
                     offset = 0
+                    nSamples = Defines.Matterhorn.nPixelsPerTransceiver
                     for row in range(Defines.Matterhorn.nRows):
                         for col in range(Defines.Matterhorn.nHalfCols):
+                            #print(f'row:{row} col:{col} offset: {offset}')
                             for iTrans in range(Defines.Matterhorn.nTransceivers):
-                                self.transceiver_frame[iTrans * Defines.Matterhorn.nHalfCols + col, row] = trans_array[offset + iTrans]
-                            offset += 2
+                                self.transceiver_frame[iTrans * Defines.Matterhorn.nHalfCols + col, row] = trans_array[offset + nSamples * iTrans]
+                            offset += 1
+                            if (col + 1) % nSamples == 0:
+                                offset += nSamples
                     self.plotTransceiverImage.setImage(self.transceiver_frame)
 
         except zmq.ZMQError as e:

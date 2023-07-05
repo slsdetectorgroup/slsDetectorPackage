@@ -2247,8 +2247,6 @@ int startStateMachine() {
         LOG(logINFOBLUE, ("Writing 1 to reg 0x202\n"))
         usleep(1);
         cleanFifos();
-        bus_w(addr, bus_r(addr) | (1 << 2));
-        LOG(logINFOBLUE, ("Writing 2 to reg 0x202\n"))
         usleep(1);
     }
 

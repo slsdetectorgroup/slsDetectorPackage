@@ -1837,6 +1837,14 @@ class Detector(CppDetectorApi):
         }
 
     @property
+    def voltagevalues(self):
+        """Gets the voltage values for every voltage for this detector."""
+        return {
+            voltage.name.lower(): element_if_equal(np.array(self.getVoltage(voltage)))
+            for voltage in self.getVoltageList()
+        }
+
+    @property
     def timinglist(self):
         """Gets the list of timing modes (timingMode) for this detector."""
         return self.getTimingModeList()

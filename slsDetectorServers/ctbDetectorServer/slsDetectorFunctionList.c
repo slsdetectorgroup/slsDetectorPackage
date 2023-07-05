@@ -2680,13 +2680,15 @@ uint32_t checkDataInFifo() {
 
 // only called for starting of a new frame
 int checkFifoForEndOfAcquisition() {
+    LOG(logDEBUG1, ("Check for end of acq\n"));
     uint32_t dataPresent = checkDataInFifo();
-    LOG(logDEBUG2, ("status:0x%x\n", bus_r(STATUS_REG)));
+    LOG(logDEBUG1, ("dataPresent:%d\n", dataPresent));
 
     // as long as no data
     while (!dataPresent) {
         // acquisition done
         if (!runBusy()) {
+            LOG(logDEBUG1, ("Not running\n"));
             // wait to be sure there is no data in fifo
             usleep(WAIT_TME_US_FR_ACQDONE_REG);
 
@@ -2720,13 +2722,13 @@ int readFrameFromFifo() {
     memset(transceiverData, 0, transceiverDataBytes);
 
     // no data for this frame
-    if (!checkDataInFifo() || getRunStatus() == STOPPED) {
-        return FAIL;
-    }
-    // for startacquistiion
-    /*if (checkFifoForEndOfAcquisition() == FAIL) {
+    /*if (!checkDataInFifo()) {
         return FAIL;
     }*/
+    // for startacquistiion
+    if (checkFifoForEndOfAcquisition() == FAIL) {
+        return FAIL;
+    }
 
     // read Sample
     int maxSamples = 0;

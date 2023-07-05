@@ -353,6 +353,13 @@ TEST_CASE("voltageindex", "[.cmd]") {
     }
 }
 
+TEST_CASE("voltagevalues", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("voltagevalues", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("voltagevalues", {}, -1, PUT));
+}
+
 TEST_CASE("slowadclist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

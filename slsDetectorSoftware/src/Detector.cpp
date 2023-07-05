@@ -2035,6 +2035,16 @@ void Detector::setADCPipeline(int value, Positions pos) {
     pimpl->Parallel(&Module::setADCPipeline, pos, value);
 }
 
+std::vector<defs::dacIndex> Detector::getVoltageList() const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError("Voltage list not implemented for this detector");
+    }
+    return std::vector<defs::dacIndex>{
+        defs::V_POWER_A, defs::V_POWER_B,  defs::V_POWER_C,
+        defs::V_POWER_D, defs::V_POWER_IO,
+    };
+}
+
 Result<int> Detector::getVoltage(defs::dacIndex index, Positions pos) const {
     switch (index) {
     case defs::V_LIMIT:

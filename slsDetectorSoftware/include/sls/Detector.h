@@ -1608,6 +1608,9 @@ class Detector {
     /** [CTB] */
     void setADCPipeline(int value, Positions pos = {});
 
+    /** gets list of voltage enums */
+    std::vector<defs::dacIndex> getVoltageList() const;
+
     /** [CTB] */
     Result<int> getVoltage(defs::dacIndex index, Positions pos = {}) const;
 

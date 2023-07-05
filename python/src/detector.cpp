@@ -1516,6 +1516,9 @@ void init_det(py::module &m) {
                        (void (Detector::*)(int, sls::Positions)) &
                            Detector::setADCPipeline,
                        py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("getVoltageList",
+                       (std::vector<defs::dacIndex>(Detector::*)() const) &
+                           Detector::getVoltageList);
     CppDetectorApi.def(
         "getVoltage",
         (Result<int>(Detector::*)(defs::dacIndex, sls::Positions) const) &

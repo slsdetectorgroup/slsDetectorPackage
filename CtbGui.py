@@ -1149,6 +1149,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.plotAnalogImage.setImage(self.analog_frame)
         self.gridLayoutPlot.addWidget(self.plotAnalogImage, 0, 1)
 
+        cm = pg.colormap.get('CET-L9') # prepare a linear color map
+        self.plotAnalogImage.setColorMap(cm)
+
     def addSelectedAnalogPlots(self, i):
             enable = getattr(self, f"checkBoxADC{i}Plot").isChecked()
             if enable:
@@ -1182,6 +1185,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.plotDigitalImage.setImage(self.digital_frame)
         self.gridLayoutPlot.addWidget(self.plotDigitalImage, 1, 1)
 
+        cm = pg.colormap.get('CET-L9') # prepare a linear color map
+        self.plotDigitalImage.setColorMap(cm)
+
     def addSelectedDigitalPlots(self, i):
             enable = getattr(self, f"checkBoxBIT{i}Plot").isChecked()
             if enable:
@@ -1214,6 +1220,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.transceiver_frame = np.zeros((self.nTransceiverRows, self.nTransceiverCols))
         self.plotTransceiverImage.setImage(self.transceiver_frame)
         self.gridLayoutPlot.addWidget(self.plotTransceiverImage, 2, 1)
+
+        cm = pg.colormap.get('CET-L9') # prepare a linear color map
+        self.plotTransceiverImage.setColorMap(cm)
 
     def addSelectedTransceiverPlots(self, i):
             enable = getattr(self, f"checkBoxTransceiver{i}Plot").isChecked()

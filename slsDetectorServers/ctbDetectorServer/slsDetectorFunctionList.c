@@ -2511,14 +2511,6 @@ int readSample(int ns) {
 
         uint32_t fifoAddr = FIFO_DATA_REG;
 
-        // read strobe to all analog fifos
-        bus_w(addr, bus_r(addr) | DUMMY_ANLG_FIFO_RD_STRBE_MSK);
-        bus_w(addr, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK));
-
-        // wait for 1 us to latch different clocks of read and read strobe
-        for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
-            ;
-
         if (!(ns % 1000)) {
             LOG(logDEBUG1, ("Reading sample ns:%d of %d AEmtpy:0x%x AFull:0x%x "
                             "Status:0x%x\n",
@@ -2539,6 +2531,11 @@ int readSample(int ns) {
                 bus_w(addr, bus_r(addr) | ((ich << DUMMY_FIFO_CHNNL_SLCT_OFST) &
                                            DUMMY_FIFO_CHNNL_SLCT_MSK));
 
+                // wait for 1 us to latch different clocks of read and read
+                // strobe
+                for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
+                    ;
+
                 // read fifo and write it to current position of data pointer
                 *((uint16_t *)analogDataPtr) = bus_r16(fifoAddr);
 
@@ -2553,17 +2550,18 @@ int readSample(int ns) {
                 sampleRead = 1;
             }
         }
-    }
 
-    // read digital output
-    if (digitalEnable && ns < ndSamples) {
-        // read strobe to digital fifo
-        bus_w(addr, bus_r(addr) | DUMMY_DGTL_FIFO_RD_STRBE_MSK);
-        bus_w(addr, bus_r(addr) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
+        // read strobe to all analog fifos
+        bus_w(addr, bus_r(addr) | DUMMY_ANLG_FIFO_RD_STRBE_MSK);
+        bus_w(addr, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK));
 
         // wait for 1 us to latch different clocks of read and read strobe
         for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
             ;
+    }
+
+    // read digital output
+    if (digitalEnable && ns < ndSamples) {
 
         if (!(ns % 1000)) {
             LOG(logDEBUG1,
@@ -2583,6 +2581,14 @@ int readSample(int ns) {
             get64BitReg(FIFO_DIN_LSB_REG, FIFO_DIN_MSB_REG);
         digitalDataPtr += 8;
         sampleRead = 1;
+
+        // read strobe to digital fifo
+        bus_w(addr, bus_r(addr) | DUMMY_DGTL_FIFO_RD_STRBE_MSK);
+        bus_w(addr, bus_r(addr) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
+
+        // wait for 1 us to latch different clocks of read and read strobe
+        for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
+            ;
     }
 
     // read transceivers
@@ -2618,11 +2624,6 @@ int readSample(int ns) {
                                 ((ich << DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_OFST) &
                                  DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK));
 
-                // read strobe
-                bus_w(addr, bus_r(addr) | DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK);
-                usleep(5 * 1000);
-                bus_w(addr, bus_r(addr) & (~DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK));
-
                 // wait for 1 us to latch different clocks of read and read
                 // strobe
                 for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
@@ -2637,7 +2638,18 @@ int readSample(int ns) {
                 //}
             }
         }
+
+        // read strobe
+        bus_w(addr, bus_r(addr) | DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK);
+        usleep(5 * 1000);
+        bus_w(addr, bus_r(addr) & (~DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK));
+
+        // wait for 1 us to latch different clocks of read and read
+        // strobe
+        for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
+            ;
     }
+
     LOG(logDEBUG1, ("sample read:%d\n", sampleRead));
     return sampleRead;
 }

@@ -2039,10 +2039,9 @@ std::vector<defs::dacIndex> Detector::getVoltageList() const {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD) {
         throw RuntimeError("Voltage list not implemented for this detector");
     }
-    return std::vector<defs::dacIndex>{
-        defs::V_POWER_A, defs::V_POWER_B,  defs::V_POWER_C,
-        defs::V_POWER_D, defs::V_POWER_IO
-    };
+    return std::vector<defs::dacIndex>{defs::V_POWER_A, defs::V_POWER_B,
+                                       defs::V_POWER_C, defs::V_POWER_D,
+                                       defs::V_POWER_IO};
 }
 
 std::vector<defs::dacIndex> Detector::getSlowADCList() const {
@@ -2050,10 +2049,8 @@ std::vector<defs::dacIndex> Detector::getSlowADCList() const {
         throw RuntimeError("Slow ADC list not implemented for this detector");
     }
     return std::vector<defs::dacIndex>{
-        defs::SLOW_ADC0, defs::SLOW_ADC1,  defs::SLOW_ADC2,
-        defs::SLOW_ADC3, defs::SLOW_ADC4,  defs::SLOW_ADC5,
-        defs::SLOW_ADC6, defs::SLOW_ADC7
-    };
+        defs::SLOW_ADC0, defs::SLOW_ADC1, defs::SLOW_ADC2, defs::SLOW_ADC3,
+        defs::SLOW_ADC4, defs::SLOW_ADC5, defs::SLOW_ADC6, defs::SLOW_ADC7};
 }
 
 Result<int> Detector::getVoltage(defs::dacIndex index, Positions pos) const {

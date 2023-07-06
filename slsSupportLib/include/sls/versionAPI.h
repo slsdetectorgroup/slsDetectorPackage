@@ -8,6 +8,6 @@
 #define APIGOTTHARD  "developer 0x230615"
 #define APIGOTTHARD2 "developer 0x230615"
 #define APIJUNGFRAU  "developer 0x230615"
-#define APIMOENCH    "developer 0x230615"
 #define APICTB       "developer 0x230621"
 #define APIMYTHEN3   "developer 0x230621"
+#define APIMOENCH "developer 0x230706"

@@ -373,7 +373,7 @@ TEST_CASE("slowadclist", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD) {
-        auto prev = det.getSlowAdcNames();
+        auto prev = det.getSlowADCNames();
 
         REQUIRE_THROWS(proxy.Call("slowadclist", {"a", "s", "d"}, -1, PUT));
 
@@ -391,7 +391,7 @@ TEST_CASE("slowadclist", "[.cmd]") {
             REQUIRE(oss.str() ==
                     std::string("slowadclist ") + ToString(names) + '\n');
         }
-        det.setSlowAdcNames(prev);
+        det.setSlowADCNames(prev);
 
     } else {
         REQUIRE_THROWS(proxy.Call("slowadclist", {"a", "b"}, -1, PUT));
@@ -407,7 +407,7 @@ TEST_CASE("slowadcname", "[.cmd]") {
     if (det_type == defs::CHIPTESTBOARD) {
         defs::dacIndex ind = static_cast<defs::dacIndex>(2 + defs::SLOW_ADC0);
         std::string str_slowadc_index = "2";
-        auto prev = det.getSlowAdcName(ind);
+        auto prev = det.getSlowADCName(ind);
 
         // 1 arg throw
         REQUIRE_THROWS(proxy.Call("slowadcname", {"2", "3", "bname"}, -1, PUT));
@@ -425,7 +425,7 @@ TEST_CASE("slowadcname", "[.cmd]") {
             REQUIRE(oss.str() == std::string("slowadcname ") +
                                      str_slowadc_index + " bname\n");
         }
-        det.setSlowAdcName(ind, prev);
+        det.setSlowADCName(ind, prev);
 
     } else {
         REQUIRE_THROWS(proxy.Call("slowadcname", {"2", "b"}, -1, PUT));
@@ -446,7 +446,7 @@ TEST_CASE("slowadcindex", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("slowadcindex", {"2", "2"}, -1, PUT));
         // invalid index
         REQUIRE_THROWS(proxy.Call("slowadcindex", {"8"}, -1, PUT));
-        auto slowadcname = det.getSlowAdcName(ind);
+        auto slowadcname = det.getSlowADCName(ind);
         {
             std::ostringstream oss;
             REQUIRE_NOTHROW(

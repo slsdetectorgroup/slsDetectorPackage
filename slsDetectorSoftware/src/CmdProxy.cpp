@@ -2660,7 +2660,7 @@ std::string CmdProxy::AdcVpp(int action) {
     return os.str();
 }
 
-std::string CmdProxy::SlowAdc(int action) {
+std::string CmdProxy::SlowADC(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {

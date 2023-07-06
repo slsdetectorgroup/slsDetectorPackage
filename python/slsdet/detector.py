@@ -1845,6 +1845,14 @@ class Detector(CppDetectorApi):
         }
 
     @property
+    def slowadcvalues(self):
+        """Gets the slow adc values for every slow adc for this detector."""
+        return {
+            slowadc.name.lower(): element_if_equal(np.array(self.getSlowADC(slowadc)))
+            for slowadc in self.getSlowADCList()
+        }
+
+    @property
     def timinglist(self):
         """Gets the list of timing modes (timingMode) for this detector."""
         return self.getTimingModeList()

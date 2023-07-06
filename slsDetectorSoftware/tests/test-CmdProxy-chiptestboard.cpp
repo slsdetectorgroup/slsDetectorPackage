@@ -360,6 +360,13 @@ TEST_CASE("voltagevalues", "[.cmd]") {
     REQUIRE_THROWS(proxy.Call("voltagevalues", {}, -1, PUT));
 }
 
+TEST_CASE("slowadcvalues", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("slowadcvalues", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("slowadcvalues", {}, -1, PUT));
+}
+
 TEST_CASE("slowadclist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

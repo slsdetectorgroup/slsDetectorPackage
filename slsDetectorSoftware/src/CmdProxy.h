@@ -572,10 +572,7 @@ namespace sls {
             if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
-            std::string suffix = " ";                                          \
-            if (cmd == "voltagevalues") {                                      \
-                suffix = " mV";                                                \
-            }                                                                  \
+            std::string suffix = " mV";                                        \
             auto t = det->GETFCNLIST();                                        \
             auto names = det->GETFCNNAME();                                    \
             auto name_it = names.begin();                                      \
@@ -1062,6 +1059,7 @@ class CmdProxy {
         {"slowadclist", &CmdProxy::slowadclist},
         {"slowadcname", &CmdProxy::slowadcname},
         {"slowadcindex", &CmdProxy::slowadcindex},
+        {"slowadcvalues", &CmdProxy::slowadcvalues},
 
         /* dacs */
         {"dac", &CmdProxy::Dac},
@@ -1259,7 +1257,7 @@ class CmdProxy {
         {"im_c", &CmdProxy::im_c},
         {"im_d", &CmdProxy::im_d},
         {"im_io", &CmdProxy::im_io},
-        {"slowadc", &CmdProxy::SlowAdc},
+        {"slowadc", &CmdProxy::SlowADC},
         {"extsampling", &CmdProxy::extsampling},
         {"extsamplingsrc", &CmdProxy::extsamplingsrc},
         {"rx_dbitlist", &CmdProxy::ReceiverDbitList},
@@ -1419,7 +1417,7 @@ class CmdProxy {
     std::string Samples(int action);
     /* CTB Specific */
     std::string AdcVpp(int action);
-    std::string SlowAdc(int action);
+    std::string SlowADC(int action);
     std::string ReceiverDbitList(int action);
     std::string DigitalIODelay(int action);
     /* Pattern */
@@ -1785,17 +1783,20 @@ class CmdProxy {
     CTB_VALUES(voltagevalues, getVoltage, getVoltageList, getVoltageNames,
                "[name] \n\t\t[ChipTestBoard] Get values of all voltages.");
 
+    CTB_VALUES(slowadcvalues, getSlowADC, getSlowADCList, getSlowADCNames,
+               "[name] \n\t\t[ChipTestBoard] Get values of all slow adcs.");
+
     CTB_NAMED_LIST(
-        slowadclist, getSlowAdcNames, setSlowAdcNames,
+        slowadclist, getSlowADCNames, setSlowADCNames,
         "[slowadcname1 slowadcname2 .. slowadcname7] "
         "\n\t\t[ChipTestBoard] Set the list of slowadc names for this board.");
 
-    CTB_SINGLE_DACNAME(slowadcname, getSlowAdcName, setSlowAdcName,
+    CTB_SINGLE_DACNAME(slowadcname, getSlowADCName, setSlowADCName,
                        defs::SLOW_ADC0,
                        "[0-7][name] \n\t\t[ChipTestBoard] Set "
                        "the slowadc at the given position to the given name.");
 
-    CTB_GET_DACINDEX(slowadcindex, getSlowAdcIndex, defs::SLOW_ADC0,
+    CTB_GET_DACINDEX(slowadcindex, getSlowADCIndex, defs::SLOW_ADC0,
                      "[name] \n\t\t[ChipTestBoard] Get "
                      "the slowadc index for the given name.");
 

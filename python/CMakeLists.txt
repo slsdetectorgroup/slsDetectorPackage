@@ -28,6 +28,7 @@ set( PYTHON_FILES
     slsdet/adcs.py
     slsdet/dacs.py
     slsdet/voltages.py
+    slsdet/slowadcs.py
     slsdet/decorators.py
     slsdet/detector_property.py
     slsdet/detector.py

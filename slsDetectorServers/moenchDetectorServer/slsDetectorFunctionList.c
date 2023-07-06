@@ -493,7 +493,7 @@ void setupDetector() {
     initReadoutConfiguration();
 
     // Initialization of acquistion parameters
-    // setSettings(DEFAULT_SETTINGS);
+    setSettings(DEFAULT_SETTINGS);
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
     setExpTime(DEFAULT_EXPTIME);
@@ -816,18 +816,87 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     if (sett == UNINITIALIZED)
         return thisSettings;
 
+    uint32_t mask =  0;
     // set settings
     switch (sett) {
+        case G1_HIGHGAIN:
+            LOG(logINFOBLUE, ("Settinng settings to g1 hg\n"))
+            mask = SETTINGS_G1_HG;
+            break;
+        case G1_LOWGAIN:
+            LOG(logINFOBLUE, ("Settinng settings to g1 lg\n"))
+            mask = SETTINGS_G1_LG;
+            break;
+        case G2_HIGHCAP_HIGHGAIN:
+            LOG(logINFOBLUE, ("Settinng settings to g2 hc hg\n"))
+            mask = SETTINGS_G2_HC_HG;
+            break;
+        case G2_HIGHCAP_LOWGAIN:
+            LOG(logINFOBLUE, ("Settinng settings to g2 hc lg\n"))
+            mask = SETTINGS_G2_HC_LG;
+            break;
+        case G2_LOWCAP_HIGHGAIN:
+            LOG(logINFOBLUE, ("Settinng settings to g2 lc_hg\n"))
+            mask = SETTINGS_G2_LC_HG;
+            break;
+        case G2_LOWCAP_LOWGAIN:
+            LOG(logINFOBLUE, ("Settinng settings to g2 lc lg\n"))
+            mask = SETTINGS_G2_LC_LG;
+            break;
+        case G4_HIGHGAIN:
+            LOG(logINFOBLUE, ("Settinng settings to g4 hg\n"))
+            mask = SETTINGS_G4_HG;
+            break;
+        case G4_LOWGAIN:
+            LOG(logINFOBLUE, ("Settinng settings to g4 lg\n"))
+            mask = SETTINGS_G4_LG;
+            break;
     default:
         LOG(logERROR, ("This settings %d is not defined\n", (int)sett));
         return -1;
     }
 
+    uint32_t addr = ASIC_CTRL_REG;
+    bus_w(addr, bus_r(addr) & ~SETTINGS_MSK);
+    bus_w(addr, bus_r(addr) | mask);
+
     thisSettings = sett;
     return getSettings();
 }
 
-enum detectorSettings getSettings() { return UNDEFINED; }
+enum detectorSettings getSettings() { 
+    uint32_t regval = bus_r(ASIC_CTRL_REG) & SETTINGS_MSK;
+    switch (regval) {
+        case SETTINGS_G1_HG:
+            thisSettings = G1_HIGHGAIN;
+            break;
+        case SETTINGS_G1_LG:
+            thisSettings = G1_LOWGAIN;
+            break;
+        case SETTINGS_G2_HC_HG:
+            thisSettings = G2_HIGHCAP_HIGHGAIN;
+            break;
+        case SETTINGS_G2_HC_LG:
+            thisSettings = G2_HIGHCAP_LOWGAIN;
+            break;
+        case SETTINGS_G2_LC_HG:
+            thisSettings = G2_LOWCAP_HIGHGAIN;
+            break;
+        case SETTINGS_G2_LC_LG:
+            thisSettings = G2_LOWCAP_LOWGAIN;
+            break;
+        case SETTINGS_G4_HG:
+            thisSettings = G4_HIGHGAIN;
+            break;
+        case SETTINGS_G4_LG:
+            thisSettings = G4_LOWGAIN;       
+            break;
+        default:
+            thisSettings = UNDEFINED; 
+            break;
+    }
+    return thisSettings;
+}
 
 /* parameters - dac, adc, hv */
 void setDAC(enum DACINDEX ind, int val, int mV) {

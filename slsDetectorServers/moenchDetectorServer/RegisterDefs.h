@@ -323,6 +323,35 @@
 #define ASIC_CTRL_PARALLEL_RD_MSK           (0x00000001 << ASIC_CTRL_PARALLEL_RD_OFST)
 #define ASIC_CTRL_INTRFCE_CLK_PLRTY_OFST    (1)
 #define ASIC_CTRL_INTRFCE_CLK_PLRTY_MSK     (0x00000001 << ASIC_CTRL_INTRFCE_CLK_PLRTY_OFST)
+#define ASIC_CTRL_DSG1_BOT_OFST             (7)
+#define ASIC_CTRL_DSG1_BOT_MSK              (0x00000001 << ASIC_CTRL_DSG1_BOT_OFST)
+#define ASIC_CTRL_HG_BOT_OFST               (9)
+#define ASIC_CTRL_HG_BOT_MSK                (0x00000001 << ASIC_CTRL_HG_BOT_OFST)
+#define ASIC_CTRL_DSG3_TOP_OFST             (15)
+#define ASIC_CTRL_DSG3_TOP_MSK              (0x00000001 << ASIC_CTRL_DSG3_TOP_OFST)
+#define ASIC_CTRL_DSG1_TOP_OFST             (24)
+#define ASIC_CTRL_DSG1_TOP_MSK              (0x00000001 << ASIC_CTRL_DSG1_TOP_OFST)
+#define ASIC_CTRL_DSG3_BOT_OFST             (27)
+#define ASIC_CTRL_DSG3_BOT_MSK              (0x00000001 << ASIC_CTRL_DSG3_BOT_OFST)
+#define ASIC_CTRL_HG_TOP_OFST               (28)
+#define ASIC_CTRL_HG_TOP_MSK                (0x00000001 << ASIC_CTRL_HG_TOP_OFST)
+
+#define ASIC_CTRL_HG_MSK                    (ASIC_CTRL_HG_TOP_MSK | ASIC_CTRL_HG_BOT_MSK)
+#define ASIC_CTRL_DSG1_MSK                  (ASIC_CTRL_DSG1_TOP_MSK | ASIC_CTRL_DSG1_TOP_MSK)
+#define ASIC_CTRL_DSG3_MSK                  (ASIC_CTRL_DSG3_TOP_MSK | ASIC_CTRL_DSG3_TOP_MSK)
+
+#define SETTINGS_MSK                        (ASIC_CTRL_HG_MSK | ASIC_CTRL_DSG1_MSK | ASIC_CTRL_DSG3_MSK)
+#define SETTINGS_G1_HG                      (ASIC_CTRL_HG_MSK | ASIC_CTRL_DSG3_MSK)                    
+#define SETTINGS_G1_LG                      (ASIC_CTRL_DSG3_MSK)                        
+#define SETTINGS_G2_HC_HG                   (ASIC_CTRL_HG_MSK)                         
+#define SETTINGS_G2_HC_LG                   (0)                         
+#define SETTINGS_G2_LC_HG                   (ASIC_CTRL_HG_MSK | ASIC_CTRL_DSG1_MSK | ASIC_CTRL_DSG3_MSK)                      
+#define SETTINGS_G2_LC_LG                   (ASIC_CTRL_DSG1_MSK | ASIC_CTRL_DSG3_MSK)                      
+#define SETTINGS_G4_HG                      (ASIC_CTRL_HG_MSK | ASIC_CTRL_DSG1_MSK)                      
+#define SETTINGS_G4_LG                      (ASIC_CTRL_DSG1_MSK)                      
+
+
+
 
 /* ADC 0 Deserializer Control */
 #define ADC_DSRLZR_0_REG                    (0xF0 << MEM_MAP_SHIFT)

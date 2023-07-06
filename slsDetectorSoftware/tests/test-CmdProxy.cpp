@@ -220,10 +220,10 @@ TEST_CASE("settings", "[.cmd]") {
         sett.push_back("g1_lg");
         sett.push_back("g2_hc_hg");
         sett.push_back("g2_hc_lg");
-        sett.push_back("g2_lc_hg");    
-        sett.push_back("g2_lc_lg");    
-        sett.push_back("g4_hg");    
-        sett.push_back("g4_lg");    
+        sett.push_back("g2_lc_hg");
+        sett.push_back("g2_lc_lg");
+        sett.push_back("g4_hg");
+        sett.push_back("g4_lg");
         break;
     case defs::GOTTHARD:
         sett.push_back("highgain");

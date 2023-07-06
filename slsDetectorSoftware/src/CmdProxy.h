@@ -1466,7 +1466,7 @@ class CmdProxy {
         "\n\t[Mythen3] - [standard | fast | highgain] Also changes vrshaper "
         "and vrpreamp. \n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] "
         "threshold and settings loaded from file found in settingspath. "
-         "\n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | "
+        "\n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | "
         "g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]");
 
     STRING_COMMAND(settingspath, getSettingsPath, setSettingsPath,

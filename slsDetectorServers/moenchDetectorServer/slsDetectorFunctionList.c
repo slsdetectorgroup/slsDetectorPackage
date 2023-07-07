@@ -1459,7 +1459,22 @@ int setReadoutSpeed(int val) {
 }
 
 int getReadoutSpeed(int *retval) {
-    *retval = FULL_SPEED;
+    u_int32_t speed = bus_r(CONFIG_REG) & CONFIG_READOUT_SPEED_MSK;
+    switch (speed) {
+    case CONFIG_FULL_SPEED_40MHZ_VAL:
+        *retval = FULL_SPEED;
+        break;
+    case CONFIG_HALF_SPEED_20MHZ_VAL:
+        *retval = HALF_SPEED;
+        break;
+    case CONFIG_QUARTER_SPEED_10MHZ_VAL:
+        *retval = QUARTER_SPEED;
+        break;
+    default:
+        LOG(logERROR, ("Unknown speed val: %d\n", speed));
+        *retval = -1;
+        return FAIL;
+    }
     return OK;
 }
 

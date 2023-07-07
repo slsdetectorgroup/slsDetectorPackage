@@ -337,8 +337,8 @@
 #define ASIC_CTRL_HG_TOP_MSK                (0x00000001 << ASIC_CTRL_HG_TOP_OFST)
 
 #define ASIC_CTRL_HG_MSK                    (ASIC_CTRL_HG_TOP_MSK | ASIC_CTRL_HG_BOT_MSK)
-#define ASIC_CTRL_DSG1_MSK                  (ASIC_CTRL_DSG1_TOP_MSK | ASIC_CTRL_DSG1_TOP_MSK)
-#define ASIC_CTRL_DSG3_MSK                  (ASIC_CTRL_DSG3_TOP_MSK | ASIC_CTRL_DSG3_TOP_MSK)
+#define ASIC_CTRL_DSG1_MSK                  (ASIC_CTRL_DSG1_TOP_MSK | ASIC_CTRL_DSG1_BOT_MSK)
+#define ASIC_CTRL_DSG3_MSK                  (ASIC_CTRL_DSG3_TOP_MSK | ASIC_CTRL_DSG3_BOT_MSK)
 
 #define SETTINGS_MSK                        (ASIC_CTRL_HG_MSK | ASIC_CTRL_DSG1_MSK | ASIC_CTRL_DSG3_MSK)
 #define SETTINGS_G1_HG                      (ASIC_CTRL_HG_MSK | ASIC_CTRL_DSG3_MSK)                    

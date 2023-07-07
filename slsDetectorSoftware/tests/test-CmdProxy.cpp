@@ -1050,8 +1050,9 @@ TEST_CASE("readoutspeed", "[.cmd]") {
 
         // full speed for jungfrau/moench only works for new boards (chipv1.1 is
         // with new board [hw1.0 and chipv1.0 not tested here])
-        if (((det_type == defs::JUNGFRAU) && det.getChipVersion().squash() * 10 == 11) ||
-            (det_type == defs::EIGER) ||  (det_type == defs::MOENCH)) {
+        if (((det_type == defs::JUNGFRAU) &&
+             det.getChipVersion().squash() * 10 == 11) ||
+            (det_type == defs::EIGER) || (det_type == defs::MOENCH)) {
             std::ostringstream oss1, oss2, oss3, oss4;
             proxy.Call("readoutspeed", {"0"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "readoutspeed full_speed\n");

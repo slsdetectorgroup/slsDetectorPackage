@@ -1426,19 +1426,22 @@ int setReadoutSpeed(int val) {
     case FULL_SPEED:
         LOG(logINFO, ("Setting Full Speed (40 MHz):\n"));
         config = CONFIG_FULL_SPEED_40MHZ_VAL;
-        sampleAdcDecimationFactor = ADC_DECMT_FULL_SPEED << SAMPLE_ADC_DECMT_FACTOR_OFST;
+        sampleAdcDecimationFactor = ADC_DECMT_FULL_SPEED
+                                    << SAMPLE_ADC_DECMT_FACTOR_OFST;
         break;
 
     case HALF_SPEED:
         LOG(logINFO, ("Setting Speed Speed (20 MHz):\n"));
         config = CONFIG_HALF_SPEED_20MHZ_VAL;
-        sampleAdcDecimationFactor = ADC_DECMT_HALF_SPEED << SAMPLE_ADC_DECMT_FACTOR_OFST;
+        sampleAdcDecimationFactor = ADC_DECMT_HALF_SPEED
+                                    << SAMPLE_ADC_DECMT_FACTOR_OFST;
         break;
 
     case QUARTER_SPEED:
         LOG(logINFO, ("Setting Quarter Speed (10 MHz):\n"));
         config = CONFIG_QUARTER_SPEED_10MHZ_VAL;
-        sampleAdcDecimationFactor = ADC_DECMT_QUARTER_SPEED << SAMPLE_ADC_DECMT_FACTOR_OFST;
+        sampleAdcDecimationFactor = ADC_DECMT_QUARTER_SPEED
+                                    << SAMPLE_ADC_DECMT_FACTOR_OFST;
         break;
 
     default:

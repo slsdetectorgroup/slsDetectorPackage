@@ -387,7 +387,7 @@
                                             ASIC_CTRL_PULSEOFFBOT_MSK | ASIC_CTRL_CONNCDSBOT_MSK | \
                                             ASIC_CTRL_DSG1_TOP_MSK | ASIC_CTRL_STO1BOT_MSK | \
                                             ASIC_CTRL_HG_TOP_MSK | ASIC_CTRL_STO2BOT_MSK | \
-                                            ASIC_CTRL_BOTSRTESTTOP_MSK
+                                            ASIC_CTRL_BOTSRTESTTOP_MSK)
 
 #define ASIC_CTRL_HG_MSK                    (ASIC_CTRL_HG_TOP_MSK | ASIC_CTRL_HG_BOT_MSK)
 #define ASIC_CTRL_DSG1_MSK                  (ASIC_CTRL_DSG1_TOP_MSK | ASIC_CTRL_DSG1_BOT_MSK)

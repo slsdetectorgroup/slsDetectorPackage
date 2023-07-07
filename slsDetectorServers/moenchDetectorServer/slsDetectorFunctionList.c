@@ -489,6 +489,8 @@ void setupDetector() {
 
     // delay
     bus_w(ADC_PORT_INVERT_REG, ADC_PORT_INVERT_VAL);
+    // default asic
+    bus_w(ASIC_CTRL_REG, ASIC_CTRL_DEFAULT_VAL);
 
     initReadoutConfiguration();
 

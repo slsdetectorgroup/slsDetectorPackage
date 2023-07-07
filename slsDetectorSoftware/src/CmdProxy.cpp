@@ -708,8 +708,7 @@ std::string CmdProxy::ReadoutSpeed(int action) {
               "full_speed option only available from v2.0 boards and is "
               "recommended to set number of interfaces to 2. Also overwrites "
               "adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] "
-              "Readout speed of chip in MHz. Default is 108.\n\t\t[Moench] "
-              "Only Full speed is implemented."
+              "Readout speed of chip in MHz. Default is 108."
            << '\n';
     } else {
         defs::detectorType type = det->getDetectorType().squash();

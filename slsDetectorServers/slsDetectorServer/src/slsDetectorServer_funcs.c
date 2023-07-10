@@ -1734,7 +1734,7 @@ void validate_settings(enum detectorSettings sett) {
     switch (sett) {
 #ifdef EIGERD
     case STANDARD:
-#elif defined(JUNGFRAUD)
+#elif JUNGFRAUD
     case GAIN0:
     case HIGHGAIN0:
 #elif GOTTHARDD
@@ -1751,6 +1751,15 @@ void validate_settings(enum detectorSettings sett) {
     case STANDARD:
     case FAST:
     case HIGHGAIN:
+#elif MOENCHD
+    case G1_HIGHGAIN:
+    case G1_LOWGAIN:
+    case G2_HIGHCAP_HIGHGAIN:
+    case G2_HIGHCAP_LOWGAIN:
+    case G2_LOWCAP_HIGHGAIN:
+    case G2_LOWCAP_LOWGAIN:
+    case G4_HIGHGAIN:
+    case G4_LOWGAIN:
 #endif
         break;
     default:

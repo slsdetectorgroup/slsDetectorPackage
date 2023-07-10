@@ -37,7 +37,7 @@
 #define DEFAULT_DELAY                 (0)
 #define DEFAULT_HIGH_VOLTAGE          (0)
 #define DEFAULT_TIMING_MODE           (AUTO_TIMING)
-#define DEFAULT_SETTINGS              (GAIN0)
+#define DEFAULT_SETTINGS              (G4_HIGHGAIN)
 #define DEFAULT_TX_UDP_PORT           (0x7e9a)
 #define DEFAULT_TMP_THRSHLD           (65 * 1000) // milli degree Celsius
 #define DEFAULT_FLIP_ROWS             (0)

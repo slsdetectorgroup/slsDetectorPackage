@@ -1127,35 +1127,6 @@ std::string CmdProxy::TemperatureValues(int action) {
 }
 
 /* list */
-std::string CmdProxy::DacList(const int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << "\n\t[dacname1 dacname2 .. dacname18] \n\t\t[ChipTestBoard] Set "
-              "the list of dac names for this detector.\n\t\t[All] Gets the "
-              "list of dac names for every dac for this detector."
-           << '\n';
-    } else if (action == slsDetectorDefs::GET_ACTION) {
-        if (!args.empty()) {
-            WrongNumberOfParameters(0);
-        }
-        auto t = det->getDacNames();
-        os << ToString(t) << '\n';
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
-            throw RuntimeError("This detector already has fixed dac "
-                               "names. Cannot change them.");
-        }
-        if (det_id != -1) {
-            throw RuntimeError("Cannot configure dacnames at module level");
-        }
-        det->setDacNames(args);
-        os << ToString(args) << '\n';
-    } else {
-        throw RuntimeError("Unknown action");
-    }
-    return os.str();
-}
 
 /* dacs */
 std::string CmdProxy::Dac(int action) {
@@ -2688,7 +2659,7 @@ std::string CmdProxy::AdcVpp(int action) {
     return os.str();
 }
 
-std::string CmdProxy::SlowAdc(int action) {
+std::string CmdProxy::SlowADC(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {

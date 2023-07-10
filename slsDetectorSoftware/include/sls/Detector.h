@@ -1611,6 +1611,12 @@ class Detector {
     /** [CTB] */
     void setADCPipeline(int value, Positions pos = {});
 
+    /** gets list of voltage enums */
+    std::vector<defs::dacIndex> getVoltageList() const;
+
+    /** gets list of slow adc enums */
+    std::vector<defs::dacIndex> getSlowADCList() const;
+
     /** [CTB] */
     Result<int> getVoltage(defs::dacIndex index, Positions pos = {}) const;
 
@@ -1783,19 +1789,19 @@ class Detector {
     std::string getVoltageName(const defs::dacIndex i) const;
 
     /** [CTB] */
-    void setSlowAdcNames(const std::vector<std::string> names);
+    void setSlowADCNames(const std::vector<std::string> names);
 
     /** [CTB] */
-    std::vector<std::string> getSlowAdcNames() const;
+    std::vector<std::string> getSlowADCNames() const;
 
     /** [CTB] */
-    defs::dacIndex getSlowAdcIndex(const std::string &name) const;
+    defs::dacIndex getSlowADCIndex(const std::string &name) const;
 
     /** [CTB] */
-    void setSlowAdcName(const defs::dacIndex i, const std::string &name);
+    void setSlowADCName(const defs::dacIndex i, const std::string &name);
 
     /** [CTB] */
-    std::string getSlowAdcName(const defs::dacIndex i) const;
+    std::string getSlowADCName(const defs::dacIndex i) const;
 
     ///@}
 

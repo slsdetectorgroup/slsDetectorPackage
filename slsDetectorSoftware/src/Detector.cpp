@@ -2040,6 +2040,24 @@ void Detector::setADCPipeline(int value, Positions pos) {
     pimpl->Parallel(&Module::setADCPipeline, pos, value);
 }
 
+std::vector<defs::dacIndex> Detector::getVoltageList() const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError("Voltage list not implemented for this detector");
+    }
+    return std::vector<defs::dacIndex>{defs::V_POWER_A, defs::V_POWER_B,
+                                       defs::V_POWER_C, defs::V_POWER_D,
+                                       defs::V_POWER_IO};
+}
+
+std::vector<defs::dacIndex> Detector::getSlowADCList() const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError("Slow ADC list not implemented for this detector");
+    }
+    return std::vector<defs::dacIndex>{
+        defs::SLOW_ADC0, defs::SLOW_ADC1, defs::SLOW_ADC2, defs::SLOW_ADC3,
+        defs::SLOW_ADC4, defs::SLOW_ADC5, defs::SLOW_ADC6, defs::SLOW_ADC7};
+}
+
 Result<int> Detector::getVoltage(defs::dacIndex index, Positions pos) const {
     switch (index) {
     case defs::V_LIMIT:
@@ -2352,39 +2370,39 @@ std::string Detector::getVoltageName(const defs::dacIndex i) const {
     return pimpl->getCtbVoltageName(i);
 }
 
-void Detector::setSlowAdcNames(const std::vector<std::string> names) {
+void Detector::setSlowADCNames(const std::vector<std::string> names) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
-        throw RuntimeError("Named SlowAdcs only for CTB");
-    pimpl->setCtbSlowAdcNames(names);
+        throw RuntimeError("Named SlowADCs only for CTB");
+    pimpl->setCtbSlowADCNames(names);
 }
 
-std::vector<std::string> Detector::getSlowAdcNames() const {
+std::vector<std::string> Detector::getSlowADCNames() const {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
-        throw RuntimeError("Named SlowAdcs only for CTB");
-    return pimpl->getCtbSlowAdcNames();
+        throw RuntimeError("Named SlowADCs only for CTB");
+    return pimpl->getCtbSlowADCNames();
 }
 
-defs::dacIndex Detector::getSlowAdcIndex(const std::string &name) const {
+defs::dacIndex Detector::getSlowADCIndex(const std::string &name) const {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
-        throw RuntimeError("Named SlowAdcs only for CTB");
-    auto names = getSlowAdcNames();
+        throw RuntimeError("Named SlowADCs only for CTB");
+    auto names = getSlowADCNames();
     auto it = std::find(names.begin(), names.end(), name);
     if (it == names.end())
-        throw RuntimeError("SlowAdc name not found");
+        throw RuntimeError("SlowADC name not found");
     return static_cast<defs::dacIndex>(it - names.begin() + defs::SLOW_ADC0);
 }
 
-void Detector::setSlowAdcName(const defs::dacIndex index,
+void Detector::setSlowADCName(const defs::dacIndex index,
                               const std::string &name) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
-        throw RuntimeError("Named SlowAdcs only for CTB");
-    pimpl->setCtbSlowAdcName(index, name);
+        throw RuntimeError("Named SlowADCs only for CTB");
+    pimpl->setCtbSlowADCName(index, name);
 }
 
-std::string Detector::getSlowAdcName(const defs::dacIndex i) const {
+std::string Detector::getSlowADCName(const defs::dacIndex i) const {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
-        throw RuntimeError("Named SlowAdcs only for CTB");
-    return pimpl->getCtbSlowAdcName(i);
+        throw RuntimeError("Named SlowADCs only for CTB");
+    return pimpl->getCtbSlowADCName(i);
 }
 
 // Pattern

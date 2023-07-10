@@ -1516,6 +1516,12 @@ void init_det(py::module &m) {
                        (void (Detector::*)(int, sls::Positions)) &
                            Detector::setADCPipeline,
                        py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("getVoltageList",
+                       (std::vector<defs::dacIndex>(Detector::*)() const) &
+                           Detector::getVoltageList);
+    CppDetectorApi.def("getSlowADCList",
+                       (std::vector<defs::dacIndex>(Detector::*)() const) &
+                           Detector::getSlowADCList);
     CppDetectorApi.def(
         "getVoltage",
         (Result<int>(Detector::*)(defs::dacIndex, sls::Positions) const) &
@@ -1716,26 +1722,26 @@ void init_det(py::module &m) {
                        (std::string(Detector::*)(const defs::dacIndex) const) &
                            Detector::getVoltageName,
                        py::arg());
-    CppDetectorApi.def("setSlowAdcNames",
+    CppDetectorApi.def("setSlowADCNames",
                        (void (Detector::*)(const std::vector<std::string>)) &
-                           Detector::setSlowAdcNames,
+                           Detector::setSlowADCNames,
                        py::arg());
-    CppDetectorApi.def("getSlowAdcNames",
+    CppDetectorApi.def("getSlowADCNames",
                        (std::vector<std::string>(Detector::*)() const) &
-                           Detector::getSlowAdcNames);
+                           Detector::getSlowADCNames);
     CppDetectorApi.def(
-        "getSlowAdcIndex",
+        "getSlowADCIndex",
         (defs::dacIndex(Detector::*)(const std::string &) const) &
-            Detector::getSlowAdcIndex,
+            Detector::getSlowADCIndex,
         py::arg());
     CppDetectorApi.def(
-        "setSlowAdcName",
+        "setSlowADCName",
         (void (Detector::*)(const defs::dacIndex, const std::string &)) &
-            Detector::setSlowAdcName,
+            Detector::setSlowADCName,
         py::arg(), py::arg());
-    CppDetectorApi.def("getSlowAdcName",
+    CppDetectorApi.def("getSlowADCName",
                        (std::string(Detector::*)(const defs::dacIndex) const) &
-                           Detector::getSlowAdcName,
+                           Detector::getSlowADCName,
                        py::arg());
     CppDetectorApi.def(
         "getPatterFileName",

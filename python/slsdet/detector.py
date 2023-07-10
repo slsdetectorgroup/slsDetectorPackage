@@ -1838,6 +1838,22 @@ class Detector(CppDetectorApi):
         }
 
     @property
+    def voltagevalues(self):
+        """Gets the voltage values for every voltage for this detector."""
+        return {
+            voltage.name.lower(): element_if_equal(np.array(self.getVoltage(voltage)))
+            for voltage in self.getVoltageList()
+        }
+
+    @property
+    def slowadcvalues(self):
+        """Gets the slow adc values for every slow adc for this detector."""
+        return {
+            slowadc.name.lower(): element_if_equal(np.array(self.getSlowADC(slowadc)))
+            for slowadc in self.getSlowADCList()
+        }
+
+    @property
     def timinglist(self):
         """Gets the list of timing modes (timingMode) for this detector."""
         return self.getTimingModeList()
@@ -3755,45 +3771,45 @@ class Detector(CppDetectorApi):
     @element
     def v_a(self):
         """[Ctb] Voltage supply a in mV."""
-        return self.getDAC(dacIndex.V_POWER_A, True)
+        return self.getVoltage(dacIndex.V_POWER_A)
 
     @v_a.setter
     def v_a(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_A, value, True)
-        ut.set_using_dict(self.setDAC, *value)
+        value = ut.merge_args(dacIndex.V_POWER_A, value)
+        ut.set_using_dict(self.setVoltage, *value)
 
     @property
     @element
     def v_b(self):
         """[Ctb] Voltage supply b in mV."""
-        return self.getDAC(dacIndex.V_POWER_B, True)
+        return self.getVoltage(dacIndex.V_POWER_B)
 
     @v_b.setter
     def v_b(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_B, value, True)
-        ut.set_using_dict(self.setDAC, *value)
+        value = ut.merge_args(dacIndex.V_POWER_B, value)
+        ut.set_using_dict(self.setVoltage, *value)
 
     @property
     @element
     def v_c(self):
         """[Ctb] Voltage supply c in mV."""
-        return self.getDAC(dacIndex.V_POWER_C, True)
+        return self.getVoltage(dacIndex.V_POWER_C)
 
     @v_c.setter
     def v_c(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_C, value, True)
-        ut.set_using_dict(self.setDAC, *value)
+        value = ut.merge_args(dacIndex.V_POWER_C, value)
+        ut.set_using_dict(self.setVoltage, *value)
 
     @property
     @element
     def v_d(self):
         """[Ctb] Voltage supply d in mV."""
-        return self.getDAC(dacIndex.V_POWER_D, True)
+        return self.getVoltage(dacIndex.V_POWER_D)
 
     @v_d.setter
     def v_d(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_D, value, True)
-        ut.set_using_dict(self.setDAC, *value)
+        value = ut.merge_args(dacIndex.V_POWER_D, value)
+        ut.set_using_dict(self.setVoltage, *value)
 
     @property
     @element
@@ -3804,23 +3820,23 @@ class Detector(CppDetectorApi):
         ----
         Must be the first power regulator to be set after fpga reset (on-board detector server start up).
         """
-        return self.getDAC(dacIndex.V_POWER_IO, True)
+        return self.getVoltage(dacIndex.V_POWER_IO)
 
     @v_io.setter
     def v_io(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_IO, value, True)
-        ut.set_using_dict(self.setDAC, *value)
+        value = ut.merge_args(dacIndex.V_POWER_IO, value)
+        ut.set_using_dict(self.setVoltage, *value)
 
     @property
     @element
     def v_limit(self):
         """[Ctb] Soft limit for power supplies (ctb only) and DACS in mV."""
-        return self.getDAC(dacIndex.V_LIMIT, True)
+        return self.getVoltage(dacIndex.V_LIMIT)
 
     @v_limit.setter
     def v_limit(self, value):
-        value = ut.merge_args(dacIndex.V_LIMIT, value, True)
-        ut.set_using_dict(self.setDAC, *value)
+        value = ut.merge_args(dacIndex.V_LIMIT, value)
+        ut.set_using_dict(self.setVoltage, *value)
 
 
     @property

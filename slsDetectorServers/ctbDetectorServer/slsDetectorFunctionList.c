@@ -2240,7 +2240,7 @@ int startStateMachine() {
 
     LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
 
-    // TODO:  Matternhorn Specific
+    // TODO:  Temporary Matternhorn Specific ( will be moved to the pattern )
     if (transceiverEnable) {
         uint32_t addr = 0x202 << MEM_MAP_SHIFT;
         bus_w(addr, bus_r(addr) | (1 << 1));

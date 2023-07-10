@@ -368,6 +368,7 @@ class Detector(CppDetectorApi):
         [Gotthard] DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n
         [Gotthard2] DYNAMICGAIN, FIXGAIN1, FIXGAIN2 \n
         [Eiger] settings loaded from file found in settingspath
+        [Moench] G1_HIGHGAIN, G1_LOWGAIN, G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN, G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN
         """
         return element_if_equal(self.getSettings())
 
@@ -2050,10 +2051,10 @@ class Detector(CppDetectorApi):
         -----
         [Jungfrau][Moench] FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED
         [Eiger] FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED
+        [Moench] FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED
         [Gottthard2] G2_108MHZ (Default), G2_144MHZ
         [Jungfrau] FULL_SPEED option only available from v2.0 boards and is recommended to set number of interfaces to 2.  \n
         Also overwrites adcphase to recommended default.
-        [Moench] FULL_SPEED (Default)
         """
         return element_if_equal(self.getReadoutSpeed())
 

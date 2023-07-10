@@ -1503,12 +1503,13 @@ class CmdProxy {
         "\n\t[Jungfrau] - [ gain0 | highgain0]"
         "\n\t[Gotthard] - [dynamicgain | highgain | lowgain | "
         "mediumgain | veryhighgain]"
+        "\n\t[Gotthard] Also loads default dacs on to the detector."
         "\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]"
-        "\n\t[Mythen3] - [standard | fast | highgain] Also changes "
-        "vrshaper and vrpreamp. \n\t[Eiger] Use threshold or thresholdnotb. "
-        "\n\t[Eiger] threshold and settings loaded from file found in "
-        "settingspath. \n\t[Gotthard] Also loads default dacs on to the "
-        "detector.");
+        "\n\t[Mythen3] - [standard | fast | highgain] Also changes vrshaper "
+        "and vrpreamp. \n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] "
+        "threshold and settings loaded from file found in settingspath. "
+        "\n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | "
+        "g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]");
 
     STRING_COMMAND(settingspath, getSettingsPath, setSettingsPath,
                    "[path]\n\t[Eiger][Mythen3] Directory where settings files "

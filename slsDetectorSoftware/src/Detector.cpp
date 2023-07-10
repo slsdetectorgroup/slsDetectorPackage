@@ -190,14 +190,20 @@ std::vector<defs::detectorSettings> Detector::getSettingsList() const {
             defs::HIGHGAIN, defs::DYNAMICGAIN, defs::LOWGAIN, defs::MEDIUMGAIN,
             defs::VERYHIGHGAIN};
     case defs::JUNGFRAU:
-    case defs::MOENCH:
-        return std::vector<defs::detectorSettings>{};
+        return std::vector<defs::detectorSettings>{defs::GAIN0,
+                                                   defs::HIGHGAIN0};
     case defs::GOTTHARD2:
         return std::vector<defs::detectorSettings>{
             defs::DYNAMICGAIN, defs::FIXGAIN1, defs::FIXGAIN2};
     case defs::MYTHEN3:
         return std::vector<defs::detectorSettings>{defs::STANDARD, defs::FAST,
                                                    defs::HIGHGAIN};
+    case defs::MOENCH:
+        return std::vector<defs::detectorSettings>{
+            defs::G1_HIGHGAIN,         defs::G1_LOWGAIN,
+            defs::G2_HIGHCAP_HIGHGAIN, defs::G2_HIGHCAP_LOWGAIN,
+            defs::G2_LOWCAP_HIGHGAIN,  defs::G2_LOWCAP_LOWGAIN,
+            defs::G4_HIGHGAIN,         defs::G4_LOWGAIN};
     case defs::CHIPTESTBOARD:
         throw RuntimeError("Settings not implemented for this detector");
     default:
@@ -506,10 +512,9 @@ std::vector<defs::speedLevel> Detector::getReadoutSpeedList() const {
     switch (getDetectorType().squash()) {
     case defs::EIGER:
     case defs::JUNGFRAU:
+    case defs::MOENCH:
         return std::vector<defs::speedLevel>{defs::FULL_SPEED, defs::HALF_SPEED,
                                              defs::QUARTER_SPEED};
-    case defs::MOENCH:
-        return std::vector<defs::speedLevel>{defs::FULL_SPEED};
     case defs::GOTTHARD2:
         return std::vector<defs::speedLevel>{defs::G2_108MHZ, defs::G2_144MHZ};
     default:

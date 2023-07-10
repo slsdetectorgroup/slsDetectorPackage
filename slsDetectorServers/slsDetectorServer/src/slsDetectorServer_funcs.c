@@ -1734,7 +1734,7 @@ void validate_settings(enum detectorSettings sett) {
     switch (sett) {
 #ifdef EIGERD
     case STANDARD:
-#elif defined(JUNGFRAUD)
+#elif JUNGFRAUD
     case GAIN0:
     case HIGHGAIN0:
 #elif GOTTHARDD
@@ -1751,6 +1751,15 @@ void validate_settings(enum detectorSettings sett) {
     case STANDARD:
     case FAST:
     case HIGHGAIN:
+#elif MOENCHD
+    case G1_HIGHGAIN:
+    case G1_LOWGAIN:
+    case G2_HIGHCAP_HIGHGAIN:
+    case G2_HIGHCAP_LOWGAIN:
+    case G2_LOWCAP_HIGHGAIN:
+    case G2_LOWCAP_LOWGAIN:
+    case G4_HIGHGAIN:
+    case G4_LOWGAIN:
 #endif
         break;
     default:
@@ -9438,10 +9447,8 @@ int set_readout_speed(int file_des) {
             switch (arg) {
 #if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)
             case FULL_SPEED:
-#ifndef MOENCHD
             case HALF_SPEED:
             case QUARTER_SPEED:
-#endif
 #elif GOTTHARD2D
             case G2_108MHZ:
             case G2_144MHZ:

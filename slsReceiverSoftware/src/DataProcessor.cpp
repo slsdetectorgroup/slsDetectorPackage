@@ -549,7 +549,7 @@ void DataProcessor::RearrangeDbitData(size_t &size, char *data) {
            totalNumBytes * sizeof(uint8_t));
     size = totalNumBytes * sizeof(uint8_t) + nAnalogDataBytes + ctbDbitOffset +
            nTransceiverDataBytes;
-    LOG(logINFOBLUE) << "totalNumBytes: " << totalNumBytes
+    LOG(logDEBUG1) << "totalNumBytes: " << totalNumBytes
                      << " nAnalogDataBytes:" << nAnalogDataBytes
                      << " ctbDbitOffset:" << ctbDbitOffset
                      << " nTransceiverDataBytes:" << nTransceiverDataBytes

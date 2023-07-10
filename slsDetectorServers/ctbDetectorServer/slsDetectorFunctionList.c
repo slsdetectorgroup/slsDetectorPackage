@@ -1094,7 +1094,7 @@ int setNumTransceiverSamples(int val) {
     LOG(logINFO, ("Setting number of transceiver samples %d\n", val));
     ntSamples = val;
     uint32_t addr = SAMPLES_TRANSCEIVER_REG;
-    bus_w(addr, bus_r(addr) & ~SAMPLES_DIGITAL_MSK);
+    bus_w(addr, bus_r(addr) & ~SAMPLES_TRANSCEIVER_MSK);
     bus_w(addr, bus_r(addr) | ((val << SAMPLES_TRANSCEIVER_OFST) &
                                SAMPLES_TRANSCEIVER_MSK));
     // 1Gb

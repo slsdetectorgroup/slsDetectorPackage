@@ -65,6 +65,10 @@
 #define MAX_PHASE_SHIFTS (240)
 #define BIT16_MASK       (0xFFFF)
 
+#define ADC_DECMT_QUARTER_SPEED (0x3)
+#define ADC_DECMT_HALF_SPEED    (0x1)
+#define ADC_DECMT_FULL_SPEED    (0x0)
+
 // pipeline
 #define ADC_PORT_INVERT_VAL (0x55555555)
 

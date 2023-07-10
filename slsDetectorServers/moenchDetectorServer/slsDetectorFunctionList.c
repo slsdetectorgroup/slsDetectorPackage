@@ -1482,23 +1482,37 @@ int setReadoutSpeed(int val) {
     // stop state machine if running
     if (runBusy()) {
         stopStateMachine();
+        return FAIL;
+    }
+    if (isHardwareVersion_1_0()) {
+        LOG(logERROR, ("Cannot set full speed. Not implemented for this pcb version (1.0)\n"));
+        return FAIL;
     }
 
-    uint32_t adcOfst = 0;
-    uint32_t sampleAdcSpeed = 0;
-    uint32_t adcPhase = 0;
+    uint32_t config = 0;
+    uint32_t sampleAdcDecimationFactor = 0;
 
     switch (val) {
 
     case FULL_SPEED:
-        if (isHardwareVersion_1_0()) {
-            LOG(logERROR, ("Cannot set full speed. Should not be here\n"));
-            return FAIL;
-        }
         LOG(logINFO, ("Setting Full Speed (40 MHz):\n"));
-        sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED;
-        adcPhase = ADC_PHASE_DEG_FULL_SPEED;
-        adcOfst = ADC_OFST_FULL_SPEED_VAL;
+        config = CONFIG_FULL_SPEED_40MHZ_VAL;
+        sampleAdcDecimationFactor = ADC_DECMT_FULL_SPEED
+                                    << SAMPLE_ADC_DECMT_FACTOR_OFST;
+        break;
+
+    case HALF_SPEED:
+        LOG(logINFO, ("Setting Speed Speed (20 MHz):\n"));
+        config = CONFIG_HALF_SPEED_20MHZ_VAL;
+        sampleAdcDecimationFactor = ADC_DECMT_HALF_SPEED
+                                    << SAMPLE_ADC_DECMT_FACTOR_OFST;
+        break;
+
+    case QUARTER_SPEED:
+        LOG(logINFO, ("Setting Quarter Speed (10 MHz):\n"));
+        config = CONFIG_QUARTER_SPEED_10MHZ_VAL;
+        sampleAdcDecimationFactor = ADC_DECMT_QUARTER_SPEED
+                                    << SAMPLE_ADC_DECMT_FACTOR_OFST;
         break;
 
     default:
@@ -1506,23 +1520,35 @@ int setReadoutSpeed(int val) {
         return FAIL;
     }
 
-    bus_w(ADC_OFST_REG, (bus_r(ADC_OFST_REG) & ~ADC_OFFSET_MSK));
-    bus_w(ADC_OFST_REG, (bus_r(ADC_OFST_REG) |
-                         ((adcOfst << ADC_OFFSET_OFST) & ADC_OFFSET_MSK)));
-    LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n",
-                  ((bus_r(ADC_OFST_REG) & ADC_OFFSET_MSK) >> ADC_OFFSET_OFST)));
+    bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_READOUT_SPEED_MSK);
+    bus_w(CONFIG_REG, bus_r(CONFIG_REG) | config);
+    LOG(logINFO, ("\tSet Config Reg to 0x%x\n", bus_r(CONFIG_REG)));
 
-    bus_w(SAMPLE_REG, sampleAdcSpeed);
+    bus_w(SAMPLE_REG, bus_r(SAMPLE_REG) & ~SAMPLE_ADC_DECMT_FACTOR_MSK);
+    bus_w(SAMPLE_REG, bus_r(SAMPLE_REG) | sampleAdcDecimationFactor);
     LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));
 
-    setPhase(ADC_CLK, adcPhase, 1);
-    LOG(logINFO, ("\tSet ADC Phase Reg to %d deg\n", adcPhase));
-
+    // TODO: adcofst, adcphase?
     return OK;
 }
 
 int getReadoutSpeed(int *retval) {
-    *retval = FULL_SPEED;
+    u_int32_t speed = bus_r(CONFIG_REG) & CONFIG_READOUT_SPEED_MSK;
+    switch (speed) {
+    case CONFIG_FULL_SPEED_40MHZ_VAL:
+        *retval = FULL_SPEED;
+        break;
+    case CONFIG_HALF_SPEED_20MHZ_VAL:
+        *retval = HALF_SPEED;
+        break;
+    case CONFIG_QUARTER_SPEED_10MHZ_VAL:
+        *retval = QUARTER_SPEED;
+        break;
+    default:
+        LOG(logERROR, ("Unknown speed val: %d\n", speed));
+        *retval = -1;
+        return FAIL;
+    }
     return OK;
 }
 

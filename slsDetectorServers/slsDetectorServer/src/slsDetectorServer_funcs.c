@@ -5944,7 +5944,7 @@ int get_clock_phase(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-    LOG(logINFOBLUE, ("Getting clock (%d) phase %s \n", args[0],
+    LOG(logDEBUG1, ("Getting clock (%d) phase %s \n", args[0],
                       (args[1] == 0 ? "" : "in degrees")));
 
 #if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&    \
@@ -5970,7 +5970,7 @@ int get_clock_phase(int file_des) {
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
         if (ind < NUM_CLOCKS) {
             c = (enum CLKINDEX)ind;
-            LOG(logINFOBLUE, ("NUMclocks:%d c:%d\n", NUM_CLOCKS, c));
+            LOG(logDEBUG1, ("NUMclocks:%d c:%d\n", NUM_CLOCKS, c));
             break;
         }
 #endif
@@ -10438,7 +10438,7 @@ int get_bit(int file_des) {
         return printSocketReadError();
     uint32_t addr = args[0];
     int nBit = (int)args[1];
-    LOG(logINFOBLUE, ("Getting bit %d of reg 0x%x\n", nBit, addr));
+    LOG(logDEBUG1, ("Getting bit %d of reg 0x%x\n", nBit, addr));
 
     if (nBit < 0 || nBit > 31) {
         ret = FAIL;

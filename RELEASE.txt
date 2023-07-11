@@ -15,9 +15,9 @@ This document describes the differences between v7.0.2 and v7.0.1
 
 
 
-
 1 Resolved Issues
 =================
+
 
     Firmware
     --------
@@ -45,7 +45,6 @@ This document describes the differences between v7.0.2 and v7.0.1
         is fixed now.
 
 
-
     Client
     ------
 
@@ -54,7 +53,6 @@ This document describes the differences between v7.0.2 and v7.0.1
         (or the master for stop acquisition) first had to be obeyed. This is fixed
         now.
     
-
 
     ZMQ
     ---

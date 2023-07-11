@@ -19,15 +19,64 @@ This document describes the differences between v7.0.1 and v7.0.0
 1 Resolved Issues
 =================
 
-    - row and col for multi mod junngfrau single interface (gui)
-    - jungfrau multi mod sync mode (start, trigger, stop)
-    - set/get timing jungfrau does not give error when syc enabled
-    - switching between 1 and 2 interfaces did not set gui/client zmq port properly. Resulted in dummy streaming forever.
-    - rx_roi in zmq header for external guis
-    - show fix go in expert mode from any tab (not just settings tab)
-    - if synced, setting master to slave would have changed status to running. workaround found in software
-    - new firmware requirement for fix. if acq stopped in sync mode the slave stays running for next acquisition and framesl is stuck from previous acq.
+    Firmware
+    --------
 
+    *   [Jungfrau] Stopping acquisition in sync mode
+        Previously, stopping acquisition in sync mode would result in the slave
+        status remaining in Running status for next acquisition and framesl (frames
+        left) would be stuck from the previous acquisition. This is fixed in firmware.
+  
+
+
+    Detector Server
+    ---------------
+    
+    *   [Jungfrau] Changing master to slave in sync mode
+        When in sync mode, changing from master to slave would change the status
+        to Running in firmware. A workaround in the detector server fixes this.
+
+    *   [Jungfrau] Row and column for multi module Jungfrau 
+        This mainly affected only the GUI, unless one was using the row and column
+        sent out by the detector. Row and column values were mixed up, but fixed now.
+
+    *   [Jungfrau] Timing in sync mode
+        When sync is enabled, setting or getting timing would give an error. This 
+        is fixed now.
+
+
+
+    Client
+    ------
+
+    *   [Jungfrau] Multi module sync mode
+        For start, stop and trigger acquisition, the procedure to start the slaves
+        (or the master for stop acquisition) first had to be obeyed. This is fixed
+        now.
+    
+
+
+    ZMQ
+    ---
+
+    *   [Jungfrau][Gotthard2] Client ZMQ port when using 2 interfaces
+        When switching between 1 and 2 interfaces, the client or gui zmq port
+        was not set properly and resulted in dummy streaming forever. This is
+        fixed now.
+
+    *   Rx_roi
+        This parameter is now also streamed in the zmq header to be able to use in 
+        external GUIs.
+
+
+    GUI
+    ---
+
+    *   [Jungfrau] Show Fix_G0 in expert mode
+        Fix_G0 was only shown when expert mode was enabled from Settings Tab. Now, 
+        fixed to show when expert mode enabled from any tab.
+
+    
 
 
 2  On-board Detector Server Compatibility
@@ -63,8 +112,8 @@ This document describes the differences between v7.0.1 and v7.0.0
 
     Eiger       20.02.2023 (v31)
     
-    Jungfrau    04.11.2022 (v1.4, HW v1.0) 
-                03.11.2022 (v2.4, HW v2.0)
+    Jungfrau    16.05.2023 (v1.4.1, HW v1.0) 
+                15.05.2023 (v2.4.1, HW v2.0)
 
     Mythen3     24.01.2023 (v1.4)
 

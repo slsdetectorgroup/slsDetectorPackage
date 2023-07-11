@@ -1,7 +1,7 @@
-SLS Detector Package Major Release 7.0.1 released on 24.03.2023
+SLS Detector Package Major Release 7.0.2 released on 12.07.2023
 ===============================================================
 
-This document describes the differences between v7.0.1 and v7.0.0   
+This document describes the differences between v7.0.2 and v7.0.1   
 
 
 
@@ -31,7 +31,7 @@ This document describes the differences between v7.0.1 and v7.0.0
 
     Detector Server
     ---------------
-    
+
     *   [Jungfrau] Changing master to slave in sync mode
         When in sync mode, changing from master to slave would change the status
         to Running in firmware. A workaround in the detector server fixes this.

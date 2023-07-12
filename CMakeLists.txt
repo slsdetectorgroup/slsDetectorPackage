@@ -9,16 +9,20 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 cmake_policy(SET CMP0074 NEW)
 include(cmake/project_version.cmake)
 include(cmake/SlsAddFlag.cmake)
-# include(cmake/SlsFindZeroMQ.cmake)
 
 
 
+# Using FetchContent to get libzmq
 include(FetchContent)
+
+# Fetch libzmq from git using a tag for identification
 FetchContent_Declare(
   libzmq
   GIT_REPOSITORY https://github.com/zeromq/libzmq.git
   GIT_TAG        v4.3.4
 )
+
+# Disable unwanted options
 set(BUILD_TESTS OFF CACHE BOOL "Switch off libzmq test build")
 set(BUILD_SHARED OFF CACHE BOOL "Switch off libzmq shared libs")
 set(WITH_PERF_TOOL OFF CACHE BOOL "")
@@ -27,14 +31,15 @@ set(ENABLE_CLANG OFF CACHE BOOL "")
 set(ENABLE_CURVE OFF CACHE BOOL "")
 set(ENABLE_DRAFTS OFF CACHE BOOL "")
 
-# FetchContent_MakeAvailable(libzmq)
+# Using GetProperties and Poulate to be able to
+# exclude zmq from install (not possible with FetchContent_MakeAvailable(libzmq))
 FetchContent_GetProperties(libzmq)
 if(NOT libzmq_POPULATED)
   FetchContent_Populate(libzmq)
   add_subdirectory(${libzmq_SOURCE_DIR} ${libzmq_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
-# find_package(ZeroMQ 4.3.4)
+
 
 include(GNUInstallDirs)
 

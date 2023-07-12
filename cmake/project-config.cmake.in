@@ -13,17 +13,6 @@ include(CMakeFindDependencyMacro)
 set(SLS_USE_HDF5 "@SLS_USE_HDF5@")
 
 
-find_package(ZeroMQ 4 QUIET)
-# libzmq autotools install: fallback to pkg-config
-if(NOT ZeroMQ_FOUND)
-    list (APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/libzmq-pkg-config)
-    find_package(ZeroMQ 4 REQUIRED)
-endif()
-
-if(NOT ZeroMQ_FOUND)
-    message(FATAL_ERROR "ZeroMQ was NOT found!")
-endif()
-
 find_dependency(Threads)
 
 # Add optional dependencies here

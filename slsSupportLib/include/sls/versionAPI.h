@@ -10,4 +10,4 @@
 #define APIEIGER     "7.0.0 0x230222"
 #define APIRECEIVER  "7.0.0 0x230222"
 #define APILIB       "7.0.2 0x230421"
-#define APIJUNGFRAU "7.0.2 0x230710"
+#define APIJUNGFRAU  "7.0.2 0x230710"

@@ -140,14 +140,21 @@ ZMQ: Json Header Format
             "quad": unsigned int,
             "addJsonHeader": {
                 string : string
-            }
+            },
+            "rx_roi": [
+                unsigned int,
+                unsigned int,
+                unsigned int,
+                unsigned int
+            ]
         }
 
    +--------------+----------------------------------------------+
    |   Field      |       Description                            |
    +--------------+----------------------------------------------+
    | jsonversion  | Version of the json header.                  |
-   |              | Value at 4 for v6.x.x and v7.x.x             |
+   |              | Value at 4 for v6.x.x - v7.0.1               | 
+   |              | Value at 5 for v7.0.2                        |
    +--------------+----------------------------------------------+
    | bitmode      | Bits per pixel [4|8|16|32]                   |
    +--------------+----------------------------------------------+
@@ -222,7 +229,10 @@ ZMQ: Json Header Format
    | addJsonHeader| Optional custom parameters that is required  |
    |              | for processing code.                         |
    +--------------+----------------------------------------------+
-
+   | rx_roi       | ROI in the receiver per port (xmin, xmax,    |
+   |              | ymin, ymax). For external guis to know       |
+   |              | what is saved                                |
+   +--------------+----------------------------------------------+
 
 SLS Receiver Header Format
 --------------------------

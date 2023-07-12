@@ -9,7 +9,33 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 cmake_policy(SET CMP0074 NEW)
 include(cmake/project_version.cmake)
 include(cmake/SlsAddFlag.cmake)
-include(cmake/SlsFindZeroMQ.cmake)
+# include(cmake/SlsFindZeroMQ.cmake)
+
+
+
+include(FetchContent)
+FetchContent_Declare(
+  libzmq
+  GIT_REPOSITORY https://github.com/zeromq/libzmq.git
+  GIT_TAG        v4.3.4
+)
+set(BUILD_TESTS OFF CACHE BOOL "Switch off libzmq test build")
+set(BUILD_SHARED OFF CACHE BOOL "Switch off libzmq shared libs")
+set(WITH_PERF_TOOL OFF CACHE BOOL "")
+set(ENABLE_CPACK OFF CACHE BOOL "")
+set(ENABLE_CLANG OFF CACHE BOOL "")
+set(ENABLE_CURVE OFF CACHE BOOL "")
+set(ENABLE_DRAFTS OFF CACHE BOOL "")
+
+# FetchContent_MakeAvailable(libzmq)
+FetchContent_GetProperties(libzmq)
+if(NOT libzmq_POPULATED)
+  FetchContent_Populate(libzmq)
+  add_subdirectory(${libzmq_SOURCE_DIR} ${libzmq_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
+# find_package(ZeroMQ 4.3.4)
+
 include(GNUInstallDirs)
 
 # If conda build, always set lib dir to 'lib'
@@ -216,7 +242,7 @@ set(CMAKE_INSTALL_RPATH $ORIGIN)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 
-custom_find_zmq()
+# custom_find_zmq()
 
 
 if (SLS_USE_TESTS)

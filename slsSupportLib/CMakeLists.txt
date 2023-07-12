@@ -88,7 +88,7 @@ message(STATUS "RAPID: ${SLS_INTERNAL_RAPIDJSON_DIR}")
 target_link_libraries(slsSupportObject 
   PUBLIC
     slsProjectOptions 
-    libzmq
+    libzmq-static
   PRIVATE
     slsProjectWarnings
     md5sls     

@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
 project(slsDetectorPackage)
 set(PROJECT_VERSION 7.0.0)
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 cmake_policy(SET CMP0074 NEW)
+cmake_policy(SET CMP0135 NEW) #Fetch content download timestamp
 include(cmake/project_version.cmake)
 include(cmake/SlsAddFlag.cmake)
 
@@ -16,11 +17,26 @@ include(cmake/SlsAddFlag.cmake)
 include(FetchContent)
 
 # Fetch libzmq from git using a tag for identification
-FetchContent_Declare(
-  libzmq
-  GIT_REPOSITORY https://github.com/zeromq/libzmq.git
-  GIT_TAG        v4.3.4
-)
+
+
+option(SLS_FETCH_ZMQ_FROM_GITHUB "HDF5 File format" OFF)
+
+if(SLS_FETCH_ZMQ_FROM_GITHUB)
+    # Opt in to pull down a zmq version from github
+    FetchContent_Declare(
+        libzmq
+        GIT_REPOSITORY https://github.com/zeromq/libzmq.git
+        GIT_TAG        v4.3.4
+    )
+else()
+    # Normal behaviour use the libzmq included in this repo
+    FetchContent_Declare(
+        libzmq
+        URL ${CMAKE_SOURCE_DIR}/libs/libzmq/libzmq-4.3.4.tar.gz
+        URL_HASH MD5=cc20b769ac10afa352e5ed2769bb23b3
+    )
+endif()
+
 
 # Disable unwanted options
 set(BUILD_TESTS OFF CACHE BOOL "Switch off libzmq test build")

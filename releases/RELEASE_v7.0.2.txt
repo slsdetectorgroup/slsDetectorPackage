@@ -1,0 +1,259 @@
+SLS Detector Package Major Release 7.0.2 released on 12.07.2023
+===============================================================
+
+This document describes the differences between v7.0.2 and v7.0.1   
+
+
+
+    CONTENTS
+    --------
+    1   Resolved Issues
+    2   On-board Detector Server Compatibility
+    3   Firmware Requirements
+    4   Kernel Requirements
+    5   Download, Documentation & Support
+
+
+
+1 Resolved Issues
+=================
+
+
+    Firmware
+    --------
+
+    *   [Jungfrau] Stopping acquisition in sync mode
+        Previously, stopping acquisition in sync mode would result in the slave
+        status remaining in Running status for next acquisition and framesl (frames
+        left) would be stuck from the previous acquisition. This is fixed in firmware.
+  
+
+
+    Detector Server
+    ---------------
+
+    *   [Jungfrau] Changing master to slave in sync mode
+        When in sync mode, changing from master to slave would change the status
+        to Running in firmware. A workaround in the detector server fixes this.
+
+    *   [Jungfrau] Row and column for multi module Jungfrau 
+        This mainly affected only the GUI, unless one was using the row and column
+        sent out by the detector. Row and column values were mixed up, but fixed now.
+
+    *   [Jungfrau] Timing in sync mode
+        When sync is enabled, setting or getting timing would give an error. This 
+        is fixed now.
+
+
+    Client
+    ------
+
+    *   [Jungfrau] Multi module sync mode
+        For start, stop and trigger acquisition, the procedure to start the slaves
+        (or the master for stop acquisition) first had to be obeyed. This is fixed
+        now.
+    
+
+    ZMQ
+    ---
+
+    *   [Jungfrau][Gotthard2] Client ZMQ port when using 2 interfaces
+        When switching between 1 and 2 interfaces, the client or gui zmq port
+        was not set properly and resulted in dummy streaming forever. This is
+        fixed now.
+
+    *   Rx_roi
+        This parameter is now also streamed in the zmq header to be able to use in 
+        external GUIs.
+
+
+    GUI
+    ---
+
+    *   [Jungfrau] Show Fix_G0 in expert mode
+        Fix_G0 was only shown when expert mode was enabled from Settings Tab. Now, 
+        fixed to show when expert mode enabled from any tab.
+
+    
+
+
+2  On-board Detector Server Compatibility
+==========================================
+
+
+    Eiger       7.0.0
+    Jungfrau    7.0.2
+    Mythen3     7.0.0
+    Gotthard2   7.0.0
+    Gotthard    7.0.0
+    Moench      7.0.0
+    Ctb         7.0.0
+    
+
+    On-board Detector Server Upgrade
+    --------------------------------
+
+    From v6.1.0 (without tftp):
+        Using command 'updatedetectorserver'
+    From 5.0.0 (with tftp):
+        Using command 'copydetectorserver'
+
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
+
+
+
+
+3 Firmware Requirements
+========================
+
+
+    Eiger       20.02.2023 (v31)
+    
+    Jungfrau    16.05.2023 (v1.4.1, HW v1.0) 
+                15.05.2023 (v2.4.1, HW v2.0)
+
+    Mythen3     24.01.2023 (v1.4)
+
+    Gotthard2   23.11.2022 (v0.3)
+
+    Gotthard    08.02.2018 (50um and 25um Master)
+                09.02.2018 (25 um Slave) 
+
+    Moench      05.12.2022 (v0.3)
+
+    Ctb         05.12.2022 (v1.1)
+
+
+    Detector Upgrade
+    ----------------
+
+    The following can be upgraded remotely:
+
+    Eiger      via bit files
+    Jungfrau   via command <.pof>
+    Mythen3    via command <.rbf>
+    Gotthard2  via command <.rbf>
+    Moench     via command <.pof>
+    Ctb        via command <.pof>
+
+    Gotthard cannot be upgraded remotely  
+
+    Except Eiger, 
+        upgrade 
+            Using command 'programfpga' or
+
+        udpate both server and firmware simultaneously
+            Using command 'update'
+
+
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/firmware.html
+
+
+
+
+4 Kernel Requirements
+======================
+
+    Blackfin 
+    --------
+    Latest version: Fri Oct 29 00:00:00 2021
+    
+    Older ones will work, but might have issues with programming firmware via
+    the package.
+
+    Nios
+    -----
+    Compatible version: Mon May 10 18:00:21 CEST 2021
+
+    Kernel Upgrade
+    ---------------
+    Eiger   via bit files
+    Others  via command
+
+    Commands: udpatekernel, kernelversion
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/commandline.html
+        https://slsdetectorgroup.github.io/devdoc/detector.html
+        https://slsdetectorgroup.github.io/devdoc/pydetector.html
+
+
+
+
+5 Download, Documentation & Support
+====================================
+
+    Download
+    --------
+    
+    The Source Code:
+         https://github.com/slsdetectorgroup/slsDetectorPackage
+            
+    Documentation
+    -------------
+    
+    Installation:
+        https://slsdetectorgroup.github.io/devdoc/installation.html
+
+    Quick Start Guide:
+        https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
+        
+    Firmware Upgrade:
+        https://slsdetectorgroup.github.io/devdoc/firmware.html
+
+    Detector Server upgrade:
+        https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
+
+    Detector Simulators:
+        https://slsdetectorgroup.github.io/devdoc/virtualserver.html
+
+    Consuming slsDetectorPackage:
+        https://slsdetectorgroup.github.io/devdoc/consuming.html
+        
+    API Examples:
+        https://github.com/slsdetectorgroup/api-examples
+
+    Command Line Documentation:
+        https://slsdetectorgroup.github.io/devdoc/commandline.html
+
+    C++ API Documentation:
+        https://slsdetectorgroup.github.io/devdoc/detector.html
+       
+    C++ API Example:
+        https://slsdetectorgroup.github.io/devdoc/examples.html#
+        
+    Python API Documentation:
+        https://slsdetectorgroup.github.io/devdoc/pygettingstarted.html
+
+    Python API Example:
+        https://slsdetectorgroup.github.io/devdoc/pyexamples.html
+
+    Receivers (including custom receiver):
+        https://slsdetectorgroup.github.io/devdoc/receivers.html
+        https://slsdetectorgroup.github.io/devdoc/slsreceiver.html
+
+    Detector UDP Header:
+        https://slsdetectorgroup.github.io/devdoc/udpheader.html
+        https://slsdetectorgroup.github.io/devdoc/udpdetspec.html
+
+    slsReceiver Zmq Format:
+        https://slsdetectorgroup.github.io/devdoc/slsreceiver.html#zmq-json-header-format
+
+    TroubleShooting:
+        https://slsdetectorgroup.github.io/devdoc/troubleshooting.html
+        https://slsdetectorgroup.github.io/devdoc/troubleshooting.html#receiver-pc-tuning-options
+        
+    Further Documentation:
+        https://www.psi.ch/en/detectors/documentation
+        
+    Info on Releases:
+        https://www.psi.ch/en/detectors/software
+
+
+    Support
+    -------
+
+        dhanya.thattil@psi.ch
+        erik.frojdh@psi.ch
+

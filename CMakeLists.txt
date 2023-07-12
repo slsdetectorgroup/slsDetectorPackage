@@ -7,7 +7,10 @@ set(PROJECT_VERSION 7.0.0)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 cmake_policy(SET CMP0074 NEW)
-cmake_policy(SET CMP0135 NEW) #Fetch content download timestamp
+
+if (${CMAKE_VERSION} VERSION_GREATER "3.24")
+    cmake_policy(SET CMP0135 NEW) #Fetch content download timestamp
+endif()
 include(cmake/project_version.cmake)
 include(cmake/SlsAddFlag.cmake)
 
@@ -15,9 +18,6 @@ include(cmake/SlsAddFlag.cmake)
 
 # Using FetchContent to get libzmq
 include(FetchContent)
-
-# Fetch libzmq from git using a tag for identification
-
 
 option(SLS_FETCH_ZMQ_FROM_GITHUB "HDF5 File format" OFF)
 

@@ -262,10 +262,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INSTALL_RPATH $ORIGIN)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
-
-# custom_find_zmq()
-
-
 if (SLS_USE_TESTS)
     enable_testing()
     add_subdirectory(tests)

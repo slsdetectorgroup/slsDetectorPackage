@@ -134,6 +134,10 @@ class Module : public virtual slsDetectorDefs {
     void setSynchronization(const bool value);
     std::vector<int> getBadChannels() const;
     void setBadChannels(std::vector<int> list);
+    int getRow() const;
+    void setRow(const int value);
+    int getColumn() const;
+    void setColumn(const int value);
 
     bool isVirtualDetectorServer() const;
 

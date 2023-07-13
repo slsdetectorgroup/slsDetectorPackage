@@ -373,6 +373,22 @@ void Detector::setBadChannels(const std::vector<int> list, Positions pos) {
     pimpl->setBadChannels(list, pos);
 }
 
+Result<int> Detector::getRow(Positions pos) const {
+    return pimpl->Parallel(&Module::getRow, pos);
+}
+
+void Detector::setRow(const int value, Positions pos) {
+    pimpl->Parallel(&Module::setRow, pos, value);
+}
+
+Result<int> Detector::getColumn(Positions pos) const {
+    return pimpl->Parallel(&Module::getColumn, pos);
+}
+
+void Detector::setColumn(const int value, Positions pos) {
+    pimpl->Parallel(&Module::setColumn, pos, value);
+}
+
 Result<bool> Detector::isVirtualDetectorServer(Positions pos) const {
     return pimpl->Parallel(&Module::isVirtualDetectorServer, pos);
 }

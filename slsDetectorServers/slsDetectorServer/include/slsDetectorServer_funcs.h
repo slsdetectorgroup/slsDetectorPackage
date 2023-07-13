@@ -319,3 +319,12 @@ int get_num_transceiver_samples(int);
 int set_num_transceiver_samples(int);
 int get_transceiver_enable(int);
 int set_transceiver_enable(int);
+int get_row(int);
+int set_row(int);
+int get_column(int);
+int set_column(int);
+int getRow();
+int setRow(int);
+int getColumn();
+int setColumn(int);
+

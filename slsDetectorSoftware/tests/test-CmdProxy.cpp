@@ -707,6 +707,52 @@ TEST_CASE("badchannels", "[.cmd]") {
     }
 }
 
+TEST_CASE("row", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getRow()[0];
+    {
+        std::ostringstream oss;
+        proxy.Call("row", {"1"}, 0, PUT, oss);
+        REQUIRE(oss.str() == "row 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("row", {}, 0, GET, oss);
+        REQUIRE(oss.str() == "row 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("row", {"0"}, 0, PUT, oss);
+        REQUIRE(oss.str() == "row 0\n");
+    }
+    REQUIRE_THROWS(proxy.Call("row", {"-5"}, -1, PUT));
+    det.setRow(prev_val, {0});
+}
+
+TEST_CASE("column", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getColumn()[0];
+    {
+        std::ostringstream oss;
+        proxy.Call("column", {"1"}, 0, PUT, oss);
+        REQUIRE(oss.str() == "column 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("column", {}, 0, GET, oss);
+        REQUIRE(oss.str() == "column 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("column", {"0"}, 0, PUT, oss);
+        REQUIRE(oss.str() == "column 0\n");
+    }
+    REQUIRE_THROWS(proxy.Call("column", {"-5"}, -1, PUT));
+    det.setColumn(prev_val, {0});
+}
+
 /* acquisition parameters */
 
 // acquire: not testing

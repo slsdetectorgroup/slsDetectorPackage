@@ -1683,6 +1683,30 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def row(self):
+        """
+        Set Detector row (udp header) to value. Gui uses it to rearrange for complete image.
+        """
+        return self.getRow()
+
+    @row.setter
+    def row(self, value):
+        ut.set_using_dict(self.setRow, value)
+
+    @property
+    @element
+    def column(self):
+        """
+        Set Detector column (udp header) to value. Gui uses it to rearrange for complete image.
+        """
+        return self.getColumn()
+
+    @column.setter
+    def column(self, value):
+        ut.set_using_dict(self.setColumn, value)
+
+    @property
+    @element
     def lock(self):
         """Lock detector to one client IP, 1 locks, 0 unlocks. Default is unlocked."""
         return self.getDetectorLock()

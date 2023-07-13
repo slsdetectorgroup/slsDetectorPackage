@@ -12,14 +12,62 @@ namespace sls {
 
 CtbConfig::CtbConfig() {
     for (size_t i = 0; i != num_dacs; ++i) {
-        setDacName(i, "dac" + ToString(i));
+        setDacName(i, "DAC" + ToString(i));
+    }
+    for (size_t i = 0; i != num_adcs; ++i) {
+        setAdcName(i, "ADC" + ToString(i));
+    }
+    for (size_t i = 0; i != num_signals; ++i) {
+        setSignalName(i, "BIT" + ToString(i));
+    }
+    setVoltageName(0, "VA");
+    setVoltageName(1, "VB");
+    setVoltageName(2, "VC");
+    setVoltageName(3, "VD");
+    setVoltageName(4, "VIO");
+    for (size_t i = 0; i != num_slowADCs; ++i) {
+        setSlowADCName(i, "SLOWADC" + ToString(i));
     }
 }
 
-void CtbConfig::check_index(size_t i) const {
-    if (!(i < num_dacs)) {
+void CtbConfig::check_dac_index(size_t i) const {
+    if (i >= num_dacs) {
         std::ostringstream oss;
-        oss << "DAC index is too large needs to be below " << num_dacs;
+        oss << "Invalid DAC index. Options: 0 - " << num_dacs;
+        throw RuntimeError(oss.str());
+    }
+}
+
+void CtbConfig::check_adc_index(size_t i) const {
+    if (i >= num_adcs) {
+        std::ostringstream oss;
+        oss << "Invalid ADC index. Options: 0 - " << num_adcs;
+        throw RuntimeError(oss.str());
+    }
+}
+
+void CtbConfig::check_signal_index(size_t i) const {
+    if (i >= num_signals) {
+        std::ostringstream oss;
+        oss << "Invalid Signal index. Options: 0 - " << num_signals;
+        throw RuntimeError(oss.str());
+    }
+}
+
+void CtbConfig::check_voltage_index(size_t i) const {
+    if (i >= num_voltages) {
+        std::ostringstream oss;
+        oss << "Invalid Voltage index. Options: 0 - " << num_voltages
+            << " or V_POWER_A - V_POWER_IO";
+        throw RuntimeError(oss.str());
+    }
+}
+
+void CtbConfig::check_slow_adc_index(size_t i) const {
+    if (i >= num_slowADCs) {
+        std::ostringstream oss;
+        oss << "Invalid Slow ADC index. Options: 0 - " << num_slowADCs
+            << " or SLOW_ADC0 - SLOW_ADC7";
         throw RuntimeError(oss.str());
     }
 }
@@ -29,7 +77,7 @@ void CtbConfig::check_size(const std::string &name) const {
     if (name.empty())
         throw RuntimeError("Name needs to be at least one character");
 
-    // dacname_length -1 to account for \0 termination
+    // name_length -1 to account for \0 termination
     if (!(name.size() < (name_length - 1))) {
         std::ostringstream oss;
         oss << "Length of name needs to be less than " << name_length - 1
@@ -39,22 +87,25 @@ void CtbConfig::check_size(const std::string &name) const {
 }
 
 void CtbConfig::setDacName(size_t index, const std::string &name) {
-
-    check_index(index);
+    check_dac_index(index);
     check_size(name);
-
     char *dst = &dacnames[index * name_length];
     memset(dst, '\0', name_length);
     memcpy(dst, &name[0], name.size());
 }
 
 void CtbConfig::setDacNames(const std::vector<std::string> &names) {
+    if (names.size() != num_dacs) {
+        throw RuntimeError("Dac names need to be of size " +
+                           std::to_string(num_dacs));
+    }
     for (size_t i = 0; i != num_dacs; ++i) {
         setDacName(i, names[i]);
     }
 }
 
 std::string CtbConfig::getDacName(size_t index) const {
+    check_dac_index(index);
     return dacnames + index * name_length;
 }
 
@@ -62,6 +113,126 @@ std::vector<std::string> CtbConfig::getDacNames() const {
     std::vector<std::string> names;
     for (size_t i = 0; i != num_dacs; ++i)
         names.push_back(getDacName(i));
+    return names;
+}
+
+void CtbConfig::setAdcName(size_t index, const std::string &name) {
+    check_adc_index(index);
+    check_size(name);
+    char *dst = &adcnames[index * name_length];
+    memset(dst, '\0', name_length);
+    memcpy(dst, &name[0], name.size());
+}
+
+void CtbConfig::setAdcNames(const std::vector<std::string> &names) {
+    if (names.size() != num_adcs) {
+        throw RuntimeError("Adc names need to be of size " +
+                           std::to_string(num_adcs));
+    }
+    for (size_t i = 0; i != num_adcs; ++i) {
+        setAdcName(i, names[i]);
+    }
+}
+
+std::string CtbConfig::getAdcName(size_t index) const {
+    check_adc_index(index);
+    return adcnames + index * name_length;
+}
+
+std::vector<std::string> CtbConfig::getAdcNames() const {
+    std::vector<std::string> names;
+    for (size_t i = 0; i != num_adcs; ++i)
+        names.push_back(getAdcName(i));
+    return names;
+}
+
+void CtbConfig::setSignalName(size_t index, const std::string &name) {
+    check_signal_index(index);
+    check_size(name);
+    char *dst = &signalnames[index * name_length];
+    memset(dst, '\0', name_length);
+    memcpy(dst, &name[0], name.size());
+}
+
+void CtbConfig::setSignalNames(const std::vector<std::string> &names) {
+    if (names.size() != num_signals) {
+        throw RuntimeError("Signal names need to be of size " +
+                           std::to_string(num_signals));
+    }
+    for (size_t i = 0; i != num_signals; ++i) {
+        setSignalName(i, names[i]);
+    }
+}
+
+std::string CtbConfig::getSignalName(size_t index) const {
+    check_signal_index(index);
+    return signalnames + index * name_length;
+}
+
+std::vector<std::string> CtbConfig::getSignalNames() const {
+    std::vector<std::string> names;
+    for (size_t i = 0; i != num_signals; ++i)
+        names.push_back(getSignalName(i));
+    return names;
+}
+
+void CtbConfig::setVoltageName(size_t index, const std::string &name) {
+    check_voltage_index(index);
+    check_size(name);
+    char *dst = &voltagenames[index * name_length];
+    memset(dst, '\0', name_length);
+    memcpy(dst, &name[0], name.size());
+}
+
+void CtbConfig::setVoltageNames(const std::vector<std::string> &names) {
+    if (names.size() != num_voltages) {
+        throw RuntimeError("Voltage names need to be of size " +
+                           std::to_string(num_voltages));
+    }
+    for (size_t i = 0; i != num_voltages; ++i) {
+        setVoltageName(i, names[i]);
+    }
+}
+
+std::string CtbConfig::getVoltageName(size_t index) const {
+    check_voltage_index(index);
+    return voltagenames + index * name_length;
+}
+
+std::vector<std::string> CtbConfig::getVoltageNames() const {
+    std::vector<std::string> names;
+    for (size_t i = 0; i != num_voltages; ++i)
+        names.push_back(getVoltageName(i));
+    return names;
+}
+
+void CtbConfig::setSlowADCName(size_t index, const std::string &name) {
+    check_slow_adc_index(index);
+    check_size(name);
+    char *dst = &slowADCnames[index * name_length];
+    memset(dst, '\0', name_length);
+    memcpy(dst, &name[0], name.size());
+}
+
+void CtbConfig::setSlowADCNames(const std::vector<std::string> &names) {
+    if (names.size() != num_slowADCs) {
+        throw RuntimeError("Slow ADC names need to be of size " +
+                           std::to_string(num_slowADCs));
+    }
+    for (size_t i = 0; i != num_slowADCs; ++i) {
+        setSlowADCName(i, names[i]);
+    }
+}
+
+std::string CtbConfig::getSlowADCName(size_t index) const {
+    check_slow_adc_index(index);
+    return slowADCnames + index * name_length;
+}
+
+std::vector<std::string> CtbConfig::getSlowADCNames() const {
+    std::vector<std::string> names;
+    for (size_t i = 0; i != num_slowADCs; ++i)
+        names.push_back(getSlowADCName(i));
     return names;
 }
 

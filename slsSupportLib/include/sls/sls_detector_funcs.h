@@ -277,6 +277,11 @@ enum detFuncs {
     F_SET_SYNCHRONIZATION,
     F_GET_HARDWARE_VERSION,
     F_GET_FRONTEND_FIRMWARE_VERSION,
+    F_GET_BIT,
+    F_SET_BIT,
+    F_CLEAR_BIT,
+    F_GET_PATTERN_IO_CONTROL,
+    F_GET_PATTERN_FILE_NAME,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 512, /**< detector function should not exceed this
@@ -657,6 +662,12 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_SYNCHRONIZATION:             return "F_SET_SYNCHRONIZATION";
     case F_GET_HARDWARE_VERSION:            return "F_GET_HARDWARE_VERSION";
     case F_GET_FRONTEND_FIRMWARE_VERSION:   return "F_GET_FRONTEND_FIRMWARE_VERSION";
+    case F_GET_BIT:                         return "F_GET_BIT";                 
+    case F_SET_BIT:                         return "F_SET_BIT";                 
+    case F_CLEAR_BIT:                       return "F_CLEAR_BIT";               
+    case F_GET_PATTERN_IO_CONTROL:          return "F_GET_PATTERN_IO_CONTROL";
+    case F_GET_PATTERN_FILE_NAME:           return "F_GET_PATTERN_FILE_NAME";
+
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

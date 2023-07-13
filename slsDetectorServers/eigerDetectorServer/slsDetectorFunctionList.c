@@ -932,6 +932,59 @@ int readRegister(uint32_t offset, uint32_t *retval) {
 #endif
 }
 
+int setBit(const uint32_t addr, const int nBit) {
+#ifndef VIRTUAL
+    uint32_t regval = 0;
+    if (readRegister(addr, &regval) == FAIL) {
+        return FAIL;
+    }
+    uint32_t bitmask = (1 << nBit);
+    uint32_t val = regval | bitmask;
+
+    sharedMemory_lockLocalLink();
+    if (!Feb_Control_WriteRegister_BitMask(addr, val, bitmask)) {
+        sharedMemory_unlockLocalLink();
+        return FAIL;
+    }
+    sharedMemory_unlockLocalLink();
+#endif
+    return OK;
+}
+
+int clearBit(const uint32_t addr, const int nBit) {
+#ifndef VIRTUAL
+    uint32_t regval = 0;
+    if (readRegister(addr, &regval) == FAIL) {
+        return FAIL;
+    }
+    uint32_t bitmask = (1 << nBit);
+    uint32_t val = regval & ~bitmask;
+
+    sharedMemory_lockLocalLink();
+    if (!Feb_Control_WriteRegister_BitMask(addr, val, bitmask)) {
+        sharedMemory_unlockLocalLink();
+        return FAIL;
+    }
+    sharedMemory_unlockLocalLink();
+#endif
+    return OK;
+}
+
+int getBit(const uint32_t addr, const int nBit, int *retval) {
+#ifndef VIRTUAL
+    uint32_t regval = 0;
+    uint32_t bitmask = (1 << nBit);
+    sharedMemory_lockLocalLink();
+    if (!Feb_Control_ReadRegister_BitMask(addr, &regval, bitmask)) {
+        sharedMemory_unlockLocalLink();
+        return FAIL;
+    }
+    sharedMemory_unlockLocalLink();
+    *retval = (regval >> nBit);
+#endif
+    return OK;
+}
+
 /* set parameters -  dr, roi */
 
 int setDynamicRange(int dr) {

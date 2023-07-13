@@ -541,7 +541,7 @@ void DataProcessor::RearrangeDbitData(size_t &size, char *data) {
     // copy back to memory and update size
     memcpy(data + nAnalogDataBytes, result.data(),
            numResult8Bits * sizeof(uint8_t));
-    size = numResult8Bits * sizeof(uint8_t);
+    size = numResult8Bits * sizeof(uint8_t) + nAnalogDataBytes + ctbDbitOffset;
 }
 
 void DataProcessor::CropImage(size_t &size, char *data) {

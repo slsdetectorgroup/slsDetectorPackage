@@ -326,8 +326,29 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setBadChannels(const std::vector<int> list, Positions pos);
 
     std::vector<std::string> getCtbDacNames() const;
-    std::string getCtbDacName(defs::dacIndex i) const;
+    std::string getCtbDacName(const defs::dacIndex i) const;
     void setCtbDacNames(const std::vector<std::string> &names);
+    void setCtbDacName(const defs::dacIndex index, const std::string &name);
+
+    std::vector<std::string> getCtbAdcNames() const;
+    std::string getCtbAdcName(const int i) const;
+    void setCtbAdcNames(const std::vector<std::string> &names);
+    void setCtbAdcName(const int index, const std::string &name);
+
+    std::vector<std::string> getCtbSignalNames() const;
+    std::string getCtbSignalName(const int i) const;
+    void setCtbSignalNames(const std::vector<std::string> &names);
+    void setCtbSignalName(const int index, const std::string &name);
+
+    std::vector<std::string> getCtbVoltageNames() const;
+    std::string getCtbVoltageName(const defs::dacIndex i) const;
+    void setCtbVoltageNames(const std::vector<std::string> &names);
+    void setCtbVoltageName(const defs::dacIndex index, const std::string &name);
+
+    std::vector<std::string> getCtbSlowADCNames() const;
+    std::string getCtbSlowADCName(const defs::dacIndex i) const;
+    void setCtbSlowADCNames(const std::vector<std::string> &names);
+    void setCtbSlowADCName(const defs::dacIndex index, const std::string &name);
 
   private:
     /**

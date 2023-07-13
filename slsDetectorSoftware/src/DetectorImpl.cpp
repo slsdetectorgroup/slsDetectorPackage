@@ -1298,7 +1298,7 @@ void DetectorImpl::startAcquisition(const bool blocking, Positions pos) {
         if (!masters.empty()) {
             Parallel((blocking ? &Module::startAndReadAll
                                : &Module::startAcquisition),
-                     pos);
+                     masters);
         }
     }
     // all in parallel
@@ -1372,7 +1372,7 @@ void DetectorImpl::processData(bool receiver) {
                     if (fgetc(stdin) == 'q') {
                         LOG(logINFO)
                             << "Caught the command to stop acquisition";
-                        Parallel(&Module::stopAcquisition, {});
+                        stopDetector({});
                     }
                 }
                 // get and print progress
@@ -1999,6 +1999,77 @@ void DetectorImpl::setCtbDacNames(const std::vector<std::string> &names) {
 
 std::string DetectorImpl::getCtbDacName(defs::dacIndex i) const {
     return ctb_shm()->getDacName(static_cast<int>(i));
+}
+
+void DetectorImpl::setCtbDacName(const defs::dacIndex index,
+                                 const std::string &name) {
+    ctb_shm()->setDacName(index, name);
+}
+
+std::vector<std::string> DetectorImpl::getCtbAdcNames() const {
+    return ctb_shm()->getAdcNames();
+}
+
+void DetectorImpl::setCtbAdcNames(const std::vector<std::string> &names) {
+    ctb_shm()->setAdcNames(names);
+}
+
+std::string DetectorImpl::getCtbAdcName(const int i) const {
+    return ctb_shm()->getAdcName(i);
+}
+
+void DetectorImpl::setCtbAdcName(const int index, const std::string &name) {
+    ctb_shm()->setAdcName(index, name);
+}
+
+std::vector<std::string> DetectorImpl::getCtbSignalNames() const {
+    return ctb_shm()->getSignalNames();
+}
+
+void DetectorImpl::setCtbSignalNames(const std::vector<std::string> &names) {
+    ctb_shm()->setSignalNames(names);
+}
+
+std::string DetectorImpl::getCtbSignalName(const int i) const {
+    return ctb_shm()->getSignalName(i);
+}
+
+void DetectorImpl::setCtbSignalName(const int index, const std::string &name) {
+    ctb_shm()->setSignalName(index, name);
+}
+
+std::vector<std::string> DetectorImpl::getCtbVoltageNames() const {
+    return ctb_shm()->getVoltageNames();
+}
+
+void DetectorImpl::setCtbVoltageNames(const std::vector<std::string> &names) {
+    ctb_shm()->setVoltageNames(names);
+}
+
+std::string DetectorImpl::getCtbVoltageName(const defs::dacIndex i) const {
+    return ctb_shm()->getVoltageName(static_cast<int>(i - defs::V_POWER_A));
+}
+
+void DetectorImpl::setCtbVoltageName(const defs::dacIndex index,
+                                     const std::string &name) {
+    ctb_shm()->setVoltageName(static_cast<int>(index - defs::V_POWER_A), name);
+}
+
+std::vector<std::string> DetectorImpl::getCtbSlowADCNames() const {
+    return ctb_shm()->getSlowADCNames();
+}
+
+void DetectorImpl::setCtbSlowADCNames(const std::vector<std::string> &names) {
+    ctb_shm()->setSlowADCNames(names);
+}
+
+std::string DetectorImpl::getCtbSlowADCName(const defs::dacIndex i) const {
+    return ctb_shm()->getSlowADCName(static_cast<int>(i - defs::SLOW_ADC0));
+}
+
+void DetectorImpl::setCtbSlowADCName(const defs::dacIndex index,
+                                     const std::string &name) {
+    ctb_shm()->setSlowADCName(static_cast<int>(index - defs::SLOW_ADC0), name);
 }
 
 } // namespace sls

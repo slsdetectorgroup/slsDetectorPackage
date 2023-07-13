@@ -2478,9 +2478,23 @@ void Module::setLEDEnable(bool enable) {
 }
 
 // Pattern
+std::string Module::getPatterFileName() const {
+    char retval[MAX_STR_LENGTH]{};
+    sendToDetector(F_GET_PATTERN_FILE_NAME, nullptr, retval);
+    return retval;
+}
 
-void Module::setPattern(const Pattern &pat) {
-    sendToDetector(F_SET_PATTERN, pat.data(), pat.size(), nullptr, 0);
+void Module::setPattern(const Pattern &pat, const std::string &fname) {
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_SET_PATTERN);
+    client.Send(pat.data(), pat.size());
+    char args[MAX_STR_LENGTH]{};
+    strcpy_safe(args, fname.c_str());
+    client.Send(args);
+    if (client.Receive<int>() == FAIL) {
+        throw DetectorError("Detector " + std::to_string(moduleIndex) +
+                            " returned error: " + client.readErrorMessage());
+    }
 }
 
 Pattern Module::getPattern() {
@@ -2492,12 +2506,11 @@ Pattern Module::getPattern() {
 void Module::loadDefaultPattern() { sendToDetector(F_LOAD_DEFAULT_PATTERN); }
 
 uint64_t Module::getPatternIOControl() const {
-    return sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL,
-                                    int64_t(GET_FLAG));
+    return sendToDetector<uint64_t>(F_GET_PATTERN_IO_CONTROL);
 }
 
 void Module::setPatternIOControl(uint64_t word) {
-    sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL, word);
+    sendToDetector(F_SET_PATTERN_IO_CONTROL, word, nullptr);
 }
 
 uint64_t Module::getPatternWord(int addr) const {
@@ -2747,29 +2760,18 @@ uint32_t Module::writeRegister(uint32_t addr, uint32_t val) {
 }
 
 void Module::setBit(uint32_t addr, int n) {
-    if (n < 0 || n > 31) {
-        throw RuntimeError("Bit number " + std::to_string(n) + " out of Range");
-    } else {
-        uint32_t val = readRegister(addr);
-        writeRegister(addr, val | 1 << n);
-    }
+    uint32_t args[2] = {addr, static_cast<uint32_t>(n)};
+    sendToDetectorStop(F_SET_BIT, args, nullptr);
 }
 
 void Module::clearBit(uint32_t addr, int n) {
-    if (n < 0 || n > 31) {
-        throw RuntimeError("Bit number " + std::to_string(n) + " out of Range");
-    } else {
-        uint32_t val = readRegister(addr);
-        writeRegister(addr, val & ~(1 << n));
-    }
+    uint32_t args[2] = {addr, static_cast<uint32_t>(n)};
+    sendToDetectorStop(F_CLEAR_BIT, args, nullptr);
 }
 
 int Module::getBit(uint32_t addr, int n) {
-    if (n < 0 || n > 31) {
-        throw RuntimeError("Bit number " + std::to_string(n) + " out of Range");
-    } else {
-        return ((readRegister(addr) >> n) & 0x1);
-    }
+    uint32_t args[2] = {addr, static_cast<uint32_t>(n)};
+    return sendToDetectorStop<int>(F_GET_BIT, args);
 }
 
 void Module::executeFirmwareTest() { sendToDetector(F_SET_FIRMWARE_TEST); }

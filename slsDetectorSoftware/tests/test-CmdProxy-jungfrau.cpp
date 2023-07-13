@@ -226,7 +226,7 @@ TEST_CASE("autocompdisable", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    if (det_type == defs::JUNGFRAU) {
         auto prev_val = det.getAutoComparatorDisable();
         {
             std::ostringstream oss;
@@ -256,7 +256,7 @@ TEST_CASE("compdisabletime", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if ((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) &&
+    if (det_type == defs::JUNGFRAU &&
         det.getChipVersion().squash() * 10 == 11) {
         auto prev_val = det.getComparatorDisableTime();
         {
@@ -416,7 +416,7 @@ TEST_CASE("gainmode", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    if (det_type == defs::JUNGFRAU) {
         auto prev_val = det.getGainMode();
         {
             std::ostringstream oss;
@@ -465,7 +465,7 @@ TEST_CASE("filtercells", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    if (det_type == defs::JUNGFRAU) {
         // chip version 1.1
         if (det.getChipVersion().squash() * 10 == 11) {
             auto prev_val = det.getNumberOfFilterCells();
@@ -522,6 +522,28 @@ TEST_CASE("sync", "[.cmd]") {
             std::ostringstream oss;
             proxy.Call("sync", {"1"}, -1, PUT, oss);
             REQUIRE(oss.str() == "sync 1\n");
+        }
+        // setting to master or slave when synced
+        {
+            // get previous master
+            int prevMaster = 0;
+            auto previous = det.getMaster();
+            for (int i = 0; i != det.size(); ++i) {
+                if (previous[i] == 1) {
+                    prevMaster = i;
+                    break;
+                }
+            }
+            proxy.Call("master", {"1"}, 0, PUT);
+            proxy.Call("master", {"0"}, 0, PUT);
+            std::ostringstream oss;
+            proxy.Call("status", {}, -1, GET, oss);
+            REQUIRE(oss.str() != "status running\n");
+            // set all to slaves, and then master
+            for (int i = 0; i != det.size(); ++i) {
+                det.setMaster(0, {i});
+            }
+            det.setMaster(1, prevMaster);
         }
         {
             std::ostringstream oss;

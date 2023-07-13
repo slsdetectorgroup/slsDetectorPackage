@@ -364,10 +364,11 @@ class Detector(CppDetectorApi):
         -----
         
         [Eiger] Use threshold command to load settings
-        [Jungfrau][Moench] GAIN0, HIGHGAIN0 \n
+        [Jungfrau] GAIN0, HIGHGAIN0 \n
         [Gotthard] DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n
         [Gotthard2] DYNAMICGAIN, FIXGAIN1, FIXGAIN2 \n
         [Eiger] settings loaded from file found in settingspath
+        [Moench] G1_HIGHGAIN, G1_LOWGAIN, G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN, G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN
         """
         return element_if_equal(self.getSettings())
 
@@ -1766,7 +1767,7 @@ class Detector(CppDetectorApi):
     @property
     def daclist(self):
         """
-        List of enums for every dac for this detector.
+        List of enums/names for every dac for this detector
         :setter: Only implemented for Chiptestboard
         
         """
@@ -1777,11 +1778,79 @@ class Detector(CppDetectorApi):
         self.setDacNames(value)
 
     @property
+    def adclist(self):
+        """
+        List of names for every adc for this board. 32 adcs
+        :setter: Only implemented for Chiptestboard
+        
+        """
+        return self.getAdcNames()
+
+    @adclist.setter
+    def adclist(self, value):
+        self.setAdcNames(value)
+
+    @property
+    def signallist(self):
+        """
+        List of names for every io signal for this board. 64 signals
+        :setter: Only implemented for Chiptestboard
+        
+        """
+        return self.getSignalNames()
+
+    @signallist.setter
+    def signallist(self, value):
+        self.setSignalNames(value)
+
+    @property
+    def voltagelist(self):
+        """
+        List of names for every voltage for this board. 5 voltage supply
+        :setter: Only implemented for Chiptestboard
+        
+        """
+        return self.getVoltageNames()
+
+    @voltagelist.setter
+    def voltagelist(self, value):
+        self.setVoltageNames(value)
+
+    @property
+    def slowadclist(self):
+        """
+        List of names for every slowadc for this board. 8 slowadc
+        :setter: Only implemented for Chiptestboard
+        
+        """
+        return self.getSlowAdcNames()
+
+    @slowadclist.setter
+    def slowadclist(self, value):
+        self.setSlowAdcNames(value)
+        
+    @property
     def dacvalues(self):
         """Gets the dac values for every dac for this detector."""
         return {
             dac.name.lower(): element_if_equal(np.array(self.getDAC(dac, False)))
             for dac in self.getDacList()
+        }
+
+    @property
+    def voltagevalues(self):
+        """Gets the voltage values for every voltage for this detector."""
+        return {
+            voltage.name.lower(): element_if_equal(np.array(self.getVoltage(voltage)))
+            for voltage in self.getVoltageList()
+        }
+
+    @property
+    def slowadcvalues(self):
+        """Gets the slow adc values for every slow adc for this detector."""
+        return {
+            slowadc.name.lower(): element_if_equal(np.array(self.getSlowADC(slowadc)))
+            for slowadc in self.getSlowADCList()
         }
 
     @property
@@ -1982,8 +2051,9 @@ class Detector(CppDetectorApi):
         -----
         [Jungfrau][Moench] FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED
         [Eiger] FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED
+        [Moench] FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED
         [Gottthard2] G2_108MHZ (Default), G2_144MHZ
-        [Jungfrau][Moench] FULL_SPEED option only available from v2.0 boards and is recommended to set number of interfaces to 2.  \n
+        [Jungfrau] FULL_SPEED option only available from v2.0 boards and is recommended to set number of interfaces to 2.  \n
         Also overwrites adcphase to recommended default.
         """
         return element_if_equal(self.getReadoutSpeed())
@@ -2293,12 +2363,12 @@ class Detector(CppDetectorApi):
     @element
     def parallel(self):
         """
-        [Eiger][Mythen3][Gotthard2] Enable or disable the parallel readout mode of detector. 
+        [Eiger][Mythen3][Gotthard2][Moench] Enable or disable the parallel readout mode of detector. 
         
         Note
         ----
         [Mythen3] If exposure time is too short, acquisition will return with an ERROR and take fewer frames than expected. 
-        [Mythen3][Eiger] Default: Non parallel
+        [Mythen3][Eiger][Moench] Default: Non parallel
         [Gotthard2] Default: parallel. Non parallel mode works only in continuous mode.
         """
         return self.getParallelMode()
@@ -2421,7 +2491,7 @@ class Detector(CppDetectorApi):
     @element
     def chipversion(self):
         """
-        [Jungfrau][Moench] Chip version of module. Can be 1.0 or 1.1.
+        [Jungfrau] Chip version of module. Can be 1.0 or 1.1.
 
         Example
         -------
@@ -2434,7 +2504,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def autocompdisable(self):
-        """[Jungfrau][Moench] Enable or disable auto comparator disable mode. 
+        """[Jungfrau] Enable or disable auto comparator disable mode. 
 
         Note
         -----
@@ -2450,7 +2520,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def compdisabletime(self):
-        """[Jungfrau][Moench] Time before end of exposure when comparator is disabled. 
+        """[Jungfrau] Time before end of exposure when comparator is disabled. 
 
         Note
         -----
@@ -2671,11 +2741,11 @@ class Detector(CppDetectorApi):
     @property
     def gainmode(self):
         """
-        [Jungfrau][Moench] Detector gain mode. Enum: gainMode
+        [Jungfrau] Detector gain mode. Enum: gainMode
         
         Note
         -----
-        [Jungfrau][Moench] DYNAMIC, FORCE_SWITCH_G1, FORCE_SWITCH_G2, FIX_G1, FIX_G2, FIX_G0 \n
+        [Jungfrau] DYNAMIC, FORCE_SWITCH_G1, FORCE_SWITCH_G2, FIX_G1, FIX_G2, FIX_G0 \n
         CAUTION: Do not use FIX_G0 without caution, you can damage the detector!!!
         """
         return element_if_equal(self.getGainMode())
@@ -2688,7 +2758,7 @@ class Detector(CppDetectorApi):
     @element
     def currentsource(self):
         """
-        Pass in a currentSrcParameters object
+        [Gotthard2][Jungfrau] Pass in a currentSrcParameters object
         see python/examples/use_currentsource.py
 
         """
@@ -2730,14 +2800,14 @@ class Detector(CppDetectorApi):
     @element
     def filterresistor(self):
         """
-        [Gotthard2][Jungfrau][Moench] Set filter resistor. Increasing values for increasing "
+        [Gotthard2][Jungfrau] Set filter resistor. Increasing values for increasing "
         "resistance.
         
         Note
         ----
         Advanced user command.
         [Gotthard2] Default is 0. Options: 0-3.
-        [Jungfrau][Moench] Default is 1. Options: 0-1.
+        [Jungfrau] Default is 1. Options: 0-1.
         """
         return self.getFilterResistor()
 
@@ -2749,11 +2819,11 @@ class Detector(CppDetectorApi):
     @element
     def filtercells(self):
         """
-        [Jungfrau][Moench] Set filter capacitor. 
+        [Jungfrau] Set filter capacitor. 
         
         Note
         ----
-        [Jungfrau][Moench] Options: 0-12. Default: 0. Advanced user command. Only for chipv1.1.
+        [Jungfrau] Options: 0-12. Default: 0. Advanced user command. Only for chipv1.1.
         """
         return self.getNumberOfFilterCells()
 
@@ -3179,7 +3249,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def dbitphase(self):
-        """[Ctb][Jungfrau][Moench] Phase shift of clock to latch digital bits. Absolute phase shift.
+        """[Ctb][Jungfrau] Phase shift of clock to latch digital bits. Absolute phase shift.
 
         Note
         -----
@@ -3231,7 +3301,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def maxdbitphaseshift(self):
-        """[CTB][Jungfrau][Moench] Absolute maximum Phase shift of of the clock to latch digital bits.
+        """[CTB][Jungfrau] Absolute maximum Phase shift of of the clock to latch digital bits.
         
         Note
         -----
@@ -3359,6 +3429,13 @@ class Detector(CppDetectorApi):
         fname = ut.make_string_path(fname)
         ut.set_using_dict(self.setPattern, fname)
 
+    @property
+    def patfname(self):
+        """
+        [Ctb][Mythen3] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default
+        file
+        """
+        return self.getPatterFileName()
 
     @property
     @element
@@ -3694,45 +3771,45 @@ class Detector(CppDetectorApi):
     @element
     def v_a(self):
         """[Ctb] Voltage supply a in mV."""
-        return self.getDAC(dacIndex.V_POWER_A, True)
+        return self.getVoltage(dacIndex.V_POWER_A)
 
     @v_a.setter
     def v_a(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_A, value, True)
-        ut.set_using_dict(self.setDAC, *value)
+        value = ut.merge_args(dacIndex.V_POWER_A, value)
+        ut.set_using_dict(self.setVoltage, *value)
 
     @property
     @element
     def v_b(self):
         """[Ctb] Voltage supply b in mV."""
-        return self.getDAC(dacIndex.V_POWER_B, True)
+        return self.getVoltage(dacIndex.V_POWER_B)
 
     @v_b.setter
     def v_b(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_B, value, True)
-        ut.set_using_dict(self.setDAC, *value)
+        value = ut.merge_args(dacIndex.V_POWER_B, value)
+        ut.set_using_dict(self.setVoltage, *value)
 
     @property
     @element
     def v_c(self):
         """[Ctb] Voltage supply c in mV."""
-        return self.getDAC(dacIndex.V_POWER_C, True)
+        return self.getVoltage(dacIndex.V_POWER_C)
 
     @v_c.setter
     def v_c(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_C, value, True)
-        ut.set_using_dict(self.setDAC, *value)
+        value = ut.merge_args(dacIndex.V_POWER_C, value)
+        ut.set_using_dict(self.setVoltage, *value)
 
     @property
     @element
     def v_d(self):
         """[Ctb] Voltage supply d in mV."""
-        return self.getDAC(dacIndex.V_POWER_D, True)
+        return self.getVoltage(dacIndex.V_POWER_D)
 
     @v_d.setter
     def v_d(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_D, value, True)
-        ut.set_using_dict(self.setDAC, *value)
+        value = ut.merge_args(dacIndex.V_POWER_D, value)
+        ut.set_using_dict(self.setVoltage, *value)
 
     @property
     @element
@@ -3743,23 +3820,23 @@ class Detector(CppDetectorApi):
         ----
         Must be the first power regulator to be set after fpga reset (on-board detector server start up).
         """
-        return self.getDAC(dacIndex.V_POWER_IO, True)
+        return self.getVoltage(dacIndex.V_POWER_IO)
 
     @v_io.setter
     def v_io(self, value):
-        value = ut.merge_args(dacIndex.V_POWER_IO, value, True)
-        ut.set_using_dict(self.setDAC, *value)
+        value = ut.merge_args(dacIndex.V_POWER_IO, value)
+        ut.set_using_dict(self.setVoltage, *value)
 
     @property
     @element
     def v_limit(self):
         """[Ctb] Soft limit for power supplies (ctb only) and DACS in mV."""
-        return self.getDAC(dacIndex.V_LIMIT, True)
+        return self.getVoltage(dacIndex.V_LIMIT)
 
     @v_limit.setter
     def v_limit(self, value):
-        value = ut.merge_args(dacIndex.V_LIMIT, value, True)
-        ut.set_using_dict(self.setDAC, *value)
+        value = ut.merge_args(dacIndex.V_LIMIT, value)
+        ut.set_using_dict(self.setVoltage, *value)
 
 
     @property

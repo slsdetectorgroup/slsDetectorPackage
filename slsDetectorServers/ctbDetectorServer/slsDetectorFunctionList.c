@@ -1149,7 +1149,7 @@ int checkVLimitCompliant(int mV) {
 }
 
 int checkVLimitDacCompliant(int dac) {
-    if (vLimit > 0) {
+    if (vLimit > 0 && dac != -1 && dac != LTC2620_GetPowerDownValue()) {
         int mv = 0;
         // could not convert
         if (LTC2620_DacToVoltage(dac, &mv) == FAIL)
@@ -2289,6 +2289,11 @@ enum runStatus getRunStatus() {
             return TRANSMITTING;
         }
 
+        // 1g might still be transmitting or reading from fifo (not virtual)
+        if (!enableTenGigabitEthernet(-1) && checkDataInFifo()) {
+            return TRANSMITTING;
+        }
+
         if (!(retval & STATUS_IDLE_MSK)) {
             LOG(logINFOBLUE, ("Status: Idle\n"));
             return IDLE;
@@ -2299,19 +2304,17 @@ enum runStatus getRunStatus() {
     }
 }
 
-void readandSendUDPFrames(int *ret, char *mess) {
+int validateUDPSocket() {
+    if (getUdPSocketDescriptor(0, 0) <= 0) {
+        return FAIL;
+    }
+    return OK;
+}
+
+void readandSendUDPFrames() {
     LOG(logDEBUG1, ("Reading from 1G UDP\n"));
 
-    // validate udp socket
-    if (getUdPSocketDescriptor(0, 0) <= 0) {
-        *ret = FAIL;
-        sprintf(mess, "UDP Socket not created. sockfd:%d\n",
-                getUdPSocketDescriptor(0, 0));
-        LOG(logERROR, (mess));
-        return;
-    }
-
-    // every frame read
+    // read every frame
     while (readFrameFromFifo() == OK) {
         int bytesToSend = 0, n = 0;
         while ((bytesToSend = fillUDPPacket(udpPacketData))) {
@@ -2324,6 +2327,7 @@ void readandSendUDPFrames(int *ret, char *mess) {
         }
     }
     closeUDPSocket(0);
+    LOG(logINFOBLUE, ("Transmitting frames done\n"));
 }
 
 void waitForAcquisitionEnd() {
@@ -2337,20 +2341,6 @@ void waitForAcquisitionEnd() {
     }
 #endif
     LOG(logINFOGREEN, ("Blocking Acquisition done\n"));
-}
-
-void readFrames(int *ret, char *mess) {
-#ifdef VIRTUAL
-    while (runBusy()) {
-        usleep(500);
-    }
-#else
-    // 1G force reading of frames
-    if (!enableTenGigabitEthernet(-1)) {
-        readandSendUDPFrames(ret, mess);
-        LOG(logINFOBLUE, ("Transmitting frames done\n"));
-    }
-#endif
 }
 
 void unsetFifoReadStrobes() {
@@ -2444,7 +2434,7 @@ uint32_t checkDataInFifo() {
     uint32_t dataPresent = 0;
     if (analogEnable) {
         uint32_t analogFifoEmpty = bus_r(FIFO_EMPTY_REG);
-        LOG(logINFO,
+        LOG(logDEBUG1,
             ("Analog Fifo Empty (32 channels): 0x%08x\n", analogFifoEmpty));
         dataPresent = (~analogFifoEmpty);
     }

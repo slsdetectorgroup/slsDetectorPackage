@@ -52,7 +52,6 @@ void qDrawPlot::SetupWidgetWindow() {
     detType = det->getDetectorType().squash();
     switch (detType) {
     case slsDetectorDefs::JUNGFRAU:
-    case slsDetectorDefs::MOENCH:
         pixelMask = ((1 << 14) - 1);
         gainMask = (3 << 14);
         gainOffset = 14;
@@ -1143,8 +1142,7 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size,
         break;
 
     case 16:
-        if (detType == slsDetectorDefs::MOENCH ||
-            detType == slsDetectorDefs::JUNGFRAU ||
+        if (detType == slsDetectorDefs::JUNGFRAU ||
             detType == slsDetectorDefs::GOTTHARD2) {
 
             // show gain plot

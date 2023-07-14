@@ -239,6 +239,22 @@ void init_det(py::module &m) {
         (void (Detector::*)(const std::vector<std::vector<int>>)) &
             Detector::setBadChannels,
         py::arg());
+    CppDetectorApi.def("getRow",
+                       (Result<int>(Detector::*)(sls::Positions) const) &
+                           Detector::getRow,
+                       py::arg() = Positions{});
+    CppDetectorApi.def("setRow",
+                       (void (Detector::*)(const int, sls::Positions)) &
+                           Detector::setRow,
+                       py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("getColumn",
+                       (Result<int>(Detector::*)(sls::Positions) const) &
+                           Detector::getColumn,
+                       py::arg() = Positions{});
+    CppDetectorApi.def("setColumn",
+                       (void (Detector::*)(const int, sls::Positions)) &
+                           Detector::setColumn,
+                       py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("isVirtualDetectorServer",
                        (Result<bool>(Detector::*)(sls::Positions) const) &
                            Detector::isVirtualDetectorServer,

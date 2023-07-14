@@ -10,6 +10,17 @@ class Defines():
     Time_Status_Refresh_ms  = 100
     Time_Plot_Refresh_ms = 20
 
+    Acquisition_Tab_Index = 7
+    Max_Tabs = 9
+
+    class Matterhorn():
+        nRows = 48
+        nHalfCols = 24
+        nCols = 48
+        nTransceivers = 2
+        tranceiverEnable = 0x3
+        nPixelsPerTransceiver = 4
+
 
     # pattern viewer defines
 

@@ -1501,10 +1501,13 @@ class CmdProxy {
         "synchronization between modules.");
 
     INTEGER_COMMAND_VEC_ID(row, getRow, setRow, StringTo<int>,
-                               "[value]\n\tSet Detector row (udp header) to value. \n\tGui uses it to rearrange for complete image");
+                           "[value]\n\tSet Detector row (udp header) to value. "
+                           "\n\tGui uses it to rearrange for complete image");
 
-    INTEGER_COMMAND_VEC_ID(column, getColumn, setColumn, StringTo<int>,
-                               "[value]\n\tSet Detector column (udp header) to value. \n\tGui uses it to rearrange for complete image");
+    INTEGER_COMMAND_VEC_ID(
+        column, getColumn, setColumn, StringTo<int>,
+        "[value]\n\tSet Detector column (udp header) to value. \n\tGui uses it "
+        "to rearrange for complete image");
 
     /* acquisition parameters */
 

@@ -487,8 +487,6 @@ void function_table() {
     flist[F_GET_COLUMN] = &get_column;
     flist[F_SET_COLUMN] = &set_column;
 
-
-
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
         LOG(logERROR, ("The last detector function enum has reached its "
@@ -5952,7 +5950,7 @@ int get_clock_phase(int file_des) {
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     LOG(logDEBUG1, ("Getting clock (%d) phase %s \n", args[0],
-                      (args[1] == 0 ? "" : "in degrees")));
+                    (args[1] == 0 ? "" : "in degrees")));
 
 #if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&    \
     !defined(GOTTHARD2D) && !defined(MYTHEN3D)
@@ -10583,7 +10581,6 @@ int get_transceiver_enable(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-
 int get_row(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
@@ -10610,9 +10607,10 @@ int set_row(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (arg < 0) {
             ret = FAIL;
-            sprintf(mess,
-                    "Could not set row. Invalid value %d. Must be greater than 0\n",
-                    arg);
+            sprintf(
+                mess,
+                "Could not set row. Invalid value %d. Must be greater than 0\n",
+                arg);
             LOG(logERROR, (mess));
         } else {
             ret = setRow(arg);
@@ -10657,7 +10655,8 @@ int set_column(int file_des) {
         if (arg < 0) {
             ret = FAIL;
             sprintf(mess,
-                    "Could not set column. Invalid value %d. Must be greater than 0\n",
+                    "Could not set column. Invalid value %d. Must be greater "
+                    "than 0\n",
                     arg);
             LOG(logERROR, (mess));
         } else {

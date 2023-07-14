@@ -255,7 +255,6 @@ std::pair<uint16_t, uint16_t> Listener::GetHardCodedPosition() {
     return std::make_pair(row, column);
 }
 
-
 void Listener::ThreadExecution() {
     char *buffer;
     fifo->GetNewAddress(buffer);

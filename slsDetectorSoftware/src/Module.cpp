@@ -589,9 +589,7 @@ void Module::setBadChannels(std::vector<int> list) {
     }
 }
 
-int Module::getRow() const {
-    return sendToDetector<int>(F_GET_ROW);
-}
+int Module::getRow() const { return sendToDetector<int>(F_GET_ROW); }
 
 void Module::setRow(int value) {
     sendToDetector(F_SET_ROW, value, nullptr);
@@ -600,9 +598,7 @@ void Module::setRow(int value) {
     }
 }
 
-int Module::getColumn() const {
-    return sendToDetector<int>(F_GET_COLUMN);
-}
+int Module::getColumn() const { return sendToDetector<int>(F_GET_COLUMN); }
 
 void Module::setColumn(int value) {
     sendToDetector(F_SET_COLUMN, value, nullptr);

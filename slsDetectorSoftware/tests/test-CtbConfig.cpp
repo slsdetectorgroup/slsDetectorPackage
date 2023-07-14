@@ -39,7 +39,7 @@ TEST_CASE("Default construction") {
     REQUIRE(signalnames[1] == "BIT1");
     REQUIRE(signalnames[2] == "BIT2");
     REQUIRE(signalnames[3] == "BIT3");
-    auto sensenames = c.getSlowAdcNames();
+    auto sensenames = c.getSlowADCNames();
     REQUIRE(sensenames.size() == 8);
     REQUIRE(sensenames[0] == "SLOWADC0");
     REQUIRE(sensenames[1] == "SLOWADC1");

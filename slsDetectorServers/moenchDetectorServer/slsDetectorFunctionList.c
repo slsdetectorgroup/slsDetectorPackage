@@ -489,11 +489,13 @@ void setupDetector() {
 
     // delay
     bus_w(ADC_PORT_INVERT_REG, ADC_PORT_INVERT_VAL);
+    // default asic
+    bus_w(ASIC_CTRL_REG, ASIC_CTRL_DEFAULT_VAL);
 
     initReadoutConfiguration();
 
     // Initialization of acquistion parameters
-    // setSettings(DEFAULT_SETTINGS);
+    setSettings(DEFAULT_SETTINGS);
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
     setExpTime(DEFAULT_EXPTIME);
@@ -816,18 +818,87 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     if (sett == UNINITIALIZED)
         return thisSettings;
 
+    uint32_t mask = 0;
     // set settings
     switch (sett) {
+    case G1_HIGHGAIN:
+        LOG(logINFOBLUE, ("Settinng settings to g1 hg\n"))
+        mask = SETTINGS_G1_HG;
+        break;
+    case G1_LOWGAIN:
+        LOG(logINFOBLUE, ("Settinng settings to g1 lg\n"))
+        mask = SETTINGS_G1_LG;
+        break;
+    case G2_HIGHCAP_HIGHGAIN:
+        LOG(logINFOBLUE, ("Settinng settings to g2 hc hg\n"))
+        mask = SETTINGS_G2_HC_HG;
+        break;
+    case G2_HIGHCAP_LOWGAIN:
+        LOG(logINFOBLUE, ("Settinng settings to g2 hc lg\n"))
+        mask = SETTINGS_G2_HC_LG;
+        break;
+    case G2_LOWCAP_HIGHGAIN:
+        LOG(logINFOBLUE, ("Settinng settings to g2 lc_hg\n"))
+        mask = SETTINGS_G2_LC_HG;
+        break;
+    case G2_LOWCAP_LOWGAIN:
+        LOG(logINFOBLUE, ("Settinng settings to g2 lc lg\n"))
+        mask = SETTINGS_G2_LC_LG;
+        break;
+    case G4_HIGHGAIN:
+        LOG(logINFOBLUE, ("Settinng settings to g4 hg\n"))
+        mask = SETTINGS_G4_HG;
+        break;
+    case G4_LOWGAIN:
+        LOG(logINFOBLUE, ("Settinng settings to g4 lg\n"))
+        mask = SETTINGS_G4_LG;
+        break;
     default:
         LOG(logERROR, ("This settings %d is not defined\n", (int)sett));
         return -1;
     }
 
+    uint32_t addr = ASIC_CTRL_REG;
+    bus_w(addr, bus_r(addr) & ~SETTINGS_MSK);
+    bus_w(addr, bus_r(addr) | mask);
+
     thisSettings = sett;
     return getSettings();
 }
 
-enum detectorSettings getSettings() { return UNDEFINED; }
+enum detectorSettings getSettings() {
+    uint32_t regval = bus_r(ASIC_CTRL_REG) & SETTINGS_MSK;
+    switch (regval) {
+    case SETTINGS_G1_HG:
+        thisSettings = G1_HIGHGAIN;
+        break;
+    case SETTINGS_G1_LG:
+        thisSettings = G1_LOWGAIN;
+        break;
+    case SETTINGS_G2_HC_HG:
+        thisSettings = G2_HIGHCAP_HIGHGAIN;
+        break;
+    case SETTINGS_G2_HC_LG:
+        thisSettings = G2_HIGHCAP_LOWGAIN;
+        break;
+    case SETTINGS_G2_LC_HG:
+        thisSettings = G2_LOWCAP_HIGHGAIN;
+        break;
+    case SETTINGS_G2_LC_LG:
+        thisSettings = G2_LOWCAP_LOWGAIN;
+        break;
+    case SETTINGS_G4_HG:
+        thisSettings = G4_HIGHGAIN;
+        break;
+    case SETTINGS_G4_LG:
+        thisSettings = G4_LOWGAIN;
+        break;
+    default:
+        thisSettings = UNDEFINED;
+        break;
+    }
+    return thisSettings;
+}
 
 /* parameters - dac, adc, hv */
 void setDAC(enum DACINDEX ind, int val, int mV) {
@@ -1411,23 +1482,37 @@ int setReadoutSpeed(int val) {
     // stop state machine if running
     if (runBusy()) {
         stopStateMachine();
+        return FAIL;
+    }
+    if (isHardwareVersion_1_0()) {
+        LOG(logERROR, ("Cannot set full speed. Not implemented for this pcb version (1.0)\n"));
+        return FAIL;
     }
 
-    uint32_t adcOfst = 0;
-    uint32_t sampleAdcSpeed = 0;
-    uint32_t adcPhase = 0;
+    uint32_t config = 0;
+    uint32_t sampleAdcDecimationFactor = 0;
 
     switch (val) {
 
     case FULL_SPEED:
-        if (isHardwareVersion_1_0()) {
-            LOG(logERROR, ("Cannot set full speed. Should not be here\n"));
-            return FAIL;
-        }
         LOG(logINFO, ("Setting Full Speed (40 MHz):\n"));
-        sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED;
-        adcPhase = ADC_PHASE_DEG_FULL_SPEED;
-        adcOfst = ADC_OFST_FULL_SPEED_VAL;
+        config = CONFIG_FULL_SPEED_40MHZ_VAL;
+        sampleAdcDecimationFactor = ADC_DECMT_FULL_SPEED
+                                    << SAMPLE_ADC_DECMT_FACTOR_OFST;
+        break;
+
+    case HALF_SPEED:
+        LOG(logINFO, ("Setting Speed Speed (20 MHz):\n"));
+        config = CONFIG_HALF_SPEED_20MHZ_VAL;
+        sampleAdcDecimationFactor = ADC_DECMT_HALF_SPEED
+                                    << SAMPLE_ADC_DECMT_FACTOR_OFST;
+        break;
+
+    case QUARTER_SPEED:
+        LOG(logINFO, ("Setting Quarter Speed (10 MHz):\n"));
+        config = CONFIG_QUARTER_SPEED_10MHZ_VAL;
+        sampleAdcDecimationFactor = ADC_DECMT_QUARTER_SPEED
+                                    << SAMPLE_ADC_DECMT_FACTOR_OFST;
         break;
 
     default:
@@ -1435,23 +1520,35 @@ int setReadoutSpeed(int val) {
         return FAIL;
     }
 
-    bus_w(ADC_OFST_REG, (bus_r(ADC_OFST_REG) & ~ADC_OFFSET_MSK));
-    bus_w(ADC_OFST_REG, (bus_r(ADC_OFST_REG) |
-                         ((adcOfst << ADC_OFFSET_OFST) & ADC_OFFSET_MSK)));
-    LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n",
-                  ((bus_r(ADC_OFST_REG) & ADC_OFFSET_MSK) >> ADC_OFFSET_OFST)));
+    bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_READOUT_SPEED_MSK);
+    bus_w(CONFIG_REG, bus_r(CONFIG_REG) | config);
+    LOG(logINFO, ("\tSet Config Reg to 0x%x\n", bus_r(CONFIG_REG)));
 
-    bus_w(SAMPLE_REG, sampleAdcSpeed);
+    bus_w(SAMPLE_REG, bus_r(SAMPLE_REG) & ~SAMPLE_ADC_DECMT_FACTOR_MSK);
+    bus_w(SAMPLE_REG, bus_r(SAMPLE_REG) | sampleAdcDecimationFactor);
     LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));
 
-    setPhase(ADC_CLK, adcPhase, 1);
-    LOG(logINFO, ("\tSet ADC Phase Reg to %d deg\n", adcPhase));
-
+    // TODO: adcofst, adcphase?
     return OK;
 }
 
 int getReadoutSpeed(int *retval) {
-    *retval = FULL_SPEED;
+    u_int32_t speed = bus_r(CONFIG_REG) & CONFIG_READOUT_SPEED_MSK;
+    switch (speed) {
+    case CONFIG_FULL_SPEED_40MHZ_VAL:
+        *retval = FULL_SPEED;
+        break;
+    case CONFIG_HALF_SPEED_20MHZ_VAL:
+        *retval = HALF_SPEED;
+        break;
+    case CONFIG_QUARTER_SPEED_10MHZ_VAL:
+        *retval = QUARTER_SPEED;
+        break;
+    default:
+        LOG(logERROR, ("Unknown speed val: %d\n", speed));
+        *retval = -1;
+        return FAIL;
+    }
     return OK;
 }
 

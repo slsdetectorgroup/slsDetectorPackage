@@ -345,10 +345,10 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setCtbVoltageNames(const std::vector<std::string> &names);
     void setCtbVoltageName(const defs::dacIndex index, const std::string &name);
 
-    std::vector<std::string> getCtbSlowAdcNames() const;
-    std::string getCtbSlowAdcName(const defs::dacIndex i) const;
-    void setCtbSlowAdcNames(const std::vector<std::string> &names);
-    void setCtbSlowAdcName(const defs::dacIndex index, const std::string &name);
+    std::vector<std::string> getCtbSlowADCNames() const;
+    std::string getCtbSlowADCName(const defs::dacIndex i) const;
+    void setCtbSlowADCNames(const std::vector<std::string> &names);
+    void setCtbSlowADCName(const defs::dacIndex index, const std::string &name);
 
   private:
     /**

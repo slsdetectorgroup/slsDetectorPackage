@@ -216,6 +216,14 @@ TEST_CASE("settings", "[.cmd]") {
         sett.push_back("highgain0");
         break;
     case defs::MOENCH:
+        sett.push_back("g1_hg");
+        sett.push_back("g1_lg");
+        sett.push_back("g2_hc_hg");
+        sett.push_back("g2_hc_lg");
+        sett.push_back("g2_lc_hg");
+        sett.push_back("g2_lc_lg");
+        sett.push_back("g4_hg");
+        sett.push_back("g4_lg");
         break;
     case defs::GOTTHARD:
         sett.push_back("highgain");
@@ -1096,9 +1104,9 @@ TEST_CASE("readoutspeed", "[.cmd]") {
 
         // full speed for jungfrau/moench only works for new boards (chipv1.1 is
         // with new board [hw1.0 and chipv1.0 not tested here])
-        if (((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) &&
+        if (((det_type == defs::JUNGFRAU) &&
              det.getChipVersion().squash() * 10 == 11) ||
-            (det_type == defs::EIGER)) {
+            (det_type == defs::EIGER) || (det_type == defs::MOENCH)) {
             std::ostringstream oss1, oss2, oss3, oss4;
             proxy.Call("readoutspeed", {"0"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "readoutspeed full_speed\n");

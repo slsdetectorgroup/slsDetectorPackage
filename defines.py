@@ -1,4 +1,6 @@
 
+from enum import Enum
+
 class Defines():
 
     BIT0_15_MASK = 0x0000FFFF
@@ -13,6 +15,11 @@ class Defines():
     Acquisition_Tab_Index = 7
     Max_Tabs = 9
 
+    class ImageIndex(Enum):
+        Matterhorn = 0
+        Moench04 = 1
+
+
     class Matterhorn():
         nRows = 48
         nHalfCols = 24
@@ -20,6 +27,15 @@ class Defines():
         nTransceivers = 2
         tranceiverEnable = 0x3
         nPixelsPerTransceiver = 4
+
+
+    class Moench04():
+        nRows = 400
+        nCols = 400
+        adcNumbers = [9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 7, 6, 23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28, 27, 26, 25, 24]
+        nPixelsPerSuperColumn = 5000
+        superColumnWidth = 25
+
 
 
     # pattern viewer defines

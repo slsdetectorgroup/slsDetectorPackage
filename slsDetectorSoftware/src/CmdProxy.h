@@ -1228,7 +1228,6 @@ class CmdProxy {
         {"dpulse", &CmdProxy::dpulse},
 
         /* CTB Specific */
-        /* CTB Specific */
         {"samples", &CmdProxy::Samples},
         {"asamples", &CmdProxy::asamples},
         {"adcclk", &CmdProxy::adcclk},
@@ -1239,9 +1238,7 @@ class CmdProxy {
         {"adcenable", &CmdProxy::adcenable},
         {"adcenable10g", &CmdProxy::adcenable10g},
         {"transceiverenable", &CmdProxy::transceiverenable},
-        {"transceiverenable", &CmdProxy::transceiverenable},
         {"dsamples", &CmdProxy::dsamples},
-        {"tsamples", &CmdProxy::tsamples},
         {"tsamples", &CmdProxy::tsamples},
         {"romode", &CmdProxy::romode},
         {"dbitclk", &CmdProxy::dbitclk},
@@ -2453,10 +2450,6 @@ class CmdProxy {
                         setTransceiverEnableMask, StringTo<uint32_t>,
                         "[bitmask]\n\t[Ctb] Transceiver Enable Mask. Enable "
                         "for each 4 Transceiver channel.");
-    INTEGER_COMMAND_HEX(transceiverenable, getTransceiverEnableMask,
-                        setTransceiverEnableMask, StringTo<uint32_t>,
-                        "[bitmask]\n\t[Ctb] Transceiver Enable Mask. Enable "
-                        "for each 4 Transceiver channel.");
 
     INTEGER_COMMAND_VEC_ID(
         dsamples, getNumberOfDigitalSamples, setNumberOfDigitalSamples,
@@ -2469,15 +2462,8 @@ class CmdProxy {
         "[n_value]\n\t[CTB] Number of transceiver samples expected.");
 
     INTEGER_COMMAND_VEC_ID(
-        tsamples, getNumberOfTransceiverSamples, setNumberOfTransceiverSamples,
-        StringTo<int>,
-        "[n_value]\n\t[CTB] Number of transceiver samples expected.");
-
-    INTEGER_COMMAND_VEC_ID(
         romode, getReadoutMode, setReadoutMode,
         StringTo<slsDetectorDefs::readoutMode>,
-        "[analog|digital|analog_digital|transceiver|digital_transceiver]\n\t["
-        "CTB] Readout mode. Default is analog.");
         "[analog|digital|analog_digital|transceiver|digital_transceiver]\n\t["
         "CTB] Readout mode. Default is analog.");
 

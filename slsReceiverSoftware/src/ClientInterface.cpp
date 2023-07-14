@@ -377,7 +377,6 @@ int ClientInterface::setup_receiver(Interface &socket) {
             impl()->setNumberofAnalogSamples(arg.analogSamples);
             impl()->setNumberofDigitalSamples(arg.digitalSamples);
             impl()->setNumberofTransceiverSamples(arg.transceiverSamples);
-            impl()->setNumberofTransceiverSamples(arg.transceiverSamples);
         }
         if (detType != MYTHEN3) {
             impl()->setAcquisitionTime(std::chrono::nanoseconds(arg.expTimeNs));
@@ -415,7 +414,6 @@ int ClientInterface::setup_receiver(Interface &socket) {
             impl()->setReadoutMode(arg.roMode);
             impl()->setADCEnableMask(arg.adcMask);
             impl()->setTenGigaADCEnableMask(arg.adc10gMask);
-            impl()->setTransceiverEnableMask(arg.transceiverMask);
             impl()->setTransceiverEnableMask(arg.transceiverMask);
         }
         if (detType == GOTTHARD) {

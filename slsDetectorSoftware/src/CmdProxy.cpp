@@ -708,8 +708,7 @@ std::string CmdProxy::ReadoutSpeed(int action) {
               "full_speed option only available from v2.0 boards and is "
               "recommended to set number of interfaces to 2. Also overwrites "
               "adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] "
-              "Readout speed of chip in MHz. Default is 108.\n\t\t[Moench] "
-              "Only Full speed is implemented."
+              "Readout speed of chip in MHz. Default is 108."
            << '\n';
     } else {
         defs::detectorType type = det->getDetectorType().squash();
@@ -1128,35 +1127,6 @@ std::string CmdProxy::TemperatureValues(int action) {
 }
 
 /* list */
-std::string CmdProxy::DacList(const int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << "\n\t[dacname1 dacname2 .. dacname18] \n\t\t[ChipTestBoard] Set "
-              "the list of dac names for this detector.\n\t\t[All] Gets the "
-              "list of dac names for every dac for this detector."
-           << '\n';
-    } else if (action == slsDetectorDefs::GET_ACTION) {
-        if (!args.empty()) {
-            WrongNumberOfParameters(0);
-        }
-        auto t = det->getDacNames();
-        os << ToString(t) << '\n';
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
-            throw RuntimeError("This detector already has fixed dac "
-                               "names. Cannot change them.");
-        }
-        if (det_id != -1) {
-            throw RuntimeError("Cannot configure dacnames at module level");
-        }
-        det->setDacNames(args);
-        os << ToString(args) << '\n';
-    } else {
-        throw RuntimeError("Unknown action");
-    }
-    return os.str();
-}
 
 /* dacs */
 std::string CmdProxy::Dac(int action) {
@@ -2695,7 +2665,7 @@ std::string CmdProxy::AdcVpp(int action) {
     return os.str();
 }
 
-std::string CmdProxy::SlowAdc(int action) {
+std::string CmdProxy::SlowADC(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {

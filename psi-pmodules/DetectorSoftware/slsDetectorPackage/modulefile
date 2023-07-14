@@ -1,0 +1,9 @@
+#%Module1.0
+
+module-whatis		"SLS detector package"
+module-url		"https://www.psi.ch/en/lxn/software-releases"
+module-license		"GNU LGPL 3.0"
+module-maintainer	"Lars Erik Froejdh <erik.froejdh@psi.ch>"
+
+module-help	"
+"

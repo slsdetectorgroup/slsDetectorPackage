@@ -25,8 +25,8 @@ CtbConfig::CtbConfig() {
     setVoltageName(2, "VC");
     setVoltageName(3, "VD");
     setVoltageName(4, "VIO");
-    for (size_t i = 0; i != num_slowAdcs; ++i) {
-        setSlowAdcName(i, "SLOWADC" + ToString(i));
+    for (size_t i = 0; i != num_slowADCs; ++i) {
+        setSlowADCName(i, "SLOWADC" + ToString(i));
     }
 }
 
@@ -64,9 +64,9 @@ void CtbConfig::check_voltage_index(size_t i) const {
 }
 
 void CtbConfig::check_slow_adc_index(size_t i) const {
-    if (i >= num_slowAdcs) {
+    if (i >= num_slowADCs) {
         std::ostringstream oss;
-        oss << "Invalid Slow ADC index. Options: 0 - " << num_slowAdcs
+        oss << "Invalid Slow ADC index. Options: 0 - " << num_slowADCs
             << " or SLOW_ADC0 - SLOW_ADC7";
         throw RuntimeError(oss.str());
     }
@@ -206,33 +206,33 @@ std::vector<std::string> CtbConfig::getVoltageNames() const {
     return names;
 }
 
-void CtbConfig::setSlowAdcName(size_t index, const std::string &name) {
+void CtbConfig::setSlowADCName(size_t index, const std::string &name) {
     check_slow_adc_index(index);
     check_size(name);
-    char *dst = &slowAdcnames[index * name_length];
+    char *dst = &slowADCnames[index * name_length];
     memset(dst, '\0', name_length);
     memcpy(dst, &name[0], name.size());
 }
 
-void CtbConfig::setSlowAdcNames(const std::vector<std::string> &names) {
-    if (names.size() != num_slowAdcs) {
+void CtbConfig::setSlowADCNames(const std::vector<std::string> &names) {
+    if (names.size() != num_slowADCs) {
         throw RuntimeError("Slow ADC names need to be of size " +
-                           std::to_string(num_slowAdcs));
+                           std::to_string(num_slowADCs));
     }
-    for (size_t i = 0; i != num_slowAdcs; ++i) {
-        setSlowAdcName(i, names[i]);
+    for (size_t i = 0; i != num_slowADCs; ++i) {
+        setSlowADCName(i, names[i]);
     }
 }
 
-std::string CtbConfig::getSlowAdcName(size_t index) const {
+std::string CtbConfig::getSlowADCName(size_t index) const {
     check_slow_adc_index(index);
-    return slowAdcnames + index * name_length;
+    return slowADCnames + index * name_length;
 }
 
-std::vector<std::string> CtbConfig::getSlowAdcNames() const {
+std::vector<std::string> CtbConfig::getSlowADCNames() const {
     std::vector<std::string> names;
-    for (size_t i = 0; i != num_slowAdcs; ++i)
-        names.push_back(getSlowAdcName(i));
+    for (size_t i = 0; i != num_slowADCs; ++i)
+        names.push_back(getSlowADCName(i));
     return names;
 }
 

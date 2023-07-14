@@ -5,7 +5,7 @@
 #include "sls/sls_detector_defs.h"
 
 #define REQRD_FRMWRE_VRSN_BOARD2 0x444445 // 1.0 pcb (version = 010)
-#define REQRD_FRMWRE_VRSN        0x230522 // 2.0 pcb (version = 011)
+#define REQRD_FRMWRE_VRSN        0x230710 // 2.0 pcb (version = 011)
 
 #define NUM_HARDWARE_VERSIONS (2)
 #define HARDWARE_VERSION_NUMBERS                                               \
@@ -37,7 +37,7 @@
 #define DEFAULT_DELAY                 (0)
 #define DEFAULT_HIGH_VOLTAGE          (0)
 #define DEFAULT_TIMING_MODE           (AUTO_TIMING)
-#define DEFAULT_SETTINGS              (GAIN0)
+#define DEFAULT_SETTINGS              (G4_HIGHGAIN)
 #define DEFAULT_TX_UDP_PORT           (0x7e9a)
 #define DEFAULT_TMP_THRSHLD           (65 * 1000) // milli degree Celsius
 #define DEFAULT_FLIP_ROWS             (0)
@@ -64,6 +64,10 @@
 
 #define MAX_PHASE_SHIFTS (240)
 #define BIT16_MASK       (0xFFFF)
+
+#define ADC_DECMT_QUARTER_SPEED (0x3)
+#define ADC_DECMT_HALF_SPEED    (0x1)
+#define ADC_DECMT_FULL_SPEED    (0x0)
 
 // pipeline
 #define ADC_PORT_INVERT_VAL (0x55555555)

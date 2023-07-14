@@ -149,18 +149,20 @@ class MainWindow(QtWidgets.QMainWindow):
         msg.setText("Start Acquisition (from any tab): Shift + Return<br>Move Tab Right : Ctrl + '+'<br>Move Tab Left : Ctrl + '-'<br>")
         x = msg.exec_()
 
-    # Function to open file
-    def openFile(self):
+    def loadParameters(self):
         response = QtWidgets.QFileDialog.getOpenFileName(
             parent=self,
-            caption="Select a file to open",
+            caption="Select a parameter file to open",
             directory=os.getcwd(),
             # filter='README (*.md *.ui)'
         )
         if response[0]:
-            print(response[0])
-
-
+            try:
+                parameters = response[0]
+                QtWidgets.QMessageBox.information(self, "Load Parameter Success", "Parameters loaded successfully", QtWidgets.QMessageBox.Ok)
+            except Exception as e:
+                QtWidgets.QMessageBox.warning(self, "Load Parameter Fail", str(e), QtWidgets.QMessageBox.Ok)
+                pass
 
     # DACs tab functions
 
@@ -2183,7 +2185,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Show info
         self.actionInfo.triggered.connect(self.showInfo)
         self.actionKeyboardShortcuts.triggered.connect(self.showKeyBoardShortcuts)
-        self.actionOpen.triggered.connect(self.openFile)
+        self.actionLoadParameters.triggered.connect(self.loadParameters)
 
         # For DACs tab
         n_dacs = len(self.det.daclist)

@@ -17633,8 +17633,7 @@ QPushButton:checked{background-color: red;}</string>
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
+    <addaction name="actionLoadParameters"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -17697,9 +17696,9 @@ QPushButton:checked{background-color: red;}</string>
     </layout>
    </widget>
   </widget>
-  <action name="actionOpen">
+  <action name="actionLoadParameters">
    <property name="text">
-    <string>Open</string>
+    <string>Load Parameters</string>
    </property>
   </action>
   <action name="actionSave">

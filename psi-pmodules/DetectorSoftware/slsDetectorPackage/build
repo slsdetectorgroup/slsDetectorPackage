@@ -1,0 +1,17 @@
+#!/usr/bin/env modbuild
+
+pbuild::set_download_url "https://github.com/slsdetectorgroup/$P/archive/refs/tags/${V_PKG}.tar.gz"
+
+pbuild::add_to_group 'DetectorSoftware'
+pbuild::add_configure_args '-DSLS_USE_SIMULATOR=ON'
+pbuild::add_configure_args '-DSLS_USE_GUI=ON'
+
+if (( V_MAJOR < 7 )); then
+	pbuild::add_patch 'files/fname-fix.patch'
+fi
+
+# Local Variables:
+# mode: sh
+# sh-basic-offset: 8
+# tab-width: 8
+# End:

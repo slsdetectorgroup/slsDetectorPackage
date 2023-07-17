@@ -496,8 +496,10 @@ void DataProcessor::PadMissingPackets(sls_receiver_header header, char *data) {
 /** ctb specific */
 void DataProcessor::RearrangeDbitData(size_t &size, char *data) {
     int nAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
+    int nDigitalDataBytes = generalData->GetNumberOfDigitalDatabytes();
+    int nTransceiverDataBytes = generalData->GetNumberOfTransceiverDatabytes();
     // TODO! (Erik) Refactor and add tests
-    int ctbDigitalDataBytes = size - nAnalogDataBytes - ctbDbitOffset;
+    int ctbDigitalDataBytes = nDigitalDataBytes - ctbDbitOffset;
 
     // no digital data
     if (ctbDigitalDataBytes == 0) {
@@ -506,11 +508,15 @@ void DataProcessor::RearrangeDbitData(size_t &size, char *data) {
         return;
     }
 
-    const int numSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
+    const int numDigitalSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
 
-    // ceil as numResult8Bits could be decimal
-    const int numResult8Bits = ceil((numSamples * ctbDbitList.size()) / 8.00);
-    std::vector<uint8_t> result(numResult8Bits);
+    // const int numResult8Bits = ceil((numDigitalSamples * ctbDbitList.size())
+    // / 8.00);
+    int numBitsPerDbit = numDigitalSamples;
+    if ((numBitsPerDbit % 8) != 0)
+        numBitsPerDbit += (8 - (numDigitalSamples % 8));
+    const int totalNumBytes = (numBitsPerDbit / 8) * ctbDbitList.size();
+    std::vector<uint8_t> result(totalNumBytes);
     uint8_t *dest = &result[0];
 
     auto *source = (uint64_t *)(data + nAnalogDataBytes + ctbDbitOffset);
@@ -518,14 +524,14 @@ void DataProcessor::RearrangeDbitData(size_t &size, char *data) {
     // loop through digital bit enable vector
     int bitoffset = 0;
     for (auto bi : ctbDbitList) {
-        // where numbits * numsamples is not a multiple of 8
+        // where numbits * numDigitalSamples is not a multiple of 8
         if (bitoffset != 0) {
             bitoffset = 0;
             ++dest;
         }
 
         // loop through the frame digital data
-        for (auto *ptr = source; ptr < (source + numSamples);) {
+        for (auto *ptr = source; ptr < (source + numDigitalSamples);) {
             // get selected bit from each 8 bit
             uint8_t bit = (*ptr++ >> bi) & 1;
             *dest |= bit << bitoffset;
@@ -540,8 +546,14 @@ void DataProcessor::RearrangeDbitData(size_t &size, char *data) {
 
     // copy back to memory and update size
     memcpy(data + nAnalogDataBytes, result.data(),
-           numResult8Bits * sizeof(uint8_t));
-    size = numResult8Bits * sizeof(uint8_t) + nAnalogDataBytes + ctbDbitOffset;
+           totalNumBytes * sizeof(uint8_t));
+    size = totalNumBytes * sizeof(uint8_t) + nAnalogDataBytes + ctbDbitOffset +
+           nTransceiverDataBytes;
+    LOG(logDEBUG1) << "totalNumBytes: " << totalNumBytes
+                     << " nAnalogDataBytes:" << nAnalogDataBytes
+                     << " ctbDbitOffset:" << ctbDbitOffset
+                     << " nTransceiverDataBytes:" << nTransceiverDataBytes
+                     << " size:" << size;
 }
 
 void DataProcessor::CropImage(size_t &size, char *data) {

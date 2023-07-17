@@ -343,7 +343,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Sense Tab functions
     def updateSlowAdcNames(self):
-        for i, name in enumerate(self.det.getSlowAdcNames()):
+        for i, name in enumerate(self.det.getSlowADCNames()):
             getattr(self, f"labelSlowAdc{i}").setText(name)    
 
     def updateSlowAdc(self, i):
@@ -1300,9 +1300,18 @@ class MainWindow(QtWidgets.QMainWindow):
             self.comboBoxPlot.setEnabled(True)          
             self.comboBoxPlot.currentIndexChanged.disconnect()
             # matterhorn image
+            if self.comboBoxPlot.currentIndex() == 0:
+                if self.romode not in [readoutMode.TRANSCEIVER_ONLY, readoutMode.DIGITAL_AND_TRANSCEIVER]:
+                    QtWidgets.QMessageBox.warning(self, "Plot type", "To read Matterhorn image, please enable transceiver readout mode", QtWidgets.QMessageBox.Ok)
+                if self.getTransceiverEnableReg() != Defines.Matterhorn.tranceiverEnable:
+                    QtWidgets.QMessageBox.warcning(self, "Plot type", "To read Matterhorn image, please set transceiver enable to " + str(Defines.Matternhorn.tranceiverEnable), QtWidgets.QMessageBox.Ok)
+            # moench04 image
             if self.comboBoxPlot.currentIndex() == 1:
-                if self.getTransceiverEnableReg() != Defines.Matternhorn.tranceiverEnable:
-                    QtWidgets.QMessageBox.warning(self, "To read Matterhorn image, please set transceiver enable to " + str(Defines.Matternhorn.tranceiverEnable), QtWidgets.QMessageBox.Ok)
+                if self.romode not in [readoutMode.ANALOG_ONLY, readoutMode.ANALOG_AND_DIGITAL]:
+                    QtWidgets.QMessageBox.warning(self, "Plot type", "To read Moench 04 image, please enable analog readout mode", QtWidgets.QMessageBox.Ok)
+                if self.nADCEnabled != 32:
+                    QtWidgets.QMessageBox.warning(self, "Plot type", "To read Moench 04 image, please enable all 32 adcs", QtWidgets.QMessageBox.Ok)
+                        
             # other images not implemented yet
             elif self.comboBoxPlot.currentIndex() > 1:
                 QtWidgets.QMessageBox.warning(self, "Not Implemented Yet", "Sorry, this is not implemented yet.", QtWidgets.QMessageBox.Ok)
@@ -1924,14 +1933,13 @@ class MainWindow(QtWidgets.QMainWindow):
             # image
             else:
 
-                # analog fake image
+                # analog
                 if self.romode.value in [0, 2]:  
                     analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count= self.nADCEnabled * self.asamples))
-                    self.nAnalogRows = self.nADCEnabled + 1000
-                    self.nAnalogCols = self.asamples
-                    self.analog_frame = np.zeros((self.nAnalogCols, self.nAnalogRows))
-                    self.plotAnalogImage.setImage(self.analog_frame)
-
+                    
+                    if self.comboBoxPlot.currentIndex() == Defines.ImageIndex.Moench04.value:
+                        self.moench04Analog(analog_array)
+                    
                 # transceiver
                 if self.romode.value in [3, 4]:  
                     transceiverOffset = 0     
@@ -1942,20 +1950,11 @@ class MainWindow(QtWidgets.QMainWindow):
                         transceiverOffset += self.nDbitEnabled * (nbitsPerDBit // 8)
                     #print(f'transceiverOffset:{transceiverOffset}')
                     trans_array = np.array(np.frombuffer(data, offset = transceiverOffset, dtype=np.uint16))
-                    self.nTransceiverRows = Defines.Matterhorn.nRows
-                    self.nTransceiverCols = Defines.Matterhorn.nCols
-                    self.transceiver_frame = np.zeros((self.nTransceiverCols, self.nTransceiverRows))
-                    offset = 0
-                    nSamples = Defines.Matterhorn.nPixelsPerTransceiver
-                    for row in range(Defines.Matterhorn.nRows):
-                        for col in range(Defines.Matterhorn.nHalfCols):
-                            #print(f'row:{row} col:{col} offset: {offset}')
-                            for iTrans in range(Defines.Matterhorn.nTransceivers):
-                                self.transceiver_frame[iTrans * Defines.Matterhorn.nHalfCols + col, row] = trans_array[offset + nSamples * iTrans]
-                            offset += 1
-                            if (col + 1) % nSamples == 0:
-                                offset += nSamples
-                    self.plotTransceiverImage.setImage(self.transceiver_frame)
+                    
+                    if self.comboBoxPlot.currentIndex() == Defines.ImageIndex.Matterhorn.value:
+                        self.matterhornImage(trans_array)
+
+
 
         except zmq.ZMQError as e:
             pass
@@ -1963,6 +1962,64 @@ class MainWindow(QtWidgets.QMainWindow):
             print(f'Caught exception: {str(e)}')
 
 
+    def moench04Analog(self, analog_array):
+        #print("moench 04 analog image")
+        self.nAnalogRows = 400
+        self.nAnalogCols = 400
+
+        # check size
+        if analog_array.size != self.nAnalogRows * self.nAnalogCols:
+            self.statusbar.setStyleSheet("color:red")
+            message = f'Warning: Invalid size for Analog Image. Expected {self.nAnalogRows * self.nAnalogCols} size, got {analog_array.size} instead.'
+            self.statusbar.showMessage(message)
+            print(message)
+            return
+
+
+        self.analog_frame = np.zeros((self.nAnalogCols, self.nAnalogRows))
+        adcNumbers = Defines.Moench04.adcNumbers
+        nPixelsPerSC = Defines.Moench04.nPixelsPerSuperColumn
+        scWidth = Defines.Moench04.superColumnWidth
+
+        for iPixel in range(nPixelsPerSC):
+            for iSC, iAdc in enumerate(adcNumbers):
+                col = ((iAdc % 16) * scWidth) + (iPixel % scWidth)
+                if iSC < 16:
+                    row = 199 - int(iPixel / scWidth)
+                else:
+                    row = 200 + int(iPixel / scWidth)
+                index_min = iPixel * 32 + iSC
+                pixel_value = analog_array[index_min]
+                self.analog_frame[row, col] = pixel_value
+                
+        self.plotAnalogImage.setImage(self.analog_frame)
+
+
+    def matterhornImage(self, trans_array):
+        #print("matterhorn image")
+        self.nTransceiverRows = Defines.Matterhorn.nRows
+        self.nTransceiverCols = Defines.Matterhorn.nCols
+
+        # check size
+        if trans_array.size != self.nTransceiverRows * self.nTransceiverCols:
+            self.statusbar.setStyleSheet("color:red")
+            message = f'Warning: Invalid size for Transceiver Image. Expected {self.nTransceiverRows * self.nTransceiverCols} size, got {trans_array.size} instead.'
+            self.statusbar.showMessage(message)
+            print(message)
+            return
+
+        self.transceiver_frame = np.zeros((self.nTransceiverCols, self.nTransceiverRows))
+        offset = 0
+        nSamples = Defines.Matterhorn.nPixelsPerTransceiver
+        for row in range(Defines.Matterhorn.nRows):
+            for col in range(Defines.Matterhorn.nHalfCols):
+                #print(f'row:{row} col:{col} offset: {offset}')
+                for iTrans in range(Defines.Matterhorn.nTransceivers):
+                    self.transceiver_frame[iTrans * Defines.Matterhorn.nHalfCols + col, row] = trans_array[offset + nSamples * iTrans]
+                offset += 1
+                if (col + 1) % nSamples == 0:
+                    offset += nSamples
+        self.plotTransceiverImage.setImage(self.transceiver_frame)
 
 
     def getRandomColor(self):

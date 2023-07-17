@@ -18,18 +18,18 @@ include(cmake/SlsAddFlag.cmake)
 
 # Using FetchContent to get libzmq
 include(FetchContent)
-
-option(SLS_FETCH_ZMQ_FROM_GITHUB "HDF5 File format" OFF)
+option(SLS_FETCH_ZMQ_FROM_GITHUB "Fetch zmq from github" OFF)
 
 if(SLS_FETCH_ZMQ_FROM_GITHUB)
-    # Opt in to pull down a zmq version from github
+    # Opt in to pull down a zmq version from github instead of
+    # using the bundled verison
     FetchContent_Declare(
         libzmq
         GIT_REPOSITORY https://github.com/zeromq/libzmq.git
         GIT_TAG        v4.3.4
     )
 else()
-    # Normal behaviour use the libzmq included in this repo
+    # Standard behaviour use libzmq included in this repo (libs/libzmq)
     FetchContent_Declare(
         libzmq
         URL ${CMAKE_SOURCE_DIR}/libs/libzmq/libzmq-4.3.4.tar.gz
@@ -37,8 +37,7 @@ else()
     )
 endif()
 
-
-# Disable unwanted options
+# Disable unwanted options from libzmq
 set(BUILD_TESTS OFF CACHE BOOL "Switch off libzmq test build")
 set(BUILD_SHARED OFF CACHE BOOL "Switch off libzmq shared libs")
 set(WITH_PERF_TOOL OFF CACHE BOOL "")
@@ -47,8 +46,8 @@ set(ENABLE_CLANG OFF CACHE BOOL "")
 set(ENABLE_CURVE OFF CACHE BOOL "")
 set(ENABLE_DRAFTS OFF CACHE BOOL "")
 
-# Using GetProperties and Poulate to be able to
-# exclude zmq from install (not possible with FetchContent_MakeAvailable(libzmq))
+# Using GetProperties and Populate to be able to exclude zmq
+# from install (not possible with FetchContent_MakeAvailable(libzmq))
 FetchContent_GetProperties(libzmq)
 if(NOT libzmq_POPULATED)
   FetchContent_Populate(libzmq)

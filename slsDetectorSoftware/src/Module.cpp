@@ -2387,6 +2387,19 @@ void Module::setTenGigaADCEnableMask(uint32_t mask) {
     }
 }
 
+uint32_t Module::getTransceiverEnableMask() const {
+    return sendToDetector<uint32_t>(F_GET_TRANSCEIVER_ENABLE_MASK);
+}
+
+void Module::setTransceiverEnableMask(uint32_t mask) {
+    sendToDetector(F_SET_TRANSCEIVER_ENABLE_MASK, mask, nullptr);
+    // update #nchan, as it depends on #samples, adcmask,
+    updateNumberOfChannels();
+
+    if (shm()->useReceiverFlag) {
+        sendToReceiver<int>(F_RECEIVER_SET_TRANSCEIVER_MASK, mask);
+    }
+}
 // CTB Specific
 
 int Module::getNumberOfDigitalSamples() const {
@@ -2401,6 +2414,18 @@ void Module::setNumberOfDigitalSamples(int value) {
     }
 }
 
+int Module::getNumberOfTransceiverSamples() const {
+    return sendToDetector<int>(F_GET_NUM_TRANSCEIVER_SAMPLES);
+}
+
+void Module::setNumberOfTransceiverSamples(int value) {
+    sendToDetector(F_SET_NUM_TRANSCEIVER_SAMPLES, value, nullptr);
+    updateNumberOfChannels(); // depends on samples and adcmask
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_NUM_TRANSCEIVER_SAMPLES, value, nullptr);
+    }
+}
+
 slsDetectorDefs::readoutMode Module::getReadoutMode() const {
     return sendToDetector<readoutMode>(F_GET_READOUT_MODE);
 }
@@ -2408,6 +2433,7 @@ slsDetectorDefs::readoutMode Module::getReadoutMode() const {
 void Module::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
     auto arg = static_cast<uint32_t>(mode); // TODO! unit?
     sendToDetector(F_SET_READOUT_MODE, arg, nullptr);
+    sendToDetectorStop(F_SET_READOUT_MODE, arg, nullptr);
     // update #nchan, as it depends on #samples, adcmask,
     if (shm()->detType == CHIPTESTBOARD) {
         updateNumberOfChannels();

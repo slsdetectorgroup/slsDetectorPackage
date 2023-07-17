@@ -406,7 +406,13 @@ typedef struct {
     /**
      * read out mode (ctb)
      */
-    enum readoutMode { ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL };
+    enum readoutMode {
+        ANALOG_ONLY,
+        DIGITAL_ONLY,
+        ANALOG_AND_DIGITAL,
+        TRANSCEIVER_ONLY,
+        DIGITAL_AND_TRANSCEIVER
+    };
 
     /** chip speed */
     enum speedLevel {
@@ -588,6 +594,8 @@ enum streamingInterface {
         int64_t gateDelay3Ns{0};
         int gates{0};
         scanParameters scanParams{};
+        int transceiverSamples{0};
+        uint32_t transceiverMask{0};
     } __attribute__((packed));
 #endif
 

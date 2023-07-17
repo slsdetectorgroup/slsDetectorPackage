@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
+// clang-format off
 
 /* Definitions for FPGA */
 #define MEM_MAP_SHIFT 1
@@ -87,7 +88,7 @@
 
 /* PLL Param (Reconfiguratble PLL Parameter) RO register TODO FIXME: Same as
  * PLL_PARAM_REG 0x50 */
-//#define PLL_PARAM_REG                       (0x05 << MEM_MAP_SHIFT)
+// #define PLL_PARAM_REG                       (0x05 << MEM_MAP_SHIFT)
 
 /* FIFO Data RO register TODO */
 #define FIFO_DATA_REG (0x06 << MEM_MAP_SHIFT)
@@ -95,8 +96,9 @@
 #define FIFO_DATA_HRDWR_SRL_NMBR_OFST (0)
 #define FIFO_DATA_HRDWR_SRL_NMBR_MSK                                           \
     (0x0000FFFF << FIFO_DATA_HRDWR_SRL_NMBR_OFST)
-//#define FIFO_DATA_WRD_OFST                  (16)
-//#define FIFO_DATA_WRD_MSK                   (0x0000FFFF << FIFO_DATA_WRD_OFST)
+// #define FIFO_DATA_WRD_OFST                  (16)
+// #define FIFO_DATA_WRD_MSK                   (0x0000FFFF <<
+// FIFO_DATA_WRD_OFST)
 
 /* FIFO Status RO register TODO */
 #define FIFO_STATUS_REG (0x07 << MEM_MAP_SHIFT)
@@ -146,15 +148,15 @@
 #define PERIOD_LEFT_MSB_REG (0x19 << MEM_MAP_SHIFT)
 
 /* Exposure Time Left 64 bit RO register */
-//#define EXPTIME_LEFT_LSB_REG                (0x1A << MEM_MAP_SHIFT) // Not
-// used in FW #define EXPTIME_LEFT_MSB_REG                (0x1B <<
-// MEM_MAP_SHIFT)
+// #define EXPTIME_LEFT_LSB_REG                (0x1A << MEM_MAP_SHIFT) // Not
+//  used in FW #define EXPTIME_LEFT_MSB_REG                (0x1B <<
+//  MEM_MAP_SHIFT)
 //// Not used in FW
 
 /* Gates Left 64 bit RO register */
-//#define GATES_LEFT_LSB_REG                  (0x1C << MEM_MAP_SHIFT) // Not
-// used in FW #define GATES_LEFT_MSB_REG                  (0x1D <<
-// MEM_MAP_SHIFT)
+// #define GATES_LEFT_LSB_REG                  (0x1C << MEM_MAP_SHIFT) // Not
+//  used in FW #define GATES_LEFT_MSB_REG                  (0x1D <<
+//  MEM_MAP_SHIFT)
 //// Not used in FW
 
 /* Data In 64 bit RO register TODO */
@@ -184,14 +186,28 @@
 #define POWER_STATUS_ALRT_OFST (27)
 #define POWER_STATUS_ALRT_MSK  (0x0000001F << POWER_STATUS_ALRT_OFST)
 
+/* FIFO Transceiver In Status RO register */
+#define FIFO_TIN_STATUS_REG                 (0x30 << MEM_MAP_SHIFT)
+#define FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST   (4)
+#define FIFO_TIN_STATUS_FIFO_EMPTY_1_MSK    (0x00000001 << FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST)
+#define FIFO_TIN_STATUS_FIFO_EMPTY_2_OFST   (5)
+#define FIFO_TIN_STATUS_FIFO_EMPTY_2_MSK    (0x00000001 << FIFO_TIN_STATUS_FIFO_EMPTY_2_OFST)
+#define FIFO_TIN_STATUS_FIFO_EMPTY_3_OFST   (6)
+#define FIFO_TIN_STATUS_FIFO_EMPTY_3_MSK    (0x00000001 << FIFO_TIN_STATUS_FIFO_EMPTY_3_OFST)
+#define FIFO_TIN_STATUS_FIFO_EMPTY_4_OFST   (7)
+#define FIFO_TIN_STATUS_FIFO_EMPTY_4_MSK    (0x00000001 << FIFO_TIN_STATUS_FIFO_EMPTY_4_OFST)
+#define FIFO_TIN_STATUS_FIFO_EMPTY_ALL_MSK  (0x0000000F << FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST)
+
+/* FIFO Transceiver In 64 bit RO register */
+#define FIFO_TIN_LSB_REG (0x31 << MEM_MAP_SHIFT)
+#define FIFO_TIN_MSB_REG (0x32 << MEM_MAP_SHIFT)
+
 /* FIFO Digital In Status RO register */
-#define FIFO_DIN_STATUS_REG            (0x3B << MEM_MAP_SHIFT)
-#define FIFO_DIN_STATUS_FIFO_FULL_OFST (30)
-#define FIFO_DIN_STATUS_FIFO_FULL_MSK                                          \
-    (0x00000001 << FIFO_DIN_STATUS_FIFO_FULL_OFST)
+#define FIFO_DIN_STATUS_REG             (0x3B << MEM_MAP_SHIFT)
+#define FIFO_DIN_STATUS_FIFO_FULL_OFST  (30)
+#define FIFO_DIN_STATUS_FIFO_FULL_MSK   (0x00000001 << FIFO_DIN_STATUS_FIFO_FULL_OFST)
 #define FIFO_DIN_STATUS_FIFO_EMPTY_OFST (31)
-#define FIFO_DIN_STATUS_FIFO_EMPTY_MSK                                         \
-    (0x00000001 << FIFO_DIN_STATUS_FIFO_EMPTY_OFST)
+#define FIFO_DIN_STATUS_FIFO_EMPTY_MSK  (0x00000001 << FIFO_DIN_STATUS_FIFO_EMPTY_OFST)
 
 /* FIFO Digital In 64 bit RO register */
 #define FIFO_DIN_LSB_REG (0x3C << MEM_MAP_SHIFT)
@@ -246,14 +262,16 @@
 /* Dummy RW register */
 #define DUMMY_REG (0x44 << MEM_MAP_SHIFT)
 
-#define DUMMY_FIFO_CHNNL_SLCT_OFST    (0)
-#define DUMMY_FIFO_CHNNL_SLCT_MSK     (0x0000003F << DUMMY_FIFO_CHNNL_SLCT_OFST)
-#define DUMMY_ANLG_FIFO_RD_STRBE_OFST (8)
-#define DUMMY_ANLG_FIFO_RD_STRBE_MSK                                           \
-    (0x00000001 << DUMMY_ANLG_FIFO_RD_STRBE_OFST)
-#define DUMMY_DGTL_FIFO_RD_STRBE_OFST (9)
-#define DUMMY_DGTL_FIFO_RD_STRBE_MSK                                           \
-    (0x00000001 << DUMMY_DGTL_FIFO_RD_STRBE_OFST)
+#define DUMMY_FIFO_CHNNL_SLCT_OFST          (0)
+#define DUMMY_FIFO_CHNNL_SLCT_MSK           (0x0000003F << DUMMY_FIFO_CHNNL_SLCT_OFST)
+#define DUMMY_ANLG_FIFO_RD_STRBE_OFST       (8)
+#define DUMMY_ANLG_FIFO_RD_STRBE_MSK        (0x00000001 << DUMMY_ANLG_FIFO_RD_STRBE_OFST)
+#define DUMMY_DGTL_FIFO_RD_STRBE_OFST       (9)
+#define DUMMY_DGTL_FIFO_RD_STRBE_MSK        (0x00000001 << DUMMY_DGTL_FIFO_RD_STRBE_OFST)
+#define DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_OFST  (12)
+#define DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK   (0x00000003 << DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_OFST)
+#define DUMMY_TRNSCVR_FIFO_RD_STRBE_OFST    (14)
+#define DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK     (0x00000001 << DUMMY_TRNSCVR_FIFO_RD_STRBE_OFST)
 
 /* Receiver IP Address RW register */
 #define RX_IP_REG (0x45 << MEM_MAP_SHIFT)
@@ -296,14 +314,17 @@
 /* Configuration RW register */
 #define CONFIG_REG (0x4D << MEM_MAP_SHIFT)
 
-#define CONFIG_LED_DSBL_OFST        (0)
-#define CONFIG_LED_DSBL_MSK         (0x00000001 << CONFIG_LED_DSBL_OFST)
-#define CONFIG_DSBL_ANLG_OTPT_OFST  (8)
-#define CONFIG_DSBL_ANLG_OTPT_MSK   (0x00000001 << CONFIG_DSBL_ANLG_OTPT_OFST)
-#define CONFIG_ENBLE_DGTL_OTPT_OFST (9)
-#define CONFIG_ENBLE_DGTL_OTPT_MSK  (0x00000001 << CONFIG_ENBLE_DGTL_OTPT_OFST)
-#define CONFIG_GB10_SND_UDP_OFST    (12)
-#define CONFIG_GB10_SND_UDP_MSK     (0x00000001 << CONFIG_GB10_SND_UDP_OFST)
+#define CONFIG_LED_DSBL_OFST           (0)
+#define CONFIG_LED_DSBL_MSK            (0x00000001 << CONFIG_LED_DSBL_OFST)
+#define CONFIG_DSBL_ANLG_OTPT_OFST     (8)
+#define CONFIG_DSBL_ANLG_OTPT_MSK      (0x00000001 << CONFIG_DSBL_ANLG_OTPT_OFST)
+#define CONFIG_ENBLE_DGTL_OTPT_OFST    (9)
+#define CONFIG_ENBLE_DGTL_OTPT_MSK     (0x00000001 << CONFIG_ENBLE_DGTL_OTPT_OFST)
+#define CONFIG_ENBLE_TRNSCVR_OTPT_OFST (10)
+#define CONFIG_ENBLE_TRNSCVR_OTPT_MSK                                          \
+    (0x00000001 << CONFIG_ENBLE_TRNSCVR_OTPT_OFST)
+#define CONFIG_GB10_SND_UDP_OFST (12)
+#define CONFIG_GB10_SND_UDP_MSK  (0x00000001 << CONFIG_GB10_SND_UDP_OFST)
 
 /* External Signal RW register */
 #define EXT_SIGNAL_REG (0x4E << MEM_MAP_SHIFT)
@@ -320,33 +341,34 @@
 #define CONTROL_STRT_ACQSTN_MSK  (0x00000001 << CONTROL_STRT_ACQSTN_OFST)
 #define CONTROL_STP_ACQSTN_OFST  (1)
 #define CONTROL_STP_ACQSTN_MSK   (0x00000001 << CONTROL_STP_ACQSTN_OFST)
-//#define CONTROL_STRT_FF_TST_OFST            (2)
-//#define CONTROL_STRT_FF_TST_MSK             (0x00000001 <<
-// CONTROL_STRT_FF_TST_OFST) #define CONTROL_STP_FF_TST_OFST             (3)
-//#define CONTROL_STP_FF_TST_MSK              (0x00000001 <<
-// CONTROL_STP_FF_TST_OFST) #define CONTROL_STRT_RDT_OFST               (4)
-//#define CONTROL_STRT_RDT_MSK                (0x00000001 <<
-// CONTROL_STRT_RDT_OFST) #define CONTROL_STP_RDT_OFST                (5)
-// #define CONTROL_STP_RDT_MSK                 (0x00000001 <<
-// CONTROL_STP_RDT_OFST)
+// #define CONTROL_STRT_FF_TST_OFST            (2)
+// #define CONTROL_STRT_FF_TST_MSK             (0x00000001 <<
+//  CONTROL_STRT_FF_TST_OFST) #define CONTROL_STP_FF_TST_OFST             (3)
+// #define CONTROL_STP_FF_TST_MSK              (0x00000001 <<
+//  CONTROL_STP_FF_TST_OFST) #define CONTROL_STRT_RDT_OFST               (4)
+// #define CONTROL_STRT_RDT_MSK                (0x00000001 <<
+//  CONTROL_STRT_RDT_OFST) #define CONTROL_STP_RDT_OFST                (5)
+//  #define CONTROL_STP_RDT_MSK                 (0x00000001 <<
+//  CONTROL_STP_RDT_OFST)
 #define CONTROL_STRT_EXPSR_OFST (6)
 #define CONTROL_STRT_EXPSR_MSK  (0x00000001 << CONTROL_STRT_EXPSR_OFST)
-//#define CONTROL_STP_EXPSR_OFST              (7)
-//#define CONTROL_STP_EXPSR_MSK               (0x00000001 <<
-// CONTROL_STP_RDT_OFST) #define CONTROL_STRT_TRN_OFST               (8) #define
-// CONTROL_STRT_TRN_MSK                (0x00000001 << CONTROL_STRT_RDT_OFST)
-//#define CONTROL_STP_TRN_OFST                (9)
-//#define CONTROL_STP_TRN_MSK                 (0x00000001 <<
-// CONTROL_STP_RDT_OFST)
+// #define CONTROL_STP_EXPSR_OFST              (7)
+// #define CONTROL_STP_EXPSR_MSK               (0x00000001 <<
+//  CONTROL_STP_RDT_OFST) #define CONTROL_STRT_TRN_OFST               (8)
+//  #define CONTROL_STRT_TRN_MSK                (0x00000001 <<
+//  CONTROL_STRT_RDT_OFST)
+// #define CONTROL_STP_TRN_OFST                (9)
+// #define CONTROL_STP_TRN_MSK                 (0x00000001 <<
+//  CONTROL_STP_RDT_OFST)
 #define CONTROL_CRE_RST_OFST    (10)
 #define CONTROL_CRE_RST_MSK     (0x00000001 << CONTROL_CRE_RST_OFST)
 #define CONTROL_PRPHRL_RST_OFST (11) // Only GBE10?
 #define CONTROL_PRPHRL_RST_MSK  (0x00000001 << CONTROL_PRPHRL_RST_OFST)
 #define CONTROL_MMRY_RST_OFST   (12)
 #define CONTROL_MMRY_RST_MSK    (0x00000001 << CONTROL_MMRY_RST_OFST)
-//#define CONTROL_PLL_RCNFG_WR_OFST           (13)
-//#define CONTROL_PLL_RCNFG_WR_MSK            (0x00000001 <<
-// CONTROL_PLL_RCNFG_WR_OFST)
+// #define CONTROL_PLL_RCNFG_WR_OFST           (13)
+// #define CONTROL_PLL_RCNFG_WR_MSK            (0x00000001 <<
+//  CONTROL_PLL_RCNFG_WR_OFST)
 #define CONTROL_SND_10GB_PCKT_OFST   (14)
 #define CONTROL_SND_10GB_PCKT_MSK    (0x00000001 << CONTROL_SND_10GB_PCKT_OFST)
 #define CONTROL_CLR_ACQSTN_FIFO_OFST (15)
@@ -457,8 +479,10 @@
 #define POWER_HV_INTERNAL_SLCT_OFST (31)
 #define POWER_HV_INTERNAL_SLCT_MSK  (0x00000001 << POWER_HV_INTERNAL_SLCT_OFST)
 
-/* Number of Words RW register TODO */
-#define NUMBER_OF_WORDS_REG (0x5F << MEM_MAP_SHIFT)
+/* Number of samples from transceiver RW register */
+#define SAMPLES_TRANSCEIVER_REG  (0x5F << MEM_MAP_SHIFT)
+#define SAMPLES_TRANSCEIVER_OFST (0)
+#define SAMPLES_TRANSCEIVER_MSK  (0x0000FFFF << SAMPLES_TRANSCEIVER_OFST)
 
 /* Delay 64 bit RW register. t = DLY x 50 ns. */
 #define DELAY_LSB_REG (0x60 << MEM_MAP_SHIFT)
@@ -477,14 +501,15 @@
 #define PERIOD_MSB_REG (0x67 << MEM_MAP_SHIFT)
 
 /* Period 64 bit RW register */
-//#define EXPTIME_LSB_REG    			    (0x68 << MEM_MAP_SHIFT) //
-// Not used in FW #define EXPTIME_MSB_REG    			    (0x69 <<
-// MEM_MAP_SHIFT)                 // Not used in FW
+// #define EXPTIME_LSB_REG    			    (0x68 << MEM_MAP_SHIFT) //
+//  Not used in FW #define EXPTIME_MSB_REG    			    (0x69 <<
+//  MEM_MAP_SHIFT)                 // Not used in FW
 
 /* Gates 64 bit RW register */
-//#define GATES_LSB_REG                      (0x6A << MEM_MAP_SHIFT) // Not used
-// in FW #define GATES_MSB_REG                      (0x6B << MEM_MAP_SHIFT) //
-// Not used in FW
+// #define GATES_LSB_REG                      (0x6A << MEM_MAP_SHIFT) // Not
+// used
+//  in FW #define GATES_MSB_REG                      (0x6B << MEM_MAP_SHIFT) //
+//  Not used in FW
 
 /* Pattern IO Control 64 bit RW regiser
  * Each bit configured as output(1)/ input(0) */
@@ -516,10 +541,13 @@
 /* Readout enable RW register */
 #define READOUT_10G_ENABLE_REG (0x79 << MEM_MAP_SHIFT)
 
-#define READOUT_10G_ENABLE_ANLG_OFST (0)
-#define READOUT_10G_ENABLE_ANLG_MSK  (0x000000FF << READOUT_10G_ENABLE_ANLG_OFST)
-#define READOUT_10G_ENABLE_DGTL_OFST (8)
-#define READOUT_10G_ENABLE_DGTL_MSK  (0x00000001 << READOUT_10G_ENABLE_DGTL_OFST)
+#define READOUT_10G_ENABLE_ANLG_OFST    (0)
+#define READOUT_10G_ENABLE_ANLG_MSK     (0x000000FF << READOUT_10G_ENABLE_ANLG_OFST)
+#define READOUT_10G_ENABLE_DGTL_OFST    (8)
+#define READOUT_10G_ENABLE_DGTL_MSK     (0x00000001 << READOUT_10G_ENABLE_DGTL_OFST)
+#define READOUT_10G_ENABLE_TRNSCVR_OFST (9)
+#define READOUT_10G_ENABLE_TRNSCVR_MSK                                         \
+    (0x0000000F << READOUT_10G_ENABLE_TRNSCVR_OFST)
 
 /* Digital Bit External Trigger RW register */
 #define DBIT_EXT_TRG_REG (0x7B << MEM_MAP_SHIFT)
@@ -725,3 +753,5 @@
 
 /* Round Robin  */
 #define RXR_ENDPOINT_START_REG (0x1000 << MEM_MAP_SHIFT)
+
+// clang-format on

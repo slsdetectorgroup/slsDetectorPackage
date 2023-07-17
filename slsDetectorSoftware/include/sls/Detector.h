@@ -1647,6 +1647,13 @@ class Detector {
     /** [CTB] If any of a consecutive 4 bits are enabled, the "
         "complete 4 bits are enabled */
     void setTenGigaADCEnableMask(uint32_t mask, Positions pos = {});
+
+    /** [CTB] */
+    Result<uint32_t> getTransceiverEnableMask(Positions pos = {}) const;
+
+    /** [CTB] */
+    void setTransceiverEnableMask(uint32_t mask, Positions pos = {});
+
     ///@}
 
     /** @name CTB Specific */
@@ -1664,9 +1671,16 @@ class Detector {
     void setNumberOfDigitalSamples(int value, Positions pos = {});
 
     /** [CTB] */
+    Result<int> getNumberOfTransceiverSamples(Positions pos = {}) const;
+
+    /** [CTB] */
+    void setNumberOfTransceiverSamples(int value, Positions pos = {});
+
+    /** [CTB] */
     Result<defs::readoutMode> getReadoutMode(Positions pos = {}) const;
 
-    /** [CTB] Options: ANALOG_ONLY (default), DIGITAL_ONLY, ANALOG_AND_DIGITAL
+    /** [CTB] Options: ANALOG_ONLY (default), DIGITAL_ONLY, ANALOG_AND_DIGITAL,
+     * TRANSCEIVER_ONLY, DIGITAL_AND_TRANSCEIVER
      */
     void setReadoutMode(defs::readoutMode value, Positions pos = {});
 

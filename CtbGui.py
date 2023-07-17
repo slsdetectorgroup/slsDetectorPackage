@@ -341,7 +341,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Sense Tab functions
     def updateSlowAdcNames(self):
-        for i, name in enumerate(self.det.getSlowAdcNames()):
+        for i, name in enumerate(self.det.getSlowADCNames()):
             getattr(self, f"labelSlowAdc{i}").setText(name)    
 
     def updateSlowAdc(self, i):

@@ -1,15 +1,62 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
 project(slsDetectorPackage)
 set(PROJECT_VERSION 7.0.0)
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 cmake_policy(SET CMP0074 NEW)
+
+if (${CMAKE_VERSION} VERSION_GREATER "3.24")
+    cmake_policy(SET CMP0135 NEW) #Fetch content download timestamp
+endif()
 include(cmake/project_version.cmake)
 include(cmake/SlsAddFlag.cmake)
-include(cmake/SlsFindZeroMQ.cmake)
+
+
+
+# Using FetchContent to get libzmq
+include(FetchContent)
+option(SLS_FETCH_ZMQ_FROM_GITHUB "Fetch zmq from github" OFF)
+option(SLS_FETCH_PYBIND11_FROM_GITHUB "Fetch pybind11 from github" OFF)
+
+if(SLS_FETCH_ZMQ_FROM_GITHUB)
+    # Opt in to pull down a zmq version from github instead of
+    # using the bundled verison
+    FetchContent_Declare(
+        libzmq
+        GIT_REPOSITORY https://github.com/zeromq/libzmq.git
+        GIT_TAG        v4.3.4
+    )
+else()
+    # Standard behaviour use libzmq included in this repo (libs/libzmq)
+    FetchContent_Declare(
+        libzmq
+        URL ${CMAKE_SOURCE_DIR}/libs/libzmq/libzmq-4.3.4.tar.gz
+        URL_HASH MD5=cc20b769ac10afa352e5ed2769bb23b3
+    )
+endif()
+
+# Disable unwanted options from libzmq
+set(BUILD_TESTS OFF CACHE BOOL "Switch off libzmq test build")
+set(BUILD_SHARED OFF CACHE BOOL "Switch off libzmq shared libs")
+set(WITH_PERF_TOOL OFF CACHE BOOL "")
+set(ENABLE_CPACK OFF CACHE BOOL "")
+set(ENABLE_CLANG OFF CACHE BOOL "")
+set(ENABLE_CURVE OFF CACHE BOOL "")
+set(ENABLE_DRAFTS OFF CACHE BOOL "")
+
+# Using GetProperties and Populate to be able to exclude zmq
+# from install (not possible with FetchContent_MakeAvailable(libzmq))
+FetchContent_GetProperties(libzmq)
+if(NOT libzmq_POPULATED)
+  FetchContent_Populate(libzmq)
+  add_subdirectory(${libzmq_SOURCE_DIR} ${libzmq_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
+
+
 include(GNUInstallDirs)
 
 # If conda build, always set lib dir to 'lib'
@@ -215,10 +262,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INSTALL_RPATH $ORIGIN)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
-
-custom_find_zmq()
-
-
 if (SLS_USE_TESTS)
     enable_testing()
     add_subdirectory(tests)
@@ -252,7 +295,22 @@ endif (SLS_USE_INTEGRATION_TESTS)
 
 if (SLS_USE_PYTHON)
     find_package (Python 3.6 COMPONENTS Interpreter Development)
-    add_subdirectory(libs/pybind  ${CMAKE_BINARY_DIR}/bin/)
+    if(SLS_FETCH_PYBIND11_FROM_GITHUB)
+        FetchContent_Declare(
+            pybind11
+            GIT_REPOSITORY https://github.com/pybind/pybind11
+            GIT_TAG        v2.11.0
+        )
+
+    else()
+        FetchContent_Declare(
+            pybind11
+            URL ${CMAKE_SOURCE_DIR}/libs/pybind11/v2.11.0.tar.gz
+            URL_HASH MD5=90c4946e87c64d8d8fc0ae4edf35d780
+        )
+    endif()
+    FetchContent_MakeAvailable(pybind11)
+
     add_subdirectory(python)
 endif(SLS_USE_PYTHON)
 

@@ -19,6 +19,7 @@ include(cmake/SlsAddFlag.cmake)
 # Using FetchContent to get libzmq
 include(FetchContent)
 option(SLS_FETCH_ZMQ_FROM_GITHUB "Fetch zmq from github" OFF)
+option(SLS_FETCH_PYBIND11_FROM_GITHUB "Fetch pybind11 from github" OFF)
 
 if(SLS_FETCH_ZMQ_FROM_GITHUB)
     # Opt in to pull down a zmq version from github instead of
@@ -294,7 +295,22 @@ endif (SLS_USE_INTEGRATION_TESTS)
 
 if (SLS_USE_PYTHON)
     find_package (Python 3.6 COMPONENTS Interpreter Development)
-    add_subdirectory(libs/pybind  ${CMAKE_BINARY_DIR}/bin/)
+    if(SLS_FETCH_PYBIND11_FROM_GITHUB)
+        FetchContent_Declare(
+            pybind11
+            GIT_REPOSITORY https://github.com/pybind/pybind11
+            GIT_TAG        v2.11.0
+        )
+
+    else()
+        FetchContent_Declare(
+            pybind11
+            URL ${CMAKE_SOURCE_DIR}/libs/pybind11/v2.11.0.tar.gz
+            URL_HASH MD5=90c4946e87c64d8d8fc0ae4edf35d780
+        )
+    endif()
+    FetchContent_MakeAvailable(pybind11)
+
     add_subdirectory(python)
 endif(SLS_USE_PYTHON)
 

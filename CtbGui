@@ -46,7 +46,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         pg.setConfigOption("background", (247, 247, 247))
         pg.setConfigOption("foreground", "k")
-
+        pg.setConfigOption('leftButtonPan', False)
+        
         self.det = Detector()
         self.setup_zmq()
 
@@ -1156,6 +1157,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         cm = pg.colormap.get('CET-L9') # prepare a linear color map
         self.plotAnalogImage.setColorMap(cm)
+
 
     def addSelectedAnalogPlots(self, i):
             enable = getattr(self, f"checkBoxADC{i}Plot").isChecked()

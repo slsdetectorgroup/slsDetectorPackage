@@ -44,7 +44,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         pg.setConfigOption("background", (247, 247, 247))
         pg.setConfigOption("foreground", "k")
-
+        pg.setConfigOption('leftButtonPan', False)
+        
         self.det = Detector()
         self.setup_zmq()
 
@@ -1155,6 +1156,7 @@ class MainWindow(QtWidgets.QMainWindow):
         cm = pg.colormap.get('CET-L9') # prepare a linear color map
         self.plotAnalogImage.setColorMap(cm)
 
+
     def addSelectedAnalogPlots(self, i):
             enable = getattr(self, f"checkBoxADC{i}Plot").isChecked()
             if enable:
@@ -1993,7 +1995,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 pixel_value = analog_array[index_min]
                 self.analog_frame[row, col] = pixel_value
                 
-        self.plotAnalogImage.setImage(self.analog_frame)
+        self.plotAnalogImage.setImage(np.rot90(self.analog_frame))
 
 
     def matterhornImage(self, trans_array):

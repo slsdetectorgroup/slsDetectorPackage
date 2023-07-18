@@ -589,6 +589,24 @@ void Module::setBadChannels(std::vector<int> list) {
     }
 }
 
+int Module::getRow() const { return sendToDetector<int>(F_GET_ROW); }
+
+void Module::setRow(int value) {
+    sendToDetector(F_SET_ROW, value, nullptr);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_ROW, value, nullptr);
+    }
+}
+
+int Module::getColumn() const { return sendToDetector<int>(F_GET_COLUMN); }
+
+void Module::setColumn(int value) {
+    sendToDetector(F_SET_COLUMN, value, nullptr);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_COLUMN, value, nullptr);
+    }
+}
+
 bool Module::isVirtualDetectorServer() const {
     return sendToDetector<int>(F_IS_VIRTUAL);
 }

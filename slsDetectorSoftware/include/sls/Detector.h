@@ -238,6 +238,16 @@ class Detector {
      * channel list. */
     void setBadChannels(const std::vector<std::vector<int>> list);
 
+    Result<int> getRow(Positions pos = {}) const;
+
+    /** Set it in udp header. Gui uses it to rearrange for complete image */
+    void setRow(const int value, Positions pos = {});
+
+    Result<int> getColumn(Positions pos = {}) const;
+
+    /** Set it in udp header. Gui uses it to rearrange for complete image */
+    void setColumn(const int value, Positions pos = {});
+
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;
     ///@}
 

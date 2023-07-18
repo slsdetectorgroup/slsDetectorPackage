@@ -222,6 +222,9 @@ int ClientInterface::functionTable(){
     flist[F_RECEIVER_SET_RECEIVER_ROI_METADATA] =   &ClientInterface::set_receiver_roi_metadata;
     flist[F_RECEIVER_SET_NUM_TRANSCEIVER_SAMPLES] = &ClientInterface::set_num_transceiver_samples;
     flist[F_RECEIVER_SET_TRANSCEIVER_MASK]  =   &ClientInterface::set_transceiver_mask;
+    flist[F_RECEIVER_SET_ROW]               =   &ClientInterface::set_row;
+    flist[F_RECEIVER_SET_COLUMN]            =   &ClientInterface::set_column;    
+
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -1797,6 +1800,28 @@ int ClientInterface::set_transceiver_mask(Interface &socket) {
     }
     LOG(logDEBUG1) << "Transceiver enable mask retval: " << retval;
     return socket.sendResult(retval);
+}
+
+int ClientInterface::set_row(Interface &socket) {
+    auto value = socket.Receive<int>();
+    if (value < 0) {
+        throw RuntimeError("Invalid row " + std::to_string(value));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting num rows to " << value;
+    impl()->setRow(value);
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_column(Interface &socket) {
+    auto value = socket.Receive<int>();
+    if (value < 0) {
+        throw RuntimeError("Invalid column " + std::to_string(value));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting column to " << value;
+    impl()->setColumn(value);
+    return socket.Send(OK);
 }
 
 } // namespace sls

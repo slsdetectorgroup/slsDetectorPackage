@@ -992,6 +992,8 @@ class CmdProxy {
         {"master", &CmdProxy::master},
         {"sync", &CmdProxy::sync},
         {"badchannels", &CmdProxy::BadChannels},
+        {"row", &CmdProxy::row},
+        {"column", &CmdProxy::column},
 
         /* acquisition parameters */
         {"acquire", &CmdProxy::Acquire},
@@ -1541,6 +1543,15 @@ class CmdProxy {
         sync, getSynchronization, setSynchronization, StringTo<int>,
         "[0, 1]\n\t[Jungfrau][Moench] Enables or disables "
         "synchronization between modules.");
+
+    INTEGER_COMMAND_VEC_ID(row, getRow, setRow, StringTo<int>,
+                           "[value]\n\tSet Detector row (udp header) to value. "
+                           "\n\tGui uses it to rearrange for complete image");
+
+    INTEGER_COMMAND_VEC_ID(
+        column, getColumn, setColumn, StringTo<int>,
+        "[value]\n\tSet Detector column (udp header) to value. \n\tGui uses it "
+        "to rearrange for complete image");
 
     /* acquisition parameters */
 

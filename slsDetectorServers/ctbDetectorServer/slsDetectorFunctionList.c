@@ -2605,8 +2605,8 @@ int readSample(int ns) {
             // if channel is in enable mask
             if ((1 << ich) & (transceiverMask)) {
 
-                int offset = FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST + ich;
-                uint32_t mask = (1 << offset);
+                // int offset = FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST + ich;
+                // uint32_t mask = (1 << offset);
                 // int empty = ((bus_r(tStatusAddr) & mask) >> offset);
 
                 // if fifo not empty

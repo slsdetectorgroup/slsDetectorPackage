@@ -1823,7 +1823,7 @@ class Detector(CppDetectorApi):
         :setter: Only implemented for Chiptestboard
         
         """
-        return self.getSlowAdcNames()
+        return self.getSlowADCNames()
 
     @slowadclist.setter
     def slowadclist(self, value):

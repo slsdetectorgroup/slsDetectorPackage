@@ -19,4 +19,5 @@ def moench04(analog_buffer):
             index_min = iPixel * 32 + iSC
             pixel_value = analog_buffer[index_min]
             analog_frame[row, col] = pixel_value
-    return analog_frame
+
+    return np.rot90(analog_frame)

@@ -1135,9 +1135,22 @@ class MainWindow(QtWidgets.QMainWindow):
             pass
 
     # Plot Tab functions
+    
+    def initializeColorMaps(self):
+        self.comboBoxColorMap.addItems(Defines.Color_map)
+        self.comboBoxColorMap.setCurrentIndex(Defines.Color_map.index(Defines.Default_Color_Map))
+        self.setColorMap()
+
+    def setColorMap(self):
+        cm = pg.colormap.getFromMatplotlib(self.comboBoxColorMap.currentText())
+        #print(f'color map:{self.comboBoxColorMap.currentText()}')
+        self.plotAnalogImage.setColorMap(cm)
+        self.plotDigitalImage.setColorMap(cm)
+        self.plotTransceiverImage.setColorMap(cm)
+
     def initializeAllAnalogPlots(self):
         self.plotAnalogWaveform = pg.plot()
-        self.gridLayoutPlot.addWidget(self.plotAnalogWaveform, 0, 0)
+        self.gridLayoutPlot.addWidget(self.plotAnalogWaveform, 1, 0)
         self.analogPlots = {}
         waveform = np.zeros(1000)
         for i in range(32):
@@ -1151,11 +1164,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.nAnalogCols = 0
         self.analog_frame = np.zeros((self.nAnalogRows, self.nAnalogCols))
         self.plotAnalogImage.setImage(self.analog_frame)
-        self.gridLayoutPlot.addWidget(self.plotAnalogImage, 0, 1)
-
-        cm = pg.colormap.get('CET-L9') # prepare a linear color map
-        self.plotAnalogImage.setColorMap(cm)
-
+        self.gridLayoutPlot.addWidget(self.plotAnalogImage, 2, 0)
 
     def addSelectedAnalogPlots(self, i):
             enable = getattr(self, f"checkBoxADC{i}Plot").isChecked()
@@ -1174,7 +1183,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def initializeAllDigitalPlots(self):
         self.plotDigitalWaveform = pg.plot()
-        self.gridLayoutPlot.addWidget(self.plotDigitalWaveform, 1, 0)
+        self.gridLayoutPlot.addWidget(self.plotDigitalWaveform, 3, 0)
         self.digitalPlots = {}
         waveform = np.zeros(1000)
         for i in range(64):
@@ -1188,7 +1197,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.nDigitalCols = 0
         self.digital_frame = np.zeros((self.nDigitalRows, self.nDigitalCols))
         self.plotDigitalImage.setImage(self.digital_frame)
-        self.gridLayoutPlot.addWidget(self.plotDigitalImage, 1, 1)
+        self.gridLayoutPlot.addWidget(self.plotDigitalImage, 4, 0)
 
         cm = pg.colormap.get('CET-L9') # prepare a linear color map
         self.plotDigitalImage.setColorMap(cm)
@@ -1210,7 +1219,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def initializeAllTransceiverPlots(self):
         self.plotTransceiverWaveform = pg.plot()
-        self.gridLayoutPlot.addWidget(self.plotTransceiverWaveform, 2, 0)
+        self.gridLayoutPlot.addWidget(self.plotTransceiverWaveform, 5, 0)
         self.transceiverPlots = {}
         waveform = np.zeros(1000)
         for i in range(4):
@@ -1224,7 +1233,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.nTransceiverCols = 0
         self.transceiver_frame = np.zeros((self.nTransceiverRows, self.nTransceiverCols))
         self.plotTransceiverImage.setImage(self.transceiver_frame)
-        self.gridLayoutPlot.addWidget(self.plotTransceiverImage, 2, 1)
+        self.gridLayoutPlot.addWidget(self.plotTransceiverImage, 6, 0)
 
         cm = pg.colormap.get('CET-L9') # prepare a linear color map
         self.plotTransceiverImage.setColorMap(cm)
@@ -1280,9 +1289,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.framePatternViewer.hide()
         self.showPlot()
 
-        # disable image widgets
-        self.comboBoxPlot.setDisabled(True)
-
         # disable plotting
         self.read_timer.stop()
         
@@ -1300,7 +1306,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.stackedWidgetPlotType.setCurrentIndex(0)
 
         elif self.radioButtonImage.isChecked():
-            self.comboBoxPlot.setEnabled(True)          
             self.comboBoxPlot.currentIndexChanged.disconnect()
             # matterhorn image
             if self.comboBoxPlot.currentIndex() == 0:
@@ -1742,6 +1747,7 @@ class MainWindow(QtWidgets.QMainWindow):
     
     def updateCurrentFrame(self, val):
         self.labelCurrentFrame.setText(str(val))
+        self.labelFrameNumber.setText(str(val))
 
     def updateAcquiredFrames(self, val):
         self.labelAcquiredFrames.setText(str(val))
@@ -1995,8 +2001,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 pixel_value = analog_array[index_min]
                 self.analog_frame[row, col] = pixel_value
                 
-        self.plotAnalogImage.setImage(np.rot90(self.analog_frame))
-
+        self.plotAnalogImage.setImage(np.rot90(self.analog_frame, 3))
 
     def matterhornImage(self, trans_array):
         #print("matterhorn image")
@@ -2217,7 +2222,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.initializeAllAnalogPlots()
         self.initializeAllDigitalPlots()
         self.initializeAllTransceiverPlots()
-
+        self.initializeColorMaps()
 
     def keyPressEvent(self, event):
         if event.modifiers() & QtCore.Qt.ShiftModifier:
@@ -2371,6 +2376,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.radioButtonDistribution.clicked.connect(self.plotOptions)
         self.radioButtonImage.clicked.connect(self.plotOptions)
         self.comboBoxPlot.currentIndexChanged.connect(self.plotOptions)
+        self.comboBoxColorMap.currentIndexChanged.connect(self.setColorMap)
         self.spinBoxSerialOffset.editingFinished.connect(self.setSerialOffset)
         self.spinBoxNCount.editingFinished.connect(self.setNCounter)
         self.spinBoxDynamicRange.editingFinished.connect(self.setDynamicRange)

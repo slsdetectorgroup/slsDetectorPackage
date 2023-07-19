@@ -64,8 +64,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>746</width>
-         <height>886</height>
+         <width>748</width>
+         <height>888</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -17433,7 +17433,7 @@ QPushButton:checked{background-color: red;}</string>
                 <item row="1" column="1" colspan="4">
                  <widget class="QStackedWidget" name="stackedWidgetPlotType">
                   <property name="currentIndex">
-                   <number>0</number>
+                   <number>2</number>
                   </property>
                   <widget class="QWidget" name="pageWaveform">
                    <layout class="QGridLayout" name="gridLayout_23">
@@ -17479,16 +17479,19 @@ QPushButton:checked{background-color: red;}</string>
                   <widget class="QWidget" name="pageDistribution"/>
                   <widget class="QWidget" name="pageImage">
                    <layout class="QGridLayout" name="gridLayout_22">
-                    <item row="0" column="0">
+                    <item row="0" column="1">
                      <widget class="QComboBox" name="comboBoxPlot">
                       <property name="enabled">
-                       <bool>false</bool>
+                       <bool>true</bool>
                       </property>
                       <property name="minimumSize">
                        <size>
                         <width>0</width>
                         <height>31</height>
                        </size>
+                      </property>
+                      <property name="toolTip">
+                       <string>Image decoder</string>
                       </property>
                       <item>
                        <property name="text">
@@ -17517,7 +17520,7 @@ QPushButton:checked{background-color: red;}</string>
                       </item>
                      </widget>
                     </item>
-                    <item row="0" column="1">
+                    <item row="0" column="5">
                      <spacer name="horizontalSpacer_9">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
@@ -17529,6 +17532,52 @@ QPushButton:checked{background-color: red;}</string>
                        </size>
                       </property>
                      </spacer>
+                    </item>
+                    <item row="0" column="4">
+                     <widget class="QComboBox" name="comboBoxColorMap">
+                      <property name="enabled">
+                       <bool>true</bool>
+                      </property>
+                      <property name="minimumSize">
+                       <size>
+                        <width>120</width>
+                        <height>31</height>
+                       </size>
+                      </property>
+                      <property name="toolTip">
+                       <string>Color map of the image</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="2">
+                     <spacer name="horizontalSpacer_18">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Fixed</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="label_9">
+                      <property name="text">
+                       <string>Decoder: </string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="3">
+                     <widget class="QLabel" name="label_10">
+                      <property name="text">
+                       <string>Color Map: </string>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </widget>
@@ -17626,7 +17675,7 @@ QPushButton:checked{background-color: red;}</string>
      <x>0</x>
      <y>0</y>
      <width>1332</width>
-     <height>29</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -17690,7 +17739,15 @@ QPushButton:checked{background-color: red;}</string>
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
        </property>
-       <layout class="QGridLayout" name="gridLayoutPlot"/>
+       <layout class="QGridLayout" name="gridLayoutPlot">
+        <item row="0" column="0">
+         <widget class="QLabel" name="labelFrameNumber">
+          <property name="text">
+           <string>x</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
     </layout>

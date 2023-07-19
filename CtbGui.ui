@@ -17697,10 +17697,16 @@ QPushButton:checked{background-color: red;}</string>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dockWidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="minimumSize">
     <size>
-     <width>535</width>
-     <height>169</height>
+     <width>0</width>
+     <height>0</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -17739,8 +17745,8 @@ QPushButton:checked{background-color: red;}</string>
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
        </property>
-       <layout class="QGridLayout" name="gridLayoutPlot">
-        <item row="0" column="0">
+       <layout class="QVBoxLayout" name="verticalLayoutPlot">
+        <item>
          <widget class="QLabel" name="labelFrameNumber">
           <property name="text">
            <string>x</string>

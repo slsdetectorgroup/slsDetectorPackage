@@ -1150,7 +1150,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def initializeAllAnalogPlots(self):
         self.plotAnalogWaveform = pg.plot()
-        self.gridLayoutPlot.addWidget(self.plotAnalogWaveform, 1, 0)
+        self.verticalLayoutPlot.addWidget(self.plotAnalogWaveform, 1)
         self.analogPlots = {}
         waveform = np.zeros(1000)
         for i in range(32):
@@ -1164,7 +1164,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.nAnalogCols = 0
         self.analog_frame = np.zeros((self.nAnalogRows, self.nAnalogCols))
         self.plotAnalogImage.setImage(self.analog_frame)
-        self.gridLayoutPlot.addWidget(self.plotAnalogImage, 2, 0)
+        self.verticalLayoutPlot.addWidget(self.plotAnalogImage, 2)
 
     def addSelectedAnalogPlots(self, i):
             enable = getattr(self, f"checkBoxADC{i}Plot").isChecked()
@@ -1183,7 +1183,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def initializeAllDigitalPlots(self):
         self.plotDigitalWaveform = pg.plot()
-        self.gridLayoutPlot.addWidget(self.plotDigitalWaveform, 3, 0)
+        self.verticalLayoutPlot.addWidget(self.plotDigitalWaveform, 3)
         self.digitalPlots = {}
         waveform = np.zeros(1000)
         for i in range(64):
@@ -1197,7 +1197,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.nDigitalCols = 0
         self.digital_frame = np.zeros((self.nDigitalRows, self.nDigitalCols))
         self.plotDigitalImage.setImage(self.digital_frame)
-        self.gridLayoutPlot.addWidget(self.plotDigitalImage, 4, 0)
+        self.verticalLayoutPlot.addWidget(self.plotDigitalImage, 4)
 
         cm = pg.colormap.get('CET-L9') # prepare a linear color map
         self.plotDigitalImage.setColorMap(cm)
@@ -1219,7 +1219,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def initializeAllTransceiverPlots(self):
         self.plotTransceiverWaveform = pg.plot()
-        self.gridLayoutPlot.addWidget(self.plotTransceiverWaveform, 5, 0)
+        self.verticalLayoutPlot.addWidget(self.plotTransceiverWaveform, 5)
         self.transceiverPlots = {}
         waveform = np.zeros(1000)
         for i in range(4):
@@ -1233,7 +1233,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.nTransceiverCols = 0
         self.transceiver_frame = np.zeros((self.nTransceiverRows, self.nTransceiverCols))
         self.plotTransceiverImage.setImage(self.transceiver_frame)
-        self.gridLayoutPlot.addWidget(self.plotTransceiverImage, 6, 0)
+        self.verticalLayoutPlot.addWidget(self.plotTransceiverImage, 6)
 
         cm = pg.colormap.get('CET-L9') # prepare a linear color map
         self.plotTransceiverImage.setColorMap(cm)

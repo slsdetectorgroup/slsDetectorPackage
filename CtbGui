@@ -1306,26 +1306,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.stackedWidgetPlotType.setCurrentIndex(0)
 
         elif self.radioButtonImage.isChecked():
-            self.comboBoxPlot.currentIndexChanged.disconnect()
-            # matterhorn image
-            if self.comboBoxPlot.currentIndex() == 0:
-                if self.romode not in [readoutMode.TRANSCEIVER_ONLY, readoutMode.DIGITAL_AND_TRANSCEIVER]:
-                    QtWidgets.QMessageBox.warning(self, "Plot type", "To read Matterhorn image, please enable transceiver readout mode", QtWidgets.QMessageBox.Ok)
-                if self.getTransceiverEnableReg() != Defines.Matterhorn.tranceiverEnable:
-                    QtWidgets.QMessageBox.warcning(self, "Plot type", "To read Matterhorn image, please set transceiver enable to " + str(Defines.Matternhorn.tranceiverEnable), QtWidgets.QMessageBox.Ok)
-            # moench04 image
-            if self.comboBoxPlot.currentIndex() == 1:
-                if self.romode not in [readoutMode.ANALOG_ONLY, readoutMode.ANALOG_AND_DIGITAL]:
-                    QtWidgets.QMessageBox.warning(self, "Plot type", "To read Moench 04 image, please enable analog readout mode", QtWidgets.QMessageBox.Ok)
-                if self.nADCEnabled != 32:
-                    QtWidgets.QMessageBox.warning(self, "Plot type", "To read Moench 04 image, please enable all 32 adcs", QtWidgets.QMessageBox.Ok)
-                        
-            # other images not implemented yet
-            elif self.comboBoxPlot.currentIndex() > 1:
-                QtWidgets.QMessageBox.warning(self, "Not Implemented Yet", "Sorry, this is not implemented yet.", QtWidgets.QMessageBox.Ok)
-                self.comboBoxPlot.setCurrentIndex(0)
-            self.comboBoxPlot.currentIndexChanged.connect(self.plotOptions)
-
             self.stackedWidgetPlotType.setCurrentIndex(2)
                 
         if self.radioButtonNoPlot.isChecked():
@@ -1771,7 +1751,32 @@ class MainWindow(QtWidgets.QMainWindow):
         self.det.stop()
         self.stoppedFlag = True
         
+    def checkBeforeAcquire(self):
+        if self.radioButtonImage.isChecked():
+            # matterhorn image
+            if self.comboBoxPlot.currentIndex() == 0:
+                if self.romode not in [readoutMode.TRANSCEIVER_ONLY, readoutMode.DIGITAL_AND_TRANSCEIVER]:
+                    QtWidgets.QMessageBox.warning(self, "Plot type", "To read Matterhorn image, please enable transceiver readout mode", QtWidgets.QMessageBox.Ok)
+                    return False
+                if self.getTransceiverEnableReg() != Defines.Matterhorn.tranceiverEnable:
+                    QtWidgets.QMessageBox.warcning(self, "Plot type", "To read Matterhorn image, please set transceiver enable to " + str(Defines.Matternhorn.tranceiverEnable), QtWidgets.QMessageBox.Ok)
+                    return False
+            # moench04 image
+            if self.comboBoxPlot.currentIndex() == 1:
+                if self.romode not in [readoutMode.ANALOG_ONLY, readoutMode.ANALOG_AND_DIGITAL]:
+                    QtWidgets.QMessageBox.warning(self, "Plot type", "To read Moench 04 image, please enable analog readout mode", QtWidgets.QMessageBox.Ok)
+                    return False
+                if self.nADCEnabled != 32:
+                    QtWidgets.QMessageBox.warning(self, "Plot type", "To read Moench 04 image, please enable all 32 adcs", QtWidgets.QMessageBox.Ok)
+                    return False
+        return True
+
+
     def acquire(self):
+        if not self.checkBeforeAcquire():
+            self.toggleStartButton(False)
+            return
+
         self.stoppedFlag = False
         self.toggleStartButton(True)
         self.currentMeasurement = 0

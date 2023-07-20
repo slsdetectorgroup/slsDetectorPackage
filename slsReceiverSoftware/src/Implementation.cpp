@@ -175,6 +175,11 @@ void Implementation::setDetectorType(const detectorType d) {
 
     SetThreadPriorities();
 
+    // special detector specific initializations
+    if (d == MOENCH) {
+        setFrameDiscardPolicy(DISCARD_PARTIAL_FRAMES);
+    }
+
     LOG(logDEBUG) << " Detector type set to " << ToString(d);
 }
 

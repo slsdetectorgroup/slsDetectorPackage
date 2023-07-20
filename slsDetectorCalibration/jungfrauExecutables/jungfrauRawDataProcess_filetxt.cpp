@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     if (argc < 10) {
         std::cout
             << "Usage is " << argv[0]
-            << "filestxt outdir [pedfile (raw or tiff)] [xmin xmax ymin ymax] "
+            << " filestxt outdir [pedfile (raw or tiff)] [xmin xmax ymin ymax] "
                "[threshold] [nframes] "
 	       "NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS! "
             << std::endl;

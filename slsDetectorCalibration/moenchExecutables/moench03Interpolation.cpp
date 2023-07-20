@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
     //  int nSubPixels = nsubpix;
 #ifndef NOINTERPOLATION
     eta2InterpolationPosXY *interp =
-        new eta2InterpolationPosXY(NC, NR, nsubpix, etabins, etamin, etamax);
+      new eta2InterpolationPosXY(NC, NR, nsubpix, nsubpix,etabins,etabins, etamin, etamax);
     // eta2InterpolationCleverAdaptiveBins *interp=new
     // eta2InterpolationCleverAdaptiveBins(NC, NR, nsubpix, etabins, etamin,
     // etamax);

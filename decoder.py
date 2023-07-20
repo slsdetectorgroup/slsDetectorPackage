@@ -1,5 +1,7 @@
 from defines import *
+from _decoder import * #bring in the function from the compiled extension
 import numpy as np
+
 def moench04(analog_buffer):
     nAnalogCols = 400 #We know we have a Moench
     nAnalogRows = 400

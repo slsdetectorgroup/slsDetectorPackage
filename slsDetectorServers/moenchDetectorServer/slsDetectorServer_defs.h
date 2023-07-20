@@ -107,29 +107,29 @@ typedef struct udp_header_struct {
 /* Enums */
 enum ADCINDEX { TEMP_FPGA, TEMP_ADC };
 enum DACINDEX {
-    J_VB_COMP,
-    J_VDD_PROT,
-    J_VIN_COM,
-    J_VREF_PRECH,
-    J_VB_PIXBUF,
-    J_VB_DS,
-    J_VREF_DS,
-    J_VREF_COMP
+    MO_VBP_COLBUF,
+    MO_VIPRE,
+    MO_VIN_CM,
+    MO_VB_SDA,
+    MO_VCASC_SFP,
+    MO_VOUT_CM,
+    MO_VIPRE_CDS,
+    MO_IBIAS_SFP
 };
 #define DAC_NAMES                                                              \
-    "vb_comp", "vdd_prot", "vin_com", "vref_prech", "vb_pixbuf", "vb_ds",      \
-        "vref_ds", "vref_comp"
+    "vbp_colbuf", "vipre", "vin_cm", "vb_sda", "vcasc_sfp", "vout_cm",         \
+        "vipre_cds", "ibias_sfp"
 
 #define DEFAULT_DAC_VALS                                                       \
     {                                                                          \
-        1220, /* J_VB_COMP */                                                  \
-        3000, /* J_VDD_PROT */                                                 \
-        1053, /* J_VIN_COM */                                                  \
-        1450, /* J_VREF_PRECH */                                               \
-        750,  /* J_VB_PIXBUF */                                                \
-        1000, /* J_VB_DS */                                                    \
-        480,  /* J_VREF_DS */                                                  \
-        420   /* J_VREF_COMP */                                                \
+        1300, /* MO_VBP_COLBUF */                                              \
+        1000, /* MO_VIPRE */                                                   \
+        1400, /* MO_VIN_CM */                                                  \
+        680,  /* MO_VB_SDA */                                                  \
+        1428, /* MO_VCASC_SFP */                                               \
+        1200, /* MO_VOUT_CM */                                                 \
+        800,  /* MO_VIPRE_CDS */                                               \
+        900   /* MO_IBIAS_SFP */                                               \
     };
 
 enum MASTERINDEX { MASTER_HARDWARE, OW_MASTER, OW_SLAVE };

@@ -718,7 +718,6 @@ std::vector<defs::dacIndex> Detector::getDacList() const {
             defs::VREF_DS,   defs::VCASCN_PB, defs::VCASCP_PB, defs::VOUT_CM,
             defs::VCASC_OUT, defs::VIN_CM,    defs::VREF_COMP, defs::IB_TESTC};
     case defs::JUNGFRAU:
-    case defs::MOENCH:
         return std::vector<defs::dacIndex>{
             defs::VB_COMP,   defs::VDD_PROT, defs::VIN_COM, defs::VREF_PRECH,
             defs::VB_PIXBUF, defs::VB_DS,    defs::VREF_DS, defs::VREF_COMP};
@@ -736,6 +735,10 @@ std::vector<defs::dacIndex> Detector::getDacList() const {
             defs::VCAS,      defs::VRPREAMP, defs::VCAL_N,   defs::VIPRE,
             defs::VISHAPER,  defs::VCAL_P,   defs::VTRIM,    defs::VDCSH,
             defs::VTHRESHOLD};
+    case defs::MOENCH:
+        return std::vector<defs::dacIndex>{
+            defs::VBP_COLBUF, defs::VIPRE,   defs::VIN_CM,    defs::VB_SDA,
+            defs::VCASC_SFP,  defs::VOUT_CM, defs::VIPRE_CDS, defs::IBIAS_SFP};
     case defs::CHIPTESTBOARD:
         for (int i = 0; i != 18; ++i) {
             retval.push_back(static_cast<defs::dacIndex>(i));

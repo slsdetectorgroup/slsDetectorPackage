@@ -111,7 +111,6 @@ void qTabDeveloper::SetupWidgetWindow() {
             break;
 
         case slsDetectorDefs::JUNGFRAU:
-        case slsDetectorDefs::MOENCH:
             dacWidgets.push_back(
                 new qDacWidget(this, det, true,
                                "v vb comp: ", getSLSIndex(detType, tempid++)));
@@ -180,6 +179,31 @@ void qTabDeveloper::SetupWidgetWindow() {
             dacWidgets.push_back(
                 new qDacWidget(this, det, true,
                                "vcom_adc2: ", getSLSIndex(detType, tempid++)));
+            adcWidgets.push_back(new qDacWidget(
+                this, det, false,
+                "Temperature FPGA: ", getSLSIndex(detType, tempid++)));
+            break;
+        case slsDetectorDefs::MOENCH:
+            dacWidgets.push_back(
+                new qDacWidget(this, det, true,
+                               "vbp_colbuf: ", getSLSIndex(detType, tempid++)));
+            dacWidgets.push_back(new qDacWidget(
+                this, det, true, "vipre: ", getSLSIndex(detType, tempid++)));
+            dacWidgets.push_back(new qDacWidget(
+                this, det, true, "vin_cm: ", getSLSIndex(detType, tempid++)));
+            dacWidgets.push_back(new qDacWidget(
+                this, det, true, "vb_sda: ", getSLSIndex(detType, tempid++)));
+            dacWidgets.push_back(
+                new qDacWidget(this, det, true,
+                               "vcasc_sfp: ", getSLSIndex(detType, tempid++)));
+            dacWidgets.push_back(new qDacWidget(
+                this, det, true, "vout_cm: ", getSLSIndex(detType, tempid++)));
+            dacWidgets.push_back(
+                new qDacWidget(this, det, true,
+                               "vipre_cds: ", getSLSIndex(detType, tempid++)));
+            dacWidgets.push_back(
+                new qDacWidget(this, det, true,
+                               "ibias_sfp: ", getSLSIndex(detType, tempid++)));
             adcWidgets.push_back(new qDacWidget(
                 this, det, false,
                 "Temperature FPGA: ", getSLSIndex(detType, tempid++)));
@@ -321,7 +345,6 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
         break;
 
     case slsDetectorDefs::JUNGFRAU:
-    case slsDetectorDefs::MOENCH:
         switch (index) {
         case 0:
             return slsDetectorDefs::VB_COMP;
@@ -339,6 +362,32 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
             return slsDetectorDefs::VREF_DS;
         case 7:
             return slsDetectorDefs::VREF_COMP;
+        case 8:
+            return slsDetectorDefs::TEMPERATURE_ADC;
+        default:
+            throw RuntimeError(std::string("Unknown dac/adc index") +
+                               std::to_string(index));
+        }
+        break;
+
+    case slsDetectorDefs::MOENCH:
+        switch (index) {
+        case 0:
+            return slsDetectorDefs::VBP_COLBUF;
+        case 1:
+            return slsDetectorDefs::VIPRE;
+        case 2:
+            return slsDetectorDefs::VIN_CM;
+        case 3:
+            return slsDetectorDefs::VB_SDA;
+        case 4:
+            return slsDetectorDefs::VCASC_SFP;
+        case 5:
+            return slsDetectorDefs::VOUT_CM;
+        case 6:
+            return slsDetectorDefs::VIPRE_CDS;
+        case 7:
+            return slsDetectorDefs::IBIAS_SFP;
         case 8:
             return slsDetectorDefs::TEMPERATURE_ADC;
         default:

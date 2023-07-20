@@ -36,7 +36,12 @@ class Defines():
         nPixelsPerSuperColumn = 5000
         superColumnWidth = 25
 
-
+    Color_map = ['viridis', 'plasma', 'inferno', 'magma', 'cividis',
+                'binary', 'gist_yarg', 'gist_gray', 'gray', 'bone',
+                'pink', 'spring', 'summer', 'autumn', 'winter', 'cool',
+                'Wistia', 'hot', 'afmhot', 'gist_heat', 'copper',
+                'gist_rainbow', 'rainbow', 'jet', 'turbo' ]
+    Default_Color_Map = 'viridis'
 
     # pattern viewer defines
 

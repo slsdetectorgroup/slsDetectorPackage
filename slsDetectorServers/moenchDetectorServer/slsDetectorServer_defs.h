@@ -41,7 +41,7 @@
 #define DEFAULT_TX_UDP_PORT           (0x7e9a)
 #define DEFAULT_TMP_THRSHLD           (65 * 1000) // milli degree Celsius
 #define DEFAULT_FLIP_ROWS             (0)
-#define DEFAULT_SPEED                 (FULL_SPEED)
+#define DEFAULT_SPEED                 (HALF_SPEED)
 #define DEFAULT_PARALLEL_ENABLE       (0)
 
 #define HIGHVOLTAGE_MIN     (60)
@@ -68,6 +68,14 @@
 #define ADC_DECMT_QUARTER_SPEED (0x3)
 #define ADC_DECMT_HALF_SPEED    (0x1)
 #define ADC_DECMT_FULL_SPEED    (0x0)
+
+#define ADC_PHASE_DEG_QUARTER_SPEED (0)
+#define ADC_PHASE_DEG_HALF_SPEED    (0)
+#define ADC_PHASE_DEG_FULL_SPEED    (0)
+
+#define ADC_OFST_QUARTER_SPEED (0x12)
+#define ADC_OFST_HALF_SPEED    (0x12)
+#define ADC_OFST_FULL_SPEED    (0x12)
 
 // pipeline
 #define ADC_PORT_INVERT_VAL (0x55555555)

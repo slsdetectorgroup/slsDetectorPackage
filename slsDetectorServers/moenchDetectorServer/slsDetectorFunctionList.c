@@ -1492,6 +1492,8 @@ int setReadoutSpeed(int val) {
 
     uint32_t config = 0;
     uint32_t sampleAdcDecimationFactor = 0;
+    int adcPhase = 0;
+    int adcOffset = 0;
 
     switch (val) {
 
@@ -1500,6 +1502,8 @@ int setReadoutSpeed(int val) {
         config = CONFIG_FULL_SPEED_40MHZ_VAL;
         sampleAdcDecimationFactor = ADC_DECMT_FULL_SPEED
                                     << SAMPLE_ADC_DECMT_FACTOR_OFST;
+        adcOffset = ADC_OFST_FULL_SPEED;
+        adcPhase = ADC_PHASE_DEG_FULL_SPEED;
         break;
 
     case HALF_SPEED:
@@ -1507,6 +1511,8 @@ int setReadoutSpeed(int val) {
         config = CONFIG_HALF_SPEED_20MHZ_VAL;
         sampleAdcDecimationFactor = ADC_DECMT_HALF_SPEED
                                     << SAMPLE_ADC_DECMT_FACTOR_OFST;
+        adcOffset = ADC_OFST_HALF_SPEED;
+        adcPhase = ADC_PHASE_DEG_HALF_SPEED;
         break;
 
     case QUARTER_SPEED:
@@ -1514,6 +1520,8 @@ int setReadoutSpeed(int val) {
         config = CONFIG_QUARTER_SPEED_10MHZ_VAL;
         sampleAdcDecimationFactor = ADC_DECMT_QUARTER_SPEED
                                     << SAMPLE_ADC_DECMT_FACTOR_OFST;
+        adcOffset = ADC_OFST_QUARTER_SPEED;
+        adcPhase = ADC_PHASE_DEG_QUARTER_SPEED;
         break;
 
     default:
@@ -1529,7 +1537,12 @@ int setReadoutSpeed(int val) {
     bus_w(SAMPLE_REG, bus_r(SAMPLE_REG) | sampleAdcDecimationFactor);
     LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));
 
-    // TODO: adcofst, adcphase?
+    bus_w(ADC_OFST_REG, adcOfst);
+    LOG(logINFO, ("\tSet ADC offset to 0x%x\n", bus_r(ADC_OFST_REG)));
+
+    setPhase(ADC_CLK, adcPhase, 1);
+    LOG(logINFO, ("\tSet ADC Phase to %d degrees\n", adcPhase));
+
     return OK;
 }
 

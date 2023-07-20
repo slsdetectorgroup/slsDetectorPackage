@@ -161,9 +161,9 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
             case 1:
 
                 x0 = 9 + chip_x0; // 9 gr sq pixel
-                x1 = 246 + chip_x0;
+                x1 = 245 + chip_x0; // was 246
                 y0 = 192 + chip_y0;
-                y1 = 244 + chip_y0;
+                y1 = 246 + chip_y0;
 
                 shifty = g1_nrows + 2 * g2_nrows + 2 * g3_nrows;
                 break;
@@ -171,7 +171,7 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
             case 2:
 
                 x0 = 9 + chip_x0;
-                x1 = 244 + chip_x0;
+                x1 = 243 + chip_x0; //was 244
                 y0 = 128 + chip_y0;
                 y1 = 191 + chip_y0;
 
@@ -236,6 +236,9 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
         } else if (ymax <= c6g1_yend - bond_shift_y) {
             group = 1;
             mchip = 6;
+	} else if (ymax <= 511) {
+            group = 1;
+            mchip = 6;
         } else { //to fix compiler warning
 	  group = -1;
 	  mchip = -1;
@@ -243,7 +246,7 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
         int multiplicator = getMultiplicator(group);
         setMappingShifts(group);
 
-        std::cout << "group: " << group << ", m: " << multiplicator
+        std::cout << "chip: " << mchip << ", group: " << group << ", m: " << multiplicator
                   << ", x0: " << x0 << ", x1: " << x1 << ", y0: " << y0
                   << ", y1: " << y1 << std::endl;
 

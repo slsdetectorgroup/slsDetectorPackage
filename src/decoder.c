@@ -6,14 +6,8 @@
 #include <pthread.h>
 #include <stdbool.h>
 
-#include "thread_utils.h"
 #include "pm_decode.h"
-
-
-static PyObject *func(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(args)) {
-    Py_INCREF(Py_None);
-    return Py_None;
-}
+#include "thread_utils.h"
 
 /*Decode various types of CTB data using a pixel map. Works on single frames and
 on stacks of frames*/
@@ -39,23 +33,18 @@ static PyObject *decode(PyObject *Py_UNUSED(self), PyObject *args,
         return NULL;
     }
 
-
     // Handle to the pixel map
     PyObject *pixel_map = PyArray_FROM_OTF(
         pm_obj, NPY_UINT32, NPY_ARRAY_C_CONTIGUOUS); // Make 64bit?
     if (!pixel_map) {
         return NULL;
     }
-    if (PyArray_NDIM((PyArrayObject *)pixel_map)!=2){
-        PyErr_SetString(
-            PyExc_TypeError,
-            "The pixel map needs to be 2D");
+    if (PyArray_NDIM((PyArrayObject *)pixel_map) != 2) {
+        PyErr_SetString(PyExc_TypeError, "The pixel map needs to be 2D");
         return NULL;
     }
     npy_intp n_rows = PyArray_DIM((PyArrayObject *)pixel_map, 0);
     npy_intp n_cols = PyArray_DIM((PyArrayObject *)pixel_map, 1);
-
-
 
     // If called with an output array get an handle to it, otherwise allocate
     // the output array
@@ -117,7 +106,6 @@ static PyObject *decode(PyObject *Py_UNUSED(self), PyObject *args,
         return NULL;
     }
 
-
     // Multithreaded processing
     pthread_t *threads = malloc(sizeof(pthread_t *) * n_threads);
     thread_args *arguments = malloc(sizeof(thread_args) * n_threads);
@@ -129,7 +117,7 @@ static PyObject *decode(PyObject *Py_UNUSED(self), PyObject *args,
         arguments[i].dst = dst + (i * frames_per_thread * pm_size);
         arguments[i].pm = pm;
         arguments[i].n_frames = frames_per_thread; // TODO! not matching frames.
-        arguments[i].n_pixels = n_rows*n_cols;
+        arguments[i].n_pixels = n_rows * n_cols;
         assigned_frames += frames_per_thread;
     }
     arguments[n_threads - 1].n_frames += n_frames - assigned_frames;
@@ -154,7 +142,6 @@ static char module_docstring[] = "C functions decode CTB data";
 
 // Module methods
 static PyMethodDef creader_methods[] = {
-    {"func", func, METH_VARARGS, "Does nothing and returns None"},
     {"decode", (PyCFunction)(void (*)(void))decode,
      METH_VARARGS | METH_KEYWORDS, "Decode analog data using a pixel map"},
     {NULL, NULL, 0, NULL} /* Sentinel */
@@ -182,4 +169,3 @@ PyMODINIT_FUNC PyInit__decoder(void) {
     import_array(); // Needed for numpy
     return m;
 }
-

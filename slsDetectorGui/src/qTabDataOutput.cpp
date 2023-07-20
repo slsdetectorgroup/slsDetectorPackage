@@ -43,8 +43,8 @@ void qTabDataOutput::SetupWidgetWindow() {
     case slsDetectorDefs::MYTHEN3:
         chkParallel->setEnabled(true);
         break;
-    case slsDetectorDefs::JUNGFRAU:
     case slsDetectorDefs::MOENCH:
+    case slsDetectorDefs::JUNGFRAU:
         lblClkDivider->setEnabled(true);
         comboClkDivider->setEnabled(true);
         break;

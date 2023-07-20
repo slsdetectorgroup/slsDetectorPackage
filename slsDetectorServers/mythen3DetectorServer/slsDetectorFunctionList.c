@@ -1375,7 +1375,7 @@ int setTrimbits(int *trimbits) {
             error = 1;
         } else {
             memset(cmess, 0, MAX_STR_LENGTH);
-            error |= loadPattern(cmess, logDEBUG5, pat);
+            error |= loadPattern(cmess, logDEBUG5, pat, "");
             if (!error)
                 startPattern();
             free(pat);
@@ -2827,7 +2827,7 @@ int setChipStatusRegister(int csr) {
         iret = FAIL;
     } else {
         memset(cmess, 0, MAX_STR_LENGTH);
-        iret = loadPattern(cmess, logDEBUG5, pat);
+        iret = loadPattern(cmess, logDEBUG5, pat, "");
         if (iret == OK) {
             startPattern();
             LOG(logINFO, ("CSR is now: 0x%x\n", csr));

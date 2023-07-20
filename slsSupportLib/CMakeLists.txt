@@ -88,10 +88,11 @@ message(STATUS "RAPID: ${SLS_INTERNAL_RAPIDJSON_DIR}")
 target_link_libraries(slsSupportObject 
   PUBLIC
     slsProjectOptions 
-    libzmq
+    
   PRIVATE
     slsProjectWarnings
     md5sls     
+    "$<BUILD_INTERFACE:libzmq-static>"
 )
 
 if (SLS_USE_TESTS)

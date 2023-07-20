@@ -67,6 +67,7 @@ int moduleIndex = -1;
 // Local variables
 int (*flist[NUM_DET_FUNCTIONS])(int);
 pthread_t pthread_tid;
+pthread_t pthread_tid_ctb_1g;
 
 // scan variables
 int scan = 0;
@@ -271,6 +272,7 @@ void function_table() {
     flist[F_ENABLE_TEN_GIGA] = &enable_ten_giga;
     flist[F_SET_ALL_TRIMBITS] = &set_all_trimbits;
     flist[F_SET_PATTERN_IO_CONTROL] = &set_pattern_io_control;
+    flist[F_GET_PATTERN_IO_CONTROL] = &get_pattern_io_control;
     flist[F_SET_PATTERN_WORD] = &set_pattern_word;
     flist[F_SET_PATTERN_LOOP_ADDRESSES] = &set_pattern_loop_addresses;
     flist[F_SET_PATTERN_LOOP_CYCLES] = &set_pattern_loop_cycles;
@@ -395,6 +397,7 @@ void function_table() {
     flist[F_GET_VETO] = &get_veto;
     flist[F_SET_VETO] = &set_veto;
     flist[F_SET_PATTERN] = &set_pattern;
+    flist[F_GET_PATTERN_FILE_NAME] = &get_pattern_file;
     flist[F_GET_SCAN] = &get_scan;
     flist[F_SET_SCAN] = &set_scan;
     flist[F_GET_SCAN_ERROR_MESSAGE] = &get_scan_error_message;
@@ -472,6 +475,17 @@ void function_table() {
     flist[F_SET_SYNCHRONIZATION] = &set_synchronization;
     flist[F_GET_HARDWARE_VERSION] = &get_hardware_version;
     flist[F_GET_FRONTEND_FIRMWARE_VERSION] = &get_frontend_firmware_version;
+    flist[F_GET_BIT] = &get_bit;
+    flist[F_SET_BIT] = &set_bit;
+    flist[F_CLEAR_BIT] = &clear_bit;
+    flist[F_GET_NUM_TRANSCEIVER_SAMPLES] = &get_num_transceiver_samples;
+    flist[F_SET_NUM_TRANSCEIVER_SAMPLES] = &set_num_transceiver_samples;
+    flist[F_GET_TRANSCEIVER_ENABLE_MASK] = &get_transceiver_enable;
+    flist[F_SET_TRANSCEIVER_ENABLE_MASK] = &set_transceiver_enable;
+    flist[F_GET_ROW] = &get_row;
+    flist[F_SET_ROW] = &set_row;
+    flist[F_GET_COLUMN] = &get_column;
+    flist[F_SET_COLUMN] = &set_column;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -1728,7 +1742,7 @@ void validate_settings(enum detectorSettings sett) {
     switch (sett) {
 #ifdef EIGERD
     case STANDARD:
-#elif defined(JUNGFRAUD) || defined(MOENCHD)
+#elif JUNGFRAUD
     case GAIN0:
     case HIGHGAIN0:
 #elif GOTTHARDD
@@ -1745,6 +1759,15 @@ void validate_settings(enum detectorSettings sett) {
     case STANDARD:
     case FAST:
     case HIGHGAIN:
+#elif MOENCHD
+    case G1_HIGHGAIN:
+    case G1_LOWGAIN:
+    case G2_HIGHCAP_HIGHGAIN:
+    case G2_HIGHCAP_LOWGAIN:
+    case G2_LOWCAP_HIGHGAIN:
+    case G2_LOWCAP_LOWGAIN:
+    case G4_HIGHGAIN:
+    case G4_LOWGAIN:
 #endif
         break;
     default:
@@ -1841,7 +1864,7 @@ int acquire(int blocking, int file_des) {
     }
     // only set
     if (Server_VerifyLock() == OK) {
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
         // chipv1.1 has to be configured before acquisition
         if (getChipVersion() == 11 && !isChipConfigured()) {
             ret = FAIL;
@@ -1861,13 +1884,24 @@ int acquire(int blocking, int file_des) {
                     getNumAnalogSamples());
             LOG(logERROR, (mess));
         } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                    getReadoutMode() == DIGITAL_ONLY) &&
+                    getReadoutMode() == DIGITAL_ONLY ||
+                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
                    (getNumDigitalSamples() <= 0)) {
             ret = FAIL;
             sprintf(mess,
                     "Could not start acquisition. Invalid number of digital "
                     "samples: %d.\n",
                     getNumDigitalSamples());
+            LOG(logERROR, (mess));
+        } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
+                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                   (getNumTransceiverSamples() <= 0)) {
+            ret = FAIL;
+            sprintf(
+                mess,
+                "Could not start acquisition. Invalid number of transceiver "
+                "samples: %d.\n",
+                getNumTransceiverSamples());
             LOG(logERROR, (mess));
         } else
 #endif
@@ -1917,7 +1951,9 @@ int acquire(int blocking, int file_des) {
                 strcpy(mess, "Could not start acquisition thread!\n");
                 LOG(logERROR, (mess));
             } else {
-                // only does not wait for non blocking and scan
+                // wait for blocking always (scan or not)
+                // non blocking-no scan also wait (for error message)
+                // non blcoking-scan dont wait (there is scanErrorMessage)
                 if (blocking || !scan) {
                     pthread_join(pthread_tid, NULL);
                 }
@@ -1999,18 +2035,43 @@ void *start_state_machine(void *arg) {
             }
             break;
         }
-
-#if defined(CHIPTESTBOARDD)
-        readFrames(&ret, mess);
-        if (ret == FAIL && scan) {
-            sprintf(scanErrMessage, "Cannot scan at %d. ", scanSteps[i]);
-            strcat(scanErrMessage, mess);
-            sharedMemory_setScanStatus(ERROR);
-            break;
+// only 1g real ctb needs to read from fifo
+// to avoid blocking, in another thread
+#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
+        if (!enableTenGigabitEthernet(-1)) {
+            ret = validateUDPSocket();
+            if (ret == FAIL) {
+                strcpy(mess, "UDP socket not created!\n");
+                LOG(logERROR, (mess));
+            } else {
+                if (pthread_create(&pthread_tid_ctb_1g, NULL,
+                                   &start_reading_and_sending_udp_frames,
+                                   NULL)) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not start read frames thread!\n");
+                    LOG(logERROR, (mess));
+                }
+            }
+            // add scan error message
+            if (ret == FAIL) {
+                if (scan) {
+                    sprintf(scanErrMessage, "Cannot scan at %d. ",
+                            scanSteps[i]);
+                    strcat(scanErrMessage, mess);
+                    sharedMemory_setScanStatus(ERROR);
+                }
+                break;
+            }
         }
 #endif
         // blocking or scan
         if (*blocking || times > 1) {
+            // wait to finish reading from fifo (1g real ctb)
+#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
+            if (!enableTenGigabitEthernet(-1)) {
+                pthread_join(pthread_tid_ctb_1g, NULL);
+            }
+#endif
 #ifdef EIGERD
             waitForAcquisitionEnd(&ret, mess);
             if (ret == FAIL && scan) {
@@ -2030,6 +2091,13 @@ void *start_state_machine(void *arg) {
     }
     return NULL;
 }
+
+#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
+void *start_reading_and_sending_udp_frames(void *arg) {
+    readandSendUDPFrames();
+    return NULL;
+}
+#endif
 
 int start_acquisition(int file_des) { return acquire(0, file_des); }
 
@@ -3116,7 +3184,6 @@ int set_pattern_io_control(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     uint64_t arg = -1;
-    uint64_t retval = -1;
 
     if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
         return printSocketReadError();
@@ -3125,14 +3192,25 @@ int set_pattern_io_control(int file_des) {
 #else
     LOG(logDEBUG1,
         ("Setting Pattern IO Control to 0x%llx\n", (long long int)arg));
-    if (((int64_t)arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        if ((int64_t)arg != GET_FLAG) {
-            ret = validate_writePatternIOControl(mess, arg);
-        }
-        retval = validate_readPatternIOControl();
+    if (Server_VerifyLock() == OK) {
+        ret = validate_writePatternIOControl(mess, arg);
     }
 #endif
-    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT64, NULL, 0);
+}
+
+int get_pattern_io_control(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint64_t retval64 = -1;
+
+#if !defined(CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    LOG(logDEBUG1, ("Getting Pattern IO Control\n"));
+    retval64 = validate_readPatternIOControl();
+#endif
+    return Server_SendResult(file_des, INT64, &retval64, sizeof(retval64));
 }
 
 int set_pattern_word(int file_des) {
@@ -3314,7 +3392,13 @@ int set_pattern_mask(int file_des) {
         uint64_t retval64 = getPatternMask();
         LOG(logDEBUG1,
             ("Pattern mask: 0x%llx\n", (long long unsigned int)retval64));
-        validate64(&ret, mess, arg, retval64, "set Pattern Mask", HEX);
+        if (retval64 != arg) {
+            ret = FAIL;
+            sprintf(
+                mess, "Could not pattern mask. Set 0x%llx, but read 0x%llx\n",
+                (long long unsigned int)arg, (long long unsigned int)retval64);
+            LOG(logERROR, (mess));
+        }
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -3357,7 +3441,14 @@ int set_pattern_bit_mask(int file_des) {
         uint64_t retval64 = getPatternBitMask();
         LOG(logDEBUG1,
             ("Pattern bit mask: 0x%llx\n", (long long unsigned int)retval64));
-        validate64(&ret, mess, arg, retval64, "set Pattern Bit Mask", HEX);
+        if (retval64 != arg) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not pattern bit mask. Set 0x%llx, but read 0x%llx\n",
+                    (long long unsigned int)arg,
+                    (long long unsigned int)retval64);
+            LOG(logERROR, (mess));
+        }
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -3999,7 +4090,7 @@ int auto_comp_disable(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting  Auto comp disable to %d\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // set & get
@@ -4254,15 +4345,22 @@ int set_adc_enable_mask_10g(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        setADCEnableMask_10G(arg);
-        uint32_t retval = getADCEnableMask_10G();
-        if (arg != retval) {
+        if (arg == 0u) {
             ret = FAIL;
             sprintf(mess,
-                    "Could not set 10Gb ADC Enable mask. Set 0x%x, but "
-                    "read 0x%x\n",
-                    arg, retval);
+                    "Not allowed to set adc mask of 0 due to data readout \n");
             LOG(logERROR, (mess));
+        } else {
+            setADCEnableMask_10G(arg);
+            uint32_t retval = getADCEnableMask_10G();
+            if (arg != retval) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set 10Gb ADC Enable mask. Set 0x%x, but "
+                        "read 0x%x\n",
+                        arg, retval);
+                LOG(logERROR, (mess));
+            }
         }
     }
 #endif
@@ -5463,7 +5561,8 @@ int set_parallel_mode(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting parallel mode: %u\n", arg));
 
-#if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&          \
+    !defined(MOENCHD)
     functionNotImplemented();
 #else
     // only set
@@ -5494,7 +5593,8 @@ int get_parallel_mode(int file_des) {
 
     LOG(logDEBUG1, ("Getting parallel mode\n"));
 
-#if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&          \
+    !defined(MOENCHD)
     functionNotImplemented();
 #else
     // get only
@@ -5572,6 +5672,8 @@ int set_readout_mode(int file_des) {
         case ANALOG_ONLY:
         case DIGITAL_ONLY:
         case ANALOG_AND_DIGITAL:
+        case TRANSCEIVER_ONLY:
+        case DIGITAL_AND_TRANSCEIVER:
             break;
         default:
             modeNotImplemented("Readout mode", (int)arg);
@@ -5767,7 +5869,7 @@ int set_clock_phase(int file_des) {
             c = ADC_CLK;
             break;
 #endif
-#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD)
         case DBIT_CLOCK:
             c = DBIT_CLK;
             break;
@@ -5856,8 +5958,8 @@ int get_clock_phase(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-    LOG(logINFOBLUE, ("Getting clock (%d) phase %s \n", args[0],
-                      (args[1] == 0 ? "" : "in degrees")));
+    LOG(logDEBUG1, ("Getting clock (%d) phase %s \n", args[0],
+                    (args[1] == 0 ? "" : "in degrees")));
 
 #if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&    \
     !defined(GOTTHARD2D) && !defined(MYTHEN3D)
@@ -5873,7 +5975,7 @@ int get_clock_phase(int file_des) {
         c = ADC_CLK;
         break;
 #endif
-#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD)
     case DBIT_CLOCK:
         c = DBIT_CLK;
         break;
@@ -5882,7 +5984,7 @@ int get_clock_phase(int file_des) {
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
         if (ind < NUM_CLOCKS) {
             c = (enum CLKINDEX)ind;
-            LOG(logINFOBLUE, ("NUMclocks:%d c:%d\n", NUM_CLOCKS, c));
+            LOG(logDEBUG1, ("NUMclocks:%d c:%d\n", NUM_CLOCKS, c));
             break;
         }
 #endif
@@ -5921,7 +6023,7 @@ int get_max_clock_phase_shift(int file_des) {
         c = ADC_CLK;
         break;
 #endif
-#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD)
     case DBIT_CLOCK:
         c = DBIT_CLK;
         break;
@@ -6643,7 +6745,7 @@ int set_current_source(int file_des) {
                     "normal:%d]\n",
                     enable, fix, (long long int)select, normal));
 
-#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -6716,7 +6818,7 @@ int set_current_source(int file_des) {
         }
 
         if (ret == OK) {
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
             if (enable == 0) {
                 disableCurrentSource();
             } else {
@@ -6743,13 +6845,13 @@ int get_current_source(int file_des) {
 
     LOG(logDEBUG1, ("Getting current source\n"));
 
-#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
     retvals[0] = getCurrentSource();
     LOG(logDEBUG1, ("current source enable retval: %u\n", retvals[0]));
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
     if (retvals[0]) {
         retvals[1] = getFixCurrentSource();
         retvals[2] = getNormalCurrentSource();
@@ -7133,7 +7235,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // readout mode
-#ifdef CHIPTESTBOARD
+#ifdef CHIPTESTBOARDD
     i32 = getReadoutMode();
 #else
     i32 = 0;
@@ -7294,6 +7396,26 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
     n += sendData(file_des, &i64, sizeof(i64), INT64);
+    if (n < 0)
+        return printSocketReadError();
+
+        // transceiver samples
+#ifdef CHIPTESTBOARDD
+    i32 = getNumTransceiverSamples();
+#else
+    i32 = 0;
+#endif
+    n += sendData(file_des, &i32, sizeof(i32), INT32);
+    if (n < 0)
+        return printSocketReadError();
+
+        // transceiver mask
+#if defined(CHIPTESTBOARDD)
+    u32 = getTransceiverEnableMask();
+#else
+    u32 = 0;
+#endif
+    n += sendData(file_des, &u32, sizeof(u32), INT32);
     if (n < 0)
         return printSocketReadError();
 
@@ -7524,6 +7646,8 @@ int set_veto(int file_des) {
 int set_pattern(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
+    char args[MAX_STR_LENGTH];
+    memset(args, 0, MAX_STR_LENGTH);
 
 #if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
     functionNotImplemented();
@@ -7537,16 +7661,39 @@ int set_pattern(int file_des) {
             free(pat);
         return printSocketReadError();
     }
+    if (receiveData(file_des, args, MAX_STR_LENGTH, OTHER) < 0) {
+        if (pat != NULL)
+            free(pat);
+        return printSocketReadError();
+    }
 
     if (Server_VerifyLock() == OK) {
-        LOG(logINFO, ("Setting Pattern from structure\n"));
-        ret = loadPattern(mess, logINFO, pat);
+        LOG(logDEBUG1, ("Setting Pattern from structure\n"));
+        ret = loadPattern(mess, logINFO, pat, args);
     }
     if (pat != NULL)
         free(pat);
 #endif
 
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_pattern_file(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    char retvals[MAX_STR_LENGTH];
+    memset(retvals, 0, MAX_STR_LENGTH);
+
+    LOG(logDEBUG1, ("Getting pattern file name\n"));
+
+#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    // get only
+    strcpy(retvals, getPatternFileName());
+    LOG(logDEBUG1, ("pattern file name retval: %s\n", retvals));
+#endif
+    return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 
 int get_pattern(int file_des) {
@@ -7764,11 +7911,11 @@ int get_filter_resistor(int file_des) {
 
     LOG(logDEBUG1, ("Getting filter resistor\n"));
 
-#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
     if (getChipVersion() == 10) {
         ret = FAIL;
         strcpy(mess, "Could not get filter cell. Not available for this chip "
@@ -7793,7 +7940,7 @@ int set_filter_resistor(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting filter resistor: %u\n", arg));
 
-#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -7807,7 +7954,7 @@ int set_filter_resistor(int file_des) {
                 arg, ASIC_FILTER_MAX_RES_VALUE);
             LOG(logERROR, (mess));
         }
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
         else if (getChipVersion() == 10) {
             ret = FAIL;
             strcpy(mess, "Could not set filter cell. Not available for this "
@@ -7821,9 +7968,8 @@ int set_filter_resistor(int file_des) {
                 strcpy(mess, "Could not set filter resistor.\n");
                 LOG(logERROR, (mess));
             }
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
-            // jungfrau/moench might take time to update status register if
-            // acquiring
+#if defined(GOTTHARD2D)
+            // jungfrau might take time to update status register if acquiring
             int retval = getFilterResistor();
             LOG(logDEBUG1, ("filter resistor retval: %u\n", retval));
             validate(&ret, mess, arg, retval, "set filter resistor", DEC);
@@ -8096,7 +8242,7 @@ int get_bursts_left(int file_des) {
 int start_readout(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-#ifndef MYTHEN3D
+#if !defined(MYTHEN3D) && !defined(CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     if (Server_VerifyLock() == OK) {
@@ -8127,6 +8273,25 @@ int start_readout(int file_des) {
 #endif
                 LOG(logERROR, (mess));
             }
+// only 1g real ctb needs to read from fifo
+// to avoid blocking, in another thread
+#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
+            if (!enableTenGigabitEthernet(-1)) {
+                ret = validateUDPSocket();
+                if (ret == FAIL) {
+                    strcpy(mess, "UDP socket not created!\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    if (pthread_create(&pthread_tid_ctb_1g, NULL,
+                                       &start_reading_and_sending_udp_frames,
+                                       NULL)) {
+                        ret = FAIL;
+                        strcpy(mess, "Could not start read frames thread!\n");
+                        LOG(logERROR, (mess));
+                    }
+                }
+            }
+#endif
         }
     }
 #endif
@@ -8534,7 +8699,7 @@ int get_chip_version(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     retval = getChipVersion();
@@ -8641,7 +8806,7 @@ int get_gain_mode(int file_des) {
     enum gainMode retval = DYNAMIC;
     LOG(logDEBUG1, ("Getting gain mode\n"));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
@@ -8665,7 +8830,7 @@ int set_gain_mode(int file_des) {
     enum gainMode gainmode = arg;
     LOG(logDEBUG1, ("Setting gain mode %d\n", (int)gainmode));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -8701,7 +8866,7 @@ int get_comp_disable_time(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
@@ -8727,7 +8892,7 @@ int set_comp_disable_time(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting comp disable time %lld ns\n", (long long int)arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -8827,7 +8992,7 @@ int get_num_filter_cells(int file_des) {
 
     LOG(logDEBUG1, ("Getting number of filter cellsn"));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
@@ -8854,7 +9019,7 @@ int set_num_filter_cells(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting number of filter cells: %u\n", (int)arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -10185,4 +10350,364 @@ int get_frontend_firmware_version(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
+}
+
+int set_bit(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint32_t args[2] = {-1, -1};
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    uint32_t addr = args[0];
+    int nBit = (int)args[1];
+    LOG(logDEBUG1, ("Setting bit %d of reg 0x%x\n", nBit, addr));
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (nBit < 0 || nBit > 31) {
+            ret = FAIL;
+            sprintf(
+                mess,
+                "Could not set bit. Bit nr %d out of range. Must be  0-31\n",
+                nBit);
+            LOG(logERROR, (mess));
+        } else {
+#ifdef EIGERD
+            ret = setBit(addr, nBit);
+            if (ret == FAIL) {
+#else
+            uint32_t bitmask = (1 << nBit);
+#ifdef GOTTHARDD
+            uint32_t val = readRegister16And32(addr) | bitmask;
+            uint32_t retval = writeRegister16And32(addr, val);
+#else
+            uint32_t val = readRegister(addr) | bitmask;
+            uint32_t retval = writeRegister(addr, val);
+#endif
+            if (!(retval & bitmask)) {
+                ret = FAIL;
+#endif
+                sprintf(mess, "Could not set bit %d.\n", nBit);
+                LOG(logERROR, (mess));
+            }
+        }
+    }
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int clear_bit(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint32_t args[2] = {-1, -1};
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    uint32_t addr = args[0];
+    int nBit = (int)args[1];
+    LOG(logDEBUG1, ("Clearing bit %d of reg 0x%x\n", nBit, addr));
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (nBit < 0 || nBit > 31) {
+            ret = FAIL;
+            sprintf(
+                mess,
+                "Could not clear bit. Bit nr %d out of range. Must be  0-31\n",
+                nBit);
+            LOG(logERROR, (mess));
+        } else {
+#ifdef EIGERD
+            ret = clearBit(addr, nBit);
+            if (ret == FAIL) {
+#else
+            uint32_t bitmask = (1 << nBit);
+#ifdef GOTTHARDD
+            uint32_t val = readRegister16And32(addr) & ~bitmask;
+            uint32_t retval = writeRegister16And32(addr, val);
+#else
+            uint32_t val = readRegister(addr) & ~bitmask;
+            uint32_t retval = writeRegister(addr, val);
+#endif
+            if (retval & bitmask) {
+                ret = FAIL;
+#endif
+                sprintf(mess, "Could not clear bit %d.\n", nBit);
+                LOG(logERROR, (mess));
+            }
+        }
+    }
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_bit(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint32_t args[2] = {-1, -1};
+    int retval = 0;
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    uint32_t addr = args[0];
+    int nBit = (int)args[1];
+    LOG(logDEBUG1, ("Getting bit %d of reg 0x%x\n", nBit, addr));
+
+    if (nBit < 0 || nBit > 31) {
+        ret = FAIL;
+        sprintf(mess,
+                "Could not get bit. Bit nr %d out of range. Must be  0-31\n",
+                nBit);
+        LOG(logERROR, (mess));
+    } else {
+#ifdef EIGERD
+        ret = getBit(addr, nBit, &retval);
+        LOG(logDEBUG1, ("retval: %d\n", retval));
+        if (ret == FAIL) {
+            sprintf(mess, "Could not get bit %d.\n", nBit);
+            LOG(logERROR, (mess));
+        }
+#else
+#ifdef GOTTHARDD
+        uint32_t regval = readRegister16And32(addr);
+#else
+        uint32_t regval = readRegister(addr);
+#endif
+        retval = (regval & (1 << nBit)) >> nBit;
+        LOG(logDEBUG1, ("regval: 0x%x bit value:0%d\n", regval, retval));
+#endif
+    }
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int get_num_transceiver_samples(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+#if !defined(CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    // get only
+    retval = getNumTransceiverSamples();
+    LOG(logDEBUG1, ("retval num transceiver samples %d\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_num_transceiver_samples(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting number of transceiver samples %d\n", arg));
+
+#if !defined(CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        ret = setNumTransceiverSamples(arg);
+        if (ret == FAIL) {
+            sprintf(
+                mess,
+                "Could not set number of transceiver samples to %d. Could not "
+                "allocate RAM\n",
+                arg);
+            LOG(logERROR, (mess));
+        } else {
+            int retval = getNumTransceiverSamples();
+            LOG(logDEBUG1, ("retval num transceiver samples %d\n", retval));
+            validate(&ret, mess, arg, retval,
+                     "set number of transceiver samples", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int set_transceiver_enable(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint32_t arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting Transceiver Enable Mask to %u\n", arg));
+
+#if (!defined(CHIPTESTBOARDD))
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg > MAX_TRANSCEIVER_MASK) {
+            ret = FAIL;
+            sprintf(mess, "Invalid Transceiver Mask. Max: 0x%x\n",
+                    MAX_TRANSCEIVER_MASK);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setTransceiverEnableMask(arg);
+            if (ret == FAIL) {
+                sprintf(mess,
+                        "Could not set Transceiver Enable mask to 0x%x.\n",
+                        arg);
+                LOG(logERROR, (mess));
+            } else {
+                uint32_t retval = getTransceiverEnableMask();
+                if (arg != retval) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Could not set Transceiver Enable mask. Set 0x%x, "
+                            "but read "
+                            "0x%x\n",
+                            arg, retval);
+                    LOG(logERROR, (mess));
+                }
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_transceiver_enable(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint32_t retval = -1;
+
+    LOG(logDEBUG1, ("Getting Transceiver Enable Mask \n"));
+
+#if (!defined(CHIPTESTBOARDD))
+    functionNotImplemented();
+#else
+    // get
+    retval = getTransceiverEnableMask();
+    LOG(logDEBUG1, ("Transceiver Enable Mask retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int get_row(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting row\n"));
+    // get only
+    retval = getRow();
+    LOG(logDEBUG1, ("row retval: %u\n", retval));
+
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_row(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting row: %u\n", arg));
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg < 0) {
+            ret = FAIL;
+            sprintf(
+                mess,
+                "Could not set row. Invalid value %d. Must be greater than 0\n",
+                arg);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setRow(arg);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set row\n");
+                LOG(logERROR, (mess));
+            } else {
+                int retval = getRow();
+                LOG(logDEBUG1, ("gain retval: %u\n", retval));
+                validate(&ret, mess, arg, retval, "set row", DEC);
+            }
+        }
+    }
+
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_column(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting column\n"));
+    // get only
+    retval = getColumn();
+    LOG(logDEBUG1, ("column retval: %u\n", retval));
+
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_column(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting column: %u\n", arg));
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg < 0) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set column. Invalid value %d. Must be greater "
+                    "than 0\n",
+                    arg);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setColumn(arg);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set column\n");
+                LOG(logERROR, (mess));
+            } else {
+                int retval = getColumn();
+                LOG(logDEBUG1, ("gain retval: %u\n", retval));
+                validate(&ret, mess, arg, retval, "set column", DEC);
+            }
+        }
+    }
+
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int getRow() {
+#if defined(JUNGFRAUD) || defined(MOENCHD)
+    // inner (top) position (0, 1) might be incremented if 2 interfaces
+    return getDetectorPosition()[Y + 2];
+#endif
+    return getDetectorPosition()[Y];
+}
+
+int setRow(int value) {
+    int pos[2] = {0, 0};
+    memcpy(pos, getDetectorPosition(), sizeof(pos));
+    pos[Y] = value;
+    return setDetectorPosition(pos);
+}
+
+int getColumn() {
+#if defined(JUNGFRAUD) || defined(MOENCHD)
+    // inner (top) position (0, 1) might be incremented if 2 interfaces
+    return getDetectorPosition()[X + 2];
+#endif
+    return getDetectorPosition()[X];
+}
+
+int setColumn(int value) {
+    int pos[2] = {0, 0};
+    memcpy(pos, getDetectorPosition(), sizeof(pos));
+    pos[X] = value;
+    return setDetectorPosition(pos);
 }

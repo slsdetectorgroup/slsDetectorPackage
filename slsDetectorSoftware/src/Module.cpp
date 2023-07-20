@@ -589,6 +589,24 @@ void Module::setBadChannels(std::vector<int> list) {
     }
 }
 
+int Module::getRow() const { return sendToDetector<int>(F_GET_ROW); }
+
+void Module::setRow(int value) {
+    sendToDetector(F_SET_ROW, value, nullptr);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_ROW, value, nullptr);
+    }
+}
+
+int Module::getColumn() const { return sendToDetector<int>(F_GET_COLUMN); }
+
+void Module::setColumn(int value) {
+    sendToDetector(F_SET_COLUMN, value, nullptr);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_COLUMN, value, nullptr);
+    }
+}
+
 bool Module::isVirtualDetectorServer() const {
     return sendToDetector<int>(F_IS_VIRTUAL);
 }
@@ -2387,6 +2405,19 @@ void Module::setTenGigaADCEnableMask(uint32_t mask) {
     }
 }
 
+uint32_t Module::getTransceiverEnableMask() const {
+    return sendToDetector<uint32_t>(F_GET_TRANSCEIVER_ENABLE_MASK);
+}
+
+void Module::setTransceiverEnableMask(uint32_t mask) {
+    sendToDetector(F_SET_TRANSCEIVER_ENABLE_MASK, mask, nullptr);
+    // update #nchan, as it depends on #samples, adcmask,
+    updateNumberOfChannels();
+
+    if (shm()->useReceiverFlag) {
+        sendToReceiver<int>(F_RECEIVER_SET_TRANSCEIVER_MASK, mask);
+    }
+}
 // CTB Specific
 
 int Module::getNumberOfDigitalSamples() const {
@@ -2401,6 +2432,18 @@ void Module::setNumberOfDigitalSamples(int value) {
     }
 }
 
+int Module::getNumberOfTransceiverSamples() const {
+    return sendToDetector<int>(F_GET_NUM_TRANSCEIVER_SAMPLES);
+}
+
+void Module::setNumberOfTransceiverSamples(int value) {
+    sendToDetector(F_SET_NUM_TRANSCEIVER_SAMPLES, value, nullptr);
+    updateNumberOfChannels(); // depends on samples and adcmask
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_NUM_TRANSCEIVER_SAMPLES, value, nullptr);
+    }
+}
+
 slsDetectorDefs::readoutMode Module::getReadoutMode() const {
     return sendToDetector<readoutMode>(F_GET_READOUT_MODE);
 }
@@ -2408,6 +2451,7 @@ slsDetectorDefs::readoutMode Module::getReadoutMode() const {
 void Module::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
     auto arg = static_cast<uint32_t>(mode); // TODO! unit?
     sendToDetector(F_SET_READOUT_MODE, arg, nullptr);
+    sendToDetectorStop(F_SET_READOUT_MODE, arg, nullptr);
     // update #nchan, as it depends on #samples, adcmask,
     if (shm()->detType == CHIPTESTBOARD) {
         updateNumberOfChannels();
@@ -2478,9 +2522,23 @@ void Module::setLEDEnable(bool enable) {
 }
 
 // Pattern
+std::string Module::getPatterFileName() const {
+    char retval[MAX_STR_LENGTH]{};
+    sendToDetector(F_GET_PATTERN_FILE_NAME, nullptr, retval);
+    return retval;
+}
 
-void Module::setPattern(const Pattern &pat) {
-    sendToDetector(F_SET_PATTERN, pat.data(), pat.size(), nullptr, 0);
+void Module::setPattern(const Pattern &pat, const std::string &fname) {
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_SET_PATTERN);
+    client.Send(pat.data(), pat.size());
+    char args[MAX_STR_LENGTH]{};
+    strcpy_safe(args, fname.c_str());
+    client.Send(args);
+    if (client.Receive<int>() == FAIL) {
+        throw DetectorError("Detector " + std::to_string(moduleIndex) +
+                            " returned error: " + client.readErrorMessage());
+    }
 }
 
 Pattern Module::getPattern() {
@@ -2492,12 +2550,11 @@ Pattern Module::getPattern() {
 void Module::loadDefaultPattern() { sendToDetector(F_LOAD_DEFAULT_PATTERN); }
 
 uint64_t Module::getPatternIOControl() const {
-    return sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL,
-                                    int64_t(GET_FLAG));
+    return sendToDetector<uint64_t>(F_GET_PATTERN_IO_CONTROL);
 }
 
 void Module::setPatternIOControl(uint64_t word) {
-    sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL, word);
+    sendToDetector(F_SET_PATTERN_IO_CONTROL, word, nullptr);
 }
 
 uint64_t Module::getPatternWord(int addr) const {
@@ -2747,29 +2804,18 @@ uint32_t Module::writeRegister(uint32_t addr, uint32_t val) {
 }
 
 void Module::setBit(uint32_t addr, int n) {
-    if (n < 0 || n > 31) {
-        throw RuntimeError("Bit number " + std::to_string(n) + " out of Range");
-    } else {
-        uint32_t val = readRegister(addr);
-        writeRegister(addr, val | 1 << n);
-    }
+    uint32_t args[2] = {addr, static_cast<uint32_t>(n)};
+    sendToDetectorStop(F_SET_BIT, args, nullptr);
 }
 
 void Module::clearBit(uint32_t addr, int n) {
-    if (n < 0 || n > 31) {
-        throw RuntimeError("Bit number " + std::to_string(n) + " out of Range");
-    } else {
-        uint32_t val = readRegister(addr);
-        writeRegister(addr, val & ~(1 << n));
-    }
+    uint32_t args[2] = {addr, static_cast<uint32_t>(n)};
+    sendToDetectorStop(F_CLEAR_BIT, args, nullptr);
 }
 
 int Module::getBit(uint32_t addr, int n) {
-    if (n < 0 || n > 31) {
-        throw RuntimeError("Bit number " + std::to_string(n) + " out of Range");
-    } else {
-        return ((readRegister(addr) >> n) & 0x1);
-    }
+    uint32_t args[2] = {addr, static_cast<uint32_t>(n)};
+    return sendToDetectorStop<int>(F_GET_BIT, args);
 }
 
 void Module::executeFirmwareTest() { sendToDetector(F_SET_FIRMWARE_TEST); }

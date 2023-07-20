@@ -574,6 +574,30 @@ void MasterAttributes::WriteHDF5DbitList(H5::H5File *fd, H5::Group *group) {
         "Dbit Bitset List", H5::PredType::STD_U64LE, dataspace);
     dataset.write(&dbitlist, H5::PredType::STD_U64LE);
 }
+
+void MasterAttributes::WriteHDF5TransceiverMask(H5::H5File *fd,
+                                                H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset = group->createDataSet(
+        "Transceiver Mask", H5::PredType::NATIVE_INT, dataspace);
+    dataset.write(&transceiverMask, H5::PredType::NATIVE_INT);
+}
+
+void MasterAttributes::WriteHDF5TransceiverFlag(H5::H5File *fd,
+                                                H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset = group->createDataSet(
+        "Transceiver Flag", H5::PredType::NATIVE_INT, dataspace);
+    dataset.write(&transceiver, H5::PredType::NATIVE_INT);
+}
+
+void MasterAttributes::WriteHDF5TransceiverSamples(H5::H5File *fd,
+                                                   H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset = group->createDataSet(
+        "Transceiver Samples", H5::PredType::NATIVE_INT, dataspace);
+    dataset.write(&transceiverSamples, H5::PredType::NATIVE_INT);
+}
 #endif
 
 void MasterAttributes::GetGotthardBinaryAttributes(
@@ -763,6 +787,12 @@ void MasterAttributes::GetCtbBinaryAttributes(
     w->Uint(dbitoffset);
     w->Key("Dbit Bitset");
     w->Uint64(dbitlist);
+    w->Key("Transceiver Mask");
+    w->String(ToStringHex(transceiverMask).c_str());
+    w->Key("Transceiver Flag");
+    w->Uint(transceiver);
+    w->Key("Transceiver Samples");
+    w->Uint(transceiverSamples);
 }
 
 #ifdef HDF5C
@@ -778,6 +808,9 @@ void MasterAttributes::WriteCtbHDF5Attributes(H5::H5File *fd,
     MasterAttributes::WriteHDF5DigitalSamples(fd, group);
     MasterAttributes::WriteHDF5DbitOffset(fd, group);
     MasterAttributes::WriteHDF5DbitList(fd, group);
+    MasterAttributes::WriteHDF5TransceiverMask(fd, group);
+    MasterAttributes::WriteHDF5TransceiverFlag(fd, group);
+    MasterAttributes::WriteHDF5TransceiverSamples(fd, group);
 }
 #endif
 

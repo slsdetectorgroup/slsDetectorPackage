@@ -727,41 +727,6 @@ TEST_CASE("syncclk", "[.cmd]") {
     }
 }
 
-TEST_CASE("adcpipeline", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::CHIPTESTBOARD) {
-        auto prev_val = det.getADCPipeline();
-        {
-            std::ostringstream oss;
-            proxy.Call("adcpipeline", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "adcpipeline 1\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("adcpipeline", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "adcpipeline 0\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("adcpipeline", {"15"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "adcpipeline 15\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("adcpipeline", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "adcpipeline 15\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setADCPipeline(prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("adcpipeline", {}, -1, GET));
-    }
-}
-
 TEST_CASE("v_limit", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

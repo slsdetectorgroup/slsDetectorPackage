@@ -9089,7 +9089,7 @@ int set_adc_pipeline(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting adc pipeline : %u\n", arg));
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
 
@@ -9111,7 +9111,7 @@ int get_adc_pipeline(int file_des) {
 
     LOG(logDEBUG1, ("Getting adc pipeline\n"));
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // get only

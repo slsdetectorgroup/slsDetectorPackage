@@ -2051,14 +2051,6 @@ Result<int> Detector::getSYNCClock(Positions pos) const {
     return pimpl->Parallel(&Module::getClockFrequency, pos, defs::SYNC_CLOCK);
 }
 
-Result<int> Detector::getADCPipeline(Positions pos) const {
-    return pimpl->Parallel(&Module::getADCPipeline, pos);
-}
-
-void Detector::setADCPipeline(int value, Positions pos) {
-    pimpl->Parallel(&Module::setADCPipeline, pos, value);
-}
-
 std::vector<defs::dacIndex> Detector::getVoltageList() const {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD) {
         throw RuntimeError("Voltage list not implemented for this detector");
@@ -2536,6 +2528,8 @@ void Detector::startPattern(Positions pos) {
     pimpl->Parallel(&Module::startPattern, pos);
 }
 
+// Json Header specific
+
 Result<std::map<std::string, std::string>>
 Detector::getAdditionalJsonHeader(Positions pos) const {
     return pimpl->Parallel(&Module::getAdditionalJsonHeader, pos);
@@ -2558,6 +2552,14 @@ void Detector::setAdditionalJsonParameter(const std::string &key,
 }
 
 // Advanced
+
+Result<int> Detector::getADCPipeline(Positions pos) const {
+    return pimpl->Parallel(&Module::getADCPipeline, pos);
+}
+
+void Detector::setADCPipeline(int value, Positions pos) {
+    pimpl->Parallel(&Module::setADCPipeline, pos, value);
+}
 
 void Detector::programFPGA(const std::string &fname,
                            const bool forceDeleteNormalFile, Positions pos) {

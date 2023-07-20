@@ -508,9 +508,6 @@ int getFrequency(enum CLKINDEX ind);
 void configureSyncFrequency(enum CLKINDEX ind);
 void setADCPipeline(int val);
 int getADCPipeline();
-#endif
-
-#ifdef CHIPTESTBOARDD
 void setDBITPipeline(int val);
 int getDBITPipeline();
 int setLEDEnable(int enable);
@@ -519,6 +516,10 @@ void setDigitalIODelay(uint64_t pinMask, int delay);
 
 // jungfrau/moench specific - powerchip, autocompdisable, clockdiv, asictimer,
 // clock, pll, flashing firmware
+#if defined(MOENCHED)
+void setADCPipeline(int val);
+int getADCPipeline();
+#endif
 #if defined(JUNGFRAUD) || defined(MOENCHD)
 int setReadNRows(int value);
 int getReadNRows();

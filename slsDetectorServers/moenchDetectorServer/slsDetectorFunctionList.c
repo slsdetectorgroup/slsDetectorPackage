@@ -1382,6 +1382,16 @@ int *getDetectorPosition() { return detPos; }
 /* moench specific - powerchip, clockdiv, pll,
  * flashing fpga */
 
+void setADCPipeline(int val) {
+    if (val < 0) {
+        return;
+    }
+    LOG(logINFO, ("Setting adc pipeline to %d\n", val));
+    bus_w(ADC_OFST_REG, val);
+}
+
+int getADCPipeline() { return bus_r(ADC_OFST_REG); }
+
 int setReadNRows(int value) {
     if (value < 0 || (value % READ_N_ROWS_MULTIPLE != 0)) {
         LOG(logERROR, ("Invalid number of rows %d\n", value));
@@ -1537,8 +1547,8 @@ int setReadoutSpeed(int val) {
     bus_w(SAMPLE_REG, bus_r(SAMPLE_REG) | sampleAdcDecimationFactor);
     LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));
 
-    bus_w(ADC_OFST_REG, adcOfst);
-    LOG(logINFO, ("\tSet ADC offset to 0x%x\n", bus_r(ADC_OFST_REG)));
+    setADCPipeline(adcOfst);
+    LOG(logINFO, ("\tSet ADC offset to 0x%x\n", getADCPipeline()));
 
     setPhase(ADC_CLK, adcPhase, 1);
     LOG(logINFO, ("\tSet ADC Phase to %d degrees\n", adcPhase));

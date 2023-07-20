@@ -1615,12 +1615,6 @@ class Detector {
     /** [CTB]  in MHZ */
     Result<int> getSYNCClock(Positions pos = {}) const;
 
-    /** [CTB] */
-    Result<int> getADCPipeline(Positions pos = {}) const;
-
-    /** [CTB] */
-    void setADCPipeline(int value, Positions pos = {});
-
     /** gets list of voltage enums */
     std::vector<defs::dacIndex> getVoltageList() const;
 
@@ -1958,6 +1952,12 @@ class Detector {
      *    Advanced                                    *
      *                                                *
      * ************************************************/
+
+    /** [CTB][Moench] */
+    Result<int> getADCPipeline(Positions pos = {}) const;
+
+    /** [CTB][Moench] */
+    void setADCPipeline(int value, Positions pos = {});
 
     /**  [Jungfrau][Moench][Gotthard][CTB][Mythen3][Gotthard2]
      * Advanced user Function!

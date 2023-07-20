@@ -172,6 +172,8 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_receiver_roi_metadata(ServerInterface &socket);
     int set_num_transceiver_samples(ServerInterface &socket);
     int set_transceiver_mask(ServerInterface &socket);
+    int set_row(ServerInterface &socket);
+    int set_column(ServerInterface &socket);
 
     Implementation *impl() {
         if (receiver != nullptr) {

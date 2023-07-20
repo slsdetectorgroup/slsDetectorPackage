@@ -284,6 +284,20 @@ void Implementation::setModulePositionId(const int id) {
     }
 }
 
+void Implementation::setRow(const int value) {
+    for (unsigned int i = 0; i < listener.size(); ++i) {
+        int col = listener[i]->GetHardCodedPosition().second;
+        listener[i]->SetHardCodedPosition(value, col);
+    }
+}
+
+void Implementation::setColumn(const int value) {
+    for (unsigned int i = 0; i < listener.size(); ++i) {
+        int row = listener[i]->GetHardCodedPosition().first;
+        listener[i]->SetHardCodedPosition(row, value);
+    }
+}
+
 std::string Implementation::getDetectorHostname() const { return detHostname; }
 
 void Implementation::setDetectorHostname(const std::string &c) {

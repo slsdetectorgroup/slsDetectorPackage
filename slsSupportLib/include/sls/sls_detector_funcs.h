@@ -286,6 +286,10 @@ enum detFuncs {
     F_SET_NUM_TRANSCEIVER_SAMPLES,
     F_GET_TRANSCEIVER_ENABLE_MASK,
     F_SET_TRANSCEIVER_ENABLE_MASK,
+    F_GET_ROW,
+    F_SET_ROW,
+    F_GET_COLUMN,
+    F_SET_COLUMN,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 512, /**< detector function should not exceed this
@@ -395,6 +399,8 @@ enum detFuncs {
     F_RECEIVER_SET_RECEIVER_ROI_METADATA,
     F_RECEIVER_SET_NUM_TRANSCEIVER_SAMPLES,
     F_RECEIVER_SET_TRANSCEIVER_MASK,
+    F_RECEIVER_SET_ROW,
+    F_RECEIVER_SET_COLUMN,
 
     NUM_REC_FUNCTIONS
 };
@@ -677,6 +683,10 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_NUM_TRANSCEIVER_SAMPLES:     return "F_SET_NUM_TRANSCEIVER_SAMPLES";
     case F_GET_TRANSCEIVER_ENABLE_MASK:     return "F_GET_TRANSCEIVER_ENABLE_MASK";
     case F_SET_TRANSCEIVER_ENABLE_MASK:     return "F_SET_TRANSCEIVER_ENABLE_MASK";
+    case F_GET_ROW:                         return "F_GET_ROW";
+    case F_SET_ROW:                         return "F_SET_ROW";
+    case F_GET_COLUMN:                      return "F_GET_COLUMN";
+    case F_SET_COLUMN:                      return "F_SET_COLUMN";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
@@ -786,6 +796,9 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_RECEIVER_SET_RECEIVER_ROI_METADATA: return "F_RECEIVER_SET_RECEIVER_ROI_METADATA";
     case F_RECEIVER_SET_NUM_TRANSCEIVER_SAMPLES: return "F_RECEIVER_SET_NUM_TRANSCEIVER_SAMPLES";
     case F_RECEIVER_SET_TRANSCEIVER_MASK:   return "F_RECEIVER_SET_TRANSCEIVER_MASK";
+    case F_RECEIVER_SET_ROW:                return "F_RECEIVER_SET_ROW";
+    case F_RECEIVER_SET_COLUMN:             return "F_RECEIVER_SET_COLUMN";
+
 
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";

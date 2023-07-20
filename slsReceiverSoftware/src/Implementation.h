@@ -41,6 +41,8 @@ class Implementation : private virtual slsDetectorDefs {
     void setDetectorSize(const xy size);
     int getModulePositionId() const;
     void setModulePositionId(const int id);
+    void setRow(const int value);
+    void setColumn(const int value);
     std::string getDetectorHostname() const;
     void setDetectorHostname(const std::string &c);
     bool getSilentMode() const;

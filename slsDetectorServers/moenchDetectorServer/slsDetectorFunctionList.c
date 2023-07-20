@@ -1485,7 +1485,8 @@ int setReadoutSpeed(int val) {
         return FAIL;
     }
     if (isHardwareVersion_1_0()) {
-        LOG(logERROR, ("Cannot set full speed. Not implemented for this pcb version (1.0)\n"));
+        LOG(logERROR, ("Cannot set full speed. Not implemented for this pcb "
+                       "version (1.0)\n"));
         return FAIL;
     }
 

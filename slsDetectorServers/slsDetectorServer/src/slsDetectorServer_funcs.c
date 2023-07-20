@@ -482,6 +482,11 @@ void function_table() {
     flist[F_SET_NUM_TRANSCEIVER_SAMPLES] = &set_num_transceiver_samples;
     flist[F_GET_TRANSCEIVER_ENABLE_MASK] = &get_transceiver_enable;
     flist[F_SET_TRANSCEIVER_ENABLE_MASK] = &set_transceiver_enable;
+    flist[F_GET_ROW] = &get_row;
+    flist[F_SET_ROW] = &set_row;
+    flist[F_GET_COLUMN] = &get_column;
+    flist[F_SET_COLUMN] = &set_column;
+
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
         LOG(logERROR, ("The last detector function enum has reached its "
@@ -5954,7 +5959,7 @@ int get_clock_phase(int file_des) {
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     LOG(logDEBUG1, ("Getting clock (%d) phase %s \n", args[0],
-                      (args[1] == 0 ? "" : "in degrees")));
+                    (args[1] == 0 ? "" : "in degrees")));
 
 #if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&    \
     !defined(GOTTHARD2D) && !defined(MYTHEN3D)
@@ -10581,4 +10586,128 @@ int get_transceiver_enable(int file_des) {
     LOG(logDEBUG1, ("Transceiver Enable Mask retval: %u\n", retval));
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int get_row(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting row\n"));
+    // get only
+    retval = getRow();
+    LOG(logDEBUG1, ("row retval: %u\n", retval));
+
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_row(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting row: %u\n", arg));
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg < 0) {
+            ret = FAIL;
+            sprintf(
+                mess,
+                "Could not set row. Invalid value %d. Must be greater than 0\n",
+                arg);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setRow(arg);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set row\n");
+                LOG(logERROR, (mess));
+            } else {
+                int retval = getRow();
+                LOG(logDEBUG1, ("gain retval: %u\n", retval));
+                validate(&ret, mess, arg, retval, "set row", DEC);
+            }
+        }
+    }
+
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_column(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting column\n"));
+    // get only
+    retval = getColumn();
+    LOG(logDEBUG1, ("column retval: %u\n", retval));
+
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_column(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting column: %u\n", arg));
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg < 0) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set column. Invalid value %d. Must be greater "
+                    "than 0\n",
+                    arg);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setColumn(arg);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set column\n");
+                LOG(logERROR, (mess));
+            } else {
+                int retval = getColumn();
+                LOG(logDEBUG1, ("gain retval: %u\n", retval));
+                validate(&ret, mess, arg, retval, "set column", DEC);
+            }
+        }
+    }
+
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int getRow() {
+#if defined(JUNGFRAUD) || defined(MOENCHD)
+    // inner (top) position (0, 1) might be incremented if 2 interfaces
+    return getDetectorPosition()[Y + 2];
+#endif
+    return getDetectorPosition()[Y];
+}
+
+int setRow(int value) {
+    int pos[2] = {0, 0};
+    memcpy(pos, getDetectorPosition(), sizeof(pos));
+    pos[Y] = value;
+    return setDetectorPosition(pos);
+}
+
+int getColumn() {
+#if defined(JUNGFRAUD) || defined(MOENCHD)
+    // inner (top) position (0, 1) might be incremented if 2 interfaces
+    return getDetectorPosition()[X + 2];
+#endif
+    return getDetectorPosition()[X];
+}
+
+int setColumn(int value) {
+    int pos[2] = {0, 0};
+    memcpy(pos, getDetectorPosition(), sizeof(pos));
+    pos[X] = value;
+    return setDetectorPosition(pos);
 }

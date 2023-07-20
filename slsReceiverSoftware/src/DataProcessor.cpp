@@ -550,10 +550,10 @@ void DataProcessor::RearrangeDbitData(size_t &size, char *data) {
     size = totalNumBytes * sizeof(uint8_t) + nAnalogDataBytes + ctbDbitOffset +
            nTransceiverDataBytes;
     LOG(logDEBUG1) << "totalNumBytes: " << totalNumBytes
-                     << " nAnalogDataBytes:" << nAnalogDataBytes
-                     << " ctbDbitOffset:" << ctbDbitOffset
-                     << " nTransceiverDataBytes:" << nTransceiverDataBytes
-                     << " size:" << size;
+                   << " nAnalogDataBytes:" << nAnalogDataBytes
+                   << " ctbDbitOffset:" << ctbDbitOffset
+                   << " nTransceiverDataBytes:" << nTransceiverDataBytes
+                   << " size:" << size;
 }
 
 void DataProcessor::CropImage(size_t &size, char *data) {

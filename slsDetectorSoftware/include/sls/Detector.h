@@ -129,11 +129,14 @@ class Detector {
     /** [Jungfrau][Moench][Gotthard][Gotthard2][Mythen3] */
     Result<defs::detectorSettings> getSettings(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] GAIN0, HIGHGAIN0 \n [Gotthard] DYNAMICGAIN, HIGHGAIN,
+    /** [Jungfrau] GAIN0, HIGHGAIN0 \n [Gotthard] DYNAMICGAIN, HIGHGAIN,
      * LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n [Gotthard2] DYNAMICGAIN,
      * FIXGAIN1, FIXGAIN2 \n [Mythen3] STANDARD, FAST,
      * HIGHGAIN. Also changes vrshaper and vrpreamp \n [Eiger] Use threshold
-     * command. Settings loaded from file found in settingspath
+     * command. Settings loaded from file found in settingspath \n
+     * [Moench] G1_HIGHGAIN, G1_LOWGAIN, G2_HIGHCAP_HIGHGAIN,
+     * G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN, G2_LOWCAP_LOWGAIN, G4_HIGHGAIN,
+     * G4_LOWGAIN
      */
     void setSettings(defs::detectorSettings value, Positions pos = {});
 
@@ -234,6 +237,16 @@ class Detector {
      * value is at module level and can start at 0. Empty vector resets bad
      * channel list. */
     void setBadChannels(const std::vector<std::vector<int>> list);
+
+    Result<int> getRow(Positions pos = {}) const;
+
+    /** Set it in udp header. Gui uses it to rearrange for complete image */
+    void setRow(const int value, Positions pos = {});
+
+    Result<int> getColumn(Positions pos = {}) const;
+
+    /** Set it in udp header. Gui uses it to rearrange for complete image */
+    void setColumn(const int value, Positions pos = {});
 
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;
     ///@}
@@ -352,12 +365,12 @@ class Detector {
     Result<defs::speedLevel> getReadoutSpeed(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau][Moench][Gotthard2]
-     * [Jungfrau][Moench] Options: FULL_SPEED, HALF_SPEED (Default),
-     * QUARTER_SPEED \n [Eiger] Options: FULL_SPEED (Default), HALF_SPEED,
-     * QUARTER_SPEED \n [Gotthard2] Options: G2_108MHZ (Default), G2_144MHZ \n
-     * [Jungfrau][Moench] FULL_SPEED option only available from v2.0 boards and
-     * is recommended to set number of interfaces to 2. \n Also overwrites
-     * adcphase to recommended default.
+     * [Jungfrau] Options: FULL_SPEED, HALF_SPEED (Default),
+     * QUARTER_SPEED \n [Moench] Options: FULL_SPEED (Default) \n [Eiger]
+     * Options: FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED \n [Gotthard2]
+     * Options: G2_108MHZ (Default), G2_144MHZ \n [Jungfrau][Moench] FULL_SPEED
+     * option only available from v2.0 boards and is recommended to set number
+     * of interfaces to 2. \n Also overwrites adcphase to recommended default.
      */
     void setReadoutSpeed(defs::speedLevel value, Positions pos = {});
 
@@ -389,21 +402,21 @@ class Detector {
      */
     void setADCPhaseInDegrees(int value, Positions pos = {});
 
-    /** [CTB][Jungfrau][Moench] */
+    /** [CTB][Jungfrau] */
     Result<int> getDBITPhase(Positions pos = {}) const;
 
-    /** [CTB][Jungfrau][Moench] Absolute phase shift \n
+    /** [CTB][Jungfrau] Absolute phase shift \n
      * [CTB] changing dbitclk also resets dbitphase and sets to previous values.
      */
     void setDBITPhase(int value, Positions pos = {});
 
-    /** [CTB][Jungfrau][Moench] */
+    /** [CTB][Jungfrau] */
     Result<int> getMaxDBITPhaseShift(Positions pos = {}) const;
 
-    /** [CTB][Jungfrau][Moench] */
+    /** [CTB][Jungfrau] */
     Result<int> getDBITPhaseInDegrees(Positions pos = {}) const;
 
-    /** [CTB][Jungfrau][Moench] Absolute phase shift \n
+    /** [CTB][Jungfrau] Absolute phase shift \n
      * [CTB] changing dbitclk also resets dbitphase and sets to previous values.
      */
     void setDBITPhaseInDegrees(int value, Positions pos = {});
@@ -529,30 +542,30 @@ class Detector {
     void setExternalSignalFlags(int signalIndex, defs::externalSignalFlag value,
                                 Positions pos = {});
 
-    /** [Eiger][Mythen3][Gotthard2] */
+    /** [Eiger][Mythen3][Gotthard2][Moench] */
     Result<bool> getParallelMode(Positions pos = {}) const;
 
-    /** [Eiger][Mythen3][Gotthard2]
+    /** [Eiger][Mythen3][Gotthard2][Moench]
      * [Mythen3] If exposure time is too short, acquisition will return with an
      * ERROR and take fewer frames than expected \n
-     * [Mythen3][Eiger] Default: Non parallel \n
+     * [Mythen3][Eiger][Moench] Default: Non parallel \n
      * [Gotthard2] Default: Parallel. Non parallel mode works only in continuous
      * mode.*/
     void setParallelMode(bool value, Positions pos = {});
 
-    /** [Gotthard2][Jungfrau][Moench] */
+    /** [Gotthard2][Jungfrau] */
     Result<int> getFilterResistor(Positions pos = {}) const;
 
-    /** [Gotthard2][Jungfrau][Moench] Set filter resistor. Increasing values for
+    /** [Gotthard2][Jungfrau] Set filter resistor. Increasing values for
      * increasing resistance.\n[Gotthard2] Options: [0|1|2|3]. Default is
-     * 0.\n[Jungfrau][Moench] Options: [0|1]. Default is 1.*/
+     * 0.\n[Jungfrau] Options: [0|1]. Default is 1.*/
     void setFilterResistor(int value, Positions pos = {});
 
-    /** [Gotthard2][Jungfrau][Moench] */
+    /** [Gotthard2][Jungfrau] */
     Result<defs::currentSrcParameters>
     getCurrentSource(Positions pos = {}) const;
 
-    /** [Gotthard2][Jungfrau][Moench] Please refer documentation on
+    /** [Gotthard2][Jungfrau] Please refer documentation on
      * currentSrcParameters (sls_detector_defs.h) on the structure and its
      * members */
     void setCurrentSource(defs::currentSrcParameters par, Positions pos = {});
@@ -1250,7 +1263,7 @@ class Detector {
      *                                                *
      * ************************************************/
 
-    /** [Jungfrau][Moench] */
+    /** [Jungfrau] */
     Result<double> getChipVersion(Positions pos = {}) const;
 
     /** [Jungfrau][Moench] */
@@ -1279,10 +1292,10 @@ class Detector {
     /** [Jungfrau][Moench] refer to setThresdholdTemperature */
     void resetTemperatureEvent(Positions pos = {});
 
-    /** [Jungfrau][Moench] */
+    /** [Jungfrau] */
     Result<bool> getAutoComparatorDisable(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Advanced
+    /** [Jungfrau] Advanced
      * //TODO naming
      * By default, the on-chip gain switching is active during the
      * entire exposure. This mode disables the on-chip gain switching comparator
@@ -1294,10 +1307,10 @@ class Detector {
      */
     void setAutoComparatorDisable(bool value, Positions pos = {});
 
-    /** [Jungfrau][Moench] */
+    /** [Jungfrau] */
     Result<ns> getComparatorDisableTime(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Time before end of exposure when comparator is
+    /** [Jungfrau] Time before end of exposure when comparator is
      * disabled. It is only possible for chipv1.1.*/
     void setComparatorDisableTime(ns t, Positions pos = {});
 
@@ -1330,19 +1343,19 @@ class Detector {
     /** list of possible gainmode  */
     std::vector<defs::gainMode> getGainModeList() const;
 
-    /** [Jungfrau][Moench]*/
+    /** [Jungfrau]*/
     Result<defs::gainMode> getGainMode(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Options: DYNAMIC, FORCE_SWITCH_G1, FORCE_SWITCH_G2,
+    /** [Jungfrau] Options: DYNAMIC, FORCE_SWITCH_G1, FORCE_SWITCH_G2,
      * FIX_G1, FIX_G2, FIX_G0 \n\CAUTION: Do not use FIX_G0 without caution, you
      * can damage the detector!!!\n
      */
     void setGainMode(const defs::gainMode mode, Positions pos = {});
 
-    /** [Jungfrau][Moench] Advanced */
+    /** [Jungfrau] Advanced */
     Result<int> getNumberOfFilterCells(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Advanced Options[0-12], only for chip v1.1
+    /** [Jungfrau] Advanced Options[0-12], only for chip v1.1
      */
     void setNumberOfFilterCells(int cell, Positions pos = {});
 
@@ -1608,6 +1621,12 @@ class Detector {
     /** [CTB] */
     void setADCPipeline(int value, Positions pos = {});
 
+    /** gets list of voltage enums */
+    std::vector<defs::dacIndex> getVoltageList() const;
+
+    /** gets list of slow adc enums */
+    std::vector<defs::dacIndex> getSlowADCList() const;
+
     /** [CTB] */
     Result<int> getVoltage(defs::dacIndex index, Positions pos = {}) const;
 
@@ -1638,6 +1657,13 @@ class Detector {
     /** [CTB] If any of a consecutive 4 bits are enabled, the "
         "complete 4 bits are enabled */
     void setTenGigaADCEnableMask(uint32_t mask, Positions pos = {});
+
+    /** [CTB] */
+    Result<uint32_t> getTransceiverEnableMask(Positions pos = {}) const;
+
+    /** [CTB] */
+    void setTransceiverEnableMask(uint32_t mask, Positions pos = {});
+
     ///@}
 
     /** @name CTB Specific */
@@ -1655,9 +1681,16 @@ class Detector {
     void setNumberOfDigitalSamples(int value, Positions pos = {});
 
     /** [CTB] */
+    Result<int> getNumberOfTransceiverSamples(Positions pos = {}) const;
+
+    /** [CTB] */
+    void setNumberOfTransceiverSamples(int value, Positions pos = {});
+
+    /** [CTB] */
     Result<defs::readoutMode> getReadoutMode(Positions pos = {}) const;
 
-    /** [CTB] Options: ANALOG_ONLY (default), DIGITAL_ONLY, ANALOG_AND_DIGITAL
+    /** [CTB] Options: ANALOG_ONLY (default), DIGITAL_ONLY, ANALOG_AND_DIGITAL,
+     * TRANSCEIVER_ONLY, DIGITAL_AND_TRANSCEIVER
      */
     void setReadoutMode(defs::readoutMode value, Positions pos = {});
 
@@ -1721,12 +1754,79 @@ class Detector {
     /** [CTB] Default is enabled. */
     void setLEDEnable(bool enable, Positions pos = {});
 
+    /** [CTB] */
     void setDacNames(const std::vector<std::string> names);
 
     std::vector<std::string> getDacNames() const;
 
-    defs::dacIndex getDacIndex(const std::string &name);
-    std::string getDacName(defs::dacIndex i);
+    defs::dacIndex getDacIndex(const std::string &name) const;
+
+    /** [CTB] */
+    void setDacName(const defs::dacIndex i, const std::string &name);
+
+    /** [CTB] */
+    std::string getDacName(const defs::dacIndex i) const;
+
+    /** [CTB] */
+    void setAdcNames(const std::vector<std::string> names);
+
+    /** [CTB] */
+    std::vector<std::string> getAdcNames() const;
+
+    /** [CTB] */
+    int getAdcIndex(const std::string &name) const;
+
+    /** [CTB] */
+    void setAdcName(const int i, const std::string &name);
+
+    /** [CTB] */
+    std::string getAdcName(const int i) const;
+
+    /** [CTB] */
+    void setSignalNames(const std::vector<std::string> names);
+
+    /** [CTB] */
+    std::vector<std::string> getSignalNames() const;
+
+    /** [CTB] */
+    int getSignalIndex(const std::string &name) const;
+
+    /** [CTB] */
+    void setSignalName(const int i, const std::string &name);
+
+    /** [CTB] */
+    std::string getSignalName(const int i) const;
+
+    /** [CTB] */
+    void setVoltageNames(const std::vector<std::string> names);
+
+    /** [CTB] */
+    std::vector<std::string> getVoltageNames() const;
+
+    /** [CTB] */
+    defs::dacIndex getVoltageIndex(const std::string &name) const;
+
+    /** [CTB] */
+    void setVoltageName(const defs::dacIndex i, const std::string &name);
+
+    /** [CTB] */
+    std::string getVoltageName(const defs::dacIndex i) const;
+
+    /** [CTB] */
+    void setSlowADCNames(const std::vector<std::string> names);
+
+    /** [CTB] */
+    std::vector<std::string> getSlowADCNames() const;
+
+    /** [CTB] */
+    defs::dacIndex getSlowADCIndex(const std::string &name) const;
+
+    /** [CTB] */
+    void setSlowADCName(const defs::dacIndex i, const std::string &name);
+
+    /** [CTB] */
+    std::string getSlowADCName(const defs::dacIndex i) const;
+
     ///@}
 
     /** @name Pattern */
@@ -1736,6 +1836,10 @@ class Detector {
      *    Pattern                                     *
      *                                                *
      * ************************************************/
+    /** [CTB][Mythen3] Gets the pattern file name including path of the last
+     * pattern uploaded. \n Returns an empty if nothing was uploaded or via a
+     * server default file*/
+    Result<std::string> getPatterFileName(Positions pos = {}) const;
 
     /** [CTB][Mythen3]  Loads ASCII pattern file directly to server
      * (instead of executing line by line)*/

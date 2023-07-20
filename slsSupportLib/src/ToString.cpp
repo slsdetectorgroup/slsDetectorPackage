@@ -87,6 +87,8 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
         << std::endl
         << "gates:" << r.gates << std::endl
         << "scanParams:" << ToString(r.scanParams) << std::endl
+        << "transceiverSamples:" << r.transceiverSamples << std::endl
+        << "transceiverMask:" << r.transceiverMask << std::endl
         << ']';
     return oss.str();
 }
@@ -325,6 +327,10 @@ std::string ToString(const defs::readoutMode s) {
         return std::string("digital");
     case defs::ANALOG_AND_DIGITAL:
         return std::string("analog_digital");
+    case defs::TRANSCEIVER_ONLY:
+        return std::string("transceiver");
+    case defs::DIGITAL_AND_TRANSCEIVER:
+        return std::string("digital_transceiver");
     default:
         return std::string("Unknown");
     }
@@ -789,6 +795,10 @@ template <> defs::readoutMode StringTo(const std::string &s) {
         return defs::DIGITAL_ONLY;
     if (s == "analog_digital")
         return defs::ANALOG_AND_DIGITAL;
+    if (s == "transceiver")
+        return defs::TRANSCEIVER_ONLY;
+    if (s == "digital_transceiver")
+        return defs::DIGITAL_AND_TRANSCEIVER;
     throw RuntimeError("Unknown readout mode " + s);
 }
 

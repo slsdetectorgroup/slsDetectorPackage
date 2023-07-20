@@ -41,5 +41,4 @@ install(TARGETS moenchDetectorServer_virtual
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-configure_file(config_moench.txt ${CMAKE_BINARY_DIR}/bin/config_moench.txt COPYONLY)
 configure_file(detid_moench.txt ${CMAKE_BINARY_DIR}/bin/detid_moench.txt COPYONLY)

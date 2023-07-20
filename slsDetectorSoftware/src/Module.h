@@ -134,6 +134,10 @@ class Module : public virtual slsDetectorDefs {
     void setSynchronization(const bool value);
     std::vector<int> getBadChannels() const;
     void setBadChannels(std::vector<int> list);
+    int getRow() const;
+    void setRow(const int value);
+    int getColumn() const;
+    void setColumn(const int value);
 
     bool isVirtualDetectorServer() const;
 
@@ -504,8 +508,12 @@ class Module : public virtual slsDetectorDefs {
     void setADCEnableMask(uint32_t mask);
     uint32_t getTenGigaADCEnableMask() const;
     void setTenGigaADCEnableMask(uint32_t mask);
+    uint32_t getTransceiverEnableMask() const;
+    void setTransceiverEnableMask(uint32_t mask);
     int getNumberOfDigitalSamples() const;
     void setNumberOfDigitalSamples(int value);
+    int getNumberOfTransceiverSamples() const;
+    void setNumberOfTransceiverSamples(int value);
     readoutMode getReadoutMode() const;
     void setReadoutMode(const readoutMode mode);
     int getExternalSamplingSource();
@@ -525,7 +533,8 @@ class Module : public virtual slsDetectorDefs {
      *    Pattern                                     *
      *                                                *
      * ************************************************/
-    void setPattern(const Pattern &pat);
+    std::string getPatterFileName() const;
+    void setPattern(const Pattern &pat, const std::string &fname);
     Pattern getPattern();
     void loadDefaultPattern();
     uint64_t getPatternIOControl() const;

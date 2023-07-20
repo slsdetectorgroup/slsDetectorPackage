@@ -212,9 +212,18 @@ TEST_CASE("settings", "[.cmd]") {
     std::vector<std::string> sett;
     switch (det_type) {
     case defs::JUNGFRAU:
-    case defs::MOENCH:
         sett.push_back("gain0");
         sett.push_back("highgain0");
+        break;
+    case defs::MOENCH:
+        sett.push_back("g1_hg");
+        sett.push_back("g1_lg");
+        sett.push_back("g2_hc_hg");
+        sett.push_back("g2_hc_lg");
+        sett.push_back("g2_lc_hg");
+        sett.push_back("g2_lc_lg");
+        sett.push_back("g4_hg");
+        sett.push_back("g4_lg");
         break;
     case defs::GOTTHARD:
         sett.push_back("highgain");
@@ -706,6 +715,52 @@ TEST_CASE("badchannels", "[.cmd]") {
     }
 }
 
+TEST_CASE("row", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getRow()[0];
+    {
+        std::ostringstream oss;
+        proxy.Call("row", {"1"}, 0, PUT, oss);
+        REQUIRE(oss.str() == "row 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("row", {}, 0, GET, oss);
+        REQUIRE(oss.str() == "row 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("row", {"0"}, 0, PUT, oss);
+        REQUIRE(oss.str() == "row 0\n");
+    }
+    REQUIRE_THROWS(proxy.Call("row", {"-5"}, -1, PUT));
+    det.setRow(prev_val, {0});
+}
+
+TEST_CASE("column", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getColumn()[0];
+    {
+        std::ostringstream oss;
+        proxy.Call("column", {"1"}, 0, PUT, oss);
+        REQUIRE(oss.str() == "column 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("column", {}, 0, GET, oss);
+        REQUIRE(oss.str() == "column 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("column", {"0"}, 0, PUT, oss);
+        REQUIRE(oss.str() == "column 0\n");
+    }
+    REQUIRE_THROWS(proxy.Call("column", {"-5"}, -1, PUT));
+    det.setColumn(prev_val, {0});
+}
+
 /* acquisition parameters */
 
 // acquire: not testing
@@ -1049,9 +1104,9 @@ TEST_CASE("readoutspeed", "[.cmd]") {
 
         // full speed for jungfrau/moench only works for new boards (chipv1.1 is
         // with new board [hw1.0 and chipv1.0 not tested here])
-        if (((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) &&
+        if (((det_type == defs::JUNGFRAU) &&
              det.getChipVersion().squash() * 10 == 11) ||
-            (det_type == defs::EIGER)) {
+            (det_type == defs::EIGER) || (det_type == defs::MOENCH)) {
             std::ostringstream oss1, oss2, oss3, oss4;
             proxy.Call("readoutspeed", {"0"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "readoutspeed full_speed\n");
@@ -1195,8 +1250,7 @@ TEST_CASE("dbitphase", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD) {
         auto prev_val = det.getDBITPhase();
         {
             std::ostringstream oss1, oss2;
@@ -1225,8 +1279,7 @@ TEST_CASE("maxdbitphaseshift", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::CHIPTESTBOARD ||
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
         det_type == defs::MYTHEN3 ||   // only because clk index of 0 exists
         det_type == defs::GOTTHARD2) { // only because clk index of 0 exists
         REQUIRE_NOTHROW(proxy.Call("maxdbitphaseshift", {}, -1, GET));
@@ -1572,7 +1625,7 @@ TEST_CASE("parallel", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD2) {
+        det_type == defs::GOTTHARD2 || det_type == defs::MOENCH) {
         auto prev_val = det.getParallelMode();
         {
             std::ostringstream oss;
@@ -1604,7 +1657,7 @@ TEST_CASE("filterresistor", "[.cmd]") {
 
     // only for chipv1.1
     bool chip11 = false;
-    if ((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) &&
+    if (det_type == defs::JUNGFRAU &&
         det.getChipVersion().squash() * 10 == 11) {
         chip11 = true;
     }
@@ -1748,8 +1801,7 @@ TEST_CASE("currentsource", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU ||
-        det_type == defs::MOENCH) {
+    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU) {
         auto prev_val = det.getCurrentSource();
 
         if (det_type == defs::GOTTHARD2) {
@@ -1773,11 +1825,14 @@ TEST_CASE("currentsource", "[.cmd]") {
             REQUIRE_THROWS(proxy.Call("currentsource",
                                       {"1", "fix", "42", "normal"}, -1, PUT));
         }
-        // jungfrau/moench
+        // jungfrau
         else {
-            int chipVersion = det.getChipVersion().tsquash(
+            int chipVersion = 10;
+            if (det_type == defs::JUNGFRAU) {
+                chipVersion = det.getChipVersion().tsquash(
                                   "inconsistent chip versions to test") *
                               10;
+            }
             if (chipVersion == 10) {
                 REQUIRE_THROWS(proxy.Call("currentsource", {"1"}, -1, PUT));
                 REQUIRE_THROWS(
@@ -1928,14 +1983,42 @@ TEST_CASE("temp_fpga", "[.cmd]") {
     }
 }
 
-/* dacs */
+/* list */
 
 TEST_CASE("daclist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
-    REQUIRE_NOTHROW(proxy.Call("daclist", {}, -1, GET));
-    REQUIRE_THROWS(proxy.Call("daclist", {}, -1, PUT));
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        REQUIRE_NOTHROW(proxy.Call("daclist", {}, -1, GET));
+
+        auto prev = det.getDacNames();
+        REQUIRE_THROWS(proxy.Call("daclist", {"a", "s", "d"}, -1, PUT));
+
+        std::vector<std::string> names;
+        for (int iarg = 0; iarg != 18; ++iarg) {
+            names.push_back("a");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("daclist", names, -1, PUT, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(proxy.Call("daclist", {}, -1, GET, oss));
+            REQUIRE(oss.str() ==
+                    std::string("daclist ") + ToString(names) + '\n');
+        }
+        det.setDacNames(prev);
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("daclist", {"a", "b"}, -1, PUT));
+        REQUIRE_NOTHROW(proxy.Call("daclist", {}, -1, GET));
+    }
 }
+
+/* dacs */
 
 TEST_CASE("dacvalues", "[.cmd]") {
     Detector det;

@@ -220,6 +220,11 @@ int ClientInterface::functionTable(){
     flist[F_RECEIVER_GET_RECEIVER_ROI]      =   &ClientInterface::get_receiver_roi;
     flist[F_RECEIVER_SET_RECEIVER_ROI]      =   &ClientInterface::set_receiver_roi;
     flist[F_RECEIVER_SET_RECEIVER_ROI_METADATA] =   &ClientInterface::set_receiver_roi_metadata;
+    flist[F_RECEIVER_SET_NUM_TRANSCEIVER_SAMPLES] = &ClientInterface::set_num_transceiver_samples;
+    flist[F_RECEIVER_SET_TRANSCEIVER_MASK]  =   &ClientInterface::set_transceiver_mask;
+    flist[F_RECEIVER_SET_ROW]               =   &ClientInterface::set_row;
+    flist[F_RECEIVER_SET_COLUMN]            =   &ClientInterface::set_column;    
+
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -370,9 +375,8 @@ int ClientInterface::setup_receiver(Interface &socket) {
 
         if (detType == CHIPTESTBOARD) {
             impl()->setNumberofAnalogSamples(arg.analogSamples);
-        }
-        if (detType == CHIPTESTBOARD) {
             impl()->setNumberofDigitalSamples(arg.digitalSamples);
+            impl()->setNumberofTransceiverSamples(arg.transceiverSamples);
         }
         if (detType != MYTHEN3) {
             impl()->setAcquisitionTime(std::chrono::nanoseconds(arg.expTimeNs));
@@ -410,6 +414,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
             impl()->setReadoutMode(arg.roMode);
             impl()->setADCEnableMask(arg.adcMask);
             impl()->setTenGigaADCEnableMask(arg.adc10gMask);
+            impl()->setTransceiverEnableMask(arg.transceiverMask);
         }
         if (detType == GOTTHARD) {
             impl()->setDetectorROI(arg.roi);
@@ -1755,6 +1760,67 @@ int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
                            std::string(e.what()) + ']');
     }
 
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_num_transceiver_samples(Interface &socket) {
+    auto value = socket.Receive<int>();
+    LOG(logDEBUG1) << "Setting num transceiver samples to " << value;
+    if (detType != CHIPTESTBOARD) {
+        functionNotImplemented();
+    }
+    try {
+        impl()->setNumberofTransceiverSamples(value);
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not set number of transceiver samples to " +
+                           std::to_string(value) + " [" +
+                           std::string(e.what()) + ']');
+    }
+
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_transceiver_mask(Interface &socket) {
+    auto arg = socket.Receive<uint32_t>();
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting Transceiver enable mask: " << arg;
+    try {
+        impl()->setTransceiverEnableMask(arg);
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not set transceiver enable mask [" +
+                           std::string(e.what()) + ']');
+    }
+
+    auto retval = impl()->getTransceiverEnableMask();
+    if (retval != arg) {
+        std::ostringstream os;
+        os << "Could not set Transceiver enable mask. Set 0x" << std::hex << arg
+           << " but read 0x" << std::hex << retval;
+        throw RuntimeError(os.str());
+    }
+    LOG(logDEBUG1) << "Transceiver enable mask retval: " << retval;
+    return socket.sendResult(retval);
+}
+
+int ClientInterface::set_row(Interface &socket) {
+    auto value = socket.Receive<int>();
+    if (value < 0) {
+        throw RuntimeError("Invalid row " + std::to_string(value));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting num rows to " << value;
+    impl()->setRow(value);
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_column(Interface &socket) {
+    auto value = socket.Receive<int>();
+    if (value < 0) {
+        throw RuntimeError("Invalid column " + std::to_string(value));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting column to " << value;
+    impl()->setColumn(value);
     return socket.Send(OK);
 }
 

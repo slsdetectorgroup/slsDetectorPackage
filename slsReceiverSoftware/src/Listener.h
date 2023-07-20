@@ -61,6 +61,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * packets/deactivated) c when used is in 2d
      */
     void SetHardCodedPosition(uint16_t r, uint16_t c);
+    std::pair<uint16_t, uint16_t> GetHardCodedPosition();
 
   private:
     void RecordFirstIndex(uint64_t fnum);

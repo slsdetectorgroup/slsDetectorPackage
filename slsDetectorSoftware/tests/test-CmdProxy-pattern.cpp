@@ -19,6 +19,18 @@ using test::PUT;
 
 /* Pattern */
 
+TEST_CASE("patfname", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
+        REQUIRE_THROWS(proxy.Call("patfname", {}, -1, PUT));
+        REQUIRE_NOTHROW(proxy.Call("patfname", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("patfname", {}, -1, GET));
+    }
+}
+
 TEST_CASE("pattern", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

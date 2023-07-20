@@ -277,6 +277,19 @@ enum detFuncs {
     F_SET_SYNCHRONIZATION,
     F_GET_HARDWARE_VERSION,
     F_GET_FRONTEND_FIRMWARE_VERSION,
+    F_GET_BIT,
+    F_SET_BIT,
+    F_CLEAR_BIT,
+    F_GET_PATTERN_IO_CONTROL,
+    F_GET_PATTERN_FILE_NAME,
+    F_GET_NUM_TRANSCEIVER_SAMPLES,
+    F_SET_NUM_TRANSCEIVER_SAMPLES,
+    F_GET_TRANSCEIVER_ENABLE_MASK,
+    F_SET_TRANSCEIVER_ENABLE_MASK,
+    F_GET_ROW,
+    F_SET_ROW,
+    F_GET_COLUMN,
+    F_SET_COLUMN,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 512, /**< detector function should not exceed this
@@ -384,6 +397,10 @@ enum detFuncs {
     F_RECEIVER_GET_RECEIVER_ROI,
     F_RECEIVER_SET_RECEIVER_ROI,
     F_RECEIVER_SET_RECEIVER_ROI_METADATA,
+    F_RECEIVER_SET_NUM_TRANSCEIVER_SAMPLES,
+    F_RECEIVER_SET_TRANSCEIVER_MASK,
+    F_RECEIVER_SET_ROW,
+    F_RECEIVER_SET_COLUMN,
 
     NUM_REC_FUNCTIONS
 };
@@ -657,6 +674,19 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_SYNCHRONIZATION:             return "F_SET_SYNCHRONIZATION";
     case F_GET_HARDWARE_VERSION:            return "F_GET_HARDWARE_VERSION";
     case F_GET_FRONTEND_FIRMWARE_VERSION:   return "F_GET_FRONTEND_FIRMWARE_VERSION";
+    case F_GET_BIT:                         return "F_GET_BIT";                 
+    case F_SET_BIT:                         return "F_SET_BIT";                 
+    case F_CLEAR_BIT:                       return "F_CLEAR_BIT";               
+    case F_GET_PATTERN_IO_CONTROL:          return "F_GET_PATTERN_IO_CONTROL";
+    case F_GET_PATTERN_FILE_NAME:           return "F_GET_PATTERN_FILE_NAME";
+    case F_GET_NUM_TRANSCEIVER_SAMPLES:     return "F_GET_NUM_TRANSCEIVER_SAMPLES";
+    case F_SET_NUM_TRANSCEIVER_SAMPLES:     return "F_SET_NUM_TRANSCEIVER_SAMPLES";
+    case F_GET_TRANSCEIVER_ENABLE_MASK:     return "F_GET_TRANSCEIVER_ENABLE_MASK";
+    case F_SET_TRANSCEIVER_ENABLE_MASK:     return "F_SET_TRANSCEIVER_ENABLE_MASK";
+    case F_GET_ROW:                         return "F_GET_ROW";
+    case F_SET_ROW:                         return "F_SET_ROW";
+    case F_GET_COLUMN:                      return "F_GET_COLUMN";
+    case F_SET_COLUMN:                      return "F_SET_COLUMN";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
@@ -764,6 +794,11 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_RECEIVER_GET_RECEIVER_ROI:       return "F_RECEIVER_GET_RECEIVER_ROI";
     case F_RECEIVER_SET_RECEIVER_ROI:       return "F_RECEIVER_SET_RECEIVER_ROI";
     case F_RECEIVER_SET_RECEIVER_ROI_METADATA: return "F_RECEIVER_SET_RECEIVER_ROI_METADATA";
+    case F_RECEIVER_SET_NUM_TRANSCEIVER_SAMPLES: return "F_RECEIVER_SET_NUM_TRANSCEIVER_SAMPLES";
+    case F_RECEIVER_SET_TRANSCEIVER_MASK:   return "F_RECEIVER_SET_TRANSCEIVER_MASK";
+    case F_RECEIVER_SET_ROW:                return "F_RECEIVER_SET_ROW";
+    case F_RECEIVER_SET_COLUMN:             return "F_RECEIVER_SET_COLUMN";
+
 
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";

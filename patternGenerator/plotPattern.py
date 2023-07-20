@@ -138,8 +138,15 @@ if verbose:
 
 # Load the pattern and get all lines
 # Loop all lines
-with open(Folder + "/" + File_pat + ".pat") as f_pat:
-    lines_pat = f_pat.readlines()
+if os.path.exists(Folder + "/" + File_pat + ".pat"):
+    with open(Folder + "/" + File_pat + ".pat") as f_pat:
+        lines_pat = f_pat.readlines()
+elif os.path.exists(Folder + "/" + File_pat + ".pyat"):
+    with open(Folder + "/" + File_pat + ".pyat") as f_pat:
+        lines_pat = f_pat.readlines()
+else:
+    print("No file found - Check it")
+    exit()
 f_pat.close()
 
 # number of lines for pattern file
@@ -586,7 +593,8 @@ for idx, i in enumerate(range(nbiteff)):
 
 n_cols = count_nonzero([waittime0 != 0, waittime1 != 0, waittime2 != 0, waittime3 != 0, waittime4 != 0, waittime5 != 0,
                         nloop0 != 0, nloop1 != 0, nloop2 != 0, nloop3 != 0, nloop4 != 0, nloop5 != 0])
-fig2.legend(loc="upper center", ncol=n_cols)
+if n_cols > 0:
+    fig2.legend(loc="upper center", ncol=n_cols)
 # manager = get_current_fig_manager()
 # manager.window.showMaximized()
 

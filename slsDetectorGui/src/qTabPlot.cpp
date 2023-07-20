@@ -62,11 +62,6 @@ void qTabPlot::SetupWidgetWindow() {
         chkGainPlot->setChecked(true);
         plot->EnableGainPlot(true);
         break;
-    case slsDetectorDefs::MOENCH:
-        chkGainPlot->setEnabled(true);
-        chkGainPlot->setChecked(true);
-        plot->EnableGainPlot(true);
-        break;
     default:
         break;
     }
@@ -803,9 +798,6 @@ void qTabPlot::Refresh() {
         case slsDetectorDefs::JUNGFRAU:
             chkGainPlot->setEnabled(true);
             GetGapPixels();
-            break;
-        case slsDetectorDefs::MOENCH:
-            chkGainPlot->setEnabled(true);
             break;
         case slsDetectorDefs::GOTTHARD2:
             chkGainPlot1D->setEnabled(true);

@@ -190,7 +190,6 @@ std::vector<defs::detectorSettings> Detector::getSettingsList() const {
             defs::HIGHGAIN, defs::DYNAMICGAIN, defs::LOWGAIN, defs::MEDIUMGAIN,
             defs::VERYHIGHGAIN};
     case defs::JUNGFRAU:
-    case defs::MOENCH:
         return std::vector<defs::detectorSettings>{defs::GAIN0,
                                                    defs::HIGHGAIN0};
     case defs::GOTTHARD2:
@@ -199,6 +198,12 @@ std::vector<defs::detectorSettings> Detector::getSettingsList() const {
     case defs::MYTHEN3:
         return std::vector<defs::detectorSettings>{defs::STANDARD, defs::FAST,
                                                    defs::HIGHGAIN};
+    case defs::MOENCH:
+        return std::vector<defs::detectorSettings>{
+            defs::G1_HIGHGAIN,         defs::G1_LOWGAIN,
+            defs::G2_HIGHCAP_HIGHGAIN, defs::G2_HIGHCAP_LOWGAIN,
+            defs::G2_LOWCAP_HIGHGAIN,  defs::G2_LOWCAP_LOWGAIN,
+            defs::G4_HIGHGAIN,         defs::G4_LOWGAIN};
     case defs::CHIPTESTBOARD:
         throw RuntimeError("Settings not implemented for this detector");
     default:
@@ -372,6 +377,22 @@ void Detector::setBadChannels(const std::vector<std::vector<int>> list) {
 
 void Detector::setBadChannels(const std::vector<int> list, Positions pos) {
     pimpl->setBadChannels(list, pos);
+}
+
+Result<int> Detector::getRow(Positions pos) const {
+    return pimpl->Parallel(&Module::getRow, pos);
+}
+
+void Detector::setRow(const int value, Positions pos) {
+    pimpl->Parallel(&Module::setRow, pos, value);
+}
+
+Result<int> Detector::getColumn(Positions pos) const {
+    return pimpl->Parallel(&Module::getColumn, pos);
+}
+
+void Detector::setColumn(const int value, Positions pos) {
+    pimpl->Parallel(&Module::setColumn, pos, value);
 }
 
 Result<bool> Detector::isVirtualDetectorServer(Positions pos) const {
@@ -1704,7 +1725,6 @@ void Detector::setStorageCellDelay(ns value, Positions pos) {
 std::vector<defs::gainMode> Detector::getGainModeList() const {
     switch (getDetectorType().squash()) {
     case defs::JUNGFRAU:
-    case defs::MOENCH:
         return std::vector<defs::gainMode>{
             defs::DYNAMIC, defs::FORCE_SWITCH_G1, defs::FORCE_SWITCH_G2,
             defs::FIX_G1,  defs::FIX_G2,          defs::FIX_G0};
@@ -2036,6 +2056,24 @@ void Detector::setADCPipeline(int value, Positions pos) {
     pimpl->Parallel(&Module::setADCPipeline, pos, value);
 }
 
+std::vector<defs::dacIndex> Detector::getVoltageList() const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError("Voltage list not implemented for this detector");
+    }
+    return std::vector<defs::dacIndex>{defs::V_POWER_A, defs::V_POWER_B,
+                                       defs::V_POWER_C, defs::V_POWER_D,
+                                       defs::V_POWER_IO};
+}
+
+std::vector<defs::dacIndex> Detector::getSlowADCList() const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError("Slow ADC list not implemented for this detector");
+    }
+    return std::vector<defs::dacIndex>{
+        defs::SLOW_ADC0, defs::SLOW_ADC1, defs::SLOW_ADC2, defs::SLOW_ADC3,
+        defs::SLOW_ADC4, defs::SLOW_ADC5, defs::SLOW_ADC6, defs::SLOW_ADC7};
+}
+
 Result<int> Detector::getVoltage(defs::dacIndex index, Positions pos) const {
     switch (index) {
     case defs::V_LIMIT:
@@ -2092,6 +2130,13 @@ void Detector::setTenGigaADCEnableMask(uint32_t mask, Positions pos) {
     pimpl->Parallel(&Module::setTenGigaADCEnableMask, pos, mask);
 }
 
+Result<uint32_t> Detector::getTransceiverEnableMask(Positions pos) const {
+    return pimpl->Parallel(&Module::getTransceiverEnableMask, pos);
+}
+
+void Detector::setTransceiverEnableMask(uint32_t mask, Positions pos) {
+    pimpl->Parallel(&Module::setTransceiverEnableMask, pos, mask);
+}
 // CTB Specific
 
 Result<int> Detector::getNumberOfDigitalSamples(Positions pos) const {
@@ -2102,12 +2147,18 @@ void Detector::setNumberOfDigitalSamples(int value, Positions pos) {
     pimpl->Parallel(&Module::setNumberOfDigitalSamples, pos, value);
 }
 
+Result<int> Detector::getNumberOfTransceiverSamples(Positions pos) const {
+    return pimpl->Parallel(&Module::getNumberOfTransceiverSamples, pos);
+}
+
+void Detector::setNumberOfTransceiverSamples(int value, Positions pos) {
+    pimpl->Parallel(&Module::setNumberOfTransceiverSamples, pos, value);
+}
+
 Result<defs::readoutMode> Detector::getReadoutMode(Positions pos) const {
     return pimpl->Parallel(&Module::getReadoutMode, pos);
 }
 
-/** Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL \n
- * Default: ANALOG_ONLY */
 void Detector::setReadoutMode(defs::readoutMode value, Positions pos) {
     pimpl->Parallel(&Module::setReadoutMode, pos, value);
 }
@@ -2220,37 +2271,185 @@ std::vector<std::string> Detector::getDacNames() const {
     return names;
 }
 
-defs::dacIndex Detector::getDacIndex(const std::string &name) {
+defs::dacIndex Detector::getDacIndex(const std::string &name) const {
     auto type = getDetectorType().squash();
     if (type == defs::CHIPTESTBOARD) {
         auto names = getDacNames();
         auto it = std::find(names.begin(), names.end(), name);
         if (it == names.end())
-            throw RuntimeError("Dacname not found");
+            throw RuntimeError("Dac name not found");
         return static_cast<defs::dacIndex>(it - names.begin());
     }
     return StringTo<defs::dacIndex>(name);
 }
 
-std::string Detector::getDacName(defs::dacIndex i) {
+void Detector::setDacName(const defs::dacIndex i, const std::string &name) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named dacs only for CTB");
+    pimpl->setCtbDacName(i, name);
+}
+
+std::string Detector::getDacName(const defs::dacIndex i) const {
     auto type = getDetectorType().squash();
     if (type == defs::CHIPTESTBOARD)
         return pimpl->getCtbDacName(i);
     return ToString(i);
 }
 
+void Detector::setAdcNames(const std::vector<std::string> names) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named adcs only for CTB");
+    pimpl->setCtbAdcNames(names);
+}
+
+std::vector<std::string> Detector::getAdcNames() const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named adcs only for CTB");
+    return pimpl->getCtbAdcNames();
+}
+
+int Detector::getAdcIndex(const std::string &name) const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named adcs only for CTB");
+    auto names = getAdcNames();
+    auto it = std::find(names.begin(), names.end(), name);
+    if (it == names.end())
+        throw RuntimeError("Adc name not found");
+    return (it - names.begin());
+}
+
+void Detector::setAdcName(const int index, const std::string &name) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named adcs only for CTB");
+    pimpl->setCtbAdcName(index, name);
+}
+
+std::string Detector::getAdcName(const int i) const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named adcs only for CTB");
+    return pimpl->getCtbAdcName(i);
+}
+
+void Detector::setSignalNames(const std::vector<std::string> names) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named signals only for CTB");
+    pimpl->setCtbSignalNames(names);
+}
+
+std::vector<std::string> Detector::getSignalNames() const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named signals only for CTB");
+    return pimpl->getCtbSignalNames();
+}
+
+int Detector::getSignalIndex(const std::string &name) const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named signals only for CTB");
+    auto names = getSignalNames();
+    auto it = std::find(names.begin(), names.end(), name);
+    if (it == names.end())
+        throw RuntimeError("Signalname not found");
+    return (it - names.begin());
+}
+
+void Detector::setSignalName(const int index, const std::string &name) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named signals only for CTB");
+    pimpl->setCtbSignalName(index, name);
+}
+
+std::string Detector::getSignalName(const int i) const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named signals only for CTB");
+    return pimpl->getCtbSignalName(i);
+}
+
+void Detector::setVoltageNames(const std::vector<std::string> names) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named powers only for CTB");
+    pimpl->setCtbVoltageNames(names);
+}
+
+std::vector<std::string> Detector::getVoltageNames() const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named powers only for CTB");
+    return pimpl->getCtbVoltageNames();
+}
+
+defs::dacIndex Detector::getVoltageIndex(const std::string &name) const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named powers only for CTB");
+    auto names = getVoltageNames();
+    auto it = std::find(names.begin(), names.end(), name);
+    if (it == names.end())
+        throw RuntimeError("Voltage name not found");
+    return static_cast<defs::dacIndex>(it - names.begin() + defs::V_POWER_A);
+}
+
+void Detector::setVoltageName(const defs::dacIndex index,
+                              const std::string &name) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named powers only for CTB");
+    pimpl->setCtbVoltageName(index, name);
+}
+
+std::string Detector::getVoltageName(const defs::dacIndex i) const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named powers only for CTB");
+    return pimpl->getCtbVoltageName(i);
+}
+
+void Detector::setSlowADCNames(const std::vector<std::string> names) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named SlowADCs only for CTB");
+    pimpl->setCtbSlowADCNames(names);
+}
+
+std::vector<std::string> Detector::getSlowADCNames() const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named SlowADCs only for CTB");
+    return pimpl->getCtbSlowADCNames();
+}
+
+defs::dacIndex Detector::getSlowADCIndex(const std::string &name) const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named SlowADCs only for CTB");
+    auto names = getSlowADCNames();
+    auto it = std::find(names.begin(), names.end(), name);
+    if (it == names.end())
+        throw RuntimeError("SlowADC name not found");
+    return static_cast<defs::dacIndex>(it - names.begin() + defs::SLOW_ADC0);
+}
+
+void Detector::setSlowADCName(const defs::dacIndex index,
+                              const std::string &name) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named SlowADCs only for CTB");
+    pimpl->setCtbSlowADCName(index, name);
+}
+
+std::string Detector::getSlowADCName(const defs::dacIndex i) const {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named SlowADCs only for CTB");
+    return pimpl->getCtbSlowADCName(i);
+}
+
 // Pattern
+
+Result<std::string> Detector::getPatterFileName(Positions pos) const {
+    return pimpl->Parallel(&Module::getPatterFileName, pos);
+}
 
 void Detector::setPattern(const std::string &fname, Positions pos) {
     Pattern pat;
     pat.load(fname);
     pat.validate();
-    setPattern(pat, pos);
+    pimpl->Parallel(&Module::setPattern, pos, pat, fname);
 }
 
 void Detector::setPattern(const Pattern &pat, Positions pos) {
     pat.validate();
-    pimpl->Parallel(&Module::setPattern, pos, pat);
+    pimpl->Parallel(&Module::setPattern, pos, pat, "");
 }
 
 void Detector::savePattern(const std::string &fname) {

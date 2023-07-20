@@ -1517,7 +1517,7 @@ int setReadoutSpeed(int val) {
         break;
 
     case HALF_SPEED:
-        LOG(logINFO, ("Setting Speed Speed (20 MHz):\n"));
+        LOG(logINFO, ("Setting Half Speed (20 MHz):\n"));
         config = CONFIG_HALF_SPEED_20MHZ_VAL;
         sampleAdcDecimationFactor = ADC_DECMT_HALF_SPEED
                                     << SAMPLE_ADC_DECMT_FACTOR_OFST;
@@ -1547,8 +1547,9 @@ int setReadoutSpeed(int val) {
     bus_w(SAMPLE_REG, bus_r(SAMPLE_REG) | sampleAdcDecimationFactor);
     LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));
 
-    setADCPipeline(adcOfst);
-    LOG(logINFO, ("\tSet ADC offset to 0x%x\n", getADCPipeline()));
+    setADCPipeline(adcOffset);
+    LOG(logINFO, ("\tSet ADC offset to 0x%x (%d)\n", getADCPipeline(),
+                  getADCPipeline()));
 
     setPhase(ADC_CLK, adcPhase, 1);
     LOG(logINFO, ("\tSet ADC Phase to %d degrees\n", adcPhase));

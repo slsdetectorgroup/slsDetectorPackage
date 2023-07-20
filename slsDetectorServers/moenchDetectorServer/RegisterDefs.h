@@ -385,7 +385,7 @@
 #define ASIC_CTRL_BOTSRTESTTOP_OFST         (31)
 #define ASIC_CTRL_BOTSRTESTTOP_MSK          (0x00000001 << ASIC_CTRL_BOTSRTESTTOP_OFST)
 
-#define ASIC_CTRL_DEFAULT_VAL               (ASIC_CTRL_INTRFCE_CLK_PLRTY_MSK | ASIC_CTRL_DSG1_BOT_MSK | \
+#define ASIC_CTRL_DEFAULT_VAL               (ASIC_CTRL_DSG1_BOT_MSK | \
                                             ASIC_CTRL_HG_BOT_MSK | ASIC_CTRL_STO2TOP_MSK | \
                                             ASIC_CTRL_CONNCDSTOP_MSK | ASIC_CTRL_STO1TOP_MSK | \
                                             ASIC_CTRL_BOTSRTESTBOT_MSK | ASIC_CTRL_PULSEOFFTOP_MSK | \

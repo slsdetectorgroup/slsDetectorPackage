@@ -12,6 +12,9 @@ class Defines():
     Time_Status_Refresh_ms  = 100
     Time_Plot_Refresh_ms = 20
 
+    Zmq_hwm_high_speed = 2
+    Zmq_hwm_low_speed = -1
+
     Acquisition_Tab_Index = 7
     Max_Tabs = 9
 

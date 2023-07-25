@@ -19,7 +19,7 @@ def moench03():
 
             i_analog = n_pixel * 32 + i_sc
             out[row, col] = i_analog
-    out = np.rot90(out) #TODO! check if we should rotate
+            
     return out
 
 def moench04_analog():
@@ -41,6 +41,4 @@ def moench04_analog():
             i_analog = n_pixel * 32 + i_sc
             out[row, col] = i_analog
 
-
-    out = np.rot90(out, 3) #TODO! check if we should rotate, maybe better in GUI?
     return out

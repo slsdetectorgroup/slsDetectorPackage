@@ -28,4 +28,4 @@ def moench04(analog_buffer):
 
     mask = np.uint16(0x3FFF) #Do we always mask out the top bits?
     np.bitwise_and(analog_frame, mask, out = analog_frame)
-    return np.rot90(analog_frame, 3)
+    return analog_frame

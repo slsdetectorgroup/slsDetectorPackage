@@ -785,20 +785,14 @@ int setADCEnableMask(uint32_t mask) {
 uint32_t getADCEnableMask() { return adcEnableMask_1g; }
 
 void setADCEnableMask_10G(uint32_t mask) {
-    if (mask == 0u) {
-        LOG(logERROR, ("Cannot set 10gb adc mask to 0\n"));
-        return;
-    }
     // convert 32 bit mask to 8 bit mask
     uint8_t actualMask = 0;
-    if (mask != 0) {
-        int ival = 0;
-        for (int ich = 0; ich < NCHAN_ANALOG; ich = ich + 4) {
-            if ((1 << ich) & mask) {
-                actualMask |= (1 << ival);
-            }
-            ++ival;
+    int ival = 0;
+    for (int ich = 0; ich < NCHAN_ANALOG; ich = ich + 4) {
+        if ((1 << ich) & mask) {
+            actualMask |= (1 << ival);
         }
+        ++ival;
     }
 
     LOG(logINFO, ("Setting adcEnableMask 10G to 0x%x (from 0x%08x)\n",
@@ -919,15 +913,15 @@ int setReadoutMode(enum readoutMode mode) {
     uint32_t addr = CONFIG_REG;
     uint32_t addr_readout_10g = READOUT_10G_ENABLE_REG;
 
-    bus_w(addr, (bus_r(addr) | CONFIG_DSBL_ANLG_OTPT_MSK) &
-                    (~CONFIG_ENBLE_DGTL_OTPT_MSK) &
-                    (~CONFIG_ENBLE_TRNSCVR_OTPT_MSK));
+    bus_w(addr,
+          (bus_r(addr) & (~CONFIG_ENBLE_ANLG_OTPT_MSK) &
+           (~CONFIG_ENBLE_DGTL_OTPT_MSK) & (~CONFIG_ENBLE_TRNSCVR_OTPT_MSK)));
     bus_w(addr_readout_10g, bus_r(addr_readout_10g) &
                                 (~READOUT_10G_ENABLE_ANLG_MSK) &
                                 ~(READOUT_10G_ENABLE_DGTL_MSK) &
                                 ~(READOUT_10G_ENABLE_TRNSCVR_MSK));
     if (analogEnable) {
-        bus_w(addr, bus_r(addr) & ~(CONFIG_DSBL_ANLG_OTPT_MSK));
+        bus_w(addr, bus_r(addr) | (CONFIG_ENBLE_ANLG_OTPT_MSK));
         bus_w(addr_readout_10g,
               bus_r(addr_readout_10g) |
                   ((adcEnableMask_10g << READOUT_10G_ENABLE_ANLG_OFST) &
@@ -2239,16 +2233,6 @@ int startStateMachine() {
                            ~CONTROL_STRT_EXPSR_MSK);
 
     LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
-
-    // TODO:  Temporary Matternhorn Specific ( will be moved to the pattern )
-    if (transceiverEnable) {
-        uint32_t addr = 0x202 << MEM_MAP_SHIFT;
-        bus_w(addr, bus_r(addr) | (1 << 1));
-        LOG(logINFOBLUE, ("Writing 1 to reg 0x202\n"))
-        usleep(1);
-        cleanFifos();
-        usleep(1);
-    }
 
     return OK;
 }

@@ -135,7 +135,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>8</number>
+              <number>7</number>
              </property>
              <widget class="QWidget" name="tabDac">
               <attribute name="title">
@@ -15958,7 +15958,7 @@ QPushButton:disabled{background-color: grey;}</string>
                  <x>10</x>
                  <y>550</y>
                  <width>711</width>
-                 <height>101</height>
+                 <height>141</height>
                 </rect>
                </property>
                <property name="sizePolicy">
@@ -16003,6 +16003,9 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="minimum">
+                   <number>1</number>
                   </property>
                   <property name="maximum">
                    <number>999999999</number>
@@ -16132,303 +16135,22 @@ QPushButton:disabled{background-color: grey;}</string>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                   </property>
+                  <property name="minimum">
+                   <number>1</number>
+                  </property>
                   <property name="maximum">
                    <number>999999999</number>
                   </property>
                  </widget>
                 </item>
-               </layout>
-              </widget>
-              <widget class="QFrame" name="frame_14">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>740</y>
-                 <width>711</width>
-                 <height>81</height>
-                </rect>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
-               </property>
-               <layout class="QGridLayout" name="gridLayout">
-                <item row="0" column="1">
-                 <widget class="QProgressBar" name="progressBar">
-                  <property name="minimumSize">
-                   <size>
-                    <width>260</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="value">
-                   <number>24</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="0">
-                 <widget class="QPushButton" name="pushButtonStart">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>36</height>
-                   </size>
-                  </property>
-                  <property name="palette">
-                   <palette>
-                    <active>
-                     <colorrole role="Button">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>85</red>
-                        <green>170</green>
-                        <blue>127</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                     <colorrole role="Base">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>85</red>
-                        <green>170</green>
-                        <blue>127</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                     <colorrole role="Window">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>85</red>
-                        <green>170</green>
-                        <blue>127</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </active>
-                    <inactive>
-                     <colorrole role="Button">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>85</red>
-                        <green>170</green>
-                        <blue>127</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                     <colorrole role="Base">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>85</red>
-                        <green>170</green>
-                        <blue>127</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                     <colorrole role="Window">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>85</red>
-                        <green>170</green>
-                        <blue>127</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </inactive>
-                    <disabled>
-                     <colorrole role="Button">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>85</red>
-                        <green>170</green>
-                        <blue>127</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                     <colorrole role="Base">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>85</red>
-                        <green>170</green>
-                        <blue>127</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                     <colorrole role="Window">
-                      <brush brushstyle="SolidPattern">
-                       <color alpha="255">
-                        <red>85</red>
-                        <green>170</green>
-                        <blue>127</blue>
-                       </color>
-                      </brush>
-                     </colorrole>
-                    </disabled>
-                   </palette>
-                  </property>
-                  <property name="toolTip">
-                   <string>Shift + Enter is the keyboard shortcut to start/stop acquisition from any tab</string>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">QPushButton {background-color: rgb(85, 170, 127);} 
-QPushButton:checked{background-color: red;}</string>
-                  </property>
-                  <property name="text">
-                   <string>Start</string>
-                  </property>
-                  <property name="checkable">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
                 <item row="2" column="0">
-                 <widget class="QLabel" name="labelDetectorStatus">
-                  <property name="minimumSize">
-                   <size>
-                    <width>110</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>IDLE</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignCenter</set>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="3">
-                 <widget class="QLabel" name="label_135">
-                  <property name="minimumSize">
-                   <size>
-                    <width>100</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>Current frame:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="3">
-                 <widget class="QLabel" name="label_137">
-                  <property name="minimumSize">
-                   <size>
-                    <width>100</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>Acquired:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="4">
-                 <widget class="QLabel" name="labelAcquiredFrames">
-                  <property name="minimumSize">
-                   <size>
-                    <width>70</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>70</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>0</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="4">
-                 <widget class="QLabel" name="labelCurrentFrame">
-                  <property name="minimumSize">
-                   <size>
-                    <width>70</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>70</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>0</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="2">
-                 <spacer name="horizontalSpacer_3">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeType">
-                   <enum>QSizePolicy::Fixed</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-               </layout>
-              </widget>
-              <widget class="QFrame" name="frame">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>660</y>
-                 <width>711</width>
-                 <height>71</height>
-                </rect>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_14">
-                <item row="0" column="3">
-                 <widget class="QLabel" name="label_134">
-                  <property name="minimumSize">
-                   <size>
-                    <width>150</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>Current measurement:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="0">
                  <widget class="QLabel" name="label_132">
                   <property name="text">
                    <string>Number of measurements:</string>
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="1">
+                <item row="2" column="1">
                  <widget class="QSpinBox" name="spinBoxMeasurements">
                   <property name="minimumSize">
                    <size>
@@ -16450,38 +16172,6 @@ QPushButton:checked{background-color: red;}</string>
                   </property>
                   <property name="maximum">
                    <number>999999999</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="2">
-                 <spacer name="horizontalSpacer_23">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="0" column="4">
-                 <widget class="QLabel" name="labelCurrentMeasurement">
-                  <property name="minimumSize">
-                   <size>
-                    <width>70</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>70</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>0</string>
                   </property>
                  </widget>
                 </item>
@@ -16591,19 +16281,6 @@ QPushButton:checked{background-color: red;}</string>
                    <string>Run Clock Frequency (MHz):</string>
                   </property>
                  </widget>
-                </item>
-                <item row="1" column="3">
-                 <spacer name="horizontalSpacer_24">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
                 </item>
                </layout>
               </widget>
@@ -17741,8 +17418,8 @@ QPushButton:checked{background-color: red;}</string>
    </property>
    <property name="minimumSize">
     <size>
-     <width>72</width>
-     <height>80</height>
+     <width>568</width>
+     <height>214</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -17762,35 +17439,295 @@ QPushButton:checked{background-color: red;}</string>
    </attribute>
    <widget class="QWidget" name="dockWidgetContent">
     <layout class="QGridLayout" name="gridLayout_7">
-     <item row="0" column="0" rowspan="2">
-      <widget class="QFrame" name="framePatternViewer">
+     <item row="0" column="0" colspan="2">
+      <widget class="QFrame" name="frameAcquisition">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>100</height>
+        </size>
+       </property>
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
        </property>
-       <layout class="QGridLayout" name="gridLayoutPatternViewer"/>
-      </widget>
-     </item>
-     <item row="0" column="1" rowspan="2">
-      <widget class="QFrame" name="framePlot">
-       <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Raised</enum>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayoutPlot">
-        <item>
-         <widget class="QLabel" name="labelFrameNumber">
+       <layout class="QGridLayout" name="gridLayout_25">
+        <item row="1" column="2">
+         <widget class="QLabel" name="labelCurrentMeasurement">
+          <property name="minimumSize">
+           <size>
+            <width>70</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>70</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
-           <string>x</string>
+           <string>0</string>
           </property>
          </widget>
         </item>
+        <item row="0" column="1" colspan="5">
+         <widget class="QProgressBar" name="progressBar">
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="value">
+           <number>24</number>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QPushButton" name="pushButtonStart">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>36</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="palette">
+           <palette>
+            <active>
+             <colorrole role="Button">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Base">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Window">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+            </active>
+            <inactive>
+             <colorrole role="Button">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Base">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Window">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+            </inactive>
+            <disabled>
+             <colorrole role="Button">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Base">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Window">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+            </disabled>
+           </palette>
+          </property>
+          <property name="toolTip">
+           <string>Shift + Enter is the keyboard shortcut to start/stop acquisition from any tab</string>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton {background-color: rgb(85, 170, 127);} 
+QPushButton:checked{background-color: red;}</string>
+          </property>
+          <property name="text">
+           <string>Start</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="labelDetectorStatus">
+          <property name="minimumSize">
+           <size>
+            <width>110</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>IDLE</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4">
+         <widget class="QLabel" name="label_137">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>70</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Acquired:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="5">
+         <widget class="QLabel" name="labelAcquiredFrames">
+          <property name="minimumSize">
+           <size>
+            <width>70</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>70</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLabel" name="label_134">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Measurement:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <spacer name="horizontalSpacer_24">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
        </layout>
       </widget>
+     </item>
+     <item row="1" column="0" colspan="2">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QFrame" name="framePatternViewer">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayoutPatternViewer"/>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="framePlot">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayoutPlot">
+          <item>
+           <widget class="QLabel" name="labelFrameNumber">
+            <property name="text">
+             <string>#</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </widget>

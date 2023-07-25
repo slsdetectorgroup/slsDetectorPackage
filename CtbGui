@@ -29,6 +29,8 @@ import argparse
 import alias_utility 
 import signal
 
+import decoder
+
 
 class MainWindow(QtWidgets.QMainWindow):
     signalShortcutAcquire = QtCore.pyqtSignal()
@@ -1163,6 +1165,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.nAnalogRows = 0
         self.nAnalogCols = 0
         self.analog_frame = np.zeros((self.nAnalogRows, self.nAnalogCols))
+        self.plotAnalogImage.getView().invertY(False)
         self.plotAnalogImage.setImage(self.analog_frame)
         self.verticalLayoutPlot.addWidget(self.plotAnalogImage, 2)
 
@@ -1989,24 +1992,9 @@ class MainWindow(QtWidgets.QMainWindow):
             print(message)
             return
 
+        self.analog_frame = decoder.moench04(analog_array)       
+        self.plotAnalogImage.setImage(self.analog_frame.T)
 
-        self.analog_frame = np.zeros((self.nAnalogCols, self.nAnalogRows))
-        adcNumbers = Defines.Moench04.adcNumbers
-        nPixelsPerSC = Defines.Moench04.nPixelsPerSuperColumn
-        scWidth = Defines.Moench04.superColumnWidth
-
-        for iPixel in range(nPixelsPerSC):
-            for iSC, iAdc in enumerate(adcNumbers):
-                col = ((iAdc % 16) * scWidth) + (iPixel % scWidth)
-                if iSC < 16:
-                    row = 199 - int(iPixel / scWidth)
-                else:
-                    row = 200 + int(iPixel / scWidth)
-                index_min = iPixel * 32 + iSC
-                pixel_value = analog_array[index_min]
-                self.analog_frame[row, col] = pixel_value
-                
-        self.plotAnalogImage.setImage(np.rot90(self.analog_frame, 3))
 
     def matterhornImage(self, trans_array):
         #print("matterhorn image")

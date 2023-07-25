@@ -65,6 +65,8 @@ class GeneralData {
     slsDetectorDefs::ROI detectorRoi{};
     uint32_t counterMask{0};
     uint32_t transceiverMask{0};
+    slsDetectorDefs::frameDiscardPolicy frameDiscardMode{
+        slsDetectorDefs::NO_DISCARD};
 
     GeneralData(){};
     virtual ~GeneralData(){};
@@ -384,6 +386,7 @@ class MoenchData : public GeneralData {
         fifoDepth = 1000;
         standardheader = true;
         maxRowsPerReadout = 400;
+        frameDiscardMode = slsDetectorDefs::DISCARD_PARTIAL_FRAMES;
         UpdateImageSize();
     };
 

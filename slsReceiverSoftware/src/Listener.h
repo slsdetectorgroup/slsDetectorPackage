@@ -44,7 +44,6 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     void SetActivate(bool enable);
     void SetDetectorDatastream(bool enable);
     void SetNoRoi(bool enable);
-    void SetFrameDiscardPolicy(frameDiscardPolicy value);
     void SetSilentMode(bool enable);
 
     void ResetParametersforNewAcquisition();
@@ -115,7 +114,6 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
     uint32_t udpPortNumber{0};
     std::string eth;
-    frameDiscardPolicy frameDiscardMode;
     bool activated{false};
     bool detectorDataStream{true};
     bool noRoi{false};

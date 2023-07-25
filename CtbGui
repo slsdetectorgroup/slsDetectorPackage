@@ -92,7 +92,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.signalShortcutTabDown.connect(partial(self.changeTabIndex, False))
         # to catch the ctrl + c to abort
         signal.signal(signal.SIGINT, signal.SIG_DFL)
-        self.firstImage = True
+        self.firstAnalogImage = True
+        self.firstDigitalImage = True
+        self.firstTransceiverImage = True
 
 
         
@@ -1968,14 +1970,17 @@ class MainWindow(QtWidgets.QMainWindow):
                     if self.comboBoxPlot.currentIndex() == Defines.ImageIndex.Moench04.value:
                         self.moench04Analog(analog_array)
 
-                    # keep the zoomed in state
-                    if not self.firstImage:
+                    # keep the zoomed in state (not 1st image)
+                    if self.firstAnalogImage:
+                        self.firstAnalogImage = False
+                    else:
                         viewBox.setState(state)
                     
                     
                 # transceiver
                 if self.romode.value in [3, 4]:  
                     viewBox = self.plotTransceiverImage.getView()
+                    state = viewBox.getState()
 
                     transceiverOffset = 0     
                     if self.romode.value == 4:
@@ -1989,13 +1994,12 @@ class MainWindow(QtWidgets.QMainWindow):
                     if self.comboBoxPlot.currentIndex() == Defines.ImageIndex.Matterhorn.value:
                         self.matterhornImage(trans_array)
 
-                    # keep the zoomed in state
-                    if not self.firstImage:
+                    # keep the zoomed in state (not 1st image)
+                    if self.firstTransceiverImage:
+                        self.firstTransceiverImage = False
+                    else:
                         viewBox.setState(state)
 
-
-            if self.firstImage:
-                self.firstImage = False
 
         except zmq.ZMQError as e:
             pass

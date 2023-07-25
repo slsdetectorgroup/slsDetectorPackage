@@ -64,6 +64,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.refresh_tab_adc()
         self.refresh_tab_pattern()
         self.refresh_tab_acquisition()
+        self.refresh_tab_plot()
 
         # also refreshes timer to start plotting 
         self.plotOptions()
@@ -1148,6 +1149,35 @@ class MainWindow(QtWidgets.QMainWindow):
         self.plotDigitalImage.setColorMap(cm)
         self.plotTransceiverImage.setColorMap(cm)
 
+    def getZMQHWM(self):
+        self.comboBoxZMQHWM.currentIndexChanged.disconnect()
+
+        rx_zmq_hwm = self.det.getRxZmqHwm()[0]
+        # ensure same value in client zmq
+        self.det.setClientZmqHwm(rx_zmq_hwm)
+
+        # high readout, low HWM
+        if rx_zmq_hwm < 25 and rx_zmq_hwm > -1:
+            self.comboBoxZMQHWM.setCurrentIndex(1)
+        # low readout, high HWM
+        else:
+            self.comboBoxZMQHWM.setCurrentIndex(0)
+        self.comboBoxZMQHWM.currentIndexChanged.connect(self.setZMQHWM)
+
+
+    def setZMQHWM(self):
+        val = self.comboBoxZMQHWM.currentIndex()
+        # low readout, high HWM
+        if val == 0:
+            self.det.setRxZmqHwm(Defines.Zmq_hwm_low_speed)
+            self.det.setClientZmqHwm(Defines.Zmq_hwm_low_speed)
+        # high readout, low HWM
+        else:
+            self.det.setRxZmqHwm(Defines.Zmq_hwm_high_speed)
+            self.det.setClientZmqHwm(Defines.Zmq_hwm_high_speed)
+
+        self.getZMQHWM()
+
     def initializeAllAnalogPlots(self):
         self.plotAnalogWaveform = pg.plot()
         self.verticalLayoutPlot.addWidget(self.plotAnalogWaveform, 1)
@@ -2074,6 +2104,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.refresh_tab_pattern()
             case 7:
                 self.refresh_tab_acquisition()
+            case 8:
+                self.refresh_tab_plot()
 
     def refresh_tab_dac(self):
         self.updateDACNames()
@@ -2138,6 +2170,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getTriggers()
         self.getPeriod()
         self.updateDetectorStatus(self.det.status)
+
+    def refresh_tab_plot(self):
+        self.getZMQHWM()
 
     def setup_zmq(self):
         self.det.rx_zmqstream = 1
@@ -2382,6 +2417,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.radioButtonImage.clicked.connect(self.plotOptions)
         self.comboBoxPlot.currentIndexChanged.connect(self.plotOptions)
         self.comboBoxColorMap.currentIndexChanged.connect(self.setColorMap)
+        self.comboBoxZMQHWM.currentIndexChanged.connect(self.setZMQHWM)
         self.spinBoxSerialOffset.editingFinished.connect(self.setSerialOffset)
         self.spinBoxNCount.editingFinished.connect(self.setNCounter)
         self.spinBoxDynamicRange.editingFinished.connect(self.setDynamicRange)

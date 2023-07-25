@@ -1165,6 +1165,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.nAnalogRows = 0
         self.nAnalogCols = 0
         self.analog_frame = np.zeros((self.nAnalogRows, self.nAnalogCols))
+        self.plotAnalogImage.getView().invertY(False)
         self.plotAnalogImage.setImage(self.analog_frame)
         self.verticalLayoutPlot.addWidget(self.plotAnalogImage, 2)
 
@@ -1991,8 +1992,8 @@ class MainWindow(QtWidgets.QMainWindow):
             print(message)
             return
 
-        self.analog_frame = decoder.moench04(analog_array)                
-        self.plotAnalogImage.setImage(self.analog_frame)
+        self.analog_frame = decoder.moench04(analog_array)       
+        self.plotAnalogImage.setImage(self.analog_frame.T)
 
 
     def matterhornImage(self, trans_array):

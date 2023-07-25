@@ -16,6 +16,7 @@ class qDacWidget : public QWidget, private Ui::WidgetDacObject {
                slsDetectorDefs::dacIndex i);
     ~qDacWidget();
     void SetDetectorIndex(int id);
+    void Refresh();
 
   private slots:
     void SetDac();
@@ -25,7 +26,6 @@ class qDacWidget : public QWidget, private Ui::WidgetDacObject {
     void Initialization();
     void GetDac();
     void GetAdc();
-    void Refresh();
 
     Detector *det;
     bool isDac{true};

@@ -34,13 +34,13 @@ def moench04_analog():
             col = ((adc_nr % 16) * 25) + (n_pixel % 25)
             row = 0
             if i_sc < 16:
-                row = 199 - (n_pixel / 25)
+                row = 199 - (n_pixel // 25)
             else:
-                row = 200 + (n_pixel / 25)
+                row = 200 + (n_pixel // 25)
 
             i_analog = n_pixel * 32 + i_sc
             out[row, col] = i_analog
 
 
-    out = np.rot90(out) #TODO! check if we should rotate, maybe better in GUI?
+    out = np.rot90(out, 3) #TODO! check if we should rotate, maybe better in GUI?
     return out

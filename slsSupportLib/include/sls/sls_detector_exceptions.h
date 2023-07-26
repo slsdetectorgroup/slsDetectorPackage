@@ -8,43 +8,43 @@ namespace sls {
 struct RuntimeError : public std::runtime_error {
   public:
     RuntimeError();
-    RuntimeError(const std::string &msg);
-    RuntimeError(const char *msg);
+    explicit RuntimeError(const std::string &msg);
+    explicit RuntimeError(const char *msg);
 };
 
 struct SharedMemoryError : public RuntimeError {
   public:
-    SharedMemoryError(const std::string &msg);
+    explicit SharedMemoryError(const std::string &msg);
 };
 
 struct SocketError : public RuntimeError {
   public:
-    SocketError(const std::string &msg);
+    explicit SocketError(const std::string &msg);
 };
 
 struct ZmqSocketError : public RuntimeError {
   public:
-    ZmqSocketError(const std::string &msg);
+    explicit ZmqSocketError(const std::string &msg);
 };
 
 struct NotImplementedError : public RuntimeError {
   public:
-    NotImplementedError(const std::string &msg);
+    explicit NotImplementedError(const std::string &msg);
 };
 
 struct DetectorError : public RuntimeError {
   public:
-    DetectorError(const std::string &msg);
+    explicit DetectorError(const std::string &msg);
 };
 
 struct ReceiverError : public RuntimeError {
   public:
-    ReceiverError(const std::string &msg);
+    explicit ReceiverError(const std::string &msg);
 };
 
 struct GuiError : public RuntimeError {
   public:
-    GuiError(const std::string &msg);
+    explicit GuiError(const std::string &msg);
 };
 
 } //  namespace sls

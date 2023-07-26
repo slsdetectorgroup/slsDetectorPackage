@@ -50,6 +50,8 @@ class MainWindow(QtWidgets.QMainWindow):
         
         super(MainWindow, self).__init__()
         uic.loadUi("CtbGui.ui", self)
+
+        self.updateSettingValues()
         
         self.det = None
         try:
@@ -97,8 +99,72 @@ class MainWindow(QtWidgets.QMainWindow):
         self.firstDigitalImage = True
         self.firstTransceiverImage = True
 
+    def updateSettingMainWindow(self):
+        self.settings.beginGroup("mainwindow");
+        # window size
+        width = self.settings.value('window_width')
+        height = self.settings.value('window_height')
+        if width is not None and height is not None:
+            self.resize(int(width), int(height))
+            #print(f'Main window resized to {width}x{height}')
 
-        
+        # window position
+        pos = self.settings.value('window_pos')
+        if type(pos) is QtCore.QPoint:
+            #print(f'Moved main window to {pos}')
+            self.move(pos)
+        self.settings.endGroup();
+
+    def saveSettingMainWindow(self):
+        self.settings.beginGroup("mainwindow");
+        self.settings.setValue('window_width', self.rect().width())
+        self.settings.setValue('window_height', self.rect().height())
+        self.settings.setValue('window_pos', self.pos())
+        self.settings.endGroup();
+
+    def updateSettingDockWidget(self):
+        self.settings.beginGroup("dockwidget");
+
+        # is docked
+        if self.settings.contains('window_width') and self.settings.contains('window_height'): 
+            # window size
+            width = self.settings.value('window_width')
+            height = self.settings.value('window_height')
+            if width is not None and height is not None:
+                #print(f'Plot window - Floating ({width}x{height})')
+                self.dockWidget.setFloating(True)
+                self.dockWidget.resize(int(width), int(height))
+            # window position
+            pos = self.settings.value('window_pos')
+            if type(pos) is QtCore.QPoint:
+                #print(f'Moved plot window to {pos}')
+                self.dockWidget.move(pos)
+        self.settings.endGroup();
+
+    def saveSettingDockWidget(self):
+        self.settings.beginGroup("dockwidget");
+        if self.dockWidget.isFloating():
+            self.settings.setValue('window_width', self.dockWidget.rect().width())
+            self.settings.setValue('window_height', self.dockWidget.rect().height())
+            self.settings.setValue('window_pos', self.dockWidget.pos())
+        else:
+            self.settings.remove('window_width')
+            self.settings.remove('window_height')
+            self.settings.remove('window_pos')
+        self.settings.endGroup();
+
+    def updateSettingValues(self):
+        self.settings = QtCore.QSettings('slsdetectorgroup', 'pyctbgui')
+        self.updateSettingMainWindow()
+        self.updateSettingDockWidget()
+
+    def saveSettings(self):
+        # store in ~/.config/slsdetectorgroup/pyctbgui.conf
+        self.saveSettingMainWindow()
+        self.saveSettingDockWidget()         
+
+    def closeEvent(self, event):
+        self.saveSettings()
 
     def loadAliasFile(self):
         print(f'Loading Alias file: {self.alias_file}')

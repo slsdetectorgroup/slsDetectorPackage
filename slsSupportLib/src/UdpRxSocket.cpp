@@ -71,7 +71,7 @@ bool UdpRxSocket::ReceivePacket(char *dst) noexcept {
     LOG(logINFORED) << portnum << ":Going to receive packet";
     auto bytes_received =
         recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
-    LOG(logINFORED) << portnum << ":received " << (bytes_received == packet_size_) ? "all" : "missing";
+    LOG(logINFORED) << portnum << ":received " << ((bytes_received == packet_size_) ? "all" : "missing");
 
     return bytes_received == packet_size_;
 }

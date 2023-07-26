@@ -5,44 +5,44 @@
 
 namespace sls {
 
-struct RuntimeError : public std::runtime_error {
+class RuntimeError : public std::runtime_error {
   public:
     RuntimeError();
     explicit RuntimeError(const std::string &msg);
     explicit RuntimeError(const char *msg);
 };
 
-struct SharedMemoryError : public RuntimeError {
+class SharedMemoryError : public RuntimeError {
   public:
     explicit SharedMemoryError(const std::string &msg);
 };
 
-struct SocketError : public RuntimeError {
+class SocketError : public RuntimeError {
   public:
     explicit SocketError(const std::string &msg);
 };
 
-struct ZmqSocketError : public RuntimeError {
+class ZmqSocketError : public RuntimeError {
   public:
     explicit ZmqSocketError(const std::string &msg);
 };
 
-struct NotImplementedError : public RuntimeError {
+class NotImplementedError : public RuntimeError {
   public:
     explicit NotImplementedError(const std::string &msg);
 };
 
-struct DetectorError : public RuntimeError {
+class DetectorError : public RuntimeError {
   public:
     explicit DetectorError(const std::string &msg);
 };
 
-struct ReceiverError : public RuntimeError {
+class ReceiverError : public RuntimeError {
   public:
     explicit ReceiverError(const std::string &msg);
 };
 
-struct GuiError : public RuntimeError {
+class GuiError : public RuntimeError {
   public:
     explicit GuiError(const std::string &msg);
 };

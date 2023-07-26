@@ -263,9 +263,13 @@ void Listener::ThreadExecution() {
     auto *memImage = reinterpret_cast<image_structure *>(buffer);
 
     // udpsocket doesnt exist
-    if ((*status == TRANSMITTING || !udpSocketAlive) && !carryOverFlag) {
-        StopListening(buffer, memImage->size);
-        return;
+    if (*status == TRANSMITTING || !udpSocketAlive) {
+        if (!carryOverFlag) {
+            StopListening(buffer, memImage->size);
+            return;
+        } else {
+            LOG(logINFORED) << index << ":carry over flag is True, but should end!!!!";
+        }
     }
 
     // reset header and size and get data
@@ -294,6 +298,7 @@ void Listener::ThreadExecution() {
 }
 
 void Listener::StopListening(char *buf, size_t &size) {
+    LOG(logINFORED) << index << ":StopListening";
     size = DUMMY_PACKET_VALUE;
     fifo->PushAddress(buf);
     StopRunning();

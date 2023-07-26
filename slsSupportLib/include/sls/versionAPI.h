@@ -9,5 +9,5 @@
 #define APIGOTTHARD2 "developer 0x230615"
 #define APIMYTHEN3   "developer 0x230621"
 #define APIJUNGFRAU  "developer 0x230720"
-#define APIMOENCH "developer 0x230725"
-#define APICTB "developer 0x230720"
+#define APIMOENCH    "developer 0x230725"
+#define APICTB       "developer 0x230720"

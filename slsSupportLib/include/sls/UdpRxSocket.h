@@ -23,6 +23,8 @@ class UdpRxSocket {
     void setBufferSize(int size);
     ssize_t getPacketSize() const noexcept;
     void Shutdown();
+  private:
+   int portnum{0};
 };
 
 } // namespace sls

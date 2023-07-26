@@ -24,6 +24,7 @@ UdpRxSocket::UdpRxSocket(int port, ssize_t packet_size, const char *hostname,
     hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
     struct addrinfo *res{nullptr};
 
+    portnum = port;
     const std::string portname = std::to_string(port);
     if (getaddrinfo(hostname, portname.c_str(), &hints, &res)) {
         throw RuntimeError("Failed at getaddrinfo with " +
@@ -67,8 +68,10 @@ UdpRxSocket::~UdpRxSocket() {
 ssize_t UdpRxSocket::getPacketSize() const noexcept { return packet_size_; }
 
 bool UdpRxSocket::ReceivePacket(char *dst) noexcept {
+    LOG(logINFORED) << portnum << ":Going to receive packet";
     auto bytes_received =
         recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
+    LOG(logINFORED) << portnum << ":received " << (bytes_received == packet_size_) ? "all" : "missing";
 
     return bytes_received == packet_size_;
 }

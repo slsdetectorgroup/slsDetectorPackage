@@ -159,7 +159,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updateSettingDockWidget()
 
     def saveSettings(self):
-        # store in ~/.config/pyctbgui/...
+        # store in ~/.config/slsdetectorgroup/pyctbgui.conf
         self.saveSettingMainWindow()
         self.saveSettingDockWidget()         
 

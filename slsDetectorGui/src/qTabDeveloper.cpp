@@ -17,84 +17,44 @@ qTabDeveloper::~qTabDeveloper() {}
 
 void qTabDeveloper::SetupWidgetWindow() {
     try {
+        // dacs
+        auto daclist = det->getDacList();
+        for (auto it : daclist) {
+            dacWidgets.push_back(
+                new qDacWidget(this, det, true, sls::ToString(it), it));
+        }
+
+        // adcs
         slsDetectorDefs::detectorType detType = det->getDetectorType().squash();
+        slsDetectorDefs::dacIndex ind = slsDetectorDefs::DAC_0;
         switch (detType) {
         case slsDetectorDefs::EIGER:
-            for (auto it : eiger_dacs) {
-                dacWidgets.push_back(new qDacWidget(
-                    this, det, true, it,
-                    sls::StringTo<slsDetectorDefs::dacIndex>(it)));
-            }
             for (auto it : eiger_adcs) {
-                adcWidgets.push_back(new qDacWidget(
-                    this, det, false, it,
-                    sls::StringTo<slsDetectorDefs::dacIndex>(it)));
+                adcWidgets.push_back(
+                    new qDacWidget(this, det, false, sls::ToString(it), it));
             }
             break;
-
         case slsDetectorDefs::GOTTHARD:
-            for (auto it : gotthard_dacs) {
-                dacWidgets.push_back(new qDacWidget(
-                    this, det, true, it,
-                    sls::StringTo<slsDetectorDefs::dacIndex>(it)));
-            }
-            for (auto it : gotthard_adcs) {
-                adcWidgets.push_back(new qDacWidget(
-                    this, det, false, it,
-                    sls::StringTo<slsDetectorDefs::dacIndex>(it)));
-            }
+            ind = slsDetectorDefs::TEMPERATURE_ADC;
+            adcWidgets.push_back(
+                new qDacWidget(this, det, false, sls::ToString(ind), ind));
+            ind = slsDetectorDefs::TEMPERATURE_FPGA;
+            adcWidgets.push_back(
+                new qDacWidget(this, det, false, sls::ToString(ind), ind));
             break;
 
         case slsDetectorDefs::JUNGFRAU:
-            for (auto it : jungfrau_dacs) {
-                dacWidgets.push_back(new qDacWidget(
-                    this, det, true, it,
-                    sls::StringTo<slsDetectorDefs::dacIndex>(it)));
-            }
-            for (auto it : jungfrau_adcs) {
-                adcWidgets.push_back(new qDacWidget(
-                    this, det, false, it,
-                    sls::StringTo<slsDetectorDefs::dacIndex>(it)));
-            }
+            ind = slsDetectorDefs::TEMPERATURE_ADC;
+            adcWidgets.push_back(
+                new qDacWidget(this, det, false, sls::ToString(ind), ind));
             break;
 
         case slsDetectorDefs::GOTTHARD2:
-            for (auto it : gotthard2_dacs) {
-                dacWidgets.push_back(new qDacWidget(
-                    this, det, true, it,
-                    sls::StringTo<slsDetectorDefs::dacIndex>(it)));
-            }
-            for (auto it : gotthard2_adcs) {
-                adcWidgets.push_back(new qDacWidget(
-                    this, det, false, it,
-                    sls::StringTo<slsDetectorDefs::dacIndex>(it)));
-            }
-            break;
-
         case slsDetectorDefs::MYTHEN3:
-            for (auto it : mythen3_dacs) {
-                dacWidgets.push_back(new qDacWidget(
-                    this, det, true, it,
-                    sls::StringTo<slsDetectorDefs::dacIndex>(it)));
-            }
-            for (auto it : mythen3_adcs) {
-                adcWidgets.push_back(new qDacWidget(
-                    this, det, false, it,
-                    sls::StringTo<slsDetectorDefs::dacIndex>(it)));
-            }
-            break;
-
         case slsDetectorDefs::MOENCH:
-            for (auto it : moench_dacs) {
-                dacWidgets.push_back(new qDacWidget(
-                    this, det, true, it,
-                    sls::StringTo<slsDetectorDefs::dacIndex>(it)));
-            }
-            for (auto it : moench_adcs) {
-                adcWidgets.push_back(new qDacWidget(
-                    this, det, false, it,
-                    sls::StringTo<slsDetectorDefs::dacIndex>(it)));
-            }
+            ind = slsDetectorDefs::TEMPERATURE_FPGA;
+            adcWidgets.push_back(
+                new qDacWidget(this, det, false, sls::ToString(ind), ind));
             break;
 
         default:

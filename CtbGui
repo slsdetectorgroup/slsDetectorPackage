@@ -1364,14 +1364,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def showPatternViewer(self, enable):
         if enable:
             self.framePatternViewer.show()
-            self.plotAnalogWaveform.hide()
-            self.plotDigitalWaveform.hide()
-            self.plotTransceiverWaveform.hide()
-            self.plotAnalogImage.hide()
-            self.plotDigitalImage.hide()
-            self.plotTransceiverImage.hide()
+            self.framePlot.hide()
         elif self.framePatternViewer.isVisible():
                 self.framePatternViewer.hide()
+                self.framePlot.show()
                 self.showPlot()
 
 
@@ -1769,7 +1765,6 @@ class MainWindow(QtWidgets.QMainWindow):
         #print(f"Meausrement {self.currentMeasurement}")
     
     def updateCurrentFrame(self, val):
-        self.labelCurrentFrame.setText(str(val))
         self.labelFrameNumber.setText(str(val))
 
     def updateAcquiredFrames(self, val):
@@ -1856,7 +1851,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.checkEndofAcquisition()
 
     def checkEndofAcquisition(self):
-        caught = self.det.rx_framescaught
+        caught = self.det.rx_framescaught[0]
         self.updateAcquiredFrames(caught)
         status = self.det.getDetectorStatus()[0]
         self.updateDetectorStatus(status)
@@ -1876,7 +1871,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # needs more time for 1g streaming out done
         if measurementDone:
             time.sleep(Defines.Time_Wait_For_Packets_ms)
-            if self.det.rx_framescaught != caught:
+            if self.det.rx_framescaught[0] != caught:
                 measurementDone = False
 
         numMeasurments = self.spinBoxMeasurements.value()

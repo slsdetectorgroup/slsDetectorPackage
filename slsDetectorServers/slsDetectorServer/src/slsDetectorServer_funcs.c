@@ -4374,22 +4374,15 @@ int set_adc_enable_mask_10g(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (arg == 0u) {
+        setADCEnableMask_10G(arg);
+        uint32_t retval = getADCEnableMask_10G();
+        if (arg != retval) {
             ret = FAIL;
             sprintf(mess,
-                    "Not allowed to set adc mask of 0 due to data readout \n");
+                    "Could not set 10Gb ADC Enable mask. Set 0x%x, but "
+                    "read 0x%x\n",
+                    arg, retval);
             LOG(logERROR, (mess));
-        } else {
-            setADCEnableMask_10G(arg);
-            uint32_t retval = getADCEnableMask_10G();
-            if (arg != retval) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not set 10Gb ADC Enable mask. Set 0x%x, but "
-                        "read 0x%x\n",
-                        arg, retval);
-                LOG(logERROR, (mess));
-            }
         }
     }
 #endif

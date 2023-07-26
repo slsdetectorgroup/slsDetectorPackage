@@ -48,12 +48,19 @@ class MainWindow(QtWidgets.QMainWindow):
         pg.setConfigOption("foreground", "k")
         pg.setConfigOption('leftButtonPan', False)
         
-        self.det = Detector()
-        self.setup_zmq()
-
         super(MainWindow, self).__init__()
         uic.loadUi("CtbGui.ui", self)
+        
+        self.det = None
+        try:
+            self.det = Detector()
+            # ensure detector is up
+            self.det.detectorserverversion[0]
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Connect Fail", str(e) + "Exiting Gui...",  QtWidgets.QMessageBox.Ok)
+            raise
 
+        self.setup_zmq()
         self.setup_ui()
         self.tabWidget.setCurrentIndex(Defines.Acquisition_Tab_Index)
         self.tabWidget.currentChanged.connect(self.refresh_tab)
@@ -86,6 +93,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.signalShortcutTabDown.connect(partial(self.changeTabIndex, False))
         # to catch the ctrl + c to abort
         signal.signal(signal.SIGINT, signal.SIG_DFL)
+        self.firstAnalogImage = True
+        self.firstDigitalImage = True
+        self.firstTransceiverImage = True
 
 
         
@@ -95,7 +105,7 @@ class MainWindow(QtWidgets.QMainWindow):
         try:
             bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, slowadc_names, voltage_names, pat_file_name = alias_utility.read_alias_file(self.alias_file)
         except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "Alias File Fail", e + "<br> " + self.alias_file, QtWidgets.QMessageBox.Ok)
+            QtWidgets.QMessageBox.warning(self, "Alias File Fail", str(e) + "<br> " + self.alias_file, QtWidgets.QMessageBox.Ok)
             return
 
         for i in range(64):
@@ -1827,6 +1837,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getADCEnableReg()
         self.updateDigitalBitEnable()
         self.getTransceiverEnableReg()
+
         self.startMeasurement()
 
     def startMeasurement(self):
@@ -1904,7 +1915,6 @@ class MainWindow(QtWidgets.QMainWindow):
             #print(f"image size:{int(jsonHeader['size'])}")
             #print(f'Data size: {len(data)}')
                       
-
             # waveform
             if self.radioButtonWaveform.isChecked():
                 # analog
@@ -1982,13 +1992,26 @@ class MainWindow(QtWidgets.QMainWindow):
 
                 # analog
                 if self.romode.value in [0, 2]:  
+                    viewBox = self.plotAnalogImage.getView()
+                    state = viewBox.getState()
+
                     analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count= self.nADCEnabled * self.asamples))
                     
                     if self.comboBoxPlot.currentIndex() == Defines.ImageIndex.Moench04.value:
                         self.moench04Analog(analog_array)
+
+                    # keep the zoomed in state (not 1st image)
+                    if self.firstAnalogImage:
+                        self.firstAnalogImage = False
+                    else:
+                        viewBox.setState(state)
+                    
                     
                 # transceiver
                 if self.romode.value in [3, 4]:  
+                    viewBox = self.plotTransceiverImage.getView()
+                    state = viewBox.getState()
+
                     transceiverOffset = 0     
                     if self.romode.value == 4:
                         nbitsPerDBit = self.dsamples
@@ -2001,6 +2024,11 @@ class MainWindow(QtWidgets.QMainWindow):
                     if self.comboBoxPlot.currentIndex() == Defines.ImageIndex.Matterhorn.value:
                         self.matterhornImage(trans_array)
 
+                    # keep the zoomed in state (not 1st image)
+                    if self.firstTransceiverImage:
+                        self.firstTransceiverImage = False
+                    else:
+                        viewBox.setState(state)
 
 
         except zmq.ZMQError as e:

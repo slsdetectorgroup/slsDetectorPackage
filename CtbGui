@@ -2065,9 +2065,16 @@ class MainWindow(QtWidgets.QMainWindow):
                     analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count= self.nADCEnabled * self.asamples))
                     
 
-                    self.analog_frame = decoder.decode(analog_array, self.pixelMapAnalog)
-                    self.plotAnalogImage.setImage(self.analog_frame.T)
-
+                    try:
+                        self.analog_frame = decoder.decode(analog_array, self.pixelMapAnalog)
+                        self.plotAnalogImage.setImage(self.analog_frame.T)
+                    except Exception as e:
+                        self.statusbar.setStyleSheet("color:red")
+                        message = f'Warning: Invalid size for Analog Image. Expected {self.nAnalogRows * self.nAnalogCols} size, got {analog_array.size} instead.'
+                        self.updateCurrentFrame('Invalid Image')
+                        self.statusbar.showMessage(message)
+                        print(message)
+                        pass
 
                     #if self.comboBoxPlot.currentIndex() == Defines.ImageIndex.Moench04.value:
                     #    self.moench04Analog(analog_array)
@@ -2093,8 +2100,17 @@ class MainWindow(QtWidgets.QMainWindow):
                     #print(f'transceiverOffset:{transceiverOffset}')
                     trans_array = np.array(np.frombuffer(data, offset = transceiverOffset, dtype=np.uint16))
                     
-                    self.transceiver_frame = decoder.decode(trans_array, self.pixelMapTransceiver)
-                    self.plotTransceiverImage.setImage(self.transceiver_frame)
+                    try:
+                        self.transceiver_frame = decoder.decode(trans_array, self.pixelMapTransceiver)
+                        self.plotTransceiverImage.setImage(self.transceiver_frame)
+                    except Exception as e:
+                        self.statusbar.setStyleSheet("color:red")
+                        message = f'Warning: Invalid size for Transceiver Image. Expected {self.nTransceiverRows * self.nTransceiverCols} size, got {trans_array.size} instead.'
+                        self.updateCurrentFrame('Invalid Image')
+                        self.statusbar.showMessage(message)
+                        print(message)
+                        pass
+
 
                     #if self.comboBoxPlot.currentIndex() == Defines.ImageIndex.Matterhorn.value:
                     #    self.matterhornImage(trans_array)

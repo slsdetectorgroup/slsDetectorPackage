@@ -284,7 +284,6 @@ void Listener::ThreadExecution() {
         LOG(logINFORED) << index << ":Going to free Fifo slot";
         fifo->FreeAddress(buffer);
         LOG(logINFORED) << index << ": (Listener eoa) Fifo slot freed" << " \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree();
-        fifo->GetNewAddress(buffer);
         return;
     }
 

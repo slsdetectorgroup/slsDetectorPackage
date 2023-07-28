@@ -257,7 +257,9 @@ std::pair<uint16_t, uint16_t> Listener::GetHardCodedPosition() {
 
 void Listener::ThreadExecution() {
     char *buffer;
+    LOG(logINFORED) << index << ":Going to get free fifo slot";
     fifo->GetNewAddress(buffer);
+    LOG(logINFORED) << index << ":Got free fifo slot";
     LOG(logDEBUG5) << "Listener " << index << ", pop 0x" << std::hex
                    << (void *)(buffer) << std::dec << ":" << buffer;
     auto *memImage = reinterpret_cast<image_structure *>(buffer);
@@ -279,14 +281,17 @@ void Listener::ThreadExecution() {
     LOG(logINFOBLUE) << index << ": rc=" << rc;
     // end of acquisition or discarding image
     if (rc <= 0) {
+        LOG(logINFORED) << index << ":Going to free Fifo slot";
         fifo->FreeAddress(buffer);
+        LOG(logINFORED) << index << ":Fifo slot freed";
         return;
     }
 
     // valid image, set size and push into fifo
     memImage->size = rc;
+    LOG(logINFORED) << index << ":Going to push data fifo slot";
     fifo->PushAddress(buffer);
-
+    LOG(logINFORED) << index << ":Data fifo slot pushed";
     // Statistics
     if (!silentMode) {
         numFramesStatistic++;

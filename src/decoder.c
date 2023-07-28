@@ -9,6 +9,8 @@
 #include "pm_decode.h"
 #include "thread_utils.h"
 
+//TODO: check if size of rawdata equals expected size and throw if it doesnt
+
 /*Decode various types of CTB data using a pixel map. Works on single frames and
 on stacks of frames*/
 static PyObject *decode(PyObject *Py_UNUSED(self), PyObject *args,

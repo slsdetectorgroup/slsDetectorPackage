@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1332</width>
+    <width>1439</width>
     <height>954</height>
    </rect>
   </property>
@@ -19,13 +19,13 @@
   <widget class="QWidget" name="centralwidget">
    <property name="minimumSize">
     <size>
-     <width>750</width>
+     <width>870</width>
      <height>890</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
-     <width>750</width>
+     <width>870</width>
      <height>890</height>
     </size>
    </property>
@@ -64,8 +64,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>748</width>
-         <height>888</height>
+         <width>870</width>
+         <height>879</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -88,7 +88,7 @@
          <widget class="QFrame" name="frameControl">
           <property name="minimumSize">
            <size>
-            <width>50</width>
+            <width>0</width>
             <height>0</height>
            </size>
           </property>
@@ -124,18 +124,18 @@
             <widget class="QTabWidget" name="tabWidget">
              <property name="minimumSize">
               <size>
-               <width>740</width>
+               <width>870</width>
                <height>870</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>740</width>
+               <width>870</width>
                <height>870</height>
               </size>
              </property>
              <property name="currentIndex">
-              <number>7</number>
+              <number>8</number>
              </property>
              <widget class="QWidget" name="tabDac">
               <attribute name="title">
@@ -146,7 +146,7 @@
                 <rect>
                  <x>10</x>
                  <y>10</y>
-                 <width>711</width>
+                 <width>831</width>
                  <height>801</height>
                 </rect>
                </property>
@@ -1306,7 +1306,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
                 <rect>
                  <x>10</x>
                  <y>10</y>
-                 <width>711</width>
+                 <width>841</width>
                  <height>381</height>
                 </rect>
                </property>
@@ -1775,7 +1775,7 @@ QPushButton:disabled{background-color: grey;}</string>
                 <rect>
                  <x>10</x>
                  <y>10</y>
-                 <width>711</width>
+                 <width>841</width>
                  <height>571</height>
                 </rect>
                </property>
@@ -2227,7 +2227,7 @@ QPushButton:disabled{background-color: grey;}</string>
                 <rect>
                  <x>10</x>
                  <y>10</y>
-                 <width>711</width>
+                 <width>831</width>
                  <height>821</height>
                 </rect>
                </property>
@@ -8390,7 +8390,7 @@ QPushButton:disabled{background-color: grey;}</string>
                 <rect>
                  <x>10</x>
                  <y>10</y>
-                 <width>711</width>
+                 <width>841</width>
                  <height>181</height>
                 </rect>
                </property>
@@ -8906,7 +8906,7 @@ QPushButton:disabled{background-color: grey;}</string>
                 <rect>
                  <x>10</x>
                  <y>10</y>
-                 <width>711</width>
+                 <width>841</width>
                  <height>461</height>
                 </rect>
                </property>
@@ -13098,7 +13098,7 @@ QPushButton:disabled{background-color: grey;}</string>
                 <rect>
                  <x>10</x>
                  <y>20</y>
-                 <width>401</width>
+                 <width>471</width>
                  <height>311</height>
                 </rect>
                </property>
@@ -14319,7 +14319,7 @@ QPushButton:disabled{background-color: grey;}</string>
                 <rect>
                  <x>10</x>
                  <y>350</y>
-                 <width>711</width>
+                 <width>841</width>
                  <height>141</height>
                 </rect>
                </property>
@@ -14457,7 +14457,7 @@ QPushButton:disabled{background-color: grey;}</string>
                 <rect>
                  <x>10</x>
                  <y>740</y>
-                 <width>711</width>
+                 <width>841</width>
                  <height>51</height>
                 </rect>
                </property>
@@ -14566,9 +14566,9 @@ QPushButton:disabled{background-color: grey;}</string>
               <widget class="QFrame" name="frame_21">
                <property name="geometry">
                 <rect>
-                 <x>430</x>
+                 <x>490</x>
                  <y>20</y>
-                 <width>291</width>
+                 <width>361</width>
                  <height>271</height>
                 </rect>
                </property>
@@ -15242,7 +15242,7 @@ QPushButton:disabled{background-color: grey;}</string>
                 <rect>
                  <x>10</x>
                  <y>510</y>
-                 <width>711</width>
+                 <width>841</width>
                  <height>211</height>
                 </rect>
                </property>
@@ -15263,7 +15263,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>50</width>
+                    <width>30</width>
                     <height>16777215</height>
                    </size>
                   </property>
@@ -15358,7 +15358,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>100</width>
+                    <width>120</width>
                     <height>32</height>
                    </size>
                   </property>
@@ -15383,7 +15383,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>100</width>
+                    <width>120</width>
                     <height>32</height>
                    </size>
                   </property>
@@ -15429,7 +15429,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>50</width>
+                    <width>30</width>
                     <height>16777215</height>
                    </size>
                   </property>
@@ -15448,7 +15448,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>100</width>
+                    <width>120</width>
                     <height>32</height>
                    </size>
                   </property>
@@ -15473,7 +15473,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>100</width>
+                    <width>120</width>
                     <height>32</height>
                    </size>
                   </property>
@@ -15519,7 +15519,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>70</width>
+                    <width>120</width>
                     <height>32</height>
                    </size>
                   </property>
@@ -15532,7 +15532,7 @@ QPushButton:disabled{background-color: grey;}</string>
                  <widget class="QDoubleSpinBox" name="doubleSpinBoxWaitAlphaRect">
                   <property name="maximumSize">
                    <size>
-                    <width>100</width>
+                    <width>120</width>
                     <height>32</height>
                    </size>
                   </property>
@@ -15557,7 +15557,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>80</width>
+                    <width>120</width>
                     <height>32</height>
                    </size>
                   </property>
@@ -15573,7 +15573,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>70</width>
+                    <width>120</width>
                     <height>32</height>
                    </size>
                   </property>
@@ -15586,7 +15586,7 @@ QPushButton:disabled{background-color: grey;}</string>
                  <widget class="QDoubleSpinBox" name="doubleSpinBoxLoopAlphaRect">
                   <property name="maximumSize">
                    <size>
-                    <width>100</width>
+                    <width>120</width>
                     <height>32</height>
                    </size>
                   </property>
@@ -15632,7 +15632,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>80</width>
+                    <width>120</width>
                     <height>32</height>
                    </size>
                   </property>
@@ -15648,7 +15648,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>100</width>
+                    <width>120</width>
                     <height>32</height>
                    </size>
                   </property>
@@ -15674,7 +15674,7 @@ QPushButton:disabled{background-color: grey;}</string>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>80</width>
+                    <width>120</width>
                     <height>32</height>
                    </size>
                   </property>
@@ -15788,7 +15788,7 @@ QPushButton:disabled{background-color: grey;}</string>
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>16777215</width>
+                      <width>120</width>
                       <height>32</height>
                      </size>
                     </property>
@@ -15811,7 +15811,7 @@ QPushButton:disabled{background-color: grey;}</string>
                 <rect>
                  <x>10</x>
                  <y>360</y>
-                 <width>711</width>
+                 <width>841</width>
                  <height>181</height>
                 </rect>
                </property>
@@ -15957,7 +15957,7 @@ QPushButton:disabled{background-color: grey;}</string>
                 <rect>
                  <x>10</x>
                  <y>550</y>
-                 <width>711</width>
+                 <width>841</width>
                  <height>141</height>
                 </rect>
                </property>
@@ -16182,7 +16182,7 @@ QPushButton:disabled{background-color: grey;}</string>
                 <rect>
                  <x>10</x>
                  <y>10</y>
-                 <width>711</width>
+                 <width>841</width>
                  <height>71</height>
                 </rect>
                </property>
@@ -16289,7 +16289,7 @@ QPushButton:disabled{background-color: grey;}</string>
                 <rect>
                  <x>10</x>
                  <y>150</y>
-                 <width>711</width>
+                 <width>841</width>
                  <height>201</height>
                 </rect>
                </property>
@@ -16624,7 +16624,7 @@ QPushButton:disabled{background-color: grey;}</string>
                 <rect>
                  <x>10</x>
                  <y>90</y>
-                 <width>711</width>
+                 <width>841</width>
                  <height>51</height>
                 </rect>
                </property>
@@ -16704,7 +16704,7 @@ QPushButton:disabled{background-color: grey;}</string>
                 <rect>
                  <x>10</x>
                  <y>160</y>
-                 <width>711</width>
+                 <width>841</width>
                  <height>311</height>
                 </rect>
                </property>
@@ -17080,7 +17080,7 @@ QPushButton:disabled{background-color: grey;}</string>
                 <rect>
                  <x>10</x>
                  <y>10</y>
-                 <width>711</width>
+                 <width>841</width>
                  <height>141</height>
                 </rect>
                </property>
@@ -17177,7 +17177,7 @@ QPushButton:disabled{background-color: grey;}</string>
                       </item>
                       <item>
                        <property name="text">
-                        <string>Moench 04</string>
+                        <string>Moench04</string>
                        </property>
                       </item>
                       <item>
@@ -17387,8 +17387,8 @@ QPushButton:disabled{background-color: grey;}</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1332</width>
-     <height>25</height>
+     <width>1439</width>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

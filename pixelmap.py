@@ -42,3 +42,19 @@ def moench04_analog():
             out[row, col] = i_analog
 
     return out
+
+def matterhorn_transceiver():
+    out = np.zeros((48, 48), dtype = np.uint32)    
+
+    offset = 0
+    nSamples = 4
+    for row in range(48):
+        for col in range(24):
+            for iTrans in range(2):
+                out[iTrans * 24 + col, row] = offset + nSamples * iTrans
+            offset += 1
+            if (col + 1) % nSamples == 0:
+                offset += nSamples
+
+    return out
+ 

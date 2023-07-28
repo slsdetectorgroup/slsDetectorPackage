@@ -30,7 +30,7 @@ import alias_utility
 import signal
 
 import decoder
-
+from pixelmap import moench04_analog, matterhorn_transceiver
 
 class MainWindow(QtWidgets.QMainWindow):
     signalShortcutAcquire = QtCore.pyqtSignal()
@@ -1416,6 +1416,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         elif self.radioButtonImage.isChecked():
             self.stackedWidgetPlotType.setCurrentIndex(2)
+            self.setPixelMap()
                 
         if self.radioButtonNoPlot.isChecked():
             self.labelPlotOptions.hide()
@@ -1426,6 +1427,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.stackedWidgetPlotType.show()
             self.read_timer.start(Defines.Time_Plot_Refresh_ms)
         
+    def setPixelMap(self):
+        if self.comboBoxPlot.currentText() == "Matterhorn":
+            self.pixelMapTransceiver = matterhorn_transceiver()
+        elif self.comboBoxPlot.currentText() == "Moench04":
+            self.pixelMapAnalog = moench04_analog()
 
     def showPatternViewer(self, enable):
         if enable:
@@ -1858,7 +1864,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def checkBeforeAcquire(self):
         if self.radioButtonImage.isChecked():
             # matterhorn image
-            if self.comboBoxPlot.currentIndex() == 0:
+            if self.comboBoxPlot.currentText() == "Matterhorn":
                 if self.romode not in [readoutMode.TRANSCEIVER_ONLY, readoutMode.DIGITAL_AND_TRANSCEIVER]:
                     QtWidgets.QMessageBox.warning(self, "Plot type", "To read Matterhorn image, please enable transceiver readout mode", QtWidgets.QMessageBox.Ok)
                     return False
@@ -1866,7 +1872,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     QtWidgets.QMessageBox.warcning(self, "Plot type", "To read Matterhorn image, please set transceiver enable to " + str(Defines.Matternhorn.tranceiverEnable), QtWidgets.QMessageBox.Ok)
                     return False
             # moench04 image
-            if self.comboBoxPlot.currentIndex() == 1:
+            elif self.comboBoxPlot.currentText() == "Moench04":
                 if self.romode not in [readoutMode.ANALOG_ONLY, readoutMode.ANALOG_AND_DIGITAL]:
                     QtWidgets.QMessageBox.warning(self, "Plot type", "To read Moench 04 image, please enable analog readout mode", QtWidgets.QMessageBox.Ok)
                     return False
@@ -2058,8 +2064,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
                     analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count= self.nADCEnabled * self.asamples))
                     
-                    if self.comboBoxPlot.currentIndex() == Defines.ImageIndex.Moench04.value:
-                        self.moench04Analog(analog_array)
+
+                    self.analog_frame = decoder.decode(analog_array, self.pixelMapAnalog)
+                    self.plotAnalogImage.setImage(self.analog_frame.T)
+
+
+                    #if self.comboBoxPlot.currentIndex() == Defines.ImageIndex.Moench04.value:
+                    #    self.moench04Analog(analog_array)
 
                     # keep the zoomed in state (not 1st image)
                     if self.firstAnalogImage:
@@ -2082,8 +2093,11 @@ class MainWindow(QtWidgets.QMainWindow):
                     #print(f'transceiverOffset:{transceiverOffset}')
                     trans_array = np.array(np.frombuffer(data, offset = transceiverOffset, dtype=np.uint16))
                     
-                    if self.comboBoxPlot.currentIndex() == Defines.ImageIndex.Matterhorn.value:
-                        self.matterhornImage(trans_array)
+                    self.transceiver_frame = decoder.decode(trans_array, self.pixelMapTransceiver)
+                    self.plotTransceiverImage.setImage(self.transceiver_frame)
+
+                    #if self.comboBoxPlot.currentIndex() == Defines.ImageIndex.Matterhorn.value:
+                    #    self.matterhornImage(trans_array)
 
                     # keep the zoomed in state (not 1st image)
                     if self.firstTransceiverImage:
@@ -2492,7 +2506,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.radioButtonWaveform.clicked.connect(self.plotOptions)
         self.radioButtonDistribution.clicked.connect(self.plotOptions)
         self.radioButtonImage.clicked.connect(self.plotOptions)
-        self.comboBoxPlot.currentIndexChanged.connect(self.plotOptions)
+        self.comboBoxPlot.currentIndexChanged.connect(self.setPixelMap)
         self.comboBoxColorMap.currentIndexChanged.connect(self.setColorMap)
         self.comboBoxZMQHWM.currentIndexChanged.connect(self.setZMQHWM)
         self.spinBoxSerialOffset.editingFinished.connect(self.setSerialOffset)

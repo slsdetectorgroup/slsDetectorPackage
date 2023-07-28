@@ -274,6 +274,7 @@ void Listener::ThreadExecution() {
 
     // reset header and size and get data
     memset(memImage, 0, IMAGE_STRUCTURE_HEADER_SIZE);
+    LOG(logINFOBLUE) << index << "Going to listen to an image";
     int rc = ListenToAnImage(memImage->header, memImage->data);
     LOG(logINFOBLUE) << index << ": rc=" << rc;
     // end of acquisition or discarding image

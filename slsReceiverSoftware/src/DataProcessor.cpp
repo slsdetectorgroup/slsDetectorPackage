@@ -277,6 +277,7 @@ void DataProcessor::ThreadExecution() {
                        memImage->data);
     } catch (const std::exception &e) {
         fifo->FreeAddress(buffer);
+        LOG(logINFORED) << index << ": (DP exception catch) Fifo slot freed" << " \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree();
         return;
     }
 
@@ -291,6 +292,7 @@ void DataProcessor::ThreadExecution() {
         fifo->PushAddressToStream(buffer);
     } else {
         fifo->FreeAddress(buffer);
+        LOG(logINFORED) << index << ": (DP not stream) Fifo slot freed" << " \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree();
     }
 }
 
@@ -300,9 +302,10 @@ void DataProcessor::StopProcessing(char *buf) {
     // stream or free
     if (dataStreamEnable)
         fifo->PushAddressToStream(buf);
-    else
+    else {
         fifo->FreeAddress(buf);
-
+        LOG(logINFORED) << index << ": (DP stop processing) Fifo slot freed" << " \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree();
+    }
     CloseFiles();
     StopRunning();
     LOG(logDEBUG1) << index << ": Processing Completed";

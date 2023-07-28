@@ -257,7 +257,7 @@ std::pair<uint16_t, uint16_t> Listener::GetHardCodedPosition() {
 
 void Listener::ThreadExecution() {
     char *buffer;
-    LOG(logINFORED) << index << ":Going to get free fifo slot";
+    LOG(logINFORED) << index << ":Going to get free fifo slot" << " \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree();
     fifo->GetNewAddress(buffer);
     LOG(logINFORED) << index << ":Got free fifo slot";
     LOG(logDEBUG5) << "Listener " << index << ", pop 0x" << std::hex
@@ -283,7 +283,8 @@ void Listener::ThreadExecution() {
     if (rc <= 0) {
         LOG(logINFORED) << index << ":Going to free Fifo slot";
         fifo->FreeAddress(buffer);
-        LOG(logINFORED) << index << ":Fifo slot freed";
+        LOG(logINFORED) << index << ": (Listener eoa) Fifo slot freed" << " \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree();
+        fifo->GetNewAddress(buffer);
         return;
     }
 

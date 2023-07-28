@@ -33,3 +33,9 @@ def test_compare_python_and_c_decoding():
     c_data = decoder.decode(raw_data, pixel_map)
     py_data = decoder.moench04(raw_data)
     assert (c_data == py_data).all()
+
+    pixel_map = matterhorn_transceiver()
+    raw_data = np.arange(48*48, dtype = np.uint16)
+    c_data = decoder.decode(raw_data, pixel_map)
+    py_data = decoder.matterhorn(raw_data)
+    assert (c_data == py_data).all()  

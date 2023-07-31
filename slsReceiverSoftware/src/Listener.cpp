@@ -257,7 +257,7 @@ std::pair<uint16_t, uint16_t> Listener::GetHardCodedPosition() {
 
 void Listener::ThreadExecution() {
     char *buffer;
-    LOG(logINFORED) << index << ":Going to get free fifo slot" << " \tFree:" << fifo->GetFreeValue();
+    LOG(logINFORED) << index << ": (L) Going to get free fifo slot" << " \tFree:" << fifo->GetFreeValue();
     fifo->GetNewAddress(buffer);
     LOG(logINFORED) << "Listener " << index << ", pop 0x" << std::hex
                    << (void *)(buffer) << std::dec << ":" << buffer << " \tFree:" << fifo->GetFreeValue();
@@ -280,7 +280,7 @@ void Listener::ThreadExecution() {
     LOG(logINFOBLUE) << index << ": rc=" << rc;
     // end of acquisition or discarding image
     if (rc <= 0) {
-        LOG(logINFORED) << index << ":Going to free Fifo slot";
+        LOG(logINFORED) << index << ": (L) Going to free Fifo slot" << " \tFree:" << fifo->GetFreeValue();;
         fifo->FreeAddress(buffer);
         LOG(logINFORED) << index << ": (Listener eoa) Fifo slot freed" << " \tFree:" << fifo->GetFreeValue();
         return;
@@ -288,9 +288,9 @@ void Listener::ThreadExecution() {
 
     // valid image, set size and push into fifo
     memImage->size = rc;
-    LOG(logINFORED) << index << ":Going to push data fifo slot. Bound:" << fifo->GetBoundValue();
+    LOG(logINFORED) << index << ": (L) Going to push data fifo slot. Bound:" << fifo->GetBoundValue();
     fifo->PushAddress(buffer);
-    LOG(logINFORED) << index << ":Data fifo slot pushed. Bound:" << fifo->GetBoundValue();
+    LOG(logINFORED) << index << ": (L) Data fifo slot pushed. Bound:" << fifo->GetBoundValue();
     // Statistics
     if (!silentMode) {
         numFramesStatistic++;
@@ -305,9 +305,9 @@ void Listener::ThreadExecution() {
 void Listener::StopListening(char *buf, size_t &size) {
     LOG(logINFORED) << index << ":StopListening";
     size = DUMMY_PACKET_VALUE;
-    LOG(logINFORED) << index << ":Going to push last data fifo slot. Bound:" << fifo->GetBoundValue();
+    LOG(logINFORED) << index << ": (L) Going to push last data fifo slot. Bound:" << fifo->GetBoundValue();
     fifo->PushAddress(buf);
-    LOG(logINFORED) << index << ":Last Data fifo slot pushed. Bound:" << fifo->GetBoundValue();
+    LOG(logINFORED) << index << ": (L) Last Data fifo slot pushed. Bound:" << fifo->GetBoundValue();
 
     StopRunning();
     LOG(logDEBUG1) << index << ": Listening Completed. Packets ("

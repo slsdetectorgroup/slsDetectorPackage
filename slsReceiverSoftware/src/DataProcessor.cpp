@@ -259,9 +259,10 @@ std::string DataProcessor::CreateMasterFile(
 
 void DataProcessor::ThreadExecution() {
     char *buffer = nullptr;
+    LOG(logINFORED) << index << ":(DP) Going to pop data fifo slot. Bound:" << fifo->GetBoundValue();
     fifo->PopAddress(buffer);
     LOG(logDEBUG5) << "DataProcessor " << index << ", " << std::hex
-                   << static_cast<void *>(buffer) << std::dec << ":" << buffer;
+                   << static_cast<void *>(buffer) << std::dec << ":" << buffer << " Bound:" << fifo->GetBoundValue();
     auto *memImage = reinterpret_cast<image_structure *>(buffer);
 
     // check dummy
@@ -276,8 +277,9 @@ void DataProcessor::ThreadExecution() {
         ProcessAnImage(memImage->header, memImage->size, memImage->firstIndex,
                        memImage->data);
     } catch (const std::exception &e) {
+        LOG(logINFORED) << index << ":(DP exception catch) Going to free fifo slot. Free:" << fifo->GetFreeValue();
         fifo->FreeAddress(buffer);
-        LOG(logINFORED) << index << ": (DP exception catch) Fifo slot freed" << " \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree();
+        LOG(logINFORED) << index << ": (DP exception catch) Fifo slot freed" << " \tFree:" << fifo->GetFreeValue();
         return;
     }
 
@@ -289,22 +291,29 @@ void DataProcessor::ThreadExecution() {
             memcpy(memImage->data, &completeImageToStreamBeforeCropping[0],
                    generalData->imageSize);
         }
+        LOG(logINFORED) << index << ": (DP stream!!) Going to push fifo to stream!!";
+        exit(-1);
         fifo->PushAddressToStream(buffer);
     } else {
+        LOG(logINFORED) << index << ":(DP enot stream) Going to free fifo slot. Free:" << fifo->GetFreeValue();
         fifo->FreeAddress(buffer);
-        LOG(logINFORED) << index << ": (DP not stream) Fifo slot freed" << " \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree();
+        LOG(logINFORED) << index << ": (DP not stream) Fifo slot freed" << " \tFree:" << fifo->GetFreeValue();
     }
 }
 
 void DataProcessor::StopProcessing(char *buf) {
-    LOG(logDEBUG1) << "DataProcessing " << index << ": Dummy";
+    LOG(logINFORED) << "DataProcessing " << index << ": Dummy";
 
     // stream or free
-    if (dataStreamEnable)
+    if (dataStreamEnable) {
+        LOG(logINFORED) << index << ": (DP stream stop prcessing!!) Going to push fifo to stream!!";
+        exit(-1);
         fifo->PushAddressToStream(buf);
+    }
     else {
+        LOG(logINFORED) << index << ":(DP stop processing) Going to free fifo slot. Free:" << fifo->GetFreeValue();
         fifo->FreeAddress(buf);
-        LOG(logINFORED) << index << ": (DP stop processing) Fifo slot freed" << " \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree();
+        LOG(logINFORED) << index << ": (DP stop processing) Fifo slot freed" << " \tFree:" << fifo->GetFreeValue();
     }
     CloseFiles();
     StopRunning();

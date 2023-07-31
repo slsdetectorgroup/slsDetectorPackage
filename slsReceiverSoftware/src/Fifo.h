@@ -34,6 +34,10 @@ class Fifo : private virtual slsDetectorDefs {
     void PushAddressToStream(char *&address);
     void PopAddressToStream(char *&address);
 
+    int GetFreeValue();
+    int GetBoundValue();
+
+
     int GetMaxLevelForFifoBound();
     int GetMinLevelForFifoFree();
 

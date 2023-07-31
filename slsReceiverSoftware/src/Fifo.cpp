@@ -107,6 +107,15 @@ void Fifo::PushAddressToStream(char *&address) { fifoStream->push(address); }
 
 void Fifo::PopAddressToStream(char *&address) { fifoStream->pop(address); }
 
+int Fifo::GetFreeValue() {
+    return fifoFree->getDataValue();
+}
+
+int Fifo::GetBoundValue() {
+    return fifoBound->getDataValue();
+}
+
+
 int Fifo::GetMaxLevelForFifoBound() {
     int temp = status_fifoBound;
     status_fifoBound = 0;

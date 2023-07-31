@@ -2992,6 +2992,8 @@ std::string CmdProxy::PatternWaitTime(int action) {
     return os.str();
 }
 
+/* Advanced */
+
 std::string CmdProxy::AdditionalJsonHeader(int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -3066,8 +3068,6 @@ std::string CmdProxy::JsonParameter(int action) {
     }
     return os.str();
 }
-
-/* Advanced */
 
 std::string CmdProxy::ProgramFpga(int action) {
     std::ostringstream os;

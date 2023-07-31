@@ -1049,7 +1049,7 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
     case VCOM_ADC2:
         serverDacIndex = G2_VCOM_ADC2;
         break;
-#elif defined(JUNGFRAUD) || defined(MOENCHD)
+#elif JUNGFRAUD
     case HIGH_VOLTAGE:
         break;
     case VB_COMP:
@@ -1075,6 +1075,33 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
         break;
     case VREF_COMP:
         serverDacIndex = J_VREF_COMP;
+        break;
+#elif MOENCHD
+    case HIGH_VOLTAGE:
+        break;
+    case VBP_COLBUF:
+        serverDacIndex = MO_VBP_COLBUF;
+        break;
+    case VIPRE:
+        serverDacIndex = MO_VIPRE;
+        break;
+    case VIN_CM:
+        serverDacIndex = MO_VIN_CM;
+        break;
+    case VB_SDA:
+        serverDacIndex = MO_VB_SDA;
+        break;
+    case VCASC_SFP:
+        serverDacIndex = MO_VCASC_SFP;
+        break;
+    case VOUT_CM:
+        serverDacIndex = MO_VOUT_CM;
+        break;
+    case VIPRE_CDS:
+        serverDacIndex = MO_VIPRE_CDS;
+        break;
+    case IBIAS_SFP:
+        serverDacIndex = MO_IBIAS_SFP;
         break;
 #endif
 
@@ -9053,7 +9080,7 @@ int set_adc_pipeline(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting adc pipeline : %u\n", arg));
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
 
@@ -9075,7 +9102,7 @@ int get_adc_pipeline(int file_des) {
 
     LOG(logDEBUG1, ("Getting adc pipeline\n"));
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // get only

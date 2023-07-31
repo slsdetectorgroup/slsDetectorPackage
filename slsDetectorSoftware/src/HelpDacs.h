@@ -91,7 +91,7 @@ std::string GetHelpDac(std::string dac) {
     }
     if (dac == "vref_ds") {
         return std::string("[dac or mV value][(optional unit) mV] "
-                           "\n\t[Gotthard][Jungfrau][Moench] Dac for ??");
+                           "\n\t[Gotthard][Jungfrau] Dac for ??");
     }
     if (dac == "vcascn_pb") {
         return std::string(
@@ -103,7 +103,7 @@ std::string GetHelpDac(std::string dac) {
     }
     if (dac == "vout_cm") {
         return std::string("[dac or mV value][(optional unit) mV] "
-                           "\n\t[Gotthard] Dac for ??");
+                           "\n\t[Gotthard] Dac for ??\n\t[Moench] Dac for 5");
     }
     if (dac == "vcasc_out") {
         return std::string(
@@ -111,11 +111,11 @@ std::string GetHelpDac(std::string dac) {
     }
     if (dac == "vin_cm") {
         return std::string("[dac or mV value][(optional unit) mV] "
-                           "\n\t[Gotthard] Dac for ??");
+                           "\n\t[Gotthard] Dac for ??\n\t[Moench] Dac for 2");
     }
     if (dac == "vref_comp") {
         return std::string("[dac or mV value][(optional unit) mV] "
-                           "\n\t[Gotthard][Jungfrau][Moench] Dac for ??");
+                           "\n\t[Gotthard][Jungfrau] Dac for ??");
     }
     if (dac == "ib_test_c") {
         return std::string(
@@ -129,7 +129,7 @@ std::string GetHelpDac(std::string dac) {
     if (dac == "vipre") {
         return std::string(
             "[dac or mV value][(optional unit) mV] \n\t[Mythen3] Dac for the "
-            "preamplifier's input transistor current.");
+            "preamplifier's input transistor current.\n\t[Moench] Dac for 1");
     }
     if (dac == "vdcsh") {
         return std::string(
@@ -225,7 +225,7 @@ std::string GetHelpDac(std::string dac) {
     if (dac == "vref_prech") {
         return std::string(
             "[dac or mV value][(optional unit) mV] "
-            "\n\t[Gotthard2][Jungfrau][Moench] "
+            "\n\t[Gotthard2][Jungfrau] "
             "Dac for reference votlage for precharing the preamplifier.");
     }
     if (dac == "vref_l_adc") {
@@ -256,38 +256,43 @@ std::string GetHelpDac(std::string dac) {
     }
     if (dac == "vb_ds") {
         return std::string("[dac or mV value][(optional unit) mV] "
-                           "\n\t[Jungfrau][Moench] Dac for ??");
+                           "\n\t[Jungfrau] Dac for ??");
     }
     if (dac == "vb_comp") {
         return std::string("[dac or mV value][(optional unit) mV] "
-                           "\n\t[Jungfrau][Moench] Dac for ??");
+                           "\n\t[Jungfrau] Dac for ??");
     }
     if (dac == "vb_pixbuf") {
         return std::string("[dac or mV value][(optional unit) mV] "
-                           "\n\t[Jungfrau][Moench] Dac for ??");
+                           "\n\t[Jungfrau] Dac for ??");
     }
     if (dac == "vin_com") {
         return std::string("[dac or mV value][(optional unit) mV] "
-                           "\n\t[Jungfrau][Moench] Dac for ??");
+                           "\n\t[Jungfrau] Dac for ??");
     }
     if (dac == "vdd_prot") {
         return std::string("[dac or mV value][(optional unit) mV] "
-                           "\n\t[Jungfrau][Moench] Dac for ??");
+                           "\n\t[Jungfrau] Dac for ??");
     }
     if (dac == "vbp_colbuf") {
-        return std::string("[dac or mV value][(optional unit) mV] \n");
+        return std::string(
+            "[dac or mV value][(optional unit) mV] \n\t[Moench] Dac for 0");
     }
     if (dac == "vb_sda") {
-        return std::string("[dac or mV value][(optional unit) mV] \n");
+        return std::string(
+            "[dac or mV value][(optional unit) mV] \n\t[Moench] Dac for 3");
     }
     if (dac == "vcasc_sfp") {
-        return std::string("[dac or mV value][(optional unit) mV] \n");
+        return std::string(
+            "[dac or mV value][(optional unit) mV] \n\t[Moench] Dac for 4");
     }
     if (dac == "vipre_cds") {
-        return std::string("[dac or mV value][(optional unit) mV] \n");
+        return std::string(
+            "[dac or mV value][(optional unit) mV] \n\t[Moench] Dac for 6");
     }
     if (dac == "ibias_sfp") {
-        return std::string("[dac or mV value][(optional unit) mV] \n");
+        return std::string(
+            "[dac or mV value][(optional unit) mV] \n\t[Moench] Dac for 7");
     }
 
     // clang-format off

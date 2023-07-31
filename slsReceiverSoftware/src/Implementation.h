@@ -312,7 +312,6 @@ class Implementation : private virtual slsDetectorDefs {
     int modulePos{0};
     std::string detHostname;
     bool silentMode{false};
-    frameDiscardPolicy frameDiscardMode{NO_DISCARD};
     bool framePadding{true};
     pid_t parentThreadId;
     pid_t tcpThreadId;

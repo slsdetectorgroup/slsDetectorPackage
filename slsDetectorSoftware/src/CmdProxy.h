@@ -1233,7 +1233,6 @@ class CmdProxy {
         {"adcclk", &CmdProxy::adcclk},
         {"runclk", &CmdProxy::runclk},
         {"syncclk", &CmdProxy::syncclk},
-        {"adcpipeline", &CmdProxy::adcpipeline},
         {"v_limit", &CmdProxy::v_limit},
         {"adcenable", &CmdProxy::adcenable},
         {"adcenable10g", &CmdProxy::adcenable10g},
@@ -1296,10 +1295,11 @@ class CmdProxy {
         {"patternstart", &CmdProxy::patternstart},
 
         /* Moench */
-        {"rx_jsonaddheader", &CmdProxy::AdditionalJsonHeader},
-        {"rx_jsonpara", &CmdProxy::JsonParameter},
 
         /* Advanced */
+        {"adcpipeline", &CmdProxy::adcpipeline},
+        {"rx_jsonaddheader", &CmdProxy::AdditionalJsonHeader},
+        {"rx_jsonpara", &CmdProxy::JsonParameter},
         {"programfpga", &CmdProxy::ProgramFpga},
         {"resetfpga", &CmdProxy::resetfpga},
         {"updatedetectorserver", &CmdProxy::UpdateDetectorServer},
@@ -2425,10 +2425,6 @@ class CmdProxy {
     GET_COMMAND(syncclk, getSYNCClock,
                 "[n_clk in MHz]\n\t[Ctb] Sync clock in MHz.");
 
-    INTEGER_COMMAND_VEC_ID(adcpipeline, getADCPipeline, setADCPipeline,
-                           StringTo<int>,
-                           "[n_value]\n\t[Ctb] Pipeline for ADC clock.");
-
     INTEGER_IND_COMMAND(v_limit, getVoltage, setVoltage, StringTo<int>,
                         defs::V_LIMIT,
                         "[n_value]\n\t[Ctb] Soft limit for power "
@@ -2586,6 +2582,10 @@ class CmdProxy {
 
     /* Moench */
     /* Advanced */
+
+    INTEGER_COMMAND_VEC_ID(
+        adcpipeline, getADCPipeline, setADCPipeline, StringTo<int>,
+        "[n_value]\n\t[Ctb][Moench] Pipeline for ADC clock.");
 
     EXECUTE_SET_COMMAND(resetfpga, resetFPGA,
                         "\n\t[Jungfrau][Moench][Ctb] Reset FPGA.");

@@ -186,7 +186,6 @@ void Implementation::SetupListener(int i) {
     listener[i]->SetActivate(activated);
     listener[i]->SetNoRoi(portRois[i].noRoi());
     listener[i]->SetDetectorDatastream(detectorDataStream[i]);
-    listener[i]->SetFrameDiscardPolicy(frameDiscardMode);
     listener[i]->SetSilentMode(silentMode);
 }
 
@@ -327,14 +326,13 @@ void Implementation::setFifoDepth(const uint32_t i) {
 
 slsDetectorDefs::frameDiscardPolicy
 Implementation::getFrameDiscardPolicy() const {
-    return frameDiscardMode;
+    return generalData->frameDiscardMode;
 }
 
 void Implementation::setFrameDiscardPolicy(const frameDiscardPolicy i) {
-    frameDiscardMode = i;
-    for (const auto &it : listener)
-        it->SetFrameDiscardPolicy(frameDiscardMode);
-    LOG(logINFO) << "Frame Discard Policy: " << ToString(frameDiscardMode);
+    generalData->frameDiscardMode = i;
+    LOG(logINFO) << "Frame Discard Policy: "
+                 << ToString(generalData->frameDiscardMode);
 }
 
 bool Implementation::getFramePaddingEnable() const { return framePadding; }
@@ -931,7 +929,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.nPixels =
                 xy(generalData->nPixelsX, generalData->nPixelsY);
             masterAttributes.maxFramesPerFile = generalData->framesPerFile;
-            masterAttributes.frameDiscardMode = frameDiscardMode;
+            masterAttributes.frameDiscardMode = generalData->frameDiscardMode;
             masterAttributes.framePadding = framePadding;
             masterAttributes.scanParams = scanParams;
             masterAttributes.totalFrames = numberOfTotalFrames;

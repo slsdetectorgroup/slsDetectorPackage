@@ -2,13 +2,14 @@ from defines import *
 from _decoder import * #bring in the function from the compiled extension
 import numpy as np
 
+"""
+Python implementation, keep as a reference. Change name and replace
+with C version to swap it out in the GUI
+"""
+
 def moench04(analog_buffer):
-    """
-    Python implementation, keep as a reference. Change name and replace
-    with C version to swap it out in the GUI
-    """
-    nAnalogCols = 400 #We know we have a Moench
-    nAnalogRows = 400
+    nAnalogCols = Defines.Moench04.nCols
+    nAnalogRows = Defines.Moench04.nRows
     adcNumbers = Defines.Moench04.adcNumbers
     nPixelsPerSC = Defines.Moench04.nPixelsPerSuperColumn
     scWidth = Defines.Moench04.superColumnWidth
@@ -26,6 +27,23 @@ def moench04(analog_buffer):
             pixel_value = analog_buffer[index_min]
             analog_frame[row, col] = pixel_value
 
-    mask = np.uint16(0x3FFF) #Do we always mask out the top bits?
-    np.bitwise_and(analog_frame, mask, out = analog_frame)
     return analog_frame
+
+def matterhorn(trans_buffer):
+    nTransceiverRows = Defines.Matterhorn.nRows
+    nTransceiverCols = Defines.Matterhorn.nCols
+
+    transceiver_frame = np.zeros((nTransceiverCols, nTransceiverRows), dtype = trans_buffer.dtype)
+
+    offset = 0
+    nSamples = Defines.Matterhorn.nPixelsPerTransceiver
+    for row in range(Defines.Matterhorn.nRows):
+        for col in range(Defines.Matterhorn.nHalfCols):
+            #print(f'row:{row} col:{col} offset: {offset}')
+            for iTrans in range(Defines.Matterhorn.nTransceivers):
+                transceiver_frame[iTrans * Defines.Matterhorn.nHalfCols + col, row] = trans_buffer[offset + nSamples * iTrans]
+            offset += 1
+            if (col + 1) % nSamples == 0:
+                offset += nSamples
+                
+    return transceiver_frame

@@ -532,8 +532,9 @@ namespace sls {
             os << HLPSTR << '\n';                                              \
             return os.str();                                                   \
         }                                                                      \
+        auto dettype = det->getDetectorType().squash();                        \
         if (cmd != "daclist" &&                                                \
-            det->getDetectorType().squash() != defs::CHIPTESTBOARD) {          \
+            dettype != defs::CHIPTESTBOARD || dettype == XILINX_CHIPTESTBOARD) {\
             throw RuntimeError(cmd + " only allowed for CTB.");                \
         }                                                                      \
         if (det_id != -1) {                                                    \
@@ -548,7 +549,7 @@ namespace sls {
             os << ToString(t) << '\n';                                         \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (cmd == "daclist" &&                                            \
-                det->getDetectorType().squash() != defs::CHIPTESTBOARD) {      \
+                dettype != defs::CHIPTESTBOARD || dettype == XILINX_CHIPTESTBOARD) {\
                 throw RuntimeError("This detector already has fixed dac "      \
                                    "names. Cannot change them.");              \
             }                                                                  \
@@ -603,7 +604,8 @@ namespace sls {
             os << HLPSTR << '\n';                                              \
             return os.str();                                                   \
         }                                                                      \
-        if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {          \
+        auto dettype = det->getDetectorType().squash();                        \
+        if (dettype != defs::CHIPTESTBOARD || dettype == XILINX_CHIPTESTBOARD) {\
             throw RuntimeError(cmd + " only allowed for CTB.");                \
         }                                                                      \
         if (det_id != -1) {                                                    \
@@ -641,7 +643,8 @@ namespace sls {
             os << HLPSTR << '\n';                                              \
             return os.str();                                                   \
         }                                                                      \
-        if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {          \
+        auto dettype = det->getDetectorType().squash();                        \
+        if (dettype != defs::CHIPTESTBOARD || dettype == XILINX_CHIPTESTBOARD) {\
             throw RuntimeError(cmd + " only allowed for CTB.");                \
         }                                                                      \
         if (det_id != -1) {                                                    \
@@ -670,7 +673,8 @@ namespace sls {
             os << HLPSTR << '\n';                                              \
             return os.str();                                                   \
         }                                                                      \
-        if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {          \
+        auto dettype = det->getDetectorType().squash();                        \
+        if (dettype != defs::CHIPTESTBOARD || dettype == XILINX_CHIPTESTBOARD) {\
             throw RuntimeError(cmd + " only allowed for CTB.");                \
         }                                                                      \
         if (det_id != -1) {                                                    \
@@ -703,7 +707,8 @@ namespace sls {
             os << HLPSTR << '\n';                                              \
             return os.str();                                                   \
         }                                                                      \
-        if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {          \
+        auto dettype = det->getDetectorType().squash();                        \
+        if (dettype != defs::CHIPTESTBOARD || dettype == XILINX_CHIPTESTBOARD) {\
             throw RuntimeError(cmd + " only allowed for CTB.");                \
         }                                                                      \
         if (det_id != -1) {                                                    \
@@ -1486,7 +1491,7 @@ class CmdProxy {
 
     GET_COMMAND(type, getDetectorType,
                 "\n\tReturns detector type. Can be Eiger, Jungfrau, Gotthard, "
-                "Moench, Mythen3, Gotthard2, ChipTestBoard");
+                "Moench, Mythen3, Gotthard2, ChipTestBoard, Xilinx_ChipTestBoard");
 
     GET_COMMAND_NOID(nmod, size, "\n\tNumber of modules in shared memory.");
 
@@ -1741,75 +1746,75 @@ class CmdProxy {
 
     /* lists */
     CTB_NAMED_LIST(daclist, getDacNames, setDacNames,
-                   "[dacname1 dacname2 .. dacname18] \n\t\t[ChipTestBoard] Set "
+                   "[dacname1 dacname2 .. dacname18] \n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Set "
                    "the list of dac names for this detector.\n\t\t[All] Gets "
                    "the list of dac names for every dac for this detector.");
 
     CTB_SINGLE_DACNAME(dacname, getDacName, setDacName, defs::DAC_0,
-                       "\n\t[0-17][name] \n\t\t[ChipTestBoard] Set "
+                       "\n\t[0-17][name] \n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Set "
                        "the dac at the given position to the given name.");
 
     CTB_GET_DACINDEX(dacindex, getDacIndex, defs::DAC_0,
-                     "\n\t[name] \n\t\t[ChipTestBoard] Get "
+                     "\n\t[name] \n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Get "
                      "the dac index for the given name.");
 
     CTB_NAMED_LIST(adclist, getAdcNames, setAdcNames,
-                   "[adcname1 adcname2 .. adcname32] \n\t\t[ChipTestBoard] Set "
+                   "[adcname1 adcname2 .. adcname32] \n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Set "
                    "the list of adc names for this board.");
 
     CTB_SINGLE_NAME(adcname, getAdcName, setAdcName,
-                    "[0-31][name] \n\t\t[ChipTestBoard] Set "
+                    "[0-31][name] \n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Set "
                     "the adc at the given position to the given name.");
 
     CTB_GET_INDEX(adcindex, getAdcIndex,
-                  "[name] \n\t\t[ChipTestBoard] Get "
+                  "[name] \n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Get "
                   "the adc index for the given name.");
 
     CTB_NAMED_LIST(signallist, getSignalNames, setSignalNames,
                    "[signalname1 signalname2 .. signalname63] "
-                   "\n\t\t[ChipTestBoard] Set "
+                   "\n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Set "
                    "the list of signal names for this board.");
 
     CTB_SINGLE_NAME(signalname, getSignalName, setSignalName,
-                    "[0-63][name] \n\t\t[ChipTestBoard] Set "
+                    "[0-63][name] \n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Set "
                     "the signal at the given position to the given name.");
 
     CTB_GET_INDEX(signalindex, getSignalIndex,
-                  "[name] \n\t\t[ChipTestBoard] Get "
+                  "[name] \n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Get "
                   "the signal index for the given name.");
 
     CTB_NAMED_LIST(voltagelist, getVoltageNames, setVoltageNames,
                    "[voltagename1 voltagename2 .. voltagename4] "
-                   "\n\t\t[ChipTestBoard] Set "
+                   "\n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Set "
                    "the list of voltage names for this board.");
 
     CTB_SINGLE_DACNAME(voltagename, getVoltageName, setVoltageName,
                        defs::V_POWER_A,
-                       "[0-4][name] \n\t\t[ChipTestBoard] Set "
+                       "[0-4][name] \n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Set "
                        "the voltage at the given position to the given name.");
 
     CTB_GET_DACINDEX(voltageindex, getVoltageIndex, defs::V_POWER_A,
-                     "[name] \n\t\t[ChipTestBoard] Get "
+                     "[name] \n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Get "
                      "the voltage index for the given name.");
 
     CTB_VALUES(voltagevalues, getVoltage, getVoltageList, getVoltageNames,
-               "[name] \n\t\t[ChipTestBoard] Get values of all voltages.");
+               "[name] \n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Get values of all voltages.");
 
     CTB_VALUES(slowadcvalues, getSlowADC, getSlowADCList, getSlowADCNames,
-               "[name] \n\t\t[ChipTestBoard] Get values of all slow adcs.");
+               "[name] \n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Get values of all slow adcs.");
 
     CTB_NAMED_LIST(
         slowadclist, getSlowADCNames, setSlowADCNames,
         "[slowadcname1 slowadcname2 .. slowadcname7] "
-        "\n\t\t[ChipTestBoard] Set the list of slowadc names for this board.");
+        "\n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Set the list of slowadc names for this board.");
 
     CTB_SINGLE_DACNAME(slowadcname, getSlowADCName, setSlowADCName,
                        defs::SLOW_ADC0,
-                       "[0-7][name] \n\t\t[ChipTestBoard] Set "
+                       "[0-7][name] \n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Set "
                        "the slowadc at the given position to the given name.");
 
     CTB_GET_DACINDEX(slowadcindex, getSlowADCIndex, defs::SLOW_ADC0,
-                     "[name] \n\t\t[ChipTestBoard] Get "
+                     "[name] \n\t\t[ChipTestBoard][Xilinx_ChipTestBoard] Get "
                      "the slowadc index for the given name.");
 
     /* dacs */

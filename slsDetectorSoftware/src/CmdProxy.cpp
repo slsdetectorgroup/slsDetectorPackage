@@ -712,7 +712,7 @@ std::string CmdProxy::ReadoutSpeed(int action) {
            << '\n';
     } else {
         defs::detectorType type = det->getDetectorType().squash();
-        if (type == defs::CHIPTESTBOARD) {
+        if (type == defs::CHIPTESTBOARD || type == defs::XILINX_CHIPTESTBOARD) {
             throw RuntimeError(
                 "ReadoutSpeed not implemented. Did you mean runclk?");
         }
@@ -1146,7 +1146,7 @@ std::string CmdProxy::Dac(int action) {
 
     // dac indices only for ctb
     if (args.size() > 0 && action != defs::HELP_ACTION) {
-        if (is_int(args[0]) && type != defs::CHIPTESTBOARD) {
+        if (is_int(args[0]) && type != defs::CHIPTESTBOARD && type != defs::XILINX_CHIPTESTBOARD) {
             throw RuntimeError(
                 "Dac indices can only be used for chip test board. Use daclist "
                 "to get list of dac names for current detector.");
@@ -1159,7 +1159,7 @@ std::string CmdProxy::Dac(int action) {
 
         defs::dacIndex dacIndex{};
         // TODO! Remove if
-        if (type == defs::CHIPTESTBOARD && !is_int(args[0])) {
+        if (type == defs::CHIPTESTBOARD && type == defs::XILINX_CHIPTESTBOARD && !is_int(args[0])) {
             dacIndex = det->getDacIndex(args[0]);
         } else {
             dacIndex = StringTo<defs::dacIndex>(args[0]);
@@ -1183,7 +1183,7 @@ std::string CmdProxy::Dac(int action) {
             WrongNumberOfParameters(1); // This prints slightly wrong
 
         defs::dacIndex dacIndex{};
-        if (type == defs::CHIPTESTBOARD && !is_int(args[0]))
+        if (type == defs::CHIPTESTBOARD && type == defs::XILINX_CHIPTESTBOARD && !is_int(args[0]))
             dacIndex = det->getDacIndex(args[0]);
         else
             dacIndex = StringTo<defs::dacIndex>(args[0]);
@@ -2585,7 +2585,8 @@ std::string CmdProxy::Samples(int action) {
         }
         auto a = det->getNumberOfAnalogSamples(std::vector<int>{det_id});
         // get also digital samples for ctb and compare with analog
-        if (det->getDetectorType().squash() == defs::CHIPTESTBOARD) {
+        auto dettype = det->getDetectorType().squash();
+        if (dettype == defs::CHIPTESTBOARD || dettype == defs::XILINX_CHIPTESTBOARD) {
             auto d = det->getNumberOfDigitalSamples(std::vector<int>{det_id});
             auto t =
                 det->getNumberOfTransceiverSamples(std::vector<int>{det_id});

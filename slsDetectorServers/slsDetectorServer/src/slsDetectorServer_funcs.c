@@ -33,6 +33,8 @@ const enum detectorType myDetectorType = MOENCH;
 const enum detectorType myDetectorType = MYTHEN3;
 #elif GOTTHARD2D
 const enum detectorType myDetectorType = GOTTHARD2;
+#elif XILINX_CHIPTESTBOARDD
+const enum detectortype myDetectorType = XILINX_CHIPTESTBOARD;
 #else
 const enum detectorType myDetectorType = GENERIC;
 #endif

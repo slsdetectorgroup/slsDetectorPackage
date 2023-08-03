@@ -41,7 +41,7 @@
 #define DEFAULT_TX_UDP_PORT           (0x7e9a)
 #define DEFAULT_TMP_THRSHLD           (65 * 1000) // milli degree Celsius
 #define DEFAULT_FLIP_ROWS             (0)
-#define DEFAULT_SPEED                 (FULL_SPEED)
+#define DEFAULT_SPEED                 (HALF_SPEED)
 #define DEFAULT_PARALLEL_ENABLE       (0)
 
 #define HIGHVOLTAGE_MIN     (60)
@@ -69,13 +69,19 @@
 #define ADC_DECMT_HALF_SPEED    (0x1)
 #define ADC_DECMT_FULL_SPEED    (0x0)
 
+#define ADC_PHASE_DEG_QUARTER_SPEED (0)
+#define ADC_PHASE_DEG_HALF_SPEED    (0)
+#define ADC_PHASE_DEG_FULL_SPEED    (300)
+
+#define ADC_OFST_QUARTER_SPEED (0x12)
+#define ADC_OFST_HALF_SPEED    (0x12)
+#define ADC_OFST_FULL_SPEED    (0x12)
+
 // pipeline
 #define ADC_PORT_INVERT_VAL (0x55555555)
 
 #define SAMPLE_ADC_FULL_SPEED                                                  \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL) // 0x0
-#define ADC_PHASE_DEG_FULL_SPEED (140)
-#define ADC_OFST_FULL_SPEED_VAL  (0xf)
 
 /* Struct Definitions */
 typedef struct udp_header_struct {
@@ -107,29 +113,29 @@ typedef struct udp_header_struct {
 /* Enums */
 enum ADCINDEX { TEMP_FPGA, TEMP_ADC };
 enum DACINDEX {
-    J_VB_COMP,
-    J_VDD_PROT,
-    J_VIN_COM,
-    J_VREF_PRECH,
-    J_VB_PIXBUF,
-    J_VB_DS,
-    J_VREF_DS,
-    J_VREF_COMP
+    MO_VBP_COLBUF,
+    MO_VIPRE,
+    MO_VIN_CM,
+    MO_VB_SDA,
+    MO_VCASC_SFP,
+    MO_VOUT_CM,
+    MO_VIPRE_CDS,
+    MO_IBIAS_SFP
 };
 #define DAC_NAMES                                                              \
-    "vb_comp", "vdd_prot", "vin_com", "vref_prech", "vb_pixbuf", "vb_ds",      \
-        "vref_ds", "vref_comp"
+    "vbp_colbuf", "vipre", "vin_cm", "vb_sda", "vcasc_sfp", "vout_cm",         \
+        "vipre_cds", "ibias_sfp"
 
 #define DEFAULT_DAC_VALS                                                       \
     {                                                                          \
-        1220, /* J_VB_COMP */                                                  \
-        3000, /* J_VDD_PROT */                                                 \
-        1053, /* J_VIN_COM */                                                  \
-        1450, /* J_VREF_PRECH */                                               \
-        750,  /* J_VB_PIXBUF */                                                \
-        1000, /* J_VB_DS */                                                    \
-        480,  /* J_VREF_DS */                                                  \
-        420   /* J_VREF_COMP */                                                \
+        1300, /* MO_VBP_COLBUF */                                              \
+        1000, /* MO_VIPRE */                                                   \
+        1400, /* MO_VIN_CM */                                                  \
+        680,  /* MO_VB_SDA */                                                  \
+        1428, /* MO_VCASC_SFP */                                               \
+        1200, /* MO_VOUT_CM */                                                 \
+        800,  /* MO_VIPRE_CDS */                                               \
+        900   /* MO_IBIAS_SFP */                                               \
     };
 
 enum MASTERINDEX { MASTER_HARDWARE, OW_MASTER, OW_SLAVE };

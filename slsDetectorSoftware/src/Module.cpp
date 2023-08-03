@@ -2370,14 +2370,6 @@ void Module::setNumberOfAnalogSamples(int value) {
     }
 }
 
-int Module::getADCPipeline() const {
-    return sendToDetector<int>(F_GET_ADC_PIPELINE);
-}
-
-void Module::setADCPipeline(int value) {
-    sendToDetector(F_SET_ADC_PIPELINE, value, nullptr);
-}
-
 uint32_t Module::getADCEnableMask() const {
     return sendToDetector<uint32_t>(F_GET_ADC_ENABLE_MASK);
 }
@@ -2630,6 +2622,8 @@ void Module::setPatternBitMask(uint64_t mask) {
 
 void Module::startPattern() { sendToDetector(F_START_PATTERN); }
 
+// Json Header specific
+
 std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
     // TODO, refactor this function with a more robust sending.
     // Now assuming whitespace separated key value
@@ -2718,6 +2712,15 @@ void Module::setAdditionalJsonParameter(const std::string &key,
 }
 
 // Advanced
+
+int Module::getADCPipeline() const {
+    return sendToDetector<int>(F_GET_ADC_PIPELINE);
+}
+
+void Module::setADCPipeline(int value) {
+    sendToDetector(F_SET_ADC_PIPELINE, value, nullptr);
+}
+
 void Module::programFPGA(std::vector<char> buffer,
                          const bool forceDeleteNormalFile) {
     switch (shm()->detType) {

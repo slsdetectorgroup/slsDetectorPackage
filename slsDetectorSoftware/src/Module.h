@@ -502,8 +502,6 @@ class Module : public virtual slsDetectorDefs {
      * ************************************************/
     int getNumberOfAnalogSamples() const;
     void setNumberOfAnalogSamples(int value);
-    int getADCPipeline() const;
-    void setADCPipeline(int value);
     uint32_t getADCEnableMask() const;
     void setADCEnableMask(uint32_t mask);
     uint32_t getTenGigaADCEnableMask() const;
@@ -557,7 +555,7 @@ class Module : public virtual slsDetectorDefs {
 
     /**************************************************
      *                                                *
-     *    Moench                                      *
+     *    Json Header specific                        *
      *                                                *
      * ************************************************/
     std::map<std::string, std::string> getAdditionalJsonHeader() const;
@@ -572,6 +570,8 @@ class Module : public virtual slsDetectorDefs {
      *    Advanced                                    *
      *                                                *
      * ************************************************/
+    int getADCPipeline() const;
+    void setADCPipeline(int value);
     void programFPGA(std::vector<char> buffer,
                      const bool forceDeleteNormalFile);
     void resetFPGA();

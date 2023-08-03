@@ -102,10 +102,6 @@ void Listener::SetNoRoi(bool enable) {
     disabledPort = (!activated || !detectorDataStream || noRoi);
 }
 
-void Listener::SetFrameDiscardPolicy(frameDiscardPolicy value) {
-    frameDiscardMode = value;
-}
-
 void Listener::SetSilentMode(bool enable) { silentMode = enable; }
 
 void Listener::ResetParametersforNewAcquisition() {
@@ -419,7 +415,7 @@ size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets,
                                     uint64_t fnum, bool isHeaderEmpty,
                                     size_t imageSize,
                                     sls_receiver_header &dstHeader) {
-    switch (frameDiscardMode) {
+    switch (generalData->frameDiscardMode) {
     case DISCARD_EMPTY_FRAMES:
         if (!numpackets) {
             if (!EOA) {

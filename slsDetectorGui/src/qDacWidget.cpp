@@ -34,10 +34,7 @@ void qDacWidget::Initialization() {
     }
 }
 
-void qDacWidget::SetDetectorIndex(int id) {
-    detectorIndex = id;
-    Refresh();
-}
+void qDacWidget::SetDetectorIndex(int id) { detectorIndex = id; }
 
 void qDacWidget::GetDac() {
     LOG(logDEBUG) << "Getting Dac " << index;

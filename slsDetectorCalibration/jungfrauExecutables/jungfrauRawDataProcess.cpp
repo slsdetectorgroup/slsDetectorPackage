@@ -41,6 +41,9 @@
 #include <ctime>
 #include <fmt/core.h>
 
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
 
 std::string getRootString( const std::string& filepath ) {
   size_t pos1 = filepath.find_last_of("/");
@@ -61,20 +64,24 @@ std::string getRootString( const std::string& filepath ) {
 std::string createFileName( const std::string& dir, const std::string& fprefix="run", const std::string& fsuffix="", const std::string& fext="raw", int aindex=0, int mindex=0, int findex=0, int outfilecounter=-1 ) {
   if (outfilecounter >= 0)
     return fmt::format("{:s}/{:s}_d{:d}_f{:d}_{:d}_f{:05d}.{:s}", dir, fprefix, mindex, findex, aindex, outfilecounter, fext);
-  else if (fsuffix.length()!=0)
-    return fmt::format("{:s}/{:s}_{:s}.{:s}", dir, fprefix, fsuffix, fext);
+  else if (fsuffix.length()!=0) {
+    if (fsuffix == "master")
+      return fmt::format("{:s}/{:s}_master_{:d}.{:s}", dir, fprefix, aindex, fext);
+    else
+      return fmt::format("{:s}/{:s}_{:s}.{:s}", dir, fprefix, fsuffix, fext);
+  }
   else
     return fmt::format("{:s}/{:s}_d{:d}_f{:d}_{:d}.{:s}", dir, fprefix, mindex, findex, aindex, fext);
 }
 
 int main(int argc, char *argv[]) {
 
-    if (argc < 5) {
+    if (argc < 6) {
         std::cout
             << "Usage is " << argv[0]
-            << "indir outdir fprefix(excluding slsDetector standard suffixes and extension) fextension "
-               "[runmin] [runmax] [pedfile (raw or tiff)] [threshold] "
-               "[nframes] [xmin xmax ymin ymax] [gainmap]"
+            << "indir outdir [fprefix(excluding slsDetector standard suffixes and extension)] [fextension] "
+	       "[fmin] [fmax] [runmin] [runmax] [pedfile (raw or tiff)] [threshold] "
+               "[nframes] [xmin xmax ymin ymax] [optional: bool read rxroi from data file header] [gainmap]"
             << std::endl;
         std::cout
             << "threshold <0 means analog; threshold=0 means cluster finder; "
@@ -106,36 +113,71 @@ int main(int argc, char *argv[]) {
     std::string outdir(argv[2]);
     std::string fprefix(argv[3]);
     std::string fext(argv[4]);
+
+    int fmin = 0;
+    if (argc >= 6)
+        fmin = atoi(argv[5]);
+    int fmax = fmin;
+    if (argc >= 7)
+        fmax = atoi(argv[6]);
+
     int runmin = 0;
-
     // cout << "argc is " << argc << endl;
-    if (argc >= 6) {
-        runmin = atoi(argv[5]);
+    if (argc >= 8) {
+        runmin = atoi(argv[7]);
     }
-
     int runmax = runmin;
-
-    if (argc >= 7) {
-        runmax = atoi(argv[6]);
+    if (argc >= 9) {
+        runmax = atoi(argv[8]);
     }
 
     std::string pedfilename{};
-    if (argc >= 8) {
-        pedfilename = argv[7];
+    if (argc >= 10) {
+        pedfilename = argv[9];
     }
     double thr = 0;
     double thr1 = 1;
 
-    if (argc >= 9) {
-        thr = atof(argv[8]);
+    if (argc >= 11) {
+        thr = atof(argv[10]);
     }
 
     int nframes = 0;
 
-    if (argc >= 10) {
-        nframes = atoi(argv[9]);
+    if (argc >= 12) {
+        nframes = atoi(argv[11]);
     }
+
+    bool readrxroifromdatafile = false;
+    if (argc >= 17)
+      readrxroifromdatafile = atoi(argv[16]);
     
+    // Receiver ROI
+    uint16_t rxroi_xmin = 0;
+    uint16_t rxroi_xmax = 0;
+    uint16_t rxroi_ymin = 0;
+    uint16_t rxroi_ymax = 0;
+
+    { //protective scope so ifstream gets destroyed properly
+
+      auto jsonmastername = createFileName( indir, fprefix, "master", "json", runmin );
+      std::cout << "json master file " << jsonmastername << std::endl;
+      std::ifstream masterfile(jsonmastername); //, ios::in | ios::binary);
+      if (masterfile.is_open()) {
+	json j;
+	masterfile >> j;
+	rxroi_xmin = j["Receiver Roi"]["xmin"];
+	rxroi_xmax = j["Receiver Roi"]["xmax"];
+	rxroi_ymin = j["Receiver Roi"]["ymin"];
+	rxroi_ymax = j["Receiver Roi"]["ymax"];
+	masterfile.close();
+	std::cout << "Read Receiver ROI [" << rxroi_xmin << ", " << rxroi_xmax << ", "
+		  << rxroi_ymin << ", " << rxroi_ymax << "] from json master file" << std::endl;
+      } else 
+	std::cout << "Could not open master file " << jsonmastername << std::endl;
+    
+    }
+
     // Define decoders...
 #if !defined JFSTRX && !defined JFSTRXOLD && !defined JFSTRXCHIP1 &&           \
     !defined JFSTRXCHIP6
@@ -151,49 +193,45 @@ int main(int argc, char *argv[]) {
 
 #ifdef JFSTRX
     cout << "Jungfrau strixel full module readout" << endl;
-    // ROI
-    uint16_t xxmin = 0;
-    uint16_t xxmax = 0;
-    uint16_t yymin = 0;
-    uint16_t yymax = 0;
 
 #ifndef ALDO
-    { //THIS SCOPE IS IMPORTANT! (To ensure proper destruction of ifstream)
-      using header = sls::defs::sls_receiver_header;
-      // check if there is a roi in the header
-      typedef struct {
-        uint16_t xmin;
-        uint16_t xmax;
-        uint16_t ymin;
-        uint16_t ymax;
-      } receiverRoi_compact;
-      receiverRoi_compact croi;
-      std::string fsuffix{};
-      auto filename = createFileName( indir, fprefix, fsuffix, fext, runmin );
-      std::cout << "Reading header of file " << filename << " to check for ROI "
-		<< std::endl;
-      ifstream firstfile(filename, ios::in | ios::binary);
-      if (firstfile.is_open()) {
-        header hbuffer;
-        std::cout << "sizeof(header) = " << sizeof(header) << std::endl;
-        if (firstfile.read((char *)&hbuffer, sizeof(header))) {
-	  memcpy(&croi, &hbuffer.detHeader.detSpec1, 8);
-	  std::cout << "Read ROI [" << croi.xmin << ", " << croi.xmax << ", "
-		    << croi.ymin << ", " << croi.ymax << "]" << std::endl;
-	  xxmin = croi.xmin;
-	  xxmax = croi.xmax;
-	  yymin = croi.ymin;
-	  yymax = croi.ymax;
-        } else
-	  std::cout << "reading error" << std::endl;
-        firstfile.close();
-      } else
-        std::cout << "Could not open " << filename << " for reading " << std::endl;
-    } //end of protective scope
+    if (readrxroifromdatafile)
+      { //THIS SCOPE IS IMPORTANT! (To ensure proper destruction of ifstream)
+	using header = sls::defs::sls_receiver_header;
+	// check if there is a roi in the header
+	typedef struct {
+	  uint16_t xmin;
+	  uint16_t xmax;
+	  uint16_t ymin;
+	  uint16_t ymax;
+	} receiverRoi_compact;
+	receiverRoi_compact croi;
+	std::string fsuffix{};
+	auto filename = createFileName( indir, fprefix, fsuffix, fext, runmin );
+	std::cout << "Reading header of file " << filename << " to check for ROI "
+		  << std::endl;
+	ifstream firstfile(filename, ios::in | ios::binary);
+	if (firstfile.is_open()) {
+	  header hbuffer;
+	  std::cout << "sizeof(header) = " << sizeof(header) << std::endl;
+	  if (firstfile.read((char *)&hbuffer, sizeof(header))) {
+	    memcpy(&croi, &hbuffer.detHeader.detSpec1, 8);
+	    std::cout << "Read ROI [" << croi.xmin << ", " << croi.xmax << ", "
+		      << croi.ymin << ", " << croi.ymax << "]" << std::endl;
+	    rxroi_xmin = croi.xmin;
+	    rxroi_xmax = croi.xmax;
+	    rxroi_ymin = croi.ymin;
+	    rxroi_ymax = croi.ymax;
+	  } else
+	    std::cout << "reading error" << std::endl;
+	  firstfile.close();
+	} else
+	  std::cout << "Could not open " << filename << " for reading " << std::endl;
+      } //end of protective scope
 #endif
 
     jungfrauLGADStrixelsData *decoder =
-        new jungfrauLGADStrixelsData(xxmin, xxmax, yymin, yymax);
+      new jungfrauLGADStrixelsData(rxroi_xmin, rxroi_xmax, rxroi_ymin, rxroi_ymax);
     int nx = 1024 / 3, ny = 512 * 5;
 #endif
 #ifdef JFSTRXCHIP1
@@ -218,19 +256,20 @@ int main(int argc, char *argv[]) {
     decoder->getDetectorSize(nx, ny);
     std::cout << "Detector size is " << nx << " " << ny << std::endl;
 
+    //Cluster finder ROI
     int xmin = 0, xmax = nx, ymin = 0, ymax = ny;
-    if (argc >= 14) {
-        xmin = atoi(argv[10]);
-        xmax = atoi(argv[11]);
-        ymin = atoi(argv[12]);
-        ymax = atoi(argv[13]);
+    if (argc >= 16) {
+        xmin = atoi(argv[12]);
+        xmax = atoi(argv[13]);
+        ymin = atoi(argv[14]);
+        ymax = atoi(argv[15]);
     }
-    std::cout << xmin << " " << xmax << " " << ymin << " " << ymax << " "
+    std::cout << "Cluster finder ROI: [" << xmin << ", " << xmax << ", " << ymin << ", " << ymax << "]"
               << std::endl;
 
     char *gainfname = NULL;
-    if (argc > 14) {
-        gainfname = argv[14];
+    if (argc > 17) {
+        gainfname = argv[17];
         std::cout << "Gain map file name is: " << gainfname << std::endl;
     }
 
@@ -239,6 +278,8 @@ int main(int argc, char *argv[]) {
     std::cout << "input directory is " << indir << std::endl;
     std::cout << "output directory is " << outdir << std::endl;
     std::cout << "input file prefix is " << fprefix << std::endl;
+    std::cout << "fmin is " << fmin << std::endl;
+    std::cout << "fmax is " << fmax << std::endl;
     std::cout << "runmin is " << runmin << std::endl;
     std::cout << "runmax is " << runmax << std::endl;
     if (pedfilename.length()!=0)
@@ -380,26 +421,27 @@ int main(int argc, char *argv[]) {
     }
 
     ifr = 0;
-    int ifile = 0;
+    int ioutfile = 0;
 
     mt->setFrameMode(eFrame);
 
     FILE *of = NULL;
     
-    for (int irun = runmin; irun <= runmax; irun++) {
+    for (int irun = runmin; irun <= runmax; ++irun) {
+      for (int ifile = fmin; ifile <= fmax; ++ifile) {
         std::cout << "DATA ";
 	std::string fsuffix{};
-	auto fname = createFileName( indir, fprefix, fsuffix, fext, irun );
-	auto imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", irun );
-	auto cfname = createFileName( outdir, fprefix, fsuffix, "clust", irun );
+	auto fname = createFileName( indir, fprefix, fsuffix, fext, irun, 0, ifile );
+	auto imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", irun, 0, ifile );
+	auto cfname = createFileName( outdir, fprefix, fsuffix, "clust", irun, 0, ifile );
         std::cout << fname << " ";
         std::cout << imgfname << std::endl;
         std::time(&end_time);
         std::cout << std::ctime(&end_time) << std::endl;
         //  std::cout <<  fname << " " << outfname << " " << imgfname <<  std::endl;
-        ifstream filebin(fname, ios::in | ios::binary);
+	std::ifstream filebin(fname, ios::in | ios::binary);
         //      //open file
-        ifile = 0;
+        ioutfile = 0;
         if (filebin.is_open()) {
             if (thr <= 0 && cf != 0) { // cluster finder
                 if (of == NULL) {
@@ -436,10 +478,10 @@ int main(int argc, char *argv[]) {
                     std::cout << " " << ifr << " " << ff << std::endl;
                 if (nframes > 0) {
                     if (ifr % nframes == 0) {
-		      imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", irun, 0, 0, ifile );
+		      imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", irun, 0, 0, ioutfile );
 		      mt->writeImage(imgfname.c_str(), thr1);
                         mt->clearImage();
-                        ifile++;
+                        ioutfile++;
                     }
                 }
                 // } else
@@ -453,7 +495,7 @@ int main(int argc, char *argv[]) {
             }
             if (nframes >= 0) {
                 if (nframes > 0)
-		  imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", irun, 0, 0, ifile );
+		  imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", irun, 0, 0, ioutfile );
                 std::cout << "Writing tiff to " << imgfname << " " << thr1
                           << std::endl;
                 mt->writeImage(imgfname.c_str(), thr1);
@@ -469,9 +511,10 @@ int main(int argc, char *argv[]) {
         } else
             std::cout << "Could not open " << fname << " for reading "
                       << std::endl;
+      }
     }
     if (nframes < 0) {
-      auto imgfname = createFileName( outdir, fprefix, "sum", "tiff", -1, 0, 0, -1 );
+      auto imgfname = createFileName( outdir, fprefix, "sum", "tiff", runmin, 0, fmin, -1 );
         std::cout << "Writing tiff to " << imgfname << " " << thr1 << std::endl;
         mt->writeImage(imgfname.c_str(), thr1);
     }

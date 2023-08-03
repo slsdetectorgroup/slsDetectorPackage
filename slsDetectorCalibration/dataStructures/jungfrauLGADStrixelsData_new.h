@@ -28,6 +28,10 @@
     @li version is the version number of this structure format
 */
 
+#include <algorithm>
+#include <numeric>
+#include <tuple>
+
 namespace strixelSingleChip {
 constexpr int nc_rawimg = 1024; // for full images  //256;
 constexpr int nr_rawimg = 512;
@@ -97,6 +101,13 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
     int chip_x0;
     int chip_y0;
     int x0, y0, x1, y1, shifty;
+    struct {
+      uint16_t xmin;
+      uint16_t xmax;
+      uint16_t ymin;
+      uint16_t ymax;
+      int nc;
+    } globalROI;
 
     int getMultiplicator(const int group) {
         int multiplicator;
@@ -215,9 +226,113 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
         }
     }
 
-    void remapROI(uint16_t xmin, uint16_t xmax, uint16_t ymin, uint16_t ymax) {
+
+    std::tuple< uint16_t, uint16_t, uint16_t, uint16_t > adjustROItoLimits(uint16_t xmin,
+									   uint16_t xmax,
+									   uint16_t ymin,
+									   uint16_t ymax,
+									   uint16_t lim_roi_xmin,
+									   uint16_t lim_roi_xmax,
+									   uint16_t lim_roi_ymin,
+									   uint16_t lim_roi_ymax) {
+      uint16_t xmin_roi, xmax_roi, ymin_roi, ymax_roi;
+      if ( xmin < lim_roi_xmin)
+        xmin_roi = lim_roi_xmin;
+      else
+        xmin_roi = xmin;
+      if ( xmax > lim_roi_xmax )
+        xmax_roi = lim_roi_xmax;
+      else
+        xmax_roi = xmax;
+      if ( ymin < lim_roi_ymin )
+        ymin_roi = lim_roi_ymin;
+      else
+        ymin_roi = ymin;
+      if ( ymax > lim_roi_ymax )
+        ymax_roi = lim_roi_ymax;
+      else
+        ymax_roi = ymax;
+      return std::make_tuple(xmin_roi, xmax_roi, ymin_roi, ymax_roi);
+    }
+
+    std::vector < std::tuple< int, int, uint16_t, uint16_t, uint16_t, uint16_t > > mapSubROIs(uint16_t xmin,
+											      uint16_t xmax,
+											      uint16_t ymin,
+											      uint16_t ymax) {
+      bool chip_1_1 = false;
+      bool chip_1_2 = false;
+      bool chip_1_3 = false;
+      bool chip_6_1 = false;
+      bool chip_6_2 = false;
+      bool chip_6_3 = false;
+
+      for ( int x=xmin; x!=xmax+1; ++x ) {
+	for ( int y=ymin; y!=ymax; ++y ) {
+	  if ( c1g1_xstart<=x && x<=c1_xend && (c1g1_ystart+bond_shift_y)<=y && y<=(c1g1_yend+bond_shift_y) )
+	    chip_1_1 = true;
+	  if ( c1g2_xstart<=x && x<=c1_xend && (c1g2_ystart+bond_shift_y)<=y && y<=(c1g2_yend+bond_shift_y) )
+	    chip_1_2 = true;
+	  if ( c1g3_xstart<=x && x<=c1_xend && (c1g3_ystart+bond_shift_y)<=y && y<=(c1g3_yend+bond_shift_y) )
+	    chip_1_3 = true;
+	  if ( c6_xstart<=x && x<=c6g1_xend && (c6g1_ystart-bond_shift_y)<=y && y<=(c6g1_yend-bond_shift_y) )
+	    chip_6_1 = true;
+	  if ( c6_xstart<=x && x<=c6g2_xend && (c6g2_ystart-bond_shift_y)<=y && y<=(c6g2_yend-bond_shift_y) )
+	    chip_6_2 = true;
+	  if ( c6_xstart<=x && x<=c6g3_xend && (c6g3_ystart-bond_shift_y)<=y && y<=(c6g3_yend-bond_shift_y) )
+	    chip_6_3 = true;
+	}
+      }
+
+      uint16_t xmin_roi{}, xmax_roi{}, ymin_roi{}, ymax_roi{};
+       //[ chip, group, xmin, xmax, ymin, ymax ]
+      std::vector < std::tuple< int, int, uint16_t, uint16_t, uint16_t, uint16_t > > rois{};
+
+      if (chip_1_1) {
+	std::tie( xmin_roi, xmax_roi, ymin_roi, ymax_roi ) =
+	  adjustROItoLimits( xmin, xmax, ymin, ymax,
+			     c1g1_xstart, c1_xend, 0, c1g1_yend+bond_shift_y );
+	rois.push_back( std::make_tuple( 1, 1, xmin_roi, xmax_roi, ymin_roi, ymax_roi ) );
+      }
+      if (chip_1_2) {
+	std::tie( xmin_roi, xmax_roi, ymin_roi, ymax_roi ) =
+	  adjustROItoLimits( xmin, xmax, ymin, ymax,
+			     c1g2_xstart, c1_xend, c1g2_ystart+bond_shift_y, c1g2_yend+bond_shift_y );
+	rois.push_back( std::make_tuple( 1, 2, xmin_roi, xmax_roi, ymin_roi, ymax_roi ) );
+      }
+      if (chip_1_3) {
+	std::tie( xmin_roi, xmax_roi, ymin_roi, ymax_roi ) =
+	  adjustROItoLimits( xmin, xmax, ymin, ymax,
+			     c1g3_xstart, c1_xend, c1g3_ystart+bond_shift_y, c1g3_yend+bond_shift_y );
+	rois.push_back( std::make_tuple( 1, 3, xmin_roi, xmax_roi, ymin_roi, ymax_roi ) );
+      }
+      if (chip_6_3) {
+	std::tie( xmin_roi, xmax_roi, ymin_roi, ymax_roi ) =
+	  adjustROItoLimits( xmin, xmax, ymin, ymax,
+			     c6_xstart, c6g3_xend, c6g3_ystart-bond_shift_y, c6g3_yend-bond_shift_y );
+	rois.push_back( std::make_tuple( 6, 3, xmin_roi, xmax_roi, ymin_roi, ymax_roi ) );
+      }
+      if (chip_6_2) {
+	std::tie( xmin_roi, xmax_roi, ymin_roi, ymax_roi ) =
+	  adjustROItoLimits( xmin, xmax, ymin, ymax,
+			     c6_xstart, c6g2_xend, c6g2_ystart-bond_shift_y, c6g2_yend-bond_shift_y );
+	rois.push_back( std::make_tuple( 6, 2, xmin_roi, xmax_roi, ymin_roi, ymax_roi ) );
+      }
+      if (chip_6_1) {
+	std::tie( xmin_roi, xmax_roi, ymin_roi, ymax_roi ) =
+	  adjustROItoLimits( xmin, xmax, ymin, ymax,
+			     c6_xstart, c6g1_xend, c6g1_ystart-bond_shift_y, 511 );
+	rois.push_back( std::make_tuple( 6, 1, xmin_roi, xmax_roi, ymin_roi, ymax_roi ) );
+      }
+
+      return rois;
+
+    }
+
+    void remapROI(std::tuple< int, int, uint16_t, uint16_t, uint16_t, uint16_t > roi) {
         // determine group and chip selected by ROI
-        int group;
+      int group, xmin, xmax, ymin, ymax;
+	std::tie( mchip, group, xmin, xmax, ymin, ymax ) = roi;
+	/*
         if (ymax <= c1g1_yend + bond_shift_y) {
             group = 1;
             mchip = 1;
@@ -243,18 +358,17 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 	  group = -1;
 	  mchip = -1;
 	}
+	*/
         int multiplicator = getMultiplicator(group);
         setMappingShifts(group);
 
-        std::cout << "chip: " << mchip << ", group: " << group << ", m: " << multiplicator
+        std::cout << "remapping chip: " << mchip << ", group: " << group << ", m: " << multiplicator
                   << ", x0: " << x0 << ", x1: " << x1 << ", y0: " << y0
                   << ", y1: " << y1 << std::endl;
-
-        // get ROI raw image number of columns
-        int nc_roi = xmax - xmin + 1;
-        std::cout << "nc_roi = " << nc_roi << std::endl;
+	std::cout << "Adjusted roi: [" << xmin << ", " << xmax << ", " << ymin << ", " << ymax << "]" << std::endl;
 
         // make sure loop bounds are correct
+	/*
         if (y0 < ymin)
             std::cout << "Error ymin" << std::endl;
         if (y1 > ymax)
@@ -264,6 +378,7 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
             std::cout << "Error xmin" << std::endl;
         if (x1 > xmax)
             std::cout << "Error xmax" << std::endl;
+	*/
 
         // remapping loop
         int ix, iy = 0;
@@ -277,8 +392,10 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
                 }
 
                 //	  if (iy< 40)	  cout << iy << "  " << ix <<endl;
-                dataMap[iy][ix] =
-                    sizeof(header) + (nc_roi * (ipy - ymin) + (ipx - xmin)) * 2;
+		if ( ipx>=xmin && ipx<=xmax && ipy>=ymin && ipy <=ymax )
+		  dataMap[iy][ix] =
+                    sizeof(header) + (globalROI.nc * (ipy - globalROI.ymin) + (ipx - globalROI.xmin)) * 2;
+		else dataMap[iy][ix] = sizeof(header);
                 groupmap[iy][ix] = group - 1;
             }
         }
@@ -307,16 +424,31 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
             }
         }
 
+	globalROI.xmin = xmin;
+	globalROI.xmax = xmax;
+	globalROI.ymin = ymin;
+	globalROI.ymax = ymax;
+
         std::cout << "sizeofheader = " << sizeof(header) << std::endl;
         std::cout << "Jungfrau strixels 2X single chip with full module data "
                   << std::endl;
 
         if (xmin < xmax && ymin < ymax) {
 
-            dataSize =
-                (xmax - xmin + 1) * (ymax - ymin + 1) * 2 + sizeof(header);
-            std::cout << "datasize " << dataSize << std::endl;
-            remapROI(xmin, xmax, ymin, ymax);
+	  // get ROI raw image number of columns
+	  globalROI.nc = xmax - xmin + 1;
+	  std::cout << "nc_roi = " << globalROI.nc << std::endl;
+	  
+	  dataSize =
+	    (xmax - xmin + 1) * (ymax - ymin + 1) * 2 + sizeof(header);
+	  std::cout << "datasize " << dataSize << std::endl;
+
+	  //[ chip, group, xmin, xmax, ymin, ymax ]
+	  auto rois = mapSubROIs(xmin, xmax, ymin, ymax);
+	  //function to fill vector of rois from globalROI
+
+	  for ( auto roi : rois )
+	    remapROI(roi);
 
         } else {
 

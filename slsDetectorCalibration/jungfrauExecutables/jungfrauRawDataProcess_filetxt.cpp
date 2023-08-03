@@ -41,6 +41,9 @@
 #include <ctime>
 #include <fmt/core.h>
 
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
 
 std::string getRootString( const std::string& filepath ) {
   size_t pos1;
@@ -71,11 +74,11 @@ std::string createFileName( const std::string& dir, const std::string& fprefix="
 //NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS!
 int main(int argc, char *argv[]) {
 
-    if (argc < 10) {
+    if (argc < 11) {
         std::cout
             << "Usage is " << argv[0]
-            << " filestxt outdir [pedfile (raw or tiff)] [xmin xmax ymin ymax] "
-               "[threshold] [nframes] "
+            << " filestxt outdir [json master] [pedfile (raw or tiff)] [xmin xmax ymin ymax] "
+               "[threshold] [nframes] [optional: bool read rxroi from data file header]"
 	       "NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS! "
             << std::endl;
         std::cout
@@ -105,19 +108,24 @@ int main(int argc, char *argv[]) {
 
     const std::string txtfilename(argv[1]);
     const std::string outdir(argv[2]);
-    const std::string pedfilename(argv[3]);
+    const std::string jsonmastername(argv[3]);
+    const std::string pedfilename(argv[4]);
 
-    int xmin = atoi(argv[4]);
-    int xmax = atoi(argv[5]);
-    int ymin = atoi(argv[6]);
-    int ymax = atoi(argv[7]);
+    int xmin = atoi(argv[5]);
+    int xmax = atoi(argv[6]);
+    int ymin = atoi(argv[7]);
+    int ymax = atoi(argv[8]);
 
     double thr = 0;
     double thr1 = 1;
-    thr = atof(argv[8]);
+    thr = atof(argv[9]);
 
     int nframes = 0;
-    nframes = atoi(argv[9]);
+    nframes = atoi(argv[10]);
+
+    bool readrxroifromdatafile = false;
+    if (argc > 11)
+      readrxroifromdatafile = atoi(argv[11]);
 
     //Get vector of filenames from input txt-file
     std::vector<std::string> filenames{};
@@ -146,7 +154,29 @@ int main(int argc, char *argv[]) {
     }
 
     std::cout << "###############" << std::endl;
-    
+
+    // Receiver ROI
+    uint16_t rxroi_xmin = 0;
+    uint16_t rxroi_xmax = 0;
+    uint16_t rxroi_ymin = 0;
+    uint16_t rxroi_ymax = 0;
+
+    { //protective scope so ifstream gets destroyed properly
+
+      std::ifstream masterfile(jsonmastername); //, ios::in | ios::binary);
+      if (masterfile.is_open()) {
+	json j;
+	masterfile >> j;
+	rxroi_xmin = j["Receiver Roi"]["xmin"];
+	rxroi_xmax = j["Receiver Roi"]["xmax"];
+	rxroi_ymin = j["Receiver Roi"]["ymin"];
+	rxroi_ymax = j["Receiver Roi"]["ymax"];
+	masterfile.close();
+      } else 
+	std::cout << "Could not open master file " << jsonmastername << std::endl;
+      
+    }
+
     // Define decoders...
 #if !defined JFSTRX && !defined JFSTRXOLD && !defined JFSTRXCHIP1 &&           \
     !defined JFSTRXCHIP6
@@ -162,48 +192,44 @@ int main(int argc, char *argv[]) {
 
 #ifdef JFSTRX
     cout << "Jungfrau strixel full module readout" << endl;
-    // ROI
-    uint16_t xxmin = 0;
-    uint16_t xxmax = 0;
-    uint16_t yymin = 0;
-    uint16_t yymax = 0;
 
 #ifndef ALDO
-    { //THIS SCOPE IS IMPORTANT! (To ensure proper destruction of ifstream)
-      using header = sls::defs::sls_receiver_header;
-      // check if there is a roi in the header
-      typedef struct {
-        uint16_t xmin;
-        uint16_t xmax;
-        uint16_t ymin;
-        uint16_t ymax;
-      } receiverRoi_compact;
-      receiverRoi_compact croi;
-      //std::string filepath(argv[9]); //This is a problem if the input files have different ROIs!
-      std::cout << "Reading header of file " << filenames[0] << " to check for ROI "
-		<< std::endl;
-      ifstream firstfile(filenames[0], ios::in | ios::binary);
-      if (firstfile.is_open()) {
-        header hbuffer;
-        std::cout << "sizeof(header) = " << sizeof(header) << std::endl;
-        if (firstfile.read((char *)&hbuffer, sizeof(header))) {
-	  memcpy(&croi, &hbuffer.detHeader.detSpec1, 8);
-	  std::cout << "Read ROI [" << croi.xmin << ", " << croi.xmax << ", "
-		    << croi.ymin << ", " << croi.ymax << "]" << std::endl;
-	  xxmin = croi.xmin;
-	  xxmax = croi.xmax;
-	  yymin = croi.ymin;
-	  yymax = croi.ymax;
-        } else
-	  std::cout << "reading error" << std::endl;
-        firstfile.close();
-      } else
-        std::cout << "Could not open " << filenames[0] << " for reading " << std::endl;
-    } //end of protective scope
+    if (readrxroifromdatafile)
+      { //THIS SCOPE IS IMPORTANT! (To ensure proper destruction of ifstream)
+	using header = sls::defs::sls_receiver_header;
+	// check if there is a roi in the header
+	typedef struct {
+	  uint16_t xmin;
+	  uint16_t xmax;
+	  uint16_t ymin;
+	  uint16_t ymax;
+	} receiverRoi_compact;
+	receiverRoi_compact croi;
+	//std::string filepath(argv[9]); //This is a problem if the input files have different ROIs!
+	std::cout << "Reading header of file " << filenames[0] << " to check for ROI "
+		  << std::endl;
+	std::ifstream firstfile( filenames[0], ios::in | ios::binary);
+	if (firstfile.is_open()) {
+	  header hbuffer;
+	  std::cout << "sizeof(header) = " << sizeof(header) << std::endl;
+	  if (firstfile.read((char *)&hbuffer, sizeof(header))) {
+	    memcpy(&croi, &hbuffer.detHeader.detSpec1, 8);
+	    std::cout << "Read ROI [" << croi.xmin << ", " << croi.xmax << ", "
+		      << croi.ymin << ", " << croi.ymax << "]" << std::endl;
+	    rxroi_xmin = croi.xmin;
+	    rxroi_xmax = croi.xmax;
+	    rxroi_ymin = croi.ymin;
+	    rxroi_ymax = croi.ymax;
+	  } else
+	    std::cout << "reading error" << std::endl;
+	  firstfile.close();
+	} else
+	  std::cout << "Could not open " << filenames[0] << " for reading " << std::endl;
+      } //end of protective scope
 #endif
 
     jungfrauLGADStrixelsData *decoder =
-        new jungfrauLGADStrixelsData(xxmin, xxmax, yymin, yymax);
+        new jungfrauLGADStrixelsData(rxroi_xmin, rxroi_xmax, rxroi_ymin, rxroi_ymax);
     int nx = 1024 / 3, ny = 512 * 5;
 #endif
 #ifdef JFSTRXCHIP1

@@ -50,12 +50,33 @@ class jungfrauModuleData : public slsDetectorData<uint16_t> {
 #endif
 
 
-    jungfrauModuleData()
+ jungfrauModuleData(uint16_t xmin=0, uint16_t xmax=0,
+		    uint16_t ymin=0, uint16_t ymax=0)
         : slsDetectorData<uint16_t>(1024, 512,
                                     1024* 512 * 2 + off) {
-  
-        for (int ix = 0; ix < 1024; ix++) {
-            for (int iy = 0; iy < 512; iy++) {
+
+      if (xmin < xmax && ymin < ymax) {
+
+	int nc_roi = xmax - xmin + 1;
+	std::cout << "nc_roi = " << nc_roi << std::endl;
+	  
+	dataSize =
+	  (xmax - xmin + 1) * (ymax - ymin + 1) * 2 + off;
+	std::cout << "datasize " << dataSize << std::endl;
+
+	for (int ix = xmin; ix < xmax+1; ++ix) {
+            for (int iy = ymin; iy < ymax+1; ++iy) {
+                dataMap[iy][ix] = off + (nc_roi * iy + ix) * 2;
+#ifdef HIGHZ
+                dataMask[iy][ix] = 0x3fff;
+#endif
+            }
+        }
+
+      } else {
+	  
+        for (int ix = 0; ix < 1024; ++ix) {
+            for (int iy = 0; iy < 512; ++iy) {
                 dataMap[iy][ix] = off + (1024 * iy + ix) * 2;
 #ifdef HIGHZ
                 dataMask[iy][ix] = 0x3fff;
@@ -63,7 +84,7 @@ class jungfrauModuleData : public slsDetectorData<uint16_t> {
             }
         }
 
-
+      }
 
 
         iframe = 0;

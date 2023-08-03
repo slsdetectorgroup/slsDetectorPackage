@@ -7,6 +7,7 @@
 set(JUNGFRAU_EXECUTABLES)
 
 find_package(fmt REQUIRED)
+find_package(nlohmann_json 3.11.2 REQUIRED)
 
 # jungfrauRawDataProcess
 add_executable(jungfrauRawDataProcess jungfrauRawDataProcess.cpp)
@@ -14,7 +15,7 @@ target_compile_definitions(jungfrauRawDataProcess PRIVATE MODULE)
 list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcess)
 
 # jungfrauRawDataProcessStrx
-add_executable(jungfrauRawDataProcessStrx jungfrauRawDataProcess_filetxt.cpp)
+add_executable(jungfrauRawDataProcessStrx jungfrauRawDataProcess.cpp)
 target_compile_definitions(jungfrauRawDataProcessStrx PRIVATE JFSTRX)
 list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcessStrx)
 
@@ -79,6 +80,7 @@ foreach(exe ${JUNGFRAU_EXECUTABLES})
         pthread 
         tiffio
         fmt::fmt
+	nlohmann_json::nlohmann_json
           #-L/usr/lib64/
         #-lm  -lstdc++  -lrt
 

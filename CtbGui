@@ -1433,8 +1433,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.nTransceiverCols = Defines.Matterhorn.nCols
             self.pixelMapTransceiver = matterhorn_transceiver()
         elif self.comboBoxPlot.currentText() == "Moench04":
-            self.nAnalogRows = Defines.Moench04.nAnalogRows
-            self.nAnalogCols = Defines.Moench04.nAnalogCols
+            self.nAnalogRows = Defines.Moench04.nRows
+            self.nAnalogCols = Defines.Moench04.nCols
             self.pixelMapAnalog = moench04_analog()
 
     def showPatternViewer(self, enable):

@@ -1429,8 +1429,12 @@ class MainWindow(QtWidgets.QMainWindow):
         
     def setPixelMap(self):
         if self.comboBoxPlot.currentText() == "Matterhorn":
+            self.nTransceiverRows = Defines.Matterhorn.nRows		
+            self.nTransceiverCols = Defines.Matterhorn.nCols
             self.pixelMapTransceiver = matterhorn_transceiver()
         elif self.comboBoxPlot.currentText() == "Moench04":
+            self.nAnalogRows = Defines.Moench04.nAnalogRows
+            self.nAnalogCols = Defines.Moench04.nAnalogCols
             self.pixelMapAnalog = moench04_analog()
 
     def showPatternViewer(self, enable):
@@ -2099,6 +2103,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     
                     try:
                         self.transceiver_frame = decoder.decode(trans_array, self.pixelMapTransceiver)
+                        print(f"type of image:{type(self.transceiver_frame)}")
                         self.plotTransceiverImage.setImage(self.transceiver_frame)
                     except Exception as e:
                         self.statusbar.setStyleSheet("color:red")

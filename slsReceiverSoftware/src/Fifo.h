@@ -37,6 +37,8 @@ class Fifo : private virtual slsDetectorDefs {
     int GetMaxLevelForFifoBound();
     int GetMinLevelForFifoFree();
 
+    int GetBoundLevel();
+
   private:
     /** also allocate memory & push addresses into free fifo */
     void CreateFifos(size_t fifoItemSize);

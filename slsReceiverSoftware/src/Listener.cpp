@@ -296,6 +296,8 @@ void Listener::ThreadExecution() {
 void Listener::StopListening(char *buf, size_t &size) {
     size = DUMMY_PACKET_VALUE;
     fifo->PushAddress(buf);
+    LOG(logINFOBLUE) << index << ": Listener dummy packet pushed to 0x"
+                     << std::hex << (void *)(buf) << std::dec;
     StopRunning();
     LOG(logDEBUG1) << index << ": Listening Completed. Packets ("
                    << udpPortNumber << ") : " << numPacketsCaught;

@@ -295,13 +295,21 @@ void DataProcessor::ThreadExecution() {
 }
 
 void DataProcessor::StopProcessing(char *buf) {
-    LOG(logDEBUG1) << "DataProcessing " << index << ": Dummy";
+    LOG(logINFOGREEN) << "DataProcessing " << index << ": Dummy";
 
     // stream or free
     if (dataStreamEnable)
         fifo->PushAddressToStream(buf);
-    else
+    else {
         fifo->FreeAddress(buf);
+        LOG(logINFOGREEN) << index
+                          << ": Dataprocessor dummy packet freed from 0x"
+                          << std::hex << (void *)(buf) << std::dec;
+    }
+    if (fifo->GetBoundLevel() != 0) {
+        LOG(logINFORED) << "fifo bound level not 0!: " << fifo->GetBoundLevel();
+        exit(-1);
+    }
 
     CloseFiles();
     StopRunning();

@@ -119,4 +119,6 @@ int Fifo::GetMinLevelForFifoFree() {
     return temp;
 }
 
+int Fifo::GetBoundLevel() { return fifoBound->getDataValue(); }
+
 } // namespace sls

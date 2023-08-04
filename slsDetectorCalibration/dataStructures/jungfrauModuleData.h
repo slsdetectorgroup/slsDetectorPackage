@@ -3,6 +3,7 @@
 #ifndef JUNGFRAUMODULEDATA_H
 #define JUNGFRAUMODULEDATA_H
 #include <cstdint>
+#include "sls/sls_detector_defs.h"
 #include "slsDetectorData.h"
 
 //#define VERSION_V2
@@ -27,7 +28,7 @@ typedef struct {
     uint64_t bunchNumber; /**< is the frame number */
     uint64_t pre;         /**< something */
 
-} jf_header;
+} jf_header; //Aldo's header!
 
 using namespace std;  
 class jungfrauModuleData : public slsDetectorData<uint16_t> {
@@ -42,8 +43,15 @@ class jungfrauModuleData : public slsDetectorData<uint16_t> {
        1286 large etc.) \param c crosstalk parameter for the output buffer
 
    */
+
+#ifdef ALDO
+    using header = jf_header;
+#else
+    using header = sls::defs::sls_receiver_header;
+#endif
+
 #ifndef ZMQ
-#define off sizeof(jf_header)
+#define off sizeof(header)
 #endif
 #ifdef ZMQ
 #define off 0
@@ -55,10 +63,18 @@ class jungfrauModuleData : public slsDetectorData<uint16_t> {
         : slsDetectorData<uint16_t>(1024, 512,
                                     1024* 512 * 2 + off) {
 
+      for (int ix = 0; ix != 1024; ++ix) {
+	for (int iy = 0; iy != 512; ++iy) {
+	  dataMap[iy][ix] = off;
+	}
+      }
+
       if (xmin < xmax && ymin < ymax) {
 
 	int nc_roi = xmax - xmin + 1;
+	int nr_roi = ymax - ymin + 1;
 	std::cout << "nc_roi = " << nc_roi << std::endl;
+	std::cout << "nr_roi = " << nr_roi << std::endl;
 	  
 	dataSize =
 	  (xmax - xmin + 1) * (ymax - ymin + 1) * 2 + off;
@@ -171,7 +187,7 @@ class jungfrauModuleData : public slsDetectorData<uint16_t> {
         //int pn;
 
         //  cout << dataSize << endl;
-        if (ff >= 0)
+        //if (ff >= 0)
 	  //fnum = ff;
 
         if (filebin.is_open()) {

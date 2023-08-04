@@ -257,7 +257,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Detector size is " << nx << " " << ny << std::endl;
 
     //Cluster finder ROI
-    int xmin = 0, xmax = nx, ymin = 0, ymax = ny;
+    int xmin = 0, xmax = nx-1, ymin = 0, ymax = ny-1;
     if (argc >= 16) {
         xmin = atoi(argv[12]);
         xmax = atoi(argv[13]);

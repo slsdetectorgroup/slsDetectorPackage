@@ -2116,7 +2116,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     
                     try:
                         self.transceiver_frame = decoder.decode(trans_array, self.pixelMapTransceiver)
-                        print(f"type of image:{type(self.transceiver_frame)}")
+                        # print(f"type of image:{type(self.transceiver_frame)}")
                         self.plotTransceiverImage.setImage(self.transceiver_frame)
                     except Exception as e:
                         self.statusbar.setStyleSheet("color:red")

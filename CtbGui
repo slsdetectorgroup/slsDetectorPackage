@@ -2102,8 +2102,8 @@ class MainWindow(QtWidgets.QMainWindow):
                     viewBox = self.plotTransceiverImage.getView()
                     state = viewBox.getState()
                     # get histogram (colorbar) levels and histogram zoom range
-                    levels = self.plotAnalogImage.getHistogramWidget().item.getLevels()
-                    histRange = self.plotAnalogImage.getHistogramWidget().item.getHistogramRange()
+                    levels = self.plotTransceiverImage.getHistogramWidget().item.getLevels()
+                    histRange = self.plotTransceiverImage.getHistogramWidget().item.getHistogramRange()
 
                     transceiverOffset = 0     
                     if self.romode.value == 4:
@@ -2131,8 +2131,8 @@ class MainWindow(QtWidgets.QMainWindow):
                         self.firstTransceiverImage = False
                     else:
                         viewBox.setState(state)
-                        self.plotAnalogImage.getHistogramWidget().item.setLevels(min=levels[0],max=levels[1])
-                        self.plotAnalogImage.getHistogramWidget().item.setHistogramRange(*histRange,padding=0)
+                        self.plotTransceiverImage.getHistogramWidget().item.setLevels(min=levels[0],max=levels[1])
+                        self.plotTransceiverImage.getHistogramWidget().item.setHistogramRange(*histRange,padding=0)
 
         except zmq.ZMQError as e:
             pass
@@ -2154,7 +2154,6 @@ class MainWindow(QtWidgets.QMainWindow):
             + "} :disabled {background-color: grey}")
 
     def showPalette(self, button):
-        print('palette')
         color = QtWidgets.QColorDialog.getColor()
         if color.isValid():
             self.setActiveColor(button, color.name())

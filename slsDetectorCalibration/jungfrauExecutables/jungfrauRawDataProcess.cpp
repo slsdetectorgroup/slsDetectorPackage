@@ -186,7 +186,7 @@ int main(int argc, char *argv[]) {
     int nx = 256, ny = 256;
 #endif
 #ifdef MODULE
-    jungfrauModuleData *decoder = new jungfrauModuleData();
+    jungfrauModuleData *decoder = new jungfrauModuleData(rxroi_xmin, rxroi_xmax, rxroi_ymin, rxroi_ymax);
     int nx = 1024, ny = 512;
 #endif
 #endif

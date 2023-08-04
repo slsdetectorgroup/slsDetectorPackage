@@ -20,7 +20,6 @@ import argparse
 
 class PlotPattern():
     def __init__(self, pattern, signalNames, colors_plot, colors_wait, linestyles_wait, alpha_wait, alpha_wait_rect, colors_loop, linestyles_loop, alpha_loop, alpha_loop_rect, clock_vertical_lines_spacing, show_clocks_number, line_width):
-        
         self.pattern = pattern
         self.signalNames = signalNames
         self.verbose = False

@@ -92,7 +92,7 @@
             <height>0</height>
            </size>
           </property>
-          <property name="maximumSize">
+          <property name="maximumSize">('init')
            <size>
             <width>16777215</width>
             <height>16777215</height>

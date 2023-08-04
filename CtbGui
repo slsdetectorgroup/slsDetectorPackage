@@ -38,7 +38,6 @@ class MainWindow(QtWidgets.QMainWindow):
     signalShortcutTabDown = QtCore.pyqtSignal()
 
     def __init__(self, *args, **kwargs):
-
         parser = argparse.ArgumentParser()
         parser.add_argument('-a', '--alias', help = "Alias file complete path")
         arglist = parser.parse_args()
@@ -1222,12 +1221,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def setColorMap(self):
         cm = pg.colormap.getFromMatplotlib(self.comboBoxColorMap.currentText())
-        #print(f'color map:{self.comboBoxColorMap.currentText()}')
+        # print(f'color map:{self.comboBoxColorMap.currentText()}')
         self.plotAnalogImage.setColorMap(cm)
         self.plotDigitalImage.setColorMap(cm)
         self.plotTransceiverImage.setColorMap(cm)
 
     def getZMQHWM(self):
+
         self.comboBoxZMQHWM.currentIndexChanged.disconnect()
 
         rx_zmq_hwm = self.det.getRxZmqHwm()[0]
@@ -1257,6 +1257,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getZMQHWM()
 
     def initializeAllAnalogPlots(self):
+
         self.plotAnalogWaveform = pg.plot()
         self.verticalLayoutPlot.addWidget(self.plotAnalogWaveform, 1)
         self.analogPlots = {}
@@ -2063,8 +2064,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
                 # analog
                 if self.romode.value in [0, 2]:  
+                    # get zoom state
                     viewBox = self.plotAnalogImage.getView()
                     state = viewBox.getState()
+
+                    # get histogram (colorbar) levels and histogram zoom range
+                    levels = self.plotAnalogImage.getHistogramWidget().item.getLevels()
+                    histRange = self.plotAnalogImage.getHistogramWidget().item.getHistogramRange()
+
 
                     analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count= self.nADCEnabled * self.asamples))
                     
@@ -2085,12 +2092,18 @@ class MainWindow(QtWidgets.QMainWindow):
                         self.firstAnalogImage = False
                     else:
                         viewBox.setState(state)
+                        self.plotAnalogImage.getHistogramWidget().item.setLevels(min=levels[0],max=levels[1])
+                        self.plotAnalogImage.getHistogramWidget().item.setHistogramRange(*histRange,padding=0)
                     
                     
                 # transceiver
                 if self.romode.value in [3, 4]:  
+                    # get zoom state
                     viewBox = self.plotTransceiverImage.getView()
                     state = viewBox.getState()
+                    # get histogram (colorbar) levels and histogram zoom range
+                    levels = self.plotAnalogImage.getHistogramWidget().item.getLevels()
+                    histRange = self.plotAnalogImage.getHistogramWidget().item.getHistogramRange()
 
                     transceiverOffset = 0     
                     if self.romode.value == 4:
@@ -2118,7 +2131,8 @@ class MainWindow(QtWidgets.QMainWindow):
                         self.firstTransceiverImage = False
                     else:
                         viewBox.setState(state)
-
+                        self.plotAnalogImage.getHistogramWidget().item.setLevels(min=levels[0],max=levels[1])
+                        self.plotAnalogImage.getHistogramWidget().item.setHistogramRange(*histRange,padding=0)
 
         except zmq.ZMQError as e:
             pass
@@ -2140,6 +2154,7 @@ class MainWindow(QtWidgets.QMainWindow):
             + "} :disabled {background-color: grey}")
 
     def showPalette(self, button):
+        print('palette')
         color = QtWidgets.QColorDialog.getColor()
         if color.isValid():
             self.setActiveColor(button, color.name())

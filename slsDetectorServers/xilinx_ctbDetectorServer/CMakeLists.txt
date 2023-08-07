@@ -5,21 +5,8 @@ add_executable(xilinx_ctbDetectorServer_virtual
     ../slsDetectorServer/src/slsDetectorServer.c
     ../slsDetectorServer/src/slsDetectorServer_funcs.c
     ../slsDetectorServer/src/communication_funcs.c
-    ../slsDetectorServer/src/blackfin.c
     ../slsDetectorServer/src/common.c
-    ../slsDetectorServer/src/commonServerFunctions.c
-    ../slsDetectorServer/src/communication_funcs_UDP.c
-    ../slsDetectorServer/src/UDPPacketHeaderGenerator.c
-    ../slsDetectorServer/src/AD9257.c
-    ../slsDetectorServer/src/ALTERA_PLL.c
-    ../slsDetectorServer/src/I2C.c
-    ../slsDetectorServer/src/INA226.c
-    ../slsDetectorServer/src/LTC2620.c
-    ../slsDetectorServer/src/MAX1932.c
-    ../slsDetectorServer/src/programViaBlackfin.c
     ../slsDetectorServer/src/sharedMemory.c
-    ../slsDetectorServer/src/loadPattern.c
-    ../../slsSupportLib/src/md5.c
 )
 
 include_directories(

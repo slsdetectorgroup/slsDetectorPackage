@@ -6,7 +6,8 @@ main_src = ../slsDetectorServer/src/
 support_lib = ../../slsSupportLib/include/
 det_lib = ../../slsDetectorSoftware/include/sls/
 
-CROSS  		= bfin-uclinux-
+#CROSS  		= bfin-uclinux-
+CROSS  		= 
 CC    		= $(CROSS)gcc
 CFLAGS		+=  -Wall -std=gnu99 -DXILINX_CHIPTESTBOARDD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir) #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm -lrt -pthread
@@ -15,7 +16,7 @@ DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
 SRCS 		= 	slsDetectorFunctionList.c  
-SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)common.c $(main_src)/sharedMemory.c 
+SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)arm.c $(main_src)common.c $(main_src)/sharedMemory.c 
 
 OBJS 		= 	$(SRCS:.c=.o) 
  

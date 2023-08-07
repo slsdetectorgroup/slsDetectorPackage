@@ -6,4 +6,6 @@
 
 #define LINKED_SERVER_NAME "xilinx_ctbDetectorServer"
 
+#define CTRL_SRVR_INIT_TIME_US (2 * 1000 * 1000)
+
 /* Hardware Definitions */

@@ -4,17 +4,11 @@
 #include "clogger.h"
 #include "sharedMemory.h"
 #include "sls/versionAPI.h"
-
 #include "common.h"
+#include "arm.h"
 
-#include <netinet/in.h>
 #include <string.h>
 #include <unistd.h> // usleep
-#ifdef VIRTUAL
-#include <math.h> //ceil
-#include <pthread.h>
-#include <time.h>
-#endif
 
 // Global variable from slsDetectorServer_funcs
 extern int updateFlag;
@@ -52,6 +46,18 @@ void basictests() {
         return;
     }
 }
+
+/* Ids */
+
+void getServerVersion(char *version) { strcpy(version, APIXILINXCTB); }
+
+uint64_t getFirmwareVersion() {
+#ifdef VIRTUAL
+    return REQRD_FRMWR_VRSN;
+#endif
+    return 0;
+}
+
 
 
 /* initialization */

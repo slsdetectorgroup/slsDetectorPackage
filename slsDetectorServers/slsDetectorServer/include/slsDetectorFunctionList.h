@@ -25,6 +25,10 @@
 #include "blackfin.h"
 #endif
 
+#ifdef XILINX_CHIPTESTBOARDD
+#include "arm.h"
+#endif
+
 #ifdef MYTHEN3D
 #include "mythen3.h"
 #endif
@@ -81,12 +85,16 @@ u_int64_t getFirmwareVersion();
 #ifdef EIGERD
 uint64_t getFrontEndFirmwareVersion(enum fpgaPosition fpgaPosition);
 #endif
+#ifndef XILINX_CHIPTESTBOARDD
 u_int64_t getFirmwareAPIVersion();
 void getHardwareVersion(char *version);
+#endif
 #ifdef EIGERD
 int getHardwareVersionNumber();
 #else
+#ifndef XILINX_CHIPTESTBOARDD
 u_int16_t getHardwareVersionNumber();
+#endif
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD)
 u_int16_t getHardwareSerialNumber();
@@ -112,8 +120,10 @@ void setModuleId(int modid);
 #endif
 #endif
 
+#ifndef XILINX_CHIPTESTBOARDD
 u_int64_t getDetectorMAC();
 u_int32_t getDetectorIP();
+#endif
 
 // initialization
 void initControlServer();
@@ -136,7 +146,7 @@ int updateDatabytesandAllocateRAM();
 void updateDataBytes();
 #endif
 
-#ifndef CHIPTESTBOARDD
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
 int resetToDefaultDacs(int hardReset);
 int getDefaultDac(enum DACINDEX index, enum detectorSettings sett, int *retval);
 int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value);
@@ -191,8 +201,10 @@ void setMasterSlaveConfiguration();
 #endif
 
 // parameters - dr, roi
+#ifndef XILINX_CHIPTESTBOARDD
 int setDynamicRange(int dr);
 int getDynamicRange(int *retval);
+#endif
 #ifdef GOTTHARDD
 int setROI(ROI arg);
 ROI getROI();
@@ -241,6 +253,7 @@ int getMaxStoragecellStart();
 int setNextFrameNumber(uint64_t value);
 int getNextFrameNumber(uint64_t *value);
 #endif
+#ifndef XILINX_CHIPTESTBOARDD
 void setNumFrames(int64_t val);
 int64_t getNumFrames();
 void setNumTriggers(int64_t val);
@@ -251,6 +264,7 @@ int64_t getExpTime();
 #endif
 int setPeriod(int64_t val);
 int64_t getPeriod();
+#endif
 #ifdef MYTHEN3D
 void setNumIntGates(int val);
 void setNumGates(int val);
@@ -337,10 +351,12 @@ int setTrimbits(int *trimbits);
 int setAllTrimbits(int val);
 int getAllTrimbits();
 #endif
+#ifndef XILINX_CHIPTESTBOARDD
 #ifndef CHIPTESTBOARDD
 enum detectorSettings setSettings(enum detectorSettings sett);
 #endif
 enum detectorSettings getSettings();
+#endif
 #if defined(JUNGFRAUD)
 enum gainMode getGainMode();
 void setGainMode(enum gainMode mode);
@@ -366,10 +382,14 @@ void setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck);
 void setGeneralDAC(enum DACINDEX ind, int val, int mV);
 void setVthDac(int index, int enable);
 #else
+#ifndef XILINX_CHIPTESTBOARDD
 void setDAC(enum DACINDEX ind, int val, int mV);
 #endif
+#endif
+#ifndef XILINX_CHIPTESTBOARDD
 int getDAC(enum DACINDEX ind, int mV);
 int getMaxDacSteps();
+#endif
 #if defined(CHIPTESTBOARDD)
 int dacToVoltage(int dac);
 int checkVLimitCompliant(int mV);
@@ -394,14 +414,17 @@ void powerOff();
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
 int getADC(enum ADCINDEX ind, int *value);
 #else
+#ifndef XILINX_CHIPTESTBOARDD
 int getADC(enum ADCINDEX ind);
+#endif
 #endif
 #ifdef CHIPTESTBOARDD
 int getSlowADC(int ichan);
 int getSlowADCTemperature();
 #endif
-
+#ifndef XILINX_CHIPTESTBOARDD
 int setHighVoltage(int val);
+#endif
 
 // parameters - timing, extsig
 #if defined(EIGERD) || defined(GOTTHARD2D) || defined(JUNGFRAUD) ||            \
@@ -426,8 +449,10 @@ void setSynchronization(int enable);
 void updatingRegisters();
 int updateClockDivs();
 #endif
+#ifndef XILINX_CHIPTESTBOARDD
 void setTiming(enum timingMode arg);
 enum timingMode getTiming();
+#endif
 #ifdef MYTHEN3D
 void setInitialExtSignals();
 int setChipStatusRegister(int csr);
@@ -451,7 +476,9 @@ void calcChecksum(mac_conf *mac, int sourceip, int destip);
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARD2D)
 void setNumberofUDPInterfaces(int val);
 #endif
+#ifndef XILINX_CHIPTESTBOARDD
 int getNumberofUDPInterfaces();
+#endif
 
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(EIGERD) ||               \
     defined(MYTHEN3D) || defined(GOTTHARD2D)
@@ -478,9 +505,11 @@ void calcChecksum(udp_header *udp);
 int getAdcConfigured();
 #endif
 
+#ifndef XILINX_CHIPTESTBOARDD
 int configureMAC();
 int setDetectorPosition(int pos[]);
 int *getDetectorPosition();
+#endif
 
 #ifdef EIGERD
 int setQuad(int value);
@@ -671,11 +700,13 @@ int setTransmissionDelayRight(int value);
 #endif
 
 // aquisition
+#ifndef XILINX_CHIPTESTBOARDD
 int startStateMachine();
 #ifdef VIRTUAL
 void *start_timer(void *arg);
 #endif
 int stopStateMachine();
+#endif
 #ifdef MYTHEN3D
 int softwareTrigger();
 #endif
@@ -685,11 +716,15 @@ int softwareTrigger(int block);
 #if defined(EIGERD) || defined(MYTHEN3D) || defined(CHIPTESTBOARDD)
 int startReadOut();
 #endif
+#ifndef XILINX_CHIPTESTBOARDD
 enum runStatus getRunStatus();
+#endif
 #ifdef EIGERD
 void waitForAcquisitionEnd(int *ret, char *mess);
 #else
+#ifndef XILINX_CHIPTESTBOARDD
 void waitForAcquisitionEnd();
+#endif
 #endif
 #if defined(CHIPTESTBOARDD)
 int validateUDPSocket();
@@ -711,6 +746,7 @@ u_int32_t runState(enum TLogLevel lev);
 #endif
 
 // common
+#ifndef XILINX_CHIPTESTBOARDD
 int calculateDataBytes();
 int getTotalNumberOfChannels();
 #if defined(CHIPTESTBOARDD)
@@ -719,3 +755,4 @@ void getNumberOfChannels(int *nchanx, int *nchany);
 int getNumberOfChips();
 int getNumberOfDACs();
 int getNumberOfChannelsPerChip();
+#endif

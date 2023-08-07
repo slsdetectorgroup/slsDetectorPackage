@@ -3,6 +3,8 @@
 #pragma once
 // clang-format off
 
+#define REQRD_FRMWR_VRSN        0x000000
+
 /* Definitions for FPGA */
 
 // clang-format on

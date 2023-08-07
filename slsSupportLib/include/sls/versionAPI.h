@@ -11,3 +11,4 @@
 #define APIJUNGFRAU  "developer 0x230720"
 #define APIMOENCH    "developer 0x230725"
 #define APICTB       "developer 0x230720"
+#define APIXILINXCTB "developer 0x000000"

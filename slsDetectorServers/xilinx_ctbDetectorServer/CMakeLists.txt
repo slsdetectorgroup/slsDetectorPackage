@@ -5,6 +5,7 @@ add_executable(xilinx_ctbDetectorServer_virtual
     ../slsDetectorServer/src/slsDetectorServer.c
     ../slsDetectorServer/src/slsDetectorServer_funcs.c
     ../slsDetectorServer/src/communication_funcs.c
+    ../slsDetectorServer/src/arm.c
     ../slsDetectorServer/src/common.c
     ../slsDetectorServer/src/sharedMemory.c
 )

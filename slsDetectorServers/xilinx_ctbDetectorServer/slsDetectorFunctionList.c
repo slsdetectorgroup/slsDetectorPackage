@@ -22,6 +22,8 @@ int initCheckDone = 0;
 char initErrorMessage[MAX_STR_LENGTH];
 
 
+int detPos[2] = {0, 0};
+
 int isInitCheckDone() { return initCheckDone; }
 
 int getInitResult(char **mess) {
@@ -97,3 +99,12 @@ void setupDetector() {
     LOG(logINFO, ("Goodbye...\n"));
 }
 
+
+int setDetectorPosition(int pos[]) {
+    memcpy(detPos, pos, sizeof(detPos));
+    return OK;
+}
+
+int *getDetectorPosition() { return detPos; }
+
+int getNumberofUDPInterfaces() { return 1; }

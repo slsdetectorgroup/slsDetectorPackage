@@ -476,9 +476,7 @@ void calcChecksum(mac_conf *mac, int sourceip, int destip);
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARD2D)
 void setNumberofUDPInterfaces(int val);
 #endif
-#ifndef XILINX_CHIPTESTBOARDD
 int getNumberofUDPInterfaces();
-#endif
 
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(EIGERD) ||               \
     defined(MYTHEN3D) || defined(GOTTHARD2D)
@@ -507,9 +505,9 @@ int getAdcConfigured();
 
 #ifndef XILINX_CHIPTESTBOARDD
 int configureMAC();
+#endif
 int setDetectorPosition(int pos[]);
 int *getDetectorPosition();
-#endif
 
 #ifdef EIGERD
 int setQuad(int value);

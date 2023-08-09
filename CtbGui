@@ -16,6 +16,8 @@ from pathlib import Path
 
 from functools import partial
 from slsdet import Detector, dacIndex, readoutMode, runStatus
+
+from TabClasses.SlowADCs import SlowADCs
 from bit_utils import set_bit, remove_bit, bit_is_set, manipulate_bit
 import random
 
@@ -61,6 +63,9 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(self, "Connect Fail", str(e) + "Exiting Gui...",  QtWidgets.QMessageBox.Ok)
             raise
 
+        # get Tab Classes
+        self.slowADCsTab = SlowADCs(self)
+
         self.setup_zmq()
         self.setup_ui()
         self.tabWidget.setCurrentIndex(Defines.Acquisition_Tab_Index)
@@ -68,7 +73,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.connect_ui()
         self.refresh_tab_dac()
         self.refresh_tab_power()
-        self.refresh_tab_sense()
+        self.slowADCsTab.refresh()
         self.refresh_tab_signals()
         self.refresh_tab_transceiver()
         self.refresh_tab_adc()
@@ -209,7 +214,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.updateSignalNames()
         self.updateADCNames()
-        self.updateSlowAdcNames()
+        self.slowADCsTab.updateSlowAdcNames()
         self.updateDACNames()
         self.updateVoltageNames()
         
@@ -422,19 +427,19 @@ class MainWindow(QtWidgets.QMainWindow):
             self.setVoltage(i)
 
     # Sense Tab functions
-    def updateSlowAdcNames(self):
-        for i, name in enumerate(self.det.getSlowADCNames()):
-            getattr(self, f"labelSlowAdc{i}").setText(name)    
+    # def updateSlowAdcNames(self):
+    #     for i, name in enumerate(self.det.getSlowADCNames()):
+    #         getattr(self, f"labelSlowAdc{i}").setText(name)
 
-    def updateSlowAdc(self, i):
-        slowADCIndex = getattr(dacIndex, f"SLOW_ADC{i}")
-        label = getattr(self, f"labelSlowAdcValue{i}")
-        slowadc = (self.det.getSlowADC(slowADCIndex))[0] / 1000
-        label.setText(f'{slowadc:.2f} mV')
+    # def updateSlowAdc(self, i):
+    #     slowADCIndex = getattr(dacIndex, f"SLOW_ADC{i}")
+    #     label = getattr(self, f"labelSlowAdcValue{i}")
+    #     slowadc = (self.det.getSlowADC(slowADCIndex))[0] / 1000
+    #     label.setText(f'{slowadc:.2f} mV')
 
-    def updateTemperature(self):
-        slowadc = self.det.getTemperature(dacIndex.SLOW_ADC_TEMP)
-        self.labelTempValue.setText(f'{str(slowadc[0])} °C')
+    # def updateTemperature(self):
+    #     slowadc = self.det.getTemperature(dacIndex.SLOW_ADC_TEMP)
+    #     self.labelTempValue.setText(f'{str(slowadc[0])} °C')
 
     # Signals Tab functions
     def updateSignalNames(self):
@@ -2167,7 +2172,7 @@ class MainWindow(QtWidgets.QMainWindow):
             case 1:
                 self.refresh_tab_power()
             case 2:
-                self.refresh_tab_sense()
+                self.slowADCsTab.refresh()
             case 3:
                 self.refresh_tab_transceiver()
             case 4:
@@ -2195,12 +2200,6 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in ('A', 'B', 'C', 'D', 'IO'):
             self.getVoltage(i)
             self.getCurrent(i)
-
-    def refresh_tab_sense(self):
-        self.updateSlowAdcNames()
-        for i in range(8):
-            self.updateSlowAdc(i)
-        self.updateTemperature()
 
     def refresh_tab_signals(self):
         self.updateSignalNames()
@@ -2387,10 +2386,7 @@ class MainWindow(QtWidgets.QMainWindow):
             checkBox.stateChanged.connect(partial(self.setVoltage, i))
         self.pushButtonPowerOff.clicked.connect(self.powerOff)
 
-        # For Sense Tab
-        for i in range(8):
-            getattr(self, f"pushButtonSlowAdc{i}").clicked.connect(partial(self.updateSlowAdc, i))
-        self.pushButtonTemp.clicked.connect(self.updateTemperature)
+        self.slowADCsTab.connect_ui()
 
         # For Signals Tab
         for i in range(64):

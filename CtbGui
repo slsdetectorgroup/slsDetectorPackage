@@ -426,21 +426,6 @@ class MainWindow(QtWidgets.QMainWindow):
             checkBox.stateChanged.connect(partial(self.setVoltage, i))
             self.setVoltage(i)
 
-    # Sense Tab functions
-    # def updateSlowAdcNames(self):
-    #     for i, name in enumerate(self.det.getSlowADCNames()):
-    #         getattr(self, f"labelSlowAdc{i}").setText(name)
-
-    # def updateSlowAdc(self, i):
-    #     slowADCIndex = getattr(dacIndex, f"SLOW_ADC{i}")
-    #     label = getattr(self, f"labelSlowAdcValue{i}")
-    #     slowadc = (self.det.getSlowADC(slowADCIndex))[0] / 1000
-    #     label.setText(f'{slowadc:.2f} mV')
-
-    # def updateTemperature(self):
-    #     slowadc = self.det.getTemperature(dacIndex.SLOW_ADC_TEMP)
-    #     self.labelTempValue.setText(f'{str(slowadc[0])} °C')
-
     # Signals Tab functions
     def updateSignalNames(self):
         for i, name in enumerate(self.det.getSignalNames()):

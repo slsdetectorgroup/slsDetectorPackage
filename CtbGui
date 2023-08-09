@@ -17,6 +17,7 @@ from pathlib import Path
 from functools import partial
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 
+from TabClasses.Transceiver import Transceiver
 from TabClasses.DACs import DACs
 from TabClasses.PowerSupplies import PowerSupplies
 from TabClasses.Signals import Signals
@@ -71,6 +72,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dacTab = DACs(self)
         self.powerSuppliesTab = PowerSupplies(self)
         self.signalTab = Signals(self)
+        self.transceiverTab = Transceiver(self)
 
         self.setup_zmq()
         self.setup_ui()
@@ -82,7 +84,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.powerSuppliesTab.refresh()
         self.slowADCsTab.refresh()
         self.signalTab.refresh()
-        self.refresh_tab_transceiver()
+        self.transceiverTab.refresh()
         self.refresh_tab_adc()
         self.refresh_tab_pattern()
         self.refresh_tab_acquisition()
@@ -624,80 +626,80 @@ class MainWindow(QtWidgets.QMainWindow):
     #     self.det.rx_dbitoffset = self.spinBoxDBitOffset.value()
 
     # Transceivers Tab functions
-    def getTransceiverEnableReg(self):
-        retval = self.det.transceiverenable
-        self.lineEditTransceiverMask.editingFinished.disconnect()
-        self.lineEditTransceiverMask.setText("0x{:08x}".format(retval))
-        self.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
-        return retval
-
-    def setTransceiverEnableReg(self):
-        self.lineEditTransceiverMask.editingFinished.disconnect()
-        try:
-            mask = int(self.lineEditTransceiverMask.text(), 16)
-            self.det.transceiverenable = mask
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "Transceiver Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
-        #TODO: handling double event exceptions
-        self.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
-        self.updateTransceiverEnable()
-
-    def getTransceiverEnable(self, i, mask):
-        checkBox = getattr(self, f"checkBoxTransceiver{i}")
-        checkBox.stateChanged.disconnect()
-        checkBox.setChecked(bit_is_set(mask, i))
-        checkBox.stateChanged.connect(partial(self.setTransceiverEnable, i))
-
-    def updateTransceiverEnable(self):
-        retval = self.getTransceiverEnableReg()
-        self.nTransceiverEnabled = bin(retval).count('1')
-        for i in range(4):
-            self.getTransceiverEnable(i, retval)
-            self.getTransceiverEnablePlot(i)
-            self.getTransceiverEnableColor(i)
-            self.addSelectedTransceiverPlots(i)
-
-    def setTransceiverEnable(self, i):
-        checkBox = getattr(self, f"checkBoxTransceiver{i}")
-        try:
-            enableMask = manipulate_bit(checkBox.isChecked(), self.det.transceiverenable, i)
-            self.det.transceiverenable = enableMask
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "Transceiver Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
-
-        self.updateTransceiverEnable()
-
-    def getTransceiverEnablePlot(self, i):
-        checkBox = getattr(self, f"checkBoxTransceiver{i}")
-        checkBoxPlot = getattr(self, f"checkBoxTransceiver{i}Plot")
-        checkBoxPlot.setEnabled(checkBox.isChecked())
-
-    def setTransceiverEnablePlot(self, i):
-        pushButton = getattr(self, f"pushButtonTransceiver{i}")
-        checkBox = getattr(self, f"checkBoxTransceiver{i}Plot")
-        pushButton.setEnabled(checkBox.isChecked())
-        self.addSelectedTransceiverPlots(i)
-
-    def getTransceiverEnableColor(self, i):
-        checkBox = getattr(self, f"checkBoxTransceiver{i}Plot")
-        pushButton = getattr(self, f"pushButtonTransceiver{i}")
-        pushButton.setEnabled(checkBox.isEnabled() and checkBox.isChecked())
-
-    def selectTransceiverColor(self, i):
-        pushButton = getattr(self, f"pushButtonTransceiver{i}")
-        self.showPalette(pushButton)
-        pen = pg.mkPen(color = self.getTransceiverButtonColor(i), width = 1)
-        self.transceiverPlots[i].setPen(pen)
-
-    def getTransceiverButtonColor(self, i):
-        pushButton = getattr(self, f"pushButtonTransceiver{i}")
-        return self.getActiveColor(pushButton)
-
-    def setTransceiverButtonColor(self, i, color):
-        pushButton = getattr(self, f"pushButtonTransceiver{i}")
-        return self.setActiveColor(pushButton, color)
+    # def getTransceiverEnableReg(self):
+    #     retval = self.det.transceiverenable
+    #     self.lineEditTransceiverMask.editingFinished.disconnect()
+    #     self.lineEditTransceiverMask.setText("0x{:08x}".format(retval))
+    #     self.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
+    #     return retval
+    #
+    # def setTransceiverEnableReg(self):
+    #     self.lineEditTransceiverMask.editingFinished.disconnect()
+    #     try:
+    #         mask = int(self.lineEditTransceiverMask.text(), 16)
+    #         self.det.transceiverenable = mask
+    #     except Exception as e:
+    #         QtWidgets.QMessageBox.warning(self, "Transceiver Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
+    #         pass
+    #     #TODO: handling double event exceptions
+    #     self.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
+    #     self.updateTransceiverEnable()
+    #
+    # def getTransceiverEnable(self, i, mask):
+    #     checkBox = getattr(self, f"checkBoxTransceiver{i}")
+    #     checkBox.stateChanged.disconnect()
+    #     checkBox.setChecked(bit_is_set(mask, i))
+    #     checkBox.stateChanged.connect(partial(self.setTransceiverEnable, i))
+    #
+    # def updateTransceiverEnable(self):
+    #     retval = self.getTransceiverEnableReg()
+    #     self.nTransceiverEnabled = bin(retval).count('1')
+    #     for i in range(4):
+    #         self.getTransceiverEnable(i, retval)
+    #         self.getTransceiverEnablePlot(i)
+    #         self.getTransceiverEnableColor(i)
+    #         self.addSelectedTransceiverPlots(i)
+    #
+    # def setTransceiverEnable(self, i):
+    #     checkBox = getattr(self, f"checkBoxTransceiver{i}")
+    #     try:
+    #         enableMask = manipulate_bit(checkBox.isChecked(), self.det.transceiverenable, i)
+    #         self.det.transceiverenable = enableMask
+    #     except Exception as e:
+    #         QtWidgets.QMessageBox.warning(self, "Transceiver Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
+    #         pass
+    #
+    #     self.updateTransceiverEnable()
+    #
+    # def getTransceiverEnablePlot(self, i):
+    #     checkBox = getattr(self, f"checkBoxTransceiver{i}")
+    #     checkBoxPlot = getattr(self, f"checkBoxTransceiver{i}Plot")
+    #     checkBoxPlot.setEnabled(checkBox.isChecked())
+    #
+    # def setTransceiverEnablePlot(self, i):
+    #     pushButton = getattr(self, f"pushButtonTransceiver{i}")
+    #     checkBox = getattr(self, f"checkBoxTransceiver{i}Plot")
+    #     pushButton.setEnabled(checkBox.isChecked())
+    #     self.addSelectedTransceiverPlots(i)
+    #
+    # def getTransceiverEnableColor(self, i):
+    #     checkBox = getattr(self, f"checkBoxTransceiver{i}Plot")
+    #     pushButton = getattr(self, f"pushButtonTransceiver{i}")
+    #     pushButton.setEnabled(checkBox.isEnabled() and checkBox.isChecked())
+    #
+    # def selectTransceiverColor(self, i):
+    #     pushButton = getattr(self, f"pushButtonTransceiver{i}")
+    #     self.showPalette(pushButton)
+    #     pen = pg.mkPen(color = self.getTransceiverButtonColor(i), width = 1)
+    #     self.transceiverPlots[i].setPen(pen)
+    #
+    # def getTransceiverButtonColor(self, i):
+    #     pushButton = getattr(self, f"pushButtonTransceiver{i}")
+    #     return self.getActiveColor(pushButton)
+    #
+    # def setTransceiverButtonColor(self, i, color):
+    #     pushButton = getattr(self, f"pushButtonTransceiver{i}")
+    #     return self.setActiveColor(pushButton, color)
 
 
     # ADCs Tab functions
@@ -1347,7 +1349,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.transceiverPlots = {}
         waveform = np.zeros(1000)
         for i in range(4):
-            pen = pg.mkPen(color = self.getTransceiverButtonColor(i), width = 1)
+            pen = pg.mkPen(color = self.transceiverTab.getTransceiverButtonColor(i), width = 1)
             legendName = getattr(self, f"labelTransceiver{i}").text()
             self.transceiverPlots[i] = self.plotTransceiverWaveform.plot(waveform, pen=pen, name = legendName)
             self.transceiverPlots[i].hide()
@@ -1887,7 +1889,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 if self.romode not in [readoutMode.TRANSCEIVER_ONLY, readoutMode.DIGITAL_AND_TRANSCEIVER]:
                     QtWidgets.QMessageBox.warning(self, "Plot type", "To read Matterhorn image, please enable transceiver readout mode", QtWidgets.QMessageBox.Ok)
                     return False
-                if self.getTransceiverEnableReg() != Defines.Matterhorn.tranceiverEnable:
+                if self.transceiverTab.getTransceiverEnableReg() != Defines.Matterhorn.tranceiverEnable:
                     QtWidgets.QMessageBox.warcning(self, "Plot type", "To read Matterhorn image, please set transceiver enable to " + str(Defines.Matternhorn.tranceiverEnable), QtWidgets.QMessageBox.Ok)
                     return False
             # moench04 image
@@ -1922,7 +1924,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.signalTab.getDBitOffset()
         self.getADCEnableReg()
         self.signalTab.updateDigitalBitEnable()
-        self.getTransceiverEnableReg()
+        self.transceiverTab.getTransceiverEnableReg()
 
         self.startMeasurement()
 
@@ -2183,7 +2185,7 @@ class MainWindow(QtWidgets.QMainWindow):
             case 2:
                 self.slowADCsTab.refresh()
             case 3:
-                self.refresh_tab_transceiver()
+                self.transceiverTab.refresh()
             case 4:
                 self.signalTab.refresh()
             case 5:
@@ -2216,8 +2218,8 @@ class MainWindow(QtWidgets.QMainWindow):
     #     self.updateIOOut()
     #     self.getDBitOffset()
 
-    def refresh_tab_transceiver(self):
-        self.updateTransceiverEnable()
+    # def refresh_tab_transceiver(self):
+    #     self.updateTransceiverEnable()
 
     def refresh_tab_adc(self):
         self.updateADCNames()
@@ -2309,8 +2311,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.signalTab.setup_ui()
         
         # Transceiver Tab
-        for i in range(4):
-            self.setTransceiverButtonColor(i, self.getRandomColor())
+        # for i in range(4):
+        #     self.setTransceiverButtonColor(i, self.getRandomColor())
+        self.transceiverTab.setup_ui()
 
         # Adc Tab
         for i in range(32):
@@ -2426,11 +2429,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
         # For Transceiver Tab
-        for i in range(4):
-            getattr(self, f"checkBoxTransceiver{i}").stateChanged.connect(partial(self.setTransceiverEnable, i))
-            getattr(self, f"checkBoxTransceiver{i}Plot").stateChanged.connect(partial(self.setTransceiverEnablePlot, i))
-            getattr(self, f"pushButtonTransceiver{i}").clicked.connect(partial(self.selectTransceiverColor, i))
-        self.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
+        # for i in range(4):
+        #     getattr(self, f"checkBoxTransceiver{i}").stateChanged.connect(partial(self.setTransceiverEnable, i))
+        #     getattr(self, f"checkBoxTransceiver{i}Plot").stateChanged.connect(partial(self.setTransceiverEnablePlot, i))
+        #     getattr(self, f"pushButtonTransceiver{i}").clicked.connect(partial(self.selectTransceiverColor, i))
+        # self.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
+        self.transceiverTab.connect_ui()
 
         # For ADCs Tab
         for i in range(32):

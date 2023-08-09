@@ -252,113 +252,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.warning(self, "Load Parameter Fail", str(e), QtWidgets.QMessageBox.Ok)
                 pass
 
-    # DACs tab functions
-
-
-    # def updateDACNames(self):
-    #     for i, name in enumerate(self.det.getDacNames()):
-    #         getattr(self, f"checkBoxDAC{i}").setText(name)
-    #
-    # def getDACTristate(self, i):
-    #     checkBox = getattr(self, f"checkBoxDAC{i}")
-    #     dac = getattr(dacIndex, f"DAC_{i}")
-    #     checkBox.stateChanged.disconnect()
-    #     if (self.det.getDAC(dac)[0]) == -100:
-    #         checkBox.setChecked(False)
-    #     else:
-    #         checkBox.setChecked(True)
-    #     checkBox.stateChanged.connect(partial(self.setDACTristate, i))
-    #
-    # def setDACTristate(self, i):
-    #     checkBox = getattr(self, f"checkBoxDAC{i}")
-    #     if not checkBox.isChecked():
-    #         self.setDAC(i)
-    #     self.getDAC(i)
-    #
-    # def getDAC(self, i):
-    #     checkBox = getattr(self, f"checkBoxDAC{i}")
-    #     checkBoxmV = getattr(self, f"checkBoxDAC{i}mV")
-    #     spinBox = getattr(self, f"spinBoxDAC{i}")
-    #     label = getattr(self, f"labelDAC{i}")
-    #     dac = getattr(dacIndex, f"DAC_{i}")
-    #
-    #     checkBox.stateChanged.disconnect()
-    #     checkBoxmV.stateChanged.disconnect()
-    #     spinBox.editingFinished.disconnect()
-    #
-    #     # do not uncheck automatically
-    #     if (self.det.getDAC(dac)[0]) != -100:
-    #         checkBox.setChecked(True)
-    #
-    #     if checkBox.isChecked():
-    #         spinBox.setEnabled(True)
-    #         checkBoxmV.setEnabled(True)
-    #     else:
-    #         spinBox.setDisabled(True)
-    #         checkBoxmV.setDisabled(True)
-    #
-    #     if checkBoxmV.isChecked():
-    #         label.setText(str(self.det.getDAC(dac, True)[0]))
-    #     else:
-    #         label.setText(str(self.det.getDAC(dac)[0]))
-    #
-    #     checkBox.stateChanged.connect(partial(self.setDACTristate, i))
-    #     checkBoxmV.stateChanged.connect(partial(self.getDAC, i))
-    #     spinBox.editingFinished.connect(partial(self.setDAC, i))
-    #
-    # def setDAC(self, i):
-    #     checkBoxDac = getattr(self, f"checkBoxDAC{i}")
-    #     checkBoxmV = getattr(self, f"checkBoxDAC{i}mV")
-    #     spinBox = getattr(self, f"spinBoxDAC{i}")
-    #     dac = getattr(dacIndex, f"DAC_{i}")
-    #
-    #     value = -100
-    #     if checkBoxDac.isChecked():
-    #         value = spinBox.value()
-    #
-    #     self.det.setDAC(dac, value, checkBoxmV.isChecked())
-    #     self.getDAC(i)
-    #
-    # def getADCVpp(self):
-    #     retval = self.det.adcvpp
-    #     self.labelADCVpp.setText(f'Mode: {str(retval)}')
-    #
-    #     self.comboBoxADCVpp.currentIndexChanged.disconnect()
-    #     self.comboBoxADCVpp.setCurrentIndex(retval)
-    #     self.comboBoxADCVpp.currentIndexChanged.connect(self.setADCVpp)
-    #
-    # def setADCVpp(self):
-    #     self.det.adcvpp = self.comboBoxADCVpp.currentIndex()
-    #     self.getADCVpp()
-    #
-    # def getHighVoltage(self):
-    #     retval = self.det.highvoltage
-    #     self.labelHighVoltage.setText(str(retval))
-    #
-    #     self.spinBoxHighVoltage.editingFinished.disconnect()
-    #     self.checkBoxHighVoltage.stateChanged.disconnect()
-    #
-    #     self.spinBoxHighVoltage.setValue(retval)
-    #     if retval:
-    #         self.checkBoxHighVoltage.setChecked(True)
-    #     if self.checkBoxHighVoltage.isChecked():
-    #         self.spinBoxHighVoltage.setEnabled(True)
-    #
-    #     self.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
-    #     self.checkBoxHighVoltage.stateChanged.connect(self.setHighVoltage)
-    #
-    # def setHighVoltage(self):
-    #     value = 0
-    #     if self.checkBoxHighVoltage.isChecked():
-    #         value = self.spinBoxHighVoltage.value()
-    #     try:
-    #         self.det.highvoltage = value
-    #     except Exception as e:
-    #         QtWidgets.QMessageBox.warning(self, "High Voltage Fail", str(e), QtWidgets.QMessageBox.Ok)
-    #         pass
-    #     self.getHighVoltage()
-
-
     # Power Supplies Tab functions
     def updateVoltageNames(self):
         retval = self.det.getVoltageNames()
@@ -2176,15 +2069,6 @@ class MainWindow(QtWidgets.QMainWindow):
             case 8:
                 self.refresh_tab_plot()
 
-    # def refresh_tab_dac(self):
-    #     self.updateDACNames()
-    #     for i in range(18):
-    #         self.getDACTristate(i)
-    #         self.getDAC(i)
-    #
-    #     self.getADCVpp()
-    #     self.getHighVoltage()
-
     def refresh_tab_power(self):
         self.updateVoltageNames()
         for i in ('A', 'B', 'C', 'D', 'IO'):
@@ -2257,16 +2141,6 @@ class MainWindow(QtWidgets.QMainWindow):
         #To auto trigger the read
         self.read_timer =  QtCore.QTimer()
         self.read_timer.timeout.connect(self.read_zmq)
-
-        # Dac Tab
-        # Getting dac values for spinboxes (only for modifying)
-        # for i in range(18):
-        #     dac = getattr(dacIndex, f"DAC_{i}")
-        #     getattr(self, f"spinBoxDAC{i}").setValue(self.det.getDAC(dac)[0])
-        #
-        # if self.det.highvoltage == 0:
-        #     self.spinBoxHighVoltage.setDisabled(True)
-        #     self.checkBoxHighVoltage.setChecked(False)
 
         self.dacTab.setup_ui()
 
@@ -2356,19 +2230,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionInfo.triggered.connect(self.showInfo)
         self.actionKeyboardShortcuts.triggered.connect(self.showKeyBoardShortcuts)
         self.actionLoadParameters.triggered.connect(self.loadParameters)
-
-        # For DACs tab
-        # n_dacs = len(self.det.daclist)
-        # for i in range(n_dacs):
-        #     getattr(self, f"spinBoxDAC{i}").editingFinished.connect(
-        #         partial(self.setDAC, i)
-        #     )
-        #     getattr(self, f"checkBoxDAC{i}").stateChanged.connect(partial(self.setDACTristate, i))
-        #     getattr(self, f"checkBoxDAC{i}mV").stateChanged.connect(partial(self.getDAC, i))
-        #
-        # self.comboBoxADCVpp.currentIndexChanged.connect(self.setADCVpp)
-        # self.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
-        # self.checkBoxHighVoltage.stateChanged.connect(self.setHighVoltage)
 
         self.dacTab.connect_ui()
 

@@ -1890,7 +1890,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     QtWidgets.QMessageBox.warning(self, "Plot type", "To read Matterhorn image, please enable transceiver readout mode", QtWidgets.QMessageBox.Ok)
                     return False
                 if self.transceiverTab.getTransceiverEnableReg() != Defines.Matterhorn.tranceiverEnable:
-                    QtWidgets.QMessageBox.warning(self, "Plot type", "To read Matterhorn image, please set transceiver enable to " + str(Defines.Matternhorn.tranceiverEnable), QtWidgets.QMessageBox.Ok)
+                    QtWidgets.QMessageBox.warning(self, "Plot type", "To read Matterhorn image, please set transceiver enable to " + str(Defines.Matterhorn.tranceiverEnable), QtWidgets.QMessageBox.Ok)
                     return False
             # moench04 image
             elif self.comboBoxPlot.currentText() == "Moench04":

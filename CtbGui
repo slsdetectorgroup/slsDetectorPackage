@@ -17,6 +17,7 @@ from pathlib import Path
 from functools import partial
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 
+from TabClasses.ADC import ADC
 from TabClasses.Transceiver import Transceiver
 from TabClasses.DACs import DACs
 from TabClasses.PowerSupplies import PowerSupplies
@@ -73,6 +74,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.powerSuppliesTab = PowerSupplies(self)
         self.signalTab = Signals(self)
         self.transceiverTab = Transceiver(self)
+        self.adcTab = ADC(self)
 
         self.setup_zmq()
         self.setup_ui()
@@ -85,7 +87,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.slowADCsTab.refresh()
         self.signalTab.refresh()
         self.transceiverTab.refresh()
-        self.refresh_tab_adc()
+        self.adcTab.refresh()
         self.refresh_tab_pattern()
         self.refresh_tab_acquisition()
         self.refresh_tab_plot()
@@ -203,7 +205,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 getattr(self, f"checkBoxADC{i}En").setChecked(adc_plots[i])
                 getattr(self, f"checkBoxADC{i}Plot").setChecked(adc_plots[i])
             if adc_colors[i]:
-                self.setADCButtonColor(i, adc_colors[i])
+                self.adcTab.setADCButtonColor(i, adc_colors[i])
 
         for i in range(18):
             if dac_names[i]:
@@ -222,7 +224,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.lineEditPatternFile.setText(pat_file_name)
 
         self.signalTab.updateSignalNames()
-        self.updateADCNames()
+        self.adcTab.updateADCNames()
         self.slowADCsTab.updateSlowAdcNames()
         self.dacTab.updateDACNames()
         self.powerSuppliesTab.updateVoltageNames()
@@ -258,199 +260,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.warning(self, "Load Parameter Fail", str(e), QtWidgets.QMessageBox.Ok)
                 pass
 
-    # ADCs Tab functions
-    def updateADCNames(self):
-        for i, adc_name in enumerate(self.det.getAdcNames()):
-            getattr(self, f"labelADC{i}").setText(adc_name)    
-       
-    def getADCEnableReg(self):
-        retval = self.det.adcenable
-        if self.det.tengiga:
-            retval = self.det.adcenable10g   
-        self.lineEditADCEnable.editingFinished.disconnect()
-        self.lineEditADCEnable.setText("0x{:08x}".format(retval))
-        self.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
-        return retval
-
-    def setADCEnableReg(self):
-        self.lineEditADCEnable.editingFinished.disconnect()
-        try:
-            mask = int(self.lineEditADCEnable.text(), 16)
-            if self.det.tengiga:
-                self.det.adcenable10g = mask
-            else:
-                self.det.adcenable = mask
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "ADC Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
-        #TODO: handling double event exceptions
-        self.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
-        self.updateADCEnable()
-
-    def getADCEnable(self, i, mask):
-        checkBox = getattr(self, f"checkBoxADC{i}En")
-        checkBox.stateChanged.disconnect()
-        checkBox.setChecked(bit_is_set(mask, i))
-        checkBox.stateChanged.connect(partial(self.setADCEnable, i))
-
-    def updateADCEnable(self):
-        retval = self.getADCEnableReg()
-        self.nADCEnabled = bin(retval).count('1')
-        for i in range(32):
-            self.getADCEnable(i, retval)
-            self.getADCEnablePlot(i)
-            self.getADCEnableColor(i)
-            self.addSelectedAnalogPlots(i)
-        self.getADCEnableRange(retval)
-        self.getADCEnablePlotRange()
-
-    def setADCEnable(self, i):
-        checkBox = getattr(self, f"checkBoxADC{i}En")
-        try:
-            if self.det.tengiga:
-                enableMask = manipulate_bit(checkBox.isChecked(), self.det.adcenable10g, i)
-                self.det.adcenable10g = enableMask
-            else:
-                enableMask = manipulate_bit(checkBox.isChecked(), self.det.adcenable, i)
-                self.det.adcenable = enableMask
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "ADC Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
-
-        self.updateADCEnable()
-
-    def getADCEnableRange(self, mask):
-        self.checkBoxADC0_15En.stateChanged.disconnect()
-        self.checkBoxADC16_31En.stateChanged.disconnect()
-        self.checkBoxADC0_15En.setChecked((mask & Defines.BIT0_15_MASK) == Defines.BIT0_15_MASK)
-        self.checkBoxADC16_31En.setChecked((mask & Defines.BIT16_31_MASK) == Defines.BIT16_31_MASK)
-        self.checkBoxADC0_15En.stateChanged.connect(partial(self.setADCEnableRange, 0, 16))
-        self.checkBoxADC16_31En.stateChanged.connect(partial(self.setADCEnableRange, 16, 32)) 
-
-    def setADCEnableRange(self, start_nr, end_nr):
-        mask = self.getADCEnableReg()
-        retval = 0
-        checkBox = getattr(self, f"checkBoxADC{start_nr}_{end_nr - 1}En")
-        for i in range(start_nr, end_nr):
-            mask = manipulate_bit(checkBox.isChecked(), mask, i)
-        try:
-            if self.det.tengiga:
-                self.det.adcenable10g = mask
-            else:
-                self.det.adcenable = mask
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "ADC Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
-        self.updateADCEnable()
-
-    def getADCEnablePlot(self, i):
-        checkBox = getattr(self, f"checkBoxADC{i}En")
-        checkBoxPlot = getattr(self, f"checkBoxADC{i}Plot")
-        checkBoxPlot.setEnabled(checkBox.isChecked())
-
-    def setADCEnablePlot(self, i):
-        pushButton = getattr(self, f"pushButtonADC{i}")
-        checkBox = getattr(self, f"checkBoxADC{i}Plot")
-        pushButton.setEnabled(checkBox.isChecked())
-
-        self.getADCEnablePlotRange()
-        self.addSelectedAnalogPlots(i)
-
-    def getADCEnablePlotRange(self):
-        self.checkBoxADC0_15Plot.stateChanged.disconnect()
-        self.checkBoxADC16_31Plot.stateChanged.disconnect()
-        self.checkBoxADC0_15Plot.setEnabled(all(getattr(self, f"checkBoxADC{i}Plot").isEnabled() for i in range(16)))
-        self.checkBoxADC16_31Plot.setEnabled(all(getattr(self, f"checkBoxADC{i}Plot").isEnabled() for i in range(16, 32)))
-        self.checkBoxADC0_15Plot.setChecked(all(getattr(self, f"checkBoxADC{i}Plot").isChecked() for i in range(16)))
-        self.checkBoxADC16_31Plot.setChecked(all(getattr(self, f"checkBoxADC{i}Plot").isChecked() for i in range(16, 32)))
-        self.checkBoxADC0_15Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 0, 16))
-        self.checkBoxADC16_31Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 16, 32)) 
-   
-    def setADCEnablePlotRange(self, start_nr, end_nr):
-        checkBox = getattr(self, f"checkBoxADC{start_nr}_{end_nr - 1}Plot")
-        enable = checkBox.isChecked()
-        for i in range(start_nr, end_nr):
-            checkBox = getattr(self, f"checkBoxADC{i}Plot")
-            checkBox.setChecked(enable)
-        self.addAllSelectedAnalogPlots()
-
-    def getADCEnableColor(self, i):
-        checkBox = getattr(self, f"checkBoxADC{i}Plot")
-        pushButton = getattr(self, f"pushButtonADC{i}")
-        pushButton.setEnabled(checkBox.isEnabled() and checkBox.isChecked())
-
-    def selectADCColor(self, i):
-        pushButton = getattr(self, f"pushButtonADC{i}")
-        self.showPalette(pushButton)
-        pen = pg.mkPen(color = self.getADCButtonColor(i), width = 1)
-        self.analogPlots[i].setPen(pen)
-
-    def getADCButtonColor(self, i):
-        pushButton = getattr(self, f"pushButtonADC{i}")
-        return self.getActiveColor(pushButton)
-
-    def setADCButtonColor(self, i, color):
-        pushButton = getattr(self, f"pushButtonADC{i}")
-        return self.setActiveColor(pushButton, color)
-
-    def getADCInvReg(self):
-        retval = self.det.adcinvert
-        self.lineEditADCInversion.editingFinished.disconnect()
-        self.lineEditADCInversion.setText("0x{:08x}".format(retval))
-        self.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
-        return retval
-
-    def setADCInvReg(self):
-        self.lineEditADCInversion.editingFinished.disconnect()
-        try:
-            self.det.adcinvert = int(self.lineEditADCInversion.text(), 16)
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "ADC Inversion Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
-        #TODO: handling double event exceptions
-        self.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
-        self.updateADCInv()
-
-    def getADCInv(self, i, inv):
-        checkBox = getattr(self, f"checkBoxADC{i}Inv")
-        checkBox.stateChanged.disconnect()
-        checkBox.setChecked(bit_is_set(inv, i))
-        checkBox.stateChanged.connect(partial(self.setADCInv, i))
-
-    def updateADCInv(self):
-        retval = self.getADCInvReg()
-        for i in range(32):
-            self.getADCInv(i, retval)
-        self.getADCInvRange(retval)
-
-    def setADCInv(self, i):
-        out = self.det.adcinvert
-        checkBox = getattr(self, f"checkBoxADC{i}Inv")
-        mask = manipulate_bit(checkBox.isChecked(), out, i)
-        self.det.adcinvert = mask
-
-        retval = self.getADCInvReg()
-        self.getADCInv(i, retval)
-        self.getADCInvRange(retval)
-
-    def getADCInvRange(self, inv):
-        self.checkBoxADC0_15Inv.stateChanged.disconnect()
-        self.checkBoxADC16_31Inv.stateChanged.disconnect()
-        self.checkBoxADC0_15Inv.setChecked((inv & Defines.BIT0_15_MASK) == Defines.BIT0_15_MASK)
-        self.checkBoxADC16_31Inv.setChecked((inv & Defines.BIT16_31_MASK) == Defines.BIT16_31_MASK)
-        self.checkBoxADC0_15Inv.stateChanged.connect(partial(self.setADCInvRange, 0, 16))
-        self.checkBoxADC16_31Inv.stateChanged.connect(partial(self.setADCInvRange, 16, 32)) 
-
-    def setADCInvRange(self, start_nr, end_nr):
-        out = self.det.adcinvert
-        checkBox = getattr(self, f"checkBoxADC{start_nr}_{end_nr - 1}Inv")
-        mask = getattr(Defines, f"BIT{start_nr}_{end_nr - 1}_MASK")
-        if checkBox.isChecked():
-            self.det.adcinvert = out | mask
-        else:   
-            self.det.adcinvert = out & ~mask
-
-        self.updateADCInv()
         
     # Pattern Tab functions
 
@@ -835,7 +644,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.analogPlots = {}
         waveform = np.zeros(1000)
         for i in range(32):
-            pen = pg.mkPen(color = self.getADCButtonColor(i), width = 1)
+            pen = pg.mkPen(color = self.adcTab.getADCButtonColor(i), width = 1)
             legendName = getattr(self, f"labelADC{i}").text()
             self.analogPlots[i] = self.plotAnalogWaveform.plot(waveform, pen=pen, name = legendName)
             self.analogPlots[i].hide()
@@ -1478,7 +1287,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getDigital()
         self.getReadout()
         self.signalTab.getDBitOffset()
-        self.getADCEnableReg()
+        self.adcTab.getADCEnableReg()
         self.signalTab.updateDigitalBitEnable()
         self.transceiverTab.getTransceiverEnableReg()
 
@@ -1745,18 +1554,13 @@ class MainWindow(QtWidgets.QMainWindow):
             case 4:
                 self.signalTab.refresh()
             case 5:
-                self.refresh_tab_adc()
+                self.adcTab.refresh()
             case 6:
                 self.refresh_tab_pattern()
             case 7:
                 self.refresh_tab_acquisition()
             case 8:
                 self.refresh_tab_plot()
-
-    def refresh_tab_adc(self):
-        self.updateADCNames()
-        self.updateADCInv()
-        self.updateADCEnable()
 
     def refresh_tab_pattern(self):
         self.getPatLimitAddress()
@@ -1815,10 +1619,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.powerSuppliesTab.setup_ui()
         self.signalTab.setup_ui()
         self.transceiverTab.setup_ui()
+        self.adcTab.setup_ui()
 
-        # Adc Tab
-        for i in range(32):
-            self.setADCButtonColor(i, self.getRandomColor())
 
         # Pattern Tab
         for i in range(len(Defines.Colors)):
@@ -1888,21 +1690,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.slowADCsTab.connect_ui()
         self.signalTab.connect_ui()
         self.transceiverTab.connect_ui()
-
-        # For ADCs Tab
-        for i in range(32):
-            getattr(self, f"checkBoxADC{i}Inv").stateChanged.connect(partial(self.setADCInv, i))
-            getattr(self, f"checkBoxADC{i}En").stateChanged.connect(partial(self.setADCEnable, i))
-            getattr(self, f"checkBoxADC{i}Plot").stateChanged.connect(partial(self.setADCEnablePlot, i))
-            getattr(self, f"pushButtonADC{i}").clicked.connect(partial(self.selectADCColor, i))
-        self.checkBoxADC0_15En.stateChanged.connect(partial(self.setADCEnableRange, 0, 16))
-        self.checkBoxADC16_31En.stateChanged.connect(partial(self.setADCEnableRange, 16, 32)) 
-        self.checkBoxADC0_15Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 0, 16))
-        self.checkBoxADC16_31Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 16, 32)) 
-        self.checkBoxADC0_15Inv.stateChanged.connect(partial(self.setADCInvRange, 0, 16))
-        self.checkBoxADC16_31Inv.stateChanged.connect(partial(self.setADCInvRange, 16, 32)) 
-        self.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
-        self.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
+        self.adcTab.connect_ui()
 
         # For Pattern Tab
         self.lineEditStartAddress.editingFinished.connect(self.setPatLimitAddress)

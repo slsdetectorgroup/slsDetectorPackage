@@ -19,6 +19,7 @@ from slsdet import Detector, dacIndex, readoutMode, runStatus
 
 from TabClasses.DACs import DACs
 from TabClasses.PowerSupplies import PowerSupplies
+from TabClasses.Signals import Signals
 from TabClasses.SlowADCs import SlowADCs
 from bit_utils import set_bit, remove_bit, bit_is_set, manipulate_bit
 import random
@@ -69,6 +70,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.slowADCsTab = SlowADCs(self)
         self.dacTab = DACs(self)
         self.powerSuppliesTab = PowerSupplies(self)
+        self.signalTab = Signals(self)
 
         self.setup_zmq()
         self.setup_ui()
@@ -79,7 +81,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dacTab.refresh()
         self.powerSuppliesTab.refresh()
         self.slowADCsTab.refresh()
-        self.refresh_tab_signals()
+        self.signalTab.refresh()
         self.refresh_tab_transceiver()
         self.refresh_tab_adc()
         self.refresh_tab_pattern()
@@ -190,7 +192,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 getattr(self, f"checkBoxBIT{i}DB").setChecked(bit_plots[i])
                 getattr(self, f"checkBoxBIT{i}Plot").setChecked(bit_plots[i])
             if bit_colors[i]:
-                self.setDBitButtonColor(i, bit_colors[i])
+                self.signalTab.setDBitButtonColor(i, bit_colors[i])
 
         for i in range(32):
             if adc_names[i]:
@@ -217,7 +219,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if pat_file_name:
             self.lineEditPatternFile.setText(pat_file_name)
 
-        self.updateSignalNames()
+        self.signalTab.updateSignalNames()
         self.updateADCNames()
         self.slowADCsTab.updateSlowAdcNames()
         self.dacTab.updateDACNames()
@@ -253,179 +255,6 @@ class MainWindow(QtWidgets.QMainWindow):
             except Exception as e:
                 QtWidgets.QMessageBox.warning(self, "Load Parameter Fail", str(e), QtWidgets.QMessageBox.Ok)
                 pass
-
-    # Signals Tab functions
-    def updateSignalNames(self):
-        for i, name in enumerate(self.det.getSignalNames()):
-            getattr(self, f"labelBIT{i}").setText(name)    
-
-    def getDigitalBitEnable(self, i, dbitList):
-        checkBox = getattr(self, f"checkBoxBIT{i}DB")
-        checkBox.stateChanged.disconnect()
-        checkBox.setChecked(i in list(dbitList))
-        checkBox.stateChanged.connect(partial(self.setDigitalBitEnable, i))
-
-    def updateDigitalBitEnable(self):
-        retval = self.det.rx_dbitlist    
-        self.rx_dbitlist = list(retval)
-        self.nDbitEnabled = len(list(retval)) 
-        for i in range(64):
-            self.getDigitalBitEnable(i, retval)
-            self.getEnableBitPlot(i)
-            self.getEnableBitColor(i)
-            self.addSelectedDigitalPlots(i)
-        self.getDigitalBitEnableRange(retval)
-        self.getEnableBitPlotRange()
-
-    def setDigitalBitEnable(self, i):
-        bitList = self.det.rx_dbitlist
-        checkBox = getattr(self, f"checkBoxBIT{i}DB")
-        if checkBox.isChecked():
-            bitList.append(i)
-        else:
-            bitList.remove(i)
-        self.det.rx_dbitlist = bitList
-        
-        self.updateDigitalBitEnable()
-
-    def getDigitalBitEnableRange(self, dbitList):
-        self.checkBoxBIT0_31DB.stateChanged.disconnect()
-        self.checkBoxBIT32_63DB.stateChanged.disconnect()
-        self.checkBoxBIT0_31DB.setChecked(all(x in list(dbitList) for x in range(32)))
-        self.checkBoxBIT32_63DB.setChecked(all(x in list(dbitList) for x in range(32, 64)))
-        self.checkBoxBIT0_31DB.stateChanged.connect(partial(self.setDigitalBitEnableRange, 0, 32))
-        self.checkBoxBIT32_63DB.stateChanged.connect(partial(self.setDigitalBitEnableRange, 32, 64)) 
-
-    def setDigitalBitEnableRange(self, start_nr, end_nr):
-        bitList = self.det.rx_dbitlist
-        checkBox = getattr(self, f"checkBoxBIT{start_nr}_{end_nr - 1}DB")
-        for i in range(start_nr, end_nr):
-            if checkBox.isChecked():
-                if i not in list(bitList):
-                    bitList.append(i)
-            else:
-                if i in list(bitList):
-                    bitList.remove(i)
-        self.det.rx_dbitlist = bitList
-
-        self.updateDigitalBitEnable()
-
-    def getEnableBitPlot(self, i):
-        checkBox = getattr(self, f"checkBoxBIT{i}DB")
-        checkBoxPlot = getattr(self, f"checkBoxBIT{i}Plot")
-        checkBoxPlot.setEnabled(checkBox.isChecked())
-
-    def setEnableBitPlot(self, i):
-        pushButton = getattr(self, f"pushButtonBIT{i}")
-        checkBox = getattr(self, f"checkBoxBIT{i}Plot")
-        pushButton.setEnabled(checkBox.isChecked())
-
-        self.getEnableBitPlotRange()
-        self.addSelectedDigitalPlots(i)
-
-    def getEnableBitPlotRange(self):
-        self.checkBoxBIT0_31Plot.stateChanged.disconnect()
-        self.checkBoxBIT32_63Plot.stateChanged.disconnect()
-        self.checkBoxBIT0_31Plot.setEnabled(all(getattr(self, f"checkBoxBIT{i}Plot").isEnabled() for i in range(32)))
-        self.checkBoxBIT32_63Plot.setEnabled(all(getattr(self, f"checkBoxBIT{i}Plot").isEnabled() for i in range(32, 64)))
-        self.checkBoxBIT0_31Plot.setChecked(all(getattr(self, f"checkBoxBIT{i}Plot").isChecked() for i in range(32)))
-        self.checkBoxBIT32_63Plot.setChecked(all(getattr(self, f"checkBoxBIT{i}Plot").isChecked() for i in range(32, 64)))
-        self.checkBoxBIT0_31Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 0, 32))
-        self.checkBoxBIT32_63Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 32, 64)) 
-
-    def setEnableBitPlotRange(self, start_nr, end_nr):
-        checkBox = getattr(self, f"checkBoxBIT{start_nr}_{end_nr - 1}Plot")
-        enable = checkBox.isChecked()
-        for i in range(start_nr, end_nr):
-            checkBox = getattr(self, f"checkBoxBIT{i}Plot")
-            checkBox.setChecked(enable)
-        self.addAllSelectedDigitalPlots()
-
-    def getEnableBitColor(self, i):
-        checkBox = getattr(self, f"checkBoxBIT{i}Plot")
-        pushButton = getattr(self, f"pushButtonBIT{i}")
-        pushButton.setEnabled(checkBox.isEnabled() and checkBox.isChecked())
-
-    def selectBitColor(self, i):
-        pushButton = getattr(self, f"pushButtonBIT{i}")
-        self.showPalette(pushButton)
-        pen = pg.mkPen(color = self.getDbitButtonColor(i), width = 1)
-        self.digitalPlots[i].setPen(pen)
-
-    def getDBitButtonColor(self, i):
-        pushButton = getattr(self, f"pushButtonBIT{i}")
-        return self.getActiveColor(pushButton)
-
-    def setDBitButtonColor(self, i, color):
-        pushButton = getattr(self, f"pushButtonBIT{i}")
-        return self.setActiveColor(pushButton, color)
-
-    def getIOOutReg(self):
-        retval = self.det.patioctrl
-        self.lineEditPatIOCtrl.editingFinished.disconnect()
-        self.lineEditPatIOCtrl.setText("0x{:016x}".format(retval))
-        self.lineEditPatIOCtrl.editingFinished.connect(self.setIOOutReg)
-        return retval
-
-    def setIOOutReg(self):
-        self.lineEditPatIOCtrl.editingFinished.disconnect()
-        try:
-            self.det.patioctrl = int(self.lineEditPatIOCtrl.text(), 16)
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "IO Out Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
-        #TODO: handling double event exceptions
-        self.lineEditPatIOCtrl.editingFinished.connect(self.setIOOutReg)
-        self.updateIOOut()
-
-    def updateCheckBoxIOOut(self, i, out):
-        checkBox = getattr(self, f"checkBoxBIT{i}Out")
-        checkBox.stateChanged.disconnect()
-        checkBox.setChecked(bit_is_set(out, i))
-        checkBox.stateChanged.connect(partial(self.setIOOut, i))
-
-    def updateIOOut(self):
-        retval = self.getIOOutReg()
-        for i in range(64):
-            self.updateCheckBoxIOOut(i, retval)
-        self.getIOoutRange(retval)
-        
-    def setIOOut(self, i):
-        out = self.det.patioctrl
-        checkBox = getattr(self, f"checkBoxBIT{i}Out")
-        mask = manipulate_bit(checkBox.isChecked(), out, i)
-        self.det.patioctrl = mask
-
-        retval = self.getIOOutReg()
-        self.updateCheckBoxIOOut(i, retval)
-        self.getIOoutRange(retval)
-
-    def getIOoutRange(self, out):
-        self.checkBoxBIT0_31Out.stateChanged.disconnect()
-        self.checkBoxBIT32_63Out.stateChanged.disconnect()
-        self.checkBoxBIT0_31Out.setChecked((out & Defines.BIT0_31_MASK) == Defines.BIT0_31_MASK)
-        self.checkBoxBIT32_63Out.setChecked((out & Defines.BIT32_63_MASK) == Defines.BIT32_63_MASK)
-        self.checkBoxBIT0_31Out.stateChanged.connect(partial(self.setIOOutRange, 0, 32))
-        self.checkBoxBIT32_63Out.stateChanged.connect(partial(self.setIOOutRange, 32, 64)) 
-
-    def setIOOutRange(self, start_nr, end_nr):
-        out = self.det.patioctrl
-        checkBox = getattr(self, f"checkBoxBIT{start_nr}_{end_nr - 1}Out")
-        mask = getattr(Defines, f"BIT{start_nr}_{end_nr - 1}_MASK")
-        if checkBox.isChecked():
-            self.det.patioctrl = out | mask
-        else:   
-            self.det.patioctrl = out & ~mask
-        self.updateIOOut()
-        
-    def getDBitOffset(self):
-        self.spinBoxDBitOffset.editingFinished.disconnect()
-        self.rx_dbitoffset = self.det.rx_dbitoffset
-        self.spinBoxDBitOffset.setValue(self.rx_dbitoffset)
-        self.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
-
-    def setDbitOffset(self):
-        self.det.rx_dbitoffset = self.spinBoxDBitOffset.value()
 
     # Transceivers Tab functions
     def getTransceiverEnableReg(self):
@@ -1115,7 +944,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.digitalPlots = {}
         waveform = np.zeros(1000)
         for i in range(64):
-            pen = pg.mkPen(color = self.getDBitButtonColor(i), width = 1)
+            pen = pg.mkPen(color = self.signalTab.getDBitButtonColor(i), width = 1)
             legendName = getattr(self, f"labelBIT{i}").text()
             self.digitalPlots[i] = self.plotDigitalWaveform.plot(waveform, pen=pen, name = legendName, stepMode = "left")
             self.digitalPlots[i].hide()
@@ -1723,9 +1552,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getAnalog()
         self.getDigital()
         self.getReadout()
-        self.getDBitOffset()
+        self.signalTab.getDBitOffset()
         self.getADCEnableReg()
-        self.updateDigitalBitEnable()
+        self.signalTab.updateDigitalBitEnable()
         self.getTransceiverEnableReg()
 
         self.startMeasurement()
@@ -1989,7 +1818,7 @@ class MainWindow(QtWidgets.QMainWindow):
             case 3:
                 self.refresh_tab_transceiver()
             case 4:
-                self.refresh_tab_signals()
+                self.signalTab.refresh()
             case 5:
                 self.refresh_tab_adc()
             case 6:
@@ -1998,12 +1827,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.refresh_tab_acquisition()
             case 8:
                 self.refresh_tab_plot()
-
-    def refresh_tab_signals(self):
-        self.updateSignalNames()
-        self.updateDigitalBitEnable()
-        self.updateIOOut()
-        self.getDBitOffset()
 
     def refresh_tab_transceiver(self):
         self.updateTransceiverEnable()
@@ -2068,10 +1891,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.dacTab.setup_ui()
         self.powerSuppliesTab.setup_ui()
-
-        # Signals Tab
-        for i in range(64):
-            self.setDBitButtonColor(i, self.getRandomColor())
+        self.signalTab.setup_ui()
         
         # Transceiver Tab
         for i in range(4):
@@ -2147,21 +1967,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dacTab.connect_ui()
         self.powerSuppliesTab.connect_ui()
         self.slowADCsTab.connect_ui()
+        self.signalTab.connect_ui()
 
-        # For Signals Tab
-        for i in range(64):
-            getattr(self, f"checkBoxBIT{i}DB").stateChanged.connect(partial(self.setDigitalBitEnable, i))
-            getattr(self, f"checkBoxBIT{i}Out").stateChanged.connect(partial(self.setIOOut, i))
-            getattr(self, f"checkBoxBIT{i}Plot").stateChanged.connect(partial(self.setEnableBitPlot, i))
-            getattr(self, f"pushButtonBIT{i}").clicked.connect(partial(self.selectBitColor, i))
-        self.checkBoxBIT0_31DB.stateChanged.connect(partial(self.setDigitalBitEnableRange, 0, 32))
-        self.checkBoxBIT32_63DB.stateChanged.connect(partial(self.setDigitalBitEnableRange, 32, 64)) 
-        self.checkBoxBIT0_31Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 0, 32))
-        self.checkBoxBIT32_63Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 32, 64)) 
-        self.checkBoxBIT0_31Out.stateChanged.connect(partial(self.setIOOutRange, 0, 32))
-        self.checkBoxBIT32_63Out.stateChanged.connect(partial(self.setIOOutRange, 32, 64)) 
-        self.lineEditPatIOCtrl.editingFinished.connect(self.setIOOutReg)
-        self.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
 
         # For Transceiver Tab
         for i in range(4):

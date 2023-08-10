@@ -18,6 +18,7 @@ from functools import partial
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 
 from TabClasses.ADC import ADC
+from TabClasses.Pattern import Pattern
 from TabClasses.Transceiver import Transceiver
 from TabClasses.DACs import DACs
 from TabClasses.PowerSupplies import PowerSupplies
@@ -75,6 +76,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.signalTab = Signals(self)
         self.transceiverTab = Transceiver(self)
         self.adcTab = ADC(self)
+        self.patternTab = Pattern(self)
 
         self.setup_zmq()
         self.setup_ui()
@@ -88,7 +90,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.signalTab.refresh()
         self.transceiverTab.refresh()
         self.adcTab.refresh()
-        self.refresh_tab_pattern()
+        self.patternTab.refresh()
         self.refresh_tab_acquisition()
         self.refresh_tab_plot()
 
@@ -96,10 +98,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.plotOptions()
         self.showPlot()
 
-        self.getPatViewerColors()
-        self.getPatViewerWaitParameters()
-        self.getPatViewerLoopParameters()
-        self.updatePatViewerParameters()
+        self.patternTab.getPatViewerColors()
+        self.patternTab.getPatViewerWaitParameters()
+        self.patternTab.getPatViewerLoopParameters()
+        self.patternTab.updatePatViewerParameters()
         self.showPatternViewer(False)
 
         if self.alias_file is not None:
@@ -260,338 +262,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.warning(self, "Load Parameter Fail", str(e), QtWidgets.QMessageBox.Ok)
                 pass
 
-        
-    # Pattern Tab functions
-
-    def getPatLimitAddress(self):
-        retval = self.det.patlimits
-        self.lineEditStartAddress.editingFinished.disconnect()
-        self.lineEditStopAddress.editingFinished.disconnect()
-        self.lineEditStartAddress.setText("0x{:04x}".format(retval[0]))
-        self.lineEditStopAddress.setText("0x{:04x}".format(retval[1]))
-        self.lineEditStartAddress.editingFinished.connect(self.setPatLimitAddress)
-        self.lineEditStopAddress.editingFinished.connect(self.setPatLimitAddress)
-
-    def setPatLimitAddress(self):
-        self.lineEditStartAddress.editingFinished.disconnect()
-        self.lineEditStopAddress.editingFinished.disconnect()      
-        try: 
-            start = int(self.lineEditStartAddress.text(), 16)
-            stop = int(self.lineEditStopAddress.text(), 16)
-            self.det.patlimits = [start, stop]
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "Pattern Limit Address Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
-        #TODO: handling double event exceptions
-        self.lineEditStartAddress.editingFinished.connect(self.setPatLimitAddress)
-        self.lineEditStopAddress.editingFinished.connect(self.setPatLimitAddress)
-        self.getPatLimitAddress()
-
-    def getPatLoopStartStopAddress(self, level):
-        retval = self.det.patloop[level]
-        lineEditStart = getattr(self, f"lineEditLoop{level}Start")
-        lineEditStop = getattr(self, f"lineEditLoop{level}Stop")
-        lineEditStart.editingFinished.disconnect()
-        lineEditStop.editingFinished.disconnect()
-        lineEditStart.setText("0x{:04x}".format(retval[0]))
-        lineEditStop.setText("0x{:04x}".format(retval[1]))
-        lineEditStart.editingFinished.connect(partial(self.setPatLoopStartStopAddress, level))
-        lineEditStop.editingFinished.connect(partial(self.setPatLoopStartStopAddress, level))
-
-    def setPatLoopStartStopAddress(self, level):
-        lineEditStart = getattr(self, f"lineEditLoop{level}Start")
-        lineEditStop = getattr(self, f"lineEditLoop{level}Stop")
-        lineEditStart.editingFinished.disconnect()
-        lineEditStop.editingFinished.disconnect()
-        try:
-            start = int(lineEditStart.text(), 16)
-            stop = int(lineEditStop.text(), 16)
-            self.det.patloop[level] = [start, stop]
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "Pattern Loop Start Stop Address Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
-        #TODO: handling double event exceptions
-        lineEditStart.editingFinished.connect(partial(self.setPatLoopStartStopAddress, level))
-        lineEditStop.editingFinished.connect(partial(self.setPatLoopStartStopAddress, level))
-        self.getPatLoopStartStopAddress(level)
-
-    def getPatLoopWaitAddress(self, level):
-        retval = self.det.patwait[level]
-        lineEdit = getattr(self, f"lineEditLoop{level}Wait")
-        lineEdit.editingFinished.disconnect()
-        lineEdit.setText("0x{:04x}".format(retval))
-        lineEdit.editingFinished.connect(partial(self.setPatLoopWaitAddress, level))
-
-    def setPatLoopWaitAddress(self, level):
-        lineEdit = getattr(self, f"lineEditLoop{level}Wait")
-        lineEdit.editingFinished.disconnect()
-        try:
-            addr = int(lineEdit.text(), 16)
-            self.det.patwait[level] = addr
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "Pattern Wait Address Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
-        #TODO: handling double event exceptions
-        lineEdit.editingFinished.connect(partial(self.setPatLoopWaitAddress, level))
-        self.getPatLoopWaitAddress(level)
-
-    def getPatLoopRepetition(self, level):
-        retval = self.det.patnloop[level]
-        spinBox = getattr(self, f"spinBoxLoop{level}Repetition")
-        spinBox.editingFinished.disconnect()
-        spinBox.setValue(retval)
-        spinBox.editingFinished.connect(partial(self.setPatLoopRepetition, level))
-
-    def setPatLoopRepetition(self, level):
-        spinBox = getattr(self, f"spinBoxLoop{level}Repetition")
-        self.det.patnloop[level] = spinBox.value()
-        self.getPatLoopRepetition(level)
-
-    def getPatLoopWaitTime(self, level):
-        retval = self.det.patwaittime[level]
-        spinBox = getattr(self, f"spinBoxLoop{level}WaitTime")
-        spinBox.editingFinished.disconnect()
-        spinBox.setValue(retval)
-        spinBox.editingFinished.connect(partial(self.setPatLoopWaitTime, level))
-
-    def setPatLoopWaitTime(self, level):
-        spinBox = getattr(self, f"spinBoxLoop{level}WaitTime")
-        self.det.patwaittime[level] = spinBox.value()
-        self.getPatLoopWaitTime(level)
-
-    def setCompiler(self):
-        response = QtWidgets.QFileDialog.getOpenFileName(
-            parent=self,
-            caption="Select a compiler file",
-            directory=os.getcwd(),
-            # filter='README (*.md *.ui)'
-        )
-        if response[0]:
-            self.lineEditCompiler.setText(response[0])
-    
-    def setUncompiledPatternFile(self):
-        filt='Pattern code(*.py *.c)'
-        folder = os.path.dirname(self.det.patfname[0])
-        if not folder:
-            folder = os.getcwd()
-        response = QtWidgets.QFileDialog.getOpenFileName(
-            parent=self,
-            caption="Select an uncompiled pattern file",
-            directory=folder,
-            filter=filt
-        )
-        if response[0]:
-            self.lineEditUncompiled.setText(response[0])
-
-    def setPatternFile(self):
-        filt='Pattern file(*.pyat *.pat)'
-        folder = os.path.dirname(self.det.patfname[0])
-        if not folder:
-            folder = os.getcwd()
-        response = QtWidgets.QFileDialog.getOpenFileName(
-            parent=self,
-            caption="Select a compiled pattern file",
-            directory=folder,
-            filter=filt
-        )
-        if response[0]:
-            self.lineEditPatternFile.setText(response[0])
-
-    def compilePattern(self):
-        compilerFile = self.lineEditCompiler.text()
-        if not compilerFile:
-            QtWidgets.QMessageBox.warning(self, "Compile Fail", "No compiler selected. Please select one.", QtWidgets.QMessageBox.Ok)
-            return ""
-
-        pattern_file = self.lineEditUncompiled.text()
-
-        # if old compile file exists, backup and remove to ensure old copy not loaded
-        oldFile = Path(pattern_file + 'at')
-        if oldFile.is_file():
-            print("Moving old compiled pattern file to _bck") 
-            exit_status = os.system('mv '+ str(oldFile) + ' ' + str(oldFile) + '_bkup')
-            if exit_status != 0:
-                retval = QtWidgets.QMessageBox.question(self, "Backup Fail", "Could not make a backup of old compiled code. Proceed anyway to compile and overwrite?", QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
-                if retval == QtWidgets.QMessageBox.No:              
-                    return ""
-
-        compileCommand = compilerFile + ' ' + pattern_file
-        print(compileCommand)
-        print("Compiling pattern code to .pat file")
-        exit_status = os.system(compileCommand)
-        if exit_status != 0:
-            QtWidgets.QMessageBox.warning(self, "Compile Fail", "Could not compile pattern.", QtWidgets.QMessageBox.Ok)
-            return ""
-        pattern_file += 'at'
-        
-        return pattern_file
-
-    def getCompiledPatFname(self):
-        if self.checkBoxCompile.isChecked():
-            pattern_file = self.compilePattern()
-        # pat name from pattern field
-        else:
-            pattern_file = self.lineEditPatternFile.text()
-            if not pattern_file:
-                QtWidgets.QMessageBox.warning(self, "Pattern Fail", "No pattern file selected. Please select one.", QtWidgets.QMessageBox.Ok)
-                return ""
-        return pattern_file
-
-    def loadPattern(self):
-        pattern_file = self.getCompiledPatFname()
-        if not pattern_file:
-            return
-        # load pattern
-        self.det.pattern = pattern_file
-        self.lineEditPatternFile.setText(self.det.patfname[0])
-
-
-    def getPatViewerColors(self):
-        colorLevel = self.comboBoxPatColorSelect.currentIndex()
-        color = self.colors_plot[colorLevel]
-        self.comboBoxPatColor.currentIndexChanged.disconnect()
-        self.comboBoxPatColor.setCurrentIndex(Defines.Colors.index(color))
-        self.comboBoxPatColor.currentIndexChanged.connect(self.updatePatViewerParameters)
-        
-    def getPatViewerWaitParameters(self):
-        waitLevel = self.comboBoxPatWait.currentIndex()
-        color = self.colors_wait[waitLevel]
-        line_style = self.linestyles_wait[waitLevel]
-        alpha = self.alpha_wait[waitLevel]
-        alpha_rect = self.alpha_wait_rect[waitLevel]
-
-        self.comboBoxPatWaitColor.currentIndexChanged.disconnect()
-        self.comboBoxPatWaitLineStyle.currentIndexChanged.disconnect()
-        self.doubleSpinBoxWaitAlpha.editingFinished.disconnect()
-        self.doubleSpinBoxWaitAlphaRect.editingFinished.disconnect()
-
-        self.comboBoxPatWaitColor.setCurrentIndex(Defines.Colors.index(color))
-        self.comboBoxPatWaitLineStyle.setCurrentIndex(Defines.LineStyles.index(line_style))
-        self.doubleSpinBoxWaitAlpha.setValue(alpha)
-        self.doubleSpinBoxWaitAlphaRect.setValue(alpha_rect)
-
-        self.comboBoxPatWaitColor.currentIndexChanged.connect(self.updatePatViewerParameters)
-        self.comboBoxPatWaitLineStyle.currentIndexChanged.connect(self.updatePatViewerParameters)
-        self.doubleSpinBoxWaitAlpha.editingFinished.connect(self.updatePatViewerParameters)
-        self.doubleSpinBoxWaitAlphaRect.editingFinished.connect(self.updatePatViewerParameters)
-         
-    def getPatViewerLoopParameters(self):
-        loopLevel = self.comboBoxPatLoop.currentIndex()
-        color = self.colors_loop[loopLevel]
-        line_style = self.linestyles_loop[loopLevel]
-        alpha = self.alpha_loop[loopLevel]
-        alpha_rect = self.alpha_loop_rect[loopLevel]
-
-        self.comboBoxPatLoopColor.currentIndexChanged.disconnect()
-        self.comboBoxPatLoopLineStyle.currentIndexChanged.disconnect()
-        self.doubleSpinBoxLoopAlpha.editingFinished.disconnect()
-        self.doubleSpinBoxLoopAlphaRect.editingFinished.disconnect()
-
-        self.comboBoxPatLoopColor.setCurrentIndex(Defines.Colors.index(color))
-        self.comboBoxPatLoopLineStyle.setCurrentIndex(Defines.LineStyles.index(line_style))
-        self.doubleSpinBoxLoopAlpha.setValue(alpha)
-        self.doubleSpinBoxLoopAlphaRect.setValue(alpha_rect)
-
-        self.comboBoxPatLoopColor.currentIndexChanged.connect(self.updatePatViewerParameters)
-        self.comboBoxPatLoopLineStyle.currentIndexChanged.connect(self.updatePatViewerParameters)
-        self.doubleSpinBoxLoopAlpha.editingFinished.connect(self.updatePatViewerParameters)
-        self.doubleSpinBoxLoopAlphaRect.editingFinished.connect(self.updatePatViewerParameters)
-
-    # only at start up
-    def updateDefaultPatViewerParameters(self):
-        self.colors_plot = Defines.Colors_plot.copy()
-        self.colors_wait = Defines.Colors_wait.copy()
-        self.linestyles_wait = Defines.Linestyles_wait.copy()
-        self.alpha_wait = Defines.Alpha_wait.copy()
-        self.alpha_wait_rect = Defines.Alpha_wait_rect.copy()
-        self.colors_loop = Defines.Colors_loop.copy()
-        self.linestyles_loop = Defines.Linestyles_loop.copy()
-        self.alpha_loop = Defines.Alpha_loop.copy()
-        self.alpha_loop_rect = Defines.Alpha_loop_rect.copy()
-        self.clock_vertical_lines_spacing = Defines.Clock_vertical_lines_spacing
-        self.show_clocks_number = Defines.Show_clocks_number
-        self.line_width = Defines.Line_width
-
-        #print('default')
-        #self.printPatViewerParameters()
-
-
-    def updatePatViewerParameters(self):
-        colorLevel = self.comboBoxPatColorSelect.currentIndex()
-        color = self.comboBoxPatColor.currentIndex()
-        #self.colors_plot[colorLevel] = f'tab:{Defines.Colors[color].lower()}'
-        self.colors_plot[colorLevel] = Defines.Colors[color]
-        
-        waitLevel = self.comboBoxPatWait.currentIndex()
-        color = self.comboBoxPatWaitColor.currentIndex()
-        line_style = self.comboBoxPatWaitLineStyle.currentIndex()
-        alpha = self.doubleSpinBoxWaitAlpha.value()
-        alpha_rect = self.doubleSpinBoxWaitAlphaRect.value()
-
-        self.colors_wait[waitLevel] = Defines.Colors[color]
-        self.linestyles_wait[waitLevel] = Defines.LineStyles[line_style]
-        self.alpha_wait[waitLevel] = alpha
-        self.alpha_wait_rect[waitLevel] = alpha_rect
 
         
-        loopLevel = self.comboBoxPatLoop.currentIndex()
-        color = self.comboBoxPatLoopColor.currentIndex()
-        line_style = self.comboBoxPatLoopLineStyle.currentIndex()
-        alpha = self.doubleSpinBoxLoopAlpha.value()
-        alpha_rect = self.doubleSpinBoxLoopAlphaRect.value()
-
-        self.colors_loop[loopLevel] = Defines.Colors[color]
-        self.linestyles_loop[loopLevel] = Defines.LineStyles[line_style]
-        self.alpha_loop[loopLevel] = alpha
-        self.alpha_loop_rect[loopLevel] = alpha_rect
-
-        self.clock_vertical_lines_spacing = self.spinBoxPatClockSpacing.value()
-        self.show_clocks_number = self.checkBoxPatShowClockNumber.isChecked()
-        self.line_width = self.doubleSpinBoxLineWidth.value()
-
-        # for debugging
-        #self.printPatViewerParameters()
-
-    def printPatViewerParameters(self):
-        print('Pattern Viewer Parameters:')
-        print(f'\tcolor1: {self.colors_plot[0]}, color2: {self.colors_plot[1]}')
-        print(f"\twait color: {self.colors_wait}")
-        print(f"\twait linestyles: {self.linestyles_wait}")
-        print(f"\twait alpha: {self.alpha_wait}")
-        print(f"\twait alpha rect: {self.alpha_wait_rect}")
-        print(f"\tloop color: {self.colors_loop}")
-        print(f"\tloop linestyles: {self.linestyles_loop}")
-        print(f"\tloop alpha: {self.alpha_loop}")
-        print(f"\tloop alpha rect: {self.alpha_loop_rect}")
-        print(f'\tclock vertical lines spacing: {self.clock_vertical_lines_spacing}')
-        print(f'\tshow clocks number: {self.show_clocks_number}')
-        print(f'\tline width: {self.line_width}')
-        print('\n')
-
-    def viewPattern(self):
-        self.showPatternViewer(True)
-        pattern_file = self.getCompiledPatFname()
-        if not pattern_file:
-            return
-        
-        signalNames = self.det.getSignalNames()
-        p = PlotPattern(pattern_file, signalNames, self.colors_plot, self.colors_wait, self.linestyles_wait, self.alpha_wait, self.alpha_wait_rect, self.colors_loop, self.linestyles_loop, self.alpha_loop, self.alpha_loop_rect, self.clock_vertical_lines_spacing, self.show_clocks_number, self.line_width, )
-        
-        plt.close(self.figure)
-        self.gridLayoutPatternViewer.removeWidget(self.canvas)
-        self.canvas.close()
-        self.gridLayoutPatternViewer.removeWidget(self.toolbar)
-        self.toolbar.close()
-
-        try:
-            self.figure = p.patternPlot()
-            self.canvas = FigureCanvas(self.figure)
-            self.toolbar = NavigationToolbar(self.canvas, self)
-            self.gridLayoutPatternViewer.addWidget(self.toolbar)
-            self.gridLayoutPatternViewer.addWidget(self.canvas)
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "Pattern Viewer Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
 
     # Plot Tab functions
     
@@ -1556,19 +1228,11 @@ class MainWindow(QtWidgets.QMainWindow):
             case 5:
                 self.adcTab.refresh()
             case 6:
-                self.refresh_tab_pattern()
+                self.patternTab.refresh()
             case 7:
                 self.refresh_tab_acquisition()
             case 8:
                 self.refresh_tab_plot()
-
-    def refresh_tab_pattern(self):
-        self.getPatLimitAddress()
-        for i in range(6):
-            self.getPatLoopStartStopAddress(i)
-            self.getPatLoopWaitAddress(i)
-            self.getPatLoopRepetition(i)
-            self.getPatLoopWaitTime(i)
         
     def refresh_tab_acquisition(self):
         self.getReadout()
@@ -1620,25 +1284,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.signalTab.setup_ui()
         self.transceiverTab.setup_ui()
         self.adcTab.setup_ui()
-
-
-        # Pattern Tab
-        for i in range(len(Defines.Colors)):
-            self.comboBoxPatColor.addItem(Defines.Colors[i])
-            self.comboBoxPatWaitColor.addItem(Defines.Colors[i])
-            self.comboBoxPatLoopColor.addItem(Defines.Colors[i])
-        for i in range(len(Defines.LineStyles)):
-            self.comboBoxPatWaitLineStyle.addItem(Defines.LineStyles[i])
-            self.comboBoxPatLoopLineStyle.addItem(Defines.LineStyles[i])       
-        self.updateDefaultPatViewerParameters()
-        self.comboBoxPatColorSelect.setCurrentIndex(0)
-        self.comboBoxPatWait.setCurrentIndex(0)
-        self.comboBoxPatLoop.setCurrentIndex(0)
-        self.spinBoxPatClockSpacing.setValue(self.clock_vertical_lines_spacing)
-        self.checkBoxPatShowClockNumber.setChecked(self.show_clocks_number)
-        self.doubleSpinBoxLineWidth.setValue(self.line_width)
-        self.lineEditPatternFile.setText(self.det.patfname[0])
-        # rest gets updated after connecting to slots
+        self.patternTab.setup_ui()
 
         # Acquisition Tab
         self.toggleStartButton(False)
@@ -1691,48 +1337,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.signalTab.connect_ui()
         self.transceiverTab.connect_ui()
         self.adcTab.connect_ui()
+        self.patternTab.connect_ui()
 
-        # For Pattern Tab
-        self.lineEditStartAddress.editingFinished.connect(self.setPatLimitAddress)
-        self.lineEditStopAddress.editingFinished.connect(self.setPatLimitAddress)
-        for i in range(6):
-            getattr(self, f"lineEditLoop{i}Start").editingFinished.connect(
-                partial(self.setPatLoopStartStopAddress, i)
-            )
-            getattr(self, f"lineEditLoop{i}Stop").editingFinished.connect(
-                partial(self.setPatLoopStartStopAddress, i)
-            )
-            getattr(self, f"lineEditLoop{i}Wait").editingFinished.connect(
-                partial(self.setPatLoopWaitAddress, i)
-            )
-            getattr(self, f"spinBoxLoop{i}Repetition").editingFinished.connect(
-                partial(self.setPatLoopRepetition, i)
-            )
-            getattr(self, f"spinBoxLoop{i}WaitTime").editingFinished.connect(
-                partial(self.setPatLoopWaitTime, i)
-            )
-        self.pushButtonCompiler.clicked.connect(self.setCompiler)
-        self.pushButtonUncompiled.clicked.connect(self.setUncompiledPatternFile)
-        self.pushButtonPatternFile.clicked.connect(self.setPatternFile)
-        self.pushButtonLoadPattern.clicked.connect(self.loadPattern)
-        
-        self.comboBoxPatColorSelect.currentIndexChanged.connect(self.getPatViewerColors)
-        self.comboBoxPatWait.currentIndexChanged.connect(self.getPatViewerWaitParameters)
-        self.comboBoxPatLoop.currentIndexChanged.connect(self.getPatViewerLoopParameters)
 
-        self.comboBoxPatColor.currentIndexChanged.connect(self.updatePatViewerParameters)
-        self.comboBoxPatWaitColor.currentIndexChanged.connect(self.updatePatViewerParameters)
-        self.comboBoxPatLoopColor.currentIndexChanged.connect(self.updatePatViewerParameters)
-        self.comboBoxPatWaitLineStyle.currentIndexChanged.connect(self.updatePatViewerParameters)
-        self.comboBoxPatLoopLineStyle.currentIndexChanged.connect(self.updatePatViewerParameters)
-        self.doubleSpinBoxWaitAlpha.editingFinished.connect(self.updatePatViewerParameters)
-        self.doubleSpinBoxLoopAlpha.editingFinished.connect(self.updatePatViewerParameters)
-        self.doubleSpinBoxWaitAlphaRect.editingFinished.connect(self.updatePatViewerParameters)
-        self.doubleSpinBoxLoopAlphaRect.editingFinished.connect(self.updatePatViewerParameters)
-        self.spinBoxPatClockSpacing.editingFinished.connect(self.updatePatViewerParameters)
-        self.checkBoxPatShowClockNumber.stateChanged.connect(self.updatePatViewerParameters)
-        self.doubleSpinBoxLineWidth.editingFinished.connect(self.updatePatViewerParameters)        
-        self.pushButtonViewPattern.clicked.connect(self.viewPattern)
 
 
         # For Acquistions Tab

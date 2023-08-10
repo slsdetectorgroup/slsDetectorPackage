@@ -18,6 +18,7 @@ from functools import partial
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 
 from TabClasses.DACs import DACs
+from TabClasses.PowerSupplies import PowerSupplies
 from TabClasses.SlowADCs import SlowADCs
 from bit_utils import set_bit, remove_bit, bit_is_set, manipulate_bit
 import random
@@ -67,6 +68,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # get Tab Classes
         self.slowADCsTab = SlowADCs(self)
         self.dacTab = DACs(self)
+        self.powerSuppliesTab = PowerSupplies(self)
 
         self.setup_zmq()
         self.setup_ui()
@@ -75,7 +77,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.connect_ui()
 
         self.dacTab.refresh()
-        self.refresh_tab_power()
+        self.powerSuppliesTab.refresh()
         self.slowADCsTab.refresh()
         self.refresh_tab_signals()
         self.refresh_tab_transceiver()
@@ -219,7 +221,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updateADCNames()
         self.slowADCsTab.updateSlowAdcNames()
         self.dacTab.updateDACNames()
-        self.updateVoltageNames()
+        self.powerSuppliesTab.updateVoltageNames()
         
 
     # For Action options function
@@ -251,78 +253,6 @@ class MainWindow(QtWidgets.QMainWindow):
             except Exception as e:
                 QtWidgets.QMessageBox.warning(self, "Load Parameter Fail", str(e), QtWidgets.QMessageBox.Ok)
                 pass
-
-    # Power Supplies Tab functions
-    def updateVoltageNames(self):
-        retval = self.det.getVoltageNames()
-        getattr(self, f"checkBoxVA").setText(retval[0])  
-        getattr(self, f"checkBoxVB").setText(retval[1])  
-        getattr(self, f"checkBoxVC").setText(retval[2])  
-        getattr(self, f"checkBoxVD").setText(retval[3])  
-        getattr(self, f"checkBoxVIO").setText(retval[4])  
-
-    def getVoltage(self, i):
-        spinBox = getattr(self, f"spinBoxV{i}")
-        checkBox = getattr(self, f"checkBoxV{i}")
-        voltageIndex = getattr(dacIndex, f"V_POWER_{i}")
-        label = getattr(self, f"labelV{i}")
-
-        spinBox.editingFinished.disconnect()
-        checkBox.stateChanged.disconnect()
-
-        retval = self.det.getMeasuredVoltage(voltageIndex)[0]
-        #spinBox.setValue(retval)
-        if retval > 1:
-            checkBox.setChecked(True)  
-        if checkBox.isChecked():
-            spinBox.setEnabled(True)
-        else:
-            spinBox.setDisabled(True)
-        label.setText(f'{str(retval)} mV')
-
-        spinBox.editingFinished.connect(partial(self.setVoltage, i))
-        checkBox.stateChanged.connect(partial(self.setVoltage, i))
-
-        self.getVChip()
-
-    #TODO: handle multiple events when pressing enter (twice)
-    def setVoltage(self, i):
-        checkBox = getattr(self, f"checkBoxV{i}")
-        spinBox = getattr(self, f"spinBoxV{i}")
-        voltageIndex = getattr(dacIndex, f"V_POWER_{i}")
-        spinBox.editingFinished.disconnect()
-
-        value = 0
-        if checkBox.isChecked():
-            value = spinBox.value()
-        try:
-            self.det.setVoltage(voltageIndex, value)
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "Voltage Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
-
-        # TODO: (properly) disconnecting and connecting to handle multiple events (out of focus and pressing enter).
-        spinBox.editingFinished.connect(partial(self.setVoltage, i))
-        self.getVoltage(i)
-        self.getCurrent(i)
-
-    def getCurrent(self, i):
-        label = getattr(self, f"labelI{i}")
-        currentIndex = getattr(dacIndex, f"I_POWER_{i}")
-        retval = self.det.getMeasuredCurrent(currentIndex)[0]
-        label.setText(f'{str(retval)} mA')
-
-    def getVChip(self):
-        self.spinBoxVChip.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
-
-    def powerOff(self):
-        for i in ('A', 'B', 'C', 'D', 'IO'):
-            # set all voltages to 0
-            checkBox = getattr(self, f"checkBoxV{i}")
-            checkBox.stateChanged.disconnect()
-            checkBox.setChecked(False)
-            checkBox.stateChanged.connect(partial(self.setVoltage, i))
-            self.setVoltage(i)
 
     # Signals Tab functions
     def updateSignalNames(self):
@@ -2053,7 +1983,7 @@ class MainWindow(QtWidgets.QMainWindow):
             case 0:
                 self.dacTab.refresh()
             case 1:
-                self.refresh_tab_power()
+                self.powerSuppliesTab.refresh()
             case 2:
                 self.slowADCsTab.refresh()
             case 3:
@@ -2068,12 +1998,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.refresh_tab_acquisition()
             case 8:
                 self.refresh_tab_plot()
-
-    def refresh_tab_power(self):
-        self.updateVoltageNames()
-        for i in ('A', 'B', 'C', 'D', 'IO'):
-            self.getVoltage(i)
-            self.getCurrent(i)
 
     def refresh_tab_signals(self):
         self.updateSignalNames()
@@ -2143,18 +2067,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.read_timer.timeout.connect(self.read_zmq)
 
         self.dacTab.setup_ui()
-
-        # Power Tab
-        # Getting voltage values for spinboxes (only for modifying)
-        for i in ('A', 'B', 'C', 'D', 'IO'):
-            dac = getattr(dacIndex, f"V_POWER_{i}")
-            spinBox = getattr(self, f"spinBoxV{i}")
-            checkBox = getattr(self, f"checkBoxV{i}")
-            retval = self.det.getVoltage(dac)[0]
-            spinBox.setValue(retval)
-            if retval == 0:
-                checkBox.setChecked(False)
-                spinBox.setDisabled(True)
+        self.powerSuppliesTab.setup_ui()
 
         # Signals Tab
         for i in range(64):
@@ -2232,15 +2145,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionLoadParameters.triggered.connect(self.loadParameters)
 
         self.dacTab.connect_ui()
-
-        # For Power Supplies tab
-        for i in ('A', 'B', 'C', 'D', 'IO'):
-            spinBox = getattr(self, f"spinBoxV{i}")
-            checkBox = getattr(self, f"checkBoxV{i}")
-            spinBox.editingFinished.connect(partial(self.setVoltage, i))
-            checkBox.stateChanged.connect(partial(self.setVoltage, i))
-        self.pushButtonPowerOff.clicked.connect(self.powerOff)
-
+        self.powerSuppliesTab.connect_ui()
         self.slowADCsTab.connect_ui()
 
         # For Signals Tab

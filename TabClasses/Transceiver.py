@@ -12,7 +12,7 @@ class Transceiver:
 
     def setup_ui(self):
         for i in range(4):
-            self.setTransceiverButtonColor(i, self.mainWindow.getRandomColor())
+            self.setTransceiverButtonColor(i, self.mainWindow.plotTab.getRandomColor())
 
     def connect_ui(self):
         for i in range(4):
@@ -56,7 +56,7 @@ class Transceiver:
             self.getTransceiverEnable(i, retval)
             self.getTransceiverEnablePlot(i)
             self.getTransceiverEnableColor(i)
-            self.mainWindow.addSelectedTransceiverPlots(i)
+            self.mainWindow.plotTab.addSelectedTransceiverPlots(i)
 
     def setTransceiverEnable(self, i):
         checkBox = getattr(self.mainWindow, f"checkBoxTransceiver{i}")
@@ -78,7 +78,7 @@ class Transceiver:
         pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
         checkBox = getattr(self.mainWindow, f"checkBoxTransceiver{i}Plot")
         pushButton.setEnabled(checkBox.isChecked())
-        self.mainWindow.addSelectedTransceiverPlots(i)
+        self.mainWindow.plotTab.addSelectedTransceiverPlots(i)
 
     def getTransceiverEnableColor(self, i):
         checkBox = getattr(self.mainWindow, f"checkBoxTransceiver{i}Plot")
@@ -87,14 +87,14 @@ class Transceiver:
 
     def selectTransceiverColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
-        self.mainWindow.showPalette(pushButton)
+        self.mainWindow.plotTab.showPalette(pushButton)
         pen = pg.mkPen(color=self.getTransceiverButtonColor(i), width=1)
         self.mainWindow.transceiverPlots[i].setPen(pen)
 
     def getTransceiverButtonColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
-        return self.mainWindow.getActiveColor(pushButton)
+        return self.mainWindow.plotTab.getActiveColor(pushButton)
 
     def setTransceiverButtonColor(self, i, color):
         pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
-        return self.mainWindow.setActiveColor(pushButton, color)
+        return self.mainWindow.plotTab.setActiveColor(pushButton, color)

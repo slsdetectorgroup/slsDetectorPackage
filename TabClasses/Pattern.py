@@ -401,7 +401,7 @@ class Pattern:
         print('\n')
 
     def viewPattern(self):
-        self.mainWindow.showPatternViewer(True)
+        self.mainWindow.plotTab.showPatternViewer(True)
         pattern_file = self.getCompiledPatFname()
         if not pattern_file:
             return

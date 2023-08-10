@@ -258,83 +258,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.warning(self, "Load Parameter Fail", str(e), QtWidgets.QMessageBox.Ok)
                 pass
 
-    # Transceivers Tab functions
-    # def getTransceiverEnableReg(self):
-    #     retval = self.det.transceiverenable
-    #     self.lineEditTransceiverMask.editingFinished.disconnect()
-    #     self.lineEditTransceiverMask.setText("0x{:08x}".format(retval))
-    #     self.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
-    #     return retval
-    #
-    # def setTransceiverEnableReg(self):
-    #     self.lineEditTransceiverMask.editingFinished.disconnect()
-    #     try:
-    #         mask = int(self.lineEditTransceiverMask.text(), 16)
-    #         self.det.transceiverenable = mask
-    #     except Exception as e:
-    #         QtWidgets.QMessageBox.warning(self, "Transceiver Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
-    #         pass
-    #     #TODO: handling double event exceptions
-    #     self.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
-    #     self.updateTransceiverEnable()
-    #
-    # def getTransceiverEnable(self, i, mask):
-    #     checkBox = getattr(self, f"checkBoxTransceiver{i}")
-    #     checkBox.stateChanged.disconnect()
-    #     checkBox.setChecked(bit_is_set(mask, i))
-    #     checkBox.stateChanged.connect(partial(self.setTransceiverEnable, i))
-    #
-    # def updateTransceiverEnable(self):
-    #     retval = self.getTransceiverEnableReg()
-    #     self.nTransceiverEnabled = bin(retval).count('1')
-    #     for i in range(4):
-    #         self.getTransceiverEnable(i, retval)
-    #         self.getTransceiverEnablePlot(i)
-    #         self.getTransceiverEnableColor(i)
-    #         self.addSelectedTransceiverPlots(i)
-    #
-    # def setTransceiverEnable(self, i):
-    #     checkBox = getattr(self, f"checkBoxTransceiver{i}")
-    #     try:
-    #         enableMask = manipulate_bit(checkBox.isChecked(), self.det.transceiverenable, i)
-    #         self.det.transceiverenable = enableMask
-    #     except Exception as e:
-    #         QtWidgets.QMessageBox.warning(self, "Transceiver Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
-    #         pass
-    #
-    #     self.updateTransceiverEnable()
-    #
-    # def getTransceiverEnablePlot(self, i):
-    #     checkBox = getattr(self, f"checkBoxTransceiver{i}")
-    #     checkBoxPlot = getattr(self, f"checkBoxTransceiver{i}Plot")
-    #     checkBoxPlot.setEnabled(checkBox.isChecked())
-    #
-    # def setTransceiverEnablePlot(self, i):
-    #     pushButton = getattr(self, f"pushButtonTransceiver{i}")
-    #     checkBox = getattr(self, f"checkBoxTransceiver{i}Plot")
-    #     pushButton.setEnabled(checkBox.isChecked())
-    #     self.addSelectedTransceiverPlots(i)
-    #
-    # def getTransceiverEnableColor(self, i):
-    #     checkBox = getattr(self, f"checkBoxTransceiver{i}Plot")
-    #     pushButton = getattr(self, f"pushButtonTransceiver{i}")
-    #     pushButton.setEnabled(checkBox.isEnabled() and checkBox.isChecked())
-    #
-    # def selectTransceiverColor(self, i):
-    #     pushButton = getattr(self, f"pushButtonTransceiver{i}")
-    #     self.showPalette(pushButton)
-    #     pen = pg.mkPen(color = self.getTransceiverButtonColor(i), width = 1)
-    #     self.transceiverPlots[i].setPen(pen)
-    #
-    # def getTransceiverButtonColor(self, i):
-    #     pushButton = getattr(self, f"pushButtonTransceiver{i}")
-    #     return self.getActiveColor(pushButton)
-    #
-    # def setTransceiverButtonColor(self, i, color):
-    #     pushButton = getattr(self, f"pushButtonTransceiver{i}")
-    #     return self.setActiveColor(pushButton, color)
-
-
     # ADCs Tab functions
     def updateADCNames(self):
         for i, adc_name in enumerate(self.det.getAdcNames()):
@@ -1891,10 +1814,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dacTab.setup_ui()
         self.powerSuppliesTab.setup_ui()
         self.signalTab.setup_ui()
-        
-        # Transceiver Tab
-        # for i in range(4):
-        #     self.setTransceiverButtonColor(i, self.getRandomColor())
         self.transceiverTab.setup_ui()
 
         # Adc Tab
@@ -1968,14 +1887,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.powerSuppliesTab.connect_ui()
         self.slowADCsTab.connect_ui()
         self.signalTab.connect_ui()
-
-
-        # For Transceiver Tab
-        # for i in range(4):
-        #     getattr(self, f"checkBoxTransceiver{i}").stateChanged.connect(partial(self.setTransceiverEnable, i))
-        #     getattr(self, f"checkBoxTransceiver{i}Plot").stateChanged.connect(partial(self.setTransceiverEnablePlot, i))
-        #     getattr(self, f"pushButtonTransceiver{i}").clicked.connect(partial(self.selectTransceiverColor, i))
-        # self.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
         self.transceiverTab.connect_ui()
 
         # For ADCs Tab

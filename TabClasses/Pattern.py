@@ -36,6 +36,13 @@ class Pattern:
         self.mainWindow.doubleSpinBoxLineWidth.setValue(self.line_width)
         self.mainWindow.lineEditPatternFile.setText(self.det.patfname[0])
         # rest gets updated after connecting to slots
+        # pattern viewer plot area
+        self.figure, self.ax = plt.subplots()
+        self.canvas = FigureCanvas(self.figure)
+        self.toolbar = NavigationToolbar(self.canvas, self.mainWindow)
+        self.mainWindow.gridLayoutPatternViewer.addWidget(self.toolbar)
+        self.mainWindow.gridLayoutPatternViewer.addWidget(self.canvas)
+        self.figure.clear()
 
     def connect_ui(self):
         # For Pattern Tab
@@ -401,7 +408,7 @@ class Pattern:
         print('\n')
 
     def viewPattern(self):
-        self.mainWindow.showPatternViewer(True)
+        self.mainWindow.plotTab.showPatternViewer(True)
         pattern_file = self.getCompiledPatFname()
         if not pattern_file:
             return
@@ -412,18 +419,18 @@ class Pattern:
                         self.alpha_loop, self.alpha_loop_rect, self.clock_vertical_lines_spacing,
                         self.show_clocks_number, self.line_width, )
 
-        plt.close(self.mainWindow.figure)
-        self.mainWindow.gridLayoutPatternViewer.removeWidget(self.mainWindow.canvas)
-        self.mainWindow.canvas.close()
-        self.mainWindow.gridLayoutPatternViewer.removeWidget(self.mainWindow.toolbar)
-        self.mainWindow.toolbar.close()
+        plt.close(self.figure)
+        self.mainWindow.gridLayoutPatternViewer.removeWidget(self.canvas)
+        self.canvas.close()
+        self.mainWindow.gridLayoutPatternViewer.removeWidget(self.toolbar)
+        self.toolbar.close()
 
         try:
-            self.mainWindow.figure = p.patternPlot()
-            self.mainWindow.canvas = FigureCanvas(self.mainWindow.figure)
-            self.mainWindow.toolbar = NavigationToolbar(self.mainWindow.canvas, self.mainWindow)
-            self.mainWindow.gridLayoutPatternViewer.addWidget(self.mainWindow.toolbar)
-            self.mainWindow.gridLayoutPatternViewer.addWidget(self.mainWindow.canvas)
+            self.figure = p.patternPlot()
+            self.canvas = FigureCanvas(self.figure)
+            self.toolbar = NavigationToolbar(self.canvas, self.mainWindow)
+            self.mainWindow.gridLayoutPatternViewer.addWidget(self.toolbar)
+            self.mainWindow.gridLayoutPatternViewer.addWidget(self.canvas)
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "Pattern Viewer Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass

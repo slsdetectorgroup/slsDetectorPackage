@@ -33,7 +33,7 @@ class Signals:
 
     def setup_ui(self):
         for i in range(64):
-            self.setDBitButtonColor(i, self.mainWindow.getRandomColor())
+            self.setDBitButtonColor(i, self.mainWindow.plotTab.getRandomColor())
 
     def updateSignalNames(self):
         for i, name in enumerate(self.mainWindow.det.getSignalNames()):
@@ -53,7 +53,7 @@ class Signals:
             self.getDigitalBitEnable(i, retval)
             self.getEnableBitPlot(i)
             self.getEnableBitColor(i)
-            self.mainWindow.addSelectedDigitalPlots(i)
+            self.mainWindow.plotTab.addSelectedDigitalPlots(i)
         self.getDigitalBitEnableRange(retval)
         self.getEnableBitPlotRange()
 
@@ -101,7 +101,7 @@ class Signals:
         pushButton.setEnabled(checkBox.isChecked())
 
         self.getEnableBitPlotRange()
-        self.mainWindow.addSelectedDigitalPlots(i)
+        self.mainWindow.plotTab.addSelectedDigitalPlots(i)
 
     def getEnableBitPlotRange(self):
         self.mainWindow.checkBoxBIT0_31Plot.stateChanged.disconnect()
@@ -123,7 +123,7 @@ class Signals:
         for i in range(start_nr, end_nr):
             checkBox = getattr(self.mainWindow, f"checkBoxBIT{i}Plot")
             checkBox.setChecked(enable)
-        self.mainWindow.addAllSelectedDigitalPlots()
+        self.mainWindow.plotTab.addAllSelectedDigitalPlots()
 
     def getEnableBitColor(self, i):
         checkBox = getattr(self.mainWindow, f"checkBoxBIT{i}Plot")
@@ -132,17 +132,17 @@ class Signals:
 
     def selectBitColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonBIT{i}")
-        self.mainWindow.showPalette(pushButton)
-        pen = pg.mkPen(color=self.mainWindow.getDbitButtonColor(i), width=1)
+        self.mainWindow.plotTab.showPalette(pushButton)
+        pen = pg.mkPen(color=self.getDBitButtonColor(i), width=1)
         self.mainWindow.digitalPlots[i].setPen(pen)
 
     def getDBitButtonColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonBIT{i}")
-        return self.mainWindow.getActiveColor(pushButton)
+        return self.mainWindow.plotTab.getActiveColor(pushButton)
 
     def setDBitButtonColor(self, i, color):
         pushButton = getattr(self.mainWindow, f"pushButtonBIT{i}")
-        return self.mainWindow.setActiveColor(pushButton, color)
+        return self.mainWindow.plotTab.setActiveColor(pushButton, color)
 
     def getIOOutReg(self):
         retval = self.mainWindow.det.patioctrl

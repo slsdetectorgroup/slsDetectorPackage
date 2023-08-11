@@ -14,7 +14,7 @@ class ADC:
 
     def setup_ui(self):
         for i in range(32):
-            self.setADCButtonColor(i, self.mainWindow.getRandomColor())
+            self.setADCButtonColor(i, self.mainWindow.plotTab.getRandomColor())
 
     def connect_ui(self):
         for i in range(32):
@@ -79,7 +79,7 @@ class ADC:
             self.getADCEnable(i, retval)
             self.getADCEnablePlot(i)
             self.getADCEnableColor(i)
-            self.mainWindow.addSelectedAnalogPlots(i)
+            self.mainWindow.plotTab.addSelectedAnalogPlots(i)
         self.getADCEnableRange(retval)
         self.getADCEnablePlotRange()
 
@@ -133,7 +133,7 @@ class ADC:
         pushButton.setEnabled(checkBox.isChecked())
 
         self.getADCEnablePlotRange()
-        self.mainWindow.addSelectedAnalogPlots(i)
+        self.mainWindow.plotTab.addSelectedAnalogPlots(i)
 
     def getADCEnablePlotRange(self):
         self.mainWindow.checkBoxADC0_15Plot.stateChanged.disconnect()
@@ -151,7 +151,7 @@ class ADC:
         for i in range(start_nr, end_nr):
             checkBox = getattr(self.mainWindow, f"checkBoxADC{i}Plot")
             checkBox.setChecked(enable)
-        self.mainWindow.addAllSelectedAnalogPlots()
+        self.mainWindow.plotTab.addAllSelectedAnalogPlots()
 
     def getADCEnableColor(self, i):
         checkBox = getattr(self.mainWindow, f"checkBoxADC{i}Plot")
@@ -160,17 +160,17 @@ class ADC:
 
     def selectADCColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonADC{i}")
-        self.mainWindow.showPalette(pushButton)
+        self.mainWindow.plotTab.showPalette(pushButton)
         pen = pg.mkPen(color=self.getADCButtonColor(i), width=1)
         self.mainWindow.analogPlots[i].setPen(pen)
 
     def getADCButtonColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonADC{i}")
-        return self.mainWindow.getActiveColor(pushButton)
+        return self.mainWindow.plotTab.getActiveColor(pushButton)
 
     def setADCButtonColor(self, i, color):
         pushButton = getattr(self.mainWindow, f"pushButtonADC{i}")
-        return self.mainWindow.setActiveColor(pushButton, color)
+        return self.mainWindow.plotTab.setActiveColor(pushButton, color)
 
     def getADCInvReg(self):
         retval = self.det.adcinvert

@@ -6,8 +6,8 @@ from PyQt5 import QtWidgets
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-from utils.defines import Defines
-from utils.plotPattern import PlotPattern
+from ..utils.defines import Defines
+from ..utils.plotPattern import PlotPattern
 
 
 class Pattern:

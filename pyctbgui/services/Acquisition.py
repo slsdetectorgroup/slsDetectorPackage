@@ -1,15 +1,16 @@
 import json
 import os
 from pathlib import Path
-from utils import decoder
-
-import numpy as np
-from slsdet import readoutMode, runStatus
-from PyQt5 import QtWidgets
-from utils.defines import Defines
-
 import time
 import zmq
+import numpy as np
+
+from PyQt5 import QtWidgets
+from slsdet import readoutMode, runStatus
+
+from ..utils import decoder
+from ..utils.defines import Defines
+
 
 
 class Acquisition:

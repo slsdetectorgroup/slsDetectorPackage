@@ -22,7 +22,17 @@ c_ext = setuptools.Extension(
 c_ext.language = 'c'
 setuptools.setup(
     name= 'pyctbgui',
-    version = '2023.7.19',
+    version = '2023.8.11',
     description = 'Experimental GUI for the chip test board',
+    packages=setuptools.find_packages(
+        exclude=['tests',]  
+    ),
+    include_package_data=True,
     ext_modules=[c_ext],
+    scripts=['CtbGui',],
+     install_requires=[
+          'numpy', #TODO! write proper requires block
+          'pyzmq',
+          'pillow',
+      ],
 )

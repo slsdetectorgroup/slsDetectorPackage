@@ -1,8 +1,11 @@
 from functools import partial
+
+import numpy as np
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 from PyQt5 import QtWidgets
 import pyqtgraph as pg
 
+from .Plot import PlotService
 from utils.SingletonMeta import SingletonMeta
 from utils.bit_utils import bit_is_set, manipulate_bit
 
@@ -11,19 +14,48 @@ class TransceiverService(metaclass=SingletonMeta):
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
 
+        self.plotService = PlotService(self)
+
     def setup_ui(self):
         for i in range(4):
-            self.setTransceiverButtonColor(i, self.mainWindow.plotService.getRandomColor())
+            self.setTransceiverButtonColor(i, self.plotService.getRandomColor())
+        self.initializeAllTransceiverPlots()
 
     def connect_ui(self):
         for i in range(4):
-            getattr(self.mainWindow, f"checkBoxTransceiver{i}").stateChanged.connect(partial(self.setTransceiverEnable, i))
-            getattr(self.mainWindow, f"checkBoxTransceiver{i}Plot").stateChanged.connect(partial(self.setTransceiverEnablePlot, i))
-            getattr(self.mainWindow, f"pushButtonTransceiver{i}").clicked.connect(partial(self.selectTransceiverColor, i))
+            getattr(self.mainWindow, f"checkBoxTransceiver{i}").stateChanged.connect(
+                partial(self.setTransceiverEnable, i))
+            getattr(self.mainWindow, f"checkBoxTransceiver{i}Plot").stateChanged.connect(
+                partial(self.setTransceiverEnablePlot, i))
+            getattr(self.mainWindow, f"pushButtonTransceiver{i}").clicked.connect(
+                partial(self.selectTransceiverColor, i))
         self.mainWindow.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
 
     def refresh(self):
         self.updateTransceiverEnable()
+
+    def initializeAllTransceiverPlots(self):
+        self.mainWindow.plotTransceiverWaveform = pg.plot()
+        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotTransceiverWaveform, 5)
+        self.mainWindow.transceiverPlots = {}
+        waveform = np.zeros(1000)
+        for i in range(4):
+            pen = pg.mkPen(color=self.getTransceiverButtonColor(i), width=1)
+            legendName = getattr(self.mainWindow, f"labelTransceiver{i}").text()
+            self.mainWindow.transceiverPlots[i] = self.mainWindow.plotTransceiverWaveform.plot(waveform, pen=pen,
+                                                                                               name=legendName)
+            self.mainWindow.transceiverPlots[i].hide()
+
+        self.mainWindow.plotTransceiverImage = pg.ImageView()
+        self.mainWindow.nTransceiverRows = 0
+        self.mainWindow.nTransceiverCols = 0
+        self.mainWindow.transceiver_frame = np.zeros(
+            (self.mainWindow.nTransceiverRows, self.mainWindow.nTransceiverCols))
+        self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame)
+        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotTransceiverImage, 6)
+
+        cm = pg.colormap.get('CET-L9')  # prepare a linear color map
+        self.mainWindow.plotTransceiverImage.setColorMap(cm)
 
     def getTransceiverEnableReg(self):
         retval = self.mainWindow.det.transceiverenable
@@ -57,7 +89,7 @@ class TransceiverService(metaclass=SingletonMeta):
             self.getTransceiverEnable(i, retval)
             self.getTransceiverEnablePlot(i)
             self.getTransceiverEnableColor(i)
-            self.mainWindow.plotService.addSelectedTransceiverPlots(i)
+            self.plotService.addSelectedTransceiverPlots(i)
 
     def setTransceiverEnable(self, i):
         checkBox = getattr(self.mainWindow, f"checkBoxTransceiver{i}")
@@ -79,7 +111,7 @@ class TransceiverService(metaclass=SingletonMeta):
         pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
         checkBox = getattr(self.mainWindow, f"checkBoxTransceiver{i}Plot")
         pushButton.setEnabled(checkBox.isChecked())
-        self.mainWindow.plotService.addSelectedTransceiverPlots(i)
+        self.plotService.addSelectedTransceiverPlots(i)
 
     def getTransceiverEnableColor(self, i):
         checkBox = getattr(self.mainWindow, f"checkBoxTransceiver{i}Plot")
@@ -88,14 +120,14 @@ class TransceiverService(metaclass=SingletonMeta):
 
     def selectTransceiverColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
-        self.mainWindow.plotService.showPalette(pushButton)
+        self.plotService.showPalette(pushButton)
         pen = pg.mkPen(color=self.getTransceiverButtonColor(i), width=1)
         self.mainWindow.transceiverPlots[i].setPen(pen)
 
     def getTransceiverButtonColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
-        return self.mainWindow.plotService.getActiveColor(pushButton)
+        return self.plotService.getActiveColor(pushButton)
 
     def setTransceiverButtonColor(self, i, color):
         pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
-        return self.mainWindow.plotService.setActiveColor(pushButton, color)
+        return self.plotService.setActiveColor(pushButton, color)

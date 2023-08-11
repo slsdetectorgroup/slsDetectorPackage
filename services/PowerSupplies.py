@@ -9,6 +9,7 @@ class PowerSuppliesService(metaclass=SingletonMeta):
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
 
+
     def refresh(self):
         self.updateVoltageNames()
         for i in ('A', 'B', 'C', 'D', 'IO'):

@@ -8,6 +8,8 @@ from PyQt5 import QtWidgets,QtGui
 from utils.SingletonMeta import SingletonMeta
 from utils.pixelmap import moench04_analog, matterhorn_transceiver
 
+
+
 import pyqtgraph as pg
 
 from utils.defines import Defines
@@ -18,10 +20,8 @@ class PlotService(metaclass=SingletonMeta):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det
 
+
     def setup_ui(self):
-        self.initializeAllAnalogPlots()
-        self.initializeAllDigitalPlots()
-        self.initializeAllTransceiverPlots()
         self.initializeColorMaps()
 
     def connect_ui(self):
@@ -73,25 +73,7 @@ class PlotService(metaclass=SingletonMeta):
 
         self.getZMQHWM()
 
-    def initializeAllAnalogPlots(self):
 
-        self.mainWindow.plotAnalogWaveform = pg.plot()
-        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotAnalogWaveform, 1)
-        self.mainWindow.analogPlots = {}
-        waveform = np.zeros(1000)
-        for i in range(32):
-            pen = pg.mkPen(color=self.mainWindow.adcService.getADCButtonColor(i), width=1)
-            legendName = getattr(self.mainWindow, f"labelADC{i}").text()
-            self.mainWindow.analogPlots[i] = self.mainWindow.plotAnalogWaveform.plot(waveform, pen=pen, name=legendName)
-            self.mainWindow.analogPlots[i].hide()
-
-        self.mainWindow.plotAnalogImage = pg.ImageView()
-        self.mainWindow.nAnalogRows = 0
-        self.mainWindow.nAnalogCols = 0
-        self.mainWindow.analog_frame = np.zeros((self.mainWindow.nAnalogRows, self.mainWindow.nAnalogCols))
-        self.mainWindow.plotAnalogImage.getView().invertY(False)
-        self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame)
-        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotAnalogImage, 2)
 
     def addSelectedAnalogPlots(self, i):
         enable = getattr(self.mainWindow, f"checkBoxADC{i}Plot").isChecked()
@@ -108,23 +90,7 @@ class PlotService(metaclass=SingletonMeta):
         for i in range(32):
             self.mainWindow.analogPlots[i].hide()
 
-    def initializeAllDigitalPlots(self):
-        self.mainWindow.plotDigitalWaveform = pg.plot()
-        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotDigitalWaveform, 3)
-        self.mainWindow.digitalPlots = {}
-        waveform = np.zeros(1000)
-        for i in range(64):
-            pen = pg.mkPen(color=self.mainWindow.signalsService.getDBitButtonColor(i), width=1)
-            legendName = getattr(self.mainWindow, f"labelBIT{i}").text()
-            self.mainWindow.digitalPlots[i] = self.mainWindow.plotDigitalWaveform.plot(waveform, pen=pen, name=legendName, stepMode="left")
-            self.mainWindow.digitalPlots[i].hide()
 
-        self.mainWindow.plotDigitalImage = pg.ImageView()
-        self.mainWindow.nDigitalRows = 0
-        self.mainWindow.nDigitalCols = 0
-        self.mainWindow.digital_frame = np.zeros((self.mainWindow.nDigitalRows, self.mainWindow.nDigitalCols))
-        self.mainWindow.plotDigitalImage.setImage(self.mainWindow.digital_frame)
-        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotDigitalImage, 4)
 
         cm = pg.colormap.get('CET-L9')  # prepare a linear color map
         self.mainWindow.plotDigitalImage.setColorMap(cm)
@@ -144,26 +110,7 @@ class PlotService(metaclass=SingletonMeta):
         for i in range(64):
             self.mainWindow.digitalPlots[i].hide()
 
-    def initializeAllTransceiverPlots(self):
-        self.mainWindow.plotTransceiverWaveform = pg.plot()
-        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotTransceiverWaveform, 5)
-        self.mainWindow.transceiverPlots = {}
-        waveform = np.zeros(1000)
-        for i in range(4):
-            pen = pg.mkPen(color=self.mainWindow.transceiverService.getTransceiverButtonColor(i), width=1)
-            legendName = getattr(self.mainWindow, f"labelTransceiver{i}").text()
-            self.mainWindow.transceiverPlots[i] = self.mainWindow.plotTransceiverWaveform.plot(waveform, pen=pen, name=legendName)
-            self.mainWindow.transceiverPlots[i].hide()
 
-        self.mainWindow.plotTransceiverImage = pg.ImageView()
-        self.mainWindow.nTransceiverRows = 0
-        self.mainWindow.nTransceiverCols = 0
-        self.mainWindow.transceiver_frame = np.zeros((self.mainWindow.nTransceiverRows, self.mainWindow.nTransceiverCols))
-        self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame)
-        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotTransceiverImage, 6)
-
-        cm = pg.colormap.get('CET-L9')  # prepare a linear color map
-        self.mainWindow.plotTransceiverImage.setColorMap(cm)
 
     def addSelectedTransceiverPlots(self, i):
         enable = getattr(self.mainWindow, f"checkBoxTransceiver{i}Plot").isChecked()
@@ -311,9 +258,6 @@ class PlotService(metaclass=SingletonMeta):
     def setPlotBit(self):
         print("plot options - Not implemented yet")
         # TODO:
-
-    def plotReferesh(self):
-        self.mainWindow.acquisitionService.read_zmq()
 
     def getRandomColor(self):
         '''

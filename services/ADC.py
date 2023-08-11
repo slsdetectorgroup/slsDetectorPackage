@@ -1,6 +1,11 @@
 from functools import partial
+
+import numpy as np
 from PyQt5 import QtWidgets
 import pyqtgraph as pg
+
+from .Plot import PlotService
+
 
 from utils.SingletonMeta import SingletonMeta
 from utils.bit_utils import bit_is_set, manipulate_bit
@@ -12,9 +17,32 @@ class AdcService(metaclass=SingletonMeta):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det
 
+        self.plotService = PlotService(self)
+
     def setup_ui(self):
         for i in range(32):
-            self.setADCButtonColor(i, self.mainWindow.plotService.getRandomColor())
+            self.setADCButtonColor(i, self.plotService.getRandomColor())
+        self.initializeAllAnalogPlots()
+
+    def initializeAllAnalogPlots(self):
+
+        self.mainWindow.plotAnalogWaveform = pg.plot()
+        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotAnalogWaveform, 1)
+        self.mainWindow.analogPlots = {}
+        waveform = np.zeros(1000)
+        for i in range(32):
+            pen = pg.mkPen(color=self.getADCButtonColor(i), width=1)
+            legendName = getattr(self.mainWindow, f"labelADC{i}").text()
+            self.mainWindow.analogPlots[i] = self.mainWindow.plotAnalogWaveform.plot(waveform, pen=pen, name=legendName)
+            self.mainWindow.analogPlots[i].hide()
+
+        self.mainWindow.plotAnalogImage = pg.ImageView()
+        self.mainWindow.nAnalogRows = 0
+        self.mainWindow.nAnalogCols = 0
+        self.mainWindow.analog_frame = np.zeros((self.mainWindow.nAnalogRows, self.mainWindow.nAnalogCols))
+        self.mainWindow.plotAnalogImage.getView().invertY(False)
+        self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame)
+        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotAnalogImage, 2)
 
     def connect_ui(self):
         for i in range(32):
@@ -79,7 +107,7 @@ class AdcService(metaclass=SingletonMeta):
             self.getADCEnable(i, retval)
             self.getADCEnablePlot(i)
             self.getADCEnableColor(i)
-            self.mainWindow.plotService.addSelectedAnalogPlots(i)
+            self.plotService.addSelectedAnalogPlots(i)
         self.getADCEnableRange(retval)
         self.getADCEnablePlotRange()
 
@@ -133,7 +161,7 @@ class AdcService(metaclass=SingletonMeta):
         pushButton.setEnabled(checkBox.isChecked())
 
         self.getADCEnablePlotRange()
-        self.mainWindow.plotService.addSelectedAnalogPlots(i)
+        self.plotService.addSelectedAnalogPlots(i)
 
     def getADCEnablePlotRange(self):
         self.mainWindow.checkBoxADC0_15Plot.stateChanged.disconnect()
@@ -151,7 +179,7 @@ class AdcService(metaclass=SingletonMeta):
         for i in range(start_nr, end_nr):
             checkBox = getattr(self.mainWindow, f"checkBoxADC{i}Plot")
             checkBox.setChecked(enable)
-        self.mainWindow.plotService.addAllSelectedAnalogPlots()
+        self.plotService.addAllSelectedAnalogPlots()
 
     def getADCEnableColor(self, i):
         checkBox = getattr(self.mainWindow, f"checkBoxADC{i}Plot")
@@ -160,17 +188,17 @@ class AdcService(metaclass=SingletonMeta):
 
     def selectADCColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonADC{i}")
-        self.mainWindow.plotService.showPalette(pushButton)
+        self.plotService.showPalette(pushButton)
         pen = pg.mkPen(color=self.getADCButtonColor(i), width=1)
         self.mainWindow.analogPlots[i].setPen(pen)
 
     def getADCButtonColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonADC{i}")
-        return self.mainWindow.plotService.getActiveColor(pushButton)
+        return self.plotService.getActiveColor(pushButton)
 
     def setADCButtonColor(self, i, color):
         pushButton = getattr(self.mainWindow, f"pushButtonADC{i}")
-        return self.mainWindow.plotService.setActiveColor(pushButton, color)
+        return self.plotService.setActiveColor(pushButton, color)
 
     def getADCInvReg(self):
         retval = self.det.adcinvert

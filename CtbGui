@@ -7,15 +7,8 @@ import pyqtgraph as pg
 from functools import partial
 from slsdet import Detector, dacIndex
 
-from services.ADC import AdcService
-from services.Acquisition import AcquisitionService
-from services.Pattern import PatternService
-from services.Plot import PlotService
-from services.Transceiver import TransceiverService
-from services.DACs import DacService
-from services.PowerSupplies import PowerSuppliesService
-from services.Signals import SignalsService
-from services.SlowADCs import SlowAdcService
+from services import AcquisitionService, AdcService, DacService, PatternService, PlotService, PowerSuppliesService, \
+    SignalsService, SlowAdcService, TransceiverService
 
 from utils.defines import *
 
@@ -31,7 +24,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, *args, **kwargs):
         parser = argparse.ArgumentParser()
-        parser.add_argument('-a', '--alias', help = "Alias file complete path")
+        parser.add_argument('-a', '--alias', help="Alias file complete path")
         arglist = parser.parse_args()
         self.alias_file = arglist.alias
 
@@ -50,7 +43,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # ensure detector is up
             self.det.detectorserverversion[0]
         except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Connect Fail", str(e) + "Exiting Gui...",  QtWidgets.QMessageBox.Ok)
+            QtWidgets.QMessageBox.critical(self, "Connect Fail", str(e) + "Exiting Gui...", QtWidgets.QMessageBox.Ok)
             raise
 
         # get Tab Classes
@@ -109,12 +102,12 @@ class MainWindow(QtWidgets.QMainWindow):
         height = self.settings.value('window_height')
         if width is not None and height is not None:
             self.resize(int(width), int(height))
-            #print(f'Main window resized to {width}x{height}')
+            # print(f'Main window resized to {width}x{height}')
 
         # window position
         pos = self.settings.value('window_pos')
         if type(pos) is QtCore.QPoint:
-            #print(f'Moved main window to {pos}')
+            # print(f'Moved main window to {pos}')
             self.move(pos)
         self.settings.endGroup();
 
@@ -134,13 +127,13 @@ class MainWindow(QtWidgets.QMainWindow):
             width = self.settings.value('window_width')
             height = self.settings.value('window_height')
             if width is not None and height is not None:
-                #print(f'Plot window - Floating ({width}x{height})')
+                # print(f'Plot window - Floating ({width}x{height})')
                 self.dockWidget.setFloating(True)
                 self.dockWidget.resize(int(width), int(height))
             # window position
             pos = self.settings.value('window_pos')
             if type(pos) is QtCore.QPoint:
-                #print(f'Moved plot window to {pos}')
+                # print(f'Moved plot window to {pos}')
                 self.dockWidget.move(pos)
         self.settings.endGroup();
 
@@ -172,9 +165,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def loadAliasFile(self):
         print(f'Loading Alias file: {self.alias_file}')
         try:
-            bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, slowadc_names, voltage_names, pat_file_name = alias_utility.read_alias_file(self.alias_file)
+            bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, slowadc_names, voltage_names, pat_file_name = alias_utility.read_alias_file(
+                self.alias_file)
         except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "Alias File Fail", str(e) + "<br> " + self.alias_file, QtWidgets.QMessageBox.Ok)
+            QtWidgets.QMessageBox.warning(self, "Alias File Fail", str(e) + "<br> " + self.alias_file,
+                                          QtWidgets.QMessageBox.Ok)
             return
 
         for i in range(64):
@@ -217,7 +212,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dacService.updateDACNames()
         self.powerService.updateVoltageNames()
 
-
     # For Action options function
     # TODO Only add the components of action option+ functions
     # Function to show info
@@ -230,7 +224,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def showKeyBoardShortcuts(self):
         msg = QtWidgets.QMessageBox()
         msg.setWindowTitle("Keyboard Shortcuts")
-        msg.setText("Start Acquisition (from any tab): Shift + Return<br>Move Tab Right : Ctrl + '+'<br>Move Tab Left : Ctrl + '-'<br>")
+        msg.setText(
+            "Start Acquisition (from any tab): Shift + Return<br>Move Tab Right : Ctrl + '+'<br>Move Tab Left : Ctrl + '-'<br>")
         x = msg.exec_()
 
     def loadParameters(self):
@@ -243,13 +238,11 @@ class MainWindow(QtWidgets.QMainWindow):
         if response[0]:
             try:
                 parameters = response[0]
-                QtWidgets.QMessageBox.information(self, "Load Parameter Success", "Parameters loaded successfully", QtWidgets.QMessageBox.Ok)
+                QtWidgets.QMessageBox.information(self, "Load Parameter Success", "Parameters loaded successfully",
+                                                  QtWidgets.QMessageBox.Ok)
             except Exception as e:
                 QtWidgets.QMessageBox.warning(self, "Load Parameter Fail", str(e), QtWidgets.QMessageBox.Ok)
                 pass
-
-
-
 
     def refresh_tab(self, tab_index):
         match tab_index:
@@ -272,16 +265,13 @@ class MainWindow(QtWidgets.QMainWindow):
             case 8:
                 self.plotService.refresh()
 
-
-
-
     def setup_ui(self):
-        #To check detector status
+        # To check detector status
         self.statusTimer = QtCore.QTimer()
         self.statusTimer.timeout.connect(self.acquisitionService.checkEndofAcquisition)
 
-        #To auto trigger the read
-        self.read_timer =  QtCore.QTimer()
+        # To auto trigger the read
+        self.read_timer = QtCore.QTimer()
         self.read_timer.timeout.connect(self.acquisitionService.read_zmq)
 
         self.dacService.setup_ui()
@@ -292,11 +282,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.patternService.setup_ui()
         self.acquisitionService.setup_ui()
         self.plotService.setup_ui()
-
-
-
-
-
 
     def keyPressEvent(self, event):
         if event.modifiers() & QtCore.Qt.ShiftModifier:
@@ -317,7 +302,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             ind -= 1
             if ind == -1:
-                ind = Defines.Max_Tabs -1
+                ind = Defines.Max_Tabs - 1
         self.tabWidget.setCurrentIndex(ind)
 
     def connect_ui(self):

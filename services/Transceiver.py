@@ -3,7 +3,7 @@ from slsdet import Detector, dacIndex, readoutMode, runStatus
 from PyQt5 import QtWidgets
 import pyqtgraph as pg
 
-from bit_utils import bit_is_set, manipulate_bit
+from utils.bit_utils import bit_is_set, manipulate_bit
 
 
 class Transceiver:

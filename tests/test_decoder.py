@@ -1,9 +1,8 @@
-import pytest
 import numpy as np
 import sys
 
-import decoder
-from pixelmap import moench04_analog
+from utils import decoder
+from utils.pixelmap import moench04_analog
 
 def test_simple_decode():
     pixel_map = np.zeros((2,2), dtype = np.uint32)

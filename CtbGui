@@ -1,48 +1,28 @@
 #!/usr/bin/env python3
-import time
-import zmq
 
-from PyQt5 import QtWidgets, QtCore, QtGui, uic
+from PyQt5 import QtWidgets, QtCore, uic
 import sys, os
 import pyqtgraph as pg
-from pyqtgraph import PlotWidget, GraphicsLayoutWidget
-import multiprocessing as mp
-from threading import Thread
-from PIL import Image as im
-
-import json
-import zmq
-import numpy as np
-import posixpath
-from pathlib import Path
 
 from functools import partial
-from slsdet import Detector, dacIndex, readoutMode, runStatus
+from slsdet import Detector, dacIndex
 
-from TabClasses.ADC import ADC
-from TabClasses.Acquisition import Acquisition
-from TabClasses.Pattern import Pattern
-from TabClasses.Plot import Plot
-from TabClasses.Transceiver import Transceiver
-from TabClasses.DACs import DACs
-from TabClasses.PowerSupplies import PowerSupplies
-from TabClasses.Signals import Signals
-from TabClasses.SlowADCs import SlowADCs
-from bit_utils import set_bit, remove_bit, bit_is_set, manipulate_bit
-import random
+from services.ADC import ADC
+from services.Acquisition import Acquisition
+from services.Pattern import Pattern
+from services.Plot import Plot
+from services.Transceiver import Transceiver
+from services.DACs import DACs
+from services.PowerSupplies import PowerSupplies
+from services.Signals import Signals
+from services.SlowADCs import SlowADCs
 
-from defines import *
-from plotPattern import PlotPattern
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from utils.defines import *
 
 import argparse
-import alias_utility
+from utils import alias_utility
 import signal
 
-import decoder
-from pixelmap import moench04_analog, matterhorn_transceiver
 
 class MainWindow(QtWidgets.QMainWindow):
     signalShortcutAcquire = QtCore.pyqtSignal()

@@ -1,16 +1,14 @@
 from functools import partial
 
 import numpy as np
-from slsdet import Detector, dacIndex, readoutMode, runStatus
 import random
 
 from PyQt5 import QtWidgets,QtGui
-from pixelmap import moench04_analog, matterhorn_transceiver
+from utils.pixelmap import moench04_analog, matterhorn_transceiver
 
 import pyqtgraph as pg
 
-from bit_utils import bit_is_set, manipulate_bit
-from defines import Defines
+from utils.defines import Defines
 
 
 class Plot:

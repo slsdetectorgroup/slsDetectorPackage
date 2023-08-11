@@ -2,7 +2,10 @@ from functools import partial
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 from PyQt5 import QtWidgets
 
-class DACs:
+from utils.SingletonMeta import SingletonMeta
+
+
+class DacService(metaclass=SingletonMeta):
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
 

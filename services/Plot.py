@@ -4,6 +4,8 @@ import numpy as np
 import random
 
 from PyQt5 import QtWidgets,QtGui
+
+from utils.SingletonMeta import SingletonMeta
 from utils.pixelmap import moench04_analog, matterhorn_transceiver
 
 import pyqtgraph as pg
@@ -11,7 +13,7 @@ import pyqtgraph as pg
 from utils.defines import Defines
 
 
-class Plot:
+class PlotService(metaclass=SingletonMeta):
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det
@@ -78,7 +80,7 @@ class Plot:
         self.mainWindow.analogPlots = {}
         waveform = np.zeros(1000)
         for i in range(32):
-            pen = pg.mkPen(color=self.mainWindow.adcTab.getADCButtonColor(i), width=1)
+            pen = pg.mkPen(color=self.mainWindow.adcService.getADCButtonColor(i), width=1)
             legendName = getattr(self.mainWindow, f"labelADC{i}").text()
             self.mainWindow.analogPlots[i] = self.mainWindow.plotAnalogWaveform.plot(waveform, pen=pen, name=legendName)
             self.mainWindow.analogPlots[i].hide()
@@ -112,7 +114,7 @@ class Plot:
         self.mainWindow.digitalPlots = {}
         waveform = np.zeros(1000)
         for i in range(64):
-            pen = pg.mkPen(color=self.mainWindow.signalTab.getDBitButtonColor(i), width=1)
+            pen = pg.mkPen(color=self.mainWindow.signalsService.getDBitButtonColor(i), width=1)
             legendName = getattr(self.mainWindow, f"labelBIT{i}").text()
             self.mainWindow.digitalPlots[i] = self.mainWindow.plotDigitalWaveform.plot(waveform, pen=pen, name=legendName, stepMode="left")
             self.mainWindow.digitalPlots[i].hide()
@@ -148,7 +150,7 @@ class Plot:
         self.mainWindow.transceiverPlots = {}
         waveform = np.zeros(1000)
         for i in range(4):
-            pen = pg.mkPen(color=self.mainWindow.transceiverTab.getTransceiverButtonColor(i), width=1)
+            pen = pg.mkPen(color=self.mainWindow.transceiverService.getTransceiverButtonColor(i), width=1)
             legendName = getattr(self.mainWindow, f"labelTransceiver{i}").text()
             self.mainWindow.transceiverPlots[i] = self.mainWindow.plotTransceiverWaveform.plot(waveform, pen=pen, name=legendName)
             self.mainWindow.transceiverPlots[i].hide()
@@ -311,7 +313,7 @@ class Plot:
         # TODO:
 
     def plotReferesh(self):
-        self.mainWindow.acquisitionTab.read_zmq()
+        self.mainWindow.acquisitionService.read_zmq()
 
     def getRandomColor(self):
         '''

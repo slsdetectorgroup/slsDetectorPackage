@@ -6,11 +6,13 @@ from PyQt5 import QtWidgets
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+
+from utils.SingletonMeta import SingletonMeta
 from utils.defines import Defines
 from utils.plotPattern import PlotPattern
 
 
-class Pattern:
+class PatternService(metaclass=SingletonMeta):
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det
@@ -405,7 +407,7 @@ class Pattern:
         print('\n')
 
     def viewPattern(self):
-        self.mainWindow.plotTab.showPatternViewer(True)
+        self.mainWindow.plotService.showPatternViewer(True)
         pattern_file = self.getCompiledPatFname()
         if not pattern_file:
             return

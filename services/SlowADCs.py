@@ -1,8 +1,10 @@
 from functools import partial
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 
+from utils.SingletonMeta import SingletonMeta
 
-class SlowADCs:
+
+class SlowAdcService(metaclass=SingletonMeta):
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
 

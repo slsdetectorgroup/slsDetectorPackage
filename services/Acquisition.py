@@ -1,19 +1,12 @@
 import json
 import os
-from functools import partial
 from pathlib import Path
-import decoder
+from utils import decoder
 
 import numpy as np
-from slsdet import Detector, dacIndex, readoutMode, runStatus
+from slsdet import readoutMode, runStatus
 from PyQt5 import QtWidgets
-import pyqtgraph as pg
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-from bit_utils import bit_is_set, manipulate_bit
-from defines import Defines
-from plotPattern import PlotPattern
+from utils.defines import Defines
 
 import time
 import zmq

@@ -698,7 +698,7 @@ class Acquisition:
 
                     # keep the zoomed in state (not 1st image)
                     if self.mainWindow.firstAnalogImage:
-                        self.firstAnalogImage = False
+                        self.mainWindow.firstAnalogImage = False
                     else:
                         viewBox.setState(state)
                         self.mainWindow.plotAnalogImage.getHistogramWidget().item.setLevels(min=levels[0],
@@ -727,7 +727,7 @@ class Acquisition:
                     try:
                         self.mainWindow.transceiver_frame = decoder.decode(trans_array,
                                                                            self.mainWindow.pixelMapTransceiver)
-                        # print(f"type of image:{type(self.transceiver_frame)}")
+                        # print(f"type of image:{type(self.mainWindows.transceiver_frame)}")
                         self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame)
                     except Exception as e:
                         self.mainWindow.statusbar.setStyleSheet("color:red")

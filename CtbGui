@@ -38,7 +38,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 import argparse
-import alias_utility 
+import alias_utility
 import signal
 
 import decoder
@@ -58,12 +58,12 @@ class MainWindow(QtWidgets.QMainWindow):
         pg.setConfigOption("background", (247, 247, 247))
         pg.setConfigOption("foreground", "k")
         pg.setConfigOption('leftButtonPan', False)
-        
+
         super(MainWindow, self).__init__()
         uic.loadUi("CtbGui.ui", self)
 
         self.updateSettingValues()
-        
+
         self.det = None
         try:
             self.det = Detector()
@@ -149,7 +149,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.beginGroup("dockwidget");
 
         # is docked
-        if self.settings.contains('window_width') and self.settings.contains('window_height'): 
+        if self.settings.contains('window_width') and self.settings.contains('window_height'):
             # window size
             width = self.settings.value('window_width')
             height = self.settings.value('window_height')
@@ -184,7 +184,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def saveSettings(self):
         # store in ~/.config/slsdetectorgroup/pyctbgui.conf
         self.saveSettingMainWindow()
-        self.saveSettingDockWidget()         
+        self.saveSettingDockWidget()
 
     def closeEvent(self, event):
         self.saveSettings()
@@ -236,7 +236,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.slowADCsTab.updateSlowAdcNames()
         self.dacTab.updateDACNames()
         self.powerSuppliesTab.updateVoltageNames()
-        
+
 
     # For Action options function
     # TODO Only add the components of action option+ functions
@@ -314,13 +314,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.plotTab.setup_ui()
 
 
-        # pattern viewer plot area
-        self.figure, self.ax = plt.subplots()
-        self.canvas = FigureCanvas(self.figure)
-        self.toolbar = NavigationToolbar(self.canvas, self)
-        self.gridLayoutPatternViewer.addWidget(self.toolbar)
-        self.gridLayoutPatternViewer.addWidget(self.canvas)
-        self.figure.clear()
+
 
 
 
@@ -333,7 +327,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.signalShortcutTabUp.emit()
             if event.key() == QtCore.Qt.Key_Minus:
                 self.signalShortcutTabDown.emit()
-    
+
     def changeTabIndex(self, up):
         ind = self.tabWidget.currentIndex()
         if up:

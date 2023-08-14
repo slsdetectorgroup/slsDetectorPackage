@@ -8,17 +8,16 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 from .Plot import PlotService
-from utils.SingletonMeta import SingletonMeta
 from utils.defines import Defines
 from utils.plotPattern import PlotPattern
 
 
-class PatternService(metaclass=SingletonMeta):
+class PatternService():
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det
 
-        self.plotService = PlotService(self)
+        self.plotService = self.mainWindow.plotService
 
     def setup_ui(self):
         # Pattern Tab

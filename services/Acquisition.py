@@ -12,23 +12,21 @@ from .ADC import AdcService
 from .Signals import SignalsService
 from .Transceiver import TransceiverService
 
-from utils.SingletonMeta import SingletonMeta
 from utils.defines import Defines
 
 import time
 import zmq
 
 
-class AcquisitionService(metaclass=SingletonMeta):
+class AcquisitionService():
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det
 
-        self.signalsService = SignalsService(self)
-        self.transceiverService = TransceiverService(self)
-        self.adcService = AdcService(self)
-        self.plotService = PlotService(self)
-
+        self.signalsService = self.mainWindow.signalsService
+        self.transceiverService = self.mainWindow.transceiverService
+        self.adcService = self.mainWindow.adcService
+        self.plotService = self.mainWindow.plotService
 
     def setup_ui(self):
         self.toggleStartButton(False)

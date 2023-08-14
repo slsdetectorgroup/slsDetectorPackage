@@ -5,7 +5,6 @@ import random
 
 from PyQt5 import QtWidgets,QtGui
 
-from utils.SingletonMeta import SingletonMeta
 from utils.pixelmap import moench04_analog, matterhorn_transceiver
 
 
@@ -15,7 +14,7 @@ import pyqtgraph as pg
 from utils.defines import Defines
 
 
-class PlotService(metaclass=SingletonMeta):
+class PlotService():
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det

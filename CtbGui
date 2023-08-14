@@ -47,6 +47,7 @@ class MainWindow(QtWidgets.QMainWindow):
             raise
 
         # get Tab Classes
+        self.plotService = PlotService(self)
         self.slowAdcService = SlowAdcService(self)
         self.dacService = DacService(self)
         self.powerService = PowerSuppliesService(self)
@@ -55,7 +56,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.adcService = AdcService(self)
         self.patternService = PatternService(self)
         self.acquisitionService = AcquisitionService(self)
-        self.plotService = PlotService(self)
+
 
         self.acquisitionService.setup_zmq()
         self.setup_ui()

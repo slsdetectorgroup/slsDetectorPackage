@@ -6,15 +6,14 @@ from PyQt5 import QtWidgets
 import pyqtgraph as pg
 
 from .Plot import PlotService
-from utils.SingletonMeta import SingletonMeta
 from utils.bit_utils import bit_is_set, manipulate_bit
 
 
-class TransceiverService(metaclass=SingletonMeta):
+class TransceiverService():
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
 
-        self.plotService = PlotService(self)
+        self.plotService = self.mainWindow.plotService
 
     def setup_ui(self):
         for i in range(4):

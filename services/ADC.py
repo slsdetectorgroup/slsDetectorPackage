@@ -7,17 +7,16 @@ import pyqtgraph as pg
 from .Plot import PlotService
 
 
-from utils.SingletonMeta import SingletonMeta
 from utils.bit_utils import bit_is_set, manipulate_bit
 from utils.defines import Defines
 
 
-class AdcService(metaclass=SingletonMeta):
+class AdcService():
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det
 
-        self.plotService = PlotService(self)
+        self.plotService = self.mainWindow.plotService
 
     def setup_ui(self):
         for i in range(32):

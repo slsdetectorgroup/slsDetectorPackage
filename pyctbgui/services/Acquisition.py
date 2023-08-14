@@ -1,21 +1,23 @@
 import json
 import os
 from pathlib import Path
-from utils import decoder
-
 import numpy as np
-from slsdet import readoutMode, runStatus
+import time
+import zmq
 from PyQt5 import QtWidgets
 
+from slsdet import readoutMode, runStatus
+
+from PyQt5 import QtWidgets
+from slsdet import readoutMode, runStatus
 from .Plot import PlotService
 from .ADC import AdcService
 from .Signals import SignalsService
 from .Transceiver import TransceiverService
 
-from utils.defines import Defines
+from ..utils import decoder
+from ..utils.defines import Defines
 
-import time
-import zmq
 
 
 class AcquisitionService():

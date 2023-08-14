@@ -4,14 +4,11 @@ import numpy as np
 import random
 
 from PyQt5 import QtWidgets,QtGui
-
-from utils.pixelmap import moench04_analog, matterhorn_transceiver
-
-
+from ..utils.pixelmap import moench04_analog, matterhorn_transceiver
 
 import pyqtgraph as pg
 
-from utils.defines import Defines
+from ..utils.defines import Defines
 
 
 class PlotService():

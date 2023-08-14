@@ -1,14 +1,11 @@
 from functools import partial
-
 import numpy as np
 from PyQt5 import QtWidgets
 import pyqtgraph as pg
 
 from .Plot import PlotService
-
-
-from utils.bit_utils import bit_is_set, manipulate_bit
-from utils.defines import Defines
+from ..utils.bit_utils import bit_is_set, manipulate_bit
+from ..utils.defines import Defines
 
 
 class AdcService():

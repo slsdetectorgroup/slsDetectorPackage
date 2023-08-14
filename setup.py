@@ -31,8 +31,11 @@ setuptools.setup(
     ext_modules=[c_ext],
     scripts=['CtbGui',],
      install_requires=[
-          'numpy', #TODO! write proper requires block
+          'numpy', #TODO! write proper requires block (can't depend on slsdet at the moment)
           'pyzmq',
           'pillow',
+          'PyQt5', 
+          'pyqtgraph',
+          'matplotlib'
       ],
 )

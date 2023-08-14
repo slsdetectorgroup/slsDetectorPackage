@@ -7,17 +7,17 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
-from .Plot import PlotService
+from .Plot import PlotTab
 from ..utils.defines import Defines
 from ..utils.plotPattern import PlotPattern
 
 
-class PatternService():
+class PatternTab():
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det
 
-        self.plotService = self.mainWindow.plotService
+        self.plotTab = self.mainWindow.plotTab
 
     def setup_ui(self):
         # Pattern Tab
@@ -409,7 +409,7 @@ class PatternService():
         print('\n')
 
     def viewPattern(self):
-        self.plotService.showPatternViewer(True)
+        self.plotTab.showPatternViewer(True)
         pattern_file = self.getCompiledPatFname()
         if not pattern_file:
             return

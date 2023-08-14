@@ -4,20 +4,20 @@ import numpy as np
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 from PyQt5 import QtWidgets
 import pyqtgraph as pg
-from .Plot import PlotService
+from .Plot import PlotTab
 
 from ..utils.bit_utils import bit_is_set, manipulate_bit
 
 
-class TransceiverService():
+class TransceiverTab():
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
 
-        self.plotService = self.mainWindow.plotService
+        self.plotTab = self.mainWindow.plotTab
 
     def setup_ui(self):
         for i in range(4):
-            self.setTransceiverButtonColor(i, self.plotService.getRandomColor())
+            self.setTransceiverButtonColor(i, self.plotTab.getRandomColor())
         self.initializeAllTransceiverPlots()
 
     def connect_ui(self):
@@ -88,7 +88,7 @@ class TransceiverService():
             self.getTransceiverEnable(i, retval)
             self.getTransceiverEnablePlot(i)
             self.getTransceiverEnableColor(i)
-            self.plotService.addSelectedTransceiverPlots(i)
+            self.plotTab.addSelectedTransceiverPlots(i)
 
     def setTransceiverEnable(self, i):
         checkBox = getattr(self.mainWindow, f"checkBoxTransceiver{i}")
@@ -110,7 +110,7 @@ class TransceiverService():
         pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
         checkBox = getattr(self.mainWindow, f"checkBoxTransceiver{i}Plot")
         pushButton.setEnabled(checkBox.isChecked())
-        self.plotService.addSelectedTransceiverPlots(i)
+        self.plotTab.addSelectedTransceiverPlots(i)
 
     def getTransceiverEnableColor(self, i):
         checkBox = getattr(self.mainWindow, f"checkBoxTransceiver{i}Plot")
@@ -119,14 +119,14 @@ class TransceiverService():
 
     def selectTransceiverColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
-        self.plotService.showPalette(pushButton)
+        self.plotTab.showPalette(pushButton)
         pen = pg.mkPen(color=self.getTransceiverButtonColor(i), width=1)
         self.mainWindow.transceiverPlots[i].setPen(pen)
 
     def getTransceiverButtonColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
-        return self.plotService.getActiveColor(pushButton)
+        return self.plotTab.getActiveColor(pushButton)
 
     def setTransceiverButtonColor(self, i, color):
         pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
-        return self.plotService.setActiveColor(pushButton, color)
+        return self.plotTab.setActiveColor(pushButton, color)

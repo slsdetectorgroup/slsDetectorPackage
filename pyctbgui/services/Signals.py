@@ -4,17 +4,17 @@ import numpy as np
 from PyQt5 import QtWidgets
 import pyqtgraph as pg
 
-from .Plot import PlotService
+from .Plot import PlotTab
 
 from ..utils.bit_utils import bit_is_set, manipulate_bit
 from ..utils.defines import Defines
 
 
-class SignalsService():
+class SignalsTab():
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
 
-        self.plotService = PlotService(mainWindow)
+        self.plotTab = PlotTab(mainWindow)
 
     def refresh(self):
         self.updateSignalNames()
@@ -39,7 +39,7 @@ class SignalsService():
 
     def setup_ui(self):
         for i in range(64):
-            self.setDBitButtonColor(i, self.plotService.getRandomColor())
+            self.setDBitButtonColor(i, self.plotTab.getRandomColor())
         self.initializeAllDigitalPlots()
 
     def initializeAllDigitalPlots(self):
@@ -79,7 +79,7 @@ class SignalsService():
             self.getDigitalBitEnable(i, retval)
             self.getEnableBitPlot(i)
             self.getEnableBitColor(i)
-            self.plotService.addSelectedDigitalPlots(i)
+            self.plotTab.addSelectedDigitalPlots(i)
         self.getDigitalBitEnableRange(retval)
         self.getEnableBitPlotRange()
 
@@ -127,7 +127,7 @@ class SignalsService():
         pushButton.setEnabled(checkBox.isChecked())
 
         self.getEnableBitPlotRange()
-        self.plotService.addSelectedDigitalPlots(i)
+        self.plotTab.addSelectedDigitalPlots(i)
 
     def getEnableBitPlotRange(self):
         self.mainWindow.checkBoxBIT0_31Plot.stateChanged.disconnect()
@@ -149,7 +149,7 @@ class SignalsService():
         for i in range(start_nr, end_nr):
             checkBox = getattr(self.mainWindow, f"checkBoxBIT{i}Plot")
             checkBox.setChecked(enable)
-        self.plotService.addAllSelectedDigitalPlots()
+        self.plotTab.addAllSelectedDigitalPlots()
 
     def getEnableBitColor(self, i):
         checkBox = getattr(self.mainWindow, f"checkBoxBIT{i}Plot")
@@ -158,17 +158,17 @@ class SignalsService():
 
     def selectBitColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonBIT{i}")
-        self.plotService.showPalette(pushButton)
+        self.plotTab.showPalette(pushButton)
         pen = pg.mkPen(color=self.getDBitButtonColor(i), width=1)
         self.mainWindow.digitalPlots[i].setPen(pen)
 
     def getDBitButtonColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonBIT{i}")
-        return self.plotService.getActiveColor(pushButton)
+        return self.plotTab.getActiveColor(pushButton)
 
     def setDBitButtonColor(self, i, color):
         pushButton = getattr(self.mainWindow, f"pushButtonBIT{i}")
-        return self.plotService.setActiveColor(pushButton, color)
+        return self.plotTab.setActiveColor(pushButton, color)
 
     def getIOOutReg(self):
         retval = self.mainWindow.det.patioctrl

@@ -10,25 +10,25 @@ from slsdet import readoutMode, runStatus
 
 from PyQt5 import QtWidgets
 from slsdet import readoutMode, runStatus
-from .Plot import PlotService
-from .ADC import AdcService
-from .Signals import SignalsService
-from .Transceiver import TransceiverService
+from .Plot import PlotTab
+from .ADC import AdcTab
+from .Signals import SignalsTab
+from .Transceiver import TransceiverTab
 
 from ..utils import decoder
 from ..utils.defines import Defines
 
 
 
-class AcquisitionService():
+class AcquisitionTab():
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det
 
-        self.signalsService = self.mainWindow.signalsService
-        self.transceiverService = self.mainWindow.transceiverService
-        self.adcService = self.mainWindow.adcService
-        self.plotService = self.mainWindow.plotService
+        self.signalsTab = self.mainWindow.signalsTab
+        self.transceiverTab = self.mainWindow.transceiverTab
+        self.adcTab = self.mainWindow.adcTab
+        self.plotTab = self.mainWindow.plotTab
 
     def setup_ui(self):
         self.toggleStartButton(False)
@@ -47,30 +47,30 @@ class AcquisitionService():
         self.mainWindow.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
         self.mainWindow.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
 
-        self.mainWindow.radioButtonNoPlot.clicked.connect(self.plotService.plotOptions)
-        self.mainWindow.radioButtonWaveform.clicked.connect(self.plotService.plotOptions)
-        self.mainWindow.radioButtonDistribution.clicked.connect(self.plotService.plotOptions)
-        self.mainWindow.radioButtonImage.clicked.connect(self.plotService.plotOptions)
-        self.mainWindow.comboBoxPlot.currentIndexChanged.connect(self.plotService.setPixelMap)
-        self.mainWindow.comboBoxColorMap.currentIndexChanged.connect(self.plotService.setColorMap)
-        self.mainWindow.comboBoxZMQHWM.currentIndexChanged.connect(self.plotService.setZMQHWM)
-        self.mainWindow.spinBoxSerialOffset.editingFinished.connect(self.plotService.setSerialOffset)
-        self.mainWindow.spinBoxNCount.editingFinished.connect(self.plotService.setNCounter)
-        self.mainWindow.spinBoxDynamicRange.editingFinished.connect(self.plotService.setDynamicRange)
-        self.mainWindow.spinBoxImageX.editingFinished.connect(self.plotService.setImageX)
-        self.mainWindow.spinBoxImageY.editingFinished.connect(self.plotService.setImageY)
-        self.mainWindow.checkBoxAcquire.stateChanged.connect(self.plotService.setPedestal)
-        self.mainWindow.checkBoxSubtract.stateChanged.connect(self.plotService.setPedestal)
-        self.mainWindow.checkBoxCommonMode.stateChanged.connect(self.plotService.setPedestal)
-        self.mainWindow.pushButtonReset.clicked.connect(self.plotService.resetPedestal)
-        self.mainWindow.checkBoxRaw.stateChanged.connect(self.plotService.setRawData)
-        self.mainWindow.spinBoxRawMin.editingFinished.connect(self.plotService.setRawData)
-        self.mainWindow.spinBoxRawMax.editingFinished.connect(self.plotService.setRawData)
-        self.mainWindow.checkBoxPedestal.stateChanged.connect(self.plotService.setPedestalSubtract)
-        self.mainWindow.spinBoxPedestalMin.editingFinished.connect(self.plotService.setPedestalSubtract)
-        self.mainWindow.spinBoxPedestalMax.editingFinished.connect(self.plotService.setPedestalSubtract)
-        self.mainWindow.spinBoxFit.editingFinished.connect(self.plotService.setFitADC)
-        self.mainWindow.spinBoxPlot.editingFinished.connect(self.plotService.setPlotBit)
+        self.mainWindow.radioButtonNoPlot.clicked.connect(self.plotTab.plotOptions)
+        self.mainWindow.radioButtonWaveform.clicked.connect(self.plotTab.plotOptions)
+        self.mainWindow.radioButtonDistribution.clicked.connect(self.plotTab.plotOptions)
+        self.mainWindow.radioButtonImage.clicked.connect(self.plotTab.plotOptions)
+        self.mainWindow.comboBoxPlot.currentIndexChanged.connect(self.plotTab.setPixelMap)
+        self.mainWindow.comboBoxColorMap.currentIndexChanged.connect(self.plotTab.setColorMap)
+        self.mainWindow.comboBoxZMQHWM.currentIndexChanged.connect(self.plotTab.setZMQHWM)
+        self.mainWindow.spinBoxSerialOffset.editingFinished.connect(self.plotTab.setSerialOffset)
+        self.mainWindow.spinBoxNCount.editingFinished.connect(self.plotTab.setNCounter)
+        self.mainWindow.spinBoxDynamicRange.editingFinished.connect(self.plotTab.setDynamicRange)
+        self.mainWindow.spinBoxImageX.editingFinished.connect(self.plotTab.setImageX)
+        self.mainWindow.spinBoxImageY.editingFinished.connect(self.plotTab.setImageY)
+        self.mainWindow.checkBoxAcquire.stateChanged.connect(self.plotTab.setPedestal)
+        self.mainWindow.checkBoxSubtract.stateChanged.connect(self.plotTab.setPedestal)
+        self.mainWindow.checkBoxCommonMode.stateChanged.connect(self.plotTab.setPedestal)
+        self.mainWindow.pushButtonReset.clicked.connect(self.plotTab.resetPedestal)
+        self.mainWindow.checkBoxRaw.stateChanged.connect(self.plotTab.setRawData)
+        self.mainWindow.spinBoxRawMin.editingFinished.connect(self.plotTab.setRawData)
+        self.mainWindow.spinBoxRawMax.editingFinished.connect(self.plotTab.setRawData)
+        self.mainWindow.checkBoxPedestal.stateChanged.connect(self.plotTab.setPedestalSubtract)
+        self.mainWindow.spinBoxPedestalMin.editingFinished.connect(self.plotTab.setPedestalSubtract)
+        self.mainWindow.spinBoxPedestalMax.editingFinished.connect(self.plotTab.setPedestalSubtract)
+        self.mainWindow.spinBoxFit.editingFinished.connect(self.plotTab.setFitADC)
+        self.mainWindow.spinBoxPlot.editingFinished.connect(self.plotTab.setPlotBit)
         self.mainWindow.pushButtonReferesh.clicked.connect(self.plotReferesh)
 
         self.mainWindow.checkBoxFileWrite.stateChanged.connect(self.setFileWrite)
@@ -158,7 +158,7 @@ class AcquisitionService():
         self.mainWindow.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
         self.getAnalog()
         self.getDigital()
-        self.plotService.showPlot()
+        self.plotTab.showPlot()
 
     def plotReferesh(self):
         self.read_zmq()
@@ -461,7 +461,7 @@ class AcquisitionService():
 
     def toggleAcquire(self):
         if self.mainWindow.pushButtonStart.isChecked():
-            self.plotService.showPatternViewer(False)
+            self.plotTab.showPatternViewer(False)
             self.acquire()
         else:
             self.stopAcquisition()
@@ -487,7 +487,7 @@ class AcquisitionService():
                                                   "To read Matterhorn image, please enable transceiver readout mode",
                                                   QtWidgets.QMessageBox.Ok)
                     return False
-                if self.transceiverService.getTransceiverEnableReg() != Defines.Matterhorn.tranceiverEnable:
+                if self.transceiverTab.getTransceiverEnableReg() != Defines.Matterhorn.tranceiverEnable:
                     QtWidgets.QMessageBox.warning(self.mainWindow, "Plot type",
                                                   "To read Matterhorn image, please set transceiver enable to " + str(
                                                       Defines.Matterhorn.tranceiverEnable), QtWidgets.QMessageBox.Ok)
@@ -524,10 +524,10 @@ class AcquisitionService():
         self.getAnalog()
         self.getDigital()
         self.getReadout()
-        self.signalsService.getDBitOffset()
-        self.adcService.getADCEnableReg()
-        self.signalsService.updateDigitalBitEnable()
-        self.transceiverService.getTransceiverEnableReg()
+        self.signalsTab.getDBitOffset()
+        self.adcTab.getADCEnableReg()
+        self.signalsTab.updateDigitalBitEnable()
+        self.transceiverTab.getTransceiverEnableReg()
 
         self.startMeasurement()
 

@@ -3,21 +3,21 @@ import numpy as np
 from PyQt5 import QtWidgets
 import pyqtgraph as pg
 
-from .Plot import PlotService
+from .Plot import PlotTab
 from ..utils.bit_utils import bit_is_set, manipulate_bit
 from ..utils.defines import Defines
 
 
-class AdcService():
+class AdcTab():
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det
 
-        self.plotService = self.mainWindow.plotService
+        self.plotTab = self.mainWindow.plotTab
 
     def setup_ui(self):
         for i in range(32):
-            self.setADCButtonColor(i, self.plotService.getRandomColor())
+            self.setADCButtonColor(i, self.plotTab.getRandomColor())
         self.initializeAllAnalogPlots()
 
     def initializeAllAnalogPlots(self):
@@ -103,7 +103,7 @@ class AdcService():
             self.getADCEnable(i, retval)
             self.getADCEnablePlot(i)
             self.getADCEnableColor(i)
-            self.plotService.addSelectedAnalogPlots(i)
+            self.plotTab.addSelectedAnalogPlots(i)
         self.getADCEnableRange(retval)
         self.getADCEnablePlotRange()
 
@@ -157,7 +157,7 @@ class AdcService():
         pushButton.setEnabled(checkBox.isChecked())
 
         self.getADCEnablePlotRange()
-        self.plotService.addSelectedAnalogPlots(i)
+        self.plotTab.addSelectedAnalogPlots(i)
 
     def getADCEnablePlotRange(self):
         self.mainWindow.checkBoxADC0_15Plot.stateChanged.disconnect()
@@ -175,7 +175,7 @@ class AdcService():
         for i in range(start_nr, end_nr):
             checkBox = getattr(self.mainWindow, f"checkBoxADC{i}Plot")
             checkBox.setChecked(enable)
-        self.plotService.addAllSelectedAnalogPlots()
+        self.plotTab.addAllSelectedAnalogPlots()
 
     def getADCEnableColor(self, i):
         checkBox = getattr(self.mainWindow, f"checkBoxADC{i}Plot")
@@ -184,17 +184,17 @@ class AdcService():
 
     def selectADCColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonADC{i}")
-        self.plotService.showPalette(pushButton)
+        self.plotTab.showPalette(pushButton)
         pen = pg.mkPen(color=self.getADCButtonColor(i), width=1)
         self.mainWindow.analogPlots[i].setPen(pen)
 
     def getADCButtonColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonADC{i}")
-        return self.plotService.getActiveColor(pushButton)
+        return self.plotTab.getActiveColor(pushButton)
 
     def setADCButtonColor(self, i, color):
         pushButton = getattr(self.mainWindow, f"pushButtonADC{i}")
-        return self.plotService.setActiveColor(pushButton, color)
+        return self.plotTab.setActiveColor(pushButton, color)
 
     def getADCInvReg(self):
         retval = self.det.adcinvert

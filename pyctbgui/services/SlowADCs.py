@@ -3,7 +3,7 @@ from slsdet import Detector, dacIndex, readoutMode, runStatus
 
 
 
-class SlowAdcService():
+class SlowAdcTab():
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
 

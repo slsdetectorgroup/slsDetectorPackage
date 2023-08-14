@@ -11,7 +11,7 @@ import pyqtgraph as pg
 from ..utils.defines import Defines
 
 
-class PlotService():
+class PlotTab():
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det

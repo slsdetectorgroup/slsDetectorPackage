@@ -12,15 +12,15 @@ from functools import partial
 from slsdet import Detector, dacIndex
 
 
-from ..services.ADC import AdcService
-from ..services.Acquisition import AcquisitionService
-from ..services.Pattern import PatternService
-from ..services.Plot import PlotService
-from ..services.Transceiver import TransceiverService
-from ..services.DACs import DacService
-from ..services.PowerSupplies import PowerSuppliesService
-from ..services.Signals import SignalsService
-from ..services.SlowADCs import SlowAdcService
+from ..services.ADC import AdcTab
+from ..services.Acquisition import AcquisitionTab
+from ..services.Pattern import PatternTab
+from ..services.Plot import PlotTab
+from ..services.Transceiver import TransceiverTab
+from ..services.DACs import DacTab
+from ..services.PowerSupplies import PowerSuppliesTab
+from ..services.Signals import SignalsTab
+from ..services.SlowADCs import SlowAdcTab
 
 from pathlib import Path
 class MainWindow(QtWidgets.QMainWindow):
@@ -53,41 +53,41 @@ class MainWindow(QtWidgets.QMainWindow):
             raise
 
         # get Tab Classes
-        self.plotService = PlotService(self)
-        self.slowAdcService = SlowAdcService(self)
-        self.dacService = DacService(self)
-        self.powerSuppliesService = PowerSuppliesService(self)
-        self.signalsService = SignalsService(self)
-        self.transceiverService = TransceiverService(self)
-        self.adcService = AdcService(self)
-        self.patternService = PatternService(self)
-        self.acquisitionService = AcquisitionService(self)
+        self.plotTab = PlotTab(self)
+        self.slowAdcTab = SlowAdcTab(self)
+        self.dacTab = DacTab(self)
+        self.powerSuppliesTab = PowerSuppliesTab(self)
+        self.signalsTab = SignalsTab(self)
+        self.transceiverTab = TransceiverTab(self)
+        self.adcTab = AdcTab(self)
+        self.patternTab = PatternTab(self)
+        self.acquisitionTab = AcquisitionTab(self)
 
-        self.acquisitionService.setup_zmq()
+        self.acquisitionTab.setup_zmq()
         self.setup_ui()
         self.tabWidget.setCurrentIndex(Defines.Acquisition_Tab_Index)
         self.tabWidget.currentChanged.connect(self.refresh_tab)
         self.connect_ui()
 
-        self.dacService.refresh()
-        self.powerSuppliesService.refresh()
-        self.slowAdcService.refresh()
-        self.signalsService.refresh()
-        self.transceiverService.refresh()
-        self.adcService.refresh()
-        self.patternService.refresh()
-        self.acquisitionService.refresh()
-        self.plotService.refresh()
+        self.dacTab.refresh()
+        self.powerSuppliesTab.refresh()
+        self.slowAdcTab.refresh()
+        self.signalsTab.refresh()
+        self.transceiverTab.refresh()
+        self.adcTab.refresh()
+        self.patternTab.refresh()
+        self.acquisitionTab.refresh()
+        self.plotTab.refresh()
 
         # also refreshes timer to start plotting 
-        self.plotService.plotOptions()
-        self.plotService.showPlot()
+        self.plotTab.plotOptions()
+        self.plotTab.showPlot()
 
-        self.patternService.getPatViewerColors()
-        self.patternService.getPatViewerWaitParameters()
-        self.patternService.getPatViewerLoopParameters()
-        self.patternService.updatePatViewerParameters()
-        self.plotService.showPatternViewer(False)
+        self.patternTab.getPatViewerColors()
+        self.patternTab.getPatViewerWaitParameters()
+        self.patternTab.getPatViewerLoopParameters()
+        self.patternTab.updatePatViewerParameters()
+        self.plotTab.showPatternViewer(False)
 
         if self.alias_file is not None:
             self.loadAliasFile()
@@ -183,7 +183,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 getattr(self, f"checkBoxBIT{i}DB").setChecked(bit_plots[i])
                 getattr(self, f"checkBoxBIT{i}Plot").setChecked(bit_plots[i])
             if bit_colors[i]:
-                self.signalsService.setDBitButtonColor(i, bit_colors[i])
+                self.signalsTab.setDBitButtonColor(i, bit_colors[i])
 
         for i in range(32):
             if adc_names[i]:
@@ -192,7 +192,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 getattr(self, f"checkBoxADC{i}En").setChecked(adc_plots[i])
                 getattr(self, f"checkBoxADC{i}Plot").setChecked(adc_plots[i])
             if adc_colors[i]:
-                self.adcService.setADCButtonColor(i, adc_colors[i])
+                self.adcTab.setADCButtonColor(i, adc_colors[i])
 
         for i in range(18):
             if dac_names[i]:
@@ -210,11 +210,11 @@ class MainWindow(QtWidgets.QMainWindow):
         if pat_file_name:
             self.lineEditPatternFile.setText(pat_file_name)
 
-        self.signalsService.updateSignalNames()
-        self.adcService.updateADCNames()
-        self.slowAdcService.updateSlowAdcNames()
-        self.dacService.updateDACNames()
-        self.powerSuppliesService.updateVoltageNames()
+        self.signalsTab.updateSignalNames()
+        self.adcTab.updateADCNames()
+        self.slowAdcTab.updateSlowAdcNames()
+        self.dacTab.updateDACNames()
+        self.powerSuppliesTab.updateVoltageNames()
 
 
     # For Action options function
@@ -253,23 +253,23 @@ class MainWindow(QtWidgets.QMainWindow):
     def refresh_tab(self, tab_index):
         match tab_index:
             case 0:
-                self.dacService.refresh()
+                self.dacTab.refresh()
             case 1:
-                self.powerSuppliesService.refresh()
+                self.powerSuppliesTab.refresh()
             case 2:
-                self.slowAdcService.refresh()
+                self.slowAdcTab.refresh()
             case 3:
-                self.transceiverService.refresh()
+                self.transceiverTab.refresh()
             case 4:
-                self.signalsService.refresh()
+                self.signalsTab.refresh()
             case 5:
-                self.adcService.refresh()
+                self.adcTab.refresh()
             case 6:
-                self.patternService.refresh()
+                self.patternTab.refresh()
             case 7:
-                self.acquisitionService.refresh()
+                self.acquisitionTab.refresh()
             case 8:
-                self.plotService.refresh()
+                self.plotTab.refresh()
 
 
 
@@ -277,20 +277,20 @@ class MainWindow(QtWidgets.QMainWindow):
     def setup_ui(self):
         #To check detector status
         self.statusTimer = QtCore.QTimer()
-        self.statusTimer.timeout.connect(self.acquisitionService.checkEndofAcquisition)
+        self.statusTimer.timeout.connect(self.acquisitionTab.checkEndofAcquisition)
 
         #To auto trigger the read
         self.read_timer =  QtCore.QTimer()
-        self.read_timer.timeout.connect(self.acquisitionService.read_zmq)
+        self.read_timer.timeout.connect(self.acquisitionTab.read_zmq)
 
-        self.dacService.setup_ui()
-        self.powerSuppliesService.setup_ui()
-        self.signalsService.setup_ui()
-        self.transceiverService.setup_ui()
-        self.adcService.setup_ui()
-        self.patternService.setup_ui()
-        self.acquisitionService.setup_ui()
-        self.plotService.setup_ui()
+        self.dacTab.setup_ui()
+        self.powerSuppliesTab.setup_ui()
+        self.signalsTab.setup_ui()
+        self.transceiverTab.setup_ui()
+        self.adcTab.setup_ui()
+        self.patternTab.setup_ui()
+        self.acquisitionTab.setup_ui()
+        self.plotTab.setup_ui()
 
 
 
@@ -325,12 +325,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionKeyboardShortcuts.triggered.connect(self.showKeyBoardShortcuts)
         self.actionLoadParameters.triggered.connect(self.loadParameters)
 
-        self.dacService.connect_ui()
-        self.powerSuppliesService.connect_ui()
-        self.slowAdcService.connect_ui()
-        self.signalsService.connect_ui()
-        self.transceiverService.connect_ui()
-        self.adcService.connect_ui()
-        self.patternService.connect_ui()
-        self.acquisitionService.connect_ui()
-        self.plotService.connect_ui()
+        self.dacTab.connect_ui()
+        self.powerSuppliesTab.connect_ui()
+        self.slowAdcTab.connect_ui()
+        self.signalsTab.connect_ui()
+        self.transceiverTab.connect_ui()
+        self.adcTab.connect_ui()
+        self.patternTab.connect_ui()
+        self.acquisitionTab.connect_ui()
+        self.plotTab.connect_ui()

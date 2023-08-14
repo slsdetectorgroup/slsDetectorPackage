@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets
 
 
 
-class PowerSuppliesService():
+class PowerSuppliesTab():
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
 

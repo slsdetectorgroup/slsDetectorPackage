@@ -1,15 +1,13 @@
 from functools import partial
 
 import numpy as np
-from slsdet import Detector, dacIndex, readoutMode, runStatus
 from PyQt5 import QtWidgets
 import pyqtgraph as pg
-from .Plot import PlotTab
 
 from ..utils.bit_utils import bit_is_set, manipulate_bit
 
 
-class TransceiverTab():
+class TransceiverTab:
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
 

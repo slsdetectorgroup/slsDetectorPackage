@@ -1,10 +1,10 @@
 from functools import partial
-from slsdet import Detector, dacIndex, readoutMode, runStatus
 from PyQt5 import QtWidgets
 
+from slsdet import Detector, dacIndex, readoutMode, runStatus
 
 
-class DacTab():
+class DacTab:
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
 

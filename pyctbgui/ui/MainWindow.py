@@ -1,28 +1,18 @@
 import os
-
 from PyQt5 import QtWidgets, QtCore, uic
-from ..utils.defines import *
-
 import argparse
-from ..utils import alias_utility
 import signal
 import pyqtgraph as pg
-
+from pathlib import Path
 from functools import partial
+
 from slsdet import Detector, dacIndex
 
+from ..services import *
+from ..utils import alias_utility
+from ..utils.defines import *
 
-from ..services.ADC import AdcTab
-from ..services.Acquisition import AcquisitionTab
-from ..services.Pattern import PatternTab
-from ..services.Plot import PlotTab
-from ..services.Transceiver import TransceiverTab
-from ..services.DACs import DacTab
-from ..services.PowerSupplies import PowerSuppliesTab
-from ..services.Signals import SignalsTab
-from ..services.SlowADCs import SlowAdcTab
 
-from pathlib import Path
 class MainWindow(QtWidgets.QMainWindow):
     signalShortcutAcquire = QtCore.pyqtSignal()
     signalShortcutTabUp = QtCore.pyqtSignal()

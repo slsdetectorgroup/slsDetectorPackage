@@ -1,17 +1,15 @@
 from functools import partial
-
-import numpy as np
 import random
 
 from PyQt5 import QtWidgets,QtGui
-from ..utils.pixelmap import moench04_analog, matterhorn_transceiver
 
 import pyqtgraph as pg
 
 from ..utils.defines import Defines
+from ..utils.pixelmap import moench04_analog, matterhorn_transceiver
 
 
-class PlotTab():
+class PlotTab:
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det

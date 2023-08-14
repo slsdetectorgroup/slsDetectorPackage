@@ -7,20 +7,11 @@ import zmq
 from PyQt5 import QtWidgets
 
 from slsdet import readoutMode, runStatus
-
-from PyQt5 import QtWidgets
-from slsdet import readoutMode, runStatus
-from .Plot import PlotTab
-from .ADC import AdcTab
-from .Signals import SignalsTab
-from .Transceiver import TransceiverTab
-
 from ..utils import decoder
 from ..utils.defines import Defines
 
 
-
-class AcquisitionTab():
+class AcquisitionTab:
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det

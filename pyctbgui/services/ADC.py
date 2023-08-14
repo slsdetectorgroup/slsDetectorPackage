@@ -3,12 +3,11 @@ import numpy as np
 from PyQt5 import QtWidgets
 import pyqtgraph as pg
 
-from .Plot import PlotTab
 from ..utils.bit_utils import bit_is_set, manipulate_bit
 from ..utils.defines import Defines
 
 
-class AdcTab():
+class AdcTab:
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det

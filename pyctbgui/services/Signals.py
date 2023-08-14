@@ -1,5 +1,4 @@
 from functools import partial
-
 import numpy as np
 from PyQt5 import QtWidgets
 import pyqtgraph as pg
@@ -10,7 +9,7 @@ from ..utils.bit_utils import bit_is_set, manipulate_bit
 from ..utils.defines import Defines
 
 
-class SignalsTab():
+class SignalsTab:
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
 

@@ -53,7 +53,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.patternTab = PatternTab(self)
         self.acquisitionTab = AcquisitionTab(self)
 
-        self.tabs_list = [self.dacTab,self.powerSuppliesTab, self.signalsTab,self.transceiverTab,self.adcTab,self.patternTab,self.acquisitionTab,self.plotTab]
+        self.tabs_list = [self.dacTab, self.powerSuppliesTab, self.slowAdcTab,
+                          self.signalsTab, self.transceiverTab, self.adcTab,
+                          self.patternTab, self.acquisitionTab, self.plotTab]
 
         self.acquisitionTab.setup_zmq()
         self.setup_ui()

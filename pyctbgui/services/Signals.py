@@ -1,14 +1,19 @@
 from functools import partial
+import numpy as np
 from PyQt5 import QtWidgets
 import pyqtgraph as pg
+
+from .Plot import PlotTab
 
 from ..utils.bit_utils import bit_is_set, manipulate_bit
 from ..utils.defines import Defines
 
 
-class Signals:
+class SignalsTab:
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
+
+        self.plotTab = PlotTab(mainWindow)
 
     def refresh(self):
         self.updateSignalNames()
@@ -33,7 +38,27 @@ class Signals:
 
     def setup_ui(self):
         for i in range(64):
-            self.setDBitButtonColor(i, self.mainWindow.plotTab.getRandomColor())
+            self.setDBitButtonColor(i, self.plotTab.getRandomColor())
+        self.initializeAllDigitalPlots()
+
+    def initializeAllDigitalPlots(self):
+        self.mainWindow.plotDigitalWaveform = pg.plot()
+        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotDigitalWaveform, 3)
+        self.mainWindow.digitalPlots = {}
+        waveform = np.zeros(1000)
+        for i in range(64):
+            pen = pg.mkPen(color=self.getDBitButtonColor(i), width=1)
+            legendName = getattr(self.mainWindow, f"labelBIT{i}").text()
+            self.mainWindow.digitalPlots[i] = self.mainWindow.plotDigitalWaveform.plot(waveform, pen=pen,
+                                                                                       name=legendName, stepMode="left")
+            self.mainWindow.digitalPlots[i].hide()
+
+        self.mainWindow.plotDigitalImage = pg.ImageView()
+        self.mainWindow.nDigitalRows = 0
+        self.mainWindow.nDigitalCols = 0
+        self.mainWindow.digital_frame = np.zeros((self.mainWindow.nDigitalRows, self.mainWindow.nDigitalCols))
+        self.mainWindow.plotDigitalImage.setImage(self.mainWindow.digital_frame)
+        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotDigitalImage, 4)
 
     def updateSignalNames(self):
         for i, name in enumerate(self.mainWindow.det.getSignalNames()):
@@ -53,7 +78,7 @@ class Signals:
             self.getDigitalBitEnable(i, retval)
             self.getEnableBitPlot(i)
             self.getEnableBitColor(i)
-            self.mainWindow.plotTab.addSelectedDigitalPlots(i)
+            self.plotTab.addSelectedDigitalPlots(i)
         self.getDigitalBitEnableRange(retval)
         self.getEnableBitPlotRange()
 
@@ -101,7 +126,7 @@ class Signals:
         pushButton.setEnabled(checkBox.isChecked())
 
         self.getEnableBitPlotRange()
-        self.mainWindow.plotTab.addSelectedDigitalPlots(i)
+        self.plotTab.addSelectedDigitalPlots(i)
 
     def getEnableBitPlotRange(self):
         self.mainWindow.checkBoxBIT0_31Plot.stateChanged.disconnect()
@@ -123,7 +148,7 @@ class Signals:
         for i in range(start_nr, end_nr):
             checkBox = getattr(self.mainWindow, f"checkBoxBIT{i}Plot")
             checkBox.setChecked(enable)
-        self.mainWindow.plotTab.addAllSelectedDigitalPlots()
+        self.plotTab.addAllSelectedDigitalPlots()
 
     def getEnableBitColor(self, i):
         checkBox = getattr(self.mainWindow, f"checkBoxBIT{i}Plot")
@@ -132,17 +157,17 @@ class Signals:
 
     def selectBitColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonBIT{i}")
-        self.mainWindow.plotTab.showPalette(pushButton)
+        self.plotTab.showPalette(pushButton)
         pen = pg.mkPen(color=self.getDBitButtonColor(i), width=1)
         self.mainWindow.digitalPlots[i].setPen(pen)
 
     def getDBitButtonColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonBIT{i}")
-        return self.mainWindow.plotTab.getActiveColor(pushButton)
+        return self.plotTab.getActiveColor(pushButton)
 
     def setDBitButtonColor(self, i, color):
         pushButton = getattr(self.mainWindow, f"pushButtonBIT{i}")
-        return self.mainWindow.plotTab.setActiveColor(pushButton, color)
+        return self.plotTab.setActiveColor(pushButton, color)
 
     def getIOOutReg(self):
         retval = self.mainWindow.det.patioctrl

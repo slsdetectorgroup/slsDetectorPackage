@@ -2,7 +2,7 @@ from functools import partial
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 
 
-class SlowADCs:
+class SlowAdcTab:
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
 

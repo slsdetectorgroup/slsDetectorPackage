@@ -1,4 +1,5 @@
 from functools import partial
+import numpy as np
 from PyQt5 import QtWidgets
 import pyqtgraph as pg
 
@@ -6,14 +7,37 @@ from ..utils.bit_utils import bit_is_set, manipulate_bit
 from ..utils.defines import Defines
 
 
-class ADC:
+class AdcTab:
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det
 
+        self.plotTab = self.mainWindow.plotTab
+
     def setup_ui(self):
         for i in range(32):
-            self.setADCButtonColor(i, self.mainWindow.plotTab.getRandomColor())
+            self.setADCButtonColor(i, self.plotTab.getRandomColor())
+        self.initializeAllAnalogPlots()
+
+    def initializeAllAnalogPlots(self):
+
+        self.mainWindow.plotAnalogWaveform = pg.plot()
+        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotAnalogWaveform, 1)
+        self.mainWindow.analogPlots = {}
+        waveform = np.zeros(1000)
+        for i in range(32):
+            pen = pg.mkPen(color=self.getADCButtonColor(i), width=1)
+            legendName = getattr(self.mainWindow, f"labelADC{i}").text()
+            self.mainWindow.analogPlots[i] = self.mainWindow.plotAnalogWaveform.plot(waveform, pen=pen, name=legendName)
+            self.mainWindow.analogPlots[i].hide()
+
+        self.mainWindow.plotAnalogImage = pg.ImageView()
+        self.mainWindow.nAnalogRows = 0
+        self.mainWindow.nAnalogCols = 0
+        self.mainWindow.analog_frame = np.zeros((self.mainWindow.nAnalogRows, self.mainWindow.nAnalogCols))
+        self.mainWindow.plotAnalogImage.getView().invertY(False)
+        self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame)
+        self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotAnalogImage, 2)
 
     def connect_ui(self):
         for i in range(32):
@@ -78,7 +102,7 @@ class ADC:
             self.getADCEnable(i, retval)
             self.getADCEnablePlot(i)
             self.getADCEnableColor(i)
-            self.mainWindow.plotTab.addSelectedAnalogPlots(i)
+            self.plotTab.addSelectedAnalogPlots(i)
         self.getADCEnableRange(retval)
         self.getADCEnablePlotRange()
 
@@ -132,7 +156,7 @@ class ADC:
         pushButton.setEnabled(checkBox.isChecked())
 
         self.getADCEnablePlotRange()
-        self.mainWindow.plotTab.addSelectedAnalogPlots(i)
+        self.plotTab.addSelectedAnalogPlots(i)
 
     def getADCEnablePlotRange(self):
         self.mainWindow.checkBoxADC0_15Plot.stateChanged.disconnect()
@@ -150,7 +174,7 @@ class ADC:
         for i in range(start_nr, end_nr):
             checkBox = getattr(self.mainWindow, f"checkBoxADC{i}Plot")
             checkBox.setChecked(enable)
-        self.mainWindow.plotTab.addAllSelectedAnalogPlots()
+        self.plotTab.addAllSelectedAnalogPlots()
 
     def getADCEnableColor(self, i):
         checkBox = getattr(self.mainWindow, f"checkBoxADC{i}Plot")
@@ -159,17 +183,17 @@ class ADC:
 
     def selectADCColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonADC{i}")
-        self.mainWindow.plotTab.showPalette(pushButton)
+        self.plotTab.showPalette(pushButton)
         pen = pg.mkPen(color=self.getADCButtonColor(i), width=1)
         self.mainWindow.analogPlots[i].setPen(pen)
 
     def getADCButtonColor(self, i):
         pushButton = getattr(self.mainWindow, f"pushButtonADC{i}")
-        return self.mainWindow.plotTab.getActiveColor(pushButton)
+        return self.plotTab.getActiveColor(pushButton)
 
     def setADCButtonColor(self, i, color):
         pushButton = getattr(self.mainWindow, f"pushButtonADC{i}")
-        return self.mainWindow.plotTab.setActiveColor(pushButton, color)
+        return self.plotTab.setActiveColor(pushButton, color)
 
     def getADCInvReg(self):
         retval = self.det.adcinvert

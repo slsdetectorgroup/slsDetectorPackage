@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1439</width>
-    <height>954</height>
+    <width>1444</width>
+    <height>943</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,16 +33,7 @@
     <property name="spacing">
      <number>9</number>
     </property>
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>0</number>
     </property>
     <item>
@@ -72,16 +63,7 @@
         <string notr="true"/>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -135,7 +117,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>8</number>
+              <number>1</number>
              </property>
              <widget class="QWidget" name="tabDac">
               <attribute name="title">
@@ -1301,469 +1283,15 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
               <attribute name="title">
                <string>Power Supplies</string>
               </attribute>
-              <widget class="QFrame" name="frame_3">
+              <widget class="PowerSuppliesTab" name="widget_power_supplies" native="true">
                <property name="geometry">
                 <rect>
-                 <x>10</x>
-                 <y>10</y>
+                 <x>-1</x>
+                 <y>-1</y>
                  <width>841</width>
-                 <height>381</height>
+                 <height>821</height>
                 </rect>
                </property>
-               <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Sunken</enum>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_12">
-                <item row="2" column="1">
-                 <widget class="QSpinBox" name="spinBoxVC">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>32</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>150</width>
-                    <height>32</height>
-                   </size>
-                  </property>
-                  <property name="toolTip">
-                   <string>Only accepts value range (636 - 2468)</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="suffix">
-                   <string> mV</string>
-                  </property>
-                  <property name="maximum">
-                   <number>2468</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="4">
-                 <widget class="QLabel" name="labelID">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>0</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QSpinBox" name="spinBoxVA">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>32</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>150</width>
-                    <height>32</height>
-                   </size>
-                  </property>
-                  <property name="toolTip">
-                   <string>Only accepts value range (636 - 2468)</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="specialValueText">
-                   <string/>
-                  </property>
-                  <property name="suffix">
-                   <string> mV</string>
-                  </property>
-                  <property name="minimum">
-                   <number>0</number>
-                  </property>
-                  <property name="maximum">
-                   <number>2468</number>
-                  </property>
-                  <property name="value">
-                   <number>0</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="4">
-                 <widget class="QLabel" name="labelIA">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>0</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="5" column="3" colspan="2">
-                 <widget class="QPushButton" name="pushButtonPowerOff">
-                  <property name="enabled">
-                   <bool>true</bool>
-                  </property>
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>36</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>150</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">QPushButton{background-color: red;}
-QPushButton:disabled{background-color: grey;}</string>
-                  </property>
-                  <property name="text">
-                   <string>Power off</string>
-                  </property>
-                  <property name="checkable">
-                   <bool>false</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="3">
-                 <widget class="QLabel" name="labelVIO">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>0</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="4">
-                 <widget class="QLabel" name="labelIC">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>0</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="0">
-                 <widget class="QCheckBox" name="checkBoxVC">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>VC</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="1">
-                 <widget class="QSpinBox" name="spinBoxVIO">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>32</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>150</width>
-                    <height>32</height>
-                   </size>
-                  </property>
-                  <property name="toolTip">
-                   <string>Only accepts value range (1200 - 2468)</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="suffix">
-                   <string> mV</string>
-                  </property>
-                  <property name="maximum">
-                   <number>2468</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="5" column="1">
-                 <widget class="QSpinBox" name="spinBoxVChip">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>32</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>150</width>
-                    <height>32</height>
-                   </size>
-                  </property>
-                  <property name="toolTip">
-                   <string>Only accepts value range (1200 - 2468)</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="suffix">
-                   <string> mV</string>
-                  </property>
-                  <property name="maximum">
-                   <number>2468</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QCheckBox" name="checkBoxVB">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>VB</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="4">
-                 <widget class="QLabel" name="labelIIO">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>0</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="3">
-                 <widget class="QLabel" name="labelVB">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>0</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="0">
-                 <widget class="QCheckBox" name="checkBoxVA">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>VA</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="3">
-                 <widget class="QLabel" name="labelVD">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>0</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="0">
-                 <widget class="QCheckBox" name="checkBoxVD">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>VD</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="5" column="0">
-                 <widget class="QLabel" name="label_136">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>VCHIP</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="3">
-                 <widget class="QLabel" name="labelVC">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>0</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="1">
-                 <widget class="QSpinBox" name="spinBoxVD">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>32</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>150</width>
-                    <height>32</height>
-                   </size>
-                  </property>
-                  <property name="toolTip">
-                   <string>Only accepts value range (636 - 2468)</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="suffix">
-                   <string> mV</string>
-                  </property>
-                  <property name="maximum">
-                   <number>2468</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="0">
-                 <widget class="QCheckBox" name="checkBoxVIO">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>VIO</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="4">
-                 <widget class="QLabel" name="labelIB">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>0</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="2">
-                 <spacer name="horizontalSpacer_12">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeType">
-                   <enum>QSizePolicy::Fixed</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>80</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="0" column="3">
-                 <widget class="QLabel" name="labelVA">
-                  <property name="maximumSize">
-                   <size>
-                    <width>100</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>0</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QSpinBox" name="spinBoxVB">
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>32</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>150</width>
-                    <height>32</height>
-                   </size>
-                  </property>
-                  <property name="toolTip">
-                   <string>Only accepts value range (636 - 2468)</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="suffix">
-                   <string> mV</string>
-                  </property>
-                  <property name="maximum">
-                   <number>2468</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="5">
-                 <spacer name="horizontalSpacer_22">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeType">
-                   <enum>QSizePolicy::Fixed</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>80</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-               </layout>
               </widget>
              </widget>
              <widget class="QWidget" name="tabSlowAdc">
@@ -17387,8 +16915,8 @@ QPushButton:disabled{background-color: grey;}</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1439</width>
-     <height>29</height>
+     <width>1444</width>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -17758,6 +17286,14 @@ QPushButton:checked{background-color: red;}</string>
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PowerSuppliesTab</class>
+   <extends>QWidget</extends>
+   <header>pyctbgui.services.PowerSupplies</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

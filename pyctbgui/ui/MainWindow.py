@@ -53,21 +53,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.patternTab = PatternTab(self)
         self.acquisitionTab = AcquisitionTab(self)
 
+        self.tabs_list = [self.plotTab, self.slowAdcTab, self.dacTab, self.powerSuppliesTab,
+                          self.signalsTab, self.transceiverTab, self.adcTab, self.patternTab,
+                          self.acquisitionTab]
+
         self.acquisitionTab.setup_zmq()
         self.setup_ui()
         self.tabWidget.setCurrentIndex(Defines.Acquisition_Tab_Index)
         self.tabWidget.currentChanged.connect(self.refresh_tab)
         self.connect_ui()
 
-        self.dacTab.refresh()
-        self.powerSuppliesTab.refresh()
-        self.slowAdcTab.refresh()
-        self.signalsTab.refresh()
-        self.transceiverTab.refresh()
-        self.adcTab.refresh()
-        self.patternTab.refresh()
-        self.acquisitionTab.refresh()
-        self.plotTab.refresh()
+        for tab in self.tabs_list:
+            tab.refresh()
 
         # also refreshes timer to start plotting 
         self.plotTab.plotOptions()
@@ -261,31 +258,17 @@ class MainWindow(QtWidgets.QMainWindow):
             case 8:
                 self.plotTab.refresh()
 
-
-
-
     def setup_ui(self):
-        #To check detector status
+        # To check detector status
         self.statusTimer = QtCore.QTimer()
         self.statusTimer.timeout.connect(self.acquisitionTab.checkEndofAcquisition)
 
-        #To auto trigger the read
+        # To auto trigger the read
         self.read_timer =  QtCore.QTimer()
         self.read_timer.timeout.connect(self.acquisitionTab.read_zmq)
 
-        self.dacTab.setup_ui()
-        self.powerSuppliesTab.setup_ui()
-        self.signalsTab.setup_ui()
-        self.transceiverTab.setup_ui()
-        self.adcTab.setup_ui()
-        self.patternTab.setup_ui()
-        self.acquisitionTab.setup_ui()
-        self.plotTab.setup_ui()
-
-
-
-
-
+        for tab in self.tabs_list:
+            tab.setup_ui()
 
     def keyPressEvent(self, event):
         if event.modifiers() & QtCore.Qt.ShiftModifier:
@@ -315,12 +298,5 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionKeyboardShortcuts.triggered.connect(self.showKeyBoardShortcuts)
         self.actionLoadParameters.triggered.connect(self.loadParameters)
 
-        self.dacTab.connect_ui()
-        self.powerSuppliesTab.connect_ui()
-        self.slowAdcTab.connect_ui()
-        self.signalsTab.connect_ui()
-        self.transceiverTab.connect_ui()
-        self.adcTab.connect_ui()
-        self.patternTab.connect_ui()
-        self.acquisitionTab.connect_ui()
-        self.plotTab.connect_ui()
+        for tab in self.tabs_list:
+            tab.connect_ui()

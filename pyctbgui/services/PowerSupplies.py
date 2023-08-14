@@ -8,11 +8,11 @@ from slsdet import Detector, dacIndex, readoutMode, runStatus
 from pyctbgui import utils
 
 
-class PowerSuppliesTab(QtWidgets.QWidget):
-    def __init__(self,parent):
-        super(PowerSuppliesTab, self).__init__()
-        uic.loadUi(Path(__file__).parent.parent / 'ui' / "power_supplies.ui", self)
-
+class PowerSuppliesTab:
+    def __init__(self, mainWindow):
+        self.mainWindow = mainWindow
+        self.det = self.mainWindow.det
+        self.view = utils.powerSuppliesView
 
 
     def refresh(self):
@@ -23,20 +23,17 @@ class PowerSuppliesTab(QtWidgets.QWidget):
 
     def connect_ui(self):
         for i in ('A', 'B', 'C', 'D', 'IO'):
-            spinBox = getattr(self, f"spinBoxV{i}")
-            checkBox = getattr(self, f"checkBoxV{i}")
+            spinBox = getattr(self.view, f"spinBoxV{i}")
+            checkBox = getattr(self.view, f"checkBoxV{i}")
             spinBox.editingFinished.connect(partial(self.setVoltage, i))
             checkBox.stateChanged.connect(partial(self.setVoltage, i))
-        self.pushButtonPowerOff.clicked.connect(self.powerOff)
+        self.view.pushButtonPowerOff.clicked.connect(self.powerOff)
 
     def setup_ui(self):
-        self.mainWindow = utils.mainWindow
-        self.det = self.mainWindow.det
-
         for i in ('A', 'B', 'C', 'D', 'IO'):
             dac = getattr(dacIndex, f"V_POWER_{i}")
-            spinBox = getattr(self, f"spinBoxV{i}")
-            checkBox = getattr(self, f"checkBoxV{i}")
+            spinBox = getattr(self.view, f"spinBoxV{i}")
+            checkBox = getattr(self.view, f"checkBoxV{i}")
             retval = self.det.getVoltage(dac)[0]
             spinBox.setValue(retval)
             if retval == 0:
@@ -45,17 +42,17 @@ class PowerSuppliesTab(QtWidgets.QWidget):
 
     def updateVoltageNames(self):
         retval = self.det.getVoltageNames()
-        getattr(self, f"checkBoxVA").setText(retval[0])
-        getattr(self, f"checkBoxVB").setText(retval[1])
-        getattr(self, f"checkBoxVC").setText(retval[2])
-        getattr(self, f"checkBoxVD").setText(retval[3])
-        getattr(self, f"checkBoxVIO").setText(retval[4])
+        getattr(self.view, f"checkBoxVA").setText(retval[0])
+        getattr(self.view, f"checkBoxVB").setText(retval[1])
+        getattr(self.view, f"checkBoxVC").setText(retval[2])
+        getattr(self.view, f"checkBoxVD").setText(retval[3])
+        getattr(self.view, f"checkBoxVIO").setText(retval[4])
 
     def getVoltage(self, i):
-        spinBox = getattr(self, f"spinBoxV{i}")
-        checkBox = getattr(self, f"checkBoxV{i}")
+        spinBox = getattr(self.view, f"spinBoxV{i}")
+        checkBox = getattr(self.view, f"checkBoxV{i}")
         voltageIndex = getattr(dacIndex, f"V_POWER_{i}")
-        label = getattr(self, f"labelV{i}")
+        label = getattr(self.view, f"labelV{i}")
 
         spinBox.editingFinished.disconnect()
         checkBox.stateChanged.disconnect()
@@ -78,8 +75,8 @@ class PowerSuppliesTab(QtWidgets.QWidget):
         # TODO: handle multiple events when pressing enter (twice)
 
     def setVoltage(self, i):
-        checkBox = getattr(self, f"checkBoxV{i}")
-        spinBox = getattr(self, f"spinBoxV{i}")
+        checkBox = getattr(self.view, f"checkBoxV{i}")
+        spinBox = getattr(self.view, f"spinBoxV{i}")
         voltageIndex = getattr(dacIndex, f"V_POWER_{i}")
         spinBox.editingFinished.disconnect()
 
@@ -98,18 +95,18 @@ class PowerSuppliesTab(QtWidgets.QWidget):
         self.getCurrent(i)
 
     def getCurrent(self, i):
-        label = getattr(self, f"labelI{i}")
+        label = getattr(self.view, f"labelI{i}")
         currentIndex = getattr(dacIndex, f"I_POWER_{i}")
         retval = self.det.getMeasuredCurrent(currentIndex)[0]
         label.setText(f'{str(retval)} mA')
 
     def getVChip(self):
-        self.spinBoxVChip.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
+        self.view.spinBoxVChip.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
 
     def powerOff(self):
         for i in ('A', 'B', 'C', 'D', 'IO'):
             # set all voltages to 0
-            checkBox = getattr(self, f"checkBoxV{i}")
+            checkBox = getattr(self.view, f"checkBoxV{i}")
             checkBox.stateChanged.disconnect()
             checkBox.setChecked(False)
             checkBox.stateChanged.connect(partial(self.setVoltage, i))

@@ -1,1 +1,2 @@
-from .globals import mainWindow
+mainWindow = None
+powerSuppliesView = None

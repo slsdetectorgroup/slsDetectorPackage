@@ -250,8 +250,8 @@ class AdcTab:
     def getADCInvRange(self, inv):
         self.mainWindow.checkBoxADC0_15Inv.stateChanged.disconnect()
         self.mainWindow.checkBoxADC16_31Inv.stateChanged.disconnect()
-        self.mainWindow.checkBoxADC0_15Inv.setChecked((inv & Defines.BIT0_15_MASK) == Defines.BIT0_15_MASK)
-        self.mainWindow.checkBoxADC16_31Inv.setChecked((inv & Defines.BIT16_31_MASK) == Defines.BIT16_31_MASK)
+        self.mainWindow.checkBoxADC0_15Inv.setChecked((inv & Defines.adc.BIT0_15_MASK) == Defines.adc.BIT0_15_MASK)
+        self.mainWindow.checkBoxADC16_31Inv.setChecked((inv & Defines.adc.BIT16_31_MASK) == Defines.adc.BIT16_31_MASK)
         self.mainWindow.checkBoxADC0_15Inv.stateChanged.connect(partial(self.setADCInvRange, 0, Defines.adc.half))
         self.mainWindow.checkBoxADC16_31Inv.stateChanged.connect(
             partial(self.setADCInvRange, Defines.adc.half, Defines.adc.count))

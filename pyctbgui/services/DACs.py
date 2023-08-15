@@ -14,7 +14,6 @@ class DacTab(QtWidgets.QWidget):
         self.view = parent
 
     def setup_ui(self):
-        print(self.view.spinBoxDAC0)
         for i in range(Defines.dac.count):
             dac = getattr(dacIndex, f"DAC_{i}")
             getattr(self.view, f"spinBoxDAC{i}").setValue(self.det.getDAC(dac)[0])

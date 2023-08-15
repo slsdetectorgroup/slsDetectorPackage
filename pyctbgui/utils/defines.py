@@ -2,9 +2,6 @@ from enum import Enum
 
 
 class Defines():
-
-
-
     Time_Wait_For_Packets_ms = 0.5
     Time_Status_Refresh_ms = 100
     Time_Plot_Refresh_ms = 20
@@ -36,13 +33,10 @@ class Defines():
     class transceiver:
         count = 4
 
-    numSlowAdc = 8
+    class slowAdc:
+        count = 8
 
     powerSupplies = ('A', 'B', 'C', 'D', 'IO')
-
-
-
-
 
     class ImageIndex(Enum):
         Matterhorn = 0

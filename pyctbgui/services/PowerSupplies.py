@@ -1,5 +1,6 @@
 from functools import partial
 from PyQt5 import QtWidgets
+from pyctbgui.utils.defines import Defines
 
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 
@@ -11,12 +12,12 @@ class PowerSuppliesTab:
 
     def refresh(self):
         self.updateVoltageNames()
-        for i in ('A', 'B', 'C', 'D', 'IO'):
+        for i in Defines.powerSupplies:
             self.getVoltage(i)
             self.getCurrent(i)
 
     def connect_ui(self):
-        for i in ('A', 'B', 'C', 'D', 'IO'):
+        for i in Defines.powerSupplies:
             spinBox = getattr(self.mainWindow, f"spinBoxV{i}")
             checkBox = getattr(self.mainWindow, f"checkBoxV{i}")
             spinBox.editingFinished.connect(partial(self.setVoltage, i))
@@ -24,7 +25,7 @@ class PowerSuppliesTab:
         self.mainWindow.pushButtonPowerOff.clicked.connect(self.powerOff)
 
     def setup_ui(self):
-        for i in ('A', 'B', 'C', 'D', 'IO'):
+        for i in Defines.powerSupplies:
             dac = getattr(dacIndex, f"V_POWER_{i}")
             spinBox = getattr(self.mainWindow, f"spinBoxV{i}")
             checkBox = getattr(self.mainWindow, f"checkBoxV{i}")
@@ -98,7 +99,7 @@ class PowerSuppliesTab:
         self.mainWindow.spinBoxVChip.setValue(self.mainWindow.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
 
     def powerOff(self):
-        for i in ('A', 'B', 'C', 'D', 'IO'):
+        for i in Defines.powerSupplies:
             # set all voltages to 0
             checkBox = getattr(self.mainWindow, f"checkBoxV{i}")
             checkBox.stateChanged.disconnect()

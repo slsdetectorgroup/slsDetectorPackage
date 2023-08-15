@@ -3,6 +3,7 @@ from functools import partial
 import numpy as np
 from PyQt5 import QtWidgets
 import pyqtgraph as pg
+from pyctbgui.utils.defines import Defines
 
 from ..utils.bit_utils import bit_is_set, manipulate_bit
 
@@ -14,12 +15,12 @@ class TransceiverTab:
         self.plotTab = self.mainWindow.plotTab
 
     def setup_ui(self):
-        for i in range(4):
+        for i in range(Defines.transceiver.count):
             self.setTransceiverButtonColor(i, self.plotTab.getRandomColor())
         self.initializeAllTransceiverPlots()
 
     def connect_ui(self):
-        for i in range(4):
+        for i in range(Defines.transceiver.count):
             getattr(self.mainWindow, f"checkBoxTransceiver{i}").stateChanged.connect(
                 partial(self.setTransceiverEnable, i))
             getattr(self.mainWindow, f"checkBoxTransceiver{i}Plot").stateChanged.connect(
@@ -36,7 +37,7 @@ class TransceiverTab:
         self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotTransceiverWaveform, 5)
         self.mainWindow.transceiverPlots = {}
         waveform = np.zeros(1000)
-        for i in range(4):
+        for i in range(Defines.transceiver.count):
             pen = pg.mkPen(color=self.getTransceiverButtonColor(i), width=1)
             legendName = getattr(self.mainWindow, f"labelTransceiver{i}").text()
             self.mainWindow.transceiverPlots[i] = self.mainWindow.plotTransceiverWaveform.plot(waveform, pen=pen,

@@ -1,5 +1,6 @@
 from functools import partial
 from PyQt5 import QtWidgets
+from pyctbgui.utils.defines import Defines
 
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 
@@ -9,7 +10,7 @@ class DacTab:
         self.mainWindow = mainWindow
 
     def setup_ui(self):
-        for i in range(18):
+        for i in range(Defines.dac.count):
             dac = getattr(dacIndex, f"DAC_{i}")
             getattr(self.mainWindow, f"spinBoxDAC{i}").setValue(self.mainWindow.det.getDAC(dac)[0])
 
@@ -30,7 +31,7 @@ class DacTab:
 
     def refresh(self):
         self.updateDACNames()
-        for i in range(18):
+        for i in range(Defines.dac.count):
             self.getDACTristate(i)
             self.getDAC(i)
 

@@ -48,7 +48,7 @@ class PatternTab:
         # For Pattern Tab
         self.mainWindow.lineEditStartAddress.editingFinished.connect(self.setPatLimitAddress)
         self.mainWindow.lineEditStopAddress.editingFinished.connect(self.setPatLimitAddress)
-        for i in range(6):
+        for i in range(Defines.pattern.loops_count):
             getattr(self.mainWindow, f"lineEditLoop{i}Start").editingFinished.connect(
                 partial(self.setPatLoopStartStopAddress, i)
             )
@@ -89,7 +89,7 @@ class PatternTab:
 
     def refresh(self):
         self.getPatLimitAddress()
-        for i in range(6):
+        for i in range(Defines.pattern.loops_count):
             self.getPatLoopStartStopAddress(i)
             self.getPatLoopWaitAddress(i)
             self.getPatLoopRepetition(i)

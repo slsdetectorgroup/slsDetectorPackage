@@ -602,7 +602,7 @@ class AcquisitionTab:
                 if self.mainWindow.romode.value in [0, 2]:
                     analog_array = np.array(
                         np.frombuffer(data, dtype=np.uint16, count=self.mainWindow.nADCEnabled * self.asamples))
-                    for i in range(32):
+                    for i in range(Defines.adc.count):
                         checkBox = getattr(self.mainWindow, f"checkBoxADC{i}Plot")
                         if checkBox.isChecked():
                             waveform = np.zeros(self.asamples)
@@ -660,7 +660,7 @@ class AcquisitionTab:
                         transceiverOffset += self.mainWindow.nDbitEnabled * (nbitsPerDBit // 8)
                     # print(f'transceiverOffset:{transceiverOffset}')
                     trans_array = np.array(np.frombuffer(data, offset=transceiverOffset, dtype=np.uint16))
-                    for i in range(4):
+                    for i in range(Defines.transceiver.count):
                         checkBox = getattr(self.mainWindow, f"checkBoxTransceiver{i}Plot")
                         if checkBox.isChecked():
                             waveform = np.zeros(self.tsamples * 4)

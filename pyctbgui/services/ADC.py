@@ -15,17 +15,16 @@ class AdcTab:
         self.plotTab = self.mainWindow.plotTab
 
     def setup_ui(self):
-        for i in range(32):
+        for i in range(Defines.adc.count):
             self.setADCButtonColor(i, self.plotTab.getRandomColor())
         self.initializeAllAnalogPlots()
 
     def initializeAllAnalogPlots(self):
-
         self.mainWindow.plotAnalogWaveform = pg.plot()
         self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotAnalogWaveform, 1)
         self.mainWindow.analogPlots = {}
         waveform = np.zeros(1000)
-        for i in range(32):
+        for i in range(Defines.adc.count):
             pen = pg.mkPen(color=self.getADCButtonColor(i), width=1)
             legendName = getattr(self.mainWindow, f"labelADC{i}").text()
             self.mainWindow.analogPlots[i] = self.mainWindow.plotAnalogWaveform.plot(waveform, pen=pen, name=legendName)
@@ -40,17 +39,21 @@ class AdcTab:
         self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotAnalogImage, 2)
 
     def connect_ui(self):
-        for i in range(32):
+        for i in range(Defines.adc.count):
             getattr(self.mainWindow, f"checkBoxADC{i}Inv").stateChanged.connect(partial(self.setADCInv, i))
             getattr(self.mainWindow, f"checkBoxADC{i}En").stateChanged.connect(partial(self.setADCEnable, i))
             getattr(self.mainWindow, f"checkBoxADC{i}Plot").stateChanged.connect(partial(self.setADCEnablePlot, i))
             getattr(self.mainWindow, f"pushButtonADC{i}").clicked.connect(partial(self.selectADCColor, i))
-        self.mainWindow.checkBoxADC0_15En.stateChanged.connect(partial(self.setADCEnableRange, 0, 16))
-        self.mainWindow.checkBoxADC16_31En.stateChanged.connect(partial(self.setADCEnableRange, 16, 32))
-        self.mainWindow.checkBoxADC0_15Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 0, 16))
-        self.mainWindow.checkBoxADC16_31Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 16, 32))
-        self.mainWindow.checkBoxADC0_15Inv.stateChanged.connect(partial(self.setADCInvRange, 0, 16))
-        self.mainWindow.checkBoxADC16_31Inv.stateChanged.connect(partial(self.setADCInvRange, 16, 32))
+        self.mainWindow.checkBoxADC0_15En.stateChanged.connect(partial(self.setADCEnableRange, 0, Defines.adc.half))
+        self.mainWindow.checkBoxADC16_31En.stateChanged.connect(
+            partial(self.setADCEnableRange, Defines.adc.half, Defines.adc.count))
+        self.mainWindow.checkBoxADC0_15Plot.stateChanged.connect(
+            partial(self.setADCEnablePlotRange, 0, Defines.adc.half))
+        self.mainWindow.checkBoxADC16_31Plot.stateChanged.connect(
+            partial(self.setADCEnablePlotRange, Defines.adc.half, Defines.adc.count))
+        self.mainWindow.checkBoxADC0_15Inv.stateChanged.connect(partial(self.setADCInvRange, 0, Defines.adc.half))
+        self.mainWindow.checkBoxADC16_31Inv.stateChanged.connect(
+            partial(self.setADCInvRange, Defines.adc.half, Defines.adc.count))
         self.mainWindow.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
         self.mainWindow.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
 
@@ -98,7 +101,7 @@ class AdcTab:
     def updateADCEnable(self):
         retval = self.getADCEnableReg()
         self.mainWindow.nADCEnabled = bin(retval).count('1')
-        for i in range(32):
+        for i in range(Defines.adc.count):
             self.getADCEnable(i, retval)
             self.getADCEnablePlot(i)
             self.getADCEnableColor(i)
@@ -124,10 +127,11 @@ class AdcTab:
     def getADCEnableRange(self, mask):
         self.mainWindow.checkBoxADC0_15En.stateChanged.disconnect()
         self.mainWindow.checkBoxADC16_31En.stateChanged.disconnect()
-        self.mainWindow.checkBoxADC0_15En.setChecked((mask & Defines.BIT0_15_MASK) == Defines.BIT0_15_MASK)
-        self.mainWindow.checkBoxADC16_31En.setChecked((mask & Defines.BIT16_31_MASK) == Defines.BIT16_31_MASK)
-        self.mainWindow.checkBoxADC0_15En.stateChanged.connect(partial(self.setADCEnableRange, 0, 16))
-        self.mainWindow.checkBoxADC16_31En.stateChanged.connect(partial(self.setADCEnableRange, 16, 32))
+        self.mainWindow.checkBoxADC0_15En.setChecked((mask & Defines.adc.BIT0_15_MASK) == Defines.adc.BIT0_15_MASK)
+        self.mainWindow.checkBoxADC16_31En.setChecked((mask & Defines.adc.BIT16_31_MASK) == Defines.adc.BIT16_31_MASK)
+        self.mainWindow.checkBoxADC0_15En.stateChanged.connect(partial(self.setADCEnableRange, 0, Defines.adc.half))
+        self.mainWindow.checkBoxADC16_31En.stateChanged.connect(
+            partial(self.setADCEnableRange, Defines.adc.half, Defines.adc.count))
 
     def setADCEnableRange(self, start_nr, end_nr):
         mask = self.getADCEnableReg()
@@ -161,12 +165,20 @@ class AdcTab:
     def getADCEnablePlotRange(self):
         self.mainWindow.checkBoxADC0_15Plot.stateChanged.disconnect()
         self.mainWindow.checkBoxADC16_31Plot.stateChanged.disconnect()
-        self.mainWindow.checkBoxADC0_15Plot.setEnabled(all(getattr(self.mainWindow, f"checkBoxADC{i}Plot").isEnabled() for i in range(16)))
-        self.mainWindow.checkBoxADC16_31Plot.setEnabled(all(getattr(self.mainWindow, f"checkBoxADC{i}Plot").isEnabled() for i in range(16, 32)))
-        self.mainWindow.checkBoxADC0_15Plot.setChecked(all(getattr(self.mainWindow, f"checkBoxADC{i}Plot").isChecked() for i in range(16)))
-        self.mainWindow.checkBoxADC16_31Plot.setChecked(all(getattr(self.mainWindow, f"checkBoxADC{i}Plot").isChecked() for i in range(16, 32)))
-        self.mainWindow.checkBoxADC0_15Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 0, 16))
-        self.mainWindow.checkBoxADC16_31Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 16, 32))
+        self.mainWindow.checkBoxADC0_15Plot.setEnabled(
+            all(getattr(self.mainWindow, f"checkBoxADC{i}Plot").isEnabled() for i in range(Defines.adc.half)))
+        self.mainWindow.checkBoxADC16_31Plot.setEnabled(all(
+            getattr(self.mainWindow, f"checkBoxADC{i}Plot").isEnabled() for i in
+            range(Defines.adc.half, Defines.adc.count)))
+        self.mainWindow.checkBoxADC0_15Plot.setChecked(
+            all(getattr(self.mainWindow, f"checkBoxADC{i}Plot").isChecked() for i in range(Defines.adc.half)))
+        self.mainWindow.checkBoxADC16_31Plot.setChecked(all(
+            getattr(self.mainWindow, f"checkBoxADC{i}Plot").isChecked() for i in
+            range(Defines.adc.half, Defines.adc.count)))
+        self.mainWindow.checkBoxADC0_15Plot.stateChanged.connect(
+            partial(self.setADCEnablePlotRange, 0, Defines.adc.half))
+        self.mainWindow.checkBoxADC16_31Plot.stateChanged.connect(
+            partial(self.setADCEnablePlotRange, Defines.adc.half, Defines.adc.count))
 
     def setADCEnablePlotRange(self, start_nr, end_nr):
         checkBox = getattr(self.mainWindow, f"checkBoxADC{start_nr}_{end_nr - 1}Plot")
@@ -221,7 +233,7 @@ class AdcTab:
 
     def updateADCInv(self):
         retval = self.getADCInvReg()
-        for i in range(32):
+        for i in range(Defines.adc.count):
             self.getADCInv(i, retval)
         self.getADCInvRange(retval)
 
@@ -240,8 +252,9 @@ class AdcTab:
         self.mainWindow.checkBoxADC16_31Inv.stateChanged.disconnect()
         self.mainWindow.checkBoxADC0_15Inv.setChecked((inv & Defines.BIT0_15_MASK) == Defines.BIT0_15_MASK)
         self.mainWindow.checkBoxADC16_31Inv.setChecked((inv & Defines.BIT16_31_MASK) == Defines.BIT16_31_MASK)
-        self.mainWindow.checkBoxADC0_15Inv.stateChanged.connect(partial(self.setADCInvRange, 0, 16))
-        self.mainWindow.checkBoxADC16_31Inv.stateChanged.connect(partial(self.setADCInvRange, 16, 32))
+        self.mainWindow.checkBoxADC0_15Inv.stateChanged.connect(partial(self.setADCInvRange, 0, Defines.adc.half))
+        self.mainWindow.checkBoxADC16_31Inv.stateChanged.connect(
+            partial(self.setADCInvRange, Defines.adc.half, Defines.adc.count))
 
     def setADCInvRange(self, start_nr, end_nr):
         out = self.det.adcinvert

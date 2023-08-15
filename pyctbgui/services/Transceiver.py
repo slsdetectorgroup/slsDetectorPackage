@@ -1,33 +1,39 @@
 from functools import partial
+from pathlib import Path
 
 import numpy as np
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, uic
 import pyqtgraph as pg
 from pyctbgui.utils.defines import Defines
 
 from ..utils.bit_utils import bit_is_set, manipulate_bit
 
 
-class TransceiverTab:
-    def __init__(self, mainWindow):
-        self.mainWindow = mainWindow
-
-        self.plotTab = self.mainWindow.plotTab
+class TransceiverTab(QtWidgets.QWidget):
+    def __init__(self, parent):
+        super(TransceiverTab, self).__init__(parent)
+        uic.loadUi(Path(__file__).parent.parent / 'ui' / "transceiver.ui", parent)
+        self.view = parent
+        self.mainWindow = None
+        self.det = None
+        self.plotTab = None
 
     def setup_ui(self):
+        self.plotTab = self.mainWindow.plotTab
+
         for i in range(Defines.transceiver.count):
             self.setTransceiverButtonColor(i, self.plotTab.getRandomColor())
         self.initializeAllTransceiverPlots()
 
     def connect_ui(self):
         for i in range(Defines.transceiver.count):
-            getattr(self.mainWindow, f"checkBoxTransceiver{i}").stateChanged.connect(
+            getattr(self.view, f"checkBoxTransceiver{i}").stateChanged.connect(
                 partial(self.setTransceiverEnable, i))
-            getattr(self.mainWindow, f"checkBoxTransceiver{i}Plot").stateChanged.connect(
+            getattr(self.view, f"checkBoxTransceiver{i}Plot").stateChanged.connect(
                 partial(self.setTransceiverEnablePlot, i))
-            getattr(self.mainWindow, f"pushButtonTransceiver{i}").clicked.connect(
+            getattr(self.view, f"pushButtonTransceiver{i}").clicked.connect(
                 partial(self.selectTransceiverColor, i))
-        self.mainWindow.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
+        self.view.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
 
     def refresh(self):
         self.updateTransceiverEnable()
@@ -39,7 +45,7 @@ class TransceiverTab:
         waveform = np.zeros(1000)
         for i in range(Defines.transceiver.count):
             pen = pg.mkPen(color=self.getTransceiverButtonColor(i), width=1)
-            legendName = getattr(self.mainWindow, f"labelTransceiver{i}").text()
+            legendName = getattr(self.view, f"labelTransceiver{i}").text()
             self.mainWindow.transceiverPlots[i] = self.mainWindow.plotTransceiverWaveform.plot(waveform, pen=pen,
                                                                                                name=legendName)
             self.mainWindow.transceiverPlots[i].hide()
@@ -56,26 +62,26 @@ class TransceiverTab:
         self.mainWindow.plotTransceiverImage.setColorMap(cm)
 
     def getTransceiverEnableReg(self):
-        retval = self.mainWindow.det.transceiverenable
-        self.mainWindow.lineEditTransceiverMask.editingFinished.disconnect()
-        self.mainWindow.lineEditTransceiverMask.setText("0x{:08x}".format(retval))
-        self.mainWindow.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
+        retval = self.det.transceiverenable
+        self.view.lineEditTransceiverMask.editingFinished.disconnect()
+        self.view.lineEditTransceiverMask.setText("0x{:08x}".format(retval))
+        self.view.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
         return retval
 
     def setTransceiverEnableReg(self):
-        self.mainWindow.lineEditTransceiverMask.editingFinished.disconnect()
+        self.view.lineEditTransceiverMask.editingFinished.disconnect()
         try:
-            mask = int(self.mainWindow.lineEditTransceiverMask.text(), 16)
-            self.mainWindow.det.transceiverenable = mask
+            mask = int(self.view.lineEditTransceiverMask.text(), 16)
+            self.det.transceiverenable = mask
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "Transceiver Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
         # TODO: handling double event exceptions
-        self.mainWindow.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
+        self.view.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
         self.updateTransceiverEnable()
 
     def getTransceiverEnable(self, i, mask):
-        checkBox = getattr(self.mainWindow, f"checkBoxTransceiver{i}")
+        checkBox = getattr(self.view, f"checkBoxTransceiver{i}")
         checkBox.stateChanged.disconnect()
         checkBox.setChecked(bit_is_set(mask, i))
         checkBox.stateChanged.connect(partial(self.setTransceiverEnable, i))
@@ -90,10 +96,10 @@ class TransceiverTab:
             self.plotTab.addSelectedTransceiverPlots(i)
 
     def setTransceiverEnable(self, i):
-        checkBox = getattr(self.mainWindow, f"checkBoxTransceiver{i}")
+        checkBox = getattr(self.view, f"checkBoxTransceiver{i}")
         try:
-            enableMask = manipulate_bit(checkBox.isChecked(), self.mainWindow.det.transceiverenable, i)
-            self.mainWindow.det.transceiverenable = enableMask
+            enableMask = manipulate_bit(checkBox.isChecked(), self.det.transceiverenable, i)
+            self.det.transceiverenable = enableMask
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "Transceiver Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
@@ -101,31 +107,31 @@ class TransceiverTab:
         self.updateTransceiverEnable()
 
     def getTransceiverEnablePlot(self, i):
-        checkBox = getattr(self.mainWindow, f"checkBoxTransceiver{i}")
-        checkBoxPlot = getattr(self.mainWindow, f"checkBoxTransceiver{i}Plot")
+        checkBox = getattr(self.view, f"checkBoxTransceiver{i}")
+        checkBoxPlot = getattr(self.view, f"checkBoxTransceiver{i}Plot")
         checkBoxPlot.setEnabled(checkBox.isChecked())
 
     def setTransceiverEnablePlot(self, i):
-        pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
-        checkBox = getattr(self.mainWindow, f"checkBoxTransceiver{i}Plot")
+        pushButton = getattr(self.view, f"pushButtonTransceiver{i}")
+        checkBox = getattr(self.view, f"checkBoxTransceiver{i}Plot")
         pushButton.setEnabled(checkBox.isChecked())
         self.plotTab.addSelectedTransceiverPlots(i)
 
     def getTransceiverEnableColor(self, i):
-        checkBox = getattr(self.mainWindow, f"checkBoxTransceiver{i}Plot")
-        pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
+        checkBox = getattr(self.view, f"checkBoxTransceiver{i}Plot")
+        pushButton = getattr(self.view, f"pushButtonTransceiver{i}")
         pushButton.setEnabled(checkBox.isEnabled() and checkBox.isChecked())
 
     def selectTransceiverColor(self, i):
-        pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
+        pushButton = getattr(self.view, f"pushButtonTransceiver{i}")
         self.plotTab.showPalette(pushButton)
         pen = pg.mkPen(color=self.getTransceiverButtonColor(i), width=1)
         self.mainWindow.transceiverPlots[i].setPen(pen)
 
     def getTransceiverButtonColor(self, i):
-        pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
+        pushButton = getattr(self.view, f"pushButtonTransceiver{i}")
         return self.plotTab.getActiveColor(pushButton)
 
     def setTransceiverButtonColor(self, i, color):
-        pushButton = getattr(self.mainWindow, f"pushButtonTransceiver{i}")
+        pushButton = getattr(self.view, f"pushButtonTransceiver{i}")
         return self.plotTab.setActiveColor(pushButton, color)

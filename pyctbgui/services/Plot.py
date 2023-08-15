@@ -108,7 +108,7 @@ class PlotTab:
 
 
     def addSelectedTransceiverPlots(self, i):
-        enable = getattr(self.mainWindow, f"checkBoxTransceiver{i}Plot").isChecked()
+        enable = getattr(self.mainWindow.transceiverTab.view, f"checkBoxTransceiver{i}Plot").isChecked()
         if enable:
             self.mainWindow.transceiverPlots[i].show()
         if not enable:

@@ -1283,7 +1283,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
               <attribute name="title">
                <string>Power Supplies</string>
               </attribute>
-              <widget class="PowerSuppliesView" name="widget_power_supplies" native="true">
+              <widget class="PowerSuppliesTab" name="widget_power_supplies" native="true">
                <property name="geometry">
                 <rect>
                  <x>-1</x>
@@ -17288,9 +17288,9 @@ QPushButton:checked{background-color: red;}</string>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PowerSuppliesView</class>
+   <class>PowerSuppliesTab</class>
    <extends>QWidget</extends>
-   <header>pyctbgui.ui.views.PowerSupplies</header>
+   <header>pyctbgui.services.PowerSupplies</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

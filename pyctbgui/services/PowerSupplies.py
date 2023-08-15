@@ -8,12 +8,15 @@ from slsdet import Detector, dacIndex, readoutMode, runStatus
 from pyctbgui import utils
 
 
-class PowerSuppliesTab:
-    def __init__(self, mainWindow):
+class PowerSuppliesTab(QtWidgets.QWidget):
+    def __init__(self, parent):
+        super(PowerSuppliesTab, self).__init__(parent)
+        uic.loadUi(Path(__file__).parent.parent / 'ui' / "powerSupplies.ui", parent)
+        self.view = parent
+
+    def setMainWindow(self, mainWindow):
         self.mainWindow = mainWindow
         self.det = self.mainWindow.det
-        self.view = utils.powerSuppliesView
-
 
     def refresh(self):
         self.updateVoltageNames()

@@ -68,7 +68,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         for tab in self.tabs_list:
             tab.refresh()
-            tab.setMainWindow(self)
 
         # also refreshes timer to start plotting 
         self.plotTab.plotOptions()
@@ -272,6 +271,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.read_timer.timeout.connect(self.acquisitionTab.read_zmq)
 
         for tab in self.tabs_list:
+            tab.mainWindow = self
+            tab.det = self.det
             tab.setup_ui()
 
     def keyPressEvent(self, event):

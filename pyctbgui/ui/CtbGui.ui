@@ -1283,7 +1283,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
               <attribute name="title">
                <string>Power Supplies</string>
               </attribute>
-              <widget class="PowerSuppliesTab" name="widget_power_supplies" native="true">
+              <widget class="PowerSuppliesTab" name="widgetPowerSupplies" native="true">
                <property name="geometry">
                 <rect>
                  <x>-1</x>

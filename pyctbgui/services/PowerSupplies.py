@@ -15,10 +15,6 @@ class PowerSuppliesTab(QtWidgets.QWidget):
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "powerSupplies.ui", parent)
         self.view = parent
 
-    def setMainWindow(self, mainWindow):
-        self.mainWindow = mainWindow
-        self.det = self.mainWindow.det
-
     def refresh(self):
         self.updateVoltageNames()
         for i in Defines.powerSupplies:

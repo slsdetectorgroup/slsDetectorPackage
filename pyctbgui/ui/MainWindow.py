@@ -48,7 +48,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # get Tab Classes
         self.plotTab = PlotTab(self)
         self.slowAdcTab = SlowAdcTab(self)
-        self.dacTab = DacTab(self)
+        self.dacTab :DacTab = self.widgetDacs
         self.powerSuppliesTab: PowerSuppliesTab = self.widgetPowerSupplies
         self.signalsTab = SignalsTab(self)
         self.transceiverTab = TransceiverTab(self)

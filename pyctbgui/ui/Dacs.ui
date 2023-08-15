@@ -1,0 +1,1198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>711</width>
+    <height>791</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>711</width>
+    <height>791</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>711</width>
+    <height>791</height>
+   </size>
+  </property>
+  <property name="baseSize">
+   <size>
+    <width>711</width>
+    <height>791</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QFrame" name="frame_2">
+   <property name="geometry">
+    <rect>
+     <x>-10</x>
+     <y>0</y>
+     <width>1000</width>
+     <height>1000</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>711</width>
+     <height>791</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>1000</width>
+     <height>1000</height>
+    </size>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Sunken</enum>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_13">
+    <property name="verticalSpacing">
+     <number>11</number>
+    </property>
+    <item row="1" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC1">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 1</string>
+      </property>
+     </widget>
+    </item>
+    <item row="14" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC14mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC7">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 7</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC8">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 8</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC11mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC6mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="15" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC15">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 15</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC2">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 2</string>
+      </property>
+     </widget>
+    </item>
+    <item row="12" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC12mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="3">
+     <widget class="QLabel" name="labelDAC10">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC7mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC6">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="19" column="3">
+     <widget class="QLabel" name="labelHighVoltage">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC11">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="14" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC14">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 14</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="3">
+     <widget class="QLabel" name="labelDAC5">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="3">
+     <widget class="QLabel" name="labelDAC11">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="17" column="3">
+     <widget class="QLabel" name="labelDAC17">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="3">
+     <widget class="QLabel" name="labelDAC3">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="16" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC16">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 16</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC0">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC4mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC9mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="16" column="3">
+     <widget class="QLabel" name="labelDAC16">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC6">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 6</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC0">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="minimum">
+       <number>0</number>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC9">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 9</string>
+      </property>
+     </widget>
+    </item>
+    <item row="14" column="3">
+     <widget class="QLabel" name="labelDAC14">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="18" column="2">
+     <widget class="QLabel" name="label_124">
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC10mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="12" column="3">
+     <widget class="QLabel" name="labelDAC12">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="16" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC16mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC7">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="19" column="2">
+     <widget class="QLabel" name="label_126">
+      <property name="text">
+       <string>V</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="3">
+     <widget class="QLabel" name="labelDAC7">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC3mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC5">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 5</string>
+      </property>
+     </widget>
+    </item>
+    <item row="17" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC17">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC13">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 13</string>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="3">
+     <widget class="QLabel" name="labelDAC13">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="18" column="3">
+     <widget class="QLabel" name="labelADCVpp">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="16" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC16">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="17" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC17">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 17</string>
+      </property>
+     </widget>
+    </item>
+    <item row="15" column="3">
+     <widget class="QLabel" name="labelDAC15">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="19" column="0">
+     <widget class="QCheckBox" name="checkBoxHighVoltage">
+      <property name="text">
+       <string>High Voltage</string>
+      </property>
+     </widget>
+    </item>
+    <item row="18" column="1">
+     <widget class="QComboBox" name="comboBoxADCVpp">
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
+      <item>
+       <property name="text">
+        <string>1000</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>1140</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>1330</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>1600</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>2000</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="4" column="3">
+     <widget class="QLabel" name="labelDAC4">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="12" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC12">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC3">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC0mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="17" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC17mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC1mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC4">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC2">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC13">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="18" column="0">
+     <widget class="QLabel" name="label_125">
+      <property name="text">
+       <string>ADC_VPP</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC11">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 11</string>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC13mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC8mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC5">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC1">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC10">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <widget class="QLabel" name="labelDAC1">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="3">
+     <widget class="QLabel" name="labelDAC2">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="14" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC14">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC2mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="3">
+     <widget class="QLabel" name="labelDAC6">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="19" column="1">
+     <widget class="QSpinBox" name="spinBoxHighVoltage">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only enter values between 60-200</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>200</number>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC3">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 3</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="3">
+     <widget class="QLabel" name="labelDAC9">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC9">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC5mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC10">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 10</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="3">
+     <widget class="QLabel" name="labelDAC8">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="15" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC15">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC4">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 4</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="1">
+     <widget class="QSpinBox" name="spinBoxDAC8">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Only accepts value range (0 - 4096). Only modifying this or pressing enter will set DAC.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="maximum">
+       <number>4096</number>
+      </property>
+     </widget>
+    </item>
+    <item row="15" column="2">
+     <widget class="QCheckBox" name="checkBoxDAC15mV">
+      <property name="toolTip">
+       <string>Checking or unchecking this will only get DAC values on the right (with this condition).&lt;br&gt;
+Only pressing enter on spinbox will set DAC (with this condition).</string>
+      </property>
+      <property name="text">
+       <string>mV</string>
+      </property>
+     </widget>
+    </item>
+    <item row="12" column="0">
+     <widget class="QCheckBox" name="checkBoxDAC12">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>Unchecking will set DAC in tristate (sends -100).&lt;br&gt;
+Checking sends nothing to DAC</string>
+      </property>
+      <property name="text">
+       <string>DAC 12</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <widget class="QLabel" name="labelDAC0">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

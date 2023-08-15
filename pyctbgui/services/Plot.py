@@ -77,11 +77,11 @@ class PlotTab:
             self.mainWindow.analogPlots[i].hide()
 
     def addAllSelectedAnalogPlots(self):
-        for i in range(32):
+        for i in range(Defines.adc.count):
             self.addSelectedAnalogPlots(i)
 
     def removeAllAnalogPlots(self):
-        for i in range(32):
+        for i in range(Defines.adc.count):
             self.mainWindow.analogPlots[i].hide()
 
 
@@ -97,11 +97,11 @@ class PlotTab:
             self.mainWindow.digitalPlots[i].hide()
 
     def addAllSelectedDigitalPlots(self):
-        for i in range(64):
+        for i in range(Defines.signals.count):
             self.addSelectedDigitalPlots(i)
 
     def removeAllDigitalPlots(self):
-        for i in range(64):
+        for i in range(Defines.signals.count):
             self.mainWindow.digitalPlots[i].hide()
 
 
@@ -114,11 +114,11 @@ class PlotTab:
             self.mainWindow.transceiverPlots[i].hide()
 
     def addAllSelectedTransceiverPlots(self):
-        for i in range(4):
+        for i in range(Defines.transceiver.count):
             self.addSelectedTransceiverPlots(i)
 
     def removeAllTransceiverPlots(self):
-        for i in range(4):
+        for i in range(Defines.transceiver.count):
             self.mainWindow.transceiverPlots[i].hide()
 
     def showPlot(self):
@@ -289,7 +289,7 @@ class PlotTab:
             nMaxY = self.mainWindow.nTransceiverRows
             nMaxX = self.mainWindow.nTransceiverCols
             frame = self.mainWindow.transceiver_frame
-        if x >= 0 and x < nMaxX and y >= 0 and y < nMaxY:
+        if 0 <= x < nMaxX and 0 <= y < nMaxY:
             val = frame[int(x), int(y)]
             message = f'[{x:.2f}, {y:.2f}] = {val:.2f}'
             sender.setToolTip(message)

@@ -19,13 +19,13 @@ class SlowAdcTab(QtWidgets.QWidget):
         pass
 
     def connect_ui(self):
-        for i in range(Defines.numSlowAdc):
+        for i in range(Defines.slowAdc.count):
             getattr(self.view, f"pushButtonSlowAdc{i}").clicked.connect(partial(self.updateSlowAdc, i))
         self.view.pushButtonTemp.clicked.connect(self.updateTemperature)
 
     def refresh(self):
         self.updateSlowAdcNames()
-        for i in range(Defines.numSlowAdc):
+        for i in range(Defines.slowAdc.count):
             self.updateSlowAdc(i)
         self.updateTemperature()
 

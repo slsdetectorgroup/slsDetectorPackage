@@ -50,7 +50,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.slowAdcTab: SlowAdcTab = self.widgetSlowAdcs
         self.dacTab: DacTab = self.widgetDacs
         self.powerSuppliesTab: PowerSuppliesTab = self.widgetPowerSupplies
-        self.signalsTab = SignalsTab(self)
+        self.signalsTab: SignalsTab = self.widgetSignals
         self.transceiverTab = TransceiverTab(self)
         self.adcTab = AdcTab(self)
         self.patternTab = PatternTab(self)
@@ -273,6 +273,8 @@ class MainWindow(QtWidgets.QMainWindow):
         for tab in self.tabs_list:
             tab.mainWindow = self
             tab.det = self.det
+
+        for tab in self.tabs_list:
             tab.setup_ui()
 
     def keyPressEvent(self, event):

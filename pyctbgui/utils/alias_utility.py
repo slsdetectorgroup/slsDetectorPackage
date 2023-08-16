@@ -2,13 +2,8 @@ from pathlib import Path
 
 
 def read_alias_file(alias_file):
-    pathAlias = Path(alias_file)
-    if not pathAlias.is_file():
-        raise Exception("Alias file does not exist.")
-    lines_alias = None
     with open(alias_file) as fp:
         lines_alias = fp.readlines()
-    fp.close()
     return parse_alias_lines(lines_alias)
 
 def parse_alias_lines(lines_alias):

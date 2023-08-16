@@ -88,7 +88,7 @@ class TransceiverTab(QtWidgets.QWidget):
 
     def updateTransceiverEnable(self):
         retval = self.getTransceiverEnableReg()
-        self.mainWindow.nTransceiverEnabled = bin(retval).count('1')
+        self.nTransceiverEnabled = bin(retval).count('1')
         for i in range(4):
             self.getTransceiverEnable(i, retval)
             self.getTransceiverEnablePlot(i)

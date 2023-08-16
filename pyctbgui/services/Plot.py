@@ -1,7 +1,8 @@
 from functools import partial
 import random
+from pathlib import Path
 
-from PyQt5 import QtWidgets,QtGui
+from PyQt5 import QtWidgets, QtGui, uic
 
 import pyqtgraph as pg
 
@@ -9,17 +10,54 @@ from ..utils.defines import Defines
 from ..utils.pixelmap import moench04_analog, matterhorn_transceiver
 
 
-class PlotTab:
-    def __init__(self, mainWindow):
-        self.mainWindow = mainWindow
-        self.det = self.mainWindow.det
-
+class PlotTab(QtWidgets.QWidget):
+    def __init__(self, parent):
+        super(PlotTab, self).__init__(parent)
+        uic.loadUi(Path(__file__).parent.parent / 'ui' / "plot.ui", parent)
+        self.view = parent
+        self.mainWindow = None
+        self.det = None
+        self.signalsTab = None
+        self.transceiverTab = None
+        self.acquisitionTab = None
+        self.adcTab = None
 
     def setup_ui(self):
-        self.mainWindow.signalsTab.initializeAllDigitalPlots()
+        self.signalsTab = self.mainWindow.signalsTab
+        self.transceiverTab = self.mainWindow.transceiverTab
+        self.acquisitionTab = self.mainWindow.acquisitionTab
+        self.adcTab = self.mainWindow.adcTab
+        
+        self.signalsTab.initializeAllDigitalPlots()
         self.initializeColorMaps()
 
     def connect_ui(self):
+        self.view.radioButtonNoPlot.clicked.connect(self.plotOptions)
+        self.view.radioButtonWaveform.clicked.connect(self.plotOptions)
+        self.view.radioButtonDistribution.clicked.connect(self.plotOptions)
+        self.view.radioButtonImage.clicked.connect(self.plotOptions)
+        self.view.comboBoxPlot.currentIndexChanged.connect(self.setPixelMap)
+        self.view.comboBoxColorMap.currentIndexChanged.connect(self.setColorMap)
+        self.view.comboBoxZMQHWM.currentIndexChanged.connect(self.setZMQHWM)
+        self.view.spinBoxSerialOffset.editingFinished.connect(self.setSerialOffset)
+        self.view.spinBoxNCount.editingFinished.connect(self.setNCounter)
+        self.view.spinBoxDynamicRange.editingFinished.connect(self.setDynamicRange)
+        self.view.spinBoxImageX.editingFinished.connect(self.setImageX)
+        self.view.spinBoxImageY.editingFinished.connect(self.setImageY)
+        self.view.checkBoxAcquire.stateChanged.connect(self.setPedestal)
+        self.view.checkBoxSubtract.stateChanged.connect(self.setPedestal)
+        self.view.checkBoxCommonMode.stateChanged.connect(self.setPedestal)
+        self.view.pushButtonReset.clicked.connect(self.resetPedestal)
+        self.view.checkBoxRaw.stateChanged.connect(self.setRawData)
+        self.view.spinBoxRawMin.editingFinished.connect(self.setRawData)
+        self.view.spinBoxRawMax.editingFinished.connect(self.setRawData)
+        self.view.checkBoxPedestal.stateChanged.connect(self.setPedestalSubtract)
+        self.view.spinBoxPedestalMin.editingFinished.connect(self.setPedestalSubtract)
+        self.view.spinBoxPedestalMax.editingFinished.connect(self.setPedestalSubtract)
+        self.view.spinBoxFit.editingFinished.connect(self.setFitADC)
+        self.view.spinBoxPlot.editingFinished.connect(self.setPlotBit)
+        self.view.pushButtonReferesh.clicked.connect(self.acquisitionTab.refresh)
+        
         self.mainWindow.plotAnalogImage.scene.sigMouseMoved.connect(partial(self.showPlotValues, self.mainWindow.plotAnalogImage))
         self.mainWindow.plotDigitalImage.scene.sigMouseMoved.connect(partial(self.showPlotValues, self.mainWindow.plotDigitalImage))
         self.mainWindow.plotTransceiverImage.scene.sigMouseMoved.connect(partial(self.showPlotValues, self.mainWindow.plotTransceiverImage))
@@ -28,12 +66,12 @@ class PlotTab:
         self.getZMQHWM()
 
     def initializeColorMaps(self):
-        self.mainWindow.comboBoxColorMap.addItems(Defines.Color_map)
-        self.mainWindow.comboBoxColorMap.setCurrentIndex(Defines.Color_map.index(Defines.Default_Color_Map))
+        self.view.comboBoxColorMap.addItems(Defines.Color_map)
+        self.view.comboBoxColorMap.setCurrentIndex(Defines.Color_map.index(Defines.Default_Color_Map))
         self.setColorMap()
 
     def setColorMap(self):
-        cm = pg.colormap.getFromMatplotlib(self.mainWindow.comboBoxColorMap.currentText())
+        cm = pg.colormap.getFromMatplotlib(self.view.comboBoxColorMap.currentText())
         # print(f'color map:{self.comboBoxColorMap.currentText()}')
         self.mainWindow.plotAnalogImage.setColorMap(cm)
         self.mainWindow.plotDigitalImage.setColorMap(cm)
@@ -41,7 +79,7 @@ class PlotTab:
 
     def getZMQHWM(self):
 
-        self.mainWindow.comboBoxZMQHWM.currentIndexChanged.disconnect()
+        self.view.comboBoxZMQHWM.currentIndexChanged.disconnect()
 
         rx_zmq_hwm = self.det.getRxZmqHwm()[0]
         # ensure same value in client zmq
@@ -49,14 +87,14 @@ class PlotTab:
 
         # high readout, low HWM
         if rx_zmq_hwm < 25 and rx_zmq_hwm > -1:
-            self.mainWindow.comboBoxZMQHWM.setCurrentIndex(1)
+            self.view.comboBoxZMQHWM.setCurrentIndex(1)
         # low readout, high HWM
         else:
-            self.mainWindow.comboBoxZMQHWM.setCurrentIndex(0)
-        self.mainWindow.comboBoxZMQHWM.currentIndexChanged.connect(self.setZMQHWM)
+            self.view.comboBoxZMQHWM.setCurrentIndex(0)
+        self.view.comboBoxZMQHWM.currentIndexChanged.connect(self.setZMQHWM)
 
     def setZMQHWM(self):
-        val = self.mainWindow.comboBoxZMQHWM.currentIndex()
+        val = self.view.comboBoxZMQHWM.currentIndex()
         # low readout, high HWM
         if val == 0:
             self.det.setRxZmqHwm(Defines.Zmq_hwm_low_speed)
@@ -71,7 +109,7 @@ class PlotTab:
 
 
     def addSelectedAnalogPlots(self, i):
-        enable = getattr(self.mainWindow.adcTab.view, f"checkBoxADC{i}Plot").isChecked()
+        enable = getattr(self.adcTab.view, f"checkBoxADC{i}Plot").isChecked()
         if enable:
             self.mainWindow.analogPlots[i].show()
         if not enable:
@@ -91,7 +129,7 @@ class PlotTab:
         self.mainWindow.plotDigitalImage.setColorMap(cm)
 
     def addSelectedDigitalPlots(self, i):
-        enable = getattr(self.mainWindow.signalsTab.view, f"checkBoxBIT{i}Plot").isChecked()
+        enable = getattr(self.signalsTab.view, f"checkBoxBIT{i}Plot").isChecked()
         if enable:
             self.mainWindow.digitalPlots[i].show()
         if not enable:
@@ -108,7 +146,7 @@ class PlotTab:
 
 
     def addSelectedTransceiverPlots(self, i):
-        enable = getattr(self.mainWindow.transceiverTab.view, f"checkBoxTransceiver{i}Plot").isChecked()
+        enable = getattr(self.transceiverTab.view, f"checkBoxTransceiver{i}Plot").isChecked()
         if enable:
             self.mainWindow.transceiverPlots[i].show()
         if not enable:
@@ -129,28 +167,28 @@ class PlotTab:
         self.mainWindow.plotAnalogImage.hide()
         self.mainWindow.plotDigitalImage.hide()
         self.mainWindow.plotTransceiverImage.hide()
-        self.mainWindow.labelDigitalWaveformOption.setDisabled(True)
-        self.mainWindow.radioButtonOverlay.setDisabled(True)
-        self.mainWindow.radioButtonStripe.setDisabled(True)
+        self.view.labelDigitalWaveformOption.setDisabled(True)
+        self.view.radioButtonOverlay.setDisabled(True)
+        self.view.radioButtonStripe.setDisabled(True)
 
         if self.mainWindow.romode.value in [0, 2]:
-            if self.mainWindow.radioButtonWaveform.isChecked():
+            if self.view.radioButtonWaveform.isChecked():
                 self.mainWindow.plotAnalogWaveform.show()
-            elif self.mainWindow.radioButtonImage.isChecked():
+            elif self.view.radioButtonImage.isChecked():
                 self.mainWindow.plotAnalogImage.show()
         if self.mainWindow.romode.value in [1, 2, 4]:
-            if self.mainWindow.radioButtonWaveform.isChecked():
+            if self.view.radioButtonWaveform.isChecked():
                 self.mainWindow.plotDigitalWaveform.show()
-            elif self.mainWindow.radioButtonImage.isChecked():
+            elif self.view.radioButtonImage.isChecked():
                 self.mainWindow.plotDigitalImage.show()
-            self.mainWindow.labelDigitalWaveformOption.setEnabled(True)
-            self.mainWindow.radioButtonOverlay.setEnabled(True)
-            self.mainWindow.radioButtonStripe.setEnabled(True)
+            self.view.labelDigitalWaveformOption.setEnabled(True)
+            self.view.radioButtonOverlay.setEnabled(True)
+            self.view.radioButtonStripe.setEnabled(True)
 
         if self.mainWindow.romode.value in [3, 4]:
-            if self.mainWindow.radioButtonWaveform.isChecked():
+            if self.view.radioButtonWaveform.isChecked():
                 self.mainWindow.plotTransceiverWaveform.show()
-            elif self.mainWindow.radioButtonImage.isChecked():
+            elif self.view.radioButtonImage.isChecked():
                 self.mainWindow.plotTransceiverImage.show()
 
     def plotOptions(self):
@@ -161,7 +199,7 @@ class PlotTab:
         # disable plotting
         self.mainWindow.read_timer.stop()
 
-        if self.mainWindow.radioButtonWaveform.isChecked():
+        if self.view.radioButtonWaveform.isChecked():
             self.mainWindow.plotAnalogWaveform.setLabel('left', "<span style=\"color:black;font-size:14px\">Output [ADC]</span>")
             self.mainWindow.plotAnalogWaveform.setLabel('bottom',
                                              "<span style=\"color:black;font-size:14px\">Analog Sample [#]</span>")
@@ -176,27 +214,27 @@ class PlotTab:
                                                   "<span style=\"color:black;font-size:14px\">Transceiver Sample [#]</span>")
             self.mainWindow.plotTransceiverWaveform.addLegend(colCount=4)
 
-            self.mainWindow.stackedWidgetPlotType.setCurrentIndex(0)
+            self.view.stackedWidgetPlotType.setCurrentIndex(0)
 
-        elif self.mainWindow.radioButtonImage.isChecked():
-            self.mainWindow.stackedWidgetPlotType.setCurrentIndex(2)
+        elif self.view.radioButtonImage.isChecked():
+            self.view.stackedWidgetPlotType.setCurrentIndex(2)
             self.setPixelMap()
 
-        if self.mainWindow.radioButtonNoPlot.isChecked():
-            self.mainWindow.labelPlotOptions.hide()
-            self.mainWindow.stackedWidgetPlotType.hide()
+        if self.view.radioButtonNoPlot.isChecked():
+            self.view.labelPlotOptions.hide()
+            self.view.stackedWidgetPlotType.hide()
         # enable plotting
         else:
-            self.mainWindow.labelPlotOptions.show()
-            self.mainWindow.stackedWidgetPlotType.show()
+            self.view.labelPlotOptions.show()
+            self.view.stackedWidgetPlotType.show()
             self.mainWindow.read_timer.start(Defines.Time_Plot_Refresh_ms)
 
     def setPixelMap(self):
-        if self.mainWindow.comboBoxPlot.currentText() == "Matterhorn":
+        if self.view.comboBoxPlot.currentText() == "Matterhorn":
             self.mainWindow.nTransceiverRows = Defines.Matterhorn.nRows
             self.mainWindow.nTransceiverCols = Defines.Matterhorn.nCols
             self.mainWindow.pixelMapTransceiver = matterhorn_transceiver()
-        elif self.mainWindow.comboBoxPlot.currentText() == "Moench04":
+        elif self.view.comboBoxPlot.currentText() == "Moench04":
             self.mainWindow.nAnalogRows = Defines.Moench04.nRows
             self.mainWindow.nAnalogCols = Defines.Moench04.nCols
             self.mainWindow.pixelMapAnalog = moench04_analog()

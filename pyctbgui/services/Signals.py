@@ -22,22 +22,22 @@ class SignalsTab:
         self.getDBitOffset()
 
     def connect_ui(self):
-        for i in range(64):
+        for i in range(Defines.signals.count):
             getattr(self.mainWindow, f"checkBoxBIT{i}DB").stateChanged.connect(partial(self.setDigitalBitEnable, i))
             getattr(self.mainWindow, f"checkBoxBIT{i}Out").stateChanged.connect(partial(self.setIOOut, i))
             getattr(self.mainWindow, f"checkBoxBIT{i}Plot").stateChanged.connect(partial(self.setEnableBitPlot, i))
             getattr(self.mainWindow, f"pushButtonBIT{i}").clicked.connect(partial(self.selectBitColor, i))
-        self.mainWindow.checkBoxBIT0_31DB.stateChanged.connect(partial(self.setDigitalBitEnableRange, 0, 32))
-        self.mainWindow.checkBoxBIT32_63DB.stateChanged.connect(partial(self.setDigitalBitEnableRange, 32, 64))
-        self.mainWindow.checkBoxBIT0_31Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 0, 32))
-        self.mainWindow.checkBoxBIT32_63Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 32, 64))
-        self.mainWindow.checkBoxBIT0_31Out.stateChanged.connect(partial(self.setIOOutRange, 0, 32))
-        self.mainWindow.checkBoxBIT32_63Out.stateChanged.connect(partial(self.setIOOutRange, 32, 64))
+        self.mainWindow.checkBoxBIT0_31DB.stateChanged.connect(partial(self.setDigitalBitEnableRange, 0, Defines.signals.half))
+        self.mainWindow.checkBoxBIT32_63DB.stateChanged.connect(partial(self.setDigitalBitEnableRange, Defines.signals.half, Defines.signals.count))
+        self.mainWindow.checkBoxBIT0_31Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 0, Defines.signals.half))
+        self.mainWindow.checkBoxBIT32_63Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, Defines.signals.half, Defines.signals.count))
+        self.mainWindow.checkBoxBIT0_31Out.stateChanged.connect(partial(self.setIOOutRange, 0, Defines.signals.half))
+        self.mainWindow.checkBoxBIT32_63Out.stateChanged.connect(partial(self.setIOOutRange, Defines.signals.half, Defines.signals.count))
         self.mainWindow.lineEditPatIOCtrl.editingFinished.connect(self.setIOOutReg)
         self.mainWindow.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
 
     def setup_ui(self):
-        for i in range(64):
+        for i in range(Defines.signals.count):
             self.setDBitButtonColor(i, self.plotTab.getRandomColor())
         self.initializeAllDigitalPlots()
 
@@ -46,7 +46,7 @@ class SignalsTab:
         self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotDigitalWaveform, 3)
         self.mainWindow.digitalPlots = {}
         waveform = np.zeros(1000)
-        for i in range(64):
+        for i in range(Defines.signals.count):
             pen = pg.mkPen(color=self.getDBitButtonColor(i), width=1)
             legendName = getattr(self.mainWindow, f"labelBIT{i}").text()
             self.mainWindow.digitalPlots[i] = self.mainWindow.plotDigitalWaveform.plot(waveform, pen=pen,
@@ -74,7 +74,7 @@ class SignalsTab:
         retval = self.mainWindow.det.rx_dbitlist
         self.mainWindow.rx_dbitlist = list(retval)
         self.mainWindow.nDbitEnabled = len(list(retval))
-        for i in range(64):
+        for i in range(Defines.signals.count):
             self.getDigitalBitEnable(i, retval)
             self.getEnableBitPlot(i)
             self.getEnableBitColor(i)
@@ -96,10 +96,10 @@ class SignalsTab:
     def getDigitalBitEnableRange(self, dbitList):
         self.mainWindow.checkBoxBIT0_31DB.stateChanged.disconnect()
         self.mainWindow.checkBoxBIT32_63DB.stateChanged.disconnect()
-        self.mainWindow.checkBoxBIT0_31DB.setChecked(all(x in list(dbitList) for x in range(32)))
-        self.mainWindow.checkBoxBIT32_63DB.setChecked(all(x in list(dbitList) for x in range(32, 64)))
-        self.mainWindow.checkBoxBIT0_31DB.stateChanged.connect(partial(self.setDigitalBitEnableRange, 0, 32))
-        self.mainWindow.checkBoxBIT32_63DB.stateChanged.connect(partial(self.setDigitalBitEnableRange, 32, 64))
+        self.mainWindow.checkBoxBIT0_31DB.setChecked(all(x in list(dbitList) for x in range(Defines.signals.half)))
+        self.mainWindow.checkBoxBIT32_63DB.setChecked(all(x in list(dbitList) for x in range(Defines.signals.half, Defines.signals.count)))
+        self.mainWindow.checkBoxBIT0_31DB.stateChanged.connect(partial(self.setDigitalBitEnableRange, 0, Defines.signals.half))
+        self.mainWindow.checkBoxBIT32_63DB.stateChanged.connect(partial(self.setDigitalBitEnableRange, Defines.signals.half, Defines.signals.count))
 
     def setDigitalBitEnableRange(self, start_nr, end_nr):
         bitList = self.mainWindow.det.rx_dbitlist
@@ -132,15 +132,15 @@ class SignalsTab:
         self.mainWindow.checkBoxBIT0_31Plot.stateChanged.disconnect()
         self.mainWindow.checkBoxBIT32_63Plot.stateChanged.disconnect()
         self.mainWindow.checkBoxBIT0_31Plot.setEnabled(
-            all(getattr(self.mainWindow, f"checkBoxBIT{i}Plot").isEnabled() for i in range(32)))
+            all(getattr(self.mainWindow, f"checkBoxBIT{i}Plot").isEnabled() for i in range(Defines.signals.half)))
         self.mainWindow.checkBoxBIT32_63Plot.setEnabled(
-            all(getattr(self.mainWindow, f"checkBoxBIT{i}Plot").isEnabled() for i in range(32, 64)))
+            all(getattr(self.mainWindow, f"checkBoxBIT{i}Plot").isEnabled() for i in range(Defines.signals.half, Defines.signals.count)))
         self.mainWindow.checkBoxBIT0_31Plot.setChecked(
-            all(getattr(self.mainWindow, f"checkBoxBIT{i}Plot").isChecked() for i in range(32)))
+            all(getattr(self.mainWindow, f"checkBoxBIT{i}Plot").isChecked() for i in range(Defines.signals.half)))
         self.mainWindow.checkBoxBIT32_63Plot.setChecked(
-            all(getattr(self.mainWindow, f"checkBoxBIT{i}Plot").isChecked() for i in range(32, 64)))
-        self.mainWindow.checkBoxBIT0_31Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 0, 32))
-        self.mainWindow.checkBoxBIT32_63Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 32, 64))
+            all(getattr(self.mainWindow, f"checkBoxBIT{i}Plot").isChecked() for i in range(Defines.signals.half, Defines.signals.count)))
+        self.mainWindow.checkBoxBIT0_31Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, 0, Defines.signals.half))
+        self.mainWindow.checkBoxBIT32_63Plot.stateChanged.connect(partial(self.setEnableBitPlotRange, Defines.signals.half, Defines.signals.count))
 
     def setEnableBitPlotRange(self, start_nr, end_nr):
         checkBox = getattr(self.mainWindow, f"checkBoxBIT{start_nr}_{end_nr - 1}Plot")
@@ -195,7 +195,7 @@ class SignalsTab:
 
     def updateIOOut(self):
         retval = self.getIOOutReg()
-        for i in range(64):
+        for i in range(Defines.signals.count):
             self.updateCheckBoxIOOut(i, retval)
         self.getIOoutRange(retval)
 
@@ -212,10 +212,10 @@ class SignalsTab:
     def getIOoutRange(self, out):
         self.mainWindow.checkBoxBIT0_31Out.stateChanged.disconnect()
         self.mainWindow.checkBoxBIT32_63Out.stateChanged.disconnect()
-        self.mainWindow.checkBoxBIT0_31Out.setChecked((out & Defines.BIT0_31_MASK) == Defines.BIT0_31_MASK)
-        self.mainWindow.checkBoxBIT32_63Out.setChecked((out & Defines.BIT32_63_MASK) == Defines.BIT32_63_MASK)
-        self.mainWindow.checkBoxBIT0_31Out.stateChanged.connect(partial(self.setIOOutRange, 0, 32))
-        self.mainWindow.checkBoxBIT32_63Out.stateChanged.connect(partial(self.setIOOutRange, 32, 64))
+        self.mainWindow.checkBoxBIT0_31Out.setChecked((out & Defines.signals.BIT0_31_MASK) == Defines.signals.BIT0_31_MASK)
+        self.mainWindow.checkBoxBIT32_63Out.setChecked((out & Defines.signals.BIT32_63_MASK) == Defines.signals.BIT32_63_MASK)
+        self.mainWindow.checkBoxBIT0_31Out.stateChanged.connect(partial(self.setIOOutRange, 0, Defines.signals.half))
+        self.mainWindow.checkBoxBIT32_63Out.stateChanged.connect(partial(self.setIOOutRange, Defines.signals.half, Defines.signals.count))
 
     def setIOOutRange(self, start_nr, end_nr):
         out = self.mainWindow.det.patioctrl

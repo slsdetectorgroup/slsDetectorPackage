@@ -1,4 +1,6 @@
 from functools import partial
+
+from pyctbgui.utils.defines import Defines
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 
 
@@ -10,13 +12,13 @@ class SlowAdcTab:
         pass
 
     def connect_ui(self):
-        for i in range(8):
+        for i in range(Defines.slowAdc.count):
             getattr(self.mainWindow, f"pushButtonSlowAdc{i}").clicked.connect(partial(self.updateSlowAdc, i))
         self.mainWindow.pushButtonTemp.clicked.connect(self.updateTemperature)
 
     def refresh(self):
         self.updateSlowAdcNames()
-        for i in range(8):
+        for i in range(Defines.slowAdc.count):
             self.updateSlowAdc(i)
         self.updateTemperature()
 

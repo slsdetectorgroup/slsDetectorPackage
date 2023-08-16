@@ -1,2 +1,3 @@
 from .ui.MainWindow import MainWindow
 from .utils.defines import Defines as defs
+from .utils import bit_utils

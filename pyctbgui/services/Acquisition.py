@@ -603,7 +603,7 @@ class AcquisitionTab:
                     analog_array = np.array(
                         np.frombuffer(data, dtype=np.uint16, count=self.mainWindow.nADCEnabled * self.asamples))
                     for i in range(Defines.adc.count):
-                        checkBox = getattr(self.mainWindow, f"checkBoxADC{i}Plot")
+                        checkBox = getattr(self.mainWindow.adcTab.view, f"checkBoxADC{i}Plot")
                         if checkBox.isChecked():
                             waveform = np.zeros(self.asamples)
                             for iSample in range(self.asamples):

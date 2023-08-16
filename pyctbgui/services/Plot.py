@@ -71,7 +71,7 @@ class PlotTab:
 
 
     def addSelectedAnalogPlots(self, i):
-        enable = getattr(self.mainWindow, f"checkBoxADC{i}Plot").isChecked()
+        enable = getattr(self.mainWindow.adcTab.view, f"checkBoxADC{i}Plot").isChecked()
         if enable:
             self.mainWindow.analogPlots[i].show()
         if not enable:

@@ -1,20 +1,27 @@
 from functools import partial
+from pathlib import Path
+
+from PyQt5 import uic,QtWidgets
 
 from pyctbgui.utils.defines import Defines
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 
 
-class SlowAdcTab:
-    def __init__(self, mainWindow):
-        self.mainWindow = mainWindow
+class SlowAdcTab(QtWidgets.QWidget):
+    def __init__(self, parent):
+        super(SlowAdcTab, self).__init__(parent)
+        uic.loadUi(Path(__file__).parent.parent / 'ui' / "slowAdcs.ui", parent)
+        self.view = parent
+        self.mainWindow = None
+        self.det = None
 
     def setup_ui(self):
         pass
 
     def connect_ui(self):
         for i in range(Defines.slowAdc.count):
-            getattr(self.mainWindow, f"pushButtonSlowAdc{i}").clicked.connect(partial(self.updateSlowAdc, i))
-        self.mainWindow.pushButtonTemp.clicked.connect(self.updateTemperature)
+            getattr(self.view, f"pushButtonSlowAdc{i}").clicked.connect(partial(self.updateSlowAdc, i))
+        self.view.pushButtonTemp.clicked.connect(self.updateTemperature)
 
     def refresh(self):
         self.updateSlowAdcNames()
@@ -24,14 +31,14 @@ class SlowAdcTab:
 
     def updateSlowAdcNames(self):
         for i, name in enumerate(self.mainWindow.det.getSlowADCNames()):
-            getattr(self.mainWindow, f"labelSlowAdc{i}").setText(name)
+            getattr(self.view, f"labelSlowAdc{i}").setText(name)
 
     def updateSlowAdc(self, i):
         slowADCIndex = getattr(dacIndex, f"SLOW_ADC{i}")
-        label = getattr(self.mainWindow, f"labelSlowAdcValue{i}")
-        slowadc = (self.mainWindow.det.getSlowADC(slowADCIndex))[0] / 1000
+        label = getattr(self.view, f"labelSlowAdcValue{i}")
+        slowadc = (self.det.getSlowADC(slowADCIndex))[0] / 1000
         label.setText(f'{slowadc:.2f} mV')
 
     def updateTemperature(self):
-        slowadc = self.mainWindow.det.getTemperature(dacIndex.SLOW_ADC_TEMP)
-        self.mainWindow.labelTempValue.setText(f'{str(slowadc[0])} °C')
+        slowadc = self.det.getTemperature(dacIndex.SLOW_ADC_TEMP)
+        self.view.labelTempValue.setText(f'{str(slowadc[0])} °C')

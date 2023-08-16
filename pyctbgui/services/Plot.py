@@ -16,6 +16,7 @@ class PlotTab:
 
 
     def setup_ui(self):
+        self.mainWindow.signalsTab.initializeAllDigitalPlots()
         self.initializeColorMaps()
 
     def connect_ui(self):
@@ -90,7 +91,7 @@ class PlotTab:
         self.mainWindow.plotDigitalImage.setColorMap(cm)
 
     def addSelectedDigitalPlots(self, i):
-        enable = getattr(self.mainWindow, f"checkBoxBIT{i}Plot").isChecked()
+        enable = getattr(self.mainWindow.signalsTab.view, f"checkBoxBIT{i}Plot").isChecked()
         if enable:
             self.mainWindow.digitalPlots[i].show()
         if not enable:

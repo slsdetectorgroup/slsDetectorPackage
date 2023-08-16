@@ -11,6 +11,7 @@ from slsdet import Detector, dacIndex
 from ..services import *
 from ..utils import alias_utility
 from ..utils.defines import *
+from pyctbgui import utils
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -20,7 +21,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, *args, **kwargs):
         parser = argparse.ArgumentParser()
-        parser.add_argument('-a', '--alias', help = "Alias file complete path")
+        parser.add_argument('-a', '--alias', help="Alias file complete path")
         arglist = parser.parse_args()
         self.alias_file = arglist.alias
 
@@ -28,8 +29,10 @@ class MainWindow(QtWidgets.QMainWindow):
         pg.setConfigOption("foreground", "k")
         pg.setConfigOption('leftButtonPan', False)
 
+        utils.mainWindow = self
+
         super(MainWindow, self).__init__()
-        uic.loadUi(Path(__file__).parent/"CtbGui.ui", self)
+        uic.loadUi(Path(__file__).parent / "CtbGui.ui", self)
 
         self.updateSettingValues()
 
@@ -39,15 +42,15 @@ class MainWindow(QtWidgets.QMainWindow):
             # ensure detector is up
             self.det.detectorserverversion[0]
         except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Connect Fail", str(e) + "Exiting Gui...",  QtWidgets.QMessageBox.Ok)
+            QtWidgets.QMessageBox.critical(self, "Connect Fail", str(e) + "Exiting Gui...", QtWidgets.QMessageBox.Ok)
             raise
 
         # get Tab Classes
         self.plotTab = PlotTab(self)
-        self.slowAdcTab = SlowAdcTab(self)
-        self.dacTab = DacTab(self)
-        self.powerSuppliesTab = PowerSuppliesTab(self)
-        self.signalsTab = SignalsTab(self)
+        self.slowAdcTab: SlowAdcTab = self.widgetSlowAdcs
+        self.dacTab: DacTab = self.widgetDacs
+        self.powerSuppliesTab: PowerSuppliesTab = self.widgetPowerSupplies
+        self.signalsTab: SignalsTab = self.widgetSignals
         self.transceiverTab = TransceiverTab(self)
         self.adcTab = AdcTab(self)
         self.patternTab = PatternTab(self)
@@ -95,12 +98,12 @@ class MainWindow(QtWidgets.QMainWindow):
         height = self.settings.value('window_height')
         if width is not None and height is not None:
             self.resize(int(width), int(height))
-            #print(f'Main window resized to {width}x{height}')
+            # print(f'Main window resized to {width}x{height}')
 
         # window position
         pos = self.settings.value('window_pos')
         if type(pos) is QtCore.QPoint:
-            #print(f'Moved main window to {pos}')
+            # print(f'Moved main window to {pos}')
             self.move(pos)
         self.settings.endGroup();
 
@@ -120,13 +123,13 @@ class MainWindow(QtWidgets.QMainWindow):
             width = self.settings.value('window_width')
             height = self.settings.value('window_height')
             if width is not None and height is not None:
-                #print(f'Plot window - Floating ({width}x{height})')
+                # print(f'Plot window - Floating ({width}x{height})')
                 self.dockWidget.setFloating(True)
                 self.dockWidget.resize(int(width), int(height))
             # window position
             pos = self.settings.value('window_pos')
             if type(pos) is QtCore.QPoint:
-                #print(f'Moved plot window to {pos}')
+                # print(f'Moved plot window to {pos}')
                 self.dockWidget.move(pos)
         self.settings.endGroup();
 
@@ -158,9 +161,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def loadAliasFile(self):
         print(f'Loading Alias file: {self.alias_file}')
         try:
-            bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, slowadc_names, voltage_names, pat_file_name = alias_utility.read_alias_file(self.alias_file)
+            bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, slowadc_names, voltage_names, pat_file_name = alias_utility.read_alias_file(
+                self.alias_file)
         except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "Alias File Fail", str(e) + "<br> " + self.alias_file, QtWidgets.QMessageBox.Ok)
+            QtWidgets.QMessageBox.warning(self, "Alias File Fail", str(e) + "<br> " + self.alias_file,
+                                          QtWidgets.QMessageBox.Ok)
             return
 
         for i in range(64):
@@ -203,7 +208,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dacTab.updateDACNames()
         self.powerSuppliesTab.updateVoltageNames()
 
-
     # For Action options function
     # TODO Only add the components of action option+ functions
     # Function to show info
@@ -216,7 +220,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def showKeyBoardShortcuts(self):
         msg = QtWidgets.QMessageBox()
         msg.setWindowTitle("Keyboard Shortcuts")
-        msg.setText("Start Acquisition (from any tab): Shift + Return<br>Move Tab Right : Ctrl + '+'<br>Move Tab Left : Ctrl + '-'<br>")
+        msg.setText(
+            "Start Acquisition (from any tab): Shift + Return<br>Move Tab Right : Ctrl + '+'<br>Move Tab Left : Ctrl + '-'<br>")
         x = msg.exec_()
 
     def loadParameters(self):
@@ -229,13 +234,11 @@ class MainWindow(QtWidgets.QMainWindow):
         if response[0]:
             try:
                 parameters = response[0]
-                QtWidgets.QMessageBox.information(self, "Load Parameter Success", "Parameters loaded successfully", QtWidgets.QMessageBox.Ok)
+                QtWidgets.QMessageBox.information(self, "Load Parameter Success", "Parameters loaded successfully",
+                                                  QtWidgets.QMessageBox.Ok)
             except Exception as e:
                 QtWidgets.QMessageBox.warning(self, "Load Parameter Fail", str(e), QtWidgets.QMessageBox.Ok)
                 pass
-
-
-
 
     def refresh_tab(self, tab_index):
         match tab_index:
@@ -264,8 +267,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statusTimer.timeout.connect(self.acquisitionTab.checkEndofAcquisition)
 
         # To auto trigger the read
-        self.read_timer =  QtCore.QTimer()
+        self.read_timer = QtCore.QTimer()
         self.read_timer.timeout.connect(self.acquisitionTab.read_zmq)
+
+        for tab in self.tabs_list:
+            tab.mainWindow = self
+            tab.det = self.det
 
         for tab in self.tabs_list:
             tab.setup_ui()
@@ -289,7 +296,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             ind -= 1
             if ind == -1:
-                ind = Defines.Max_Tabs -1
+                ind = Defines.Max_Tabs - 1
         self.tabWidget.setCurrentIndex(ind)
 
     def connect_ui(self):

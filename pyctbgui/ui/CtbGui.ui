@@ -117,7 +117,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>8</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="tabDac">
               <attribute name="title">
@@ -126,10 +126,10 @@
               <widget class="DacTab" name="widgetDacs" native="true">
                <property name="geometry">
                 <rect>
-                 <x>-1</x>
-                 <y>-1</y>
+                 <x>0</x>
+                 <y>0</y>
                  <width>851</width>
-                 <height>831</height>
+                 <height>841</height>
                 </rect>
                </property>
                <property name="minimumSize">
@@ -752,11 +752,4 @@ QPushButton:checked{background-color: red;}</string>
    </hints>
   </connection>
  </connections>
- <buttongroups>
-  <buttongroup name="buttonGroup">
-   <property name="exclusive">
-    <bool>true</bool>
-   </property>
-  </buttongroup>
- </buttongroups>
 </ui>

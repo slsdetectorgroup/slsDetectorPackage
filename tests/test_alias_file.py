@@ -35,6 +35,52 @@ def test_parse_sample_file():
         assert value == reference
 
 
+    #sense names
+    true_sese = ['Vcc_iochip', 'Va+', 'Vcc_int', 'T_boa.(C)', 'Vsh', 'Vcc1.8D', 'Vdd_ps', 'Vcc1.8A']
+    assert len(true_sese) == 8
+    assert true_sese == sense_names
+
+    #ADC
+
+    true_adc = [
+        'SCOL9',
+        'SCOL8',
+        'SCOL11',
+        'SCOL10',
+        'SCOL13',
+        'SCOL12',
+        'SCOL15',
+        'SCOL14',
+        'SCOL1',
+        'SCOL0',
+        'SCOL3',
+        'SCOL2',
+        'SCOL5',
+        'SCOL4',
+        'SCOL7',
+        'SCOL6',
+        'SCOL23',
+        'SCOL22',
+        'SCOL21',
+        'SCOL20',
+        'SCOL19',
+        'SCOL18',
+        'SCOL17',
+        'SCOL16',
+        'SCOL31',
+        'SCOL30',
+        'SCOL29',
+        'SCOL28',
+        'SCOL27',
+        'SCOL26',
+        'SCOL25',
+        'SCOL24',
+    ]
+
+    assert len(true_adc) == 32
+    assert true_adc == adc_names
+
+
 def test_single_value_parse_gives_exception():
     #Check that we get the correct exception
     with pytest.raises(Exception, match= r'Alias file parsing failed'):

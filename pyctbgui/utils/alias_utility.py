@@ -28,32 +28,36 @@ def parse_alias_lines(lines_alias):
         if line.startswith('#'):
             continue
 
-        words = line.split()
-        nwords = len(words)
-        if nwords == 1:
-            raise Exception(f"Alias file parsing failed: Require atleast 2 arguments in line: {line_nr}:{line}")
+        cmd, *args = line.split()
+
+
+        if not args:
+            raise Exception(f"Alias file parsing failed: Require atleast one argument in addition to command. ({line_nr}:{line})")
               
-        cmd = words[0]
-        
+
         if cmd.startswith("BIT"):
-            process_alias_bit_or_adc(words, bit_names, bit_plots, bit_colors)
+            process_alias_bit_or_adc(cmd, args, bit_names, bit_plots, bit_colors)
         
         elif cmd.startswith("ADC"):
-            process_alias_bit_or_adc(words, adc_names, adc_plots, adc_colors)
+            process_alias_bit_or_adc(cmd, args, adc_names, adc_plots, adc_colors)
 
         elif cmd.startswith("DAC"):
-            i = int(words[0][3:])
-            dac_names[i] = words[1]
-            if nwords > 2:
-                raise Exception("Too many arguments " + str(nwords) + " (expected max: 4) for this type in line <br>" + str(words))
-        
+            if len(args) > 1:
+                raise Exception(f"Too many arguments {len(args)} (expected max: 1) for this type. ({line_nr}:{line})")
+            i = int(cmd[3:])
+            dac_names[i] = args[0]
+          
         elif cmd.startswith("SENSE"):
-            i = int(words[0][5:])
-            sense_names[i] = words[1]
-            if nwords > 2:
-                raise Exception("Too many arguments " + str(nwords) + " (expected max: 4) for this type in line <br>" + str(words))
+            if len(args) > 1:
+                raise Exception(f"Too many arguments {len(args)} (expected max: 1) for this type. ({line_nr}:{line})")
+            i = int(cmd[5:])
+            sense_names[i] = args[0]
+            
 
         elif cmd in ["VA", "VB", "VC", "VD", "VIO"]:
+            if len(args) > 1:
+                raise Exception(f"Too many arguments {len(args)} (expected max: 1) for this type. ({line_nr}:{line})")
+
             match cmd:
                 case "VA":
                     i = 0
@@ -65,14 +69,14 @@ def parse_alias_lines(lines_alias):
                     i = 3
                 case "VIO":
                     i = 4   
-            power_names[i] = words[1]                    
-            if nwords > 2:
-                raise Exception("Too many arguments " + str(nwords) + " (expected max: 4) for this type in line <br>" + str(words))
+            power_names[i] = args[0]                    
+            
         
         elif cmd == "PATFILE":
-            if nwords > 2:
-                raise Exception("Too many arguments " + str(nwords) + " (expected max: 4) for this type in line <br>" + str(words))
-            pat_file_name = words[1]
+            if len(args) > 1:
+                raise Exception(f"Too many arguments {len(args)} (expected max: 1) for this type. ({line_nr}:{line})")
+
+            pat_file_name = args[0]
             path = Path(pat_file_name)
             if not path.is_file():
                 raise Exception("Pattern file provided in alias file does not exist.<br><br>Pattern file:" + pat_file_name)
@@ -85,14 +89,14 @@ def parse_alias_lines(lines_alias):
     return bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, sense_names, power_names, pat_file_name
 
 
-def process_alias_bit_or_adc(words, names, plots, colors):
-    nwords = len(words)
-    i = int(words[0][3:])
-    names[i] = words[1]
-    if nwords > 2:
-        plots[i] = bool(int(words[2]))
-        if nwords > 3:
-            colors[i] = words[3]
-        if nwords > 4:
-            raise Exception(f"Too many arguments {nwords} (expected max: 4) for this type in line. Called with: {words}")
+def process_alias_bit_or_adc(cmd, args, names, plots, colors):
+    n_args = len(args)
+    i = int(cmd[3:])
+    names[i] = args[0]
+    if n_args > 1:
+        plots[i] = bool(int(args[1]))
+        if n_args > 2:
+            colors[i] = args[2]
+        if n_args > 3:
+            raise Exception(f"Too many arguments {args} (expected max: 3) for this type in line.")
     

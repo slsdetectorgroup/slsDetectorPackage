@@ -46,7 +46,7 @@ class MainWindow(QtWidgets.QMainWindow):
             raise
 
         # get Tab Classes
-        self.plotTab = PlotTab(self)
+        self.plotTab: PlotTab=self.widgetPlot
         self.slowAdcTab: SlowAdcTab = self.widgetSlowAdcs
         self.dacTab: DacTab = self.widgetDacs
         self.powerSuppliesTab: PowerSuppliesTab = self.widgetPowerSupplies
@@ -54,14 +54,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.transceiverTab: TransceiverTab = self.widgetTransceiver
         self.adcTab: AdcTab = self.widgetAdc
         self.patternTab: PatternTab = self.widgetPattern
-        self.acquisitionTab = AcquisitionTab(self)
+        self.acquisitionTab: AcquisitionTab = self.widgetAcquisition
 
         self.tabs_list = [self.dacTab, self.powerSuppliesTab, self.slowAdcTab,
                           self.signalsTab, self.transceiverTab, self.adcTab,
                           self.patternTab, self.acquisitionTab, self.plotTab]
 
-        self.acquisitionTab.setup_zmq()
         self.setup_ui()
+        self.acquisitionTab.setup_zmq()
         self.tabWidget.setCurrentIndex(Defines.Acquisition_Tab_Index)
         self.tabWidget.currentChanged.connect(self.refresh_tab)
         self.connect_ui()
@@ -304,6 +304,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionInfo.triggered.connect(self.showInfo)
         self.actionKeyboardShortcuts.triggered.connect(self.showKeyBoardShortcuts)
         self.actionLoadParameters.triggered.connect(self.loadParameters)
+        self.pushButtonStart.clicked.connect(self.acquisitionTab.toggleAcquire)
+
 
         for tab in self.tabs_list:
             tab.connect_ui()

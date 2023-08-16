@@ -4,76 +4,55 @@ from pathlib import Path
 import numpy as np
 import time
 import zmq
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, uic
 
 from slsdet import readoutMode, runStatus
 from ..utils import decoder
 from ..utils.defines import Defines
 
 
-class AcquisitionTab:
-    def __init__(self, mainWindow):
-        self.mainWindow = mainWindow
-        self.det = self.mainWindow.det
+class AcquisitionTab(QtWidgets.QWidget):
+    def __init__(self, parent):
+        super(AcquisitionTab, self).__init__(parent)
+        uic.loadUi(Path(__file__).parent.parent / 'ui' / "acquisition.ui", parent)
+        self.view = parent
+        self.mainWindow = None
+        self.det = None
+        self.signalsTab = None
+        self.transceiverTab = None
+        self.adcTab = None
+        self.plotTab = None
 
+    def setup_ui(self):
         self.signalsTab = self.mainWindow.signalsTab
         self.transceiverTab = self.mainWindow.transceiverTab
         self.adcTab = self.mainWindow.adcTab
         self.plotTab = self.mainWindow.plotTab
-
-    def setup_ui(self):
         self.toggleStartButton(False)
 
     def connect_ui(self):
         # For Acquistions Tab
-        self.mainWindow.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
-        self.mainWindow.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
-        self.mainWindow.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
-        self.mainWindow.spinBoxAnalog.editingFinished.connect(self.setAnalog)
-        self.mainWindow.spinBoxDigital.editingFinished.connect(self.setDigital)
-        self.mainWindow.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
-        self.mainWindow.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
-        self.mainWindow.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
-        self.mainWindow.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
-        self.mainWindow.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
-        self.mainWindow.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
+        self.view.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
+        self.view.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
+        self.view.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
+        self.view.spinBoxAnalog.editingFinished.connect(self.setAnalog)
+        self.view.spinBoxDigital.editingFinished.connect(self.setDigital)
+        self.view.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
+        self.view.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
+        self.view.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
+        self.view.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
+        self.view.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
+        self.view.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
 
-        self.mainWindow.radioButtonNoPlot.clicked.connect(self.plotTab.plotOptions)
-        self.mainWindow.radioButtonWaveform.clicked.connect(self.plotTab.plotOptions)
-        self.mainWindow.radioButtonDistribution.clicked.connect(self.plotTab.plotOptions)
-        self.mainWindow.radioButtonImage.clicked.connect(self.plotTab.plotOptions)
-        self.mainWindow.comboBoxPlot.currentIndexChanged.connect(self.plotTab.setPixelMap)
-        self.mainWindow.comboBoxColorMap.currentIndexChanged.connect(self.plotTab.setColorMap)
-        self.mainWindow.comboBoxZMQHWM.currentIndexChanged.connect(self.plotTab.setZMQHWM)
-        self.mainWindow.spinBoxSerialOffset.editingFinished.connect(self.plotTab.setSerialOffset)
-        self.mainWindow.spinBoxNCount.editingFinished.connect(self.plotTab.setNCounter)
-        self.mainWindow.spinBoxDynamicRange.editingFinished.connect(self.plotTab.setDynamicRange)
-        self.mainWindow.spinBoxImageX.editingFinished.connect(self.plotTab.setImageX)
-        self.mainWindow.spinBoxImageY.editingFinished.connect(self.plotTab.setImageY)
-        self.mainWindow.checkBoxAcquire.stateChanged.connect(self.plotTab.setPedestal)
-        self.mainWindow.checkBoxSubtract.stateChanged.connect(self.plotTab.setPedestal)
-        self.mainWindow.checkBoxCommonMode.stateChanged.connect(self.plotTab.setPedestal)
-        self.mainWindow.pushButtonReset.clicked.connect(self.plotTab.resetPedestal)
-        self.mainWindow.checkBoxRaw.stateChanged.connect(self.plotTab.setRawData)
-        self.mainWindow.spinBoxRawMin.editingFinished.connect(self.plotTab.setRawData)
-        self.mainWindow.spinBoxRawMax.editingFinished.connect(self.plotTab.setRawData)
-        self.mainWindow.checkBoxPedestal.stateChanged.connect(self.plotTab.setPedestalSubtract)
-        self.mainWindow.spinBoxPedestalMin.editingFinished.connect(self.plotTab.setPedestalSubtract)
-        self.mainWindow.spinBoxPedestalMax.editingFinished.connect(self.plotTab.setPedestalSubtract)
-        self.mainWindow.spinBoxFit.editingFinished.connect(self.plotTab.setFitADC)
-        self.mainWindow.spinBoxPlot.editingFinished.connect(self.plotTab.setPlotBit)
-        self.mainWindow.pushButtonReferesh.clicked.connect(self.plotReferesh)
-
-        self.mainWindow.checkBoxFileWrite.stateChanged.connect(self.setFileWrite)
-        self.mainWindow.lineEditFileName.editingFinished.connect(self.setFileName)
-        self.mainWindow.lineEditFilePath.editingFinished.connect(self.setFilePath)
-        self.mainWindow.pushButtonFilePath.clicked.connect(self.browseFilePath)
-        self.mainWindow.spinBoxAcquisitionIndex.editingFinished.connect(self.setAccquisitionIndex)
-        self.mainWindow.spinBoxFrames.editingFinished.connect(self.setFrames)
-        self.mainWindow.spinBoxPeriod.editingFinished.connect(self.setPeriod)
-        self.mainWindow.comboBoxPeriod.currentIndexChanged.connect(self.setPeriod)
-        self.mainWindow.spinBoxTriggers.editingFinished.connect(self.setTriggers)
-        self.mainWindow.pushButtonStart.clicked.connect(self.toggleAcquire)
+        self.view.checkBoxFileWrite.stateChanged.connect(self.setFileWrite)
+        self.view.lineEditFileName.editingFinished.connect(self.setFileName)
+        self.view.lineEditFilePath.editingFinished.connect(self.setFilePath)
+        self.view.pushButtonFilePath.clicked.connect(self.browseFilePath)
+        self.view.spinBoxAcquisitionIndex.editingFinished.connect(self.setAccquisitionIndex)
+        self.view.spinBoxFrames.editingFinished.connect(self.setFrames)
+        self.view.spinBoxPeriod.editingFinished.connect(self.setPeriod)
+        self.view.comboBoxPeriod.currentIndexChanged.connect(self.setPeriod)
+        self.view.spinBoxTriggers.editingFinished.connect(self.setTriggers)
 
     def refresh(self):
         self.getReadout()
@@ -99,54 +78,54 @@ class AcquisitionTab:
     # Acquisition Tab functions
 
     def getReadout(self):
-        self.mainWindow.comboBoxROMode.currentIndexChanged.disconnect()
-        self.mainWindow.spinBoxAnalog.editingFinished.disconnect()
-        self.mainWindow.spinBoxDigital.editingFinished.disconnect()
-        self.mainWindow.spinBoxTransceiver.editingFinished.disconnect()
+        self.view.comboBoxROMode.currentIndexChanged.disconnect()
+        self.view.spinBoxAnalog.editingFinished.disconnect()
+        self.view.spinBoxDigital.editingFinished.disconnect()
+        self.view.spinBoxTransceiver.editingFinished.disconnect()
 
         self.mainWindow.romode = self.det.romode
-        self.mainWindow.comboBoxROMode.setCurrentIndex(self.mainWindow.romode.value)
+        self.view.comboBoxROMode.setCurrentIndex(self.mainWindow.romode.value)
         match self.mainWindow.romode:
             case readoutMode.ANALOG_ONLY:
-                self.mainWindow.spinBoxAnalog.setEnabled(True)
-                self.mainWindow.labelAnalog.setEnabled(True)
-                self.mainWindow.spinBoxDigital.setDisabled(True)
-                self.mainWindow.labelDigital.setDisabled(True)
-                self.mainWindow.labelTransceiver.setDisabled(True)
-                self.mainWindow.spinBoxTransceiver.setDisabled(True)
+                self.view.spinBoxAnalog.setEnabled(True)
+                self.view.labelAnalog.setEnabled(True)
+                self.view.spinBoxDigital.setDisabled(True)
+                self.view.labelDigital.setDisabled(True)
+                self.view.labelTransceiver.setDisabled(True)
+                self.view.spinBoxTransceiver.setDisabled(True)
             case readoutMode.DIGITAL_ONLY:
-                self.mainWindow.spinBoxAnalog.setDisabled(True)
-                self.mainWindow.labelAnalog.setDisabled(True)
-                self.mainWindow.spinBoxDigital.setEnabled(True)
-                self.mainWindow.labelDigital.setEnabled(True)
-                self.mainWindow.labelTransceiver.setDisabled(True)
-                self.mainWindow.spinBoxTransceiver.setDisabled(True)
+                self.view.spinBoxAnalog.setDisabled(True)
+                self.view.labelAnalog.setDisabled(True)
+                self.view.spinBoxDigital.setEnabled(True)
+                self.view.labelDigital.setEnabled(True)
+                self.view.labelTransceiver.setDisabled(True)
+                self.view.spinBoxTransceiver.setDisabled(True)
             case readoutMode.ANALOG_AND_DIGITAL:
-                self.mainWindow.spinBoxAnalog.setEnabled(True)
-                self.mainWindow.labelAnalog.setEnabled(True)
-                self.mainWindow.spinBoxDigital.setEnabled(True)
-                self.mainWindow.labelDigital.setEnabled(True)
-                self.mainWindow.labelTransceiver.setDisabled(True)
-                self.mainWindow.spinBoxTransceiver.setDisabled(True)
+                self.view.spinBoxAnalog.setEnabled(True)
+                self.view.labelAnalog.setEnabled(True)
+                self.view.spinBoxDigital.setEnabled(True)
+                self.view.labelDigital.setEnabled(True)
+                self.view.labelTransceiver.setDisabled(True)
+                self.view.spinBoxTransceiver.setDisabled(True)
             case readoutMode.TRANSCEIVER_ONLY:
-                self.mainWindow.spinBoxAnalog.setDisabled(True)
-                self.mainWindow.labelAnalog.setDisabled(True)
-                self.mainWindow.spinBoxDigital.setDisabled(True)
-                self.mainWindow.labelDigital.setDisabled(True)
-                self.mainWindow.labelTransceiver.setEnabled(True)
-                self.mainWindow.spinBoxTransceiver.setEnabled(True)
+                self.view.spinBoxAnalog.setDisabled(True)
+                self.view.labelAnalog.setDisabled(True)
+                self.view.spinBoxDigital.setDisabled(True)
+                self.view.labelDigital.setDisabled(True)
+                self.view.labelTransceiver.setEnabled(True)
+                self.view.spinBoxTransceiver.setEnabled(True)
             case _:
-                self.mainWindow.spinBoxAnalog.setDisabled(True)
-                self.mainWindow.labelAnalog.setDisabled(True)
-                self.mainWindow.spinBoxDigital.setEnabled(True)
-                self.mainWindow.labelDigital.setEnabled(True)
-                self.mainWindow.labelTransceiver.setEnabled(True)
-                self.mainWindow.spinBoxTransceiver.setEnabled(True)
+                self.view.spinBoxAnalog.setDisabled(True)
+                self.view.labelAnalog.setDisabled(True)
+                self.view.spinBoxDigital.setEnabled(True)
+                self.view.labelDigital.setEnabled(True)
+                self.view.labelTransceiver.setEnabled(True)
+                self.view.spinBoxTransceiver.setEnabled(True)
 
-        self.mainWindow.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
-        self.mainWindow.spinBoxAnalog.editingFinished.connect(self.setAnalog)
-        self.mainWindow.spinBoxDigital.editingFinished.connect(self.setDigital)
-        self.mainWindow.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
+        self.view.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
+        self.view.spinBoxAnalog.editingFinished.connect(self.setAnalog)
+        self.view.spinBoxDigital.editingFinished.connect(self.setDigital)
+        self.view.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
         self.getAnalog()
         self.getDigital()
         self.plotTab.showPlot()
@@ -155,15 +134,15 @@ class AcquisitionTab:
         self.read_zmq()
 
     def setReadOut(self):
-        self.mainWindow.comboBoxROMode.currentIndexChanged.disconnect()
+        self.view.comboBoxROMode.currentIndexChanged.disconnect()
         try:
-            if self.mainWindow.comboBoxROMode.currentIndex() == 0:
+            if self.view.comboBoxROMode.currentIndex() == 0:
                 self.det.romode = readoutMode.ANALOG_ONLY
-            elif self.mainWindow.comboBoxROMode.currentIndex() == 1:
+            elif self.view.comboBoxROMode.currentIndex() == 1:
                 self.det.romode = readoutMode.DIGITAL_ONLY
-            elif self.mainWindow.comboBoxROMode.currentIndex() == 2:
+            elif self.view.comboBoxROMode.currentIndex() == 2:
                 self.det.romode = readoutMode.ANALOG_AND_DIGITAL
-            elif self.mainWindow.comboBoxROMode.currentIndex() == 3:
+            elif self.view.comboBoxROMode.currentIndex() == 3:
                 self.det.romode = readoutMode.TRANSCEIVER_ONLY
             else:
                 self.det.romode = readoutMode.DIGITAL_AND_TRANSCEIVER
@@ -171,197 +150,197 @@ class AcquisitionTab:
             QtWidgets.QMessageBox.warning(self.mainWindow, "Readout Mode Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
         # TODO: handling double event exceptions
-        self.mainWindow.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
+        self.view.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
         self.getReadout()
 
     def getRunFrequency(self):
-        self.mainWindow.spinBoxRunF.editingFinished.disconnect()
-        self.mainWindow.spinBoxRunF.setValue(self.det.runclk)
-        self.mainWindow.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
+        self.view.spinBoxRunF.editingFinished.disconnect()
+        self.view.spinBoxRunF.setValue(self.det.runclk)
+        self.view.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
 
     def setRunFrequency(self):
-        self.mainWindow.spinBoxRunF.editingFinished.disconnect()
+        self.view.spinBoxRunF.editingFinished.disconnect()
         try:
-            self.det.runclk = self.mainWindow.spinBoxRunF.value()
+            self.det.runclk = self.view.spinBoxRunF.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "Run Frequency Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
         # TODO: handling double event exceptions
-        self.mainWindow.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
+        self.view.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
         self.getRunFrequency()
 
     def getTransceiver(self):
-        self.mainWindow.spinBoxTransceiver.editingFinished.disconnect()
+        self.view.spinBoxTransceiver.editingFinished.disconnect()
         self.tsamples = self.det.tsamples
-        self.mainWindow.spinBoxTransceiver.setValue(self.tsamples)
-        self.mainWindow.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
+        self.view.spinBoxTransceiver.setValue(self.tsamples)
+        self.view.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
 
     def setTransceiver(self):
-        self.mainWindow.spinBoxTransceiver.editingFinished.disconnect()
+        self.view.spinBoxTransceiver.editingFinished.disconnect()
         try:
-            self.det.tsamples = self.mainWindow.spinBoxTransceiver.value()
+            self.det.tsamples = self.view.spinBoxTransceiver.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "Transceiver Samples Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
         # TODO: handling double event exceptions
-        self.mainWindow.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
+        self.view.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
         self.getTransceiver()
 
     def getAnalog(self):
-        self.mainWindow.spinBoxAnalog.editingFinished.disconnect()
+        self.view.spinBoxAnalog.editingFinished.disconnect()
         self.asamples = self.det.asamples
-        self.mainWindow.spinBoxAnalog.setValue(self.asamples)
-        self.mainWindow.spinBoxAnalog.editingFinished.connect(self.setAnalog)
+        self.view.spinBoxAnalog.setValue(self.asamples)
+        self.view.spinBoxAnalog.editingFinished.connect(self.setAnalog)
 
     def setAnalog(self):
-        self.mainWindow.spinBoxAnalog.editingFinished.disconnect()
+        self.view.spinBoxAnalog.editingFinished.disconnect()
         try:
-            self.det.asamples = self.mainWindow.spinBoxAnalog.value()
+            self.det.asamples = self.view.spinBoxAnalog.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "Digital Samples Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
         # TODO: handling double event exceptions
-        self.mainWindow.spinBoxAnalog.editingFinished.connect(self.setAnalog)
+        self.view.spinBoxAnalog.editingFinished.connect(self.setAnalog)
         self.getAnalog()
 
     def getDigital(self):
-        self.mainWindow.spinBoxDigital.editingFinished.disconnect()
+        self.view.spinBoxDigital.editingFinished.disconnect()
         self.dsamples = self.det.dsamples
-        self.mainWindow.spinBoxDigital.setValue(self.dsamples)
-        self.mainWindow.spinBoxDigital.editingFinished.connect(self.setDigital)
+        self.view.spinBoxDigital.setValue(self.dsamples)
+        self.view.spinBoxDigital.editingFinished.connect(self.setDigital)
 
     def setDigital(self):
-        self.mainWindow.spinBoxDigital.editingFinished.disconnect()
+        self.view.spinBoxDigital.editingFinished.disconnect()
         try:
-            self.det.dsamples = self.mainWindow.spinBoxDigital.value()
+            self.det.dsamples = self.view.spinBoxDigital.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "Digital Samples Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
         # TODO: handling double event exceptions
-        self.mainWindow.spinBoxDigital.editingFinished.connect(self.setDigital)
+        self.view.spinBoxDigital.editingFinished.connect(self.setDigital)
         self.getDigital()
 
     def getADCFrequency(self):
-        self.mainWindow.spinBoxADCF.editingFinished.disconnect()
-        self.mainWindow.spinBoxADCF.setValue(self.det.adcclk)
-        self.mainWindow.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
+        self.view.spinBoxADCF.editingFinished.disconnect()
+        self.view.spinBoxADCF.setValue(self.det.adcclk)
+        self.view.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
 
     def setADCFrequency(self):
-        self.mainWindow.spinBoxADCF.editingFinished.disconnect()
+        self.view.spinBoxADCF.editingFinished.disconnect()
         try:
-            self.det.adcclk = self.mainWindow.spinBoxADCF.value()
+            self.det.adcclk = self.view.spinBoxADCF.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "ADC Frequency Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
         # TODO: handling double event exceptions
-        self.mainWindow.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
+        self.view.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
         self.getADCFrequency()
 
     def getADCPhase(self):
-        self.mainWindow.spinBoxADCPhase.editingFinished.disconnect()
-        self.mainWindow.spinBoxADCPhase.setValue(self.det.adcphase)
-        self.mainWindow.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
+        self.view.spinBoxADCPhase.editingFinished.disconnect()
+        self.view.spinBoxADCPhase.setValue(self.det.adcphase)
+        self.view.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
 
     def setADCPhase(self):
-        self.mainWindow.spinBoxADCPhase.editingFinished.disconnect()
+        self.view.spinBoxADCPhase.editingFinished.disconnect()
         try:
-            self.det.adcphase = self.mainWindow.spinBoxADCPhase.value()
+            self.det.adcphase = self.view.spinBoxADCPhase.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "ADC Phase Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
         # TODO: handling double event exceptions
-        self.mainWindow.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
+        self.view.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
         self.getADCPhase()
 
     def getADCPipeline(self):
-        self.mainWindow.spinBoxADCPipeline.editingFinished.disconnect()
-        self.mainWindow.spinBoxADCPipeline.setValue(self.det.adcpipeline)
-        self.mainWindow.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
+        self.view.spinBoxADCPipeline.editingFinished.disconnect()
+        self.view.spinBoxADCPipeline.setValue(self.det.adcpipeline)
+        self.view.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
 
     def setADCPipeline(self):
-        self.mainWindow.spinBoxADCPipeline.editingFinished.disconnect()
+        self.view.spinBoxADCPipeline.editingFinished.disconnect()
         try:
-            self.det.adcpipeline = self.mainWindow.spinBoxADCPipeline.value()
+            self.det.adcpipeline = self.view.spinBoxADCPipeline.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "ADC Pipeline Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
         # TODO: handling double event exceptions
-        self.mainWindow.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
+        self.view.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
         self.getADCPipeline()
 
     def getDBITFrequency(self):
-        self.mainWindow.spinBoxDBITF.editingFinished.disconnect()
-        self.mainWindow.spinBoxDBITF.setValue(self.det.dbitclk)
-        self.mainWindow.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
+        self.view.spinBoxDBITF.editingFinished.disconnect()
+        self.view.spinBoxDBITF.setValue(self.det.dbitclk)
+        self.view.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
 
     def setDBITFrequency(self):
-        self.mainWindow.spinBoxDBITF.editingFinished.disconnect()
+        self.view.spinBoxDBITF.editingFinished.disconnect()
         try:
-            self.det.dbitclk = self.mainWindow.spinBoxDBITF.value()
+            self.det.dbitclk = self.view.spinBoxDBITF.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "DBit Frequency Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
         # TODO: handling double event exceptions
-        self.mainWindow.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
+        self.view.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
         self.getDBITFrequency()
 
     def getDBITPhase(self):
-        self.mainWindow.spinBoxDBITPhase.editingFinished.disconnect()
-        self.mainWindow.spinBoxDBITPhase.setValue(self.det.dbitphase)
-        self.mainWindow.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
+        self.view.spinBoxDBITPhase.editingFinished.disconnect()
+        self.view.spinBoxDBITPhase.setValue(self.det.dbitphase)
+        self.view.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
 
     def setDBITPhase(self):
-        self.mainWindow.spinBoxDBITPhase.editingFinished.disconnect()
+        self.view.spinBoxDBITPhase.editingFinished.disconnect()
         try:
-            self.det.dbitphase = self.mainWindow.spinBoxDBITPhase.value()
+            self.det.dbitphase = self.view.spinBoxDBITPhase.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "DBit Phase Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
         # TODO: handling double event exceptions
-        self.mainWindow.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
+        self.view.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
         self.getDBITPhase()
 
     def getDBITPipeline(self):
-        self.mainWindow.spinBoxDBITPipeline.editingFinished.disconnect()
-        self.mainWindow.spinBoxDBITPipeline.setValue(self.det.dbitpipeline)
-        self.mainWindow.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
+        self.view.spinBoxDBITPipeline.editingFinished.disconnect()
+        self.view.spinBoxDBITPipeline.setValue(self.det.dbitpipeline)
+        self.view.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
 
     def setDBITPipeline(self):
-        self.mainWindow.spinBoxDBITPipeline.editingFinished.disconnect()
+        self.view.spinBoxDBITPipeline.editingFinished.disconnect()
         try:
-            self.det.dbitpipeline = self.mainWindow.spinBoxDBITPipeline.value()
+            self.det.dbitpipeline = self.view.spinBoxDBITPipeline.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "DBit Pipeline Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
         # TODO: handling double event exceptions
-        self.mainWindow.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
+        self.view.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
         self.getDBITPipeline()
 
     def getFileWrite(self):
-        self.mainWindow.checkBoxFileWrite.stateChanged.disconnect()
-        self.mainWindow.checkBoxFileWrite.setChecked(self.det.fwrite)
-        self.mainWindow.checkBoxFileWrite.stateChanged.connect(self.setFileWrite)
+        self.view.checkBoxFileWrite.stateChanged.disconnect()
+        self.view.checkBoxFileWrite.setChecked(self.det.fwrite)
+        self.view.checkBoxFileWrite.stateChanged.connect(self.setFileWrite)
 
     def setFileWrite(self):
-        self.det.fwrite = self.mainWindow.checkBoxFileWrite.isChecked()
+        self.det.fwrite = self.view.checkBoxFileWrite.isChecked()
         self.getFileWrite()
 
     def getFileName(self):
-        self.mainWindow.lineEditFileName.editingFinished.disconnect()
-        self.mainWindow.lineEditFileName.setText(self.det.fname)
-        self.mainWindow.lineEditFileName.editingFinished.connect(self.setFileName)
+        self.view.lineEditFileName.editingFinished.disconnect()
+        self.view.lineEditFileName.setText(self.det.fname)
+        self.view.lineEditFileName.editingFinished.connect(self.setFileName)
 
     def setFileName(self):
-        self.det.fname = self.mainWindow.lineEditFileName.text()
+        self.det.fname = self.view.lineEditFileName.text()
         self.getFileName()
 
     def getFilePath(self):
-        self.mainWindow.lineEditFilePath.editingFinished.disconnect()
-        self.mainWindow.lineEditFilePath.setText(str(self.det.fpath))
-        self.mainWindow.lineEditFilePath.editingFinished.connect(self.setFilePath)
+        self.view.lineEditFilePath.editingFinished.disconnect()
+        self.view.lineEditFilePath.setText(str(self.det.fpath))
+        self.view.lineEditFilePath.editingFinished.connect(self.setFilePath)
 
     def setFilePath(self):
-        self.det.fpath = Path(self.mainWindow.lineEditFilePath.text())
+        self.det.fpath = Path(self.view.lineEditFilePath.text())
         self.getFilePath()
 
     def browseFilePath(self):
@@ -373,68 +352,68 @@ class AcquisitionTab:
             # filter='README (*.md *.ui)'
         )
         if response:
-            self.mainWindow.lineEditFilePath.setText(response)
+            self.view.lineEditFilePath.setText(response)
             self.setFilePath()
 
     def getAccquisitionIndex(self):
-        self.mainWindow.spinBoxAcquisitionIndex.editingFinished.disconnect()
-        self.mainWindow.spinBoxAcquisitionIndex.setValue(self.det.findex)
-        self.mainWindow.spinBoxAcquisitionIndex.editingFinished.connect(self.setAccquisitionIndex)
+        self.view.spinBoxAcquisitionIndex.editingFinished.disconnect()
+        self.view.spinBoxAcquisitionIndex.setValue(self.det.findex)
+        self.view.spinBoxAcquisitionIndex.editingFinished.connect(self.setAccquisitionIndex)
 
     def setAccquisitionIndex(self):
-        self.det.findex = self.mainWindow.spinBoxAcquisitionIndex.value()
+        self.det.findex = self.view.spinBoxAcquisitionIndex.value()
         self.getAccquisitionIndex()
 
     def getFrames(self):
-        self.mainWindow.spinBoxFrames.editingFinished.disconnect()
-        self.mainWindow.spinBoxFrames.setValue(self.det.frames)
-        self.mainWindow.spinBoxFrames.editingFinished.connect(self.setFrames)
+        self.view.spinBoxFrames.editingFinished.disconnect()
+        self.view.spinBoxFrames.setValue(self.det.frames)
+        self.view.spinBoxFrames.editingFinished.connect(self.setFrames)
 
     def setFrames(self):
-        self.det.frames = self.mainWindow.spinBoxFrames.value()
+        self.det.frames = self.view.spinBoxFrames.value()
         self.getFrames()
 
     def getPeriod(self):
-        self.mainWindow.spinBoxPeriod.editingFinished.disconnect()
-        self.mainWindow.comboBoxPeriod.currentIndexChanged.disconnect()
+        self.view.spinBoxPeriod.editingFinished.disconnect()
+        self.view.comboBoxPeriod.currentIndexChanged.disconnect()
 
         # Converting to right time unit for period
         tPeriod = self.det.period
         if tPeriod < 100e-9:
-            self.mainWindow.comboBoxPeriod.setCurrentIndex(3)
-            self.mainWindow.spinBoxPeriod.setValue(tPeriod / 1e-9)
+            self.view.comboBoxPeriod.setCurrentIndex(3)
+            self.view.spinBoxPeriod.setValue(tPeriod / 1e-9)
         elif tPeriod < 100e-6:
-            self.mainWindow.comboBoxPeriod.setCurrentIndex(2)
-            self.mainWindow.spinBoxPeriod.setValue(tPeriod / 1e-6)
+            self.view.comboBoxPeriod.setCurrentIndex(2)
+            self.view.spinBoxPeriod.setValue(tPeriod / 1e-6)
         elif tPeriod < 100e-3:
-            self.mainWindow.comboBoxPeriod.setCurrentIndex(1)
-            self.mainWindow.spinBoxPeriod.setValue(tPeriod / 1e-3)
+            self.view.comboBoxPeriod.setCurrentIndex(1)
+            self.view.spinBoxPeriod.setValue(tPeriod / 1e-3)
         else:
-            self.mainWindow.comboBoxPeriod.setCurrentIndex(0)
-            self.mainWindow.spinBoxPeriod.setValue(tPeriod)
+            self.view.comboBoxPeriod.setCurrentIndex(0)
+            self.view.spinBoxPeriod.setValue(tPeriod)
 
-        self.mainWindow.spinBoxPeriod.editingFinished.connect(self.setPeriod)
-        self.mainWindow.comboBoxPeriod.currentIndexChanged.connect(self.setPeriod)
+        self.view.spinBoxPeriod.editingFinished.connect(self.setPeriod)
+        self.view.comboBoxPeriod.currentIndexChanged.connect(self.setPeriod)
 
     def setPeriod(self):
-        if self.mainWindow.comboBoxPeriod.currentIndex() == 0:
-            self.det.period = self.mainWindow.spinBoxPeriod.value()
-        elif self.mainWindow.comboBoxPeriod.currentIndex() == 1:
-            self.det.period = self.mainWindow.spinBoxPeriod.value() * (1e-3)
-        elif self.mainWindow.comboBoxPeriod.currentIndex() == 2:
-            self.det.period = self.mainWindow.spinBoxPeriod.value() * (1e-6)
+        if self.view.comboBoxPeriod.currentIndex() == 0:
+            self.det.period = self.view.spinBoxPeriod.value()
+        elif self.view.comboBoxPeriod.currentIndex() == 1:
+            self.det.period = self.view.spinBoxPeriod.value() * (1e-3)
+        elif self.view.comboBoxPeriod.currentIndex() == 2:
+            self.det.period = self.view.spinBoxPeriod.value() * (1e-6)
         else:
-            self.det.period = self.mainWindow.spinBoxPeriod.value() * (1e-9)
+            self.det.period = self.view.spinBoxPeriod.value() * (1e-9)
 
         self.getPeriod()
 
     def getTriggers(self):
-        self.mainWindow.spinBoxTriggers.editingFinished.disconnect()
-        self.mainWindow.spinBoxTriggers.setValue(self.det.triggers)
-        self.mainWindow.spinBoxTriggers.editingFinished.connect(self.setTriggers)
+        self.view.spinBoxTriggers.editingFinished.disconnect()
+        self.view.spinBoxTriggers.setValue(self.det.triggers)
+        self.view.spinBoxTriggers.editingFinished.connect(self.setTriggers)
 
     def setTriggers(self):
-        self.det.triggers = self.mainWindow.spinBoxTriggers.value()
+        self.det.triggers = self.view.spinBoxTriggers.value()
         self.getTriggers()
 
     def updateDetectorStatus(self, status):
@@ -470,9 +449,9 @@ class AcquisitionTab:
         self.stoppedFlag = True
 
     def checkBeforeAcquire(self):
-        if self.mainWindow.radioButtonImage.isChecked():
+        if self.plotTab.view.radioButtonImage.isChecked():
             # matterhorn image
-            if self.mainWindow.comboBoxPlot.currentText() == "Matterhorn":
+            if self.plotTab.view.comboBoxPlot.currentText() == "Matterhorn":
                 if self.mainWindow.romode not in [readoutMode.TRANSCEIVER_ONLY, readoutMode.DIGITAL_AND_TRANSCEIVER]:
                     QtWidgets.QMessageBox.warning(self.mainWindow, "Plot type",
                                                   "To read Matterhorn image, please enable transceiver readout mode",
@@ -484,7 +463,7 @@ class AcquisitionTab:
                                                       Defines.Matterhorn.tranceiverEnable), QtWidgets.QMessageBox.Ok)
                     return False
             # moench04 image
-            elif self.mainWindow.comboBoxPlot.currentText() == "Moench04":
+            elif self.plotTab.view.comboBoxPlot.currentText() == "Moench04":
                 if self.mainWindow.romode not in [readoutMode.ANALOG_ONLY, readoutMode.ANALOG_AND_DIGITAL]:
                     QtWidgets.QMessageBox.warning(self.mainWindow, "Plot type",
                                                   "To read Moench 04 image, please enable analog readout mode",
@@ -561,12 +540,12 @@ class AcquisitionTab:
             if self.det.rx_framescaught[0] != caught:
                 measurementDone = False
 
-        numMeasurments = self.mainWindow.spinBoxMeasurements.value()
+        numMeasurments = self.view.spinBoxMeasurements.value()
         if measurementDone:
             if self.det.rx_status == runStatus.RUNNING:
                 self.det.rx_stop()
-            if self.mainWindow.checkBoxFileWrite.isChecked():
-                self.mainWindow.spinBoxAcquisitionIndex.stepUp()
+            if self.view.checkBoxFileWrite.isChecked():
+                self.view.spinBoxAcquisitionIndex.stepUp()
                 self.setAccquisitionIndex()
             # next measurement
             self.currentMeasurement += 1
@@ -597,13 +576,13 @@ class AcquisitionTab:
             # print(f'Data size: {len(data)}')
 
             # waveform
-            if self.mainWindow.radioButtonWaveform.isChecked():
+            if self.plotTab.view.radioButtonWaveform.isChecked():
                 # analog
                 if self.mainWindow.romode.value in [0, 2]:
                     analog_array = np.array(
                         np.frombuffer(data, dtype=np.uint16, count=self.mainWindow.nADCEnabled * self.asamples))
                     for i in range(Defines.adc.count):
-                        checkBox = getattr(self.mainWindow.adcTab.view, f"checkBoxADC{i}Plot")
+                        checkBox = getattr(self.adcTab.view, f"checkBoxADC{i}Plot")
                         if checkBox.isChecked():
                             waveform = np.zeros(self.asamples)
                             for iSample in range(self.asamples):
@@ -627,7 +606,7 @@ class AcquisitionTab:
                         if offset % 8 != 0:
                             offset += (8 - (offset % 8))
 
-                        checkBox = getattr(self.mainWindow, f"checkBoxBIT{i}Plot")
+                        checkBox = getattr(self.signalsTab.view, f"checkBoxBIT{i}Plot")
                         # bits enabled but not plotting
                         if not checkBox.isChecked():
                             offset += nbitsPerDBit
@@ -644,7 +623,7 @@ class AcquisitionTab:
                                 offset += 1
                             self.mainWindow.digitalPlots[i].setData(waveform)
                             # TODO: left axis does not show 0 to 1, but keeps increasing
-                            if self.mainWindow.radioButtonStripe.isChecked():
+                            if self.plotTab.view.radioButtonStripe.isChecked():
                                 self.mainWindow.digitalPlots[i].setY(irow * 2)
                                 irow += 1
                             else:
@@ -661,11 +640,11 @@ class AcquisitionTab:
                     # print(f'transceiverOffset:{transceiverOffset}')
                     trans_array = np.array(np.frombuffer(data, offset=transceiverOffset, dtype=np.uint16))
                     for i in range(Defines.transceiver.count):
-                        checkBox = getattr(self.mainWindow.transceiverTab.view, f"checkBoxTransceiver{i}Plot")
+                        checkBox = getattr(self.transceiverTab.view, f"checkBoxTransceiver{i}Plot")
                         if checkBox.isChecked():
                             waveform = np.zeros(self.tsamples * 4)
                             for iSample in range(self.tsamples * 4):
-                                waveform[iSample] = trans_array[iSample * self.mainWindow.nTransceiverEnabled + i]
+                                waveform[iSample] = trans_array[iSample * self.transceiverTab.nTransceiverEnabled + i]
                             self.mainWindow.transceiverPlots[i].setData(waveform)
 
 

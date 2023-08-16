@@ -53,7 +53,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.signalsTab: SignalsTab = self.widgetSignals
         self.transceiverTab: TransceiverTab = self.widgetTransceiver
         self.adcTab: AdcTab = self.widgetAdc
-        self.patternTab = PatternTab(self)
+        self.patternTab: PatternTab = self.widgetPattern
         self.acquisitionTab = AcquisitionTab(self)
 
         self.tabs_list = [self.dacTab, self.powerSuppliesTab, self.slowAdcTab,

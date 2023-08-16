@@ -51,8 +51,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dacTab: DacTab = self.widgetDacs
         self.powerSuppliesTab: PowerSuppliesTab = self.widgetPowerSupplies
         self.signalsTab: SignalsTab = self.widgetSignals
-        self.transceiverTab = TransceiverTab(self)
-        self.adcTab = AdcTab(self)
+        self.transceiverTab: TransceiverTab = self.widgetTransceiver
+        self.adcTab: AdcTab = self.widgetAdc
         self.patternTab = PatternTab(self)
         self.acquisitionTab = AcquisitionTab(self)
 
@@ -181,8 +181,8 @@ class MainWindow(QtWidgets.QMainWindow):
             if adc_names[i]:
                 self.det.setAdcName(i, adc_names[i])
             if adc_plots[i]:
-                getattr(self, f"checkBoxADC{i}En").setChecked(adc_plots[i])
-                getattr(self, f"checkBoxADC{i}Plot").setChecked(adc_plots[i])
+                getattr(self.adcTab.view, f"checkBoxADC{i}En").setChecked(adc_plots[i])
+                getattr(self.adcTab.view, f"checkBoxADC{i}Plot").setChecked(adc_plots[i])
             if adc_colors[i]:
                 self.adcTab.setADCButtonColor(i, adc_colors[i])
 

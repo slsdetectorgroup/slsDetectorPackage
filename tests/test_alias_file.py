@@ -23,7 +23,19 @@ def test_parse_sample_file():
         'DGS24'
         ]
     
+    true_plot = [None, True, None, True, None, True, None, True, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True]
+    
     #Make sure we didn't mess up anything in this file
     assert len(true_names) == len(bit_names)
     for value, reference in zip(bit_names, true_names):
         assert value == reference
+
+    assert len(true_plot) == 64
+    for value, reference in zip(bit_plots, true_plot):
+        assert value == reference
+
+
+def test_single_value_parse_gives_exception():
+    #Check that we get the correct exception
+    with pytest.raises(Exception, match= r'Alias file parsing failed'):
+        at.parse_alias_lines(['hej'])

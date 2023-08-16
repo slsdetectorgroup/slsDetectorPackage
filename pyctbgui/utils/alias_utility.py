@@ -18,35 +18,36 @@ def parse_alias_lines(lines_alias):
     power_names = [None] * 5
     pat_file_name = None
 
-    for line in lines_alias:
+    for line_nr, line in enumerate(lines_alias):
+        ignore_list = ['PATCOMPILER']
+        
+        #skip empty lines
+        if line == '\n' or len(line) == 0:
+            continue
+        #skip comments
+        if line.startswith('#'):
+            continue
+
         words = line.split()
         nwords = len(words)
-        # ignore empty lines
-        if nwords == 0:
-            continue
-        # ignore comments
-        if words[0][0:1] == '#':
-            continue
-        # invalid (only command)
         if nwords == 1:
-            QtWidgets.QMessageBox.warning(self, "Alias File Fail", "Require atleast 2 arguments in line:<br>" + line + "<br>File: " + self.alias_file, QtWidgets.QMessageBox.Ok)
-            return                 
+            raise Exception(f"Alias file parsing failed: Require atleast 2 arguments in line: {line_nr}:{line}")
+              
         cmd = words[0]
-        #print(f'line: {line}')
-
-        if cmd[:3] == "BIT":
+        
+        if cmd.startswith("BIT"):
             process_alias_bit_or_adc(words, bit_names, bit_plots, bit_colors)
         
-        elif cmd[:3] == "ADC":
+        elif cmd.startswith("ADC"):
             process_alias_bit_or_adc(words, adc_names, adc_plots, adc_colors)
 
-        elif cmd[:3] == "DAC":
+        elif cmd.startswith("DAC"):
             i = int(words[0][3:])
             dac_names[i] = words[1]
             if nwords > 2:
                 raise Exception("Too many arguments " + str(nwords) + " (expected max: 4) for this type in line <br>" + str(words))
         
-        elif cmd[:5] == "SENSE":
+        elif cmd.startswith("SENSE"):
             i = int(words[0][5:])
             sense_names[i] = words[1]
             if nwords > 2:
@@ -75,7 +76,11 @@ def parse_alias_lines(lines_alias):
             path = Path(pat_file_name)
             if not path.is_file():
                 raise Exception("Pattern file provided in alias file does not exist.<br><br>Pattern file:" + pat_file_name)
-
+        elif cmd in ignore_list:
+            pass
+        
+        else:
+            raise Exception(f"Command: {cmd} not supported. Line {line_nr}:{line}")
     
     return bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, sense_names, power_names, pat_file_name
 
@@ -89,5 +94,5 @@ def process_alias_bit_or_adc(words, names, plots, colors):
         if nwords > 3:
             colors[i] = words[3]
         if nwords > 4:
-            raise Exception("Too many arguments " + str(nwords) + " (expected max: 4) for this type in line <br>" + str(words))
+            raise Exception(f"Too many arguments {nwords} (expected max: 4) for this type in line. Called with: {words}")
     

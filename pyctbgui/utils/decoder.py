@@ -1,5 +1,5 @@
 from ..utils.defines import *
-from _decoder import * #bring in the function from the compiled extension
+from .._decoder import * #bring in the function from the compiled extension
 import numpy as np
 
 """

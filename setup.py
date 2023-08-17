@@ -2,7 +2,7 @@ import setuptools
 import numpy as np
 
 c_ext = setuptools.Extension(
-    "_decoder",
+    "pyctbgui._decoder",
     sources = [
         "src/decoder.c", 
         "src/pm_decode.c"
@@ -22,7 +22,7 @@ c_ext = setuptools.Extension(
 c_ext.language = 'c'
 setuptools.setup(
     name= 'pyctbgui',
-    version = '2023.8.11',
+    version = '2023.8.17',
     description = 'Experimental GUI for the chip test board',
     packages=setuptools.find_packages(
         exclude=['tests',]  
@@ -30,12 +30,19 @@ setuptools.setup(
     include_package_data=True,
     ext_modules=[c_ext],
     scripts=['CtbGui',],
-     install_requires=[
-          'numpy', #TODO! write proper requires block (can't depend on slsdet at the moment)
-          'pyzmq',
-          'pillow',
-          'PyQt5', 
-          'pyqtgraph',
-          'matplotlib'
-      ],
+    python_requires='>=3.10', #using match statement
+    install_requires=[
+        'numpy', 
+        'pyzmq',
+        'pillow',
+        'PyQt5', 
+        'pyqtgraph',
+        'matplotlib',
+        #'slsdet', not yet available on pypi, maybe v8
+    ],
+     extras_require={
+        'dev': [
+            'pytest',
+        ]
+    }
 )

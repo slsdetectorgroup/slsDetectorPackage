@@ -11,7 +11,6 @@ from slsdet import Detector, dacIndex
 from ..services import *
 from ..utils import alias_utility
 from ..utils.defines import *
-from pyctbgui import utils
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -28,8 +27,6 @@ class MainWindow(QtWidgets.QMainWindow):
         pg.setConfigOption("background", (247, 247, 247))
         pg.setConfigOption("foreground", "k")
         pg.setConfigOption('leftButtonPan', False)
-
-        utils.mainWindow = self
 
         super(MainWindow, self).__init__()
         uic.loadUi(Path(__file__).parent / "CtbGui.ui", self)

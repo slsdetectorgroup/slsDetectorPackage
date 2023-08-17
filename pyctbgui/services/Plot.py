@@ -28,7 +28,6 @@ class PlotTab(QtWidgets.QWidget):
         self.acquisitionTab = self.mainWindow.acquisitionTab
         self.adcTab = self.mainWindow.adcTab
         
-        self.signalsTab.initializeAllDigitalPlots()
         self.initializeColorMaps()
 
     def connect_ui(self):

@@ -6,7 +6,6 @@ from pyctbgui.utils.defines import Defines
 
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 
-from pyctbgui import utils
 
 
 class PowerSuppliesTab(QtWidgets.QWidget):

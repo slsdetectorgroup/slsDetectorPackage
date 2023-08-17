@@ -1,2 +1,0 @@
-mainWindow = None
-powerSuppliesView = None

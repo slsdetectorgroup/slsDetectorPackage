@@ -189,12 +189,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.det.setDacName(iDac, dac_names[i])
 
         for i in range(8):
+            slowadc_index = self.det.getSlowADCList()
             if slowadc_names[i]:
-                self.det.setSlowAdcName(i, slowadc_names[i])
+                self.det.setSlowADCName(slowadc_index[i], slowadc_names[i])
 
         for i in range(5):
+            voltage_index = self.det.getVoltageList()
             if voltage_names[i]:
-                self.det.setVoltageName(i, voltage_names[i])
+                self.det.setVoltageName(voltage_index[i], voltage_names[i])
 
         if pat_file_name:
             self.lineEditPatternFile.setText(pat_file_name)

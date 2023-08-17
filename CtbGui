@@ -2,10 +2,10 @@
 from PyQt5 import QtWidgets
 import sys
 
-import pyctbgui as ctb
+from pyctbgui.ui import MainWindow
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    main = ctb.MainWindow()
+    main = MainWindow()
     main.show()
     app.exec_()

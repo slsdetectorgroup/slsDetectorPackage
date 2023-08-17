@@ -5,7 +5,6 @@ default: ext
 
 ext: ## [DEFAULT] build c extension in place
 	rm -rf build/ pyctbgui/_decoder.cpython*
-	clear
 	python setup.py build_ext --inplace
 
 clean: ## Remove the build folder and the shared library

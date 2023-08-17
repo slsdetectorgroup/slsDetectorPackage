@@ -47,6 +47,9 @@ class SignalsTab(QtWidgets.QWidget):
         for i in range(Defines.signals.count):
             self.setDBitButtonColor(i, self.plotTab.getRandomColor())
 
+        self.initializeAllDigitalPlots()
+
+
 
 
     def initializeAllDigitalPlots(self):

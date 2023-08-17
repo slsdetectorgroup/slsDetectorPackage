@@ -1,4 +1,4 @@
-name: Python package
+name: Build inplace and run tests
 
 on: [push]
 

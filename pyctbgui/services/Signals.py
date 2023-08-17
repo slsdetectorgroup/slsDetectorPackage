@@ -54,7 +54,7 @@ class SignalsTab(QtWidgets.QWidget):
 
     def initializeAllDigitalPlots(self):
         self.mainWindow.plotDigitalWaveform = pg.plot()
-        self.mainWindow.plotDigitalWaveform.addLegend(colCount=4)
+        self.mainWindow.plotDigitalWaveform.addLegend(colCount=Defines.colCount)
         self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotDigitalWaveform, 3)
         self.mainWindow.digitalPlots = {}
         waveform = np.zeros(1000)

@@ -40,7 +40,7 @@ class TransceiverTab(QtWidgets.QWidget):
 
     def initializeAllTransceiverPlots(self):
         self.mainWindow.plotTransceiverWaveform = pg.plot()
-        self.mainWindow.plotTransceiverWaveform.addLegend(colCount=4)
+        self.mainWindow.plotTransceiverWaveform.addLegend(colCount=Defines.colCount)
         self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotTransceiverWaveform, 5)
         self.mainWindow.transceiverPlots = {}
         waveform = np.zeros(1000)

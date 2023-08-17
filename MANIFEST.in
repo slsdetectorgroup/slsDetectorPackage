@@ -1,1 +1,2 @@
 include pyctbgui/ui/*.ui
+recursive-include src *.c *.h

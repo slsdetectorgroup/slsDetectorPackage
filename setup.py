@@ -2,7 +2,7 @@ import setuptools
 import numpy as np
 
 c_ext = setuptools.Extension(
-    "_decoder",
+    "pyctbgui._decoder",
     sources = [
         "src/decoder.c", 
         "src/pm_decode.c"

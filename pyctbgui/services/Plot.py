@@ -202,16 +202,13 @@ class PlotTab(QtWidgets.QWidget):
             self.mainWindow.plotAnalogWaveform.setLabel('left', "<span style=\"color:black;font-size:14px\">Output [ADC]</span>")
             self.mainWindow.plotAnalogWaveform.setLabel('bottom',
                                              "<span style=\"color:black;font-size:14px\">Analog Sample [#]</span>")
-            self.mainWindow.plotAnalogWaveform.addLegend(colCount=4)
             self.mainWindow.plotDigitalWaveform.setLabel('left', "<span style=\"color:black;font-size:14px\">Digital Bit</span>")
             self.mainWindow.plotDigitalWaveform.setLabel('bottom',
                                               "<span style=\"color:black;font-size:14px\">Digital Sample [#]</span>")
-            self.mainWindow.plotDigitalWaveform.addLegend(colCount=4)
             self.mainWindow.plotTransceiverWaveform.setLabel('left',
                                                   "<span style=\"color:black;font-size:14px\">Transceiver Bit</span>")
             self.mainWindow.plotTransceiverWaveform.setLabel('bottom',
                                                   "<span style=\"color:black;font-size:14px\">Transceiver Sample [#]</span>")
-            self.mainWindow.plotTransceiverWaveform.addLegend(colCount=4)
 
             self.view.stackedWidgetPlotType.setCurrentIndex(0)
 

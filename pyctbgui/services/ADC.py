@@ -26,6 +26,7 @@ class AdcTab(QtWidgets.QWidget):
 
     def initializeAllAnalogPlots(self):
         self.mainWindow.plotAnalogWaveform = pg.plot()
+        self.mainWindow.plotAnalogWaveform.addLegend(colCount=4)
         self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotAnalogWaveform, 1)
         self.mainWindow.analogPlots = {}
         waveform = np.zeros(1000)

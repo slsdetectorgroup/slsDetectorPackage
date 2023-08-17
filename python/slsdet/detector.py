@@ -1851,7 +1851,7 @@ class Detector(CppDetectorApi):
 
     @slowadclist.setter
     def slowadclist(self, value):
-        self.setSlowAdcNames(value)
+        self.setSlowADCNames(value)
         
     @property
     def dacvalues(self):

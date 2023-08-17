@@ -102,8 +102,8 @@ class DacTab(QtWidgets.QWidget):
         value = -100
         if checkBoxDac.isChecked():
             value = spinBox.value()
-
-        self.det.setDAC(dac, value, checkBoxmV.isChecked())
+        cond = checkBoxDac.isChecked() and checkBoxmV.isChecked()
+        self.det.setDAC(dac, value, cond)
         self.getDAC(i)
 
     def getADCVpp(self):

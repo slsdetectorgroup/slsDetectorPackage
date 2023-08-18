@@ -10,8 +10,8 @@ def test_read_non_existing_file_throws():
 
 def test_parse_sample_file():
     fpath = Path(__file__).parent / 'data/moench04_start_trigger.alias'
-    bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names,\
-    sense_names, power_names, pat_file_name = at.read_alias_file(fpath)
+    bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, sense_names, power_names, \
+    pat_file_name = at.read_alias_file(fpath)
 
     assert len(bit_names) == 64
 
@@ -31,7 +31,7 @@ def test_parse_sample_file():
         True, True, True, True, True, True, True, True, True, True
     ]
 
-    #Make sure we didn't mess up anything in this file
+    # Make sure we didn't mess up anything in this file
     assert len(true_names) == len(bit_names)
     for value, reference in zip(bit_names, true_names):
         assert value == reference
@@ -40,46 +40,17 @@ def test_parse_sample_file():
     for value, reference in zip(bit_plots, true_plot):
         assert value == reference
 
-    #sense names
+    # sense names
     true_sese = ['Vcc_iochip', 'Va+', 'Vcc_int', 'T_boa.(C)', 'Vsh', 'Vcc1.8D', 'Vdd_ps', 'Vcc1.8A']
     assert len(true_sese) == 8
     assert true_sese == sense_names
 
-    #ADC
+    # ADC
 
     true_adc = [
-        'SCOL9',
-        'SCOL8',
-        'SCOL11',
-        'SCOL10',
-        'SCOL13',
-        'SCOL12',
-        'SCOL15',
-        'SCOL14',
-        'SCOL1',
-        'SCOL0',
-        'SCOL3',
-        'SCOL2',
-        'SCOL5',
-        'SCOL4',
-        'SCOL7',
-        'SCOL6',
-        'SCOL23',
-        'SCOL22',
-        'SCOL21',
-        'SCOL20',
-        'SCOL19',
-        'SCOL18',
-        'SCOL17',
-        'SCOL16',
-        'SCOL31',
-        'SCOL30',
-        'SCOL29',
-        'SCOL28',
-        'SCOL27',
-        'SCOL26',
-        'SCOL25',
-        'SCOL24',
+        'SCOL9', 'SCOL8', 'SCOL11', 'SCOL10', 'SCOL13', 'SCOL12', 'SCOL15', 'SCOL14', 'SCOL1', 'SCOL0', 'SCOL3',
+        'SCOL2', 'SCOL5', 'SCOL4', 'SCOL7', 'SCOL6', 'SCOL23', 'SCOL22', 'SCOL21', 'SCOL20', 'SCOL19', 'SCOL18',
+        'SCOL17', 'SCOL16', 'SCOL31', 'SCOL30', 'SCOL29', 'SCOL28', 'SCOL27', 'SCOL26', 'SCOL25', 'SCOL24'
     ]
 
     assert len(true_adc) == 32

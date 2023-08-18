@@ -13,5 +13,8 @@ clean: ## Remove the build folder and the shared library
 test: ## Run unit tests using pytest
 	python -m pytest --ruff -v
 
+test_gh: ## tests for github actions without ruff
+	python -m pytest -v
+
 help: # from compiler explorer
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'

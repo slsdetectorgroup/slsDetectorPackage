@@ -7,7 +7,9 @@ line-length = 119
 select = ["E","F","UP","PT","RET","SLF","TID","PTH","NPY"]
 # other usefule rules "N" "PL"
 # rules to ignore
-ignore = ["UP032"]
+# PTH123 causes issues with gh actions
+ignore = ["UP032","PTH123"]
+
 # Exclude a variety of commonly ignored directories.
 exclude = [
     ".bzr",

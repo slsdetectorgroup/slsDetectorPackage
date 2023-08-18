@@ -22,7 +22,7 @@ setuptools.setup(
     scripts=[
         'CtbGui',
     ],
-    python_requires='>=3.10',  #using match statement
+    python_requires='>=3.10',  # using match statement
     install_requires=[
         'numpy',
         'pyzmq',
@@ -30,11 +30,14 @@ setuptools.setup(
         'PyQt5',
         'pyqtgraph',
         'matplotlib',
-        #'slsdet', not yet available on pypi, maybe v8
+        # 'slsdet', not yet available on pypi, maybe v8
     ],
-    extras_require={'dev': [
-        'pytest',
-        'ruff',
-        'yapf',
-        'pytest-ruff'
-    ]})
+    extras_require={
+        'dev': [
+            'pytest==7.4.0',
+            'ruff==0.0.285',
+            'yapf==0.40.1',
+            'pytest-ruff==0.1.1',
+            'pre-commit',
+        ],
+    })

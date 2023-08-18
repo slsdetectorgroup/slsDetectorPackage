@@ -668,9 +668,11 @@ class AcquisitionTab(QtWidgets.QWidget):
                     try:
                         self.mainWindow.analog_frame = decoder.decode(analog_array, self.mainWindow.pixelMapAnalog)
                         self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame.T)
-                    except Exception as e:
+                    except Exception:
                         self.mainWindow.statusbar.setStyleSheet("color:red")
-                        message = f'Warning: Invalid size for Analog Image. Expected {self.mainWindow.nAnalogRows * self.mainWindow.nAnalogCols} size, got {analog_array.size} instead.'
+                        message = f'Warning: Invalid size for Analog Image. Expected' \
+                                  f' {self.mainWindow.nAnalogRows * self.mainWindow.nAnalogCols} ' \
+                                  f'size, got {analog_array.size} instead.'
                         self.updateCurrentFrame('Invalid Image')
                         self.mainWindow.statusbar.showMessage(message)
                         print(message)
@@ -709,9 +711,11 @@ class AcquisitionTab(QtWidgets.QWidget):
                                                                            self.mainWindow.pixelMapTransceiver)
                         # print(f"type of image:{type(self.mainWindows.transceiver_frame)}")
                         self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame)
-                    except Exception as e:
+                    except Exception:
                         self.mainWindow.statusbar.setStyleSheet("color:red")
-                        message = f'Warning: Invalid size for Transceiver Image. Expected {self.mainWindow.nTransceiverRows * self.mainWindow.nTransceiverCols} size, got {trans_array.size} instead.'
+                        message = f'Warning: Invalid size for Transceiver Image. Expected' \
+                                  f' {self.mainWindow.nTransceiverRows * self.mainWindow.nTransceiverCols} size,' \
+                                  f' got {trans_array.size} instead.'
                         self.updateCurrentFrame('Invalid Image')
                         self.mainWindow.statusbar.showMessage(message)
                         print(message)
@@ -727,7 +731,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                         self.mainWindow.plotTransceiverImage.getHistogramWidget().item.setHistogramRange(*histRange,
                                                                                                          padding=0)
 
-        except zmq.ZMQError as e:
+        except zmq.ZMQError:
             pass
         except Exception as e:
             print(f'Caught exception: {str(e)}')

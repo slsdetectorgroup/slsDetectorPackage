@@ -142,7 +142,6 @@ class AdcTab(QtWidgets.QWidget):
 
     def setADCEnableRange(self, start_nr, end_nr):
         mask = self.getADCEnableReg()
-        retval = 0
         checkBox = getattr(self.view, f"checkBoxADC{start_nr}_{end_nr - 1}En")
         for i in range(start_nr, end_nr):
             mask = manipulate_bit(checkBox.isChecked(), mask, i)

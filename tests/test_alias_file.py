@@ -10,8 +10,8 @@ def test_read_non_existing_file_throws():
 
 def test_parse_sample_file():
     fpath = Path(__file__).parent / 'data/moench04_start_trigger.alias'
-    bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, sense_names, power_names, pat_file_name = at.read_alias_file(
-        fpath)
+    bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names,\
+    sense_names, power_names, pat_file_name = at.read_alias_file(fpath)
 
     assert len(bit_names) == 64
 

@@ -8,9 +8,10 @@ from functools import partial
 
 from slsdet import Detector, dacIndex
 
-from ..services import *
+from ..services import TransceiverTab, DacTab, AdcTab, AcquisitionTab, SignalsTab, PatternTab, SlowAdcTab,\
+                       PlotTab, PowerSuppliesTab
 from ..utils import alias_utility
-from ..utils.defines import *
+from ..utils.defines import Defines
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -159,8 +160,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def loadAliasFile(self):
         print(f'Loading Alias file: {self.alias_file}')
         try:
-            bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, slowadc_names, voltage_names, pat_file_name = alias_utility.read_alias_file(
-                self.alias_file)
+            bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, slowadc_names, \
+            voltage_names, pat_file_name = alias_utility.read_alias_file(self.alias_file)
         except Exception as e:
             QtWidgets.QMessageBox.warning(self, "Alias File Fail",
                                           str(e) + "<br> " + self.alias_file, QtWidgets.QMessageBox.Ok)
@@ -215,15 +216,15 @@ class MainWindow(QtWidgets.QMainWindow):
         msg = QtWidgets.QMessageBox()
         msg.setWindowTitle("About")
         msg.setText("This Gui is for Chip Test Boards.\n Current Phase: Development")
-        x = msg.exec_()
+        msg.exec_()
 
     def showKeyBoardShortcuts(self):
         msg = QtWidgets.QMessageBox()
         msg.setWindowTitle("Keyboard Shortcuts")
         msg.setText(
-            "Start Acquisition (from any tab): Shift + Return<br>Move Tab Right : Ctrl + '+'<br>Move Tab Left : Ctrl + '-'<br>"
-        )
-        x = msg.exec_()
+            "Start Acquisition (from any tab): Shift + Return<br>Move Tab Right : Ctrl + '+'<br>Move Tab Left :"
+            " Ctrl + '-'<br>")
+        msg.exec_()
 
     def loadParameters(self):
         response = QtWidgets.QFileDialog.getOpenFileName(
@@ -234,7 +235,6 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         if response[0]:
             try:
-                parameters = response[0]
                 QtWidgets.QMessageBox.information(self, "Load Parameter Success", "Parameters loaded successfully",
                                                   QtWidgets.QMessageBox.Ok)
             except Exception as e:

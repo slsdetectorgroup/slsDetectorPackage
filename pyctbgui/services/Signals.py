@@ -5,8 +5,6 @@ import numpy as np
 from PyQt5 import QtWidgets, uic
 import pyqtgraph as pg
 
-from .Plot import PlotTab
-
 from ..utils.bit_utils import bit_is_set, manipulate_bit
 from ..utils.defines import Defines
 

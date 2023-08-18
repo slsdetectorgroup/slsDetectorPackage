@@ -4,7 +4,7 @@ from pathlib import Path
 from PyQt5 import QtWidgets, uic
 from pyctbgui.utils.defines import Defines
 
-from slsdet import Detector, dacIndex, readoutMode, runStatus
+from slsdet import dacIndex
 
 
 class PowerSuppliesTab(QtWidgets.QWidget):
@@ -41,11 +41,11 @@ class PowerSuppliesTab(QtWidgets.QWidget):
 
     def updateVoltageNames(self):
         retval = self.det.getVoltageNames()
-        getattr(self.view, f"checkBoxVA").setText(retval[0])
-        getattr(self.view, f"checkBoxVB").setText(retval[1])
-        getattr(self.view, f"checkBoxVC").setText(retval[2])
-        getattr(self.view, f"checkBoxVD").setText(retval[3])
-        getattr(self.view, f"checkBoxVIO").setText(retval[4])
+        getattr(self.view, "checkBoxVA").setText(retval[0])
+        getattr(self.view, "checkBoxVB").setText(retval[1])
+        getattr(self.view, "checkBoxVC").setText(retval[2])
+        getattr(self.view, "checkBoxVD").setText(retval[3])
+        getattr(self.view, "checkBoxVIO").setText(retval[4])
 
     def getVoltage(self, i):
         spinBox = getattr(self.view, f"spinBoxV{i}")

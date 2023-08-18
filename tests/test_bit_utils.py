@@ -1,4 +1,3 @@
-import pytest
 import numpy as np
 
 from pyctbgui import bit_utils as bt
@@ -22,7 +21,7 @@ def test_manipulate_bit():
     assert num == 2**5
 
 
-def test_manipulate_bit():
+def test_manipulate_bit2():
     num = np.int32(2**8)
     num = bt.manipulate_bit(False, num, 8)  # False means clearing the bit
     assert num == 0

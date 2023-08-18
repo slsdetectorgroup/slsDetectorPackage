@@ -22,10 +22,10 @@ def parse_alias_lines(lines_alias):
     for line_nr, line in enumerate(lines_alias):
         ignore_list = ['PATCOMPILER']
 
-        #skip empty lines
+        # skip empty lines
         if line == '\n' or len(line) == 0:
             continue
-        #skip comments
+        # skip comments
         if line.startswith('#'):
             continue
 
@@ -85,7 +85,8 @@ def parse_alias_lines(lines_alias):
         else:
             raise Exception(f"Command: {cmd} not supported. Line {line_nr}:{line}")
 
-    return bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, sense_names, power_names, pat_file_name
+    return bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, sense_names, power_names,\
+           pat_file_name
 
 
 def process_alias_bit_or_adc(cmd, args, names, plots, colors):

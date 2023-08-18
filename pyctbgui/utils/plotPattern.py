@@ -14,8 +14,6 @@ Changes:
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Rectangle
-import os
-import argparse
 
 
 class PlotPattern():
@@ -288,7 +286,7 @@ class PlotPattern():
         # print(mat_pat.shape)
         subMat = mat_pat.reshape(int(cnt), int(len(num_bits)))[0:, avail_index]
         # subMat = mat_pat[avail_index]
-        timing = np.linspace(0, subMat.shape[0] - 1, subMat.shape[0])
+        # timing = np.linspace(0, subMat.shape[0] - 1, subMat.shape[0])
         plt.rcParams['figure.figsize'] = 15, 5
 
         # ============= PLOTTING =============

@@ -10,7 +10,7 @@ from slsdet import dacIndex
 class DacTab(QtWidgets.QWidget):
 
     def __init__(self, parent):
-        super(DacTab, self).__init__(parent)
+        super().__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "Dacs.ui", parent)
         self.view = parent
 

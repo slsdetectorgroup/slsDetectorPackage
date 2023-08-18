@@ -1,5 +1,5 @@
-from ..utils.defines import Defines
-from .._decoder import *  #bring in the function from the compiled extension
+from pyctbgui.utils.defines import Defines
+from pyctbgui._decoder import *  #bring in the function from the compiled extension
 import numpy as np
 """
 Python implementation, keep as a reference. Change name and replace

@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 def read_alias_file(alias_file):
-    with open(alias_file) as fp:
+    with Path.open(alias_file) as fp:
         lines_alias = fp.readlines()
     return parse_alias_lines(lines_alias)
 

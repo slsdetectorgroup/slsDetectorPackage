@@ -7,14 +7,14 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
-from ..utils.defines import Defines
-from ..utils.plotPattern import PlotPattern
+from pyctbgui.utils.defines import Defines
+from pyctbgui.utils.plotPattern import PlotPattern
 
 
 class PatternTab(QtWidgets.QWidget):
 
     def __init__(self, parent):
-        super(PatternTab, self).__init__(parent)
+        super().__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "pattern.ui", parent)
         self.view = parent
         self.mainWindow = None
@@ -198,7 +198,7 @@ class PatternTab(QtWidgets.QWidget):
         response = QtWidgets.QFileDialog.getOpenFileName(
             parent=self.mainWindow,
             caption="Select a compiler file",
-            directory=os.getcwd(),
+            directory=Path.cwd(),
             # filter='README (*.md *.ui)'
         )
         if response[0]:
@@ -206,9 +206,9 @@ class PatternTab(QtWidgets.QWidget):
 
     def setUncompiledPatternFile(self):
         filt = 'Pattern code(*.py *.c)'
-        folder = os.path.dirname(self.det.patfname[0])
+        folder = Path(self.det.patfname[0]).parent
         if not folder:
-            folder = os.getcwd()
+            folder = Path.cwd()
         response = QtWidgets.QFileDialog.getOpenFileName(parent=self.mainWindow,
                                                          caption="Select an uncompiled pattern file",
                                                          directory=folder,
@@ -218,9 +218,9 @@ class PatternTab(QtWidgets.QWidget):
 
     def setPatternFile(self):
         filt = 'Pattern file(*.pyat *.pat)'
-        folder = os.path.dirname(self.det.patfname[0])
+        folder = Path(self.det.patfname[0]).parent
         if not folder:
-            folder = os.getcwd()
+            folder = Path.cwd()
         response = QtWidgets.QFileDialog.getOpenFileName(parent=self.mainWindow,
                                                          caption="Select a compiled pattern file",
                                                          directory=folder,

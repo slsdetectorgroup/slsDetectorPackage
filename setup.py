@@ -34,4 +34,7 @@ setuptools.setup(
     ],
     extras_require={'dev': [
         'pytest',
+        'ruff',
+        'yapf',
+        'pytest-ruff'
     ]})

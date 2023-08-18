@@ -5,14 +5,14 @@ import numpy as np
 from PyQt5 import QtWidgets, uic
 import pyqtgraph as pg
 
-from ..utils.bit_utils import bit_is_set, manipulate_bit
-from ..utils.defines import Defines
+from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
+from pyctbgui.utils.defines import Defines
 
 
 class SignalsTab(QtWidgets.QWidget):
 
     def __init__(self, parent):
-        super(SignalsTab, self).__init__(parent)
+        super().__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "signals.ui", parent)
         self.view = parent
         self.mainWindow = None

@@ -1,4 +1,3 @@
-import os
 from PyQt5 import QtWidgets, QtCore, uic
 import argparse
 import signal
@@ -8,10 +7,10 @@ from functools import partial
 
 from slsdet import Detector, dacIndex
 
-from ..services import TransceiverTab, DacTab, AdcTab, AcquisitionTab, SignalsTab, PatternTab, SlowAdcTab,\
-                       PlotTab, PowerSuppliesTab
-from ..utils import alias_utility
-from ..utils.defines import Defines
+from pyctbgui.services import TransceiverTab, DacTab, AdcTab, AcquisitionTab, SignalsTab, PatternTab,\
+                              SlowAdcTab, PlotTab, PowerSuppliesTab
+from pyctbgui.utils import alias_utility
+from pyctbgui.utils.defines import Defines
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -29,7 +28,7 @@ class MainWindow(QtWidgets.QMainWindow):
         pg.setConfigOption("foreground", "k")
         pg.setConfigOption('leftButtonPan', False)
 
-        super(MainWindow, self).__init__()
+        super().__init__(*args, **kwargs)
         uic.loadUi(Path(__file__).parent / "CtbGui.ui", self)
 
         self.updateSettingValues()
@@ -230,7 +229,7 @@ class MainWindow(QtWidgets.QMainWindow):
         response = QtWidgets.QFileDialog.getOpenFileName(
             parent=self,
             caption="Select a parameter file to open",
-            directory=os.getcwd(),
+            directory=Path.cwd(),
             # filter='README (*.md *.ui)'
         )
         if response[0]:

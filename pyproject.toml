@@ -4,9 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [tool.ruff]
 line-length = 119
-select = ["E","F"]
+select = ["E","F","UP","PT","RET","SLF","TID","PTH","NPY"]
+# other usefule rules "N" "PL"
 # rules to ignore
-ignore = []
+ignore = ["UP032"]
 # Exclude a variety of commonly ignored directories.
 exclude = [
     ".bzr",

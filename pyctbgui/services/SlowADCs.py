@@ -10,7 +10,7 @@ from slsdet import dacIndex
 class SlowAdcTab(QtWidgets.QWidget):
 
     def __init__(self, parent):
-        super(SlowAdcTab, self).__init__(parent)
+        super().__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "slowAdcs.ui", parent)
         self.view = parent
         self.mainWindow = None

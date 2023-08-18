@@ -4,7 +4,7 @@ from pyctbgui import alias_utility as at
 
 
 def test_read_non_existing_file_throws():
-    with pytest.raises(Exception):
+    with pytest.raises(FileNotFoundError):
         at.read_alias_file('saijvcaiewjrvijaerijvaeoirvjveiojroiajgv')
 
 

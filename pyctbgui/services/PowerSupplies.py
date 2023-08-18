@@ -10,7 +10,7 @@ from slsdet import dacIndex
 class PowerSuppliesTab(QtWidgets.QWidget):
 
     def __init__(self, parent):
-        super(PowerSuppliesTab, self).__init__(parent)
+        super().__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "powerSupplies.ui", parent)
         self.view = parent
 

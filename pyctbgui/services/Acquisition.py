@@ -1,5 +1,4 @@
 import json
-import os
 from pathlib import Path
 import numpy as np
 import time
@@ -7,14 +6,14 @@ import zmq
 from PyQt5 import QtWidgets, uic
 
 from slsdet import readoutMode, runStatus
-from ..utils import decoder
-from ..utils.defines import Defines
+from pyctbgui.utils import decoder
+from pyctbgui.utils.defines import Defines
 
 
 class AcquisitionTab(QtWidgets.QWidget):
 
     def __init__(self, parent):
-        super(AcquisitionTab, self).__init__(parent)
+        super().__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "acquisition.ui", parent)
         self.view = parent
         self.mainWindow = None
@@ -348,7 +347,7 @@ class AcquisitionTab(QtWidgets.QWidget):
     def browseFilePath(self):
         response = QtWidgets.QFileDialog.getExistingDirectory(parent=self.mainWindow,
                                                               caption="Select Path to Save Output File",
-                                                              directory=os.getcwd(),
+                                                              directory=Path.cwd(),
                                                               options=(QtWidgets.QFileDialog.ShowDirsOnly
                                                                        | QtWidgets.QFileDialog.DontResolveSymlinks)
                                                               # filter='README (*.md *.ui)'

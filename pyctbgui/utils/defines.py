@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class Defines():
+class Defines:
     Time_Wait_For_Packets_ms = 0.5
     Time_Status_Refresh_ms = 100
     Time_Plot_Refresh_ms = 20
@@ -42,7 +42,7 @@ class Defines():
         Matterhorn = 0
         Moench04 = 1
 
-    class Matterhorn():
+    class Matterhorn:
         nRows = 48
         nHalfCols = 24
         nCols = 48
@@ -50,7 +50,7 @@ class Defines():
         tranceiverEnable = 0x3
         nPixelsPerTransceiver = 4
 
-    class Moench04():
+    class Moench04:
         nRows = 400
         nCols = 400
         adcNumbers = [

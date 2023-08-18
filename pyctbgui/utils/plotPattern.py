@@ -11,12 +11,14 @@ Changes:
 
 @author: Jiaguo Zhang and Julian Heymes
 """
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Rectangle
 
 
-class PlotPattern():
+class PlotPattern:
 
     def __init__(self, pattern, signalNames, colors_plot, colors_wait, linestyles_wait, alpha_wait, alpha_wait_rect,
                  colors_loop, linestyles_loop, alpha_loop, alpha_loop_rect, clock_vertical_lines_spacing,
@@ -83,7 +85,7 @@ class PlotPattern():
         # Load the pattern and get all lines
         # Loop all lines
         #with open(Folder + "/" + File_pat + ".pat") as f_pat:
-        with open(self.pattern) as f_pat:
+        with Path.open(self.pattern) as f_pat:
             lines_pat = f_pat.readlines()
         f_pat.close()
 

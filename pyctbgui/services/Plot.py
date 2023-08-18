@@ -6,14 +6,14 @@ from PyQt5 import QtWidgets, QtGui, uic
 
 import pyqtgraph as pg
 
-from ..utils.defines import Defines
-from ..utils.pixelmap import moench04_analog, matterhorn_transceiver
+from pyctbgui.utils.defines import Defines
+from pyctbgui.utils.pixelmap import moench04_analog, matterhorn_transceiver
 
 
 class PlotTab(QtWidgets.QWidget):
 
     def __init__(self, parent):
-        super(PlotTab, self).__init__(parent)
+        super().__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "plot.ui", parent)
         self.view = parent
         self.mainWindow = None

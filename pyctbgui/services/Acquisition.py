@@ -12,6 +12,7 @@ from ..utils.defines import Defines
 
 
 class AcquisitionTab(QtWidgets.QWidget):
+
     def __init__(self, parent):
         super(AcquisitionTab, self).__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "acquisition.ui", parent)
@@ -180,7 +181,8 @@ class AcquisitionTab(QtWidgets.QWidget):
         try:
             self.det.tsamples = self.view.spinBoxTransceiver.value()
         except Exception as e:
-            QtWidgets.QMessageBox.warning(self.mainWindow, "Transceiver Samples Fail", str(e), QtWidgets.QMessageBox.Ok)
+            QtWidgets.QMessageBox.warning(self.mainWindow, "Transceiver Samples Fail", str(e),
+                                          QtWidgets.QMessageBox.Ok)
             pass
         # TODO: handling double event exceptions
         self.view.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
@@ -344,13 +346,13 @@ class AcquisitionTab(QtWidgets.QWidget):
         self.getFilePath()
 
     def browseFilePath(self):
-        response = QtWidgets.QFileDialog.getExistingDirectory(
-            parent=self.mainWindow,
-            caption="Select Path to Save Output File",
-            directory=os.getcwd(),
-            options=(QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontResolveSymlinks)
-            # filter='README (*.md *.ui)'
-        )
+        response = QtWidgets.QFileDialog.getExistingDirectory(parent=self.mainWindow,
+                                                              caption="Select Path to Save Output File",
+                                                              directory=os.getcwd(),
+                                                              options=(QtWidgets.QFileDialog.ShowDirsOnly
+                                                                       | QtWidgets.QFileDialog.DontResolveSymlinks)
+                                                              # filter='README (*.md *.ui)'
+                                                              )
         if response:
             self.view.lineEditFilePath.setText(response)
             self.setFilePath()
@@ -458,9 +460,9 @@ class AcquisitionTab(QtWidgets.QWidget):
                                                   QtWidgets.QMessageBox.Ok)
                     return False
                 if self.transceiverTab.getTransceiverEnableReg() != Defines.Matterhorn.tranceiverEnable:
-                    QtWidgets.QMessageBox.warning(self.mainWindow, "Plot type",
-                                                  "To read Matterhorn image, please set transceiver enable to " + str(
-                                                      Defines.Matterhorn.tranceiverEnable), QtWidgets.QMessageBox.Ok)
+                    QtWidgets.QMessageBox.warning(
+                        self.mainWindow, "Plot type", "To read Matterhorn image, please set transceiver enable to " +
+                        str(Defines.Matterhorn.tranceiverEnable), QtWidgets.QMessageBox.Ok)
                     return False
             # moench04 image
             elif self.plotTab.view.comboBoxPlot.currentText() == "Moench04":
@@ -646,7 +648,6 @@ class AcquisitionTab(QtWidgets.QWidget):
                             for iSample in range(self.tsamples * 4):
                                 waveform[iSample] = trans_array[iSample * self.transceiverTab.nTransceiverEnabled + i]
                             self.mainWindow.transceiverPlots[i].setData(waveform)
-
 
             # image
             else:

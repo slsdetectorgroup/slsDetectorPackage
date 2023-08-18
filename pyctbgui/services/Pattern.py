@@ -12,6 +12,7 @@ from ..utils.plotPattern import PlotPattern
 
 
 class PatternTab(QtWidgets.QWidget):
+
     def __init__(self, parent):
         super(PatternTab, self).__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "pattern.ui", parent)
@@ -53,21 +54,14 @@ class PatternTab(QtWidgets.QWidget):
         self.view.lineEditStartAddress.editingFinished.connect(self.setPatLimitAddress)
         self.view.lineEditStopAddress.editingFinished.connect(self.setPatLimitAddress)
         for i in range(Defines.pattern.loops_count):
-            getattr(self.view, f"lineEditLoop{i}Start").editingFinished.connect(
-                partial(self.setPatLoopStartStopAddress, i)
-            )
-            getattr(self.view, f"lineEditLoop{i}Stop").editingFinished.connect(
-                partial(self.setPatLoopStartStopAddress, i)
-            )
-            getattr(self.view, f"lineEditLoop{i}Wait").editingFinished.connect(
-                partial(self.setPatLoopWaitAddress, i)
-            )
-            getattr(self.view, f"spinBoxLoop{i}Repetition").editingFinished.connect(
-                partial(self.setPatLoopRepetition, i)
-            )
-            getattr(self.view, f"spinBoxLoop{i}WaitTime").editingFinished.connect(
-                partial(self.setPatLoopWaitTime, i)
-            )
+            getattr(self.view,
+                    f"lineEditLoop{i}Start").editingFinished.connect(partial(self.setPatLoopStartStopAddress, i))
+            getattr(self.view,
+                    f"lineEditLoop{i}Stop").editingFinished.connect(partial(self.setPatLoopStartStopAddress, i))
+            getattr(self.view, f"lineEditLoop{i}Wait").editingFinished.connect(partial(self.setPatLoopWaitAddress, i))
+            getattr(self.view,
+                    f"spinBoxLoop{i}Repetition").editingFinished.connect(partial(self.setPatLoopRepetition, i))
+            getattr(self.view, f"spinBoxLoop{i}WaitTime").editingFinished.connect(partial(self.setPatLoopWaitTime, i))
         self.view.pushButtonCompiler.clicked.connect(self.setCompiler)
         self.view.pushButtonUncompiled.clicked.connect(self.setUncompiledPatternFile)
         self.view.pushButtonPatternFile.clicked.connect(self.setPatternFile)
@@ -215,12 +209,10 @@ class PatternTab(QtWidgets.QWidget):
         folder = os.path.dirname(self.det.patfname[0])
         if not folder:
             folder = os.getcwd()
-        response = QtWidgets.QFileDialog.getOpenFileName(
-            parent=self.mainWindow,
-            caption="Select an uncompiled pattern file",
-            directory=folder,
-            filter=filt
-        )
+        response = QtWidgets.QFileDialog.getOpenFileName(parent=self.mainWindow,
+                                                         caption="Select an uncompiled pattern file",
+                                                         directory=folder,
+                                                         filter=filt)
         if response[0]:
             self.view.lineEditUncompiled.setText(response[0])
 
@@ -229,12 +221,10 @@ class PatternTab(QtWidgets.QWidget):
         folder = os.path.dirname(self.det.patfname[0])
         if not folder:
             folder = os.getcwd()
-        response = QtWidgets.QFileDialog.getOpenFileName(
-            parent=self.mainWindow,
-            caption="Select a compiled pattern file",
-            directory=folder,
-            filter=filt
-        )
+        response = QtWidgets.QFileDialog.getOpenFileName(parent=self.mainWindow,
+                                                         caption="Select a compiled pattern file",
+                                                         directory=folder,
+                                                         filter=filt)
         if response[0]:
             self.view.lineEditPatternFile.setText(response[0])
 
@@ -253,9 +243,10 @@ class PatternTab(QtWidgets.QWidget):
             print("Moving old compiled pattern file to _bck")
             exit_status = os.system('mv ' + str(oldFile) + ' ' + str(oldFile) + '_bkup')
             if exit_status != 0:
-                retval = QtWidgets.QMessageBox.question(self.mainWindow, "Backup Fail",
-                                                        "Could not make a backup of old compiled code. Proceed anyway to compile and overwrite?",
-                                                        QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+                retval = QtWidgets.QMessageBox.question(
+                    self.mainWindow, "Backup Fail",
+                    "Could not make a backup of old compiled code. Proceed anyway to compile and overwrite?",
+                    QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
                 if retval == QtWidgets.QMessageBox.No:
                     return ""
 
@@ -279,8 +270,7 @@ class PatternTab(QtWidgets.QWidget):
             pattern_file = self.view.lineEditPatternFile.text()
             if not pattern_file:
                 QtWidgets.QMessageBox.warning(self.mainWindow, "Pattern Fail",
-                                              "No pattern file selected. Please select one.",
-                                              QtWidgets.QMessageBox.Ok)
+                                              "No pattern file selected. Please select one.", QtWidgets.QMessageBox.Ok)
                 return ""
         return pattern_file
 
@@ -419,10 +409,22 @@ class PatternTab(QtWidgets.QWidget):
             return
 
         signalNames = self.det.getSignalNames()
-        p = PlotPattern(pattern_file, signalNames, self.colors_plot, self.colors_wait, self.linestyles_wait,
-                        self.alpha_wait, self.alpha_wait_rect, self.colors_loop, self.linestyles_loop,
-                        self.alpha_loop, self.alpha_loop_rect, self.clock_vertical_lines_spacing,
-                        self.show_clocks_number, self.line_width, )
+        p = PlotPattern(
+            pattern_file,
+            signalNames,
+            self.colors_plot,
+            self.colors_wait,
+            self.linestyles_wait,
+            self.alpha_wait,
+            self.alpha_wait_rect,
+            self.colors_loop,
+            self.linestyles_loop,
+            self.alpha_loop,
+            self.alpha_loop_rect,
+            self.clock_vertical_lines_spacing,
+            self.show_clocks_number,
+            self.line_width,
+        )
 
         plt.close(self.figure)
         self.mainWindow.gridLayoutPatternViewer.removeWidget(self.canvas)

@@ -7,8 +7,8 @@ from pyctbgui.utils.defines import Defines
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 
 
-
 class PowerSuppliesTab(QtWidgets.QWidget):
+
     def __init__(self, parent):
         super(PowerSuppliesTab, self).__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "powerSupplies.ui", parent)

@@ -6,6 +6,7 @@ def read_alias_file(alias_file):
         lines_alias = fp.readlines()
     return parse_alias_lines(lines_alias)
 
+
 def parse_alias_lines(lines_alias):
     bit_names = [None] * 64
     bit_plots = [None] * 64
@@ -20,7 +21,7 @@ def parse_alias_lines(lines_alias):
 
     for line_nr, line in enumerate(lines_alias):
         ignore_list = ['PATCOMPILER']
-        
+
         #skip empty lines
         if line == '\n' or len(line) == 0:
             continue
@@ -30,14 +31,13 @@ def parse_alias_lines(lines_alias):
 
         cmd, *args = line.split()
 
-
         if not args:
-            raise Exception(f"Alias file parsing failed: Require atleast one argument in addition to command. ({line_nr}:{line})")
-              
+            raise Exception(
+                f"Alias file parsing failed: Require atleast one argument in addition to command. ({line_nr}:{line})")
 
         if cmd.startswith("BIT"):
             process_alias_bit_or_adc(cmd, args, bit_names, bit_plots, bit_colors)
-        
+
         elif cmd.startswith("ADC"):
             process_alias_bit_or_adc(cmd, args, adc_names, adc_plots, adc_colors)
 
@@ -46,13 +46,12 @@ def parse_alias_lines(lines_alias):
                 raise Exception(f"Too many arguments {len(args)} (expected max: 1) for this type. ({line_nr}:{line})")
             i = int(cmd[3:])
             dac_names[i] = args[0]
-          
+
         elif cmd.startswith("SENSE"):
             if len(args) > 1:
                 raise Exception(f"Too many arguments {len(args)} (expected max: 1) for this type. ({line_nr}:{line})")
             i = int(cmd[5:])
             sense_names[i] = args[0]
-            
 
         elif cmd in ["VA", "VB", "VC", "VD", "VIO"]:
             if len(args) > 1:
@@ -68,10 +67,9 @@ def parse_alias_lines(lines_alias):
                 case "VD":
                     i = 3
                 case "VIO":
-                    i = 4   
-            power_names[i] = args[0]                    
-            
-        
+                    i = 4
+            power_names[i] = args[0]
+
         elif cmd == "PATFILE":
             if len(args) > 1:
                 raise Exception(f"Too many arguments {len(args)} (expected max: 1) for this type. ({line_nr}:{line})")
@@ -79,13 +77,14 @@ def parse_alias_lines(lines_alias):
             pat_file_name = args[0]
             path = Path(pat_file_name)
             if not path.is_file():
-                raise Exception("Pattern file provided in alias file does not exist.<br><br>Pattern file:" + pat_file_name)
+                raise Exception("Pattern file provided in alias file does not exist.<br><br>Pattern file:" +
+                                pat_file_name)
         elif cmd in ignore_list:
             pass
-        
+
         else:
             raise Exception(f"Command: {cmd} not supported. Line {line_nr}:{line}")
-    
+
     return bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, sense_names, power_names, pat_file_name
 
 
@@ -99,4 +98,3 @@ def process_alias_bit_or_adc(cmd, args, names, plots, colors):
             colors[i] = args[2]
         if n_args > 3:
             raise Exception(f"Too many arguments {args} (expected max: 3) for this type in line.")
-    

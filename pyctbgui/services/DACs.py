@@ -8,6 +8,7 @@ from slsdet import Detector, dacIndex, readoutMode, runStatus
 
 
 class DacTab(QtWidgets.QWidget):
+
     def __init__(self, parent):
         super(DacTab, self).__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "Dacs.ui", parent)

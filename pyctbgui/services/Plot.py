@@ -11,6 +11,7 @@ from ..utils.pixelmap import moench04_analog, matterhorn_transceiver
 
 
 class PlotTab(QtWidgets.QWidget):
+
     def __init__(self, parent):
         super(PlotTab, self).__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "plot.ui", parent)
@@ -27,7 +28,7 @@ class PlotTab(QtWidgets.QWidget):
         self.transceiverTab = self.mainWindow.transceiverTab
         self.acquisitionTab = self.mainWindow.acquisitionTab
         self.adcTab = self.mainWindow.adcTab
-        
+
         self.initializeColorMaps()
 
     def connect_ui(self):
@@ -56,10 +57,13 @@ class PlotTab(QtWidgets.QWidget):
         self.view.spinBoxFit.editingFinished.connect(self.setFitADC)
         self.view.spinBoxPlot.editingFinished.connect(self.setPlotBit)
         self.view.pushButtonReferesh.clicked.connect(self.acquisitionTab.refresh)
-        
-        self.mainWindow.plotAnalogImage.scene.sigMouseMoved.connect(partial(self.showPlotValues, self.mainWindow.plotAnalogImage))
-        self.mainWindow.plotDigitalImage.scene.sigMouseMoved.connect(partial(self.showPlotValues, self.mainWindow.plotDigitalImage))
-        self.mainWindow.plotTransceiverImage.scene.sigMouseMoved.connect(partial(self.showPlotValues, self.mainWindow.plotTransceiverImage))
+
+        self.mainWindow.plotAnalogImage.scene.sigMouseMoved.connect(
+            partial(self.showPlotValues, self.mainWindow.plotAnalogImage))
+        self.mainWindow.plotDigitalImage.scene.sigMouseMoved.connect(
+            partial(self.showPlotValues, self.mainWindow.plotDigitalImage))
+        self.mainWindow.plotTransceiverImage.scene.sigMouseMoved.connect(
+            partial(self.showPlotValues, self.mainWindow.plotTransceiverImage))
 
     def refresh(self):
         self.getZMQHWM()
@@ -105,8 +109,6 @@ class PlotTab(QtWidgets.QWidget):
 
         self.getZMQHWM()
 
-
-
     def addSelectedAnalogPlots(self, i):
         enable = getattr(self.adcTab.view, f"checkBoxADC{i}Plot").isChecked()
         if enable:
@@ -121,8 +123,6 @@ class PlotTab(QtWidgets.QWidget):
     def removeAllAnalogPlots(self):
         for i in range(Defines.adc.count):
             self.mainWindow.analogPlots[i].hide()
-
-
 
         cm = pg.colormap.get('CET-L9')  # prepare a linear color map
         self.mainWindow.plotDigitalImage.setColorMap(cm)
@@ -141,8 +141,6 @@ class PlotTab(QtWidgets.QWidget):
     def removeAllDigitalPlots(self):
         for i in range(Defines.signals.count):
             self.mainWindow.digitalPlots[i].hide()
-
-
 
     def addSelectedTransceiverPlots(self, i):
         enable = getattr(self.transceiverTab.view, f"checkBoxTransceiver{i}Plot").isChecked()
@@ -199,18 +197,20 @@ class PlotTab(QtWidgets.QWidget):
         self.mainWindow.read_timer.stop()
 
         if self.view.radioButtonWaveform.isChecked():
-            self.mainWindow.plotAnalogWaveform.setLabel('left', "<span style=\"color:black;font-size:14px\">Output [ADC]</span>")
-            self.mainWindow.plotAnalogWaveform.setLabel('bottom',
-                                             "<span style=\"color:black;font-size:14px\">Analog Sample [#]</span>")
+            self.mainWindow.plotAnalogWaveform.setLabel(
+                'left', "<span style=\"color:black;font-size:14px\">Output [ADC]</span>")
+            self.mainWindow.plotAnalogWaveform.setLabel(
+                'bottom', "<span style=\"color:black;font-size:14px\">Analog Sample [#]</span>")
             self.mainWindow.plotAnalogWaveform.addLegend(colCount=4)
-            self.mainWindow.plotDigitalWaveform.setLabel('left', "<span style=\"color:black;font-size:14px\">Digital Bit</span>")
-            self.mainWindow.plotDigitalWaveform.setLabel('bottom',
-                                              "<span style=\"color:black;font-size:14px\">Digital Sample [#]</span>")
+            self.mainWindow.plotDigitalWaveform.setLabel(
+                'left', "<span style=\"color:black;font-size:14px\">Digital Bit</span>")
+            self.mainWindow.plotDigitalWaveform.setLabel(
+                'bottom', "<span style=\"color:black;font-size:14px\">Digital Sample [#]</span>")
             self.mainWindow.plotDigitalWaveform.addLegend(colCount=4)
-            self.mainWindow.plotTransceiverWaveform.setLabel('left',
-                                                  "<span style=\"color:black;font-size:14px\">Transceiver Bit</span>")
-            self.mainWindow.plotTransceiverWaveform.setLabel('bottom',
-                                                  "<span style=\"color:black;font-size:14px\">Transceiver Sample [#]</span>")
+            self.mainWindow.plotTransceiverWaveform.setLabel(
+                'left', "<span style=\"color:black;font-size:14px\">Transceiver Bit</span>")
+            self.mainWindow.plotTransceiverWaveform.setLabel(
+                'bottom', "<span style=\"color:black;font-size:14px\">Transceiver Sample [#]</span>")
             self.mainWindow.plotTransceiverWaveform.addLegend(colCount=4)
 
             self.view.stackedWidgetPlotType.setCurrentIndex(0)
@@ -302,8 +302,7 @@ class PlotTab(QtWidgets.QWidget):
         return button.palette().color(QtGui.QPalette.Window)
 
     def setActiveColor(self, button, str_color):
-        button.setStyleSheet(":enabled {background-color: %s" % str_color
-                             + "} :disabled {background-color: grey}")
+        button.setStyleSheet(":enabled {background-color: %s" % str_color + "} :disabled {background-color: grey}")
 
     def showPalette(self, button):
         color = QtWidgets.QColorDialog.getColor()

@@ -1,13 +1,14 @@
 from functools import partial
 from pathlib import Path
 
-from PyQt5 import uic,QtWidgets
+from PyQt5 import uic, QtWidgets
 
 from pyctbgui.utils.defines import Defines
 from slsdet import Detector, dacIndex, readoutMode, runStatus
 
 
 class SlowAdcTab(QtWidgets.QWidget):
+
     def __init__(self, parent):
         super(SlowAdcTab, self).__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "slowAdcs.ui", parent)

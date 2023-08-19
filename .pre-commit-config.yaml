@@ -1,9 +1,14 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
+- repo: https://github.com/pre-commit/mirrors-yapf 
+  rev: 'v0.32.0'  # Use the sha / tag you want to point at
+  hooks:
+    - id: yapf
+      additional_dependencies: ['toml']
+
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
   rev: v0.0.285
   hooks:
     - id: ruff
-

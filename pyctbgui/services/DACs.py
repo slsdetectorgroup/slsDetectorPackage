@@ -4,12 +4,13 @@ from pathlib import Path
 from PyQt5 import QtWidgets, uic
 from pyctbgui.utils.defines import Defines
 
-from slsdet import Detector, dacIndex, readoutMode, runStatus
+from slsdet import dacIndex
 
 
 class DacTab(QtWidgets.QWidget):
+
     def __init__(self, parent):
-        super(DacTab, self).__init__(parent)
+        super().__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "Dacs.ui", parent)
         self.view = parent
 

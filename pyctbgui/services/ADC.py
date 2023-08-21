@@ -5,13 +5,14 @@ import numpy as np
 from PyQt5 import QtWidgets, uic
 import pyqtgraph as pg
 
-from ..utils.bit_utils import bit_is_set, manipulate_bit
-from ..utils.defines import Defines
+from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
+from pyctbgui.utils.defines import Defines
 
 
 class AdcTab(QtWidgets.QWidget):
-    def __init__(self, parent):
-        super(AdcTab, self).__init__(parent)
+
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "adc.ui", parent)
         self.view = parent
         self.mainWindow = None
@@ -32,7 +33,9 @@ class AdcTab(QtWidgets.QWidget):
         for i in range(Defines.adc.count):
             pen = pg.mkPen(color=self.getADCButtonColor(i), width=1)
             legendName = getattr(self.view, f"labelADC{i}").text()
-            self.mainWindow.analogPlots[i] = self.mainWindow.plotAnalogWaveform.plot(waveform, pen=pen, name=legendName)
+            self.mainWindow.analogPlots[i] = self.mainWindow.plotAnalogWaveform.plot(waveform,
+                                                                                     pen=pen,
+                                                                                     name=legendName)
             self.mainWindow.analogPlots[i].hide()
 
         self.mainWindow.plotAnalogImage = pg.ImageView()
@@ -52,8 +55,7 @@ class AdcTab(QtWidgets.QWidget):
         self.view.checkBoxADC0_15En.stateChanged.connect(partial(self.setADCEnableRange, 0, Defines.adc.half))
         self.view.checkBoxADC16_31En.stateChanged.connect(
             partial(self.setADCEnableRange, Defines.adc.half, Defines.adc.count))
-        self.view.checkBoxADC0_15Plot.stateChanged.connect(
-            partial(self.setADCEnablePlotRange, 0, Defines.adc.half))
+        self.view.checkBoxADC0_15Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 0, Defines.adc.half))
         self.view.checkBoxADC16_31Plot.stateChanged.connect(
             partial(self.setADCEnablePlotRange, Defines.adc.half, Defines.adc.count))
         self.view.checkBoxADC0_15Inv.stateChanged.connect(partial(self.setADCInvRange, 0, Defines.adc.half))
@@ -140,7 +142,6 @@ class AdcTab(QtWidgets.QWidget):
 
     def setADCEnableRange(self, start_nr, end_nr):
         mask = self.getADCEnableReg()
-        retval = 0
         checkBox = getattr(self.view, f"checkBoxADC{start_nr}_{end_nr - 1}En")
         for i in range(start_nr, end_nr):
             mask = manipulate_bit(checkBox.isChecked(), mask, i)
@@ -172,16 +173,17 @@ class AdcTab(QtWidgets.QWidget):
         self.view.checkBoxADC16_31Plot.stateChanged.disconnect()
         self.view.checkBoxADC0_15Plot.setEnabled(
             all(getattr(self.view, f"checkBoxADC{i}Plot").isEnabled() for i in range(Defines.adc.half)))
-        self.view.checkBoxADC16_31Plot.setEnabled(all(
-            getattr(self.view, f"checkBoxADC{i}Plot").isEnabled() for i in
-            range(Defines.adc.half, Defines.adc.count)))
+        self.view.checkBoxADC16_31Plot.setEnabled(
+            all(
+                getattr(self.view, f"checkBoxADC{i}Plot").isEnabled()
+                for i in range(Defines.adc.half, Defines.adc.count)))
         self.view.checkBoxADC0_15Plot.setChecked(
             all(getattr(self.view, f"checkBoxADC{i}Plot").isChecked() for i in range(Defines.adc.half)))
-        self.view.checkBoxADC16_31Plot.setChecked(all(
-            getattr(self.view, f"checkBoxADC{i}Plot").isChecked() for i in
-            range(Defines.adc.half, Defines.adc.count)))
-        self.view.checkBoxADC0_15Plot.stateChanged.connect(
-            partial(self.setADCEnablePlotRange, 0, Defines.adc.half))
+        self.view.checkBoxADC16_31Plot.setChecked(
+            all(
+                getattr(self.view, f"checkBoxADC{i}Plot").isChecked()
+                for i in range(Defines.adc.half, Defines.adc.count)))
+        self.view.checkBoxADC0_15Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 0, Defines.adc.half))
         self.view.checkBoxADC16_31Plot.stateChanged.connect(
             partial(self.setADCEnablePlotRange, Defines.adc.half, Defines.adc.count))
 

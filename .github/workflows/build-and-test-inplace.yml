@@ -1,4 +1,4 @@
-name: Build inplace and run tests
+name: Build inplace, run tests and linting
 
 on: [push]
 
@@ -27,7 +27,11 @@ jobs:
       - name: Run tests using pytest
         run: |
           make test
-      - name: format code
+      - name: check code formatting
         run: |
-          make format
-      - uses: chartboost/ruff-action@v1
+          make check_format
+      - name: lint the code with ruff
+          run: |
+            make lint
+
+      # - uses: chartboost/ruff-action@v1

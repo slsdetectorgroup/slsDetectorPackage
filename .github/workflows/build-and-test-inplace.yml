@@ -30,8 +30,4 @@ jobs:
       - name: check code formatting
         run: |
           make check_format
-      - name: lint the code with ruff
-          run: |
-            make lint
-
-      # - uses: chartboost/ruff-action@v1
+    

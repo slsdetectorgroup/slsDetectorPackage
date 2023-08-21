@@ -4,11 +4,22 @@ Prototype for a new python based GUI for the Chip Test Board
 ## Format code
 
 ```
-yapf --style pyproject.toml . --recursive  -m -i
+make format
 ```
 
-## Test
+## run linting tests
+
+```
+make check_format
+```
+
+## run unit tests
 
 ```
 make test
+```
+
+## setup pre-commit hooks
+```
+pre-commit install
 ```

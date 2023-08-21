@@ -75,7 +75,7 @@ class DacTab(QtWidgets.QWidget):
         spinBox.editingFinished.disconnect()
 
         # do not uncheck automatically
-        if (self.det.getDAC(dac)[0]) != -100:
+        if self.det.getDAC(dac)[0] != -100:
             checkBox.setChecked(True)
 
         if checkBox.isChecked():
@@ -85,10 +85,11 @@ class DacTab(QtWidgets.QWidget):
             spinBox.setDisabled(True)
             checkBoxmV.setDisabled(True)
 
-        if checkBoxmV.isChecked():
-            label.setText(str(self.det.getDAC(dac, True)[0]))
-        else:
-            label.setText(str(self.det.getDAC(dac)[0]))
+        in_mv = checkBoxmV.isChecked() and checkBox.isChecked()
+        dacValue = self.det.getDAC(dac, in_mv)[0]
+        unit = "mV" if in_mv else ""
+        label.setText(f"{dacValue} {unit}")
+        spinBox.setValue(dacValue)
 
         checkBox.stateChanged.connect(partial(self.setDACTristate, i))
         checkBoxmV.stateChanged.connect(partial(self.getDAC, i))

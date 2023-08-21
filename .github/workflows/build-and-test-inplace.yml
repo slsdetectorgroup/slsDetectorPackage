@@ -26,5 +26,8 @@ jobs:
           make
       - name: Run tests using pytest
         run: |
-          make test_gh
+          make test
+      - name: format code
+        run: |
+          make format
       - uses: chartboost/ruff-action@v1

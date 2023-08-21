@@ -13,7 +13,7 @@ clean: ## Remove the build folder and the shared library
 test: ## Run unit tests using pytest
 	python -m pytest -v
 
-check_format:
+check_format: ## run ruff linter to check formatting errors
 	@ruff check . &&  echo "format checks passed ✅"
 
 format: ## format code inplace using style in pyproject.toml

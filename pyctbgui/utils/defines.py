@@ -96,3 +96,8 @@ class Defines:
     ]
 
     LineStyles = ['-', '--', '-.', ':']
+
+    class colorRange(Enum):
+        all = 0
+        center = 1
+        fixed = 2

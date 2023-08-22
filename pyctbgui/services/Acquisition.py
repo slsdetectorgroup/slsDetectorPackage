@@ -656,36 +656,30 @@ class AcquisitionTab(QtWidgets.QWidget):
                     # get zoom state
                     viewBox = self.mainWindow.plotAnalogImage.getView()
                     state = viewBox.getState()
-
-                    # get histogram (colorbar) levels and histogram zoom range
-                    levels = self.mainWindow.plotAnalogImage.getHistogramWidget().item.getLevels()
-                    histRange = self.mainWindow.plotAnalogImage.getHistogramWidget().item.getHistogramRange()
-
                     analog_array = np.array(
                         np.frombuffer(data, dtype=np.uint16, count=self.mainWindow.nADCEnabled * self.asamples))
-
                     try:
                         self.mainWindow.analog_frame = decoder.decode(analog_array, self.mainWindow.pixelMapAnalog)
+                        self.plotTab.ignoreHistogramSignal = True
                         self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame.T)
+
                     except Exception:
                         self.mainWindow.statusbar.setStyleSheet("color:red")
                         message = f'Warning: Invalid size for Analog Image. Expected' \
                                   f' {self.mainWindow.nAnalogRows * self.mainWindow.nAnalogCols} ' \
                                   f'size, got {analog_array.size} instead.'
                         self.updateCurrentFrame('Invalid Image')
+
                         self.mainWindow.statusbar.showMessage(message)
                         print(message)
-                        pass
+
+                    self.plotTab.setFrameLimits(self.mainWindow.analog_frame)
 
                     # keep the zoomed in state (not 1st image)
                     if self.mainWindow.firstAnalogImage:
                         self.mainWindow.firstAnalogImage = False
                     else:
                         viewBox.setState(state)
-                        self.mainWindow.plotAnalogImage.getHistogramWidget().item.setLevels(min=levels[0],
-                                                                                            max=levels[1])
-                        self.mainWindow.plotAnalogImage.getHistogramWidget().item.setHistogramRange(*histRange,
-                                                                                                    padding=0)
 
                 # transceiver
                 if self.mainWindow.romode.value in [3, 4]:
@@ -693,8 +687,6 @@ class AcquisitionTab(QtWidgets.QWidget):
                     viewBox = self.mainWindow.plotTransceiverImage.getView()
                     state = viewBox.getState()
                     # get histogram (colorbar) levels and histogram zoom range
-                    levels = self.mainWindow.plotTransceiverImage.getHistogramWidget().item.getLevels()
-                    histRange = self.mainWindow.plotTransceiverImage.getHistogramWidget().item.getHistogramRange()
 
                     transceiverOffset = 0
                     if self.mainWindow.romode.value == 4:
@@ -709,6 +701,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                         self.mainWindow.transceiver_frame = decoder.decode(trans_array,
                                                                            self.mainWindow.pixelMapTransceiver)
                         # print(f"type of image:{type(self.mainWindows.transceiver_frame)}")
+                        self.plotTab.ignoreHistogramSignal = True
                         self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame)
                     except Exception:
                         self.mainWindow.statusbar.setStyleSheet("color:red")
@@ -720,15 +713,13 @@ class AcquisitionTab(QtWidgets.QWidget):
                         print(message)
                         pass
 
+                    self.plotTab.setFrameLimits(self.mainWindow.transceiver_frame)
+
                     # keep the zoomed in state (not 1st image)
                     if self.mainWindow.firstTransceiverImage:
                         self.mainWindow.firstTransceiverImage = False
                     else:
                         viewBox.setState(state)
-                        self.mainWindow.plotTransceiverImage.getHistogramWidget().item.setLevels(min=levels[0],
-                                                                                                 max=levels[1])
-                        self.mainWindow.plotTransceiverImage.getHistogramWidget().item.setHistogramRange(*histRange,
-                                                                                                         padding=0)
 
         except zmq.ZMQError:
             pass

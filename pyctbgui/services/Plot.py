@@ -2,6 +2,7 @@ from functools import partial
 import random
 from pathlib import Path
 
+import numpy as np
 from PyQt5 import QtWidgets, QtGui, uic
 
 import pyqtgraph as pg
@@ -14,6 +15,8 @@ class PlotTab(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super().__init__(parent)
+        self.frame_min = 0.0
+        self.frame_max = 0.0
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "plot.ui", parent)
         self.view = parent
         self.mainWindow = None
@@ -22,6 +25,10 @@ class PlotTab(QtWidgets.QWidget):
         self.transceiverTab = None
         self.acquisitionTab = None
         self.adcTab = None
+        self.cmin = 0.0
+        self.cmax = 0.0
+        self.colorRangeMode = Defines.colorRange.all
+        self.ignoreHistogramSignal = False
 
     def setup_ui(self):
         self.signalsTab = self.mainWindow.signalsTab
@@ -57,13 +64,21 @@ class PlotTab(QtWidgets.QWidget):
         self.view.spinBoxFit.editingFinished.connect(self.setFitADC)
         self.view.spinBoxPlot.editingFinished.connect(self.setPlotBit)
         self.view.pushButtonReferesh.clicked.connect(self.acquisitionTab.refresh)
+        # color range widgets
+        self.view.cminSpinBox.editingFinished.connect(self.setCmin)
+        self.view.cmaxSpinBox.editingFinished.connect(self.setCmax)
+        self.view.radioButtonAutomatic.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.all))
+        self.view.radioButtonFixed.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.fixed))
+        self.view.radioButtonCenter.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.center))
 
-        self.mainWindow.plotAnalogImage.scene.sigMouseMoved.connect(
-            partial(self.showPlotValues, self.mainWindow.plotAnalogImage))
-        self.mainWindow.plotDigitalImage.scene.sigMouseMoved.connect(
-            partial(self.showPlotValues, self.mainWindow.plotDigitalImage))
-        self.mainWindow.plotTransceiverImage.scene.sigMouseMoved.connect(
-            partial(self.showPlotValues, self.mainWindow.plotTransceiverImage))
+        plots = (
+            self.mainWindow.plotAnalogImage,
+            self.mainWindow.plotDigitalImage,
+            self.mainWindow.plotTransceiverImage,
+        )
+        for plot in plots:
+            plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot))
+            plot.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, plot))
 
     def refresh(self):
         self.getZMQHWM()
@@ -72,6 +87,97 @@ class PlotTab(QtWidgets.QWidget):
         self.view.comboBoxColorMap.addItems(Defines.Color_map)
         self.view.comboBoxColorMap.setCurrentIndex(Defines.Color_map.index(Defines.Default_Color_Map))
         self.setColorMap()
+
+    def setCmin(self, value=None):
+        """
+        slot for setting cmin from cminSpinBox
+        also used as a normal function
+        """
+        if value is None:
+            self.cmin = self.view.cminSpinBox.value()
+        else:
+            self.cmin = value
+        self.updateColorRangeUI()
+
+    def setCmax(self, value=None):
+        """
+        slot for setting cmax from cmaxSpinBox
+        also used as a normal function
+        """
+        if value is None:
+            self.cmax = self.view.cmaxSpinBox.value()
+        else:
+            self.cmax = value
+        self.updateColorRangeUI()
+
+    def setColorRangeMode(self, mode):
+        """
+        slot for setting the color range mode (all,fixed,3-97%)
+        """
+        self.colorRangeMode = mode
+
+        # disable or enable cmin/cmax spinboxes
+        enableSpinBoxes = mode == Defines.colorRange.fixed
+        self.view.cminSpinBox.setEnabled(enableSpinBoxes)
+        self.view.cmaxSpinBox.setEnabled(enableSpinBoxes)
+        self.updateColorRange()
+        self.updateColorRangeUI()
+
+    def handleHistogramChange(self, plot):
+        """
+        slot called after changing the color bar
+        This is called even when pyqtgraph sets the image without any user intervention
+        the class attribute ignore_histogram_signal is set to False before setting the image
+        so that we can distinguish between the signal originates from pyqt or from the user
+        """
+        if not self.ignoreHistogramSignal:
+            self.cmin, self.cmax = plot.getHistogramWidget().item.getLevels()
+            self.setCmin(self.cmin)
+            self.setCmax(self.cmax)
+
+        self.ignoreHistogramSignal = False
+        # self.setColorRangeMode(Defines.colorRange.fixed)
+
+    def setFrameLimits(self, frame):
+        """
+        function called from AcquisitionTab::read_zmq to get the maximum and minimum
+        values of the decoded frame and save them in frame_min/frame_max
+        """
+        self.frame_min = np.min(frame)
+        self.frame_max = np.max(frame)
+        self.updateColorRange()
+
+    def updateColorRange(self):
+        """
+        for mode:
+        - all:   sets cmin and cmax to the maximums/minimum values of the frame
+        - 3-97%: limits cmax and cmin so that we ignore 3% from each end of the whole range
+        - fixed: this function does not change cmin and cmax
+        """
+
+        if self.colorRangeMode == Defines.colorRange.all:
+            self.cmin = self.frame_min
+            self.cmax = self.frame_max
+        elif self.colorRangeMode == Defines.colorRange.center:
+            self.cmin = self.frame_min + 0.03 * (self.frame_max - self.frame_min)
+            self.cmax = self.frame_max - 0.03 * (self.frame_max - self.frame_min)
+
+        self.updateColorRangeUI()
+
+    def updateColorRangeUI(self):
+        """
+        updates UI views should be called after every change to cmin or cmax
+        """
+
+        plots = (
+            self.mainWindow.plotAnalogImage,
+            self.mainWindow.plotDigitalImage,
+            self.mainWindow.plotTransceiverImage,
+        )
+        for plot in plots:
+            plot.getHistogramWidget().item.setLevels(min=self.cmin, max=self.cmax)
+        self.view.cminSpinBox.setValue(self.cmin)
+        self.view.cmaxSpinBox.setValue(self.cmax)
 
     def setColorMap(self):
         cm = pg.colormap.getFromMatplotlib(self.view.comboBoxColorMap.currentText())
@@ -89,7 +195,7 @@ class PlotTab(QtWidgets.QWidget):
         self.det.setClientZmqHwm(rx_zmq_hwm)
 
         # high readout, low HWM
-        if rx_zmq_hwm < 25 and rx_zmq_hwm > -1:
+        if -1 < rx_zmq_hwm < 25:
             self.view.comboBoxZMQHWM.setCurrentIndex(1)
         # low readout, high HWM
         else:
@@ -330,6 +436,6 @@ class PlotTab(QtWidgets.QWidget):
             val = frame[int(x), int(y)]
             message = f'[{x:.2f}, {y:.2f}] = {val:.2f}'
             sender.setToolTip(message)
-            #print(message)
+            # print(message)
         else:
             sender.setToolTip('')

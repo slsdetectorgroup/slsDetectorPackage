@@ -245,7 +245,7 @@ class SignalsTab(QtWidgets.QWidget):
     def setIOOutRange(self, start_nr, end_nr):
         out = self.det.patioctrl
         checkBox = getattr(self.view, f"checkBoxBIT{start_nr}_{end_nr - 1}Out")
-        mask = getattr(Defines, f"BIT{start_nr}_{end_nr - 1}_MASK")
+        mask = getattr(Defines.signals, f"BIT{start_nr}_{end_nr - 1}_MASK")
         if checkBox.isChecked():
             self.det.patioctrl = out | mask
         else:

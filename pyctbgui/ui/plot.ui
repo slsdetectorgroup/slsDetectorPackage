@@ -746,16 +746,22 @@
      </item>
      <item>
       <widget class="QGroupBox" name="groupBox">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="title">
         <string/>
        </property>
        <widget class="QWidget" name="verticalLayoutWidget">
         <property name="geometry">
          <rect>
-          <x>0</x>
-          <y>-2</y>
+          <x>10</x>
+          <y>10</y>
           <width>171</width>
-          <height>89</height>
+          <height>61</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
@@ -799,7 +805,7 @@
         </size>
        </property>
        <property name="text">
-        <string>min</string>
+        <string>min:</string>
        </property>
       </widget>
      </item>
@@ -817,6 +823,9 @@
       </widget>
      </item>
      <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2"/>
+     </item>
+     <item>
       <widget class="QLabel" name="label_2">
        <property name="maximumSize">
         <size>
@@ -825,7 +834,7 @@
         </size>
        </property>
        <property name="text">
-        <string>max</string>
+        <string>max:</string>
        </property>
       </widget>
      </item>

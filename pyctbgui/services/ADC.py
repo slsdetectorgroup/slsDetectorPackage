@@ -96,7 +96,7 @@ class AdcTab(QtWidgets.QWidget):
         update the legend for the ADC waveform plot
         should be called after checking or unchecking plot checkbox
         """
-        if self.mainWindow.hideLegend:
+        if not self.mainWindow.showLegend:
             self.legend.clear()
         else:
             for plot, name in self.getEnabledPlots():

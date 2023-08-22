@@ -34,7 +34,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updateSettingValues()
 
         self.det = None
-        self.hideLegend = True
+        self.showLegend = True
         try:
             self.det = Detector()
             # ensure detector is up

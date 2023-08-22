@@ -86,7 +86,7 @@ class PlotTab(QtWidgets.QWidget):
             plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot))
             plot.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, plot))
 
-        self.view.checkBoxHideLegend.stateChanged.connect(self.toggleLegend)
+        self.view.checkBoxShowLegend.stateChanged.connect(self.toggleLegend)
 
     def refresh(self):
         self.getZMQHWM()
@@ -105,9 +105,9 @@ class PlotTab(QtWidgets.QWidget):
 
     def toggleLegend(self):
         """
-        notify subscribers for the hideLegend checkbox event by executing their callbacks
+        notify subscribers for the showLegend checkbox event by executing their callbacks
         """
-        self.mainWindow.hideLegend = not self.mainWindow.hideLegend
+        self.mainWindow.showLegend = not self.mainWindow.showLegend
         for notify_function in self.hideLegendObservers:
             notify_function()
 

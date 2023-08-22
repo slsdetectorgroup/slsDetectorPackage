@@ -63,7 +63,7 @@ class TransceiverTab(QtWidgets.QWidget):
         update the legend for the transceiver waveform plot
         should be called after checking or unchecking plot checkbox
         """
-        if self.mainWindow.hideLegend:
+        if not self.mainWindow.showLegend:
             self.legend.clear()
         else:
             for plot, name in self.getEnabledPlots():

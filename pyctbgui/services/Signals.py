@@ -57,6 +57,8 @@ class SignalsTab(QtWidgets.QWidget):
 
         self.legend = self.mainWindow.plotDigitalWaveform.getPlotItem().legend
         self.legend.clear()
+        # subscribe to toggle legend
+        self.plotTab.subscribeToggleLegend(self.updateLegend)
 
     def getEnabledPlots(self):
         """
@@ -75,8 +77,11 @@ class SignalsTab(QtWidgets.QWidget):
         update the legend for the signals waveform plot
         should be called after checking or unchecking plot checkbox
         """
-        for plot, name in self.getEnabledPlots():
-            self.legend.addItem(plot, name)
+        if self.mainWindow.hideLegend:
+            self.legend.clear()
+        else:
+            for plot, name in self.getEnabledPlots():
+                self.legend.addItem(plot, name)
 
     def initializeAllDigitalPlots(self):
         self.mainWindow.plotDigitalWaveform = pg.plot()

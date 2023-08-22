@@ -29,6 +29,8 @@ class AdcTab(QtWidgets.QWidget):
 
         self.legend = self.mainWindow.plotAnalogWaveform.getPlotItem().legend
         self.legend.clear()
+        # subscribe to toggle legend
+        self.plotTab.subscribeToggleLegend(self.updateLegend)
 
     def initializeAllAnalogPlots(self):
         self.mainWindow.plotAnalogWaveform = pg.plot()
@@ -94,8 +96,11 @@ class AdcTab(QtWidgets.QWidget):
         update the legend for the ADC waveform plot
         should be called after checking or unchecking plot checkbox
         """
-        for plot, name in self.getEnabledPlots():
-            self.legend.addItem(plot, name)
+        if self.mainWindow.hideLegend:
+            self.legend.clear()
+        else:
+            for plot, name in self.getEnabledPlots():
+                self.legend.addItem(plot, name)
 
     def updateADCNames(self):
         """

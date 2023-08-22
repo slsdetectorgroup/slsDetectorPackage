@@ -32,6 +32,9 @@ class TransceiverTab(QtWidgets.QWidget):
         self.legend = self.mainWindow.plotTransceiverWaveform.getPlotItem().legend
         self.legend.clear()
 
+        # subscribe to toggle legend
+        self.plotTab.subscribeToggleLegend(self.updateLegend)
+
     def connect_ui(self):
         for i in range(Defines.transceiver.count):
             getattr(self.view, f"checkBoxTransceiver{i}").stateChanged.connect(partial(self.setTransceiverEnable, i))
@@ -60,8 +63,11 @@ class TransceiverTab(QtWidgets.QWidget):
         update the legend for the transceiver waveform plot
         should be called after checking or unchecking plot checkbox
         """
-        for plot, name in self.getEnabledPlots():
-            self.legend.addItem(plot, name)
+        if self.mainWindow.hideLegend:
+            self.legend.clear()
+        else:
+            for plot, name in self.getEnabledPlots():
+                self.legend.addItem(plot, name)
 
     def initializeAllTransceiverPlots(self):
         self.mainWindow.plotTransceiverWaveform = pg.plot()

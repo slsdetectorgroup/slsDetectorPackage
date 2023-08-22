@@ -31,6 +31,9 @@ class PlotTab(QtWidgets.QWidget):
         self.colorRangeMode: Defines.colorRange = Defines.colorRange.all
         self.ignoreHistogramSignal: bool = False
         self.imagePlots: list[PlotWidget] = []
+        # list of callback functions to notify tabs when we should hide their legend
+        # follows the observer design pattern
+        self.hideLegendObservers = []
 
     def setup_ui(self):
         self.signalsTab = self.mainWindow.signalsTab
@@ -83,6 +86,8 @@ class PlotTab(QtWidgets.QWidget):
             plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot))
             plot.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, plot))
 
+        self.view.checkBoxHideLegend.stateChanged.connect(self.toggleLegend)
+
     def refresh(self):
         self.getZMQHWM()
 
@@ -90,6 +95,21 @@ class PlotTab(QtWidgets.QWidget):
         self.view.comboBoxColorMap.addItems(Defines.Color_map)
         self.view.comboBoxColorMap.setCurrentIndex(Defines.Color_map.index(Defines.Default_Color_Map))
         self.setColorMap()
+
+    def subscribeToggleLegend(self, fn_cbk):
+        """
+        subscribe to the event of toggling the hide legend checkbox by subscribing
+        with a callback function
+        """
+        self.hideLegendObservers.append(fn_cbk)
+
+    def toggleLegend(self):
+        """
+        notify subscribers for the hideLegend checkbox event by executing their callbacks
+        """
+        self.mainWindow.hideLegend = not self.mainWindow.hideLegend
+        for notify_function in self.hideLegendObservers:
+            notify_function()
 
     def setCmin(self, value=None):
         """

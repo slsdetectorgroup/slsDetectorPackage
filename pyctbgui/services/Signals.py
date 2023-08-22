@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 from PyQt5 import QtWidgets, uic
 import pyqtgraph as pg
+from pyqtgraph import LegendItem
 
 from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
 from pyctbgui.utils.defines import Defines
@@ -18,6 +19,7 @@ class SignalsTab(QtWidgets.QWidget):
         self.mainWindow = None
         self.det = None
         self.plotTab = None
+        self.legend: LegendItem | None = None
 
     def refresh(self):
         self.updateSignalNames()
@@ -52,6 +54,29 @@ class SignalsTab(QtWidgets.QWidget):
             self.setDBitButtonColor(i, self.plotTab.getRandomColor())
 
         self.initializeAllDigitalPlots()
+
+        self.legend = self.mainWindow.plotDigitalWaveform.getPlotItem().legend
+        self.legend.clear()
+
+    def getEnabledPlots(self):
+        """
+        return plots that are shown (checkBoxTransceiver{i}Plot is checked)
+        """
+        enabledPlots = []
+        self.legend.clear()
+        for i in range(Defines.signals.count):
+            if getattr(self.view, f'checkBoxBIT{i}Plot').isChecked():
+                plotName = getattr(self.view, f"labelBIT{i}").text()
+                enabledPlots.append((self.mainWindow.digitalPlots[i], plotName))
+        return enabledPlots
+
+    def updateLegend(self):
+        """
+        update the legend for the signals waveform plot
+        should be called after checking or unchecking plot checkbox
+        """
+        for plot, name in self.getEnabledPlots():
+            self.legend.addItem(plot, name)
 
     def initializeAllDigitalPlots(self):
         self.mainWindow.plotDigitalWaveform = pg.plot()
@@ -145,6 +170,7 @@ class SignalsTab(QtWidgets.QWidget):
 
         self.getEnableBitPlotRange()
         self.plotTab.addSelectedDigitalPlots(i)
+        self.updateLegend()
 
     def getEnableBitPlotRange(self):
         self.view.checkBoxBIT0_31Plot.stateChanged.disconnect()
@@ -246,7 +272,7 @@ class SignalsTab(QtWidgets.QWidget):
     def setIOOutRange(self, start_nr, end_nr):
         out = self.det.patioctrl
         checkBox = getattr(self.view, f"checkBoxBIT{start_nr}_{end_nr - 1}Out")
-        mask = getattr(Defines, f"BIT{start_nr}_{end_nr - 1}_MASK")
+        mask = getattr(Defines.signals, f"BIT{start_nr}_{end_nr - 1}_MASK")
         if checkBox.isChecked():
             self.det.patioctrl = out | mask
         else:

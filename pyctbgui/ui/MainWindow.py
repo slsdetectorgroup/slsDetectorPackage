@@ -166,16 +166,16 @@ class MainWindow(QtWidgets.QMainWindow):
                                           str(e) + "<br> " + self.alias_file, QtWidgets.QMessageBox.Ok)
             return
 
-        for i in range(64):
+        for i in range(Defines.signals.count):
             if bit_names[i]:
                 self.det.setSignalName(i, bit_names[i])
             if bit_plots[i]:
-                getattr(self, f"checkBoxBIT{i}DB").setChecked(bit_plots[i])
-                getattr(self, f"checkBoxBIT{i}Plot").setChecked(bit_plots[i])
+                getattr(self.signalsTab.view, f"checkBoxBIT{i}DB").setChecked(bit_plots[i])
+                getattr(self.signalsTab.view, f"checkBoxBIT{i}Plot").setChecked(bit_plots[i])
             if bit_colors[i]:
                 self.signalsTab.setDBitButtonColor(i, bit_colors[i])
 
-        for i in range(32):
+        for i in range(Defines.adc.count):
             if adc_names[i]:
                 self.det.setAdcName(i, adc_names[i])
             if adc_plots[i]:
@@ -184,17 +184,17 @@ class MainWindow(QtWidgets.QMainWindow):
             if adc_colors[i]:
                 self.adcTab.setADCButtonColor(i, adc_colors[i])
 
-        for i in range(18):
+        for i in range(Defines.dac.count):
             if dac_names[i]:
                 iDac = getattr(dacIndex, f"DAC_{i}")
                 self.det.setDacName(iDac, dac_names[i])
 
-        for i in range(8):
+        for i in range(Defines.slowAdc.count):
             slowadc_index = self.det.getSlowADCList()
             if slowadc_names[i]:
                 self.det.setSlowADCName(slowadc_index[i], slowadc_names[i])
 
-        for i in range(5):
+        for i in range(len(Defines.powerSupplies)):
             voltage_index = self.det.getVoltageList()
             if voltage_names[i]:
                 self.det.setVoltageName(voltage_index[i], voltage_names[i])

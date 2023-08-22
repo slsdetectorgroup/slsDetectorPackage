@@ -74,11 +74,24 @@
     <item row="1" column="1" colspan="4">
      <widget class="QStackedWidget" name="stackedWidgetPlotType">
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="pageWaveform">
        <layout class="QGridLayout" name="gridLayout_23">
-        <item row="0" column="2">
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="checkBoxHideLegend">
+          <property name="text">
+           <string>hide legend</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <property name="tristate">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="4">
          <widget class="QRadioButton" name="radioButtonStripe">
           <property name="text">
            <string>Stripe</string>
@@ -91,7 +104,7 @@
           </attribute>
          </widget>
         </item>
-        <item row="0" column="3">
+        <item row="0" column="5">
          <spacer name="horizontalSpacer_8">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -104,7 +117,7 @@
           </property>
          </spacer>
         </item>
-        <item row="0" column="1">
+        <item row="0" column="3">
          <widget class="QRadioButton" name="radioButtonOverlay">
           <property name="text">
            <string>Overlay</string>
@@ -114,12 +127,25 @@
           </attribute>
          </widget>
         </item>
-        <item row="0" column="0">
+        <item row="0" column="2">
          <widget class="QLabel" name="labelDigitalWaveformOption">
           <property name="text">
            <string>Digital plot:</string>
           </property>
          </widget>
+        </item>
+        <item row="0" column="1">
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </widget>

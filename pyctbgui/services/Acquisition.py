@@ -1,5 +1,4 @@
 import json
-import os
 from pathlib import Path
 import numpy as np
 import time
@@ -7,13 +6,14 @@ import zmq
 from PyQt5 import QtWidgets, uic
 
 from slsdet import readoutMode, runStatus
-from ..utils import decoder
-from ..utils.defines import Defines
+from pyctbgui.utils import decoder
+from pyctbgui.utils.defines import Defines
 
 
 class AcquisitionTab(QtWidgets.QWidget):
+
     def __init__(self, parent):
-        super(AcquisitionTab, self).__init__(parent)
+        super().__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "acquisition.ui", parent)
         self.view = parent
         self.mainWindow = None
@@ -180,7 +180,8 @@ class AcquisitionTab(QtWidgets.QWidget):
         try:
             self.det.tsamples = self.view.spinBoxTransceiver.value()
         except Exception as e:
-            QtWidgets.QMessageBox.warning(self.mainWindow, "Transceiver Samples Fail", str(e), QtWidgets.QMessageBox.Ok)
+            QtWidgets.QMessageBox.warning(self.mainWindow, "Transceiver Samples Fail", str(e),
+                                          QtWidgets.QMessageBox.Ok)
             pass
         # TODO: handling double event exceptions
         self.view.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
@@ -344,13 +345,13 @@ class AcquisitionTab(QtWidgets.QWidget):
         self.getFilePath()
 
     def browseFilePath(self):
-        response = QtWidgets.QFileDialog.getExistingDirectory(
-            parent=self.mainWindow,
-            caption="Select Path to Save Output File",
-            directory=os.getcwd(),
-            options=(QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontResolveSymlinks)
-            # filter='README (*.md *.ui)'
-        )
+        response = QtWidgets.QFileDialog.getExistingDirectory(parent=self.mainWindow,
+                                                              caption="Select Path to Save Output File",
+                                                              directory=Path.cwd(),
+                                                              options=(QtWidgets.QFileDialog.ShowDirsOnly
+                                                                       | QtWidgets.QFileDialog.DontResolveSymlinks)
+                                                              # filter='README (*.md *.ui)'
+                                                              )
         if response:
             self.view.lineEditFilePath.setText(response)
             self.setFilePath()
@@ -458,9 +459,9 @@ class AcquisitionTab(QtWidgets.QWidget):
                                                   QtWidgets.QMessageBox.Ok)
                     return False
                 if self.transceiverTab.getTransceiverEnableReg() != Defines.Matterhorn.tranceiverEnable:
-                    QtWidgets.QMessageBox.warning(self.mainWindow, "Plot type",
-                                                  "To read Matterhorn image, please set transceiver enable to " + str(
-                                                      Defines.Matterhorn.tranceiverEnable), QtWidgets.QMessageBox.Ok)
+                    QtWidgets.QMessageBox.warning(
+                        self.mainWindow, "Plot type", "To read Matterhorn image, please set transceiver enable to " +
+                        str(Defines.Matterhorn.tranceiverEnable), QtWidgets.QMessageBox.Ok)
                     return False
             # moench04 image
             elif self.plotTab.view.comboBoxPlot.currentText() == "Moench04":
@@ -647,7 +648,6 @@ class AcquisitionTab(QtWidgets.QWidget):
                                 waveform[iSample] = trans_array[iSample * self.transceiverTab.nTransceiverEnabled + i]
                             self.mainWindow.transceiverPlots[i].setData(waveform)
 
-
             # image
             else:
 
@@ -656,34 +656,30 @@ class AcquisitionTab(QtWidgets.QWidget):
                     # get zoom state
                     viewBox = self.mainWindow.plotAnalogImage.getView()
                     state = viewBox.getState()
-
-                    # get histogram (colorbar) levels and histogram zoom range
-                    levels = self.mainWindow.plotAnalogImage.getHistogramWidget().item.getLevels()
-                    histRange = self.mainWindow.plotAnalogImage.getHistogramWidget().item.getHistogramRange()
-
                     analog_array = np.array(
                         np.frombuffer(data, dtype=np.uint16, count=self.mainWindow.nADCEnabled * self.asamples))
-
                     try:
                         self.mainWindow.analog_frame = decoder.decode(analog_array, self.mainWindow.pixelMapAnalog)
+                        self.plotTab.ignoreHistogramSignal = True
                         self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame.T)
-                    except Exception as e:
+
+                    except Exception:
                         self.mainWindow.statusbar.setStyleSheet("color:red")
-                        message = f'Warning: Invalid size for Analog Image. Expected {self.mainWindow.nAnalogRows * self.mainWindow.nAnalogCols} size, got {analog_array.size} instead.'
+                        message = f'Warning: Invalid size for Analog Image. Expected' \
+                                  f' {self.mainWindow.nAnalogRows * self.mainWindow.nAnalogCols} ' \
+                                  f'size, got {analog_array.size} instead.'
                         self.updateCurrentFrame('Invalid Image')
+
                         self.mainWindow.statusbar.showMessage(message)
                         print(message)
-                        pass
+
+                    self.plotTab.setFrameLimits(self.mainWindow.analog_frame)
 
                     # keep the zoomed in state (not 1st image)
                     if self.mainWindow.firstAnalogImage:
                         self.mainWindow.firstAnalogImage = False
                     else:
                         viewBox.setState(state)
-                        self.mainWindow.plotAnalogImage.getHistogramWidget().item.setLevels(min=levels[0],
-                                                                                            max=levels[1])
-                        self.mainWindow.plotAnalogImage.getHistogramWidget().item.setHistogramRange(*histRange,
-                                                                                                    padding=0)
 
                 # transceiver
                 if self.mainWindow.romode.value in [3, 4]:
@@ -691,8 +687,6 @@ class AcquisitionTab(QtWidgets.QWidget):
                     viewBox = self.mainWindow.plotTransceiverImage.getView()
                     state = viewBox.getState()
                     # get histogram (colorbar) levels and histogram zoom range
-                    levels = self.mainWindow.plotTransceiverImage.getHistogramWidget().item.getLevels()
-                    histRange = self.mainWindow.plotTransceiverImage.getHistogramWidget().item.getHistogramRange()
 
                     transceiverOffset = 0
                     if self.mainWindow.romode.value == 4:
@@ -707,26 +701,27 @@ class AcquisitionTab(QtWidgets.QWidget):
                         self.mainWindow.transceiver_frame = decoder.decode(trans_array,
                                                                            self.mainWindow.pixelMapTransceiver)
                         # print(f"type of image:{type(self.mainWindows.transceiver_frame)}")
+                        self.plotTab.ignoreHistogramSignal = True
                         self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame)
-                    except Exception as e:
+                    except Exception:
                         self.mainWindow.statusbar.setStyleSheet("color:red")
-                        message = f'Warning: Invalid size for Transceiver Image. Expected {self.mainWindow.nTransceiverRows * self.mainWindow.nTransceiverCols} size, got {trans_array.size} instead.'
+                        message = f'Warning: Invalid size for Transceiver Image. Expected' \
+                                  f' {self.mainWindow.nTransceiverRows * self.mainWindow.nTransceiverCols} size,' \
+                                  f' got {trans_array.size} instead.'
                         self.updateCurrentFrame('Invalid Image')
                         self.mainWindow.statusbar.showMessage(message)
                         print(message)
                         pass
+
+                    self.plotTab.setFrameLimits(self.mainWindow.transceiver_frame)
 
                     # keep the zoomed in state (not 1st image)
                     if self.mainWindow.firstTransceiverImage:
                         self.mainWindow.firstTransceiverImage = False
                     else:
                         viewBox.setState(state)
-                        self.mainWindow.plotTransceiverImage.getHistogramWidget().item.setLevels(min=levels[0],
-                                                                                                 max=levels[1])
-                        self.mainWindow.plotTransceiverImage.getHistogramWidget().item.setHistogramRange(*histRange,
-                                                                                                         padding=0)
 
-        except zmq.ZMQError as e:
+        except zmq.ZMQError:
             pass
         except Exception as e:
             print(f'Caught exception: {str(e)}')

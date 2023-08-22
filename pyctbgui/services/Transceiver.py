@@ -6,12 +6,13 @@ from PyQt5 import QtWidgets, uic
 import pyqtgraph as pg
 from pyctbgui.utils.defines import Defines
 
-from ..utils.bit_utils import bit_is_set, manipulate_bit
+from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
 
 
 class TransceiverTab(QtWidgets.QWidget):
+
     def __init__(self, parent):
-        super(TransceiverTab, self).__init__(parent)
+        super().__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "transceiver.ui", parent)
         self.view = parent
         self.mainWindow = None
@@ -27,12 +28,10 @@ class TransceiverTab(QtWidgets.QWidget):
 
     def connect_ui(self):
         for i in range(Defines.transceiver.count):
-            getattr(self.view, f"checkBoxTransceiver{i}").stateChanged.connect(
-                partial(self.setTransceiverEnable, i))
-            getattr(self.view, f"checkBoxTransceiver{i}Plot").stateChanged.connect(
-                partial(self.setTransceiverEnablePlot, i))
-            getattr(self.view, f"pushButtonTransceiver{i}").clicked.connect(
-                partial(self.selectTransceiverColor, i))
+            getattr(self.view, f"checkBoxTransceiver{i}").stateChanged.connect(partial(self.setTransceiverEnable, i))
+            getattr(self.view,
+                    f"checkBoxTransceiver{i}Plot").stateChanged.connect(partial(self.setTransceiverEnablePlot, i))
+            getattr(self.view, f"pushButtonTransceiver{i}").clicked.connect(partial(self.selectTransceiverColor, i))
         self.view.lineEditTransceiverMask.editingFinished.connect(self.setTransceiverEnableReg)
 
     def refresh(self):
@@ -47,7 +46,8 @@ class TransceiverTab(QtWidgets.QWidget):
         for i in range(Defines.transceiver.count):
             pen = pg.mkPen(color=self.getTransceiverButtonColor(i), width=1)
             legendName = getattr(self.view, f"labelTransceiver{i}").text()
-            self.mainWindow.transceiverPlots[i] = self.mainWindow.plotTransceiverWaveform.plot(waveform, pen=pen,
+            self.mainWindow.transceiverPlots[i] = self.mainWindow.plotTransceiverWaveform.plot(waveform,
+                                                                                               pen=pen,
                                                                                                name=legendName)
             self.mainWindow.transceiverPlots[i].hide()
 

@@ -4,12 +4,13 @@ from pathlib import Path
 from PyQt5 import QtWidgets, uic
 from pyctbgui.utils.defines import Defines
 
-from slsdet import Detector, dacIndex, readoutMode, runStatus
+from slsdet import dacIndex
 
 
 class DacTab(QtWidgets.QWidget):
+
     def __init__(self, parent):
-        super(DacTab, self).__init__(parent)
+        super().__init__(parent)
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "Dacs.ui", parent)
         self.view = parent
 
@@ -74,7 +75,7 @@ class DacTab(QtWidgets.QWidget):
         spinBox.editingFinished.disconnect()
 
         # do not uncheck automatically
-        if (self.det.getDAC(dac)[0]) != -100:
+        if self.det.getDAC(dac)[0] != -100:
             checkBox.setChecked(True)
 
         if checkBox.isChecked():
@@ -84,10 +85,11 @@ class DacTab(QtWidgets.QWidget):
             spinBox.setDisabled(True)
             checkBoxmV.setDisabled(True)
 
-        if checkBoxmV.isChecked():
-            label.setText(str(self.det.getDAC(dac, True)[0]))
-        else:
-            label.setText(str(self.det.getDAC(dac)[0]))
+        in_mv = checkBoxmV.isChecked() and checkBox.isChecked()
+        dacValue = self.det.getDAC(dac, in_mv)[0]
+        unit = "mV" if in_mv else ""
+        label.setText(f"{dacValue} {unit}")
+        spinBox.setValue(dacValue)
 
         checkBox.stateChanged.connect(partial(self.setDACTristate, i))
         checkBoxmV.stateChanged.connect(partial(self.getDAC, i))
@@ -102,8 +104,8 @@ class DacTab(QtWidgets.QWidget):
         value = -100
         if checkBoxDac.isChecked():
             value = spinBox.value()
-
-        self.det.setDAC(dac, value, checkBoxmV.isChecked())
+        in_mV = checkBoxDac.isChecked() and checkBoxmV.isChecked()
+        self.det.setDAC(dac, value, in_mV)
         self.getDAC(i)
 
     def getADCVpp(self):

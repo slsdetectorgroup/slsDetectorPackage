@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class Defines():
+class Defines:
     Time_Wait_For_Packets_ms = 0.5
     Time_Status_Refresh_ms = 100
     Time_Plot_Refresh_ms = 20
@@ -35,6 +35,7 @@ class Defines():
 
     class slowAdc:
         count = 8
+
     colCount = 4
 
     powerSupplies = ('A', 'B', 'C', 'D', 'IO')
@@ -43,7 +44,7 @@ class Defines():
         Matterhorn = 0
         Moench04 = 1
 
-    class Matterhorn():
+    class Matterhorn:
         nRows = 48
         nHalfCols = 24
         nCols = 48
@@ -51,19 +52,21 @@ class Defines():
         tranceiverEnable = 0x3
         nPixelsPerTransceiver = 4
 
-    class Moench04():
+    class Moench04:
         nRows = 400
         nCols = 400
-        adcNumbers = [9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 7, 6, 23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29,
-                      28, 27, 26, 25, 24]
+        adcNumbers = [
+            9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 7, 6, 23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28, 27,
+            26, 25, 24
+        ]
         nPixelsPerSuperColumn = 5000
         superColumnWidth = 25
 
-    Color_map = ['viridis', 'plasma', 'inferno', 'magma', 'cividis',
-                 'binary', 'gist_yarg', 'gist_gray', 'gray', 'bone',
-                 'pink', 'spring', 'summer', 'autumn', 'winter', 'cool',
-                 'Wistia', 'hot', 'afmhot', 'gist_heat', 'copper',
-                 'gist_rainbow', 'rainbow', 'jet', 'turbo']
+    Color_map = [
+        'viridis', 'plasma', 'inferno', 'magma', 'cividis', 'binary', 'gist_yarg', 'gist_gray', 'gray', 'bone', 'pink',
+        'spring', 'summer', 'autumn', 'winter', 'cool', 'Wistia', 'hot', 'afmhot', 'gist_heat', 'copper',
+        'gist_rainbow', 'rainbow', 'jet', 'turbo'
+    ]
     Default_Color_Map = 'viridis'
 
     # pattern viewer defines
@@ -90,25 +93,13 @@ class Defines():
     Line_width = 2.0
 
     Colors = [
-        'Blue',
-        'Orange',
-        'Green',
-        'Red',
-        'Purple',
-        'Brown',
-        'Pink',
-        'Gray',
-        'Olive',
-        'Cyan',
-        'Magenta',
-        'Yellow',
-        'Black',
-        'White'
+        'Blue', 'Orange', 'Green', 'Red', 'Purple', 'Brown', 'Pink', 'Gray', 'Olive', 'Cyan', 'Magenta', 'Yellow',
+        'Black', 'White'
     ]
 
-    LineStyles = [
-        '-',
-        '--',
-        '-.',
-        ':'
-    ]
+    LineStyles = ['-', '--', '-.', ':']
+
+    class colorRange(Enum):
+        all = 0
+        center = 1
+        fixed = 2

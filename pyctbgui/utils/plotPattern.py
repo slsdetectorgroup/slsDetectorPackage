@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 Created on Wed May 24 09:44:53 2017
 
@@ -12,14 +11,18 @@ Changes:
 
 @author: Jiaguo Zhang and Julian Heymes
 """
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Rectangle
-import os
-import argparse
 
-class PlotPattern():
-    def __init__(self, pattern, signalNames, colors_plot, colors_wait, linestyles_wait, alpha_wait, alpha_wait_rect, colors_loop, linestyles_loop, alpha_loop, alpha_loop_rect, clock_vertical_lines_spacing, show_clocks_number, line_width):
+
+class PlotPattern:
+
+    def __init__(self, pattern, signalNames, colors_plot, colors_wait, linestyles_wait, alpha_wait, alpha_wait_rect,
+                 colors_loop, linestyles_loop, alpha_loop, alpha_loop_rect, clock_vertical_lines_spacing,
+                 show_clocks_number, line_width):
         self.pattern = pattern
         self.signalNames = signalNames
         self.verbose = False
@@ -35,12 +38,12 @@ class PlotPattern():
         self.alpha_loop = alpha_loop.copy()
         self.alpha_loop_rect = alpha_loop_rect.copy()
         self.clock_vertical_lines_spacing = clock_vertical_lines_spacing
-        self.show_clocks_number = show_clocks_number     
-        self.line_width = line_width     
+        self.show_clocks_number = show_clocks_number
+        self.line_width = line_width
 
         self.colors_plot[0] = f'xkcd:{colors_plot[0].lower()}'
         self.colors_plot[1] = f'xkcd:{colors_plot[1].lower()}'
-        
+
         for i in range(6):
             self.colors_wait[i] = f'xkcd:{colors_wait[i].lower()}'
             self.colors_loop[i] = f'xkcd:{colors_loop[i].lower()}'
@@ -64,7 +67,6 @@ class PlotPattern():
         print(f'\tline width: {self.line_width}')
         print('\n')
 
-
     def dec2binary(self, dec_num, width=None):
         return np.binary_repr(int(dec_num), width=width)
 
@@ -78,12 +80,12 @@ class PlotPattern():
         # Define a hex to binary function
         # global definition
         # base = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F]
-        self.base = [str(x) for x in range(10)] + [chr(x) for x in range(ord('A'), ord('A')+6)]
+        self.base = [str(x) for x in range(10)] + [chr(x) for x in range(ord('A'), ord('A') + 6)]
 
         # Load the pattern and get all lines
         # Loop all lines
         #with open(Folder + "/" + File_pat + ".pat") as f_pat:
-        with open(self.pattern) as f_pat:
+        with Path.open(self.pattern) as f_pat:
             lines_pat = f_pat.readlines()
         f_pat.close()
 
@@ -119,7 +121,7 @@ class PlotPattern():
                 # print words_line from b0 to b63
                 bits = self.hex2binary(words_line[-1], 64)[::-1]
                 if self.verbose:
-                    print("The bits for line-", k+1, "is:", bits)
+                    print("The bits for line-", k + 1, "is:", bits)
                 # convert string bits to decimal array
                 num_bits = np.array(list(map(str, bits)), dtype="uint16")
                 if cnt == 0:
@@ -286,9 +288,8 @@ class PlotPattern():
         # print(mat_pat.shape)
         subMat = mat_pat.reshape(int(cnt), int(len(num_bits)))[0:, avail_index]
         # subMat = mat_pat[avail_index]
-        timing = np.linspace(0, subMat.shape[0]-1, subMat.shape[0])
+        # timing = np.linspace(0, subMat.shape[0] - 1, subMat.shape[0])
         plt.rcParams['figure.figsize'] = 15, 5
-
 
         # ============= PLOTTING =============
 
@@ -299,12 +300,21 @@ class PlotPattern():
         # axs[nbiteff - 1].set(xlabel='Timing [clk]')
         for idx, i in enumerate(range(nbiteff)):
 
-            axs[idx].plot(subMat.T[i], "-", drawstyle="steps-post", linewidth=self.line_width, color=self.colors_plot[idx % 2])
+            axs[idx].plot(subMat.T[i],
+                          "-",
+                          drawstyle="steps-post",
+                          linewidth=self.line_width,
+                          color=self.colors_plot[idx % 2])
             x_additional = range(len(subMat.T[i]) - 1, len(subMat.T[i]) + 2)
             additional_stuff = [subMat.T[i][-1]] * 3
 
-            axs[idx].plot(x_additional, additional_stuff,
-                        "--", drawstyle="steps-post", linewidth=self.line_width, color=self.colors_plot[idx % 2], alpha=0.5)
+            axs[idx].plot(x_additional,
+                          additional_stuff,
+                          "--",
+                          drawstyle="steps-post",
+                          linewidth=self.line_width,
+                          color=self.colors_plot[idx % 2],
+                          alpha=0.5)
             axs[idx].yaxis.set_ticks([0.5], minor=False)
             axs[idx].xaxis.set_ticks(np.arange(0, len(subMat.T[i]) + 10, self.clock_vertical_lines_spacing))
 
@@ -333,97 +343,175 @@ class PlotPattern():
             if waittime0 is not None:
                 if waittime0 == 0:
                     axs[idx].plot([wait0, wait0], [-10, 10],
-                                linestyle=self.linestyles_wait[0], color=self.colors_wait[0], alpha=self.alpha_wait[0], linewidth=self.line_width)
+                                  linestyle=self.linestyles_wait[0],
+                                  color=self.colors_wait[0],
+                                  alpha=self.alpha_wait[0],
+                                  linewidth=self.line_width)
                     axs[idx].plot([wait0 + 1, wait0 + 1], [-10, 10],
-                                linestyle=self.linestyles_wait[0], color=self.colors_wait[0], linewidth=self.line_width, alpha=self.alpha_wait[0])
-                    axs[idx].add_patch(Rectangle((wait0, -10), 1, 20,
-                                                label="wait 0: skipped" if idx == 0 else "",
-                                                facecolor=self.colors_wait[0], alpha=self.alpha_wait_rect[0], hatch='\\\\'))
+                                  linestyle=self.linestyles_wait[0],
+                                  color=self.colors_wait[0],
+                                  linewidth=self.line_width,
+                                  alpha=self.alpha_wait[0])
+                    axs[idx].add_patch(
+                        Rectangle((wait0, -10),
+                                  1,
+                                  20,
+                                  label="wait 0: skipped" if idx == 0 else "",
+                                  facecolor=self.colors_wait[0],
+                                  alpha=self.alpha_wait_rect[0],
+                                  hatch='\\\\'))
                 else:
                     axs[idx].plot([wait0, wait0], [-10, 10],
-                                linestyle=self.linestyles_wait[0], color=self.colors_wait[0],
-                                label="wait 0: " + str(waittime0) + " clk" if idx == 0 else "",
-                                linewidth=self.line_width, alpha=self.alpha_wait[0])
+                                  linestyle=self.linestyles_wait[0],
+                                  color=self.colors_wait[0],
+                                  label="wait 0: " + str(waittime0) + " clk" if idx == 0 else "",
+                                  linewidth=self.line_width,
+                                  alpha=self.alpha_wait[0])
 
             # Wait 1
             if waittime1 is not None:
                 if waittime1 == 0:
                     axs[idx].plot([wait1, wait1], [-10, 10],
-                                linestyle=self.linestyles_wait[1], color=self.colors_wait[1], alpha=self.alpha_wait[1], linewidth=self.line_width)
+                                  linestyle=self.linestyles_wait[1],
+                                  color=self.colors_wait[1],
+                                  alpha=self.alpha_wait[1],
+                                  linewidth=self.line_width)
                     axs[idx].plot([wait1 + 1, wait1 + 1], [-10, 10],
-                                linestyle=self.linestyles_wait[1], color=self.colors_wait[1], linewidth=self.line_width, alpha=self.alpha_wait[1])
-                    axs[idx].add_patch(Rectangle((wait1, -10), 1, 20,
-                                                label="wait 1: skipped" if idx == 0 else "",
-                                                facecolor=self.colors_wait[1], alpha=self.alpha_wait_rect[1], hatch='\\\\'))
+                                  linestyle=self.linestyles_wait[1],
+                                  color=self.colors_wait[1],
+                                  linewidth=self.line_width,
+                                  alpha=self.alpha_wait[1])
+                    axs[idx].add_patch(
+                        Rectangle((wait1, -10),
+                                  1,
+                                  20,
+                                  label="wait 1: skipped" if idx == 0 else "",
+                                  facecolor=self.colors_wait[1],
+                                  alpha=self.alpha_wait_rect[1],
+                                  hatch='\\\\'))
                 else:
                     axs[idx].plot([wait1, wait1], [-10, 10],
-                                linestyle=self.linestyles_wait[1], color=self.colors_wait[1],
-                                label="wait 1: " + str(waittime1) + " clk" if idx == 0 else "",
-                                linewidth=self.line_width, alpha=self.alpha_wait[1])
+                                  linestyle=self.linestyles_wait[1],
+                                  color=self.colors_wait[1],
+                                  label="wait 1: " + str(waittime1) + " clk" if idx == 0 else "",
+                                  linewidth=self.line_width,
+                                  alpha=self.alpha_wait[1])
 
             # Wait 2
             if waittime2 is not None:
                 if waittime2 == 0:
                     axs[idx].plot([wait2, wait2], [-10, 10],
-                                linestyle=self.linestyles_wait[2], color=self.colors_wait[2], alpha=self.alpha_wait[2], linewidth=self.line_width)
+                                  linestyle=self.linestyles_wait[2],
+                                  color=self.colors_wait[2],
+                                  alpha=self.alpha_wait[2],
+                                  linewidth=self.line_width)
                     axs[idx].plot([wait2 + 1, wait2 + 1], [-10, 10],
-                                linestyle=self.linestyles_wait[2], color=self.colors_wait[2], linewidth=self.line_width, alpha=self.alpha_wait[2])
-                    axs[idx].add_patch(Rectangle((wait2, -10), 1, 20,
-                                                label="wait 2: skipped" if idx == 0 else "",
-                                                facecolor=self.colors_wait[2], alpha=self.alpha_wait_rect[2], hatch='\\\\'))
+                                  linestyle=self.linestyles_wait[2],
+                                  color=self.colors_wait[2],
+                                  linewidth=self.line_width,
+                                  alpha=self.alpha_wait[2])
+                    axs[idx].add_patch(
+                        Rectangle((wait2, -10),
+                                  1,
+                                  20,
+                                  label="wait 2: skipped" if idx == 0 else "",
+                                  facecolor=self.colors_wait[2],
+                                  alpha=self.alpha_wait_rect[2],
+                                  hatch='\\\\'))
                 else:
                     axs[idx].plot([wait2, wait2], [-10, 10],
-                                linestyle=self.linestyles_wait[2], color=self.colors_wait[2],
-                                label="wait 2: " + str(waittime2) + " clk" if idx == 0 else "",
-                                linewidth=self.line_width, alpha=self.alpha_wait[2])
+                                  linestyle=self.linestyles_wait[2],
+                                  color=self.colors_wait[2],
+                                  label="wait 2: " + str(waittime2) + " clk" if idx == 0 else "",
+                                  linewidth=self.line_width,
+                                  alpha=self.alpha_wait[2])
 
             # Wait 3
             if waittime3 is not None:
                 if waittime3 == 0:
                     axs[idx].plot([wait3, wait3], [-10, 10],
-                                linestyle=self.linestyles_wait[3], color=self.colors_wait[3], alpha=self.alpha_wait[3], linewidth=self.line_width)
+                                  linestyle=self.linestyles_wait[3],
+                                  color=self.colors_wait[3],
+                                  alpha=self.alpha_wait[3],
+                                  linewidth=self.line_width)
                     axs[idx].plot([wait3 + 1, wait3 + 1], [-10, 10],
-                                linestyle=self.linestyles_wait[3], color=self.colors_wait[3], linewidth=self.line_width, alpha=self.alpha_wait[3])
-                    axs[idx].add_patch(Rectangle((wait3, -10), 1, 20,
-                                                label="wait 3: skipped" if idx == 0 else "",
-                                                facecolor=self.colors_wait[3], alpha=self.alpha_wait_rect[3], hatch='\\\\'))
+                                  linestyle=self.linestyles_wait[3],
+                                  color=self.colors_wait[3],
+                                  linewidth=self.line_width,
+                                  alpha=self.alpha_wait[3])
+                    axs[idx].add_patch(
+                        Rectangle((wait3, -10),
+                                  1,
+                                  20,
+                                  label="wait 3: skipped" if idx == 0 else "",
+                                  facecolor=self.colors_wait[3],
+                                  alpha=self.alpha_wait_rect[3],
+                                  hatch='\\\\'))
                 else:
                     axs[idx].plot([wait3, wait3], [-10, 10],
-                                linestyle=self.linestyles_wait[3], color=self.colors_wait[3],
-                                label="wait 3: " + str(waittime3) + " clk" if idx == 0 else "",
-                                linewidth=self.line_width, alpha=self.alpha_wait[3])
+                                  linestyle=self.linestyles_wait[3],
+                                  color=self.colors_wait[3],
+                                  label="wait 3: " + str(waittime3) + " clk" if idx == 0 else "",
+                                  linewidth=self.line_width,
+                                  alpha=self.alpha_wait[3])
 
             # Wait 4
             if waittime4 is not None:
                 if waittime4 == 0:
                     axs[idx].plot([wait4, wait4], [-10, 10],
-                                linestyle=self.linestyles_wait[4], color=self.colors_wait[4], alpha=self.alpha_wait[4], linewidth=self.line_width)
+                                  linestyle=self.linestyles_wait[4],
+                                  color=self.colors_wait[4],
+                                  alpha=self.alpha_wait[4],
+                                  linewidth=self.line_width)
                     axs[idx].plot([wait4 + 1, wait4 + 1], [-10, 10],
-                                linestyle=self.linestyles_wait[4], color=self.colors_wait[4], linewidth=self.line_width, alpha=self.alpha_wait[4])
-                    axs[idx].add_patch(Rectangle((wait4, -10), 1, 20,
-                                                label="wait 4: skipped" if idx == 0 else "",
-                                                facecolor=self.colors_wait[4], alpha=self.alpha_wait_rect[4], hatch='\\\\'))
+                                  linestyle=self.linestyles_wait[4],
+                                  color=self.colors_wait[4],
+                                  linewidth=self.line_width,
+                                  alpha=self.alpha_wait[4])
+                    axs[idx].add_patch(
+                        Rectangle((wait4, -10),
+                                  1,
+                                  20,
+                                  label="wait 4: skipped" if idx == 0 else "",
+                                  facecolor=self.colors_wait[4],
+                                  alpha=self.alpha_wait_rect[4],
+                                  hatch='\\\\'))
                 else:
                     axs[idx].plot([wait4, wait4], [-10, 10],
-                                linestyle=self.linestyles_wait[4], color=self.colors_wait[4],
-                                label="wait 4: " + str(waittime4) + " clk" if idx == 0 else "",
-                                linewidth=self.line_width, alpha=self.alpha_wait[4])
+                                  linestyle=self.linestyles_wait[4],
+                                  color=self.colors_wait[4],
+                                  label="wait 4: " + str(waittime4) + " clk" if idx == 0 else "",
+                                  linewidth=self.line_width,
+                                  alpha=self.alpha_wait[4])
 
             # Wait 5
             if waittime5 is not None:
                 if waittime5 == 0:
                     axs[idx].plot([wait5, wait5], [-10, 10],
-                                linestyle=self.linestyles_wait[5], color=self.colors_wait[5], alpha=self.alpha_wait[5], linewidth=self.line_width)
+                                  linestyle=self.linestyles_wait[5],
+                                  color=self.colors_wait[5],
+                                  alpha=self.alpha_wait[5],
+                                  linewidth=self.line_width)
                     axs[idx].plot([wait5 + 1, wait5 + 1], [-10, 10],
-                                linestyle=self.linestyles_wait[5], color=self.colors_wait[5], linewidth=self.line_width, alpha=self.alpha_wait[5])
-                    axs[idx].add_patch(Rectangle((wait5, -10), 1, 20,
-                                                label="wait 5: skipped" if idx == 0 else "",
-                                                facecolor=self.colors_wait[5], alpha=self.alpha_wait_rect[5], hatch='\\\\'))
+                                  linestyle=self.linestyles_wait[5],
+                                  color=self.colors_wait[5],
+                                  linewidth=self.line_width,
+                                  alpha=self.alpha_wait[5])
+                    axs[idx].add_patch(
+                        Rectangle((wait5, -10),
+                                  1,
+                                  20,
+                                  label="wait 5: skipped" if idx == 0 else "",
+                                  facecolor=self.colors_wait[5],
+                                  alpha=self.alpha_wait_rect[5],
+                                  hatch='\\\\'))
                 else:
                     axs[idx].plot([wait5, wait5], [-10, 10],
-                                linestyle=self.linestyles_wait[5], color=self.colors_wait[5],
-                                label="wait 5: " + str(waittime5) + " clk" if idx == 0 else "",
-                                linewidth=self.line_width, alpha=self.alpha_wait[5])
+                                  linestyle=self.linestyles_wait[5],
+                                  color=self.colors_wait[5],
+                                  label="wait 5: " + str(waittime5) + " clk" if idx == 0 else "",
+                                  linewidth=self.line_width,
+                                  alpha=self.alpha_wait[5])
 
             # =====================================================================================================
             # Plot the loop lines
@@ -431,113 +519,210 @@ class PlotPattern():
             if nloop0 is not None:
                 if nloop0 == 0:
                     axs[idx].plot([loop0_start, loop0_start], [-10, 10],
-                                linestyle=self.linestyles_loop[0], color=self.colors_loop[0],
-                                alpha=self.alpha_loop[0], linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[0],
+                                  color=self.colors_loop[0],
+                                  alpha=self.alpha_loop[0],
+                                  linewidth=self.line_width)
                     axs[idx].plot([loop0_end + 1, loop0_end + 1], [-10, 10],
-                                linestyle=self.linestyles_loop[0], color=self.colors_loop[0], alpha=self.alpha_loop[0], linewidth=self.line_width)
-                    axs[idx].add_patch(Rectangle((loop0_start, -10), loop0_end + 1 - loop0_start, 20,
-                                                label="loop 0: skipped" if idx == 0 else "",
-                                                facecolor=self.colors_loop[0], alpha=self.alpha_loop_rect[0], hatch='//'))
+                                  linestyle=self.linestyles_loop[0],
+                                  color=self.colors_loop[0],
+                                  alpha=self.alpha_loop[0],
+                                  linewidth=self.line_width)
+                    axs[idx].add_patch(
+                        Rectangle((loop0_start, -10),
+                                  loop0_end + 1 - loop0_start,
+                                  20,
+                                  label="loop 0: skipped" if idx == 0 else "",
+                                  facecolor=self.colors_loop[0],
+                                  alpha=self.alpha_loop_rect[0],
+                                  hatch='//'))
                 else:
                     axs[idx].plot([loop0_start, loop0_start], [-10, 10],
-                                linestyle=self.linestyles_loop[0], color=self.colors_loop[0], alpha=self.alpha_loop[0],
-                                label="loop 0: " + str(nloop0) + " times" if idx == 0 else "", linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[0],
+                                  color=self.colors_loop[0],
+                                  alpha=self.alpha_loop[0],
+                                  label="loop 0: " + str(nloop0) + " times" if idx == 0 else "",
+                                  linewidth=self.line_width)
                     axs[idx].plot([loop0_end, loop0_end], [-10, 10],
-                                linestyle=self.linestyles_loop[0], color=self.colors_loop[0], alpha=self.alpha_loop[0], linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[0],
+                                  color=self.colors_loop[0],
+                                  alpha=self.alpha_loop[0],
+                                  linewidth=self.line_width)
 
             # Loop 1
             if nloop1 is not None:
                 if nloop1 == 0:
                     axs[idx].plot([loop1_start, loop1_start], [-10, 10],
-                                linestyle=self.linestyles_loop[1], color=self.colors_loop[1],
-                                alpha=self.alpha_loop[1], linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[1],
+                                  color=self.colors_loop[1],
+                                  alpha=self.alpha_loop[1],
+                                  linewidth=self.line_width)
                     axs[idx].plot([loop1_end + 1, loop1_end + 1], [-10, 10],
-                                linestyle=self.linestyles_loop[1], color=self.colors_loop[1], alpha=self.alpha_loop[1], linewidth=self.line_width)
-                    axs[idx].add_patch(Rectangle((loop1_start, -10), loop1_end + 1 - loop1_start, 20,
-                                                label="loop 1: skipped" if idx == 0 else "",
-                                                facecolor=self.colors_loop[1], alpha=self.alpha_loop_rect[1], hatch='//'))
+                                  linestyle=self.linestyles_loop[1],
+                                  color=self.colors_loop[1],
+                                  alpha=self.alpha_loop[1],
+                                  linewidth=self.line_width)
+                    axs[idx].add_patch(
+                        Rectangle((loop1_start, -10),
+                                  loop1_end + 1 - loop1_start,
+                                  20,
+                                  label="loop 1: skipped" if idx == 0 else "",
+                                  facecolor=self.colors_loop[1],
+                                  alpha=self.alpha_loop_rect[1],
+                                  hatch='//'))
                 else:
                     axs[idx].plot([loop1_start, loop1_start], [-10, 10],
-                                linestyle=self.linestyles_loop[1], color=self.colors_loop[1], alpha=self.alpha_loop[1],
-                                label="loop 1: " + str(nloop1) + " times" if idx == 0 else "", linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[1],
+                                  color=self.colors_loop[1],
+                                  alpha=self.alpha_loop[1],
+                                  label="loop 1: " + str(nloop1) + " times" if idx == 0 else "",
+                                  linewidth=self.line_width)
                     axs[idx].plot([loop1_end, loop1_end], [-10, 10],
-                                linestyle=self.linestyles_loop[1], color=self.colors_loop[1], alpha=self.alpha_loop[1], linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[1],
+                                  color=self.colors_loop[1],
+                                  alpha=self.alpha_loop[1],
+                                  linewidth=self.line_width)
 
             # Loop 2
             if nloop2 is not None:
                 if nloop2 == 0:
                     axs[idx].plot([loop2_start, loop2_start], [-10, 10],
-                                linestyle=self.linestyles_loop[2], color=self.colors_loop[2],
-                                alpha=self.alpha_loop[2], linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[2],
+                                  color=self.colors_loop[2],
+                                  alpha=self.alpha_loop[2],
+                                  linewidth=self.line_width)
                     axs[idx].plot([loop2_end + 1, loop2_end + 1], [-10, 10],
-                                linestyle=self.linestyles_loop[2], color=self.colors_loop[2], alpha=self.alpha_loop[2], linewidth=self.line_width)
-                    axs[idx].add_patch(Rectangle((loop2_start, -10), loop2_end + 1 - loop2_start, 20,
-                                                label="loop 2: skipped" if idx == 0 else "",
-                                                facecolor=self.colors_loop[2], alpha=self.alpha_loop_rect[2], hatch='//'))
+                                  linestyle=self.linestyles_loop[2],
+                                  color=self.colors_loop[2],
+                                  alpha=self.alpha_loop[2],
+                                  linewidth=self.line_width)
+                    axs[idx].add_patch(
+                        Rectangle((loop2_start, -10),
+                                  loop2_end + 1 - loop2_start,
+                                  20,
+                                  label="loop 2: skipped" if idx == 0 else "",
+                                  facecolor=self.colors_loop[2],
+                                  alpha=self.alpha_loop_rect[2],
+                                  hatch='//'))
                 else:
                     axs[idx].plot([loop2_start, loop2_start], [-10, 10],
-                                linestyle=self.linestyles_loop[2], color=self.colors_loop[2], alpha=self.alpha_loop[2],
-                                label="loop 2: " + str(nloop2) + " times" if idx == 0 else "", linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[2],
+                                  color=self.colors_loop[2],
+                                  alpha=self.alpha_loop[2],
+                                  label="loop 2: " + str(nloop2) + " times" if idx == 0 else "",
+                                  linewidth=self.line_width)
                     axs[idx].plot([loop2_end, loop2_end], [-10, 10],
-                                linestyle=self.linestyles_loop[2], color=self.colors_loop[2], alpha=self.alpha_loop[2], linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[2],
+                                  color=self.colors_loop[2],
+                                  alpha=self.alpha_loop[2],
+                                  linewidth=self.line_width)
 
             # Loop 3
             if nloop3 is not None:
                 if nloop3 == 0:
                     axs[idx].plot([loop3_start, loop3_start], [-10, 10],
-                                linestyle=self.linestyles_loop[3], color=self.colors_loop[3],
-                                alpha=self.alpha_loop[3], linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[3],
+                                  color=self.colors_loop[3],
+                                  alpha=self.alpha_loop[3],
+                                  linewidth=self.line_width)
                     axs[idx].plot([loop3_end + 1, loop3_end + 1], [-10, 10],
-                                linestyle=self.linestyles_loop[3], color=self.colors_loop[3], alpha=self.alpha_loop[3], linewidth=self.line_width)
-                    axs[idx].add_patch(Rectangle((loop3_start, -10), loop3_end + 1 - loop3_start, 20,
-                                                label="loop 3: skipped" if idx == 0 else "",
-                                                facecolor=self.colors_loop[3], alpha=self.alpha_loop_rect[3], hatch='//'))
+                                  linestyle=self.linestyles_loop[3],
+                                  color=self.colors_loop[3],
+                                  alpha=self.alpha_loop[3],
+                                  linewidth=self.line_width)
+                    axs[idx].add_patch(
+                        Rectangle((loop3_start, -10),
+                                  loop3_end + 1 - loop3_start,
+                                  20,
+                                  label="loop 3: skipped" if idx == 0 else "",
+                                  facecolor=self.colors_loop[3],
+                                  alpha=self.alpha_loop_rect[3],
+                                  hatch='//'))
                 else:
                     axs[idx].plot([loop3_start, loop3_start], [-10, 10],
-                                linestyle=self.linestyles_loop[3], color=self.colors_loop[3], alpha=self.alpha_loop[3],
-                                label="loop 3: " + str(nloop3) + " times" if idx == 0 else "", linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[3],
+                                  color=self.colors_loop[3],
+                                  alpha=self.alpha_loop[3],
+                                  label="loop 3: " + str(nloop3) + " times" if idx == 0 else "",
+                                  linewidth=self.line_width)
                     axs[idx].plot([loop3_end, loop3_end], [-10, 10],
-                                linestyle=self.linestyles_loop[3], color=self.colors_loop[3], alpha=self.alpha_loop[3], linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[3],
+                                  color=self.colors_loop[3],
+                                  alpha=self.alpha_loop[3],
+                                  linewidth=self.line_width)
 
             # Loop 4
             if nloop4 is not None:
                 if nloop4 == 0:
                     axs[idx].plot([loop4_start, loop4_start], [-10, 10],
-                                linestyle=self.linestyles_loop[4], color=self.colors_loop[4],
-                                alpha=self.alpha_loop[4], linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[4],
+                                  color=self.colors_loop[4],
+                                  alpha=self.alpha_loop[4],
+                                  linewidth=self.line_width)
                     axs[idx].plot([loop4_end + 1, loop4_end + 1], [-10, 10],
-                                linestyle=self.linestyles_loop[4], color=self.colors_loop[4], alpha=self.alpha_loop[4], linewidth=self.line_width)
-                    axs[idx].add_patch(Rectangle((loop4_start, -10), loop4_end + 1 - loop4_start, 20,
-                                                label="loop 4: skipped" if idx == 0 else "",
-                                                facecolor=self.colors_loop[4], alpha=self.alpha_loop_rect[4], hatch='//'))
+                                  linestyle=self.linestyles_loop[4],
+                                  color=self.colors_loop[4],
+                                  alpha=self.alpha_loop[4],
+                                  linewidth=self.line_width)
+                    axs[idx].add_patch(
+                        Rectangle((loop4_start, -10),
+                                  loop4_end + 1 - loop4_start,
+                                  20,
+                                  label="loop 4: skipped" if idx == 0 else "",
+                                  facecolor=self.colors_loop[4],
+                                  alpha=self.alpha_loop_rect[4],
+                                  hatch='//'))
                 else:
                     axs[idx].plot([loop4_start, loop4_start], [-10, 10],
-                                linestyle=self.linestyles_loop[4], color=self.colors_loop[4], alpha=self.alpha_loop[4],
-                                label="loop 4: " + str(nloop4) + " times" if idx == 0 else "", linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[4],
+                                  color=self.colors_loop[4],
+                                  alpha=self.alpha_loop[4],
+                                  label="loop 4: " + str(nloop4) + " times" if idx == 0 else "",
+                                  linewidth=self.line_width)
                     axs[idx].plot([loop4_end, loop4_end], [-10, 10],
-                                linestyle=self.linestyles_loop[4], color=self.colors_loop[4], alpha=self.alpha_loop[4], linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[4],
+                                  color=self.colors_loop[4],
+                                  alpha=self.alpha_loop[4],
+                                  linewidth=self.line_width)
 
             # Loop 5
             if nloop5 is not None:
                 if nloop5 == 0:
                     axs[idx].plot([loop5_start, loop5_start], [-10, 10],
-                                linestyle=self.linestyles_loop[5], color=self.colors_loop[5],
-                                alpha=self.alpha_loop[5], linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[5],
+                                  color=self.colors_loop[5],
+                                  alpha=self.alpha_loop[5],
+                                  linewidth=self.line_width)
                     axs[idx].plot([loop5_end + 1, loop5_end + 1], [-10, 10],
-                                linestyle=self.linestyles_loop[5], color=self.colors_loop[5], alpha=self.alpha_loop[5], linewidth=self.line_width)
-                    axs[idx].add_patch(Rectangle((loop5_start, -10), loop5_end + 1 - loop5_start, 20,
-                                                label="loop 5: skipped" if idx == 0 else "",
-                                                facecolor=self.colors_loop[5], alpha=self.alpha_loop_rect[5], hatch='//'))
+                                  linestyle=self.linestyles_loop[5],
+                                  color=self.colors_loop[5],
+                                  alpha=self.alpha_loop[5],
+                                  linewidth=self.line_width)
+                    axs[idx].add_patch(
+                        Rectangle((loop5_start, -10),
+                                  loop5_end + 1 - loop5_start,
+                                  20,
+                                  label="loop 5: skipped" if idx == 0 else "",
+                                  facecolor=self.colors_loop[5],
+                                  alpha=self.alpha_loop_rect[5],
+                                  hatch='//'))
                 else:
                     axs[idx].plot([loop5_start, loop5_start], [-10, 10],
-                                linestyle=self.linestyles_loop[5], color=self.colors_loop[5], alpha=self.alpha_loop[5],
-                                label="loop 5: " + str(nloop5) + " times" if idx == 0 else "", linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[5],
+                                  color=self.colors_loop[5],
+                                  alpha=self.alpha_loop[5],
+                                  label="loop 5: " + str(nloop5) + " times" if idx == 0 else "",
+                                  linewidth=self.line_width)
                     axs[idx].plot([loop5_end, loop5_end], [-10, 10],
-                                linestyle=self.linestyles_loop[5], color=self.colors_loop[5], alpha=self.alpha_loop[5], linewidth=self.line_width)
+                                  linestyle=self.linestyles_loop[5],
+                                  color=self.colors_loop[5],
+                                  alpha=self.alpha_loop[5],
+                                  linewidth=self.line_width)
 
-
-        n_cols = np.count_nonzero([waittime0 != 0, waittime1 != 0, waittime2 != 0, waittime3 != 0, waittime4 != 0, waittime5 != 0,
-                                nloop0 != 0, nloop1 != 0, nloop2 != 0, nloop3 != 0, nloop4 != 0, nloop5 != 0])
+        n_cols = np.count_nonzero([
+            waittime0 != 0, waittime1 != 0, waittime2 != 0, waittime3 != 0, waittime4 != 0, waittime5 != 0, nloop0
+            != 0, nloop1 != 0, nloop2 != 0, nloop3 != 0, nloop4 != 0, nloop5 != 0
+        ])
         if n_cols > 0:
             fig.legend(loc="upper center", ncol=n_cols)
         return fig

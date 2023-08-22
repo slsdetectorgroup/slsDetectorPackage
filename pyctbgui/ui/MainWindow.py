@@ -1,4 +1,3 @@
-import os
 from PyQt5 import QtWidgets, QtCore, uic
 import argparse
 import signal
@@ -8,9 +7,10 @@ from functools import partial
 
 from slsdet import Detector, dacIndex
 
-from ..services import *
-from ..utils import alias_utility
-from ..utils.defines import *
+from pyctbgui.services import TransceiverTab, DacTab, AdcTab, AcquisitionTab, SignalsTab, PatternTab,\
+                              SlowAdcTab, PlotTab, PowerSuppliesTab
+from pyctbgui.utils import alias_utility
+from pyctbgui.utils.defines import Defines
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -28,7 +28,7 @@ class MainWindow(QtWidgets.QMainWindow):
         pg.setConfigOption("foreground", "k")
         pg.setConfigOption('leftButtonPan', False)
 
-        super(MainWindow, self).__init__()
+        super().__init__(*args, **kwargs)
         uic.loadUi(Path(__file__).parent / "CtbGui.ui", self)
 
         self.updateSettingValues()
@@ -43,7 +43,7 @@ class MainWindow(QtWidgets.QMainWindow):
             raise
 
         # get Tab Classes
-        self.plotTab: PlotTab=self.widgetPlot
+        self.plotTab: PlotTab = self.widgetPlot
         self.slowAdcTab: SlowAdcTab = self.widgetSlowAdcs
         self.dacTab: DacTab = self.widgetDacs
         self.powerSuppliesTab: PowerSuppliesTab = self.widgetPowerSupplies
@@ -53,9 +53,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.patternTab: PatternTab = self.widgetPattern
         self.acquisitionTab: AcquisitionTab = self.widgetAcquisition
 
-        self.tabs_list = [self.dacTab, self.powerSuppliesTab, self.slowAdcTab,
-                          self.signalsTab, self.transceiverTab, self.adcTab,
-                          self.patternTab, self.acquisitionTab, self.plotTab]
+        self.tabs_list = [
+            self.dacTab, self.powerSuppliesTab, self.slowAdcTab, self.signalsTab, self.transceiverTab, self.adcTab,
+            self.patternTab, self.acquisitionTab, self.plotTab
+        ]
 
         self.setup_ui()
         self.acquisitionTab.setup_zmq()
@@ -66,7 +67,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for tab in self.tabs_list:
             tab.refresh()
 
-        # also refreshes timer to start plotting 
+        # also refreshes timer to start plotting
         self.plotTab.plotOptions()
         self.plotTab.showPlot()
 
@@ -89,7 +90,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.firstTransceiverImage = True
 
     def updateSettingMainWindow(self):
-        self.settings.beginGroup("mainwindow");
+        self.settings.beginGroup("mainwindow")
         # window size
         width = self.settings.value('window_width')
         height = self.settings.value('window_height')
@@ -102,17 +103,17 @@ class MainWindow(QtWidgets.QMainWindow):
         if type(pos) is QtCore.QPoint:
             # print(f'Moved main window to {pos}')
             self.move(pos)
-        self.settings.endGroup();
+        self.settings.endGroup()
 
     def saveSettingMainWindow(self):
-        self.settings.beginGroup("mainwindow");
+        self.settings.beginGroup("mainwindow")
         self.settings.setValue('window_width', self.rect().width())
         self.settings.setValue('window_height', self.rect().height())
         self.settings.setValue('window_pos', self.pos())
-        self.settings.endGroup();
+        self.settings.endGroup()
 
     def updateSettingDockWidget(self):
-        self.settings.beginGroup("dockwidget");
+        self.settings.beginGroup("dockwidget")
 
         # is docked
         if self.settings.contains('window_width') and self.settings.contains('window_height'):
@@ -128,10 +129,10 @@ class MainWindow(QtWidgets.QMainWindow):
             if type(pos) is QtCore.QPoint:
                 # print(f'Moved plot window to {pos}')
                 self.dockWidget.move(pos)
-        self.settings.endGroup();
+        self.settings.endGroup()
 
     def saveSettingDockWidget(self):
-        self.settings.beginGroup("dockwidget");
+        self.settings.beginGroup("dockwidget")
         if self.dockWidget.isFloating():
             self.settings.setValue('window_width', self.dockWidget.rect().width())
             self.settings.setValue('window_height', self.dockWidget.rect().height())
@@ -140,7 +141,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.settings.remove('window_width')
             self.settings.remove('window_height')
             self.settings.remove('window_pos')
-        self.settings.endGroup();
+        self.settings.endGroup()
 
     def updateSettingValues(self):
         self.settings = QtCore.QSettings('slsdetectorgroup', 'pyctbgui')
@@ -158,11 +159,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def loadAliasFile(self):
         print(f'Loading Alias file: {self.alias_file}')
         try:
-            bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, slowadc_names, voltage_names, pat_file_name = alias_utility.read_alias_file(
-                self.alias_file)
+            bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, slowadc_names, \
+            voltage_names, pat_file_name = alias_utility.read_alias_file(self.alias_file)
         except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "Alias File Fail", str(e) + "<br> " + self.alias_file,
-                                          QtWidgets.QMessageBox.Ok)
+            QtWidgets.QMessageBox.warning(self, "Alias File Fail",
+                                          str(e) + "<br> " + self.alias_file, QtWidgets.QMessageBox.Ok)
             return
 
         for i in range(64):
@@ -189,12 +190,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.det.setDacName(iDac, dac_names[i])
 
         for i in range(8):
+            slowadc_index = self.det.getSlowADCList()
             if slowadc_names[i]:
-                self.det.setSlowAdcName(i, slowadc_names[i])
+                self.det.setSlowADCName(slowadc_index[i], slowadc_names[i])
 
         for i in range(5):
+            voltage_index = self.det.getVoltageList()
             if voltage_names[i]:
-                self.det.setVoltageName(i, voltage_names[i])
+                self.det.setVoltageName(voltage_index[i], voltage_names[i])
 
         if pat_file_name:
             self.lineEditPatternFile.setText(pat_file_name)
@@ -212,25 +215,25 @@ class MainWindow(QtWidgets.QMainWindow):
         msg = QtWidgets.QMessageBox()
         msg.setWindowTitle("About")
         msg.setText("This Gui is for Chip Test Boards.\n Current Phase: Development")
-        x = msg.exec_()
+        msg.exec_()
 
     def showKeyBoardShortcuts(self):
         msg = QtWidgets.QMessageBox()
         msg.setWindowTitle("Keyboard Shortcuts")
         msg.setText(
-            "Start Acquisition (from any tab): Shift + Return<br>Move Tab Right : Ctrl + '+'<br>Move Tab Left : Ctrl + '-'<br>")
-        x = msg.exec_()
+            "Start Acquisition (from any tab): Shift + Return<br>Move Tab Right : Ctrl + '+'<br>Move Tab Left :"
+            " Ctrl + '-'<br>")
+        msg.exec_()
 
     def loadParameters(self):
         response = QtWidgets.QFileDialog.getOpenFileName(
             parent=self,
             caption="Select a parameter file to open",
-            directory=os.getcwd(),
+            directory=Path.cwd(),
             # filter='README (*.md *.ui)'
         )
         if response[0]:
             try:
-                parameters = response[0]
                 QtWidgets.QMessageBox.information(self, "Load Parameter Success", "Parameters loaded successfully",
                                                   QtWidgets.QMessageBox.Ok)
             except Exception as e:
@@ -302,7 +305,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionKeyboardShortcuts.triggered.connect(self.showKeyBoardShortcuts)
         self.actionLoadParameters.triggered.connect(self.loadParameters)
         self.pushButtonStart.clicked.connect(self.acquisitionTab.toggleAcquire)
-
 
         for tab in self.tabs_list:
             tab.connect_ui()

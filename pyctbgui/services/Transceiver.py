@@ -4,6 +4,8 @@ from pathlib import Path
 import numpy as np
 from PyQt5 import QtWidgets, uic
 import pyqtgraph as pg
+from pyqtgraph import LegendItem
+
 from pyctbgui.utils.defines import Defines
 
 from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
@@ -18,6 +20,7 @@ class TransceiverTab(QtWidgets.QWidget):
         self.mainWindow = None
         self.det = None
         self.plotTab = None
+        self.legend: LegendItem | None = None
 
     def setup_ui(self):
         self.plotTab = self.mainWindow.plotTab
@@ -25,6 +28,12 @@ class TransceiverTab(QtWidgets.QWidget):
         for i in range(Defines.transceiver.count):
             self.setTransceiverButtonColor(i, self.plotTab.getRandomColor())
         self.initializeAllTransceiverPlots()
+
+        self.legend = self.mainWindow.plotTransceiverWaveform.getPlotItem().legend
+        self.legend.clear()
+
+        # subscribe to toggle legend
+        self.plotTab.subscribeToggleLegend(self.updateLegend)
 
     def connect_ui(self):
         for i in range(Defines.transceiver.count):
@@ -37,8 +46,32 @@ class TransceiverTab(QtWidgets.QWidget):
     def refresh(self):
         self.updateTransceiverEnable()
 
+    def getEnabledPlots(self):
+        """
+        return plots that are shown (checkBoxTransceiver{i}Plot is checked)
+        """
+        enabledPlots = []
+        self.legend.clear()
+        for i in range(Defines.transceiver.count):
+            if getattr(self.view, f'checkBoxTransceiver{i}Plot').isChecked():
+                plotName = getattr(self.view, f"labelTransceiver{i}").text()
+                enabledPlots.append((self.mainWindow.transceiverPlots[i], plotName))
+        return enabledPlots
+
+    def updateLegend(self):
+        """
+        update the legend for the transceiver waveform plot
+        should be called after checking or unchecking plot checkbox
+        """
+        if not self.mainWindow.showLegend:
+            self.legend.clear()
+        else:
+            for plot, name in self.getEnabledPlots():
+                self.legend.addItem(plot, name)
+
     def initializeAllTransceiverPlots(self):
         self.mainWindow.plotTransceiverWaveform = pg.plot()
+        self.mainWindow.plotTransceiverWaveform.addLegend(colCount=Defines.colCount)
         self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotTransceiverWaveform, 5)
         self.mainWindow.transceiverPlots = {}
         waveform = np.zeros(1000)
@@ -116,6 +149,7 @@ class TransceiverTab(QtWidgets.QWidget):
         checkBox = getattr(self.view, f"checkBoxTransceiver{i}Plot")
         pushButton.setEnabled(checkBox.isChecked())
         self.plotTab.addSelectedTransceiverPlots(i)
+        self.updateLegend()
 
     def getTransceiverEnableColor(self, i):
         checkBox = getattr(self.view, f"checkBoxTransceiver{i}Plot")

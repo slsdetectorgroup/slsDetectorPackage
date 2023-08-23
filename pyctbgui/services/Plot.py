@@ -6,6 +6,7 @@ import numpy as np
 from PyQt5 import QtWidgets, QtGui, uic
 
 import pyqtgraph as pg
+from pyqtgraph import PlotWidget
 
 from pyctbgui.utils.defines import Defines
 from pyctbgui.utils.pixelmap import moench04_analog, matterhorn_transceiver
@@ -15,8 +16,8 @@ class PlotTab(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super().__init__(parent)
-        self.frame_min = 0.0
-        self.frame_max = 0.0
+        self.frame_min: float = 0.0
+        self.frame_max: float = 0.0
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "plot.ui", parent)
         self.view = parent
         self.mainWindow = None
@@ -25,10 +26,14 @@ class PlotTab(QtWidgets.QWidget):
         self.transceiverTab = None
         self.acquisitionTab = None
         self.adcTab = None
-        self.cmin = 0.0
-        self.cmax = 0.0
-        self.colorRangeMode = Defines.colorRange.all
-        self.ignoreHistogramSignal = False
+        self.cmin: float = 0.0
+        self.cmax: float = 0.0
+        self.colorRangeMode: Defines.colorRange = Defines.colorRange.all
+        self.ignoreHistogramSignal: bool = False
+        self.imagePlots: list[PlotWidget] = []
+        # list of callback functions to notify tabs when we should hide their legend
+        # follows the observer design pattern
+        self.hideLegendObservers = []
 
     def setup_ui(self):
         self.signalsTab = self.mainWindow.signalsTab
@@ -37,6 +42,12 @@ class PlotTab(QtWidgets.QWidget):
         self.adcTab = self.mainWindow.adcTab
 
         self.initializeColorMaps()
+
+        self.imagePlots = (
+            self.mainWindow.plotAnalogImage,
+            self.mainWindow.plotDigitalImage,
+            self.mainWindow.plotTransceiverImage,
+        )
 
     def connect_ui(self):
         self.view.radioButtonNoPlot.clicked.connect(self.plotOptions)
@@ -71,14 +82,11 @@ class PlotTab(QtWidgets.QWidget):
         self.view.radioButtonFixed.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.fixed))
         self.view.radioButtonCenter.clicked.connect(partial(self.setColorRangeMode, Defines.colorRange.center))
 
-        plots = (
-            self.mainWindow.plotAnalogImage,
-            self.mainWindow.plotDigitalImage,
-            self.mainWindow.plotTransceiverImage,
-        )
-        for plot in plots:
+        for plot in self.imagePlots:
             plot.scene.sigMouseMoved.connect(partial(self.showPlotValues, plot))
             plot.getHistogramWidget().item.sigLevelChangeFinished.connect(partial(self.handleHistogramChange, plot))
+
+        self.view.checkBoxShowLegend.stateChanged.connect(self.toggleLegend)
 
     def refresh(self):
         self.getZMQHWM()
@@ -87,6 +95,21 @@ class PlotTab(QtWidgets.QWidget):
         self.view.comboBoxColorMap.addItems(Defines.Color_map)
         self.view.comboBoxColorMap.setCurrentIndex(Defines.Color_map.index(Defines.Default_Color_Map))
         self.setColorMap()
+
+    def subscribeToggleLegend(self, fn_cbk):
+        """
+        subscribe to the event of toggling the hide legend checkbox by subscribing
+        with a callback function
+        """
+        self.hideLegendObservers.append(fn_cbk)
+
+    def toggleLegend(self):
+        """
+        notify subscribers for the showLegend checkbox event by executing their callbacks
+        """
+        self.mainWindow.showLegend = not self.mainWindow.showLegend
+        for notify_function in self.hideLegendObservers:
+            notify_function()
 
     def setCmin(self, value=None):
         """
@@ -168,13 +191,7 @@ class PlotTab(QtWidgets.QWidget):
         """
         updates UI views should be called after every change to cmin or cmax
         """
-
-        plots = (
-            self.mainWindow.plotAnalogImage,
-            self.mainWindow.plotDigitalImage,
-            self.mainWindow.plotTransceiverImage,
-        )
-        for plot in plots:
+        for plot in self.imagePlots:
             plot.getHistogramWidget().item.setLevels(min=self.cmin, max=self.cmax)
         self.view.cminSpinBox.setValue(self.cmin)
         self.view.cmaxSpinBox.setValue(self.cmax)
@@ -307,17 +324,14 @@ class PlotTab(QtWidgets.QWidget):
                 'left', "<span style=\"color:black;font-size:14px\">Output [ADC]</span>")
             self.mainWindow.plotAnalogWaveform.setLabel(
                 'bottom', "<span style=\"color:black;font-size:14px\">Analog Sample [#]</span>")
-            self.mainWindow.plotAnalogWaveform.addLegend(colCount=4)
             self.mainWindow.plotDigitalWaveform.setLabel(
                 'left', "<span style=\"color:black;font-size:14px\">Digital Bit</span>")
             self.mainWindow.plotDigitalWaveform.setLabel(
                 'bottom', "<span style=\"color:black;font-size:14px\">Digital Sample [#]</span>")
-            self.mainWindow.plotDigitalWaveform.addLegend(colCount=4)
             self.mainWindow.plotTransceiverWaveform.setLabel(
                 'left', "<span style=\"color:black;font-size:14px\">Transceiver Bit</span>")
             self.mainWindow.plotTransceiverWaveform.setLabel(
                 'bottom', "<span style=\"color:black;font-size:14px\">Transceiver Sample [#]</span>")
-            self.mainWindow.plotTransceiverWaveform.addLegend(colCount=4)
 
             self.view.stackedWidgetPlotType.setCurrentIndex(0)
 

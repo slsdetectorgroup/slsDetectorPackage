@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 from PyQt5 import QtWidgets, uic
 import pyqtgraph as pg
+from pyqtgraph import LegendItem
 
 from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
 from pyctbgui.utils.defines import Defines
@@ -18,6 +19,7 @@ class SignalsTab(QtWidgets.QWidget):
         self.mainWindow = None
         self.det = None
         self.plotTab = None
+        self.legend: LegendItem | None = None
 
     def refresh(self):
         self.updateSignalNames()
@@ -53,8 +55,37 @@ class SignalsTab(QtWidgets.QWidget):
 
         self.initializeAllDigitalPlots()
 
+        self.legend = self.mainWindow.plotDigitalWaveform.getPlotItem().legend
+        self.legend.clear()
+        # subscribe to toggle legend
+        self.plotTab.subscribeToggleLegend(self.updateLegend)
+
+    def getEnabledPlots(self):
+        """
+        return plots that are shown (checkBoxTransceiver{i}Plot is checked)
+        """
+        enabledPlots = []
+        self.legend.clear()
+        for i in range(Defines.signals.count):
+            if getattr(self.view, f'checkBoxBIT{i}Plot').isChecked():
+                plotName = getattr(self.view, f"labelBIT{i}").text()
+                enabledPlots.append((self.mainWindow.digitalPlots[i], plotName))
+        return enabledPlots
+
+    def updateLegend(self):
+        """
+        update the legend for the signals waveform plot
+        should be called after checking or unchecking plot checkbox
+        """
+        if not self.mainWindow.showLegend:
+            self.legend.clear()
+        else:
+            for plot, name in self.getEnabledPlots():
+                self.legend.addItem(plot, name)
+
     def initializeAllDigitalPlots(self):
         self.mainWindow.plotDigitalWaveform = pg.plot()
+        self.mainWindow.plotDigitalWaveform.addLegend(colCount=Defines.colCount)
         self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotDigitalWaveform, 3)
         self.mainWindow.digitalPlots = {}
         waveform = np.zeros(1000)
@@ -144,6 +175,7 @@ class SignalsTab(QtWidgets.QWidget):
 
         self.getEnableBitPlotRange()
         self.plotTab.addSelectedDigitalPlots(i)
+        self.updateLegend()
 
     def getEnableBitPlotRange(self):
         self.view.checkBoxBIT0_31Plot.stateChanged.disconnect()

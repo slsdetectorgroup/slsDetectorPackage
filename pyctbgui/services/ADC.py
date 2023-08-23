@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 from PyQt5 import QtWidgets, uic
 import pyqtgraph as pg
+from pyqtgraph import LegendItem
 
 from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
 from pyctbgui.utils.defines import Defines
@@ -18,6 +19,7 @@ class AdcTab(QtWidgets.QWidget):
         self.mainWindow = None
         self.det = None
         self.plotTab = None
+        self.legend: LegendItem | None = None
 
     def setup_ui(self):
         self.plotTab = self.mainWindow.plotTab
@@ -25,8 +27,14 @@ class AdcTab(QtWidgets.QWidget):
             self.setADCButtonColor(i, self.plotTab.getRandomColor())
         self.initializeAllAnalogPlots()
 
+        self.legend = self.mainWindow.plotAnalogWaveform.getPlotItem().legend
+        self.legend.clear()
+        # subscribe to toggle legend
+        self.plotTab.subscribeToggleLegend(self.updateLegend)
+
     def initializeAllAnalogPlots(self):
         self.mainWindow.plotAnalogWaveform = pg.plot()
+        self.mainWindow.plotAnalogWaveform.addLegend(colCount=Defines.colCount)
         self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotAnalogWaveform, 1)
         self.mainWindow.analogPlots = {}
         waveform = np.zeros(1000)
@@ -71,7 +79,33 @@ class AdcTab(QtWidgets.QWidget):
 
         # ADCs Tab functions
 
+    def getEnabledPlots(self):
+        """
+        return plots that are shown (checkBoxADC#Plot is checked)
+        """
+        enabledPlots = []
+        self.legend.clear()
+        for i in range(Defines.adc.count):
+            if getattr(self.view, f'checkBoxADC{i}Plot').isChecked():
+                plotName = getattr(self.view, f"labelADC{i}").text()
+                enabledPlots.append((self.mainWindow.analogPlots[i], plotName))
+        return enabledPlots
+
+    def updateLegend(self):
+        """
+        update the legend for the ADC waveform plot
+        should be called after checking or unchecking plot checkbox
+        """
+        if not self.mainWindow.showLegend:
+            self.legend.clear()
+        else:
+            for plot, name in self.getEnabledPlots():
+                self.legend.addItem(plot, name)
+
     def updateADCNames(self):
+        """
+        get adc names from detector and update them in the UI
+        """
         for i, adc_name in enumerate(self.det.getAdcNames()):
             getattr(self.view, f"labelADC{i}").setText(adc_name)
 
@@ -167,6 +201,7 @@ class AdcTab(QtWidgets.QWidget):
 
         self.getADCEnablePlotRange()
         self.plotTab.addSelectedAnalogPlots(i)
+        self.updateLegend()
 
     def getADCEnablePlotRange(self):
         self.view.checkBoxADC0_15Plot.stateChanged.disconnect()
@@ -266,7 +301,7 @@ class AdcTab(QtWidgets.QWidget):
     def setADCInvRange(self, start_nr, end_nr):
         out = self.det.adcinvert
         checkBox = getattr(self.view, f"checkBoxADC{start_nr}_{end_nr - 1}Inv")
-        mask = getattr(Defines, f"BIT{start_nr}_{end_nr - 1}_MASK")
+        mask = getattr(Defines.adc, f"BIT{start_nr}_{end_nr - 1}_MASK")
         if checkBox.isChecked():
             self.det.adcinvert = out | mask
         else:

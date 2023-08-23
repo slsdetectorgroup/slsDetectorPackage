@@ -36,6 +36,8 @@ class Defines:
     class slowAdc:
         count = 8
 
+    colCount = 4
+
     powerSupplies = ('A', 'B', 'C', 'D', 'IO')
 
     class ImageIndex(Enum):

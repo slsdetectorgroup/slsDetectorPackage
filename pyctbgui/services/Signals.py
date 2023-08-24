@@ -20,6 +20,8 @@ class SignalsTab(QtWidgets.QWidget):
         self.det = None
         self.plotTab = None
         self.legend: LegendItem | None = None
+        self.rx_dbitoffset = None
+        self.rx_dbitlist = None
 
     def refresh(self):
         self.updateSignalNames()
@@ -83,6 +85,54 @@ class SignalsTab(QtWidgets.QWidget):
             for plot, name in self.getEnabledPlots():
                 self.legend.addItem(plot, name)
 
+    def processWafeformData(self, data, asamples, dsamples):
+        """
+        processes raw waveform data
+        data: receiver waveform data
+        dsamples: digital samples
+        asamples: analog samples
+        """
+        waveforms = {}
+        dbitoffset = self.rx_dbitoffset
+        if self.mainWindow.romode.value == 2:
+            dbitoffset += self.mainWindow.nADCEnabled * 2 * asamples
+        digital_array = np.array(np.frombuffer(data, offset=dbitoffset, dtype=np.uint8))
+        nbitsPerDBit = dsamples
+        if nbitsPerDBit % 8 != 0:
+            nbitsPerDBit += (8 - (dsamples % 8))
+        offset = 0
+        irow = 0
+        for i in self.rx_dbitlist:
+            # where numbits * numsamples is not a multiple of 8
+            if offset % 8 != 0:
+                offset += (8 - (offset % 8))
+
+            checkBox = getattr(self.view, f"checkBoxBIT{i}Plot")
+            # bits enabled but not plotting
+            if not checkBox.isChecked():
+                offset += nbitsPerDBit
+                continue
+            # to plot
+            if checkBox.isChecked():
+                waveform = np.zeros(dsamples)
+                for iSample in range(dsamples):
+                    # all samples for digital bit together from slsReceiver
+                    index = int(offset / 8)
+                    iBit = offset % 8
+                    bit = (digital_array[index] >> iBit) & 1
+                    waveform[iSample] = bit
+                    offset += 1
+                self.mainWindow.digitalPlots[i].setData(waveform)
+                plotName = getattr(self.view, f"labelBIT{i}").text()
+                waveforms[plotName] = waveform
+                # TODO: left axis does not show 0 to 1, but keeps increasing
+                if self.plotTab.view.radioButtonStripe.isChecked():
+                    self.mainWindow.digitalPlots[i].setY(irow * 2)
+                    irow += 1
+                else:
+                    self.mainWindow.digitalPlots[i].setY(0)
+        return waveforms
+
     def initializeAllDigitalPlots(self):
         self.mainWindow.plotDigitalWaveform = pg.plot()
         self.mainWindow.plotDigitalWaveform.addLegend(colCount=Defines.colCount)
@@ -117,7 +167,7 @@ class SignalsTab(QtWidgets.QWidget):
 
     def updateDigitalBitEnable(self):
         retval = self.det.rx_dbitlist
-        self.mainWindow.rx_dbitlist = list(retval)
+        self.rx_dbitlist = list(retval)
         self.mainWindow.nDbitEnabled = len(list(retval))
         for i in range(Defines.signals.count):
             self.getDigitalBitEnable(i, retval)
@@ -286,8 +336,8 @@ class SignalsTab(QtWidgets.QWidget):
 
     def getDBitOffset(self):
         self.view.spinBoxDBitOffset.editingFinished.disconnect()
-        self.mainWindow.rx_dbitoffset = self.det.rx_dbitoffset
-        self.view.spinBoxDBitOffset.setValue(self.mainWindow.rx_dbitoffset)
+        self.rx_dbitoffset = self.det.rx_dbitoffset
+        self.view.spinBoxDBitOffset.setValue(self.rx_dbitoffset)
         self.view.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
 
     def setDbitOffset(self):

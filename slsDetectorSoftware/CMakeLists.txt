@@ -29,6 +29,7 @@ target_link_libraries(slsDetectorObject
         rt
     PRIVATE
         slsProjectWarnings
+        "$<BUILD_INTERFACE:libzmq-static>"
 )
 
 set(DETECTOR_LIBRARY_TARGETS slsDetectorObject)

@@ -19,7 +19,7 @@ target_link_libraries(_slsdet PUBLIC
 
 
 set_target_properties(_slsdet PROPERTIES
-                        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+                        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/slsdet
                     )
 
 #Copy Python code 
@@ -49,6 +49,7 @@ set( PYTHON_FILES
     slsdet/temperature.py
     slsdet/lookup.py
     slsdet/utils.py
+    setup.py
 
 )
 
@@ -57,7 +58,6 @@ foreach(FILE ${PYTHON_FILES})
     ${CMAKE_BINARY_DIR}/bin/${FILE}  )
 
 endforeach(FILE ${PYTHON_FILES})
-
 
 configure_file( scripts/basic.py  
     ${CMAKE_BINARY_DIR}/basic.py 

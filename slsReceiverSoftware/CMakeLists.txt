@@ -49,6 +49,7 @@ target_link_libraries(slsReceiverObject
     slsSupportStatic
   PRIVATE
     slsProjectWarnings #don't propagate warnigns 
+    "$<BUILD_INTERFACE:libzmq-static>"
 )
 
 # HDF5

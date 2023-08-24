@@ -7,50 +7,15 @@ Build upon the pybind11 example found here: https://github.com/pybind/python_exa
 
 import os
 import sys
-sys.path.append('../libs/pybind')
+from pathlib import Path
+# sys.path.append('../libs/pybind')
 from setuptools import setup, find_packages
-from pybind11.setup_helpers import Pybind11Extension, build_ext
+
 
 __version__ = os.environ.get('GIT_DESCRIBE_TAG', 'developer')
 
 
-def get_conda_path():
-    """
-    Keep this a function if we need some fancier logic later
-    """
-    print('Prefix: ', os.environ['CONDA_PREFIX'])
-    return os.environ['CONDA_PREFIX']
 
-
-#TODO migrate to CMake build or fetch files from cmake? 
-ext_modules = [
-    Pybind11Extension(
-        '_slsdet',
-        ['src/main.cpp',
-        'src/enums.cpp',
-        'src/current.cpp',
-        'src/detector.cpp',
-        'src/network.cpp',
-        'src/pattern.cpp',
-        'src/scan.cpp',
-        'src/duration.cpp',
-        'src/DurationWrapper.cpp',
-        ]
-        
-        
-        ,
-        include_dirs=[
-            os.path.join('../libs/pybind/include'),
-            os.path.join(get_conda_path(), 'include'),
-
-        ],
-        libraries=['SlsDetector', 'SlsSupport', 'SlsReceiver', 'zmq'],
-        library_dirs=[
-            os.path.join(get_conda_path(), 'lib'),
-        ],
-        language='c++'
-    ),
-]
 
 setup(
     name='slsdet',
@@ -61,7 +26,7 @@ setup(
     description='Detector API for SLS Detector Group detectors',
     long_description='',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    ext_modules=ext_modules,
-    cmdclass={"build_ext": build_ext},
+    package_data={"":["*.so"]},
+    include_package_data=True,
     zip_safe=False,
 )

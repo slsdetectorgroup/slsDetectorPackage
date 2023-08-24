@@ -15,8 +15,9 @@ if dt === detectorType.EIGER:
 """
 
 
-import _slsdet
-for name, cls in _slsdet.slsDetectorDefs.__dict__.items():
+from . import _slsdet
+import slsdet._slsdet
+for name, cls in slsdet._slsdet.slsDetectorDefs.__dict__.items():
     if isinstance(cls, type):
         exec(f'{name} = {cls.__module__}.{cls.__qualname__}')
 

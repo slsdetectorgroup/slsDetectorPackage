@@ -294,10 +294,13 @@ void Listener::ThreadExecution() {
 
     // valid image, set size and push into fifo
     memImage->size = rc;
-    LOG(logINFOGREEN) << index << ": Listener: rc = " << rc;
-    if (rc == DUMMY_PACKET_VALUE) {
-        LOG(logINFORED) << index << ": Listener pushing dummy packet value!!";
-        exit(-1);
+    if (rc != 160000) {
+        LOG(logINFORED) << index << ": Listener: weird rc = " << rc;
+        if (rc == DUMMY_PACKET_VALUE) {
+            LOG(logINFORED)
+                << index << ": Listener pushing dummy packet value!!";
+            exit(-1);
+        }
     }
     fifo->PushAddress(buffer);
 

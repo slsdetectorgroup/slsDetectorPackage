@@ -257,13 +257,13 @@ std::pair<uint16_t, uint16_t> Listener::GetHardCodedPosition() {
 }
 
 void Listener::ThreadExecution() {
-    {
+    /*{
         struct sysinfo info;
         sysinfo(&info);
         LOG(logINFORED) << "Listener " << index
                         << ": free memory: " << (info.freeram / (1024 * 1024))
                         << " MB";
-    }
+    }*/
     char *buffer;
     fifo->GetNewAddress(buffer);
     LOG(logDEBUG5) << "Listener " << index << ", pop 0x" << std::hex

@@ -59,7 +59,7 @@ struct image_structure {
 // to differentiate between gotthard and short gotthard
 #define GOTTHARD_PACKET_SIZE (1286)
 
-#define DUMMY_PACKET_VALUE (0xFFFFFFFF)
+#define DUMMY_PACKET_VALUE (0x0FFFFFFF)
 
 #define LISTENER_PRIORITY  (90)
 #define PROCESSOR_PRIORITY (70)

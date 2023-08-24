@@ -18,9 +18,8 @@
 #include <cerrno>
 #include <cstring>
 #include <iostream>
-#include <unistd.h>
 #include <sys/sysinfo.h>
-
+#include <unistd.h>
 
 namespace sls {
 
@@ -261,7 +260,9 @@ void Listener::ThreadExecution() {
     {
         struct sysinfo info;
         sysinfo(&info);
-        LOG(logINFORED) << "Listener " << index << ": free memory: " << (info.freeram / (1024 * 1024)) << " MB";
+        LOG(logINFORED) << "Listener " << index
+                        << ": free memory: " << (info.freeram / (1024 * 1024))
+                        << " MB";
     }
     char *buffer;
     fifo->GetNewAddress(buffer);
@@ -270,9 +271,15 @@ void Listener::ThreadExecution() {
     auto *memImage = reinterpret_cast<image_structure *>(buffer);
 
     // udpsocket doesnt exist
-    if ((*status == TRANSMITTING || !udpSocketAlive) && !carryOverFlag) {
-        StopListening(buffer, memImage->size);
-        return;
+    if (*status == TRANSMITTING || !udpSocketAlive) {
+        LOG(logINFORED)
+            << index
+            << ": Listener socket not alive or transmitting. carry flag: "
+            << carryOverFlag;
+        if (!carryOverFlag) {
+            StopListening(buffer, memImage->size);
+            return;
+        }
     }
 
     // reset header and size and get data
@@ -287,6 +294,11 @@ void Listener::ThreadExecution() {
 
     // valid image, set size and push into fifo
     memImage->size = rc;
+    LOG(logINFOGREEN) << index << ": Listener: rc = " << rc;
+    if (rc == DUMMY_PACKET_VALUE) {
+        LOG(logINFORED) << index << ": Listener pushing dummy packet value!!";
+        exit(-1);
+    }
     fifo->PushAddress(buffer);
 
     // Statistics
@@ -366,9 +378,14 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header &dstHeader,
     while (numpackets < pperFrame) {
         // listen to new packet
         if (!udpSocketAlive || !udpSocket->ReceivePacket(&listeningPacket[0])) {
+            LOG(logINFORED)
+                << index
+                << ": Listener socket not alive or packet size does not match";
             // end of acquisition
-            if (numpackets == 0)
+            if (numpackets == 0) {
+                LOG(logINFORED) << index << ": Listener: numpackets also 0.";
                 return 0;
+            }
             return HandleFuturePacket(true, numpackets, fnum, isHeaderEmpty,
                                       imageSize, dstHeader);
         }

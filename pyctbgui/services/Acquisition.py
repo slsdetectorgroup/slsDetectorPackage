@@ -388,7 +388,7 @@ class AcquisitionTab(QtWidgets.QWidget):
         if self.outputFileNamePrefix == '':
             self.outputFileNamePrefix = 'run'
 
-        acqIndex = self.view.spinBoxAcquisitionIndex.value()
+        acqIndex = self.view.spinBoxAcquisitionIndex.value() - 1
         if isWaveform:
             path = self.outputDir / f'{self.outputFileNamePrefix}_f{frameIndex}_{acqIndex}.npz'
             np.savez(str(path), **data)

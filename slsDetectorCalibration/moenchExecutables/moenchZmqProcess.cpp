@@ -720,6 +720,22 @@ int main(int argc, char *argv[]) {
                     ymin >> ymax;
             }
 
+            if (addJsonHeader.find("xMin") != addJsonHeader.end()) {
+                istringstream(addJsonHeader.at("xMin")) >> xmin;
+            }
+
+            if (addJsonHeader.find("yMin") != addJsonHeader.end()) {
+                istringstream(addJsonHeader.at("yMin")) >> ymin;
+            }
+
+            if (addJsonHeader.find("xMax") != addJsonHeader.end()) {
+                istringstream(addJsonHeader.at("xMax")) >> xmax;
+            }
+
+            if (addJsonHeader.find("yMax") != addJsonHeader.end()) {
+                istringstream(addJsonHeader.at("yMax")) >> ymax;
+            }
+
             cprintf(MAGENTA, "%d %d %d %d\n", xmin, xmax, ymin, ymax);
             mt->setROI(xmin, xmax, ymin, ymax);
             if (addJsonHeader.find("dynamicRange") != addJsonHeader.end()) {

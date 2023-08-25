@@ -357,6 +357,16 @@ class slsInterpolation {
             }
         }
 
+	/* cout << "(((" << totquad << "\t" << corner << endl; */
+	/* for (int iy=0; iy<3; iy++) { */
+	/*   for (int ix=0; ix<3; ix++)  */
+	/*     cout << cl[ix+iy*3] <<"\t"; */
+	/*   cout << endl; */
+
+	/* } */
+
+	/* cout << ")))" <<  endl; */
+
         return corner;
     }
 
@@ -370,6 +380,10 @@ class slsInterpolation {
             etax = r / totquad;
             etay = t / totquad;
         }
+	/* cout << "************" << endl; */
+	/* cout << sDum[0][0]<< "\t"<<sDum[0][1] << endl << sDum[1][0]<< "\t"<<sDum[1][1] << endl;  */
+	/* cout << "***************" <<endl; */
+	/* cout << etax << " " << etay << endl; */
         return 0;
     }
 

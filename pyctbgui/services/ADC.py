@@ -9,7 +9,7 @@ from pyqtgraph import LegendItem
 from pyctbgui.utils import decoder
 from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
 from pyctbgui.utils.defines import Defines
-from pyctbgui.utils.pixelmap import moench04_analog
+import pyctbgui.utils.pixelmap as pm
 
 
 class AdcTab(QtWidgets.QWidget):
@@ -111,23 +111,38 @@ class AdcTab(QtWidgets.QWidget):
         for i, adc_name in enumerate(self.det.getAdcNames()):
             getattr(self.view, f"labelADC{i}").setText(adc_name)
 
-    def processWaveformData(self, data, aSamples):
+    def processWaveformData(self, data: bytes, aSamples: int) -> dict[str, np.ndarray]:
         """
-        process raw analog waveform data and return dictionary having keys the names of the plots
+        view function
+        plots processed waveform data
+        @param data: raw waveform data
+        @param aSamples: analog samples
+        @return: waveform dict returned to handle it for saving the output
         """
+
         waveforms = {}
-        analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count=self.mainWindow.nADCEnabled * aSamples))
+        analog_array = self._processWaveformData(data, aSamples, self.mainWindow.nADCEnabled)
         for i in range(Defines.adc.count):
             checkBox = getattr(self.view, f"checkBoxADC{i}Plot")
             if checkBox.isChecked():
-                waveform = np.zeros(aSamples)
-                for iSample in range(aSamples):
-                    # all adc for 1 sample together
-                    waveform[iSample] = analog_array[iSample * self.mainWindow.nADCEnabled + i]
+                waveform = analog_array[:, i]
                 self.mainWindow.analogPlots[i].setData(waveform)
                 plotName = getattr(self.view, f"labelADC{i}").text()
                 waveforms[plotName] = waveform
         return waveforms
+
+    @staticmethod
+    def _processWaveformData(data: bytes, aSamples: int, nADCEnabled: int) -> np.ndarray:
+        """
+        model function
+        processes raw waveform data
+        @param data: raw waveform data
+        @param aSamples: analog samples
+        @param nADCEnabled: number of enabled ADCs
+        @return: processed waveform data
+        """
+        analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count=nADCEnabled * aSamples))
+        return analog_array.reshape(-1, nADCEnabled)
 
     def processImageData(self, data, aSamples):
         """
@@ -138,17 +153,15 @@ class AdcTab(QtWidgets.QWidget):
         # get zoom state
         viewBox = self.mainWindow.plotAnalogImage.getView()
         state = viewBox.getState()
-        analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count=self.mainWindow.nADCEnabled * aSamples))
         try:
-            self.mainWindow.analog_frame = decoder.decode(analog_array, moench04_analog())
+            self.mainWindow.analog_frame = self._processImageData(data, aSamples, self.mainWindow.nADCEnabled)
             self.plotTab.ignoreHistogramSignal = True
             self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame.T)
-
         except Exception:
             self.mainWindow.statusbar.setStyleSheet("color:red")
             message = f'Warning: Invalid size for Analog Image. Expected' \
                       f' {self.mainWindow.nAnalogRows * self.mainWindow.nAnalogCols} ' \
-                      f'size, got {analog_array.size} instead.'
+                      f'size, got {self.mainWindow.analog_frame.size} instead.'
             self.updateCurrentFrame('Invalid Image')
 
             self.mainWindow.statusbar.showMessage(message)
@@ -162,6 +175,11 @@ class AdcTab(QtWidgets.QWidget):
         else:
             viewBox.setState(state)
         return self.mainWindow.analog_frame.T
+
+    @staticmethod
+    def _processImageData(data, aSamples, nADCEnabled):
+        analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count=nADCEnabled * aSamples))
+        return decoder.decode(analog_array, pm.moench04_analog())
 
     def getADCEnableReg(self):
         retval = self.det.adcenable

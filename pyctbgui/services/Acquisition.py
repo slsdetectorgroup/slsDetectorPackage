@@ -639,10 +639,10 @@ class AcquisitionTab(QtWidgets.QWidget):
                     waveforms = self.adcTab.processWaveformData(data, self.asamples)
                 # digital
                 if self.mainWindow.romode.value in [1, 2, 4]:
-                    waveforms = self.signalsTab.processWafeformData(data, self.asamples, self.dsamples)
+                    waveforms = self.signalsTab.processWaveformData(data, self.asamples, self.dsamples)
                 # transceiver
                 if self.mainWindow.romode.value in [3, 4]:
-                    waveforms = self.transceiverTab.processWaveformData(data, self.dsamples, self.tsamples)
+                    waveforms = self.transceiverTab.processWaveformData(data, self.dsamples)
                 self.saveNumpyFile(waveforms, jsonHeader['frameIndex'], isWaveform=True)
 
             # image

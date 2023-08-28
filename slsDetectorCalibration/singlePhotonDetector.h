@@ -533,7 +533,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
 		      (clusters + nph)->print();
 		      cout << max << " " <<  val[iy * nx + ix] << endl;
 		    }
-                    good = 1;
+                    //good = 1;
                     if (eMin > 0 && tot < eMin)
                         good = 0;
                     if (eMax > 0 && tot > eMax)
@@ -542,7 +542,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
                         nph++;
                         image[iy * nx + ix]++;
                     }
-
+		    good=1;
                 } else if (ee == PEDESTAL) {
                     addToPedestal(data, ix, iy, cm);
                 } /*else {

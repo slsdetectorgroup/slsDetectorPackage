@@ -2576,8 +2576,8 @@ std::string CmdProxy::Samples(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_samples]\n\t[CTB] Number of samples (both analog and "
-              "digitial) expected.\n"
+        os << "[n_samples]\n\t[CTB] Number of samples (analog, digitial and "
+              "transceiver) expected.\n"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -2587,11 +2587,15 @@ std::string CmdProxy::Samples(int action) {
         // get also digital samples for ctb and compare with analog
         if (det->getDetectorType().squash() == defs::CHIPTESTBOARD) {
             auto d = det->getNumberOfDigitalSamples(std::vector<int>{det_id});
+            auto t =
+                det->getNumberOfTransceiverSamples(std::vector<int>{det_id});
             int as = a.squash(-1);
             int ds = d.squash(-1);
-            if (as == -1 || ds == -1 || as != ds) { // check if a == d?
+            int ts = t.squash(-1);
+            if (as == -1 || ds == -1 || ts == -1 || as != ds ||
+                as != ts) { // check if a == d?
                 throw RuntimeError(
-                    "Different samples. Use asamples or dsamples.");
+                    "Different samples. Use asamples, dsamples or tsamples.");
             }
         }
         os << OutString(a) << '\n';
@@ -2605,6 +2609,8 @@ std::string CmdProxy::Samples(int action) {
         if (det->getDetectorType().squash() == defs::CHIPTESTBOARD) {
             det->setNumberOfDigitalSamples(StringTo<int>(args[0]),
                                            std::vector<int>{det_id});
+            det->setNumberOfTransceiverSamples(StringTo<int>(args[0]),
+                                               std::vector<int>{det_id});
         }
         os << args.front() << '\n';
     } else {
@@ -2986,6 +2992,8 @@ std::string CmdProxy::PatternWaitTime(int action) {
     return os.str();
 }
 
+/* Advanced */
+
 std::string CmdProxy::AdditionalJsonHeader(int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -3060,8 +3068,6 @@ std::string CmdProxy::JsonParameter(int action) {
     }
     return os.str();
 }
-
-/* Advanced */
 
 std::string CmdProxy::ProgramFpga(int action) {
     std::ostringstream os;

@@ -18,7 +18,6 @@ CTBGUI=0
 MANUALS=0
 MANUALS_ONLY_RST=0
 MOENCHZMQ=0
-ZMQ_HINT_DIR=""
 
 
 CLEAN=0
@@ -27,7 +26,7 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [-b] [-c] [-d <HDF5 directory>] [e] [g] [-h] [i] [-j <Number of threads>] [-k <CMake command>] [-l <Install directory>] [m] [n] [-p] [-q <Zmq hint directory>] [r] [s] [t] [u] [z]  
+Usage: $0 [-b] [-c] [-d <HDF5 directory>] [e] [g] [-h] [i] [-j <Number of threads>] [-k <CMake command>] [-l <Install directory>] [m] [n] [-p] [r] [s] [t] [u] [z]  
  -[no option]: only make
  -b: Builds/Rebuilds CMake files normal mode
  -c: Clean
@@ -42,7 +41,6 @@ Usage: $0 [-b] [-c] [-d <HDF5 directory>] [e] [g] [-h] [i] [-j <Number of thread
  -m: Manuals
  -n: Manuals without compiling doxygen (only rst)
  -p: Builds/Rebuilds Python API
- -q: Zmq hint directory
  -r: Build/Rebuilds only receiver
  -s: Simulator
  -t: Build/Rebuilds only text client
@@ -140,10 +138,6 @@ while getopts ":bcd:eghij:k:l:mnpq:rstuz" opt ; do
 		PYTHON=1
 		REBUILD=1
 		;;   
-	q) 
-		echo "Zmq hint directory: $OPTARG" 
-		ZMQ_HINT_DIR=$OPTARG
-		;;
 	r) 
 		echo "Compiling Options: Receiver" 
 		RECEIVER=1
@@ -258,13 +252,6 @@ fi
 if [ $TESTS -eq 1 ]; then
 	CMAKE_POST+=" -DSLS_USE_TESTS=ON -DSLS_USE_INTEGRATION_TESTS=ON"
 	echo "Tests Option enabled"
-fi 
-
-#zmq hint dir
-if [ -n "$ZMQ_HINT_DIR" ]; then
-	CMAKE_POST+=" -DZeroMQ_HINT="$ZMQ_HINT_DIR
-	CMAKE_POST+=" -DZeroMQ_DIR="
-#	echo "Enabling Zmq Hint Directory: $ZMQ_HINT_DIR"
 fi 
 
 #hdf5 rebuild

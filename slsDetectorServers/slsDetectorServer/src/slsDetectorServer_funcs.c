@@ -478,6 +478,14 @@ void function_table() {
     flist[F_GET_BIT] = &get_bit;
     flist[F_SET_BIT] = &set_bit;
     flist[F_CLEAR_BIT] = &clear_bit;
+    flist[F_GET_NUM_TRANSCEIVER_SAMPLES] = &get_num_transceiver_samples;
+    flist[F_SET_NUM_TRANSCEIVER_SAMPLES] = &set_num_transceiver_samples;
+    flist[F_GET_TRANSCEIVER_ENABLE_MASK] = &get_transceiver_enable;
+    flist[F_SET_TRANSCEIVER_ENABLE_MASK] = &set_transceiver_enable;
+    flist[F_GET_ROW] = &get_row;
+    flist[F_SET_ROW] = &set_row;
+    flist[F_GET_COLUMN] = &get_column;
+    flist[F_SET_COLUMN] = &set_column;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -1041,7 +1049,7 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
     case VCOM_ADC2:
         serverDacIndex = G2_VCOM_ADC2;
         break;
-#elif defined(JUNGFRAUD) || defined(MOENCHD)
+#elif JUNGFRAUD
     case HIGH_VOLTAGE:
         break;
     case VB_COMP:
@@ -1067,6 +1075,33 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
         break;
     case VREF_COMP:
         serverDacIndex = J_VREF_COMP;
+        break;
+#elif MOENCHD
+    case HIGH_VOLTAGE:
+        break;
+    case VBP_COLBUF:
+        serverDacIndex = MO_VBP_COLBUF;
+        break;
+    case VIPRE:
+        serverDacIndex = MO_VIPRE;
+        break;
+    case VIN_CM:
+        serverDacIndex = MO_VIN_CM;
+        break;
+    case VB_SDA:
+        serverDacIndex = MO_VB_SDA;
+        break;
+    case VCASC_SFP:
+        serverDacIndex = MO_VCASC_SFP;
+        break;
+    case VOUT_CM:
+        serverDacIndex = MO_VOUT_CM;
+        break;
+    case VIPRE_CDS:
+        serverDacIndex = MO_VIPRE_CDS;
+        break;
+    case IBIAS_SFP:
+        serverDacIndex = MO_IBIAS_SFP;
         break;
 #endif
 
@@ -1876,13 +1911,24 @@ int acquire(int blocking, int file_des) {
                     getNumAnalogSamples());
             LOG(logERROR, (mess));
         } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                    getReadoutMode() == DIGITAL_ONLY) &&
+                    getReadoutMode() == DIGITAL_ONLY ||
+                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
                    (getNumDigitalSamples() <= 0)) {
             ret = FAIL;
             sprintf(mess,
                     "Could not start acquisition. Invalid number of digital "
                     "samples: %d.\n",
                     getNumDigitalSamples());
+            LOG(logERROR, (mess));
+        } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
+                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                   (getNumTransceiverSamples() <= 0)) {
+            ret = FAIL;
+            sprintf(
+                mess,
+                "Could not start acquisition. Invalid number of transceiver "
+                "samples: %d.\n",
+                getNumTransceiverSamples());
             LOG(logERROR, (mess));
         } else
 #endif
@@ -4275,28 +4321,19 @@ int set_adc_enable_mask(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (arg == 0u) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Not allowed to set adc mask of 0 due to data readout. \n");
+        ret = setADCEnableMask(arg);
+        if (ret == FAIL) {
+            sprintf(mess, "Could not set 1Gb ADC Enable mask to 0x%x.\n", arg);
             LOG(logERROR, (mess));
         } else {
-            ret = setADCEnableMask(arg);
-            if (ret == FAIL) {
-                sprintf(mess, "Could not set 1Gb ADC Enable mask to 0x%x.\n",
-                        arg);
-                LOG(logERROR, (mess));
-            } else {
-                uint32_t retval = getADCEnableMask();
-                if (arg != retval) {
-                    ret = FAIL;
-                    sprintf(
-                        mess,
+            uint32_t retval = getADCEnableMask();
+            if (arg != retval) {
+                ret = FAIL;
+                sprintf(mess,
                         "Could not set 1Gb ADC Enable mask. Set 0x%x, but read "
                         "0x%x\n",
                         arg, retval);
-                    LOG(logERROR, (mess));
-                }
+                LOG(logERROR, (mess));
             }
         }
     }
@@ -4335,22 +4372,15 @@ int set_adc_enable_mask_10g(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (arg == 0u) {
+        setADCEnableMask_10G(arg);
+        uint32_t retval = getADCEnableMask_10G();
+        if (arg != retval) {
             ret = FAIL;
             sprintf(mess,
-                    "Not allowed to set adc mask of 0 due to data readout \n");
+                    "Could not set 10Gb ADC Enable mask. Set 0x%x, but "
+                    "read 0x%x\n",
+                    arg, retval);
             LOG(logERROR, (mess));
-        } else {
-            setADCEnableMask_10G(arg);
-            uint32_t retval = getADCEnableMask_10G();
-            if (arg != retval) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not set 10Gb ADC Enable mask. Set 0x%x, but "
-                        "read 0x%x\n",
-                        arg, retval);
-                LOG(logERROR, (mess));
-            }
         }
     }
 #endif
@@ -5662,6 +5692,8 @@ int set_readout_mode(int file_des) {
         case ANALOG_ONLY:
         case DIGITAL_ONLY:
         case ANALOG_AND_DIGITAL:
+        case TRANSCEIVER_ONLY:
+        case DIGITAL_AND_TRANSCEIVER:
             break;
         default:
             modeNotImplemented("Readout mode", (int)arg);
@@ -5946,8 +5978,8 @@ int get_clock_phase(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-    LOG(logINFOBLUE, ("Getting clock (%d) phase %s \n", args[0],
-                      (args[1] == 0 ? "" : "in degrees")));
+    LOG(logDEBUG1, ("Getting clock (%d) phase %s \n", args[0],
+                    (args[1] == 0 ? "" : "in degrees")));
 
 #if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&    \
     !defined(GOTTHARD2D) && !defined(MYTHEN3D)
@@ -5972,7 +6004,7 @@ int get_clock_phase(int file_des) {
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
         if (ind < NUM_CLOCKS) {
             c = (enum CLKINDEX)ind;
-            LOG(logINFOBLUE, ("NUMclocks:%d c:%d\n", NUM_CLOCKS, c));
+            LOG(logDEBUG1, ("NUMclocks:%d c:%d\n", NUM_CLOCKS, c));
             break;
         }
 #endif
@@ -7387,6 +7419,26 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
+        // transceiver samples
+#ifdef CHIPTESTBOARDD
+    i32 = getNumTransceiverSamples();
+#else
+    i32 = 0;
+#endif
+    n += sendData(file_des, &i32, sizeof(i32), INT32);
+    if (n < 0)
+        return printSocketReadError();
+
+        // transceiver mask
+#if defined(CHIPTESTBOARDD)
+    u32 = getTransceiverEnableMask();
+#else
+    u32 = 0;
+#endif
+    n += sendData(file_des, &u32, sizeof(u32), INT32);
+    if (n < 0)
+        return printSocketReadError();
+
     LOG(logINFO, ("Sent %d bytes for receiver parameters\n", n));
 
     return OK;
@@ -8210,7 +8262,7 @@ int get_bursts_left(int file_des) {
 int start_readout(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-#ifndef MYTHEN3D
+#if !defined(MYTHEN3D) && !defined(CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     if (Server_VerifyLock() == OK) {
@@ -8241,6 +8293,25 @@ int start_readout(int file_des) {
 #endif
                 LOG(logERROR, (mess));
             }
+// only 1g real ctb needs to read from fifo
+// to avoid blocking, in another thread
+#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
+            if (!enableTenGigabitEthernet(-1)) {
+                ret = validateUDPSocket();
+                if (ret == FAIL) {
+                    strcpy(mess, "UDP socket not created!\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    if (pthread_create(&pthread_tid_ctb_1g, NULL,
+                                       &start_reading_and_sending_udp_frames,
+                                       NULL)) {
+                        ret = FAIL;
+                        strcpy(mess, "Could not start read frames thread!\n");
+                        LOG(logERROR, (mess));
+                    }
+                }
+            }
+#endif
         }
     }
 #endif
@@ -9009,7 +9080,7 @@ int set_adc_pipeline(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting adc pipeline : %u\n", arg));
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
 
@@ -9031,7 +9102,7 @@ int get_adc_pipeline(int file_des) {
 
     LOG(logDEBUG1, ("Getting adc pipeline\n"));
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // get only
@@ -10401,34 +10472,262 @@ int get_bit(int file_des) {
     int nBit = (int)args[1];
     LOG(logDEBUG1, ("Getting bit %d of reg 0x%x\n", nBit, addr));
 
-    // only set
-    if (Server_VerifyLock() == OK) {
-        if (nBit < 0 || nBit > 31) {
-            ret = FAIL;
-            sprintf(
-                mess,
+    if (nBit < 0 || nBit > 31) {
+        ret = FAIL;
+        sprintf(mess,
                 "Could not get bit. Bit nr %d out of range. Must be  0-31\n",
                 nBit);
-            LOG(logERROR, (mess));
-        } else {
+        LOG(logERROR, (mess));
+    } else {
 #ifdef EIGERD
-            ret = getBit(addr, nBit, &retval);
-            LOG(logDEBUG1, ("retval: %d\n", retval));
-            if (ret == FAIL) {
+        ret = getBit(addr, nBit, &retval);
+        LOG(logDEBUG1, ("retval: %d\n", retval));
+        if (ret == FAIL) {
+            sprintf(mess, "Could not get bit %d.\n", nBit);
+            LOG(logERROR, (mess));
+        }
 #else
 #ifdef GOTTHARDD
-            retval = readRegister16And32(addr);
+        uint32_t regval = readRegister16And32(addr);
 #else
-            retval = readRegister(addr);
+        uint32_t regval = readRegister(addr);
 #endif
-            LOG(logDEBUG1, ("retval: %d\n", retval));
-            if (retval & (1 << nBit)) {
-                ret = FAIL;
+        retval = (regval & (1 << nBit)) >> nBit;
+        LOG(logDEBUG1, ("regval: 0x%x bit value:0%d\n", regval, retval));
 #endif
-                sprintf(mess, "Could not get bit %d.\n", nBit);
+    }
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int get_num_transceiver_samples(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+#if !defined(CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    // get only
+    retval = getNumTransceiverSamples();
+    LOG(logDEBUG1, ("retval num transceiver samples %d\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_num_transceiver_samples(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting number of transceiver samples %d\n", arg));
+
+#if !defined(CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        ret = setNumTransceiverSamples(arg);
+        if (ret == FAIL) {
+            sprintf(
+                mess,
+                "Could not set number of transceiver samples to %d. Could not "
+                "allocate RAM\n",
+                arg);
+            LOG(logERROR, (mess));
+        } else {
+            int retval = getNumTransceiverSamples();
+            LOG(logDEBUG1, ("retval num transceiver samples %d\n", retval));
+            validate(&ret, mess, arg, retval,
+                     "set number of transceiver samples", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int set_transceiver_enable(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint32_t arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting Transceiver Enable Mask to %u\n", arg));
+
+#if (!defined(CHIPTESTBOARDD))
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg > MAX_TRANSCEIVER_MASK) {
+            ret = FAIL;
+            sprintf(mess, "Invalid Transceiver Mask. Max: 0x%x\n",
+                    MAX_TRANSCEIVER_MASK);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setTransceiverEnableMask(arg);
+            if (ret == FAIL) {
+                sprintf(mess,
+                        "Could not set Transceiver Enable mask to 0x%x.\n",
+                        arg);
                 LOG(logERROR, (mess));
+            } else {
+                uint32_t retval = getTransceiverEnableMask();
+                if (arg != retval) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Could not set Transceiver Enable mask. Set 0x%x, "
+                            "but read "
+                            "0x%x\n",
+                            arg, retval);
+                    LOG(logERROR, (mess));
+                }
             }
         }
     }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_transceiver_enable(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint32_t retval = -1;
+
+    LOG(logDEBUG1, ("Getting Transceiver Enable Mask \n"));
+
+#if (!defined(CHIPTESTBOARDD))
+    functionNotImplemented();
+#else
+    // get
+    retval = getTransceiverEnableMask();
+    LOG(logDEBUG1, ("Transceiver Enable Mask retval: %u\n", retval));
+#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int get_row(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting row\n"));
+    // get only
+    retval = getRow();
+    LOG(logDEBUG1, ("row retval: %u\n", retval));
+
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_row(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting row: %u\n", arg));
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg < 0) {
+            ret = FAIL;
+            sprintf(
+                mess,
+                "Could not set row. Invalid value %d. Must be greater than 0\n",
+                arg);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setRow(arg);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set row\n");
+                LOG(logERROR, (mess));
+            } else {
+                int retval = getRow();
+                LOG(logDEBUG1, ("gain retval: %u\n", retval));
+                validate(&ret, mess, arg, retval, "set row", DEC);
+            }
+        }
+    }
+
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_column(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting column\n"));
+    // get only
+    retval = getColumn();
+    LOG(logDEBUG1, ("column retval: %u\n", retval));
+
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_column(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting column: %u\n", arg));
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg < 0) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set column. Invalid value %d. Must be greater "
+                    "than 0\n",
+                    arg);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setColumn(arg);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set column\n");
+                LOG(logERROR, (mess));
+            } else {
+                int retval = getColumn();
+                LOG(logDEBUG1, ("gain retval: %u\n", retval));
+                validate(&ret, mess, arg, retval, "set column", DEC);
+            }
+        }
+    }
+
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int getRow() {
+#if defined(JUNGFRAUD) || defined(MOENCHD)
+    // inner (top) position (0, 1) might be incremented if 2 interfaces
+    return getDetectorPosition()[Y + 2];
+#endif
+    return getDetectorPosition()[Y];
+}
+
+int setRow(int value) {
+    int pos[2] = {0, 0};
+    memcpy(pos, getDetectorPosition(), sizeof(pos));
+    pos[Y] = value;
+    return setDetectorPosition(pos);
+}
+
+int getColumn() {
+#if defined(JUNGFRAUD) || defined(MOENCHD)
+    // inner (top) position (0, 1) might be incremented if 2 interfaces
+    return getDetectorPosition()[X + 2];
+#endif
+    return getDetectorPosition()[X];
+}
+
+int setColumn(int value) {
+    int pos[2] = {0, 0};
+    memcpy(pos, getDetectorPosition(), sizeof(pos));
+    pos[X] = value;
+    return setDetectorPosition(pos);
 }

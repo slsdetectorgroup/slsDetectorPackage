@@ -206,6 +206,8 @@ int setADCEnableMask(uint32_t mask);
 uint32_t getADCEnableMask();
 void setADCEnableMask_10G(uint32_t mask);
 uint32_t getADCEnableMask_10G();
+int setTransceiverEnableMask(uint32_t mask);
+uint32_t getTransceiverEnableMask();
 void setADCInvertRegister(uint32_t val);
 uint32_t getADCInvertRegister();
 #endif
@@ -287,6 +289,8 @@ int getNumAnalogSamples();
 #ifdef CHIPTESTBOARDD
 int setNumDigitalSamples(int val);
 int getNumDigitalSamples();
+int setNumTransceiverSamples(int val);
+int getNumTransceiverSamples();
 #endif
 #ifdef MYTHEN3D
 void setCounterMask(uint32_t arg);
@@ -504,9 +508,6 @@ int getFrequency(enum CLKINDEX ind);
 void configureSyncFrequency(enum CLKINDEX ind);
 void setADCPipeline(int val);
 int getADCPipeline();
-#endif
-
-#ifdef CHIPTESTBOARDD
 void setDBITPipeline(int val);
 int getDBITPipeline();
 int setLEDEnable(int enable);
@@ -515,6 +516,10 @@ void setDigitalIODelay(uint64_t pinMask, int delay);
 
 // jungfrau/moench specific - powerchip, autocompdisable, clockdiv, asictimer,
 // clock, pll, flashing firmware
+#if defined(MOENCHED)
+void setADCPipeline(int val);
+int getADCPipeline();
+#endif
 #if defined(JUNGFRAUD) || defined(MOENCHD)
 int setReadNRows(int value);
 int getReadNRows();
@@ -677,7 +682,7 @@ int softwareTrigger();
 #if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)
 int softwareTrigger(int block);
 #endif
-#if defined(EIGERD) || defined(MYTHEN3D)
+#if defined(EIGERD) || defined(MYTHEN3D) || defined(CHIPTESTBOARDD)
 int startReadOut();
 #endif
 enum runStatus getRunStatus();
@@ -690,7 +695,7 @@ void waitForAcquisitionEnd();
 int validateUDPSocket();
 void readandSendUDPFrames();
 void unsetFifoReadStrobes();
-void readSample(int ns);
+int readSample(int ns);
 uint32_t checkDataInFifo();
 int checkFifoForEndOfAcquisition();
 int readFrameFromFifo();

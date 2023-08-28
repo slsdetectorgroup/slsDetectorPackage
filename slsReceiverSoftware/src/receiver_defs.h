@@ -19,14 +19,14 @@ namespace sls {
 // files
 
 // versions
-#define HDF5_WRITER_VERSION   (6.5) // 1 decimal places
-#define BINARY_WRITER_VERSION (7.1) // 1 decimal places
+#define HDF5_WRITER_VERSION   (6.6) // 1 decimal places
+#define BINARY_WRITER_VERSION (7.2) // 1 decimal places
 
 #define MAX_FRAMES_PER_FILE           20000
 #define SHORT_MAX_FRAMES_PER_FILE     100000
 #define EIGER_MAX_FRAMES_PER_FILE     10000
 #define JFRAU_MAX_FRAMES_PER_FILE     10000
-#define MOENCH_MAX_FRAMES_PER_FILE    10000
+#define MOENCH_MAX_FRAMES_PER_FILE    100000
 #define CTB_MAX_FRAMES_PER_FILE       20000
 #define MYTHEN3_MAX_FRAMES_PER_FILE   10000
 #define GOTTHARD2_MAX_FRAMES_PER_FILE 20000

@@ -238,6 +238,16 @@ class Detector {
      * channel list. */
     void setBadChannels(const std::vector<std::vector<int>> list);
 
+    Result<int> getRow(Positions pos = {}) const;
+
+    /** Set it in udp header. Gui uses it to rearrange for complete image */
+    void setRow(const int value, Positions pos = {});
+
+    Result<int> getColumn(Positions pos = {}) const;
+
+    /** Set it in udp header. Gui uses it to rearrange for complete image */
+    void setColumn(const int value, Positions pos = {});
+
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;
     ///@}
 
@@ -1605,12 +1615,6 @@ class Detector {
     /** [CTB]  in MHZ */
     Result<int> getSYNCClock(Positions pos = {}) const;
 
-    /** [CTB] */
-    Result<int> getADCPipeline(Positions pos = {}) const;
-
-    /** [CTB] */
-    void setADCPipeline(int value, Positions pos = {});
-
     /** gets list of voltage enums */
     std::vector<defs::dacIndex> getVoltageList() const;
 
@@ -1647,6 +1651,13 @@ class Detector {
     /** [CTB] If any of a consecutive 4 bits are enabled, the "
         "complete 4 bits are enabled */
     void setTenGigaADCEnableMask(uint32_t mask, Positions pos = {});
+
+    /** [CTB] */
+    Result<uint32_t> getTransceiverEnableMask(Positions pos = {}) const;
+
+    /** [CTB] */
+    void setTransceiverEnableMask(uint32_t mask, Positions pos = {});
+
     ///@}
 
     /** @name CTB Specific */
@@ -1664,9 +1675,16 @@ class Detector {
     void setNumberOfDigitalSamples(int value, Positions pos = {});
 
     /** [CTB] */
+    Result<int> getNumberOfTransceiverSamples(Positions pos = {}) const;
+
+    /** [CTB] */
+    void setNumberOfTransceiverSamples(int value, Positions pos = {});
+
+    /** [CTB] */
     Result<defs::readoutMode> getReadoutMode(Positions pos = {}) const;
 
-    /** [CTB] Options: ANALOG_ONLY (default), DIGITAL_ONLY, ANALOG_AND_DIGITAL
+    /** [CTB] Options: ANALOG_ONLY (default), DIGITAL_ONLY, ANALOG_AND_DIGITAL,
+     * TRANSCEIVER_ONLY, DIGITAL_AND_TRANSCEIVER
      */
     void setReadoutMode(defs::readoutMode value, Positions pos = {});
 
@@ -1934,6 +1952,12 @@ class Detector {
      *    Advanced                                    *
      *                                                *
      * ************************************************/
+
+    /** [CTB][Moench] */
+    Result<int> getADCPipeline(Positions pos = {}) const;
+
+    /** [CTB][Moench] */
+    void setADCPipeline(int value, Positions pos = {});
 
     /**  [Jungfrau][Moench][Gotthard][CTB][Mythen3][Gotthard2]
      * Advanced user Function!

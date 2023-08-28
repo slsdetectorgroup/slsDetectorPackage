@@ -379,6 +379,22 @@ void Detector::setBadChannels(const std::vector<int> list, Positions pos) {
     pimpl->setBadChannels(list, pos);
 }
 
+Result<int> Detector::getRow(Positions pos) const {
+    return pimpl->Parallel(&Module::getRow, pos);
+}
+
+void Detector::setRow(const int value, Positions pos) {
+    pimpl->Parallel(&Module::setRow, pos, value);
+}
+
+Result<int> Detector::getColumn(Positions pos) const {
+    return pimpl->Parallel(&Module::getColumn, pos);
+}
+
+void Detector::setColumn(const int value, Positions pos) {
+    pimpl->Parallel(&Module::setColumn, pos, value);
+}
+
 Result<bool> Detector::isVirtualDetectorServer(Positions pos) const {
     return pimpl->Parallel(&Module::isVirtualDetectorServer, pos);
 }
@@ -702,7 +718,6 @@ std::vector<defs::dacIndex> Detector::getDacList() const {
             defs::VREF_DS,   defs::VCASCN_PB, defs::VCASCP_PB, defs::VOUT_CM,
             defs::VCASC_OUT, defs::VIN_CM,    defs::VREF_COMP, defs::IB_TESTC};
     case defs::JUNGFRAU:
-    case defs::MOENCH:
         return std::vector<defs::dacIndex>{
             defs::VB_COMP,   defs::VDD_PROT, defs::VIN_COM, defs::VREF_PRECH,
             defs::VB_PIXBUF, defs::VB_DS,    defs::VREF_DS, defs::VREF_COMP};
@@ -720,6 +735,10 @@ std::vector<defs::dacIndex> Detector::getDacList() const {
             defs::VCAS,      defs::VRPREAMP, defs::VCAL_N,   defs::VIPRE,
             defs::VISHAPER,  defs::VCAL_P,   defs::VTRIM,    defs::VDCSH,
             defs::VTHRESHOLD};
+    case defs::MOENCH:
+        return std::vector<defs::dacIndex>{
+            defs::VBP_COLBUF, defs::VIPRE,   defs::VIN_CM,    defs::VB_SDA,
+            defs::VCASC_SFP,  defs::VOUT_CM, defs::VIPRE_CDS, defs::IBIAS_SFP};
     case defs::CHIPTESTBOARD:
         for (int i = 0; i != 18; ++i) {
             retval.push_back(static_cast<defs::dacIndex>(i));
@@ -2032,14 +2051,6 @@ Result<int> Detector::getSYNCClock(Positions pos) const {
     return pimpl->Parallel(&Module::getClockFrequency, pos, defs::SYNC_CLOCK);
 }
 
-Result<int> Detector::getADCPipeline(Positions pos) const {
-    return pimpl->Parallel(&Module::getADCPipeline, pos);
-}
-
-void Detector::setADCPipeline(int value, Positions pos) {
-    pimpl->Parallel(&Module::setADCPipeline, pos, value);
-}
-
 std::vector<defs::dacIndex> Detector::getVoltageList() const {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD) {
         throw RuntimeError("Voltage list not implemented for this detector");
@@ -2114,6 +2125,13 @@ void Detector::setTenGigaADCEnableMask(uint32_t mask, Positions pos) {
     pimpl->Parallel(&Module::setTenGigaADCEnableMask, pos, mask);
 }
 
+Result<uint32_t> Detector::getTransceiverEnableMask(Positions pos) const {
+    return pimpl->Parallel(&Module::getTransceiverEnableMask, pos);
+}
+
+void Detector::setTransceiverEnableMask(uint32_t mask, Positions pos) {
+    pimpl->Parallel(&Module::setTransceiverEnableMask, pos, mask);
+}
 // CTB Specific
 
 Result<int> Detector::getNumberOfDigitalSamples(Positions pos) const {
@@ -2124,12 +2142,18 @@ void Detector::setNumberOfDigitalSamples(int value, Positions pos) {
     pimpl->Parallel(&Module::setNumberOfDigitalSamples, pos, value);
 }
 
+Result<int> Detector::getNumberOfTransceiverSamples(Positions pos) const {
+    return pimpl->Parallel(&Module::getNumberOfTransceiverSamples, pos);
+}
+
+void Detector::setNumberOfTransceiverSamples(int value, Positions pos) {
+    pimpl->Parallel(&Module::setNumberOfTransceiverSamples, pos, value);
+}
+
 Result<defs::readoutMode> Detector::getReadoutMode(Positions pos) const {
     return pimpl->Parallel(&Module::getReadoutMode, pos);
 }
 
-/** Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL \n
- * Default: ANALOG_ONLY */
 void Detector::setReadoutMode(defs::readoutMode value, Positions pos) {
     pimpl->Parallel(&Module::setReadoutMode, pos, value);
 }
@@ -2504,6 +2528,8 @@ void Detector::startPattern(Positions pos) {
     pimpl->Parallel(&Module::startPattern, pos);
 }
 
+// Json Header specific
+
 Result<std::map<std::string, std::string>>
 Detector::getAdditionalJsonHeader(Positions pos) const {
     return pimpl->Parallel(&Module::getAdditionalJsonHeader, pos);
@@ -2526,6 +2552,14 @@ void Detector::setAdditionalJsonParameter(const std::string &key,
 }
 
 // Advanced
+
+Result<int> Detector::getADCPipeline(Positions pos) const {
+    return pimpl->Parallel(&Module::getADCPipeline, pos);
+}
+
+void Detector::setADCPipeline(int value, Positions pos) {
+    pimpl->Parallel(&Module::setADCPipeline, pos, value);
+}
 
 void Detector::programFPGA(const std::string &fname,
                            const bool forceDeleteNormalFile, Positions pos) {

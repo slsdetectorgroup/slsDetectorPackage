@@ -1,0 +1,13 @@
+diff --git a/slsSupportLib/CMakeLists.txt b/slsSupportLib/CMakeLists.txt
+index efa8010..e842b3d 100755
+--- a/slsSupportLib/CMakeLists.txt
++++ b/slsSupportLib/CMakeLists.txt
+@@ -46,7 +46,7 @@ if(SLS_DEVEL_HEADERS)
+         include/sls/versionAPI.h
+         include/sls/ZmqSocket.h
+         include/sls/bit_utils.h
+-        include/sls/mdf5.h
++        include/sls/md5.h
+         include/sls/md5_helper.h
+     )
+ endif()

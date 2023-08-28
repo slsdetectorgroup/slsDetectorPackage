@@ -41,6 +41,8 @@ class Implementation : private virtual slsDetectorDefs {
     void setDetectorSize(const xy size);
     int getModulePositionId() const;
     void setModulePositionId(const int id);
+    void setRow(const int value);
+    void setColumn(const int value);
     std::string getDetectorHostname() const;
     void setDetectorHostname(const std::string &c);
     bool getSilentMode() const;
@@ -108,17 +110,17 @@ class Implementation : private virtual slsDetectorDefs {
      *                                                 *
      * ************************************************/
     int getNumberofUDPInterfaces() const;
-    /* [Jungfrau] */
+    /* [Jungfrau][Moench] */
     void setNumberofUDPInterfaces(const int n);
     std::string getEthernetInterface() const;
     void setEthernetInterface(const std::string &c);
     std::string getEthernetInterface2() const;
-    /* [Jungfrau] */
+    /* [Jungfrau][Moench] */
     void setEthernetInterface2(const std::string &c);
     uint32_t getUDPPortNumber() const;
     void setUDPPortNumber(const uint32_t i);
     uint32_t getUDPPortNumber2() const;
-    /* [Eiger][Jungfrau] */
+    /* [Eiger][Jungfrau][Moench] */
     void setUDPPortNumber2(const uint32_t i);
     int getUDPSocketBufferSize() const;
     void setUDPSocketBufferSize(const int s);
@@ -198,11 +200,14 @@ class Implementation : private virtual slsDetectorDefs {
     /* [Eiger] */
     void setSubPeriod(const ns i);
     uint32_t getNumberofAnalogSamples() const;
-    /**[Ctb][Moench] */
+    /**[Ctb] */
     void setNumberofAnalogSamples(const uint32_t i);
     uint32_t getNumberofDigitalSamples() const;
     /**[Ctb] */
     void setNumberofDigitalSamples(const uint32_t i);
+    uint32_t getNumberofTransceiverSamples() const;
+    /**[Ctb] */
+    void setNumberofTransceiverSamples(const uint32_t i);
     uint32_t getCounterMask() const;
     /** [Mythen3] */
     void setCounterMask(const uint32_t i);
@@ -230,7 +235,7 @@ class Implementation : private virtual slsDetectorDefs {
      * detector) */
     void setDetectorDataStream(const portPosition port, const bool enable);
     int getReadNRows() const;
-    /* [Eiger][Jungfrau] */
+    /* [Eiger][Jungfrau][Moench] */
     void setReadNRows(const int value);
     /** [Eiger] */
     void setThresholdEnergy(const int value);
@@ -241,10 +246,10 @@ class Implementation : private virtual slsDetectorDefs {
     /* [Ctb] */
     void setReadoutMode(const readoutMode f);
     uint32_t getADCEnableMask() const;
-    /* [Ctb][Moench] */
+    /* [Ctb] */
     void setADCEnableMask(const uint32_t mask);
     uint32_t getTenGigaADCEnableMask() const;
-    /* [Ctb][Moench] */
+    /* [Ctb] */
     void setTenGigaADCEnableMask(const uint32_t mask);
     std::vector<int> getDbitList() const;
     /* [Ctb] */
@@ -252,6 +257,9 @@ class Implementation : private virtual slsDetectorDefs {
     int getDbitOffset() const;
     /* [Ctb] */
     void setDbitOffset(const int s);
+    uint32_t getTransceiverEnableMask() const;
+    /* [Ctb] */
+    void setTransceiverEnableMask(const uint32_t mask);
 
     /**************************************************
      *                                                *
@@ -304,7 +312,6 @@ class Implementation : private virtual slsDetectorDefs {
     int modulePos{0};
     std::string detHostname;
     bool silentMode{false};
-    frameDiscardPolicy frameDiscardMode{NO_DISCARD};
     bool framePadding{true};
     pid_t parentThreadId;
     pid_t tcpThreadId;

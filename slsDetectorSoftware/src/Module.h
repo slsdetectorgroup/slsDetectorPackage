@@ -134,6 +134,10 @@ class Module : public virtual slsDetectorDefs {
     void setSynchronization(const bool value);
     std::vector<int> getBadChannels() const;
     void setBadChannels(std::vector<int> list);
+    int getRow() const;
+    void setRow(const int value);
+    int getColumn() const;
+    void setColumn(const int value);
 
     bool isVirtualDetectorServer() const;
 
@@ -498,14 +502,16 @@ class Module : public virtual slsDetectorDefs {
      * ************************************************/
     int getNumberOfAnalogSamples() const;
     void setNumberOfAnalogSamples(int value);
-    int getADCPipeline() const;
-    void setADCPipeline(int value);
     uint32_t getADCEnableMask() const;
     void setADCEnableMask(uint32_t mask);
     uint32_t getTenGigaADCEnableMask() const;
     void setTenGigaADCEnableMask(uint32_t mask);
+    uint32_t getTransceiverEnableMask() const;
+    void setTransceiverEnableMask(uint32_t mask);
     int getNumberOfDigitalSamples() const;
     void setNumberOfDigitalSamples(int value);
+    int getNumberOfTransceiverSamples() const;
+    void setNumberOfTransceiverSamples(int value);
     readoutMode getReadoutMode() const;
     void setReadoutMode(const readoutMode mode);
     int getExternalSamplingSource();
@@ -549,7 +555,7 @@ class Module : public virtual slsDetectorDefs {
 
     /**************************************************
      *                                                *
-     *    Moench                                      *
+     *    Json Header specific                        *
      *                                                *
      * ************************************************/
     std::map<std::string, std::string> getAdditionalJsonHeader() const;
@@ -564,6 +570,8 @@ class Module : public virtual slsDetectorDefs {
      *    Advanced                                    *
      *                                                *
      * ************************************************/
+    int getADCPipeline() const;
+    void setADCPipeline(int value);
     void programFPGA(std::vector<char> buffer,
                      const bool forceDeleteNormalFile);
     void resetFPGA();

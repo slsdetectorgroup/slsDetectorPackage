@@ -20,16 +20,27 @@ class qTabDeveloper : public QWidget, private Ui::TabDeveloperObject {
   public slots:
     void Refresh();
 
+  private slots:
+    void setDetectorIndex();
+
   private:
     void SetupWidgetWindow();
     void Initialization();
     void PopulateDetectors();
-    slsDetectorDefs::dacIndex getSLSIndex(slsDetectorDefs::detectorType detType,
-                                          int index);
 
     Detector *det;
     std::vector<qDacWidget *> dacWidgets;
     std::vector<qDacWidget *> adcWidgets;
+
+    const std::vector<slsDetectorDefs::dacIndex> eiger_adcs = {
+        slsDetectorDefs::TEMPERATURE_FPGA,
+        slsDetectorDefs::TEMPERATURE_FPGAEXT,
+        slsDetectorDefs::TEMPERATURE_10GE,
+        slsDetectorDefs::TEMPERATURE_DCDC,
+        slsDetectorDefs::TEMPERATURE_SODL,
+        slsDetectorDefs::TEMPERATURE_SODR,
+        slsDetectorDefs::TEMPERATURE_FPGA2,
+        slsDetectorDefs::TEMPERATURE_FPGA3};
 };
 
 } // namespace sls

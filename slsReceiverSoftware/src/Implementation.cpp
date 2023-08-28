@@ -186,7 +186,6 @@ void Implementation::SetupListener(int i) {
     listener[i]->SetActivate(activated);
     listener[i]->SetNoRoi(portRois[i].noRoi());
     listener[i]->SetDetectorDatastream(detectorDataStream[i]);
-    listener[i]->SetFrameDiscardPolicy(frameDiscardMode);
     listener[i]->SetSilentMode(silentMode);
 }
 
@@ -284,6 +283,20 @@ void Implementation::setModulePositionId(const int id) {
     }
 }
 
+void Implementation::setRow(const int value) {
+    for (unsigned int i = 0; i < listener.size(); ++i) {
+        int col = listener[i]->GetHardCodedPosition().second;
+        listener[i]->SetHardCodedPosition(value, col);
+    }
+}
+
+void Implementation::setColumn(const int value) {
+    for (unsigned int i = 0; i < listener.size(); ++i) {
+        int row = listener[i]->GetHardCodedPosition().first;
+        listener[i]->SetHardCodedPosition(row, value);
+    }
+}
+
 std::string Implementation::getDetectorHostname() const { return detHostname; }
 
 void Implementation::setDetectorHostname(const std::string &c) {
@@ -313,14 +326,13 @@ void Implementation::setFifoDepth(const uint32_t i) {
 
 slsDetectorDefs::frameDiscardPolicy
 Implementation::getFrameDiscardPolicy() const {
-    return frameDiscardMode;
+    return generalData->frameDiscardMode;
 }
 
 void Implementation::setFrameDiscardPolicy(const frameDiscardPolicy i) {
-    frameDiscardMode = i;
-    for (const auto &it : listener)
-        it->SetFrameDiscardPolicy(frameDiscardMode);
-    LOG(logINFO) << "Frame Discard Policy: " << ToString(frameDiscardMode);
+    generalData->frameDiscardMode = i;
+    LOG(logINFO) << "Frame Discard Policy: "
+                 << ToString(generalData->frameDiscardMode);
 }
 
 bool Implementation::getFramePaddingEnable() const { return framePadding; }
@@ -917,7 +929,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.nPixels =
                 xy(generalData->nPixelsX, generalData->nPixelsY);
             masterAttributes.maxFramesPerFile = generalData->framesPerFile;
-            masterAttributes.frameDiscardMode = frameDiscardMode;
+            masterAttributes.frameDiscardMode = generalData->frameDiscardMode;
             masterAttributes.framePadding = framePadding;
             masterAttributes.scanParams = scanParams;
             masterAttributes.totalFrames = numberOfTotalFrames;
@@ -946,7 +958,8 @@ void Implementation::StartMasterWriter() {
             masterAttributes.analogSamples = generalData->nAnalogSamples;
             masterAttributes.digital =
                 (generalData->readoutType == DIGITAL_ONLY ||
-                 generalData->readoutType == ANALOG_AND_DIGITAL)
+                 generalData->readoutType == ANALOG_AND_DIGITAL ||
+                 generalData->readoutType == DIGITAL_AND_TRANSCEIVER)
                     ? 1
                     : 0;
             masterAttributes.digitalSamples = generalData->nDigitalSamples;
@@ -955,6 +968,14 @@ void Implementation::StartMasterWriter() {
             for (auto &i : ctbDbitList) {
                 masterAttributes.dbitlist |= (1 << i);
             }
+            masterAttributes.transceiverSamples =
+                generalData->nTransceiverSamples;
+            masterAttributes.transceiverMask = generalData->transceiverMask;
+            masterAttributes.transceiver =
+                (generalData->readoutType == TRANSCEIVER_ONLY ||
+                 generalData->readoutType == DIGITAL_AND_TRANSCEIVER)
+                    ? 1
+                    : 0;
             masterAttributes.detectorRoi = generalData->detectorRoi;
             masterAttributes.counterMask = generalData->counterMask;
             masterAttributes.exptimeArray[0] = acquisitionTime1;
@@ -1509,6 +1530,20 @@ void Implementation::setNumberofDigitalSamples(const uint32_t i) {
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
+uint32_t Implementation::getNumberofTransceiverSamples() const {
+    return generalData->nTransceiverSamples;
+}
+
+void Implementation::setNumberofTransceiverSamples(const uint32_t i) {
+    if (generalData->nTransceiverSamples != i) {
+        generalData->SetNumberOfTransceiverSamples(i);
+        SetupFifoStructure();
+    }
+    LOG(logINFO) << "Number of Transceiver Samples: "
+                 << generalData->nTransceiverSamples;
+    LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
+}
+
 uint32_t Implementation::getCounterMask() const {
     return generalData->counterMask;
 }
@@ -1716,6 +1751,20 @@ void Implementation::setDbitOffset(const int s) {
     for (const auto &it : dataProcessor)
         it->SetCtbDbitOffset(ctbDbitOffset);
     LOG(logINFO) << "Dbit offset: " << ctbDbitOffset;
+}
+
+uint32_t Implementation::getTransceiverEnableMask() const {
+    return generalData->transceiverMask;
+}
+
+void Implementation::setTransceiverEnableMask(uint32_t mask) {
+    if (generalData->transceiverMask != mask) {
+        generalData->SetTransceiverEnableMask(mask);
+        SetupFifoStructure();
+    }
+    LOG(logINFO) << "Transceiver Enable Mask: 0x" << std::hex
+                 << generalData->transceiverMask << std::dec;
+    LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
 /**************************************************

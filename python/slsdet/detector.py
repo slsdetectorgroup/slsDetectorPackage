@@ -1684,6 +1684,30 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def row(self):
+        """
+        Set Detector row (udp header) to value. Gui uses it to rearrange for complete image.
+        """
+        return self.getRow()
+
+    @row.setter
+    def row(self, value):
+        ut.set_using_dict(self.setRow, value)
+
+    @property
+    @element
+    def column(self):
+        """
+        Set Detector column (udp header) to value. Gui uses it to rearrange for complete image.
+        """
+        return self.getColumn()
+
+    @column.setter
+    def column(self, value):
+        ut.set_using_dict(self.setColumn, value)
+
+    @property
+    @element
     def lock(self):
         """Lock detector to one client IP, 1 locks, 0 unlocks. Default is unlocked."""
         return self.getDetectorLock()
@@ -1823,11 +1847,11 @@ class Detector(CppDetectorApi):
         :setter: Only implemented for Chiptestboard
         
         """
-        return self.getSlowAdcNames()
+        return self.getSlowADCNames()
 
     @slowadclist.setter
     def slowadclist(self, value):
-        self.setSlowAdcNames(value)
+        self.setSlowADCNames(value)
         
     @property
     def dacvalues(self):
@@ -3180,12 +3204,22 @@ class Detector(CppDetectorApi):
     def adcenable10g(self, value):
         ut.set_using_dict(self.setTenGigaADCEnableMask, value)
 
+    @property
+    @element
+    def transceiverenable(self):
+        """[Ctb] Transceiver Enable Mask. Enable for each 4 transceiver channel."""
+        return self.getTransceiverEnableMask()
 
+    @transceiverenable.setter
+    def transceiverenable(self, value):
+        ut.set_using_dict(self.setTransceiverEnableMask, value)
+
+    #TODO: remove this command or throw if it doesnt match with digital and transceiver
     @property
     @element
     def samples(self):
         """
-        [CTB] Number of samples (both analog and digitial) expected. \n
+        [CTB] Number of samples (only analog) expected. \n
         """
         return self.getNumberOfAnalogSamples()
 
@@ -3211,7 +3245,7 @@ class Detector(CppDetectorApi):
         
         Note
         ------
-        Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL
+        Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL, TRANSCEIVER_ONLY, DIGITAL_AND_TRANSCEIVER
         Default: ANALOG_ONLY
 
         Example
@@ -3245,6 +3279,16 @@ class Detector(CppDetectorApi):
     @dsamples.setter
     def dsamples(self, N):
         ut.set_using_dict(self.setNumberOfDigitalSamples, N)
+
+    @property
+    @element
+    def tsamples(self):
+        """[CTB] Number of transceiver samples expected. """
+        return self.getNumberOfTransceiverSamples()
+
+    @tsamples.setter
+    def tsamples(self, N):
+        ut.set_using_dict(self.setNumberOfTransceiverSamples, N)
 
     @property
     @element

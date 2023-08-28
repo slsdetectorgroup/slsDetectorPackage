@@ -102,10 +102,6 @@ void Listener::SetNoRoi(bool enable) {
     disabledPort = (!activated || !detectorDataStream || noRoi);
 }
 
-void Listener::SetFrameDiscardPolicy(frameDiscardPolicy value) {
-    frameDiscardMode = value;
-}
-
 void Listener::SetSilentMode(bool enable) { silentMode = enable; }
 
 void Listener::ResetParametersforNewAcquisition() {
@@ -249,6 +245,10 @@ void Listener::SetHardCodedPosition(uint16_t r, uint16_t c) {
     column = c;
     LOG(logDEBUG1) << "Setting hardcoded position [" << index
                    << "] (row: " << row << ", col: " << column << ")";
+}
+
+std::pair<uint16_t, uint16_t> Listener::GetHardCodedPosition() {
+    return std::make_pair(row, column);
 }
 
 void Listener::ThreadExecution() {
@@ -415,7 +415,7 @@ size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets,
                                     uint64_t fnum, bool isHeaderEmpty,
                                     size_t imageSize,
                                     sls_receiver_header &dstHeader) {
-    switch (frameDiscardMode) {
+    switch (generalData->frameDiscardMode) {
     case DISCARD_EMPTY_FRAMES:
         if (!numpackets) {
             if (!EOA) {

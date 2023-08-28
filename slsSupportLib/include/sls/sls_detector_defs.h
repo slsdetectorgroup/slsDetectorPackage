@@ -30,7 +30,8 @@
 // C includes
 #include <stdint.h>
 #endif
-
+//Need macros for C compatibility
+//NOLINTBEGIN(cppcoreguidelines-macro-usage)
 #define BIT32_MASK  0xFFFFFFFF
 #define MAX_RX_DBIT 64
 
@@ -46,7 +47,7 @@
 #define MAX_UDP_DESTINATION 32
 
 #define SLS_DETECTOR_HEADER_VERSION      0x2
-#define SLS_DETECTOR_JSON_HEADER_VERSION 0x4
+#define SLS_DETECTOR_JSON_HEADER_VERSION 0x5
 
 // ctb 1g udp (read from fifo)
 #define UDP_PACKET_DATA_BYTES (1344)
@@ -79,7 +80,7 @@
 #define DEFAULT_STREAMING_TIMER_IN_MS 500
 
 #define NUM_RX_THREAD_IDS 9
-
+//NOLINTEND(cppcoreguidelines-macro-usage)
 #ifdef __cplusplus
 class slsDetectorDefs {
   public:
@@ -406,7 +407,13 @@ typedef struct {
     /**
      * read out mode (ctb)
      */
-    enum readoutMode { ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL };
+    enum readoutMode {
+        ANALOG_ONLY,
+        DIGITAL_ONLY,
+        ANALOG_AND_DIGITAL,
+        TRANSCEIVER_ONLY,
+        DIGITAL_AND_TRANSCEIVER
+    };
 
     /** chip speed */
     enum speedLevel {
@@ -588,6 +595,8 @@ enum streamingInterface {
         int64_t gateDelay3Ns{0};
         int gates{0};
         scanParameters scanParams{};
+        int transceiverSamples{0};
+        uint32_t transceiverMask{0};
     } __attribute__((packed));
 #endif
 

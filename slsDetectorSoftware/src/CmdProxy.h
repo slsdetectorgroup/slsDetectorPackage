@@ -992,6 +992,8 @@ class CmdProxy {
         {"master", &CmdProxy::master},
         {"sync", &CmdProxy::sync},
         {"badchannels", &CmdProxy::BadChannels},
+        {"row", &CmdProxy::row},
+        {"column", &CmdProxy::column},
 
         /* acquisition parameters */
         {"acquire", &CmdProxy::Acquire},
@@ -1225,19 +1227,18 @@ class CmdProxy {
         {"apulse", &CmdProxy::apulse},
         {"dpulse", &CmdProxy::dpulse},
 
-        /* CTB/ Moench Specific */
+        /* CTB Specific */
         {"samples", &CmdProxy::Samples},
         {"asamples", &CmdProxy::asamples},
         {"adcclk", &CmdProxy::adcclk},
         {"runclk", &CmdProxy::runclk},
         {"syncclk", &CmdProxy::syncclk},
-        {"adcpipeline", &CmdProxy::adcpipeline},
         {"v_limit", &CmdProxy::v_limit},
         {"adcenable", &CmdProxy::adcenable},
         {"adcenable10g", &CmdProxy::adcenable10g},
-
-        /* CTB Specific */
+        {"transceiverenable", &CmdProxy::transceiverenable},
         {"dsamples", &CmdProxy::dsamples},
+        {"tsamples", &CmdProxy::tsamples},
         {"romode", &CmdProxy::romode},
         {"dbitclk", &CmdProxy::dbitclk},
         {"adcvpp", &CmdProxy::AdcVpp},
@@ -1294,10 +1295,11 @@ class CmdProxy {
         {"patternstart", &CmdProxy::patternstart},
 
         /* Moench */
-        {"rx_jsonaddheader", &CmdProxy::AdditionalJsonHeader},
-        {"rx_jsonpara", &CmdProxy::JsonParameter},
 
         /* Advanced */
+        {"adcpipeline", &CmdProxy::adcpipeline},
+        {"rx_jsonaddheader", &CmdProxy::AdditionalJsonHeader},
+        {"rx_jsonpara", &CmdProxy::JsonParameter},
         {"programfpga", &CmdProxy::ProgramFpga},
         {"resetfpga", &CmdProxy::resetfpga},
         {"updatedetectorserver", &CmdProxy::UpdateDetectorServer},
@@ -1541,6 +1543,15 @@ class CmdProxy {
         sync, getSynchronization, setSynchronization, StringTo<int>,
         "[0, 1]\n\t[Jungfrau][Moench] Enables or disables "
         "synchronization between modules.");
+
+    INTEGER_COMMAND_VEC_ID(row, getRow, setRow, StringTo<int>,
+                           "[value]\n\tSet Detector row (udp header) to value. "
+                           "\n\tGui uses it to rearrange for complete image");
+
+    INTEGER_COMMAND_VEC_ID(
+        column, getColumn, setColumn, StringTo<int>,
+        "[value]\n\tSet Detector column (udp header) to value. \n\tGui uses it "
+        "to rearrange for complete image");
 
     /* acquisition parameters */
 
@@ -2414,10 +2425,6 @@ class CmdProxy {
     GET_COMMAND(syncclk, getSYNCClock,
                 "[n_clk in MHz]\n\t[Ctb] Sync clock in MHz.");
 
-    INTEGER_COMMAND_VEC_ID(adcpipeline, getADCPipeline, setADCPipeline,
-                           StringTo<int>,
-                           "[n_value]\n\t[Ctb] Pipeline for ADC clock.");
-
     INTEGER_IND_COMMAND(v_limit, getVoltage, setVoltage, StringTo<int>,
                         defs::V_LIMIT,
                         "[n_value]\n\t[Ctb] Soft limit for power "
@@ -2435,7 +2442,10 @@ class CmdProxy {
         "ADC channel. However, if any of a consecutive 4 bits are enabled, "
         "the complete 4 bits are enabled.");
 
-    /* CTB Specific */
+    INTEGER_COMMAND_HEX(transceiverenable, getTransceiverEnableMask,
+                        setTransceiverEnableMask, StringTo<uint32_t>,
+                        "[bitmask]\n\t[Ctb] Transceiver Enable Mask. Enable "
+                        "for each 4 Transceiver channel.");
 
     INTEGER_COMMAND_VEC_ID(
         dsamples, getNumberOfDigitalSamples, setNumberOfDigitalSamples,
@@ -2443,10 +2453,15 @@ class CmdProxy {
         "[n_value]\n\t[CTB] Number of digital samples expected.");
 
     INTEGER_COMMAND_VEC_ID(
+        tsamples, getNumberOfTransceiverSamples, setNumberOfTransceiverSamples,
+        StringTo<int>,
+        "[n_value]\n\t[CTB] Number of transceiver samples expected.");
+
+    INTEGER_COMMAND_VEC_ID(
         romode, getReadoutMode, setReadoutMode,
         StringTo<slsDetectorDefs::readoutMode>,
-        "[analog|digital|analog_digital]\n\t[CTB] Readout mode. "
-        "Default is analog.");
+        "[analog|digital|analog_digital|transceiver|digital_transceiver]\n\t["
+        "CTB] Readout mode. Default is analog.");
 
     INTEGER_COMMAND_VEC_ID(dbitclk, getDBITClock, setDBITClock, StringTo<int>,
                            "[n_clk in MHz]\n\t[Ctb] Clock for latching the "
@@ -2567,6 +2582,10 @@ class CmdProxy {
 
     /* Moench */
     /* Advanced */
+
+    INTEGER_COMMAND_VEC_ID(
+        adcpipeline, getADCPipeline, setADCPipeline, StringTo<int>,
+        "[n_value]\n\t[Ctb][Moench] Pipeline for ADC clock.");
 
     EXECUTE_SET_COMMAND(resetfpga, resetFPGA,
                         "\n\t[Jungfrau][Moench][Ctb] Reset FPGA.");

@@ -242,6 +242,10 @@ void init_enums(py::module &m) {
         .value("DIGITAL_ONLY", slsDetectorDefs::readoutMode::DIGITAL_ONLY)
         .value("ANALOG_AND_DIGITAL",
                slsDetectorDefs::readoutMode::ANALOG_AND_DIGITAL)
+        .value("TRANSCEIVER_ONLY",
+               slsDetectorDefs::readoutMode::TRANSCEIVER_ONLY)
+        .value("DIGITAL_AND_TRANSCEIVER",
+               slsDetectorDefs::readoutMode::DIGITAL_AND_TRANSCEIVER)
         .export_values();
 
     py::enum_<slsDetectorDefs::speedLevel>(Defs, "speedLevel")

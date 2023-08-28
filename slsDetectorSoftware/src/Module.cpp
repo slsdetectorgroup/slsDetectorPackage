@@ -589,6 +589,24 @@ void Module::setBadChannels(std::vector<int> list) {
     }
 }
 
+int Module::getRow() const { return sendToDetector<int>(F_GET_ROW); }
+
+void Module::setRow(int value) {
+    sendToDetector(F_SET_ROW, value, nullptr);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_ROW, value, nullptr);
+    }
+}
+
+int Module::getColumn() const { return sendToDetector<int>(F_GET_COLUMN); }
+
+void Module::setColumn(int value) {
+    sendToDetector(F_SET_COLUMN, value, nullptr);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_COLUMN, value, nullptr);
+    }
+}
+
 bool Module::isVirtualDetectorServer() const {
     return sendToDetector<int>(F_IS_VIRTUAL);
 }
@@ -2352,14 +2370,6 @@ void Module::setNumberOfAnalogSamples(int value) {
     }
 }
 
-int Module::getADCPipeline() const {
-    return sendToDetector<int>(F_GET_ADC_PIPELINE);
-}
-
-void Module::setADCPipeline(int value) {
-    sendToDetector(F_SET_ADC_PIPELINE, value, nullptr);
-}
-
 uint32_t Module::getADCEnableMask() const {
     return sendToDetector<uint32_t>(F_GET_ADC_ENABLE_MASK);
 }
@@ -2387,6 +2397,19 @@ void Module::setTenGigaADCEnableMask(uint32_t mask) {
     }
 }
 
+uint32_t Module::getTransceiverEnableMask() const {
+    return sendToDetector<uint32_t>(F_GET_TRANSCEIVER_ENABLE_MASK);
+}
+
+void Module::setTransceiverEnableMask(uint32_t mask) {
+    sendToDetector(F_SET_TRANSCEIVER_ENABLE_MASK, mask, nullptr);
+    // update #nchan, as it depends on #samples, adcmask,
+    updateNumberOfChannels();
+
+    if (shm()->useReceiverFlag) {
+        sendToReceiver<int>(F_RECEIVER_SET_TRANSCEIVER_MASK, mask);
+    }
+}
 // CTB Specific
 
 int Module::getNumberOfDigitalSamples() const {
@@ -2401,6 +2424,18 @@ void Module::setNumberOfDigitalSamples(int value) {
     }
 }
 
+int Module::getNumberOfTransceiverSamples() const {
+    return sendToDetector<int>(F_GET_NUM_TRANSCEIVER_SAMPLES);
+}
+
+void Module::setNumberOfTransceiverSamples(int value) {
+    sendToDetector(F_SET_NUM_TRANSCEIVER_SAMPLES, value, nullptr);
+    updateNumberOfChannels(); // depends on samples and adcmask
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_NUM_TRANSCEIVER_SAMPLES, value, nullptr);
+    }
+}
+
 slsDetectorDefs::readoutMode Module::getReadoutMode() const {
     return sendToDetector<readoutMode>(F_GET_READOUT_MODE);
 }
@@ -2408,6 +2443,7 @@ slsDetectorDefs::readoutMode Module::getReadoutMode() const {
 void Module::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
     auto arg = static_cast<uint32_t>(mode); // TODO! unit?
     sendToDetector(F_SET_READOUT_MODE, arg, nullptr);
+    sendToDetectorStop(F_SET_READOUT_MODE, arg, nullptr);
     // update #nchan, as it depends on #samples, adcmask,
     if (shm()->detType == CHIPTESTBOARD) {
         updateNumberOfChannels();
@@ -2586,6 +2622,8 @@ void Module::setPatternBitMask(uint64_t mask) {
 
 void Module::startPattern() { sendToDetector(F_START_PATTERN); }
 
+// Json Header specific
+
 std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
     // TODO, refactor this function with a more robust sending.
     // Now assuming whitespace separated key value
@@ -2674,6 +2712,15 @@ void Module::setAdditionalJsonParameter(const std::string &key,
 }
 
 // Advanced
+
+int Module::getADCPipeline() const {
+    return sendToDetector<int>(F_GET_ADC_PIPELINE);
+}
+
+void Module::setADCPipeline(int value) {
+    sendToDetector(F_SET_ADC_PIPELINE, value, nullptr);
+}
+
 void Module::programFPGA(std::vector<char> buffer,
                          const bool forceDeleteNormalFile) {
     switch (shm()->detType) {

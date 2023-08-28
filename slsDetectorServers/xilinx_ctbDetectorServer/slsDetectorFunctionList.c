@@ -5,7 +5,7 @@
 #include "sharedMemory.h"
 #include "sls/versionAPI.h"
 #include "common.h"
-#include "arm.h"
+#include "arm64.h"
 
 #include <string.h>
 #include <unistd.h> // usleep

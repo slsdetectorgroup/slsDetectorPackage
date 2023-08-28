@@ -26,7 +26,7 @@
 #endif
 
 #ifdef XILINX_CHIPTESTBOARDD
-#include "arm.h"
+#include "arm64.h"
 #endif
 
 #ifdef MYTHEN3D

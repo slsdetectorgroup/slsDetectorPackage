@@ -8,7 +8,7 @@ det_lib = ../../slsDetectorSoftware/include/sls/
 md5_dir = ../../slsSupportLib/src/
 
 #CROSS  		= bfin-uclinux-
-CROSS  		= aarch64-linux-gnu-
+CROSS  		= #aarch64-linux-gnu-
 CC    		= $(CROSS)gcc
 CFLAGS		+=  -Wall -std=gnu99 -DXILINX_CHIPTESTBOARDD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir)  #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm -lrt -pthread

@@ -7,3 +7,5 @@
 
 
 int mapCSP0(void);
+void bus_w(u_int32_t offset, u_int32_t data);
+u_int32_t bus_r(u_int32_t offset);

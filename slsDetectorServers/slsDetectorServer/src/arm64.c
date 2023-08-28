@@ -49,3 +49,14 @@ int mapCSP0(void) {
     return OK;
 }
 
+void bus_w(u_int32_t offset, u_int32_t data) {
+    volatile u_int32_t *ptr1;
+    ptr1 = (u_int32_t *)(csp0base + offset / (sizeof(u_int32_t)));
+    *ptr1 = data;
+}
+
+u_int32_t bus_r(u_int32_t offset) {
+    volatile u_int32_t *ptr1;
+    ptr1 = (u_int32_t *)(csp0base + offset / (sizeof(u_int32_t)));
+    return *ptr1;
+}

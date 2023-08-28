@@ -47,6 +47,21 @@ void basictests() {
         initError = FAIL;
         return;
     }
+
+    int64_t fwversion = getFirmwareVersion();
+    char swversion[MAX_STR_LENGTH] = {0};
+    memset(swversion, 0, MAX_STR_LENGTH);
+    getServerVersion(swversion);   
+    uint32_t requiredFirmwareVersion = REQRD_FRMWRE_VRSN;
+
+    LOG(logINFOBLUE,
+        ("**************************************************\n"
+         "Reg [0x0]:\t\t 0x%llx\n"
+         "Software Version:\t\t %s\n"
+         "Required Firmware Version:\t 0x%x\n"
+         "********************************************************\n",
+         (long long int)fwversion, swversion,
+         requiredFirmwareVersion));
 }
 
 /* Ids */
@@ -55,9 +70,9 @@ void getServerVersion(char *version) { strcpy(version, APIXILINXCTB); }
 
 uint64_t getFirmwareVersion() {
 #ifdef VIRTUAL
-    return REQRD_FRMWR_VRSN;
+    return REQRD_FRMWRE_VRSN;
 #endif
-    return 0;
+    return bus_r(CTRLREG1REG);
 }
 
 

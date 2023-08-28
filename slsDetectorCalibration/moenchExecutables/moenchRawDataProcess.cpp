@@ -175,13 +175,12 @@ int main(int argc, char *argv[]) {
     
     int cf = 0;
     int numberOfPackets=nrows/8;
-
 #ifdef RECT
     cout << "Should be rectangular but now it will crash! No data structure defined!" << endl;
 #endif
     
 #ifndef MOENCH04
-    moench03v2Data *decoder = new moench03v2Data(100);
+    moench03v2Data *decoder = new moench03v2Data(nrows/2);
     cout << "MOENCH03!" << endl;
 #endif
 
@@ -299,6 +298,7 @@ int main(int argc, char *argv[]) {
     double *ped=new double[nx * ny];//, *ped1;
     int pos,pos1;
     //return  0;
+  
     if (pedfile.find(".raw") != std::string::npos) {
       pos1=pedfile.rfind("/");
       strcpy(froot,pedfile.substr(pos1).c_str());
@@ -337,8 +337,8 @@ int main(int argc, char *argv[]) {
                 filebin.close();
                 while (mt->isBusy()) {
 		  ;
-
-                }
+		}
+	  }
 		
 		sprintf(imgfname, "%s/%s_ped.tiff", outdir.c_str(),froot);
 		mt->writePedestal(imgfname);
@@ -463,7 +463,6 @@ int main(int argc, char *argv[]) {
                     }
 	      } else {
 		cout << "bp " << ifr << " " << ff << " " << np << endl;
-		//break;
 	      }
                 ff = -1;
             }

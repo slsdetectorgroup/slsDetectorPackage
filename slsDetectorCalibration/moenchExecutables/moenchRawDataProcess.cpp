@@ -13,7 +13,7 @@
 
 #ifndef MOENCH04
 #ifndef RECT
-#include "moench03T1ReceiverDataNew.h"
+#include "moench03v2Data.h"
 #endif
 #endif
 
@@ -62,13 +62,13 @@ int main(int argc, char *argv[]) {
     int nped = 10000;
 
     int cf = 0;
-    int numberOfPackets=40;
+    int numberOfPackets=50;
 #ifdef RECT
     cout << "Should be rectangular but now it will crash! No data structure defined!" << endl;
 #endif
 
 #ifndef MOENCH04
-    moench03T1ReceiverDataNew *decoder = new moench03T1ReceiverDataNew();
+    moench03v2Data *decoder = new moench03v2Data(100);
     cout << "MOENCH03!" << endl;
 #endif
 
@@ -236,7 +236,7 @@ int main(int argc, char *argv[]) {
     char froot[1000];
     double *ped=new double[nx * ny];//, *ped1;
     int pos,pos1;
-    
+    //return  0;
     if (pedfile) {
       if (string(pedfile).find(".raw") != std::string::npos) {
 	pos1=string(pedfile).rfind("/");
@@ -259,20 +259,24 @@ int main(int argc, char *argv[]) {
             if (filebin.is_open()) {
                 ff = -1;
                 while (decoder->readNextFrame(filebin, ff, np, buff)) {
-                    if (np == numberOfPackets) {
+		  if (np <= numberOfPackets) {
                         mt->pushData(buff);
                         mt->nextThread();
                         mt->popFree(buff);
                         ifr++;
-                        if (ifr % 100 == 0)
+			if (ifr % 100 == 0)
                             cout << ifr << " " << ff << " " << np << endl;
-                    } else
-                        cout << ifr << " " << ff << " " << np << endl;
+			    //	break;
+		  } else {
+		    cout << ifr << " " << ff << " " << np << endl;
+		    break;
+		  }
                     ff = -1;
                 }
                 filebin.close();
                 while (mt->isBusy()) {
                     ;
+
                 }
 
 		sprintf(imgfname, "%s/%s_ped.tiff", outdir,froot);
@@ -341,7 +345,7 @@ int main(int argc, char *argv[]) {
             ff = -1;
             ifr = 0;
             while (decoder->readNextFrame(filebin, ff, np, buff)) {
-                if (np == numberOfPackets) {
+	      if (np <= numberOfPackets) {
                     //         //push
                     mt->pushData(buff);
                     // 	//         //pop
@@ -350,7 +354,8 @@ int main(int argc, char *argv[]) {
 
                     ifr++;
 		    if (ifr % 100 == 0)
-                        cout << ifr << " " << ff << endl;
+		      cout << ifr << " " << ff << " " << np << endl;
+		    //break;
                     if (nframes > 0) {
                         if (ifr % nframes == 0) {
                             sprintf(ffname, "%s/%s_f%05d.tiff", outdir, fformat,
@@ -361,10 +366,10 @@ int main(int argc, char *argv[]) {
                             ifile++;
                         }
                     }
-                } else {
-		  cout << "bp " << ifr << " " << ff << " " << np << endl;
-		  //break;
-		}
+	      } else {
+		cout << "bp " << ifr << " " << ff << " " << np << endl;
+		break;
+	      }
                 ff = -1;
             }
             cout << "--" << endl;

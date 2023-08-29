@@ -223,7 +223,7 @@ class PatternTab(QtWidgets.QWidget):
             folder = Path.cwd()
         response = QtWidgets.QFileDialog.getOpenFileName(parent=self.mainWindow,
                                                          caption="Select a compiled pattern file",
-                                                         directory=folder,
+                                                         directory=str(folder),
                                                          filter=filt)
         if response[0]:
             self.view.lineEditPatternFile.setText(response[0])

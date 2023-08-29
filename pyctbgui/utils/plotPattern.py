@@ -299,6 +299,7 @@ class PlotPattern:
         plt.subplots_adjust(wspace=0, hspace=0)
         # axs[nbiteff - 1].set(xlabel='Timing [clk]')
         for idx, i in enumerate(range(nbiteff)):
+            axs[idx].tick_params(axis='x', labelsize=6)
 
             axs[idx].plot(subMat.T[i],
                           "-",

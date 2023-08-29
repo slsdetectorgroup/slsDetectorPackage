@@ -1274,7 +1274,7 @@
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
       </property>
       <property name="maximum">
-       <number>999999</number>
+       <number>999999999</number>
       </property>
      </widget>
     </item>
@@ -1296,7 +1296,7 @@
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
       </property>
       <property name="maximum">
-       <number>999999</number>
+       <number>999999999</number>
       </property>
      </widget>
     </item>
@@ -1356,7 +1356,7 @@
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
       </property>
       <property name="maximum">
-       <number>999999</number>
+       <number>999999999</number>
       </property>
      </widget>
     </item>
@@ -1599,7 +1599,7 @@
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
       </property>
       <property name="maximum">
-       <number>999999</number>
+       <number>999999999</number>
       </property>
      </widget>
     </item>
@@ -1803,7 +1803,7 @@
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
       </property>
       <property name="maximum">
-       <number>999999</number>
+       <number>999999999</number>
       </property>
      </widget>
     </item>
@@ -1889,7 +1889,7 @@
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
       </property>
       <property name="maximum">
-       <number>999999</number>
+       <number>999999999</number>
       </property>
      </widget>
     </item>

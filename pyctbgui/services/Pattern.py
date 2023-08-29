@@ -198,7 +198,7 @@ class PatternTab(QtWidgets.QWidget):
         response = QtWidgets.QFileDialog.getOpenFileName(
             parent=self.mainWindow,
             caption="Select a compiler file",
-            directory=Path.cwd(),
+            directory=str(Path.cwd()),
             # filter='README (*.md *.ui)'
         )
         if response[0]:
@@ -211,7 +211,7 @@ class PatternTab(QtWidgets.QWidget):
             folder = Path.cwd()
         response = QtWidgets.QFileDialog.getOpenFileName(parent=self.mainWindow,
                                                          caption="Select an uncompiled pattern file",
-                                                         directory=folder,
+                                                         directory=str(folder),
                                                          filter=filt)
         if response[0]:
             self.view.lineEditUncompiled.setText(response[0])

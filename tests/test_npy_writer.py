@@ -21,10 +21,10 @@ def __clean_tmp_dir(path=prefix):
 def test_create_new_file():
     __clean_tmp_dir()
     npw = NumpyFileManager(prefix / 'tmp.npy', 'w', (400, 400), np.int32)
-    npw.addFrame(np.ones([400, 400], dtype=np.int32))
-    npw.addFrame(np.ones([400, 400], dtype=np.int32))
-    npw.addFrame(np.ones([400, 400], dtype=np.int32))
-    npw.addFrame(np.ones([400, 400], dtype=np.int32))
+    npw.writeOneFrame(np.ones([400, 400], dtype=np.int32))
+    npw.writeOneFrame(np.ones([400, 400], dtype=np.int32))
+    npw.writeOneFrame(np.ones([400, 400], dtype=np.int32))
+    npw.writeOneFrame(np.ones([400, 400], dtype=np.int32))
     npw.close()
 
     arr = np.load(prefix / 'tmp.npy')
@@ -40,37 +40,16 @@ def test_create_new_file():
 def test_open_old_file():
     __clean_tmp_dir()
     npw = NumpyFileManager(prefix / 'tmp.npy', 'w', (4000, ), np.float32)
-    npw.addFrame(np.ones(4000, dtype=np.float32))
-    npw.addFrame(np.ones(4000, dtype=np.float32))
+    npw.writeOneFrame(np.ones(4000, dtype=np.float32))
+    npw.writeOneFrame(np.ones(4000, dtype=np.float32))
     npw.close()
     npw2 = NumpyFileManager(prefix / 'tmp.npy')
     assert npw2.frameCount == 2
     assert npw2.frameShape == (4000, )
     assert npw2.dtype == np.float32
-    assert len(npw2.buffer) == 0
-    npw2.addFrame(np.ones(4000, dtype=np.float32))
+    npw2.writeOneFrame(np.ones(4000, dtype=np.float32))
     del npw2
     np.save(prefix / 'tmp2.npy', np.ones([3, 4000], dtype=np.float32))
-    assert filecmp.cmp(prefix / 'tmp.npy', prefix / 'tmp2.npy')
-
-
-def test_buffer():
-    __clean_tmp_dir()
-    npw = NumpyFileManager(prefix / 'tmp.npy', 'w', (2, 2, 2), np.clongdouble, bufferMax=3)
-    assert npw.bufferCount == 0
-    npw.addFrame(np.ones((2, 2, 2), dtype=np.clongdouble))
-    assert npw.bufferCount == 1
-    npw.addFrame(np.ones((2, 2, 2), dtype=np.clongdouble))
-    assert npw.bufferCount == 2
-    npw.addFrame(np.ones((2, 2, 2), dtype=np.clongdouble))
-    assert npw.bufferCount == 3
-    npw.addFrame(np.ones((2, 2, 2), dtype=np.clongdouble))
-    assert npw.bufferCount == 0
-    npw.flushBuffer(strict=True)
-    assert np.array_equal(np.load(prefix / 'tmp.npy'), np.ones((4, 2, 2, 2), dtype=np.clongdouble))
-    del npw
-
-    np.save(prefix / 'tmp2.npy', np.ones((4, 2, 2, 2), dtype=np.clongdouble))
     assert filecmp.cmp(prefix / 'tmp.npy', prefix / 'tmp2.npy')
 
 
@@ -119,16 +98,16 @@ def test_init_parameters():
 
     # test resetting an existing file
     npw = NumpyFileManager(prefix / 'tmp4.npy', 'w', dtype=np.float32, frameShape=(5, 5))
-    npw.addFrame(np.ones((5, 5), dtype=np.float32))
+    npw.writeOneFrame(np.ones((5, 5), dtype=np.float32))
     npw.close()
     assert np.load(prefix / 'tmp4.npy').shape == (1, 5, 5)
     npw = NumpyFileManager(prefix / 'tmp4.npy', 'w', dtype=np.int64, frameShape=(7, 7))
-    npw.flushBuffer(strict=True)
+    npw.flush()
     assert np.load(prefix / 'tmp4.npy').shape == (0, 7, 7)
 
     # test adding frames with the wrong shape to an existing file
     with pytest.raises(AssertionError):
-        npw.addFrame(np.ones((9, 4, 4)))
+        npw.writeOneFrame(np.ones((9, 4, 4)))
 
 
 def test_read_frames():
@@ -137,8 +116,7 @@ def test_read_frames():
     arr = rng.random((10000, 20, 20))
     npw = NumpyFileManager(prefix / 'tmp.npy', 'w', frameShape=(20, 20), dtype=arr.dtype)
     for frame in arr:
-        npw.addFrame(frame)
-    npw.flushBuffer(strict=True)
+        npw.writeOneFrame(frame)
     assert np.array_equal(npw.readFrames(50, 100), arr[50:100])
     assert np.array_equal(npw.readFrames(0, 1), arr[0:1])
     assert np.array_equal(npw.readFrames(0, 10000), arr)

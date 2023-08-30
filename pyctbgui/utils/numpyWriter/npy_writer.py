@@ -35,7 +35,6 @@ class NumpyFileManager:
         mode: str = 'r',
         frameShape: tuple = None,
         dtype=None,
-        bufferMax=BUFFER_MAX,
     ):
         """
         initiates a NumpyFileManager class for reading or writing bytes directly to/from a .npy file
@@ -43,7 +42,6 @@ class NumpyFileManager:
         @param frameShape: shape of the frame ex: (5000,) for waveforms or (400,400) for image
         @param dtype: type of the numpy array's header
         @param mode: file open mode must be in 'rwx'
-        @param bufferMax: maximum length of the buffer that accumulates frames before flushing it  and calling syscalls
         """
         if mode not in 'rwx':
             raise ValueError('file mode should be either r,w,x')
@@ -55,12 +53,9 @@ class NumpyFileManager:
             if mode == 'x' and Path.is_file(Path(file)):
                 raise FileExistsError(f'file {file} exists while given mode is x')
 
-        self.bufferMax = bufferMax
         self.dtype = np.dtype(dtype)  # in case we pass a type like np.float32
         self.frameShape = frameShape
         self.frameCount = 0
-        self.buffer = bytearray()
-        self.bufferCount = 0
 
         newFile = (mode == 'w' or mode == 'x')
 
@@ -122,40 +117,14 @@ class NumpyFileManager:
         self.file.seek(0, self.FSEEK_FILE_END)
         self.frameCount += 1
         self.file.write(frame.tobytes())
+
+    def flush(self):
+        """
+        persist data into disk
+        """
         self.updateHeader()
-
-    def addFrame(self, frame: np.ndarray):
-        """
-        asserts if the frame is not in the correct format
-        appends frame to the buffer
-        flush the buffer once bufferMax is reached
-        @param frame:
-        @return:
-        """
-        assert frame.shape == self.frameShape
-        assert frame.dtype == self.dtype
-        self.buffer.extend(frame.tobytes())
-        self.frameCount += 1
-        self.bufferCount += 1
-        if self.bufferCount > self.bufferMax:
-            self.flushBuffer()
-
-    def flushBuffer(self, strict=False):
-        """
-        write the buffer's bytes to the end of the file
-        clears the buffer and update the .npy file header
-        @param strict: set to True to use fsync() syscall to persist the file directly to disk without waiting to wait
-        fot the kernel's buffer to reach io.DEFAULT_BUFFER_SIZE
-        """
-        if len(self.buffer) > 0:
-            self.file.seek(0, self.FSEEK_FILE_END)
-            self.file.write(bytes(self.buffer))
-            self.buffer = bytearray()
-            self.updateHeader()
-            self.bufferCount = 0
-        if strict:
-            self.file.flush()
-            os.fsync(self.file)
+        self.file.flush()
+        os.fsync(self.file)
 
     def readFrames(self, frameStart: int, frameEnd: int) -> np.ndarray:
         """
@@ -173,7 +142,7 @@ class NumpyFileManager:
         return np.frombuffer(data, self.dtype).reshape([-1, *self.frameShape])
 
     def close(self):
-        self.flushBuffer()
+        self.updateHeader()
         self.file.close()
 
     def __del__(self):

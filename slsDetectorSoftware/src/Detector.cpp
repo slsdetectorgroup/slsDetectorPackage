@@ -2275,7 +2275,7 @@ std::vector<std::string> Detector::getDacNames() const {
 
 defs::dacIndex Detector::getDacIndex(const std::string &name) const {
     auto type = getDetectorType().squash();
-    if (type == defs::CHIPTESTBOARD || type == defs::XILINX_CHIPTESTBOARD)
+    if (type == defs::CHIPTESTBOARD || type == defs::XILINX_CHIPTESTBOARD) {
         auto names = getDacNames();
         auto it = std::find(names.begin(), names.end(), name);
         if (it == names.end())
@@ -2293,28 +2293,28 @@ void Detector::setDacName(const defs::dacIndex i, const std::string &name) {
 }
 
 std::string Detector::getDacName(const defs::dacIndex i) const {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype == defs::CHIPTESTBOARD || dettype == defs::XILINX_CHIPTESTBOARD)
         return pimpl->getCtbDacName(i);
     return ToString(i);
 }
 
 void Detector::setAdcNames(const std::vector<std::string> names) {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named adcs only for CTB");
     pimpl->setCtbAdcNames(names);
 }
 
 std::vector<std::string> Detector::getAdcNames() const {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named adcs only for CTB");
     return pimpl->getCtbAdcNames();
 }
 
 int Detector::getAdcIndex(const std::string &name) const {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named adcs only for CTB");
     auto names = getAdcNames();
@@ -2325,35 +2325,35 @@ int Detector::getAdcIndex(const std::string &name) const {
 }
 
 void Detector::setAdcName(const int index, const std::string &name) {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named adcs only for CTB");
     pimpl->setCtbAdcName(index, name);
 }
 
 std::string Detector::getAdcName(const int i) const {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named adcs only for CTB");
     return pimpl->getCtbAdcName(i);
 }
 
 void Detector::setSignalNames(const std::vector<std::string> names) {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named signals only for CTB");
     pimpl->setCtbSignalNames(names);
 }
 
 std::vector<std::string> Detector::getSignalNames() const {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named signals only for CTB");
     return pimpl->getCtbSignalNames();
 }
 
 int Detector::getSignalIndex(const std::string &name) const {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named signals only for CTB");
     auto names = getSignalNames();
@@ -2364,35 +2364,35 @@ int Detector::getSignalIndex(const std::string &name) const {
 }
 
 void Detector::setSignalName(const int index, const std::string &name) {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named signals only for CTB");
     pimpl->setCtbSignalName(index, name);
 }
 
 std::string Detector::getSignalName(const int i) const {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named signals only for CTB");
     return pimpl->getCtbSignalName(i);
 }
 
 void Detector::setVoltageNames(const std::vector<std::string> names) {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
     pimpl->setCtbVoltageNames(names);
 }
 
 std::vector<std::string> Detector::getVoltageNames() const {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
     return pimpl->getCtbVoltageNames();
 }
 
 defs::dacIndex Detector::getVoltageIndex(const std::string &name) const {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
     auto names = getVoltageNames();
@@ -2404,35 +2404,35 @@ defs::dacIndex Detector::getVoltageIndex(const std::string &name) const {
 
 void Detector::setVoltageName(const defs::dacIndex index,
                               const std::string &name) {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
     pimpl->setCtbVoltageName(index, name);
 }
 
 std::string Detector::getVoltageName(const defs::dacIndex i) const {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
     return pimpl->getCtbVoltageName(i);
 }
 
 void Detector::setSlowADCNames(const std::vector<std::string> names) {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named SlowADCs only for CTB");
     pimpl->setCtbSlowADCNames(names);
 }
 
 std::vector<std::string> Detector::getSlowADCNames() const {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named SlowADCs only for CTB");
     return pimpl->getCtbSlowADCNames();
 }
 
 defs::dacIndex Detector::getSlowADCIndex(const std::string &name) const {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named SlowADCs only for CTB");
     auto names = getSlowADCNames();
@@ -2444,14 +2444,14 @@ defs::dacIndex Detector::getSlowADCIndex(const std::string &name) const {
 
 void Detector::setSlowADCName(const defs::dacIndex index,
                               const std::string &name) {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named SlowADCs only for CTB");
     pimpl->setCtbSlowADCName(index, name);
 }
 
 std::string Detector::getSlowADCName(const defs::dacIndex i) const {
-    auto type = getDetectorType().squash();
+    auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named SlowADCs only for CTB");
     return pimpl->getCtbSlowADCName(i);

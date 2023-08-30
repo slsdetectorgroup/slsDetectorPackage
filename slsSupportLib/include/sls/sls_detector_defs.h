@@ -96,7 +96,7 @@ class slsDetectorDefs {
         MOENCH,
         MYTHEN3,
         GOTTHARD2,
-        XILINX_CHIPTESTBOARD,
+        XILINX_CHIPTESTBOARD
     };
 
     /**  return values */

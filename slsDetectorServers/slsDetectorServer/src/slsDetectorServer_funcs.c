@@ -2942,7 +2942,7 @@ int get_measured_period(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if defined(EIGERD) || defined(XILINX_CHIPTESTBOARDD)
+#ifndef EIGERD
     functionNotImplemented();
 #else
     // get only

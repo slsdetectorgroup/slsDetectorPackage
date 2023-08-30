@@ -534,7 +534,7 @@ namespace sls {
         }                                                                      \
         auto dettype = det->getDetectorType().squash();                        \
         if (cmd != "daclist" &&                                                \
-            dettype != defs::CHIPTESTBOARD || dettype == XILINX_CHIPTESTBOARD) {\
+            dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD) {\
             throw RuntimeError(cmd + " only allowed for CTB.");                \
         }                                                                      \
         if (det_id != -1) {                                                    \
@@ -549,7 +549,7 @@ namespace sls {
             os << ToString(t) << '\n';                                         \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (cmd == "daclist" &&                                            \
-                dettype != defs::CHIPTESTBOARD || dettype == XILINX_CHIPTESTBOARD) {\
+                dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD) {\
                 throw RuntimeError("This detector already has fixed dac "      \
                                    "names. Cannot change them.");              \
             }                                                                  \
@@ -605,7 +605,7 @@ namespace sls {
             return os.str();                                                   \
         }                                                                      \
         auto dettype = det->getDetectorType().squash();                        \
-        if (dettype != defs::CHIPTESTBOARD || dettype == XILINX_CHIPTESTBOARD) {\
+        if (dettype != defs::CHIPTESTBOARD && dettype == defs::XILINX_CHIPTESTBOARD) {\
             throw RuntimeError(cmd + " only allowed for CTB.");                \
         }                                                                      \
         if (det_id != -1) {                                                    \
@@ -644,7 +644,7 @@ namespace sls {
             return os.str();                                                   \
         }                                                                      \
         auto dettype = det->getDetectorType().squash();                        \
-        if (dettype != defs::CHIPTESTBOARD || dettype == XILINX_CHIPTESTBOARD) {\
+        if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD) {\
             throw RuntimeError(cmd + " only allowed for CTB.");                \
         }                                                                      \
         if (det_id != -1) {                                                    \
@@ -674,7 +674,7 @@ namespace sls {
             return os.str();                                                   \
         }                                                                      \
         auto dettype = det->getDetectorType().squash();                        \
-        if (dettype != defs::CHIPTESTBOARD || dettype == XILINX_CHIPTESTBOARD) {\
+        if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD) {\
             throw RuntimeError(cmd + " only allowed for CTB.");                \
         }                                                                      \
         if (det_id != -1) {                                                    \
@@ -708,7 +708,7 @@ namespace sls {
             return os.str();                                                   \
         }                                                                      \
         auto dettype = det->getDetectorType().squash();                        \
-        if (dettype != defs::CHIPTESTBOARD || dettype == XILINX_CHIPTESTBOARD) {\
+        if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD) {\
             throw RuntimeError(cmd + " only allowed for CTB.");                \
         }                                                                      \
         if (det_id != -1) {                                                    \

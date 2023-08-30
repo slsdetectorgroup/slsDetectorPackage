@@ -543,7 +543,7 @@ void setDigitalIODelay(uint64_t pinMask, int delay);
 
 // jungfrau/moench specific - powerchip, autocompdisable, clockdiv, asictimer,
 // clock, pll, flashing firmware
-#if defined(MOENCHED)
+#if defined(MOENCHD)
 void setADCPipeline(int val);
 int getADCPipeline();
 #endif

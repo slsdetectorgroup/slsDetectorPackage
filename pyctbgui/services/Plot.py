@@ -9,7 +9,6 @@ import pyqtgraph as pg
 from pyqtgraph import PlotWidget
 
 from pyctbgui.utils.defines import Defines
-from pyctbgui.utils.pixelmap import moench04_analog, matterhorn_transceiver
 
 
 class PlotTab(QtWidgets.QWidget):
@@ -352,11 +351,9 @@ class PlotTab(QtWidgets.QWidget):
         if self.view.comboBoxPlot.currentText() == "Matterhorn":
             self.mainWindow.nTransceiverRows = Defines.Matterhorn.nRows
             self.mainWindow.nTransceiverCols = Defines.Matterhorn.nCols
-            self.mainWindow.pixelMapTransceiver = matterhorn_transceiver()
         elif self.view.comboBoxPlot.currentText() == "Moench04":
             self.mainWindow.nAnalogRows = Defines.Moench04.nRows
             self.mainWindow.nAnalogCols = Defines.Moench04.nCols
-            self.mainWindow.pixelMapAnalog = moench04_analog()
 
     def showPatternViewer(self, enable):
         if enable:

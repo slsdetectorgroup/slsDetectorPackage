@@ -6,9 +6,11 @@ from PyQt5 import QtWidgets, uic
 import pyqtgraph as pg
 from pyqtgraph import LegendItem
 
+from pyctbgui.utils import decoder
 from pyctbgui.utils.defines import Defines
 
 from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
+import pyctbgui.utils.pixelmap as pm
 
 
 class TransceiverTab(QtWidgets.QWidget):
@@ -68,6 +70,101 @@ class TransceiverTab(QtWidgets.QWidget):
         else:
             for plot, name in self.getEnabledPlots():
                 self.legend.addItem(plot, name)
+
+    @staticmethod
+    def _processWaveformData(data, dSamples, romode, nDBitEnabled, nTransceiverEnabled):
+        """
+        model function
+        processes raw receiver waveform data
+        @param data: raw receiver waveform data
+        @param dSamples: digital samples
+        @param romode: readout mode value
+        @param nDBitEnabled: number of digital bits enabled
+        @param nTransceiverEnabled: number of transceivers enabled
+        @return: processed transceiver data
+        """
+        transceiverOffset = 0
+        if romode == 4:
+            nbitsPerDBit = dSamples
+            if dSamples % 8 != 0:
+                nbitsPerDBit += (8 - (dSamples % 8))
+            transceiverOffset += nDBitEnabled * (nbitsPerDBit // 8)
+        trans_array = np.array(np.frombuffer(data, offset=transceiverOffset, dtype=np.uint16))
+        return trans_array.reshape(-1, nTransceiverEnabled)
+
+    def processWaveformData(self, data, dSamples):
+        """
+        plots raw waveform data
+        data: raw waveform data
+        dsamples: digital samples
+        tsamples: transceiver samples
+        """
+        waveforms = {}
+        trans_array = self._processWaveformData(data, dSamples, self.mainWindow.romode.value,
+                                                self.mainWindow.nDBitEnabled, self.nTransceiverEnabled)
+        for i in range(Defines.transceiver.count):
+            checkBox = getattr(self.view, f"checkBoxTransceiver{i}Plot")
+            if checkBox.isChecked():
+                waveform = trans_array[:, i]
+                self.mainWindow.transceiverPlots[i].setData(waveform)
+                plotName = getattr(self.view, f"labelTransceiver{i}").text()
+                waveforms[plotName] = waveform
+        return waveforms
+
+    @staticmethod
+    def _processImageData(data, dSamples, romode, nDBitEnabled):
+        """
+        processes raw image data
+        @param data:
+        @param dSamples:
+        @param romode:
+        @param nDBitEnabled:
+        @return:
+        """
+        transceiverOffset = 0
+        if romode == 4:
+            nbitsPerDBit = dSamples
+            if dSamples % 8 != 0:
+                nbitsPerDBit += (8 - (dSamples % 8))
+            transceiverOffset += nDBitEnabled * (nbitsPerDBit // 8)
+        trans_array = np.array(np.frombuffer(data, offset=transceiverOffset, dtype=np.uint16))
+        return decoder.decode(trans_array, pm.matterhorn_transceiver())
+
+    def processImageData(self, data, dSamples):
+        """
+        view function
+        plots transceiver image
+        dSamples: digital samples
+        data: raw image data
+        """
+        # get zoom state
+        viewBox = self.mainWindow.plotTransceiverImage.getView()
+        state = viewBox.getState()
+        # get histogram (colorbar) levels and histogram zoom range
+
+        try:
+            self.mainWindow.transceiver_frame = self._processImageData(data, dSamples, self.mainWindow.romode.value,
+                                                                       self.mainWindow.nDBitEnabled)
+            # print(f"type of image:{type(self.mainWindows.transceiver_frame)}")
+            self.plotTab.ignoreHistogramSignal = True
+            self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame)
+        except Exception:
+            self.mainWindow.statusbar.setStyleSheet("color:red")
+            message = f'Warning: Invalid size for Transceiver Image. Expected' \
+                      f' {self.mainWindow.nTransceiverRows * self.mainWindow.nTransceiverCols} size,' \
+                      f' got {self.mainWindow.transceiver_frame.size} instead.'
+            self.updateCurrentFrame('Invalid Image')
+            self.mainWindow.statusbar.showMessage(message)
+            print(message)
+
+        self.plotTab.setFrameLimits(self.mainWindow.transceiver_frame)
+
+        # keep the zoomed in state (not 1st image)
+        if self.mainWindow.firstTransceiverImage:
+            self.mainWindow.firstTransceiverImage = False
+        else:
+            viewBox.setState(state)
+        return self.mainWindow.transceiver_frame
 
     def initializeAllTransceiverPlots(self):
         self.mainWindow.plotTransceiverWaveform = pg.plot()

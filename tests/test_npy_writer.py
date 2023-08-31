@@ -43,7 +43,7 @@ def test_open_old_file():
     npw.writeOneFrame(np.ones(4000, dtype=np.float32))
     npw.writeOneFrame(np.ones(4000, dtype=np.float32))
     npw.close()
-    npw2 = NumpyFileManager(prefix / 'tmp.npy')
+    npw2 = NumpyFileManager(prefix / 'tmp.npy', 'r+')
     assert npw2.frameCount == 2
     assert npw2.frameShape == (4000, )
     assert npw2.dtype == np.float32
@@ -166,3 +166,12 @@ def test_file_functions():
     npw.seek(5)
     npw.readFrames(500, 600)
     assert np.array_equal(npw.read(10), arr[5:15])
+
+
+def test_with_statement():
+    __clean_tmp_dir()
+    arr = np.ones((5, 5))
+    with NumpyFileManager(prefix / 'tmp.npy', 'w', (5, 5), arr.dtype) as npw:
+        npw.writeOneFrame(arr)
+    np.save(prefix / 'tmp2.npy', np.expand_dims(arr, 0))
+    assert filecmp.cmp(prefix / 'tmp2.npy', prefix / 'tmp.npy')

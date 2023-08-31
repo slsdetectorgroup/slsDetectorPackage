@@ -13,7 +13,6 @@ Allocate enough space to allow for the data to grow
 """
 
 import ast
-import logging
 import os
 import zipfile
 from pathlib import Path
@@ -46,8 +45,8 @@ class NumpyFileManager:
         @param dtype: type of the numpy array's header
         @param mode: file open mode must be in 'rwx'
         """
-        if mode not in 'rwx':
-            raise ValueError('file mode should be either r,w,x')
+        if mode not in ['r', 'w', 'x', 'r+']:
+            raise ValueError('file mode should be either r,w,x,r+')
 
         if isinstance(file, zipfile.ZipExtFile):
             if mode != 'r':
@@ -59,27 +58,25 @@ class NumpyFileManager:
         self.dtype = np.dtype(dtype)  # in case we pass a type like np.float32
         self.frameShape = frameShape
         self.frameCount = 0
-        self.logger = logging.getLogger('NumpyFileManager')
         self.cursorPosition = self.headerLength
         self.mode = mode
-        newFile = (mode == 'w' or mode == 'x')
 
         # if newFile frameShape and dtype should be present
-        if newFile:
+        if mode == 'w' or mode == 'x':
             assert frameShape is not None
             assert dtype is not None
             # create/clear the file with mode wb+
             self.file = open(file, 'wb+')
             self.updateHeader()
-            self.flush()
 
         else:
-            # opens file for read/write and check if the header of the file corresponds to the given function
+            # opens file for read and check if the header of the file corresponds to the given function
             # arguments
             if isinstance(file, zipfile.ZipExtFile):
                 self.file = file
             else:
-                self.file = open(file, 'rb+')
+                mode = 'rb' if self.mode == 'r' else 'rb+'
+                self.file = open(file, mode)
             self.file.seek(10)
             headerStr = self.file.read(np.uint16(self.headerLength - 10)).decode("UTF-8")
             header_dict = ast.literal_eval(headerStr)
@@ -99,6 +96,12 @@ class NumpyFileManager:
             assert not header_dict['fortran_order'], "fortran_order in the stored file is not False"
 
         self.__frameSize = np.dtype(self.dtype).itemsize * np.prod(self.frameShape)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
     def restoreCursorPosition(func):
         """
@@ -218,6 +221,4 @@ class NumpyFileManager:
             try:
                 self.close()
             except ImportError:
-                self.logger.warning('NumpyFileManager Not closed properly: header of the file can be written '
-                                    'incorrectly `did you forget to call close()?` ')
                 self.file.close()

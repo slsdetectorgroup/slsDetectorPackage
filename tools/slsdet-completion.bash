@@ -1,22 +1,49 @@
-#/usr/bin/env bash
-_slsdet_completions()
+#!/bin/bash
+_sd ()
 {
-  if [ "${#COMP_WORDS[@]}" != "2" ]; then
-    return
-  fi
-  SLSDETCMDS=$(sls_detector_get list | sed -e "1d")
-  COMPREPLY=($(compgen -W "${SLSDETCMDS}" "${COMP_WORDS[1]}"))
+	OPTIONS=`sls_detector_get list | sed -e "1d"`
+	local cur
+	COMPREPLY=()
+	OPTIONS_NEW=""
+	cur=${COMP_WORDS[COMP_CWORD]}
 
+	# First argument is the command
+	if [ "$COMP_CWORD" == "1" ]; then
+		case "$cur" in
+			[0-9]*)
+				for i in $OPTIONS; do
+					OPTIONS_NEW="${OPTIONS_NEW} ${cur%%:*}:$i"
+				done
+				COMPREPLY=( $( compgen -W "${OPTIONS_NEW}" -- "$cur" ) );;
+			*)
+				COMPREPLY=( $( compgen -W "$OPTIONS -h" -- "$cur" ) );;
+		esac
+	elif [ "$COMP_CWORD" == "2" ]; then
+
+		# Help
+		if [ "${COMP_WORDS[1]}" == "-h" ]; then
+			COMPREPLY=( $( compgen -W "$OPTIONS" -- "$cur" ) )
+
+		# All commands with [0, 1] in help text  ## TODO: Doesn't work for datastream
+		elif ( echo $OPTIONS | grep -sq -- ${COMP_WORDS[1]}) && (sls_detector_get -h ${COMP_WORDS[1]} | grep -sq "\[0, 1\]"); then
+			COMPREPLY=( $( compgen -W "0 1" -- "$cur" ) )
+		else
+			# Commands offering a certain choice
+			case "${COMP_WORDS[1]}" in
+				"badchannels"|"fformat"|"gainmode"|"polarity"|"romode"|"timing"|"timingsource"|"updatemode")
+					OPTIONS=`sls_detector_get -h ${COMP_WORDS[1]}| awk '{print $2}' | head -n 1| tr '|[]' ' '`
+					COMPREPLY=( $( compgen -W "$OPTIONS" -- "$cur") );;
+				*)
+					COMPREPLY=($(compgen -f ${COMP_WORDS[${COMP_CWORD}]} ) )
+			esac
+		fi
+	else
+		COMPREPLY=($(compgen -f ${COMP_WORDS[${COMP_CWORD}]} ) )
+	fi
+
+	return 0
 }
-complete -F _slsdet_completions sls_detector_get
-complete -F _slsdet_completions sls_detector_put
 
+complete -F _sd -o filenames sls_detector_get
+complete -F _sd -o filenames sls_detector_put
 
-#if the "normal" aliases are set up then
-#add completion for them as well
-if command -v g &> /dev/null; then
-  complete -F _slsdet_completions g
-fi
-if command -v p &> /dev/null; then
-  complete -F _slsdet_completions p
-fi

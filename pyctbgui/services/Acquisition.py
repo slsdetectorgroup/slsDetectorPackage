@@ -9,6 +9,8 @@ import logging
 
 from slsdet import readoutMode, runStatus
 from pyctbgui.utils.defines import Defines
+from pyctbgui.utils.numpyWriter.npy_writer import NumpyFileManager
+from pyctbgui.utils.numpyWriter.npz_writer import NpzFileWriter
 
 if typing.TYPE_CHECKING:
     # only used for type hinting. To avoid circular dependencies these
@@ -19,7 +21,7 @@ if typing.TYPE_CHECKING:
 class AcquisitionTab(QtWidgets.QWidget):
 
     def __init__(self, parent):
-        self.x = 0
+        self.__isWaveform = None
         super().__init__(parent)
         self.currentMeasurement = None
         self.dsamples = None
@@ -37,6 +39,7 @@ class AcquisitionTab(QtWidgets.QWidget):
         self.writeNumpy: bool = False
         self.outputDir: Path = Path('/')
         self.outputFileNamePrefix: str = ''
+        self.numpyFileManagers: dict[str, NumpyFileManager] = {}
 
         self.logger = logging.getLogger('AcquisitionTab')
 
@@ -377,25 +380,61 @@ class AcquisitionTab(QtWidgets.QWidget):
     def saveNumpyFile(self, data: np.ndarray | dict[str, np.ndarray], frameIndex: int, isWaveform: bool):
         """
         save the acquisition data (waveform or image) in the specified path
-        save waveform as npz file format
+        save waveform in multiple .npy files
         save image as npy file format
+        @note: frame number can be up to 100,000 so the data arrays cannot be fully loaded to memory
         """
 
         if not self.writeNumpy:
             return
+        self.__isWaveform = isWaveform
         if self.outputDir == Path('/'):
             self.outputDir = Path('./')
         if self.outputFileNamePrefix == '':
             self.outputFileNamePrefix = 'run'
-
         acqIndex = self.view.spinBoxAcquisitionIndex.value() - 1
         if isWaveform:
-            path = self.outputDir / f'{self.outputFileNamePrefix}_f{frameIndex}_{acqIndex}.npz'
-            np.savez(str(path), **data)
+            for device in data:
+                if device not in self.numpyFileManagers:
+                    tmpPath = self.outputDir / f'{self.outputFileNamePrefix}_{device}_{acqIndex}.npy'
+                    self.numpyFileManagers[device] = NumpyFileManager(tmpPath, 'w', data[device].shape,
+                                                                      data[device].dtype)
+
+                self.numpyFileManagers[device].writeOneFrame(data[device])
         else:
-            path = self.outputDir / f'{self.outputFileNamePrefix}_f{frameIndex}_{acqIndex}.npy'
-            np.save(str(path), data)
-        self.logger.info(f'Saving numpy data in {path} Finished')
+            if 'image' not in self.numpyFileManagers:
+                tmpPath = self.outputDir / f'{self.outputFileNamePrefix}_{acqIndex}.npy'
+                self.numpyFileManagers['image'] = NumpyFileManager(tmpPath, 'w', data.shape, data.dtype)
+            self.numpyFileManagers['image'].writeOneFrame(data)
+        self.closeOpenedNumpyFiles(acqIndex)
+
+    def closeOpenedNumpyFiles(self, acqIndex):
+        """
+        create npz file for waveform plots and close opened numpy files to persist their data
+        """
+        if not self.writeNumpy:
+            return
+        status = self.det.getDetectorStatus()[0]
+        if status != runStatus.IDLE:
+            return
+        if len(self.numpyFileManagers) == 0:
+            return
+
+        filepaths = [npw.file.name for device, npw in self.numpyFileManagers.items()]
+        filenames = list(self.numpyFileManagers.keys())
+        ext = 'npz' if self.__isWaveform else 'npy'
+        tmpPath = self.outputDir / f'{self.outputFileNamePrefix}_{acqIndex}.{ext}'
+        self.logger.info(f'closing numpy {len(self.numpyFileManagers)} files')
+        self.numpyFileManagers.clear()
+
+        if self.__isWaveform:
+            NpzFileWriter.zipNpyFiles(tmpPath, filepaths, filenames, deleteOriginals=True, compressed=False)
+        acqIndexDet = self.det.findex
+        if acqIndex != acqIndexDet:
+            path2 = self.outputDir / f'{self.outputFileNamePrefix}_{acqIndexDet}.{ext}'
+            Path.rename(tmpPath, path2)
+            tmpPath = path2
+        self.logger.info(f'Saving numpy data in {tmpPath} Finished')
 
     def browseFilePath(self):
         response = QtWidgets.QFileDialog.getExistingDirectory(parent=self.mainWindow,
@@ -622,8 +661,6 @@ class AcquisitionTab(QtWidgets.QWidget):
                     print(f'len(msg) = {len(msg)}')
                 return
             header, data = msg
-            self.x += 1
-
             jsonHeader = json.loads(header)
             # print(jsonHeader)
             self.mainWindow.progressBar.setValue(int(jsonHeader['progress']))

@@ -163,7 +163,7 @@ class MainWindow(QtWidgets.QMainWindow):
         print(f'Loading Alias file: {self.alias_file}')
         try:
             bit_names, bit_plots, bit_colors, adc_names, adc_plots, adc_colors, dac_names, slowadc_names, \
-             voltage_names, pat_file_name = alias_utility.read_alias_file(self.alias_file)
+            voltage_names, pat_file_name = alias_utility.read_alias_file(self.alias_file)
         except Exception as e:
             QtWidgets.QMessageBox.warning(self, "Alias File Fail",
                                           str(e) + "<br> " + self.alias_file, QtWidgets.QMessageBox.Ok)
@@ -232,7 +232,7 @@ class MainWindow(QtWidgets.QMainWindow):
         response = QtWidgets.QFileDialog.getOpenFileName(
             parent=self,
             caption="Select a parameter file to open",
-            directory=Path.cwd(),
+            directory=str(Path.cwd()),
             # filter='README (*.md *.ui)'
         )
         if response[0]:

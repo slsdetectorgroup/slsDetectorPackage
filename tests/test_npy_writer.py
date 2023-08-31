@@ -113,13 +113,76 @@ def test_init_parameters():
 def test_read_frames():
     __clean_tmp_dir()
     rng = np.random.default_rng(seed=42)
-    arr = rng.random((10000, 20, 20))
+    arr = rng.random((1000, 20, 20))
     npw = NumpyFileManager(prefix / 'tmp.npy', 'w', frameShape=(20, 20), dtype=arr.dtype)
     for frame in arr:
         npw.writeOneFrame(frame)
-    assert np.array_equal(npw.readFrames(50, 100), arr[50:100])
-    assert np.array_equal(npw.readFrames(0, 1), arr[0:1])
-    assert np.array_equal(npw.readFrames(0, 10000), arr)
-    assert np.array_equal(npw.readFrames(9999, 10000), arr[9999:10000])
-    assert np.array_equal(npw.readFrames(9999, 10005), arr[9999:10000])
-    assert np.array_equal(npw.readFrames(499, 3000), arr[499:3000])
+    print(npw.readFrames(50, 100))
+    assert np.array_equal(npw[50:100], arr[50:100])
+    assert np.array_equal(npw[0:1], arr[0:1])
+    assert np.array_equal(npw[0:10000], arr)
+    assert np.array_equal(npw[999:1000], arr[999:1000])
+    assert np.array_equal(npw[999:1005], arr[999:1000])
+    assert np.array_equal(npw[49:300], arr[49:300])
+    assert np.array_equal(npw[88:88], arr[88:88])
+    assert np.array_equal(npw[0:0], arr[0:0])
+    assert np.array_equal(npw[0:77], arr[0:77])
+    assert np.array_equal(npw[77:0], arr[77:0])
+
+    with pytest.raises(NotImplementedError):
+        npw.readFrames(-1, -4)
+    with pytest.raises(NotImplementedError):
+        npw.readFrames(0, -77)
+    with pytest.raises(NotImplementedError):
+        npw.readFrames(-5, -5)
+
+
+def test_get_item():
+    __clean_tmp_dir()
+    rng = np.random.default_rng(seed=42)
+    arr = rng.random((1000, 20, 20))
+    npw = NumpyFileManager(prefix / 'tmp.npy', 'w', frameShape=(20, 20), dtype=arr.dtype)
+    for frame in arr:
+        npw.writeOneFrame(frame)
+
+    assert np.array_equal(npw[50:100], arr[50:100])
+    assert np.array_equal(npw[0:1], arr[0:1])
+    assert np.array_equal(npw[0:10000], arr)
+    assert np.array_equal(npw[999:1000], arr[999:1000])
+    assert np.array_equal(npw[999:1005], arr[999:1000])
+    assert np.array_equal(npw[49:300], arr[49:300])
+    assert np.array_equal(npw[88:88], arr[88:88])
+    assert np.array_equal(npw[0:0], arr[0:0])
+    assert np.array_equal(npw[0:77], arr[0:77])
+    assert np.array_equal(npw[77:0], arr[77:0])
+
+    with pytest.raises(NotImplementedError):
+        npw[-1:-3]
+    with pytest.raises(NotImplementedError):
+        npw[10:20:2]
+    with pytest.raises(NotImplementedError):
+        npw[-5:-87:5]
+    with pytest.raises(NotImplementedError):
+        npw[-5:-87:-5]
+
+
+def test_file_functions():
+    rng = np.random.default_rng(seed=42)
+    arr = rng.random((1000, 20, 20))
+    npw = NumpyFileManager('tmp.npy', 'w', frameShape=(20, 20), dtype=arr.dtype)
+    for frame in arr:
+        npw.writeOneFrame(frame)
+    assert np.array_equal(npw.read(10), arr[:10])
+    assert np.array_equal(npw.read(10), arr[10:20])
+    assert np.array_equal(npw.read(10), arr[20:30])
+    npw.readFrames(500, 600)
+    assert np.array_equal(npw.read(10), arr[30:40])
+    npw.readFrames(0, 2)
+    assert np.array_equal(npw.read(100), arr[40:140])
+    npw.writeOneFrame(arr[700])
+    assert np.array_equal(npw.read(5), arr[140:145])
+    npw.seek(900)
+    assert np.array_equal(npw.read(20), arr[900:920])
+    npw.seek(5)
+    npw.readFrames(500, 600)
+    assert np.array_equal(npw.read(10), arr[5:15])

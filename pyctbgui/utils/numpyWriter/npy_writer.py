@@ -13,6 +13,7 @@ Allocate enough space to allow for the data to grow
 """
 
 import ast
+import logging
 import os
 import zipfile
 from pathlib import Path
@@ -23,6 +24,8 @@ import numpy as np
 class NumpyFileManager:
     """
     class used to read and write into .npy files that can't be loaded completely into memory
+
+    for read mode implements numpy like interface and file-like object function
     """
     magic_str = np.lib.format.magic(1, 0)
     headerLength = np.uint16(128)
@@ -56,7 +59,8 @@ class NumpyFileManager:
         self.dtype = np.dtype(dtype)  # in case we pass a type like np.float32
         self.frameShape = frameShape
         self.frameCount = 0
-
+        self.logger = logging.getLogger('NumpyFileManager')
+        self.cursorPosition = self.headerLength
         newFile = (mode == 'w' or mode == 'x')
 
         # if newFile frameShape and dtype should be present
@@ -66,6 +70,7 @@ class NumpyFileManager:
             # create/clear the file with mode wb+
             self.file = open(file, 'wb+')
             self.updateHeader()
+            self.flush()
 
         else:
             # opens file for read/write and check if the header of the file corresponds to the given function
@@ -94,6 +99,22 @@ class NumpyFileManager:
 
         self.__frameSize = np.dtype(self.dtype).itemsize * np.prod(self.frameShape)
 
+    def restoreCursorPosition(func):
+        """
+        decorator function used to restore the file descriptors
+        cursor position after using read or write functions
+        """
+
+        def wrapper(self, *args, **kwargs):
+            tmp = self.cursorPosition
+            result = func(self, *args, **kwargs)
+            self.cursorPosition = tmp
+            self.file.seek(tmp)
+            return result
+
+        return wrapper
+
+    @restoreCursorPosition
     def updateHeader(self):
         """
         updates the header of the .npy file with the class attributes
@@ -106,7 +127,9 @@ class NumpyFileManager:
             'shape': (self.frameCount, *self.frameShape)
         }
         np.lib.format.write_array_header_1_0(self.file, header_dict)
+        self.flush()
 
+    @restoreCursorPosition
     def writeOneFrame(self, frame: np.ndarray):
         """
         write one frame without buffering
@@ -122,10 +145,10 @@ class NumpyFileManager:
         """
         persist data into disk
         """
-        self.updateHeader()
         self.file.flush()
         os.fsync(self.file)
 
+    @restoreCursorPosition
     def readFrames(self, frameStart: int, frameEnd: int) -> np.ndarray:
         """
         read frames from .npy file without loading the whole file to memory with np.load
@@ -134,20 +157,61 @@ class NumpyFileManager:
         @return: np.ndarray of frames of the shape [frameEnd-frameStart,*self.frameShape]
         """
         frameCount = frameEnd - frameStart
-        assert frameCount >= 0, 'frameEnd must be bigger than frameStart'
-        if frameCount == 0:
-            return np.array([], dtype=self.dtype)
+
+        if frameStart < 0:
+            raise NotImplementedError("frameStart must be bigger than 0")
+        if frameCount < 0:
+            if frameStart <= 0:
+                raise NotImplementedError("frameEnd must be bigger than frameStart")
+            frameCount = 0
         self.file.seek(self.headerLength + frameStart * self.__frameSize)
         data = self.file.read(frameCount * self.__frameSize)
         return np.frombuffer(data, self.dtype).reshape([-1, *self.frameShape])
 
+    def read(self, frameCount):
+        """
+        file like interface to read frameCount frames from the already stored position
+        @param frameCount: number of frames to read
+        @return: numpy array containing frameCount frames
+        """
+        assert frameCount > 0
+        data = self.file.read(frameCount * self.__frameSize)
+        self.cursorPosition += frameCount * self.__frameSize
+        return np.frombuffer(data, self.dtype).reshape([-1, *self.frameShape])
+
+    def seek(self, frameNumber):
+        """
+        file-like interface to move the file's cursor position to the frameNumber
+        """
+        assert frameNumber >= 0
+        self.cursorPosition = self.headerLength + frameNumber * self.__frameSize
+        self.file.seek(self.cursorPosition)
+
     def close(self):
         self.updateHeader()
         self.file.close()
+
+    def __getitem__(self, item):
+        isSlice = False
+        if isinstance(item, slice):
+            isSlice = True
+            if item.step is not None:
+                raise NotImplementedError("step parameter is not implemented yet")
+        if isSlice:
+            return self.readFrames(item.start, item.stop)
+        frame = self.readFrames(item, item + 1)
+        if frame.size != 0:
+            frame = frame.squeeze(0)
+        return frame
 
     def __del__(self):
         """
         in case the user forgot to close the file
         """
         if hasattr(self, 'file') and not self.file.closed:
-            self.close()
+            try:
+                self.close()
+            except ImportError:
+                self.logger.warning('NumpyFileManager Not closed properly: header of the file can be written '
+                                    'incorrectly `did you forget to call close()?` ')
+                self.file.close()

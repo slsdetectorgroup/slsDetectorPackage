@@ -179,3 +179,34 @@ def test_file_mode_a():
     with NpzFileWriter(prefix / 'tmp.npz', 'a') as npz:
         npz.writeArray('adc2', arr1)
         npz.writeArray('adc', arr1)
+
+
+@pytest.mark.parametrize('compressed', [True, False])
+def test_get_item(compressed):
+    rng = np.random.default_rng(seed=42)
+    arr1 = rng.random((10, 5, 5))
+    arr2 = rng.random((3, 2, 2))
+    # check reopening with mode a
+    npz = NpzFileWriter('tmp.npz', 'w', compress_file=compressed)
+    npz.writeArray('adc1', arr1)
+    npz.writeArray('adc2', arr2)
+    npz.writeArray('adc3', arr1)
+    assert np.array_equal(npz['adc1'].read(3), arr1[:3])
+    assert np.array_equal(npz['adc2'].read(1), arr2[:1])
+    assert np.array_equal(npz['adc2'].read(1), arr2[1:2])
+    assert np.array_equal(npz['adc2'].read(1), arr2[2:3])
+    assert np.array_equal(npz['adc1'].read(3), arr1[3:6])
+    assert np.array_equal(npz['adc1'].read(3), arr1[6:9])
+
+
+@pytest.mark.parametrize('compressed', [True, False])
+def test_namelist(compressed):
+    rng = np.random.default_rng(seed=42)
+    arr1 = rng.random((10, 5, 5))
+    arr2 = rng.random((3, 2, 2))
+    # check reopening with mode a
+    npz = NpzFileWriter('tmp.npz', 'w', compress_file=compressed)
+    npz.writeArray('adc1', arr1)
+    npz.writeArray('adc2', arr2)
+    npz.writeArray('adc3', arr1)
+    assert npz.namelist() == ['adc1', 'adc2', 'adc3']

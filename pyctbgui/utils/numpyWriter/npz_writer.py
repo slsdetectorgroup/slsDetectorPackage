@@ -20,6 +20,7 @@ class NpzFileWriter:
         :param mode: must be one of {'x', 'w', 'a'}. See
                https://docs.python.org/3/library/zipfile.html for detail
         """
+        self.__openedFiles = {}
         self.compression = zipfile.ZIP_DEFLATED if compress_file else zipfile.ZIP_STORED
         self.tofile = tofile
         self.mode = mode
@@ -45,12 +46,7 @@ class NpzFileWriter:
             with self.file.open(key, mode='w', force_zip64=True) as outfile:
                 shutil.copyfileobj(cbuf, outfile)
 
-    def readFrames(
-        self,
-        file: str,
-        frameStart: int,
-        frameEnd: int,
-    ):
+    def readFrames(self, file: str, frameStart: int, frameEnd: int):
         file += '.npy'
         with self.file.open(file, mode='r') as outfile:
             npw = NumpyFileManager(outfile)
@@ -70,6 +66,22 @@ class NpzFileWriter:
         if deleteOriginals:
             for file in files:
                 Path.unlink(file)
+
+    def __getitem__(self, item: str) -> NumpyFileManager:
+        """
+        returns NumpyFileManager file handling the .npy file under the key item inside of the .npz file
+        @param item:
+        @return:
+        """
+        if not isinstance(item, str):
+            raise TypeError('given item is not of type str')
+        if item not in self.__openedFiles:
+            outfile = self.file.open(item + '.npy', mode='r')
+            self.__openedFiles[item] = NumpyFileManager(outfile)
+        return self.__openedFiles[item]
+
+    def namelist(self):
+        return sorted([key[:-4] for key in self.file.namelist()])
 
     def close(self):
         if hasattr(self, 'file') and self.file is not None:

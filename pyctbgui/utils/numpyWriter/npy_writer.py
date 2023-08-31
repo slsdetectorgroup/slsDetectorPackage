@@ -61,6 +61,7 @@ class NumpyFileManager:
         self.frameCount = 0
         self.logger = logging.getLogger('NumpyFileManager')
         self.cursorPosition = self.headerLength
+        self.mode = mode
         newFile = (mode == 'w' or mode == 'x')
 
         # if newFile frameShape and dtype should be present
@@ -120,6 +121,8 @@ class NumpyFileManager:
         updates the header of the .npy file with the class attributes
         @note: fortran_order is always set to False
         """
+        if self.mode == 'r':
+            return
         self.file.seek(0)
         header_dict = {
             'descr': np.lib.format.dtype_to_descr(self.dtype),
@@ -135,8 +138,11 @@ class NumpyFileManager:
         write one frame without buffering
         @param frame: numpy array for a frame
         """
-        assert frame.shape == self.frameShape
-        assert frame.dtype == self.dtype
+        if frame.shape != self.frameShape:
+            raise ValueError(f"frame shape given {frame.shape} is not the same as the file's shape {self.frameShape}")
+        if frame.dtype != self.dtype:
+            raise ValueError(f"frame dtype given {frame.dtype} is not the same as the file's dtype {self.dtype}")
+
         self.file.seek(0, self.FSEEK_FILE_END)
         self.frameCount += 1
         self.file.write(frame.tobytes())

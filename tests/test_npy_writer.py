@@ -106,7 +106,7 @@ def test_init_parameters():
     assert np.load(prefix / 'tmp4.npy').shape == (0, 7, 7)
 
     # test adding frames with the wrong shape to an existing file
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match=r'frame shape given \(9, 4, 4\) '):
         npw.writeOneFrame(np.ones((9, 4, 4)))
 
 

@@ -110,33 +110,6 @@ def test_init_parameters():
         npw.writeOneFrame(np.ones((9, 4, 4)))
 
 
-def test_read_frames():
-    __clean_tmp_dir()
-    rng = np.random.default_rng(seed=42)
-    arr = rng.random((1000, 20, 20))
-    npw = NumpyFileManager(prefix / 'tmp.npy', 'w', frameShape=(20, 20), dtype=arr.dtype)
-    for frame in arr:
-        npw.writeOneFrame(frame)
-    print(npw.readFrames(50, 100))
-    assert np.array_equal(npw[50:100], arr[50:100])
-    assert np.array_equal(npw[0:1], arr[0:1])
-    assert np.array_equal(npw[0:10000], arr)
-    assert np.array_equal(npw[999:1000], arr[999:1000])
-    assert np.array_equal(npw[999:1005], arr[999:1000])
-    assert np.array_equal(npw[49:300], arr[49:300])
-    assert np.array_equal(npw[88:88], arr[88:88])
-    assert np.array_equal(npw[0:0], arr[0:0])
-    assert np.array_equal(npw[0:77], arr[0:77])
-    assert np.array_equal(npw[77:0], arr[77:0])
-
-    with pytest.raises(NotImplementedError):
-        npw.readFrames(-1, -4)
-    with pytest.raises(NotImplementedError):
-        npw.readFrames(0, -77)
-    with pytest.raises(NotImplementedError):
-        npw.readFrames(-5, -5)
-
-
 def test_get_item():
     __clean_tmp_dir()
     rng = np.random.default_rng(seed=42)
@@ -165,11 +138,18 @@ def test_get_item():
     with pytest.raises(NotImplementedError):
         npw[-5:-87:-5]
 
+    with pytest.raises(NotImplementedError):
+        npw.readFrames(-1, -4)
+    with pytest.raises(NotImplementedError):
+        npw.readFrames(0, -77)
+    with pytest.raises(NotImplementedError):
+        npw.readFrames(-5, -5)
+
 
 def test_file_functions():
     rng = np.random.default_rng(seed=42)
     arr = rng.random((1000, 20, 20))
-    npw = NumpyFileManager('tmp.npy', 'w', frameShape=(20, 20), dtype=arr.dtype)
+    npw = NumpyFileManager(prefix / 'tmp.npy', 'w', frameShape=(20, 20), dtype=arr.dtype)
     for frame in arr:
         npw.writeOneFrame(frame)
     assert np.array_equal(npw.read(10), arr[:10])

@@ -187,7 +187,7 @@ def test_get_item(compressed):
     arr1 = rng.random((10, 5, 5))
     arr2 = rng.random((3, 2, 2))
     # check reopening with mode a
-    npz = NpzFileWriter('tmp.npz', 'w', compress_file=compressed)
+    npz = NpzFileWriter(prefix / 'tmp.npz', 'w', compress_file=compressed)
     npz.writeArray('adc1', arr1)
     npz.writeArray('adc2', arr2)
     npz.writeArray('adc3', arr1)
@@ -205,7 +205,7 @@ def test_namelist(compressed):
     arr1 = rng.random((10, 5, 5))
     arr2 = rng.random((3, 2, 2))
     # check reopening with mode a
-    npz = NpzFileWriter('tmp.npz', 'w', compress_file=compressed)
+    npz = NpzFileWriter(prefix / 'tmp.npz', 'w', compress_file=compressed)
     npz.writeArray('adc1', arr1)
     npz.writeArray('adc2', arr2)
     npz.writeArray('adc3', arr1)

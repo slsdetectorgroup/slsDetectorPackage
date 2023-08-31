@@ -18,7 +18,7 @@ def test_simple_decode():
     assert data[1, 0] == 10
     assert data[1, 1] == 11
 
-    #Make sure we didn't mess up the reference counts
+    # Make sure we didn't mess up the reference counts
     assert sys.getrefcount(data) == 2
     assert sys.getrefcount(raw_data) == 2
     assert sys.getrefcount(pixel_map) == 2

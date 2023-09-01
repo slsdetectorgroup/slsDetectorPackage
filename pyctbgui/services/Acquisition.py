@@ -377,7 +377,7 @@ class AcquisitionTab(QtWidgets.QWidget):
         self.det.fpath = Path(self.view.lineEditFilePath.text())
         self.getFilePath()
 
-    def saveNumpyFile(self, data: np.ndarray | dict[str, np.ndarray], fileIndex: int, isWaveform: bool):
+    def saveNumpyFile(self, data: np.ndarray | dict[str, np.ndarray], jsonHeader, isWaveform: bool):
         """
         save the acquisition data (waveform or image) in the specified path
         save waveform in multiple .npy files
@@ -395,26 +395,25 @@ class AcquisitionTab(QtWidgets.QWidget):
         if isWaveform:
             for device in data:
                 if device not in self.numpyFileManagers:
-                    tmpPath = self.outputDir / f'{self.outputFileNamePrefix}_{device}_{fileIndex}.npy'
+                    tmpPath = self.outputDir / f'{self.outputFileNamePrefix}_{device}_{jsonHeader["fileIndex"]}.npy'
                     self.numpyFileManagers[device] = NumpyFileManager(tmpPath, 'w', data[device].shape,
                                                                       data[device].dtype)
 
                 self.numpyFileManagers[device].writeOneFrame(data[device])
         else:
             if 'image' not in self.numpyFileManagers:
-                tmpPath = self.outputDir / f'{self.outputFileNamePrefix}_{fileIndex}.npy'
+                tmpPath = self.outputDir / f'{self.outputFileNamePrefix}_{jsonHeader["fileIndex"]}.npy'
                 self.numpyFileManagers['image'] = NumpyFileManager(tmpPath, 'w', data.shape, data.dtype)
             self.numpyFileManagers['image'].writeOneFrame(data)
-        self.closeOpenedNumpyFiles(fileIndex)
+        self.closeOpenedNumpyFiles(jsonHeader)
 
-    def closeOpenedNumpyFiles(self, fileIndex):
+    def closeOpenedNumpyFiles(self, jsonHeader):
         """
         create npz file for waveform plots and close opened numpy files to persist their data
         """
         if not self.writeNumpy:
             return
-        status = self.det.getDetectorStatus()[0]
-        if status != runStatus.IDLE:
+        if 'progress' in jsonHeader and jsonHeader['progress'] < 100:
             return
         if len(self.numpyFileManagers) == 0:
             return
@@ -422,7 +421,7 @@ class AcquisitionTab(QtWidgets.QWidget):
         filepaths = [npw.file.name for device, npw in self.numpyFileManagers.items()]
         filenames = list(self.numpyFileManagers.keys())
         ext = 'npz' if self.__isWaveform else 'npy'
-        tmpPath = self.outputDir / f'{self.outputFileNamePrefix}_{fileIndex}.{ext}'
+        tmpPath = self.outputDir / f'{self.outputFileNamePrefix}_{jsonHeader["fileIndex"]}.{ext}'
         self.numpyFileManagers.clear()
 
         if self.__isWaveform:
@@ -672,7 +671,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                 # transceiver
                 if self.mainWindow.romode.value in [3, 4]:
                     waveforms = self.transceiverTab.processWaveformData(data, self.dsamples)
-                self.saveNumpyFile(waveforms, jsonHeader['fileIndex'], isWaveform=True)
+                self.saveNumpyFile(waveforms, jsonHeader, isWaveform=True)
 
             # image
             else:
@@ -683,7 +682,7 @@ class AcquisitionTab(QtWidgets.QWidget):
                 # transceiver
                 if self.mainWindow.romode.value in [3, 4]:
                     image = self.transceiverTab.processImageData(data, self.dsamples)
-                self.saveNumpyFile(image, jsonHeader['fileIndex'], isWaveform=False)
+                self.saveNumpyFile(image, jsonHeader, isWaveform=False)
 
         except zmq.ZMQError:
             pass

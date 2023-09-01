@@ -396,15 +396,16 @@ class AcquisitionTab(QtWidgets.QWidget):
                 tmpPath = self.outputDir / f'{self.outputFileNamePrefix}_{device}_{jsonHeader["fileIndex"]}.npy'
                 self.numpyFileManagers[device] = NumpyFileManager(tmpPath, 'w', data[device].shape, data[device].dtype)
             self.numpyFileManagers[device].writeOneFrame(data[device])
-        self.closeOpenedNumpyFiles(jsonHeader)
+
+        if 'progress' in jsonHeader and jsonHeader['progress'] >= 100:
+            # close opened files after saving the last frame
+            self.closeOpenedNumpyFiles(jsonHeader)
 
     def closeOpenedNumpyFiles(self, jsonHeader):
         """
         create npz file for waveform plots and close opened numpy files to persist their data
         """
         if not self.writeNumpy:
-            return
-        if 'progress' in jsonHeader and jsonHeader['progress'] < 100:
             return
         if len(self.numpyFileManagers) == 0:
             return
@@ -416,9 +417,11 @@ class AcquisitionTab(QtWidgets.QWidget):
         newPath = self.outputDir / f'{self.outputFileNamePrefix}_{jsonHeader["fileIndex"]}.{ext}'
 
         if not oneFile:
+            # if there is multiple .npy files group then in an .npz file
             self.numpyFileManagers.clear()
             NpzFileWriter.zipNpyFiles(newPath, filepaths, filenames, deleteOriginals=True, compressed=False)
         else:
+            # rename files from "run_ADC0_0.npy" to "run_0.npy" if it is a single .npy file
             oldPath = self.outputDir / f'{self.outputFileNamePrefix}_' \
                                        f'{self.numpyFileManagers.popitem()[0]}_{jsonHeader["fileIndex"]}.{ext}'
             Path.rename(oldPath, newPath)

@@ -1,3 +1,5 @@
+import logging
+
 from PyQt5 import QtWidgets, QtCore, uic
 import argparse
 import signal
@@ -7,8 +9,8 @@ from functools import partial
 
 from slsdet import Detector, dacIndex
 
-from pyctbgui.services import TransceiverTab, DacTab, AdcTab, AcquisitionTab, SignalsTab, PatternTab,\
-                              SlowAdcTab, PlotTab, PowerSuppliesTab
+from pyctbgui.services import TransceiverTab, DacTab, AdcTab, AcquisitionTab, SignalsTab, PatternTab, \
+    SlowAdcTab, PlotTab, PowerSuppliesTab
 from pyctbgui.utils import alias_utility
 from pyctbgui.utils.defines import Defines
 
@@ -30,7 +32,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         super().__init__(*args, **kwargs)
         uic.loadUi(Path(__file__).parent / "CtbGui.ui", self)
-
+        logging.basicConfig(encoding='utf-8', level=logging.INFO)
         self.updateSettingValues()
 
         self.det = None
@@ -230,7 +232,7 @@ class MainWindow(QtWidgets.QMainWindow):
         response = QtWidgets.QFileDialog.getOpenFileName(
             parent=self,
             caption="Select a parameter file to open",
-            directory=Path.cwd(),
+            directory=str(Path.cwd()),
             # filter='README (*.md *.ui)'
         )
         if response[0]:

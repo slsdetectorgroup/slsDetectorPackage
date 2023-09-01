@@ -1,27 +1,47 @@
 import json
+import typing
 from pathlib import Path
 import numpy as np
 import time
 import zmq
 from PyQt5 import QtWidgets, uic
+import logging
 
 from slsdet import readoutMode, runStatus
-from pyctbgui.utils import decoder
 from pyctbgui.utils.defines import Defines
+from pyctbgui.utils.numpyWriter.npy_writer import NumpyFileManager
+from pyctbgui.utils.numpyWriter.npz_writer import NpzFileWriter
+
+if typing.TYPE_CHECKING:
+    # only used for type hinting. To avoid circular dependencies these
+    # won't be imported in runtime
+    from pyctbgui.services import SignalsTab, TransceiverTab, AdcTab, PlotTab
 
 
 class AcquisitionTab(QtWidgets.QWidget):
 
     def __init__(self, parent):
+        self.__isWaveform = None
         super().__init__(parent)
+        self.currentMeasurement = None
+        self.dsamples = None
+        self.stoppedFlag = None
+        self.asamples = None
+        self.tsamples = None
         uic.loadUi(Path(__file__).parent.parent / 'ui' / "acquisition.ui", parent)
         self.view = parent
         self.mainWindow = None
         self.det = None
-        self.signalsTab = None
-        self.transceiverTab = None
-        self.adcTab = None
-        self.plotTab = None
+        self.signalsTab: SignalsTab = None
+        self.transceiverTab: TransceiverTab = None
+        self.adcTab: AdcTab = None
+        self.plotTab: PlotTab = None
+        self.writeNumpy: bool = False
+        self.outputDir: Path = Path('/')
+        self.outputFileNamePrefix: str = ''
+        self.numpyFileManagers: dict[str, NumpyFileManager] = {}
+
+        self.logger = logging.getLogger('AcquisitionTab')
 
     def setup_ui(self):
         self.signalsTab = self.mainWindow.signalsTab
@@ -44,7 +64,8 @@ class AcquisitionTab(QtWidgets.QWidget):
         self.view.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
         self.view.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
 
-        self.view.checkBoxFileWrite.stateChanged.connect(self.setFileWrite)
+        self.view.checkBoxFileWriteRaw.stateChanged.connect(self.setFileWrite)
+        self.view.checkBoxFileWriteNumpy.stateChanged.connect(self.setFileWriteNumpy)
         self.view.lineEditFileName.editingFinished.connect(self.setFileName)
         self.view.lineEditFilePath.editingFinished.connect(self.setFilePath)
         self.view.pushButtonFilePath.clicked.connect(self.browseFilePath)
@@ -148,7 +169,6 @@ class AcquisitionTab(QtWidgets.QWidget):
                 self.det.romode = readoutMode.DIGITAL_AND_TRANSCEIVER
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "Readout Mode Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
         # TODO: handling double event exceptions
         self.view.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
         self.getReadout()
@@ -164,7 +184,6 @@ class AcquisitionTab(QtWidgets.QWidget):
             self.det.runclk = self.view.spinBoxRunF.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "Run Frequency Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
         # TODO: handling double event exceptions
         self.view.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
         self.getRunFrequency()
@@ -182,7 +201,6 @@ class AcquisitionTab(QtWidgets.QWidget):
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "Transceiver Samples Fail", str(e),
                                           QtWidgets.QMessageBox.Ok)
-            pass
         # TODO: handling double event exceptions
         self.view.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
         self.getTransceiver()
@@ -199,7 +217,6 @@ class AcquisitionTab(QtWidgets.QWidget):
             self.det.asamples = self.view.spinBoxAnalog.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "Digital Samples Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
         # TODO: handling double event exceptions
         self.view.spinBoxAnalog.editingFinished.connect(self.setAnalog)
         self.getAnalog()
@@ -216,7 +233,6 @@ class AcquisitionTab(QtWidgets.QWidget):
             self.det.dsamples = self.view.spinBoxDigital.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "Digital Samples Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
         # TODO: handling double event exceptions
         self.view.spinBoxDigital.editingFinished.connect(self.setDigital)
         self.getDigital()
@@ -232,7 +248,6 @@ class AcquisitionTab(QtWidgets.QWidget):
             self.det.adcclk = self.view.spinBoxADCF.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "ADC Frequency Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
         # TODO: handling double event exceptions
         self.view.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
         self.getADCFrequency()
@@ -248,7 +263,6 @@ class AcquisitionTab(QtWidgets.QWidget):
             self.det.adcphase = self.view.spinBoxADCPhase.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "ADC Phase Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
         # TODO: handling double event exceptions
         self.view.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
         self.getADCPhase()
@@ -264,7 +278,6 @@ class AcquisitionTab(QtWidgets.QWidget):
             self.det.adcpipeline = self.view.spinBoxADCPipeline.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "ADC Pipeline Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
         # TODO: handling double event exceptions
         self.view.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
         self.getADCPipeline()
@@ -280,7 +293,6 @@ class AcquisitionTab(QtWidgets.QWidget):
             self.det.dbitclk = self.view.spinBoxDBITF.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "DBit Frequency Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
         # TODO: handling double event exceptions
         self.view.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
         self.getDBITFrequency()
@@ -296,7 +308,6 @@ class AcquisitionTab(QtWidgets.QWidget):
             self.det.dbitphase = self.view.spinBoxDBITPhase.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "DBit Phase Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
         # TODO: handling double event exceptions
         self.view.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
         self.getDBITPhase()
@@ -312,37 +323,110 @@ class AcquisitionTab(QtWidgets.QWidget):
             self.det.dbitpipeline = self.view.spinBoxDBITPipeline.value()
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "DBit Pipeline Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
         # TODO: handling double event exceptions
         self.view.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
         self.getDBITPipeline()
 
     def getFileWrite(self):
-        self.view.checkBoxFileWrite.stateChanged.disconnect()
-        self.view.checkBoxFileWrite.setChecked(self.det.fwrite)
-        self.view.checkBoxFileWrite.stateChanged.connect(self.setFileWrite)
+        self.view.checkBoxFileWriteRaw.stateChanged.disconnect()
+        self.view.checkBoxFileWriteRaw.setChecked(self.det.fwrite)
+        self.view.checkBoxFileWriteRaw.stateChanged.connect(self.setFileWrite)
 
     def setFileWrite(self):
-        self.det.fwrite = self.view.checkBoxFileWrite.isChecked()
+        self.det.fwrite = self.view.checkBoxFileWriteRaw.isChecked()
         self.getFileWrite()
 
+    def setFileWriteNumpy(self):
+        """
+        slot for saving the data in numpy (.npy) format
+        """
+        self.writeNumpy = not self.writeNumpy
+
     def getFileName(self):
+        """
+        set the lineEditFilePath input widget to the filename value from the detector
+        """
+
         self.view.lineEditFileName.editingFinished.disconnect()
-        self.view.lineEditFileName.setText(self.det.fname)
+        fileName = self.det.fname
+        self.view.lineEditFileName.setText(fileName)
+        self.outputFileNamePrefix = fileName
         self.view.lineEditFileName.editingFinished.connect(self.setFileName)
 
     def setFileName(self):
+        """
+        slot for setting the filename from the widget to the detector
+        """
         self.det.fname = self.view.lineEditFileName.text()
         self.getFileName()
 
     def getFilePath(self):
+        """
+        set the lineEditFilePath input widget to the path value from the detector
+        """
         self.view.lineEditFilePath.editingFinished.disconnect()
-        self.view.lineEditFilePath.setText(str(self.det.fpath))
+        path = self.det.fpath
+        self.view.lineEditFilePath.setText(str(path))
         self.view.lineEditFilePath.editingFinished.connect(self.setFilePath)
+        self.outputDir = path
 
     def setFilePath(self):
+        """
+        slot to set the directory of the output for the detector
+        """
         self.det.fpath = Path(self.view.lineEditFilePath.text())
         self.getFilePath()
+
+    def saveNumpyFile(self, data: np.ndarray | dict[str, np.ndarray], jsonHeader):
+        """
+        save the acquisition data (waveform or image) in the specified path
+        save waveform in multiple .npy files
+        save image as npy file format
+        @note: frame number can be up to 100,000 so the data arrays cannot be fully loaded to memory
+        """
+        if not self.writeNumpy:
+            return
+        if self.outputDir == Path('/'):
+            self.outputDir = Path('./')
+        if self.outputFileNamePrefix == '':
+            self.outputFileNamePrefix = 'run'
+
+        for device in data:
+            if device not in self.numpyFileManagers:
+                tmpPath = self.outputDir / f'{self.outputFileNamePrefix}_{device}_{jsonHeader["fileIndex"]}.npy'
+                self.numpyFileManagers[device] = NumpyFileManager(tmpPath, 'w', data[device].shape, data[device].dtype)
+            self.numpyFileManagers[device].writeOneFrame(data[device])
+
+        if 'progress' in jsonHeader and jsonHeader['progress'] >= 100:
+            # close opened files after saving the last frame
+            self.closeOpenedNumpyFiles(jsonHeader)
+
+    def closeOpenedNumpyFiles(self, jsonHeader):
+        """
+        create npz file for waveform plots and close opened numpy files to persist their data
+        """
+        if not self.writeNumpy:
+            return
+        if len(self.numpyFileManagers) == 0:
+            return
+        oneFile: bool = len(self.numpyFileManagers) == 1
+
+        filepaths = [npw.file.name for device, npw in self.numpyFileManagers.items()]
+        filenames = list(self.numpyFileManagers.keys())
+        ext = 'npy' if oneFile else 'npz'
+        newPath = self.outputDir / f'{self.outputFileNamePrefix}_{jsonHeader["fileIndex"]}.{ext}'
+
+        if not oneFile:
+            # if there is multiple .npy files group then in an .npz file
+            self.numpyFileManagers.clear()
+            NpzFileWriter.zipNpyFiles(newPath, filepaths, filenames, deleteOriginals=True, compressed=False)
+        else:
+            # rename files from "run_ADC0_0.npy" to "run_0.npy" if it is a single .npy file
+            oldPath = self.outputDir / f'{self.outputFileNamePrefix}_' \
+                                       f'{self.numpyFileManagers.popitem()[0]}_{jsonHeader["fileIndex"]}.{ext}'
+            Path.rename(oldPath, newPath)
+
+        self.logger.info(f'Saving numpy data in {newPath} Finished')
 
     def browseFilePath(self):
         response = QtWidgets.QFileDialog.getExistingDirectory(parent=self.mainWindow,
@@ -543,9 +627,10 @@ class AcquisitionTab(QtWidgets.QWidget):
 
         numMeasurments = self.view.spinBoxMeasurements.value()
         if measurementDone:
+
             if self.det.rx_status == runStatus.RUNNING:
                 self.det.rx_stop()
-            if self.view.checkBoxFileWrite.isChecked():
+            if self.view.checkBoxFileWriteRaw.isChecked() or self.view.checkBoxFileWriteNumpy.isChecked():
                 self.view.spinBoxAcquisitionIndex.stepUp()
                 self.setAccquisitionIndex()
             # next measurement
@@ -570,156 +655,31 @@ class AcquisitionTab(QtWidgets.QWidget):
                 return
             header, data = msg
             jsonHeader = json.loads(header)
-            # print(jsonHeader)
             self.mainWindow.progressBar.setValue(int(jsonHeader['progress']))
             self.updateCurrentFrame(jsonHeader['frameIndex'])
-            # print(f"image size:{int(jsonHeader['size'])}")
-            # print(f'Data size: {len(data)}')
 
             # waveform
+            waveforms = {}
             if self.plotTab.view.radioButtonWaveform.isChecked():
                 # analog
                 if self.mainWindow.romode.value in [0, 2]:
-                    analog_array = np.array(
-                        np.frombuffer(data, dtype=np.uint16, count=self.mainWindow.nADCEnabled * self.asamples))
-                    for i in range(Defines.adc.count):
-                        checkBox = getattr(self.adcTab.view, f"checkBoxADC{i}Plot")
-                        if checkBox.isChecked():
-                            waveform = np.zeros(self.asamples)
-                            for iSample in range(self.asamples):
-                                # all adc for 1 sample together
-                                waveform[iSample] = analog_array[iSample * self.mainWindow.nADCEnabled + i]
-                            self.mainWindow.analogPlots[i].setData(waveform)
-
+                    waveforms |= self.adcTab.processWaveformData(data, self.asamples)
                 # digital
                 if self.mainWindow.romode.value in [1, 2, 4]:
-                    dbitoffset = self.mainWindow.rx_dbitoffset
-                    if self.mainWindow.romode.value == 2:
-                        dbitoffset += self.mainWindow.nADCEnabled * 2 * self.asamples
-                    digital_array = np.array(np.frombuffer(data, offset=dbitoffset, dtype=np.uint8))
-                    nbitsPerDBit = self.dsamples
-                    if nbitsPerDBit % 8 != 0:
-                        nbitsPerDBit += (8 - (self.dsamples % 8))
-                    offset = 0
-                    irow = 0
-                    for i in self.mainWindow.rx_dbitlist:
-                        # where numbits * numsamples is not a multiple of 8
-                        if offset % 8 != 0:
-                            offset += (8 - (offset % 8))
-
-                        checkBox = getattr(self.signalsTab.view, f"checkBoxBIT{i}Plot")
-                        # bits enabled but not plotting
-                        if not checkBox.isChecked():
-                            offset += nbitsPerDBit
-                            continue
-                        # to plot
-                        if checkBox.isChecked():
-                            waveform = np.zeros(self.dsamples)
-                            for iSample in range(self.dsamples):
-                                # all samples for digital bit together from slsReceiver
-                                index = (int)(offset / 8)
-                                iBit = offset % 8
-                                bit = (digital_array[index] >> iBit) & 1
-                                waveform[iSample] = bit
-                                offset += 1
-                            self.mainWindow.digitalPlots[i].setData(waveform)
-                            # TODO: left axis does not show 0 to 1, but keeps increasing
-                            if self.plotTab.view.radioButtonStripe.isChecked():
-                                self.mainWindow.digitalPlots[i].setY(irow * 2)
-                                irow += 1
-                            else:
-                                self.mainWindow.digitalPlots[i].setY(0)
-
+                    waveforms |= self.signalsTab.processWaveformData(data, self.asamples, self.dsamples)
                 # transceiver
                 if self.mainWindow.romode.value in [3, 4]:
-                    transceiverOffset = 0
-                    if self.mainWindow.romode.value == 4:
-                        nbitsPerDBit = self.dsamples
-                        if self.mainWindow.dsamples % 8 != 0:
-                            nbitsPerDBit += (8 - (self.dsamples % 8))
-                        transceiverOffset += self.mainWindow.nDbitEnabled * (nbitsPerDBit // 8)
-                    # print(f'transceiverOffset:{transceiverOffset}')
-                    trans_array = np.array(np.frombuffer(data, offset=transceiverOffset, dtype=np.uint16))
-                    for i in range(Defines.transceiver.count):
-                        checkBox = getattr(self.transceiverTab.view, f"checkBoxTransceiver{i}Plot")
-                        if checkBox.isChecked():
-                            waveform = np.zeros(self.tsamples * 4)
-                            for iSample in range(self.tsamples * 4):
-                                waveform[iSample] = trans_array[iSample * self.transceiverTab.nTransceiverEnabled + i]
-                            self.mainWindow.transceiverPlots[i].setData(waveform)
-
+                    waveforms |= self.transceiverTab.processWaveformData(data, self.dsamples)
             # image
             else:
-
                 # analog
                 if self.mainWindow.romode.value in [0, 2]:
-                    # get zoom state
-                    viewBox = self.mainWindow.plotAnalogImage.getView()
-                    state = viewBox.getState()
-                    analog_array = np.array(
-                        np.frombuffer(data, dtype=np.uint16, count=self.mainWindow.nADCEnabled * self.asamples))
-                    try:
-                        self.mainWindow.analog_frame = decoder.decode(analog_array, self.mainWindow.pixelMapAnalog)
-                        self.plotTab.ignoreHistogramSignal = True
-                        self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame.T)
-
-                    except Exception:
-                        self.mainWindow.statusbar.setStyleSheet("color:red")
-                        message = f'Warning: Invalid size for Analog Image. Expected' \
-                                  f' {self.mainWindow.nAnalogRows * self.mainWindow.nAnalogCols} ' \
-                                  f'size, got {analog_array.size} instead.'
-                        self.updateCurrentFrame('Invalid Image')
-
-                        self.mainWindow.statusbar.showMessage(message)
-                        print(message)
-
-                    self.plotTab.setFrameLimits(self.mainWindow.analog_frame)
-
-                    # keep the zoomed in state (not 1st image)
-                    if self.mainWindow.firstAnalogImage:
-                        self.mainWindow.firstAnalogImage = False
-                    else:
-                        viewBox.setState(state)
-
+                    waveforms['analog_image'] = self.adcTab.processImageData(data, self.asamples)
                 # transceiver
                 if self.mainWindow.romode.value in [3, 4]:
-                    # get zoom state
-                    viewBox = self.mainWindow.plotTransceiverImage.getView()
-                    state = viewBox.getState()
-                    # get histogram (colorbar) levels and histogram zoom range
+                    waveforms['tx_image'] = self.transceiverTab.processImageData(data, self.dsamples)
 
-                    transceiverOffset = 0
-                    if self.mainWindow.romode.value == 4:
-                        nbitsPerDBit = self.dsamples
-                        if self.dsamples % 8 != 0:
-                            nbitsPerDBit += (8 - (self.dsamples % 8))
-                        transceiverOffset += self.mainWindow.nDbitEnabled * (nbitsPerDBit // 8)
-                    # print(f'transceiverOffset:{transceiverOffset}')
-                    trans_array = np.array(np.frombuffer(data, offset=transceiverOffset, dtype=np.uint16))
-
-                    try:
-                        self.mainWindow.transceiver_frame = decoder.decode(trans_array,
-                                                                           self.mainWindow.pixelMapTransceiver)
-                        # print(f"type of image:{type(self.mainWindows.transceiver_frame)}")
-                        self.plotTab.ignoreHistogramSignal = True
-                        self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame)
-                    except Exception:
-                        self.mainWindow.statusbar.setStyleSheet("color:red")
-                        message = f'Warning: Invalid size for Transceiver Image. Expected' \
-                                  f' {self.mainWindow.nTransceiverRows * self.mainWindow.nTransceiverCols} size,' \
-                                  f' got {trans_array.size} instead.'
-                        self.updateCurrentFrame('Invalid Image')
-                        self.mainWindow.statusbar.showMessage(message)
-                        print(message)
-                        pass
-
-                    self.plotTab.setFrameLimits(self.mainWindow.transceiver_frame)
-
-                    # keep the zoomed in state (not 1st image)
-                    if self.mainWindow.firstTransceiverImage:
-                        self.mainWindow.firstTransceiverImage = False
-                    else:
-                        viewBox.setState(state)
+            self.saveNumpyFile(waveforms, jsonHeader)
 
         except zmq.ZMQError:
             pass

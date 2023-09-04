@@ -11,6 +11,7 @@ from pyctbgui.utils.defines import Defines
 
 from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
 import pyctbgui.utils.pixelmap as pm
+from pyctbgui.utils.recordOrApplyPedestal import recordOrApplyPedestal
 
 
 class TransceiverTab(QtWidgets.QWidget):
@@ -71,8 +72,8 @@ class TransceiverTab(QtWidgets.QWidget):
             for plot, name in self.getEnabledPlots():
                 self.legend.addItem(plot, name)
 
-    @staticmethod
-    def _processWaveformData(data, dSamples, romode, nDBitEnabled, nTransceiverEnabled):
+    @recordOrApplyPedestal
+    def _processWaveformData(self, data, dSamples, romode, nDBitEnabled, nTransceiverEnabled):
         """
         model function
         processes raw receiver waveform data
@@ -111,8 +112,8 @@ class TransceiverTab(QtWidgets.QWidget):
                 waveforms[plotName] = waveform
         return waveforms
 
-    @staticmethod
-    def _processImageData(data, dSamples, romode, nDBitEnabled):
+    @recordOrApplyPedestal
+    def _processImageData(self, data, dSamples, romode, nDBitEnabled):
         """
         processes raw image data
         @param data:

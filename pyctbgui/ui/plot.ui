@@ -346,8 +346,8 @@
   <widget class="QFrame" name="frame_10">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>320</y>
+     <x>0</x>
+     <y>480</y>
      <width>841</width>
      <height>311</height>
     </rect>
@@ -359,23 +359,13 @@
     <enum>QFrame::Sunken</enum>
    </property>
    <layout class="QGridLayout" name="gridLayout_16">
-    <item row="5" column="11" colspan="2">
-     <widget class="QSpinBox" name="spinBoxPlot">
+    <item row="5" column="0" colspan="2">
+     <widget class="QLabel" name="label_122">
       <property name="enabled">
        <bool>false</bool>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="12">
-     <widget class="QSpinBox" name="spinBoxImageY">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      <property name="text">
+       <string>Fit Panel ADC:</string>
       </property>
      </widget>
     </item>
@@ -389,8 +379,98 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="2" colspan="3">
-     <widget class="QSpinBox" name="spinBoxSerialOffset">
+    <item row="6" column="8" colspan="2">
+     <widget class="QLabel" name="labelValues">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Values</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="10" colspan="2">
+     <widget class="QLabel" name="label_113">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Dynamic Range:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="11">
+     <widget class="QLabel" name="label_116">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Y:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="12">
+     <widget class="QSpinBox" name="spinBoxPedestalMax">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="8" colspan="2">
+     <widget class="QSpinBox" name="spinBoxImageX">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="6" colspan="2">
+     <widget class="QLabel" name="label_118">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Min:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="7">
+     <widget class="QLabel" name="label_115">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>X:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="8" colspan="2">
+     <widget class="QSpinBox" name="spinBoxRawMin">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="8" colspan="2">
+     <widget class="QSpinBox" name="spinBoxNCount">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="12">
+     <widget class="QSpinBox" name="spinBoxRawMax">
       <property name="enabled">
        <bool>false</bool>
       </property>
@@ -409,82 +489,23 @@
       </property>
      </widget>
     </item>
-    <item row="4" column="0" colspan="4">
-     <widget class="QCheckBox" name="checkBoxPedestal">
+    <item row="1" column="0" colspan="2">
+     <widget class="QLabel" name="label_114">
       <property name="enabled">
        <bool>false</bool>
       </property>
       <property name="text">
-       <string>Pedestal Subtract</string>
+       <string>Image Pixels:</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="8" colspan="3">
-     <widget class="QCheckBox" name="checkBoxCommonMode">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Common Mode</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="12">
-     <widget class="QSpinBox" name="spinBoxDynamicRange">
+    <item row="0" column="2" colspan="3">
+     <widget class="QSpinBox" name="spinBoxSerialOffset">
       <property name="enabled">
        <bool>false</bool>
       </property>
       <property name="alignment">
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="11">
-     <widget class="QLabel" name="label_121">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Max:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="11" colspan="2">
-     <widget class="QPushButton" name="pushButtonReset">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>31</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgb(199, 213, 207);</string>
-      </property>
-      <property name="text">
-       <string>Reset</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="8" colspan="2">
-     <widget class="QSpinBox" name="spinBoxImageX">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="8" colspan="2">
-     <widget class="QLabel" name="labelValues">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Values</string>
       </property>
      </widget>
     </item>
@@ -498,36 +519,6 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="7">
-     <widget class="QLabel" name="label_115">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>X:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="6" colspan="2">
-     <widget class="QLabel" name="label_118">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Min:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0" colspan="2">
-     <widget class="QCheckBox" name="checkBoxRaw">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Raw Data</string>
-      </property>
-     </widget>
-    </item>
     <item row="6" column="5">
      <widget class="QLabel" name="labelY">
       <property name="enabled">
@@ -535,66 +526,6 @@
       </property>
       <property name="text">
        <string>Y</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="0" colspan="2">
-     <widget class="QLabel" name="label_122">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Fit Panel ADC:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="1">
-     <widget class="QLabel" name="labelX">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>X</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0" colspan="2">
-     <widget class="QLabel" name="label_114">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Image Pixels:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="12">
-     <widget class="QSpinBox" name="spinBoxRawMax">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="12">
-     <widget class="QSpinBox" name="spinBoxPedestalMax">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="11">
-     <widget class="QLabel" name="label_116">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Y:</string>
       </property>
      </widget>
     </item>
@@ -608,28 +539,38 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="5" colspan="3">
-     <widget class="QLabel" name="label_112">
+    <item row="6" column="1">
+     <widget class="QLabel" name="labelX">
       <property name="enabled">
        <bool>false</bool>
       </property>
       <property name="text">
-       <string>N Counters:</string>
+       <string>X</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="10" colspan="2">
-     <widget class="QLabel" name="label_113">
+    <item row="3" column="11">
+     <widget class="QLabel" name="label_121">
       <property name="enabled">
        <bool>false</bool>
       </property>
       <property name="text">
-       <string>Dynamic Range:</string>
+       <string>Max:</string>
       </property>
      </widget>
     </item>
-    <item row="3" column="8" colspan="2">
-     <widget class="QSpinBox" name="spinBoxRawMin">
+    <item row="0" column="0" colspan="2">
+     <widget class="QLabel" name="label_111">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Serial offset:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="12">
+     <widget class="QSpinBox" name="spinBoxImageY">
       <property name="enabled">
        <bool>false</bool>
       </property>
@@ -648,56 +589,13 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="5" colspan="3">
-     <widget class="QCheckBox" name="checkBoxSubtract">
+    <item row="3" column="0" colspan="2">
+     <widget class="QCheckBox" name="checkBoxRaw">
       <property name="enabled">
        <bool>false</bool>
       </property>
       <property name="text">
-       <string>Subtract</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="2" colspan="3">
-     <widget class="QCheckBox" name="checkBoxAcquire">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Acquire</string>
-      </property>
-      <property name="checked">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0" colspan="2">
-     <widget class="QLabel" name="label_117">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Pedestal:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0" colspan="2">
-     <widget class="QLabel" name="label_111">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Serial offset:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="8" colspan="2">
-     <widget class="QSpinBox" name="spinBoxNCount">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       <string>Raw Data</string>
       </property>
      </widget>
     </item>
@@ -717,15 +615,55 @@
       </property>
      </widget>
     </item>
+    <item row="4" column="0" colspan="4">
+     <widget class="QCheckBox" name="checkBoxPedestal">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Pedestal Subtract</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="12">
+     <widget class="QSpinBox" name="spinBoxDynamicRange">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="11" colspan="2">
+     <widget class="QSpinBox" name="spinBoxPlot">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="5" colspan="3">
+     <widget class="QLabel" name="label_112">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>N Counters:</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QFrame" name="frame">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>220</y>
+     <y>219</y>
      <width>841</width>
-     <height>80</height>
+     <height>81</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -738,9 +676,9 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>0</y>
+      <y>-7</y>
       <width>841</width>
-      <height>80</height>
+      <height>111</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -768,34 +706,34 @@
       </widget>
      </item>
      <item>
-      <widget class="QGroupBox" name="groupBox">
-       <property name="minimumSize">
-        <size>
-         <width>200</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="title">
-        <string/>
-       </property>
-       <widget class="QWidget" name="verticalLayoutWidget">
+      <widget class="QWidget" name="widget" native="true">
+       <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
-          <x>10</x>
+          <x>0</x>
           <y>0</y>
-          <width>171</width>
-          <height>81</height>
+          <width>121</width>
+          <height>91</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
           <widget class="QRadioButton" name="radioButtonAutomatic">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>15</height>
+            </size>
+           </property>
            <property name="text">
             <string>All</string>
            </property>
            <property name="checked">
             <bool>true</bool>
            </property>
+           <attribute name="buttonGroup">
+            <string notr="true">buttonGroup_4</string>
+           </attribute>
           </widget>
          </item>
          <item>
@@ -803,16 +741,34 @@
            <property name="enabled">
             <bool>true</bool>
            </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>15</height>
+            </size>
+           </property>
            <property name="text">
             <string>3-97%</string>
            </property>
+           <attribute name="buttonGroup">
+            <string notr="true">buttonGroup_4</string>
+           </attribute>
           </widget>
          </item>
          <item>
           <widget class="QRadioButton" name="radioButtonFixed">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>15</height>
+            </size>
+           </property>
            <property name="text">
             <string>Fixed</string>
            </property>
+           <attribute name="buttonGroup">
+            <string notr="true">buttonGroup_4</string>
+           </attribute>
           </widget>
          </item>
         </layout>
@@ -844,16 +800,6 @@
         <double>100000.000000000000000</double>
        </property>
       </widget>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetMinimumSize</enum>
-       </property>
-       <property name="leftMargin">
-        <number>50</number>
-       </property>
-      </layout>
      </item>
      <item>
       <widget class="QLabel" name="label_2">
@@ -897,11 +843,256 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QFrame" name="frame_2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>330</y>
+     <width>841</width>
+     <height>101</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QWidget" name="horizontalLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>841</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <spacer name="horizontalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_117">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Pedestal:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>frames</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="spinBoxPedestalFrames">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_6">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Preferred</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelPedestalFrames">
+       <property name="minimumSize">
+        <size>
+         <width>250</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>recorded frames: 0</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="radioButtonPedestalRecord">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Record</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroup_3</string>
+       </attribute>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="radioButtonPedestalApply">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Apply </string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroup_3</string>
+       </attribute>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonPedestalReset">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>31</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(199, 213, 207);</string>
+       </property>
+       <property name="text">
+        <string>Reset</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_5">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="horizontalLayoutWidget_3">
+    <property name="geometry">
+     <rect>
+      <x>-1</x>
+      <y>49</y>
+      <width>841</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <spacer name="horizontalSpacer_7">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonLoadPedestal">
+       <property name="minimumSize">
+        <size>
+         <width>120</width>
+         <height>31</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(199, 213, 207);</string>
+       </property>
+       <property name="text">
+        <string>Load Pedestal</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonSavePedestal">
+       <property name="minimumSize">
+        <size>
+         <width>120</width>
+         <height>31</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(199, 213, 207);</string>
+       </property>
+       <property name="text">
+        <string>Save Pedestal</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_10">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Preferred</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </widget>
+  </widget>
  </widget>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_2"/>
   <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_4"/>
+  <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup_3"/>
  </buttongroups>
 </ui>

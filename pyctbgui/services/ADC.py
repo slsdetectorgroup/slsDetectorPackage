@@ -1,3 +1,4 @@
+import typing
 from functools import partial
 from pathlib import Path
 
@@ -10,6 +11,10 @@ from pyctbgui.utils import decoder
 from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
 from pyctbgui.utils.defines import Defines
 import pyctbgui.utils.pixelmap as pm
+from pyctbgui.utils.recordOrApplyPedestal import recordOrApplyPedestal
+
+if typing.TYPE_CHECKING:
+    from pyctbgui.services import AcquisitionTab, PlotTab
 
 
 class AdcTab(QtWidgets.QWidget):
@@ -20,11 +25,13 @@ class AdcTab(QtWidgets.QWidget):
         self.view = parent
         self.mainWindow = None
         self.det = None
-        self.plotTab = None
+        self.plotTab: PlotTab | None = None
+        self.acquisitionTab: AcquisitionTab | None = None
         self.legend: LegendItem | None = None
 
     def setup_ui(self):
         self.plotTab = self.mainWindow.plotTab
+        self.acquisitionTab = self.mainWindow.acquisitionTab
         for i in range(Defines.adc.count):
             self.setADCButtonColor(i, self.plotTab.getRandomColor())
         self.initializeAllAnalogPlots()
@@ -131,8 +138,8 @@ class AdcTab(QtWidgets.QWidget):
                 waveforms[plotName] = waveform
         return waveforms
 
-    @staticmethod
-    def _processWaveformData(data: bytes, aSamples: int, nADCEnabled: int) -> np.ndarray:
+    @recordOrApplyPedestal
+    def _processWaveformData(self, data: bytes, aSamples: int, nADCEnabled: int) -> np.ndarray:
         """
         model function
         processes raw waveform data
@@ -157,12 +164,12 @@ class AdcTab(QtWidgets.QWidget):
             self.mainWindow.analog_frame = self._processImageData(data, aSamples, self.mainWindow.nADCEnabled)
             self.plotTab.ignoreHistogramSignal = True
             self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame.T)
-        except Exception:
+        except FileNotFoundError:
             self.mainWindow.statusbar.setStyleSheet("color:red")
             message = f'Warning: Invalid size for Analog Image. Expected' \
                       f' {self.mainWindow.nAnalogRows * self.mainWindow.nAnalogCols} ' \
                       f'size, got {self.mainWindow.analog_frame.size} instead.'
-            self.updateCurrentFrame('Invalid Image')
+            self.acquisitionTab.updateCurrentFrame('Invalid Image')
 
             self.mainWindow.statusbar.showMessage(message)
             print(message)
@@ -176,8 +183,8 @@ class AdcTab(QtWidgets.QWidget):
             viewBox.setState(state)
         return self.mainWindow.analog_frame.T
 
-    @staticmethod
-    def _processImageData(data, aSamples, nADCEnabled):
+    @recordOrApplyPedestal
+    def _processImageData(self, data, aSamples, nADCEnabled):
         analog_array = np.array(np.frombuffer(data, dtype=np.uint16, count=nADCEnabled * aSamples))
         return decoder.decode(analog_array, pm.moench04_analog())
 

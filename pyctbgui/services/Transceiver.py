@@ -103,10 +103,13 @@ class TransceiverTab(QtWidgets.QWidget):
         waveforms = {}
         trans_array = self._processWaveformData(data, dSamples, self.mainWindow.romode.value,
                                                 self.mainWindow.nDBitEnabled, self.nTransceiverEnabled)
+        idx = 0
         for i in range(Defines.transceiver.count):
-            checkBox = getattr(self.view, f"checkBoxTransceiver{i}Plot")
-            if checkBox.isChecked():
-                waveform = trans_array[:, i]
+            checkBoxPlot = getattr(self.view, f"checkBoxTransceiver{i}Plot")
+            checkBoxEn = getattr(self.view, f"checkBoxTransceiver{i}")
+            if checkBoxEn.isChecked() and checkBoxPlot.isChecked():
+                waveform = trans_array[:, idx]
+                idx += 1
                 self.mainWindow.transceiverPlots[i].setData(waveform)
                 plotName = getattr(self.view, f"labelTransceiver{i}").text()
                 waveforms[plotName] = waveform

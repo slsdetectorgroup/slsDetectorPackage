@@ -47,7 +47,7 @@ class PlotTab(QtWidgets.QWidget):
         self.acquisitionTab = self.mainWindow.acquisitionTab
         self.adcTab = self.mainWindow.adcTab
         self.view.spinBoxPedestalFrames.setEnabled(self.pedestalRecord)
-
+        self.view.spinBoxPedestalFrames.setValue(self.det.frames)
         self.initializeColorMaps()
 
         self.imagePlots = (

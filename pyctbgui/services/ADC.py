@@ -122,10 +122,14 @@ class AdcTab(QtWidgets.QWidget):
 
         waveforms = {}
         analog_array = self._processWaveformData(data, aSamples, self.mainWindow.nADCEnabled)
+        idx = 0
         for i in range(Defines.adc.count):
-            checkBox = getattr(self.view, f"checkBoxADC{i}Plot")
-            if checkBox.isChecked():
-                waveform = analog_array[:, i]
+            checkBoxPlot = getattr(self.view, f"checkBoxADC{i}Plot")
+            checkBoxEn = getattr(self.view, f"checkBoxADC{i}En")
+
+            if checkBoxEn.isChecked() and checkBoxPlot.isChecked():
+                waveform = analog_array[:, idx]
+                idx += 1
                 self.mainWindow.analogPlots[i].setData(waveform)
                 plotName = getattr(self.view, f"labelADC{i}").text()
                 waveforms[plotName] = waveform
@@ -233,7 +237,6 @@ class AdcTab(QtWidgets.QWidget):
                 self.det.adcenable = enableMask
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "ADC Enable Fail", str(e), QtWidgets.QMessageBox.Ok)
-            pass
 
         self.updateADCEnable()
 

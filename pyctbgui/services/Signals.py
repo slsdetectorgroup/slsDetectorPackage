@@ -8,6 +8,7 @@ from pyqtgraph import LegendItem
 
 from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
 from pyctbgui.utils.defines import Defines
+from pyctbgui.utils.recordOrApplyPedestal import recordOrApplyPedestal
 
 
 class SignalsTab(QtWidgets.QWidget):
@@ -85,25 +86,27 @@ class SignalsTab(QtWidgets.QWidget):
             for plot, name in self.getEnabledPlots():
                 self.legend.addItem(plot, name)
 
-    @staticmethod
-    def _processWaveformData(data, aSamples, dSamples, rx_dbitoffset, romode, nADCEnabled):
+    @recordOrApplyPedestal
+    def _processWaveformData(self, data, aSamples, dSamples, rx_dbitlist, isPlottedArray, rx_dbitoffset, romode,
+                             nADCEnabled):
         """
-        transform raw waveform data into numpy array and returns a function that processes each waveform
+        transform raw waveform data into a processed numpy array
         @param data:  raw waveform data
         """
-
-        def getWaveform(isPlotted: bool):
-            """
-            returns processed waveform for the specific Signal
-            each time this function is called it increments its offset
-            @param isPlotted: boolean
-            @return: processed waveform
-            """
-            nonlocal offset
+        dbitoffset = rx_dbitoffset
+        if romode == 2:
+            dbitoffset += nADCEnabled * 2 * aSamples
+        digital_array = np.array(np.frombuffer(data, offset=dbitoffset, dtype=np.uint8))
+        nbitsPerDBit = dSamples
+        if nbitsPerDBit % 8 != 0:
+            nbitsPerDBit += (8 - (dSamples % 8))
+        offset = 0
+        arr = []
+        for i in rx_dbitlist:
             # where numbits * numsamples is not a multiple of 8
             if offset % 8 != 0:
                 offset += (8 - (offset % 8))
-            if not isPlotted:
+            if not isPlottedArray[i]:
                 offset += nbitsPerDBit
                 return None
             waveform = np.zeros(dSamples)
@@ -114,18 +117,9 @@ class SignalsTab(QtWidgets.QWidget):
                 bit = (digital_array[index] >> iBit) & 1
                 waveform[iSample] = bit
                 offset += 1
-            return waveform
+            arr.append(waveform)
 
-        dbitoffset = rx_dbitoffset
-        if romode == 2:
-            dbitoffset += nADCEnabled * 2 * aSamples
-        digital_array = np.array(np.frombuffer(data, offset=dbitoffset, dtype=np.uint8))
-        nbitsPerDBit = dSamples
-        if nbitsPerDBit % 8 != 0:
-            nbitsPerDBit += (8 - (dSamples % 8))
-        offset = 0
-
-        return getWaveform
+        return np.array(arr)
 
     def processWaveformData(self, data, aSamples, dSamples):
         """
@@ -136,16 +130,16 @@ class SignalsTab(QtWidgets.QWidget):
         asamples: analog samples
         """
         waveforms = {}
+        isPlottedArray = {i: getattr(self.view, f"checkBoxBIT{i}Plot").isChecked() for i in self.rx_dbitlist}
 
-        getWaveform = self._processWaveformData(data, aSamples, dSamples, self.rx_dbitoffset,
-                                                self.mainWindow.romode.value, self.mainWindow.nADCEnabled)
+        digital_array = self._processWaveformData(data, aSamples, dSamples, self.rx_dbitlist, isPlottedArray,
+                                                  self.rx_dbitoffset, self.mainWindow.romode.value,
+                                                  self.mainWindow.nADCEnabled)
+
         irow = 0
-        for i in self.rx_dbitlist:
-            checkBox = getattr(self.view, f"checkBoxBIT{i}Plot")
+        for idx, i in enumerate(self.rx_dbitlist):
             # bits enabled but not plotting
-            isPlotted = checkBox.isChecked()
-
-            waveform = getWaveform(isPlotted)
+            waveform = digital_array[idx]
             if waveform is None:
                 continue
             self.mainWindow.digitalPlots[i].setData(waveform)

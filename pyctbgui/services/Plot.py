@@ -37,7 +37,6 @@ class PlotTab(QtWidgets.QWidget):
         self.hideLegendObservers = []
         self.pedestalRecord: bool = False
         self.pedestalApply: bool = True
-        self.pedestalFrames: int = 1
         self.__acqFrames = None
         self.logger = logging.getLogger('PlotTab')
 
@@ -46,8 +45,6 @@ class PlotTab(QtWidgets.QWidget):
         self.transceiverTab = self.mainWindow.transceiverTab
         self.acquisitionTab = self.mainWindow.acquisitionTab
         self.adcTab = self.mainWindow.adcTab
-        self.view.spinBoxPedestalFrames.setEnabled(self.pedestalRecord)
-        self.view.spinBoxPedestalFrames.setValue(self.det.frames)
         self.initializeColorMaps()
 
         self.imagePlots = (
@@ -73,7 +70,6 @@ class PlotTab(QtWidgets.QWidget):
         self.view.radioButtonPedestalRecord.toggled.connect(self.togglePedestalRecord)
         self.view.radioButtonPedestalApply.toggled.connect(self.togglePedestalApply)
         self.view.pushButtonPedestalReset.clicked.connect(self.resetPedestal)
-        self.view.spinBoxPedestalFrames.editingFinished.connect(self.setPedestalFrames)
         self.view.pushButtonSavePedestal.clicked.connect(self.savePedestal)
         self.view.pushButtonLoadPedestal.clicked.connect(self.loadPedestal)
 
@@ -142,9 +138,6 @@ class PlotTab(QtWidgets.QWidget):
         the mode
         """
         self.pedestalRecord = not self.pedestalRecord
-        # restore the acquisitionTab frame number
-        self.acquisitionTab.view.spinBoxFrames.setEnabled(not self.pedestalRecord)
-        self.view.spinBoxPedestalFrames.setEnabled(self.pedestalRecord)
 
     def togglePedestalApply(self):
         """
@@ -157,14 +150,6 @@ class PlotTab(QtWidgets.QWidget):
         slot function for resetting the pedestal
         """
         recordOrApplyPedestal.reset(self)
-
-    def setPedestalFrames(self):
-        """
-        slot function used to set the number of frames to acquire for the pedestal
-        """
-        nframes = self.view.spinBoxPedestalFrames.value()
-        self.pedestalFrames = nframes
-        self.det.frames = nframes
 
     def updateLabelPedestalFrames(self, loadedPedestal=False):
         """

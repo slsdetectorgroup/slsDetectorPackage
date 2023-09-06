@@ -23,7 +23,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         parser = argparse.ArgumentParser()
         parser.add_argument('-a', '--alias', help="Alias file complete path")
-        arglist = parser.parse_args()
+        arglist, __ = parser.parse_known_args()
         self.alias_file = arglist.alias
 
         pg.setConfigOption("background", (247, 247, 247))

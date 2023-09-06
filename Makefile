@@ -11,7 +11,7 @@ clean: ## Remove the build folder and the shared library
 	rm -rf build/ pyctbgui/_decoder.cpython*
 
 test: ## Run unit tests using pytest
-	python -m pytest -v
+	python -m pytest -v tests/*.py
 
 lint: ## run ruff linter to check formatting errors
 	@ruff check tests pyctbgui *.py &&  echo "Ruff checks passed ✅"

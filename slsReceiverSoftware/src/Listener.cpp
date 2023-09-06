@@ -298,7 +298,7 @@ void Listener::ThreadExecution() {
         LOG(logINFORED) << index << ": Listener: weird rc = " << rc;
         if (rc == DUMMY_PACKET_VALUE) {
             LOG(logINFORED)
-                << index << ": Listener pushing dummy packet value!!";
+                << index << ": Listener pushing dummy packet value!! Exiting!";
             exit(-1);
         }
     }
@@ -319,7 +319,7 @@ void Listener::StopListening(char *buf, size_t &size) {
     size = DUMMY_PACKET_VALUE;
     fifo->PushAddress(buf);
     LOG(logINFOBLUE) << index << ": Listener dummy packet pushed to 0x"
-                     << std::hex << (void *)(buf) << std::dec;
+                     << std::hex << (void *)(buf) << std::dec << ". Fifo bound level:" << fifo->GetBoundLevel();
     StopRunning();
     LOG(logDEBUG1) << index << ": Listening Completed. Packets ("
                    << udpPortNumber << ") : " << numPacketsCaught;

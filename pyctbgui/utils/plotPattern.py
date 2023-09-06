@@ -11,7 +11,6 @@ Changes:
 
 @author: Jiaguo Zhang and Julian Heymes
 """
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -85,9 +84,8 @@ class PlotPattern:
         # Load the pattern and get all lines
         # Loop all lines
         # with open(Folder + "/" + File_pat + ".pat") as f_pat:
-        with Path(self.pattern).open() as f_pat:
+        with open(self.pattern) as f_pat:
             lines_pat = f_pat.readlines()
-        f_pat.close()
 
         # number of lines for pattern file
         nlines_pat = len(lines_pat)
@@ -114,7 +112,6 @@ class PlotPattern:
         for k in range(nlines_pat):
             # content of line
             words_line = lines_pat[k].split()
-            # print(f'words_line:{words_line}')
             if len(words_line) < 2:
                 continue
             if words_line[0] == "patword":

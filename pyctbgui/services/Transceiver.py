@@ -24,10 +24,11 @@ class TransceiverTab(QtWidgets.QWidget):
         self.det = None
         self.plotTab = None
         self.legend: LegendItem | None = None
+        self.acquisitionTab = None
 
     def setup_ui(self):
         self.plotTab = self.mainWindow.plotTab
-
+        self.acquisitionTab = self.mainWindow.acquisitionTab
         for i in range(Defines.transceiver.count):
             self.setTransceiverButtonColor(i, self.plotTab.getRandomColor())
         self.initializeAllTransceiverPlots()
@@ -144,12 +145,9 @@ class TransceiverTab(QtWidgets.QWidget):
         # get zoom state
         viewBox = self.mainWindow.plotTransceiverImage.getView()
         state = viewBox.getState()
-        # get histogram (colorbar) levels and histogram zoom range
-
         try:
             self.mainWindow.transceiver_frame = self._processImageData(data, dSamples, self.mainWindow.romode.value,
                                                                        self.mainWindow.nDBitEnabled)
-            # print(f"type of image:{type(self.mainWindows.transceiver_frame)}")
             self.plotTab.ignoreHistogramSignal = True
             self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame)
         except Exception:
@@ -157,7 +155,7 @@ class TransceiverTab(QtWidgets.QWidget):
             message = f'Warning: Invalid size for Transceiver Image. Expected' \
                       f' {self.mainWindow.nTransceiverRows * self.mainWindow.nTransceiverCols} size,' \
                       f' got {self.mainWindow.transceiver_frame.size} instead.'
-            self.updateCurrentFrame('Invalid Image')
+            self.acquisitionTab.updateCurrentFrame('Invalid Image')
             self.mainWindow.statusbar.showMessage(message)
             print(message)
 

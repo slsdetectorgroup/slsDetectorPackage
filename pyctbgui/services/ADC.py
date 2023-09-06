@@ -168,7 +168,7 @@ class AdcTab(QtWidgets.QWidget):
             self.mainWindow.analog_frame = self._processImageData(data, aSamples, self.mainWindow.nADCEnabled)
             self.plotTab.ignoreHistogramSignal = True
             self.mainWindow.plotAnalogImage.setImage(self.mainWindow.analog_frame.T)
-        except Exception:
+        except FileNotFoundError:
             self.mainWindow.statusbar.setStyleSheet("color:red")
             message = f'Warning: Invalid size for Analog Image. Expected' \
                       f' {self.mainWindow.nAnalogRows * self.mainWindow.nAnalogCols} ' \

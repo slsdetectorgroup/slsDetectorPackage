@@ -3,19 +3,24 @@ from pathlib import Path
 
 import numpy as np
 
-__savedFrames = []
-__pedestal = 0
+__frameCount = 0
+__pedestalSum = np.array(0, np.float64)
+__pedestal = np.array(0, np.float32)
+__loadedPedestal = False
 
 
 def reset(plotTab):
-    global __savedFrames, __pedestal
-    __savedFrames = []
-    __pedestal = 0
+    global __frameCount, __pedestalSum, __pedestal, __loadedPedestal
+    __frameCount = 0
+    __pedestalSum = np.array(0, np.float64)
+    __pedestal = np.array(0, np.float64)
+    __loadedPedestal = False
+
     plotTab.updateLabelPedestalFrames()
 
 
 def getFramesCount():
-    return len(__savedFrames)
+    return __frameCount
 
 
 def getPedestal():
@@ -23,20 +28,24 @@ def getPedestal():
 
 
 def calculatePedestal():
-    global __pedestal
-    if len(__savedFrames) == 0:
-        __pedestal = 0
+    global __pedestalSum, __pedestal
+    if __loadedPedestal:
+        return __pedestal
+    if __frameCount == 0:
+        __pedestal = np.array(0, np.float64)
     else:
-        __pedestal = np.mean(__savedFrames, axis=0)
+        __pedestal = __pedestalSum / __frameCount
+    return __pedestal
 
 
 def savePedestal(path=Path('/tmp/pedestal')):
-    calculatePedestal()
-    np.save(path, getPedestal())
+    pedestal = calculatePedestal()
+    np.save(path, pedestal)
 
 
 def loadPedestal(path: Path):
-    global __pedestal
+    global __pedestal, __loadedPedestal
+    __loadedPedestal = True
     __pedestal = np.load(path)
 
 
@@ -56,23 +65,29 @@ def recordOrApplyPedestal(func):
         @param obj: reference to func's class instance (self of its class)
         @return: if record mode: return frame untouched, if apply mode: return frame - pedestal
         """
-        global __savedFrames, __pedestal
+        global __frameCount, __pedestal, __pedestalSum
 
         frame = func(obj, *args, **kwargs)
-        if not np.array_equal(__pedestal, 0) and __pedestal.shape != frame.shape:
-            __logger.warning('pedestal shape mismatch. resetting pedestal...')
+        if not np.array_equal(0, __pedestalSum) and __pedestalSum.shape != frame.shape:
+            # check if __pedestalSum has same different shape as the frame
+            __logger.info('pedestal shape mismatch. resetting pedestal...')
             reset(obj.plotTab)
 
         if obj.plotTab.pedestalRecord:
-            # check if savedFrames has frames with different shapes
-            __savedFrames.append(frame)
+            if __loadedPedestal:
+                # reset loaded pedestal if we acquire in record mode
+                __logger.warning('resetting loaded pedestal...')
+                reset(obj.plotTab)
+            __frameCount += 1
+
+            __pedestalSum = np.add(__pedestalSum, frame, dtype=np.float64)
+
             obj.plotTab.updateLabelPedestalFrames()
-            calculatePedestal()
             return frame
         if obj.plotTab.pedestalApply:
             # apply pedestal
             # check if pedestal is calculated
-            return frame - __pedestal
+            return frame - calculatePedestal()
 
         return frame
 

@@ -91,6 +91,9 @@ void Fifo::GetNewAddress(char *&address) {
 }
 
 void Fifo::PushAddress(char *&address) {
+     LOG(logINFOGREEN) << index << ": Going to push Fifo to 0x"
+                     << std::hex << (void *)(address) << std::dec << " Fifo data: " << fifoBound->getDataValue() << " fifo free: " << fifoBound->getFreeValue() << " freefifo data: " << fifoFree->getDataValue() <<" freefifo free:" << fifoFree->getFreeValue();
+
     int temp = fifoBound->getDataValue();
     if (temp > status_fifoBound)
         status_fifoBound = temp;

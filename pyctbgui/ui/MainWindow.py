@@ -31,6 +31,7 @@ class MainWindow(QtWidgets.QMainWindow):
         pg.setConfigOption('leftButtonPan', False)
 
         super().__init__(*args, **kwargs)
+
         uic.loadUi(Path(__file__).parent / "CtbGui.ui", self)
         logging.basicConfig(encoding='utf-8', level=logging.INFO)
         self.updateSettingValues()

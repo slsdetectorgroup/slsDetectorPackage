@@ -32,6 +32,7 @@ class Defines:
 
     class transceiver:
         count = 4
+        tabIndex = 4
 
     class slowAdc:
         count = 8

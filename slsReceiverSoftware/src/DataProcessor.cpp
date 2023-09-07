@@ -307,7 +307,7 @@ void DataProcessor::StopProcessing(char *buf) {
                           << std::hex << (void *)(buf) << std::dec;
     }
     if (fifo->GetBoundLevel() != 0) {
-        LOG(logINFORED) << "fifo bound level not 0!: " << fifo->GetBoundLevel() << ". Exiting!";
+        LOG(logINFORED) << index << ":fifo bound level not 0!: " << fifo->GetBoundLevel() << ". Exiting!";
         exit(-1);
     }
 

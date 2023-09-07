@@ -81,30 +81,43 @@ void Fifo::DestroyFifos() {
     fifoStream = nullptr;
 }
 
-void Fifo::FreeAddress(char *&address) { fifoFree->push(address); }
+void Fifo::FreeAddress(char *&address) { 
+       fifoFree->push(address); 
+        LOG(logINFOGREEN) << index << ": Freed Fifo from 0x"
+                << std::hex << (void *)(address) << std::dec << " Fifo data: " << fifoBound->getDataValue() << " fifo free: " << fifoBound->getFreeValue() << " freefifo data: " << fifoFree->getDataValue() <<" freefifo free:" << fifoFree->getFreeValue();
+
+    }
 
 void Fifo::GetNewAddress(char *&address) {
     int temp = fifoFree->getDataValue();
     if (temp < status_fifoFree)
         status_fifoFree = temp;
     fifoFree->pop(address);
+    LOG(logINFOGREEN) << index << ": Got new fifo from 0x"
+                << std::hex << (void *)(address) << std::dec << " Fifo data: " << fifoBound->getDataValue() << " fifo free: " << fifoBound->getFreeValue() << " freefifo data: " << fifoFree->getDataValue() <<" freefifo free:" << fifoFree->getFreeValue();
+  
 }
 
 void Fifo::PushAddress(char *&address) {
-     LOG(logINFOGREEN) << index << ": Going to push Fifo to 0x"
-                     << std::hex << (void *)(address) << std::dec << " Fifo data: " << fifoBound->getDataValue() << " fifo free: " << fifoBound->getFreeValue() << " freefifo data: " << fifoFree->getDataValue() <<" freefifo free:" << fifoFree->getFreeValue();
-
     int temp = fifoBound->getDataValue();
     if (temp > status_fifoBound)
         status_fifoBound = temp;
     while (!fifoBound->push(address))
         ;
+     LOG(logINFOGREEN) << index << ": Pushed Fifo to 0x"
+                     << std::hex << (void *)(address) << std::dec << " Fifo data: " << fifoBound->getDataValue() << " fifo free: " << fifoBound->getFreeValue() << " freefifo data: " << fifoFree->getDataValue() <<" freefifo free:" << fifoFree->getFreeValue();
+
     /*temp = fifoBound->getDataValue();
     if (temp > status_fifoBound)
             status_fifoBound = temp;*/
 }
 
-void Fifo::PopAddress(char *&address) { fifoBound->pop(address); }
+void Fifo::PopAddress(char *&address) { 
+    fifoBound->pop(address); 
+    LOG(logINFOGREEN) << index << ": Popped Fifo from 0x"
+                << std::hex << (void *)(address) << std::dec << " Fifo data: " << fifoBound->getDataValue() << " fifo free: " << fifoBound->getFreeValue() << " freefifo data: " << fifoFree->getDataValue() <<" freefifo free:" << fifoFree->getFreeValue();
+
+}
 
 void Fifo::PushAddressToStream(char *&address) { fifoStream->push(address); }
 

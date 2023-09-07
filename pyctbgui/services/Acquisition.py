@@ -417,7 +417,7 @@ class AcquisitionTab(QtWidgets.QWidget):
         newPath = self.outputDir / f'{self.outputFileNamePrefix}_{jsonHeader["fileIndex"]}.{ext}'
 
         if not oneFile:
-            # if there is multiple .npy files group then in an .npz file
+            # if there is multiple .npy files group them in an .npz file
             self.numpyFileManagers.clear()
             NpzFileWriter.zipNpyFiles(newPath, filepaths, filenames, deleteOriginals=True, compressed=False)
         else:
@@ -680,11 +680,10 @@ class AcquisitionTab(QtWidgets.QWidget):
                     waveforms['tx_image'] = self.transceiverTab.processImageData(data, self.dsamples)
 
             self.saveNumpyFile(waveforms, jsonHeader)
-
         except zmq.ZMQError:
             pass
-        except Exception as e:
-            print(f'Caught exception: {str(e)}')
+        except Exception:
+            self.logger.exception("Exception caught")
 
     def setup_zmq(self):
         self.det.rx_zmqstream = 1

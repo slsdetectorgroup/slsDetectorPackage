@@ -264,7 +264,7 @@ void Listener::ThreadExecution() {
                         << ": free memory: " << (info.freeram / (1024 * 1024))
                         << " MB";
     }*/
-    char *buffer;
+    char *buffer = nullptr;
     fifo->GetNewAddress(buffer);
     LOG(logDEBUG5) << "Listener " << index << ", pop 0x" << std::hex
                    << (void *)(buffer) << std::dec << ":" << buffer;

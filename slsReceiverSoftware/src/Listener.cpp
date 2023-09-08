@@ -452,6 +452,7 @@ size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets,
     switch (frameDiscardMode) {
     case DISCARD_EMPTY_FRAMES:
         if (!numpackets) {
+            LOG(logINFORED) << index << ":Listener handle future packets(discard empty) returning -1: EOA:" << EOA;
             if (!EOA) {
                 LOG(logDEBUG) << index << " Skipped fnum:" << currentFrameIndex;
                 currentFrameIndex = fnum;
@@ -460,6 +461,7 @@ size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets,
         }
         break;
     case DISCARD_PARTIAL_FRAMES:
+        LOG(logINFORED) << index << ":Listener handle future packets(discard partial) returning -1: EOA:" << EOA;
         LOG(logDEBUG) << index << " discarding fnum:" << currentFrameIndex;
         if (!EOA) {
             currentFrameIndex = fnum;

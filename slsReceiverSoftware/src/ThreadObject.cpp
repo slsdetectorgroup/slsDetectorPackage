@@ -51,7 +51,6 @@ void ThreadObject::RunningThread() {
                      << ", Tid: " << threadId << "]";
     while (!killThread) {
         while (IsRunning()) {
-            LOG(logINFOBLUE) << index << " " << type << " In the running loop";
             ThreadExecution();
         }
         LOG(logINFOBLUE) << index << " " << type << " Out of the running loop";

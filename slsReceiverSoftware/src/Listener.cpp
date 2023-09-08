@@ -289,6 +289,7 @@ void Listener::ThreadExecution() {
     // end of acquisition or discarding image
     if (rc <= 0) {
         fifo->FreeAddress(buffer);
+        LOG(logINFORED) << index << ": Listener freed address as rc <=0";
         return;
     }
 

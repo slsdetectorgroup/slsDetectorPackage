@@ -278,8 +278,8 @@ int main(int argc, char *argv[]) {
         }
 
         // validate control and stop port number
-        if (0 >= portno || portno >= USHRT_MAX || 0 >= (portno + 1) ||
-            (portno + 1) >= USHRT_MAX) {
+        if (0 >= portno || portno > USHRT_MAX || 0 >= (portno + 1) ||
+            (portno + 1) > USHRT_MAX) {
             LOG(logERROR, ("Invalid control server or stop server port "
                            "numbers (%d, %d). It must be in range 1 - %d",
                            portno, portno + 1, USHRT_MAX));

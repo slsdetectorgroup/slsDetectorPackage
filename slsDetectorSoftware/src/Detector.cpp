@@ -108,7 +108,9 @@ void Detector::setHostname(const std::vector<std::string> &hostname) {
 }
 
 void Detector::setVirtualDetectorServers(int numServers, int startingPort) {
-    isValidPortNumber(startingPort);
+    for (int i = 0; i != numServers; ++i) {
+        isValidPortNumber(startingPort + i * 2);
+    }
     pimpl->setVirtualDetectorServers(numServers, startingPort);
 }
 
@@ -2515,7 +2517,7 @@ Result<ns> Detector::getMeasurementTime(Positions pos) const {
 std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
 
 void Detector::isValidPortNumber(int port) {
-    if (0 >= port || port >= std::numeric_limits<uint16_t>::max()) {
+    if (0 >= port || port > std::numeric_limits<uint16_t>::max()) {
         std::ostringstream oss;
         oss << "Invalid port number " << port << ". It must be in range 1 - "
             << std::numeric_limits<uint16_t>::max();

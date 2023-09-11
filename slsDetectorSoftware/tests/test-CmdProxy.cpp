@@ -5,6 +5,7 @@
 #include "sls/Detector.h"
 #include "sls/file_utils.h"
 #include "sls/sls_detector_defs.h"
+#include "test-CmdProxy-global.h"
 
 #include <chrono>
 #include <sstream>
@@ -76,7 +77,13 @@ TEST_CASE("hostname", "[.cmd]") {
     REQUIRE_NOTHROW(proxy.Call("hostname", {}, -1, GET));
 }
 
-// virtual: not testing
+TEST_CASE("virtual", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_THROWS(proxy.Call("virtual", {}, -1, GET));
+    test_valid_port("virtual", {"1"}, -1, PUT);
+    test_valid_port("virtual", {"3", "65534"}, -1, PUT, 65536);
+}
 
 TEST_CASE("versions", "[.cmd]") {
     Detector det;
@@ -2618,6 +2625,9 @@ TEST_CASE("udp_dstport", "[.cmd]") {
         proxy.Call("udp_dstport", {"50084"}, -1, PUT, oss);
         REQUIRE(oss.str() == "udp_dstport 50084\n");
     }
+    test_valid_port("udp_dstport", {}, -1, PUT);
+    test_valid_port("udp_dstport", {}, 0, PUT);
+
     for (int i = 0; i != det.size(); ++i) {
         det.setDestinationUDPPort(prev_val[i], {i});
     }
@@ -2702,6 +2712,9 @@ TEST_CASE("udp_dstport2", "[.cmd]") {
             proxy.Call("udp_dstport2", {"50084"}, -1, PUT, oss);
             REQUIRE(oss.str() == "udp_dstport2 50084\n");
         }
+
+        test_valid_port("udp_dstport2", {}, -1, PUT);
+
         for (int i = 0; i != det.size(); ++i) {
             det.setDestinationUDPPort2(prev_val[i], {i});
         }

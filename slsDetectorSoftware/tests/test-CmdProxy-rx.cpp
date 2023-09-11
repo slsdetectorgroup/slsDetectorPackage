@@ -5,6 +5,7 @@
 #include "sls/Detector.h"
 #include "sls/Version.h"
 #include "sls/sls_detector_defs.h"
+#include "test-CmdProxy-global.h"
 #include <sstream>
 
 #include "sls/versionAPI.h"
@@ -237,6 +238,9 @@ TEST_CASE("rx_tcpport", "[.cmd][.rx]") {
         proxy.Call("rx_tcpport", {}, i, GET, oss);
         REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');
     }
+
+    test_valid_port("rx_tcpport", {}, -1, PUT);
+
     for (int i = 0; i != det.size(); ++i) {
         det.setRxPort(prev_val[i], i);
     }

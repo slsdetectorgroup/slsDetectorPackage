@@ -45,6 +45,14 @@ ClientInterface::ClientInterface(int portNumber)
     : detType(GOTTHARD),
       portNumber(portNumber > 0 ? portNumber : DEFAULT_TCP_RX_PORTNO),
       server(portNumber) {
+    // validate port number
+    if (0 >= portNumber || portNumber >= std::numeric_limits<uint16_t>::max()) {
+        std::ostringstream oss;
+        oss << "Invalid port number " << portNumber
+            << ". It must be in range 1 - "
+            << std::numeric_limits<uint16_t>::max();
+        throw RuntimeError(oss.str());
+    }
     functionTable();
     parentThreadId = gettid();
     tcpThread =

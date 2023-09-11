@@ -13,6 +13,7 @@
 #include "slsDetectorServer_funcs.h"
 
 #include <getopt.h>
+#include <limits.h>
 #include <signal.h>
 #include <string.h>
 #include <unistd.h>
@@ -276,6 +277,14 @@ int main(int argc, char *argv[]) {
             LOG(logERROR, ("Could not set handler function for SIGINT"));
         }
 
+        // validate control and stop port number
+        if (0 >= portno || portno >= USHRT_MAX || 0 >= (portno + 1) ||
+            (portno + 1) >= USHRT_MAX) {
+            LOG(logERROR, ("Invalid control server or stop server port "
+                           "numbers (%d, %d). It must be in range 1 - %d",
+                           portno, portno + 1, USHRT_MAX));
+            return -1;
+        }
         if (sharedMemory_create(portno) == FAIL) {
             return -1;
         }

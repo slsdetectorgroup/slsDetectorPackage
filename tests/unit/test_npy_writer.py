@@ -1,5 +1,4 @@
 import filecmp
-import os
 from pathlib import Path
 
 import pytest
@@ -7,114 +6,99 @@ import pytest
 from pyctbgui.utils.numpyWriter.npy_writer import NumpyFileManager
 import numpy as np
 
-prefix = Path('tests/.tmp/')
 
-
-def __clean_tmp_dir(path=prefix):
-    if Path.is_dir(path):
-        for file in os.listdir(path):
-            Path.unlink(path / file)
-    else:
-        Path.mkdir(path)
-
-
-def test_create_new_file():
-    __clean_tmp_dir()
-    npw = NumpyFileManager(prefix / 'tmp.npy', 'w', (400, 400), np.int32)
+def test_create_new_file(tmp_path):
+    npw = NumpyFileManager(tmp_path / 'tmp.npy', 'w', (400, 400), np.int32)
     npw.writeOneFrame(np.ones([400, 400], dtype=np.int32))
     npw.writeOneFrame(np.ones([400, 400], dtype=np.int32))
     npw.writeOneFrame(np.ones([400, 400], dtype=np.int32))
     npw.writeOneFrame(np.ones([400, 400], dtype=np.int32))
     npw.close()
 
-    arr = np.load(prefix / 'tmp.npy')
+    arr = np.load(tmp_path / 'tmp.npy')
 
     assert arr.dtype == np.int32
     assert arr.shape == (4, 400, 400)
     assert np.array_equal(arr, np.ones([4, 400, 400], dtype=np.int32))
 
-    np.save(prefix / 'tmp2.npy', np.ones([4, 400, 400], dtype=np.int32))
-    assert filecmp.cmp(prefix / 'tmp.npy', prefix / 'tmp2.npy')
+    np.save(tmp_path / 'tmp2.npy', np.ones([4, 400, 400], dtype=np.int32))
+    assert filecmp.cmp(tmp_path / 'tmp.npy', tmp_path / 'tmp2.npy')
 
 
-def test_open_old_file():
-    __clean_tmp_dir()
-    npw = NumpyFileManager(prefix / 'tmp.npy', 'w', (4000, ), np.float32)
+def test_open_old_file(tmp_path):
+    npw = NumpyFileManager(tmp_path / 'tmp.npy', 'w', (4000, ), np.float32)
     npw.writeOneFrame(np.ones(4000, dtype=np.float32))
     npw.writeOneFrame(np.ones(4000, dtype=np.float32))
     npw.close()
-    npw2 = NumpyFileManager(prefix / 'tmp.npy', 'r+')
+    npw2 = NumpyFileManager(tmp_path / 'tmp.npy', 'r+')
     assert npw2.frameCount == 2
     assert npw2.frameShape == (4000, )
     assert npw2.dtype == np.float32
     npw2.writeOneFrame(np.ones(4000, dtype=np.float32))
     del npw2
-    np.save(prefix / 'tmp2.npy', np.ones([3, 4000], dtype=np.float32))
-    assert filecmp.cmp(prefix / 'tmp.npy', prefix / 'tmp2.npy')
+    np.save(tmp_path / 'tmp2.npy', np.ones([3, 4000], dtype=np.float32))
+    assert filecmp.cmp(tmp_path / 'tmp.npy', tmp_path / 'tmp2.npy')
 
 
 @pytest.mark.parametrize('mode', ['w', 'x'])
-def test_init_parameters2(mode):
-    __clean_tmp_dir()
+def test_init_parameters2(mode, tmp_path):
     # test opening files with missing parameters for write
     with pytest.raises(AssertionError):
-        NumpyFileManager(prefix / 'abaababababa.npyx', mode)
+        NumpyFileManager(tmp_path / 'abaababababa.npyx', mode)
     with pytest.raises(AssertionError):
-        NumpyFileManager(prefix / 'abaababababa.npyx2', mode, frameShape=(12, 34))
+        NumpyFileManager(tmp_path / 'abaababababa.npyx2', mode, frameShape=(12, 34))
     with pytest.raises(AssertionError):
-        NumpyFileManager(prefix / 'abaababababa.npyx3', mode, dtype=np.int64)
+        NumpyFileManager(tmp_path / 'abaababababa.npyx3', mode, dtype=np.int64)
 
     # opening new file with required parameters (this should work)
-    NumpyFileManager(prefix / 'abaababababa.npyx3', mode, dtype=np.int64, frameShape=(6, 6))
-    assert Path.is_file(prefix / 'abaababababa.npyx3')
+    NumpyFileManager(tmp_path / 'abaababababa.npyx3', mode, dtype=np.int64, frameShape=(6, 6))
+    assert Path.is_file(tmp_path / 'abaababababa.npyx3')
 
 
-def test_init_parameters():
-    __clean_tmp_dir()
+def test_init_parameters(tmp_path):
     with pytest.raises(TypeError):
         NumpyFileManager()
 
     # test opening file that does not exist
     with pytest.raises(FileNotFoundError):
-        NumpyFileManager(prefix / 'abaababababa.npyx')
+        NumpyFileManager(tmp_path / 'abaababababa.npyx')
     with pytest.raises(FileNotFoundError):
-        NumpyFileManager(prefix / 'abaababababa.npyx2', frameShape=(12, 34))
+        NumpyFileManager(tmp_path / 'abaababababa.npyx2', frameShape=(12, 34))
     with pytest.raises(FileNotFoundError):
-        NumpyFileManager(prefix / 'abaababababa.npyx3', dtype=np.int64)
+        NumpyFileManager(tmp_path / 'abaababababa.npyx3', dtype=np.int64)
     with pytest.raises(FileNotFoundError):
-        NumpyFileManager(prefix / 'abaababababa.npyx3', dtype=np.int64, frameShape=(6, 6))
+        NumpyFileManager(tmp_path / 'abaababababa.npyx3', dtype=np.int64, frameShape=(6, 6))
 
     # re-opening the same file
-    NumpyFileManager(prefix / 'abaababababa.npyx3', 'w', dtype=np.int64, frameShape=(6, 6))
-    NumpyFileManager(prefix / 'abaababababa.npyx3')
+    NumpyFileManager(tmp_path / 'abaababababa.npyx3', 'w', dtype=np.int64, frameShape=(6, 6))
+    NumpyFileManager(tmp_path / 'abaababababa.npyx3')
 
     # re-opening the file with wrong parameters
     with pytest.raises(AssertionError):
-        NumpyFileManager(prefix / 'abaababababa.npyx3', frameShape=(6, 2))
+        NumpyFileManager(tmp_path / 'abaababababa.npyx3', frameShape=(6, 2))
     with pytest.raises(AssertionError):
-        NumpyFileManager(prefix / 'abaababababa.npyx3', dtype=np.int32)
+        NumpyFileManager(tmp_path / 'abaababababa.npyx3', dtype=np.int32)
     with pytest.raises(AssertionError):
-        NumpyFileManager(prefix / 'abaababababa.npyx3', dtype=np.float32, frameShape=(5, 5))
+        NumpyFileManager(tmp_path / 'abaababababa.npyx3', dtype=np.float32, frameShape=(5, 5))
 
     # test resetting an existing file
-    npw = NumpyFileManager(prefix / 'tmp4.npy', 'w', dtype=np.float32, frameShape=(5, 5))
+    npw = NumpyFileManager(tmp_path / 'tmp4.npy', 'w', dtype=np.float32, frameShape=(5, 5))
     npw.writeOneFrame(np.ones((5, 5), dtype=np.float32))
     npw.close()
-    assert np.load(prefix / 'tmp4.npy').shape == (1, 5, 5)
-    npw = NumpyFileManager(prefix / 'tmp4.npy', 'w', dtype=np.int64, frameShape=(7, 7))
+    assert np.load(tmp_path / 'tmp4.npy').shape == (1, 5, 5)
+    npw = NumpyFileManager(tmp_path / 'tmp4.npy', 'w', dtype=np.int64, frameShape=(7, 7))
     npw.flush()
-    assert np.load(prefix / 'tmp4.npy').shape == (0, 7, 7)
+    assert np.load(tmp_path / 'tmp4.npy').shape == (0, 7, 7)
 
     # test adding frames with the wrong shape to an existing file
     with pytest.raises(ValueError, match=r'frame shape given \(9, 4, 4\) '):
         npw.writeOneFrame(np.ones((9, 4, 4)))
 
 
-def test_get_item():
-    __clean_tmp_dir()
+def test_get_item(tmp_path):
     rng = np.random.default_rng(seed=42)
     arr = rng.random((1000, 20, 20))
-    npw = NumpyFileManager(prefix / 'tmp.npy', 'w', frameShape=(20, 20), dtype=arr.dtype)
+    npw = NumpyFileManager(tmp_path / 'tmp.npy', 'w', frameShape=(20, 20), dtype=arr.dtype)
     for frame in arr:
         npw.writeOneFrame(frame)
 
@@ -146,10 +130,10 @@ def test_get_item():
         npw.readFrames(-5, -5)
 
 
-def test_file_functions():
+def test_file_functions(tmp_path):
     rng = np.random.default_rng(seed=42)
     arr = rng.random((1000, 20, 20))
-    npw = NumpyFileManager(prefix / 'tmp.npy', 'w', frameShape=(20, 20), dtype=arr.dtype)
+    npw = NumpyFileManager(tmp_path / 'tmp.npy', 'w', frameShape=(20, 20), dtype=arr.dtype)
     for frame in arr:
         npw.writeOneFrame(frame)
     assert np.array_equal(npw.read(10), arr[:10])
@@ -168,10 +152,9 @@ def test_file_functions():
     assert np.array_equal(npw.read(10), arr[5:15])
 
 
-def test_with_statement():
-    __clean_tmp_dir()
+def test_with_statement(tmp_path):
     arr = np.ones((5, 5))
-    with NumpyFileManager(prefix / 'tmp.npy', 'w', (5, 5), arr.dtype) as npw:
+    with NumpyFileManager(tmp_path / 'tmp.npy', 'w', (5, 5), arr.dtype) as npw:
         npw.writeOneFrame(arr)
-    np.save(prefix / 'tmp2.npy', np.expand_dims(arr, 0))
-    assert filecmp.cmp(prefix / 'tmp2.npy', prefix / 'tmp.npy')
+    np.save(tmp_path / 'tmp2.npy', np.expand_dims(arr, 0))
+    assert filecmp.cmp(tmp_path / 'tmp2.npy', tmp_path / 'tmp.npy')

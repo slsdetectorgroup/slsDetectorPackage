@@ -11,7 +11,20 @@ clean: ## Remove the build folder and the shared library
 	rm -rf build/ pyctbgui/_decoder.cpython*
 
 test: ## Run unit tests using pytest
-	python -m pytest -v tests/*.py
+	python -m pytest -v tests/unit
+
+test_gui: ## Run E2E tests using pytest
+	pytest -v tests/gui
+
+setup_gui_test:
+	ctbDetectorServer_virtual > /tmp/simulator.log 2>&1 &
+	slsReceiver > /tmp/slsReceiver.log 2>&1 &
+	sleep 3
+	sls_detector_put config /opt/sls/pyctbgui/tests/gui/data/simulator.config
+
+killall:
+	killall slsReceiver ctbDetectorServer_virtual
+
 
 lint: ## run ruff linter to check formatting errors
 	@ruff check tests pyctbgui *.py &&  echo "Ruff checks passed ✅"

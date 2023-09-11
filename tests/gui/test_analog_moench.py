@@ -10,8 +10,12 @@ def test_image_acq(main, qtbot, tmp_path):
     """
     tests Transceiver image acquisition and numpy saving
     """
+    params = defaultParams()
+    params.detector = "Moench04"
+    params.mode = "Analog"
+    params.enabled = list(range(32))
 
-    setup_gui(qtbot, main, tmp_path=tmp_path)
+    setup_gui(qtbot, main, params, tmp_path=tmp_path)
 
     qtbot.mouseClick(main.pushButtonStart, qt_api.QtCore.Qt.MouseButton.LeftButton)
 
@@ -20,9 +24,9 @@ def test_image_acq(main, qtbot, tmp_path):
     qtbot.wait_until(lambda: newPath.is_file())
 
     testArray = np.load(newPath)
-    dataArray = np.load(Path(__file__).parent / 'data' / 'matterhorm_image_transceiver.npy')
+    dataArray = np.load(Path(__file__).parent / 'data' / 'moench04_image_analog.npy')
 
-    assert testArray.shape == (1, 48, 48)
+    assert testArray.shape == (1, 400, 400)
     assert np.array_equal(dataArray, testArray)
 
 
@@ -32,8 +36,10 @@ def test_waveform_acq(main, qtbot, tmp_path):
     """
     params = defaultParams()
     params.image = False
-    params.enabled = [0, 1]
-    params.plotted = [0, 1]
+    params.detector = "Moench04"
+    params.mode = "Analog"
+    params.enabled = list(range(32))
+    params.plotted = params.enabled
 
     setup_gui(qtbot, main, params, tmp_path=tmp_path)
 
@@ -44,7 +50,8 @@ def test_waveform_acq(main, qtbot, tmp_path):
 
     qtbot.wait_until(lambda: newPath.is_file())
     testArray = np.load(newPath)
-    dataArray = np.load(Path(__file__).parent / 'data' / 'matterhorn_waveform_transceiver1and2.npz')
-    assert testArray.files == ['Transceiver 0', 'Transceiver 1']
-    assert np.array_equal(dataArray['Transceiver 0'], testArray['Transceiver 0'])
-    assert np.array_equal(dataArray['Transceiver 1'], testArray['Transceiver 1'])
+    dataArray = np.load(Path(__file__).parent / 'data' / 'moench04_waveform_adc.npz')
+    files = [f"ADC{i}" for i in params.enabled]
+    assert testArray.files == files
+    for i in files:
+        assert np.array_equal(dataArray[i], testArray[i])

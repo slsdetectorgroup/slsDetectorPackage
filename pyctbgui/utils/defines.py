@@ -13,21 +13,25 @@ class Defines:
     Max_Tabs = 9
 
     class adc:
+        tabIndex = 5
         count = 32
         half = 16
         BIT0_15_MASK = 0x0000FFFF
         BIT16_31_MASK = 0xFFFF0000
 
     class dac:
+        tabIndex = 0
         count = 18
 
     class signals:
+        tabIndex = 3
         count = 64
         half = 32
         BIT0_31_MASK = 0x00000000FFFFFFFF
         BIT32_63_MASK = 0xFFFFFFFF00000000
 
     class pattern:
+        tabIndex = 6
         loops_count = 6
 
     class transceiver:
@@ -35,6 +39,7 @@ class Defines:
         tabIndex = 4
 
     class slowAdc:
+        tabIndex = 2
         count = 8
 
     colCount = 4

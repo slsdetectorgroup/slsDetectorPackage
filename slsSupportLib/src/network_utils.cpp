@@ -203,4 +203,13 @@ MacAddr InterfaceNameToMac(const std::string &inf) {
     return MacAddr(mac);
 }
 
+void validatePortNumber(int port) {
+    if (0 >= port || port > std::numeric_limits<uint16_t>::max()) {
+        std::ostringstream oss;
+        oss << "Invalid port number " << port << ". It must be in range 1 - "
+            << std::numeric_limits<uint16_t>::max();
+        throw RuntimeError(oss.str());
+    }
+}
+
 } // namespace sls

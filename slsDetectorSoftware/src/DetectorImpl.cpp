@@ -288,13 +288,7 @@ void DetectorImpl::addModule(const std::string &hostname) {
     if (res.size() > 1) {
         host = res[0];
         port = StringTo<int>(res[1]);
-        if (0 >= port || port > std::numeric_limits<uint16_t>::max()) {
-            std::ostringstream oss;
-            oss << "Invalid port number " << port
-                << ". It must be in range 1 - "
-                << std::numeric_limits<uint16_t>::max();
-            throw RuntimeError(oss.str());
-        }
+        validatePortNumber(port);
     }
 
     if (host != "localhost") {

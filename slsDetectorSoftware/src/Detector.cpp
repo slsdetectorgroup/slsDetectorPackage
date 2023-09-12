@@ -109,7 +109,7 @@ void Detector::setHostname(const std::vector<std::string> &hostname) {
 
 void Detector::setVirtualDetectorServers(int numServers, int startingPort) {
     for (int i = 0; i != numServers; ++i) {
-        isValidPortNumber(startingPort + i * 2);
+        validatePortNumber(startingPort + i * 2);
     }
     pimpl->setVirtualDetectorServers(numServers, startingPort);
 }
@@ -1096,7 +1096,7 @@ void Detector::setDestinationUDPPort(int port, int module_id) {
                             port_list[idet]);
         }
     } else {
-        isValidPortNumber(port);
+        validatePortNumber(port);
         pimpl->Parallel(&Module::setDestinationUDPPort, {module_id}, port);
     }
 }
@@ -1113,7 +1113,7 @@ void Detector::setDestinationUDPPort2(int port, int module_id) {
                             port_list[idet]);
         }
     } else {
-        isValidPortNumber(port);
+        validatePortNumber(port);
         pimpl->Parallel(&Module::setDestinationUDPPort2, {module_id}, port);
     }
 }
@@ -1225,11 +1225,11 @@ void Detector::setRxPort(int port, int module_id) {
             it = port++;
         }
         for (int idet = 0; idet < size(); ++idet) {
-            isValidPortNumber(port_list[idet]);
+            validatePortNumber(port_list[idet]);
             pimpl->Parallel(&Module::setReceiverPort, {idet}, port_list[idet]);
         }
     } else {
-        isValidPortNumber(port);
+        validatePortNumber(port);
         pimpl->Parallel(&Module::setReceiverPort, {module_id}, port);
     }
 }
@@ -1433,7 +1433,7 @@ void Detector::setRxZmqPort(int port, int module_id) {
                             port_list[idet]);
         }
     } else {
-        isValidPortNumber(port);
+        validatePortNumber(port);
         pimpl->Parallel(&Module::setReceiverStreamingPort, {module_id}, port);
     }
     if (previouslyReceiverStreaming) {
@@ -1468,7 +1468,7 @@ void Detector::setClientZmqPort(int port, int module_id) {
                             port_list[idet]);
         }
     } else {
-        isValidPortNumber(port);
+        validatePortNumber(port);
         pimpl->Parallel(&Module::setClientStreamingPort, {module_id}, port);
     }
     if (previouslyClientStreaming) {
@@ -2472,7 +2472,7 @@ Result<int> Detector::getControlPort(Positions pos) const {
 }
 
 void Detector::setControlPort(int value, Positions pos) {
-    isValidPortNumber(value);
+    validatePortNumber(value);
     pimpl->Parallel(&Module::setControlPort, pos, value);
 }
 
@@ -2481,7 +2481,7 @@ Result<int> Detector::getStopPort(Positions pos) const {
 }
 
 void Detector::setStopPort(int value, Positions pos) {
-    isValidPortNumber(value);
+    validatePortNumber(value);
     pimpl->Parallel(&Module::setStopPort, pos, value);
 }
 
@@ -2516,15 +2516,6 @@ Result<ns> Detector::getMeasurementTime(Positions pos) const {
 
 std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
 
-void Detector::isValidPortNumber(int port) {
-    if (0 >= port || port > std::numeric_limits<uint16_t>::max()) {
-        std::ostringstream oss;
-        oss << "Invalid port number " << port << ". It must be in range 1 - "
-            << std::numeric_limits<uint16_t>::max();
-        throw RuntimeError(oss.str());
-    }
-}
-
 std::vector<int> Detector::getValidPortNumbers(int start_port) {
     int num_sockets_per_detector = getNumberofUDPInterfaces({}).tsquash(
         "Number of UDP Interfaces is not consistent among modules");
@@ -2533,7 +2524,7 @@ std::vector<int> Detector::getValidPortNumbers(int start_port) {
     for (int idet = 0; idet < size(); ++idet) {
         int port = start_port + (idet * num_sockets_per_detector);
         for (int i = 0; i != num_sockets_per_detector; ++i) {
-            isValidPortNumber(port + i);
+            validatePortNumber(port + i);
         }
         res.push_back(port);
     }

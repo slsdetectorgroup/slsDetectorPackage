@@ -2532,7 +2532,9 @@ std::vector<int> Detector::getValidPortNumbers(int start_port) {
     res.reserve(size());
     for (int idet = 0; idet < size(); ++idet) {
         int port = start_port + (idet * num_sockets_per_detector);
-        isValidPortNumber(port);
+        for (int i = 0; i != num_sockets_per_detector; ++i) {
+            isValidPortNumber(port + i);
+        }
         res.push_back(port);
     }
     return res;

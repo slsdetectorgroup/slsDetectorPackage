@@ -2008,7 +2008,6 @@ class Detector {
     ///@}
 
   private:
-    void isValidPortNumber(int port);
     std::vector<int> getValidPortNumbers(int start_port);
     void updateRxRateCorrections();
     void setNumberofUDPInterfaces_(int n, Positions pos);

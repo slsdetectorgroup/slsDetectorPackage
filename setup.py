@@ -39,5 +39,6 @@ setuptools.setup(
             'yapf==0.40.1',
             'pytest-ruff==0.1.1',
             'pre-commit',
+            'pytest-qt',
         ],
     })

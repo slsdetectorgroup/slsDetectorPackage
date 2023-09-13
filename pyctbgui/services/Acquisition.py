@@ -695,3 +695,32 @@ class AcquisitionTab(QtWidgets.QWidget):
         self.socket = self.context.socket(zmq.SUB)
         self.socket.connect(f"tcp://{self.zmqIp}:{self.zmqport}")
         self.socket.subscribe("")
+
+    def saveParameters(self) -> list[str]:
+        commands = [
+            f'romode {self.view.comboBoxROMode.currentText().lower()}',
+            f'runclk {self.view.spinBoxRunF.value()}',
+            f'adcclk {self.view.spinBoxADCF.value()}',
+            f'adcphase {self.view.spinBoxADCPhase.value()}',
+            f'adcpipeline {self.view.spinBoxADCPipeline.value()}',
+            f'dbitclk {self.view.spinBoxDBITF.value()}',
+            f'dbitphase {self.view.spinBoxDBITPhase.value()}',
+            f'dbitpipeline {self.view.spinBoxDBITPipeline.value()}',
+            f'fwrite {int(self.view.checkBoxFileWriteRaw.isChecked())}',
+            f'fname {self.view.lineEditFileName.text()}',
+            f'fpath {self.view.lineEditFilePath.text()}',
+            f'findex {self.view.spinBoxAcquisitionIndex.value()}',
+            f'frames {self.view.spinBoxFrames.value()}',
+            f'triggers {self.view.spinBoxTriggers.value()}',
+            f'period {self.view.spinBoxPeriod.value()}',
+        ]
+        # analog
+        if self.mainWindow.romode.value in [0, 2]:
+            commands.append(f'asamples {self.view.spinBoxAnalog.value()}')
+        # digital
+        if self.mainWindow.romode.value in [1, 2, 4]:
+            commands.append(f'dsamples {self.view.spinBoxDigital.value()}')
+        # transceiver
+        if self.mainWindow.romode.value in [3, 4]:
+            commands.append(f'tsamples {self.view.spinBoxTransceiver.value()}')
+        return commands

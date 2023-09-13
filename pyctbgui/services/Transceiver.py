@@ -268,3 +268,6 @@ class TransceiverTab(QtWidgets.QWidget):
     def setTransceiverButtonColor(self, i, color):
         pushButton = getattr(self.view, f"pushButtonTransceiver{i}")
         return self.plotTab.setActiveColor(pushButton, color)
+
+    def saveParameters(self):
+        return ["transceiverenable {}".format(self.view.lineEditTransceiverMask.text())]

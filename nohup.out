@@ -1,0 +1,332 @@
+2023-09-13 10:16:37,593 [   1582]   WARN - #c.i.o.a.i.ActionManagerImpl - keymap "Visual Studio" not found PluginDescriptor(name=IDEA CORE, id=com.intellij, descriptorPath=plugin.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/lib, version=221.5080.212, package=null, isBundled=true)
+2023-09-13 10:16:37,596 [   1585]   WARN - #c.i.o.a.i.ActionManagerImpl - keymap "Eclipse" not found PluginDescriptor(name=IDEA CORE, id=com.intellij, descriptorPath=plugin.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/lib, version=221.5080.212, package=null, isBundled=true)
+2023-09-13 10:16:37,597 [   1586]   WARN - #c.i.o.a.i.ActionManagerImpl - keymap "NetBeans 6.5" not found PluginDescriptor(name=IDEA CORE, id=com.intellij, descriptorPath=plugin.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/lib, version=221.5080.212, package=null, isBundled=true)
+2023-09-13 10:16:37,597 [   1586]   WARN - #c.i.o.a.i.ActionManagerImpl - keymap "Visual Studio" not found PluginDescriptor(name=IDEA CORE, id=com.intellij, descriptorPath=plugin.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/lib, version=221.5080.212, package=null, isBundled=true)
+2023-09-13 10:16:37,791 [   1780]   WARN - #c.i.o.a.i.ActionManagerImpl - keymap "Eclipse" not found PluginDescriptor(name=Python Community Edition, id=PythonCore, descriptorPath=plugin.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/plugins/python-ce, version=221.5080.212, package=null, isBundled=true)
+2023-09-13 10:16:37,792 [   1781]   WARN - #c.i.o.a.i.ActionManagerImpl - keymap "NetBeans 6.5" not found PluginDescriptor(name=Python Community Edition, id=PythonCore, descriptorPath=plugin.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/plugins/python-ce, version=221.5080.212, package=null, isBundled=true)
+2023-09-13 10:16:37,816 [   1805]   WARN - #c.i.o.a.i.ActionManagerImpl - keymap "Eclipse" not found PluginDescriptor(name=GitHub, id=org.jetbrains.plugins.github, descriptorPath=plugin.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/plugins/github, version=221.5080.212, package=org.jetbrains.plugins.github, isBundled=true)
+2023-09-13 10:16:37,820 [   1809]   WARN - #c.i.o.a.i.ActionManagerImpl - keymap "Eclipse" not found PluginDescriptor(name=Space, id=com.jetbrains.space, moduleName=intellij.space.vcs, descriptorPath=intellij.space.vcs.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/plugins/space, version=221.5080.212, package=com.intellij.space.vcs, isBundled=true)
+2023-09-13 10:16:38,095 [   2084]   WARN - #c.i.n.i.NotificationGroupManagerImpl - Notification group CodeWithMe is already registered (group=com.intellij.notification.NotificationGroup@52b53f14). Plugin descriptor: PluginDescriptor(name=Code With Me, id=com.jetbrains.codeWithMe, descriptorPath=plugin.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/plugins/cwm-plugin, version=221.5080.212, package=null, isBundled=true)
+Info  | RdCoroutineScope          | 17:JobScheduler FJ pool 2/3 | RdCoroutineHost overridden 
+2023-09-13 10:16:43,129 [   7118]   WARN - #g.r.GitUntrackedFilesHolder - Ignoring ignored file under another root: /opt/sls/pyctbgui/pyctbgui/utils/numpyWriter/__pycache__; root: /opt/sls/pyctbgui; mapped root: null
+2023-09-13 10:16:43,131 [   7120]   WARN - #g.r.GitUntrackedFilesHolder - Ignoring ignored file under another root: /opt/sls/pyctbgui/pyctbgui/__pycache__; root: /opt/sls/pyctbgui; mapped root: null
+2023-09-13 10:16:43,131 [   7120]   WARN - #g.r.GitUntrackedFilesHolder - Ignoring ignored file under another root: /opt/sls/pyctbgui/pyctbgui/services/__pycache__; root: /opt/sls/pyctbgui; mapped root: null
+2023-09-13 10:16:43,131 [   7120]   WARN - #g.r.GitUntrackedFilesHolder - Ignoring ignored file under another root: /opt/sls/pyctbgui/pyctbgui/ui/__pycache__; root: /opt/sls/pyctbgui; mapped root: null
+2023-09-13 10:16:43,131 [   7120]   WARN - #g.r.GitUntrackedFilesHolder - Ignoring ignored file under another root: /opt/sls/pyctbgui/tests/__pycache__; root: /opt/sls/pyctbgui; mapped root: null
+2023-09-13 10:16:43,132 [   7121]   WARN - #g.r.GitUntrackedFilesHolder - Ignoring ignored file under another root: /opt/sls/pyctbgui/pyctbgui/utils/__pycache__; root: /opt/sls/pyctbgui; mapped root: null
+2023-09-13 10:16:43,132 [   7121]   WARN - #g.r.GitUntrackedFilesHolder - Ignoring ignored file under another root: /opt/sls/pyctbgui/tests/unit/__pycache__; root: /opt/sls/pyctbgui; mapped root: null
+2023-09-13 10:16:43,132 [   7121]   WARN - #g.r.GitUntrackedFilesHolder - Ignoring ignored file under another root: /opt/sls/pyctbgui/tests/gui/__pycache__; root: /opt/sls/pyctbgui; mapped root: null
+2023-09-13 10:16:43,424 [   7413]   WARN - #c.i.o.w.i.ToolWindowImpl - ToolWindow icons should be 13x13. Please fix ToolWindow (ID:  github.copilotToolWindow) or icon UrlResolver{ownerClass=com.github.copilot.CopilotIcons, classLoader=PluginClassLoader(plugin=PluginDescriptor(name=GitHub Copilot, id=com.github.copilot, descriptorPath=plugin.xml, path=~/.local/share/JetBrains/PyCharmCE2022.1/github-copilot-intellij, version=1.2.22.3129, package=null, isBundled=false), packagePrefix=null, instanceId=45, state=active), overriddenPath='icons/copilot_toolwindow.svg', url=file:/unresolved, useCacheOnLoad=true}
+2023-09-13 10:16:53,202 [  17191]   WARN - #c.j.p.s.s.PySkeletonRefresher - Some skeletons failed to generate
+2023-09-13 10:16:53,202 [  17191]   WARN - #c.j.p.s.s.PySkeletonRefresher - PIL._imagingtk
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.assetimporters.libassimp
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.assetimporters.libuip
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.audio.libqtaudio_alsa
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.audio.libqtmedia_pulse
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.bearer.libqconnmanbearer
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.bearer.libqgenericbearer
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.bearer.libqnmbearer
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.gamepads.libevdevgamepad
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.generic.libqevdevkeyboardplugin
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.generic.libqevdevmouseplugin
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.generic.libqevdevtabletplugin
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.generic.libqevdevtouchplugin
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.generic.libqtuiotouchplugin
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.geometryloaders.libdefaultgeometryloader
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.geometryloaders.libgltfgeometryloader
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.geoservices.libqtgeoservices_esri
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.geoservices.libqtgeoservices_itemsoverlay
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.geoservices.libqtgeoservices_mapbox
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.geoservices.libqtgeoservices_mapboxgl
+2023-09-13 10:16:53,203 [  17192]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.geoservices.libqtgeoservices_nokia
+2023-09-13 10:16:53,204 [  17193]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.geoservices.libqtgeoservices_osm
+2023-09-13 10:16:53,204 [  17193]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.iconengines.libqsvgicon
+2023-09-13 10:16:53,204 [  17193]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqgif
+2023-09-13 10:16:53,204 [  17193]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqicns
+2023-09-13 10:16:53,204 [  17193]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqico
+2023-09-13 10:16:53,204 [  17193]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqjpeg
+2023-09-13 10:16:53,204 [  17193]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqsvg
+2023-09-13 10:16:53,204 [  17193]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqtga
+2023-09-13 10:16:53,204 [  17193]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqtiff
+2023-09-13 10:16:53,204 [  17193]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqwbmp
+2023-09-13 10:16:53,204 [  17193]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqwebp
+2023-09-13 10:16:53,215 [  17204]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.mediaservice.libgstaudiodecoder
+2023-09-13 10:16:53,215 [  17204]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.mediaservice.libgstcamerabin
+2023-09-13 10:16:53,215 [  17204]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.mediaservice.libgstmediacapture
+2023-09-13 10:16:53,215 [  17204]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.mediaservice.libgstmediaplayer
+2023-09-13 10:16:53,215 [  17204]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforminputcontexts.libcomposeplatforminputcontextplugin
+2023-09-13 10:16:53,215 [  17204]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforminputcontexts.libibusplatforminputcontextplugin
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforms.libqeglfs
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforms.libqlinuxfb
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforms.libqminimal
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforms.libqminimalegl
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforms.libqoffscreen
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforms.libqvnc
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforms.libqwebgl
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforms.libqxcb
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platformthemes.libqgtk3
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platformthemes.libqxdgdesktopportal
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.playlistformats.libqtmultimedia_m3u
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.position.libqtposition_geoclue
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.position.libqtposition_geoclue2
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.position.libqtposition_positionpoll
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.position.libqtposition_serialnmea
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.printsupport.libcupsprintersupport
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.renderers.libopenglrenderer
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.renderplugins.libscene2d
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sceneparsers.libgltfsceneexport
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sceneparsers.libgltfsceneimport
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sensorgestures.libqtsensorgestures_plugin
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sensorgestures.libqtsensorgestures_shakeplugin
+2023-09-13 10:16:53,216 [  17205]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sensors.libqtsensors_generic
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sensors.libqtsensors_linuxsys
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sqldrivers.libqsqlite
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sqldrivers.libqsqlodbc
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sqldrivers.libqsqlpsql
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.texttospeech.libqtexttospeech_speechd
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.webview.libqtwebview_webengine
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.animation.liblabsanimationplugin
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.calendar.libqtlabscalendarplugin
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.folderlistmodel.libqmlfolderlistmodelplugin
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.location.liblocationlabsplugin
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.platform.libqtlabsplatformplugin
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.qmlmodels.liblabsmodelsplugin
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.settings.libqmlsettingsplugin
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.sharedimage.libsharedimageplugin
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.wavefrontmesh.libqmlwavefrontmeshplugin
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtBluetooth.libdeclarative_bluetooth
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtGraphicalEffects.libqtgraphicaleffectsplugin
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtGraphicalEffects.private.libqtgraphicaleffectsprivate
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtLocation.libdeclarative_location
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtMultimedia.libdeclarative_multimedia
+2023-09-13 10:16:53,217 [  17206]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtNfc.libdeclarative_nfc
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtPositioning.libdeclarative_positioning
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQml.RemoteObjects.libqtqmlremoteobjects
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQml.StateMachine.libqtqmlstatemachine
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQml.libqmlplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Controls.Styles.Flat.libqtquickextrasflatplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Controls.libqtquickcontrolsplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Dialogs.Private.libdialogsprivateplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Dialogs.libdialogplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Extras.libqtquickextrasplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Layouts.libqquicklayoutsplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.LocalStorage.libqmllocalstorageplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.PrivateWidgets.libwidgetsplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Scene2D.libqtquickscene2dplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Scene3D.libqtquickscene3dplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Shapes.libqmlshapesplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Timeline.libqtquicktimelineplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.XmlListModel.libqmlxmllistmodelplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick3D.Effects.libqtquick3deffectplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick3D.Helpers.libqtquick3dhelpersplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick3D.Materials.libqtquick3dmaterialplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick3D.libqquick3dplugin
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtRemoteObjects.libqtremoteobjects
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtSensors.libdeclarative_sensors
+2023-09-13 10:16:53,218 [  17207]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtTest.libqmltestplugin
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtWebChannel.libdeclarative_webchannel
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtWebSockets.libdeclarative_qmlwebsockets
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtWebView.libdeclarative_webview
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - libSlsDetector
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - libSlsReceiver
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - libSlsSupport
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - matplotlib.backends._tkagg
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - numpy.core._umath_tests
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - pyarrow.libarrow_python
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - pyarrow.libarrow_python_flight
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - pyqt5_plugins.Qt.plugins.designer.libpyqt5
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - pyqt5_plugins.Qt.plugins.libpyqt5qmlplugin
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - pyqt5_plugins.examples.libpyqt5qmlplugin
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.platforms.libqeglfs
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.platforms.libqlinuxfb
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.platforms.libqminimal
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.platforms.libqminimalegl
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.platforms.libqoffscreen
+2023-09-13 10:16:53,219 [  17208]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.platforms.libqvnc
+2023-09-13 10:16:53,220 [  17209]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.platforms.libqxcb
+2023-09-13 10:16:53,220 [  17209]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.sqldrivers.libqsqlite
+2023-09-13 10:16:53,220 [  17209]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.sqldrivers.libqsqlodbc
+2023-09-13 10:16:53,220 [  17209]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.sqldrivers.libqsqlpsql
+2023-09-13 10:17:00,273 [  24262]   WARN - #c.j.p.d.PyStructuredDocstringFormatter - Python SDK for docstring formatter EPYTEXT is not found
+2023-09-13 10:47:17,562 [1841551] SEVERE - #c.g.c.l.a.RestartableCopilotAgentProcessService - {0}
+2023-09-13 10:47:32,052 [1856041]   WARN - #c.j.p.d.PyStructuredDocstringFormatter - Python SDK for docstring formatter EPYTEXT is not found
+2023-09-13 10:53:07,061 [2191050]   WARN - #c.j.p.d.PyStructuredDocstringFormatter - Python SDK for docstring formatter EPYTEXT is not found
+2023-09-13 10:53:32,445 [2216434] SEVERE - c.j.t.m.JediTerminal - Unsupported erase in display mode:3
+2023-09-13 10:57:44,581 [2468570]   WARN - #c.i.d.PerformanceWatcherImpl - UI was frozen for 163691ms, details saved to /afs/psi.ch/user/b/braham_b/.cache/JetBrains/PyCharmCE2022.1/log/threadDumps-freeze-20230913-105505-PC-221.5080.212-163sec
+2023-09-13 11:38:43,199 [   1485]   WARN - #c.i.o.a.i.ActionManagerImpl - keymap "Visual Studio" not found PluginDescriptor(name=IDEA CORE, id=com.intellij, descriptorPath=plugin.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/lib, version=221.5080.212, package=null, isBundled=true)
+2023-09-13 11:38:43,207 [   1493]   WARN - #c.i.o.a.i.ActionManagerImpl - keymap "Eclipse" not found PluginDescriptor(name=IDEA CORE, id=com.intellij, descriptorPath=plugin.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/lib, version=221.5080.212, package=null, isBundled=true)
+2023-09-13 11:38:43,207 [   1493]   WARN - #c.i.o.a.i.ActionManagerImpl - keymap "NetBeans 6.5" not found PluginDescriptor(name=IDEA CORE, id=com.intellij, descriptorPath=plugin.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/lib, version=221.5080.212, package=null, isBundled=true)
+2023-09-13 11:38:43,212 [   1498]   WARN - #c.i.o.a.i.ActionManagerImpl - keymap "Visual Studio" not found PluginDescriptor(name=IDEA CORE, id=com.intellij, descriptorPath=plugin.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/lib, version=221.5080.212, package=null, isBundled=true)
+2023-09-13 11:38:43,347 [   1633]   WARN - #c.i.o.a.i.ActionManagerImpl - keymap "Eclipse" not found PluginDescriptor(name=Python Community Edition, id=PythonCore, descriptorPath=plugin.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/plugins/python-ce, version=221.5080.212, package=null, isBundled=true)
+2023-09-13 11:38:43,348 [   1634]   WARN - #c.i.o.a.i.ActionManagerImpl - keymap "NetBeans 6.5" not found PluginDescriptor(name=Python Community Edition, id=PythonCore, descriptorPath=plugin.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/plugins/python-ce, version=221.5080.212, package=null, isBundled=true)
+2023-09-13 11:38:43,358 [   1644]   WARN - #c.i.o.a.i.ActionManagerImpl - keymap "Eclipse" not found PluginDescriptor(name=GitHub, id=org.jetbrains.plugins.github, descriptorPath=plugin.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/plugins/github, version=221.5080.212, package=org.jetbrains.plugins.github, isBundled=true)
+2023-09-13 11:38:43,362 [   1648]   WARN - #c.i.o.a.i.ActionManagerImpl - keymap "Eclipse" not found PluginDescriptor(name=Space, id=com.jetbrains.space, moduleName=intellij.space.vcs, descriptorPath=intellij.space.vcs.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/plugins/space, version=221.5080.212, package=com.intellij.space.vcs, isBundled=true)
+2023-09-13 11:38:43,736 [   2022]   WARN - #c.i.n.i.NotificationGroupManagerImpl - Notification group CodeWithMe is already registered (group=com.intellij.notification.NotificationGroup@1cec737b). Plugin descriptor: PluginDescriptor(name=Code With Me, id=com.jetbrains.codeWithMe, descriptorPath=plugin.xml, path=/afs/psi.ch/project/sls_det_software/pycharm-community-2022.1/plugins/cwm-plugin, version=221.5080.212, package=null, isBundled=true)
+Info  | RdCoroutineScope          | 11:JobScheduler FJ pool 1/3 | RdCoroutineHost overridden 
+2023-09-13 11:38:49,890 [   8176]   WARN - #g.r.GitUntrackedFilesHolder - Ignoring ignored file under another root: /opt/sls/pyctbgui/pyctbgui/utils/numpyWriter/__pycache__; root: /opt/sls/pyctbgui; mapped root: null
+2023-09-13 11:38:49,890 [   8176]   WARN - #g.r.GitUntrackedFilesHolder - Ignoring ignored file under another root: /opt/sls/pyctbgui/pyctbgui/__pycache__; root: /opt/sls/pyctbgui; mapped root: null
+2023-09-13 11:38:49,890 [   8176]   WARN - #g.r.GitUntrackedFilesHolder - Ignoring ignored file under another root: /opt/sls/pyctbgui/pyctbgui/services/__pycache__; root: /opt/sls/pyctbgui; mapped root: null
+2023-09-13 11:38:49,890 [   8176]   WARN - #g.r.GitUntrackedFilesHolder - Ignoring ignored file under another root: /opt/sls/pyctbgui/pyctbgui/ui/__pycache__; root: /opt/sls/pyctbgui; mapped root: null
+2023-09-13 11:38:49,890 [   8176]   WARN - #g.r.GitUntrackedFilesHolder - Ignoring ignored file under another root: /opt/sls/pyctbgui/tests/__pycache__; root: /opt/sls/pyctbgui; mapped root: null
+2023-09-13 11:38:49,891 [   8177]   WARN - #g.r.GitUntrackedFilesHolder - Ignoring ignored file under another root: /opt/sls/pyctbgui/pyctbgui/utils/__pycache__; root: /opt/sls/pyctbgui; mapped root: null
+2023-09-13 11:38:49,891 [   8177]   WARN - #g.r.GitUntrackedFilesHolder - Ignoring ignored file under another root: /opt/sls/pyctbgui/tests/unit/__pycache__; root: /opt/sls/pyctbgui; mapped root: null
+2023-09-13 11:38:49,891 [   8177]   WARN - #g.r.GitUntrackedFilesHolder - Ignoring ignored file under another root: /opt/sls/pyctbgui/tests/gui/__pycache__; root: /opt/sls/pyctbgui; mapped root: null
+2023-09-13 11:38:50,991 [   9277]   WARN - #c.i.o.w.i.ToolWindowImpl - ToolWindow icons should be 13x13. Please fix ToolWindow (ID:  github.copilotToolWindow) or icon UrlResolver{ownerClass=com.github.copilot.CopilotIcons, classLoader=PluginClassLoader(plugin=PluginDescriptor(name=GitHub Copilot, id=com.github.copilot, descriptorPath=plugin.xml, path=~/.local/share/JetBrains/PyCharmCE2022.1/github-copilot-intellij, version=1.2.22.3129, package=null, isBundled=false), packagePrefix=null, instanceId=45, state=active), overriddenPath='icons/copilot_toolwindow.svg', url=file:/unresolved, useCacheOnLoad=true}
+2023-09-13 11:38:52,186 [  10472]   WARN - #c.i.o.a.i.ActionUpdater - 238 ms to grab EDT for UndoAction#update (com.intellij.ide.actions.UndoAction)
+2023-09-13 11:38:52,513 [  10799] SEVERE - c.j.t.m.JediTerminal - Unsupported erase in display mode:3
+2023-09-13 11:38:55,100 [  13386] SEVERE - c.j.t.e.JediEmulator - Unhandled control character: DC4
+2023-09-13 11:39:02,263 [  20549]   WARN - #c.j.p.s.s.PySkeletonRefresher - Some skeletons failed to generate
+2023-09-13 11:39:02,264 [  20550]   WARN - #c.j.p.s.s.PySkeletonRefresher - PIL._imagingtk
+2023-09-13 11:39:02,264 [  20550]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.assetimporters.libassimp
+2023-09-13 11:39:02,264 [  20550]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.assetimporters.libuip
+2023-09-13 11:39:02,264 [  20550]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.audio.libqtaudio_alsa
+2023-09-13 11:39:02,264 [  20550]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.audio.libqtmedia_pulse
+2023-09-13 11:39:02,264 [  20550]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.bearer.libqconnmanbearer
+2023-09-13 11:39:02,264 [  20550]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.bearer.libqgenericbearer
+2023-09-13 11:39:02,264 [  20550]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.bearer.libqnmbearer
+2023-09-13 11:39:02,264 [  20550]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.gamepads.libevdevgamepad
+2023-09-13 11:39:02,264 [  20550]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.generic.libqevdevkeyboardplugin
+2023-09-13 11:39:02,264 [  20550]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.generic.libqevdevmouseplugin
+2023-09-13 11:39:02,264 [  20550]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.generic.libqevdevtabletplugin
+2023-09-13 11:39:02,264 [  20550]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.generic.libqevdevtouchplugin
+2023-09-13 11:39:02,264 [  20550]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.generic.libqtuiotouchplugin
+2023-09-13 11:39:02,264 [  20550]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.geometryloaders.libdefaultgeometryloader
+2023-09-13 11:39:02,264 [  20550]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.geometryloaders.libgltfgeometryloader
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.geoservices.libqtgeoservices_esri
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.geoservices.libqtgeoservices_itemsoverlay
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.geoservices.libqtgeoservices_mapbox
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.geoservices.libqtgeoservices_mapboxgl
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.geoservices.libqtgeoservices_nokia
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.geoservices.libqtgeoservices_osm
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.iconengines.libqsvgicon
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqgif
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqicns
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqico
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqjpeg
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqsvg
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqtga
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqtiff
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqwbmp
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.imageformats.libqwebp
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.mediaservice.libgstaudiodecoder
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.mediaservice.libgstcamerabin
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.mediaservice.libgstmediacapture
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.mediaservice.libgstmediaplayer
+2023-09-13 11:39:02,265 [  20551]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforminputcontexts.libcomposeplatforminputcontextplugin
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforminputcontexts.libibusplatforminputcontextplugin
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforms.libqeglfs
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforms.libqlinuxfb
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforms.libqminimal
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforms.libqminimalegl
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforms.libqoffscreen
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforms.libqvnc
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforms.libqwebgl
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platforms.libqxcb
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platformthemes.libqgtk3
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.platformthemes.libqxdgdesktopportal
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.playlistformats.libqtmultimedia_m3u
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.position.libqtposition_geoclue
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.position.libqtposition_geoclue2
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.position.libqtposition_positionpoll
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.position.libqtposition_serialnmea
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.printsupport.libcupsprintersupport
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.renderers.libopenglrenderer
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.renderplugins.libscene2d
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sceneparsers.libgltfsceneexport
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sceneparsers.libgltfsceneimport
+2023-09-13 11:39:02,266 [  20552]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sensorgestures.libqtsensorgestures_plugin
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sensorgestures.libqtsensorgestures_shakeplugin
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sensors.libqtsensors_generic
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sensors.libqtsensors_linuxsys
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sqldrivers.libqsqlite
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sqldrivers.libqsqlodbc
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.sqldrivers.libqsqlpsql
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.texttospeech.libqtexttospeech_speechd
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.plugins.webview.libqtwebview_webengine
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.animation.liblabsanimationplugin
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.calendar.libqtlabscalendarplugin
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.folderlistmodel.libqmlfolderlistmodelplugin
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.location.liblocationlabsplugin
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.platform.libqtlabsplatformplugin
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.qmlmodels.liblabsmodelsplugin
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.settings.libqmlsettingsplugin
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.sharedimage.libsharedimageplugin
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.Qt.labs.wavefrontmesh.libqmlwavefrontmeshplugin
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtBluetooth.libdeclarative_bluetooth
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtGraphicalEffects.libqtgraphicaleffectsplugin
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtGraphicalEffects.private.libqtgraphicaleffectsprivate
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtLocation.libdeclarative_location
+2023-09-13 11:39:02,267 [  20553]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtMultimedia.libdeclarative_multimedia
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtNfc.libdeclarative_nfc
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtPositioning.libdeclarative_positioning
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQml.RemoteObjects.libqtqmlremoteobjects
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQml.StateMachine.libqtqmlstatemachine
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQml.libqmlplugin
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Controls.Styles.Flat.libqtquickextrasflatplugin
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Controls.libqtquickcontrolsplugin
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Dialogs.Private.libdialogsprivateplugin
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Dialogs.libdialogplugin
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Extras.libqtquickextrasplugin
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Layouts.libqquicklayoutsplugin
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.LocalStorage.libqmllocalstorageplugin
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.PrivateWidgets.libwidgetsplugin
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Scene2D.libqtquickscene2dplugin
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Scene3D.libqtquickscene3dplugin
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Shapes.libqmlshapesplugin
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.Timeline.libqtquicktimelineplugin
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick.XmlListModel.libqmlxmllistmodelplugin
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick3D.Effects.libqtquick3deffectplugin
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick3D.Helpers.libqtquick3dhelpersplugin
+2023-09-13 11:39:02,268 [  20554]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick3D.Materials.libqtquick3dmaterialplugin
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtQuick3D.libqquick3dplugin
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtRemoteObjects.libqtremoteobjects
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtSensors.libdeclarative_sensors
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtTest.libqmltestplugin
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtWebChannel.libdeclarative_webchannel
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtWebSockets.libdeclarative_qmlwebsockets
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - PyQt5.Qt5.qml.QtWebView.libdeclarative_webview
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - libSlsDetector
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - libSlsReceiver
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - libSlsSupport
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - matplotlib.backends._tkagg
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - numpy.core._umath_tests
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - pyarrow.libarrow_python
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - pyarrow.libarrow_python_flight
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - pyqt5_plugins.Qt.plugins.designer.libpyqt5
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - pyqt5_plugins.Qt.plugins.libpyqt5qmlplugin
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - pyqt5_plugins.examples.libpyqt5qmlplugin
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.platforms.libqeglfs
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.platforms.libqlinuxfb
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.platforms.libqminimal
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.platforms.libqminimalegl
+2023-09-13 11:39:02,269 [  20555]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.platforms.libqoffscreen
+2023-09-13 11:39:02,270 [  20556]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.platforms.libqvnc
+2023-09-13 11:39:02,270 [  20556]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.platforms.libqxcb
+2023-09-13 11:39:02,270 [  20556]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.sqldrivers.libqsqlite
+2023-09-13 11:39:02,270 [  20556]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.sqldrivers.libqsqlodbc
+2023-09-13 11:39:02,270 [  20556]   WARN - #c.j.p.s.s.PySkeletonRefresher - qt5_applications.Qt.plugins.sqldrivers.libqsqlpsql
+2023-09-13 11:39:02,504 [  20790]   WARN - #c.i.o.a.i.ActionUpdater - 2842 ms to call on BGT RunContextAction#update (com.intellij.execution.actions.RunContextAction)
+2023-09-13 11:58:09,634 [1167920]   WARN - #c.i.p.i.s.c.FormattingRangesExtender - The given range 5541 exceeds the document length 5529
+2023-09-13 11:59:03,958 [1222244]   WARN - #copilot - [ERROR] [streamChoices] [2023-09-13T09:59:03.956Z] Error parsing extraData: da
+2023-09-13 12:09:34,226 [1852512]   WARN - #c.i.p.i.s.c.FormattingRangesExtender - The given range 12495 exceeds the document length 12455
+2023-09-13 12:17:41,523 [2339809]   WARN - #c.i.p.i.s.c.FormattingRangesExtender - The given range 12459 exceeds the document length 12451
+2023-09-13 12:27:10,143 [2908429] SEVERE - c.j.t.TerminalMode - Mode EightBitInput is not implemented, setting to true
+2023-09-13 13:43:09,078 [7467364]   WARN - #c.j.p.d.PyStructuredDocstringFormatter - Python SDK for docstring formatter EPYTEXT is not found
+2023-09-13 13:57:25,409 [8323695]   WARN - #c.i.p.i.s.c.FormattingRangesExtender - The given range 17944 exceeds the document length 17936
+2023-09-13 13:57:31,782 [8330068]   WARN - #c.i.o.a.e.ActionUtil - Can not find action by id CompileDirty
+2023-09-13 14:08:21,428 [8979714]   WARN - #c.j.p.d.PyStructuredDocstringFormatter - Python SDK for docstring formatter EPYTEXT is not found
+2023-09-13 14:10:50,848 [9129134] SEVERE - c.j.t.e.JediEmulator - Unhandled control character: DC4
+2023-09-13 14:10:50,915 [9129201] SEVERE - c.j.t.e.JediEmulator - Unhandled control character: DC4
+2023-09-13 14:16:53,124 [9491410]   WARN - #c.j.p.d.PyStructuredDocstringFormatter - Python SDK for docstring formatter EPYTEXT is not found
+2023-09-13 14:30:52,118 [10330404]   WARN - #c.j.p.d.PyStructuredDocstringFormatter - Python SDK for docstring formatter EPYTEXT is not found
+2023-09-13 14:36:28,564 [10666850] SEVERE - c.j.t.e.JediEmulator - Unhandled control character: DC4
+2023-09-13 14:36:28,636 [10666922] SEVERE - c.j.t.e.JediEmulator - Unhandled control character: DLE
+2023-09-13 14:44:26,465 [11144751]   WARN - #c.j.p.d.PyStructuredDocstringFormatter - Python SDK for docstring formatter EPYTEXT is not found
+2023-09-13 14:47:07,311 [11305597]   WARN - #c.j.p.d.PyStructuredDocstringFormatter - Python SDK for docstring formatter EPYTEXT is not found
+2023-09-13 14:52:43,496 [11641782]   WARN - #c.j.p.d.PyStructuredDocstringFormatter - Python SDK for docstring formatter EPYTEXT is not found
+2023-09-13 15:06:53,352 [12491638]   WARN - #c.j.p.d.PyStructuredDocstringFormatter - Python SDK for docstring formatter EPYTEXT is not found
+2023-09-13 15:06:57,132 [12495418]   WARN - #c.j.p.d.PyStructuredDocstringFormatter - Python SDK for docstring formatter EPYTEXT is not found
+2023-09-13 15:28:05,793 [13764079]   WARN - #c.j.p.d.PyStructuredDocstringFormatter - Python SDK for docstring formatter EPYTEXT is not found
+2023-09-13 16:11:12,212 [16350498]   WARN - #c.j.p.d.PyStructuredDocstringFormatter - Python SDK for docstring formatter EPYTEXT is not found
+2023-09-13 16:12:29,581 [16427867]   WARN - #c.j.p.d.PyStructuredDocstringFormatter - Python SDK for docstring formatter EPYTEXT is not found
+2023-09-13 16:13:33,962 [16492248]   WARN - #c.i.p.i.s.c.FormattingRangesExtender - The given range 13491 exceeds the document length 13490

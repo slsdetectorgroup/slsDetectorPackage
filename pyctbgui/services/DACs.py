@@ -146,3 +146,25 @@ class DacTab(QtWidgets.QWidget):
             QtWidgets.QMessageBox.warning(self.mainWindow, "High Voltage Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
         self.getHighVoltage()
+
+    def saveParameters(self) -> list:
+        """
+        save parameters for the current tab
+        @return: list of commands
+        """
+        commands = []
+        for i in range(Defines.dac.count):
+            # if checkbox disabled put -100 in dac units
+            enabled = getattr(self.view, f"checkBoxDAC{i}").isChecked()
+            if not enabled:
+                commands.append(f"dac {i} -100")
+            # else put the value in dac or mV units
+            else:
+                value = getattr(self.view, f"spinBoxDAC{i}").value()
+                inMV = getattr(self.view, f"checkBoxDAC{i}mV").isChecked()
+                unit = " mV" if inMV else ""
+                commands.append(f"dac {i} {value}{unit}")
+
+        commands.append(f"adcvpp {self.view.comboBoxADCVpp.currentText()} mV")
+        commands.append(f"highvoltage {self.view.spinBoxHighVoltage.value()}")
+        return commands

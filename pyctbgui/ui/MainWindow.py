@@ -36,6 +36,7 @@ class MainWindow(QtWidgets.QMainWindow):
         logging.basicConfig(encoding='utf-8', level=logging.INFO)
         self.updateSettingValues()
 
+        self.logger = logging.getLogger(__name__)
         self.det = None
         self.showLegend = True
         try:
@@ -236,13 +237,15 @@ class MainWindow(QtWidgets.QMainWindow):
             directory=str(Path.cwd()),
             # filter='README (*.md *.ui)'
         )
-        if response[0]:
-            try:
-                QtWidgets.QMessageBox.information(self, "Load Parameter Success", "Parameters loaded successfully",
-                                                  QtWidgets.QMessageBox.Ok)
-            except Exception as e:
-                QtWidgets.QMessageBox.warning(self, "Load Parameter Fail", str(e), QtWidgets.QMessageBox.Ok)
-                pass
+        try:
+            self.det.parameters = (response[0])
+            for tab in self.tabs_list:
+                tab.refresh()
+            QtWidgets.QMessageBox.information(self, "Load Parameter Success", "Parameters loaded successfully",
+                                              QtWidgets.QMessageBox.Ok)
+        except (RuntimeError, FileNotFoundError) as e:
+            self.logger.exception(e)
+            QtWidgets.QMessageBox.warning(self, "Load Parameter Fail", str(e), QtWidgets.QMessageBox.Ok)
 
     def refresh_tab(self, tab_index):
         match tab_index:
@@ -309,6 +312,37 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionKeyboardShortcuts.triggered.connect(self.showKeyBoardShortcuts)
         self.actionLoadParameters.triggered.connect(self.loadParameters)
         self.pushButtonStart.clicked.connect(self.acquisitionTab.toggleAcquire)
+        self.actionSaveParameters.triggered.connect(self.saveParameters)
 
         for tab in self.tabs_list:
             tab.connect_ui()
+
+    def saveParameters(self):
+        response = QtWidgets.QFileDialog.getSaveFileName(self, "Save Parameters", str(self.det.fpath))
+        if response[0] == '':
+            QtWidgets.QMessageBox.warning(self, "Load Parameter Fail", "Please select a file",
+                                          QtWidgets.QMessageBox.Ok)
+            return
+
+        # save DACs
+        commands = self.dacTab.saveParameters()
+        # save Power Supplies
+        commands.extend(self.powerSuppliesTab.saveParameters())
+        # save signals
+        commands.extend(self.signalsTab.saveParameters())
+        # save transceiver
+        commands.extend(self.transceiverTab.saveParameters())
+        # save ADCs
+        commands.extend(self.adcTab.saveParameters())
+        # save pattern
+        commands.extend(self.patternTab.saveParameters())
+        # save acquisition
+        commands.extend(self.acquisitionTab.saveParameters())
+        # save power supplies
+        commands.extend(self.powerSuppliesTab.saveParameters())
+
+        with open(response[0], 'w') as fp:
+            fp.write('\n'.join(commands))
+
+        QtWidgets.QMessageBox.information(self, "Save Parameter Success", "Parameters saved successfully",
+                                          QtWidgets.QMessageBox.Ok)

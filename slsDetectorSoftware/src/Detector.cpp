@@ -107,7 +107,9 @@ void Detector::setHostname(const std::vector<std::string> &hostname) {
     pimpl->setHostname(hostname);
 }
 
-void Detector::setVirtualDetectorServers(int numServers, int startingPort) {
+void Detector::setVirtualDetectorServers(int numServers,
+                                         uint16_t startingPort) {
+    validatePortRange(startingPort, numServers * 2);
     pimpl->setVirtualDetectorServers(numServers, startingPort);
 }
 
@@ -982,10 +984,10 @@ void Detector::setNumberofUDPInterfaces_(int n, Positions pos) {
         throw RuntimeError("No modules added.");
     }
     bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
-    int clientStartingPort = getClientZmqPort({0}).squash(0);
+    uint16_t clientStartingPort = getClientZmqPort({0}).squash(0);
     bool useReceiver = getUseReceiverFlag().squash(false);
     bool previouslyReceiverStreaming = false;
-    int rxStartingPort = 0;
+    uint16_t rxStartingPort = 0;
     if (useReceiver) {
         previouslyReceiverStreaming = getRxZmqDataStream(pos).squash(true);
         rxStartingPort = getRxZmqPort({0}).squash(0);
@@ -1108,34 +1110,36 @@ void Detector::setDestinationUDPMAC2(const MacAddr mac, Positions pos) {
     pimpl->Parallel(&Module::setDestinationUDPMAC2, pos, mac);
 }
 
-Result<int> Detector::getDestinationUDPPort(Positions pos) const {
+Result<uint16_t> Detector::getDestinationUDPPort(Positions pos) const {
     return pimpl->Parallel(&Module::getDestinationUDPPort, pos);
 }
 
-void Detector::setDestinationUDPPort(int port, int module_id) {
+void Detector::setDestinationUDPPort(uint16_t port, int module_id) {
     if (module_id == -1) {
-        std::vector<int> port_list = getPortNumbers(port);
+        std::vector<uint16_t> port_list = getValidPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
             pimpl->Parallel(&Module::setDestinationUDPPort, {idet},
                             port_list[idet]);
         }
     } else {
+        validatePortNumber(port);
         pimpl->Parallel(&Module::setDestinationUDPPort, {module_id}, port);
     }
 }
 
-Result<int> Detector::getDestinationUDPPort2(Positions pos) const {
+Result<uint16_t> Detector::getDestinationUDPPort2(Positions pos) const {
     return pimpl->Parallel(&Module::getDestinationUDPPort2, pos);
 }
 
-void Detector::setDestinationUDPPort2(int port, int module_id) {
+void Detector::setDestinationUDPPort2(uint16_t port, int module_id) {
     if (module_id == -1) {
-        std::vector<int> port_list = getPortNumbers(port);
+        std::vector<uint16_t> port_list = getValidPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
             pimpl->Parallel(&Module::setDestinationUDPPort2, {idet},
                             port_list[idet]);
         }
     } else {
+        validatePortNumber(port);
         pimpl->Parallel(&Module::setDestinationUDPPort2, {module_id}, port);
     }
 }
@@ -1235,21 +1239,23 @@ void Detector::setRxHostname(const std::vector<std::string> &name) {
     updateRxRateCorrections();
 }
 
-Result<int> Detector::getRxPort(Positions pos) const {
+Result<uint16_t> Detector::getRxPort(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverPort, pos);
 }
 
-void Detector::setRxPort(int port, int module_id) {
+void Detector::setRxPort(uint16_t port, int module_id) {
     if (module_id == -1) {
-        std::vector<int> port_list(size());
-        for (auto &it : port_list) {
-            it = port++;
-        }
+        validatePortRange(port, size() - 1);
+
+        std::vector<uint16_t> port_list(size());
+        std::iota(std::begin(port_list), std::end(port_list), port);
+
         // no need to verify hostname-port combo as unique port(incremented)
         for (int idet = 0; idet < size(); ++idet) {
             pimpl->Parallel(&Module::setReceiverPort, {idet}, port_list[idet]);
         }
     } else {
+        validatePortNumber(port);
         pimpl->verifyUniqueRxHost(port, module_id);
         pimpl->Parallel(&Module::setReceiverPort, {module_id}, port);
     }
@@ -1440,20 +1446,21 @@ void Detector::setRxZmqStartingFrame(int fnum, Positions pos) {
     pimpl->Parallel(&Module::setReceiverStreamingStartingFrame, pos, fnum);
 }
 
-Result<int> Detector::getRxZmqPort(Positions pos) const {
+Result<uint16_t> Detector::getRxZmqPort(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverStreamingPort, pos);
 }
 
-void Detector::setRxZmqPort(int port, int module_id) {
+void Detector::setRxZmqPort(uint16_t port, int module_id) {
     bool previouslyReceiverStreaming =
         getRxZmqDataStream(std::vector<int>{module_id}).squash(false);
     if (module_id == -1) {
-        std::vector<int> port_list = getPortNumbers(port);
+        std::vector<uint16_t> port_list = getValidPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
             pimpl->Parallel(&Module::setReceiverStreamingPort, {idet},
                             port_list[idet]);
         }
     } else {
+        validatePortNumber(port);
         pimpl->Parallel(&Module::setReceiverStreamingPort, {module_id}, port);
     }
     if (previouslyReceiverStreaming) {
@@ -1475,19 +1482,20 @@ void Detector::setRxZmqIP(const IpAddr ip, Positions pos) {
     }
 }
 
-Result<int> Detector::getClientZmqPort(Positions pos) const {
+Result<uint16_t> Detector::getClientZmqPort(Positions pos) const {
     return pimpl->Parallel(&Module::getClientStreamingPort, pos);
 }
 
-void Detector::setClientZmqPort(int port, int module_id) {
+void Detector::setClientZmqPort(uint16_t port, int module_id) {
     bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
     if (module_id == -1) {
-        std::vector<int> port_list = getPortNumbers(port);
+        std::vector<uint16_t> port_list = getValidPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
             pimpl->Parallel(&Module::setClientStreamingPort, {idet},
                             port_list[idet]);
         }
     } else {
+        validatePortNumber(port);
         pimpl->Parallel(&Module::setClientStreamingPort, {module_id}, port);
     }
     if (previouslyClientStreaming) {
@@ -2665,21 +2673,23 @@ void Detector::setADCInvert(uint32_t value, Positions pos) {
 
 // Insignificant
 
-Result<int> Detector::getControlPort(Positions pos) const {
+Result<uint16_t> Detector::getControlPort(Positions pos) const {
     return pimpl->Parallel(&Module::getControlPort, pos);
 }
 
-void Detector::setControlPort(int value, Positions pos) {
+void Detector::setControlPort(uint16_t value, Positions pos) {
+    validatePortNumber(value);
     pimpl->verifyUniqueDetHost(value, pos);
     pimpl->Parallel(&Module::setControlPort, pos, value);
 }
 
-Result<int> Detector::getStopPort(Positions pos) const {
+Result<uint16_t> Detector::getStopPort(Positions pos) const {
     // not verifying unique stop port (control port is sufficient)
     return pimpl->Parallel(&Module::getStopPort, pos);
 }
 
-void Detector::setStopPort(int value, Positions pos) {
+void Detector::setStopPort(uint16_t value, Positions pos) {
+    validatePortNumber(value);
     pimpl->Parallel(&Module::setStopPort, pos, value);
 }
 
@@ -2714,13 +2724,17 @@ Result<ns> Detector::getMeasurementTime(Positions pos) const {
 
 std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
 
-std::vector<int> Detector::getPortNumbers(int start_port) {
+std::vector<uint16_t> Detector::getValidPortNumbers(uint16_t start_port) {
     int num_sockets_per_detector = getNumberofUDPInterfaces({}).tsquash(
         "Number of UDP Interfaces is not consistent among modules");
-    std::vector<int> res;
+
+    validatePortRange(start_port, (size() - 1) * num_sockets_per_detector);
+
+    std::vector<uint16_t> res;
     res.reserve(size());
     for (int idet = 0; idet < size(); ++idet) {
-        res.push_back(start_port + (idet * num_sockets_per_detector));
+        uint16_t port = start_port + (idet * num_sockets_per_detector);
+        res.push_back(port);
     }
     return res;
 }

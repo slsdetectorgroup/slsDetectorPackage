@@ -165,11 +165,15 @@ std::string Module::getReceiverSoftwareVersion() const {
 
 // static function
 slsDetectorDefs::detectorType
-Module::getTypeFromDetector(const std::string &hostname, int cport) {
+Module::getTypeFromDetector(const std::string &hostname, uint16_t cport) {
     LOG(logDEBUG1) << "Getting Module type ";
     ClientSocket socket("Detector", hostname, cport);
     socket.Send(F_GET_DETECTOR_TYPE);
-    socket.Receive<int>(); // TODO! Should we look at this OK/FAIL?
+    if (socket.Receive<int>() == FAIL) {
+        throw RuntimeError("Detector (" + hostname + ", " +
+                           std::to_string(cport) +
+                           ") returned error at getting detector type");
+    }
     auto retval = socket.Receive<detectorType>();
     LOG(logDEBUG1) << "Module type is " << retval;
     return retval;
@@ -2839,15 +2843,17 @@ void Module::setADCInvert(uint32_t value) {
 }
 
 // Insignificant
-int Module::getControlPort() const { return shm()->controlPort; }
+uint16_t Module::getControlPort() const { return shm()->controlPort; }
 
-void Module::setControlPort(int port_number) {
+void Module::setControlPort(uint16_t port_number) {
     shm()->controlPort = port_number;
 }
 
-int Module::getStopPort() const { return shm()->stopPort; }
+uint16_t Module::getStopPort() const { return shm()->stopPort; }
 
-void Module::setStopPort(int port_number) { shm()->stopPort = port_number; }
+void Module::setStopPort(uint16_t port_number) {
+    shm()->stopPort = port_number;
+}
 
 bool Module::getLockDetector() const {
     return sendToDetector<int>(F_LOCK_SERVER, GET_FLAG);

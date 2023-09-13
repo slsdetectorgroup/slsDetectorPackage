@@ -4,9 +4,12 @@
 #include "sls/string_utils.h"
 #include "sls/container_utils.h"
 #include "sls/network_utils.h"
+
 #include <algorithm>
 #include <iomanip>
+#include <sls/ToString.h>
 #include <sstream>
+
 namespace sls {
 
 std::vector<std::string> split(const std::string &strToSplit, char delimeter) {
@@ -50,15 +53,15 @@ bool replace_first(std::string *s, const std::string &substr,
     return false;
 }
 
-std::pair<std::string, int> ParseHostPort(const std::string &s) {
+std::pair<std::string, uint16_t> ParseHostPort(const std::string &s) {
     // TODO deal with to many :, port not there?
     // no port return hostname as is and port as 0
     std::string host;
-    int port{0};
+    uint16_t port{0};
     auto res = split(s, ':');
     host = res[0];
     if (res.size() > 1) {
-        port = std::stoi(res[1]);
+        port = StringTo<uint16_t>(res[1]);
     }
     return std::make_pair(host, port);
 }

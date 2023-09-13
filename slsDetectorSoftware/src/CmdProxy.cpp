@@ -197,7 +197,7 @@ std::string CmdProxy::VirtualServer(int action) {
             throw RuntimeError("Cannot execute this at module level");
         }
         det->setVirtualDetectorServers(StringTo<int>(args[0]),
-                                       StringTo<int>(args[1]));
+                                       StringTo<uint16_t>(args[1]));
         os << ToString(args);
     } else {
         throw RuntimeError("Unknown action");

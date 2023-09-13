@@ -187,7 +187,7 @@ namespace sls {
         return os.str();                                                       \
     }
 
-/** int or enum */
+/** put int, get vector */
 #define INTEGER_COMMAND_VEC_ID_GET(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)      \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
@@ -1976,14 +1976,14 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID_GET(
         udp_dstport, getDestinationUDPPort, setDestinationUDPPort,
-        StringTo<int>,
+        StringTo<uint16_t>,
         "[n]\n\tPort number of the receiver (destination) udp "
         "interface. Default is 50001. \n\tIf multi command, ports for each "
         "module is calculated (incremented by 1 if no 2nd interface)");
 
     INTEGER_COMMAND_VEC_ID_GET(
         udp_dstport2, getDestinationUDPPort2, setDestinationUDPPort2,
-        StringTo<int>,
+        StringTo<uint16_t>,
         "[n]\n\t[Jungfrau][Moench][Eiger][Gotthard2] Port number of the "
         "receiver (destination) udp interface 2. Default is 50002. "
         "\n\tIf multi command, ports for each module is calculated "
@@ -2041,7 +2041,7 @@ class CmdProxy {
     /* Receiver Config */
 
     INTEGER_COMMAND_VEC_ID_GET(
-        rx_tcpport, getRxPort, setRxPort, StringTo<int>,
+        rx_tcpport, getRxPort, setRxPort, StringTo<uint16_t>,
         "[port]\n\tTCP port for client-receiver communication. Default is "
         "1954. Must be different if multiple receivers on same pc. Must be "
         "first command to set a receiver parameter. Multi command will "
@@ -2172,7 +2172,7 @@ class CmdProxy {
         "and then depending on the rx zmq frequency/ timer");
 
     INTEGER_COMMAND_VEC_ID_GET(
-        rx_zmqport, getRxZmqPort, setRxZmqPort, StringTo<int>,
+        rx_zmqport, getRxZmqPort, setRxZmqPort, StringTo<uint16_t>,
         "[port]\n\tZmq port for data to be streamed out of the receiver. "
         "Also restarts receiver zmq streaming if enabled. Default is 30001. "
         "Modified only when using an intermediate process between receiver and "
@@ -2180,7 +2180,7 @@ class CmdProxy {
         "Multi command will automatically increment for individual modules.");
 
     INTEGER_COMMAND_VEC_ID_GET(
-        zmqport, getClientZmqPort, setClientZmqPort, StringTo<int>,
+        zmqport, getClientZmqPort, setClientZmqPort, StringTo<uint16_t>,
         "[port]\n\tZmq port in client(gui) or intermediate process for "
         "data to be streamed to from receiver. Default connects to receiver "
         "zmq streaming out port (30001). Modified only when using an "

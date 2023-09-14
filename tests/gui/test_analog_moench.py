@@ -8,7 +8,7 @@ from .utils import setup_gui, defaultParams
 
 def test_image_acq(main, qtbot, tmp_path):
     """
-    tests Transceiver image acquisition and numpy saving
+    tests Analog image acquisition and numpy saving
     """
     params = defaultParams()
     params.detector = "Moench04"
@@ -32,7 +32,7 @@ def test_image_acq(main, qtbot, tmp_path):
 
 def test_waveform_acq(main, qtbot, tmp_path):
     """
-    tests Transceiver waveform acquisition and numpy saving
+    tests Analog waveform acquisition and numpy saving
     """
     params = defaultParams()
     params.image = False

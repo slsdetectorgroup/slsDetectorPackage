@@ -8,7 +8,7 @@ from tests.gui.utils import defaultParams
 
 def test_view_pattern(main, qtbot, tmp_path):
     """
-    tests Transceiver image acquisition and numpy saving
+    Tests pattern file viewing
     """
     params = defaultParams()
     params.image = False

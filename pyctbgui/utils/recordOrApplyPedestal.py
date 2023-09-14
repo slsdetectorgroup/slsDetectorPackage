@@ -89,6 +89,8 @@ def recordOrApplyPedestal(func):
             # check if pedestal is calculated
             if __loadedPedestal and frame.shape != __pedestal.shape:
                 __logger.warning('pedestal shape mismatch. resetting pedestal...')
+                obj.plotTab.mainWindow.statusbar.setStyleSheet("color:red")
+                obj.plotTab.mainWindow.statusbar.showMessage('pedestal shape mismatch. resetting pedestal...')
                 reset(obj.plotTab)
 
             return frame - calculatePedestal()

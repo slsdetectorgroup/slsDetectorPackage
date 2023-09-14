@@ -23,7 +23,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         parser = argparse.ArgumentParser()
         parser.add_argument('-a', '--alias', help="Alias file complete path")
-        arglist = parser.parse_args()
+        arglist, __ = parser.parse_known_args()
         self.alias_file = arglist.alias
 
         pg.setConfigOption("background", (247, 247, 247))
@@ -31,6 +31,7 @@ class MainWindow(QtWidgets.QMainWindow):
         pg.setConfigOption('leftButtonPan', False)
 
         super().__init__(*args, **kwargs)
+
         uic.loadUi(Path(__file__).parent / "CtbGui.ui", self)
         logging.basicConfig(encoding='utf-8', level=logging.INFO)
         self.updateSettingValues()

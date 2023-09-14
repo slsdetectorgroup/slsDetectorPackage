@@ -1,5 +1,4 @@
 import filecmp
-import os
 from pathlib import Path
 
 import pytest
@@ -9,64 +8,52 @@ import numpy as np
 
 from pyctbgui.utils.numpyWriter.npz_writer import NpzFileWriter
 
-prefix = Path('tests/.tmp/')
-
-
-def __clean_tmp_dir(path=prefix):
-    if Path.is_dir(path):
-        for file in os.listdir(path):
-            Path.unlink(path / file)
-    else:
-        Path.mkdir(path)
-
 
 @pytest.mark.parametrize('compressed', [True, False])
-def test_incremental_npz(compressed):
-    __clean_tmp_dir()
+def test_incremental_npz(compressed, tmp_path):
     arr1 = np.ones((10, 5, 5))
     arr2 = np.zeros((10, 5, 5), dtype=np.int32)
     arr3 = np.ones((10, 5, 5), dtype=np.float32)
-    with NpzFileWriter(prefix / 'tmp.npz', 'w', compress_file=compressed) as npz:
+    with NpzFileWriter(tmp_path / 'tmp.npz', 'w', compress_file=compressed) as npz:
         npz.writeArray('adc', arr1)
         npz.writeArray('tx', arr2)
         npz.writeArray('signal', arr3)
 
-    npzFile = np.load(prefix / 'tmp.npz')
+    npzFile = np.load(tmp_path / 'tmp.npz')
     assert sorted(npzFile.files) == sorted(('adc', 'tx', 'signal'))
     assert np.array_equal(npzFile['adc'], np.ones((10, 5, 5)))
     assert np.array_equal(npzFile['tx'], np.zeros((10, 5, 5), dtype=np.int32))
     assert np.array_equal(npzFile['signal'], np.ones((10, 5, 5), dtype=np.float32))
     if compressed:
-        np.savez_compressed(prefix / 'tmp2.npz', adc=arr1, tx=arr2, signal=arr3)
+        np.savez_compressed(tmp_path / 'tmp2.npz', adc=arr1, tx=arr2, signal=arr3)
     else:
-        np.savez(prefix / 'tmp2.npz', adc=arr1, tx=arr2, signal=arr3)
+        np.savez(tmp_path / 'tmp2.npz', adc=arr1, tx=arr2, signal=arr3)
 
-    assert filecmp.cmp(prefix / 'tmp2.npz', prefix / 'tmp.npz')
+    assert filecmp.cmp(tmp_path / 'tmp2.npz', tmp_path / 'tmp.npz')
 
 
 @pytest.mark.parametrize('compressed', [True, False])
-def test_zipping_npy_files(compressed):
-    __clean_tmp_dir()
+def test_zipping_npy_files(compressed, tmp_path):
     data = {
         'arr1': np.ones((10, 5, 5)),
         'arr2': np.zeros((10, 5, 5), dtype=np.int32),
         'arr3': np.ones((10, 5, 5), dtype=np.float32)
     }
-    filePaths = [prefix / (file + '.npy') for file in data.keys()]
+    filePaths = [tmp_path / (file + '.npy') for file in data.keys()]
     for file in data:
-        np.save(prefix / (file + '.npy'), data[file])
-    NpzFileWriter.zipNpyFiles(prefix / 'file.npz', filePaths, list(data.keys()), compressed=compressed)
-    npz = np.load(prefix / 'file.npz')
+        np.save(tmp_path / (file + '.npy'), data[file])
+    NpzFileWriter.zipNpyFiles(tmp_path / 'file.npz', filePaths, list(data.keys()), compressed=compressed)
+    npz = np.load(tmp_path / 'file.npz')
     assert npz.files == list(data.keys())
     for file in data:
         assert np.array_equal(npz[file], data[file])
 
     if compressed:
-        np.savez_compressed(prefix / 'numpy.npz', **data)
+        np.savez_compressed(tmp_path / 'numpy.npz', **data)
     else:
-        np.savez(prefix / 'numpy.npz', **data)
+        np.savez(tmp_path / 'numpy.npz', **data)
 
-    numpyz = np.load(prefix / 'numpy.npz')
+    numpyz = np.load(tmp_path / 'numpy.npz')
     for file in data:
         assert np.array_equal(numpyz[file], npz[file])
     assert npz.files == numpyz.files
@@ -78,9 +65,8 @@ def test_zipping_npy_files(compressed):
 
 
 @pytest.mark.parametrize('compressed', [True, False])
-def test_npy_writer_with_zipfile_in_init(compressed):
-    __clean_tmp_dir()
-    npz = NpzFileWriter(prefix / 'tmp.npz', 'w', compress_file=compressed)
+def test_npy_writer_with_zipfile_in_init(compressed, tmp_path):
+    npz = NpzFileWriter(tmp_path / 'tmp.npz', 'w', compress_file=compressed)
 
     rng = np.random.default_rng(42)
     arr = rng.random((8000, 5, 5))
@@ -90,31 +76,29 @@ def test_npy_writer_with_zipfile_in_init(compressed):
         assert np.array_equal(npw.readFrames(720, 7999), arr[720:7999])
 
 
-def test_compression():
-    __clean_tmp_dir()
+def test_compression(tmp_path):
     arr = np.zeros((1000, 5, 5), dtype=np.int32)
-    with NpzFileWriter(prefix / 'tmp.npz', 'w', compress_file=True) as npz:
+    with NpzFileWriter(tmp_path / 'tmp.npz', 'w', compress_file=True) as npz:
         npz.writeArray('adc', arr)
 
-    np.savez(prefix / 'tmp2.npz', adc=arr)
+    np.savez(tmp_path / 'tmp2.npz', adc=arr)
 
-    assert Path(prefix / 'tmp2.npz').stat().st_size > Path(prefix / 'tmp.npz').stat().st_size
+    assert Path(tmp_path / 'tmp2.npz').stat().st_size > Path(tmp_path / 'tmp.npz').stat().st_size
 
 
 @pytest.mark.parametrize('compressed', [True, False])
 @pytest.mark.parametrize('isPath', [True, False])
 @pytest.mark.parametrize('deleteOriginals', [True, False])
-def test_delete_files(compressed, isPath, deleteOriginals):
-    __clean_tmp_dir()
+def test_delete_files(compressed, isPath, deleteOriginals, tmp_path):
     data = {
         'arr1': np.ones((10, 5, 5)),
         'arr2': np.zeros((10, 5, 5), dtype=np.int32),
         'arr3': np.ones((10, 5, 5), dtype=np.float32)
     }
-    filePaths = [prefix / (file + '.npy') for file in data.keys()]
+    filePaths = [tmp_path / (file + '.npy') for file in data.keys()]
     for file in data:
-        np.save(prefix / (file + '.npy'), data[file])
-    path = prefix / 'file.npz'
+        np.save(tmp_path / (file + '.npy'), data[file])
+    path = tmp_path / 'file.npz'
     path = str(path) if isPath else path
     NpzFileWriter.zipNpyFiles(path,
                               filePaths,
@@ -129,65 +113,63 @@ def test_delete_files(compressed, isPath, deleteOriginals):
             assert Path.exists(file)
 
 
-def test_npz_read_frames():
+def test_npz_read_frames(tmp_path):
     rng = np.random.default_rng(seed=42)
     arr1 = rng.random((10, 5, 5))
 
-    with NpzFileWriter(prefix / 'tmp.npz', 'w') as npz:
+    with NpzFileWriter(tmp_path / 'tmp.npz', 'w') as npz:
         npz.writeArray('adc', arr1)
 
-    with NpzFileWriter(prefix / 'tmp.npz', 'r') as npz:
+    with NpzFileWriter(tmp_path / 'tmp.npz', 'r') as npz:
         frames = npz.readFrames('adc', 5, 8)
         assert np.array_equal(frames, arr1[5:8])
 
 
-def test_file_modes():
-    __clean_tmp_dir()
+def test_file_modes(tmp_path):
     rng = np.random.default_rng(seed=42)
     arr1 = rng.random((10, 5, 5))
 
     # check reopening with mode w
-    with NpzFileWriter(prefix / 'tmp.npz', 'w') as npz:
+    with NpzFileWriter(tmp_path / 'tmp.npz', 'w') as npz:
         npz.writeArray('adc', arr1)
 
-    with NpzFileWriter(prefix / 'tmp.npz', 'w') as npz:
+    with NpzFileWriter(tmp_path / 'tmp.npz', 'w') as npz:
         assert npz.file.namelist() == []
 
     # check reopening with mode x
-    with NpzFileWriter(prefix / 'tmp.npz', 'w') as npz:
+    with NpzFileWriter(tmp_path / 'tmp.npz', 'w') as npz:
         npz.writeArray('adc', arr1)
 
     with pytest.raises(FileExistsError):
-        with NpzFileWriter(prefix / 'tmp.npz', 'x'):
+        with NpzFileWriter(tmp_path / 'tmp.npz', 'x'):
             pass
     # check reopening with mode r
-    with NpzFileWriter(prefix / 'tmp.npz', 'r') as npz:
+    with NpzFileWriter(tmp_path / 'tmp.npz', 'r') as npz:
         assert np.array_equal(npz.readFrames('adc', 4, 6), arr1[4:6])
         with pytest.raises(ValueError, match=r'write\(\) requires mode \'w\'\, \'x\'\, or \'a\''):
             npz.writeArray('adc2', arr1)
 
 
 @pytest.mark.filterwarnings('ignore::UserWarning')
-def test_file_mode_a():
-    __clean_tmp_dir()
+def test_file_mode_a(tmp_path):
     rng = np.random.default_rng(seed=42)
     arr1 = rng.random((10, 5, 5))
     # check reopening with mode a
-    with NpzFileWriter(prefix / 'tmp.npz', 'w') as npz:
+    with NpzFileWriter(tmp_path / 'tmp.npz', 'w') as npz:
         npz.writeArray('adc', arr1)
 
-    with NpzFileWriter(prefix / 'tmp.npz', 'a') as npz:
+    with NpzFileWriter(tmp_path / 'tmp.npz', 'a') as npz:
         npz.writeArray('adc2', arr1)
         npz.writeArray('adc', arr1)
 
 
 @pytest.mark.parametrize('compressed', [True, False])
-def test_get_item(compressed):
+def test_get_item(compressed, tmp_path):
     rng = np.random.default_rng(seed=42)
     arr1 = rng.random((10, 5, 5))
     arr2 = rng.random((3, 2, 2))
     # check reopening with mode a
-    npz = NpzFileWriter(prefix / 'tmp.npz', 'w', compress_file=compressed)
+    npz = NpzFileWriter(tmp_path / 'tmp.npz', 'w', compress_file=compressed)
     npz.writeArray('adc1', arr1)
     npz.writeArray('adc2', arr2)
     npz.writeArray('adc3', arr1)
@@ -200,12 +182,12 @@ def test_get_item(compressed):
 
 
 @pytest.mark.parametrize('compressed', [True, False])
-def test_namelist(compressed):
+def test_namelist(compressed, tmp_path):
     rng = np.random.default_rng(seed=42)
     arr1 = rng.random((10, 5, 5))
     arr2 = rng.random((3, 2, 2))
     # check reopening with mode a
-    npz = NpzFileWriter(prefix / 'tmp.npz', 'w', compress_file=compressed)
+    npz = NpzFileWriter(tmp_path / 'tmp.npz', 'w', compress_file=compressed)
     npz.writeArray('adc1', arr1)
     npz.writeArray('adc2', arr2)
     npz.writeArray('adc3', arr1)

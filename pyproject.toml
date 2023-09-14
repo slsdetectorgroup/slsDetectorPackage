@@ -42,8 +42,14 @@ target-version = "py311"
 "pyctbgui/utils/decoder.py" = ["F403"]
 
 
-
-
 [tool.yapf]
 based_on_style = "pep8"
 COLUMN_LIMIT = 119
+
+[tool.coverage.run]
+branch = false
+
+[tool.coverage.report]
+include = [
+    "pyctbgui/*"
+]

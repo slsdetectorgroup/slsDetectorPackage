@@ -11,6 +11,7 @@ from pyctbgui.utils.defines import Defines
 
 from pyctbgui.utils.bit_utils import bit_is_set, manipulate_bit
 import pyctbgui.utils.pixelmap as pm
+from pyctbgui.utils.recordOrApplyPedestal import recordOrApplyPedestal
 
 
 class TransceiverTab(QtWidgets.QWidget):
@@ -23,10 +24,11 @@ class TransceiverTab(QtWidgets.QWidget):
         self.det = None
         self.plotTab = None
         self.legend: LegendItem | None = None
+        self.acquisitionTab = None
 
     def setup_ui(self):
         self.plotTab = self.mainWindow.plotTab
-
+        self.acquisitionTab = self.mainWindow.acquisitionTab
         for i in range(Defines.transceiver.count):
             self.setTransceiverButtonColor(i, self.plotTab.getRandomColor())
         self.initializeAllTransceiverPlots()
@@ -71,8 +73,8 @@ class TransceiverTab(QtWidgets.QWidget):
             for plot, name in self.getEnabledPlots():
                 self.legend.addItem(plot, name)
 
-    @staticmethod
-    def _processWaveformData(data, dSamples, romode, nDBitEnabled, nTransceiverEnabled):
+    @recordOrApplyPedestal
+    def _processWaveformData(self, data, dSamples, romode, nDBitEnabled, nTransceiverEnabled):
         """
         model function
         processes raw receiver waveform data
@@ -114,8 +116,8 @@ class TransceiverTab(QtWidgets.QWidget):
                 waveforms[plotName] = waveform
         return waveforms
 
-    @staticmethod
-    def _processImageData(data, dSamples, romode, nDBitEnabled):
+    @recordOrApplyPedestal
+    def _processImageData(self, data, dSamples, romode, nDBitEnabled):
         """
         processes raw image data
         @param data:
@@ -143,12 +145,9 @@ class TransceiverTab(QtWidgets.QWidget):
         # get zoom state
         viewBox = self.mainWindow.plotTransceiverImage.getView()
         state = viewBox.getState()
-        # get histogram (colorbar) levels and histogram zoom range
-
         try:
             self.mainWindow.transceiver_frame = self._processImageData(data, dSamples, self.mainWindow.romode.value,
                                                                        self.mainWindow.nDBitEnabled)
-            # print(f"type of image:{type(self.mainWindows.transceiver_frame)}")
             self.plotTab.ignoreHistogramSignal = True
             self.mainWindow.plotTransceiverImage.setImage(self.mainWindow.transceiver_frame)
         except Exception:
@@ -156,7 +155,7 @@ class TransceiverTab(QtWidgets.QWidget):
             message = f'Warning: Invalid size for Transceiver Image. Expected' \
                       f' {self.mainWindow.nTransceiverRows * self.mainWindow.nTransceiverCols} size,' \
                       f' got {self.mainWindow.transceiver_frame.size} instead.'
-            self.updateCurrentFrame('Invalid Image')
+            self.acquisitionTab.updateCurrentFrame('Invalid Image')
             self.mainWindow.statusbar.showMessage(message)
             print(message)
 

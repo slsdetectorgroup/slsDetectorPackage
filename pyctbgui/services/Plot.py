@@ -1,3 +1,4 @@
+import logging
 from functools import partial
 import random
 from pathlib import Path
@@ -6,6 +7,7 @@ import numpy as np
 from PyQt5 import QtWidgets, QtGui, uic
 
 import pyqtgraph as pg
+from pyctbgui.utils import recordOrApplyPedestal
 from pyqtgraph import PlotWidget
 
 from pyctbgui.utils.defines import Defines
@@ -33,13 +35,16 @@ class PlotTab(QtWidgets.QWidget):
         # list of callback functions to notify tabs when we should hide their legend
         # follows the observer design pattern
         self.hideLegendObservers = []
+        self.pedestalRecord: bool = False
+        self.pedestalApply: bool = True
+        self.__acqFrames = None
+        self.logger = logging.getLogger('PlotTab')
 
     def setup_ui(self):
         self.signalsTab = self.mainWindow.signalsTab
         self.transceiverTab = self.mainWindow.transceiverTab
         self.acquisitionTab = self.mainWindow.acquisitionTab
         self.adcTab = self.mainWindow.adcTab
-
         self.initializeColorMaps()
 
         self.imagePlots = (
@@ -61,10 +66,13 @@ class PlotTab(QtWidgets.QWidget):
         self.view.spinBoxDynamicRange.editingFinished.connect(self.setDynamicRange)
         self.view.spinBoxImageX.editingFinished.connect(self.setImageX)
         self.view.spinBoxImageY.editingFinished.connect(self.setImageY)
-        self.view.checkBoxAcquire.stateChanged.connect(self.setPedestal)
-        self.view.checkBoxSubtract.stateChanged.connect(self.setPedestal)
-        self.view.checkBoxCommonMode.stateChanged.connect(self.setPedestal)
-        self.view.pushButtonReset.clicked.connect(self.resetPedestal)
+
+        self.view.radioButtonPedestalRecord.toggled.connect(self.togglePedestalRecord)
+        self.view.radioButtonPedestalApply.toggled.connect(self.togglePedestalApply)
+        self.view.pushButtonPedestalReset.clicked.connect(self.resetPedestal)
+        self.view.pushButtonSavePedestal.clicked.connect(self.savePedestal)
+        self.view.pushButtonLoadPedestal.clicked.connect(self.loadPedestal)
+
         self.view.checkBoxRaw.stateChanged.connect(self.setRawData)
         self.view.spinBoxRawMin.editingFinished.connect(self.setRawData)
         self.view.spinBoxRawMax.editingFinished.connect(self.setRawData)
@@ -94,6 +102,65 @@ class PlotTab(QtWidgets.QWidget):
         self.view.comboBoxColorMap.addItems(Defines.Color_map)
         self.view.comboBoxColorMap.setCurrentIndex(Defines.Color_map.index(Defines.Default_Color_Map))
         self.setColorMap()
+
+    def savePedestal(self):
+        """
+        slot function to save pedestal values
+        """
+        response = QtWidgets.QFileDialog.getSaveFileName(self.view, "Save Pedestal", str(self.det.fpath))
+        recordOrApplyPedestal.savePedestal(Path(response[0]))
+        self.logger.info(f'saved Pedestal in {response[0]}')
+
+    def loadPedestal(self):
+        """
+        slot function to load pedestal values
+        """
+        response = QtWidgets.QFileDialog.getOpenFileName(self.view, "Load Pedestal", str(self.det.fpath))
+        if response[0] == '':
+            return
+        recordOrApplyPedestal.reset(self)
+        try:
+            recordOrApplyPedestal.loadPedestal(Path(response[0]))
+        except (IsADirectoryError, ValueError, EOFError):
+            QtWidgets.QMessageBox.warning(
+                self.view,
+                "Loading Pedestal Failed",
+                "Loading Pedestal failed make sure the file is in the valid .npy format",
+                QtWidgets.QMessageBox.Ok,
+            )
+            self.logger.exception("Exception when loading pedestal")
+        else:
+            self.logger.info(f'loaded Pedestal from {response[0]}')
+            self.updateLabelPedestalFrames(True)
+
+    def togglePedestalRecord(self):
+        """
+        slot function for pedestal record radio button
+        toggle pedestal record variable and disables the frames spinboxes in acquisition tab or plot tab depenging on
+        the mode
+        """
+        self.pedestalRecord = not self.pedestalRecord
+
+    def togglePedestalApply(self):
+        """
+        slot function for pedestal apply radio button
+        """
+        self.pedestalApply = not self.pedestalApply
+
+    def resetPedestal(self):
+        """
+        slot function for resetting the pedestal
+        """
+        recordOrApplyPedestal.reset(self)
+
+    def updateLabelPedestalFrames(self, loadedPedestal=False):
+        """
+        updates labelPedestalFrames to the length of savedFrames
+        """
+        if loadedPedestal:
+            self.view.labelPedestalFrames.setText('using loaded pedestal file')
+        else:
+            self.view.labelPedestalFrames.setText(f'recorded frames: {recordOrApplyPedestal.getFramesCount()}')
 
     def subscribeToggleLegend(self, fn_cbk):
         """
@@ -381,14 +448,6 @@ class PlotTab(QtWidgets.QWidget):
         # TODO:
 
     def setImageY(self):
-        print("plot options - Not implemented yet")
-        # TODO:
-
-    def setPedestal(self):
-        print("plot options - Not implemented yet")
-        # TODO: acquire, subtract, common mode
-
-    def resetPedestal(self):
         print("plot options - Not implemented yet")
         # TODO:
 

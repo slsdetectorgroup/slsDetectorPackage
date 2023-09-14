@@ -8,6 +8,7 @@ set(SOURCES
     src/CmdParser.cpp
     src/Pattern.cpp
     src/CtbConfig.cpp
+    src/Caller.cpp
 )
 
 add_library(slsDetectorObject OBJECT
@@ -105,6 +106,21 @@ if(SLS_USE_TEXTCLIENT)
         endif()
     endforeach()
     install(TARGETS ${bin_names} DESTINATION bin)
+
+
+    add_executable(det src/CmdApp.cpp)
+    target_link_libraries(det 
+        slsDetectorStatic
+        pthread
+        rt
+    )
+    set_target_properties(det PROPERTIES 
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+        COMPILE_DEFINITIONS ${val2}=1
+    )
+    if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
+        set_property(TARGET det PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    endif()
 
 endif(SLS_USE_TEXTCLIENT)
 

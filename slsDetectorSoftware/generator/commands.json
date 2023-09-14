@@ -1,0 +1,11 @@
+{
+    "exptime" : {
+        "args": ["time"],
+        "help": "set exposure time"
+    },
+    "frames" : {
+        "args":["int"],
+        "help": "set number of frames"
+    }
+}
+

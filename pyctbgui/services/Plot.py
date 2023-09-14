@@ -116,6 +116,8 @@ class PlotTab(QtWidgets.QWidget):
         slot function to load pedestal values
         """
         response = QtWidgets.QFileDialog.getOpenFileName(self.view, "Load Pedestal", str(self.det.fpath))
+        if response[0] == '':
+            return
         recordOrApplyPedestal.reset(self)
         try:
             recordOrApplyPedestal.loadPedestal(Path(response[0]))

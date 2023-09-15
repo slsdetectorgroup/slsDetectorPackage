@@ -254,6 +254,8 @@ class MainWindow(QtWidgets.QMainWindow):
             directory=str(Path.cwd()),
             # filter='README (*.md *.ui)'
         )
+        if response[0] == '':
+            return
         try:
             self.det.parameters = (response[0])
             for tab in self.tabs_list:
@@ -337,14 +339,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def saveParameters(self):
         response = QtWidgets.QFileDialog.getSaveFileName(self, "Save Parameters", str(self.det.fpath))
         if response[0] == '':
-            QtWidgets.QMessageBox.warning(self, "Load Parameter Fail", "Please select a file",
-                                          QtWidgets.QMessageBox.Ok)
             return
 
         # save DACs
         commands = self.dacTab.saveParameters()
-        # save Power Supplies
-        commands.extend(self.powerSuppliesTab.saveParameters())
         # save signals
         commands.extend(self.signalsTab.saveParameters())
         # save transceiver
@@ -357,9 +355,15 @@ class MainWindow(QtWidgets.QMainWindow):
         commands.extend(self.acquisitionTab.saveParameters())
         # save power supplies
         commands.extend(self.powerSuppliesTab.saveParameters())
+        # save plot
+        commands.extend(self.plotTab.saveParameters())
 
-        with open(response[0], 'w') as fp:
-            fp.write('\n'.join(commands))
+        try:
+            with open(response[0], 'w') as fp:
+                fp.write('\n'.join(commands))
+        except Exception as e:
+            self.logger.exception(e)
+            QtWidgets.QMessageBox.warning(self, "Save Parameter Fail", str(e), QtWidgets.QMessageBox.Ok)
 
         QtWidgets.QMessageBox.information(self, "Save Parameter Success", "Parameters saved successfully",
                                           QtWidgets.QMessageBox.Ok)

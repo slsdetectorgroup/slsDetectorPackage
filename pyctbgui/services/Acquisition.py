@@ -697,7 +697,7 @@ class AcquisitionTab(QtWidgets.QWidget):
         self.socket.subscribe("")
 
     def saveParameters(self) -> list[str]:
-        commands = [
+        return [
             f'romode {self.view.comboBoxROMode.currentText().lower()}',
             f'runclk {self.view.spinBoxRunF.value()}',
             f'adcclk {self.view.spinBoxADCF.value()}',
@@ -712,15 +712,8 @@ class AcquisitionTab(QtWidgets.QWidget):
             f'findex {self.view.spinBoxAcquisitionIndex.value()}',
             f'frames {self.view.spinBoxFrames.value()}',
             f'triggers {self.view.spinBoxTriggers.value()}',
-            f'period {self.view.spinBoxPeriod.value()}',
+            f'period {self.view.spinBoxPeriod.value()} {self.view.comboBoxPeriod.currentText().lower()}',
+            f'asamples {self.view.spinBoxAnalog.value()}',
+            f'dsamples {self.view.spinBoxDigital.value()}',
+            f'tsamples {self.view.spinBoxTransceiver.value()}',
         ]
-        # analog
-        if self.mainWindow.romode.value in [0, 2]:
-            commands.append(f'asamples {self.view.spinBoxAnalog.value()}')
-        # digital
-        if self.mainWindow.romode.value in [1, 2, 4]:
-            commands.append(f'dsamples {self.view.spinBoxDigital.value()}')
-        # transceiver
-        if self.mainWindow.romode.value in [3, 4]:
-            commands.append(f'tsamples {self.view.spinBoxTransceiver.value()}')
-        return commands

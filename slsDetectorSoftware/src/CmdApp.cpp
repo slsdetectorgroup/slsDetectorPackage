@@ -9,15 +9,16 @@ int main(int argc, char *argv[]){
 
     sls::CmdParser parser;
     parser.Parse(argc, argv);
-
-    std::cout << "cmd: " << parser.command() << "\narguments: ";
-    for (auto& arg : parser.arguments()){
-        std::cout << arg << " ";
-    }
-    std::cout << "\n\n";
     
     int default_action = -1;
     sls::Detector d(parser.multi_id());
     sls::Caller c(&d);
+
+    std::cout << "call with action get\n";
     c.call(parser, default_action);
+
+    std::cout << "\ncall with action put\n";
+    c.call(parser, slsDetectorDefs::PUT_ACTION);
+
+
 }

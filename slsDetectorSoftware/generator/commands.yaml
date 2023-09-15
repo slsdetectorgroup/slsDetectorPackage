@@ -1,0 +1,19 @@
+---
+frames:
+  infer_action: true # infer action based on actions' argc (they must be unique if true)
+  help: "Get or set the number of frames to be collected."
+  actions:
+    GET:
+      function: getNumberOfFrames
+      argc: 0
+      require_det_id: true
+    PUT:
+      function: setNumberOfFrames
+      argc: 1
+      arg_types: [ int ]
+# detector: # detector specific actions
+#   eiger:
+#     GET:
+#
+#
+#

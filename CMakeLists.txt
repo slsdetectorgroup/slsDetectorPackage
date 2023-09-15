@@ -72,7 +72,7 @@ string(TOLOWER "${PROJECT_NAME}" PROJECT_NAME_LOWER)
 set(TARGETS_EXPORT_NAME "${PROJECT_NAME_LOWER}-targets")
 set(namespace "sls::")
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake3" ${CMAKE_MODULE_PATH})
 
 
 # Check if project is being used directly or via add_subdirectory

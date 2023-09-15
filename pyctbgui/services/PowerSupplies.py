@@ -110,3 +110,14 @@ class PowerSuppliesTab(QtWidgets.QWidget):
             checkBox.setChecked(False)
             checkBox.stateChanged.connect(partial(self.setVoltage, i))
             self.setVoltage(i)
+
+    def saveParameters(self) -> list:
+        commands = []
+        for i in Defines.powerSupplies:
+            enabled = getattr(self.view, f"checkBoxV{i}").isChecked()
+            if enabled:
+                value = getattr(self.view, f"spinBoxV{i}").value()
+                commands.append(f"v_{i.lower()} {value}")
+            else:
+                commands.append(f"v_{i.lower()} 0")
+        return commands

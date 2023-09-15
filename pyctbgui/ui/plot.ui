@@ -74,7 +74,7 @@
     <item row="1" column="1" colspan="4">
      <widget class="QStackedWidget" name="stackedWidgetPlotType">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="pageWaveform">
        <layout class="QGridLayout" name="gridLayout_23">
@@ -171,16 +171,6 @@
           <item>
            <property name="text">
             <string>Moench04</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Serializer</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Deserializer</string>
            </property>
           </item>
           <item>
@@ -1057,9 +1047,9 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup"/>
-  <buttongroup name="buttonGroup_4"/>
   <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup_4"/>
+  <buttongroup name="buttonGroup"/>
   <buttongroup name="buttonGroup_3"/>
  </buttongroups>
 </ui>

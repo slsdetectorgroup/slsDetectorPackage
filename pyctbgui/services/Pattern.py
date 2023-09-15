@@ -441,3 +441,16 @@ class PatternTab(QtWidgets.QWidget):
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "Pattern Viewer Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
+
+    def saveParameters(self) -> list[str]:
+        commands = []
+        for i in range(Defines.pattern.loops_count):
+            commands.append(f"patnloop {i} {getattr(self.view, f'spinBoxLoop{i}Repetition').text()}")
+            commands.append(f"patloop {i} {getattr(self.view, f'lineEditLoop{i}Start').text()}, "
+                            f"{getattr(self.view, f'lineEditLoop{i}Stop').text()}")
+
+            commands.append(f"patwait {i} {getattr(self.view, f'lineEditLoop{i}Wait').text()}")
+            commands.append(f"patwaittime {i} {getattr(self.view, f'spinBoxLoop{i}WaitTime').text()}")
+        commands.append(f"patlimits {self.view.lineEditStartAddress.text()}, {self.view.lineEditStopAddress.text()}")
+        # commands.append(f"patfname {self.view.lineEditPatternFile.text()}")
+        return commands

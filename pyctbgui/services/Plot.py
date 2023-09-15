@@ -502,10 +502,18 @@ class PlotTab(QtWidgets.QWidget):
             nMaxY = self.mainWindow.nTransceiverRows
             nMaxX = self.mainWindow.nTransceiverCols
             frame = self.mainWindow.transceiver_frame
-        if 0 <= x < nMaxX and 0 <= y < nMaxY:
+        if 0 <= x < nMaxX and 0 <= y < nMaxY and not np.array_equal(frame, []):
             val = frame[int(x), int(y)]
             message = f'[{x:.2f}, {y:.2f}] = {val:.2f}'
             sender.setToolTip(message)
             # print(message)
         else:
             sender.setToolTip('')
+
+    def saveParameters(self):
+        commands = []
+        if self.view.comboBoxZMQHWM.currentIndex() == 0:
+            commands.append(f"zmqhwm {Defines.Zmq_hwm_low_speed}")
+        else:
+            commands.append(f"zmqhwm {Defines.Zmq_hwm_high_speed}")
+        return commands

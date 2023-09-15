@@ -362,3 +362,12 @@ class SignalsTab(QtWidgets.QWidget):
 
     def setDbitOffset(self):
         self.det.rx_dbitoffset = self.view.spinBoxDBitOffset.value()
+
+    def saveParameters(self) -> list:
+        commands = []
+        dblist = [str(i) for i in range(Defines.signals.count) if getattr(self.view, f"checkBoxBIT{i}DB").isChecked()]
+        if len(dblist) > 0:
+            commands.append(f"rx_dbitlist {', '.join(dblist)}")
+        commands.append(f"rx_dbitoffset {self.view.spinBoxDBitOffset.value()}")
+        commands.append(f"patioctrl {self.view.lineEditPatIOCtrl.text()}")
+        return commands

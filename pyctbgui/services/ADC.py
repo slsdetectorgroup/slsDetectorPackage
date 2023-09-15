@@ -393,3 +393,9 @@ class AdcTab(QtWidgets.QWidget):
             self.det.adcinvert = out & ~mask
 
         self.updateADCInv()
+
+    def saveParameters(self) -> list[str]:
+        return [
+            f"adcenable {self.view.lineEditADCEnable.text()}",
+            f"adcinvert {self.view.lineEditADCInversion.text()}",
+        ]

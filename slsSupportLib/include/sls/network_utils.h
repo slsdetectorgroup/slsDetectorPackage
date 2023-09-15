@@ -64,8 +64,8 @@ class MacAddr {
 
 struct UdpDestination {
     uint32_t entry{};
-    uint32_t port{};
-    uint32_t port2{};
+    uint16_t port{};
+    uint16_t port2{};
     IpAddr ip;
     IpAddr ip2;
     MacAddr mac;

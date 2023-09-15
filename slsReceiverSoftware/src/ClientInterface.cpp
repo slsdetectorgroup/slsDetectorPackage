@@ -1063,7 +1063,7 @@ int ClientInterface::get_file_format(Interface &socket) {
 }
 
 int ClientInterface::set_streaming_port(Interface &socket) {
-    auto port = socket.Receive<int>();
+    auto port = socket.Receive<uint16_t>();
     if (port < 0) {
         throw RuntimeError("Invalid zmq port " + std::to_string(port));
     }
@@ -1073,7 +1073,7 @@ int ClientInterface::set_streaming_port(Interface &socket) {
 }
 
 int ClientInterface::get_streaming_port(Interface &socket) {
-    int retval = impl()->getStreamingPort();
+    uint16_t retval = impl()->getStreamingPort();
     LOG(logDEBUG1) << "streaming port:" << retval;
     return socket.sendResult(retval);
 }
@@ -1448,7 +1448,7 @@ int ClientInterface::set_udp_ip2(Interface &socket) {
 }
 
 int ClientInterface::set_udp_port(Interface &socket) {
-    auto arg = socket.Receive<int>();
+    auto arg = socket.Receive<uint16_t>();
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting UDP Port:" << arg;
     impl()->setUDPPortNumber(arg);
@@ -1456,7 +1456,7 @@ int ClientInterface::set_udp_port(Interface &socket) {
 }
 
 int ClientInterface::set_udp_port2(Interface &socket) {
-    auto arg = socket.Receive<int>();
+    auto arg = socket.Receive<uint16_t>();
     verifyIdle(socket);
     if (detType != JUNGFRAU && detType != MOENCH && detType != EIGER &&
         detType != GOTTHARD2) {

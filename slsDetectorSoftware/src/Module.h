@@ -261,10 +261,10 @@ class Module : public virtual slsDetectorDefs {
     void setDestinationUDPMAC(const MacAddr mac);
     MacAddr getDestinationUDPMAC2() const;
     void setDestinationUDPMAC2(const MacAddr mac);
-    int getDestinationUDPPort() const;
-    void setDestinationUDPPort(int udpport);
-    int getDestinationUDPPort2() const;
-    void setDestinationUDPPort2(int udpport);
+    uint16_t getDestinationUDPPort() const;
+    void setDestinationUDPPort(uint16_t udpport);
+    uint16_t getDestinationUDPPort2() const;
+    void setDestinationUDPPort2(uint16_t udpport);
     void reconfigureUDPDestination();
     void validateUDPConfiguration();
     std::string printReceiverConfiguration();
@@ -286,10 +286,10 @@ class Module : public virtual slsDetectorDefs {
      * ************************************************/
     bool getUseReceiverFlag() const;
     std::string getReceiverHostname() const;
-    void setReceiverHostname(const std::string &hostname, const int port,
+    void setReceiverHostname(const std::string &hostname, const uint16_t port,
                              const bool initialChecks);
-    int getReceiverPort() const;
-    int setReceiverPort(int port_number);
+    uint16_t getReceiverPort() const;
+    void setReceiverPort(uint16_t port_number);
     int getReceiverFifoDepth() const;
     void setReceiverFifoDepth(int n_frames);
     bool getReceiverSilentMode() const;
@@ -349,12 +349,12 @@ class Module : public virtual slsDetectorDefs {
     void setReceiverStreamingTimer(int time_in_ms = 200);
     int getReceiverStreamingStartingFrame() const;
     void setReceiverStreamingStartingFrame(int fnum);
-    int getReceiverStreamingPort() const;
-    void setReceiverStreamingPort(int port);
+    uint16_t getReceiverStreamingPort() const;
+    void setReceiverStreamingPort(uint16_t port);
     IpAddr getReceiverStreamingIP() const;
     void setReceiverStreamingIP(const IpAddr ip);
-    int getClientStreamingPort() const;
-    void setClientStreamingPort(int port);
+    uint16_t getClientStreamingPort() const;
+    void setClientStreamingPort(uint16_t port);
     IpAddr getClientStreamingIP() const;
     void setClientStreamingIP(const IpAddr ip);
     int getReceiverStreamingHwm() const;

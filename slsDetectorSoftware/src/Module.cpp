@@ -1245,22 +1245,22 @@ void Module::setDestinationUDPMAC2(const MacAddr mac) {
     sendToDetector(F_SET_DEST_UDP_MAC2, mac, nullptr);
 }
 
-int Module::getDestinationUDPPort() const {
-    return sendToDetector<int>(F_GET_DEST_UDP_PORT);
+uint16_t Module::getDestinationUDPPort() const {
+    return sendToDetector<uint16_t>(F_GET_DEST_UDP_PORT);
 }
 
-void Module::setDestinationUDPPort(const int port) {
+void Module::setDestinationUDPPort(const uint16_t port) {
     sendToDetector(F_SET_DEST_UDP_PORT, port, nullptr);
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_UDP_PORT, port, nullptr);
     }
 }
 
-int Module::getDestinationUDPPort2() const {
+uint16_t Module::getDestinationUDPPort2() const {
     return sendToDetector<int>(F_GET_DEST_UDP_PORT2);
 }
 
-void Module::setDestinationUDPPort2(const int port) {
+void Module::setDestinationUDPPort2(const uint16_t port) {
     sendToDetector(F_SET_DEST_UDP_PORT2, port, nullptr);
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_UDP_PORT2, port, nullptr);
@@ -1358,7 +1358,7 @@ std::string Module::getReceiverHostname() const {
     return std::string(shm()->rxHostname);
 }
 
-void Module::setReceiverHostname(const std::string &hostname, const int port,
+void Module::setReceiverHostname(const std::string &hostname, const uint16_t port,
                                  const bool initialChecks) {
     {
         std::ostringstream oss;
@@ -1431,13 +1431,12 @@ void Module::setReceiverHostname(const std::string &hostname, const int port,
     updateReceiverStreamingIP();
 }
 
-int Module::getReceiverPort() const { return shm()->rxTCPPort; }
+uint16_t Module::getReceiverPort() const { return shm()->rxTCPPort; }
 
-int Module::setReceiverPort(int port_number) {
+void Module::setReceiverPort(uint16_t port_number) {
     if (port_number >= 0 && port_number != shm()->rxTCPPort) {
         shm()->rxTCPPort = port_number;
     }
-    return shm()->rxTCPPort;
 }
 
 int Module::getReceiverFifoDepth() const {
@@ -1649,11 +1648,11 @@ void Module::setReceiverStreamingStartingFrame(int fnum) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_START_FNUM, fnum, nullptr);
 }
 
-int Module::getReceiverStreamingPort() const {
+uint16_t Module::getReceiverStreamingPort() const {
     return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_PORT);
 }
 
-void Module::setReceiverStreamingPort(int port) {
+void Module::setReceiverStreamingPort(uint16_t port) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
 }
 
@@ -1672,9 +1671,9 @@ void Module::setReceiverStreamingIP(const IpAddr ip) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
 }
 
-int Module::getClientStreamingPort() const { return shm()->zmqport; }
+uint16_t Module::getClientStreamingPort() const { return shm()->zmqport; }
 
-void Module::setClientStreamingPort(int port) { shm()->zmqport = port; }
+void Module::setClientStreamingPort(uint16_t port) { shm()->zmqport = port; }
 
 IpAddr Module::getClientStreamingIP() const { return shm()->zmqip; }
 

@@ -556,10 +556,10 @@ enum streamingInterface {
         int moduleIndex{0};
         char hostname[MAX_STR_LENGTH];
         int udpInterfaces{1};
-        int udp_dstport{0};
+        uint16_t udp_dstport{0};
         uint32_t udp_dstip{0U};
         uint64_t udp_dstmac{0LU};
-        int udp_dstport2{0};
+        uint16_t udp_dstport2{0};
         uint32_t udp_dstip2{0U};
         uint64_t udp_dstmac2{0LU};
         int64_t frames{0};

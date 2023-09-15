@@ -34,11 +34,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         uic.loadUi(Path(__file__).parent / "CtbGui.ui", self)
         logging.basicConfig(encoding='utf-8', level=logging.INFO)
-        self.updateSettingValues()
 
         self.logger = logging.getLogger(__name__)
         self.det = None
         self.showLegend = True
+        self.settings = None
         try:
             self.det = Detector()
             # ensure detector is up
@@ -94,6 +94,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.firstDigitalImage = True
         self.firstTransceiverImage = True
 
+        self.updateSettingValues()
+
     def updateSettingMainWindow(self):
         self.settings.beginGroup("mainwindow")
         # window size
@@ -148,15 +150,30 @@ class MainWindow(QtWidgets.QMainWindow):
             self.settings.remove('window_pos')
         self.settings.endGroup()
 
+    def savePlotTypeAndDetector(self):
+        self.settings.setValue('isImage', self.plotTab.view.radioButtonImage.isChecked())
+        self.settings.setValue('detector', self.plotTab.view.comboBoxPlot.currentText())
+
+    def updatePlotTypeAndDetector(self):
+        # load plot type from qsettings
+        isImage = self.settings.value('isImage', True, type=bool)
+        self.plotTab.view.radioButtonImage.setChecked(isImage)
+        self.plotTab.plotOptions()
+        # load detector from qsettings
+        if isImage:
+            self.plotTab.view.comboBoxPlot.setCurrentText(self.settings.value('detector', 'Matterhorn'))
+
     def updateSettingValues(self):
         self.settings = QtCore.QSettings('slsdetectorgroup', 'pyctbgui')
         self.updateSettingMainWindow()
         self.updateSettingDockWidget()
+        self.updatePlotTypeAndDetector()
 
     def saveSettings(self):
         # store in ~/.config/slsdetectorgroup/pyctbgui.conf
         self.saveSettingMainWindow()
         self.saveSettingDockWidget()
+        self.savePlotTypeAndDetector()
 
     def closeEvent(self, event):
         self.saveSettings()

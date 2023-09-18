@@ -15,10 +15,24 @@ int main(int argc, char *argv[]){
     sls::Caller c(&d);
 
     std::cout << "call with action get\n";
-    c.call(parser, default_action);
-
+    try
+    {
+    c.call(parser, slsDetectorDefs::GET_ACTION);
+    }
+    catch(sls::RuntimeError& e){}
     std::cout << "\ncall with action put\n";
+    try
+    {
     c.call(parser, slsDetectorDefs::PUT_ACTION);
+    }
+    catch(sls::RuntimeError& e){}
+    std::cout << "\ncall with 'infer action'\n";
+    try
+    {
+    c.call(parser, default_action);
+    }
+    catch(sls::RuntimeError& e){}
+
 
 
 }

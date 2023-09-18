@@ -96,7 +96,7 @@ class for_block:
 
 
 class function:
-    def __init__(self, return_type, name, args):
+    def __init__(self, return_type, name, args: list[tuple[str, str]]):
         self.name = name
         self.args = args
         self.return_type = return_type

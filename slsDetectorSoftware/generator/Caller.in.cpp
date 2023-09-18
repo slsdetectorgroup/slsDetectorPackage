@@ -6,13 +6,6 @@ namespace sls {
 // enum { GET_ACTION, PUT_ACTION, READOUT_ACTION, HELP_ACTION };
 
 void Caller::call(const CmdParser &parser, int action, std::ostream &os) {
-  std::cout << "Caller received:\n";
-  std::cout << "cmd: " << parser.command() << "\nargs: ";
-  for (auto &arg : parser.arguments()) {
-    std::cout << arg << " ";
-  }
-  std::cout << '\n';
-  std::cout << "action: " << action << "\n\n";
 
   args = parser.arguments();
   cmd = parser.command();

@@ -11,6 +11,31 @@ namespace sls {
 using test::GET;
 using test::PUT;
 
+void test_valid_port(const std::string &command,
+                     const std::vector<std::string> &arguments, int detector_id,
+                     int action, int port_number) {
+    Detector det;
+    CmdProxy proxy(&det);
+    std::string string_port_number = std::to_string(port_number);
+    REQUIRE_THROWS_WITH(proxy.Call(command, arguments, detector_id, action),
+                        "Invalid port number " + string_port_number +
+                            ". It must be in range 1 - 65535");
+}
+
+void test_valid_port(const std::string &command,
+                     const std::vector<std::string> &arguments, int detector_id,
+                     int action) {
+    std::vector<std::string> arg(arguments);
+    arg.push_back("0");
+
+    int test_values[2] = {77797, -1};
+    for (int i = 0; i != 2; ++i) {
+        int port_number = test_values[i];
+        arg[arg.size() - 1] = std::to_string(port_number);
+        test_valid_port(command, arg, detector_id, action, port_number);
+    }
+}
+
 void test_dac(defs::dacIndex index, const std::string &dacname, int dacvalue) {
     Detector det;
     CmdProxy proxy(&det);

@@ -45,6 +45,7 @@ ClientInterface::ClientInterface(int portNumber)
     : detType(GOTTHARD),
       portNumber(portNumber > 0 ? portNumber : DEFAULT_TCP_RX_PORTNO),
       server(portNumber) {
+    validatePortNumber(portNumber);
     functionTable();
     parentThreadId = gettid();
     tcpThread =

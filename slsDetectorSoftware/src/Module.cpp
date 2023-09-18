@@ -1350,7 +1350,9 @@ void Module::setReceiverHostname(const std::string &receiverIP,
     auto res = split(host, ':');
     if (res.size() > 1) {
         host = res[0];
-        shm()->rxTCPPort = std::stoi(res[1]);
+        int port = StringTo<int>(res[1]);
+        validatePortNumber(port);
+        shm()->rxTCPPort = port;
     }
     strcpy_safe(shm()->rxHostname, host.c_str());
     shm()->useReceiverFlag = true;

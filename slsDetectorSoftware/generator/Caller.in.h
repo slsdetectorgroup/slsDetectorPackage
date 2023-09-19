@@ -11,7 +11,9 @@ class Caller {
   public:
     Caller(Detector *ptr):det(ptr){}
     void call(const CmdParser &parser, int action, std::ostream &os=std::cout);
-    std::string frames(int action);
+
+    // THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (1)
+
     std::vector<std::string> args;
     std::string cmd;
     Detector* det;
@@ -21,7 +23,7 @@ class Caller {
     using FunctionMap = std::map<std::string, std::string (Caller::*)(int)>;
     Detector *ptr; //pointer to the detector that executes the command
 
-    // THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE
+    // THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (2)
 
     //some helper functions to print
     template <typename V> std::string OutStringHex(const V &value) {

@@ -41,7 +41,11 @@ class CodeGenerator:
         with out_path.open('w') as fp:
             with in_path.open('r') as fp2:
                 for line in fp2:
-                    if "THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE" in line:
+                    if "THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (1)" in line:
+                        for command in commands:
+                            fp.write(f'std::string {command}(int action);\n')
+                        continue
+                    if "THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (2)" in line:
                         map_string = ""
                         for command in commands:
                             map_string += f'{{"{command}", &Caller::{command}}},'

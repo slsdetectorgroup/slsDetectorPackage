@@ -4,16 +4,73 @@ frames:
   help: "Get or set the number of frames to be collected."
   actions:
     GET:
-      function: getNumberOfFrames
-      argc: 0
-      require_det_id: true
+      args:
+        - argc: 0
+          require_det_id: true
+          input: [ ]
+          input_types: [ ]
+          function: getNumberOfFrames
+          output: [ OutString(t) ]
+
     PUT:
-      function: setNumberOfFrames
-      argc: 1
-      arg_types: [ int ]
-# detector: # detector specific actions
-#   eiger:
-#     GET:
+      args:
+        - argc: 1
+          input: [ 'args[0]' ]
+          input_types: [ int ]
+          function: setNumberOfFrames
+          output: [ 'args[0]' ]
+
+
+exptime:
+  help: ""
+  infer_action: false # infer action based on actions' argc (they must be unique if true)
+  actions:
+    GET:
+      args:
+        - argc: 0
+          require_det_id: true
+          function: getExptime
+          input: [ ]
+          input_types: [ ]
+          output: [ OutString(t) ]
+        - argc: 1
+          function: getExptime
+          require_det_id: true
+          input: [ ]
+          input_types: [ ]
+          output: [ "OutString(t , args[0])" ]
+    PUT:
+      args:
+        - argc: 1
+          function: setExptime
+          require_det_id: true
+          separate_time_units:
+            input: 'args[0]'
+            output: [ converted_time, unit ]
+          input:  [converted_time]
+          input_types: [ time::ns ]
+          output: [ 'args[0]' ]
+        - argc: 2
+          function: setExptime
+          require_det_id: true
+          convert_to_time:
+            input: [ 'args[0]', 'args[1]' ]
+            output:  converted_time
+          input: [ converted_time ]
+          input_types: [ time::ns ]
+          output: [ 'args[0]', 'args[1]' ]
 #
-#
-#
+#    detectors:
+#      MYTHEN3:
+#        GET:
+#          args:
+#            - argc: 0
+#              require_det_id: true
+#              function: getExptimeForAllGates
+#              output: [t]
+#            - argc: 1
+#              function: getExptimeForAllGates
+#              output: [t, args[0]]
+
+
+

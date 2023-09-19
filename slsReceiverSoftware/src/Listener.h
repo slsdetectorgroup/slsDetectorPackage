@@ -39,7 +39,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
     void SetFifo(Fifo *f);
     void SetGeneralData(GeneralData *g);
-    void SetUdpPortNumber(const uint32_t portNumber);
+    void SetUdpPortNumber(const uint16_t portNumber);
     void SetEthernetInterface(const std::string e);
     void SetActivate(bool enable);
     void SetDetectorDatastream(bool enable);
@@ -112,7 +112,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     std::atomic<runStatus> *status;
     std::unique_ptr<UdpRxSocket> udpSocket{nullptr};
 
-    uint32_t udpPortNumber{0};
+    uint16_t udpPortNumber{0};
     std::string eth;
     bool activated{false};
     bool detectorDataStream{true};

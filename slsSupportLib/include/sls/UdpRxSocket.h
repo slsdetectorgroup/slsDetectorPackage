@@ -15,7 +15,7 @@ class UdpRxSocket {
     int sockfd_{-1};
 
   public:
-    UdpRxSocket(int port, ssize_t packet_size, const char *hostname = nullptr,
+    UdpRxSocket(uint16_t port, ssize_t packet_size, const char *hostname = nullptr,
                 int kernel_buffer_size = 0);
     ~UdpRxSocket();
     bool ReceivePacket(char *dst) noexcept;

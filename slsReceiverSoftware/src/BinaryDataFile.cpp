@@ -23,7 +23,7 @@ void BinaryDataFile::CreateFirstBinaryDataFile(const std::string &fNamePrefix,
                                                const uint64_t fIndex,
                                                const bool ovEnable,
                                                const bool sMode,
-                                               const uint32_t uPortNumber,
+                                               const uint16_t uPortNumber,
                                                const uint32_t mFramesPerFile) {
 
     subFileIndex = 0;

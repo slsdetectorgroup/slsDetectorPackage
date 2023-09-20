@@ -1434,9 +1434,7 @@ void Module::setReceiverHostname(const std::string &hostname, const uint16_t por
 uint16_t Module::getReceiverPort() const { return shm()->rxTCPPort; }
 
 void Module::setReceiverPort(uint16_t port_number) {
-    if (port_number >= 0 && port_number != shm()->rxTCPPort) {
-        shm()->rxTCPPort = port_number;
-    }
+    shm()->rxTCPPort = port_number;
 }
 
 int Module::getReceiverFifoDepth() const {

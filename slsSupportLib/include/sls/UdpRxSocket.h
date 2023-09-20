@@ -8,6 +8,7 @@ receiver listener loop. Should be used RAII style...
 */
 
 #include <sys/types.h> //ssize_t
+#include <stdint.h>
 namespace sls {
 
 class UdpRxSocket {

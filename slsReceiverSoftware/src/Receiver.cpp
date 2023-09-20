@@ -51,7 +51,6 @@ Receiver::Receiver(int argc, char *argv[]) : tcpipInterface(nullptr) {
     // getopt_long stores the option index here.
     int option_index = 0;
     int c = 0;
-    uint32_t temp = 0;
 
     std::string help_message =
         "\nUsage: " + std::string(argv[0]) + " [arguments]\n" +

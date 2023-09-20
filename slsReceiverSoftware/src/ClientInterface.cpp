@@ -1064,8 +1064,10 @@ int ClientInterface::get_file_format(Interface &socket) {
 
 int ClientInterface::set_streaming_port(Interface &socket) {
     auto port = socket.Receive<uint16_t>();
-    if (port < 0) {
-        throw RuntimeError("Invalid zmq port " + std::to_string(port));
+    try {
+        validatePortNumber(port);
+    } catch (...) {
+        throw RuntimeError("Could not set streaming (zmq) port number. Invalid value.");
     }
     verifyIdle(socket);
     impl()->setStreamingPort(port);

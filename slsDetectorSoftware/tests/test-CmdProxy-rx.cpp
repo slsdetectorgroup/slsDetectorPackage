@@ -5,6 +5,7 @@
 #include "sls/Detector.h"
 #include "sls/Version.h"
 #include "sls/sls_detector_defs.h"
+#include "test-CmdProxy-global.h"
 #include <sstream>
 
 #include "sls/versionAPI.h"
@@ -223,7 +224,7 @@ TEST_CASE("rx_tcpport", "[.cmd][.rx]") {
     CmdProxy proxy(&det);
     auto prev_val = det.getRxPort();
 
-    int port = 3500;
+    uint16_t port = 3500;
     proxy.Call("rx_tcpport", {std::to_string(port)}, -1, PUT);
     for (int i = 0; i != det.size(); ++i) {
         std::ostringstream oss;
@@ -237,6 +238,22 @@ TEST_CASE("rx_tcpport", "[.cmd][.rx]") {
         proxy.Call("rx_tcpport", {}, i, GET, oss);
         REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');
     }
+
+    test_valid_port("rx_tcpport", {}, -1, PUT);
+    test_valid_port("rx_tcpport", {}, 0, PUT);
+    // should fail for the second module
+    if (det.size() > 1) {
+        test_valid_port("rx_tcpport", {"65535"}, -1, PUT, 65536);
+        auto rxHostname = det.getRxHostname().squash("none");
+        if (rxHostname != "none") {
+            std::ostringstream oss;
+            for (int i = 0; i != det.size(); ++i) {
+                oss << rxHostname << ":" << 65536 + i << "+";
+            }
+            test_valid_port("rx_hostname", {oss.str()}, -1, PUT, 65536);
+        }
+    }
+
     for (int i = 0; i != det.size(); ++i) {
         det.setRxPort(prev_val[i], i);
     }
@@ -810,7 +827,7 @@ TEST_CASE("rx_zmqport", "[.cmd][.rx]") {
         proxy.Call("numinterfaces", {"2"}, -1, PUT);
         socketsperdetector *= 2;
     }
-    int port = 3500;
+    uint16_t port = 3500;
     proxy.Call("rx_zmqport", {std::to_string(port)}, -1, PUT);
     for (int i = 0; i != det.size(); ++i) {
         std::ostringstream oss;
@@ -828,6 +845,14 @@ TEST_CASE("rx_zmqport", "[.cmd][.rx]") {
                                  std::to_string(port + i * socketsperdetector) +
                                  '\n');
     }
+
+    test_valid_port("rx_zmqport", {}, -1, PUT);
+    test_valid_port("rx_zmqport", {}, 0, PUT);
+    // should fail for the second module
+    if (det.size() > 1) {
+        test_valid_port("rx_zmqport", {"65535"}, -1, PUT, 65536);
+    }
+
     for (int i = 0; i != det.size(); ++i) {
         det.setRxZmqPort(prev_val_zmqport[i], i);
     }

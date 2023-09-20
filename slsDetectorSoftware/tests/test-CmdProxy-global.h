@@ -5,6 +5,14 @@
 
 namespace sls {
 
+void test_valid_port(const std::string &command,
+                     const std::vector<std::string> &arguments, int detector_id,
+                     int action, uint16_t port_number);
+
+void test_valid_port(const std::string &command,
+                     const std::vector<std::string> &arguments, int detector_id,
+                     int action);
+
 void test_dac(slsDetectorDefs::dacIndex index, const std::string &dacname,
               int dacvalue);
 void test_onchip_dac(slsDetectorDefs::dacIndex index,

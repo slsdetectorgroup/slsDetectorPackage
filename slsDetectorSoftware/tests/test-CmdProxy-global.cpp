@@ -17,9 +17,14 @@ void test_valid_port(const std::string &command,
     Detector det;
     CmdProxy proxy(&det);
     std::string string_port_number = std::to_string(port_number);
-    REQUIRE_THROWS_WITH(proxy.Call(command, arguments, detector_id, action),
-                        "Invalid port number " + string_port_number +
-                            ". It must be in range 1 - 65535");
+    if (port_number == 0) {
+        REQUIRE_THROWS_WITH(proxy.Call(command, arguments, detector_id, action),
+                        "Invalid port range. Must be between 1 - 65535");
+    } else {
+        REQUIRE_THROWS_WITH(proxy.Call(command, arguments, detector_id, action),
+                        "Cannot scan uint16_t from string '" + string_port_number +
+                            "'. Value must be in range 1 - 65535.");
+    }
 }
 
 void test_valid_port(const std::string &command,
@@ -28,8 +33,8 @@ void test_valid_port(const std::string &command,
     std::vector<std::string> arg(arguments);
     arg.push_back("0");
 
-    int test_values[2] = {77797, 0};
-    for (int i = 0; i != 2; ++i) {
+    int test_values[3] = {77797, -1, 0};
+    for (int i = 0; i != 3; ++i) {
         int port_number = test_values[i];
         arg[arg.size() - 1] = std::to_string(port_number);
         test_valid_port(command, arg, detector_id, action, port_number);

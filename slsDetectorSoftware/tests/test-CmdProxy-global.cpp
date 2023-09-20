@@ -13,7 +13,7 @@ using test::PUT;
 
 void test_valid_port(const std::string &command,
                      const std::vector<std::string> &arguments, int detector_id,
-                     int action, uint16_t port_number) {
+                     int action, int port_number) {
     Detector det;
     CmdProxy proxy(&det);
     std::string string_port_number = std::to_string(port_number);
@@ -28,9 +28,9 @@ void test_valid_port(const std::string &command,
     std::vector<std::string> arg(arguments);
     arg.push_back("0");
 
-    uint16_t test_values[2] = {77797, 0};
+    int test_values[2] = {77797, 0};
     for (int i = 0; i != 2; ++i) {
-        uint16_t port_number = test_values[i];
+        int port_number = test_values[i];
         arg[arg.size() - 1] = std::to_string(port_number);
         test_valid_port(command, arg, detector_id, action, port_number);
     }

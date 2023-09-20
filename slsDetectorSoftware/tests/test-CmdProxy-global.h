@@ -7,7 +7,7 @@ namespace sls {
 
 void test_valid_port(const std::string &command,
                      const std::vector<std::string> &arguments, int detector_id,
-                     int action, uint16_t port_number);
+                     int action, int port_number);
 
 void test_valid_port(const std::string &command,
                      const std::vector<std::string> &arguments, int detector_id,

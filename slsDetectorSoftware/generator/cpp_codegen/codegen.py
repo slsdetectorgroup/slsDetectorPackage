@@ -55,6 +55,46 @@ class CodeGenerator:
 
                     fp.write(line)
 
+    def write_arg(self, args, action):
+        # prepare input arguments list
+        for arg in args:
+            with if_block(f'args.size() == {arg["argc"]}'):
+                if 'separate_time_units' in arg and arg['separate_time_units']:
+                    self.write_line(f'std::string tmp_time({arg["separate_time_units"]["input"]});')
+                    self.write_line(f'std::string {arg["separate_time_units"]["output"][1]}'
+                                    f' = RemoveUnit(tmp_time);')
+                    self.write_line(f'auto {arg["separate_time_units"]["output"][0]} = '
+                                    f'StringTo < time::ns > (tmp_time,'
+                                    f' {arg["separate_time_units"]["output"][1]});')
+                if 'convert_to_time' in arg and arg['convert_to_time']:
+                    self.write_line(f'auto {arg["convert_to_time"]["output"]} = '
+                                    f'StringTo < time::ns > ({", ".join(arg["convert_to_time"]["input"])});')
+                input_arguments = []
+                for i in range(len(arg['input'])):
+                    if arg["input_types"][i] not in ['time::ns', 'std::string']:
+                        self.write_line(
+                            f'auto arg{i} = StringTo<{arg["input_types"][i]}>({arg["input"][i]});')
+                        input_arguments.append(f'arg{i}')
+                    else:
+                        input_arguments.append(arg["input"][i])
+                if 'require_det_id' in arg and arg['require_det_id']:
+                    input_arguments.append("std::vector<int>{ det_id }")
+
+                input_arguments = ", ".join(input_arguments)
+                # call function
+                if action == 'GET':
+                    self.write_line(f'auto t = det->{arg["function"]}({input_arguments});')
+                else:
+                    self.write_line(f'det->{arg["function"]}({input_arguments});')
+
+                output_args = []
+                for output in arg['output']:
+                    output_args.append(output)
+                # if len(output_args) > 0:
+                #     self.write_line(f"os << OutString(" + ", ".join(output_args) + ") << '\\n';")
+                if len(output_args) > 0:
+                    self.write_line(f"os << {'<< '.join(output_args)} << '\\n';")
+
 
 class if_block:
     def __init__(self, condition, elseif=False):

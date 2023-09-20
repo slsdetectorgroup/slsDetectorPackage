@@ -1,76 +1,68 @@
 ---
+# detectors: MYTHEN3
 frames:
   infer_action: true # infer action based on actions' argc (they must be unique if true)
   help: "Get or set the number of frames to be collected."
   actions:
     GET:
-      args:
-        - argc: 0
-          require_det_id: true
-          input: [ ]
-          input_types: [ ]
-          function: getNumberOfFrames
-          output: [ OutString(t) ]
+      require_det_id: true
+      argc: 0
+      function: getNumberOfFrames
+      output: [ OutString(t) ]
 
     PUT:
-      args:
-        - argc: 1
-          input: [ 'args[0]' ]
-          input_types: [ int ]
-          function: setNumberOfFrames
-          output: [ 'args[0]' ]
+      argc: 1
+      input: [ 'args[0]' ]
+      input_types: [ int ]
+      function: setNumberOfFrames
+      output: [ 'args[0]' ]
 
-
-exptime:
-  help: ""
-  infer_action: false # infer action based on actions' argc (they must be unique if true)
+test_command:
+  infer_action: false
+  help: "Test command"
+  inherit_actions: frames
   actions:
     GET:
+      require_det_id: false
       args:
         - argc: 0
-          require_det_id: true
-          function: getExptime
-          input: [ ]
-          input_types: [ ]
-          output: [ OutString(t) ]
+          output: [ ttttt ]
         - argc: 1
-          function: getExptime
-          require_det_id: true
-          input: [ ]
-          input_types: [ ]
-          output: [ "OutString(t , args[0])" ]
-    PUT:
-      args:
-        - argc: 1
-          function: setExptime
-          require_det_id: true
-          separate_time_units:
-            input: 'args[0]'
-            output: [ converted_time, unit ]
-          input:  [converted_time]
-          input_types: [ time::ns ]
-          output: [ 'args[0]' ]
-        - argc: 2
-          function: setExptime
-          require_det_id: true
-          convert_to_time:
-            input: [ 'args[0]', 'args[1]' ]
-            output:  converted_time
-          input: [ converted_time ]
-          input_types: [ time::ns ]
-          output: [ 'args[0]', 'args[1]' ]
-#
-#    detectors:
-#      MYTHEN3:
-#        GET:
-#          args:
-#            - argc: 0
-#              require_det_id: true
-#              function: getExptimeForAllGates
-#              output: [t]
-#            - argc: 1
-#              function: getExptimeForAllGates
-#              output: [t, args[0]]
+          output: [ "xxxx" ]
+
+
+#exptime:
+#  help: ""
+#  infer_action: false # infer action based on actions' argc (they must be unique if true)
+#  actions:
+#    GET:
+#      require_det_id: true
+#      function: getExptime
+#      args:
+#        - argc: 0
+#          output: [ OutString(t) ]
+#        - argc: 1
+#          output: [ "OutString(t , args[0])" ]
+#      detectors:
+#        MYTHEN3:
+#          function: getExptimeForAllGates
+#    PUT:
+#      function: setExptime
+#      require_det_id: true
+#      input: [ converted_time ]
+#      input_types: [ time::ns ]
+#      args:
+#        - argc: 1
+#          separate_time_units:
+#            input: 'args[0]'
+#            output: [ converted_time, unit ]
+#          output: [ 'args[0]' ]
+#        - argc: 2
+#          convert_to_time:
+#            input: [ 'args[0]', 'args[1]' ]
+#            output:  converted_time
+#          output: [ 'args[0]', 'args[1]' ]
+
 
 
 

@@ -1,0 +1,55 @@
+frames:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        function: getNumberOfFrames
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        function: setNumberOfFrames
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args[0]
+        require_det_id: false
+  help: Get or set the number of frames to be collected.
+  infer_action: true
+test_command:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        function: ''
+        input: &id001 []
+        input_types: &id002 []
+        output:
+        - ttttt
+        require_det_id: false
+      - argc: 1
+        function: ''
+        input: *id001
+        input_types: *id002
+        output:
+        - xxxx
+        require_det_id: false
+    PUT:
+      args:
+      - argc: 1
+        function: setNumberOfFrames
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args[0]
+        require_det_id: false
+  help: Get or set the number of frames to be collected.
+  infer_action: true

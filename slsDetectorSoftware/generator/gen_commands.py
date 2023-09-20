@@ -5,7 +5,7 @@ import yaml
 from cpp_codegen.codegen import codegen, if_block, for_block, function, else_block
 
 GEN_PATH = Path(__file__).parent
-COMMANDS_PATH = GEN_PATH / 'commands.yaml'
+COMMANDS_PATH = GEN_PATH / 'extended_commands.yaml'
 commands_config = yaml.unsafe_load(COMMANDS_PATH.open('r'))
 
 codegen.open(GEN_PATH.parent / 'src' / 'Caller.cpp')
@@ -62,14 +62,14 @@ for command_name, command in commands_config.items():
                                                f'StringTo < time::ns > (tmp_time,'
                                                f' {arg["separate_time_units"]["output"][1]});')
                             codegen.write_line(
-                                f'}} catch (...) {{  throw RuntimeError("Could not convert argument {i} to time::ns");}}')
+                                f'}} catch (...) {{  throw RuntimeError("Could not convert argument to time::ns");}}')
 
                         elif 'convert_to_time' in arg and arg['convert_to_time']:
                             codegen.write_line(f'try {{')
 
                             codegen.write_line(f'StringTo < time::ns > ({", ".join(arg["convert_to_time"]["input"])});')
                             codegen.write_line(
-                                f'}} catch (...) {{  throw RuntimeError("Could not convert argument {i} to time::ns");}}')
+                                f'}} catch (...) {{  throw RuntimeError("Could not convert arguments to time::ns");}}')
 
                         for i in range(len(arg['input'])):
                             if arg["input_types"][i] in ['time::ns']:
@@ -86,46 +86,26 @@ for command_name, command in commands_config.items():
 
         # generate code for each action
         codegen.write_line('// generate code for each action')
+        codegen.write_line('auto detector_type = det->getDetectorType().squash();')
         for action, action_params in command['actions'].items():
+
             with if_block(f'action == {codegen.actions_dict[action]}'):
-                # prepare input arguments list
-                for arg in action_params['args']:
-                    with if_block(f'args.size() == {arg["argc"]}'):
-                        if 'separate_time_units' in arg and arg['separate_time_units']:
-                            codegen.write_line(f'std::string tmp_time({arg["separate_time_units"]["input"]});')
-                            codegen.write_line(f'std::string {arg["separate_time_units"]["output"][1]}'
-                                               f' = RemoveUnit(tmp_time);')
-                            codegen.write_line(f'auto {arg["separate_time_units"]["output"][0]} = '
-                                               f'StringTo < time::ns > (tmp_time,'
-                                               f' {arg["separate_time_units"]["output"][1]});')
-                        if 'convert_to_time' in arg and arg['convert_to_time']:
-                            codegen.write_line(f'auto {arg["convert_to_time"]["output"]} = '
-                                               f'StringTo < time::ns > ({", ".join(arg["convert_to_time"]["input"])});')
-                        input_arguments = []
-                        for i in range(len(arg['input'])):
-                            if arg["input_types"][i] not in ['time::ns', 'std::string']:
-                                codegen.write_line(
-                                    f'auto arg{i} = StringTo<{arg["input_types"][i]}>({arg["input"][i]});')
-                                input_arguments.append(f'arg{i}')
-                            else:
-                                input_arguments.append(arg["input"][i])
-                        if 'require_det_id' in arg and arg['require_det_id']:
-                            input_arguments.append("std::vector<int>{ det_id }")
+                if 'detectors' in action_params:
+                    first = True
+                    for detector, detector_params in action_params['detectors'].items():
+                        with if_block(f'detector_type == defs::{detector}', elseif=not first):
+                            codegen.write_arg(detector_params, action)
 
-                        input_arguments = ", ".join(input_arguments)
-                        # call function
-                        if action == 'GET':
-                            codegen.write_line(f'auto t = det->{arg["function"]}({input_arguments});')
-                        else:
-                            codegen.write_line(f'det->{arg["function"]}({input_arguments});')
+                    else_block().__enter__()
 
-                        output_args = []
-                        for output in arg['output']:
-                            output_args.append(output)
-                        # if len(output_args) > 0:
-                        #     codegen.write_line(f"os << OutString(" + ", ".join(output_args) + ") << '\\n';")
-                        if len(output_args) > 0:
-                            codegen.write_line(f"os << {'<< '.join(output_args)} << '\\n';")
+                if not action_params:
+                    codegen.write_line(f'throw RuntimeError("detector not supported for action: {action}");')
+                else:
+                    codegen.write_arg(action_params['args'], action)
+
+                if 'detectors' in action_params:
+                    else_block().__exit__()
+
         codegen.write_line('return os.str();')
 
 # close sls namespace

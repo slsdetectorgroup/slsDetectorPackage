@@ -1,8 +1,462 @@
+exptime:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        function: getExptime
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input: []
+        function: getExptime
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+      detectors:
+        MYTHEN3:
+        - argc: 0
+          cast_input: []
+          function: getExptimeForAllGates
+          input: []
+          input_types: []
+          output:
+          - OutString(t)
+          require_det_id: true
+        - argc: 1
+          cast_input: []
+          function: getExptimeForAllGates
+          input: []
+          input_types: []
+          output:
+          - OutString(t , args[0])
+          require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        function: setExptime
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        require_det_id: true
+        separate_time_units:
+          input: args[0]
+          output:
+          - converted_time
+          - unit
+      - argc: 2
+        cast_input:
+        - false
+        convert_to_time:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_time
+        function: setExptime
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        - args[1]
+        require_det_id: true
+  help: ''
+  infer_action: false
+exptime1:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input:
+        - false
+        extra_variables:
+        - name: gateIndex
+          type: int
+          value: 0
+        function: getExptime
+        input:
+        - gateIndex
+        input_types:
+        - int
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input:
+        - false
+        extra_variables:
+        - name: gateIndex
+          type: int
+          value: 0
+        function: getExptime
+        input:
+        - gateIndex
+        input_types:
+        - int
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        extra_variables:
+        - name: gateIndex
+          type: int
+          value: 0
+        function: setExptime
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        require_det_id: true
+        separate_time_units:
+          input: args[0]
+          output:
+          - converted_time
+          - unit
+      - argc: 2
+        cast_input:
+        - false
+        convert_to_time:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_time
+        extra_variables:
+        - name: gateIndex
+          type: int
+          value: 0
+        function: setExptime
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        - args[1]
+        require_det_id: true
+      detectors:
+        MYTHEN3:
+        - argc: 1
+          cast_input:
+          - false
+          extra_variables:
+          - name: gateIndex
+            type: int
+            value: 0
+          function: setExptime
+          input:
+          - gateIndex
+          - converted_time
+          input_types:
+          - int
+          - time::ns
+          output:
+          - args[0]
+          require_det_id: true
+          separate_time_units:
+            input: args[0]
+            output:
+            - converted_time
+            - unit
+        - argc: 2
+          cast_input:
+          - false
+          convert_to_time:
+            input:
+            - args[0]
+            - args[1]
+            output: converted_time
+          extra_variables:
+          - name: gateIndex
+            type: int
+            value: 0
+          function: setExptime
+          input:
+          - gateIndex
+          - converted_time
+          input_types:
+          - int
+          - time::ns
+          output:
+          - args[0]
+          - args[1]
+          require_det_id: true
+  help: ''
+  infer_action: false
+exptime2:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input:
+        - false
+        extra_variables:
+        - name: gateIndex
+          type: int
+          value: 1
+        function: getExptime
+        input:
+        - gateIndex
+        input_types:
+        - int
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input:
+        - false
+        extra_variables:
+        - name: gateIndex
+          type: int
+          value: 1
+        function: getExptime
+        input:
+        - gateIndex
+        input_types:
+        - int
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        extra_variables:
+        - name: gateIndex
+          type: int
+          value: 1
+        function: setExptime
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        require_det_id: true
+        separate_time_units:
+          input: args[0]
+          output:
+          - converted_time
+          - unit
+      - argc: 2
+        cast_input:
+        - false
+        convert_to_time:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_time
+        extra_variables:
+        - name: gateIndex
+          type: int
+          value: 1
+        function: setExptime
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        - args[1]
+        require_det_id: true
+      detectors:
+        MYTHEN3:
+        - argc: 1
+          cast_input:
+          - false
+          extra_variables:
+          - name: gateIndex
+            type: int
+            value: 0
+          function: setExptime
+          input:
+          - gateIndex
+          - converted_time
+          input_types:
+          - int
+          - time::ns
+          output:
+          - args[0]
+          require_det_id: true
+          separate_time_units:
+            input: args[0]
+            output:
+            - converted_time
+            - unit
+        - argc: 2
+          cast_input:
+          - false
+          convert_to_time:
+            input:
+            - args[0]
+            - args[1]
+            output: converted_time
+          extra_variables:
+          - name: gateIndex
+            type: int
+            value: 0
+          function: setExptime
+          input:
+          - gateIndex
+          - converted_time
+          input_types:
+          - int
+          - time::ns
+          output:
+          - args[0]
+          - args[1]
+          require_det_id: true
+  help: ''
+  infer_action: false
+exptime3:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input:
+        - false
+        extra_variables:
+        - name: gateIndex
+          type: int
+          value: 2
+        function: getExptime
+        input:
+        - gateIndex
+        input_types:
+        - int
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input:
+        - false
+        extra_variables:
+        - name: gateIndex
+          type: int
+          value: 2
+        function: getExptime
+        input:
+        - gateIndex
+        input_types:
+        - int
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        extra_variables:
+        - name: gateIndex
+          type: int
+          value: 2
+        function: setExptime
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        require_det_id: true
+        separate_time_units:
+          input: args[0]
+          output:
+          - converted_time
+          - unit
+      - argc: 2
+        cast_input:
+        - false
+        convert_to_time:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_time
+        extra_variables:
+        - name: gateIndex
+          type: int
+          value: 2
+        function: setExptime
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        - args[1]
+        require_det_id: true
+      detectors:
+        MYTHEN3:
+        - argc: 1
+          cast_input:
+          - false
+          extra_variables:
+          - name: gateIndex
+            type: int
+            value: 0
+          function: setExptime
+          input:
+          - gateIndex
+          - converted_time
+          input_types:
+          - int
+          - time::ns
+          output:
+          - args[0]
+          require_det_id: true
+          separate_time_units:
+            input: args[0]
+            output:
+            - converted_time
+            - unit
+        - argc: 2
+          cast_input:
+          - false
+          convert_to_time:
+            input:
+            - args[0]
+            - args[1]
+            output: converted_time
+          extra_variables:
+          - name: gateIndex
+            type: int
+            value: 0
+          function: setExptime
+          input:
+          - gateIndex
+          - converted_time
+          input_types:
+          - int
+          - time::ns
+          output:
+          - args[0]
+          - args[1]
+          require_det_id: true
+  help: ''
+  infer_action: false
 frames:
   actions:
     GET:
       args:
       - argc: 0
+        cast_input: []
         function: getNumberOfFrames
         input: []
         input_types: []
@@ -12,37 +466,8 @@ frames:
     PUT:
       args:
       - argc: 1
-        function: setNumberOfFrames
-        input:
-        - args[0]
-        input_types:
-        - int
-        output:
-        - args[0]
-        require_det_id: false
-  help: Get or set the number of frames to be collected.
-  infer_action: true
-test_command:
-  actions:
-    GET:
-      args:
-      - argc: 0
-        function: ''
-        input: &id001 []
-        input_types: &id002 []
-        output:
-        - ttttt
-        require_det_id: false
-      - argc: 1
-        function: ''
-        input: *id001
-        input_types: *id002
-        output:
-        - xxxx
-        require_det_id: false
-    PUT:
-      args:
-      - argc: 1
+        cast_input:
+        - true
         function: setNumberOfFrames
         input:
         - args[0]

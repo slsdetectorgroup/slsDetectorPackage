@@ -14,55 +14,95 @@ frames:
       argc: 1
       input: [ 'args[0]' ]
       input_types: [ int ]
+      cast_input: [ true ]
       function: setNumberOfFrames
       output: [ 'args[0]' ]
 
-test_command:
-  infer_action: false
-  help: "Test command"
-  inherit_actions: frames
+
+exptime:
+  help: ""
+  infer_action: false # infer action based on actions' argc (they must be unique if true)
   actions:
     GET:
-      require_det_id: false
+      require_det_id: true
+      function: getExptime
       args:
         - argc: 0
-          output: [ ttttt ]
+          output: [ OutString(t) ]
         - argc: 1
-          output: [ "xxxx" ]
-
-
-#exptime:
-#  help: ""
-#  infer_action: false # infer action based on actions' argc (they must be unique if true)
-#  actions:
-#    GET:
-#      require_det_id: true
-#      function: getExptime
-#      args:
-#        - argc: 0
-#          output: [ OutString(t) ]
-#        - argc: 1
-#          output: [ "OutString(t , args[0])" ]
-#      detectors:
-#        MYTHEN3:
-#          function: getExptimeForAllGates
-#    PUT:
-#      function: setExptime
-#      require_det_id: true
-#      input: [ converted_time ]
-#      input_types: [ time::ns ]
-#      args:
-#        - argc: 1
-#          separate_time_units:
-#            input: 'args[0]'
-#            output: [ converted_time, unit ]
-#          output: [ 'args[0]' ]
-#        - argc: 2
-#          convert_to_time:
-#            input: [ 'args[0]', 'args[1]' ]
-#            output:  converted_time
-#          output: [ 'args[0]', 'args[1]' ]
+          output: [ "OutString(t , args[0])" ]
+      detectors:
+        MYTHEN3:
+          function: getExptimeForAllGates
+    PUT:
+      function: setExptime
+      require_det_id: true
+      input: [ converted_time ]
+      input_types: [ time::ns ]
+      args:
+        - argc: 1
+          separate_time_units:
+            input: 'args[0]'
+            output: [ converted_time, unit ]
+          output: [ 'args[0]' ]
+        - argc: 2
+          convert_to_time:
+            input: [ 'args[0]', 'args[1]' ]
+            output:  converted_time
+          output: [ 'args[0]', 'args[1]' ]
 
 
 
+
+exptime1:
+  inherit_actions: exptime
+  actions:
+    GET:
+      extra_variables:
+        - name: gateIndex
+          type: int
+          value: 0
+      input: [ gateIndex ]
+      input_types: [ int ]
+      detectors:
+    PUT:
+      extra_variables:
+        - name: gateIndex
+          type: int
+          value: 0
+      detectors:
+        MYTHEN3:
+          input: [ gateIndex,converted_time ]
+          input_types: [ int, time::ns ]
+
+
+
+
+exptime2:
+  inherit_actions: exptime1
+  actions:
+    GET:
+      extra_variables:
+        - name: gateIndex
+          type: int
+          value: 1
+    PUT:
+      extra_variables:
+        - name: gateIndex
+          type: int
+          value: 1
+
+exptime3:
+  inherit_actions: exptime1
+  actions:
+    GET:
+      extra_variables:
+        - name: gateIndex
+          type: int
+          value: 2
+    PUT:
+      extra_variables:
+        - name: gateIndex
+          type: int
+          value: 2
 

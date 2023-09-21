@@ -49,8 +49,11 @@ for command_name, command in commands_config.items():
                 with if_block(condition):
                     codegen.write_line(f'throw RuntimeError("Wrong number of arguments for action {action}");')
                 for arg in action_params['args']:
-                    with if_block(f'args.size() == {arg["argc"]}'):
+                    with if_block(f'args.size() == {arg["argc"]}', block=True):
                         # check argument types
+                        if 'extra_variables' in arg:
+                            for var in arg['extra_variables']:
+                                codegen.write_line(f'{var["type"]} {var["name"]} = {var["value"]};')
 
                         if 'separate_time_units' in arg and arg['separate_time_units']:
                             codegen.write_line(f'try {{')
@@ -72,7 +75,7 @@ for command_name, command in commands_config.items():
                                 f'}} catch (...) {{  throw RuntimeError("Could not convert arguments to time::ns");}}')
 
                         for i in range(len(arg['input'])):
-                            if arg["input_types"][i] in ['time::ns']:
+                            if arg["input_types"][i] in ['std::string', 'time::ns'] or not arg['cast_input'][i]:
                                 continue
                             codegen.write_line(f'try {{')
                             codegen.write_line(f'StringTo<{arg["input_types"][i]}>({arg["input"][i]});')

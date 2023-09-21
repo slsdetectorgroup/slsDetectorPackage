@@ -56,9 +56,11 @@ class CodeGenerator:
                     fp.write(line)
 
     def write_arg(self, args, action):
-        # prepare input arguments list
         for arg in args:
-            with if_block(f'args.size() == {arg["argc"]}'):
+            with if_block(f'args.size() == {arg["argc"]}', block=True):
+                if 'extra_variables' in arg:
+                    for var in arg['extra_variables']:
+                        codegen.write_line(f'{var["type"]} {var["name"]} = {var["value"]};')
                 if 'separate_time_units' in arg and arg['separate_time_units']:
                     self.write_line(f'std::string tmp_time({arg["separate_time_units"]["input"]});')
                     self.write_line(f'std::string {arg["separate_time_units"]["output"][1]}'
@@ -71,7 +73,7 @@ class CodeGenerator:
                                     f'StringTo < time::ns > ({", ".join(arg["convert_to_time"]["input"])});')
                 input_arguments = []
                 for i in range(len(arg['input'])):
-                    if arg["input_types"][i] not in ['time::ns', 'std::string']:
+                    if arg["input_types"][i] not in ['time::ns', 'std::string'] and arg['cast_input'][i]:
                         self.write_line(
                             f'auto arg{i} = StringTo<{arg["input_types"][i]}>({arg["input"][i]});')
                         input_arguments.append(f'arg{i}')
@@ -97,19 +99,23 @@ class CodeGenerator:
 
 
 class if_block:
-    def __init__(self, condition, elseif=False):
+    def __init__(self, condition, elseif=False, block=False):
         self.condition = condition
         self.elseif = elseif
+        self.block = block
 
     def __enter__(self):
         if self.elseif:
             codegen.write_line('else if (' + self.condition + ') {')
         else:
             codegen.write_line('if (' + self.condition + ') {')
-        codegen.write_line('')
+        if self.block:
+            codegen.write_line('{\n')
 
     def __exit__(self, *args):
         codegen.write_line('}')
+        if self.block:
+            codegen.write_line('}')
         codegen.write_line('')
 
 

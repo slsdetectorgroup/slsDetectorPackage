@@ -19,11 +19,11 @@ void test_valid_port(const std::string &command,
     std::string string_port_number = std::to_string(port_number);
     if (port_number == 0) {
         REQUIRE_THROWS_WITH(proxy.Call(command, arguments, detector_id, action),
-                        "Invalid port range. Must be between 1 - 65535");
+                        "Invalid port range. Must be between 1 - 65535.");
     } else {
         REQUIRE_THROWS_WITH(proxy.Call(command, arguments, detector_id, action),
                         "Cannot scan uint16_t from string '" + string_port_number +
-                            "'. Value must be in range 1 - 65535.");
+                            "'. Value must be in range 0 - 65535.");
     }
 }
 

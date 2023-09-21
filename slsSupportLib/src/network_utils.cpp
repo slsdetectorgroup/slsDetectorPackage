@@ -207,14 +207,14 @@ MacAddr InterfaceNameToMac(const std::string &inf) {
 void validatePortNumber(uint16_t port) {
     // random local port. might work if internal = bad practise
     if (port == 0) {
-        throw RuntimeError("Invalid port number. Cannot be 0.");
+        throw RuntimeError("Invalid port number. Must be between 1 - 65535.");
     }
 }
 
 void validatePortRange(uint16_t startPort, int numPorts) {
     if (startPort == 0 ||
         (startPort + numPorts) > std::numeric_limits<uint16_t>::max()) {
-        throw RuntimeError("Invalid port range. Must be between 1 - 65535");
+        throw RuntimeError("Invalid port number. Must be between 1 - 65535.");
     }
 }
 

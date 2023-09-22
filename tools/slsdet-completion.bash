@@ -34,7 +34,7 @@ _sd ()
 		elif ( echo $OPTIONS | grep -sq -- ${COMP_WORDS[1]}) && (sls_detector_get -h ${COMP_WORDS[1]} | grep -sq "\[0, 1\]") && [ "$PUT" == "1" ]; then
 			COMPREPLY=( $( compgen -W "0 1" -- "$cur" ) )
 		# Activate file/path completion for all commands with fname or path in first line of help text
-		elif ( echo $OPTIONS | grep -sq -- ${COMP_WORDS[1]}) && (sls_detector_get -h ${COMP_WORDS[1]} | grep -sq "path\|fname") && [ "$PUT" == "1" ]; then
+		elif ( echo $OPTIONS | grep -sq -- ${COMP_WORDS[1]}) && (sls_detector_get -h ${COMP_WORDS[1]} | head -n 1 | grep -sq "path\|fname") && [ "$PUT" == "1" ]; then
 					COMPREPLY=($(compgen -f ${COMP_WORDS[${COMP_CWORD}]} ) )
 		else
 			case "${COMP_WORDS[1]}" in

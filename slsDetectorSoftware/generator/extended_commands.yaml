@@ -1,3 +1,67 @@
+activate:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getActive
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setActive
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+adcclk:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getADCClock
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setADCClock
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
 adcenable:
   actions:
     GET:
@@ -5,6 +69,7 @@ adcenable:
       - argc: 0
         args: []
         cast_input: []
+        convert_det_id: true
         function: getADCEnableMask
         input: []
         input_types: []
@@ -17,6 +82,7 @@ adcenable:
         args: []
         cast_input:
         - true
+        convert_det_id: true
         function: setADCEnableMask
         input:
         - args[0]
@@ -35,6 +101,7 @@ adcenable10g:
       - argc: 0
         args: []
         cast_input: []
+        convert_det_id: true
         function: getTenGigaADCEnableMask
         input: []
         input_types: []
@@ -47,6 +114,7 @@ adcenable10g:
         args: []
         cast_input:
         - true
+        convert_det_id: true
         function: setTenGigaADCEnableMask
         input:
         - args[0]
@@ -65,6 +133,7 @@ adcinvert:
       - argc: 0
         args: []
         cast_input: []
+        convert_det_id: true
         function: getADCInvert
         input: []
         input_types: []
@@ -77,11 +146,140 @@ adcinvert:
         args: []
         cast_input:
         - true
+        convert_det_id: true
         function: setADCInvert
         input:
         - args[0]
         input_types:
         - uint32_t
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+adcpipeline:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getADCPipeline
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setADCPipeline
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+apulse:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getAnalogPulsing
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setAnalogPulsing
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+asamples:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getNumberOfAnalogSamples
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setNumberOfAnalogSamples
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+autocompdisable:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getAutoComparatorDisable
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setAutoComparatorDisable
+        input:
+        - args[0]
+        input_types:
+        - int
         output:
         - args.front()
         require_det_id: true
@@ -94,17 +292,19 @@ burstperiod:
       args:
       - argc: 0
         cast_input: []
+        convert_det_id: true
         function: getBurstPeriod
-        input: []
-        input_types: []
+        input: &id001 []
+        input_types: &id002 []
         output:
         - OutString(t)
         require_det_id: true
       - argc: 1
         cast_input: []
+        convert_det_id: true
         function: getBurstPeriod
-        input: []
-        input_types: []
+        input: *id001
+        input_types: *id002
         output:
         - OutString(t , args[0])
         require_det_id: true
@@ -113,10 +313,11 @@ burstperiod:
       - argc: 1
         cast_input:
         - false
+        convert_det_id: true
         function: setBurstPeriod
-        input:
+        input: &id003
         - converted_time
-        input_types:
+        input_types: &id004
         - time::ns
         output:
         - args[0]
@@ -129,19 +330,82 @@ burstperiod:
       - argc: 2
         cast_input:
         - false
+        convert_det_id: true
         convert_to_time:
           input:
           - args[0]
           - args[1]
           output: converted_time
         function: setBurstPeriod
-        input:
-        - converted_time
-        input_types:
-        - time::ns
+        input: *id003
+        input_types: *id004
         output:
         - args[0]
         - args[1]
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+cdsgain:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getCDSGain
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setCDSGain
+        input:
+        - args[0]
+        input_types:
+        - bool
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+column:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getColumn
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setColumn
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
         require_det_id: true
   help: ''
   infer_action: false
@@ -152,17 +416,19 @@ compdisabletime:
       args:
       - argc: 0
         cast_input: []
+        convert_det_id: true
         function: getComparatorDisableTime
-        input: []
-        input_types: []
+        input: &id005 []
+        input_types: &id006 []
         output:
         - OutString(t)
         require_det_id: true
       - argc: 1
         cast_input: []
+        convert_det_id: true
         function: getComparatorDisableTime
-        input: []
-        input_types: []
+        input: *id005
+        input_types: *id006
         output:
         - OutString(t , args[0])
         require_det_id: true
@@ -171,10 +437,11 @@ compdisabletime:
       - argc: 1
         cast_input:
         - false
+        convert_det_id: true
         function: setComparatorDisableTime
-        input:
+        input: &id007
         - converted_time
-        input_types:
+        input_types: &id008
         - time::ns
         output:
         - args[0]
@@ -187,19 +454,82 @@ compdisabletime:
       - argc: 2
         cast_input:
         - false
+        convert_det_id: true
         convert_to_time:
           input:
           - args[0]
           - args[1]
           output: converted_time
         function: setComparatorDisableTime
-        input:
-        - converted_time
-        input_types:
-        - time::ns
+        input: *id007
+        input_types: *id008
         output:
         - args[0]
         - args[1]
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+dbitclk:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getDBITClock
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setDBITClock
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+dbitpipeline:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getDBITPipeline
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setDBITPipeline
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
         require_det_id: true
   help: ''
   infer_action: false
@@ -210,17 +540,19 @@ delay:
       args:
       - argc: 0
         cast_input: []
+        convert_det_id: true
         function: getDelayAfterTrigger
-        input: []
-        input_types: []
+        input: &id009 []
+        input_types: &id010 []
         output:
         - OutString(t)
         require_det_id: true
       - argc: 1
         cast_input: []
+        convert_det_id: true
         function: getDelayAfterTrigger
-        input: []
-        input_types: []
+        input: *id009
+        input_types: *id010
         output:
         - OutString(t , args[0])
         require_det_id: true
@@ -229,10 +561,11 @@ delay:
       - argc: 1
         cast_input:
         - false
+        convert_det_id: true
         function: setDelayAfterTrigger
-        input:
+        input: &id011
         - converted_time
-        input_types:
+        input_types: &id012
         - time::ns
         output:
         - args[0]
@@ -245,16 +578,15 @@ delay:
       - argc: 2
         cast_input:
         - false
+        convert_det_id: true
         convert_to_time:
           input:
           - args[0]
           - args[1]
           output: converted_time
         function: setDelayAfterTrigger
-        input:
-        - converted_time
-        input_types:
-        - time::ns
+        input: *id011
+        input_types: *id012
         output:
         - args[0]
         - args[1]
@@ -268,19 +600,85 @@ delayl:
       args:
       - argc: 0
         cast_input: []
+        convert_det_id: true
         function: getDelayAfterTriggerLeft
-        input: []
-        input_types: []
+        input: &id013 []
+        input_types: &id014 []
         output:
         - OutString(t)
         require_det_id: true
       - argc: 1
         cast_input: []
+        convert_det_id: true
         function: getDelayAfterTriggerLeft
+        input: *id013
+        input_types: *id014
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+dpulse:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getDigitalPulsing
         input: []
         input_types: []
         output:
-        - OutString(t , args[0])
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setDigitalPulsing
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+dsamples:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getNumberOfDigitalSamples
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setNumberOfDigitalSamples
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
         require_det_id: true
   help: ''
   infer_action: false
@@ -291,47 +689,50 @@ exptime:
       args:
       - argc: 0
         cast_input: []
+        convert_det_id: true
         function: getExptime
-        input: []
-        input_types: []
-        output:
+        input: &id015 []
+        input_types: &id016 []
+        output: &id017
         - OutString(t)
         require_det_id: true
       - argc: 1
         cast_input: []
+        convert_det_id: true
         function: getExptime
-        input: []
-        input_types: []
-        output:
+        input: *id015
+        input_types: *id016
+        output: &id018
         - OutString(t , args[0])
         require_det_id: true
       detectors:
         MYTHEN3:
         - argc: 0
           cast_input: []
+          convert_det_id: true
           function: getExptimeForAllGates
-          input: []
-          input_types: []
-          output:
-          - OutString(t)
+          input: *id015
+          input_types: *id016
+          output: *id017
           require_det_id: true
         - argc: 1
           cast_input: []
+          convert_det_id: true
           function: getExptimeForAllGates
-          input: []
-          input_types: []
-          output:
-          - OutString(t , args[0])
+          input: *id015
+          input_types: *id016
+          output: *id018
           require_det_id: true
     PUT:
       args:
       - argc: 1
         cast_input:
         - false
+        convert_det_id: true
         function: setExptime
-        input:
+        input: &id019
         - converted_time
-        input_types:
+        input_types: &id020
         - time::ns
         output:
         - args[0]
@@ -344,16 +745,15 @@ exptime:
       - argc: 2
         cast_input:
         - false
+        convert_det_id: true
         convert_to_time:
           input:
           - args[0]
           - args[1]
           output: converted_time
         function: setExptime
-        input:
-        - converted_time
-        input_types:
-        - time::ns
+        input: *id019
+        input_types: *id020
         output:
         - args[0]
         - args[1]
@@ -367,14 +767,15 @@ exptime1:
       - argc: 0
         cast_input:
         - false
-        extra_variables:
+        convert_det_id: true
+        extra_variables: &id021
         - name: gateIndex
           type: int
           value: 0
         function: getExptime
-        input:
+        input: &id022
         - gateIndex
-        input_types:
+        input_types: &id023
         - int
         output:
         - OutString(t)
@@ -382,107 +783,79 @@ exptime1:
       - argc: 1
         cast_input:
         - false
-        extra_variables:
-        - name: gateIndex
-          type: int
-          value: 0
+        convert_det_id: true
+        extra_variables: *id021
         function: getExptime
-        input:
-        - gateIndex
-        input_types:
-        - int
+        input: *id022
+        input_types: *id023
         output:
         - OutString(t , args[0])
         require_det_id: true
     PUT:
       args:
       - argc: 1
-        cast_input:
+        cast_input: &id027
         - false
-        extra_variables:
+        convert_det_id: true
+        extra_variables: &id024
         - name: gateIndex
           type: int
           value: 0
         function: setExptime
-        input:
+        input: &id025
         - converted_time
-        input_types:
+        input_types: &id026
         - time::ns
-        output:
+        output: &id028
         - args[0]
         require_det_id: true
-        separate_time_units:
+        separate_time_units: &id029
           input: args[0]
           output:
           - converted_time
           - unit
       - argc: 2
-        cast_input:
+        cast_input: &id030
         - false
-        convert_to_time:
+        convert_det_id: true
+        convert_to_time: &id031
           input:
           - args[0]
           - args[1]
           output: converted_time
-        extra_variables:
-        - name: gateIndex
-          type: int
-          value: 0
+        extra_variables: *id024
         function: setExptime
-        input:
-        - converted_time
-        input_types:
-        - time::ns
-        output:
+        input: *id025
+        input_types: *id026
+        output: &id034
         - args[0]
         - args[1]
         require_det_id: true
       detectors:
         MYTHEN3:
         - argc: 1
-          cast_input:
-          - false
-          extra_variables:
-          - name: gateIndex
-            type: int
-            value: 0
+          cast_input: *id027
+          convert_det_id: true
+          extra_variables: *id024
           function: setExptime
-          input:
+          input: &id032
           - gateIndex
           - converted_time
-          input_types:
+          input_types: &id033
           - int
           - time::ns
-          output:
-          - args[0]
+          output: *id028
           require_det_id: true
-          separate_time_units:
-            input: args[0]
-            output:
-            - converted_time
-            - unit
+          separate_time_units: *id029
         - argc: 2
-          cast_input:
-          - false
-          convert_to_time:
-            input:
-            - args[0]
-            - args[1]
-            output: converted_time
-          extra_variables:
-          - name: gateIndex
-            type: int
-            value: 0
+          cast_input: *id030
+          convert_det_id: true
+          convert_to_time: *id031
+          extra_variables: *id024
           function: setExptime
-          input:
-          - gateIndex
-          - converted_time
-          input_types:
-          - int
-          - time::ns
-          output:
-          - args[0]
-          - args[1]
+          input: *id032
+          input_types: *id033
+          output: *id034
           require_det_id: true
   help: ''
   infer_action: false
@@ -493,14 +866,15 @@ exptime2:
       - argc: 0
         cast_input:
         - false
-        extra_variables:
+        convert_det_id: true
+        extra_variables: &id035
         - name: gateIndex
           type: int
           value: 1
         function: getExptime
-        input:
+        input: &id036
         - gateIndex
-        input_types:
+        input_types: &id037
         - int
         output:
         - OutString(t)
@@ -508,107 +882,82 @@ exptime2:
       - argc: 1
         cast_input:
         - false
-        extra_variables:
-        - name: gateIndex
-          type: int
-          value: 1
+        convert_det_id: true
+        extra_variables: *id035
         function: getExptime
-        input:
-        - gateIndex
-        input_types:
-        - int
+        input: *id036
+        input_types: *id037
         output:
         - OutString(t , args[0])
         require_det_id: true
     PUT:
       args:
       - argc: 1
-        cast_input:
+        cast_input: &id041
         - false
-        extra_variables:
+        convert_det_id: true
+        extra_variables: &id038
         - name: gateIndex
           type: int
           value: 1
         function: setExptime
-        input:
+        input: &id039
         - converted_time
-        input_types:
+        input_types: &id040
         - time::ns
-        output:
+        output: &id042
         - args[0]
         require_det_id: true
-        separate_time_units:
+        separate_time_units: &id043
           input: args[0]
           output:
           - converted_time
           - unit
       - argc: 2
-        cast_input:
+        cast_input: &id044
         - false
-        convert_to_time:
+        convert_det_id: true
+        convert_to_time: &id045
           input:
           - args[0]
           - args[1]
           output: converted_time
-        extra_variables:
-        - name: gateIndex
-          type: int
-          value: 1
+        extra_variables: *id038
         function: setExptime
-        input:
-        - converted_time
-        input_types:
-        - time::ns
-        output:
+        input: *id039
+        input_types: *id040
+        output: &id049
         - args[0]
         - args[1]
         require_det_id: true
       detectors:
         MYTHEN3:
         - argc: 1
-          cast_input:
-          - false
-          extra_variables:
+          cast_input: *id041
+          convert_det_id: true
+          extra_variables: &id046
           - name: gateIndex
             type: int
             value: 0
           function: setExptime
-          input:
+          input: &id047
           - gateIndex
           - converted_time
-          input_types:
+          input_types: &id048
           - int
           - time::ns
-          output:
-          - args[0]
+          output: *id042
           require_det_id: true
-          separate_time_units:
-            input: args[0]
-            output:
-            - converted_time
-            - unit
+          separate_time_units: *id043
         - argc: 2
-          cast_input:
-          - false
-          convert_to_time:
-            input:
-            - args[0]
-            - args[1]
-            output: converted_time
-          extra_variables:
-          - name: gateIndex
-            type: int
-            value: 0
+          cast_input: *id044
+          convert_det_id: true
+          convert_to_time: *id045
+          extra_variables: *id046
           function: setExptime
-          input:
-          - gateIndex
-          - converted_time
-          input_types:
-          - int
-          - time::ns
-          output:
-          - args[0]
-          - args[1]
+          input: *id047
+          input_types: *id048
+          output: *id049
           require_det_id: true
   help: ''
   infer_action: false
@@ -619,14 +968,15 @@ exptime3:
       - argc: 0
         cast_input:
         - false
-        extra_variables:
+        convert_det_id: true
+        extra_variables: &id050
         - name: gateIndex
           type: int
           value: 2
         function: getExptime
-        input:
+        input: &id051
         - gateIndex
-        input_types:
+        input_types: &id052
         - int
         output:
         - OutString(t)
@@ -634,107 +984,82 @@ exptime3:
       - argc: 1
         cast_input:
         - false
-        extra_variables:
-        - name: gateIndex
-          type: int
-          value: 2
+        convert_det_id: true
+        extra_variables: *id050
         function: getExptime
-        input:
-        - gateIndex
-        input_types:
-        - int
+        input: *id051
+        input_types: *id052
         output:
         - OutString(t , args[0])
         require_det_id: true
     PUT:
       args:
       - argc: 1
-        cast_input:
+        cast_input: &id056
         - false
-        extra_variables:
+        convert_det_id: true
+        extra_variables: &id053
         - name: gateIndex
           type: int
           value: 2
         function: setExptime
-        input:
+        input: &id054
         - converted_time
-        input_types:
+        input_types: &id055
         - time::ns
-        output:
+        output: &id057
         - args[0]
         require_det_id: true
-        separate_time_units:
+        separate_time_units: &id058
           input: args[0]
           output:
           - converted_time
           - unit
       - argc: 2
-        cast_input:
+        cast_input: &id059
         - false
-        convert_to_time:
+        convert_det_id: true
+        convert_to_time: &id060
           input:
           - args[0]
           - args[1]
           output: converted_time
-        extra_variables:
-        - name: gateIndex
-          type: int
-          value: 2
+        extra_variables: *id053
         function: setExptime
-        input:
-        - converted_time
-        input_types:
-        - time::ns
-        output:
+        input: *id054
+        input_types: *id055
+        output: &id064
         - args[0]
         - args[1]
         require_det_id: true
       detectors:
         MYTHEN3:
         - argc: 1
-          cast_input:
-          - false
-          extra_variables:
+          cast_input: *id056
+          convert_det_id: true
+          extra_variables: &id061
           - name: gateIndex
             type: int
             value: 0
           function: setExptime
-          input:
+          input: &id062
           - gateIndex
           - converted_time
-          input_types:
+          input_types: &id063
           - int
           - time::ns
-          output:
-          - args[0]
+          output: *id057
           require_det_id: true
-          separate_time_units:
-            input: args[0]
-            output:
-            - converted_time
-            - unit
+          separate_time_units: *id058
         - argc: 2
-          cast_input:
-          - false
-          convert_to_time:
-            input:
-            - args[0]
-            - args[1]
-            output: converted_time
-          extra_variables:
-          - name: gateIndex
-            type: int
-            value: 0
+          cast_input: *id059
+          convert_det_id: true
+          convert_to_time: *id060
+          extra_variables: *id061
           function: setExptime
-          input:
-          - gateIndex
-          - converted_time
-          input_types:
-          - int
-          - time::ns
-          output:
-          - args[0]
-          - args[1]
+          input: *id062
+          input_types: *id063
+          output: *id064
           require_det_id: true
   help: ''
   infer_action: false
@@ -744,19 +1069,277 @@ exptimel:
       args:
       - argc: 0
         cast_input: []
+        convert_det_id: true
         function: getExptimeLeft
-        input: []
-        input_types: []
+        input: &id065 []
+        input_types: &id066 []
         output:
         - OutString(t)
         require_det_id: true
       - argc: 1
         cast_input: []
+        convert_det_id: true
         function: getExptimeLeft
+        input: *id065
+        input_types: *id066
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+extsampling:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getExternalSampling
         input: []
         input_types: []
         output:
-        - OutString(t , args[0])
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setExternalSampling
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+extsamplingsrc:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getExternalSamplingSource
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setExternalSamplingSource
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+fformat:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getFileFormat
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setFileFormat
+        input:
+        - args[0]
+        input_types:
+        - slsDetectorDefs::fileFormat
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+filtercells:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getNumberOfFilterCells
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setNumberOfFilterCells
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+filterresistor:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getFilterResistor
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setFilterResistor
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+findex:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getAcquisitionIndex
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setAcquisitionIndex
+        input:
+        - args[0]
+        input_types:
+        - uint64_t
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+fliprows:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getFlipRows
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setFlipRows
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+flowcontrol10g:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getTenGigaFlowControl
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setTenGigaFlowControl
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
         require_det_id: true
   help: ''
   infer_action: false
@@ -768,6 +1351,7 @@ fname:
       - argc: 0
         args: []
         cast_input: []
+        convert_det_id: true
         function: getFileNamePrefix
         input: []
         input_types: []
@@ -780,11 +1364,44 @@ fname:
         args: []
         cast_input:
         - false
+        convert_det_id: true
         function: setFileNamePrefix
         input:
         - args[0]
         input_types:
         - std::string
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+foverwrite:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getFileOverWrite
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setFileOverWrite
+        input:
+        - args[0]
+        input_types:
+        - int
         output:
         - args.front()
         require_det_id: true
@@ -798,6 +1415,7 @@ fpath:
       - argc: 0
         args: []
         cast_input: []
+        convert_det_id: true
         function: getFilePath
         input: []
         input_types: []
@@ -810,6 +1428,7 @@ fpath:
         args: []
         cast_input:
         - false
+        convert_det_id: true
         function: setFilePath
         input:
         - args[0]
@@ -827,6 +1446,7 @@ frames:
       args:
       - argc: 0
         cast_input: []
+        convert_det_id: true
         function: getNumberOfFrames
         input: []
         input_types: []
@@ -838,6 +1458,7 @@ frames:
       - argc: 1
         cast_input:
         - true
+        convert_det_id: true
         function: setNumberOfFrames
         input:
         - args[0]
@@ -854,19 +1475,341 @@ frametime:
       args:
       - argc: 0
         cast_input: []
+        convert_det_id: true
         function: getMeasurementTime
-        input: []
-        input_types: []
+        input: &id067 []
+        input_types: &id068 []
         output:
         - OutString(t)
         require_det_id: true
       - argc: 1
         cast_input: []
+        convert_det_id: true
         function: getMeasurementTime
+        input: *id067
+        input_types: *id068
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+fwrite:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getFileWrite
         input: []
         input_types: []
         output:
-        - OutString(t , args[0])
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setFileWrite
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+gainmode:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getGainMode
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setGainMode
+        input:
+        - args[0]
+        input_types:
+        - slsDetectorDefs::gainMode
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+gates:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getNumberOfGates
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setNumberOfGates
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+highvoltage:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getHighVoltage
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setHighVoltage
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+imagetest:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getImageTestMode
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setImageTestMode
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+interpolation:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getInterpolation
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setInterpolation
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+interruptsubframe:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getInterruptSubframe
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setInterruptSubframe
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+led:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getLEDEnable
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setLEDEnable
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+lock:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getDetectorLock
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setDetectorLock
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+master:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getMaster
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: false
+        function: setMaster
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
         require_det_id: true
   help: ''
   infer_action: false
@@ -877,17 +1820,19 @@ measuredperiod:
       args:
       - argc: 0
         cast_input: []
+        convert_det_id: true
         function: getMeasuredPeriod
-        input: []
-        input_types: []
+        input: &id069 []
+        input_types: &id070 []
         output:
         - OutString(t)
         require_det_id: true
       - argc: 1
         cast_input: []
+        convert_det_id: true
         function: getMeasuredPeriod
-        input: []
-        input_types: []
+        input: *id069
+        input_types: *id070
         output:
         - OutString(t , args[0])
         require_det_id: true
@@ -900,19 +1845,181 @@ measuredsubperiod:
       args:
       - argc: 0
         cast_input: []
+        convert_det_id: true
         function: getMeasuredSubFramePeriod
-        input: []
-        input_types: []
+        input: &id071 []
+        input_types: &id072 []
         output:
         - OutString(t)
         require_det_id: true
       - argc: 1
         cast_input: []
+        convert_det_id: true
         function: getMeasuredSubFramePeriod
+        input: *id071
+        input_types: *id072
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+nextframenumber:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getNextFrameNumber
         input: []
         input_types: []
         output:
-        - OutString(t , args[0])
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setNextFrameNumber
+        input:
+        - args[0]
+        input_types:
+        - uint64_t
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+numinterfaces:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getNumberofUDPInterfaces
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setNumberofUDPInterfaces
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+overflow:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getOverFlowMode
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setOverFlowMode
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+parallel:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getParallelMode
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setParallelMode
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+partialreset:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getPartialReset
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setPartialReset
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
         require_det_id: true
   help: ''
   infer_action: false
@@ -924,6 +2031,7 @@ patioctrl:
       - argc: 0
         args: []
         cast_input: []
+        convert_det_id: true
         function: getPatternIOControl
         input: []
         input_types: []
@@ -936,6 +2044,7 @@ patioctrl:
         args: []
         cast_input:
         - true
+        convert_det_id: true
         function: setPatternIOControl
         input:
         - args[0]
@@ -954,6 +2063,7 @@ patmask:
       - argc: 0
         args: []
         cast_input: []
+        convert_det_id: true
         function: getPatternMask
         input: []
         input_types: []
@@ -966,6 +2076,7 @@ patmask:
         args: []
         cast_input:
         - true
+        convert_det_id: true
         function: setPatternMask
         input:
         - args[0]
@@ -984,6 +2095,7 @@ patsetbit:
       - argc: 0
         args: []
         cast_input: []
+        convert_det_id: true
         function: getPatternBitMask
         input: []
         input_types: []
@@ -996,6 +2108,7 @@ patsetbit:
         args: []
         cast_input:
         - true
+        convert_det_id: true
         function: setPatternBitMask
         input:
         - args[0]
@@ -1013,17 +2126,19 @@ period:
       args:
       - argc: 0
         cast_input: []
+        convert_det_id: true
         function: getPeriod
-        input: []
-        input_types: []
+        input: &id073 []
+        input_types: &id074 []
         output:
         - OutString(t)
         require_det_id: true
       - argc: 1
         cast_input: []
+        convert_det_id: true
         function: getPeriod
-        input: []
-        input_types: []
+        input: *id073
+        input_types: *id074
         output:
         - OutString(t , args[0])
         require_det_id: true
@@ -1032,10 +2147,11 @@ period:
       - argc: 1
         cast_input:
         - false
+        convert_det_id: true
         function: setPeriod
-        input:
+        input: &id075
         - converted_time
-        input_types:
+        input_types: &id076
         - time::ns
         output:
         - args[0]
@@ -1048,16 +2164,15 @@ period:
       - argc: 2
         cast_input:
         - false
+        convert_det_id: true
         convert_to_time:
           input:
           - args[0]
           - args[1]
           output: converted_time
         function: setPeriod
-        input:
-        - converted_time
-        input_types:
-        - time::ns
+        input: *id075
+        input_types: *id076
         output:
         - args[0]
         - args[1]
@@ -1071,19 +2186,277 @@ periodl:
       args:
       - argc: 0
         cast_input: []
+        convert_det_id: true
         function: getPeriodLeft
-        input: []
-        input_types: []
+        input: &id077 []
+        input_types: &id078 []
         output:
         - OutString(t)
         require_det_id: true
       - argc: 1
         cast_input: []
+        convert_det_id: true
         function: getPeriodLeft
+        input: *id077
+        input_types: *id078
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+polarity:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getPolarity
         input: []
         input_types: []
         output:
-        - OutString(t , args[0])
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setPolarity
+        input:
+        - args[0]
+        input_types:
+        - defs::polarity
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+port:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getControlPort
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setControlPort
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+powerchip:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getPowerChip
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setPowerChip
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+pumpprobe:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getPumpProbe
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setPumpProbe
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+readnrows:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getReadNRows
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setReadNRows
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+romode:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getReadoutMode
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setReadoutMode
+        input:
+        - args[0]
+        input_types:
+        - slsDetectorDefs::readoutMode
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+row:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getRow
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setRow
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+runclk:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getRUNClock
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setRUNClock
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
         require_det_id: true
   help: ''
   infer_action: false
@@ -1094,19 +2467,565 @@ runtime:
       args:
       - argc: 0
         cast_input: []
+        convert_det_id: true
         function: getActualTime
-        input: []
-        input_types: []
+        input: &id079 []
+        input_types: &id080 []
         output:
         - OutString(t)
         require_det_id: true
       - argc: 1
         cast_input: []
+        convert_det_id: true
         function: getActualTime
+        input: *id079
+        input_types: *id080
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+rx_arping:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getRxArping
         input: []
         input_types: []
         output:
-        - OutString(t , args[0])
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setRxArping
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+rx_dbitoffset:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getRxDbitOffset
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setRxDbitOffset
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+rx_discardpolicy:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getRxFrameDiscardPolicy
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setRxFrameDiscardPolicy
+        input:
+        - args[0]
+        input_types:
+        - slsDetectorDefs::frameDiscardPolicy
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+rx_fifodepth:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getRxFifoDepth
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setRxFifoDepth
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+rx_framesperfile:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getFramesPerFile
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setFramesPerFile
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+rx_lock:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getRxLock
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setRxLock
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+rx_padding:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getPartialFramesPadding
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setPartialFramesPadding
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+rx_silent:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getRxSilentMode
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setRxSilentMode
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+rx_tcpport:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getRxPort
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: false
+        function: setRxPort
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+rx_udpsocksize:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getRxUDPSocketBufferSize
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setRxUDPSocketBufferSize
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+rx_zmqfreq:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getRxZmqFrequency
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setRxZmqFrequency
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+rx_zmqip:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getRxZmqIP
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - false
+        convert_det_id: true
+        function: setRxZmqIP
+        input:
+        - IpAddr(args[0])
+        input_types:
+        - IpAddr
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+rx_zmqport:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getRxZmqPort
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: false
+        function: setRxZmqPort
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+rx_zmqstartfnum:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getRxZmqStartingFrame
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setRxZmqStartingFrame
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+rx_zmqstream:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getRxZmqDataStream
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setRxZmqDataStream
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+selinterface:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getSelectedUDPInterface
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: selectUDPInterface
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+settings:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getSettings
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setSettings
+        input:
+        - args[0]
+        input_types:
+        - slsDetectorDefs::detectorSettings
+        output:
+        - args.front()
         require_det_id: true
   help: ''
   infer_action: false
@@ -1118,6 +3037,7 @@ settingspath:
       - argc: 0
         args: []
         cast_input: []
+        convert_det_id: true
         function: getSettingsPath
         input: []
         input_types: []
@@ -1130,11 +3050,44 @@ settingspath:
         args: []
         cast_input:
         - false
+        convert_det_id: true
         function: setSettingsPath
         input:
         - args[0]
         input_types:
         - std::string
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+stopport:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getStopPort
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setStopPort
+        input:
+        - args[0]
+        input_types:
+        - int
         output:
         - args.front()
         require_det_id: true
@@ -1147,17 +3100,19 @@ storagecell_delay:
       args:
       - argc: 0
         cast_input: []
+        convert_det_id: true
         function: getStorageCellDelay
-        input: []
-        input_types: []
+        input: &id081 []
+        input_types: &id082 []
         output:
         - OutString(t)
         require_det_id: true
       - argc: 1
         cast_input: []
+        convert_det_id: true
         function: getStorageCellDelay
-        input: []
-        input_types: []
+        input: *id081
+        input_types: *id082
         output:
         - OutString(t , args[0])
         require_det_id: true
@@ -1166,10 +3121,11 @@ storagecell_delay:
       - argc: 1
         cast_input:
         - false
+        convert_det_id: true
         function: setStorageCellDelay
-        input:
+        input: &id083
         - converted_time
-        input_types:
+        input_types: &id084
         - time::ns
         output:
         - args[0]
@@ -1182,19 +3138,50 @@ storagecell_delay:
       - argc: 2
         cast_input:
         - false
+        convert_det_id: true
         convert_to_time:
           input:
           - args[0]
           - args[1]
           output: converted_time
         function: setStorageCellDelay
-        input:
-        - converted_time
-        input_types:
-        - time::ns
+        input: *id083
+        input_types: *id084
         output:
         - args[0]
         - args[1]
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+storagecell_start:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getStorageCellStart
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setStorageCellStart
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
         require_det_id: true
   help: ''
   infer_action: false
@@ -1205,17 +3192,19 @@ subdeadtime:
       args:
       - argc: 0
         cast_input: []
+        convert_det_id: true
         function: getSubDeadTime
-        input: []
-        input_types: []
+        input: &id085 []
+        input_types: &id086 []
         output:
         - OutString(t)
         require_det_id: true
       - argc: 1
         cast_input: []
+        convert_det_id: true
         function: getSubDeadTime
-        input: []
-        input_types: []
+        input: *id085
+        input_types: *id086
         output:
         - OutString(t , args[0])
         require_det_id: true
@@ -1224,10 +3213,11 @@ subdeadtime:
       - argc: 1
         cast_input:
         - false
+        convert_det_id: true
         function: setSubDeadTime
-        input:
+        input: &id087
         - converted_time
-        input_types:
+        input_types: &id088
         - time::ns
         output:
         - args[0]
@@ -1240,16 +3230,15 @@ subdeadtime:
       - argc: 2
         cast_input:
         - false
+        convert_det_id: true
         convert_to_time:
           input:
           - args[0]
           - args[1]
           output: converted_time
         function: setSubDeadTime
-        input:
-        - converted_time
-        input_types:
-        - time::ns
+        input: *id087
+        input_types: *id088
         output:
         - args[0]
         - args[1]
@@ -1263,17 +3252,19 @@ subexptime:
       args:
       - argc: 0
         cast_input: []
+        convert_det_id: true
         function: getSubExptime
-        input: []
-        input_types: []
+        input: &id089 []
+        input_types: &id090 []
         output:
         - OutString(t)
         require_det_id: true
       - argc: 1
         cast_input: []
+        convert_det_id: true
         function: getSubExptime
-        input: []
-        input_types: []
+        input: *id089
+        input_types: *id090
         output:
         - OutString(t , args[0])
         require_det_id: true
@@ -1282,10 +3273,11 @@ subexptime:
       - argc: 1
         cast_input:
         - false
+        convert_det_id: true
         function: setSubExptime
-        input:
+        input: &id091
         - converted_time
-        input_types:
+        input_types: &id092
         - time::ns
         output:
         - args[0]
@@ -1298,19 +3290,210 @@ subexptime:
       - argc: 2
         cast_input:
         - false
+        convert_det_id: true
         convert_to_time:
           input:
           - args[0]
           - args[1]
           output: converted_time
         function: setSubExptime
-        input:
-        - converted_time
-        input_types:
-        - time::ns
+        input: *id091
+        input_types: *id092
         output:
         - args[0]
         - args[1]
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+temp_control:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getTemperatureControl
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setTemperatureControl
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+temp_threshold:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getThresholdTemperature
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setThresholdTemperature
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+tengiga:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getTenGiga
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setTenGiga
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+timing:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getTimingMode
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setTimingMode
+        input:
+        - args[0]
+        input_types:
+        - slsDetectorDefs::timingMode
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+timingsource:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getTimingSource
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setTimingSource
+        input:
+        - args[0]
+        input_types:
+        - slsDetectorDefs::timingSourceType
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+top:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getTop
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setTop
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
         require_det_id: true
   help: ''
   infer_action: false
@@ -1322,6 +3505,7 @@ transceiverenable:
       - argc: 0
         args: []
         cast_input: []
+        convert_det_id: true
         function: getTransceiverEnableMask
         input: []
         input_types: []
@@ -1334,11 +3518,524 @@ transceiverenable:
         args: []
         cast_input:
         - true
+        convert_det_id: true
         function: setTransceiverEnableMask
         input:
         - args[0]
         input_types:
         - uint32_t
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+trimval:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getAllTrimbits
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setAllTrimbits
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+tsamples:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getNumberOfTransceiverSamples
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setNumberOfTransceiverSamples
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+txdelay_frame:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getTransmissionDelayFrame
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setTransmissionDelayFrame
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+txdelay_left:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getTransmissionDelayLeft
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setTransmissionDelayLeft
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+txdelay_right:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getTransmissionDelayRight
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setTransmissionDelayRight
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+udp_dstmac:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getDestinationUDPMAC
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - false
+        convert_det_id: true
+        function: setDestinationUDPMAC
+        input:
+        - MacAddr(args[0])
+        input_types:
+        - MacAddr
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+udp_dstmac2:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getDestinationUDPMAC2
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - false
+        convert_det_id: true
+        function: setDestinationUDPMAC2
+        input:
+        - MacAddr(args[0])
+        input_types:
+        - MacAddr
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+udp_dstport:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getDestinationUDPPort
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: false
+        function: setDestinationUDPPort
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+udp_dstport2:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getDestinationUDPPort2
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: false
+        function: setDestinationUDPPort2
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+udp_firstdst:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getFirstUDPDestination
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setFirstUDPDestination
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+udp_srcmac:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getSourceUDPMAC
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - false
+        convert_det_id: true
+        function: setSourceUDPMAC
+        input:
+        - MacAddr(args[0])
+        input_types:
+        - MacAddr
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+udp_srcmac2:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getSourceUDPMAC2
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - false
+        convert_det_id: true
+        function: setSourceUDPMAC2
+        input:
+        - MacAddr(args[0])
+        input_types:
+        - MacAddr
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+updatemode:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getUpdateMode
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setUpdateMode
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+veto:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getVeto
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: true
+        function: setVeto
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+zmqip:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getClientZmqIp
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - false
+        convert_det_id: true
+        function: setClientZmqIp
+        input:
+        - IpAddr(args[0])
+        input_types:
+        - IpAddr
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+zmqport:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        convert_det_id: true
+        function: getClientZmqPort
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        convert_det_id: false
+        function: setClientZmqPort
+        input:
+        - args[0]
+        input_types:
+        - int
         output:
         - args.front()
         require_det_id: true

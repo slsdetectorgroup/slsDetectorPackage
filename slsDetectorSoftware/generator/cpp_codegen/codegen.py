@@ -80,7 +80,10 @@ class CodeGenerator:
                     else:
                         input_arguments.append(arg["input"][i])
                 if 'require_det_id' in arg and arg['require_det_id']:
-                    input_arguments.append("std::vector<int>{ det_id }")
+                    if 'convert_det_id' in arg and arg['convert_det_id']:
+                        input_arguments.append("std::vector<int>{ det_id }")
+                    else:
+                        input_arguments.append("det_id")
 
                 input_arguments = ", ".join(input_arguments)
                 # call function

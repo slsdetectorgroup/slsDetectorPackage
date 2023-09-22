@@ -14,6 +14,7 @@ class CommandParser:
 
         self.propagate_config = {
             'require_det_id': False,
+            'convert_det_id': True,
             'input': [],
             'input_types': [],
             'function': '',
@@ -171,6 +172,9 @@ class CommandParser:
         if 'template' in command and command['template']:
             # todo: cache templates
             return self._parse_command(command)
+        # if command_name != 'settings':
+        #     return {}
+
         self.extended_commands[command_name] = self._parse_command(command)
         return self.extended_commands[command_name]
 
@@ -181,7 +185,7 @@ class CommandParser:
         """
         for command_name in self.simple_commands:
             self.parse_command(command_name)
-        yaml.Dumper.ignore_aliases = lambda *args: True
+        # yaml.Dumper.ignore_aliases = lambda *args: True
         yaml.dump(self.extended_commands, (self.commands_file.parent / 'extended_commands.yaml').open('w'),
                   default_flow_style=False)
 

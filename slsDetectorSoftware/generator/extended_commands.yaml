@@ -1,3 +1,290 @@
+adcenable:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        function: getADCEnableMask
+        input: []
+        input_types: []
+        output:
+        - OutStringHex(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        function: setADCEnableMask
+        input:
+        - args[0]
+        input_types:
+        - uint32_t
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+adcenable10g:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        function: getTenGigaADCEnableMask
+        input: []
+        input_types: []
+        output:
+        - OutStringHex(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        function: setTenGigaADCEnableMask
+        input:
+        - args[0]
+        input_types:
+        - uint32_t
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+adcinvert:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        function: getADCInvert
+        input: []
+        input_types: []
+        output:
+        - OutStringHex(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        function: setADCInvert
+        input:
+        - args[0]
+        input_types:
+        - uint32_t
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+burstperiod:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        function: getBurstPeriod
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input: []
+        function: getBurstPeriod
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        function: setBurstPeriod
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        require_det_id: true
+        separate_time_units:
+          input: args[0]
+          output:
+          - converted_time
+          - unit
+      - argc: 2
+        cast_input:
+        - false
+        convert_to_time:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_time
+        function: setBurstPeriod
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        - args[1]
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+compdisabletime:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        function: getComparatorDisableTime
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input: []
+        function: getComparatorDisableTime
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        function: setComparatorDisableTime
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        require_det_id: true
+        separate_time_units:
+          input: args[0]
+          output:
+          - converted_time
+          - unit
+      - argc: 2
+        cast_input:
+        - false
+        convert_to_time:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_time
+        function: setComparatorDisableTime
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        - args[1]
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+delay:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        function: getDelayAfterTrigger
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input: []
+        function: getDelayAfterTrigger
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        function: setDelayAfterTrigger
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        require_det_id: true
+        separate_time_units:
+          input: args[0]
+          output:
+          - converted_time
+          - unit
+      - argc: 2
+        cast_input:
+        - false
+        convert_to_time:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_time
+        function: setDelayAfterTrigger
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        - args[1]
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+delayl:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        function: getDelayAfterTriggerLeft
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input: []
+        function: getDelayAfterTriggerLeft
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
 exptime:
   actions:
     GET:
@@ -451,6 +738,89 @@ exptime3:
           require_det_id: true
   help: ''
   infer_action: false
+exptimel:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        function: getExptimeLeft
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input: []
+        function: getExptimeLeft
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+fname:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        function: getFileNamePrefix
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - false
+        function: setFileNamePrefix
+        input:
+        - args[0]
+        input_types:
+        - std::string
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+fpath:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        function: getFilePath
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - false
+        function: setFilePath
+        input:
+        - args[0]
+        input_types:
+        - std::string
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
 frames:
   actions:
     GET:
@@ -478,3 +848,500 @@ frames:
         require_det_id: false
   help: Get or set the number of frames to be collected.
   infer_action: true
+frametime:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        function: getMeasurementTime
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input: []
+        function: getMeasurementTime
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+measuredperiod:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        function: getMeasuredPeriod
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input: []
+        function: getMeasuredPeriod
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+measuredsubperiod:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        function: getMeasuredSubFramePeriod
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input: []
+        function: getMeasuredSubFramePeriod
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+patioctrl:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        function: getPatternIOControl
+        input: []
+        input_types: []
+        output:
+        - OutStringHex(t, 16)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        function: setPatternIOControl
+        input:
+        - args[0]
+        input_types:
+        - uint64_t
+        output:
+        - ToStringHex(args[0], 16)
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+patmask:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        function: getPatternMask
+        input: []
+        input_types: []
+        output:
+        - OutStringHex(t, 16)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        function: setPatternMask
+        input:
+        - args[0]
+        input_types:
+        - uint64_t
+        output:
+        - ToStringHex(args[0], 16)
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+patsetbit:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        function: getPatternBitMask
+        input: []
+        input_types: []
+        output:
+        - OutStringHex(t, 16)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        function: setPatternBitMask
+        input:
+        - args[0]
+        input_types:
+        - uint64_t
+        output:
+        - ToStringHex(args[0], 16)
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+period:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        function: getPeriod
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input: []
+        function: getPeriod
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        function: setPeriod
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        require_det_id: true
+        separate_time_units:
+          input: args[0]
+          output:
+          - converted_time
+          - unit
+      - argc: 2
+        cast_input:
+        - false
+        convert_to_time:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_time
+        function: setPeriod
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        - args[1]
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+periodl:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        function: getPeriodLeft
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input: []
+        function: getPeriodLeft
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+runtime:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        function: getActualTime
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input: []
+        function: getActualTime
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+settingspath:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        function: getSettingsPath
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - false
+        function: setSettingsPath
+        input:
+        - args[0]
+        input_types:
+        - std::string
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+storagecell_delay:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        function: getStorageCellDelay
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input: []
+        function: getStorageCellDelay
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        function: setStorageCellDelay
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        require_det_id: true
+        separate_time_units:
+          input: args[0]
+          output:
+          - converted_time
+          - unit
+      - argc: 2
+        cast_input:
+        - false
+        convert_to_time:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_time
+        function: setStorageCellDelay
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        - args[1]
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+subdeadtime:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        function: getSubDeadTime
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input: []
+        function: getSubDeadTime
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        function: setSubDeadTime
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        require_det_id: true
+        separate_time_units:
+          input: args[0]
+          output:
+          - converted_time
+          - unit
+      - argc: 2
+        cast_input:
+        - false
+        convert_to_time:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_time
+        function: setSubDeadTime
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        - args[1]
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+subexptime:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        function: getSubExptime
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+      - argc: 1
+        cast_input: []
+        function: getSubExptime
+        input: []
+        input_types: []
+        output:
+        - OutString(t , args[0])
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        function: setSubExptime
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        require_det_id: true
+        separate_time_units:
+          input: args[0]
+          output:
+          - converted_time
+          - unit
+      - argc: 2
+        cast_input:
+        - false
+        convert_to_time:
+          input:
+          - args[0]
+          - args[1]
+          output: converted_time
+        function: setSubExptime
+        input:
+        - converted_time
+        input_types:
+        - time::ns
+        output:
+        - args[0]
+        - args[1]
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true
+transceiverenable:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        args: []
+        cast_input: []
+        function: getTransceiverEnableMask
+        input: []
+        input_types: []
+        output:
+        - OutStringHex(t)
+        require_det_id: true
+    PUT:
+      args:
+      - argc: 1
+        args: []
+        cast_input:
+        - true
+        function: setTransceiverEnableMask
+        input:
+        - args[0]
+        input_types:
+        - uint32_t
+        output:
+        - args.front()
+        require_det_id: true
+  help: ''
+  infer_action: false
+  template: true

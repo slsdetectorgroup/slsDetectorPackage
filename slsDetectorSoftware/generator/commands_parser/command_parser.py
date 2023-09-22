@@ -51,8 +51,10 @@ class CommandParser:
     def verify_format(self):
         # todo verify detectors
         # todo verify circular inheritance
+        # todo verify child commands (those that inherit)
+        # todo verify that there is no wrongly typed parameters
         for command_name, command in self.simple_commands.items():
-            if 'inherit_actions' in command:
+            if 'inherit_actions' in command or 'template' in command and command['template']:
                 continue
             self.argc_set = set()
             if 'infer_action' not in command:
@@ -166,6 +168,9 @@ class CommandParser:
         :return: the parsed command
         """
         command = self.simple_commands[command_name]
+        if 'template' in command and command['template']:
+            # todo: cache templates
+            return self._parse_command(command)
         self.extended_commands[command_name] = self._parse_command(command)
         return self.extended_commands[command_name]
 

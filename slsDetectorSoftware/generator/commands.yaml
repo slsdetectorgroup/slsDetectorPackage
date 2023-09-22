@@ -1,5 +1,196 @@
 ---
 # detectors: MYTHEN3
+
+################# TEMPLATES #################
+TIME_COMMAND:
+  infer_action: false
+  help: ""
+  template: true
+  actions:
+    GET:
+      require_det_id: true
+      function: ''
+      args:
+        - argc: 0
+          output: [ OutString(t) ]
+        - argc: 1
+          output: [ "OutString(t , args[0])" ]
+    PUT:
+      function: ''
+      require_det_id: true
+      input: [ converted_time ]
+      input_types: [ time::ns ]
+      args:
+        - argc: 1
+          separate_time_units:
+            input: 'args[0]'
+            output: [ converted_time, unit ]
+          output: [ 'args[0]' ]
+        - argc: 2
+          convert_to_time:
+            input: [ 'args[0]', 'args[1]' ]
+            output: converted_time
+          output: [ 'args[0]', 'args[1]' ]
+
+TIME_GET_COMMAND:
+  infer_action: false
+  help: ""
+  template: true
+  actions:
+    GET:
+      require_det_id: true
+      function: ''
+      args:
+        - argc: 0
+          output: [ OutString(t) ]
+        - argc: 1
+          output: [ "OutString(t , args[0])" ]
+
+STRING_COMMAND:
+  infer_action: false
+  help: ""
+  template: true
+  actions:
+    GET:
+      require_det_id: true
+      function: ''
+      argc: 0
+      output: [ OutString(t) ]
+    PUT:
+      function: ''
+      output: [ 'args.front()' ]
+      input: [ 'args[0]' ]
+      input_types: [ std::string ]
+      require_det_id: true
+      cast_input: [ false ]
+      argc: 1
+
+INTEGER_COMMAND_HEX_WIDTH16:
+  infer_action: false
+  help: ""
+  template: true
+  actions:
+    GET:
+      require_det_id: true
+      function: ''
+      argc: 0
+      output: [ "OutStringHex(t, 16)" ]
+    PUT:
+      function: ''
+      output: [ "ToStringHex(args[0], 16)" ]
+      input: [ 'args[0]' ]
+      input_types: [ uint64_t ]
+      require_det_id: true
+      cast_input: [ true ]
+      argc: 1
+
+
+INTEGER_COMMAND_HEX:
+  template: true
+  infer_action: false
+  help: ""
+  actions:
+    GET:
+      require_det_id: true
+      function: ''
+      argc: 0
+      output: [ "OutStringHex(t)" ]
+    PUT:
+      function: ''
+      output: [ "args.front()" ]
+      input: [ 'args[0]' ]
+      input_types: [ uint32_t ]
+      require_det_id: true
+      cast_input: [ true ]
+      argc: 1
+
+
+
+
+
+################# COMMANDS #################
+
+################# INTEGER_COMMAND_HEX #################
+adcenable:
+  inherit_actions: INTEGER_COMMAND_HEX
+  actions:
+    GET:
+      function: getADCEnableMask
+    PUT:
+      function: setADCEnableMask
+adcenable10g:
+    inherit_actions: INTEGER_COMMAND_HEX
+    actions:
+      GET:
+        function: getTenGigaADCEnableMask
+      PUT:
+        function: setTenGigaADCEnableMask
+transceiverenable:
+    inherit_actions: INTEGER_COMMAND_HEX
+    actions:
+      GET:
+        function: getTransceiverEnableMask
+      PUT:
+        function: setTransceiverEnableMask
+adcinvert:
+    inherit_actions: INTEGER_COMMAND_HEX
+    actions:
+      GET:
+        function: getADCInvert
+      PUT:
+        function: setADCInvert
+
+
+################# INTEGER_COMMAND_HEX_WIDTH16 #################
+patioctrl:
+  inherit_actions: INTEGER_COMMAND_HEX_WIDTH16
+  actions:
+    GET:
+      function: getPatternIOControl
+    PUT:
+      function: setPatternIOControl
+patmask:
+  inherit_actions: INTEGER_COMMAND_HEX_WIDTH16
+  actions:
+    GET:
+      function: getPatternMask
+    PUT:
+      function: setPatternMask
+patsetbit:
+  inherit_actions: INTEGER_COMMAND_HEX_WIDTH16
+  actions:
+    GET:
+      function: getPatternBitMask
+    PUT:
+      function: setPatternBitMask
+
+
+
+################# STRING_COMMAND #################
+settingspath:
+  inherit_actions: STRING_COMMAND
+  actions:
+    GET:
+      function: getSettingsPath
+    PUT:
+      function: setSettingsPath
+fpath:
+  inherit_actions: STRING_COMMAND
+  actions:
+    GET:
+      function: getFilePath
+    PUT:
+      function: setFilePath
+fname:
+  inherit_actions: STRING_COMMAND
+  actions:
+    GET:
+      function: getFileNamePrefix
+    PUT:
+      function: setFileNamePrefix
+
+################# SPECIAL COMMANDS #################
+# commands that are not using any template
 frames:
   infer_action: true # infer action based on actions' argc (they must be unique if true)
   help: "Get or set the number of frames to be collected."
@@ -18,7 +209,7 @@ frames:
       function: setNumberOfFrames
       output: [ 'args[0]' ]
 
-
+# todo use template for this command
 exptime:
   help: ""
   infer_action: false # infer action based on actions' argc (they must be unique if true)
@@ -48,7 +239,7 @@ exptime:
         - argc: 2
           convert_to_time:
             input: [ 'args[0]', 'args[1]' ]
-            output:  converted_time
+            output: converted_time
           output: [ 'args[0]', 'args[1]' ]
 
 
@@ -105,4 +296,102 @@ exptime3:
         - name: gateIndex
           type: int
           value: 2
+
+
+# commands using the TIME_COMMAND template
+period:
+  inherit_actions: TIME_COMMAND
+  actions:
+    GET:
+      function: getPeriod
+    PUT:
+      function: setPeriod
+
+delay:
+  inherit_actions: TIME_COMMAND
+  actions:
+    GET:
+      function: getDelayAfterTrigger
+    PUT:
+      function: setDelayAfterTrigger
+
+subexptime:
+  inherit_actions: TIME_COMMAND
+  actions:
+    GET:
+      function: getSubExptime
+    PUT:
+      function: setSubExptime
+
+subdeadtime:
+  inherit_actions: TIME_COMMAND
+  actions:
+    GET:
+      function: getSubDeadTime
+    PUT:
+      function: setSubDeadTime
+compdisabletime:
+  inherit_actions: TIME_COMMAND
+  actions:
+    GET:
+      function: getComparatorDisableTime
+    PUT:
+      function: setComparatorDisableTime
+
+storagecell_delay:
+  inherit_actions: TIME_COMMAND
+  actions:
+    GET:
+      function: getStorageCellDelay
+    PUT:
+      function: setStorageCellDelay
+burstperiod:
+  inherit_actions: TIME_COMMAND
+  actions:
+    GET:
+      function: getBurstPeriod
+    PUT:
+      function: setBurstPeriod
+
+# commands using the TIME_GET_COMMAND template
+delayl:
+  inherit_actions: TIME_GET_COMMAND
+  actions:
+    GET:
+      function: getDelayAfterTriggerLeft
+frametime:
+  inherit_actions: TIME_GET_COMMAND
+  actions:
+    GET:
+      function: getMeasurementTime
+runtime:
+  inherit_actions: TIME_GET_COMMAND
+  actions:
+    GET:
+      function: getActualTime
+exptimel:
+  inherit_actions: TIME_GET_COMMAND
+  actions:
+    GET:
+      function: getExptimeLeft
+measuredsubperiod:
+  inherit_actions: TIME_GET_COMMAND
+  actions:
+    GET:
+      function: getMeasuredSubFramePeriod
+measuredperiod:
+  inherit_actions: TIME_GET_COMMAND
+  actions:
+    GET:
+      function: getMeasuredPeriod
+periodl:
+  inherit_actions: TIME_GET_COMMAND
+  actions:
+    GET:
+      function: getPeriodLeft
+
+
+
+
+
 

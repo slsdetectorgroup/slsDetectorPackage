@@ -85,7 +85,7 @@ for command_name, command in commands_config.items():
                             codegen.write_line(f'}}')
                 first = False
         with else_block():
-            codegen.write_line('throw RuntimeError("Invalid action");')
+            codegen.write_line(f'throw RuntimeError("Invalid action {action}");')
 
         # generate code for each action
         codegen.write_line('// generate code for each action')

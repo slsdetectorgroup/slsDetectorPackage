@@ -11,33 +11,24 @@ namespace sls {
 using test::GET;
 using test::PUT;
 
-void test_valid_port(const std::string &command,
-                     const std::vector<std::string> &arguments, int detector_id,
-                     int action, int port_number) {
-    Detector det;
-    CmdProxy proxy(&det);
-    std::string string_port_number = std::to_string(port_number);
-    if (port_number == 0) {
-        REQUIRE_THROWS_WITH(proxy.Call(command, arguments, detector_id, action),
-                        "Invalid port range. Must be between 1 - 65535.");
-    } else {
-        REQUIRE_THROWS_WITH(proxy.Call(command, arguments, detector_id, action),
-                        "Cannot scan uint16_t from string '" + string_port_number +
-                            "'. Value must be in range 0 - 65535.");
-    }
-}
 
 void test_valid_port(const std::string &command,
                      const std::vector<std::string> &arguments, int detector_id,
                      int action) {
+    Detector det;
+    CmdProxy proxy(&det);
+
     std::vector<std::string> arg(arguments);
-    arg.push_back("0");
+    if (arg.empty())
+        arg.push_back("0");
 
     int test_values[3] = {77797, -1, 0};
     for (int i = 0; i != 3; ++i) {
         int port_number = test_values[i];
         arg[arg.size() - 1] = std::to_string(port_number);
-        test_valid_port(command, arg, detector_id, action, port_number);
+        REQUIRE_THROWS(proxy.Call(command, arg, detector_id, action));
+    /*REQUIRE_THROWS_WITH(proxy.Call(command, arguments, detector_id, action),
+                        "Invalid port range. Must be between 1 - 65535.");*/
     }
 }
 

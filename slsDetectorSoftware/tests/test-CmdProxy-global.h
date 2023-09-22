@@ -7,10 +7,6 @@ namespace sls {
 
 void test_valid_port(const std::string &command,
                      const std::vector<std::string> &arguments, int detector_id,
-                     int action, int port_number);
-
-void test_valid_port(const std::string &command,
-                     const std::vector<std::string> &arguments, int detector_id,
                      int action);
 
 void test_dac(slsDetectorDefs::dacIndex index, const std::string &dacname,

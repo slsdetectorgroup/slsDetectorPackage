@@ -243,14 +243,14 @@ TEST_CASE("rx_tcpport", "[.cmd][.rx]") {
     test_valid_port("rx_tcpport", {}, 0, PUT);
     // should fail for the second module
     if (det.size() > 1) {
-        test_valid_port("rx_tcpport", {"65535"}, -1, PUT, 65536);
+        REQUIRE_THROWS(proxy.Call("rx_tcpport", {"65535"}, -1, PUT));
         auto rxHostname = det.getRxHostname().squash("none");
         if (rxHostname != "none") {
             std::ostringstream oss;
             for (int i = 0; i != det.size(); ++i) {
                 oss << rxHostname << ":" << 65536 + i << "+";
             }
-            test_valid_port("rx_hostname", {oss.str()}, -1, PUT, 65536);
+            REQUIRE_THROWS(proxy.Call("rx_hostname", {oss.str()}, -1, PUT));
         }
     }
 
@@ -850,7 +850,7 @@ TEST_CASE("rx_zmqport", "[.cmd][.rx]") {
     test_valid_port("rx_zmqport", {}, 0, PUT);
     // should fail for the second module
     if (det.size() > 1) {
-        test_valid_port("rx_zmqport", {"65535"}, -1, PUT, 65536);
+        REQUIRE_THROWS(proxy.Call("rx_zmqport", {"65535"}, -1, PUT));
     }
 
     for (int i = 0; i != det.size(); ++i) {

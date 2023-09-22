@@ -1257,7 +1257,7 @@ void Module::setDestinationUDPPort(const uint16_t port) {
 }
 
 uint16_t Module::getDestinationUDPPort2() const {
-    return sendToDetector<int>(F_GET_DEST_UDP_PORT2);
+    return sendToDetector<uint16_t>(F_GET_DEST_UDP_PORT2);
 }
 
 void Module::setDestinationUDPPort2(const uint16_t port) {
@@ -1647,7 +1647,7 @@ void Module::setReceiverStreamingStartingFrame(int fnum) {
 }
 
 uint16_t Module::getReceiverStreamingPort() const {
-    return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_PORT);
+    return sendToReceiver<uint16_t>(F_GET_RECEIVER_STREAMING_PORT);
 }
 
 void Module::setReceiverStreamingPort(uint16_t port) {

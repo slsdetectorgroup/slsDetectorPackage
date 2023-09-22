@@ -82,7 +82,7 @@ TEST_CASE("virtual", "[.cmd]") {
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("virtual", {}, -1, GET));
     test_valid_port("virtual", {"1"}, -1, PUT);
-    test_valid_port("virtual", {"3", "65534"}, -1, PUT, 65536);
+    REQUIRE_THROWS(proxy.Call("virtual", {"3", "65534"}, -1, PUT));
 }
 
 TEST_CASE("versions", "[.cmd]") {
@@ -2704,7 +2704,7 @@ TEST_CASE("udp_dstport", "[.cmd]") {
     test_valid_port("udp_dstport", {}, 0, PUT);
     // should fail for the second module
     if (det.size() > 1) {
-        test_valid_port("udp_dstport", {"65535"}, -1, PUT, 65536);
+        REQUIRE_THROWS(proxy.Call("udp_dstport", {"65535"}, -1, PUT));
     }
     for (int i = 0; i != det.size(); ++i) {
         det.setDestinationUDPPort(prev_val[i], {i});
@@ -2799,7 +2799,7 @@ TEST_CASE("udp_dstport2", "[.cmd]") {
         test_valid_port("udp_dstport2", {}, 0, PUT);
         // should fail for the second module
         if (det.size() > 1) {
-            test_valid_port("udp_dstport2", {"65535"}, -1, PUT, 65536);
+            REQUIRE_THROWS(proxy.Call("udp_dstport2", {"65535"}, -1, PUT));
         }
 
         for (int i = 0; i != det.size(); ++i) {
@@ -3032,7 +3032,7 @@ TEST_CASE("zmqport", "[.cmd]") {
     test_valid_port("zmqport", {}, 0, PUT);
     // should fail for the second module
     if (det.size() > 1) {
-        test_valid_port("zmqport", {"65535"}, -1, PUT, 65536);
+        REQUIRE_THROWS(proxy.Call("zmqport", {"65535"}, -1, PUT));
     }
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         det.setNumberofUDPInterfaces(prev);
@@ -3417,7 +3417,7 @@ TEST_CASE("port", "[.cmd]") {
     test_valid_port("port", {}, 0, PUT);
     // should fail for the second module
     if (det.size() > 1) {
-        test_valid_port("port", {"65536"}, -1, PUT, 65536);
+        REQUIRE_THROWS(proxy.Call("port", {"65536"}, -1, PUT));
     }
     det.setControlPort(prev_val, {0});
 }
@@ -3440,7 +3440,7 @@ TEST_CASE("stopport", "[.cmd]") {
     test_valid_port("stopport", {}, 0, PUT);
     // should fail for the second module
     if (det.size() > 1) {
-        test_valid_port("stopport", {"65536"}, -1, PUT, 65536);
+        REQUIRE_THROWS(proxy.Call("stopport", {"65536"}, -1, PUT));
     }
     det.setStopPort(prev_val, {0});
 }

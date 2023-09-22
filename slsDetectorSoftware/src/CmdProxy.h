@@ -2619,13 +2619,13 @@ class CmdProxy {
     /* Insignificant */
 
     INTEGER_COMMAND_VEC_ID(
-        port, getControlPort, setControlPort, StringTo<int>,
+        port, getControlPort, setControlPort, StringTo<uint16_t>,
         "[n]\n\tPort number of the control server on detector for "
         "detector-client tcp interface. Default is 1952. Normally unchanged. "
         "Set different ports for virtual servers on same pc.");
 
     INTEGER_COMMAND_VEC_ID(
-        stopport, getStopPort, setStopPort, StringTo<int>,
+        stopport, getStopPort, setStopPort, StringTo<uint16_t>,
         "[n]\n\tPort number of the stop server on detector for detector-client "
         "tcp interface. Default is 1953. Normally unchanged.");
 

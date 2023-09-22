@@ -30,8 +30,8 @@
 // C includes
 #include <stdint.h>
 #endif
-//Need macros for C compatibility
-//NOLINTBEGIN(cppcoreguidelines-macro-usage)
+// Need macros for C compatibility
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
 #define BIT32_MASK  0xFFFFFFFF
 #define MAX_RX_DBIT 64
 
@@ -80,7 +80,7 @@
 #define DEFAULT_STREAMING_TIMER_IN_MS 500
 
 #define NUM_RX_THREAD_IDS 9
-//NOLINTEND(cppcoreguidelines-macro-usage)
+// NOLINTEND(cppcoreguidelines-macro-usage)
 #ifdef __cplusplus
 class slsDetectorDefs {
   public:

@@ -10,6 +10,7 @@
 #include <cstring>
 #include <ifaddrs.h>
 #include <iomanip>
+#include <limits>
 #include <net/if.h>
 #include <netdb.h>
 #include <sstream>
@@ -18,7 +19,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <limits>
 
 namespace sls {
 

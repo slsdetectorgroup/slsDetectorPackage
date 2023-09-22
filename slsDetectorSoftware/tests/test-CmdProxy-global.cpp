@@ -11,7 +11,6 @@ namespace sls {
 using test::GET;
 using test::PUT;
 
-
 void test_valid_port(const std::string &command,
                      const std::vector<std::string> &arguments, int detector_id,
                      int action) {
@@ -27,8 +26,8 @@ void test_valid_port(const std::string &command,
         int port_number = test_values[i];
         arg[arg.size() - 1] = std::to_string(port_number);
         REQUIRE_THROWS(proxy.Call(command, arg, detector_id, action));
-    /*REQUIRE_THROWS_WITH(proxy.Call(command, arguments, detector_id, action),
-                        "Invalid port range. Must be between 1 - 65535.");*/
+        /*REQUIRE_THROWS_WITH(proxy.Call(command, arguments, detector_id,
+           action), "Invalid port range. Must be between 1 - 65535.");*/
     }
 }
 

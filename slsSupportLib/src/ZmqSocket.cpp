@@ -295,8 +295,8 @@ int ZmqSocket::ReceiveHeader(const int index, zmqHeader &zHeader,
         if (ParseHeader(index, bytes_received, header_buffer.get(), zHeader,
                         version)) {
 #ifdef ZMQ_DETAIL
-            cprintf(RED, "Parsed Header %d [%hu] Length: %d Header:%s \n", index,
-                    portno, bytes_received, header_buffer.get());
+            cprintf(RED, "Parsed Header %d [%hu] Length: %d Header:%s \n",
+                    index, portno, bytes_received, header_buffer.get());
 #endif
             if (!zHeader.data) {
 #ifdef ZMQ_DETAIL

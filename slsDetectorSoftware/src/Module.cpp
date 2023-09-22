@@ -1358,7 +1358,8 @@ std::string Module::getReceiverHostname() const {
     return std::string(shm()->rxHostname);
 }
 
-void Module::setReceiverHostname(const std::string &hostname, const uint16_t port,
+void Module::setReceiverHostname(const std::string &hostname,
+                                 const uint16_t port,
                                  const bool initialChecks) {
     {
         std::ostringstream oss;

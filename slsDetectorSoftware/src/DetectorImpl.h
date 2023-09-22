@@ -84,9 +84,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     virtual ~DetectorImpl();
 
-    template <class CT> struct NonDeduced {
-        using type = CT;
-    };
+    template <class CT> struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
     Result<RT> Parallel(RT (Module::*somefunc)(CT...),
                         std::vector<int> positions,

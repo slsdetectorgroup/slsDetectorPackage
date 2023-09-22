@@ -1067,7 +1067,8 @@ int ClientInterface::set_streaming_port(Interface &socket) {
     try {
         validatePortNumber(port);
     } catch (...) {
-        throw RuntimeError("Could not set streaming (zmq) port number. Invalid value.");
+        throw RuntimeError(
+            "Could not set streaming (zmq) port number. Invalid value.");
     }
     verifyIdle(socket);
     impl()->setStreamingPort(port);

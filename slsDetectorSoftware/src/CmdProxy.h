@@ -187,7 +187,6 @@ namespace sls {
         return os.str();                                                       \
     }
 
-
 #define INTEGER_COMMAND_VEC_ID_GET(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)      \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \

@@ -1086,7 +1086,8 @@ template <> defs::polarity StringTo(const std::string &s) {
 template <> uint16_t StringTo(const std::string &s) {
     int base = s.find("0x") != std::string::npos ? 16 : 10;
     int value = std::stoi(s, nullptr, base);
-    if (value < std::numeric_limits<uint16_t>::min() || value > std::numeric_limits<uint16_t>::max()) {
+    if (value < std::numeric_limits<uint16_t>::min() ||
+        value > std::numeric_limits<uint16_t>::max()) {
         throw RuntimeError("Cannot scan uint16_t from string '" + s +
                            "'. Value must be in range 0 - 65535.");
     }

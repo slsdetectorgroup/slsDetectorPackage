@@ -255,6 +255,17 @@
 #define PLL_CNTRL_ADDR_OFST                 (16)
 #define PLL_CNTRL_ADDR_MSK                  (0x0000003F << PLL_CNTRL_ADDR_OFST)
 
+
+/* Pedestal Mode Regiser */
+#define PEDESTAL_MODE_REG                   (0x57 << MEM_MAP_SHIFT)
+
+#define PEDESTAL_MODE_ITRTNS_OFST           (0)
+#define PEDESTAL_MODE_ITRTNS_MSK            (0x0000FFFF << PEDESTAL_MODE_ITRTNS_OFST) 
+#define PEDESTAL_MODE_LNGTH_OFST            (16)
+#define PEDESTAL_MODE_LNGTH_MSK             (0x000000FF << PEDESTAL_MODE_LNGTH_OFST) 
+#define PEDESTAL_MODE_ENBLE_OFST            (31)
+#define PEDESTAL_MODE_ENBLE_MSK             (0x00000001 << PEDESTAL_MODE_ENBLE_OFST) 
+
 /* Config Register for chip 1.1 */
 #define CONFIG_V11_REG                      (0x58 << MEM_MAP_SHIFT)
 

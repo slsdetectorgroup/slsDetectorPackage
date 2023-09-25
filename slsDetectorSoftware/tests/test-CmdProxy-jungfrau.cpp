@@ -506,6 +506,161 @@ TEST_CASE("filtercells", "[.cmd]") {
     }
 }
 
+void test_pedestal_mode() {
+    const int numG0G2Frames = 1;
+
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val =
+        det.getPedestalMode().tsquash("Inconsistent pedestal mode to test");
+    auto prev_timing_mode =
+        det.getTimingMode().tsquash("Inconsistent timing mode to test");
+    auto prev_numTriggers = det.getNumberOfTriggers().tsquash(
+        "Inconsistent number of triggers to test");
+
+    det.setPedestalMode(1);
+    auto pede_frames = det.getPedestalFrames().squash(-1);
+    auto pede_cycles = det.getPedestalLoops().squash(-1);
+    auto numFrames = det.getNumberOfFrames().squash(-1);
+    auto expNumFrames = (pede_frames + numG0G2Frames) * 2 * pede_cycles;
+
+    // changing timing mode or #triggers should overwrite #frames,#triggers
+    // #frames = pede value, #triggers = 1
+    det.setTimingMode(defs::AUTO_TIMING);
+    auto numTriggers = det.getNumberOfTriggers().squash(-1);
+    REQUIRE(numTriggers == 1);
+    REQUIRE(numFrames == expNumFrames);
+    det.setTimingMode(defs::TRIGGER_EXPOSURE);
+    REQUIRE(numTriggers == 1);
+    REQUIRE(numFrames == expNumFrames);
+    // #triggers = ped value, #frames = 1
+    det.setNumberofTriggers(20);
+    REQUIRE(numFrames == 1);
+    REQUIRE(numTriggers == expNumFrames);
+
+    // TODO: test with a frame from receiver?
+    // TODO: check if receiver #frames/triggers is updated from detector?
+
+    det.setNumberofTriggers(prev_numTriggers);
+    det.setTimingMode(prev_timing_mode);
+    det.setPedestalMode(prev_val);
+}
+
+// Need to add checks to test #frames/trigger after setting pedestal mode
+TEST_CASE("pedestalmode", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val =
+            det.getPedestalMode().tsquash("Inconsistent pedestal mode to test");
+        {
+            std::ostringstream oss;
+            proxy.Call("pedestalmode", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pedestalmode 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("pedestalmode", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pedestalmode 1\n");
+        }
+        REQUIRE_THROWS(proxy.Call("pedestalmode", {"2"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("pedestalmode", {"-1"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("pedestalmode", {"1"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("pedestalmode", {}, 0, GET));
+        {
+            std::ostringstream oss;
+            proxy.Call("pedestalmode", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "pedestalmode 1\n");
+        }
+
+        test_pedestal_mode();
+
+        det.setPedestalMode(prev_val);
+    } else {
+        REQUIRE_THROWS(proxy.Call("pedestalmode", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("pedestalmode", {"0"}, -1, PUT));
+    }
+}
+
+// Need to add checks to test #frames/trigger after setting pedestal mode
+// check max value is int
+TEST_CASE("pedestalframes", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getPedestalFrames().tsquash(
+            "Inconsistent pedestal frames to test");
+        {
+            std::ostringstream oss;
+            proxy.Call("pedestalframes", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pedestalframes 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("pedestalframes", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pedestalframes 200\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("pedestalframes", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "pedestalframes 200\n");
+        }
+        int maxval = std::numeric_limits<int>::max() + 1;
+        REQUIRE_THROWS(
+            proxy.Call("pedestalframes", {std::to_string(maxval)}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("pedestalframes", {"-1"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("pedestalframes", {"1"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("pedestalframes", {}, 0, GET));
+
+        test_pedestal_mode();
+
+        det.setPedestalFrames(prev_val);
+    } else {
+        REQUIRE_THROWS(proxy.Call("pedestalframes", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("pedestalframes", {"0"}, -1, PUT));
+    }
+}
+
+TEST_CASE("pedestalloops", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getPedestalLoops().tsquash(
+            "Inconsistent pedestal cycles to test");
+        {
+            std::ostringstream oss;
+            proxy.Call("pedestalloops", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pedestalloops 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("pedestalloops", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pedestalloops 10\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("pedestalloops", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "pedestalloops 10\n");
+        }
+        int maxval = std::numeric_limits<int>::max() + 1;
+        REQUIRE_THROWS(
+            proxy.Call("pedestalloops", {std::to_string(maxval)}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("pedestalloops", {"-1"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("pedestalloops", {"1"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("pedestalloops", {}, 0, GET));
+
+        test_pedestal_mode();
+
+        det.setPedestalLoops(prev_val);
+    } else {
+        REQUIRE_THROWS(proxy.Call("pedestalloops", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("pedestalloops", {"0"}, -1, PUT));
+    }
+}
+
 TEST_CASE("sync", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

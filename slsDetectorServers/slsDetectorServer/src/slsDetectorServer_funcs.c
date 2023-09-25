@@ -486,6 +486,12 @@ void function_table() {
     flist[F_SET_ROW] = &set_row;
     flist[F_GET_COLUMN] = &get_column;
     flist[F_SET_COLUMN] = &set_column;
+    flist[F_GET_PEDESTAL_MODE] = &get_pedestal_mode;
+    flist[F_SET_PEDESTAL_MODE] = &set_pedestal_mode;
+    flist[F_GET_PEDESTAL_FRAMES] = &get_pedestal_frames;
+    flist[F_SET_PEDESTAL_FRAMES] = &set_pedestal_frames;
+    flist[F_GET_PEDESTAL_LOOPS] = &get_pedestal_loops;
+    flist[F_SET_PEDESTAL_LOOPS] = &set_pedestal_loops;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -10740,4 +10746,146 @@ int setColumn(int value) {
     memcpy(pos, getDetectorPosition(), sizeof(pos));
     pos[X] = value;
     return setDetectorPosition(pos);
+}
+
+
+int get_pedestal_mode(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting pedestal mode\n"));
+
+#if !defined(JUNGFRAUD)
+    functionNotImplemented();
+#else
+    retval = getPedestalMode();
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_pedestal_mode(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting pedestal mode: %d\n", arg));
+
+#if !defined(JUNGFRAUD)
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if ((check_detector_idle("set pedestal mode") == OK) &&
+            (arg != 0 && arg != 1)) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set pedestal mode. Invalid argument %d. Options: [0, 1]\n",
+                    arg);
+            LOG(logERROR, (mess));
+        } else {
+            setPedestalMode(arg);
+            int retval = getPedestalMode();
+            LOG(logDEBUG1, ("pedestal mode retval: %u\n", retval));
+            validate(&ret, mess, arg, retval, "set pedestal mode", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_pedestal_frames(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting pedestal frames\n"));
+
+#if !defined(JUNGFRAUD)
+    functionNotImplemented();
+#else
+    retval = getPedestalFrames();
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_pedestal_frames(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting pedestal frames: %d\n", arg));
+
+#if !defined(JUNGFRAUD)
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if ((check_detector_idle("set pedestal frames") == OK) &&
+            (arg <= 0 && arg > 0xFF)) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set pedestal frames. Invalid argument %d. Options: 1 - %d.\n",
+                    arg, 0xFF);
+            LOG(logERROR, (mess));
+        } else {
+            setPedestalFrames(arg);
+            int retval = getPedestalFrames();
+            LOG(logDEBUG1, ("pedestal frames retval: %u\n", retval));
+            validate(&ret, mess, arg, retval, "set pedestal frames", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_pedestal_loops(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting pedestal loops\n"));
+
+#if !defined(JUNGFRAUD)
+    functionNotImplemented();
+#else
+    retval = getPedestalLoops();
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_pedestal_loops(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting pedestal loops: %d\n", arg));
+
+#if !defined(JUNGFRAUD)
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if ((check_detector_idle("set pedestal loops") == OK) &&
+            (arg <= 0 && arg > 0xFFFFFFFF)) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set pedestal loops. Invalid argument %d. Options: 1 - %d\n",
+                    arg, 0xFFFFFFFF);
+            LOG(logERROR, (mess));
+        } else {
+            setPedestalLoops(arg);
+            int retval = getPedestalLoops();
+            LOG(logDEBUG1, ("pedestal loops retval: %u\n", retval));
+            validate(&ret, mess, arg, retval, "set pedestal loops", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

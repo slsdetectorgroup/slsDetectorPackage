@@ -290,6 +290,12 @@ enum detFuncs {
     F_SET_ROW,
     F_GET_COLUMN,
     F_SET_COLUMN,
+    F_GET_PEDESTAL_MODE,
+    F_SET_PEDESTAL_MODE,
+    F_GET_PEDESTAL_FRAMES,
+    F_SET_PEDESTAL_FRAMES,
+    F_GET_PEDESTAL_LOOPS,
+    F_SET_PEDESTAL_LOOPS,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 512, /**< detector function should not exceed this
@@ -687,6 +693,12 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_ROW:                         return "F_SET_ROW";
     case F_GET_COLUMN:                      return "F_GET_COLUMN";
     case F_SET_COLUMN:                      return "F_SET_COLUMN";
+    case F_GET_PEDESTAL_MODE:               return "F_GET_PEDESTAL_MODE";   
+    case F_SET_PEDESTAL_MODE:               return "F_SET_PEDESTAL_MODE";   
+    case F_GET_PEDESTAL_FRAMES:             return "F_GET_PEDESTAL_FRAMES"; 
+    case F_SET_PEDESTAL_FRAMES:             return "F_SET_PEDESTAL_FRAMES"; 
+    case F_GET_PEDESTAL_LOOPS:              return "F_GET_PEDESTAL_LOOPS";  
+    case F_SET_PEDESTAL_LOOPS:              return "F_SET_PEDESTAL_LOOPS";  
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

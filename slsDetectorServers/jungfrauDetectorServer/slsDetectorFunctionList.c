@@ -555,6 +555,10 @@ void setupDetector() {
         setFlipRows(DEFAULT_FLIP_ROWS);
         setReadNRows(MAX_ROWS_PER_READOUT);
     }
+    // TODO: (check with carlos if its okay to put default 1)
+    setPedestalMode(DEFAULT_PEDESTAL_MODE);
+    setPedestalFrames(DEFAULT_PEDESTAL_FRAMES);
+    setPedestalLoops(DEFAULT_PEDESTAL_LOOPS);
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -978,6 +982,7 @@ void setNumFrames(int64_t val) {
     if (val > 0) {
         LOG(logINFO, ("Setting number of frames %lld\n", (long long int)val));
         set64BitReg(val, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+        updateFramesinPedestalMode();
     }
 }
 
@@ -989,6 +994,7 @@ void setNumTriggers(int64_t val) {
     if (val > 0) {
         LOG(logINFO, ("Setting number of triggers %lld\n", (long long int)val));
         set64BitReg(val, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+        updateFramesinPedestalMode();
     }
 }
 
@@ -1451,6 +1457,7 @@ void setTiming(enum timingMode arg) {
     default:
         LOG(logERROR, ("Unknown timing mode %d\n", arg));
     }
+    updateFramesinPedestalMode();
 }
 
 enum timingMode getTiming() {
@@ -2512,6 +2519,67 @@ uint64_t getSelectCurrentSource() {
         return inverted;
     }
 }
+
+// must also calculate #frames and #triggers
+// also calculate for settiming mode, #frames, #triggers
+
+void updateFramesinPedestalMode() {
+    if (getPedestalMode()) {
+        enum timingMode tmode = getTiming();
+        int64_t triggers = getNumTriggers();
+        int64_t expFrames = (getPedestalFrames() + 1) * 2 * getPedestalLoops();
+        if (tmode == TRIGGER && triggers > 1) {
+            LOG(logINFO, ("Setting number of frames to 1\n"));
+            set64BitReg(1, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+            LOG(logINFO, ("Setting number of triggers to %lld\n", (long long int)expFrames));
+            set64BitReg(expFrames, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+        } else {
+            LOG(logINFO, ("Setting number of frames to %lld\n", (long long int)expFrames));
+            set64BitReg(expFrames, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+            LOG(logINFO, ("Setting number of triggers to 1\n"));
+            set64BitReg(1, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+        }
+    }
+}
+
+int getPedestalMode() {
+    return ((bus_r(PEDESTAL_MODE_REG) & PEDESTAL_MODE_ENBLE_MSK) >> PEDESTAL_MODE_ENBLE_OFST);
+}
+
+void setPedestalMode(int on) {
+    LOG(logINFOBLUE, "%s pedestal mode\n", (on ? "Enabling" : "Disabling"));
+    if (on) {
+        bus_w(PEDESTAL_MODE_REG, bus_r(PEDESTAL_MODE_REG) | PEDESTAL_MODE_ENBLE_MSK);
+    } else 
+        bus_w(PEDESTAL_MODE_REG, bus_r(PEDESTAL_MODE_REG) & ~PEDESTAL_MODE_ENBLE_MSK);
+    updateFramesinPedestalMode();
+    
+}
+
+int getPedestalFrames() {
+    return ((bus_r(PEDESTAL_MODE_REG) & PEDESTAL_MODE_LNGTH_MSK) >> PEDESTAL_MODE_LNGTH_OFST);
+}
+
+void setPedestalFrames(int value) {
+    LOG(logINFO, "Setting #pedestal frames: %d\n", value);
+    uint32_t addr = PEDESTAL_MODE_REG;
+    bus_w(addr, bus_r(addr) & ~PEDESTAL_MODE_LNGTH_MSK);
+    bus_w(addr, bus_r(addr) | ((value << PEDESTAL_MODE_LNGTH_OFST) & PEDESTAL_MODE_LNGTH_MSK));
+    updateFramesinPedestalMode();
+}
+
+int getPedestalLoops() {
+    return ((bus_r(PEDESTAL_MODE_REG) & PEDESTAL_MODE_ITRTNS_MSK) >> PEDESTAL_MODE_ITRTNS_OFST);
+}
+
+void setPedestalLoops(int value) {
+    LOG(logINFO, "Setting #pedestal loops: %d\n", value);
+    uint32_t addr = PEDESTAL_MODE_REG;
+    bus_w(addr, bus_r(addr) & ~PEDESTAL_MODE_ITRTNS_MSK);
+    bus_w(addr, bus_r(addr) | ((value << PEDESTAL_MODE_ITRTNS_OFST) & PEDESTAL_MODE_ITRTNS_MSK));
+    updateFramesinPedestalMode();
+}
+
 
 int getTenGigaFlowControl() {
     return ((bus_r(CONFIG_REG) & CONFIG_ETHRNT_FLW_CNTRL_MSK) >>

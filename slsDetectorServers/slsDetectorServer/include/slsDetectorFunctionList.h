@@ -556,6 +556,12 @@ int getCurrentSource();
 int getFixCurrentSource();
 int getNormalCurrentSource();
 uint64_t getSelectCurrentSource();
+int getPedestalMode();
+void setPedestalMode(int on);
+int getPedestalFrames();
+void setPedestalFrames(int value);
+int getPedestalLoops();
+void setPedestalLoops(int value);
 #endif
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter

@@ -78,7 +78,7 @@ class CommandParser:
                     for arg in action_params['args']:
                         arg = {**action_args, **arg}
                         self._verify_argument(arg, command['infer_action'])
-        print('Commands file is valid ✅️')
+        print('[X] Commands file is valid ✅️')
 
     def parse_inherited(self, parent, command, simple_parent):
         """
@@ -186,6 +186,7 @@ class CommandParser:
         for command_name in self.simple_commands:
             self.parse_command(command_name)
         # yaml.Dumper.ignore_aliases = lambda *args: True
+        print(f'[X] parsed {len(self.extended_commands)} commands')
         yaml.dump(self.extended_commands, (self.commands_file.parent / 'extended_commands.yaml').open('w'),
                   default_flow_style=False)
 

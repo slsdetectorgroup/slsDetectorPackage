@@ -1,8 +1,16 @@
+import argparse
+import os
 from pathlib import Path
 
 import yaml
 
 from cpp_codegen.codegen import codegen, if_block, for_block, function, else_block
+
+parser = argparse.ArgumentParser(
+    prog='cpp command code generator',
+    description='generate cpp code for commands using the commands.yaml file',
+)
+parser.add_argument('-f', '--format',action='store_true',  default=False,  dest='format', )
 
 GEN_PATH = Path(__file__).parent
 COMMANDS_PATH = GEN_PATH / 'extended_commands.yaml'
@@ -13,6 +21,8 @@ codegen.open(GEN_PATH.parent / 'src' / 'Caller.cpp')
 codegen.write_opening(GEN_PATH / 'Caller.in.cpp')
 
 # iterate over the commands and generate code for each
+print(f"[X] found {len(commands_config)} commands")
+print('[*] generating code for commands')
 for command_name, command in commands_config.items():
     with function('std::string', 'Caller::' + command_name, [('int', 'action')]) as fn:
         codegen.write_line('std::ostringstream os;')
@@ -114,5 +124,14 @@ for command_name, command in commands_config.items():
 # close sls namespace
 codegen.write_closing()
 codegen.close()
+print('[X] .cpp code generated')
 
 codegen.write_header(GEN_PATH / 'Caller.in.h', GEN_PATH.parent / 'src' / 'Caller.h', list(commands_config.keys()))
+print('[X] header code generated')
+
+if parser.parse_args().format:
+    os.system(f'clang-format -i  --style=LLVM {GEN_PATH.parent.absolute() / "src" / "Caller.cpp"}')
+    os.system(f'clang-format -i --style=LLVM {GEN_PATH.parent.absolute() / "src" / "Caller.h"}')
+    print('[X] code formatted')
+
+

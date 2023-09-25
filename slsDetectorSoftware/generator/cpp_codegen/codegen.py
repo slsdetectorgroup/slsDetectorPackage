@@ -46,11 +46,10 @@ class CodeGenerator:
                             fp.write(f'std::string {command}(int action);\n')
                         continue
                     if "THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (2)" in line:
-                        map_string = ""
+                        map_string = ''
                         for command in commands:
                             map_string += f'{{"{command}", &Caller::{command}}},'
-                        statement = f'FunctionMap functions{{{map_string[:-1]}}};'
-                        fp.write(statement)
+                        fp.write(map_string[:-1] + '\n')
                         continue
 
                     fp.write(line)

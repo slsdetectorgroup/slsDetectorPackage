@@ -19,6 +19,15 @@ void Caller::call(const CmdParser &parser, int action, std::ostream &os) {
   }
 }
 
+std::string Caller::list(int action) {
+  std::string ret;
+  for (auto &f : functions) {
+    ret += f.first + "\n";
+  }
+  return ret;
+}
+
+
 
 // THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE
 

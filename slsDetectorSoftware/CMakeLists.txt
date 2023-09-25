@@ -77,6 +77,7 @@ endif()
 
 
 if(SLS_USE_TEXTCLIENT)
+    # generate sls_detector_* commands
     # Loop over list to generate command line binaries
     set(bin_names "sls_detector_put" 
             "sls_detector_get" 
@@ -107,20 +108,38 @@ if(SLS_USE_TEXTCLIENT)
     endforeach()
     install(TARGETS ${bin_names} DESTINATION bin)
 
+    # python generated det* commands
+    set(det_bin_names "detp" 
+            "detg" 
+            "deta" 
+            "deth")
+    set(det_cmd_name "PUT" "GET" "READOUT" "HELP")
+    list(LENGTH det_bin_names len1)
+    math(EXPR len2 "${len1} - 1")
 
-    add_executable(det src/CmdApp.cpp)
-    target_link_libraries(det 
+    foreach(val RANGE ${len2})
+        list(GET det_bin_names ${val} val1)
+        list(GET det_cmd_name ${val} val2)
+        message(STATUS "${val1}  ${val2}")
+
+        add_executable(${val1} src/CmdApp.cpp)
+
+        target_link_libraries(${val1} 
         slsDetectorStatic
         pthread
         rt
-    )
-    set_target_properties(det PROPERTIES 
-        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-        COMPILE_DEFINITIONS ${val2}=1
-    )
-    if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
-        set_property(TARGET det PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-    endif()
+        )
+
+        set_target_properties(${val1} PROPERTIES 
+            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+            COMPILE_DEFINITIONS ${val2}=1
+        )
+        if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
+            set_property(TARGET ${val1} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+        endif()
+
+    endforeach()
+
 
 endif(SLS_USE_TEXTCLIENT)
 

@@ -1947,8 +1947,9 @@ bool Module::getPedestalMode() const {
     return sendToDetector<int>(F_GET_PEDESTAL_MODE);
 }
 
-void Module:updateFramesinPedestalModeinReceiver() {
-    if (shm()->detType == JUNGFRAU && shm()->useReceiverFlag && getPedestalMode()) {
+void Module::updateFramesinPedestalModeinReceiver() {
+    if (shm()->detType == JUNGFRAU && shm()->useReceiverFlag &&
+        getPedestalMode()) {
         auto value = getNumberOfFrames();
         sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, value, nullptr);
         value = getNumberOfTriggers();
@@ -1968,7 +1969,7 @@ int Module::getPedestalFrames() const {
 void Module::setPedestalFrames(const int value) {
     sendToDetector(F_SET_PEDESTAL_FRAMES, value, nullptr);
     updateFramesinPedestalModeinReceiver();
-}   
+}
 
 int Module::getPedestalLoops() const {
     return sendToDetector<int>(F_GET_PEDESTAL_LOOPS);
@@ -1977,7 +1978,7 @@ int Module::getPedestalLoops() const {
 void Module::setPedestalLoops(const int value) {
     sendToDetector(F_SET_PEDESTAL_LOOPS, value, nullptr);
     updateFramesinPedestalModeinReceiver();
-}  
+}
 
 // Gotthard Specific
 

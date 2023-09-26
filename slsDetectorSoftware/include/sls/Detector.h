@@ -1360,34 +1360,15 @@ class Detector {
     void setNumberOfFilterCells(int cell, Positions pos = {});
 
     /** [Jungfrau] */
-    Result<bool> getPedestalMode(Positions pos = {}) const;
+    Result<defs::pedestalParameters> getPedestalMode(Positions pos = {}) const;
 
     /** [Jungfrau] In pedestal mode, the number of frames or triggers is
-     * overwritten by \n((#pedestal_frames + 1) x 2 x #pedestal_loops). \nIn
+     * overwritten by \n(#pedestal_frames x #pedestal_loops x 2). \nIn
      * auto timing mode or if #triggers > 1, #frames is overwritten with
      * #triggers = 1, \nelse #triggers is overwritten with #frames = 1.
      */
-    void setPedestalMode(const bool on);
-
-    /** [Jungfrau] */
-    Result<int> getPedestalFrames(Positions pos = {}) const;
-
-    /** [Jungfrau] In pedestal mode, the number of frames or triggers is
-     * overwritten by \n((#pedestal_frames + 1) x 2 x #pedestal_loops). \nIn
-     * auto timing mode or if #triggers > 1, #frames is overwritten with
-     * #triggers = 1, \nelse #triggers is overwritten with #frames = 1.
-     */
-    void setPedestalFrames(const int value);    
-
-    /** [Jungfrau] */
-    Result<int> getPedestalLoops(Positions pos = {}) const;
-
-    /** [Jungfrau] In pedestal mode, the number of frames or triggers is
-     * overwritten by \n((#pedestal_frames + 1) x 2 x #pedestal_loops). \nIn
-     * auto timing mode or if #triggers > 1, #frames is overwritten with
-     * #triggers = 1, \nelse #triggers is overwritten with #frames = 1.
-     */
-    void setPedestalLoops(const int value);    
+    void setPedestalMode(const<defs::pedestalParameters> par,
+                         Positions pos = {});
 
     ///@}
 

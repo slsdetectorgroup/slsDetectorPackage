@@ -155,6 +155,23 @@ std::ostream &operator<<(std::ostream &os,
     return os << ToString(r);
 }
 
+std::string ToString(const slsDetectorDefs::pedestalParameters &r) {
+    std::ostringstream oss;
+    oss << '[';
+    if (r.enable)
+        oss << "enabled , " << r.frames << ", " << r.loops;
+    else
+        oss << "disabled";
+
+    oss << ']';
+    return oss.str();
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const slsDetectorDefs::pedestalParameters &r) {
+    return os << ToString(r);
+}
+
 std::string ToString(const defs::runStatus s) {
     switch (s) {
     case defs::ERROR:

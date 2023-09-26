@@ -1089,11 +1089,6 @@ TEST_CASE("timing", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("timing", {"burst_trigger"}, -1, PUT));
         REQUIRE_THROWS(proxy.Call("timing", {"trigger_gating"}, -1, PUT));
     }
-
-    if (det_type == defs::JUNGFRAU) {
-        test_pedestal_mode();
-    }
-
     for (int i = 0; i != det.size(); ++i) {
         det.setTimingMode(prev_val[i], {i});
     }

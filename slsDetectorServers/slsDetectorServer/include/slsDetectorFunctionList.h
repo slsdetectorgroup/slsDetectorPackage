@@ -556,6 +556,7 @@ int getCurrentSource();
 int getFixCurrentSource();
 int getNormalCurrentSource();
 uint64_t getSelectCurrentSource();
+void updateFramesinPedestalMode();
 int getPedestalMode();
 void setPedestalMode(int on);
 int getPedestalFrames();

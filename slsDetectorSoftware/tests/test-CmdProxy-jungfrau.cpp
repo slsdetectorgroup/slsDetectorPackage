@@ -552,6 +552,7 @@ TEST_CASE("pedestalmode", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU) {
+
         auto prev_val =
             det.getPedestalMode().tsquash("Inconsistent pedestal mode to test");
         {

@@ -356,6 +356,8 @@ int main(int argc, char *argv[]) {
                             sprintf(ffname, "%s/%s_f%05d.tiff", outdir, fformat,
                                     ifile);
                             sprintf(imgfname, (const char*)ffname, irun);
+			    while (mt->isBusy()) 
+			      ;
                             mt->writeImage(imgfname, thr1);
                             mt->clearImage();
                             ifile++;
@@ -381,6 +383,8 @@ int main(int argc, char *argv[]) {
                     sprintf(imgfname, (const char*)ffname, irun);
                 }
                 cout << "Writing tiff to " << imgfname << " " << thr1 << endl;
+		while (mt->isBusy()) 
+		  ;
                 mt->writeImage(imgfname, thr1);
                 mt->clearImage();
                 if (of) {

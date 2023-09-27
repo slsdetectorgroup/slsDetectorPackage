@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(
     prog='cpp command code generator',
     description='generate cpp code for commands using the commands.yaml file',
 )
-parser.add_argument('-f', '--format',action='store_true',  default=False,  dest='format', )
+parser.add_argument('-f', '--format', action='store_true', default=False, dest='format', )
 
 GEN_PATH = Path(__file__).parent
 COMMANDS_PATH = GEN_PATH / 'extended_commands.yaml'
@@ -27,6 +27,12 @@ for command_name, command in commands_config.items():
     with function('std::string', 'Caller::' + command_name, [('int', 'action')]) as fn:
         codegen.write_line('std::ostringstream os;')
 
+        # print help
+        codegen.write_line('// print help')
+        with if_block('action == slsDetectorDefs::HELP_ACTION'):
+            codegen.write_line(f'os << "Command: {command_name}" << std::endl;')
+            codegen.write_line(f'os << R"V0G0N({command["help"]} )V0G0N" << std::endl;')
+            codegen.write_line('return os.str();')
         # infer action based on number of arguments
         codegen.write_line('// infer action based on number of arguments')
         with if_block('action == -1'):
@@ -95,7 +101,8 @@ for command_name, command in commands_config.items():
                             codegen.write_line(f'}}')
                 first = False
         with else_block():
-            codegen.write_line(f'throw RuntimeError("Invalid action {action}");')
+            codegen.write_line(
+                f'throw RuntimeError("Invalid action: supported actions are {list(command["actions"].keys())}");')
 
         # generate code for each action
         codegen.write_line('// generate code for each action')
@@ -107,14 +114,17 @@ for command_name, command in commands_config.items():
                     first = True
                     for detector, detector_params in action_params['detectors'].items():
                         with if_block(f'detector_type == defs::{detector}', elseif=not first):
-                            codegen.write_arg(detector_params, action)
+                            codegen.write_arg(detector_params, action, command_name)
 
                     else_block().__enter__()
 
                 if not action_params:
                     codegen.write_line(f'throw RuntimeError("detector not supported for action: {action}");')
                 else:
-                    codegen.write_arg(action_params['args'], action)
+                    tmp_args = []
+                    if 'args' in action_params:
+                        tmp_args = action_params['args']
+                    codegen.write_arg(tmp_args, action, command_name)
 
                 if 'detectors' in action_params:
                     else_block().__exit__()
@@ -130,8 +140,6 @@ codegen.write_header(GEN_PATH / 'Caller.in.h', GEN_PATH.parent / 'src' / 'Caller
 print('[X] header code generated')
 
 if parser.parse_args().format:
-    os.system(f'clang-format -i  --style=LLVM {GEN_PATH.parent.absolute() / "src" / "Caller.cpp"}')
-    os.system(f'clang-format -i --style=LLVM {GEN_PATH.parent.absolute() / "src" / "Caller.h"}')
+    os.system(f'clang-format -i  --style="{{Standard: C++11}}" {GEN_PATH.parent.absolute() / "src" / "Caller.cpp"}')
+    os.system(f'clang-format -i  --style="{{Standard: C++11}}" {GEN_PATH.parent.absolute() / "src" / "Caller.h"}')
     print('[X] code formatted')
-
-

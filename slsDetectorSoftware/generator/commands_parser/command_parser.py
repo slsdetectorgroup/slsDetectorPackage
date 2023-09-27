@@ -19,7 +19,8 @@ class CommandParser:
             'input_types': [],
             'function': '',
             'output': [],
-            'cast_input': []
+            'cast_input': [],
+            'check_det_id': False,
         }
         self.default_config = {
             'infer_action': True,
@@ -54,6 +55,7 @@ class CommandParser:
         # todo verify circular inheritance
         # todo verify child commands (those that inherit)
         # todo verify that there is no wrongly typed parameters
+        # todo verify that the same number of input_types and input are given
         for command_name, command in self.simple_commands.items():
             if 'inherit_actions' in command or 'template' in command and command['template']:
                 continue
@@ -91,6 +93,9 @@ class CommandParser:
         # deepcopy parent and command to avoid modifying the originals
         command = copy.deepcopy(command)
         config = copy.deepcopy(parent)
+        # add help
+        if 'help' in command:
+            config['help'] = command['help']
         if 'actions' not in command:
             return config
         for action, command_params in command['actions'].items():
@@ -151,6 +156,8 @@ class CommandParser:
                 for detector_name, detector_params in action_params['detectors'].items():
                     # get the context for the detector and merge it with the action context
                     detector_context = {**action_context, **detector_params}
+                    # print(1, detector_name, action_context)
+
                     if 'args' not in detector_params:
                         detector_params['args'] = []
                     config_action['detectors'] = {}
@@ -171,7 +178,9 @@ class CommandParser:
         command = self.simple_commands[command_name]
         if 'template' in command and command['template']:
             # todo: cache templates
-            return self._parse_command(command)
+            x= self._parse_command(command)
+            return x
+
         # if command_name != 'settings':
         #     return {}
 
@@ -183,9 +192,11 @@ class CommandParser:
         iterate over all commands in yaml file and parse them
         :return: None
         """
+
         for command_name in self.simple_commands:
-            self.parse_command(command_name)
-        # yaml.Dumper.ignore_aliases = lambda *args: True
+            if command_name != 'xexptime1':
+                self.parse_command(command_name)
+        yaml.Dumper.ignore_aliases = lambda *args: True
         print(f'[X] parsed {len(self.extended_commands)} commands')
         yaml.dump(self.extended_commands, (self.commands_file.parent / 'extended_commands.yaml').open('w'),
                   default_flow_style=False)
@@ -210,7 +221,7 @@ class CommandParser:
         if not args:
             # if there are no arguments, then the action has only one argument
             context = {**action_context, **priority_context}
-            if not context['cast_input']:
+            if not context['cast_input']  or len(context['cast_input']) != len(context['input']):
                 # if the cast_input is empty, then set it to False
                 context['cast_input'] = [False] * len(context['input'])
             return [{**action_context, **priority_context}]
@@ -224,7 +235,7 @@ class CommandParser:
         # if there are arguments, then merge them with the action context and priority context
         for arg in args:
             arg = {**action_context, **arg, **priority_context}
-            if not arg['cast_input']:
+            if not arg['cast_input'] or len(arg['cast_input']) != len(arg['input']):
                 arg['cast_input'] = [False] * len(arg['input'])
             ret_args.append(arg)
         return ret_args

@@ -25,8 +25,27 @@ int main(int argc, char *argv[]){
 
     sls::CmdParser parser;
     parser.Parse(argc, argv);
-    
-//    int default_action = -1;
+    if (action == slsDetectorDefs::READOUT_ACTION)
+        parser.setCommand("acquire");
+
+    if (parser.isHelp())
+        action = slsDetectorDefs::HELP_ACTION;
+    else {
+        // Free shared memory should work also without a detector
+        // if we have an option for verify in the detector constructor
+        // we could avoid this but clutter the code
+        if (parser.command() == "free") {
+            if (parser.detector_id() != -1)
+                std::cout << "Cannot free shared memory of sub-detector\n";
+            else
+                sls::freeSharedMemory(parser.multi_id());
+            return 0;
+        }
+    }
+
+    if (parser.command() == "config" && action == slsDetectorDefs::PUT_ACTION) {
+        sls::freeSharedMemory(parser.multi_id());
+    }
     sls::Detector d(parser.multi_id());
     sls::Caller c(&d);
 

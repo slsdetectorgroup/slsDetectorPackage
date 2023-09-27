@@ -105,27 +105,156 @@ INTEGER_COMMAND_HEX:
       argc: 1
 
 INTEGER_COMMAND_VEC_ID_GET:
-    template: true
-    infer_action: false
-    help: ""
-    actions:
-        GET:
-          require_det_id: true
-          function: ''
-          argc: 0
-          output: [ OutString(t) ]
-        PUT:
-          function: ''
-          output: [ 'args.front()' ]
-          input: [ 'args[0]' ]
-          input_types: [ int ]
-          require_det_id: true
-          convert_det_id: false
-          cast_input: [ true ]
-          argc: 1
+  template: true
+  infer_action: false
+  help: ""
+  actions:
+    GET:
+      require_det_id: true
+      function: ''
+      argc: 0
+      output: [ OutString(t) ]
+    PUT:
+      function: ''
+      output: [ 'args.front()' ]
+      input: [ 'args[0]' ]
+      input_types: [ int ]
+      require_det_id: true
+      convert_det_id: false
+      cast_input: [ true ]
+      argc: 1
 
 
 INTEGER_COMMAND_VEC_ID:
+  template: true
+  infer_action: false
+  help: ""
+  actions:
+    GET:
+      require_det_id: true
+      function: ''
+      argc: 0
+      output: [ OutString(t) ]
+    PUT:
+      function: ''
+      output: [ 'args.front()' ]
+      input: [ 'args[0]' ]
+      input_types: [ int ]
+      require_det_id: true
+      cast_input: [ true ]
+      argc: 1
+INTEGER_COMMAND_SET_NOID_GET_ID:
+  template: true
+  infer_action: false
+  help: ""
+  actions:
+    GET:
+      require_det_id: true
+      function: ''
+      argc: 0
+      output: [ OutString(t) ]
+    PUT:
+      check_det_id: true
+      function: ''
+      output: [ 'args.front()' ]
+      input: [ 'args[0]' ]
+      input_types: [ int ]
+      cast_input: [ true ]
+      argc: 1
+
+INTEGER_COMMAND_NOID:
+  template: true
+  infer_action: false
+  help: ""
+  actions:
+    GET:
+      check_det_id: true
+      function: ''
+      argc: 0
+      output: [ OutString(t) ]
+    PUT:
+      check_det_id: true
+      function: ''
+      output: [ 'args.front()' ]
+      input: [ 'args[0]' ]
+      input_types: [ int ]
+      cast_input: [ true ]
+      argc: 1
+
+INTEGER_IND_COMMAND:
+  template: true
+  infer_action: false
+  help: ""
+  actions:
+    GET:
+      # extra variable to store the index
+      require_det_id: true
+      function: ''
+      input: [ 'INDEX' ]
+      input_types: [ int ]
+      cast_input: [ false ]
+      argc: 0
+      output: [ OutString(t) ]
+    PUT:
+      # extra variable to store the index
+      function: ''
+      output: [ 'args.front()' ]
+      input: [ 'INDEX', 'args[0]' ]
+      input_types: [ int, int ]
+      require_det_id: true
+      cast_input: [ false, true ]
+      argc: 1
+
+INTEGER_USER_IND_COMMAND:
+  template: true
+  infer_action: false
+  help: ""
+  actions:
+    GET:
+      # extra variable to store the index
+      require_det_id: true
+      function: ''
+      input: [ 'INDEX', 'args[0]' ]
+      input_types: [ int, int ]
+      cast_input: [ false, true ]
+      argc: 1
+      output: [ 'args[0]', OutStringHex(t) ]
+    PUT:
+      # extra variable to store the index
+      function: ''
+      output: [ 'args[0]', 'args[1]' ]
+      input: [ 'INDEX', 'args[0]', 'args[1]' ]
+      input_types: [ int, int , int ]
+      require_det_id: true
+      cast_input: [ false, true, true ]
+      argc: 2
+
+EXECUTE_SET_COMMAND_NOID:
+  template: true
+  infer_action: false
+  help: ""
+  actions:
+    PUT:
+      check_det_id: true
+      function: ''
+      output: [ '"successful"' ]
+      argc: 0
+
+EXECUTE_SET_COMMAND_NOID_1ARG:
+  template: true
+  infer_action: false
+  help: ""
+  actions:
+    PUT:
+      check_det_id: true
+      function: ''
+      input: [ 'args[0]' ]
+      input_types: [ std::string ]
+      cast_input: [ false ]
+      output: [ 'args.front()' ]
+      argc: 1
+
+GET_COMMAND:
     template: true
     infer_action: false
     help: ""
@@ -135,651 +264,1410 @@ INTEGER_COMMAND_VEC_ID:
           function: ''
           argc: 0
           output: [ OutString(t) ]
-        PUT:
+
+GET_COMMAND_NOID:
+    template: true
+    infer_action: false
+    help: ""
+    actions:
+        GET:
           function: ''
-          output: [ 'args.front()' ]
-          input: [ 'args[0]' ]
-          input_types: [ int ]
+          argc: 0
+          output: [ ToString(t) ]
+
+GET_IND_COMMAND:
+    template: true
+    infer_action: false
+    help: ""
+    actions:
+        GET:
           require_det_id: true
-          cast_input: [ true ]
-          argc: 1
+          function: ''
+          argc: 0
+          output: [ OutString(t), '" °C"' ]
+          input: [ 'VAL' ]
+          input_types: [ int ]
+          cast_input: [ false ]
 
 
-################# COMMANDS #################
+
+CTB_VALUES:
+    template: true
+    infer_action: false
+    actions:
+      GET:
+        argc: 0
+        ctb_output_list:
+           GETFCNLIST: ''
+           GETFCNNAME: ''
+           GETFCN: ''
+
+
+################# COMMANDS ###################################
+
+################# CTB_VALUES ################################
+voltagevalues:
+    inherit_actions: CTB_VALUES
+    help: "[name] \n\t\t[ChipTestBoard] Get values of all voltages."
+    actions:
+        GET:
+          ctb_output_list:
+            GETFCNLIST: getVoltageList
+            GETFCNNAME: getVoltageNames
+            GETFCN: getVoltage
+slowadcvalues:
+    inherit_actions: CTB_VALUES
+    help: "[name] \n\t\t[ChipTestBoard] Get values of all slow adcs."
+    actions:
+        GET:
+          ctb_output_list:
+            GETFCNLIST: getSlowADCList
+            GETFCNNAME: getSlowADCNames
+            GETFCN: getSlowADC
+
+
+
+
+################# GET_IND_COMMAND ############################
+temp_adc:
+    inherit_actions: GET_IND_COMMAND
+    help: "[n_value]\n\t[Jungfrau][Moench][Gotthard] ADC Temperature"
+    actions:
+        GET:
+          function: getTemperature
+          input: [ 'slsDetectorDefs::TEMPERATURE_ADC' ]
+temp_fpga:
+    inherit_actions: GET_IND_COMMAND
+    help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Gotthard][Mythen3][Gotthard2] FPGA Temperature"
+    actions:
+        GET:
+          function: getTemperature
+          input: [ 'slsDetectorDefs::TEMPERATURE_FPGA' ]
+temp_fpgaext:
+    inherit_actions: GET_IND_COMMAND
+    help: "[n_value]\n\t[Eiger]Temperature close to the FPGA"
+    actions:
+        GET:
+          function: getTemperature
+          input: [ 'slsDetectorDefs::TEMPERATURE_FPGAEXT' ]
+temp_10ge:
+    inherit_actions: GET_IND_COMMAND
+    help: "[n_value]\n\t[Eiger]Temperature close to the 10GbE"
+    actions:
+        GET:
+          function: getTemperature
+          input: [ 'slsDetectorDefs::TEMPERATURE_10GE' ]
+temp_dcdc:
+    inherit_actions: GET_IND_COMMAND
+    help: "[n_value]\n\t[Eiger]Temperature close to the dc dc converter"
+    actions:
+        GET:
+          function: getTemperature
+          input: [ 'slsDetectorDefs::TEMPERATURE_DCDC' ]
+temp_sodl:
+    inherit_actions: GET_IND_COMMAND
+    help: "[n_value]\n\t[Eiger]Temperature close to the left so-dimm memory"
+    actions:
+        GET:
+          function: getTemperature
+          input: [ 'slsDetectorDefs::TEMPERATURE_SODL' ]
+temp_sodr:
+    inherit_actions: GET_IND_COMMAND
+    help: "[n_value]\n\t[Eiger]Temperature close to the right so-dimm memory"
+    actions:
+        GET:
+          function: getTemperature
+          input: [ 'slsDetectorDefs::TEMPERATURE_SODR' ]
+temp_fpgafl:
+    inherit_actions: GET_IND_COMMAND
+    help: "[n_value]\n\t[Eiger]Temperature of the left front end board fpga."
+    actions:
+        GET:
+          function: getTemperature
+          input: [ 'slsDetectorDefs::TEMPERATURE_FPGA2' ]
+temp_fpgafr:
+    inherit_actions: GET_IND_COMMAND
+    help: "[n_value]\n\t[Eiger]Temperature of the left front end board fpga."
+    actions:
+        GET:
+          function: getTemperature
+          input: [ 'slsDetectorDefs::TEMPERATURE_FPGA3' ]
+temp_slowadc:
+    inherit_actions: GET_IND_COMMAND
+    help: "[n_value]\n\t[Ctb]Temperature of the slow adc"
+    actions:
+        GET:
+          function: getTemperature
+          input: [ 'slsDetectorDefs::SLOW_ADC_TEMP' ]
+
+vm_a:
+    inherit_actions: GET_IND_COMMAND
+    help: "\n\t[Ctb] Measured voltage of power supply a in mV."
+    actions:
+        GET:
+          function: getMeasuredVoltage
+          input: [ 'defs::V_POWER_A' ]
+vm_b:
+    inherit_actions: GET_IND_COMMAND
+    help: "\n\t[Ctb] Measured voltage of power supply b in mV."
+    actions:
+        GET:
+          function: getMeasuredVoltage
+          input: [ 'defs::V_POWER_B' ]
+vm_c:
+    inherit_actions: GET_IND_COMMAND
+    help: "\n\t[Ctb] Measured voltage of power supply c in mV."
+    actions:
+        GET:
+          function: getMeasuredVoltage
+          input: [ 'defs::V_POWER_C' ]
+vm_d:
+    inherit_actions: GET_IND_COMMAND
+    help: "\n\t[Ctb] Measured voltage of power supply d in mV."
+    actions:
+        GET:
+          function: getMeasuredVoltage
+          input: [ 'defs::V_POWER_D' ]
+vm_io:
+    inherit_actions: GET_IND_COMMAND
+    help: "\n\t[Ctb] Measured voltage of power supply io in mV."
+    actions:
+        GET:
+          function: getMeasuredVoltage
+          input: [ 'defs::V_POWER_IO' ]
+im_a:
+    inherit_actions: GET_IND_COMMAND
+    help: "\n\t[Ctb] Measured current of power supply a in mA."
+    actions:
+        GET:
+          function: getMeasuredCurrent
+          input: [ 'defs::I_POWER_A' ]
+im_b:
+    inherit_actions: GET_IND_COMMAND
+    help: "\n\t[Ctb] Measured current of power supply b in mA."
+    actions:
+        GET:
+          function: getMeasuredCurrent
+          input: [ 'defs::I_POWER_B' ]
+im_c:
+    inherit_actions: GET_IND_COMMAND
+    help: "\n\t[Ctb] Measured current of power supply c in mA."
+    actions:
+        GET:
+          function: getMeasuredCurrent
+          input: [ 'defs::I_POWER_C' ]
+im_d:
+    inherit_actions: GET_IND_COMMAND
+    help: "\n\t[Ctb] Measured current of power supply d in mA."
+    actions:
+        GET:
+          function: getMeasuredCurrent
+          input: [ 'defs::I_POWER_D' ]
+im_io:
+    inherit_actions: GET_IND_COMMAND
+    help: "\n\t[Ctb] Measured current of power supply io in mA."
+    actions:
+        GET:
+          function: getMeasuredCurrent
+          input: [ 'defs::I_POWER_IO' ]
+################# GET_COMMAND_HEX ############################
+serialnumber:
+    inherit_actions: GET_COMMAND
+    help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][CTB]\nSerial number of detector."
+    actions:
+        GET:
+          function: getSerialNumber
+          output: [ "OutStringHex(t)" ]
+
+################# GET_COMMAND_NOID ###########################
+nmod:
+    inherit_actions: GET_COMMAND_NOID
+    help: "\n\tNumber of modules in shared memory."
+    actions:
+        GET:
+          function: size
+settingslist:
+    inherit_actions: GET_COMMAND_NOID
+    help: "\n\tList of settings implemented for this detector."
+    actions:
+        GET:
+          function: getSettingsList
+drlist:
+    inherit_actions: GET_COMMAND_NOID
+    help: "\n\tGets the list of dynamic ranges for this detector."
+    actions:
+        GET:
+          function: getDynamicRangeList
+timinglist:
+    inherit_actions: GET_COMMAND_NOID
+    help: "\n\tGets the list of timing modes for this detector."
+    actions:
+        GET:
+          function: getTimingModeList
+readoutspeedlist:
+    inherit_actions: GET_COMMAND_NOID
+    help: "\n\tList of readout speed levels implemented for this detector."
+    actions:
+        GET:
+          function: getReadoutSpeedList
+templist:
+    inherit_actions: GET_COMMAND_NOID
+    help: "\n\tList of temperature commands implemented for this detector."
+    actions:
+        GET:
+          function: getTemperatureList
+
+
+
+################# GET_COMMAND ################################
+detectorserverversion:
+  inherit_actions: GET_COMMAND
+  help: "\n\tOn-board detector server software version"
+  actions:
+    GET:
+      function: getDetectorServerVersion
+hardwareversion:
+  inherit_actions: GET_COMMAND
+  help: "\n\t[Jungfrau][Gotthard2][Myhten3][Gotthard][Ctb][Moench] Hardware version of detector. \n\t[Eiger] Hardware version of front FPGA on detector."
+  actions:
+    GET:
+      function: getHardwareVersion
+kernelversion:
+  inherit_actions: GET_COMMAND
+  help: "\n\tGet kernel version on the detector including time and date."
+  actions:
+    GET:
+      function: getKernelVersion
+rx_version:
+  inherit_actions: GET_COMMAND
+  help: "\n\tReceiver version"
+  actions:
+    GET:
+      function: getReceiverVersion
+moduleid:
+  inherit_actions: GET_COMMAND
+  help: "\n\t[Gotthard2][Eiger][Mythen3][Jungfrau][Moench] 16 bit value (ideally unique) that is streamed out in the UDP header of the detector. Picked up from a file on the module."
+  actions:
+    GET:
+      function: getModuleId
+type:
+  inherit_actions: GET_COMMAND
+  help: "\n\tReturns detector type. Can be Eiger, Jungfrau, Gotthard, Moench, Mythen3, Gotthard2, ChipTestBoard"
+  actions:
+    GET:
+      function: getDetectorType
+
+framesl:
+  inherit_actions: GET_COMMAND
+  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of frames left in acquisition. \n\t[Gotthard2] only in continuous auto mode."
+  actions:
+    GET:
+      function: getNumberOfFramesLeft
+triggersl:
+  inherit_actions: GET_COMMAND
+  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of triggers left in acquisition. Only when external trigger used."
+  actions:
+    GET:
+      function: getNumberOfTriggersLeft
+maxadcphaseshift:
+  inherit_actions: GET_COMMAND
+  help: "\n\t[Jungfrau][Moench][CTB] Absolute maximum Phase shift of ADC clock."
+  actions:
+    GET:
+      function: getMaxADCPhaseShift
+maxdbitphaseshift:
+  inherit_actions: GET_COMMAND
+  help: "\n\t[CTB][Jungfrau] Absolute maximum Phase shift of of the clock to latch digital bits."
+  actions:
+    GET:
+      function: getMaxDBITPhaseShift
+rx_framecaught:
+    inherit_actions: GET_COMMAND
+    help: "\n\tNumber of frames caught by receiver."
+    actions:
+        GET:
+          function: getFramesCaught
+rx_missingpackets:
+    inherit_actions: GET_COMMAND
+    help: "\n\tNumber of missing packets for receiver. If negative, they are packets in excess."
+    actions:
+        GET:
+          function: getNumMissingPackets
+rx_frameindex:
+    inherit_actions: GET_COMMAND
+    help: "\n\tCurrent frame index received for receiver during acquisition."
+    actions:
+        GET:
+          function: getRxCurrentFrameIndex
+scanerrmsg:
+    inherit_actions: GET_COMMAND
+    help: "\n\tGets Scan error message if scan ended in error for non blocking acquisitions."
+    actions:
+        GET:
+          function: getScanErrorMessage
+udp_numdst:
+  inherit_actions: GET_COMMAND
+  help: "\n\t[Jungfrau][Moench][Eiger][Mythen3][Gotthard2] One can enter upto 32 (64 for Mythen3) destinations that the detector will stream images out in a round robin fashion. This is get only command. Default: 1"
+  actions:
+    GET:
+      function: getNumberofUDPDestinations
+rx_printconfig:
+    inherit_actions: GET_COMMAND
+    help: "\n\tPrints the receiver configuration."
+    actions:
+        GET:
+          function: printRxConfiguration
+rx_realudpsocksize:
+    inherit_actions: GET_COMMAND
+    help: "\n\tActual udp socket buffer size. Double the size of rx_udpsocksize due to kernel bookkeeping."
+    actions:
+        GET:
+           function: getRxRealUDPSocketBufferSize
+rx_lastclient:
+    inherit_actions: GET_COMMAND
+    help: "\n\tClient IP Address that last communicated with the receiver."
+    actions:
+        GET:
+          function: getRxLastClientIP
+burstsl:
+    inherit_actions: GET_COMMAND
+    help: "\n\t[Gotthard2] Number of bursts left in acquisition. Only in burst auto mode."
+    actions:
+        GET:
+          function: getNumberOfBurstsLeft
+rx_threads:
+    inherit_actions: GET_COMMAND
+    help: "\n\tGet kernel thread ids from the receiver in order of [parent, tcp, listener 0, processor 0, streamer 0, listener 1, processor 1, streamer 1, arping]. If no streamer yet or there is no second interface, it gives 0 in its place."
+    actions:
+        GET:
+          function: getRxThreadIds
+chipversion:
+    inherit_actions: GET_COMMAND
+    help: "\n\t[Jungfrau] Returns chip version. Can be 1.0 or 1.1"
+    actions:
+        GET:
+          function: getChipVersion
+syncclk:
+    inherit_actions: GET_COMMAND
+    help: "[n_clk in MHz]\n\t[Ctb] Sync clock in MHz."
+    actions:
+        GET:
+          function: getSYNCClock
+patfname:
+    inherit_actions: GET_COMMAND
+    help: "\n\t[Ctb][Mythen3] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default file"
+    actions:
+        GET:
+          function: getPatterFileName
+lastclient:
+    inherit_actions: GET_COMMAND
+    help: "\n\tClient IP Address that last communicated with the detector."
+    actions:
+        GET:
+          function: getLastClientIP
+framecounter:
+    inherit_actions: GET_COMMAND
+    help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of frames from start run control.\n\t[Gotthard2] only in continuous mode."
+    actions:
+        GET:
+          function: getNumberOfFramesFromStart
+
+
+################# EXECUTE_SET_COMMAND_NOID_1ARG ##############
+config:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID_1ARG
+  help: "\n\tFrees shared memory before loading configuration file. Set up once."
+  actions:
+    PUT:
+      function: loadConfig
+parameters:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID_1ARG
+  help: "\n\tSets detector measurement parameters to those contained in fname. Set up per measurement."
+  actions:
+    PUT:
+      function: loadParameters
+savepattern:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID_1ARG
+  help: "\n\t[Ctb][Mythen3] Saves pattern to file (ascii). \n\t[Ctb] Also executes pattern."
+  actions:
+    PUT:
+      function: savePattern
+
+################# EXECUTE_SET_COMMAND ########################
+start:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "\n\tStarts detector acquisition. Status changes to RUNNING or WAITING and automatically returns to idle at the end of acquisition. If the acquisition was abruptly stopped, some detectors come back to STOPPED."
+  actions:
+    PUT:
+      require_det_id: true
+      function: startDetector
+
+defaultpattern:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "\n\t[Mythen3] Loads and runs default pattern in pattern generator. It is to go back to initial settings."
+  actions:
+    PUT:
+      require_det_id: true
+      function: loadDefaultPattern
+resetfpga:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "\n\t[Jungfrau][Moench][Ctb] Reset FPGA."
+  actions:
+    PUT:
+      require_det_id: true
+      function: resetFPGA
+firmwaretest:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Firmware test, ie. reads a read fixed pattern from a register."
+  actions:
+    PUT:
+      require_det_id: true
+      function: executeFirmwareTest
+bustest:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Bus test, ie. Writes different values in a R/W register and confirms the writes to check bus.\n\tAdvanced User function!"
+  actions:
+    PUT:
+      require_det_id: true
+      function: executeBusTest
+rebootcontroller:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "\n\t[Jungfrau][Moench][Ctb][Gotthard][Mythen3][Gotthard2] Reboot controller of detector."
+  actions:
+    PUT:
+      require_det_id: true
+      function: rebootController
+patternstart:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "\n\t[Mythen3] Starts Pattern"
+  actions:
+    PUT:
+      require_det_id: true
+      function: startPattern
+stop:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "\n\tAbort detector acquisition. Status changes to IDLE or STOPPED. Goes to stop server."
+  actions:
+    PUT:
+      require_det_id: true
+      function: stopDetector
+udp_cleardst:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "\n\tClears udp destination details on the detector."
+  actions:
+    PUT:
+      require_det_id: true
+      function: clearUDPDestinations
+udp_reconfigure:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "\n\tReconfigures Detector with UDP destination. More for debugging as the configuration is done automatically when the detector has sufficient UDP details."
+  actions:
+    PUT:
+      require_det_id: true
+      function: reconfigureUDPDestination
+udp_validate:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "\n\tValidates that UDP configuration in the detector is valid. If not configured, it will throw with error message requesting missing udp information."
+  actions:
+    PUT:
+      require_det_id: true
+      function: validateUDPConfiguration
+clearroi:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "[Gotthard] Resets Region of interest in detector. All channels enabled. Default is all channels enabled."
+  actions:
+    PUT:
+      require_det_id: true
+      function: clearROI
+
+
+################# EXECUTE_SET_COMMAND_NOID #######################
+clearbusy:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "\n\tIf acquisition aborted during acquire command, use this to clear acquiring flag in shared memory before starting next acquisition"
+  actions:
+    PUT:
+      function: clearAcquiringFlag
+
+rx_start:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "\n\tStarts receiver listener for detector data packets and create a data file (if file write enabled)."
+  actions:
+    PUT:
+      function: startReceiver
+rx_stop:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "\n\tStops receiver listener for detector data packets and closes current data file (if file write enabled)."
+  actions:
+    PUT:
+      function: stopReceiver
+readout:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "\n\t[Mythen3] Starts detector readout. Status changes to TRANSMITTING and automatically returns to idle at the end of readout."
+  actions:
+    PUT:
+      function: startDetectorReadout
+rx_clearroi:
+  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  help: "Resets Region of interest in receiver. Default is all channels/pixels enabled."
+  actions:
+    PUT:
+      function: clearRxROI
+
+
+
+################# INTEGER_USER_IND_COMMAND ###################
+vchip_comp_fe:
+  inherit_actions: INTEGER_USER_IND_COMMAND
+  help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for comparator current of analogue front end."
+  actions:
+    GET:
+      function: getOnChipDAC
+      input: [ 'defs::VB_COMP_FE',  'args[0]' ]
+    PUT:
+      function: setOnChipDAC
+      input: [ 'defs::VB_COMP_FE', 'args[0]', 'args[1]' ]
+
+vchip_opa_1st:
+  inherit_actions: INTEGER_USER_IND_COMMAND
+  help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for opa current for driving the other DACs in chip."
+  actions:
+    GET:
+      function: getOnChipDAC
+      input: [ 'defs::VB_OPA_1ST',  'args[0]' ]
+    PUT:
+      function: setOnChipDAC
+      input: [ 'defs::VB_OPA_1ST', 'args[0]', 'args[1]' ]
+
+vchip_opa_fd:
+  inherit_actions: INTEGER_USER_IND_COMMAND
+  help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac current for CDS opa stage."
+  actions:
+    GET:
+      function: getOnChipDAC
+      input: [ 'defs::VB_OPA_FD',  'args[0]' ]
+    PUT:
+      function: setOnChipDAC
+      input: [ 'defs::VB_OPA_FD', 'args[0]', 'args[1]' ]
+
+vchip_comp_adc:
+  inherit_actions: INTEGER_USER_IND_COMMAND
+  help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for comparator current of ADC."
+  actions:
+    GET:
+      function: getOnChipDAC
+      input: [ 'defs::VB_COMP_ADC',  'args[0]' ]
+    PUT:
+      function: setOnChipDAC
+      input: [ 'defs::VB_COMP_ADC', 'args[0]', 'args[1]' ]
+
+
+vchip_ref_comp_fe:
+  inherit_actions: INTEGER_USER_IND_COMMAND
+  help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for reference voltage of the comparator of analogue front end."
+  actions:
+    GET:
+      function: getOnChipDAC
+      input: [ 'defs::VREF_COMP_FE',  'args[0]' ]
+    PUT:
+      function: setOnChipDAC
+      input: [ 'defs::VREF_COMP_FE', 'args[0]', 'args[1]' ]
+
+vchip_cs:
+  inherit_actions: INTEGER_USER_IND_COMMAND
+  help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for current injection into preamplifier."
+  actions:
+    GET:
+      function: getOnChipDAC
+      input: [ 'defs::VB_CS',  'args[0]' ]
+    PUT:
+      function: setOnChipDAC
+      input: [ 'defs::VB_CS', 'args[0]', 'args[1]' ]
+
+
+################# INTEGER_COMMAND_NOID #######################
+v_limit:
+  inherit_actions: INTEGER_IND_COMMAND
+  help: "[n_value]\n\t[Ctb] Soft limit for power supplies (ctb only) and DACS in mV."
+  actions:
+    GET:
+      function: getVoltage
+      input: [ 'defs::V_LIMIT' ]
+    PUT:
+      function: setVoltage
+      input: [ 'defs::V_LIMIT', 'args[0]' ]
+
+
+v_a:
+  inherit_actions: INTEGER_IND_COMMAND
+  help: "[n_value]\n\t[Ctb] Voltage supply a in mV."
+  actions:
+    GET:
+      function: getVoltage
+      input: [ 'defs::V_POWER_A' ]
+    PUT:
+      function: setVoltage
+      input: [ 'defs::V_POWER_A', 'args[0]' ]
+v_b:
+  inherit_actions: INTEGER_IND_COMMAND
+  help: "[n_value]\n\t[Ctb] Voltage supply b in mV."
+  actions:
+    GET:
+      function: getVoltage
+      input: [ 'defs::V_POWER_B' ]
+    PUT:
+      function: setVoltage
+      input: [ 'defs::V_POWER_B', 'args[0]' ]
+v_c:
+  inherit_actions: INTEGER_IND_COMMAND
+  help: "[n_value]\n\t[Ctb] Voltage supply c in mV."
+  actions:
+    GET:
+      function: getVoltage
+      input: [ 'defs::V_POWER_C' ]
+    PUT:
+      function: setVoltage
+      input: [ 'defs::V_POWER_C', 'args[0]' ]
+v_d:
+  inherit_actions: INTEGER_IND_COMMAND
+  help: "[n_value]\n\t[Ctb] Voltage supply d in mV."
+  actions:
+    GET:
+      function: getVoltage
+      input: [ 'defs::V_POWER_D' ]
+    PUT:
+      function: setVoltage
+      input: [ 'defs::V_POWER_D', 'args[0]' ]
+v_io:
+  inherit_actions: INTEGER_IND_COMMAND
+  help: "[n_value]\n\t[Ctb] Voltage supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up)."
+  actions:
+    GET:
+      function: getVoltage
+      input: [ 'defs::V_POWER_IO' ]
+    PUT:
+      function: setVoltage
+      input: [ 'defs::V_POWER_IO', 'args[0]' ]
+v_chip:
+  inherit_actions: INTEGER_IND_COMMAND
+  help: "[n_value]\n\t[Ctb] Voltage supply chip in mV. Do not use it unless you are completely sure you will not fry the board."
+  actions:
+    GET:
+      function: getVoltage
+      input: [ 'defs::V_POWER_CHIP' ]
+    PUT:
+      function: setVoltage
+      input: [ 'defs::V_POWER_CHIP', 'args[0]' ]
+
+################# INTEGER_COMMAND_NOID #######################
+fmaster:
+  inherit_actions: INTEGER_COMMAND_NOID
+  help: "[0, 1]\n\tEnable or disable receiver master file. Default is 1."
+  actions:
+    GET:
+      function: getMasterFileWrite
+    PUT:
+      function: setMasterFileWrite
+
+
+################# INTEGER_COMMAND_SET_NOID_GET_ID ############
+sync:
+  inherit_actions: INTEGER_COMMAND_SET_NOID_GET_ID
+  help: "[0, 1]\n\t[Jungfrau][Moench] Enables or disables synchronization between modules."
+  actions:
+    GET:
+      function: getSynchronization
+    PUT:
+      function: setSynchronization
+
+frames:
+  inherit_actions: INTEGER_COMMAND_SET_NOID_GET_ID
+  help: "[n_frames]\n\tNumber of frames per acquisition. In trigger mode, number of frames per trigger. \n\tCannot be set in modular level. \n\tIn scan mode, number of frames is set to number of steps.\n\t[Gotthard2] Burst mode has a maximum of 2720 frames."
+  actions:
+    GET:
+      function: getNumberOfFrames
+    PUT:
+      function: setNumberOfFrames
+      input_types: [ int64_t ]
+
+triggers:
+  inherit_actions: INTEGER_COMMAND_SET_NOID_GET_ID
+  help: "[n_triggers]\n\tNumber of triggers per aquire. Set timing mode to use triggers."
+  actions:
+    GET:
+      function: getNumberOfTriggers
+    PUT:
+      function: setNumberOfTriggers
+      input_types: [ int64_t ]
+dr:
+  inherit_actions: INTEGER_COMMAND_SET_NOID_GET_ID
+  help: "[value]\n\tDynamic Range or number of bits per pixel in detector.\n\t[Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets clkdivider to 2, else to 0.\n\t[Mythen3] Options: 8, 16, 32\n\t[Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2] 16"
+  actions:
+    GET:
+      function: getDynamicRange
+    PUT:
+      function: setDynamicRange
+
+rx_zmqhwm:
+  inherit_actions: INTEGER_COMMAND_SET_NOID_GET_ID
+  help: "[n_value]\n\tReceiver's zmq send high water mark. Default is the zmq library's default (1000). This is a high number and can be set to 2 for gui purposes. One must also set the client's receive high water mark to similar value. Final effect is sum of them. Also restarts receiver zmq streaming if enabled. Can set to -1 to set default value."
+  actions:
+    GET:
+      function: getRxZmqHwm
+    PUT:
+      function: setRxZmqHwm
+extrastoragecells:
+  inherit_actions: INTEGER_COMMAND_SET_NOID_GET_ID
+  help: "[0-15]\n\t[Jungfrau] Only for chipv1.0. Number of additional storage cells. Default is 0. For advanced users only. \n\tThe #images = #frames x #triggers x (#extrastoragecells + 1)."
+  actions:
+    GET:
+      function: getNumberOfAdditionalStorageCells
+    PUT:
+      function: setNumberOfAdditionalStorageCells
+
+bursts:
+  inherit_actions: INTEGER_COMMAND_SET_NOID_GET_ID
+  help: "[n_bursts]\n\t[Gotthard2] Number of bursts per aquire. Only in auto timing mode and burst mode. Use timing command to set timing mode and burstmode command to set burst mode."
+  actions:
+    GET:
+      function: getNumberOfBursts
+    PUT:
+      function: setNumberOfBursts
+
 ################# INTEGER_COMMAND_VEC_ID_GET #################
 
 master:
-    inherit_actions: INTEGER_COMMAND_VEC_ID_GET
-    actions:
-        GET:
-          function: getMaster
-        PUT:
-          function: setMaster
+  inherit_actions: INTEGER_COMMAND_VEC_ID_GET
+  actions:
+    GET:
+      function: getMaster
+    PUT:
+      function: setMaster
 udp_dstport:
-    inherit_actions: INTEGER_COMMAND_VEC_ID_GET
-    actions:
-        GET:
-          function: getDestinationUDPPort
-        PUT:
-          function: setDestinationUDPPort
+  inherit_actions: INTEGER_COMMAND_VEC_ID_GET
+  actions:
+    GET:
+      function: getDestinationUDPPort
+    PUT:
+      function: setDestinationUDPPort
 udp_dstport2:
-    inherit_actions: INTEGER_COMMAND_VEC_ID_GET
-    actions:
-        GET:
-          function: getDestinationUDPPort2
-        PUT:
-          function: setDestinationUDPPort2
+  inherit_actions: INTEGER_COMMAND_VEC_ID_GET
+  actions:
+    GET:
+      function: getDestinationUDPPort2
+    PUT:
+      function: setDestinationUDPPort2
 rx_tcpport:
-    inherit_actions: INTEGER_COMMAND_VEC_ID_GET
-    actions:
-        GET:
-          function: getRxPort
-        PUT:
-          function: setRxPort
+  inherit_actions: INTEGER_COMMAND_VEC_ID_GET
+  actions:
+    GET:
+      function: getRxPort
+    PUT:
+      function: setRxPort
 rx_zmqport:
-    inherit_actions: INTEGER_COMMAND_VEC_ID_GET
-    actions:
-        GET:
-          function: getRxZmqPort
-        PUT:
-          function: setRxZmqPort
+  inherit_actions: INTEGER_COMMAND_VEC_ID_GET
+  actions:
+    GET:
+      function: getRxZmqPort
+    PUT:
+      function: setRxZmqPort
 zmqport:
-    inherit_actions: INTEGER_COMMAND_VEC_ID_GET
-    actions:
-        GET:
-          function: getClientZmqPort
-        PUT:
-          function: setClientZmqPort
+  inherit_actions: INTEGER_COMMAND_VEC_ID_GET
+  actions:
+    GET:
+      function: getClientZmqPort
+    PUT:
+      function: setClientZmqPort
 
 
 ################# INTEGER_COMMAND_VEC_ID #################
 
 trimval:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getAllTrimbits
-        PUT:
-          function: setAllTrimbits
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getAllTrimbits
+    PUT:
+      function: setAllTrimbits
 
 fliprows:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getFlipRows
-        PUT:
-          function: setFlipRows
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getFlipRows
+    PUT:
+      function: setFlipRows
 row:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getRow
-        PUT:
-          function: setRow
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRow
+    PUT:
+      function: setRow
 column:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getColumn
-        PUT:
-          function: setColumn
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getColumn
+    PUT:
+      function: setColumn
 highvoltage:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getHighVoltage
-        PUT:
-          function: setHighVoltage
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getHighVoltage
+    PUT:
+      function: setHighVoltage
 powerchip:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getPowerChip
-        PUT:
-          function: setPowerChip
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getPowerChip
+    PUT:
+      function: setPowerChip
 imagetest:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getImageTestMode
-        PUT:
-          function: setImageTestMode
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getImageTestMode
+    PUT:
+      function: setImageTestMode
 parallel:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getParallelMode
-        PUT:
-          function: setParallelMode
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getParallelMode
+    PUT:
+      function: setParallelMode
 filterresistor:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getFilterResistor
-        PUT:
-          function: setFilterResistor
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getFilterResistor
+    PUT:
+      function: setFilterResistor
 dbitpipeline:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getDBITPipeline
-        PUT:
-          function: setDBITPipeline
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getDBITPipeline
+    PUT:
+      function: setDBITPipeline
 readnrows:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getReadNRows
-        PUT:
-          function: setReadNRows
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getReadNRows
+    PUT:
+      function: setReadNRows
 numinterfaces:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getNumberofUDPInterfaces
-        PUT:
-          function: setNumberofUDPInterfaces
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getNumberofUDPInterfaces
+    PUT:
+      function: setNumberofUDPInterfaces
 selinterface:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getSelectedUDPInterface
-        PUT:
-          function: selectUDPInterface
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getSelectedUDPInterface
+    PUT:
+      function: selectUDPInterface
 udp_firstdst:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getFirstUDPDestination
-        PUT:
-          function: setFirstUDPDestination
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getFirstUDPDestination
+    PUT:
+      function: setFirstUDPDestination
 tengiga:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getTenGiga
-        PUT:
-          function: setTenGiga
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTenGiga
+    PUT:
+      function: setTenGiga
 flowcontrol10g:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getTenGigaFlowControl
-        PUT:
-          function: setTenGigaFlowControl
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTenGigaFlowControl
+    PUT:
+      function: setTenGigaFlowControl
 txdelay_frame:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getTransmissionDelayFrame
-        PUT:
-          function: setTransmissionDelayFrame
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTransmissionDelayFrame
+    PUT:
+      function: setTransmissionDelayFrame
 txdelay_left:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getTransmissionDelayLeft
-        PUT:
-          function: setTransmissionDelayLeft
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTransmissionDelayLeft
+    PUT:
+      function: setTransmissionDelayLeft
 txdelay_right:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getTransmissionDelayRight
-        PUT:
-          function: setTransmissionDelayRight
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTransmissionDelayRight
+    PUT:
+      function: setTransmissionDelayRight
 rx_fifodepth:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getRxFifoDepth
-        PUT:
-          function: setRxFifoDepth
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxFifoDepth
+    PUT:
+      function: setRxFifoDepth
 rx_silent:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getRxSilentMode
-        PUT:
-          function: setRxSilentMode
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxSilentMode
+    PUT:
+      function: setRxSilentMode
 rx_padding:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getPartialFramesPadding
-        PUT:
-          function: setPartialFramesPadding
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getPartialFramesPadding
+    PUT:
+      function: setPartialFramesPadding
 rx_udpsocksize:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getRxUDPSocketBufferSize
-        PUT:
-          function: setRxUDPSocketBufferSize
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxUDPSocketBufferSize
+    PUT:
+      function: setRxUDPSocketBufferSize
 rx_lock:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getRxLock
-        PUT:
-          function: setRxLock
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxLock
+    PUT:
+      function: setRxLock
 rx_arping:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getRxArping
-        PUT:
-          function: setRxArping
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxArping
+    PUT:
+      function: setRxArping
 fwrite:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getFileWrite
-        PUT:
-          function: setFileWrite
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getFileWrite
+    PUT:
+      function: setFileWrite
 foverwrite:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getFileOverWrite
-        PUT:
-          function: setFileOverWrite
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getFileOverWrite
+    PUT:
+      function: setFileOverWrite
 rx_framesperfile:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getFramesPerFile
-        PUT:
-          function: setFramesPerFile
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getFramesPerFile
+    PUT:
+      function: setFramesPerFile
 rx_zmqstream:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getRxZmqDataStream
-        PUT:
-          function: setRxZmqDataStream
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxZmqDataStream
+    PUT:
+      function: setRxZmqDataStream
 rx_zmqfreq:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getRxZmqFrequency
-        PUT:
-          function: setRxZmqFrequency
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxZmqFrequency
+    PUT:
+      function: setRxZmqFrequency
 rx_zmqstartfnum:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getRxZmqStartingFrame
-        PUT:
-          function: setRxZmqStartingFrame
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxZmqStartingFrame
+    PUT:
+      function: setRxZmqStartingFrame
 overflow:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getOverFlowMode
-        PUT:
-          function: setOverFlowMode
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getOverFlowMode
+    PUT:
+      function: setOverFlowMode
 interruptsubframe:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getInterruptSubframe
-        PUT:
-          function: setInterruptSubframe
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getInterruptSubframe
+    PUT:
+      function: setInterruptSubframe
 activate:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getActive
-        PUT:
-          function: setActive
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getActive
+    PUT:
+      function: setActive
 partialreset:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getPartialReset
-        PUT:
-          function: setPartialReset
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getPartialReset
+    PUT:
+      function: setPartialReset
 top:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getTop
-        PUT:
-          function: setTop
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTop
+    PUT:
+      function: setTop
 temp_threshold:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getThresholdTemperature
-        PUT:
-          function: setThresholdTemperature
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getThresholdTemperature
+    PUT:
+      function: setThresholdTemperature
 temp_control:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getTemperatureControl
-        PUT:
-          function: setTemperatureControl
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTemperatureControl
+    PUT:
+      function: setTemperatureControl
 autocompdisable:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getAutoComparatorDisable
-        PUT:
-          function: setAutoComparatorDisable
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getAutoComparatorDisable
+    PUT:
+      function: setAutoComparatorDisable
 storagecell_start:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getStorageCellStart
-        PUT:
-            function: setStorageCellStart
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getStorageCellStart
+    PUT:
+      function: setStorageCellStart
 filtercells:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getNumberOfFilterCells
-        PUT:
-          function: setNumberOfFilterCells
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getNumberOfFilterCells
+    PUT:
+      function: setNumberOfFilterCells
 veto:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getVeto
-        PUT:
-          function: setVeto
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getVeto
+    PUT:
+      function: setVeto
 gates:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getNumberOfGates
-        PUT:
-          function: setNumberOfGates
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getNumberOfGates
+    PUT:
+      function: setNumberOfGates
 interpolation:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getInterpolation
-        PUT:
-          function: setInterpolation
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getInterpolation
+    PUT:
+      function: setInterpolation
 pumpprobe:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getPumpProbe
-        PUT:
-          function: setPumpProbe
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getPumpProbe
+    PUT:
+      function: setPumpProbe
 apulse:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getAnalogPulsing
-        PUT:
-          function: setAnalogPulsing
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getAnalogPulsing
+    PUT:
+      function: setAnalogPulsing
 dpulse:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getDigitalPulsing
-        PUT:
-          function: setDigitalPulsing
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getDigitalPulsing
+    PUT:
+      function: setDigitalPulsing
 asamples:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getNumberOfAnalogSamples
-        PUT:
-          function: setNumberOfAnalogSamples
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getNumberOfAnalogSamples
+    PUT:
+      function: setNumberOfAnalogSamples
 adcclk:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getADCClock
-        PUT:
-          function: setADCClock
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getADCClock
+    PUT:
+      function: setADCClock
 runclk:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getRUNClock
-        PUT:
-          function: setRUNClock
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRUNClock
+    PUT:
+      function: setRUNClock
 dsamples:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getNumberOfDigitalSamples
-        PUT:
-          function: setNumberOfDigitalSamples
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getNumberOfDigitalSamples
+    PUT:
+      function: setNumberOfDigitalSamples
 tsamples:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getNumberOfTransceiverSamples
-        PUT:
-          function: setNumberOfTransceiverSamples
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getNumberOfTransceiverSamples
+    PUT:
+      function: setNumberOfTransceiverSamples
 dbitclk:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getDBITClock
-        PUT:
-          function: setDBITClock
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getDBITClock
+    PUT:
+      function: setDBITClock
 extsampling:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getExternalSampling
-        PUT:
-          function: setExternalSampling
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getExternalSampling
+    PUT:
+      function: setExternalSampling
 extsamplingsrc:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getExternalSamplingSource
-        PUT:
-          function: setExternalSamplingSource
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getExternalSamplingSource
+    PUT:
+      function: setExternalSamplingSource
 rx_dbitoffset:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getRxDbitOffset
-        PUT:
-          function: setRxDbitOffset
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxDbitOffset
+    PUT:
+      function: setRxDbitOffset
 led:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getLEDEnable
-        PUT:
-          function: setLEDEnable
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getLEDEnable
+    PUT:
+      function: setLEDEnable
 adcpipeline:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getADCPipeline
-        PUT:
-          function: setADCPipeline
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getADCPipeline
+    PUT:
+      function: setADCPipeline
 updatemode:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getUpdateMode
-        PUT:
-          function: setUpdateMode
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getUpdateMode
+    PUT:
+      function: setUpdateMode
 port:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getControlPort
-        PUT:
-          function: setControlPort
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getControlPort
+    PUT:
+      function: setControlPort
 stopport:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getStopPort
-        PUT:
-          function: setStopPort
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getStopPort
+    PUT:
+      function: setStopPort
 lock:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-        GET:
-          function: getDetectorLock
-        PUT:
-          function: setDetectorLock
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getDetectorLock
+    PUT:
+      function: setDetectorLock
 #
 settings:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getSettings
-      PUT:
-        function: setSettings
-        input_types: [ slsDetectorDefs::detectorSettings ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getSettings
+    PUT:
+      function: setSettings
+      input_types: [ slsDetectorDefs::detectorSettings ]
 timing:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getTimingMode
-      PUT:
-        function: setTimingMode
-        input_types: [ slsDetectorDefs::timingMode ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTimingMode
+    PUT:
+      function: setTimingMode
+      input_types: [ slsDetectorDefs::timingMode ]
 nextframenumber:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getNextFrameNumber
-      PUT:
-        function: setNextFrameNumber
-        input_types: [ uint64_t ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getNextFrameNumber
+    PUT:
+      function: setNextFrameNumber
+      input_types: [ uint64_t ]
 findex:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getAcquisitionIndex
-      PUT:
-        function: setAcquisitionIndex
-        input_types: [ uint64_t ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getAcquisitionIndex
+    PUT:
+      function: setAcquisitionIndex
+      input_types: [ uint64_t ]
 
 rx_discardpolicy:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getRxFrameDiscardPolicy
-      PUT:
-        function: setRxFrameDiscardPolicy
-        input_types: [ slsDetectorDefs::frameDiscardPolicy ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxFrameDiscardPolicy
+    PUT:
+      function: setRxFrameDiscardPolicy
+      input_types: [ slsDetectorDefs::frameDiscardPolicy ]
 fformat:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getFileFormat
-      PUT:
-        function: setFileFormat
-        input_types: [ slsDetectorDefs::fileFormat ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getFileFormat
+    PUT:
+      function: setFileFormat
+      input_types: [ slsDetectorDefs::fileFormat ]
 cdsgain:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getCDSGain
-      PUT:
-        function: setCDSGain
-        input_types: [ bool ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getCDSGain
+    PUT:
+      function: setCDSGain
+      input_types: [ bool ]
 gainmode:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getGainMode
-      PUT:
-        function: setGainMode
-        input_types: [ slsDetectorDefs::gainMode ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getGainMode
+    PUT:
+      function: setGainMode
+      input_types: [ slsDetectorDefs::gainMode ]
 timingsource:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getTimingSource
-      PUT:
-        function: setTimingSource
-        input_types: [ slsDetectorDefs::timingSourceType ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTimingSource
+    PUT:
+      function: setTimingSource
+      input_types: [ slsDetectorDefs::timingSourceType ]
 romode:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getReadoutMode
-      PUT:
-        function: setReadoutMode
-        input_types: [ slsDetectorDefs::readoutMode ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getReadoutMode
+    PUT:
+      function: setReadoutMode
+      input_types: [ slsDetectorDefs::readoutMode ]
 polarity:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getPolarity
-      PUT:
-        function: setPolarity
-        input_types: [ defs::polarity ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getPolarity
+    PUT:
+      function: setPolarity
+      input_types: [ defs::polarity ]
 
 udp_srcmac:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getSourceUDPMAC
-      PUT:
-        function: setSourceUDPMAC
-        input_types: [ MacAddr ]
-        input: [ 'MacAddr(args[0])' ]
-        cast_input: [ false ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getSourceUDPMAC
+    PUT:
+      function: setSourceUDPMAC
+      input_types: [ MacAddr ]
+      input: [ 'MacAddr(args[0])' ]
+      cast_input: [ false ]
 udp_srcmac2:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getSourceUDPMAC2
-      PUT:
-        function: setSourceUDPMAC2
-        input_types: [ MacAddr ]
-        input: [ 'MacAddr(args[0])' ]
-        cast_input: [ false ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getSourceUDPMAC2
+    PUT:
+      function: setSourceUDPMAC2
+      input_types: [ MacAddr ]
+      input: [ 'MacAddr(args[0])' ]
+      cast_input: [ false ]
 udp_dstmac:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getDestinationUDPMAC
-      PUT:
-        function: setDestinationUDPMAC
-        input_types: [ MacAddr ]
-        input: [ 'MacAddr(args[0])' ]
-        cast_input: [ false ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getDestinationUDPMAC
+    PUT:
+      function: setDestinationUDPMAC
+      input_types: [ MacAddr ]
+      input: [ 'MacAddr(args[0])' ]
+      cast_input: [ false ]
 udp_dstmac2:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getDestinationUDPMAC2
-      PUT:
-        function: setDestinationUDPMAC2
-        input_types: [ MacAddr ]
-        input: [ 'MacAddr(args[0])' ]
-        cast_input: [ false ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getDestinationUDPMAC2
+    PUT:
+      function: setDestinationUDPMAC2
+      input_types: [ MacAddr ]
+      input: [ 'MacAddr(args[0])' ]
+      cast_input: [ false ]
 rx_zmqip:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getRxZmqIP
-      PUT:
-        function: setRxZmqIP
-        input_types: [ IpAddr ]
-        input: [ 'IpAddr(args[0])' ]
-        cast_input: [ false ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxZmqIP
+    PUT:
+      function: setRxZmqIP
+      input_types: [ IpAddr ]
+      input: [ 'IpAddr(args[0])' ]
+      cast_input: [ false ]
 zmqip:
-    inherit_actions: INTEGER_COMMAND_VEC_ID
-    actions:
-      GET:
-        function: getClientZmqIp
-      PUT:
-        function: setClientZmqIp
-        input_types: [ IpAddr ]
-        input: [ 'IpAddr(args[0])' ]
-        cast_input: [ false ]
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getClientZmqIp
+    PUT:
+      function: setClientZmqIp
+      input_types: [ IpAddr ]
+      input: [ 'IpAddr(args[0])' ]
+      cast_input: [ false ]
 
 
 ################# INTEGER_COMMAND_HEX #################
@@ -791,26 +1679,26 @@ adcenable:
     PUT:
       function: setADCEnableMask
 adcenable10g:
-    inherit_actions: INTEGER_COMMAND_HEX
-    actions:
-      GET:
-        function: getTenGigaADCEnableMask
-      PUT:
-        function: setTenGigaADCEnableMask
+  inherit_actions: INTEGER_COMMAND_HEX
+  actions:
+    GET:
+      function: getTenGigaADCEnableMask
+    PUT:
+      function: setTenGigaADCEnableMask
 transceiverenable:
-    inherit_actions: INTEGER_COMMAND_HEX
-    actions:
-      GET:
-        function: getTransceiverEnableMask
-      PUT:
-        function: setTransceiverEnableMask
+  inherit_actions: INTEGER_COMMAND_HEX
+  actions:
+    GET:
+      function: getTransceiverEnableMask
+    PUT:
+      function: setTransceiverEnableMask
 adcinvert:
-    inherit_actions: INTEGER_COMMAND_HEX
-    actions:
-      GET:
-        function: getADCInvert
-      PUT:
-        function: setADCInvert
+  inherit_actions: INTEGER_COMMAND_HEX
+  actions:
+    GET:
+      function: getADCInvert
+    PUT:
+      function: setADCInvert
 
 
 ################# INTEGER_COMMAND_HEX_WIDTH16 #################
@@ -955,23 +1843,23 @@ fname:
 
 ################# SPECIAL COMMANDS #################
 # commands that are not using any template
-frames:
-  infer_action: true # infer action based on actions' argc (they must be unique if true)
-  help: "Get or set the number of frames to be collected."
-  actions:
-    GET:
-      require_det_id: true
-      argc: 0
-      function: getNumberOfFrames
-      output: [ OutString(t) ]
-
-    PUT:
-      argc: 1
-      input: [ 'args[0]' ]
-      input_types: [ int ]
-      cast_input: [ true ]
-      function: setNumberOfFrames
-      output: [ 'args[0]' ]
+#frames:
+#  infer_action: true # infer action based on actions' argc (they must be unique if true)
+#  help: "Get or set the number of frames to be collected."
+#  actions:
+#    GET:
+#      require_det_id: true
+#      argc: 0
+#      function: getNumberOfFrames
+#      output: [ OutString(t) ]
+#
+#    PUT:
+#      argc: 1
+#      input: [ 'args[0]' ]
+#      input_types: [ int ]
+#      cast_input: [ true ]
+#      function: setNumberOfFrames
+#      output: [ 'args[0]' ]
 
 # todo use template for this command
 exptime:

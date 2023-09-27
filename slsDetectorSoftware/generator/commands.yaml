@@ -302,8 +302,139 @@ CTB_VALUES:
            GETFCNNAME: ''
            GETFCN: ''
 
+#CTB_SINGLE_DACNAME:
+#  template: true
+#  infer_action: false
+#  actions:
+#    GET:
+#      detectors:
+#        CHIPTESTBOARD:
+#          check_require_id: true
+#          argc: 1
+#          function: ''
+#          output: [ 'args[0]', 't' ]
+#    PUT:
+#      detectors:
+#        CHIPTESTBOARD:
+#          check_require_id: true
+#          argc: 2
+#          output: [ ToString(args) ]
+
+##define CTB_SINGLE_DACNAME(CMDNAME, GETFCN, SETFCN, STARTINDEX, HLPSTR)        \
+#    std::string CMDNAME(const int action) {                                    \
+#        std::ostringstream os;                                                 \
+#        os << cmd << ' ';                                                      \
+#        if (action == slsDetectorDefs::HELP_ACTION) {                          \
+#            os << HLPSTR << '\n';                                              \
+#            return os.str();                                                   \
+#        }                                                                      \
+#        if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {          \
+#            throw RuntimeError(cmd + " only allowed for CTB.");                \
+#        }                                                                      \
+#        if (det_id != -1) {                                                    \
+#            throw RuntimeError("Cannot configure " + cmd +                     \
+#                               " at module level");                            \
+#        }                                                                      \
+#        defs::dacIndex index = defs::DAC_0;                                    \
+#        if (args.size() > 0) {                                                 \
+#            index = static_cast<defs::dacIndex>(StringTo<int>(args[0]) +       \
+#                                                STARTINDEX);                   \
+#        }                                                                      \
+#        if (action == slsDetectorDefs::GET_ACTION) {                           \
+#            if (args.size() != 1) {                                            \
+#                WrongNumberOfParameters(1);                                    \
+#            }                                                                  \
+#            auto t = det->GETFCN(index);                                       \
+#            os << args[0] << ' ' << t << '\n';                                 \
+#        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+#            if (args.size() != 2) {                                            \
+#                WrongNumberOfParameters(2);                                    \
+#            }                                                                  \
+#            det->SETFCN(index, args[1]);                                       \
+#            os << ToString(args) << '\n';                                      \
+#        } else {                                                               \
+#            throw RuntimeError("Unknown action");                              \
+#        }                                                                      \
+#        return os.str();                                                       \
+#    }
 
 ################# COMMANDS ###################################
+################# CTB_SINGLE_DACNAME ###############################
+#dacname:
+#  infer_action: false
+#  help: "[0-17][name] \n\t\t[ChipTestBoard] Set the dac at the given position to the given name."
+#  actions:
+#    GET:
+#      detectors:
+#        CHIPTESTBOARD:
+#          check_require_id: true
+#          argc: 1
+#          function: 'getDacName'
+#          input: ["static_cast<defs::dacIndex>(StringTo<int>(args[0]) + defs::DAC_0)"]
+#          output: [ 'args[0]', 't' ]
+#    PUT:
+#      detectors:
+#        CHIPTESTBOARD:
+#          check_require_id: true
+#          function: 'setDacName'
+#          input: [ "static_cast<defs::dacIndex>(StringTo<int>(args[0]) + defs::DAC_0)", "args[1]" ]
+#          argc: 2
+#          output: [ ToString(args) ]
+#
+#voltagename:
+#    infer_action: false
+#    help: "[0-4][name] \n\t\t[ChipTestBoard] Set the voltage at the given position to the given name."
+#    actions:
+#      GET:
+#        detectors:
+#          CHIPTESTBOARD:
+#            check_require_id: true
+#            argc: 1
+#            function: 'getVoltageName'
+#            input: ["static_cast<defs::voltageIndex>(StringTo<int>(args[0]) + defs::V_POWER_A)"]
+#            output: [ 'args[0]', 't' ]
+#      PUT:
+#          detectors:
+#              CHIPTESTBOARD:
+#                check_require_id: true
+#                function: 'setVoltageName'
+#                input: [ "static_cast<defs::voltageIndex>(StringTo<int>(args[0]) + defs::V_POWER_A)", "args[1]" ]
+#                argc: 2
+#                output: [ ToString(args) ]
+#slowadcname:
+#    infer_action: false
+#    help: "[0-7][name] \n\t\t[ChipTestBoard] Set the slowadc at the given position to the given name."
+#    actions:
+#      GET:
+#        detectors:
+#          CHIPTESTBOARD:
+#            check_require_id: true
+#            argc: 1
+#            function: 'getSlowADCName'
+#            input: ["static_cast<defs::slowadcIndex>(StringTo<int>(args[0]) + defs::SLOW_ADC0)"]
+#            output: [ 'args[0]', 't' ]
+#      PUT:
+#          detectors:
+#              CHIPTESTBOARD:
+#                check_require_id: true
+#                function: 'setSlowADCName'
+#                input: [ "static_cast<defs::slowadcIndex>(StringTo<int>(args[0]) + defs::SLOW_ADC0)", "args[1]" ]
+#                argc: 2
+#                output: [ ToString(args) ]
+#
+
+
+#    CTB_SINGLE_DACNAME(dacname, getDacName, setDacName, defs::DAC_0,
+#                       "\n\t[0-17][name] \n\t\t[ChipTestBoard] Set "
+#                       "the dac at the given position to the given name.");
+#    CTB_SINGLE_DACNAME(voltagename, getVoltageName, setVoltageName,
+#                       defs::V_POWER_A,
+#                       "[0-4][name] \n\t\t[ChipTestBoard] Set "
+#                       "the voltage at the given position to the given name.");
+#    CTB_SINGLE_DACNAME(slowadcname, getSlowADCName, setSlowADCName,
+#                       defs::SLOW_ADC0,
+#                       "[0-7][name] \n\t\t[ChipTestBoard] Set "
+#                       "the slowadc at the given position to the given name.");
 
 ################# CTB_VALUES ################################
 voltagevalues:
@@ -326,6 +457,69 @@ slowadcvalues:
             GETFCN: getSlowADC
 
 
+################# CTB_NAMED_LIST ############################
+#adclist:
+#    help: "[adcname1 adcname2 .. adcname32] \n\t\t[ChipTestBoard] Set the list of adc names for this board."
+#    actions:
+#        PUT:
+#          detectors:
+#            CHIPTESTBOARD:
+#              args:
+#                - check_det_id: true
+#                  argc: 0
+#                  output: [ ToString(t) ]
+#                  function: setAdcNames
+#        GET:
+#          detectors:
+#            CHIPTESTBOARD:
+#              args:
+#                - function: getAdcNames
+#                  check_det_id: true
+#                  argc: 1
+#                  output: [ ToString(args) ]
+#                  input: [ 'args' ]
+#                  cast_input: [ false ]
+
+#signallist:
+#    inherit_actions: CTB_NAMED_LIST
+#    help: "[signalname1 signalname2 .. signalname63] \n\t\t[ChipTestBoard] Set the list of signal names for this board."
+#    actions:
+#        PUT:
+#          function: setSignalNames
+#        GET:
+#          function: getSignalNames
+#voltagelist:
+#    inherit_actions: CTB_NAMED_LIST
+#    help: "[voltagename1 voltagename2 .. voltagename4] \n\t\t[ChipTestBoard] Set the list of voltage names for this board."
+#    actions:
+#        PUT:
+#          function: setVoltageNames
+#        GET:
+#          function: getVoltageNames
+#slowadclist:
+#    inherit_actions: CTB_NAMED_LIST
+#    help: "[slowadcname1 slowadcname2 .. slowadcname7] \n\t\t[ChipTestBoard] Set the list of slowadc names for this board."
+#    actions:
+#        PUT:
+#          function: setSlowADCNames
+#        GET:
+#          function: getSlowADCNames
+######## daclist
+#daclist:
+#    help: "[dacname1 dacname2 .. dacname32] \n\t\t[ChipTestBoard] Set the list of dac names for this board."
+#    actions:
+#        GET:
+#          check_det_id: true
+#          function: getDacNames
+#          output: [ ToString(t) ]
+#        PUT:
+#          #todo write the specific exception error: This detector already has fixed dac names. Cannot change them.
+#          detectors:
+#            CHIPTESTBOARD:
+#              check_det_id: true
+#              function: setDacNames
+#              output: [ ToString(args) ]
+#              input: [ 'args' ]
 
 
 ################# GET_IND_COMMAND ############################
@@ -470,6 +664,79 @@ im_io:
         GET:
           function: getMeasuredCurrent
           input: [ 'defs::I_POWER_IO' ]
+# GET_IND_COMMAND(
+#        temp_adc, getTemperature, slsDetectorDefs::TEMPERATURE_ADC, " °C",
+#        "[n_value]\n\t[Jungfrau][Moench][Gotthard] ADC Temperature");
+#
+#    GET_IND_COMMAND(temp_fpga, getTemperature,
+#                    slsDetectorDefs::TEMPERATURE_FPGA, " °C",
+#                    "[n_value]\n\t[Eiger][Jungfrau][Moench][Gotthard][Mythen3]["
+#                    "Gotthard2] FPGA Temperature");
+#
+#    GET_IND_COMMAND(temp_fpgaext, getTemperature,
+#                    slsDetectorDefs::TEMPERATURE_FPGAEXT, " °C",
+#                    "[n_value]\n\t[Eiger]Temperature close to the FPGA");
+#
+#    GET_IND_COMMAND(temp_10ge, getTemperature,
+#                    slsDetectorDefs::TEMPERATURE_10GE, " °C",
+#                    "[n_value]\n\t[Eiger]Temperature close to the 10GbE");
+#
+#    GET_IND_COMMAND(
+#        temp_dcdc, getTemperature, slsDetectorDefs::TEMPERATURE_DCDC, " °C",
+#        "[n_value]\n\t[Eiger]Temperature close to the dc dc converter");
+#
+#    GET_IND_COMMAND(
+#        temp_sodl, getTemperature, slsDetectorDefs::TEMPERATURE_SODL, " °C",
+#        "[n_value]\n\t[Eiger]Temperature close to the left so-dimm memory");
+#
+#    GET_IND_COMMAND(temp_sodr, getTemperature,
+#                    slsDetectorDefs::TEMPERATURE_SODR, " °C",
+#                    "[n_value]\n\t[Eiger]Temperature close to the right "
+#                    "so-dimm memory");
+#
+#    GET_IND_COMMAND(temp_fpgafl, getTemperature,
+#                    slsDetectorDefs::TEMPERATURE_FPGA2, " °C",
+#                    "[n_value]\n\t[Eiger]Temperature of the left front end "
+#                    "board fpga.");
+#
+#    GET_IND_COMMAND(temp_fpgafr, getTemperature,
+#                    slsDetectorDefs::TEMPERATURE_FPGA3, " °C",
+#                    "[n_value]\n\t[Eiger]Temperature of the left front end "
+#                    "board fpga.");
+#
+#    GET_IND_COMMAND(temp_slowadc, getTemperature,
+#                    slsDetectorDefs::SLOW_ADC_TEMP, " °C",
+#                    "[n_value]\n\t[Ctb]Temperature of the slow adc");
+#  GET_IND_COMMAND(vm_a, getMeasuredVoltage, defs::V_POWER_A, "",
+#  "\n\t[Ctb] Measured voltage of power supply a in mV.");
+#
+#  GET_IND_COMMAND(vm_b, getMeasuredVoltage, defs::V_POWER_B, "",
+#  "\n\t[Ctb] Measured voltage of power supply b in mV.");
+#
+#  GET_IND_COMMAND(vm_c, getMeasuredVoltage, defs::V_POWER_C, "",
+#  "\n\t[Ctb] Measured voltage of power supply c in mV.");
+#
+#  GET_IND_COMMAND(vm_d, getMeasuredVoltage, defs::V_POWER_D, "",
+#  "\n\t[Ctb] Measured voltage of power supply d in mV.");
+#
+#  GET_IND_COMMAND(vm_io, getMeasuredVoltage, defs::V_POWER_IO, "",
+#  "\n\t[Ctb] Measured voltage of power supply io in mV.");
+#
+#  GET_IND_COMMAND(im_a, getMeasuredCurrent, defs::I_POWER_A, "",
+#  "\n\t[Ctb] Measured current of power supply a in mA.");
+#
+#  GET_IND_COMMAND(im_b, getMeasuredCurrent, defs::I_POWER_B, "",
+#  "\n\t[Ctb] Measured current of power supply b in mA.");
+#
+#  GET_IND_COMMAND(im_c, getMeasuredCurrent, defs::I_POWER_C, "",
+#  "\n\t[Ctb] Measured current of power supply c in mA.");
+#
+#  GET_IND_COMMAND(im_d, getMeasuredCurrent, defs::I_POWER_D, "",
+#  "\n\t[Ctb] Measured current of power supply d in mA.");
+#
+#  GET_IND_COMMAND(im_io, getMeasuredCurrent, defs::I_POWER_IO, "",
+#  "\n\t[Ctb] Measured current of power supply io in mA.");
+
 ################# GET_COMMAND_HEX ############################
 serialnumber:
     inherit_actions: GET_COMMAND

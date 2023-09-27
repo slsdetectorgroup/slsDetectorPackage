@@ -1,0 +1,72 @@
+basic:
+  infer_action: false
+  help: "xx11"
+  actions:
+    GET:
+      function: 'func1'
+      output: [ OutString(t) ]
+      args:
+        - argc: 0
+        - argc : 1
+          output: [ testytest ]
+      detectors:
+        MYTHEN3:
+          function: 'do_mythen3'
+        CHIPTESTBOARD:
+          args:
+            - argc: 55
+              output: [ ctbOutput ]
+    PUT:
+      detectors:
+        EIGER:
+          function: 'do_eiger'
+          argc: 99
+          output: [ eigerOutput ]
+
+
+# classes of tests:
+# classes of template tests: has args or has detectors => 4 cases noted (0,0) ... (1,1)
+# classes of childs: has args or has detectors => 4 cases noted (0,0) ... (1,1)
+# => 16 cases
+# example: case_0111: template (0,1) and child (1,1)
+#################### exhaustive testing over chosen classes of tests
+
+template_01:
+  infer_action: true
+  help: "vv12"
+  template: true
+
+  actions:
+    GET:
+      detectors:
+        MYTHEN3:
+          function: 'do_mythen3'
+          argc: 99
+        CHIPTESTBOARD:
+          function: 'do_ctb'
+          argc: 98
+
+case_0100:
+  inherit_actions: template_01
+  help: "0100"
+
+case_0101:
+  inherit_actions: template_01
+  help: "0100"
+  actions:
+      GET:
+        detectors:
+            MYTHEN3:
+              function: 'do_mythen23'
+              argc: 99
+
+
+
+
+
+
+
+
+
+
+

@@ -108,7 +108,7 @@ if(SLS_USE_TEXTCLIENT)
     endforeach()
     install(TARGETS ${bin_names} DESTINATION bin)
 
-    # python generated det* commands
+    # python generated detp, detg, deta, deth commands
     set(det_bin_names "detp" 
             "detg" 
             "deta" 

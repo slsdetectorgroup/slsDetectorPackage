@@ -7,10 +7,10 @@ import yaml
 from cpp_codegen.codegen import codegen, if_block, for_block, function, else_block
 
 parser = argparse.ArgumentParser(
-    prog='cpp command code generator',
-    description='generate cpp code for commands using the commands.yaml file',
+    description='generate cpp code for commands from the extended_commands.yaml file',
 )
-parser.add_argument('-f', '--format', action='store_true', default=False, dest='format', )
+parser.add_argument('-f', '--format', action='store_true', default=False, dest='format', help='format header and cpp file using clang-format')
+cli_args = parser.parse_args()
 
 GEN_PATH = Path(__file__).parent
 COMMANDS_PATH = GEN_PATH / 'extended_commands.yaml'
@@ -139,7 +139,7 @@ print('[X] .cpp code generated')
 codegen.write_header(GEN_PATH / 'Caller.in.h', GEN_PATH.parent / 'src' / 'Caller.h', list(commands_config.keys()))
 print('[X] header code generated')
 
-if parser.parse_args().format:
+if cli_args.format:
     os.system(f'clang-format -i  --style="{{Standard: C++11}}" {GEN_PATH.parent.absolute() / "src" / "Caller.cpp"}')
     os.system(f'clang-format -i  --style="{{Standard: C++11}}" {GEN_PATH.parent.absolute() / "src" / "Caller.h"}')
     print('[X] code formatted')

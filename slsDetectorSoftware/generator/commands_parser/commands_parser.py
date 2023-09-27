@@ -1,16 +1,25 @@
 import copy
-from pathlib import Path
-
+import logging
 import yaml
+from pathlib import Path
 
 
 class CommandParser:
-    def __init__(self, commands_file: Path):
+    def __init__(
+            self,
+            commands_file: Path = Path(__file__).parent.parent / 'commands.yaml',
+            output_file: Path = Path(__file__).parent.parent / 'extended_commands.yaml'
+    ):
+
+        self.output_file = output_file
         self.commands_file = commands_file
         self.fp = self.commands_file.open('r')
         self.simple_commands = yaml.unsafe_load(self.fp)
         self.extended_commands = {}
         self.argc_set = set()
+        self.logger = logging.getLogger('command_parser')
+        FORMAT = '[%(levelname)s] %(message)s'
+        logging.basicConfig(format=FORMAT, level=logging.INFO)
 
         self.propagate_config = {
             'require_det_id': False,
@@ -29,7 +38,6 @@ class CommandParser:
         }
 
     def _verify_argument(self, arg, infer_action):
-
         if arg['function'] == '':
             raise ValueError(f'Argument {arg} does not have a function')
         if len(arg['input_types']) != len(arg['input']):
@@ -56,6 +64,7 @@ class CommandParser:
         # todo verify child commands (those that inherit)
         # todo verify that there is no wrongly typed parameters
         # todo verify that the same number of input_types and input are given
+        # todo verify that each argument has argc (error can happen when inheriting)
         for command_name, command in self.simple_commands.items():
             if 'inherit_actions' in command or 'template' in command and command['template']:
                 continue
@@ -80,7 +89,8 @@ class CommandParser:
                     for arg in action_params['args']:
                         arg = {**action_args, **arg}
                         self._verify_argument(arg, command['infer_action'])
-        print('[X] Commands file is valid ✅️')
+        self.logger.info('Commands file is valid ✅️')
+        return True
 
     def parse_inherited(self, parent, command, simple_parent):
         """
@@ -142,30 +152,89 @@ class CommandParser:
             # parse the current command and merge it with the parent command
             config = self.parse_inherited(parent, command, self.simple_commands[command['inherit_actions']])
             return config
+        if 'actions' not in command:
+            return config
         for action, action_params in command['actions'].items():
             config['actions'][action] = {}
             config_action = config['actions'][action]
             # the context in the current command and the current action
             action_context = {**self.propagate_config, **action_params}
             if 'args' not in action_params:
-                action_params['args'] = []
-            # parse the action with the action context
-            config_action['args'] = self.parse_action(action_context, action_params['args'])
+                # parse the action with the action context
+                if action_params.keys() != {'detectors'}:
+                    config_action['args'] = self.parse_action(action_context, [])
+            else:
+                config_action['args'] = self.parse_action(action_context, action_params['args'])
+
             # check if the action has detectors
             if 'detectors' in action_params:
+                config_action['detectors'] = {}
                 for detector_name, detector_params in action_params['detectors'].items():
                     # get the context for the detector and merge it with the action context
                     detector_context = {**action_context, **detector_params}
-                    # print(1, detector_name, action_context)
 
+                    # if the detector does not have args, then use the action args
+                    # otherwise, use the detector args and override the action args
+                    tmp_args = []
                     if 'args' not in detector_params:
-                        detector_params['args'] = []
-                    config_action['detectors'] = {}
+                        if 'args' in config_action:
+                            tmp_args = config_action['args']
+                    else:
+                        tmp_args = detector_params['args']
+                    detector_params['args'] = tmp_args
+
                     # parse the action with the detector context
                     config_action['detectors'][detector_name] = self.parse_action(detector_context,
-                                                                                  config_action['args'],
+                                                                                  tmp_args,
                                                                                   detector_params)
         return config
+
+    def parse_action(self, action_context, args, priority_context={}):
+        """
+        parse an action
+        :param action_context: context of the action
+        :param args: arguments to be used in the action
+        :param priority_context: context that should override the arguments params
+        :return: parsed action
+        """
+
+        def add_cast_input(argument):
+            if not argument['cast_input']:
+                # if the cast_input is empty, then set it to False
+                argument['cast_input'] = [False] * len(argument['input'])
+
+            elif len(argument['cast_input']) != len(argument['input']):
+                # if the cast_input is not the same length as the input, then set it to False
+                argument['cast_input'] = [False] * len(argument['input'])
+                self.logger.warning(f'cast_input for {argument["function"]} '
+                                    f'with argc: {argument["argc"]} has different length than input')
+            return argument
+
+        # deepcopy action_context to avoid modifying the original
+        action_context = {**self.propagate_config, **copy.deepcopy(action_context)}
+        priority_context = copy.deepcopy(priority_context)
+
+        if 'detectors' in action_context:
+            del action_context['detectors']
+        if 'detectors' in priority_context:
+            del priority_context['detectors']
+
+        if args == []:
+            # if there are no arguments, then the action has only one argument
+            context = {**action_context, **priority_context}
+            return [add_cast_input(context)]
+
+        ret_args = []
+        if 'args' in action_context:
+            del action_context['args']
+        if 'args' in priority_context:
+            del priority_context['args']
+
+        # if there are arguments, then merge them with the action context and priority context
+        for arg in args:
+            arg = {**action_context, **arg, **priority_context}
+            ret_args.append(add_cast_input(arg))
+        return ret_args
 
     def parse_command(self, command_name):
         """
@@ -178,12 +247,8 @@ class CommandParser:
         command = self.simple_commands[command_name]
         if 'template' in command and command['template']:
             # todo: cache templates
-            x= self._parse_command(command)
+            x = self._parse_command(command)
             return x
-
-        # if command_name != 'settings':
-        #     return {}
-
         self.extended_commands[command_name] = self._parse_command(command)
         return self.extended_commands[command_name]
 
@@ -194,53 +259,17 @@ class CommandParser:
         """
 
         for command_name in self.simple_commands:
+            # todo remove this (added for debugging)
             if command_name != 'xexptime1':
                 self.parse_command(command_name)
         yaml.Dumper.ignore_aliases = lambda *args: True
-        print(f'[X] parsed {len(self.extended_commands)} commands')
-        yaml.dump(self.extended_commands, (self.commands_file.parent / 'extended_commands.yaml').open('w'),
-                  default_flow_style=False)
-
-    def parse_action(self, action_context, args, priority_context={}):
-        """
-        parse an action
-        :param action_context: context of the action
-        :param args: arguments to be used in the action
-        :param priority_context: context that should override the arguments params
-        :return: parsed action
-        """
-        # deepcopy action_context to avoid modifying the original
-        action_context = {**self.propagate_config, **copy.deepcopy(action_context)}
-        priority_context = copy.deepcopy(priority_context)
-
-        if 'detectors' in action_context:
-            del action_context['detectors']
-        if 'detectors' in priority_context:
-            del priority_context['detectors']
-
-        if not args:
-            # if there are no arguments, then the action has only one argument
-            context = {**action_context, **priority_context}
-            if not context['cast_input']  or len(context['cast_input']) != len(context['input']):
-                # if the cast_input is empty, then set it to False
-                context['cast_input'] = [False] * len(context['input'])
-            return [{**action_context, **priority_context}]
-
-        ret_args = []
-        if 'args' in action_context:
-            del action_context['args']
-        if 'args' in priority_context:
-            del priority_context['args']
-
-        # if there are arguments, then merge them with the action context and priority context
-        for arg in args:
-            arg = {**action_context, **arg, **priority_context}
-            if not arg['cast_input'] or len(arg['cast_input']) != len(arg['input']):
-                arg['cast_input'] = [False] * len(arg['input'])
-            ret_args.append(arg)
-        return ret_args
+        self.logger.info(f'parsed {len(self.extended_commands)} commands')
+        yaml.dump(self.extended_commands, self.output_file.open('w'), default_flow_style=False)
 
 
-command_parser = CommandParser(Path(__file__).parent.parent / 'commands.yaml')
-command_parser.verify_format()
-command_parser.parse_all_commands()
+command_parser = CommandParser(Path('/afs/psi.ch/user/b/braham_b/github/slsDetectorPackage/slsDetectorSoftware/generator/tests/command_parser/data/detectors.yaml'))
+# command_parser = CommandParser()
+
+if __name__ == '__main__':
+    command_parser.verify_format()
+    command_parser.parse_all_commands()

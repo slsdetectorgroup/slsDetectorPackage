@@ -329,7 +329,3 @@ int getColumn();
 int setColumn(int);
 int get_pedestal_mode(int);
 int set_pedestal_mode(int);
-int get_pedestal_frames(int);
-int set_pedestal_frames(int);
-int get_pedestal_loops(int);
-int set_pedestal_loops(int);

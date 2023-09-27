@@ -1100,6 +1100,17 @@ template <> defs::polarity StringTo(const std::string &s) {
     throw RuntimeError("Unknown polarity mode " + s);
 }
 
+template <> uint8_t StringTo(const std::string &s) {
+    int base = s.find("0x") != std::string::npos ? 16 : 10;
+    int value = std::stoi(s, nullptr, base);
+    if (value < std::numeric_limits<uint8_t>::min() ||
+        value > std::numeric_limits<uint8_t>::max()) {
+        throw RuntimeError("Cannot scan uint8_t from string '" + s +
+                           "'. Value must be in range 0 - 255.");
+    }
+    return static_cast<uint16_t>(value);
+}
+
 template <> uint16_t StringTo(const std::string &s) {
     int base = s.find("0x") != std::string::npos ? 16 : 10;
     int value = std::stoi(s, nullptr, base);

@@ -1364,10 +1364,13 @@ class Detector {
 
     /** [Jungfrau] In pedestal mode, the number of frames or triggers is
      * overwritten by \n(#pedestal_frames x #pedestal_loops x 2). \nIn
-     * auto timing mode or if #triggers > 1, #frames is overwritten with
-     * #triggers = 1, \nelse #triggers is overwritten with #frames = 1.
+     * auto timing mode or in trigger mode with #frames > 1, #frames is
+     * overwritten and #triggers = 1, \nelse #triggers is overwritten and
+     * #frames = 1. One cannot set #frames, #triggers or timing mode in pedestal
+     * mode (it will throw an exception). Disabling pedestal mode will set back
+     * the original values of #frames and #triggers
      */
-    void setPedestalMode(const<defs::pedestalParameters> par,
+    void setPedestalMode(const defs::pedestalParameters par,
                          Positions pos = {});
 
     ///@}

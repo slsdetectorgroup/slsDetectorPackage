@@ -1760,32 +1760,15 @@ void Detector::setNumberOfFilterCells(int cell, Positions pos) {
     pimpl->Parallel(&Module::setNumberOfFilterCells, pos, cell);
 }
 
-Result<bool> Detector::getPedestalMode(Positions pos) const {
+Result<defs::pedestalParameters>
+Detector::getPedestalMode(Positions pos) const {
     return pimpl->Parallel(&Module::getPedestalMode, pos);
 }
 
-void Detector::setPedestalMode(const bool on) {
-    pimpl->Parallel(&Module::setPedestalMode, {}, on);
+void Detector::setPedestalMode(const defs::pedestalParameters par,
+                               Positions pos) {
+    pimpl->Parallel(&Module::setPedestalMode, pos, par);
 }
-
-Result<int> Detector::getPedestalFrames(Positions pos) const {
-    return pimpl->Parallel(&Module::getPedestalFrames, pos);
-}
-
-void Detector::setPedestalFrames(const int value) {
-    pimpl->Parallel(&Module::setPedestalFrames, {}, value);
-}
-
-Result<int> Detector::getPedestalLoops(Positions pos) const {
-    return pimpl->Parallel(&Module::getPedestalLoops, pos);
-}
-
-void Detector::setPedestalLoops(const int value) {
-    pimpl->Parallel(&Module::setPedestalLoops, {}, value);
-}
-
-
-
 
 // Gotthard Specific
 

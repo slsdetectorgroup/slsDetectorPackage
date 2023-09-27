@@ -319,6 +319,7 @@ template <> defs::vetoAlgorithm StringTo(const std::string &s);
 template <> defs::gainMode StringTo(const std::string &s);
 template <> defs::polarity StringTo(const std::string &s);
 
+template <> uint8_t StringTo(const std::string &s);
 template <> uint16_t StringTo(const std::string &s);
 template <> uint32_t StringTo(const std::string &s);
 template <> uint64_t StringTo(const std::string &s);

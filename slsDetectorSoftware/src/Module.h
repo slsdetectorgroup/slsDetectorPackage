@@ -419,12 +419,8 @@ class Module : public virtual slsDetectorDefs {
     void setGainMode(const gainMode mode);
     int getNumberOfFilterCells() const;
     void setNumberOfFilterCells(int value);
-    bool getPedestalMode() const;
-    void setPedestalMode(const bool on);
-    int getPedestalFrames() const;
-    void setPedestalFrames(const int value);   
-    int getPedestalLoops() const;
-    void setPedestalLoops(const int value);  
+    defs::pedestalParameters getPedestalMode() const;
+    void setPedestalMode(defs::pedestalParameters par);
 
     /**************************************************
      *                                                *
@@ -803,10 +799,6 @@ class Module : public virtual slsDetectorDefs {
                      const bool forceDeleteNormalFile = false);
     void simulatingActivityinDetector(const std::string &functionType,
                                       const int timeRequired);
-    
-    /** [Jungfrau] In pedestal mode and if theres a receiver,
-     * gets #frames and #triggers from detector and updates receiver */
-    void updateFramesinPedestalModeinReceiver();
 
     const int moduleIndex;
     mutable SharedMemory<sharedModule> shm{0, 0};

@@ -2105,6 +2105,53 @@ std::string CmdProxy::TemperatureEvent(int action) {
     return os.str();
 }
 
+std::string CmdProxy::PedestalMode(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "\n\t[frames<uint8_t>] [loops<uint16_t>]\n\t\t[Jungfrau] Enable "
+              "pedestal mode. \n\t\tThe number of frames or triggers is "
+              "overwritten by: \n\t\t(#pedestal_frames x #pedestal_loops x 2). "
+              "\n\t\tIn auto timing mode or in trigger mode with #frames > 1, "
+              "#frames is overwritten and #triggers = 1, \n\t\telse #triggers "
+              "is overwritten and #frames = 1. \n\t\tOne cannot set #frames, "
+              "#triggers or timing mode in pedestal mode (it will throw an "
+              "exception). \n\n\t[0]\n\t\t[Jungfrau] Disable pedestal "
+              "mode.\n\t\tDisabling pedestal mode will set back the original "
+              "values of #frames and #triggers."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getPedestalMode(std::vector<int>{det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        // disable
+        if (args.size() == 1) {
+            if (args[0] != "0") {
+                throw RuntimeError(
+                    "Unknown argument " + args[0] +
+                    ". Did you mean '0' to disable pedestal mode?");
+            }
+            det->setPedestalMode(defs::pedestalParameters());
+        }
+        // enable
+        else if (args.size() == 2) {
+            uint8_t frames = StringTo<uint8_t>(args[0]);
+            uint16_t loops = StringTo<uint16_t>(args[1]);
+            det->setPedestalMode(defs::pedestalParameters(frames, loops));
+        } else {
+            throw RuntimeError(
+                "Invalid number of parareters for this command.");
+        }
+        os << ToString(args) << '\n';
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* Gotthard Specific */
 
 std::string CmdProxy::ROI(int action) {

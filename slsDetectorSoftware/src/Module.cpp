@@ -624,7 +624,6 @@ void Module::setNumberOfFrames(int64_t value) {
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, value, nullptr);
     }
-    updateFramesinPedestalModeinReceiver();
 }
 
 int64_t Module::getNumberOfTriggers() const {
@@ -636,7 +635,6 @@ void Module::setNumberOfTriggers(int64_t value) {
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_NUM_TRIGGERS, value, nullptr);
     }
-    updateFramesinPedestalModeinReceiver();
 }
 
 int64_t Module::getExptime(int gateIndex) const {
@@ -735,7 +733,6 @@ void Module::setTimingMode(timingMode value) {
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_TIMING_MODE, value, nullptr);
     }
-    updateFramesinPedestalModeinReceiver();
 }
 
 slsDetectorDefs::speedLevel Module::getReadoutSpeed() const {
@@ -1943,41 +1940,18 @@ void Module::setNumberOfFilterCells(int value) {
     sendToDetector(F_SET_NUM_FILTER_CELLS, value, nullptr);
 }
 
-bool Module::getPedestalMode() const {
-    return sendToDetector<int>(F_GET_PEDESTAL_MODE);
+defs::pedestalParameters Module::getPedestalMode() const {
+    return sendToDetector<defs::pedestalParameters>(F_GET_PEDESTAL_MODE);
 }
 
-void Module::updateFramesinPedestalModeinReceiver() {
-    if (shm()->detType == JUNGFRAU && shm()->useReceiverFlag &&
-        getPedestalMode()) {
+void Module::setPedestalMode(const defs::pedestalParameters par) {
+    sendToDetector(F_SET_PEDESTAL_MODE, par, nullptr);
+    if (shm()->useReceiverFlag) {
         auto value = getNumberOfFrames();
         sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, value, nullptr);
         value = getNumberOfTriggers();
         sendToReceiver(F_SET_RECEIVER_NUM_TRIGGERS, value, nullptr);
     }
-}
-
-void Module::setPedestalMode(const bool on) {
-    sendToDetector(F_SET_PEDESTAL_MODE, static_cast<int>(on), nullptr);
-    updateFramesinPedestalModeinReceiver();
-}
-
-int Module::getPedestalFrames() const {
-    return sendToDetector<int>(F_GET_PEDESTAL_FRAMES);
-}
-
-void Module::setPedestalFrames(const int value) {
-    sendToDetector(F_SET_PEDESTAL_FRAMES, value, nullptr);
-    updateFramesinPedestalModeinReceiver();
-}
-
-int Module::getPedestalLoops() const {
-    return sendToDetector<int>(F_GET_PEDESTAL_LOOPS);
-}
-
-void Module::setPedestalLoops(const int value) {
-    sendToDetector(F_SET_PEDESTAL_LOOPS, value, nullptr);
-    updateFramesinPedestalModeinReceiver();
 }
 
 // Gotthard Specific

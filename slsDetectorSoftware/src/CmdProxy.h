@@ -1187,9 +1187,7 @@ class CmdProxy {
         {"storagecell_delay", &CmdProxy::storagecell_delay},
         {"gainmode", &CmdProxy::gainmode},
         {"filtercells", &CmdProxy::filtercells},
-        {"pedestalmode", &CmdProxy::pedestalmode},
-        {"pedestalframes", &CmdProxy::pedestalframes},
-        {"pedestalloops", &CmdProxy::pedestalloops},
+        {"pedestalmode", &CmdProxy::PedestalMode},
 
         /* Gotthard Specific */
         {"roi", &CmdProxy::ROI},
@@ -1402,6 +1400,7 @@ class CmdProxy {
     std::string DataStream(int action);
     /* Jungfrau Specific */
     std::string TemperatureEvent(int action);
+    std::string PedestalMode(int action);
     /* Gotthard Specific */
     std::string ROI(int action);
     /* Gotthard2 Specific */
@@ -2334,30 +2333,6 @@ class CmdProxy {
                            setNumberOfFilterCells, StringTo<int>,
                            "[0-12]\n\t[Jungfrau] Set Filter Cell. Only for "
                            "chipv1.1. Advanced user Command");
-
-    INTEGER_COMMAND_SET_NOID_GET_ID(
-        pedestalmode, getPedestalMode, setPedestalMode, StringTo<int>,
-        "[0, 1]\n\t[Jungfrau] Enables or disables pedestal mode. In pedestal "
-        "mode, the number of frames or triggers is overwritten by "
-        "((#pedestal_frames + 1) x 2 x #pedestal_loops). In auto timing mode "
-        "or if #triggers > 1, #frames is overwritten with #triggers = 1, else "
-        "#triggers is overwritten with #frames = 1.");
-
-    INTEGER_COMMAND_SET_NOID_GET_ID(
-        pedestalframes, getPedestalFrames, setPedestalFrames, StringTo<int>,
-        "[value<int>]\n\t[Jungfrau] Sets number of pedestal frames in pedestal "
-        "mode. In pedestal mode, the number of frames or triggers is "
-        "overwritten by ((#pedestal_frames + 1) x 2 x #pedestal_loops). In "
-        "auto timing mode or if #triggers > 1, #frames is overwritten with "
-        "#triggers = 1, else #triggers is overwritten with #frames = 1.");
-
-    INTEGER_COMMAND_SET_NOID_GET_ID(
-        pedestalloops, getPedestalLoops, setPedestalLoops, StringTo<int>,
-        "[value<int>]\n\t[Jungfrau] Sets the number of loops in pedestal mode. "
-        "In pedestal mode, the number of frames or triggers is overwritten by "
-        "((#pedestal_frames + 1) x 2 x #pedestal_loops). In auto timing mode "
-        "or if #triggers > 1, #frames is overwritten with #triggers = 1, else "
-        "#triggers is overwritten with #frames = 1.");
 
     /* Gotthard Specific */
     TIME_GET_COMMAND(exptimel, getExptimeLeft,

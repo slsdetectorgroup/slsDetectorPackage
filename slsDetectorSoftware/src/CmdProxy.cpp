@@ -2109,16 +2109,18 @@ std::string CmdProxy::PedestalMode(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "\n\t[frames<uint8_t>] [loops<uint16_t>]\n\t\t[Jungfrau] Enable "
-              "pedestal mode. \n\t\tThe number of frames or triggers is "
+        os << " [frames<uint8_t>] [loops<uint16_t>]\n\t\t[Jungfrau] "
+              "Enable pedestal mode. \n\t\tThe number of frames or triggers is "
               "overwritten by: \n\t\t(#pedestal_frames x #pedestal_loops x 2). "
               "\n\t\tIn auto timing mode or in trigger mode with #frames > 1, "
-              "#frames is overwritten and #triggers = 1, \n\t\telse #triggers "
-              "is overwritten and #frames = 1. \n\t\tOne cannot set #frames, "
-              "#triggers or timing mode in pedestal mode (it will throw an "
-              "exception). \n\n\t[0]\n\t\t[Jungfrau] Disable pedestal "
-              "mode.\n\t\tDisabling pedestal mode will set back the original "
-              "values of #frames and #triggers."
+              "\n\t\t#frames is overwritten and #triggers = 1, \n\t\telse "
+              "#triggers is overwritten and #frames = 1. \n\t\tOne cannot set "
+              "#frames, #triggers or timing mode in pedestal mode (exception "
+              "thrown).\n\n";
+        os << cmd
+           << " [0]\n\t\t[Jungfrau] Disable pedestal "
+              "mode.\n\t\tDisabling pedestal mode will set back the normal "
+              "mode values of #frames and #triggers."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 0) {

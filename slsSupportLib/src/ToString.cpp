@@ -159,7 +159,7 @@ std::string ToString(const slsDetectorDefs::pedestalParameters &r) {
     std::ostringstream oss;
     oss << '[';
     if (r.enable)
-        oss << "enabled , " << r.frames << ", " << r.loops;
+        oss << "enabled, " << std::to_string(r.frames) << ", " << r.loops;
     else
         oss << "disabled";
 
@@ -1108,7 +1108,7 @@ template <> uint8_t StringTo(const std::string &s) {
         throw RuntimeError("Cannot scan uint8_t from string '" + s +
                            "'. Value must be in range 0 - 255.");
     }
-    return static_cast<uint16_t>(value);
+    return static_cast<uint8_t>(value);
 }
 
 template <> uint16_t StringTo(const std::string &s) {

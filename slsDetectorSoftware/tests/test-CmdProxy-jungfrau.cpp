@@ -531,28 +531,25 @@ TEST_CASE("pedestalmode", "[.cmd]") {
         {
             std::ostringstream oss;
             proxy.Call("pedestalmode", {"30", "1000"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "pedestalmode [enabled, 30 1000]\n");
+            REQUIRE(oss.str() == "pedestalmode [30, 1000]\n");
         }
         // cannot change any of these in pedestal mode
-        REQUIRE_THROWS_WITH(
-            proxy.Call("frames", {"200"}, -1, PUT),
-            "Cannot set frames in pedestal mode. It is overwritten anyway.");
-        REQUIRE_THROWS_WITH(
-            proxy.Call("triggers", {"200"}, -1, PUT),
-            "Cannot set triggers in pedestal mode. It is overwritten anyway.");
+        REQUIRE_THROWS_WITH(proxy.Call("frames", {"200"}, -1, PUT),
+                            "Detector returned: Cannot set frames in pedestal "
+                            "mode. It is overwritten anyway.\n");
+        REQUIRE_THROWS_WITH(proxy.Call("triggers", {"200"}, -1, PUT),
+                            "Detector returned: Cannot set triggers in "
+                            "pedestal mode. It is overwritten anyway.\n");
         REQUIRE_THROWS_WITH(
             proxy.Call("timing", {"auto"}, -1, PUT),
-            "Cannot set timing mode in pedestal mode. Switch off "
-            "pedestal mode to change timing mode.");
+            "Detector returned: Cannot set timing mode in pedestal mode. "
+            "Switch off pedestal mode to change timing mode.\n");
         REQUIRE_THROWS_WITH(
-            proxy.Call("scan", {"vb_comp", "500", "1500"}, -1, PUT),
-            "Cannot set scan when in pedestal mode.");
-        REQUIRE_THROWS_WITH(proxy.Call("scan",
-                                       {
-                                           "0",
-                                       },
-                                       -1, PUT),
-                            "Cannot set scan when in pedestal mode.");
+            proxy.Call("scan", {"vb_comp", "500", "1500", "10"}, -1, PUT),
+            "Detector returned: Cannot set scan when in pedestal mode.\n");
+        REQUIRE_THROWS_WITH(
+            proxy.Call("scan", {"0"}, -1, PUT),
+            "Detector returned: Cannot set scan when in pedestal mode.\n");
         // should not throw to get these values though
         REQUIRE_NOTHROW(proxy.Call("frames", {}, -1, GET));
         REQUIRE_NOTHROW(proxy.Call("triggers", {}, -1, GET));
@@ -562,12 +559,12 @@ TEST_CASE("pedestalmode", "[.cmd]") {
         {
             std::ostringstream oss;
             proxy.Call("pedestalmode", {"50", "500"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "pedestalmode 50 500\n");
+            REQUIRE(oss.str() == "pedestalmode [50, 500]\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("pedestalmode", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "pedestalmode [enabled, 50 500]\n");
+            REQUIRE(oss.str() == "pedestalmode [enabled, 50, 500]\n");
         }
         {
             auto pedemode = det.getPedestalMode().tsquash(
@@ -579,7 +576,7 @@ TEST_CASE("pedestalmode", "[.cmd]") {
         {
             std::ostringstream oss;
             proxy.Call("pedestalmode", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "pedestalmode 0\n");
+            REQUIRE(oss.str() == "pedestalmode [0]\n");
         }
         {
             std::ostringstream oss;

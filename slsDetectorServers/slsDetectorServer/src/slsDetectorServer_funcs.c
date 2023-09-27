@@ -10848,7 +10848,7 @@ int set_pedestal_mode(int file_des) {
                     "Options: [0, 1]\n",
                     enable);
                 LOG(logERROR, (mess));
-            } else if (frames == 0 || loops == 0) {
+            } else if (enable == 1 && (frames == 0 || loops == 0)) {
                 ret = FAIL;
                 sprintf(mess,
                         "Could not set pedestal mode. Frames and loops cannot "

@@ -558,6 +558,11 @@ void setupDetector() {
         setFlipRows(DEFAULT_FLIP_ROWS);
         setReadNRows(MAX_ROWS_PER_READOUT);
     }
+#ifdef VIRTUAL
+    // setting pedestalmode depends on previous values
+    bus_w(PEDESTAL_MODE_REG,
+          bus_r(PEDESTAL_MODE_REG) & ~PEDESTAL_MODE_ENBLE_MSK);
+#endif
     setPedestalMode(DEFAULT_PEDESTAL_MODE, DEFAULT_PEDESTAL_FRAMES,
                     DEFAULT_PEDESTAL_LOOPS);
 }
@@ -2560,9 +2565,11 @@ void setPedestalMode(int enable, uint8_t frames, uint16_t loops) {
 
         // if it was switched off before, remember the #frames and #triggers
         if (prevPedestalEnable == 0) {
-            LOG(logINFO, ("\tRemembering Normal mode #frames and #triggers\n"));
             normal_mode_frames = getNumFrames();
             normal_mode_triggers = getNumTriggers();
+            LOG(logINFO, ("\tRemembering Normal mode #frames and "
+                          "#triggers[%lld, %lld]\n",
+                          normal_mode_frames, normal_mode_triggers));
         }
 
         // overwrite #frames and #triggers to new values
@@ -2588,7 +2595,7 @@ void setPedestalMode(int enable, uint8_t frames, uint16_t loops) {
 
         // if it was switched on before, reset the normal mode #frames and
         // #triggers
-        if (prevPedestalEnable == 0) {
+        if (prevPedestalEnable == 1) {
             LOG(logINFO,
                 ("\tResetting to Normal mode [#frames:%lld, #triggers:%lld\n",
                  normal_mode_frames, normal_mode_triggers));

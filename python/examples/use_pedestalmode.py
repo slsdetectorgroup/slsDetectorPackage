@@ -2,11 +2,11 @@
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 from slsdet import Detector, pedestalParameters
 
-p = pedestalMode()
+p = pedestalParameters()
 p.frames = 10
 p.loops= 20
 
 
 
 d = Detector()
-d.pedestalMde = p
+d.pedestalmode = p

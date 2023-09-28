@@ -7,7 +7,7 @@
 #include "sls/sls_detector_defs.h"
 
 namespace py = pybind11;
-void init_source(py::module &m) {
+void init_pedestal(py::module &m) {
 
     using src = slsDetectorDefs::pedestalParameters;
     py::class_<src> pedestalParameters(m, "pedestalParameters");

@@ -2871,7 +2871,8 @@ class Detector(CppDetectorApi):
     @element
     def pedestalmode(self):
         """
-        [Jungfrau] Enables or disables pedestal mode.
+        [Jungfrau] Enables or disables pedestal mode. Pass in a pedestalParameters object 
+        see python/examples/use_pedestalmode.py
         
         Note
         ----

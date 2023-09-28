@@ -35,6 +35,7 @@ ext_modules = [
         'src/scan.cpp',
         'src/duration.cpp',
         'src/DurationWrapper.cpp',
+        'src/pedestal.cpp',
         ]
         
         

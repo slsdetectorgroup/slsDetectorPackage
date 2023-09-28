@@ -1270,6 +1270,16 @@ void init_det(py::module &m) {
                        (void (Detector::*)(int, sls::Positions)) &
                            Detector::setNumberOfFilterCells,
                        py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getPedestalMode",
+        (Result<defs::pedestalParameters>(Detector::*)(sls::Positions) const) &
+            Detector::getPedestalMode,
+        py::arg() = Positions{});
+    CppDetectorApi.def(
+        "setPedestalMode",
+        (void (Detector::*)(const defs::pedestalParameters, sls::Positions)) &
+            Detector::setPedestalMode,
+        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getROI",
                        (Result<defs::ROI>(Detector::*)(sls::Positions) const) &
                            Detector::getROI,

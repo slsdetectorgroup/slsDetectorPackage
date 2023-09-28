@@ -242,7 +242,8 @@ std::string DetectorImpl::exec(const char *cmd) {
     return result;
 }
 
-void DetectorImpl::setVirtualDetectorServers(const int numdet, const int port) {
+void DetectorImpl::setVirtualDetectorServers(const int numdet,
+                                             const uint16_t port) {
     std::vector<std::string> hostnames;
     for (int i = 0; i < numdet; ++i) {
         // * 2 is for control and stop port
@@ -283,7 +284,7 @@ void DetectorImpl::addModule(const std::string &name) {
     LOG(logINFO) << "Adding module " << name;
     auto host = verifyUniqueDetHost(name);
     std::string hostname = host.first;
-    int port = host.second;
+    uint16_t port = host.second;
 
     // get type by connecting
     detectorType type = Module::getTypeFromDetector(hostname, port);
@@ -1583,41 +1584,41 @@ defs::xy DetectorImpl::calculatePosition(int moduleIndex,
     return pos;
 }
 
-void DetectorImpl::verifyUniqueDetHost(const int port,
+void DetectorImpl::verifyUniqueDetHost(const uint16_t port,
                                        std::vector<int> positions) const {
     // port for given positions
     if (positions.empty() || (positions.size() == 1 && positions[0] == -1)) {
         positions.resize(modules.size());
         std::iota(begin(positions), end(positions), 0);
     }
-    std::vector<std::pair<std::string, int>> hosts(size());
+    std::vector<std::pair<std::string, uint16_t>> hosts(size());
     for (auto it : positions) {
         hosts[it].second = port;
     }
     verifyUniqueHost(true, hosts);
 }
 
-void DetectorImpl::verifyUniqueRxHost(const int port,
+void DetectorImpl::verifyUniqueRxHost(const uint16_t port,
                                       const int moduleId) const {
-    std::vector<std::pair<std::string, int>> hosts(size());
+    std::vector<std::pair<std::string, uint16_t>> hosts(size());
     hosts[moduleId].second = port;
     verifyUniqueHost(false, hosts);
 }
 
-std::pair<std::string, int>
+std::pair<std::string, uint16_t>
 DetectorImpl::verifyUniqueDetHost(const std::string &name) {
     // extract port
     // C++17 could be auto [hostname, port] = ParseHostPort(name);
     auto res = ParseHostPort(name);
     std::string hostname = res.first;
-    int port = res.second;
+    uint16_t port = res.second;
     if (port == 0) {
         port = DEFAULT_TCP_CNTRL_PORTNO;
     }
 
     int detSize = size();
     // mod not yet added
-    std::vector<std::pair<std::string, int>> hosts(detSize + 1);
+    std::vector<std::pair<std::string, uint16_t>> hosts(detSize + 1);
     hosts[detSize].first = hostname;
     hosts[detSize].second = port;
 
@@ -1625,7 +1626,7 @@ DetectorImpl::verifyUniqueDetHost(const std::string &name) {
     return std::make_pair(hostname, port);
 }
 
-std::pair<std::string, int>
+std::pair<std::string, uint16_t>
 DetectorImpl::verifyUniqueRxHost(const std::string &name,
                                  std::vector<int> positions) const {
     // no checks if setting to none
@@ -1636,7 +1637,7 @@ DetectorImpl::verifyUniqueRxHost(const std::string &name,
     // C++17 could be auto [hostname, port] = ParseHostPort(name);
     auto res = ParseHostPort(name);
     std::string hostname = res.first;
-    int port = res.second;
+    uint16_t port = res.second;
 
     // hostname and port for given positions
     if (positions.empty() || (positions.size() == 1 && positions[0] == -1)) {
@@ -1644,7 +1645,7 @@ DetectorImpl::verifyUniqueRxHost(const std::string &name,
         std::iota(begin(positions), end(positions), 0);
     }
 
-    std::vector<std::pair<std::string, int>> hosts(size());
+    std::vector<std::pair<std::string, uint16_t>> hosts(size());
     for (auto it : positions) {
         hosts[it].first = hostname;
         hosts[it].second = port;
@@ -1654,7 +1655,7 @@ DetectorImpl::verifyUniqueRxHost(const std::string &name,
     return std::make_pair(hostname, port);
 }
 
-std::vector<std::pair<std::string, int>>
+std::vector<std::pair<std::string, uint16_t>>
 DetectorImpl::verifyUniqueRxHost(const std::vector<std::string> &names) const {
     if ((int)names.size() != size()) {
         throw RuntimeError(
@@ -1663,7 +1664,7 @@ DetectorImpl::verifyUniqueRxHost(const std::vector<std::string> &names) const {
     }
 
     // extract ports
-    std::vector<std::pair<std::string, int>> hosts;
+    std::vector<std::pair<std::string, uint16_t>> hosts;
     for (const auto &name : names) {
         hosts.push_back(ParseHostPort(name));
     }
@@ -1673,7 +1674,7 @@ DetectorImpl::verifyUniqueRxHost(const std::vector<std::string> &names) const {
 }
 
 void DetectorImpl::verifyUniqueHost(
-    bool isDet, std::vector<std::pair<std::string, int>> &hosts) const {
+    bool isDet, std::vector<std::pair<std::string, uint16_t>> &hosts) const {
 
     // fill from shm if not provided
     for (int i = 0; i != size(); ++i) {
@@ -1689,7 +1690,7 @@ void DetectorImpl::verifyUniqueHost(
 
     // remove the ones without a hostname
     hosts.erase(std::remove_if(hosts.begin(), hosts.end(),
-                               [](const std::pair<std::string, int> &x) {
+                               [](const std::pair<std::string, uint16_t> &x) {
                                    return (x.first == "none" ||
                                            x.first.empty());
                                }),

@@ -3,6 +3,7 @@
 /* Creates the slsMultiReceiver for running multiple receivers form a single
  * binary */
 #include "sls/Receiver.h"
+#include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
@@ -36,14 +37,12 @@ void sigInterruptHandler(int p) { sem_post(&semaphore); }
 /**
  * prints usage of this example program
  */
-void printHelp() {
-    cprintf(
-        RESET,
-        "Usage:\n"
-        "./slsMultiReceiver(detReceiver) [start_tcp_port] "
-        "[num_receivers] [optional: 1 for call back (print frame header for "
-        "debugging), 0 for none (default)]\n\n");
-    exit(EXIT_FAILURE);
+std::string getHelpMessage() {
+    return std::string(
+        "\n\nUsage:\n"
+        "./slsMultiReceiver(detReceiver) [start_tcp_port (non-zero and 16 "
+        "bit)] [num_receivers] [optional: 1 for call back (print frame header "
+        "for debugging), 0 for none (default)]\n\n");
 }
 
 /**
@@ -140,25 +139,31 @@ int main(int argc, char *argv[]) {
 
     /**	- set default values */
     int numReceivers = 1;
-    int startTCPPort = 1954;
+    uint16_t startTCPPort = 1954;
     int withCallback = 0;
     sem_init(&semaphore, 1, 0);
 
     /**	- get number of receivers and start tcp port from command line
      * arguments */
-    if (argc != 3 && argc != 4)
-        printHelp();
-    if ((argc == 3) && ((!sscanf(argv[1], "%d", &startTCPPort)) ||
-                        (!sscanf(argv[2], "%d", &numReceivers))))
-        printHelp();
-    if ((argc == 4) && ((!sscanf(argv[1], "%d", &startTCPPort)) ||
-                        (!sscanf(argv[2], "%d", &numReceivers)) ||
-                        (!sscanf(argv[3], "%d", &withCallback))))
-        printHelp();
+    try {
+        if (argc == 3 || argc == 4) {
+            startTCPPort = sls::StringTo<uint16_t>(argv[1]);
+            if (startTCPPort == 0) {
+                throw;
+            }
+            numReceivers = std::stoi(argv[2]);
+            if (argc == 4) {
+                withCallback = std::stoi(argv[3]);
+            }
+        } else
+            throw;
+    } catch (...) {
+        throw std::runtime_error(getHelpMessage());
+    }
 
     cprintf(BLUE, "Parent Process Created [ Tid: %ld ]\n", (long)gettid());
     cprintf(RESET, "Number of Receivers: %d\n", numReceivers);
-    cprintf(RESET, "Start TCP Port: %d\n", startTCPPort);
+    cprintf(RESET, "Start TCP Port: %hu\n", startTCPPort);
     cprintf(RESET, "Callback Enable: %d\n", withCallback);
 
     /** - Catch signal SIGINT to close files and call destructors properly */

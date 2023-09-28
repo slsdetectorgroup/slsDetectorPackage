@@ -5366,11 +5366,11 @@ int get_dest_udp_mac2(int file_des) {
 int set_dest_udp_port(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int arg = 0;
+    uint16_t arg = 0;
 
-    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+    if (receiveData(file_des, &arg, sizeof(arg), INT16) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting udp destination port: %u\n", arg));
+    LOG(logINFO, ("Setting udp destination port: %hu\n", arg));
 
     // only set
     if (Server_VerifyLock() == OK) {
@@ -5381,30 +5381,30 @@ int set_dest_udp_port(int file_des) {
             }
         }
     }
-    return Server_SendResult(file_des, INT32, NULL, 0);
+    return Server_SendResult(file_des, INT16, NULL, 0);
 }
 
 int get_dest_udp_port(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int retval = -1;
+    uint16_t retval = -1;
     LOG(logDEBUG1, ("Getting destination port"));
 
     // get only
     retval = udpDetails[0].dstport;
-    LOG(logDEBUG, ("udp destination port retval: %u\n", retval));
+    LOG(logDEBUG, ("udp destination port retval: %hu\n", retval));
 
-    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT16, &retval, sizeof(retval));
 }
 
 int set_dest_udp_port2(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int arg = 0;
+    uint16_t arg = 0;
 
-    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+    if (receiveData(file_des, &arg, sizeof(arg), INT16) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting udp destination port2: %u\n", arg));
+    LOG(logINFO, ("Setting udp destination port2: %hu\n", arg));
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(EIGERD) &&            \
     !defined(GOTTHARD2D)
@@ -5420,13 +5420,13 @@ int set_dest_udp_port2(int file_des) {
         }
     }
 #endif
-    return Server_SendResult(file_des, INT32, NULL, 0);
+    return Server_SendResult(file_des, INT16, NULL, 0);
 }
 
 int get_dest_udp_port2(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int retval = -1;
+    uint16_t retval = -1;
     LOG(logDEBUG1, ("Getting destination port2\n"));
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(EIGERD) &&            \
@@ -5435,9 +5435,9 @@ int get_dest_udp_port2(int file_des) {
 #else
     // get only
     retval = udpDetails[0].dstport2;
-    LOG(logDEBUG1, ("udp destination port2 retval: %u\n", retval));
+    LOG(logDEBUG1, ("udp destination port2 retval: %hu\n", retval));
 #endif
-    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT16, &retval, sizeof(retval));
 }
 
 int set_num_interfaces(int file_des) {
@@ -6990,6 +6990,7 @@ int get_receiver_parameters(int file_des) {
     int n = 0;
     int i32 = 0;
     int64_t i64 = 0;
+    uint16_t u16 = 0;
     uint32_t u32 = 0;
     uint64_t u64 = 0;
 
@@ -7032,8 +7033,8 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
     // udp dst port
-    i32 = udpDetails[0].dstport;
-    n += sendData(file_des, &i32, sizeof(i32), INT32);
+    u16 = udpDetails[0].dstport;
+    n += sendData(file_des, &u16, sizeof(u16), INT16);
     if (n < 0)
         return printSocketReadError();
 
@@ -7051,8 +7052,8 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
     // udp dst port2
-    i32 = udpDetails[0].dstport2;
-    n += sendData(file_des, &i32, sizeof(i32), INT32);
+    u16 = udpDetails[0].dstport2;
+    n += sendData(file_des, &u16, sizeof(u16), INT16);
     if (n < 0)
         return printSocketReadError();
 
@@ -9170,7 +9171,8 @@ int get_dest_udp_list(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     uint32_t arg = 0;
-    uint32_t retvals[5] = {};
+    uint16_t retvals16[2] = {};
+    uint32_t retvals32[3] = {};
     uint64_t retvals64[2] = {};
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
@@ -9189,34 +9191,36 @@ int get_dest_udp_list(int file_des) {
             MAX_UDP_DESTINATION - 1);
         LOG(logERROR, (mess));
     } else {
-        retvals[0] = arg;
-        retvals[1] = udpDetails[arg].dstport;
-        retvals[2] = udpDetails[arg].dstport2;
-        retvals[3] = udpDetails[arg].dstip;
-        retvals[4] = udpDetails[arg].dstip2;
+        // arg;
+        retvals16[0] = udpDetails[arg].dstport;
+        retvals16[1] = udpDetails[arg].dstport2;
+        retvals32[0] = udpDetails[arg].dstip;
+        retvals32[1] = udpDetails[arg].dstip2;
         retvals64[0] = udpDetails[arg].dstmac;
         retvals64[1] = udpDetails[arg].dstmac2;
 
         // swap ip
-        retvals[3] = __builtin_bswap32(retvals[3]);
-        retvals[4] = __builtin_bswap32(retvals[4]);
+        retvals32[0] = __builtin_bswap32(retvals32[0]);
+        retvals32[1] = __builtin_bswap32(retvals32[1]);
 
         // convert to string
         char ip[INET_ADDRSTRLEN], ip2[INET_ADDRSTRLEN];
-        getIpAddressinString(ip, retvals[3]);
-        getIpAddressinString(ip2, retvals[4]);
+        getIpAddressinString(ip, retvals32[0]);
+        getIpAddressinString(ip2, retvals32[1]);
         char mac[MAC_ADDRESS_SIZE], mac2[MAC_ADDRESS_SIZE];
         getMacAddressinString(mac, MAC_ADDRESS_SIZE, retvals64[0]);
         getMacAddressinString(mac2, MAC_ADDRESS_SIZE, retvals64[1]);
         LOG(logDEBUG1,
-            ("Udp Dest. retval [%d]: [port %d, port2 %d, ip %s, ip2 %s, "
+            ("Udp Dest. retval [%d]: [port %hu, port2 %hu, ip %s, ip2 %s, "
              "mac %s, mac2 %s]\n",
-             retvals[0], retvals[1], retvals[2], ip, ip2, mac, mac2));
+             arg, retvals16[0], retvals16[1], ip, ip2, mac, mac2));
     }
 #endif
     Server_SendResult(file_des, INT32, NULL, 0);
     if (ret != FAIL) {
-        sendData(file_des, retvals, sizeof(retvals), INT32);
+        sendData(file_des, &arg, sizeof(arg), INT32);
+        sendData(file_des, retvals16, sizeof(retvals16), INT16);
+        sendData(file_des, retvals32, sizeof(retvals32), INT32);
         sendData(file_des, retvals64, sizeof(retvals64), INT64);
     }
     return ret;
@@ -9225,22 +9229,28 @@ int get_dest_udp_list(int file_des) {
 int set_dest_udp_list(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint32_t args[5] = {};
+    uint32_t arg = 0;
+    uint16_t args16[2] = {};
+    uint32_t args32[2] = {};
     uint64_t args64[2] = {};
 
-    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, args16, sizeof(args16), INT16) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, args32, sizeof(args32), INT32) < 0)
         return printSocketReadError();
     if (receiveData(file_des, args64, sizeof(args64), INT64) < 0)
         return printSocketReadError();
 
     // swap ip
-    args[3] = __builtin_bswap32(args[3]);
-    args[4] = __builtin_bswap32(args[4]);
+    args32[0] = __builtin_bswap32(args32[0]);
+    args32[1] = __builtin_bswap32(args32[1]);
 
     // convert to string
     char ip[INET_ADDRSTRLEN], ip2[INET_ADDRSTRLEN];
-    getIpAddressinString(ip, args[3]);
-    getIpAddressinString(ip2, args[4]);
+    getIpAddressinString(ip, args32[0]);
+    getIpAddressinString(ip2, args32[1]);
     char mac[MAC_ADDRESS_SIZE], mac2[MAC_ADDRESS_SIZE];
     getMacAddressinString(mac, MAC_ADDRESS_SIZE, args64[0]);
     getMacAddressinString(mac2, MAC_ADDRESS_SIZE, args64[1]);
@@ -9251,11 +9261,11 @@ int set_dest_udp_list(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        int entry = args[0];
+        int entry = arg;
         LOG(logINFOBLUE,
-            ("Setting udp dest. [%d]: [port %d, port2 %d, ip %s, ip2 %s, "
+            ("Setting udp dest. [%d]: [port %hu, port2 %hu, ip %s, ip2 %s, "
              "mac %s, mac2 %s]\n",
-             entry, args[1], args[2], ip, ip2, mac, mac2));
+             entry, args16[0], args16[1], ip, ip2, mac, mac2));
 
         if (entry < 1 || entry >= MAX_UDP_DESTINATION) {
             ret = FAIL;
@@ -9266,7 +9276,7 @@ int set_dest_udp_list(int file_des) {
             LOG(logERROR, (mess));
         }
 #if defined(EIGERD) || defined(MYTHEN3D)
-        else if (args[4] != 0 || args64[1] != 0) {
+        else if (args32[1] != 0 || args64[1] != 0) {
             ret = FAIL;
             strcpy(mess, "Could not set udp destination. ip2 and mac2 not "
                          "implemented for this detector.\n");
@@ -9275,17 +9285,17 @@ int set_dest_udp_list(int file_des) {
 #endif
         else {
             if (check_detector_idle("set udp destination list entries") == OK) {
-                if (args[1] != 0) {
-                    udpDetails[entry].dstport = args[1];
+                if (args16[0] != 0) {
+                    udpDetails[entry].dstport = args16[0];
                 }
-                if (args[2] != 0) {
-                    udpDetails[entry].dstport2 = args[2];
+                if (args16[1] != 0) {
+                    udpDetails[entry].dstport2 = args16[1];
                 }
-                if (args[3] != 0) {
-                    udpDetails[entry].dstip = args[3];
+                if (args32[0] != 0) {
+                    udpDetails[entry].dstip = args32[0];
                 }
-                if (args[4] != 0) {
-                    udpDetails[entry].dstip2 = args[4];
+                if (args32[1] != 0) {
+                    udpDetails[entry].dstip2 = args32[1];
                 }
                 if (args64[0] != 0) {
                     udpDetails[entry].dstmac = args64[0];

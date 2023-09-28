@@ -30,8 +30,8 @@
 // C includes
 #include <stdint.h>
 #endif
-//Need macros for C compatibility
-//NOLINTBEGIN(cppcoreguidelines-macro-usage)
+// Need macros for C compatibility
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
 #define BIT32_MASK  0xFFFFFFFF
 #define MAX_RX_DBIT 64
 
@@ -80,7 +80,7 @@
 #define DEFAULT_STREAMING_TIMER_IN_MS 500
 
 #define NUM_RX_THREAD_IDS 9
-//NOLINTEND(cppcoreguidelines-macro-usage)
+// NOLINTEND(cppcoreguidelines-macro-usage)
 #ifdef __cplusplus
 class slsDetectorDefs {
   public:
@@ -556,10 +556,10 @@ enum streamingInterface {
         int moduleIndex{0};
         char hostname[MAX_STR_LENGTH];
         int udpInterfaces{1};
-        int udp_dstport{0};
+        uint16_t udp_dstport{0};
         uint32_t udp_dstip{0U};
         uint64_t udp_dstmac{0LU};
-        int udp_dstport2{0};
+        uint16_t udp_dstport2{0};
         uint32_t udp_dstip2{0U};
         uint64_t udp_dstmac2{0LU};
         int64_t frames{0};

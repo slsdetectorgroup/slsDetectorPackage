@@ -1963,8 +1963,8 @@ int configureMAC() {
         uint32_t dstip = udpDetails[iRxEntry].dstip;
         uint64_t srcmac = udpDetails[iRxEntry].srcmac;
         uint64_t dstmac = udpDetails[iRxEntry].dstmac;
-        int srcport = udpDetails[iRxEntry].srcport;
-        int dstport = udpDetails[iRxEntry].dstport;
+        uint16_t srcport = udpDetails[iRxEntry].srcport;
+        uint16_t dstport = udpDetails[iRxEntry].dstport;
 
         char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
             dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
@@ -1976,10 +1976,10 @@ int configureMAC() {
             LOG(logINFOBLUE, ("\tEntry %d\n", iRxEntry));
             LOG(logINFO, ("\tSource IP   : %s\n"
                           "\tSource MAC  : %s\n"
-                          "\tSource Port : %d\n"
+                          "\tSource Port : %hu\n"
                           "\tDest IP     : %s\n"
                           "\tDest MAC    : %s\n"
-                          "\tDest Port   : %d\n",
+                          "\tDest Port   : %hu\n",
                           src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
         }
 #ifdef VIRTUAL

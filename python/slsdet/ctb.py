@@ -3,7 +3,7 @@
 from .detector import Detector, freeze
 from .utils import element_if_equal
 from .dacs import DetectorDacs, NamedDacs
-from .voltages import DetectorVoltages, NamedVoltages
+from .powers import DetectorPowers, NamedPowers
 from .slowadcs import DetectorSlowAdcs, NamedSlowAdcs
 import _slsdet
 dacIndex = _slsdet.slsDetectorDefs.dacIndex
@@ -17,7 +17,7 @@ class Ctb(Detector):
         super().__init__(id)
         self._frozen = False 
         self._dacs = NamedDacs(self)
-        self._voltages = NamedVoltages(self)
+        self._powers = NamedPowers(self)
         self._slowadcs = NamedSlowAdcs(self)
     
     @property
@@ -25,8 +25,8 @@ class Ctb(Detector):
         return self._dacs
 
     @property
-    def voltages(self):
-        return self._voltages
+    def powers(self):
+        return self._powers
 
     @property
     def slowadcs(self):

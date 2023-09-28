@@ -84,7 +84,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     virtual ~DetectorImpl();
 
-    template <class CT> struct NonDeduced { using type = CT; };
+    template <class CT> struct NonDeduced {
+        using type = CT;
+    };
     template <typename RT, typename... CT>
     Result<RT> Parallel(RT (Module::*somefunc)(CT...),
                         std::vector<int> positions,
@@ -342,10 +344,10 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setCtbSignalNames(const std::vector<std::string> &names);
     void setCtbSignalName(const int index, const std::string &name);
 
-    std::vector<std::string> getCtbVoltageNames() const;
-    std::string getCtbVoltageName(const defs::dacIndex i) const;
-    void setCtbVoltageNames(const std::vector<std::string> &names);
-    void setCtbVoltageName(const defs::dacIndex index, const std::string &name);
+    std::vector<std::string> getCtbPowerNames() const;
+    std::string getCtbPowerName(const defs::dacIndex i) const;
+    void setCtbPowerNames(const std::vector<std::string> &names);
+    void setCtbPowerName(const defs::dacIndex index, const std::string &name);
 
     std::vector<std::string> getCtbSlowADCNames() const;
     std::string getCtbSlowADCName(const defs::dacIndex i) const;

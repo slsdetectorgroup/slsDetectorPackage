@@ -20,10 +20,11 @@ class SlowAdc(DetectorProperty):
     """
     def __init__(self, name, enum, default, detector):
 
-        super().__init__(partial(detector.getVoltage, enum),
+        super().__init__(partial(detector.getSlowADC, enum),
                          lambda x, y : detector.setVoltage(enum, x, y),
                          detector.size,
                          name)
+        #FIXME ??????????????
 
         self.default = default
 
@@ -38,21 +39,21 @@ class NamedSlowAdcs:
     New implementation of the detector slowadcs. 
     """
     _frozen = False
-    _direct_access = ['_detector', '_current', '_voltagenames']
+    _direct_access = ['_detector', '_current', '_slowadcnames']
     def __init__(self, detector):
         self._detector = detector
         self._current = 0
 
-        #only get the voltagenames if we have modules attached
+        #only get the slowadcnames if we have modules attached
         if detector.size() == 0:
-            self._voltagenames  = ["VA", "VB", "VC", "VD", "VIO"]
+            self._slowadcnames  = [f"slowadc{i}" for i in range(8)]
         else:
-            self._voltagenames = [n.replace(" ", "") for n in detector.getVoltageNames()]
+            self._slowadcnames = [n.replace(" ", "") for n in detector.getSlowADCNames()]
 
         # Populate the slowadcs
-        for i,name in enumerate(self._voltagenames):
+        for i,name in enumerate(self._slowadcnames):
             #name, enum, low, high, default, detector
-            k = dacIndex(i + int(dacIndex.V_POWER_A))
+            k = dacIndex(i + int(dacIndex.SLOW_ADC0))
             setattr(self, name, SlowAdc(name, k, 0, detector))
 
         self._frozen = True
@@ -68,19 +69,19 @@ class NamedSlowAdcs:
             #Later we restrict us to manipulate slowadcs and a few fields
             if name in self._direct_access:
                 super().__setattr__(name, value)
-            elif name in self._voltagenames:
+            elif name in self._slowadcnames:
                 return self.__getattribute__(name).__setitem__(slice(None, None), value)
             else:
                 raise AttributeError(f'SlowAdc not found: {name}')
 
     def __next__(self):
-        if self._current >= len(self._voltagenames):
+        if self._current >= len(self._slowadcnames):
             self._current = 0
             raise StopIteration
         else:
             self._current += 1
-            return self.__getattribute__(self._voltagenames[self._current-1])
-            # return self.__getattr__(self._voltagenames[self._current-1])
+            return self.__getattribute__(self._slowadcnames[self._current-1])
+            # return self.__getattr__(self._slowadcnames[self._current-1])
 
     def __iter__(self):
         return self
@@ -93,28 +94,28 @@ class NamedSlowAdcs:
         """
         Read the slowadcs into a numpy array with dimensions [nslowadcs, nmodules]
         """
-        voltage_array = np.zeros((len(self._voltagenames), len(self._detector)))
+        slowadc_array = np.zeros((len(self._slowadcnames), len(self._detector)))
         for i, _d in enumerate(self):
-            voltage_array[i,:] = _d[:]
-        return voltage_array
+            slowadc_array[i,:] = _d[:]
+        return slowadc_array
 
     def to_array(self):
         return self.get_asarray()       
 
-    def set_from_array(self, voltage_array):
+    def set_from_array(self, slowadc_array):
         """
         Set the slowadc from an numpy array with slowadc values. [nslowadcs, nmodules]
         """
-        voltage_array = voltage_array.astype(np.int)
+        slowadc_array = slowadc_array.astype(np.int)
         for i, _d in enumerate(self):
-            _d[:] = voltage_array[i]
+            _d[:] = slowadc_array[i]
 
-    def from_array(self, voltage_array):
-        self.set_from_array(voltage_array)
+    def from_array(self, slowadc_array):
+        self.set_from_array(slowadc_array)
 
 class DetectorSlowAdcs:
     _slowadcs = []
-    _voltagenames = [_d[0] for _d in _slowadcs]
+    _slowadcnames = [_d[0] for _d in _slowadcs]
     _allowed_attr = ['_detector', '_current']
     _frozen = False
 
@@ -135,11 +136,11 @@ class DetectorSlowAdcs:
         return self.__getattribute__('_' + name)
 
     @property
-    def voltagenames(self):
+    def slowadcnames(self):
         return [_d[0] for _d in _slowadcs]
         
     def __setattr__(self, name, value):
-        if name in self._voltagenames:
+        if name in self._slowadcnames:
             return self.__getattribute__('_' + name).__setitem__(slice(None, None), value)
         else:
             if self._frozen == True and name not in self._allowed_attr:
@@ -153,7 +154,7 @@ class DetectorSlowAdcs:
             raise StopIteration
         else:
             self._current += 1
-            return self.__getattr__(self._voltagenames[self._current-1])
+            return self.__getattr__(self._slowadcnames[self._current-1])
 
     def __iter__(self):
         return self
@@ -167,24 +168,24 @@ class DetectorSlowAdcs:
         """
         Read the slowadcs into a numpy array with dimensions [nslowadcs, nmodules]
         """
-        voltage_array = np.zeros((len(self._slowadcs), len(self._detector)))
+        slowadc_array = np.zeros((len(self._slowadcs), len(self._detector)))
         for i, _d in enumerate(self):
-            voltage_array[i,:] = _d[:]
-        return voltage_array
+            slowadc_array[i,:] = _d[:]
+        return slowadc_array
 
     def to_array(self):
         return self.get_asarray()
 
-    def set_from_array(self, voltage_array):
+    def set_from_array(self, slowadc_array):
         """
         Set the slowadcs from an numpy array with slowadc values. [nslowadcs, nmodules]
         """
-        voltage_array = voltage_array.astype(np.int)
+        slowadc_array = slowadc_array.astype(np.int)
         for i, _d in enumerate(self):
-            _d[:] = voltage_array[i]
+            _d[:] = slowadc_array[i]
 
-    def from_array(self, voltage_array):
-        self.set_from_array(voltage_array)
+    def from_array(self, slowadc_array):
+        self.set_from_array(slowadc_array)
 
     def set_default(self):
         """

@@ -2039,21 +2039,21 @@ void DetectorImpl::setCtbSignalName(const int index, const std::string &name) {
     ctb_shm()->setSignalName(index, name);
 }
 
-std::vector<std::string> DetectorImpl::getCtbVoltageNames() const {
-    return ctb_shm()->getVoltageNames();
+std::vector<std::string> DetectorImpl::getCtbPowerNames() const {
+    return ctb_shm()->getPowerNames();
 }
 
-void DetectorImpl::setCtbVoltageNames(const std::vector<std::string> &names) {
-    ctb_shm()->setVoltageNames(names);
+void DetectorImpl::setCtbPowerNames(const std::vector<std::string> &names) {
+    ctb_shm()->setPowerNames(names);
 }
 
-std::string DetectorImpl::getCtbVoltageName(const defs::dacIndex i) const {
-    return ctb_shm()->getVoltageName(static_cast<int>(i - defs::V_POWER_A));
+std::string DetectorImpl::getCtbPowerName(const defs::dacIndex i) const {
+    return ctb_shm()->getPowerName(static_cast<int>(i - defs::V_POWER_A));
 }
 
-void DetectorImpl::setCtbVoltageName(const defs::dacIndex index,
-                                     const std::string &name) {
-    ctb_shm()->setVoltageName(static_cast<int>(index - defs::V_POWER_A), name);
+void DetectorImpl::setCtbPowerName(const defs::dacIndex index,
+                                   const std::string &name) {
+    ctb_shm()->setPowerName(static_cast<int>(index - defs::V_POWER_A), name);
 }
 
 std::vector<std::string> DetectorImpl::getCtbSlowADCNames() const {

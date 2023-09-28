@@ -1053,10 +1053,10 @@ class CmdProxy {
         {"signallist", &CmdProxy::signallist},
         {"signalname", &CmdProxy::signalname},
         {"signalindex", &CmdProxy::signalindex},
-        {"voltagelist", &CmdProxy::voltagelist},
-        {"voltagename", &CmdProxy::voltagename},
-        {"voltageindex", &CmdProxy::voltageindex},
-        {"voltagevalues", &CmdProxy::voltagevalues},
+        {"powerlist", &CmdProxy::powerlist},
+        {"powername", &CmdProxy::powername},
+        {"powerindex", &CmdProxy::powerindex},
+        {"powervalues", &CmdProxy::powervalues},
         {"slowadclist", &CmdProxy::slowadclist},
         {"slowadcname", &CmdProxy::slowadcname},
         {"slowadcindex", &CmdProxy::slowadcindex},
@@ -1779,22 +1779,21 @@ class CmdProxy {
                   "[name] \n\t\t[ChipTestBoard] Get "
                   "the signal index for the given name.");
 
-    CTB_NAMED_LIST(voltagelist, getVoltageNames, setVoltageNames,
-                   "[voltagename1 voltagename2 .. voltagename4] "
+    CTB_NAMED_LIST(powerlist, getPowerNames, setPowerNames,
+                   "[powername1 powername2 .. powername4] "
                    "\n\t\t[ChipTestBoard] Set "
-                   "the list of voltage names for this board.");
+                   "the list of power names for this board.");
 
-    CTB_SINGLE_DACNAME(voltagename, getVoltageName, setVoltageName,
-                       defs::V_POWER_A,
+    CTB_SINGLE_DACNAME(powername, getPowerName, setPowerName, defs::V_POWER_A,
                        "[0-4][name] \n\t\t[ChipTestBoard] Set "
-                       "the voltage at the given position to the given name.");
+                       "the power at the given position to the given name.");
 
-    CTB_GET_DACINDEX(voltageindex, getVoltageIndex, defs::V_POWER_A,
+    CTB_GET_DACINDEX(powerindex, getPowerIndex, defs::V_POWER_A,
                      "[name] \n\t\t[ChipTestBoard] Get "
-                     "the voltage index for the given name.");
+                     "the power index for the given name.");
 
-    CTB_VALUES(voltagevalues, getVoltage, getVoltageList, getVoltageNames,
-               "[name] \n\t\t[ChipTestBoard] Get values of all voltages.");
+    CTB_VALUES(powervalues, getPower, getPowerList, getPowerNames,
+               "[name] \n\t\t[ChipTestBoard] Get values of all powers.");
 
     CTB_VALUES(slowadcvalues, getSlowADC, getSlowADCList, getSlowADCNames,
                "[name] \n\t\t[ChipTestBoard] Get values of all slow adcs.");
@@ -2426,7 +2425,7 @@ class CmdProxy {
     GET_COMMAND(syncclk, getSYNCClock,
                 "[n_clk in MHz]\n\t[Ctb] Sync clock in MHz.");
 
-    INTEGER_IND_COMMAND(v_limit, getVoltage, setVoltage, StringTo<int>,
+    INTEGER_IND_COMMAND(v_limit, getPower, setPower, StringTo<int>,
                         defs::V_LIMIT,
                         "[n_value]\n\t[Ctb] Soft limit for power "
                         "supplies (ctb only) and DACS in mV.");
@@ -2468,47 +2467,43 @@ class CmdProxy {
                            "[n_clk in MHz]\n\t[Ctb] Clock for latching the "
                            "digital bits in MHz.");
 
-    INTEGER_IND_COMMAND(v_a, getVoltage, setVoltage, StringTo<int>,
-                        defs::V_POWER_A,
-                        "[n_value]\n\t[Ctb] Voltage supply a in mV.");
+    INTEGER_IND_COMMAND(v_a, getPower, setPower, StringTo<int>, defs::V_POWER_A,
+                        "[n_value]\n\t[Ctb] Power supply a in mV.");
 
-    INTEGER_IND_COMMAND(v_b, getVoltage, setVoltage, StringTo<int>,
-                        defs::V_POWER_B,
-                        "[n_value]\n\t[Ctb] Voltage supply b in mV.");
+    INTEGER_IND_COMMAND(v_b, getPower, setPower, StringTo<int>, defs::V_POWER_B,
+                        "[n_value]\n\t[Ctb] Power supply b in mV.");
 
-    INTEGER_IND_COMMAND(v_c, getVoltage, setVoltage, StringTo<int>,
-                        defs::V_POWER_C,
-                        "[n_value]\n\t[Ctb] Voltage supply c in mV.");
+    INTEGER_IND_COMMAND(v_c, getPower, setPower, StringTo<int>, defs::V_POWER_C,
+                        "[n_value]\n\t[Ctb] Power supply c in mV.");
 
-    INTEGER_IND_COMMAND(v_d, getVoltage, setVoltage, StringTo<int>,
-                        defs::V_POWER_D,
-                        "[n_value]\n\t[Ctb] Voltage supply d in mV.");
+    INTEGER_IND_COMMAND(v_d, getPower, setPower, StringTo<int>, defs::V_POWER_D,
+                        "[n_value]\n\t[Ctb] Power supply d in mV.");
 
     INTEGER_IND_COMMAND(
-        v_io, getVoltage, setVoltage, StringTo<int>, defs::V_POWER_IO,
-        "[n_value]\n\t[Ctb] Voltage supply io in mV. Minimum 1200 mV. Must "
+        v_io, getPower, setPower, StringTo<int>, defs::V_POWER_IO,
+        "[n_value]\n\t[Ctb] Power supply io in mV. Minimum 1200 mV. Must "
         "be the first power regulator to be set after fpga reset (on-board "
         "detector server start up).");
 
     INTEGER_IND_COMMAND(
-        v_chip, getVoltage, setVoltage, StringTo<int>, defs::V_POWER_CHIP,
-        "[n_value]\n\t[Ctb] Voltage supply chip in mV. Do not use it "
+        v_chip, getPower, setPower, StringTo<int>, defs::V_POWER_CHIP,
+        "[n_value]\n\t[Ctb] Power supply chip in mV. Do not use it "
         "unless "
         "you are completely sure you will not fry the board.");
 
-    GET_IND_COMMAND(vm_a, getMeasuredVoltage, defs::V_POWER_A, "",
+    GET_IND_COMMAND(vm_a, getMeasuredPower, defs::V_POWER_A, "",
                     "\n\t[Ctb] Measured voltage of power supply a in mV.");
 
-    GET_IND_COMMAND(vm_b, getMeasuredVoltage, defs::V_POWER_B, "",
+    GET_IND_COMMAND(vm_b, getMeasuredPower, defs::V_POWER_B, "",
                     "\n\t[Ctb] Measured voltage of power supply b in mV.");
 
-    GET_IND_COMMAND(vm_c, getMeasuredVoltage, defs::V_POWER_C, "",
+    GET_IND_COMMAND(vm_c, getMeasuredPower, defs::V_POWER_C, "",
                     "\n\t[Ctb] Measured voltage of power supply c in mV.");
 
-    GET_IND_COMMAND(vm_d, getMeasuredVoltage, defs::V_POWER_D, "",
+    GET_IND_COMMAND(vm_d, getMeasuredPower, defs::V_POWER_D, "",
                     "\n\t[Ctb] Measured voltage of power supply d in mV.");
 
-    GET_IND_COMMAND(vm_io, getMeasuredVoltage, defs::V_POWER_IO, "",
+    GET_IND_COMMAND(vm_io, getMeasuredPower, defs::V_POWER_IO, "",
                     "\n\t[Ctb] Measured voltage of power supply io in mV.");
 
     GET_IND_COMMAND(im_a, getMeasuredCurrent, defs::I_POWER_A, "",

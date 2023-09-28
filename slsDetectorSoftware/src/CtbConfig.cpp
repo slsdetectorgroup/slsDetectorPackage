@@ -20,11 +20,11 @@ CtbConfig::CtbConfig() {
     for (size_t i = 0; i != num_signals; ++i) {
         setSignalName(i, "BIT" + ToString(i));
     }
-    setVoltageName(0, "VA");
-    setVoltageName(1, "VB");
-    setVoltageName(2, "VC");
-    setVoltageName(3, "VD");
-    setVoltageName(4, "VIO");
+    setPowerName(0, "VA");
+    setPowerName(1, "VB");
+    setPowerName(2, "VC");
+    setPowerName(3, "VD");
+    setPowerName(4, "VIO");
     for (size_t i = 0; i != num_slowADCs; ++i) {
         setSlowADCName(i, "SLOWADC" + ToString(i));
     }
@@ -54,10 +54,10 @@ void CtbConfig::check_signal_index(size_t i) const {
     }
 }
 
-void CtbConfig::check_voltage_index(size_t i) const {
-    if (i >= num_voltages) {
+void CtbConfig::check_power_index(size_t i) const {
+    if (i >= num_powers) {
         std::ostringstream oss;
-        oss << "Invalid Voltage index. Options: 0 - " << num_voltages
+        oss << "Invalid Power index. Options: 0 - " << num_powers
             << " or V_POWER_A - V_POWER_IO";
         throw RuntimeError(oss.str());
     }
@@ -176,33 +176,33 @@ std::vector<std::string> CtbConfig::getSignalNames() const {
     return names;
 }
 
-void CtbConfig::setVoltageName(size_t index, const std::string &name) {
-    check_voltage_index(index);
+void CtbConfig::setPowerName(size_t index, const std::string &name) {
+    check_power_index(index);
     check_size(name);
-    char *dst = &voltagenames[index * name_length];
+    char *dst = &powernames[index * name_length];
     memset(dst, '\0', name_length);
     memcpy(dst, &name[0], name.size());
 }
 
-void CtbConfig::setVoltageNames(const std::vector<std::string> &names) {
-    if (names.size() != num_voltages) {
-        throw RuntimeError("Voltage names need to be of size " +
-                           std::to_string(num_voltages));
+void CtbConfig::setPowerNames(const std::vector<std::string> &names) {
+    if (names.size() != num_powers) {
+        throw RuntimeError("Power names need to be of size " +
+                           std::to_string(num_powers));
     }
-    for (size_t i = 0; i != num_voltages; ++i) {
-        setVoltageName(i, names[i]);
+    for (size_t i = 0; i != num_powers; ++i) {
+        setPowerName(i, names[i]);
     }
 }
 
-std::string CtbConfig::getVoltageName(size_t index) const {
-    check_voltage_index(index);
-    return voltagenames + index * name_length;
+std::string CtbConfig::getPowerName(size_t index) const {
+    check_power_index(index);
+    return powernames + index * name_length;
 }
 
-std::vector<std::string> CtbConfig::getVoltageNames() const {
+std::vector<std::string> CtbConfig::getPowerNames() const {
     std::vector<std::string> names;
-    for (size_t i = 0; i != num_voltages; ++i)
-        names.push_back(getVoltageName(i));
+    for (size_t i = 0; i != num_powers; ++i)
+        names.push_back(getPowerName(i));
     return names;
 }
 

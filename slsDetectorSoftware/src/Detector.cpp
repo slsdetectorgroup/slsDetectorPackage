@@ -2069,9 +2069,9 @@ Result<int> Detector::getSYNCClock(Positions pos) const {
     return pimpl->Parallel(&Module::getClockFrequency, pos, defs::SYNC_CLOCK);
 }
 
-std::vector<defs::dacIndex> Detector::getVoltageList() const {
+std::vector<defs::dacIndex> Detector::getPowerList() const {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD) {
-        throw RuntimeError("Voltage list not implemented for this detector");
+        throw RuntimeError("Power list not implemented for this detector");
     }
     return std::vector<defs::dacIndex>{defs::V_POWER_A, defs::V_POWER_B,
                                        defs::V_POWER_C, defs::V_POWER_D,
@@ -2087,7 +2087,7 @@ std::vector<defs::dacIndex> Detector::getSlowADCList() const {
         defs::SLOW_ADC4, defs::SLOW_ADC5, defs::SLOW_ADC6, defs::SLOW_ADC7};
 }
 
-Result<int> Detector::getVoltage(defs::dacIndex index, Positions pos) const {
+Result<int> Detector::getPower(defs::dacIndex index, Positions pos) const {
     switch (index) {
     case defs::V_LIMIT:
     case defs::V_POWER_A:
@@ -2098,12 +2098,12 @@ Result<int> Detector::getVoltage(defs::dacIndex index, Positions pos) const {
     case defs::V_POWER_CHIP:
         break;
     default:
-        throw RuntimeError("Unknown Voltage Index");
+        throw RuntimeError("Unknown Power Index");
     }
     return pimpl->Parallel(&Module::getDAC, pos, index, true);
 }
 
-void Detector::setVoltage(defs::dacIndex index, int value, Positions pos) {
+void Detector::setPower(defs::dacIndex index, int value, Positions pos) {
     switch (index) {
     case defs::V_LIMIT:
     case defs::V_POWER_A:
@@ -2114,7 +2114,7 @@ void Detector::setVoltage(defs::dacIndex index, int value, Positions pos) {
     case defs::V_POWER_CHIP:
         break;
     default:
-        throw RuntimeError("Unknown Voltage Index");
+        throw RuntimeError("Unknown Power Index");
     }
     pimpl->Parallel(&Module::setDAC, pos, value, index, true);
 }
@@ -2185,8 +2185,8 @@ void Detector::setDBITClock(int value_in_MHz, Positions pos) {
                     value_in_MHz);
 }
 
-Result<int> Detector::getMeasuredVoltage(defs::dacIndex index,
-                                         Positions pos) const {
+Result<int> Detector::getMeasuredPower(defs::dacIndex index,
+                                       Positions pos) const {
     switch (index) {
     case defs::V_POWER_A:
     case defs::V_POWER_B:
@@ -2196,7 +2196,7 @@ Result<int> Detector::getMeasuredVoltage(defs::dacIndex index,
     case defs::V_POWER_CHIP:
         break;
     default:
-        throw RuntimeError("Unknown Voltage Index");
+        throw RuntimeError("Unknown Power Index");
     }
     return pimpl->Parallel(&Module::getADC, pos, index);
 }
@@ -2377,39 +2377,39 @@ std::string Detector::getSignalName(const int i) const {
     return pimpl->getCtbSignalName(i);
 }
 
-void Detector::setVoltageNames(const std::vector<std::string> names) {
+void Detector::setPowerNames(const std::vector<std::string> names) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
-    pimpl->setCtbVoltageNames(names);
+    pimpl->setCtbPowerNames(names);
 }
 
-std::vector<std::string> Detector::getVoltageNames() const {
+std::vector<std::string> Detector::getPowerNames() const {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
-    return pimpl->getCtbVoltageNames();
+    return pimpl->getCtbPowerNames();
 }
 
-defs::dacIndex Detector::getVoltageIndex(const std::string &name) const {
+defs::dacIndex Detector::getPowerIndex(const std::string &name) const {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
-    auto names = getVoltageNames();
+    auto names = getPowerNames();
     auto it = std::find(names.begin(), names.end(), name);
     if (it == names.end())
-        throw RuntimeError("Voltage name not found");
+        throw RuntimeError("Power name not found");
     return static_cast<defs::dacIndex>(it - names.begin() + defs::V_POWER_A);
 }
 
-void Detector::setVoltageName(const defs::dacIndex index,
-                              const std::string &name) {
+void Detector::setPowerName(const defs::dacIndex index,
+                            const std::string &name) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
-    pimpl->setCtbVoltageName(index, name);
+    pimpl->setCtbPowerName(index, name);
 }
 
-std::string Detector::getVoltageName(const defs::dacIndex i) const {
+std::string Detector::getPowerName(const defs::dacIndex i) const {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
-    return pimpl->getCtbVoltageName(i);
+    return pimpl->getCtbPowerName(i);
 }
 
 void Detector::setSlowADCNames(const std::vector<std::string> names) {

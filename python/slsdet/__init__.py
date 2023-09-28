@@ -4,7 +4,7 @@
 from .eiger import Eiger
 from .ctb import Ctb
 from .dacs import DetectorDacs, Dac
-from .voltages import DetectorVoltages, Voltage
+from .powers import DetectorPowers, Power
 from .slowadcs import DetectorSlowAdcs, SlowAdc
 from .detector import Detector
 from .jungfrau import Jungfrau

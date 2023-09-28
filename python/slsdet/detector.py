@@ -2863,54 +2863,16 @@ class Detector(CppDetectorApi):
         
         Note
         ----
-        In pedestal mode, the number of frames or triggers is overwritten by 
-        ((#pedestal_frames + 1) x 2 x #pedestal_loops). 
-        In auto timing mode or if #triggers > 1, #frames is overwritten with 
-        #triggers = 1, \nelse #triggers is overwritten with #frames = 1.
+        The number of frames or triggers is overwritten by #pedestal_frames x  pedestal_loops x 2. \n
+        In auto timing mode or in trigger mode with #frames > 1, #frames is overwritten and #triggers = 1, else #triggers is overwritten and #frames = 1. \n
+        One cannot set #frames, #triggers or timing mode in pedestal mode (exception thrown).\n
+        Disabling pedestal mode will set back the normal mode values of #frames and #triggers."
         """
         return self.getPedestalMode()
 
     @pedestalmode.setter
     def pedestalmode(self, value):
-        self.setPedestalMode(value)
-
-    @property
-    @element
-    def pedestalframes(self):
-        """
-        [Jungfrau] Sets number of pedestal frames in pedestal mode
-        
-        Note
-        ----
-        In pedestal mode, the number of frames or triggers is overwritten by 
-        ((#pedestal_frames + 1) x 2 x #pedestal_loops). 
-        In auto timing mode or if #triggers > 1, #frames is overwritten with 
-        #triggers = 1, \nelse #triggers is overwritten with #frames = 1.
-        """
-        return self.getPedestalFrames()
-
-    @pedestalframes.setter
-    def pedestalframes(self, value):
-        self.setPedestalFrames(value)
-
-    @property
-    @element
-    def pedestalloops(self):
-        """
-        [Jungfrau] Sets the number of loops in pedestal mode.
-        
-        Note
-        ----
-        In pedestal mode, the number of frames or triggers is overwritten by 
-        ((#pedestal_frames + 1) x 2 x #pedestal_loops). 
-        In auto timing mode or if #triggers > 1, #frames is overwritten with 
-        #triggers = 1, \nelse #triggers is overwritten with #frames = 1.
-        """
-        return self.getPedestalLoops()
-
-    @pedestalloops.setter
-    def pedestalloops(self, value):
-        self.setPedestalLoops(value)
+        ut.set_using_dict(self.setPedestalMode, value)
 
     @property
     def maxclkphaseshift(self):

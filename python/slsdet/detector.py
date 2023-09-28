@@ -182,6 +182,7 @@ class Detector(CppDetectorApi):
 
     @port.setter
     def port(self, value):
+        ut.validate_port(value)
         ut.set_using_dict(self.setControlPort, value)
 
     @property
@@ -197,6 +198,7 @@ class Detector(CppDetectorApi):
 
     @stopport.setter
     def stopport(self, args):
+        ut.validate_port(args)
         ut.set_using_dict(self.setStopPort, args)
 
 
@@ -866,6 +868,7 @@ class Detector(CppDetectorApi):
 
     @rx_tcpport.setter
     def rx_tcpport(self, port):
+        ut.validate_port(port)
         ut.set_using_dict(self.setRxPort, port)
 
     @property
@@ -1145,11 +1148,14 @@ class Detector(CppDetectorApi):
     @rx_zmqport.setter
     def rx_zmqport(self, port):
         if isinstance(port, int):
+            ut.validate_port(port)
             self.setRxZmqPort(port, -1)
         elif isinstance(port, dict):
+            ut.validate_port(port)
             ut.set_using_dict(self.setRxZmqPort, port)
         elif is_iterable(port):
             for i, p in enumerate(port):
+                ut.validate_port(p)
                 self.setRxZmqPort(p, i)
         else:
             raise ValueError("Unknown argument type")
@@ -1179,11 +1185,14 @@ class Detector(CppDetectorApi):
     @zmqport.setter
     def zmqport(self, port):
         if isinstance(port, int):
+            ut.validate_port(port)
             self.setClientZmqPort(port, -1)
         elif isinstance(port, dict):
+            ut.validate_port(port)
             ut.set_using_dict(self.setClientZmqPort, port)
         elif is_iterable(port):
             for i, p in enumerate(port):
+                ut.validate_port(p)
                 self.setClientZmqPort(p, i)
         else:
             raise ValueError("Unknown argument type")
@@ -1493,6 +1502,7 @@ class Detector(CppDetectorApi):
 
     @udp_dstport.setter
     def udp_dstport(self, port):
+        ut.validate_port(port)
         ut.set_using_dict(self.setDestinationUDPPort, port)
 
     @property
@@ -1514,6 +1524,7 @@ class Detector(CppDetectorApi):
 
     @udp_dstport2.setter
     def udp_dstport2(self, port):
+        ut.validate_port(port)
         ut.set_using_dict(self.setDestinationUDPPort2, port)
 
     @property
@@ -2026,6 +2037,7 @@ class Detector(CppDetectorApi):
     @virtual.setter
     def virtual(self, args):
         n_detectors, starting_port = args
+        ut.validate_port(starting_port)
         self.setVirtualDetectorServers(n_detectors, starting_port)
 
     

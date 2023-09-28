@@ -10,6 +10,7 @@
 #include <cstring>
 #include <ifaddrs.h>
 #include <iomanip>
+#include <limits>
 #include <net/if.h>
 #include <netdb.h>
 #include <sstream>

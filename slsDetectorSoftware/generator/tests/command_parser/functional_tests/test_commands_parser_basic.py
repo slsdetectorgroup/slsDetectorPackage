@@ -4,7 +4,7 @@ import yaml
 
 from commands_parser.commands_parser import CommandParser
 
-data_path = Path(__file__).parent / "data"
+data_path = Path(__file__).parent.parent / "data"
 
 
 def test_basic_propagation(tmp_path):

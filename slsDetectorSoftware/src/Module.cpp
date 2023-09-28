@@ -3932,8 +3932,8 @@ void Module::sendProgram(bool blackfin, std::vector<char> buffer,
 
 void Module::simulatingActivityinDetector(const std::string &functionType,
                                           const int timeRequired) {
-    LOG(logINFO) << "(Simulating) " << functionType << " for module "
-                 << moduleIndex << " (" << shm()->hostname << ")";
+    LOG(logINFO) << functionType << " for module " << moduleIndex << " ("
+                 << shm()->hostname << ")";
     printf("%d%%\r", 0);
     std::cout << std::flush;
     const int ERASE_TIME = timeRequired;

@@ -100,3 +100,71 @@ case_0100:
   help: '0100'
   infer_action: true
   template: true
+case_0101:
+  actions:
+    GET:
+      detectors:
+        CHIPTESTBOARD:
+        - argc: 98
+          args: []
+          cast_input: []
+          check_det_id: false
+          convert_det_id: true
+          function: do_ctb
+          input: []
+          input_types: []
+          output: []
+          require_det_id: false
+        MYTHEN3:
+        - argc: 420
+          args: []
+          cast_input: []
+          check_det_id: false
+          convert_det_id: true
+          function: do_mythen23
+          input: []
+          input_types: []
+          output: []
+          require_det_id: false
+  help: '0101'
+  infer_action: true
+  template: true
+case_0110:
+  actions:
+    GET:
+      args:
+      - argc: 111
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: get_function
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+      detectors:
+        CHIPTESTBOARD:
+        - argc: 98
+          args: []
+          cast_input: []
+          check_det_id: false
+          convert_det_id: true
+          function: do_ctb
+          input: []
+          input_types: []
+          output: []
+          require_det_id: false
+        MYTHEN3:
+        - argc: 99
+          args: []
+          cast_input: []
+          check_det_id: false
+          convert_det_id: true
+          function: do_mythen3
+          input: []
+          input_types: []
+          output: []
+          require_det_id: false
+  help: '0110'
+  infer_action: true
+  template: true

@@ -52,18 +52,72 @@ case_0100:
 
 case_0101:
   inherit_actions: template_01
-  help: "0100"
+  help: "0101"
   actions:
       GET:
+        function: 'get_function'
         detectors:
             MYTHEN3:
               function: 'do_mythen23'
+              argc: 420
+
+case_0110:
+  inherit_actions: template_01
+  help: "0110"
+  actions:
+      GET:
+        argc: 111
+        function: 'get_function'
+
+case_0110v2:
+  inherit_actions: template_01
+  help: "0110v2"
+  actions:
+      GET:
+        args:
+            - argc: 111
+              function: 'get_function'
+
+
+case_0111:
+  inherit_actions: template_01
+  help: "0111"
+  actions:
+      GET:
+        args:
+            - argc: 111
+              function: 'get_function'
+        detectors:
+          MYTHEN3:
+            function: 'do_mythen23'
+            argc: 420
+
+##### cases 10** tests
+template_10:
+  template: true
+  actions:
+    GET:
+      args:
+        - argc: 0
+        - argc : 1
+          output: [ testytest ]
+
+case_1000:
+  inherit_actions: template_10
+  help: "1000"
+
+case_1001:
+  inherit_actions: template_10
+  help: "1001"
+  actions:
+    GET:
+      detectors:
+        MYTHEN3:
+          args:
+            - function: 'do_mythen23'
+              argc: 420
+            - function: 'do_mythen3'
               argc: 99
-
-
-
-
-
 
 
 

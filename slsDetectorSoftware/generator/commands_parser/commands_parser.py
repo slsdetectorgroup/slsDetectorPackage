@@ -92,13 +92,13 @@ class CommandParser:
         self.logger.info('Commands file is valid ✅️')
         return True
 
-    def parse_inherited(self, parent, command, simple_parent):
+    def _parse_inherited_command(self, parent, command, simple_parent):
         """
-        parse a command that inherits from another command
+        parse a command that inherits from parent command
         :param parent: parsed parent command
         :param command: the current command
         :param simple_parent: unparsed parent command
-        :return:
+        :return: parsed command
         """
         # deepcopy parent and command to avoid modifying the originals
         command = copy.deepcopy(command)
@@ -109,25 +109,71 @@ class CommandParser:
         if 'actions' not in command:
             return config
         for action, command_params in command['actions'].items():
+            if action not in config['actions']:
+                # todo: handle this case
+                pass
             parent_params = config['actions'][action]
-            if 'args' not in command_params:
-                config['actions'][action]['args'] = self.parse_action({}, parent_params['args'], command_params)
+            if 'args' in command_params:
+                # child has args => inherit action level params from parent + override with child args + use child's
+                # action level params
+                context = {**self.propagate_config, **simple_parent['actions'][action], **command_params}
+                config['actions'][action]['args'] = self.parse_action(context, command_params['args'])
+            elif 'argc' in command_params:
+                # child has action level args (argc)
+                context = {**self.propagate_config, **simple_parent['actions'][action], **command_params}
+                config['actions'][action]['args'] = self.parse_action(context, [])
             else:
-                config['actions'][action]['args'] = self.parse_action(simple_parent['actions'][action],
-                                                                      command_params['args'], command_params)
+                # child does not have args => use parent's action level params + override with child's action level
+                if 'args' in parent_params:
+                    config['actions'][action]['args'] = self.parse_action({}, parent_params['args'], command_params)
+
             if 'detectors' in command_params:
-
                 if command_params['detectors'] is None:
+                    # if child has an empty detector section, then delete the parent's detector section
                     del config['actions'][action]['detectors']
-                else:
-                    for detector_name, detector_params in command_params['detectors'].items():
-                        action_context = {**command_params, **detector_params}
+                    continue
 
-                        if 'args' not in detector_params:
-                            detector_params['args'] = []
+                for detector_name, detector_params in command_params['detectors'].items():
+                    if 'detectors' not in config['actions'][action]:
                         config['actions'][action]['detectors'] = {}
-                        config['actions'][action]['detectors'][detector_name] = self.parse_action(
-                            action_context, config['actions'][action]['args'], detector_params)
+                    config_detector = config['actions'][action]['detectors']
+                    if 'detectors' not in parent_params or detector_name not in parent_params['detectors']:
+                        if 'args' in detector_params:
+                            # if child has detector args and parent does not have detectors
+                            # => use child's detector args
+                            context = {**self.propagate_config, **simple_parent['actions'][action], **detector_params}
+                            config_detector[detector_name] = self.parse_action(context, detector_params['args'])
+                        elif 'args' in parent_params:
+                            # if child does not have detector args and parent does not have detectors
+                            # => use the child's action args
+                            context = {**self.propagate_config, **simple_parent['actions'][action]}
+                            config_detector[detector_name] = self.parse_action(context,
+                                                                               config['actions'][action]['args'],
+                                                                               detector_params)
+                    elif detector_name in parent_params['detectors']:
+
+                        if 'args' in detector_params:
+                            # child and parent have the same detector and child has detector args
+                            # => use child's detector args
+                            context = {
+                                **self.propagate_config,
+                                **simple_parent['actions'][action],
+                                **simple_parent['actions'][action]['detectors'][detector_name],
+
+                            }
+                            config_detector[detector_name] = self.parse_action(context, detector_params['args'])
+                        else:
+                            # child and parent have the same detector and child does not have detector args
+                            # => use parent's detector args
+                            priority_context = {**command_params, **detector_params}
+                            config_detector[detector_name] = self.parse_action(
+                                {},
+                                parent_params['detectors'][detector_name],
+                                priority_context
+                            )
+
+                    else:
+                        pass
 
         return config
 
@@ -135,7 +181,7 @@ class CommandParser:
         """
         logic function for parse_command.
         This function is recursive
-        :return:
+        :return: parsed command
         """
         config = self.default_config.copy()
         config.update(command)
@@ -150,10 +196,12 @@ class CommandParser:
                 # if parent command has not been parsed, parse it
                 parent = self.parse_command(command['inherit_actions'])
             # parse the current command and merge it with the parent command
-            config = self.parse_inherited(parent, command, self.simple_commands[command['inherit_actions']])
+            config = self._parse_inherited_command(parent, command, self.simple_commands[command['inherit_actions']])
             return config
+
         if 'actions' not in command:
             return config
+
         for action, action_params in command['actions'].items():
             config['actions'][action] = {}
             config_action = config['actions'][action]
@@ -267,7 +315,8 @@ class CommandParser:
         yaml.dump(self.extended_commands, self.output_file.open('w'), default_flow_style=False)
 
 
-command_parser = CommandParser(Path('/afs/psi.ch/user/b/braham_b/github/slsDetectorPackage/slsDetectorSoftware/generator/tests/command_parser/data/detectors.yaml'))
+command_parser = CommandParser(Path(
+    '/afs/psi.ch/user/b/braham_b/github/slsDetectorPackage/slsDetectorSoftware/generator/tests/command_parser/data/detectors.yaml'))
 # command_parser = CommandParser()
 
 if __name__ == '__main__':

@@ -315,9 +315,9 @@ class CommandParser:
         yaml.dump(self.extended_commands, self.output_file.open('w'), default_flow_style=False)
 
 
-command_parser = CommandParser(Path(
-    '/afs/psi.ch/user/b/braham_b/github/slsDetectorPackage/slsDetectorSoftware/generator/tests/command_parser/data/detectors.yaml'))
-# command_parser = CommandParser()
+# command_parser = CommandParser(Path(
+#     '/afs/psi.ch/user/b/braham_b/github/slsDetectorPackage/slsDetectorSoftware/generator/tests/command_parser/data/detectors.yaml'))
+command_parser = CommandParser()
 
 if __name__ == '__main__':
     command_parser.verify_format()

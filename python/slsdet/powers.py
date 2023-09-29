@@ -86,7 +86,7 @@ class NamedPowers:
         return self
 
     def __repr__(self):
-        r_str = ['========== VOLTAGES =========']
+        r_str = ['========== POWERS =========']
         r_str += [repr(power) for power in self]
         return '\n'.join(r_str)
     def get_asarray(self):
@@ -159,7 +159,7 @@ class DetectorPowers:
         return self
 
     def __repr__(self):
-        r_str = ['========== VOLTAGES =========']
+        r_str = ['========== POWERS =========']
         r_str += [repr(power) for power in self]
         return '\n'.join(r_str)
 

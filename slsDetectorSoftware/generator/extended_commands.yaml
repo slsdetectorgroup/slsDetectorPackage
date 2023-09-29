@@ -126,6 +126,29 @@ adcenable10g:
   help: ''
   infer_action: false
   template: true
+adcindex:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exception:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        function: getAdcIndex
+        input:
+        - args[0]
+        input_types:
+        - std::string
+        output:
+        - static_cast<int>(t)
+        require_det_id: false
+  help: "[name] \n\t\t[ChipTestBoard] Get the adc index for the given name."
+  infer_action: false
+  template: true
 adcinvert:
   actions:
     GET:
@@ -156,6 +179,53 @@ adcinvert:
         - args.front()
         require_det_id: true
   help: ''
+  infer_action: false
+  template: true
+adcname:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - true
+        check_det_id: true
+        convert_det_id: true
+        exception:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        function: getAdcName
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args[0]
+        - ''' '''
+        - t
+        require_det_id: false
+    PUT:
+      args:
+      - argc: 2
+        cast_input:
+        - true
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exception:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        function: setAdcName
+        input:
+        - args[0]
+        - args[1]
+        input_types:
+        - int
+        - std::string
+        output:
+        - ToString(args)
+        require_det_id: false
+  help: "[0-31][name] \n\t\t[ChipTestBoard] Set the adc at the given position to the\
+    \ given name."
   infer_action: false
   template: true
 adcpipeline:
@@ -624,6 +694,88 @@ config:
         - args.front()
         require_det_id: false
   help: "\n\tFrees shared memory before loading configuration file. Set up once."
+  infer_action: false
+  template: true
+dacindex:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exception:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        extra_variables:
+        - name: index
+          type: defs::dacIndex
+          value: defs::DAC_0
+        function: getDacIndex
+        input:
+        - args[0]
+        input_types:
+        - std::string
+        output:
+        - ToString(static_cast<int>(t) - index)
+        require_det_id: false
+  help: "[name] \n\t\t[ChipTestBoard] Get the dac index for the given name."
+  infer_action: false
+  template: true
+dacname:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exception:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        extra_variables:
+        - name: index
+          type: defs::dacIndex
+          value: defs::DAC_0
+        function: getDacName
+        input:
+        - static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)
+        input_types:
+        - defs::dacIndex
+        output:
+        - args[0]
+        - ''' '''
+        - t
+        require_det_id: false
+    PUT:
+      args:
+      - argc: 2
+        cast_input:
+        - false
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exception:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        extra_variables:
+        - name: index
+          type: defs::dacIndex
+          value: defs::DAC_0
+        function: setDacName
+        input:
+        - static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)
+        - args[1]
+        input_types:
+        - defs::dacIndex
+        - std::string
+        output:
+        - ToString(args)
+        require_det_id: false
+  help: "[0-17][name] \n\t\t[ChipTestBoard] Set the dac at the given position to the\
+    \ given name."
   infer_action: false
   template: true
 dbitclk:
@@ -4241,6 +4393,158 @@ settingspath:
   help: ''
   infer_action: false
   template: true
+signalindex:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exception:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        function: getSignalIndex
+        input:
+        - args[0]
+        input_types:
+        - std::string
+        output:
+        - static_cast<int>(t)
+        require_det_id: false
+  help: "[name] \n\t\t[ChipTestBoard] Get the signal index for the given name."
+  infer_action: false
+  template: true
+signalname:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - true
+        check_det_id: true
+        convert_det_id: true
+        exception:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        function: getSignalName
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args[0]
+        - ''' '''
+        - t
+        require_det_id: false
+    PUT:
+      args:
+      - argc: 2
+        cast_input:
+        - true
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exception:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        function: setSignalName
+        input:
+        - args[0]
+        - args[1]
+        input_types:
+        - int
+        - std::string
+        output:
+        - ToString(args)
+        require_det_id: false
+  help: "[0-63][name] \n\t\t[ChipTestBoard] Set the signal at the given position to\
+    \ the given name."
+  infer_action: false
+  template: true
+slowadcindex:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exception:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        extra_variables:
+        - name: index
+          type: defs::dacIndex
+          value: defs::SLOW_ADC0
+        function: getSlowADCIndex
+        input:
+        - args[0]
+        input_types:
+        - std::string
+        output:
+        - ToString(static_cast<int>(t) - index)
+        require_det_id: false
+  help: "[name] \n\t\t[ChipTestBoard] Get the slowadc index for the given name."
+  infer_action: false
+  template: true
+slowadcname:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exception:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        extra_variables:
+        - name: index
+          type: defs::dacIndex
+          value: defs::SLOW_ADC0
+        function: getSlowADCName
+        input:
+        - static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)
+        input_types:
+        - defs::dacIndex
+        output:
+        - args[0]
+        - ''' '''
+        - t
+        require_det_id: false
+    PUT:
+      args:
+      - argc: 2
+        cast_input:
+        - false
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exception:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        extra_variables:
+        - name: index
+          type: defs::dacIndex
+          value: defs::SLOW_ADC0
+        function: setSlowADCName
+        input:
+        - static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)
+        - args[1]
+        input_types:
+        - defs::dacIndex
+        - std::string
+        output:
+        - ToString(args)
+        require_det_id: false
+  help: "[0-7][name] \n\t\t[ChipTestBoard] Set the slowadc at the given position to\
+    \ the given name."
+  infer_action: false
+  template: true
 slowadcvalues:
   actions:
     GET:
@@ -6321,6 +6625,88 @@ vm_io:
         - "\" \xB0C\""
         require_det_id: true
   help: "\n\t[Ctb] Measured voltage of power supply io in mV."
+  infer_action: false
+  template: true
+voltageindex:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exception:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        extra_variables:
+        - name: index
+          type: defs::dacIndex
+          value: defs::V_POWER_A
+        function: getVoltageIndex
+        input:
+        - args[0]
+        input_types:
+        - std::string
+        output:
+        - ToString(static_cast<int>(t) - index)
+        require_det_id: false
+  help: "[name] \n\t\t[ChipTestBoard] Get the voltage index for the given name."
+  infer_action: false
+  template: true
+voltagename:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exception:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        extra_variables:
+        - name: index
+          type: defs::dacIndex
+          value: defs::V_POWER_A
+        function: getVoltageName
+        input:
+        - static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)
+        input_types:
+        - defs::dacIndex
+        output:
+        - args[0]
+        - ''' '''
+        - t
+        require_det_id: false
+    PUT:
+      args:
+      - argc: 2
+        cast_input:
+        - false
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exception:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        extra_variables:
+        - name: index
+          type: defs::dacIndex
+          value: defs::V_POWER_A
+        function: setVoltageName
+        input:
+        - static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)
+        - args[1]
+        input_types:
+        - defs::dacIndex
+        - std::string
+        output:
+        - ToString(args)
+        require_det_id: false
+  help: "[0-4][name] \n\t\t[ChipTestBoard] Set the voltage at the given position to\
+    \ the given name."
   infer_action: false
   template: true
 voltagevalues:

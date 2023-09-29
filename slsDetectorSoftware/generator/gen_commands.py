@@ -149,9 +149,17 @@ if __name__ == '__main__':
     )
     parser.add_argument('-f', '--format', action='store_true', default=False, dest='format',
                         help='format header and cpp file using clang-format')
+    parser.add_argument('-p', '--parse', action='store_true', default=False, dest='parse',
+                        help='parse the commands.yaml file into extended_commands.yaml')
     cli_args = parser.parse_args()
 
+    if cli_args.parse:
+        from commands_parser.commands_parser import command_parser
+        command_parser.verify_format()
+        command_parser.parse_all_commands()
+
     generate()
+
     if cli_args.format:
         os.system(f'clang-format -i  --style="{{Standard: C++11}}" {GEN_PATH.parent.absolute() / "src" / "Caller.cpp"}')
         os.system(f'clang-format -i  --style="{{Standard: C++11}}" {GEN_PATH.parent.absolute() / "src" / "Caller.h"}')

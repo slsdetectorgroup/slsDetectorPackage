@@ -279,6 +279,55 @@ std::string Caller::adcenable10g(int action) {
   return os.str();
 }
 
+std::string Caller::adcindex(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: adcindex" << std::endl;
+    os << R"V0G0N([name] 
+		[ChipTestBoard] Get the adc index for the given name. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET']");
+  }
+
+  // generate code for each action
+  auto detector_type = det->getDetectorType().squash();
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute adcindex at module level");
+      }
+      auto t = det->getAdcIndex(args[0]);
+      os << static_cast<int>(t) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
 std::string Caller::adcinvert(int action) {
 
   std::ostringstream os;
@@ -336,6 +385,90 @@ std::string Caller::adcinvert(int action) {
       auto arg0 = StringTo<uint32_t>(args[0]);
       det->setADCInvert(arg0, std::vector<int>{ det_id });
       os << args.front() << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::adcname(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: adcname" << std::endl;
+    os << R"V0G0N([0-31][name] 
+		[ChipTestBoard] Set the adc at the given position to the given name. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  auto detector_type = det->getDetectorType().squash();
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute adcname at module level");
+      }
+      auto arg0 = StringTo<int>(args[0]);
+      auto t = det->getAdcName(arg0);
+      os << args[0] << ' ' << t << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute adcname at module level");
+      }
+      auto arg0 = StringTo<int>(args[0]);
+      det->setAdcName(arg0, args[1]);
+      os << ToString(args) << '\n';
     }
   }
 
@@ -1231,6 +1364,133 @@ std::string Caller::config(int action) {
       }
       det->loadConfig(args[0]);
       os << args.front() << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::dacindex(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: dacindex" << std::endl;
+    os << R"V0G0N([name] 
+		[ChipTestBoard] Get the dac index for the given name. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      defs::dacIndex index = defs::DAC_0;
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET']");
+  }
+
+  // generate code for each action
+  auto detector_type = det->getDetectorType().squash();
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      defs::dacIndex index = defs::DAC_0;
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute dacindex at module level");
+      }
+      auto t = det->getDacIndex(args[0]);
+      os << ToString(static_cast<int>(t) - index) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::dacname(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: dacname" << std::endl;
+    os << R"V0G0N([0-17][name] 
+		[ChipTestBoard] Set the dac at the given position to the given name. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      defs::dacIndex index = defs::DAC_0;
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      defs::dacIndex index = defs::DAC_0;
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  auto detector_type = det->getDetectorType().squash();
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      defs::dacIndex index = defs::DAC_0;
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute dacname at module level");
+      }
+      auto t = det->getDacName(
+          static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index));
+      os << args[0] << ' ' << t << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      defs::dacIndex index = defs::DAC_0;
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute dacname at module level");
+      }
+      det->setDacName(
+          static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index), args[1]);
+      os << ToString(args) << '\n';
     }
   }
 
@@ -8007,6 +8267,266 @@ std::string Caller::settingspath(int action) {
   return os.str();
 }
 
+std::string Caller::signalindex(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: signalindex" << std::endl;
+    os << R"V0G0N([name] 
+		[ChipTestBoard] Get the signal index for the given name. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET']");
+  }
+
+  // generate code for each action
+  auto detector_type = det->getDetectorType().squash();
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute signalindex at module level");
+      }
+      auto t = det->getSignalIndex(args[0]);
+      os << static_cast<int>(t) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::signalname(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: signalname" << std::endl;
+    os << R"V0G0N([0-63][name] 
+		[ChipTestBoard] Set the signal at the given position to the given name. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  auto detector_type = det->getDetectorType().squash();
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute signalname at module level");
+      }
+      auto arg0 = StringTo<int>(args[0]);
+      auto t = det->getSignalName(arg0);
+      os << args[0] << ' ' << t << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute signalname at module level");
+      }
+      auto arg0 = StringTo<int>(args[0]);
+      det->setSignalName(arg0, args[1]);
+      os << ToString(args) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::slowadcindex(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: slowadcindex" << std::endl;
+    os << R"V0G0N([name] 
+		[ChipTestBoard] Get the slowadc index for the given name. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      defs::dacIndex index = defs::SLOW_ADC0;
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET']");
+  }
+
+  // generate code for each action
+  auto detector_type = det->getDetectorType().squash();
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      defs::dacIndex index = defs::SLOW_ADC0;
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute slowadcindex at module level");
+      }
+      auto t = det->getSlowADCIndex(args[0]);
+      os << ToString(static_cast<int>(t) - index) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::slowadcname(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: slowadcname" << std::endl;
+    os << R"V0G0N([0-7][name] 
+		[ChipTestBoard] Set the slowadc at the given position to the given name. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      defs::dacIndex index = defs::SLOW_ADC0;
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      defs::dacIndex index = defs::SLOW_ADC0;
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  auto detector_type = det->getDetectorType().squash();
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      defs::dacIndex index = defs::SLOW_ADC0;
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute slowadcname at module level");
+      }
+      auto t = det->getSlowADCName(
+          static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index));
+      os << args[0] << ' ' << t << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      defs::dacIndex index = defs::SLOW_ADC0;
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute slowadcname at module level");
+      }
+      det->setSlowADCName(
+          static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index), args[1]);
+      os << ToString(args) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
 std::string Caller::slowadcvalues(int action) {
 
   std::ostringstream os;
@@ -11956,6 +12476,133 @@ std::string Caller::vm_io(int action) {
       auto t =
           det->getMeasuredVoltage(defs::V_POWER_IO, std::vector<int>{ det_id });
       os << OutString(t) << " °C" << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::voltageindex(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: voltageindex" << std::endl;
+    os << R"V0G0N([name] 
+		[ChipTestBoard] Get the voltage index for the given name. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      defs::dacIndex index = defs::V_POWER_A;
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET']");
+  }
+
+  // generate code for each action
+  auto detector_type = det->getDetectorType().squash();
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      defs::dacIndex index = defs::V_POWER_A;
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute voltageindex at module level");
+      }
+      auto t = det->getVoltageIndex(args[0]);
+      os << ToString(static_cast<int>(t) - index) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::voltagename(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: voltagename" << std::endl;
+    os << R"V0G0N([0-4][name] 
+		[ChipTestBoard] Set the voltage at the given position to the given name. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      defs::dacIndex index = defs::V_POWER_A;
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      defs::dacIndex index = defs::V_POWER_A;
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  auto detector_type = det->getDetectorType().squash();
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      defs::dacIndex index = defs::V_POWER_A;
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute voltagename at module level");
+      }
+      auto t = det->getVoltageName(
+          static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index));
+      os << args[0] << ' ' << t << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      defs::dacIndex index = defs::V_POWER_A;
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute voltagename at module level");
+      }
+      det->setVoltageName(
+          static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index), args[1]);
+      os << ToString(args) << '\n';
     }
   }
 

@@ -18,7 +18,9 @@ public:
   std::string adcclk(int action);
   std::string adcenable(int action);
   std::string adcenable10g(int action);
+  std::string adcindex(int action);
   std::string adcinvert(int action);
+  std::string adcname(int action);
   std::string adcpipeline(int action);
   std::string apulse(int action);
   std::string asamples(int action);
@@ -34,6 +36,8 @@ public:
   std::string column(int action);
   std::string compdisabletime(int action);
   std::string config(int action);
+  std::string dacindex(int action);
+  std::string dacname(int action);
   std::string dbitclk(int action);
   std::string dbitpipeline(int action);
   std::string defaultpattern(int action);
@@ -151,6 +155,10 @@ public:
   std::string settings(int action);
   std::string settingslist(int action);
   std::string settingspath(int action);
+  std::string signalindex(int action);
+  std::string signalname(int action);
+  std::string slowadcindex(int action);
+  std::string slowadcname(int action);
   std::string slowadcvalues(int action);
   std::string start(int action);
   std::string stop(int action);
@@ -219,6 +227,8 @@ public:
   std::string vm_c(int action);
   std::string vm_d(int action);
   std::string vm_io(int action);
+  std::string voltageindex(int action);
+  std::string voltagename(int action);
   std::string voltagevalues(int action);
   std::string zmqip(int action);
   std::string zmqport(int action);
@@ -237,7 +247,9 @@ private:
                          { "adcclk", &Caller::adcclk },
                          { "adcenable", &Caller::adcenable },
                          { "adcenable10g", &Caller::adcenable10g },
+                         { "adcindex", &Caller::adcindex },
                          { "adcinvert", &Caller::adcinvert },
+                         { "adcname", &Caller::adcname },
                          { "adcpipeline", &Caller::adcpipeline },
                          { "apulse", &Caller::apulse },
                          { "asamples", &Caller::asamples },
@@ -253,6 +265,8 @@ private:
                          { "column", &Caller::column },
                          { "compdisabletime", &Caller::compdisabletime },
                          { "config", &Caller::config },
+                         { "dacindex", &Caller::dacindex },
+                         { "dacname", &Caller::dacname },
                          { "dbitclk", &Caller::dbitclk },
                          { "dbitpipeline", &Caller::dbitpipeline },
                          { "defaultpattern", &Caller::defaultpattern },
@@ -366,6 +380,10 @@ private:
                          { "settings", &Caller::settings },
                          { "settingslist", &Caller::settingslist },
                          { "settingspath", &Caller::settingspath },
+                         { "signalindex", &Caller::signalindex },
+                         { "signalname", &Caller::signalname },
+                         { "slowadcindex", &Caller::slowadcindex },
+                         { "slowadcname", &Caller::slowadcname },
                          { "slowadcvalues", &Caller::slowadcvalues },
                          { "start", &Caller::start }, { "stop", &Caller::stop },
                          { "stopport", &Caller::stopport },
@@ -427,6 +445,8 @@ private:
                          { "veto", &Caller::veto }, { "vm_a", &Caller::vm_a },
                          { "vm_b", &Caller::vm_b }, { "vm_c", &Caller::vm_c },
                          { "vm_d", &Caller::vm_d }, { "vm_io", &Caller::vm_io },
+                         { "voltageindex", &Caller::voltageindex },
+                         { "voltagename", &Caller::voltagename },
                          { "voltagevalues", &Caller::voltagevalues },
                          { "zmqip", &Caller::zmqip },
                          { "zmqport", &Caller::zmqport } };

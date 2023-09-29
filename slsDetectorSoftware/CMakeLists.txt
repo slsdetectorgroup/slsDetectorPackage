@@ -129,6 +129,7 @@ if(SLS_USE_TEXTCLIENT)
         pthread
         rt
         )
+        SET_SOURCE_FILES_PROPERTIES( src/Caller.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-variable -Wno-unused-but-set-variable")
 
         set_target_properties(${val1} PROPERTIES 
             RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
@@ -137,7 +138,6 @@ if(SLS_USE_TEXTCLIENT)
         if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
             set_property(TARGET ${val1} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
         endif()
-
     endforeach()
 
 

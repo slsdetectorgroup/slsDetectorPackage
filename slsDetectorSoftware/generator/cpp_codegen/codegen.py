@@ -71,6 +71,10 @@ class CodeGenerator:
                     self.write_line(f'auto {arg["convert_to_time"]["output"]} = '
                                     f'StringTo < time::ns > ({", ".join(arg["convert_to_time"]["input"])});')
                 input_arguments = []
+                if 'exception' in arg:
+                    for exception in arg['exception']:
+                        self.write_line(
+                            f'if ({exception["condition"]}) {{ throw RuntimeError({exception["message"]}); }}')
                 if 'check_det_id' in arg and arg['check_det_id']:
                     self.write_line(
                         f'if (det_id != -1) {{ throw RuntimeError("Cannot execute {command_name} at module level"); }} '

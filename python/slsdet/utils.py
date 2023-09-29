@@ -278,3 +278,9 @@ def hostname_list(args):
         return hosts
     else:
         raise ValueError("hostname needs to be string or list of strings")
+
+
+def validate_port(value):
+    if value <= 0 or value > 65535:
+        raise ValueError("port must be in range 1 - 65535")
+

@@ -12,6 +12,7 @@ activate:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -27,6 +28,8 @@ activate:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: activate
   help: ''
   infer_action: false
   template: true
@@ -44,6 +47,7 @@ adcclk:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -59,6 +63,8 @@ adcclk:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: adcclk
   help: ''
   infer_action: false
   template: true
@@ -76,6 +82,7 @@ adcenable:
         output:
         - OutStringHex(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -91,6 +98,8 @@ adcenable:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: adcenable
   help: ''
   infer_action: false
   template: true
@@ -108,6 +117,7 @@ adcenable10g:
         output:
         - OutStringHex(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -123,6 +133,8 @@ adcenable10g:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: adcenable10g
   help: ''
   infer_action: false
   template: true
@@ -146,6 +158,8 @@ adcindex:
         output:
         - static_cast<int>(t)
         require_det_id: false
+        store_result_in_t: true
+  function_alias: adcindex
   help: "[name] \n\t\t[ChipTestBoard] Get the adc index for the given name."
   infer_action: false
   template: true
@@ -163,6 +177,7 @@ adcinvert:
         output:
         - OutStringHex(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -178,6 +193,8 @@ adcinvert:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: adcinvert
   help: ''
   infer_action: false
   template: true
@@ -203,6 +220,7 @@ adcname:
         - ''' '''
         - t
         require_det_id: false
+        store_result_in_t: true
     PUT:
       args:
       - argc: 2
@@ -224,10 +242,116 @@ adcname:
         output:
         - ToString(args)
         require_det_id: false
+        store_result_in_t: false
+  function_alias: adcname
   help: "[0-31][name] \n\t\t[ChipTestBoard] Set the adc at the given position to the\
     \ given name."
   infer_action: false
   template: true
+adcphase:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type
+            == defs::GOTTHARD2
+          message: '"adcphase not implemented for this detector"'
+        extra_variables:
+        - name: det_type
+          type: auto
+          value: det->getDetectorType().squash(defs::GENERIC);
+        function: getADCPhase
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+      - argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type
+            == defs::GOTTHARD2
+          message: '"adcphase not implemented for this detector"'
+        - condition: args[0] != "deg"
+          message: '"Unknown adcphase   argument " + args[0] + ". Did you mean deg?    "'
+        extra_variables:
+        - name: det_type
+          type: auto
+          value: det->getDetectorType().squash(defs::GENERIC);
+        function: getADCPhaseInDegrees
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        - ' "deg"'
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type
+            == defs::GOTTHARD2
+          message: '"adcphase not implemented for this detector"'
+        extra_variables:
+        - name: det_type
+          type: auto
+          value: det->getDetectorType().squash(defs::GENERIC);
+        function: setADCPhase
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+        store_result_in_t: false
+      - argc: 2
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type
+            == defs::GOTTHARD2
+          message: '"adcphase not implemented for this detector"'
+        - condition: args[1] != "deg"
+          message: '"Unknown adcphase   2nd argument " + args[1] + ". Did you    mean
+            deg?"'
+        extra_variables:
+        - name: det_type
+          type: auto
+          value: det->getDetectorType().squash(defs::GENERIC);
+        function: setADCPhaseInDegrees
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args[0]
+        - ''' '''
+        - args[1]
+        require_det_id: true
+        store_result_in_t: false
+  function_alias: adcphase
+  help: "[n_value] [(optional)deg]\n\t[Jungfrau][Moench][Ctb][Gotthard] Phase shift\
+    \ of ADC clock. \n\t[Jungfrau][Moench] Absolute phase shift. If deg used, then\
+    \ shift in degrees. Changing Speed also resets adcphase to recommended defaults.\n\
+    \t[Ctb] Absolute phase shift. If deg used, then shift in degrees. Changing adcclk\
+    \ also resets adcphase and sets it to previous values.\n\t[Gotthard] Relative\
+    \ phase shift. Cannot get"
+  infer_action: false
 adcpipeline:
   actions:
     GET:
@@ -242,6 +366,7 @@ adcpipeline:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -257,6 +382,8 @@ adcpipeline:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: adcpipeline
   help: ''
   infer_action: false
   template: true
@@ -274,6 +401,7 @@ apulse:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -289,6 +417,8 @@ apulse:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: apulse
   help: ''
   infer_action: false
   template: true
@@ -306,6 +436,7 @@ asamples:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -321,6 +452,8 @@ asamples:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: asamples
   help: ''
   infer_action: false
   template: true
@@ -338,6 +471,7 @@ autocompdisable:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -353,8 +487,36 @@ autocompdisable:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: autocompdisable
   help: ''
   infer_action: false
+  template: true
+blockingtrigger:
+  actions:
+    PUT:
+      args:
+      - argc: 0
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        extra_variables:
+        - name: block
+          type: bool
+          value: 'true'
+        function: sendSoftwareTrigger
+        input:
+        - block
+        input_types:
+        - bool
+        output:
+        - '"successful"'
+        require_det_id: false
+        store_result_in_t: false
+  function_alias: blockingtrigger
+  help: "\n\t[Eiger][Mythen3][Jungfrau][Moench] Sends software trigger signal to detector"
+  infer_action: true
   template: true
 burstperiod:
   actions:
@@ -370,6 +532,7 @@ burstperiod:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input: []
         check_det_id: false
@@ -380,6 +543,7 @@ burstperiod:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -400,6 +564,7 @@ burstperiod:
           output:
           - converted_time
           - unit
+        store_result_in_t: false
       - argc: 2
         cast_input:
         - false
@@ -419,6 +584,8 @@ burstperiod:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
+  function_alias: burstperiod
   help: ''
   infer_action: false
   template: true
@@ -436,6 +603,7 @@ bursts:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -451,6 +619,8 @@ bursts:
         output:
         - args.front()
         require_det_id: false
+        store_result_in_t: false
+  function_alias: bursts
   help: "[n_bursts]\n\t[Gotthard2] Number of bursts per aquire. Only in auto timing\
     \ mode and burst mode. Use timing command to set timing mode and burstmode command\
     \ to set burst mode."
@@ -470,6 +640,8 @@ burstsl:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: burstsl
   help: "\n\t[Gotthard2] Number of bursts left in acquisition. Only in burst auto\
     \ mode."
   infer_action: false
@@ -488,6 +660,8 @@ bustest:
         output:
         - '"successful"'
         require_det_id: true
+        store_result_in_t: false
+  function_alias: bustest
   help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Bus test, ie. Writes\
     \ different values in a R/W register and confirms the writes to check bus.\n\t\
     Advanced User function!"
@@ -507,6 +681,7 @@ cdsgain:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -522,6 +697,8 @@ cdsgain:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: cdsgain
   help: ''
   infer_action: false
   template: true
@@ -539,6 +716,8 @@ chipversion:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: chipversion
   help: "\n\t[Jungfrau] Returns chip version. Can be 1.0 or 1.1"
   infer_action: false
   template: true
@@ -556,6 +735,8 @@ clearbusy:
         output:
         - '"successful"'
         require_det_id: false
+        store_result_in_t: false
+  function_alias: clearbusy
   help: "\n\tIf acquisition aborted during acquire command, use this to clear acquiring\
     \ flag in shared memory before starting next acquisition"
   infer_action: false
@@ -574,10 +755,225 @@ clearroi:
         output:
         - '"successful"'
         require_det_id: true
+        store_result_in_t: false
+  function_alias: clearroi
   help: '[Gotthard] Resets Region of interest in detector. All channels enabled. Default
     is all channels enabled.'
   infer_action: false
   template: true
+clientversion:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getClientVersion
+        input: []
+        input_types: []
+        output:
+        - t
+        require_det_id: false
+        store_result_in_t: true
+  function_alias: clientversion
+  help: "\n\tClient software version"
+  infer_action: false
+clkdiv:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: type != defs::GOTTHARD2 && type != defs::MYTHEN3
+          message: '"clkdiv not implemented for this detector."'
+        extra_variables:
+        - name: type
+          type: defs::detectorType
+          value: det->getDetectorType().squash(defs::GENERIC);
+        function: getClockDivider
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - argc: 2
+        cast_input:
+        - true
+        - true
+        - false
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: type != defs::GOTTHARD2 && type != defs::MYTHEN3
+          message: '"clkdiv not implemented for this detector."'
+        extra_variables:
+        - name: type
+          type: defs::detectorType
+          value: det->getDetectorType().squash(defs::GENERIC);
+        function: setClockDivider
+        input:
+        - args[0]
+        - args[1]
+        - '{det_id}'
+        input_types:
+        - int
+        - int
+        - auto
+        output:
+        - args[1]
+        require_det_id: false
+        store_result_in_t: false
+  function_alias: clkdiv
+  help: "[n_clock (0-5)] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock\
+    \ n_clock. Must be greater than 1."
+  infer_action: false
+clkfreq:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: type != defs::GOTTHARD2 && type != defs::MYTHEN3
+          message: '"clkfreq not implemented for this detector."'
+        extra_variables:
+        - name: type
+          type: defs::detectorType
+          value: det->getDetectorType().squash(defs::GENERIC);
+        function: getClockFrequency
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+  function_alias: clkfreq
+  help: "[n_clock (0-5)] [freq_in_Hz]\n\t[Gotthard2][Mythen3] Frequency of clock n_clock\
+    \ in Hz. Use clkdiv to set frequency."
+  infer_action: false
+clkphase:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: type != defs::GOTTHARD2 && type != defs::MYTHEN3
+          message: '"clkphase not implemented for this detector."'
+        extra_variables:
+        - name: type
+          type: defs::detectorType
+          value: det->getDetectorType().squash(defs::GENERIC);
+        function: getClockPhase
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+      - argc: 2
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: type != defs::GOTTHARD2 && type != defs::MYTHEN3
+          message: '"clkphase not implemented for this detector."'
+        - condition: args[1] != "deg"
+          message: '"Cannot scan argument" + args[1] + ". Did you mean deg?"'
+        extra_variables:
+        - name: type
+          type: defs::detectorType
+          value: det->getDetectorType().squash(defs::GENERIC);
+        function: getClockPhaseinDegrees
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - OutString(t)
+        - '" deg"'
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - argc: 2
+        cast_input:
+        - true
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: type != defs::GOTTHARD2 && type != defs::MYTHEN3
+          message: '"clkphase not implemented for this detector."'
+        extra_variables:
+        - name: type
+          type: defs::detectorType
+          value: det->getDetectorType().squash(defs::GENERIC);
+        function: setClockPhase
+        input:
+        - args[0]
+        - args[1]
+        input_types:
+        - int
+        - int
+        output:
+        - args[1]
+        require_det_id: true
+        store_result_in_t: false
+      - argc: 3
+        cast_input:
+        - true
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: type != defs::GOTTHARD2 && type != defs::MYTHEN3
+          message: '"clkphase not implemented for this detector."'
+        - condition: args[1] != "deg"
+          message: '"Cannot scan argument" + args[2] + ". Did you mean deg?"'
+        extra_variables:
+        - name: type
+          type: defs::detectorType
+          value: det->getDetectorType().squash(defs::GENERIC);
+        function: setClockPhaseinDegrees
+        input:
+        - args[0]
+        - args[1]
+        input_types:
+        - int
+        - int
+        output:
+        - args[1]
+        - '" "'
+        - args[2]
+        require_det_id: true
+        store_result_in_t: false
+  function_alias: clkphase
+  help: "[n_clock (0-5)] [phase] [deg (optional)]\n\t[Gotthard2][Mythen3] Phase of\
+    \ clock n_clock. If deg, then phase shift in degrees, else absolute phase shift\
+    \ values."
+  infer_action: false
 column:
   actions:
     GET:
@@ -592,6 +988,7 @@ column:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -607,6 +1004,8 @@ column:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: column
   help: ''
   infer_action: false
   template: true
@@ -624,6 +1023,7 @@ compdisabletime:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input: []
         check_det_id: false
@@ -634,6 +1034,7 @@ compdisabletime:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -654,6 +1055,7 @@ compdisabletime:
           output:
           - converted_time
           - unit
+        store_result_in_t: false
       - argc: 2
         cast_input:
         - false
@@ -673,6 +1075,8 @@ compdisabletime:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
+  function_alias: compdisabletime
   help: ''
   infer_action: false
   template: true
@@ -693,9 +1097,142 @@ config:
         output:
         - args.front()
         require_det_id: false
+        store_result_in_t: false
+  function_alias: config
   help: "\n\tFrees shared memory before loading configuration file. Set up once."
   infer_action: false
   template: true
+dac:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0])
+            && detector_type != defs::CHIPTESTBOARD
+          message: '"Dac indices can only be used for chip test board. Use daclist
+            to get list of dac names for current detector."'
+        extra_variables:
+        - name: dacIndex
+          type: defs::dacIndex
+          value: '(detector_type == defs::CHIPTESTBOARD && !is_int(args[0])) ? det->getDacIndex(args[0])
+            : StringTo<defs::dacIndex>(args[0])'
+        function: getDAC
+        input:
+        - dacIndex
+        - '"0"'
+        input_types:
+        - defs::dacIndex
+        - bool
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+      - argc: 2
+        cast_input:
+        - false
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0])
+            && detector_type != defs::CHIPTESTBOARD
+          message: '"Dac indices can only be used for chip test board. Use daclist
+            to get list of dac names for current detector."'
+        - condition: args[1] != 'mv' && args[1] != 'mV'
+          message: '"Unknown argument " + args[1] + ". Did you mean mV?"'
+        extra_variables:
+        - name: dacIndex
+          type: defs::dacIndex
+          value: '(detector_type == defs::CHIPTESTBOARD && !is_int(args[0])) ? det->getDacIndex(args[0])
+            : StringTo<defs::dacIndex>(args[0])'
+        function: getDAC
+        input:
+        - dacIndex
+        - '"1"'
+        input_types:
+        - defs::dacIndex
+        - bool
+        output:
+        - OutString(t)
+        - '" mV"'
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - argc: 2
+        cast_input:
+        - false
+        - true
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0])
+            && detector_type != defs::CHIPTESTBOARD
+          message: '"Dac indices can only be used for chip test board. Use daclist
+            to get list of dac names for current detector."'
+        extra_variables:
+        - name: dacIndex
+          type: defs::dacIndex
+          value: '(detector_type == defs::CHIPTESTBOARD && !is_int(args[0])) ? det->getDacIndex(args[0])
+            : StringTo<defs::dacIndex>(args[0])'
+        function: setDAC
+        input:
+        - dacIndex
+        - args[1]
+        - '"0"'
+        input_types:
+        - defs::dacIndex
+        - int
+        - bool
+        output:
+        - args[0]
+        - ''' '''
+        - args[1]
+        require_det_id: true
+        store_result_in_t: false
+      - argc: 3
+        cast_input:
+        - false
+        - true
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0])
+            && detector_type != defs::CHIPTESTBOARD
+          message: '"Dac indices can only be used for chip test board. Use daclist
+            to get list of dac names for current detector."'
+        extra_variables:
+        - name: dacIndex
+          type: defs::dacIndex
+          value: '(detector_type == defs::CHIPTESTBOARD && !is_int(args[0])) ? det->getDacIndex(args[0])
+            : StringTo<defs::dacIndex>(args[0])'
+        function: setDAC
+        input:
+        - dacIndex
+        - args[1]
+        - '"1"'
+        input_types:
+        - defs::dacIndex
+        - int
+        - bool
+        output:
+        - args[0]
+        - ''' '''
+        - args[1]
+        - '" mV"'
+        require_det_id: true
+        store_result_in_t: false
+  function_alias: dac
+  help: ''
+  infer_action: false
 dacindex:
   actions:
     GET:
@@ -720,6 +1257,8 @@ dacindex:
         output:
         - ToString(static_cast<int>(t) - index)
         require_det_id: false
+        store_result_in_t: true
+  function_alias: dacindex
   help: "[name] \n\t\t[ChipTestBoard] Get the dac index for the given name."
   infer_action: false
   template: true
@@ -749,6 +1288,7 @@ dacname:
         - ''' '''
         - t
         require_det_id: false
+        store_result_in_t: true
     PUT:
       args:
       - argc: 2
@@ -774,6 +1314,8 @@ dacname:
         output:
         - ToString(args)
         require_det_id: false
+        store_result_in_t: false
+  function_alias: dacname
   help: "[0-17][name] \n\t\t[ChipTestBoard] Set the dac at the given position to the\
     \ given name."
   infer_action: false
@@ -792,6 +1334,7 @@ dbitclk:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -807,9 +1350,112 @@ dbitclk:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: dbitclk
   help: ''
   infer_action: false
   template: true
+dbitphase:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type
+            == defs::GOTTHARD2 || det_type == defs::MOENCH
+          message: '"dbitphase not implemented for this detector"'
+        extra_variables:
+        - name: det_type
+          type: auto
+          value: det->getDetectorType().squash(defs::GENERIC);
+        function: getDBITPhase
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+      - argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type
+            == defs::GOTTHARD2 || det_type == defs::MOENCH
+          message: '"dbitphase not implemented for this detector"'
+        - condition: args[0] != "deg"
+          message: '"Unknown dbitphase argument " + args[0] + ". Did you mean deg?  "'
+        extra_variables:
+        - name: det_type
+          type: auto
+          value: det->getDetectorType().squash(defs::GENERIC);
+        function: getDBITPhaseInDegrees
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        - '" deg"'
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type
+            == defs::GOTTHARD2 || det_type == defs::MOENCH
+          message: '"dbitphase not implemented for this detector"'
+        extra_variables:
+        - name: det_type
+          type: auto
+          value: det->getDetectorType().squash(defs::GENERIC);
+        function: setDBITPhase
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: true
+        store_result_in_t: false
+      - argc: 2
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type
+            == defs::GOTTHARD2 || det_type == defs::MOENCH
+          message: '"dbitphase not implemented for this detector"'
+        - condition: args[1] != "deg"
+          message: '"Unknown dbitphase 2nd argument " + args[1] + ". Did you mean
+            deg?  "'
+        extra_variables:
+        - name: det_type
+          type: auto
+          value: det->getDetectorType().squash(defs::GENERIC);
+        function: setDBITPhaseInDegrees
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args[0]
+        - ''' '''
+        - args[1]
+        require_det_id: true
+        store_result_in_t: false
+  function_alias: dbitphase
+  help: "[n_value] [(optional)deg]\n\t[Ctb][Jungfrau] Phase shift of clock to latch\
+    \ digital bits. Absolute phase shift. If deg used, then shift in degrees. \n\t\
+    [Ctb]Changing dbitclk also resets dbitphase and sets to previous values."
+  infer_action: false
 dbitpipeline:
   actions:
     GET:
@@ -824,6 +1470,7 @@ dbitpipeline:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -839,9 +1486,102 @@ dbitpipeline:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: dbitpipeline
   help: ''
   infer_action: false
   template: true
+defaultdac:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: getDefaultDac
+        input:
+        - args[0]
+        input_types:
+        - defs::dacIndex
+        output:
+        - args[0]
+        - ''' '''
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+      - argc: 2
+        cast_input:
+        - true
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: getDefaultDac
+        input:
+        - args[0]
+        - args[1]
+        input_types:
+        - defs::dacIndex
+        - slsDetectorDefs::detectorSettings
+        output:
+        - args[0]
+        - ''' '''
+        - args[1]
+        - ''' '''
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - argc: 2
+        cast_input:
+        - true
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: setDefaultDac
+        input:
+        - args[0]
+        - args[1]
+        input_types:
+        - defs::dacIndex
+        - int
+        output:
+        - args[0]
+        - ''' '''
+        - args[1]
+        require_det_id: false
+        store_result_in_t: false
+      - argc: 3
+        cast_input:
+        - true
+        - true
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: setDefaultDac
+        input:
+        - args[0]
+        - args[1]
+        - args[2]
+        input_types:
+        - defs::dacIndex
+        - int
+        - slsDetectorDefs::detectorSettings
+        output:
+        - args[0]
+        - ''' '''
+        - args[2]
+        - ''' '''
+        - args[1]
+        require_det_id: true
+        store_result_in_t: false
+  function_alias: defaultdac
+  help: "[dac name][value][(optional)setting]\n\tSets the default for that dac to\
+    \ this value.\n\t[Jungfrau][Moench][Mythen3] When settings is provided, it sets\
+    \ the default value only for that setting"
+  infer_action: false
 defaultpattern:
   actions:
     PUT:
@@ -856,6 +1596,8 @@ defaultpattern:
         output:
         - '"successful"'
         require_det_id: true
+        store_result_in_t: false
+  function_alias: defaultpattern
   help: "\n\t[Mythen3] Loads and runs default pattern in pattern generator. It is\
     \ to go back to initial settings."
   infer_action: false
@@ -874,6 +1616,7 @@ delay:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input: []
         check_det_id: false
@@ -884,6 +1627,7 @@ delay:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -904,6 +1648,7 @@ delay:
           output:
           - converted_time
           - unit
+        store_result_in_t: false
       - argc: 2
         cast_input:
         - false
@@ -923,6 +1668,8 @@ delay:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
+  function_alias: delay
   help: ''
   infer_action: false
   template: true
@@ -940,6 +1687,7 @@ delayl:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input: []
         check_det_id: false
@@ -950,6 +1698,8 @@ delayl:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
+  function_alias: delayl
   help: ''
   infer_action: false
   template: true
@@ -967,9 +1717,48 @@ detectorserverversion:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: detectorserverversion
   help: "\n\tOn-board detector server software version"
   infer_action: false
   template: true
+detsize:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getDetectorSize
+        input: []
+        input_types: []
+        output:
+        - t
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - argc: 2
+        cast_input:
+        - false
+        check_det_id: false
+        convert_det_id: true
+        function: setDetectorSize
+        input:
+        - defs::xy(StringTo<int>(args[0]),StringTo<int>(args[1]))
+        input_types:
+        - defs::xy
+        output:
+        - ToString(args)
+        require_det_id: false
+        store_result_in_t: false
+  function_alias: detsize
+  help: "[nx] [ny]\n\tDetector size, ie. Number of channels in x and y dim. This is\
+    \ used to calculate module coordinates included in UDP data. \n\tBy default, it\
+    \ adds module in y dimension for 2d detectors and in x dimension for 1d detectors\
+    \ packet header."
+  infer_action: false
 dpulse:
   actions:
     GET:
@@ -984,6 +1773,7 @@ dpulse:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -999,6 +1789,8 @@ dpulse:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: dpulse
   help: ''
   infer_action: false
   template: true
@@ -1016,6 +1808,7 @@ dr:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1031,6 +1824,8 @@ dr:
         output:
         - args.front()
         require_det_id: false
+        store_result_in_t: false
+  function_alias: dr
   help: "[value]\n\tDynamic Range or number of bits per pixel in detector.\n\t[Eiger]\
     \ Options: 4, 8, 12, 16, 32. If set to 32, also sets clkdivider to 2, else to\
     \ 0.\n\t[Mythen3] Options: 8, 16, 32\n\t[Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2]\
@@ -1051,6 +1846,8 @@ drlist:
         output:
         - ToString(t)
         require_det_id: false
+        store_result_in_t: true
+  function_alias: drlist
   help: "\n\tGets the list of dynamic ranges for this detector."
   infer_action: false
   template: true
@@ -1068,6 +1865,7 @@ dsamples:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1083,6 +1881,8 @@ dsamples:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: dsamples
   help: ''
   infer_action: false
   template: true
@@ -1100,6 +1900,7 @@ exptime:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input: []
         check_det_id: false
@@ -1110,6 +1911,7 @@ exptime:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
       detectors:
         MYTHEN3:
         - argc: 0
@@ -1122,6 +1924,7 @@ exptime:
           output:
           - OutString(t)
           require_det_id: true
+          store_result_in_t: true
         - argc: 1
           cast_input: []
           check_det_id: false
@@ -1132,6 +1935,7 @@ exptime:
           output:
           - OutString(t , args[0])
           require_det_id: true
+          store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1152,6 +1956,7 @@ exptime:
           output:
           - converted_time
           - unit
+        store_result_in_t: false
       - argc: 2
         cast_input:
         - false
@@ -1171,6 +1976,8 @@ exptime:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
+  function_alias: exptime
   help: ''
   infer_action: false
 exptime1:
@@ -1194,6 +2001,7 @@ exptime1:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input:
         - false
@@ -1211,6 +2019,7 @@ exptime1:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1235,6 +2044,7 @@ exptime1:
           output:
           - converted_time
           - unit
+        store_result_in_t: false
       - argc: 2
         cast_input:
         - false
@@ -1258,6 +2068,7 @@ exptime1:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
       detectors:
         MYTHEN3:
         - argc: 1
@@ -1285,6 +2096,7 @@ exptime1:
             output:
             - converted_time
             - unit
+          store_result_in_t: false
         - argc: 2
           cast_input:
           - false
@@ -1311,6 +2123,8 @@ exptime1:
           - args[0]
           - args[1]
           require_det_id: true
+          store_result_in_t: false
+  function_alias: exptime1
   help: ''
   infer_action: false
 exptime2:
@@ -1334,6 +2148,7 @@ exptime2:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input:
         - false
@@ -1351,6 +2166,7 @@ exptime2:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1375,6 +2191,7 @@ exptime2:
           output:
           - converted_time
           - unit
+        store_result_in_t: false
       - argc: 2
         cast_input:
         - false
@@ -1398,6 +2215,7 @@ exptime2:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
       detectors:
         MYTHEN3:
         - argc: 1
@@ -1425,6 +2243,7 @@ exptime2:
             output:
             - converted_time
             - unit
+          store_result_in_t: false
         - argc: 2
           cast_input:
           - false
@@ -1451,6 +2270,8 @@ exptime2:
           - args[0]
           - args[1]
           require_det_id: true
+          store_result_in_t: false
+  function_alias: exptime2
   help: ''
   infer_action: false
 exptime3:
@@ -1474,6 +2295,7 @@ exptime3:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input:
         - false
@@ -1491,6 +2313,7 @@ exptime3:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1515,6 +2338,7 @@ exptime3:
           output:
           - converted_time
           - unit
+        store_result_in_t: false
       - argc: 2
         cast_input:
         - false
@@ -1538,6 +2362,7 @@ exptime3:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
       detectors:
         MYTHEN3:
         - argc: 1
@@ -1565,6 +2390,7 @@ exptime3:
             output:
             - converted_time
             - unit
+          store_result_in_t: false
         - argc: 2
           cast_input:
           - false
@@ -1591,6 +2417,8 @@ exptime3:
           - args[0]
           - args[1]
           require_det_id: true
+          store_result_in_t: false
+  function_alias: exptime3
   help: ''
   infer_action: false
 exptimel:
@@ -1607,6 +2435,7 @@ exptimel:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input: []
         check_det_id: false
@@ -1617,6 +2446,8 @@ exptimel:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
+  function_alias: exptimel
   help: ''
   infer_action: false
   template: true
@@ -1634,6 +2465,7 @@ extrastoragecells:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1649,6 +2481,8 @@ extrastoragecells:
         output:
         - args.front()
         require_det_id: false
+        store_result_in_t: false
+  function_alias: extrastoragecells
   help: "[0-15]\n\t[Jungfrau] Only for chipv1.0. Number of additional storage cells.\
     \ Default is 0. For advanced users only. \n\tThe #images = #frames x #triggers\
     \ x (#extrastoragecells + 1)."
@@ -1668,6 +2502,7 @@ extsampling:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1683,6 +2518,8 @@ extsampling:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: extsampling
   help: ''
   infer_action: false
   template: true
@@ -1700,6 +2537,7 @@ extsamplingsrc:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1715,9 +2553,59 @@ extsamplingsrc:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: extsamplingsrc
   help: ''
   infer_action: false
   template: true
+extsig:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: getExternalSignalFlags
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args[0]
+        - ''' '''
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - argc: 2
+        cast_input:
+        - true
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: setExternalSignalFlags
+        input:
+        - args[0]
+        - args[1]
+        input_types:
+        - int
+        - slsDetectorDefs::externalSignalFlag
+        output:
+        - args[0]
+        - ''' '''
+        - args[1]
+        require_det_id: true
+        store_result_in_t: false
+  function_alias: extsig
+  help: "[n_signal] [signal_type]\n\t[Gotthard][Mythen3] External signal mode for\
+    \ trigger timing mode.\n\t[Gotthard] [0] [trigger_in_rising_edge|trigger_in_falling_edge]\n\
+    \t[Mythen3] [0-7] [trigger_in_rising_edge|trigger_in_falling_edge|inversion_on|inversion_off]\n\
+    \t where 0 is master input trigger signal, 1-3 is master input gate signals, 4\
+    \ is busy out signal and 5-7 is master output gate signals."
+  infer_action: false
 fformat:
   actions:
     GET:
@@ -1732,6 +2620,7 @@ fformat:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1747,6 +2636,8 @@ fformat:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: fformat
   help: ''
   infer_action: false
   template: true
@@ -1764,6 +2655,7 @@ filtercells:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1779,6 +2671,8 @@ filtercells:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: filtercells
   help: ''
   infer_action: false
   template: true
@@ -1796,6 +2690,7 @@ filterresistor:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1811,6 +2706,8 @@ filterresistor:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: filterresistor
   help: ''
   infer_action: false
   template: true
@@ -1828,6 +2725,7 @@ findex:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1843,6 +2741,8 @@ findex:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: findex
   help: ''
   infer_action: false
   template: true
@@ -1860,10 +2760,44 @@ firmwaretest:
         output:
         - '"successful"'
         require_det_id: true
+        store_result_in_t: false
+  function_alias: firmwaretest
   help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Firmware test,\
     \ ie. reads a read fixed pattern from a register."
   infer_action: false
   template: true
+firmwareversion:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getFirmwareVersion
+        input: []
+        input_types: []
+        output:
+        - OutStringHex(t)
+        require_det_id: true
+        store_result_in_t: true
+      detectors:
+        EIGER:
+        - argc: 0
+          cast_input: []
+          check_det_id: false
+          convert_det_id: true
+          function: getFirmwareVersion
+          input: []
+          input_types: []
+          output:
+          - OutString(t)
+          require_det_id: true
+          store_result_in_t: true
+  function_alias: firmwareversion
+  help: "\n\tFirmware version of detector in format [0xYYMMDD] or an increasing 2\
+    \ digit number for Eiger."
+  infer_action: false
 fliprows:
   actions:
     GET:
@@ -1878,6 +2812,7 @@ fliprows:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1893,6 +2828,8 @@ fliprows:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: fliprows
   help: ''
   infer_action: false
   template: true
@@ -1910,6 +2847,7 @@ flowcontrol10g:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1925,6 +2863,8 @@ flowcontrol10g:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: flowcontrol10g
   help: ''
   infer_action: false
   template: true
@@ -1942,6 +2882,7 @@ fmaster:
         output:
         - OutString(t)
         require_det_id: false
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1957,6 +2898,8 @@ fmaster:
         output:
         - args.front()
         require_det_id: false
+        store_result_in_t: false
+  function_alias: fmaster
   help: "[0, 1]\n\tEnable or disable receiver master file. Default is 1."
   infer_action: false
   template: true
@@ -1974,6 +2917,7 @@ fname:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -1989,6 +2933,8 @@ fname:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: fname
   help: ''
   infer_action: false
   template: true
@@ -2006,6 +2952,7 @@ foverwrite:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2021,6 +2968,8 @@ foverwrite:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: foverwrite
   help: ''
   infer_action: false
   template: true
@@ -2038,6 +2987,7 @@ fpath:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2053,6 +3003,8 @@ fpath:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: fpath
   help: ''
   infer_action: false
   template: true
@@ -2070,6 +3022,8 @@ framecounter:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: framecounter
   help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of frames from start\
     \ run control.\n\t[Gotthard2] only in continuous mode."
   infer_action: false
@@ -2088,6 +3042,7 @@ frames:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2103,6 +3058,8 @@ frames:
         output:
         - args.front()
         require_det_id: false
+        store_result_in_t: false
+  function_alias: frames
   help: "[n_frames]\n\tNumber of frames per acquisition. In trigger mode, number of\
     \ frames per trigger. \n\tCannot be set in modular level. \n\tIn scan mode, number\
     \ of frames is set to number of steps.\n\t[Gotthard2] Burst mode has a maximum\
@@ -2123,6 +3080,8 @@ framesl:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: framesl
   help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of frames\
     \ left in acquisition. \n\t[Gotthard2] only in continuous auto mode."
   infer_action: false
@@ -2141,6 +3100,7 @@ frametime:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input: []
         check_det_id: false
@@ -2151,6 +3111,8 @@ frametime:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
+  function_alias: frametime
   help: ''
   infer_action: false
   template: true
@@ -2168,6 +3130,7 @@ fwrite:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2183,6 +3146,8 @@ fwrite:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: fwrite
   help: ''
   infer_action: false
   template: true
@@ -2200,6 +3165,7 @@ gainmode:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2215,9 +3181,47 @@ gainmode:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: gainmode
   help: ''
   infer_action: false
   template: true
+gappixels:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        check_det_id: true
+        convert_det_id: true
+        function: getGapPixelsinCallback
+        input: []
+        input_types: []
+        output:
+        - t
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - true
+        check_det_id: true
+        convert_det_id: true
+        function: setGapPixelsinCallback
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - args.front()
+        require_det_id: false
+        store_result_in_t: false
+  function_alias: gappixels
+  help: "[0, 1]\n\t[Eiger][Jungfrau][Moench] Include Gap pixels in client data call\
+    \ back in Detecor api. Will not be in detector streaming, receiver file or streaming.\
+    \ Default is 0. "
+  infer_action: false
 gates:
   actions:
     GET:
@@ -2232,6 +3236,7 @@ gates:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2247,6 +3252,8 @@ gates:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: gates
   help: ''
   infer_action: false
   template: true
@@ -2264,6 +3271,8 @@ hardwareversion:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: hardwareversion
   help: "\n\t[Jungfrau][Gotthard2][Myhten3][Gotthard][Ctb][Moench] Hardware version\
     \ of detector. \n\t[Eiger] Hardware version of front FPGA on detector."
   infer_action: false
@@ -2282,6 +3291,7 @@ highvoltage:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2297,6 +3307,8 @@ highvoltage:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: highvoltage
   help: ''
   infer_action: false
   template: true
@@ -2318,6 +3330,8 @@ im_a:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: im_a
   help: "\n\t[Ctb] Measured current of power supply a in mA."
   infer_action: false
   template: true
@@ -2339,6 +3353,8 @@ im_b:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: im_b
   help: "\n\t[Ctb] Measured current of power supply b in mA."
   infer_action: false
   template: true
@@ -2360,6 +3376,8 @@ im_c:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: im_c
   help: "\n\t[Ctb] Measured current of power supply c in mA."
   infer_action: false
   template: true
@@ -2381,6 +3399,8 @@ im_d:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: im_d
   help: "\n\t[Ctb] Measured current of power supply d in mA."
   infer_action: false
   template: true
@@ -2402,6 +3422,8 @@ im_io:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: im_io
   help: "\n\t[Ctb] Measured current of power supply io in mA."
   infer_action: false
   template: true
@@ -2419,6 +3441,7 @@ imagetest:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2434,6 +3457,8 @@ imagetest:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: imagetest
   help: ''
   infer_action: false
   template: true
@@ -2451,6 +3476,7 @@ interpolation:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2466,6 +3492,8 @@ interpolation:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: interpolation
   help: ''
   infer_action: false
   template: true
@@ -2483,6 +3511,7 @@ interruptsubframe:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2498,6 +3527,8 @@ interruptsubframe:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: interruptsubframe
   help: ''
   infer_action: false
   template: true
@@ -2515,6 +3546,8 @@ kernelversion:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: kernelversion
   help: "\n\tGet kernel version on the detector including time and date."
   infer_action: false
   template: true
@@ -2532,6 +3565,8 @@ lastclient:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: lastclient
   help: "\n\tClient IP Address that last communicated with the detector."
   infer_action: false
   template: true
@@ -2549,6 +3584,7 @@ led:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2564,6 +3600,8 @@ led:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: led
   help: ''
   infer_action: false
   template: true
@@ -2581,6 +3619,7 @@ lock:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2596,6 +3635,8 @@ lock:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: lock
   help: ''
   infer_action: false
   template: true
@@ -2613,6 +3654,7 @@ master:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2628,6 +3670,8 @@ master:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: master
   help: ''
   infer_action: false
   template: true
@@ -2645,9 +3689,40 @@ maxadcphaseshift:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: maxadcphaseshift
   help: "\n\t[Jungfrau][Moench][CTB] Absolute maximum Phase shift of ADC clock."
   infer_action: false
   template: true
+maxclkphaseshift:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: type != defs::GOTTHARD2 && type != defs::MYTHEN3
+          message: '"maxclkphaseshift not implemented for this detector."'
+        extra_variables:
+        - name: type
+          type: defs::detectorType
+          value: det->getDetectorType().squash(defs::GENERIC);
+        function: getMaxClockPhaseShift
+        input:
+        - args[0]
+        input_types:
+        - int
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+  function_alias: maxclkphaseshift
+  help: "[n_clock (0-5)]\n\t[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock\
+    \ n_clock."
+  infer_action: false
 maxdbitphaseshift:
   actions:
     GET:
@@ -2662,6 +3737,8 @@ maxdbitphaseshift:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: maxdbitphaseshift
   help: "\n\t[CTB][Jungfrau] Absolute maximum Phase shift of of the clock to latch\
     \ digital bits."
   infer_action: false
@@ -2680,6 +3757,7 @@ measuredperiod:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input: []
         check_det_id: false
@@ -2690,6 +3768,8 @@ measuredperiod:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
+  function_alias: measuredperiod
   help: ''
   infer_action: false
   template: true
@@ -2707,6 +3787,7 @@ measuredsubperiod:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input: []
         check_det_id: false
@@ -2717,6 +3798,8 @@ measuredsubperiod:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
+  function_alias: measuredsubperiod
   help: ''
   infer_action: false
   template: true
@@ -2734,6 +3817,8 @@ moduleid:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: moduleid
   help: "\n\t[Gotthard2][Eiger][Mythen3][Jungfrau][Moench] 16 bit value (ideally unique)\
     \ that is streamed out in the UDP header of the detector. Picked up from a file\
     \ on the module."
@@ -2753,6 +3838,7 @@ nextframenumber:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2768,6 +3854,8 @@ nextframenumber:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: nextframenumber
   help: ''
   infer_action: false
   template: true
@@ -2785,6 +3873,8 @@ nmod:
         output:
         - ToString(t)
         require_det_id: false
+        store_result_in_t: true
+  function_alias: nmod
   help: "\n\tNumber of modules in shared memory."
   infer_action: false
   template: true
@@ -2802,6 +3892,7 @@ numinterfaces:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2817,6 +3908,8 @@ numinterfaces:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: numinterfaces
   help: ''
   infer_action: false
   template: true
@@ -2834,6 +3927,7 @@ overflow:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2849,9 +3943,29 @@ overflow:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: overflow
   help: ''
   infer_action: false
   template: true
+packageversion:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getPackageVersion
+        input: []
+        input_types: []
+        output:
+        - t
+        require_det_id: false
+        store_result_in_t: true
+  function_alias: packageversion
+  help: "\n\tPackage version (git branch)."
+  infer_action: false
 parallel:
   actions:
     GET:
@@ -2866,6 +3980,7 @@ parallel:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2881,6 +3996,8 @@ parallel:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: parallel
   help: ''
   infer_action: false
   template: true
@@ -2901,6 +4018,8 @@ parameters:
         output:
         - args.front()
         require_det_id: false
+        store_result_in_t: false
+  function_alias: parameters
   help: "\n\tSets detector measurement parameters to those contained in fname. Set\
     \ up per measurement."
   infer_action: false
@@ -2919,6 +4038,7 @@ partialreset:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2934,6 +4054,8 @@ partialreset:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: partialreset
   help: ''
   infer_action: false
   template: true
@@ -2951,6 +4073,8 @@ patfname:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: patfname
   help: "\n\t[Ctb][Mythen3] Gets the pattern file name including path of the last\
     \ pattern uploaded. Returns an empty if nothing was uploaded or via a server default\
     \ file"
@@ -2970,6 +4094,7 @@ patioctrl:
         output:
         - OutStringHex(t, 16)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -2985,6 +4110,8 @@ patioctrl:
         output:
         - ToStringHex(args[0], 16)
         require_det_id: true
+        store_result_in_t: false
+  function_alias: patioctrl
   help: ''
   infer_action: false
   template: true
@@ -3002,6 +4129,7 @@ patmask:
         output:
         - OutStringHex(t, 16)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3017,6 +4145,8 @@ patmask:
         output:
         - ToStringHex(args[0], 16)
         require_det_id: true
+        store_result_in_t: false
+  function_alias: patmask
   help: ''
   infer_action: false
   template: true
@@ -3034,6 +4164,7 @@ patsetbit:
         output:
         - OutStringHex(t, 16)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3049,6 +4180,8 @@ patsetbit:
         output:
         - ToStringHex(args[0], 16)
         require_det_id: true
+        store_result_in_t: false
+  function_alias: patsetbit
   help: ''
   infer_action: false
   template: true
@@ -3066,6 +4199,8 @@ patternstart:
         output:
         - '"successful"'
         require_det_id: true
+        store_result_in_t: false
+  function_alias: patternstart
   help: "\n\t[Mythen3] Starts Pattern"
   infer_action: false
   template: true
@@ -3083,6 +4218,7 @@ period:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input: []
         check_det_id: false
@@ -3093,6 +4229,7 @@ period:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3113,6 +4250,7 @@ period:
           output:
           - converted_time
           - unit
+        store_result_in_t: false
       - argc: 2
         cast_input:
         - false
@@ -3132,6 +4270,8 @@ period:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
+  function_alias: period
   help: ''
   infer_action: false
   template: true
@@ -3149,6 +4289,7 @@ periodl:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input: []
         check_det_id: false
@@ -3159,6 +4300,8 @@ periodl:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
+  function_alias: periodl
   help: ''
   infer_action: false
   template: true
@@ -3176,6 +4319,7 @@ polarity:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3191,6 +4335,8 @@ polarity:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: polarity
   help: ''
   infer_action: false
   template: true
@@ -3208,6 +4354,7 @@ port:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3223,6 +4370,8 @@ port:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: port
   help: ''
   infer_action: false
   template: true
@@ -3240,6 +4389,7 @@ powerchip:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3255,6 +4405,8 @@ powerchip:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: powerchip
   help: ''
   infer_action: false
   template: true
@@ -3272,6 +4424,7 @@ pumpprobe:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3287,6 +4440,8 @@ pumpprobe:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: pumpprobe
   help: ''
   infer_action: false
   template: true
@@ -3304,6 +4459,7 @@ readnrows:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3319,6 +4475,8 @@ readnrows:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: readnrows
   help: ''
   infer_action: false
   template: true
@@ -3336,10 +4494,54 @@ readout:
         output:
         - '"successful"'
         require_det_id: false
+        store_result_in_t: false
+  function_alias: readout
   help: "\n\t[Mythen3] Starts detector readout. Status changes to TRANSMITTING and\
     \ automatically returns to idle at the end of readout."
   infer_action: false
   template: true
+readoutspeed:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        exception:
+        - condition: det->getDetectorType().squash() == defs::CHIPTESTBOARD
+          message: '"ReadoutSpeed not implemented. Did you mean runclk?"'
+        function: getReadoutSpeed
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: setReadoutSpeed
+        input:
+        - args[0]
+        input_types:
+        - defs::speedLevel
+        output:
+        - ToString(StringTo<defs::speedLevel>(args[0]))
+        require_det_id: true
+        store_result_in_t: false
+  function_alias: readoutspeed
+  help: "\n\t[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t[Eiger][Jungfrau][Moench]\
+    \ Readout speed of chip.\n\t[Eiger][Moench] Default speed is full_speed.\n\t[Jungfrau]\
+    \ Default speed is half_speed. full_speed option only available from v2.0 boards\
+    \ and is recommended to set number of interfaces to 2. Also overwrites adcphase\
+    \ to recommended default.\n\t [144|108]\n\t\t[Gotthard2] Readout speed of chip\
+    \ in MHz. Default is 108."
+  infer_action: false
 readoutspeedlist:
   actions:
     GET:
@@ -3354,6 +4556,8 @@ readoutspeedlist:
         output:
         - ToString(t)
         require_det_id: false
+        store_result_in_t: true
+  function_alias: readoutspeedlist
   help: "\n\tList of readout speed levels implemented for this detector."
   infer_action: false
   template: true
@@ -3371,10 +4575,52 @@ rebootcontroller:
         output:
         - '"successful"'
         require_det_id: true
+        store_result_in_t: false
+  function_alias: rebootcontroller
   help: "\n\t[Jungfrau][Moench][Ctb][Gotthard][Mythen3][Gotthard2] Reboot controller\
     \ of detector."
   infer_action: false
   template: true
+resetdacs:
+  actions:
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: args[0] != "hard"
+          message: '"Unknown argument " + args[0] + ". Did you mean hard?"'
+        function: resetToDefaultDacs
+        input:
+        - '"1"'
+        input_types:
+        - bool
+        output:
+        - '"successful"'
+        require_det_id: true
+        store_result_in_t: false
+      - argc: 0
+        cast_input:
+        - false
+        check_det_id: false
+        convert_det_id: true
+        function: resetToDefaultDacs
+        input:
+        - '"0"'
+        input_types:
+        - bool
+        output:
+        - '"successful"'
+        require_det_id: true
+        store_result_in_t: false
+  function_alias: resetdacs
+  help: "[(optional) hard] \n\t[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3]Reset\
+    \ dac values to the defaults. A 'hard' optional reset will reset the dacs to the\
+    \ hardcoded defaults in on-board detector server."
+  infer_action: false
 resetfpga:
   actions:
     PUT:
@@ -3389,6 +4635,8 @@ resetfpga:
         output:
         - '"successful"'
         require_det_id: true
+        store_result_in_t: false
+  function_alias: resetfpga
   help: "\n\t[Jungfrau][Moench][Ctb] Reset FPGA."
   infer_action: false
   template: true
@@ -3406,6 +4654,7 @@ romode:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3421,6 +4670,8 @@ romode:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: romode
   help: ''
   infer_action: false
   template: true
@@ -3438,6 +4689,7 @@ row:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3453,6 +4705,8 @@ row:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: row
   help: ''
   infer_action: false
   template: true
@@ -3470,6 +4724,7 @@ runclk:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3485,6 +4740,8 @@ runclk:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: runclk
   help: ''
   infer_action: false
   template: true
@@ -3502,6 +4759,7 @@ runtime:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input: []
         check_det_id: false
@@ -3512,6 +4770,8 @@ runtime:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
+  function_alias: runtime
   help: ''
   infer_action: false
   template: true
@@ -3529,6 +4789,7 @@ rx_arping:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3544,6 +4805,8 @@ rx_arping:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: rx_arping
   help: ''
   infer_action: false
   template: true
@@ -3561,6 +4824,8 @@ rx_clearroi:
         output:
         - '"successful"'
         require_det_id: false
+        store_result_in_t: false
+  function_alias: rx_clearroi
   help: Resets Region of interest in receiver. Default is all channels/pixels enabled.
   infer_action: false
   template: true
@@ -3578,6 +4843,7 @@ rx_dbitoffset:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3593,6 +4859,8 @@ rx_dbitoffset:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: rx_dbitoffset
   help: ''
   infer_action: false
   template: true
@@ -3610,6 +4878,7 @@ rx_discardpolicy:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3625,6 +4894,8 @@ rx_discardpolicy:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: rx_discardpolicy
   help: ''
   infer_action: false
   template: true
@@ -3642,6 +4913,7 @@ rx_fifodepth:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3657,6 +4929,8 @@ rx_fifodepth:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: rx_fifodepth
   help: ''
   infer_action: false
   template: true
@@ -3674,6 +4948,8 @@ rx_framecaught:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: rx_framecaught
   help: "\n\tNumber of frames caught by receiver."
   infer_action: false
   template: true
@@ -3691,6 +4967,8 @@ rx_frameindex:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: rx_frameindex
   help: "\n\tCurrent frame index received for receiver during acquisition."
   infer_action: false
   template: true
@@ -3708,6 +4986,7 @@ rx_framesperfile:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3723,6 +5002,8 @@ rx_framesperfile:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: rx_framesperfile
   help: ''
   infer_action: false
   template: true
@@ -3740,6 +5021,8 @@ rx_lastclient:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: rx_lastclient
   help: "\n\tClient IP Address that last communicated with the receiver."
   infer_action: false
   template: true
@@ -3757,6 +5040,7 @@ rx_lock:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3772,6 +5056,8 @@ rx_lock:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: rx_lock
   help: ''
   infer_action: false
   template: true
@@ -3789,6 +5075,8 @@ rx_missingpackets:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: rx_missingpackets
   help: "\n\tNumber of missing packets for receiver. If negative, they are packets\
     \ in excess."
   infer_action: false
@@ -3807,6 +5095,7 @@ rx_padding:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3822,6 +5111,8 @@ rx_padding:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: rx_padding
   help: ''
   infer_action: false
   template: true
@@ -3839,6 +5130,8 @@ rx_printconfig:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: rx_printconfig
   help: "\n\tPrints the receiver configuration."
   infer_action: false
   template: true
@@ -3856,6 +5149,8 @@ rx_realudpsocksize:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: rx_realudpsocksize
   help: "\n\tActual udp socket buffer size. Double the size of rx_udpsocksize due\
     \ to kernel bookkeeping."
   infer_action: false
@@ -3874,6 +5169,7 @@ rx_silent:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3889,6 +5185,8 @@ rx_silent:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: rx_silent
   help: ''
   infer_action: false
   template: true
@@ -3906,10 +5204,30 @@ rx_start:
         output:
         - '"successful"'
         require_det_id: false
+        store_result_in_t: false
+  function_alias: rx_start
   help: "\n\tStarts receiver listener for detector data packets and create a data\
     \ file (if file write enabled)."
   infer_action: false
   template: true
+rx_status:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getReceiverStatus
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+  function_alias: rx_status
+  help: "[running, idle, transmitting]\n\tReceiver listener status."
+  infer_action: false
 rx_stop:
   actions:
     PUT:
@@ -3924,6 +5242,8 @@ rx_stop:
         output:
         - '"successful"'
         require_det_id: false
+        store_result_in_t: false
+  function_alias: rx_stop
   help: "\n\tStops receiver listener for detector data packets and closes current\
     \ data file (if file write enabled)."
   infer_action: false
@@ -3942,6 +5262,7 @@ rx_tcpport:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -3957,6 +5278,8 @@ rx_tcpport:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: rx_tcpport
   help: ''
   infer_action: false
   template: true
@@ -3974,6 +5297,8 @@ rx_threads:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: rx_threads
   help: "\n\tGet kernel thread ids from the receiver in order of [parent, tcp, listener\
     \ 0, processor 0, streamer 0, listener 1, processor 1, streamer 1, arping]. If\
     \ no streamer yet or there is no second interface, it gives 0 in its place."
@@ -3993,6 +5318,7 @@ rx_udpsocksize:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4008,6 +5334,8 @@ rx_udpsocksize:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: rx_udpsocksize
   help: ''
   infer_action: false
   template: true
@@ -4025,6 +5353,8 @@ rx_version:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: rx_version
   help: "\n\tReceiver version"
   infer_action: false
   template: true
@@ -4042,6 +5372,7 @@ rx_zmqfreq:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4057,6 +5388,8 @@ rx_zmqfreq:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: rx_zmqfreq
   help: ''
   infer_action: false
   template: true
@@ -4074,6 +5407,7 @@ rx_zmqhwm:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4089,6 +5423,8 @@ rx_zmqhwm:
         output:
         - args.front()
         require_det_id: false
+        store_result_in_t: false
+  function_alias: rx_zmqhwm
   help: "[n_value]\n\tReceiver's zmq send high water mark. Default is the zmq library's\
     \ default (1000). This is a high number and can be set to 2 for gui purposes.\
     \ One must also set the client's receive high water mark to similar value. Final\
@@ -4110,6 +5446,7 @@ rx_zmqip:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4125,6 +5462,8 @@ rx_zmqip:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: rx_zmqip
   help: ''
   infer_action: false
   template: true
@@ -4142,6 +5481,7 @@ rx_zmqport:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4157,6 +5497,8 @@ rx_zmqport:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: rx_zmqport
   help: ''
   infer_action: false
   template: true
@@ -4174,6 +5516,7 @@ rx_zmqstartfnum:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4189,6 +5532,8 @@ rx_zmqstartfnum:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: rx_zmqstartfnum
   help: ''
   infer_action: false
   template: true
@@ -4206,6 +5551,7 @@ rx_zmqstream:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4221,6 +5567,8 @@ rx_zmqstream:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: rx_zmqstream
   help: ''
   infer_action: false
   template: true
@@ -4241,10 +5589,88 @@ savepattern:
         output:
         - args.front()
         require_det_id: false
+        store_result_in_t: false
+  function_alias: savepattern
   help: "\n\t[Ctb][Mythen3] Saves pattern to file (ascii). \n\t[Ctb] Also executes\
     \ pattern."
   infer_action: false
   template: true
+scan:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getScan
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exceptions:
+        - condition: StringTo<int>(args[0]) != 0
+          message: '"Unknown argument " + args[0] + ". Did you mean 0?"'
+        function: setScan
+        input:
+        - defs::scanParameters()
+        input_types:
+        - auto
+        output:
+        - ToString(args)
+        require_det_id: false
+        store_result_in_t: false
+      - argc: 4
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        function: setScan
+        input:
+        - defs::scanParameters(StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]),
+          StringTo<int>(args[2]), StringTo<int>(args[3]))
+        input_types:
+        - auto
+        output:
+        - ToString(args)
+        require_det_id: false
+        store_result_in_t: false
+      - argc: 5
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        function: setScan
+        input:
+        - defs::scanParameters(StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]),
+          StringTo<int>(args[2]), StringTo<int>(args[3]), t)
+        input_types:
+        - auto
+        output:
+        - ToString(args)
+        require_det_id: false
+        separate_time_units:
+          input: args[4]
+          output:
+          - t
+          - unit
+        store_result_in_t: false
+  function_alias: scan
+  help: "[dac_name|0|trimbits] [start_val] [stop_val] [step_size] [dac settling time\
+    \ ns|us|ms|s]\n\tEnables/ disables scans for dac and trimbits \n\tEnabling scan\
+    \ sets number of frames to number of steps in receiver. \n\tTo cancel scan configuration,\
+    \ set dac to '0', which also sets number of frames to 1. \n\t[Eiger][Mythen3]\
+    \ Use trimbits as dac name for a trimbit scan."
+  infer_action: false
 scanerrmsg:
   actions:
     GET:
@@ -4259,6 +5685,8 @@ scanerrmsg:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: scanerrmsg
   help: "\n\tGets Scan error message if scan ended in error for non blocking acquisitions."
   infer_action: false
   template: true
@@ -4276,6 +5704,7 @@ selinterface:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4291,6 +5720,8 @@ selinterface:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: selinterface
   help: ''
   infer_action: false
   template: true
@@ -4308,6 +5739,8 @@ serialnumber:
         output:
         - OutStringHex(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: serialnumber
   help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][CTB]\nSerial number\
     \ of detector."
   infer_action: false
@@ -4326,6 +5759,7 @@ settings:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4341,6 +5775,8 @@ settings:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: settings
   help: ''
   infer_action: false
   template: true
@@ -4358,6 +5794,8 @@ settingslist:
         output:
         - ToString(t)
         require_det_id: false
+        store_result_in_t: true
+  function_alias: settingslist
   help: "\n\tList of settings implemented for this detector."
   infer_action: false
   template: true
@@ -4375,6 +5813,7 @@ settingspath:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4390,6 +5829,8 @@ settingspath:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: settingspath
   help: ''
   infer_action: false
   template: true
@@ -4413,6 +5854,8 @@ signalindex:
         output:
         - static_cast<int>(t)
         require_det_id: false
+        store_result_in_t: true
+  function_alias: signalindex
   help: "[name] \n\t\t[ChipTestBoard] Get the signal index for the given name."
   infer_action: false
   template: true
@@ -4438,6 +5881,7 @@ signalname:
         - ''' '''
         - t
         require_det_id: false
+        store_result_in_t: true
     PUT:
       args:
       - argc: 2
@@ -4459,6 +5903,8 @@ signalname:
         output:
         - ToString(args)
         require_det_id: false
+        store_result_in_t: false
+  function_alias: signalname
   help: "[0-63][name] \n\t\t[ChipTestBoard] Set the signal at the given position to\
     \ the given name."
   infer_action: false
@@ -4487,6 +5933,8 @@ slowadcindex:
         output:
         - ToString(static_cast<int>(t) - index)
         require_det_id: false
+        store_result_in_t: true
+  function_alias: slowadcindex
   help: "[name] \n\t\t[ChipTestBoard] Get the slowadc index for the given name."
   infer_action: false
   template: true
@@ -4516,6 +5964,7 @@ slowadcname:
         - ''' '''
         - t
         require_det_id: false
+        store_result_in_t: true
     PUT:
       args:
       - argc: 2
@@ -4541,6 +5990,8 @@ slowadcname:
         output:
         - ToString(args)
         require_det_id: false
+        store_result_in_t: false
+  function_alias: slowadcname
   help: "[0-7][name] \n\t\t[ChipTestBoard] Set the slowadc at the given position to\
     \ the given name."
   infer_action: false
@@ -4562,6 +6013,8 @@ slowadcvalues:
         input_types: []
         output: []
         require_det_id: false
+        store_result_in_t: true
+  function_alias: slowadcvalues
   help: "[name] \n\t\t[ChipTestBoard] Get values of all slow adcs."
   infer_action: false
   template: true
@@ -4579,11 +6032,32 @@ start:
         output:
         - '"successful"'
         require_det_id: true
+        store_result_in_t: false
+  function_alias: start
   help: "\n\tStarts detector acquisition. Status changes to RUNNING or WAITING and\
     \ automatically returns to idle at the end of acquisition. If the acquisition\
     \ was abruptly stopped, some detectors come back to STOPPED."
   infer_action: false
   template: true
+status:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getDetectorStatus
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+  function_alias: status
+  help: "[running, error, transmitting, finished, waiting, idle]\n\tDetector status.\
+    \ Goes to stop server."
+  infer_action: false
 stop:
   actions:
     PUT:
@@ -4598,6 +6072,8 @@ stop:
         output:
         - '"successful"'
         require_det_id: true
+        store_result_in_t: false
+  function_alias: stop
   help: "\n\tAbort detector acquisition. Status changes to IDLE or STOPPED. Goes to\
     \ stop server."
   infer_action: false
@@ -4616,6 +6092,7 @@ stopport:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4631,6 +6108,8 @@ stopport:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: stopport
   help: ''
   infer_action: false
   template: true
@@ -4648,6 +6127,7 @@ storagecell_delay:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input: []
         check_det_id: false
@@ -4658,6 +6138,7 @@ storagecell_delay:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4678,6 +6159,7 @@ storagecell_delay:
           output:
           - converted_time
           - unit
+        store_result_in_t: false
       - argc: 2
         cast_input:
         - false
@@ -4697,6 +6179,8 @@ storagecell_delay:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
+  function_alias: storagecell_delay
   help: ''
   infer_action: false
   template: true
@@ -4714,6 +6198,7 @@ storagecell_start:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4729,6 +6214,8 @@ storagecell_start:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: storagecell_start
   help: ''
   infer_action: false
   template: true
@@ -4746,6 +6233,7 @@ subdeadtime:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input: []
         check_det_id: false
@@ -4756,6 +6244,7 @@ subdeadtime:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4776,6 +6265,7 @@ subdeadtime:
           output:
           - converted_time
           - unit
+        store_result_in_t: false
       - argc: 2
         cast_input:
         - false
@@ -4795,6 +6285,8 @@ subdeadtime:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
+  function_alias: subdeadtime
   help: ''
   infer_action: false
   template: true
@@ -4812,6 +6304,7 @@ subexptime:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
       - argc: 1
         cast_input: []
         check_det_id: false
@@ -4822,6 +6315,7 @@ subexptime:
         output:
         - OutString(t , args[0])
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4842,6 +6336,7 @@ subexptime:
           output:
           - converted_time
           - unit
+        store_result_in_t: false
       - argc: 2
         cast_input:
         - false
@@ -4861,6 +6356,8 @@ subexptime:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
+  function_alias: subexptime
   help: ''
   infer_action: false
   template: true
@@ -4878,6 +6375,7 @@ sync:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4893,6 +6391,8 @@ sync:
         output:
         - args.front()
         require_det_id: false
+        store_result_in_t: false
+  function_alias: sync
   help: "[0, 1]\n\t[Jungfrau][Moench] Enables or disables synchronization between\
     \ modules."
   infer_action: false
@@ -4911,6 +6411,8 @@ syncclk:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: syncclk
   help: "[n_clk in MHz]\n\t[Ctb] Sync clock in MHz."
   infer_action: false
   template: true
@@ -4932,6 +6434,8 @@ temp_10ge:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: temp_10ge
   help: "[n_value]\n\t[Eiger]Temperature close to the 10GbE"
   infer_action: false
   template: true
@@ -4953,6 +6457,8 @@ temp_adc:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: temp_adc
   help: "[n_value]\n\t[Jungfrau][Moench][Gotthard] ADC Temperature"
   infer_action: false
   template: true
@@ -4970,6 +6476,7 @@ temp_control:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -4985,6 +6492,8 @@ temp_control:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: temp_control
   help: ''
   infer_action: false
   template: true
@@ -5006,6 +6515,8 @@ temp_dcdc:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: temp_dcdc
   help: "[n_value]\n\t[Eiger]Temperature close to the dc dc converter"
   infer_action: false
   template: true
@@ -5027,6 +6538,8 @@ temp_fpga:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: temp_fpga
   help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Gotthard][Mythen3][Gotthard2] FPGA\
     \ Temperature"
   infer_action: false
@@ -5049,6 +6562,8 @@ temp_fpgaext:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: temp_fpgaext
   help: "[n_value]\n\t[Eiger]Temperature close to the FPGA"
   infer_action: false
   template: true
@@ -5070,6 +6585,8 @@ temp_fpgafl:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: temp_fpgafl
   help: "[n_value]\n\t[Eiger]Temperature of the left front end board fpga."
   infer_action: false
   template: true
@@ -5091,6 +6608,8 @@ temp_fpgafr:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: temp_fpgafr
   help: "[n_value]\n\t[Eiger]Temperature of the left front end board fpga."
   infer_action: false
   template: true
@@ -5112,6 +6631,8 @@ temp_slowadc:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: temp_slowadc
   help: "[n_value]\n\t[Ctb]Temperature of the slow adc"
   infer_action: false
   template: true
@@ -5133,6 +6654,8 @@ temp_sodl:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: temp_sodl
   help: "[n_value]\n\t[Eiger]Temperature close to the left so-dimm memory"
   infer_action: false
   template: true
@@ -5154,6 +6677,8 @@ temp_sodr:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: temp_sodr
   help: "[n_value]\n\t[Eiger]Temperature close to the right so-dimm memory"
   infer_action: false
   template: true
@@ -5171,6 +6696,7 @@ temp_threshold:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5186,6 +6712,8 @@ temp_threshold:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: temp_threshold
   help: ''
   infer_action: false
   template: true
@@ -5203,6 +6731,8 @@ templist:
         output:
         - ToString(t)
         require_det_id: false
+        store_result_in_t: true
+  function_alias: templist
   help: "\n\tList of temperature commands implemented for this detector."
   infer_action: false
   template: true
@@ -5220,6 +6750,7 @@ tengiga:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5235,6 +6766,8 @@ tengiga:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: tengiga
   help: ''
   infer_action: false
   template: true
@@ -5252,6 +6785,7 @@ timing:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5267,6 +6801,8 @@ timing:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: timing
   help: ''
   infer_action: false
   template: true
@@ -5284,6 +6820,8 @@ timinglist:
         output:
         - ToString(t)
         require_det_id: false
+        store_result_in_t: true
+  function_alias: timinglist
   help: "\n\tGets the list of timing modes for this detector."
   infer_action: false
   template: true
@@ -5301,6 +6839,7 @@ timingsource:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5316,6 +6855,8 @@ timingsource:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: timingsource
   help: ''
   infer_action: false
   template: true
@@ -5333,6 +6874,7 @@ top:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5348,6 +6890,8 @@ top:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: top
   help: ''
   infer_action: false
   template: true
@@ -5365,6 +6909,7 @@ transceiverenable:
         output:
         - OutStringHex(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5380,8 +6925,36 @@ transceiverenable:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: transceiverenable
   help: ''
   infer_action: false
+  template: true
+trigger:
+  actions:
+    PUT:
+      args:
+      - argc: 0
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        extra_variables:
+        - name: block
+          type: bool
+          value: 'false'
+        function: sendSoftwareTrigger
+        input:
+        - block
+        input_types:
+        - bool
+        output:
+        - '"successful"'
+        require_det_id: false
+        store_result_in_t: false
+  function_alias: trigger
+  help: "\n\t[Eiger][Mythen3][Jungfrau][Moench] Sends software trigger signal to detector"
+  infer_action: true
   template: true
 triggers:
   actions:
@@ -5397,6 +6970,7 @@ triggers:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5412,6 +6986,8 @@ triggers:
         output:
         - args.front()
         require_det_id: false
+        store_result_in_t: false
+  function_alias: triggers
   help: "[n_triggers]\n\tNumber of triggers per aquire. Set timing mode to use triggers."
   infer_action: false
   template: true
@@ -5429,10 +7005,51 @@ triggersl:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: triggersl
   help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of triggers\
     \ left in acquisition. Only when external trigger used."
   infer_action: false
   template: true
+trimbits:
+  actions:
+    GET:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        check_det_id: false
+        convert_det_id: true
+        function: saveTrimbits
+        input:
+        - args[0]
+        input_types:
+        - std::string
+        output:
+        - args[0]
+        require_det_id: true
+        store_result_in_t: false
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        check_det_id: false
+        convert_det_id: true
+        function: loadTrimbits
+        input:
+        - args[0]
+        input_types:
+        - std::string
+        output:
+        - args[0]
+        require_det_id: false
+        store_result_in_t: false
+  function_alias: trimbits
+  help: "[fname]\n\t[Eiger][Mythen3] Put will load the trimbit file to detector. If\
+    \ no extension specified, serial number of each module is attached. Get will save\
+    \ the trimbits from the detector to file with serial number added to file name."
+  infer_action: false
 trimval:
   actions:
     GET:
@@ -5447,6 +7064,7 @@ trimval:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5462,6 +7080,8 @@ trimval:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: trimval
   help: ''
   infer_action: false
   template: true
@@ -5479,6 +7099,7 @@ tsamples:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5494,6 +7115,8 @@ tsamples:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: tsamples
   help: ''
   infer_action: false
   template: true
@@ -5511,6 +7134,7 @@ txdelay_frame:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5526,6 +7150,8 @@ txdelay_frame:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: txdelay_frame
   help: ''
   infer_action: false
   template: true
@@ -5543,6 +7169,7 @@ txdelay_left:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5558,6 +7185,8 @@ txdelay_left:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: txdelay_left
   help: ''
   infer_action: false
   template: true
@@ -5575,6 +7204,7 @@ txdelay_right:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5590,6 +7220,8 @@ txdelay_right:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: txdelay_right
   help: ''
   infer_action: false
   template: true
@@ -5607,6 +7239,8 @@ type:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: type
   help: "\n\tReturns detector type. Can be Eiger, Jungfrau, Gotthard, Moench, Mythen3,\
     \ Gotthard2, ChipTestBoard"
   infer_action: false
@@ -5625,9 +7259,58 @@ udp_cleardst:
         output:
         - '"successful"'
         require_det_id: true
+        store_result_in_t: false
+  function_alias: udp_cleardst
   help: "\n\tClears udp destination details on the detector."
   infer_action: false
   template: true
+udp_dstlist:
+  actions:
+    GET:
+      args:
+      - argc: 0
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exceptions:
+        - condition: rx_id < 0 || rx_id >= MAX_UDP_DESTINATION
+          message: '"Invalid receiver index " + std::to_string(rx_id) + ".to set round
+            robin entry."'
+        function: getDestinationUDPList
+        input:
+        - rx_id
+        input_types:
+        - auto
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - argc: 1
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: false
+        exceptions:
+        - condition: rx_id < 0 || rx_id >= MAX_UDP_DESTINATION
+          message: '"Invalid receiver index to set round robin entry."'
+        function: setDestinationUDPList
+        input:
+        - getUdpEntry()
+        input_types:
+        - auto
+        output:
+        - ToString(args)
+        require_det_id: true
+        store_result_in_t: false
+  function_alias: udp_dstlist
+  help: "[ip=x.x.x.x] [(optional)ip2=x.x.x.x] \n\t\t[mac=xx:xx:xx:xx:xx:xx] [(optional)mac2=xx:xx:xx:xx:xx:xx]\n\
+    \t\t[port=value] [(optional)port2=value]\n\t\tThe order of ip, mac and port does\
+    \ not matter. entry_value can be >0 only for [Eiger][Jungfrau][Moench][Mythen3][Gotthard2]\
+    \ where round robin is implemented. If 'auto' used, then ip is set to ip of rx_hostname."
+  infer_action: false
 udp_dstmac:
   actions:
     GET:
@@ -5642,6 +7325,7 @@ udp_dstmac:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5657,6 +7341,8 @@ udp_dstmac:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: udp_dstmac
   help: ''
   infer_action: false
   template: true
@@ -5674,6 +7360,7 @@ udp_dstmac2:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5689,6 +7376,8 @@ udp_dstmac2:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: udp_dstmac2
   help: ''
   infer_action: false
   template: true
@@ -5706,6 +7395,7 @@ udp_dstport:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5721,6 +7411,8 @@ udp_dstport:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: udp_dstport
   help: ''
   infer_action: false
   template: true
@@ -5738,6 +7430,7 @@ udp_dstport2:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5753,6 +7446,8 @@ udp_dstport2:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: udp_dstport2
   help: ''
   infer_action: false
   template: true
@@ -5770,6 +7465,7 @@ udp_firstdst:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5785,6 +7481,8 @@ udp_firstdst:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: udp_firstdst
   help: ''
   infer_action: false
   template: true
@@ -5802,6 +7500,8 @@ udp_numdst:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
+  function_alias: udp_numdst
   help: "\n\t[Jungfrau][Moench][Eiger][Mythen3][Gotthard2] One can enter upto 32 (64\
     \ for Mythen3) destinations that the detector will stream images out in a round\
     \ robin fashion. This is get only command. Default: 1"
@@ -5821,6 +7521,8 @@ udp_reconfigure:
         output:
         - '"successful"'
         require_det_id: true
+        store_result_in_t: false
+  function_alias: udp_reconfigure
   help: "\n\tReconfigures Detector with UDP destination. More for debugging as the\
     \ configuration is done automatically when the detector has sufficient UDP details."
   infer_action: false
@@ -5839,6 +7541,7 @@ udp_srcmac:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5854,6 +7557,8 @@ udp_srcmac:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: udp_srcmac
   help: ''
   infer_action: false
   template: true
@@ -5871,6 +7576,7 @@ udp_srcmac2:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5886,6 +7592,8 @@ udp_srcmac2:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: udp_srcmac2
   help: ''
   infer_action: false
   template: true
@@ -5903,6 +7611,8 @@ udp_validate:
         output:
         - '"successful"'
         require_det_id: true
+        store_result_in_t: false
+  function_alias: udp_validate
   help: "\n\tValidates that UDP configuration in the detector is valid. If not configured,\
     \ it will throw with error message requesting missing udp information."
   infer_action: false
@@ -5921,6 +7631,7 @@ updatemode:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5936,6 +7647,8 @@ updatemode:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: updatemode
   help: ''
   infer_action: false
   template: true
@@ -5956,6 +7669,7 @@ v_a:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -5974,6 +7688,8 @@ v_a:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: v_a
   help: "[n_value]\n\t[Ctb] Voltage supply a in mV."
   infer_action: false
   template: true
@@ -5994,6 +7710,7 @@ v_b:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -6012,6 +7729,8 @@ v_b:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: v_b
   help: "[n_value]\n\t[Ctb] Voltage supply b in mV."
   infer_action: false
   template: true
@@ -6032,6 +7751,7 @@ v_c:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -6050,6 +7770,8 @@ v_c:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: v_c
   help: "[n_value]\n\t[Ctb] Voltage supply c in mV."
   infer_action: false
   template: true
@@ -6070,6 +7792,7 @@ v_chip:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -6088,6 +7811,8 @@ v_chip:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: v_chip
   help: "[n_value]\n\t[Ctb] Voltage supply chip in mV. Do not use it unless you are\
     \ completely sure you will not fry the board."
   infer_action: false
@@ -6109,6 +7834,7 @@ v_d:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -6127,6 +7853,8 @@ v_d:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: v_d
   help: "[n_value]\n\t[Ctb] Voltage supply d in mV."
   infer_action: false
   template: true
@@ -6147,6 +7875,7 @@ v_io:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -6165,6 +7894,8 @@ v_io:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: v_io
   help: "[n_value]\n\t[Ctb] Voltage supply io in mV. Minimum 1200 mV. Must be the\
     \ first power regulator to be set after fpga reset (on-board detector server start\
     \ up)."
@@ -6187,6 +7918,7 @@ v_limit:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -6205,6 +7937,8 @@ v_limit:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: v_limit
   help: "[n_value]\n\t[Ctb] Soft limit for power supplies (ctb only) and DACS in mV."
   infer_action: false
   template: true
@@ -6229,6 +7963,7 @@ vchip_comp_adc:
         - args[0]
         - OutStringHex(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 2
@@ -6251,6 +7986,8 @@ vchip_comp_adc:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
+  function_alias: vchip_comp_adc
   help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
     \ for comparator current of ADC."
   infer_action: false
@@ -6276,6 +8013,7 @@ vchip_comp_fe:
         - args[0]
         - OutStringHex(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 2
@@ -6298,6 +8036,8 @@ vchip_comp_fe:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
+  function_alias: vchip_comp_fe
   help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
     \ for comparator current of analogue front end."
   infer_action: false
@@ -6323,6 +8063,7 @@ vchip_cs:
         - args[0]
         - OutStringHex(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 2
@@ -6345,6 +8086,8 @@ vchip_cs:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
+  function_alias: vchip_cs
   help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
     \ for current injection into preamplifier."
   infer_action: false
@@ -6370,6 +8113,7 @@ vchip_opa_1st:
         - args[0]
         - OutStringHex(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 2
@@ -6392,6 +8136,8 @@ vchip_opa_1st:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
+  function_alias: vchip_opa_1st
   help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
     \ for opa current for driving the other DACs in chip."
   infer_action: false
@@ -6417,6 +8163,7 @@ vchip_opa_fd:
         - args[0]
         - OutStringHex(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 2
@@ -6439,6 +8186,8 @@ vchip_opa_fd:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
+  function_alias: vchip_opa_fd
   help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
     \ current for CDS opa stage."
   infer_action: false
@@ -6464,6 +8213,7 @@ vchip_ref_comp_fe:
         - args[0]
         - OutStringHex(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 2
@@ -6486,6 +8236,8 @@ vchip_ref_comp_fe:
         - args[0]
         - args[1]
         require_det_id: true
+        store_result_in_t: false
+  function_alias: vchip_ref_comp_fe
   help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
     \ for reference voltage of the comparator of analogue front end."
   infer_action: false
@@ -6504,6 +8256,7 @@ veto:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -6519,9 +8272,37 @@ veto:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: veto
   help: ''
   infer_action: false
   template: true
+virtual:
+  actions:
+    PUT:
+      args:
+      - argc: 2
+        cast_input:
+        - true
+        - true
+        check_det_id: true
+        convert_det_id: true
+        function: setVirtualDetectorServers
+        input:
+        - args[0]
+        - args[1]
+        input_types:
+        - int
+        - int
+        output:
+        - ToString(args)
+        require_det_id: false
+        store_result_in_t: false
+  function_alias: virtualFunction
+  help: "[n_servers] [starting_port_number]\n\tConnecs to n virtual server at local\
+    \ host starting at specific control port. Every virtual server will have a stop\
+    \ port (control port + 1)"
+  infer_action: false
 vm_a:
   actions:
     GET:
@@ -6540,6 +8321,8 @@ vm_a:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: vm_a
   help: "\n\t[Ctb] Measured voltage of power supply a in mV."
   infer_action: false
   template: true
@@ -6561,6 +8344,8 @@ vm_b:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: vm_b
   help: "\n\t[Ctb] Measured voltage of power supply b in mV."
   infer_action: false
   template: true
@@ -6582,6 +8367,8 @@ vm_c:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: vm_c
   help: "\n\t[Ctb] Measured voltage of power supply c in mV."
   infer_action: false
   template: true
@@ -6603,6 +8390,8 @@ vm_d:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: vm_d
   help: "\n\t[Ctb] Measured voltage of power supply d in mV."
   infer_action: false
   template: true
@@ -6624,6 +8413,8 @@ vm_io:
         - OutString(t)
         - "\" \xB0C\""
         require_det_id: true
+        store_result_in_t: true
+  function_alias: vm_io
   help: "\n\t[Ctb] Measured voltage of power supply io in mV."
   infer_action: false
   template: true
@@ -6651,6 +8442,8 @@ voltageindex:
         output:
         - ToString(static_cast<int>(t) - index)
         require_det_id: false
+        store_result_in_t: true
+  function_alias: voltageindex
   help: "[name] \n\t\t[ChipTestBoard] Get the voltage index for the given name."
   infer_action: false
   template: true
@@ -6680,6 +8473,7 @@ voltagename:
         - ''' '''
         - t
         require_det_id: false
+        store_result_in_t: true
     PUT:
       args:
       - argc: 2
@@ -6705,6 +8499,8 @@ voltagename:
         output:
         - ToString(args)
         require_det_id: false
+        store_result_in_t: false
+  function_alias: voltagename
   help: "[0-4][name] \n\t\t[ChipTestBoard] Set the voltage at the given position to\
     \ the given name."
   infer_action: false
@@ -6726,6 +8522,8 @@ voltagevalues:
         input_types: []
         output: []
         require_det_id: false
+        store_result_in_t: true
+  function_alias: voltagevalues
   help: "[name] \n\t\t[ChipTestBoard] Get values of all voltages."
   infer_action: false
   template: true
@@ -6743,6 +8541,7 @@ zmqip:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -6758,6 +8557,8 @@ zmqip:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: zmqip
   help: ''
   infer_action: false
   template: true
@@ -6775,6 +8576,7 @@ zmqport:
         output:
         - OutString(t)
         require_det_id: true
+        store_result_in_t: true
     PUT:
       args:
       - argc: 1
@@ -6790,6 +8592,8 @@ zmqport:
         output:
         - args.front()
         require_det_id: true
+        store_result_in_t: false
+  function_alias: zmqport
   help: ''
   infer_action: false
   template: true

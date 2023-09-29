@@ -43,12 +43,12 @@ class CodeGenerator:
                 for line in fp2:
                     if "THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (1)" in line:
                         for command in commands:
-                            fp.write(f'std::string {command}(int action);\n')
+                            fp.write(f'std::string {command[1]}(int action);\n')
                         continue
                     if "THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (2)" in line:
                         map_string = ''
                         for command in commands:
-                            map_string += f'{{"{command}", &Caller::{command}}},'
+                            map_string += f'{{"{command[0]}", &Caller::{command[1]}}},'
                         fp.write(map_string[:-1] + '\n')
                         continue
 
@@ -115,7 +115,7 @@ class CodeGenerator:
 
                 input_arguments = ", ".join(input_arguments)
                 # call function
-                if action == 'GET':
+                if arg['store_result_in_t']:
                     self.write_line(f'auto t = det->{arg["function"]}({input_arguments});')
                 else:
                     self.write_line(f'det->{arg["function"]}({input_arguments});')

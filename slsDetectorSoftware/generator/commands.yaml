@@ -399,6 +399,585 @@ CTB_GET_INDEX:
 
 
 ################# COMMANDS ##################################
+################# special commands ##########################
+virtual:
+  function_alias: virtualFunction
+  help: "[n_servers] [starting_port_number]\n\tConnecs to n virtual server at local host starting at specific control port. Every virtual server will have a stop port (control port + 1)"
+  actions:
+    PUT:
+      function: setVirtualDetectorServers
+      argc: 2
+      check_det_id: true
+      input: [ 'args[0]', 'args[1]' ]
+      input_types: [ int, int ]
+      cast_input: [ true, true ]
+      output: [ 'ToString(args)' ]
+
+firmwareversion:
+  help: "\n\tFirmware version of detector in format [0xYYMMDD] or an increasing 2 digit number for Eiger."
+  actions:
+    GET:
+      argc: 0
+      require_det_id: true
+      function: getFirmwareVersion
+      output: [ OutStringHex(t) ]
+      detectors:
+        EIGER:
+          output: [ OutString(t) ]
+
+
+packageversion:
+  help: "\n\tPackage version (git branch)."
+  actions:
+    GET:
+      argc: 0
+      function: getPackageVersion
+      output: [ t ]
+
+clientversion:
+  help: "\n\tClient software version"
+  actions:
+    GET:
+      argc: 0
+      function: getClientVersion
+      output: [ t ]
+
+
+detsize:
+  help: "[nx] [ny]\n\tDetector size, ie. Number of channels in x and y dim. This is used to calculate module coordinates included in UDP data. \n\tBy default, it adds module in y dimension for 2d detectors and in x dimension for 1d detectors packet header."
+  actions:
+    GET:
+      argc: 0
+      function: getDetectorSize
+      output: [ t ]
+    PUT:
+      argc: 2
+      function: setDetectorSize
+      input: [ 'defs::xy(StringTo<int>(args[0]),StringTo<int>(args[1]))' ]
+      input_types: [ defs::xy ]
+      output: [ 'ToString(args)' ]
+
+
+trimbits:
+  help: "[fname]\n\t[Eiger][Mythen3] Put will load the trimbit file to detector. If no extension specified, serial number of each module is attached. Get will save the trimbits from the detector to file with serial number added to file name."
+  actions:
+    GET:
+      argc: 1
+      require_det_id: true
+      store_result_in_t: false
+      function: saveTrimbits
+      input: [ 'args[0]' ]
+      input_types: [ std::string ]
+      output: [ "args[0]" ]
+    PUT:
+      argc: 1
+      function: loadTrimbits
+      input: [ 'args[0]' ]
+      input_types: [ std::string ]
+      output: [ "args[0]" ]
+
+gappixels:
+  help: "[0, 1]\n\t[Eiger][Jungfrau][Moench] Include Gap pixels in client data call back in Detecor api. Will not be in detector streaming, receiver file or streaming. Default is 0. "
+  actions:
+    GET:
+      argc: 0
+      check_det_id: true
+      function: getGapPixelsinCallback
+      output: [ t ]
+    PUT:
+      argc: 1
+      check_det_id: true
+      function: setGapPixelsinCallback
+      input: [ 'args[0]' ]
+      input_types: [ int ]
+      cast_input: [ true ]
+      output: [ args.front() ]
+
+readoutspeed:
+  help: "\n\t[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t[Eiger][Jungfrau][Moench] Readout speed of chip.\n\t[Eiger][Moench] Default speed is full_speed.\n\t[Jungfrau] Default speed is half_speed. full_speed option only available from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] Readout speed of chip in MHz. Default is 108."
+  actions:
+    GET:
+      exception:
+        - condition: 'det->getDetectorType().squash() == defs::CHIPTESTBOARD'
+          message: '"ReadoutSpeed not implemented. Did you mean runclk?"'
+      argc: 0
+      require_det_id: true
+      function: getReadoutSpeed
+      output: [ OutString(t) ]
+    PUT:
+      argc: 1
+      require_det_id: true
+      function: setReadoutSpeed
+      input: [ 'args[0]' ]
+      input_types: [ defs::speedLevel ]
+      cast_input: [ true ]
+      output: [ 'ToString(StringTo<defs::speedLevel>(args[0]))' ]
+
+
+adcphase:
+  help: "[n_value] [(optional)deg]\n\t[Jungfrau][Moench][Ctb][Gotthard] Phase shift of ADC clock. \n\t[Jungfrau][Moench] Absolute phase shift. If deg used, then shift in degrees. Changing Speed also resets adcphase to recommended defaults.\n\t[Ctb] Absolute phase shift. If deg used, then shift in degrees. Changing adcclk also resets adcphase and sets it to previous values.\n\t[Gotthard] Relative phase shift. Cannot get"
+  actions:
+    GET:
+      require_det_id: true
+      extra_variables:
+        - name: det_type
+          type: auto
+          value: det->getDetectorType().squash(defs::GENERIC);
+
+      exceptions:
+        - condition: 'det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2'
+          message: '"adcphase not implemented for this detector"'
+      args:
+        - argc: 0
+          function: getADCPhase
+          output: [ OutString(t) ]
+        - argc: 1
+          exceptions:
+            - condition: 'det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2'
+              message: '"adcphase not implemented for this detector"'
+            - condition: 'args[0] != "deg"'
+              message: '"Unknown adcphase   argument " + args[0] + ". Did you mean deg?    "'
+          function: getADCPhaseInDegrees
+          output: [ OutString(t), ' "deg"' ]
+
+    PUT:
+      extra_variables:
+        - name: det_type
+          type: auto
+          value: det->getDetectorType().squash(defs::GENERIC);
+      exceptions:
+        - condition: 'det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2'
+          message: '"adcphase not implemented for this detector"'
+      require_det_id: true
+      input: [ 'args[0]' ]
+      input_types: [ int ]
+      cast_input: [ true ]
+
+      args:
+        - argc: 1
+          function: setADCPhase
+          output: [ 'args.front()' ]
+        - argc: 2
+          exceptions:
+            - condition: 'det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2'
+              message: '"adcphase not implemented for this detector"'
+            - condition: 'args[1] != "deg"'
+              message: '"Unknown adcphase   2nd argument " + args[1] + ". Did you    mean deg?"'
+
+          function: setADCPhaseInDegrees
+          output: [ 'args[0]',"' '", 'args[1]' ]
+
+
+dbitphase:
+  help: "[n_value] [(optional)deg]\n\t[Ctb][Jungfrau] Phase shift of clock to latch digital bits. Absolute phase shift. If deg used, then shift in degrees. \n\t[Ctb]Changing dbitclk also resets dbitphase and sets to previous values."
+  actions:
+    GET:
+      extra_variables:
+        - name: det_type
+          type: auto
+          value: det->getDetectorType().squash(defs::GENERIC);
+
+      exceptions:
+        - condition: 'det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2 || det_type == defs::MOENCH'
+          message: '"dbitphase not implemented for this detector"'
+      args:
+        - argc: 0
+          function: getDBITPhase
+          output: [ OutString(t) ]
+          require_det_id: true
+        - argc: 1
+          exceptions:
+            - condition: 'det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2 || det_type == defs::MOENCH'
+              message: '"dbitphase not implemented for this detector"'
+            - condition: 'args[0] != "deg"'
+              message: '"Unknown dbitphase argument " + args[0] + ". Did you mean deg?  "'
+          function: getDBITPhaseInDegrees
+          require_det_id: true
+          output: [ OutString(t), '" deg"' ]
+    PUT:
+      extra_variables:
+        - name: det_type
+          type: auto
+          value: det->getDetectorType().squash(defs::GENERIC);
+
+      exceptions:
+        - condition: 'det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2 || det_type == defs::MOENCH'
+          message: '"dbitphase not implemented for this detector"'
+      require_det_id: true
+      input: [ 'args[0]' ]
+      input_types: [ int ]
+      cast_input: [ true ]
+      args:
+        - argc: 1
+          function: setDBITPhase
+          output: [ 'args.front()' ]
+        - argc: 2
+          exceptions:
+            - condition: 'det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2 || det_type == defs::MOENCH'
+              message: '"dbitphase not implemented for this detector"'
+            - condition: 'args[1] != "deg"'
+              message: '"Unknown dbitphase 2nd argument " + args[1] + ". Did you mean deg?  "'
+          function: setDBITPhaseInDegrees
+          output: [ 'args[0]',"' '", 'args[1]' ]
+
+
+
+clkfreq:
+  help: "[n_clock (0-5)] [freq_in_Hz]\n\t[Gotthard2][Mythen3] Frequency of clock n_clock in Hz. Use clkdiv to set frequency."
+  actions:
+    GET:
+      extra_variables:
+        - name: type
+          type: defs::detectorType
+          value: det->getDetectorType().squash(defs::GENERIC);
+      exceptions:
+        - condition: 'type != defs::GOTTHARD2 && type != defs::MYTHEN3'
+          message: '"clkfreq not implemented for this detector."'
+      argc: 1
+      require_det_id: true
+      function: getClockFrequency
+      input: [ 'args[0]' ]
+      input_types: [ int ]
+      cast_input: [ true ]
+      output: [ OutString(t) ]
+
+
+clkphase:
+  help: "[n_clock (0-5)] [phase] [deg (optional)]\n\t[Gotthard2][Mythen3] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values."
+  actions:
+    GET:
+      extra_variables:
+        - name: type
+          type: defs::detectorType
+          value: det->getDetectorType().squash(defs::GENERIC);
+      exceptions:
+        - condition: 'type != defs::GOTTHARD2 && type != defs::MYTHEN3'
+          message: '"clkphase not implemented for this detector."'
+      require_det_id: true
+      input: [ 'args[0]' ]
+      input_types: [ int ]
+      cast_input: [ true ]
+      output: [ OutString(t) ]
+      args:
+        - argc: 1
+          function: getClockPhase
+        - argc: 2
+          exceptions:
+            - condition: 'type != defs::GOTTHARD2 && type != defs::MYTHEN3'
+              message: '"clkphase not implemented for this detector."'
+            - condition: 'args[1] != "deg"'
+              message: '"Cannot scan argument" + args[1] + ". Did you mean deg?"'
+          function: getClockPhaseinDegrees
+          output: [ OutString(t), '" deg"' ]
+
+    PUT:
+      extra_variables:
+        - name: type
+          type: defs::detectorType
+          value: det->getDetectorType().squash(defs::GENERIC);
+      exceptions:
+        - condition: 'type != defs::GOTTHARD2 && type != defs::MYTHEN3'
+          message: '"clkphase not implemented for this detector."'
+      require_det_id: true
+      input: [ 'args[0]', 'args[1]' ]
+      input_types: [ int, int ]
+      cast_input: [ true, true ]
+      args:
+        - argc: 2
+          function: setClockPhase
+          output: [ 'args[1]' ]
+        - argc: 3
+          exceptions:
+            - condition: 'type != defs::GOTTHARD2 && type != defs::MYTHEN3'
+              message: '"clkphase not implemented for this detector."'
+            - condition: 'args[1] != "deg"'
+              message: '"Cannot scan argument" + args[2] + ". Did you mean deg?"'
+          function: setClockPhaseinDegrees
+          output: [ 'args[1]', '" "', 'args[2]' ]
+
+maxclkphaseshift:
+  help: "[n_clock (0-5)]\n\t[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock."
+  actions:
+    GET:
+      extra_variables:
+        - name: type
+          type: defs::detectorType
+          value: det->getDetectorType().squash(defs::GENERIC);
+      exceptions:
+        - condition: 'type != defs::GOTTHARD2 && type != defs::MYTHEN3'
+          message: '"maxclkphaseshift not implemented for this detector."'
+      require_det_id: true
+      input: [ 'args[0]' ]
+      input_types: [ int ]
+      cast_input: [ true ]
+      output: [ OutString(t) ]
+      argc: 1
+      function: getMaxClockPhaseShift
+
+clkdiv:
+  help: "[n_clock (0-5)] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1."
+  actions:
+    GET:
+      extra_variables:
+        - name: type
+          type: defs::detectorType
+          value: det->getDetectorType().squash(defs::GENERIC);
+      exceptions:
+        - condition: 'type != defs::GOTTHARD2 && type != defs::MYTHEN3'
+          message: '"clkdiv not implemented for this detector."'
+      require_det_id: true
+      input: [ 'args[0]' ]
+      input_types: [ int ]
+      cast_input: [ true ]
+      output: [ OutString(t) ]
+      argc: 1
+      function: getClockDivider
+    PUT:
+      extra_variables:
+        - name: type
+          type: defs::detectorType
+          value: det->getDetectorType().squash(defs::GENERIC);
+      exceptions:
+        - condition: 'type != defs::GOTTHARD2 && type != defs::MYTHEN3'
+          message: '"clkdiv not implemented for this detector."'
+      input: [ 'args[0]', 'args[1]', "{det_id}" ]
+      input_types: [ int, int, auto ]
+      cast_input: [ true, true, false ]
+      argc: 2
+      function: setClockDivider
+      output: [ 'args[1]' ]
+
+extsig:
+  help: "[n_signal] [signal_type]\n\t[Gotthard][Mythen3] External signal mode for trigger timing mode.\n\t[Gotthard] [0] [trigger_in_rising_edge|trigger_in_falling_edge]\n\t[Mythen3] [0-7] [trigger_in_rising_edge|trigger_in_falling_edge|inversion_on|inversion_off]\n\t where 0 is master input trigger signal, 1-3 is master input gate signals, 4 is busy out signal and 5-7 is master output gate signals."
+  actions:
+    GET:
+      argc: 1
+      require_det_id: true
+      function: getExternalSignalFlags
+      input: [ 'args[0]' ]
+      input_types: [ int ]
+      cast_input: [ true ]
+      output: [ "args[0]","' '", OutString(t) ]
+    PUT:
+      argc: 2
+      require_det_id: true
+      function: setExternalSignalFlags
+      input: [ 'args[0]', 'args[1]' ]
+      input_types: [ int, slsDetectorDefs::externalSignalFlag ]
+      cast_input: [ true, true ]
+      output: [ 'args[0]', "' '", 'args[1]' ]
+
+
+dac:
+  help: "" # TODO
+  actions:
+    GET:
+      exceptions:
+        - condition: "args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0]) && detector_type != defs::CHIPTESTBOARD"
+          message: '"Dac indices can only be used for chip test board. Use daclist to get list of dac names for current detector."'
+      extra_variables:
+        - name: dacIndex
+          type: defs::dacIndex
+          value: "(detector_type == defs::CHIPTESTBOARD && !is_int(args[0])) ? det->getDacIndex(args[0]) : StringTo<defs::dacIndex>(args[0])"
+      function: getDAC
+      input_types: [ defs::dacIndex, bool ]
+      cast_input: [ false, true ]
+      require_det_id: true
+      args:
+        - argc: 1
+          input: [ dacIndex, '"0"' ]
+          output: [ OutString(t) ]
+        - argc: 2
+          exceptions:
+            - condition: "args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0]) && detector_type != defs::CHIPTESTBOARD"
+              message: '"Dac indices can only be used for chip test board. Use daclist to get list of dac names for current detector."'
+            - condition: "args[1] != 'mv' && args[1] != 'mV'"
+              message: '"Unknown argument " + args[1] + ". Did you mean mV?"'
+          input: [ dacIndex, '"1"' ]
+          output: [ OutString(t), '" mV"' ]
+    PUT:
+      exceptions:
+        - condition: "args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0]) && detector_type != defs::CHIPTESTBOARD"
+          message: '"Dac indices can only be used for chip test board. Use daclist to get list of dac names for current detector."'
+      extra_variables:
+        - name: dacIndex
+          type: defs::dacIndex
+          value: "(detector_type == defs::CHIPTESTBOARD && !is_int(args[0])) ? det->getDacIndex(args[0]) : StringTo<defs::dacIndex>(args[0])"
+      function: setDAC
+      require_det_id: true
+      input_types: [ defs::dacIndex, int, bool ]
+      cast_input: [ false, true, true ]
+
+      args:
+        - argc: 2
+          input: [ dacIndex, "args[1]", '"0"' ]
+          output: [ "args[0]", "' '", "args[1]" ]
+        - argc: 3
+          input: [ dacIndex, "args[1]", '"1"' ]
+          output: [ "args[0]", "' '", "args[1]", '" mV"' ]
+
+resetdacs:
+  help: "[(optional) hard] \n\t[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3]Reset dac values to the defaults. A 'hard' optional reset will reset the dacs to the hardcoded defaults in on-board detector server."
+  actions:
+    PUT:
+      function: resetToDefaultDacs
+      require_det_id: true
+      output: [ '"successful"' ]
+      input_types: [ bool ]
+      args:
+        - argc: 1
+          exceptions:
+            - condition: 'args[0] != "hard"'
+              message: '"Unknown argument " + args[0] + ". Did you mean hard?"'
+          input: [ '"1"' ]
+        - argc: 0
+          input: [ '"0"' ]
+
+defaultdac:
+  help: "[dac name][value][(optional)setting]\n\tSets the default for that dac to this value.\n\t[Jungfrau][Moench][Mythen3] When settings is provided, it sets the default value only for that setting"
+  actions:
+    GET:
+      function: getDefaultDac
+      require_det_id: true
+
+      args:
+        - argc: 1
+          input: [ "args[0]" ]
+          input_types: [ defs::dacIndex ]
+          output: [ "args[0]", "' '", OutString(t) ]
+          cast_input: [ true ]
+
+        - argc: 2
+          cast_input: [ true, true ]
+          input: [ "args[0]", "args[1]" ]
+          input_types: [ defs::dacIndex, slsDetectorDefs::detectorSettings ]
+          output: [ "args[0]", "' '", "args[1]", "' '", OutString(t) ]
+    PUT:
+      function: setDefaultDac
+      args:
+        - argc: 2
+          cast_input: [ true, true ]
+          input: [ "args[0]", "args[1]" ]
+          input_types: [ defs::dacIndex, int ]
+          output: [ "args[0]", "' '", "args[1]" ]
+        - argc: 3
+          cast_input: [ true, true, true ]
+          input: [ "args[0]", "args[1]", "args[2]" ]
+          input_types: [ defs::dacIndex, int, slsDetectorDefs::detectorSettings ]
+          output: [ "args[0]", "' '", "args[2]", "' '", "args[1]" ]
+          require_det_id: true
+
+rx_status:
+  help: "[running, idle, transmitting]\n\tReceiver listener status."
+  actions:
+    GET:
+      argc: 0
+      function: getReceiverStatus
+      require_det_id: true
+      output: [ OutString(t) ]
+      # TODO add specific error on PUT
+
+status:
+  help: "[running, error, transmitting, finished, waiting, idle]\n\tDetector status. Goes to stop server."
+  actions:
+    GET:
+      argc: 0
+      function: getDetectorStatus
+      require_det_id: true
+      output: [ OutString(t) ]
+    # TODO add specific error on PUT
+
+
+scan:
+  help: "[dac_name|0|trimbits] [start_val] [stop_val] [step_size] [dac settling time ns|us|ms|s]\n\tEnables/ disables scans for dac and trimbits \n\tEnabling scan sets number of frames to number of steps in receiver. \n\tTo cancel scan configuration, set dac to '0', which also sets number of frames to 1. \n\t[Eiger][Mythen3] Use trimbits as dac name for a trimbit scan."
+  actions:
+    GET:
+      argc: 0
+      function: getScan
+      output: [ OutString(t) ]
+    PUT:
+      check_det_id: true
+      function: setScan
+      output: [ ToString(args) ]
+
+      args:
+        - argc: 1
+          exceptions:
+            - condition: 'StringTo<int>(args[0]) != 0'
+              message: '"Unknown argument " + args[0] + ". Did you mean 0?"'
+          input: [ "defs::scanParameters()" ]
+          input_types: [ auto ]
+        - argc: 4
+          input: [ "defs::scanParameters(StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]), StringTo<int>(args[2]), StringTo<int>(args[3]))" ]
+          input_types: [ auto ]
+        - argc: 5
+          separate_time_units:
+            input: 'args[4]'
+            output: [ t, unit ]
+          input: [ "defs::scanParameters(StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]), StringTo<int>(args[2]), StringTo<int>(args[3]), t)" ]
+          input_types: [ auto ]
+
+Trigger:
+  template: true
+  actions:
+    PUT:
+      check_det_id: true
+      argc: 0
+      function: sendSoftwareTrigger
+      input: [ block ]
+      input_types: [ bool ]
+      cast_input: [ false ]
+      output: [ '"successful"' ]
+
+trigger:
+  inherit_actions: Trigger
+  help: "\n\t[Eiger][Mythen3][Jungfrau][Moench] Sends software trigger signal to detector"
+  actions:
+    PUT:
+      extra_variables:
+        - name: block
+          type: bool
+          value: "false"
+
+blockingtrigger:
+  inherit_actions: Trigger
+  help: "\n\t[Eiger][Mythen3][Jungfrau][Moench] Sends software trigger signal to detector"
+  actions:
+    PUT:
+      extra_variables:
+        - name: block
+          type: bool
+          value: "true"
+
+udp_dstlist:
+  help: "[ip=x.x.x.x] [(optional)ip2=x.x.x.x] \n\t\t[mac=xx:xx:xx:xx:xx:xx] [(optional)mac2=xx:xx:xx:xx:xx:xx]\n\t\t[port=value] [(optional)port2=value]\n\t\tThe order of ip, mac and port does not matter. entry_value can be >0 only for [Eiger][Jungfrau][Moench][Mythen3][Gotthard2] where round robin is implemented. If 'auto' used, then ip is set to ip of rx_hostname."
+  actions:
+    GET:
+      exceptions:
+        - condition: "rx_id < 0 || rx_id >= MAX_UDP_DESTINATION"
+          message: '"Invalid receiver index " + std::to_string(rx_id) + ".to set round robin entry."'
+      check_det_id: true
+      argc: 0
+      input: [ rx_id ]
+      input_types: [ auto ]
+      function: getDestinationUDPList
+      require_det_id: true
+      output: [ OutString(t) ]
+    PUT:
+        exceptions:
+            - condition: "rx_id < 0 || rx_id >= MAX_UDP_DESTINATION"
+              message: '"Invalid receiver index to set round robin entry."'
+        check_det_id: true
+        argc: 1
+        input: [ getUdpEntry() ]
+        input_types: [ auto ]
+        function: setDestinationUDPList
+        require_det_id: true
+        convert_det_id: false
+        output: [ ToString(args) ]
+
+
+
 ################# CTB_GET_INDEX #############################
 
 adcindex:

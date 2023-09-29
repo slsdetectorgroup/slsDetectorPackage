@@ -4,6 +4,8 @@ import yaml
 from pathlib import Path
 
 
+
+
 class CommandParser:
     def __init__(
             self,
@@ -18,6 +20,7 @@ class CommandParser:
         self.extended_commands = {}
         self.argc_set = set()
         self.logger = logging.getLogger('command_parser')
+        self.__current_action :str= ''
         FORMAT = '[%(levelname)s] %(message)s'
         logging.basicConfig(format=FORMAT, level=logging.INFO)
 
@@ -30,6 +33,7 @@ class CommandParser:
             'output': [],
             'cast_input': [],
             'check_det_id': False,
+            # 'store_result_in_t': False,  # always true in GET action
         }
         self.default_config = {
             'infer_action': True,
@@ -109,6 +113,7 @@ class CommandParser:
         if 'actions' not in command:
             return config
         for action, command_params in command['actions'].items():
+            self.__current_action = action
             if action not in config['actions']:
                 # todo: handle this case
                 pass
@@ -203,6 +208,8 @@ class CommandParser:
             return config
 
         for action, action_params in command['actions'].items():
+            self.__current_action = action
+
             config['actions'][action] = {}
             config_action = config['actions'][action]
             # the context in the current command and the current action
@@ -237,6 +244,33 @@ class CommandParser:
                                                                                   detector_params)
         return config
 
+    def sanitize_argument(func):
+        def f(self,action_context, args, priority_context={}):
+            args = func(self,action_context, args, priority_context)
+            for arg in args:
+                if 'args' in arg:
+                    del arg['args']
+                if 'detectors' in arg:
+                    del arg['detectors']
+                if not arg['cast_input']:
+                    # if the cast_input is empty, then set it to False
+                    arg['cast_input'] = [False] * len(arg['input'])
+
+                elif len(arg['cast_input']) != len(arg['input']):
+                    # if the cast_input is not the same length as the input, then set it to False
+                    arg['cast_input'] = [False] * len(arg['input'])
+                    self.logger.warning(f'cast_input for {arg["function"]} '
+                                        f'with argc: {arg["argc"]} has different length than input')
+                if 'store_result_in_t' not in arg:
+                    if self.__current_action == 'GET':
+                        arg['store_result_in_t'] = True
+                    else:
+                        arg['store_result_in_t'] = False
+            return args
+
+        return f
+
+    @sanitize_argument
     def parse_action(self, action_context, args, priority_context={}):
         """
         parse an action
@@ -247,15 +281,6 @@ class CommandParser:
         """
 
         def add_cast_input(argument):
-            if not argument['cast_input']:
-                # if the cast_input is empty, then set it to False
-                argument['cast_input'] = [False] * len(argument['input'])
-
-            elif len(argument['cast_input']) != len(argument['input']):
-                # if the cast_input is not the same length as the input, then set it to False
-                argument['cast_input'] = [False] * len(argument['input'])
-                self.logger.warning(f'cast_input for {argument["function"]} '
-                                    f'with argc: {argument["argc"]} has different length than input')
             return argument
 
         # deepcopy action_context to avoid modifying the original
@@ -297,7 +322,10 @@ class CommandParser:
             # todo: cache templates
             x = self._parse_command(command)
             return x
-        self.extended_commands[command_name] = self._parse_command(command)
+        parsed_command = self._parse_command(command)
+        if 'function_alias' not in command:
+            parsed_command['function_alias'] = command_name
+        self.extended_commands[command_name] = parsed_command
         return self.extended_commands[command_name]
 
     def parse_all_commands(self):
@@ -308,7 +336,7 @@ class CommandParser:
 
         for command_name in self.simple_commands:
             # todo remove this (added for debugging)
-            if command_name != 'xexptime1':
+            if command_name != 'xxtrimbits':
                 self.parse_command(command_name)
         yaml.Dumper.ignore_aliases = lambda *args: True
         self.logger.info(f'parsed {len(self.extended_commands)} commands')

@@ -26,7 +26,7 @@ def generate(
     print(f"[X] found {len(commands_config)} commands")
     print('[*] generating code for commands')
     for command_name, command in commands_config.items():
-        with function('std::string', 'Caller::' + command_name, [('int', 'action')]) as fn:
+        with function('std::string', 'Caller::' + command['function_alias'], [('int', 'action')]) as fn:
             codegen.write_line('std::ostringstream os;')
 
             # print help
@@ -52,6 +52,8 @@ def generate(
                     codegen.write_line('throw RuntimeError("infer_action is disabled");')
 
             # check if action and arguments are valid
+            codegen.write_line('auto detector_type = det->getDetectorType().squash();')
+
             codegen.write_line('// check if action and arguments are valid')
             first = True
             for action, action_params in command['actions'].items():
@@ -109,7 +111,6 @@ def generate(
 
             # generate code for each action
             codegen.write_line('// generate code for each action')
-            codegen.write_line('auto detector_type = det->getDetectorType().squash();')
             for action, action_params in command['actions'].items():
 
                 with if_block(f'action == {codegen.actions_dict[action]}'):
@@ -139,7 +140,7 @@ def generate(
     codegen.close()
     print('[X] .cpp code generated')
 
-    codegen.write_header(HEADER_INPUT_PATH, HEADER_OUTPUT_PATH, list(commands_config.keys()))
+    codegen.write_header(HEADER_INPUT_PATH, HEADER_OUTPUT_PATH, [(command_name, command['function_alias']) for command_name, command in commands_config.items()])
     print('[X] header code generated')
 
 

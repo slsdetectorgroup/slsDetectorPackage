@@ -2,6 +2,7 @@
 
 #include "CmdParser.h"
 #include "sls/Detector.h"
+
 #include <string>
 #include <vector>
 #include <iostream>
@@ -13,6 +14,9 @@ class Caller {
     void call(const CmdParser &parser, int action, std::ostream &os=std::cout);
 
     std::string list(int action);
+    IpAddr getDstIpFromAuto();
+    IpAddr getSrcIpFromAuto();
+    UdpDestination getUdpEntry();
 
     // THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (1)
 
@@ -20,7 +24,8 @@ class Caller {
     std::vector<std::string> args;
     std::string cmd;
     Detector* det;
-    int det_id{};
+    int det_id{-1};
+    int rx_id{-1};
 
   private:
     using FunctionMap = std::map<std::string, std::string (Caller::*)(int)>;

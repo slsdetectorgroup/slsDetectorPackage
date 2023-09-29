@@ -1,6 +1,8 @@
 #include "Caller.h"
 #include <iostream>
 #include "sls/string_utils.h"
+#include "sls/logger.h"
+
 namespace sls {
 
 // enum { GET_ACTION, PUT_ACTION, READOUT_ACTION, HELP_ACTION };
@@ -27,6 +29,73 @@ std::string Caller::list(int action) {
   return ret;
 }
 
+/* Network Configuration (Detector<->Receiver) */
+
+IpAddr Caller::getDstIpFromAuto() {
+  std::string rxHostname =
+      det->getRxHostname(std::vector<int>{ det_id }).squash("none");
+  // Hostname could be ip try to decode otherwise look up the hostname
+  auto val = IpAddr{ rxHostname };
+  if (val == 0) {
+    val = HostnameToIp(rxHostname.c_str());
+  }
+  return val;
+}
+
+IpAddr Caller::getSrcIpFromAuto() {
+  if (det->getDetectorType().squash() == defs::GOTTHARD) {
+    throw RuntimeError(
+        "Cannot use 'auto' for udp_srcip for GotthardI Detector.");
+  }
+  std::string hostname =
+      det->getHostname(std::vector<int>{ det_id }).squash("none");
+  // Hostname could be ip try to decode otherwise look up the hostname
+  auto val = IpAddr{ hostname };
+  if (val == 0) {
+    val = HostnameToIp(hostname.c_str());
+  }
+  return val;
+}
+
+UdpDestination Caller::getUdpEntry() {
+  UdpDestination udpDestination{};
+  udpDestination.entry = rx_id;
+
+  for (auto it : args) {
+    size_t pos = it.find('=');
+    std::string key = it.substr(0, pos);
+    std::string value = it.substr(pos + 1);
+    if (key == "ip") {
+      if (value == "auto") {
+        auto val = getDstIpFromAuto();
+        LOG(logINFO) << "Setting udp_dstip of detector " << det_id << " to "
+                     << val;
+        udpDestination.ip = val;
+      } else {
+        udpDestination.ip = IpAddr(value);
+      }
+    } else if (key == "ip2") {
+      if (value == "auto") {
+        auto val = getDstIpFromAuto();
+        LOG(logINFO) << "Setting udp_dstip2 of detector " << det_id << " to "
+                     << val;
+        udpDestination.ip2 = val;
+      } else {
+        udpDestination.ip2 = IpAddr(value);
+      }
+    } else if (key == "mac") {
+      udpDestination.mac = MacAddr(value);
+    } else if (key == "mac2") {
+      udpDestination.mac2 = MacAddr(value);
+    } else if (key == "port") {
+      udpDestination.port = StringTo<uint32_t>(value);
+    } else if (key == "port2") {
+      udpDestination.port2 = StringTo<uint32_t>(value);
+    }
+  }
+  return udpDestination;
+}
+
 std::string Caller::activate(int action) {
 
   std::ostringstream os;
@@ -42,6 +111,7 @@ std::string Caller::activate(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -71,7 +141,6 @@ std::string Caller::activate(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getActive(std::vector<int>{ det_id });
@@ -105,6 +174,7 @@ std::string Caller::adcclk(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -134,7 +204,6 @@ std::string Caller::adcclk(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getADCClock(std::vector<int>{ det_id });
@@ -168,6 +237,7 @@ std::string Caller::adcenable(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -197,7 +267,6 @@ std::string Caller::adcenable(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getADCEnableMask(std::vector<int>{ det_id });
@@ -231,6 +300,7 @@ std::string Caller::adcenable10g(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -260,7 +330,6 @@ std::string Caller::adcenable10g(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTenGigaADCEnableMask(std::vector<int>{ det_id });
@@ -296,6 +365,7 @@ std::string Caller::adcindex(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 1) {
@@ -311,7 +381,6 @@ std::string Caller::adcindex(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 1) {
       if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
@@ -343,6 +412,7 @@ std::string Caller::adcinvert(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -372,7 +442,6 @@ std::string Caller::adcinvert(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getADCInvert(std::vector<int>{ det_id });
@@ -408,6 +477,7 @@ std::string Caller::adcname(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 1) {
@@ -443,7 +513,6 @@ std::string Caller::adcname(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 1) {
       if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
@@ -475,6 +544,112 @@ std::string Caller::adcname(int action) {
   return os.str();
 }
 
+std::string Caller::adcphase(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: adcphase" << std::endl;
+    os << R"V0G0N([n_value] [(optional)deg]
+	[Jungfrau][Moench][Ctb][Gotthard] Phase shift of ADC clock. 
+	[Jungfrau][Moench] Absolute phase shift. If deg used, then shift in degrees. Changing Speed also resets adcphase to recommended defaults.
+	[Ctb] Absolute phase shift. If deg used, then shift in degrees. Changing adcclk also resets adcphase and sets it to previous values.
+	[Gotthard] Relative phase shift. Cannot get )V0G0N" << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0 && args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+      auto det_type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+    }
+
+    if (args.size() == 1) {
+      auto det_type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 1 && args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 1) {
+      auto det_type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+    if (args.size() == 2) {
+      auto det_type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      auto det_type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      auto t = det->getADCPhase(std::vector<int>{ det_id });
+      os << OutString(t) << '\n';
+    }
+
+    if (args.size() == 1) {
+      auto det_type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      auto t = det->getADCPhaseInDegrees(std::vector<int>{ det_id });
+      os << OutString(t) << "deg" << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 1) {
+      auto det_type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      auto arg0 = StringTo<int>(args[0]);
+      det->setADCPhase(arg0, std::vector<int>{ det_id });
+      os << args.front() << '\n';
+    }
+
+    if (args.size() == 2) {
+      auto det_type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      auto arg0 = StringTo<int>(args[0]);
+      det->setADCPhaseInDegrees(arg0, std::vector<int>{ det_id });
+      os << args[0] << ' ' << args[1] << '\n';
+    }
+  }
+
+  return os.str();
+}
+
 std::string Caller::adcpipeline(int action) {
 
   std::ostringstream os;
@@ -490,6 +665,7 @@ std::string Caller::adcpipeline(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -519,7 +695,6 @@ std::string Caller::adcpipeline(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getADCPipeline(std::vector<int>{ det_id });
@@ -553,6 +728,7 @@ std::string Caller::apulse(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -582,7 +758,6 @@ std::string Caller::apulse(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getAnalogPulsing(std::vector<int>{ det_id });
@@ -616,6 +791,7 @@ std::string Caller::asamples(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -645,7 +821,6 @@ std::string Caller::asamples(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getNumberOfAnalogSamples(std::vector<int>{ det_id });
@@ -679,6 +854,7 @@ std::string Caller::autocompdisable(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -708,7 +884,6 @@ std::string Caller::autocompdisable(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getAutoComparatorDisable(std::vector<int>{ det_id });
@@ -721,6 +896,60 @@ std::string Caller::autocompdisable(int action) {
       auto arg0 = StringTo<int>(args[0]);
       det->setAutoComparatorDisable(arg0, std::vector<int>{ det_id });
       os << args.front() << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::blockingtrigger(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: blockingtrigger" << std::endl;
+    os << R"V0G0N(
+	[Eiger][Mythen3][Jungfrau][Moench] Sends software trigger signal to detector )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    if (args.size() == 0) {
+      std::cout << "inferred action: PUT" << std::endl;
+      action = slsDetectorDefs::PUT_ACTION;
+    } else {
+
+      throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 0) {
+      bool block = true;
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 0) {
+      bool block = true;
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute blockingtrigger at module level");
+      }
+      det->sendSoftwareTrigger(block);
+      os << "successful" << '\n';
     }
   }
 
@@ -742,6 +971,7 @@ std::string Caller::burstperiod(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -785,7 +1015,6 @@ std::string Caller::burstperiod(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getBurstPeriod(std::vector<int>{ det_id });
@@ -834,6 +1063,7 @@ std::string Caller::bursts(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -863,7 +1093,6 @@ std::string Caller::bursts(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getNumberOfBursts(std::vector<int>{ det_id });
@@ -902,6 +1131,7 @@ std::string Caller::burstsl(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -917,7 +1147,6 @@ std::string Caller::burstsl(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getNumberOfBurstsLeft(std::vector<int>{ det_id });
@@ -945,6 +1174,7 @@ std::string Caller::bustest(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -960,7 +1190,6 @@ std::string Caller::bustest(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -989,6 +1218,7 @@ std::string Caller::cdsgain(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -1018,7 +1248,6 @@ std::string Caller::cdsgain(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getCDSGain(std::vector<int>{ det_id });
@@ -1053,6 +1282,7 @@ std::string Caller::chipversion(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -1068,7 +1298,6 @@ std::string Caller::chipversion(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getChipVersion(std::vector<int>{ det_id });
@@ -1096,6 +1325,7 @@ std::string Caller::clearbusy(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -1111,7 +1341,6 @@ std::string Caller::clearbusy(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -1142,6 +1371,7 @@ std::string Caller::clearroi(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -1157,7 +1387,6 @@ std::string Caller::clearroi(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -1165,6 +1394,321 @@ std::string Caller::clearroi(int action) {
       }
       det->clearROI(std::vector<int>{ det_id });
       os << "successful" << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::clientversion(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: clientversion" << std::endl;
+    os << R"V0G0N(
+	Client software version )V0G0N" << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      auto t = det->getClientVersion();
+      os << t << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::clkdiv(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: clkdiv" << std::endl;
+    os << R"V0G0N([n_clock (0-5)] [n_divider]
+	[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+      try {
+        StringTo<int>(args[1]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      auto arg0 = StringTo<int>(args[0]);
+      auto t = det->getClockDivider(arg0, std::vector<int>{ det_id });
+      os << OutString(t) << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      auto arg0 = StringTo<int>(args[0]);
+      auto arg1 = StringTo<int>(args[1]);
+      det->setClockDivider(arg0, arg1, { det_id });
+      os << args[1] << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::clkfreq(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: clkfreq" << std::endl;
+    os << R"V0G0N([n_clock (0-5)] [freq_in_Hz]
+	[Gotthard2][Mythen3] Frequency of clock n_clock in Hz. Use clkdiv to set frequency. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      auto arg0 = StringTo<int>(args[0]);
+      auto t = det->getClockFrequency(arg0, std::vector<int>{ det_id });
+      os << OutString(t) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::clkphase(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: clkphase" << std::endl;
+    os << R"V0G0N([n_clock (0-5)] [phase] [deg (optional)]
+	[Gotthard2][Mythen3] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1 && args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+    if (args.size() == 2) {
+      defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2 && args.size() != 3) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+      try {
+        StringTo<int>(args[1]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to int");
+      }
+    }
+
+    if (args.size() == 3) {
+      defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+      try {
+        StringTo<int>(args[1]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      auto arg0 = StringTo<int>(args[0]);
+      auto t = det->getClockPhase(arg0, std::vector<int>{ det_id });
+      os << OutString(t) << '\n';
+    }
+
+    if (args.size() == 2) {
+      defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      auto arg0 = StringTo<int>(args[0]);
+      auto t = det->getClockPhaseinDegrees(arg0, std::vector<int>{ det_id });
+      os << OutString(t) << " deg" << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      auto arg0 = StringTo<int>(args[0]);
+      auto arg1 = StringTo<int>(args[1]);
+      det->setClockPhase(arg0, arg1, std::vector<int>{ det_id });
+      os << args[1] << '\n';
+    }
+
+    if (args.size() == 3) {
+      defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      auto arg0 = StringTo<int>(args[0]);
+      auto arg1 = StringTo<int>(args[1]);
+      det->setClockPhaseinDegrees(arg0, arg1, std::vector<int>{ det_id });
+      os << args[1] << " " << args[2] << '\n';
     }
   }
 
@@ -1186,6 +1730,7 @@ std::string Caller::column(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -1215,7 +1760,6 @@ std::string Caller::column(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getColumn(std::vector<int>{ det_id });
@@ -1249,6 +1793,7 @@ std::string Caller::compdisabletime(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -1292,7 +1837,6 @@ std::string Caller::compdisabletime(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getComparatorDisableTime(std::vector<int>{ det_id });
@@ -1341,6 +1885,7 @@ std::string Caller::config(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 1) {
@@ -1356,7 +1901,6 @@ std::string Caller::config(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 1) {
       if (det_id != -1) {
@@ -1364,6 +1908,152 @@ std::string Caller::config(int action) {
       }
       det->loadConfig(args[0]);
       os << args.front() << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::dac(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: dac" << std::endl;
+    os << R"V0G0N( )V0G0N" << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1 && args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      defs::dacIndex dacIndex =
+          (detector_type == defs::CHIPTESTBOARD && !is_int(args[0]))
+              ? det->getDacIndex(args[0])
+              : StringTo<defs::dacIndex>(args[0]);
+      try {
+        StringTo<bool>("0");
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to bool");
+      }
+    }
+
+    if (args.size() == 2) {
+      defs::dacIndex dacIndex =
+          (detector_type == defs::CHIPTESTBOARD && !is_int(args[0]))
+              ? det->getDacIndex(args[0])
+              : StringTo<defs::dacIndex>(args[0]);
+      try {
+        StringTo<bool>("1");
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to bool");
+      }
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2 && args.size() != 3) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      defs::dacIndex dacIndex =
+          (detector_type == defs::CHIPTESTBOARD && !is_int(args[0]))
+              ? det->getDacIndex(args[0])
+              : StringTo<defs::dacIndex>(args[0]);
+      try {
+        StringTo<int>(args[1]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to int");
+      }
+      try {
+        StringTo<bool>("0");
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 2 to bool");
+      }
+    }
+
+    if (args.size() == 3) {
+      defs::dacIndex dacIndex =
+          (detector_type == defs::CHIPTESTBOARD && !is_int(args[0]))
+              ? det->getDacIndex(args[0])
+              : StringTo<defs::dacIndex>(args[0]);
+      try {
+        StringTo<int>(args[1]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to int");
+      }
+      try {
+        StringTo<bool>("1");
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 2 to bool");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      defs::dacIndex dacIndex =
+          (detector_type == defs::CHIPTESTBOARD && !is_int(args[0]))
+              ? det->getDacIndex(args[0])
+              : StringTo<defs::dacIndex>(args[0]);
+      auto arg1 = StringTo<bool>("0");
+      auto t = det->getDAC(dacIndex, arg1, std::vector<int>{ det_id });
+      os << OutString(t) << '\n';
+    }
+
+    if (args.size() == 2) {
+      defs::dacIndex dacIndex =
+          (detector_type == defs::CHIPTESTBOARD && !is_int(args[0]))
+              ? det->getDacIndex(args[0])
+              : StringTo<defs::dacIndex>(args[0]);
+      auto arg1 = StringTo<bool>("1");
+      auto t = det->getDAC(dacIndex, arg1, std::vector<int>{ det_id });
+      os << OutString(t) << " mV" << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      defs::dacIndex dacIndex =
+          (detector_type == defs::CHIPTESTBOARD && !is_int(args[0]))
+              ? det->getDacIndex(args[0])
+              : StringTo<defs::dacIndex>(args[0]);
+      auto arg1 = StringTo<int>(args[1]);
+      auto arg2 = StringTo<bool>("0");
+      det->setDAC(dacIndex, arg1, arg2, std::vector<int>{ det_id });
+      os << args[0] << ' ' << args[1] << '\n';
+    }
+
+    if (args.size() == 3) {
+      defs::dacIndex dacIndex =
+          (detector_type == defs::CHIPTESTBOARD && !is_int(args[0]))
+              ? det->getDacIndex(args[0])
+              : StringTo<defs::dacIndex>(args[0]);
+      auto arg1 = StringTo<int>(args[1]);
+      auto arg2 = StringTo<bool>("1");
+      det->setDAC(dacIndex, arg1, arg2, std::vector<int>{ det_id });
+      os << args[0] << ' ' << args[1] << " mV" << '\n';
     }
   }
 
@@ -1387,6 +2077,7 @@ std::string Caller::dacindex(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 1) {
@@ -1403,7 +2094,6 @@ std::string Caller::dacindex(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 1) {
       defs::dacIndex index = defs::DAC_0;
@@ -1438,6 +2128,7 @@ std::string Caller::dacname(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 1) {
@@ -1463,7 +2154,6 @@ std::string Caller::dacname(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 1) {
       defs::dacIndex index = defs::DAC_0;
@@ -1512,6 +2202,7 @@ std::string Caller::dbitclk(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -1541,7 +2232,6 @@ std::string Caller::dbitclk(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getDBITClock(std::vector<int>{ det_id });
@@ -1554,6 +2244,111 @@ std::string Caller::dbitclk(int action) {
       auto arg0 = StringTo<int>(args[0]);
       det->setDBITClock(arg0, std::vector<int>{ det_id });
       os << args.front() << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::dbitphase(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: dbitphase" << std::endl;
+    os << R"V0G0N([n_value] [(optional)deg]
+	[Ctb][Jungfrau] Phase shift of clock to latch digital bits. Absolute phase shift. If deg used, then shift in degrees. 
+	[Ctb]Changing dbitclk also resets dbitphase and sets to previous values. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0 && args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+      auto det_type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+    }
+
+    if (args.size() == 1) {
+      auto det_type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 1 && args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 1) {
+      auto det_type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+    if (args.size() == 2) {
+      auto det_type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      auto det_type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      auto t = det->getDBITPhase(std::vector<int>{ det_id });
+      os << OutString(t) << '\n';
+    }
+
+    if (args.size() == 1) {
+      auto det_type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      auto t = det->getDBITPhaseInDegrees(std::vector<int>{ det_id });
+      os << OutString(t) << " deg" << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 1) {
+      auto det_type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      auto arg0 = StringTo<int>(args[0]);
+      det->setDBITPhase(arg0, std::vector<int>{ det_id });
+      os << args.front() << '\n';
+    }
+
+    if (args.size() == 2) {
+      auto det_type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      auto arg0 = StringTo<int>(args[0]);
+      det->setDBITPhaseInDegrees(arg0, std::vector<int>{ det_id });
+      os << args[0] << ' ' << args[1] << '\n';
     }
   }
 
@@ -1575,6 +2370,7 @@ std::string Caller::dbitpipeline(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -1604,7 +2400,6 @@ std::string Caller::dbitpipeline(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getDBITPipeline(std::vector<int>{ det_id });
@@ -1617,6 +2412,139 @@ std::string Caller::dbitpipeline(int action) {
       auto arg0 = StringTo<int>(args[0]);
       det->setDBITPipeline(arg0, std::vector<int>{ det_id });
       os << args.front() << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::defaultdac(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: defaultdac" << std::endl;
+    os << R"V0G0N([dac name][value][(optional)setting]
+	Sets the default for that dac to this value.
+	[Jungfrau][Moench][Mythen3] When settings is provided, it sets the default value only for that setting )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1 && args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      try {
+        StringTo<defs::dacIndex>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to defs::dacIndex");
+      }
+    }
+
+    if (args.size() == 2) {
+      try {
+        StringTo<defs::dacIndex>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to defs::dacIndex");
+      }
+      try {
+        StringTo<slsDetectorDefs::detectorSettings>(args[1]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to "
+                           "slsDetectorDefs::detectorSettings");
+      }
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2 && args.size() != 3) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      try {
+        StringTo<defs::dacIndex>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to defs::dacIndex");
+      }
+      try {
+        StringTo<int>(args[1]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to int");
+      }
+    }
+
+    if (args.size() == 3) {
+      try {
+        StringTo<defs::dacIndex>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to defs::dacIndex");
+      }
+      try {
+        StringTo<int>(args[1]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to int");
+      }
+      try {
+        StringTo<slsDetectorDefs::detectorSettings>(args[2]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 2 to "
+                           "slsDetectorDefs::detectorSettings");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      auto arg0 = StringTo<defs::dacIndex>(args[0]);
+      auto t = det->getDefaultDac(arg0, std::vector<int>{ det_id });
+      os << args[0] << ' ' << OutString(t) << '\n';
+    }
+
+    if (args.size() == 2) {
+      auto arg0 = StringTo<defs::dacIndex>(args[0]);
+      auto arg1 = StringTo<slsDetectorDefs::detectorSettings>(args[1]);
+      auto t = det->getDefaultDac(arg0, arg1, std::vector<int>{ det_id });
+      os << args[0] << ' ' << args[1] << ' ' << OutString(t) << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      auto arg0 = StringTo<defs::dacIndex>(args[0]);
+      auto arg1 = StringTo<int>(args[1]);
+      det->setDefaultDac(arg0, arg1);
+      os << args[0] << ' ' << args[1] << '\n';
+    }
+
+    if (args.size() == 3) {
+      auto arg0 = StringTo<defs::dacIndex>(args[0]);
+      auto arg1 = StringTo<int>(args[1]);
+      auto arg2 = StringTo<slsDetectorDefs::detectorSettings>(args[2]);
+      det->setDefaultDac(arg0, arg1, arg2, std::vector<int>{ det_id });
+      os << args[0] << ' ' << args[2] << ' ' << args[1] << '\n';
     }
   }
 
@@ -1640,6 +2568,7 @@ std::string Caller::defaultpattern(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -1655,7 +2584,6 @@ std::string Caller::defaultpattern(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -1684,6 +2612,7 @@ std::string Caller::delay(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -1727,7 +2656,6 @@ std::string Caller::delay(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getDelayAfterTrigger(std::vector<int>{ det_id });
@@ -1774,6 +2702,7 @@ std::string Caller::delayl(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -1792,7 +2721,6 @@ std::string Caller::delayl(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getDelayAfterTriggerLeft(std::vector<int>{ det_id });
@@ -1824,6 +2752,7 @@ std::string Caller::detectorserverversion(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -1839,11 +2768,70 @@ std::string Caller::detectorserverversion(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getDetectorServerVersion(std::vector<int>{ det_id });
       os << OutString(t) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::detsize(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: detsize" << std::endl;
+    os << R"V0G0N([nx] [ny]
+	Detector size, ie. Number of channels in x and y dim. This is used to calculate module coordinates included in UDP data. 
+	By default, it adds module in y dimension for 2d detectors and in x dimension for 1d detectors packet header. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      auto t = det->getDetectorSize();
+      os << t << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      det->setDetectorSize(
+          defs::xy(StringTo<int>(args[0]), StringTo<int>(args[1])));
+      os << ToString(args) << '\n';
     }
   }
 
@@ -1865,6 +2853,7 @@ std::string Caller::dpulse(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -1894,7 +2883,6 @@ std::string Caller::dpulse(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getDigitalPulsing(std::vector<int>{ det_id });
@@ -1933,6 +2921,7 @@ std::string Caller::dr(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -1962,7 +2951,6 @@ std::string Caller::dr(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getDynamicRange(std::vector<int>{ det_id });
@@ -2000,6 +2988,7 @@ std::string Caller::drlist(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -2015,7 +3004,6 @@ std::string Caller::drlist(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getDynamicRangeList();
@@ -2041,6 +3029,7 @@ std::string Caller::dsamples(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -2070,7 +3059,6 @@ std::string Caller::dsamples(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getNumberOfDigitalSamples(std::vector<int>{ det_id });
@@ -2104,6 +3092,7 @@ std::string Caller::exptime(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -2147,7 +3136,6 @@ std::string Caller::exptime(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (detector_type == defs::MYTHEN3) {
       if (args.size() == 0) {
@@ -2208,6 +3196,7 @@ std::string Caller::exptime1(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -2255,7 +3244,6 @@ std::string Caller::exptime1(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       int gateIndex = 0;
@@ -2326,6 +3314,7 @@ std::string Caller::exptime2(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -2373,7 +3362,6 @@ std::string Caller::exptime2(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       int gateIndex = 1;
@@ -2444,6 +3432,7 @@ std::string Caller::exptime3(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -2491,7 +3480,6 @@ std::string Caller::exptime3(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       int gateIndex = 2;
@@ -2562,6 +3550,7 @@ std::string Caller::exptimel(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -2580,7 +3569,6 @@ std::string Caller::exptimel(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getExptimeLeft(std::vector<int>{ det_id });
@@ -2614,6 +3602,7 @@ std::string Caller::extrastoragecells(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -2643,7 +3632,6 @@ std::string Caller::extrastoragecells(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t =
@@ -2681,6 +3669,7 @@ std::string Caller::extsampling(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -2710,7 +3699,6 @@ std::string Caller::extsampling(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getExternalSampling(std::vector<int>{ det_id });
@@ -2744,6 +3732,7 @@ std::string Caller::extsamplingsrc(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -2773,7 +3762,6 @@ std::string Caller::extsamplingsrc(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getExternalSamplingSource(std::vector<int>{ det_id });
@@ -2786,6 +3774,89 @@ std::string Caller::extsamplingsrc(int action) {
       auto arg0 = StringTo<int>(args[0]);
       det->setExternalSamplingSource(arg0, std::vector<int>{ det_id });
       os << args.front() << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::extsig(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: extsig" << std::endl;
+    os << R"V0G0N([n_signal] [signal_type]
+	[Gotthard][Mythen3] External signal mode for trigger timing mode.
+	[Gotthard] [0] [trigger_in_rising_edge|trigger_in_falling_edge]
+	[Mythen3] [0-7] [trigger_in_rising_edge|trigger_in_falling_edge|inversion_on|inversion_off]
+	 where 0 is master input trigger signal, 1-3 is master input gate signals, 4 is busy out signal and 5-7 is master output gate signals. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+      try {
+        StringTo<slsDetectorDefs::externalSignalFlag>(args[1]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to "
+                           "slsDetectorDefs::externalSignalFlag");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      auto arg0 = StringTo<int>(args[0]);
+      auto t = det->getExternalSignalFlags(arg0, std::vector<int>{ det_id });
+      os << args[0] << ' ' << OutString(t) << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      auto arg0 = StringTo<int>(args[0]);
+      auto arg1 = StringTo<slsDetectorDefs::externalSignalFlag>(args[1]);
+      det->setExternalSignalFlags(arg0, arg1, std::vector<int>{ det_id });
+      os << args[0] << ' ' << args[1] << '\n';
     }
   }
 
@@ -2807,6 +3878,7 @@ std::string Caller::fformat(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -2837,7 +3909,6 @@ std::string Caller::fformat(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getFileFormat(std::vector<int>{ det_id });
@@ -2871,6 +3942,7 @@ std::string Caller::filtercells(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -2900,7 +3972,6 @@ std::string Caller::filtercells(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getNumberOfFilterCells(std::vector<int>{ det_id });
@@ -2934,6 +4005,7 @@ std::string Caller::filterresistor(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -2963,7 +4035,6 @@ std::string Caller::filterresistor(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getFilterResistor(std::vector<int>{ det_id });
@@ -2997,6 +4068,7 @@ std::string Caller::findex(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -3026,7 +4098,6 @@ std::string Caller::findex(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getAcquisitionIndex(std::vector<int>{ det_id });
@@ -3062,6 +4133,7 @@ std::string Caller::firmwaretest(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -3077,7 +4149,6 @@ std::string Caller::firmwaretest(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -3085,6 +4156,58 @@ std::string Caller::firmwaretest(int action) {
       }
       det->executeFirmwareTest(std::vector<int>{ det_id });
       os << "successful" << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::firmwareversion(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: firmwareversion" << std::endl;
+    os << R"V0G0N(
+	Firmware version of detector in format [0xYYMMDD] or an increasing 2 digit number for Eiger. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (detector_type == defs::EIGER) {
+      if (args.size() == 0) {
+        auto t = det->getFirmwareVersion(std::vector<int>{ det_id });
+        os << OutString(t) << '\n';
+      }
+
+    } else {
+
+      if (args.size() == 0) {
+        auto t = det->getFirmwareVersion(std::vector<int>{ det_id });
+        os << OutStringHex(t) << '\n';
+      }
     }
   }
 
@@ -3106,6 +4229,7 @@ std::string Caller::fliprows(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -3135,7 +4259,6 @@ std::string Caller::fliprows(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getFlipRows(std::vector<int>{ det_id });
@@ -3169,6 +4292,7 @@ std::string Caller::flowcontrol10g(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -3198,7 +4322,6 @@ std::string Caller::flowcontrol10g(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTenGigaFlowControl(std::vector<int>{ det_id });
@@ -3234,6 +4357,7 @@ std::string Caller::fmaster(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -3263,7 +4387,6 @@ std::string Caller::fmaster(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -3303,6 +4426,7 @@ std::string Caller::fname(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -3326,7 +4450,6 @@ std::string Caller::fname(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getFileNamePrefix(std::vector<int>{ det_id });
@@ -3359,6 +4482,7 @@ std::string Caller::foverwrite(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -3388,7 +4512,6 @@ std::string Caller::foverwrite(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getFileOverWrite(std::vector<int>{ det_id });
@@ -3422,6 +4545,7 @@ std::string Caller::fpath(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -3445,7 +4569,6 @@ std::string Caller::fpath(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getFilePath(std::vector<int>{ det_id });
@@ -3480,6 +4603,7 @@ std::string Caller::framecounter(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -3495,7 +4619,6 @@ std::string Caller::framecounter(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getNumberOfFramesFromStart(std::vector<int>{ det_id });
@@ -3526,6 +4649,7 @@ std::string Caller::frames(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -3555,7 +4679,6 @@ std::string Caller::frames(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getNumberOfFrames(std::vector<int>{ det_id });
@@ -3594,6 +4717,7 @@ std::string Caller::framesl(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -3609,7 +4733,6 @@ std::string Caller::framesl(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getNumberOfFramesLeft(std::vector<int>{ det_id });
@@ -3635,6 +4758,7 @@ std::string Caller::frametime(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -3653,7 +4777,6 @@ std::string Caller::frametime(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getMeasurementTime(std::vector<int>{ det_id });
@@ -3684,6 +4807,7 @@ std::string Caller::fwrite(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -3713,7 +4837,6 @@ std::string Caller::fwrite(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getFileWrite(std::vector<int>{ det_id });
@@ -3747,6 +4870,7 @@ std::string Caller::gainmode(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -3777,7 +4901,6 @@ std::string Caller::gainmode(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getGainMode(std::vector<int>{ det_id });
@@ -3796,13 +4919,15 @@ std::string Caller::gainmode(int action) {
   return os.str();
 }
 
-std::string Caller::gates(int action) {
+std::string Caller::gappixels(int action) {
 
   std::ostringstream os;
   // print help
   if (action == slsDetectorDefs::HELP_ACTION) {
-    os << "Command: gates" << std::endl;
-    os << R"V0G0N( )V0G0N" << std::endl;
+    os << "Command: gappixels" << std::endl;
+    os << R"V0G0N([0, 1]
+	[Eiger][Jungfrau][Moench] Include Gap pixels in client data call back in Detecor api. Will not be in detector streaming, receiver file or streaming. Default is 0.  )V0G0N"
+       << std::endl;
     return os.str();
   }
 
@@ -3811,6 +4936,7 @@ std::string Caller::gates(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -3840,7 +4966,75 @@ std::string Caller::gates(int action) {
   }
 
   // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute gappixels at module level");
+      }
+      auto t = det->getGapPixelsinCallback();
+      os << t << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 1) {
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute gappixels at module level");
+      }
+      auto arg0 = StringTo<int>(args[0]);
+      det->setGapPixelsinCallback(arg0);
+      os << args.front() << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::gates(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: gates" << std::endl;
+    os << R"V0G0N( )V0G0N" << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
   auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 1) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getNumberOfGates(std::vector<int>{ det_id });
@@ -3877,6 +5071,7 @@ std::string Caller::hardwareversion(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -3892,7 +5087,6 @@ std::string Caller::hardwareversion(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getHardwareVersion(std::vector<int>{ det_id });
@@ -3918,6 +5112,7 @@ std::string Caller::highvoltage(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -3947,7 +5142,6 @@ std::string Caller::highvoltage(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getHighVoltage(std::vector<int>{ det_id });
@@ -3982,6 +5176,7 @@ std::string Caller::im_a(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -3997,7 +5192,6 @@ std::string Caller::im_a(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t =
@@ -4025,6 +5219,7 @@ std::string Caller::im_b(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4040,7 +5235,6 @@ std::string Caller::im_b(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t =
@@ -4068,6 +5262,7 @@ std::string Caller::im_c(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4083,7 +5278,6 @@ std::string Caller::im_c(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t =
@@ -4111,6 +5305,7 @@ std::string Caller::im_d(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4126,7 +5321,6 @@ std::string Caller::im_d(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t =
@@ -4154,6 +5348,7 @@ std::string Caller::im_io(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4169,7 +5364,6 @@ std::string Caller::im_io(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t =
@@ -4196,6 +5390,7 @@ std::string Caller::imagetest(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4225,7 +5420,6 @@ std::string Caller::imagetest(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getImageTestMode(std::vector<int>{ det_id });
@@ -4259,6 +5453,7 @@ std::string Caller::interpolation(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4288,7 +5483,6 @@ std::string Caller::interpolation(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getInterpolation(std::vector<int>{ det_id });
@@ -4322,6 +5516,7 @@ std::string Caller::interruptsubframe(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4351,7 +5546,6 @@ std::string Caller::interruptsubframe(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getInterruptSubframe(std::vector<int>{ det_id });
@@ -4387,6 +5581,7 @@ std::string Caller::kernelversion(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4402,7 +5597,6 @@ std::string Caller::kernelversion(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getKernelVersion(std::vector<int>{ det_id });
@@ -4430,6 +5624,7 @@ std::string Caller::lastclient(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4445,7 +5640,6 @@ std::string Caller::lastclient(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getLastClientIP(std::vector<int>{ det_id });
@@ -4471,6 +5665,7 @@ std::string Caller::led(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4500,7 +5695,6 @@ std::string Caller::led(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getLEDEnable(std::vector<int>{ det_id });
@@ -4534,6 +5728,7 @@ std::string Caller::lock(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4563,7 +5758,6 @@ std::string Caller::lock(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getDetectorLock(std::vector<int>{ det_id });
@@ -4597,6 +5791,7 @@ std::string Caller::master(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4626,7 +5821,6 @@ std::string Caller::master(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getMaster(std::vector<int>{ det_id });
@@ -4662,6 +5856,7 @@ std::string Caller::maxadcphaseshift(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4677,10 +5872,63 @@ std::string Caller::maxadcphaseshift(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getMaxADCPhaseShift(std::vector<int>{ det_id });
+      os << OutString(t) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::maxclkphaseshift(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: maxclkphaseshift" << std::endl;
+    os << R"V0G0N([n_clock (0-5)]
+	[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+      ;
+      auto arg0 = StringTo<int>(args[0]);
+      auto t = det->getMaxClockPhaseShift(arg0, std::vector<int>{ det_id });
       os << OutString(t) << '\n';
     }
   }
@@ -4705,6 +5953,7 @@ std::string Caller::maxdbitphaseshift(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4720,7 +5969,6 @@ std::string Caller::maxdbitphaseshift(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getMaxDBITPhaseShift(std::vector<int>{ det_id });
@@ -4746,6 +5994,7 @@ std::string Caller::measuredperiod(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -4764,7 +6013,6 @@ std::string Caller::measuredperiod(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getMeasuredPeriod(std::vector<int>{ det_id });
@@ -4795,6 +6043,7 @@ std::string Caller::measuredsubperiod(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -4813,7 +6062,6 @@ std::string Caller::measuredsubperiod(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getMeasuredSubFramePeriod(std::vector<int>{ det_id });
@@ -4846,6 +6094,7 @@ std::string Caller::moduleid(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4861,7 +6110,6 @@ std::string Caller::moduleid(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getModuleId(std::vector<int>{ det_id });
@@ -4887,6 +6135,7 @@ std::string Caller::nextframenumber(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4916,7 +6165,6 @@ std::string Caller::nextframenumber(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getNextFrameNumber(std::vector<int>{ det_id });
@@ -4951,6 +6199,7 @@ std::string Caller::nmod(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -4966,7 +6215,6 @@ std::string Caller::nmod(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->size();
@@ -4992,6 +6240,7 @@ std::string Caller::numinterfaces(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -5021,7 +6270,6 @@ std::string Caller::numinterfaces(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getNumberofUDPInterfaces(std::vector<int>{ det_id });
@@ -5055,6 +6303,7 @@ std::string Caller::overflow(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -5084,7 +6333,6 @@ std::string Caller::overflow(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getOverFlowMode(std::vector<int>{ det_id });
@@ -5097,6 +6345,48 @@ std::string Caller::overflow(int action) {
       auto arg0 = StringTo<int>(args[0]);
       det->setOverFlowMode(arg0, std::vector<int>{ det_id });
       os << args.front() << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::packageversion(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: packageversion" << std::endl;
+    os << R"V0G0N(
+	Package version (git branch). )V0G0N" << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      auto t = det->getPackageVersion();
+      os << t << '\n';
     }
   }
 
@@ -5118,6 +6408,7 @@ std::string Caller::parallel(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -5147,7 +6438,6 @@ std::string Caller::parallel(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getParallelMode(std::vector<int>{ det_id });
@@ -5183,6 +6473,7 @@ std::string Caller::parameters(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 1) {
@@ -5198,7 +6489,6 @@ std::string Caller::parameters(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 1) {
       if (det_id != -1) {
@@ -5227,6 +6517,7 @@ std::string Caller::partialreset(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -5256,7 +6547,6 @@ std::string Caller::partialreset(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getPartialReset(std::vector<int>{ det_id });
@@ -5292,6 +6582,7 @@ std::string Caller::patfname(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -5307,7 +6598,6 @@ std::string Caller::patfname(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getPatterFileName(std::vector<int>{ det_id });
@@ -5333,6 +6623,7 @@ std::string Caller::patioctrl(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -5362,7 +6653,6 @@ std::string Caller::patioctrl(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getPatternIOControl(std::vector<int>{ det_id });
@@ -5396,6 +6686,7 @@ std::string Caller::patmask(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -5425,7 +6716,6 @@ std::string Caller::patmask(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getPatternMask(std::vector<int>{ det_id });
@@ -5459,6 +6749,7 @@ std::string Caller::patsetbit(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -5488,7 +6779,6 @@ std::string Caller::patsetbit(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getPatternBitMask(std::vector<int>{ det_id });
@@ -5523,6 +6813,7 @@ std::string Caller::patternstart(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -5538,7 +6829,6 @@ std::string Caller::patternstart(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -5567,6 +6857,7 @@ std::string Caller::period(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -5610,7 +6901,6 @@ std::string Caller::period(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getPeriod(std::vector<int>{ det_id });
@@ -5657,6 +6947,7 @@ std::string Caller::periodl(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -5675,7 +6966,6 @@ std::string Caller::periodl(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getPeriodLeft(std::vector<int>{ det_id });
@@ -5706,6 +6996,7 @@ std::string Caller::polarity(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -5735,7 +7026,6 @@ std::string Caller::polarity(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getPolarity(std::vector<int>{ det_id });
@@ -5769,6 +7059,7 @@ std::string Caller::port(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -5798,7 +7089,6 @@ std::string Caller::port(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getControlPort(std::vector<int>{ det_id });
@@ -5832,6 +7122,7 @@ std::string Caller::powerchip(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -5861,7 +7152,6 @@ std::string Caller::powerchip(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getPowerChip(std::vector<int>{ det_id });
@@ -5895,6 +7185,7 @@ std::string Caller::pumpprobe(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -5924,7 +7215,6 @@ std::string Caller::pumpprobe(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getPumpProbe(std::vector<int>{ det_id });
@@ -5958,6 +7248,7 @@ std::string Caller::readnrows(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -5987,7 +7278,6 @@ std::string Caller::readnrows(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getReadNRows(std::vector<int>{ det_id });
@@ -6023,6 +7313,7 @@ std::string Caller::readout(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -6038,7 +7329,6 @@ std::string Caller::readout(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -6046,6 +7336,80 @@ std::string Caller::readout(int action) {
       }
       det->startDetectorReadout();
       os << "successful" << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::readoutspeed(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: readoutspeed" << std::endl;
+    os << R"V0G0N(
+	[0 or full_speed|1 or half_speed|2 or quarter_speed]
+	[Eiger][Jungfrau][Moench] Readout speed of chip.
+	[Eiger][Moench] Default speed is full_speed.
+	[Jungfrau] Default speed is half_speed. full_speed option only available from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites adcphase to recommended default.
+	 [144|108]
+		[Gotthard2] Readout speed of chip in MHz. Default is 108. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 1) {
+      try {
+        StringTo<defs::speedLevel>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to defs::speedLevel");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      if (det->getDetectorType().squash() == defs::CHIPTESTBOARD) {
+        throw RuntimeError(
+            "ReadoutSpeed not implemented. Did you mean runclk?");
+      }
+      auto t = det->getReadoutSpeed(std::vector<int>{ det_id });
+      os << OutString(t) << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 1) {
+      auto arg0 = StringTo<defs::speedLevel>(args[0]);
+      det->setReadoutSpeed(arg0, std::vector<int>{ det_id });
+      os << ToString(StringTo<defs::speedLevel>(args[0])) << '\n';
     }
   }
 
@@ -6069,6 +7433,7 @@ std::string Caller::readoutspeedlist(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -6084,7 +7449,6 @@ std::string Caller::readoutspeedlist(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getReadoutSpeedList();
@@ -6112,6 +7476,7 @@ std::string Caller::rebootcontroller(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -6127,13 +7492,63 @@ std::string Caller::rebootcontroller(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
         throw RuntimeError("Cannot execute rebootcontroller at module level");
       }
       det->rebootController(std::vector<int>{ det_id });
+      os << "successful" << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::resetdacs(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: resetdacs" << std::endl;
+    os << R"V0G0N([(optional) hard] 
+	[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3]Reset dac values to the defaults. A 'hard' optional reset will reset the dacs to the hardcoded defaults in on-board detector server. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 1 && args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 1) {
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 1) {
+      det->resetToDefaultDacs("1", std::vector<int>{ det_id });
+      os << "successful" << '\n';
+    }
+
+    if (args.size() == 0) {
+      det->resetToDefaultDacs("0", std::vector<int>{ det_id });
       os << "successful" << '\n';
     }
   }
@@ -6157,6 +7572,7 @@ std::string Caller::resetfpga(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -6172,7 +7588,6 @@ std::string Caller::resetfpga(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -6201,6 +7616,7 @@ std::string Caller::romode(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -6231,7 +7647,6 @@ std::string Caller::romode(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getReadoutMode(std::vector<int>{ det_id });
@@ -6265,6 +7680,7 @@ std::string Caller::row(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -6294,7 +7710,6 @@ std::string Caller::row(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRow(std::vector<int>{ det_id });
@@ -6328,6 +7743,7 @@ std::string Caller::runclk(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -6357,7 +7773,6 @@ std::string Caller::runclk(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRUNClock(std::vector<int>{ det_id });
@@ -6391,6 +7806,7 @@ std::string Caller::runtime(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -6409,7 +7825,6 @@ std::string Caller::runtime(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getActualTime(std::vector<int>{ det_id });
@@ -6440,6 +7855,7 @@ std::string Caller::rx_arping(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -6469,7 +7885,6 @@ std::string Caller::rx_arping(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxArping(std::vector<int>{ det_id });
@@ -6504,6 +7919,7 @@ std::string Caller::rx_clearroi(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -6519,7 +7935,6 @@ std::string Caller::rx_clearroi(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -6548,6 +7963,7 @@ std::string Caller::rx_dbitoffset(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -6577,7 +7993,6 @@ std::string Caller::rx_dbitoffset(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxDbitOffset(std::vector<int>{ det_id });
@@ -6611,6 +8026,7 @@ std::string Caller::rx_discardpolicy(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -6641,7 +8057,6 @@ std::string Caller::rx_discardpolicy(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxFrameDiscardPolicy(std::vector<int>{ det_id });
@@ -6675,6 +8090,7 @@ std::string Caller::rx_fifodepth(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -6704,7 +8120,6 @@ std::string Caller::rx_fifodepth(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxFifoDepth(std::vector<int>{ det_id });
@@ -6739,6 +8154,7 @@ std::string Caller::rx_framecaught(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -6754,7 +8170,6 @@ std::string Caller::rx_framecaught(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getFramesCaught(std::vector<int>{ det_id });
@@ -6782,6 +8197,7 @@ std::string Caller::rx_frameindex(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -6797,7 +8213,6 @@ std::string Caller::rx_frameindex(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxCurrentFrameIndex(std::vector<int>{ det_id });
@@ -6823,6 +8238,7 @@ std::string Caller::rx_framesperfile(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -6852,7 +8268,6 @@ std::string Caller::rx_framesperfile(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getFramesPerFile(std::vector<int>{ det_id });
@@ -6888,6 +8303,7 @@ std::string Caller::rx_lastclient(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -6903,7 +8319,6 @@ std::string Caller::rx_lastclient(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxLastClientIP(std::vector<int>{ det_id });
@@ -6929,6 +8344,7 @@ std::string Caller::rx_lock(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -6958,7 +8374,6 @@ std::string Caller::rx_lock(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxLock(std::vector<int>{ det_id });
@@ -6994,6 +8409,7 @@ std::string Caller::rx_missingpackets(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -7009,7 +8425,6 @@ std::string Caller::rx_missingpackets(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getNumMissingPackets(std::vector<int>{ det_id });
@@ -7035,6 +8450,7 @@ std::string Caller::rx_padding(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -7064,7 +8480,6 @@ std::string Caller::rx_padding(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getPartialFramesPadding(std::vector<int>{ det_id });
@@ -7099,6 +8514,7 @@ std::string Caller::rx_printconfig(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -7114,7 +8530,6 @@ std::string Caller::rx_printconfig(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->printRxConfiguration(std::vector<int>{ det_id });
@@ -7142,6 +8557,7 @@ std::string Caller::rx_realudpsocksize(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -7157,7 +8573,6 @@ std::string Caller::rx_realudpsocksize(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxRealUDPSocketBufferSize(std::vector<int>{ det_id });
@@ -7183,6 +8598,7 @@ std::string Caller::rx_silent(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -7212,7 +8628,6 @@ std::string Caller::rx_silent(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxSilentMode(std::vector<int>{ det_id });
@@ -7248,6 +8663,7 @@ std::string Caller::rx_start(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -7263,7 +8679,6 @@ std::string Caller::rx_start(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -7271,6 +8686,48 @@ std::string Caller::rx_start(int action) {
       }
       det->startReceiver();
       os << "successful" << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::rx_status(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: rx_status" << std::endl;
+    os << R"V0G0N([running, idle, transmitting]
+	Receiver listener status. )V0G0N" << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      auto t = det->getReceiverStatus(std::vector<int>{ det_id });
+      os << OutString(t) << '\n';
     }
   }
 
@@ -7294,6 +8751,7 @@ std::string Caller::rx_stop(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -7309,7 +8767,6 @@ std::string Caller::rx_stop(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -7338,6 +8795,7 @@ std::string Caller::rx_tcpport(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -7367,7 +8825,6 @@ std::string Caller::rx_tcpport(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxPort(std::vector<int>{ det_id });
@@ -7403,6 +8860,7 @@ std::string Caller::rx_threads(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -7418,7 +8876,6 @@ std::string Caller::rx_threads(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxThreadIds(std::vector<int>{ det_id });
@@ -7444,6 +8901,7 @@ std::string Caller::rx_udpsocksize(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -7473,7 +8931,6 @@ std::string Caller::rx_udpsocksize(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxUDPSocketBufferSize(std::vector<int>{ det_id });
@@ -7508,6 +8965,7 @@ std::string Caller::rx_version(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -7523,7 +8981,6 @@ std::string Caller::rx_version(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getReceiverVersion(std::vector<int>{ det_id });
@@ -7549,6 +9006,7 @@ std::string Caller::rx_zmqfreq(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -7578,7 +9036,6 @@ std::string Caller::rx_zmqfreq(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxZmqFrequency(std::vector<int>{ det_id });
@@ -7614,6 +9071,7 @@ std::string Caller::rx_zmqhwm(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -7643,7 +9101,6 @@ std::string Caller::rx_zmqhwm(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxZmqHwm(std::vector<int>{ det_id });
@@ -7680,6 +9137,7 @@ std::string Caller::rx_zmqip(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -7703,7 +9161,6 @@ std::string Caller::rx_zmqip(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxZmqIP(std::vector<int>{ det_id });
@@ -7736,6 +9193,7 @@ std::string Caller::rx_zmqport(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -7765,7 +9223,6 @@ std::string Caller::rx_zmqport(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxZmqPort(std::vector<int>{ det_id });
@@ -7799,6 +9256,7 @@ std::string Caller::rx_zmqstartfnum(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -7828,7 +9286,6 @@ std::string Caller::rx_zmqstartfnum(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxZmqStartingFrame(std::vector<int>{ det_id });
@@ -7862,6 +9319,7 @@ std::string Caller::rx_zmqstream(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -7891,7 +9349,6 @@ std::string Caller::rx_zmqstream(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getRxZmqDataStream(std::vector<int>{ det_id });
@@ -7927,6 +9384,7 @@ std::string Caller::savepattern(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 1) {
@@ -7942,7 +9400,6 @@ std::string Caller::savepattern(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 1) {
       if (det_id != -1) {
@@ -7950,6 +9407,107 @@ std::string Caller::savepattern(int action) {
       }
       det->savePattern(args[0]);
       os << args.front() << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::scan(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: scan" << std::endl;
+    os << R"V0G0N([dac_name|0|trimbits] [start_val] [stop_val] [step_size] [dac settling time ns|us|ms|s]
+	Enables/ disables scans for dac and trimbits 
+	Enabling scan sets number of frames to number of steps in receiver. 
+	To cancel scan configuration, set dac to '0', which also sets number of frames to 1. 
+	[Eiger][Mythen3] Use trimbits as dac name for a trimbit scan. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 1 && args.size() != 4 && args.size() != 5) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 1) {
+    }
+
+    if (args.size() == 4) {
+    }
+
+    if (args.size() == 5) {
+      try {
+        std::string tmp_time(args[4]);
+        std::string unit = RemoveUnit(tmp_time);
+        auto t = StringTo<time::ns>(tmp_time, unit);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument to time::ns");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      auto t = det->getScan();
+      os << OutString(t) << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 1) {
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute scan at module level");
+      }
+      det->setScan(defs::scanParameters());
+      os << ToString(args) << '\n';
+    }
+
+    if (args.size() == 4) {
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute scan at module level");
+      }
+      det->setScan(defs::scanParameters(
+          StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]),
+          StringTo<int>(args[2]), StringTo<int>(args[3])));
+      os << ToString(args) << '\n';
+    }
+
+    if (args.size() == 5) {
+      std::string tmp_time(args[4]);
+      std::string unit = RemoveUnit(tmp_time);
+      auto t = StringTo<time::ns>(tmp_time, unit);
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute scan at module level");
+      }
+      det->setScan(defs::scanParameters(
+          StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]),
+          StringTo<int>(args[2]), StringTo<int>(args[3]), t));
+      os << ToString(args) << '\n';
     }
   }
 
@@ -7973,6 +9531,7 @@ std::string Caller::scanerrmsg(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -7988,7 +9547,6 @@ std::string Caller::scanerrmsg(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getScanErrorMessage(std::vector<int>{ det_id });
@@ -8014,6 +9572,7 @@ std::string Caller::selinterface(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -8043,7 +9602,6 @@ std::string Caller::selinterface(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getSelectedUDPInterface(std::vector<int>{ det_id });
@@ -8079,6 +9637,7 @@ Serial number of detector. )V0G0N" << std::endl;
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -8094,7 +9653,6 @@ Serial number of detector. )V0G0N" << std::endl;
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getSerialNumber(std::vector<int>{ det_id });
@@ -8120,6 +9678,7 @@ std::string Caller::settings(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -8150,7 +9709,6 @@ std::string Caller::settings(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getSettings(std::vector<int>{ det_id });
@@ -8185,6 +9743,7 @@ std::string Caller::settingslist(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -8200,7 +9759,6 @@ std::string Caller::settingslist(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getSettingsList();
@@ -8226,6 +9784,7 @@ std::string Caller::settingspath(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -8249,7 +9808,6 @@ std::string Caller::settingspath(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getSettingsPath(std::vector<int>{ det_id });
@@ -8284,6 +9842,7 @@ std::string Caller::signalindex(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 1) {
@@ -8299,7 +9858,6 @@ std::string Caller::signalindex(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 1) {
       if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
@@ -8333,6 +9891,7 @@ std::string Caller::signalname(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 1) {
@@ -8368,7 +9927,6 @@ std::string Caller::signalname(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 1) {
       if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
@@ -8417,6 +9975,7 @@ std::string Caller::slowadcindex(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 1) {
@@ -8433,7 +9992,6 @@ std::string Caller::slowadcindex(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 1) {
       defs::dacIndex index = defs::SLOW_ADC0;
@@ -8468,6 +10026,7 @@ std::string Caller::slowadcname(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 1) {
@@ -8493,7 +10052,6 @@ std::string Caller::slowadcname(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 1) {
       defs::dacIndex index = defs::SLOW_ADC0;
@@ -8544,6 +10102,7 @@ std::string Caller::slowadcvalues(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -8559,7 +10118,6 @@ std::string Caller::slowadcvalues(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
 
@@ -8601,6 +10159,7 @@ std::string Caller::start(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -8616,7 +10175,6 @@ std::string Caller::start(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -8624,6 +10182,48 @@ std::string Caller::start(int action) {
       }
       det->startDetector(std::vector<int>{ det_id });
       os << "successful" << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::status(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: status" << std::endl;
+    os << R"V0G0N([running, error, transmitting, finished, waiting, idle]
+	Detector status. Goes to stop server. )V0G0N" << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      auto t = det->getDetectorStatus(std::vector<int>{ det_id });
+      os << OutString(t) << '\n';
     }
   }
 
@@ -8647,6 +10247,7 @@ std::string Caller::stop(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -8662,7 +10263,6 @@ std::string Caller::stop(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -8691,6 +10291,7 @@ std::string Caller::stopport(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -8720,7 +10321,6 @@ std::string Caller::stopport(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getStopPort(std::vector<int>{ det_id });
@@ -8754,6 +10354,7 @@ std::string Caller::storagecell_delay(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -8797,7 +10398,6 @@ std::string Caller::storagecell_delay(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getStorageCellDelay(std::vector<int>{ det_id });
@@ -8844,6 +10444,7 @@ std::string Caller::storagecell_start(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -8873,7 +10474,6 @@ std::string Caller::storagecell_start(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getStorageCellStart(std::vector<int>{ det_id });
@@ -8907,6 +10507,7 @@ std::string Caller::subdeadtime(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -8950,7 +10551,6 @@ std::string Caller::subdeadtime(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getSubDeadTime(std::vector<int>{ det_id });
@@ -8997,6 +10597,7 @@ std::string Caller::subexptime(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0 && args.size() != 1) {
@@ -9040,7 +10641,6 @@ std::string Caller::subexptime(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getSubExptime(std::vector<int>{ det_id });
@@ -9089,6 +10689,7 @@ std::string Caller::sync(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9118,7 +10719,6 @@ std::string Caller::sync(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getSynchronization(std::vector<int>{ det_id });
@@ -9156,6 +10756,7 @@ std::string Caller::syncclk(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9171,7 +10772,6 @@ std::string Caller::syncclk(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getSYNCClock(std::vector<int>{ det_id });
@@ -9198,6 +10798,7 @@ std::string Caller::temp_10ge(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9213,7 +10814,6 @@ std::string Caller::temp_10ge(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTemperature(slsDetectorDefs::TEMPERATURE_10GE,
@@ -9241,6 +10841,7 @@ std::string Caller::temp_adc(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9256,7 +10857,6 @@ std::string Caller::temp_adc(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTemperature(slsDetectorDefs::TEMPERATURE_ADC,
@@ -9283,6 +10883,7 @@ std::string Caller::temp_control(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9312,7 +10913,6 @@ std::string Caller::temp_control(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTemperatureControl(std::vector<int>{ det_id });
@@ -9347,6 +10947,7 @@ std::string Caller::temp_dcdc(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9362,7 +10963,6 @@ std::string Caller::temp_dcdc(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTemperature(slsDetectorDefs::TEMPERATURE_DCDC,
@@ -9391,6 +10991,7 @@ std::string Caller::temp_fpga(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9406,7 +11007,6 @@ std::string Caller::temp_fpga(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTemperature(slsDetectorDefs::TEMPERATURE_FPGA,
@@ -9434,6 +11034,7 @@ std::string Caller::temp_fpgaext(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9449,7 +11050,6 @@ std::string Caller::temp_fpgaext(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTemperature(slsDetectorDefs::TEMPERATURE_FPGAEXT,
@@ -9478,6 +11078,7 @@ std::string Caller::temp_fpgafl(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9493,7 +11094,6 @@ std::string Caller::temp_fpgafl(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTemperature(slsDetectorDefs::TEMPERATURE_FPGA2,
@@ -9522,6 +11122,7 @@ std::string Caller::temp_fpgafr(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9537,7 +11138,6 @@ std::string Caller::temp_fpgafr(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTemperature(slsDetectorDefs::TEMPERATURE_FPGA3,
@@ -9565,6 +11165,7 @@ std::string Caller::temp_slowadc(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9580,7 +11181,6 @@ std::string Caller::temp_slowadc(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTemperature(slsDetectorDefs::SLOW_ADC_TEMP,
@@ -9609,6 +11209,7 @@ std::string Caller::temp_sodl(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9624,7 +11225,6 @@ std::string Caller::temp_sodl(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTemperature(slsDetectorDefs::TEMPERATURE_SODL,
@@ -9653,6 +11253,7 @@ std::string Caller::temp_sodr(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9668,7 +11269,6 @@ std::string Caller::temp_sodr(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTemperature(slsDetectorDefs::TEMPERATURE_SODR,
@@ -9695,6 +11295,7 @@ std::string Caller::temp_threshold(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9724,7 +11325,6 @@ std::string Caller::temp_threshold(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getThresholdTemperature(std::vector<int>{ det_id });
@@ -9760,6 +11360,7 @@ std::string Caller::templist(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9775,7 +11376,6 @@ std::string Caller::templist(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTemperatureList();
@@ -9801,6 +11401,7 @@ std::string Caller::tengiga(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9830,7 +11431,6 @@ std::string Caller::tengiga(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTenGiga(std::vector<int>{ det_id });
@@ -9864,6 +11464,7 @@ std::string Caller::timing(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9894,7 +11495,6 @@ std::string Caller::timing(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTimingMode(std::vector<int>{ det_id });
@@ -9929,6 +11529,7 @@ std::string Caller::timinglist(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -9944,7 +11545,6 @@ std::string Caller::timinglist(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTimingModeList();
@@ -9970,6 +11570,7 @@ std::string Caller::timingsource(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10000,7 +11601,6 @@ std::string Caller::timingsource(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTimingSource(std::vector<int>{ det_id });
@@ -10034,6 +11634,7 @@ std::string Caller::top(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10063,7 +11664,6 @@ std::string Caller::top(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTop(std::vector<int>{ det_id });
@@ -10097,6 +11697,7 @@ std::string Caller::transceiverenable(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10126,7 +11727,6 @@ std::string Caller::transceiverenable(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTransceiverEnableMask(std::vector<int>{ det_id });
@@ -10139,6 +11739,60 @@ std::string Caller::transceiverenable(int action) {
       auto arg0 = StringTo<uint32_t>(args[0]);
       det->setTransceiverEnableMask(arg0, std::vector<int>{ det_id });
       os << args.front() << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::trigger(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: trigger" << std::endl;
+    os << R"V0G0N(
+	[Eiger][Mythen3][Jungfrau][Moench] Sends software trigger signal to detector )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    if (args.size() == 0) {
+      std::cout << "inferred action: PUT" << std::endl;
+      action = slsDetectorDefs::PUT_ACTION;
+    } else {
+
+      throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 0) {
+      bool block = false;
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 0) {
+      bool block = false;
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute trigger at module level");
+      }
+      det->sendSoftwareTrigger(block);
+      os << "successful" << '\n';
     }
   }
 
@@ -10162,6 +11816,7 @@ std::string Caller::triggers(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10191,7 +11846,6 @@ std::string Caller::triggers(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getNumberOfTriggers(std::vector<int>{ det_id });
@@ -10230,6 +11884,7 @@ std::string Caller::triggersl(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10245,11 +11900,68 @@ std::string Caller::triggersl(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getNumberOfTriggersLeft(std::vector<int>{ det_id });
       os << OutString(t) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::trimbits(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: trimbits" << std::endl;
+    os << R"V0G0N([fname]
+	[Eiger][Mythen3] Put will load the trimbit file to detector. If no extension specified, serial number of each module is attached. Get will save the trimbits from the detector to file with serial number added to file name. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 1) {
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      det->saveTrimbits(args[0], std::vector<int>{ det_id });
+      os << args[0] << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 1) {
+      det->loadTrimbits(args[0]);
+      os << args[0] << '\n';
     }
   }
 
@@ -10271,6 +11983,7 @@ std::string Caller::trimval(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10300,7 +12013,6 @@ std::string Caller::trimval(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getAllTrimbits(std::vector<int>{ det_id });
@@ -10334,6 +12046,7 @@ std::string Caller::tsamples(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10363,7 +12076,6 @@ std::string Caller::tsamples(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getNumberOfTransceiverSamples(std::vector<int>{ det_id });
@@ -10397,6 +12109,7 @@ std::string Caller::txdelay_frame(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10426,7 +12139,6 @@ std::string Caller::txdelay_frame(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTransmissionDelayFrame(std::vector<int>{ det_id });
@@ -10460,6 +12172,7 @@ std::string Caller::txdelay_left(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10489,7 +12202,6 @@ std::string Caller::txdelay_left(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTransmissionDelayLeft(std::vector<int>{ det_id });
@@ -10523,6 +12235,7 @@ std::string Caller::txdelay_right(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10552,7 +12265,6 @@ std::string Caller::txdelay_right(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getTransmissionDelayRight(std::vector<int>{ det_id });
@@ -10588,6 +12300,7 @@ std::string Caller::type(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10603,7 +12316,6 @@ std::string Caller::type(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getDetectorType(std::vector<int>{ det_id });
@@ -10630,6 +12342,7 @@ std::string Caller::udp_cleardst(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -10645,7 +12358,6 @@ std::string Caller::udp_cleardst(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -10659,13 +12371,17 @@ std::string Caller::udp_cleardst(int action) {
   return os.str();
 }
 
-std::string Caller::udp_dstmac(int action) {
+std::string Caller::udp_dstlist(int action) {
 
   std::ostringstream os;
   // print help
   if (action == slsDetectorDefs::HELP_ACTION) {
-    os << "Command: udp_dstmac" << std::endl;
-    os << R"V0G0N( )V0G0N" << std::endl;
+    os << "Command: udp_dstlist" << std::endl;
+    os << R"V0G0N([ip=x.x.x.x] [(optional)ip2=x.x.x.x] 
+		[mac=xx:xx:xx:xx:xx:xx] [(optional)mac2=xx:xx:xx:xx:xx:xx]
+		[port=value] [(optional)port2=value]
+		The order of ip, mac and port does not matter. entry_value can be >0 only for [Eiger][Jungfrau][Moench][Mythen3][Gotthard2] where round robin is implemented. If 'auto' used, then ip is set to ip of rx_hostname. )V0G0N"
+       << std::endl;
     return os.str();
   }
 
@@ -10674,6 +12390,7 @@ std::string Caller::udp_dstmac(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10697,7 +12414,68 @@ std::string Caller::udp_dstmac(int action) {
   }
 
   // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute udp_dstlist at module level");
+      }
+      auto t = det->getDestinationUDPList(rx_id, std::vector<int>{ det_id });
+      os << OutString(t) << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 1) {
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute udp_dstlist at module level");
+      }
+      det->setDestinationUDPList(getUdpEntry(), det_id);
+      os << ToString(args) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::udp_dstmac(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: udp_dstmac" << std::endl;
+    os << R"V0G0N( )V0G0N" << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
   auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 1) {
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getDestinationUDPMAC(std::vector<int>{ det_id });
@@ -10730,6 +12508,7 @@ std::string Caller::udp_dstmac2(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10753,7 +12532,6 @@ std::string Caller::udp_dstmac2(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getDestinationUDPMAC2(std::vector<int>{ det_id });
@@ -10786,6 +12564,7 @@ std::string Caller::udp_dstport(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10815,7 +12594,6 @@ std::string Caller::udp_dstport(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getDestinationUDPPort(std::vector<int>{ det_id });
@@ -10849,6 +12627,7 @@ std::string Caller::udp_dstport2(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10878,7 +12657,6 @@ std::string Caller::udp_dstport2(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getDestinationUDPPort2(std::vector<int>{ det_id });
@@ -10912,6 +12690,7 @@ std::string Caller::udp_firstdst(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10941,7 +12720,6 @@ std::string Caller::udp_firstdst(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getFirstUDPDestination(std::vector<int>{ det_id });
@@ -10977,6 +12755,7 @@ std::string Caller::udp_numdst(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -10992,7 +12771,6 @@ std::string Caller::udp_numdst(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getNumberofUDPDestinations(std::vector<int>{ det_id });
@@ -11020,6 +12798,7 @@ std::string Caller::udp_reconfigure(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -11035,7 +12814,6 @@ std::string Caller::udp_reconfigure(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -11064,6 +12842,7 @@ std::string Caller::udp_srcmac(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -11087,7 +12866,6 @@ std::string Caller::udp_srcmac(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getSourceUDPMAC(std::vector<int>{ det_id });
@@ -11120,6 +12898,7 @@ std::string Caller::udp_srcmac2(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -11143,7 +12922,6 @@ std::string Caller::udp_srcmac2(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getSourceUDPMAC2(std::vector<int>{ det_id });
@@ -11178,6 +12956,7 @@ std::string Caller::udp_validate(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() != 0) {
@@ -11193,7 +12972,6 @@ std::string Caller::udp_validate(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 0) {
       if (det_id != -1) {
@@ -11222,6 +13000,7 @@ std::string Caller::updatemode(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -11251,7 +13030,6 @@ std::string Caller::updatemode(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getUpdateMode(std::vector<int>{ det_id });
@@ -11286,6 +13064,7 @@ std::string Caller::v_a(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -11315,7 +13094,6 @@ std::string Caller::v_a(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getVoltage(defs::V_POWER_A, std::vector<int>{ det_id });
@@ -11350,6 +13128,7 @@ std::string Caller::v_b(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -11379,7 +13158,6 @@ std::string Caller::v_b(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getVoltage(defs::V_POWER_B, std::vector<int>{ det_id });
@@ -11414,6 +13192,7 @@ std::string Caller::v_c(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -11443,7 +13222,6 @@ std::string Caller::v_c(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getVoltage(defs::V_POWER_C, std::vector<int>{ det_id });
@@ -11479,6 +13257,7 @@ std::string Caller::v_chip(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -11508,7 +13287,6 @@ std::string Caller::v_chip(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getVoltage(defs::V_POWER_CHIP, std::vector<int>{ det_id });
@@ -11543,6 +13321,7 @@ std::string Caller::v_d(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -11572,7 +13351,6 @@ std::string Caller::v_d(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getVoltage(defs::V_POWER_D, std::vector<int>{ det_id });
@@ -11608,6 +13386,7 @@ std::string Caller::v_io(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -11637,7 +13416,6 @@ std::string Caller::v_io(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getVoltage(defs::V_POWER_IO, std::vector<int>{ det_id });
@@ -11673,6 +13451,7 @@ std::string Caller::v_limit(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -11702,7 +13481,6 @@ std::string Caller::v_limit(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getVoltage(defs::V_LIMIT, std::vector<int>{ det_id });
@@ -11738,6 +13516,7 @@ std::string Caller::vchip_comp_adc(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 1) {
@@ -11779,7 +13558,6 @@ std::string Caller::vchip_comp_adc(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 1) {
       auto arg1 = StringTo<int>(args[0]);
@@ -11819,6 +13597,7 @@ std::string Caller::vchip_comp_fe(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 1) {
@@ -11860,7 +13639,6 @@ std::string Caller::vchip_comp_fe(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 1) {
       auto arg1 = StringTo<int>(args[0]);
@@ -11900,6 +13678,7 @@ std::string Caller::vchip_cs(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 1) {
@@ -11941,7 +13720,6 @@ std::string Caller::vchip_cs(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 1) {
       auto arg1 = StringTo<int>(args[0]);
@@ -11979,6 +13757,7 @@ std::string Caller::vchip_opa_1st(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 1) {
@@ -12020,7 +13799,6 @@ std::string Caller::vchip_opa_1st(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 1) {
       auto arg1 = StringTo<int>(args[0]);
@@ -12059,6 +13837,7 @@ std::string Caller::vchip_opa_fd(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 1) {
@@ -12100,7 +13879,6 @@ std::string Caller::vchip_opa_fd(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 1) {
       auto arg1 = StringTo<int>(args[0]);
@@ -12140,6 +13918,7 @@ std::string Caller::vchip_ref_comp_fe(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 1) {
@@ -12181,7 +13960,6 @@ std::string Caller::vchip_ref_comp_fe(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 1) {
       auto arg1 = StringTo<int>(args[0]);
@@ -12219,6 +13997,7 @@ std::string Caller::veto(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -12248,7 +14027,6 @@ std::string Caller::veto(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getVeto(std::vector<int>{ det_id });
@@ -12261,6 +14039,66 @@ std::string Caller::veto(int action) {
       auto arg0 = StringTo<int>(args[0]);
       det->setVeto(arg0, std::vector<int>{ det_id });
       os << args.front() << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::virtualFunction(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: virtual" << std::endl;
+    os << R"V0G0N([n_servers] [starting_port_number]
+	Connecs to n virtual server at local host starting at specific control port. Every virtual server will have a stop port (control port + 1) )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+      try {
+        StringTo<int>(args[1]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute virtual at module level");
+      }
+      auto arg0 = StringTo<int>(args[0]);
+      auto arg1 = StringTo<int>(args[1]);
+      det->setVirtualDetectorServers(arg0, arg1);
+      os << ToString(args) << '\n';
     }
   }
 
@@ -12283,6 +14121,7 @@ std::string Caller::vm_a(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -12298,7 +14137,6 @@ std::string Caller::vm_a(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t =
@@ -12326,6 +14164,7 @@ std::string Caller::vm_b(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -12341,7 +14180,6 @@ std::string Caller::vm_b(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t =
@@ -12369,6 +14207,7 @@ std::string Caller::vm_c(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -12384,7 +14223,6 @@ std::string Caller::vm_c(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t =
@@ -12412,6 +14250,7 @@ std::string Caller::vm_d(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -12427,7 +14266,6 @@ std::string Caller::vm_d(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t =
@@ -12455,6 +14293,7 @@ std::string Caller::vm_io(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -12470,7 +14309,6 @@ std::string Caller::vm_io(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t =
@@ -12499,6 +14337,7 @@ std::string Caller::voltageindex(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 1) {
@@ -12515,7 +14354,6 @@ std::string Caller::voltageindex(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 1) {
       defs::dacIndex index = defs::V_POWER_A;
@@ -12550,6 +14388,7 @@ std::string Caller::voltagename(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 1) {
@@ -12575,7 +14414,6 @@ std::string Caller::voltagename(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 1) {
       defs::dacIndex index = defs::V_POWER_A;
@@ -12626,6 +14464,7 @@ std::string Caller::voltagevalues(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -12641,7 +14480,6 @@ std::string Caller::voltagevalues(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
 
@@ -12681,6 +14519,7 @@ std::string Caller::zmqip(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -12704,7 +14543,6 @@ std::string Caller::zmqip(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getClientZmqIp(std::vector<int>{ det_id });
@@ -12737,6 +14575,7 @@ std::string Caller::zmqport(int action) {
     throw RuntimeError("infer_action is disabled");
   }
 
+  auto detector_type = det->getDetectorType().squash();
   // check if action and arguments are valid
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() != 0) {
@@ -12766,7 +14605,6 @@ std::string Caller::zmqport(int action) {
   }
 
   // generate code for each action
-  auto detector_type = det->getDetectorType().squash();
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t = det->getClientZmqPort(std::vector<int>{ det_id });

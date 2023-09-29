@@ -486,6 +486,8 @@ void function_table() {
     flist[F_SET_ROW] = &set_row;
     flist[F_GET_COLUMN] = &get_column;
     flist[F_SET_COLUMN] = &set_column;
+    flist[F_GET_PEDESTAL_MODE] = &get_pedestal_mode;
+    flist[F_SET_PEDESTAL_MODE] = &set_pedestal_mode;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -724,7 +726,18 @@ int set_timing_mode(int file_des) {
         case GATED:
         case TRIGGER_GATED:
 #endif
-            setTiming(arg);
+#if JUNGFRAUD
+            // cannot set in pedestal mode
+            if (getPedestalMode()) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Cannot set timing mode in pedestal mode. Switch off "
+                        "pedestal mode to change timing mode.\n");
+                LOG(logERROR, (mess));
+            }
+#endif
+            if (ret == OK)
+                setTiming(arg);
             break;
         default:
             modeNotImplemented("Timing mode", (int)arg);
@@ -1935,57 +1948,59 @@ int acquire(int blocking, int file_des) {
 #ifdef EIGERD
             // check for hardware mac and hardware ip
             if (udpDetails[0].srcmac != getDetectorMAC()) {
-            ret = FAIL;
-            uint64_t sourcemac = getDetectorMAC();
-            char src_mac[MAC_ADDRESS_SIZE];
-            getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
-            sprintf(mess,
+                ret = FAIL;
+                uint64_t sourcemac = getDetectorMAC();
+                char src_mac[MAC_ADDRESS_SIZE];
+                getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
+                sprintf(
+                    mess,
                     "Invalid udp source mac address for this detector. Must be "
                     "same as hardware detector mac address %s\n",
                     src_mac);
-            LOG(logERROR, (mess));
-        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                   (udpDetails[0].srcip != getDetectorIP())) {
-            ret = FAIL;
-            uint32_t sourceip = getDetectorIP();
-            char src_ip[INET_ADDRSTRLEN];
-            getIpAddressinString(src_ip, sourceip);
-            sprintf(mess,
+                LOG(logERROR, (mess));
+            } else if (!enableTenGigabitEthernet(GET_FLAG) &&
+                       (udpDetails[0].srcip != getDetectorIP())) {
+                ret = FAIL;
+                uint32_t sourceip = getDetectorIP();
+                char src_ip[INET_ADDRSTRLEN];
+                getIpAddressinString(src_ip, sourceip);
+                sprintf(
+                    mess,
                     "Invalid udp source ip address for this detector. Must be "
                     "same as hardware detector ip address %s in 1G readout "
                     "mode \n",
                     src_ip);
-            LOG(logERROR, (mess));
-        } else
+                LOG(logERROR, (mess));
+            } else
 #endif
-            if (configured == FAIL) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because ");
-            strcat(mess, configureMessage);
-            LOG(logERROR, (mess));
-        } else if (sharedMemory_getScanStatus() == RUNNING) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because a scan is "
-                         "already running!\n");
-            LOG(logERROR, (mess));
-        } else {
-            memset(scanErrMessage, 0, MAX_STR_LENGTH);
-            sharedMemory_setScanStop(0);
-            sharedMemory_setScanStatus(IDLE); // if it was error
-            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
-                               &blocking)) {
+                if (configured == FAIL) {
                 ret = FAIL;
-                strcpy(mess, "Could not start acquisition thread!\n");
+                strcpy(mess, "Could not start acquisition because ");
+                strcat(mess, configureMessage);
+                LOG(logERROR, (mess));
+            } else if (sharedMemory_getScanStatus() == RUNNING) {
+                ret = FAIL;
+                strcpy(mess, "Could not start acquisition because a scan is "
+                             "already running!\n");
                 LOG(logERROR, (mess));
             } else {
-                // wait for blocking always (scan or not)
-                // non blocking-no scan also wait (for error message)
-                // non blcoking-scan dont wait (there is scanErrorMessage)
-                if (blocking || !scan) {
-                    pthread_join(pthread_tid, NULL);
+                memset(scanErrMessage, 0, MAX_STR_LENGTH);
+                sharedMemory_setScanStop(0);
+                sharedMemory_setScanStatus(IDLE); // if it was error
+                if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                                   &blocking)) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not start acquisition thread!\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    // wait for blocking always (scan or not)
+                    // non blocking-no scan also wait (for error message)
+                    // non blcoking-scan dont wait (there is scanErrorMessage)
+                    if (blocking || !scan) {
+                        pthread_join(pthread_tid, NULL);
+                    }
                 }
             }
-        }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -2211,6 +2226,14 @@ int set_num_frames(int file_des) {
                         (long long unsigned int)arg, MAX_FRAMES_IN_BURST_MODE);
                 LOG(logERROR, (mess));
             }
+#elif JUNGFRAUD
+            // cannot set in pedestal mode
+            if (getPedestalMode()) {
+                ret = FAIL;
+                sprintf(mess, "Cannot set frames in pedestal mode. It is "
+                              "overwritten anyway.\n");
+                LOG(logERROR, (mess));
+            }
 #endif
             if (ret == OK) {
                 setNumFrames(arg);
@@ -2247,10 +2270,22 @@ int set_num_triggers(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
-        setNumTriggers(arg);
-        int64_t retval = getNumTriggers();
-        LOG(logDEBUG1, ("retval num triggers %lld\n", (long long int)retval));
-        validate64(&ret, mess, arg, retval, "set number of triggers", DEC);
+#if JUNGFRAUD
+        // cannot set in pedestal mode
+        if (getPedestalMode()) {
+            ret = FAIL;
+            sprintf(mess, "Cannot set triggers in pedestal mode. It is "
+                          "overwritten anyway.\n");
+            LOG(logERROR, (mess));
+        }
+#endif
+        if (ret == OK) {
+            setNumTriggers(arg);
+            int64_t retval = getNumTriggers();
+            LOG(logDEBUG1,
+                ("retval num triggers %lld\n", (long long int)retval));
+            validate64(&ret, mess, arg, retval, "set number of triggers", DEC);
+        }
     }
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
@@ -7791,62 +7826,20 @@ int set_scan(int file_des) {
         int stop = args[3];
         int step = args[4];
 
-        // disable scan
-        if (enable == 0) {
-            LOG(logINFOBLUE, ("Disabling scan"));
-            scan = 0;
-            numScanSteps = 0;
-            // setting number of frames to 1
-            int64_t arg = 1;
-            setNumFrames(arg);
-            retval = getNumFrames();
-            LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
-            validate64(&ret, mess, arg, retval, "set number of frames", DEC);
+#ifdef JUNGFRAUD
+        if (getPedestalMode()) {
+            ret = FAIL;
+            strcpy(mess, "Cannot set scan when in pedestal mode.\n");
+            LOG(logERROR, (mess));
         }
-        // enable scan
-        else {
-            if ((start < stop && step <= 0) || (stop < start && step >= 0)) {
-                ret = FAIL;
-                sprintf(mess, "Invalid scan parameters\n");
-                LOG(logERROR, (mess));
-            } else {
-                // trimbit scan
-                if (index == TRIMBIT_SCAN) {
-                    LOG(logINFOBLUE, ("Trimbit scan enabled\n"));
-                    scanTrimbits = 1;
-                    scanGlobalIndex = index;
-                    scanSettleTime_ns = dacTime;
-                }
-                // dac scan
-                else {
-                    // validate index
-                    getDACIndex(index);
-                    if (ret == OK) {
-                        LOG(logINFOBLUE, ("Dac [%d] scan enabled\n", index));
-                        scanTrimbits = 0;
-                        scanGlobalIndex = index;
-                        scanSettleTime_ns = dacTime;
-                    }
-                }
-            }
-            // valid scan
-            if (ret == OK) {
-                scan = 1;
-                numScanSteps = (abs(stop - start) / abs(step)) + 1;
-                if (scanSteps != NULL) {
-                    free(scanSteps);
-                }
-                scanSteps = malloc(numScanSteps * sizeof(int));
-                for (int i = 0; i != numScanSteps; ++i) {
-                    scanSteps[i] = start + i * step;
-                    LOG(logDEBUG1, ("scansteps[%d]:%d\n", i, scanSteps[i]));
-                }
-                LOG(logINFOBLUE, ("Enabling scan for %s, start[%d], stop[%d], "
-                                  "step[%d], nsteps[%d]\n",
-                                  scanTrimbits == 1 ? "trimbits" : "dac", start,
-                                  stop, step, numScanSteps));
-
-                // setting number of frames to scansteps
+#endif
+        if (ret == OK) {
+            // disable scan
+            if (enable == 0) {
+                LOG(logINFOBLUE, ("Disabling scan"));
+                scan = 0;
+                numScanSteps = 0;
+                // setting number of frames to 1
                 int64_t arg = 1;
                 setNumFrames(arg);
                 retval = getNumFrames();
@@ -7854,7 +7847,63 @@ int set_scan(int file_des) {
                     ("retval num frames %lld\n", (long long int)retval));
                 validate64(&ret, mess, arg, retval, "set number of frames",
                            DEC);
-                retval = numScanSteps;
+            }
+            // enable scan
+            else {
+                if ((start < stop && step <= 0) ||
+                    (stop < start && step >= 0)) {
+                    ret = FAIL;
+                    sprintf(mess, "Invalid scan parameters\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    // trimbit scan
+                    if (index == TRIMBIT_SCAN) {
+                        LOG(logINFOBLUE, ("Trimbit scan enabled\n"));
+                        scanTrimbits = 1;
+                        scanGlobalIndex = index;
+                        scanSettleTime_ns = dacTime;
+                    }
+                    // dac scan
+                    else {
+                        // validate index
+                        getDACIndex(index);
+                        if (ret == OK) {
+                            LOG(logINFOBLUE,
+                                ("Dac [%d] scan enabled\n", index));
+                            scanTrimbits = 0;
+                            scanGlobalIndex = index;
+                            scanSettleTime_ns = dacTime;
+                        }
+                    }
+                }
+                // valid scan
+                if (ret == OK) {
+                    scan = 1;
+                    numScanSteps = (abs(stop - start) / abs(step)) + 1;
+                    if (scanSteps != NULL) {
+                        free(scanSteps);
+                    }
+                    scanSteps = malloc(numScanSteps * sizeof(int));
+                    for (int i = 0; i != numScanSteps; ++i) {
+                        scanSteps[i] = start + i * step;
+                        LOG(logDEBUG1, ("scansteps[%d]:%d\n", i, scanSteps[i]));
+                    }
+                    LOG(logINFOBLUE,
+                        ("Enabling scan for %s, start[%d], stop[%d], "
+                         "step[%d], nsteps[%d]\n",
+                         scanTrimbits == 1 ? "trimbits" : "dac", start, stop,
+                         step, numScanSteps));
+
+                    // setting number of frames to scansteps
+                    int64_t arg = 1;
+                    setNumFrames(arg);
+                    retval = getNumFrames();
+                    LOG(logDEBUG1,
+                        ("retval num frames %lld\n", (long long int)retval));
+                    validate64(&ret, mess, arg, retval, "set number of frames",
+                               DEC);
+                    retval = numScanSteps;
+                }
             }
         }
     }
@@ -10740,4 +10789,108 @@ int setColumn(int value) {
     memcpy(pos, getDetectorPosition(), sizeof(pos));
     pos[X] = value;
     return setDetectorPosition(pos);
+}
+
+int get_pedestal_mode(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retvalEnable = -1;
+    uint8_t retvalFrames = -1;
+    uint16_t retvalLoops = -1;
+    LOG(logDEBUG1, ("Getting pedestal mode\n"));
+
+#if !defined(JUNGFRAUD)
+    functionNotImplemented();
+#else
+    retvalEnable = getPedestalMode();
+    getPedestalParameters(&retvalFrames, &retvalLoops);
+    LOG(logDEBUG1, ("pedestal mode retval: [enable:%d frames:%hhu, "
+                    "loops:%hu]\n",
+                    retvalEnable, retvalFrames, retvalLoops));
+#endif
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret != FAIL) {
+        sendData(file_des, &retvalEnable, sizeof(retvalEnable), INT32);
+        sendData(file_des, &retvalFrames, sizeof(retvalFrames), OTHER);
+        sendData(file_des, &retvalLoops, sizeof(retvalLoops), INT16);
+    }
+    return ret;
+}
+
+int set_pedestal_mode(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int enable = -1;
+    uint8_t frames = -1;
+    uint16_t loops = -1;
+
+    if (receiveData(file_des, &enable, sizeof(enable), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, &frames, sizeof(frames), OTHER) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, &loops, sizeof(loops), INT16) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting pedestal mode: enable:%d frames:%hhu, "
+                    "loops:%hu]\n",
+                    enable, frames, loops));
+
+#if !defined(JUNGFRAUD)
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (check_detector_idle("set pedestal mode") == OK) {
+            if (enable != 0 && enable != 1) {
+                ret = FAIL;
+                sprintf(
+                    mess,
+                    "Could not set pedestal mode. Invalid enable argument %d. "
+                    "Options: [0, 1]\n",
+                    enable);
+                LOG(logERROR, (mess));
+            } else if (enable == 1 && (frames == 0 || loops == 0)) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set pedestal mode. Frames and loops cannot "
+                        "be 0. [%hhu, %hu].\n",
+                        frames, loops);
+                LOG(logERROR, (mess));
+            } else {
+                setPedestalMode(enable, frames, loops);
+                int retvalEnable = getPedestalMode();
+                LOG(logDEBUG1, ("pedestal mode retval: %d\n", retvalEnable));
+                if (enable != retvalEnable) {
+                    ret = FAIL;
+                    sprintf(
+                        mess,
+                        "Could not set pedestal mode. Tried to %s, but is %s\n",
+                        (enable ? "enable" : "disable"),
+                        (retvalEnable ? "enabled" : "disabled"));
+                    LOG(logERROR, (mess));
+                }
+                if (enable) {
+                    uint8_t retvalFrames = -1;
+                    uint16_t retvalLoops = -1;
+                    getPedestalParameters(&retvalFrames, &retvalLoops);
+                    LOG(logDEBUG1,
+                        ("pedestal mode retval: [enable:%d frames:%hhu, "
+                         "loops:%hu]\n",
+                         retvalEnable, retvalFrames, retvalLoops));
+                    if (frames != retvalFrames || loops != retvalLoops) {
+                        ret = FAIL;
+                        sprintf(
+                            mess,
+                            "Could not set pedestal mode. Tried to set "
+                            "[enable: %d, frames: %hhu, loops: %hu], but got "
+                            "[enable: %d, frames: %hhu, loops: %hu].\n",
+                            enable, frames, loops, retvalEnable, retvalFrames,
+                            retvalLoops);
+                        LOG(logERROR, (mess));
+                    }
+                }
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

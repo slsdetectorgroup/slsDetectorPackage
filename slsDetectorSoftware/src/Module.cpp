@@ -1940,6 +1940,20 @@ void Module::setNumberOfFilterCells(int value) {
     sendToDetector(F_SET_NUM_FILTER_CELLS, value, nullptr);
 }
 
+defs::pedestalParameters Module::getPedestalMode() const {
+    return sendToDetector<defs::pedestalParameters>(F_GET_PEDESTAL_MODE);
+}
+
+void Module::setPedestalMode(const defs::pedestalParameters par) {
+    sendToDetector(F_SET_PEDESTAL_MODE, par, nullptr);
+    if (shm()->useReceiverFlag) {
+        auto value = getNumberOfFrames();
+        sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, value, nullptr);
+        value = getNumberOfTriggers();
+        sendToReceiver(F_SET_RECEIVER_NUM_TRIGGERS, value, nullptr);
+    }
+}
+
 // Gotthard Specific
 
 slsDetectorDefs::ROI Module::getROI() const {

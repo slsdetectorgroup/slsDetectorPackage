@@ -1760,6 +1760,16 @@ void Detector::setNumberOfFilterCells(int cell, Positions pos) {
     pimpl->Parallel(&Module::setNumberOfFilterCells, pos, cell);
 }
 
+Result<defs::pedestalParameters>
+Detector::getPedestalMode(Positions pos) const {
+    return pimpl->Parallel(&Module::getPedestalMode, pos);
+}
+
+void Detector::setPedestalMode(const defs::pedestalParameters par,
+                               Positions pos) {
+    pimpl->Parallel(&Module::setPedestalMode, pos, par);
+}
+
 // Gotthard Specific
 
 Result<defs::ROI> Detector::getROI(Positions pos) const {

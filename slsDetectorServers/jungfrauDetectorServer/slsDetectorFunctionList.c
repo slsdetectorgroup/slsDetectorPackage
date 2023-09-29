@@ -55,6 +55,9 @@ int32_t clkPhase[NUM_CLOCKS] = {};
 int detPos[4] = {};
 int chipConfigured = 0;
 
+uint64_t normal_mode_frames = -1;
+uint64_t normal_mode_triggers = -1;
+
 int isInitCheckDone() { return initCheckDone; }
 
 int getInitResult(char **mess) {
@@ -555,6 +558,13 @@ void setupDetector() {
         setFlipRows(DEFAULT_FLIP_ROWS);
         setReadNRows(MAX_ROWS_PER_READOUT);
     }
+#ifdef VIRTUAL
+    // setting pedestalmode depends on previous values
+    bus_w(PEDESTAL_MODE_REG,
+          bus_r(PEDESTAL_MODE_REG) & ~PEDESTAL_MODE_ENBLE_MSK);
+#endif
+    setPedestalMode(DEFAULT_PEDESTAL_MODE, DEFAULT_PEDESTAL_FRAMES,
+                    DEFAULT_PEDESTAL_LOOPS);
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -975,6 +985,9 @@ int getNextFrameNumber(uint64_t *retval) {
 }
 
 void setNumFrames(int64_t val) {
+    if (getPedestalMode()) {
+        return;
+    }
     if (val > 0) {
         LOG(logINFO, ("Setting number of frames %lld\n", (long long int)val));
         set64BitReg(val, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
@@ -986,6 +999,9 @@ int64_t getNumFrames() {
 }
 
 void setNumTriggers(int64_t val) {
+    if (getPedestalMode()) {
+        return;
+    }
     if (val > 0) {
         LOG(logINFO, ("Setting number of triggers %lld\n", (long long int)val));
         set64BitReg(val, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
@@ -1439,6 +1455,9 @@ void setSynchronization(int enable) {
 }
 
 void setTiming(enum timingMode arg) {
+    if (getPedestalMode()) {
+        return;
+    }
     switch (arg) {
     case AUTO_TIMING:
         LOG(logINFO, ("Set Timing: Auto\n"));
@@ -2510,6 +2529,81 @@ uint64_t getSelectCurrentSource() {
             inverted |= (bit << (63 - i));
         }
         return inverted;
+    }
+}
+
+int getPedestalMode() {
+    return ((bus_r(PEDESTAL_MODE_REG) & PEDESTAL_MODE_ENBLE_MSK) >>
+            PEDESTAL_MODE_ENBLE_OFST);
+}
+
+void getPedestalParameters(uint8_t *frames, uint16_t *loops) {
+    uint32_t addr = PEDESTAL_MODE_REG;
+    *frames =
+        ((bus_r(addr) & PEDESTAL_MODE_LNGTH_MSK) >> PEDESTAL_MODE_LNGTH_OFST);
+    *loops = ((bus_r(PEDESTAL_MODE_REG) & PEDESTAL_MODE_ITRTNS_MSK) >>
+              PEDESTAL_MODE_ITRTNS_OFST);
+}
+
+void setPedestalMode(int enable, uint8_t frames, uint16_t loops) {
+    int prevPedestalEnable = getPedestalMode();
+    uint32_t addr = PEDESTAL_MODE_REG;
+
+    if (enable) {
+        LOG(logINFOBLUE, ("Enabling pedestal mode [frames: %hhu, loops: %hu]\n",
+                          frames, loops));
+        // enable
+        bus_w(addr, bus_r(addr) | PEDESTAL_MODE_ENBLE_MSK);
+        // frames
+        bus_w(addr, bus_r(addr) & ~PEDESTAL_MODE_LNGTH_MSK);
+        bus_w(addr, bus_r(addr) | ((frames << PEDESTAL_MODE_LNGTH_OFST) &
+                                   PEDESTAL_MODE_LNGTH_MSK));
+        // loops
+        bus_w(addr, bus_r(addr) & ~PEDESTAL_MODE_ITRTNS_MSK);
+        bus_w(addr, bus_r(addr) | ((loops << PEDESTAL_MODE_ITRTNS_OFST) &
+                                   PEDESTAL_MODE_ITRTNS_MSK));
+
+        // if it was switched off before, remember the #frames and #triggers
+        if (prevPedestalEnable == 0) {
+            normal_mode_frames = getNumFrames();
+            normal_mode_triggers = getNumTriggers();
+            LOG(logINFO, ("\tRemembering Normal mode #frames and "
+                          "#triggers[%lld, %lld]\n",
+                          normal_mode_frames, normal_mode_triggers));
+        }
+
+        // overwrite #frames and #triggers to new values
+        int64_t expFrames = -1;
+        int64_t expTriggers = -1;
+        enum timingMode timing = getTiming();
+        if (timing == AUTO_TIMING ||
+            (timing == TRIGGER_EXPOSURE && normal_mode_frames > 1)) {
+            expFrames = frames * loops * 2;
+            expTriggers = 1;
+        } else {
+            expFrames = 1;
+            expTriggers = frames * loops * 2;
+        }
+        LOG(logINFO, ("\tOverwriting [#frames: %lld, #triggers: %lld]\n",
+                      expFrames, expTriggers));
+        set64BitReg(expFrames, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+        set64BitReg(expTriggers, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+
+    } else {
+        LOG(logINFOBLUE, ("Disabling pedestal mode\n"));
+        bus_w(addr, bus_r(addr) & ~PEDESTAL_MODE_ENBLE_MSK);
+
+        // if it was switched on before, reset the normal mode #frames and
+        // #triggers
+        if (prevPedestalEnable == 1) {
+            LOG(logINFO,
+                ("\tResetting to Normal mode [#frames:%lld, #triggers:%lld\n",
+                 normal_mode_frames, normal_mode_triggers));
+            set64BitReg(normal_mode_frames, SET_FRAMES_LSB_REG,
+                        SET_FRAMES_MSB_REG);
+            set64BitReg(normal_mode_triggers, SET_CYCLES_LSB_REG,
+                        SET_CYCLES_MSB_REG);
+        }
     }
 }
 

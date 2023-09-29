@@ -1187,6 +1187,7 @@ class CmdProxy {
         {"storagecell_delay", &CmdProxy::storagecell_delay},
         {"gainmode", &CmdProxy::gainmode},
         {"filtercells", &CmdProxy::filtercells},
+        {"pedestalmode", &CmdProxy::PedestalMode},
 
         /* Gotthard Specific */
         {"roi", &CmdProxy::ROI},
@@ -1399,6 +1400,7 @@ class CmdProxy {
     std::string DataStream(int action);
     /* Jungfrau Specific */
     std::string TemperatureEvent(int action);
+    std::string PedestalMode(int action);
     /* Gotthard Specific */
     std::string ROI(int action);
     /* Gotthard2 Specific */

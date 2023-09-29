@@ -11,6 +11,7 @@ pybind11_add_module(_slsdet
     src/current.cpp
     src/duration.cpp
     src/DurationWrapper.cpp
+    src/pedestal.cpp
 )
 
 target_link_libraries(_slsdet PUBLIC 

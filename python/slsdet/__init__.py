@@ -28,3 +28,4 @@ MacAddr = _slsdet.MacAddr
 scanParameters = _slsdet.scanParameters
 currentSrcParameters = _slsdet.currentSrcParameters
 DurationWrapper = _slsdet.DurationWrapper
+pedestalParameters = _slsdet.pedestalParameters

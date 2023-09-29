@@ -547,6 +547,29 @@ enum streamingInterface {
         }
     } __attribute__((packed));
 
+    struct pedestalParameters {
+        int enable;
+        uint8_t frames;
+        uint16_t loops;
+
+        /** [Jungfrau] disable */
+        pedestalParameters() : enable(0), frames(0), loops(0) {}
+
+        /** [Jungfrau] enable */
+        pedestalParameters(uint8_t pedestalFrames, uint16_t pedestalLoops)
+            : enable(1), frames(pedestalFrames), loops(pedestalLoops) {
+            if (frames == 0 || loops == 0) {
+                throw sls::RuntimeError(
+                    "Pedestal frames or loops cannot be 0.");
+            }
+        }
+
+        bool operator==(const pedestalParameters &other) const {
+            return ((enable == other.enable) && (frames == other.frames) &&
+                    (loops == other.loops));
+        }
+    } __attribute__((packed));
+
     /**
      * structure to udpate receiver
      */

@@ -2866,7 +2866,27 @@ class Detector(CppDetectorApi):
     @filtercells.setter
     def filtercells(self, value):
         ut.set_using_dict(self.setNumberOfFilterCells, value)
+
+    @property
+    @element
+    def pedestalmode(self):
+        """
+        [Jungfrau] Enables or disables pedestal mode. Pass in a pedestalParameters object 
+        see python/examples/use_pedestalmode.py
         
+        Note
+        ----
+        The number of frames or triggers is overwritten by #pedestal_frames x  pedestal_loops x 2. \n
+        In auto timing mode or in trigger mode with #frames > 1, #frames is overwritten and #triggers = 1, else #triggers is overwritten and #frames = 1. \n
+        One cannot set #frames, #triggers or timing mode in pedestal mode (exception thrown).\n
+        Disabling pedestal mode will set back the normal mode values of #frames and #triggers."
+        """
+        return self.getPedestalMode()
+
+    @pedestalmode.setter
+    def pedestalmode(self, value):
+        ut.set_using_dict(self.setPedestalMode, value)
+
     @property
     def maxclkphaseshift(self):
         """

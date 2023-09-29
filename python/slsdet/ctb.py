@@ -4,7 +4,6 @@ from .detector import Detector, freeze
 from .utils import element_if_equal
 from .dacs import DetectorDacs, NamedDacs
 from .powers import DetectorPowers, NamedPowers
-from .slowadcs import DetectorSlowAdcs, NamedSlowAdcs
 import _slsdet
 dacIndex = _slsdet.slsDetectorDefs.dacIndex
 from .detector_property import DetectorProperty
@@ -18,7 +17,6 @@ class Ctb(Detector):
         self._frozen = False 
         self._dacs = NamedDacs(self)
         self._powers = NamedPowers(self)
-        self._slowadcs = NamedSlowAdcs(self)
     
     @property
     def dacs(self):
@@ -27,7 +25,3 @@ class Ctb(Detector):
     @property
     def powers(self):
         return self._powers
-
-    @property
-    def slowadcs(self):
-        return self._slowadcs

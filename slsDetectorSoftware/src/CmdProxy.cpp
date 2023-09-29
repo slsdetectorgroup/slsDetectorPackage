@@ -2719,7 +2719,7 @@ std::string CmdProxy::SlowADC(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_channel (0-7 for channel]\n\t[Ctb] Slow "
-              "ADC channel in uV"
+              "ADC channel in mV"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {

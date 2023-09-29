@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cassert>
+#include <cstdint>
 #include <cstring>
 #include <string>
 #include <utility>

@@ -64,14 +64,23 @@ class SlowAdcProxy:
 
     def __repr__(self):
         rstr = ''
-        for i in range(8):
+        for i,name in enumerate(self.det.getSlowADCNames()):
             r = element_if_equal(self.__getitem__(i))
             if isinstance(r, list):
-                rstr += ' '.join(f'{item} uV' for item in r)
+                rstr += ' '.join(f'{item} mV' for item in r)
             else:
-                rstr += f'{i}: {r} uV\n'
+                rstr += f'[{i}] {name}: {r} mV\n'
         
         return rstr.strip('\n')
+    
+    def __getattr__(self, name):
+        if name in self.det.getSlowADCNames():
+            i = self.det.getSlowADCIndex(name)
+            return element_if_equal(self.det.getSlowADC(i))
+        else:
+            raise ValueError(f"Could not find slow adc with name: {name}")
+
+
 
 class ClkDivProxy:
     """

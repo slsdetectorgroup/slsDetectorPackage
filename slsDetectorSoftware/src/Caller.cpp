@@ -1868,6 +1868,100 @@ std::string Caller::compdisabletime(int action) {
   return os.str();
 }
 
+std::string Caller::confadc(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: confadc" << std::endl;
+    os << R"V0G0N([chip index 0-9, -1 for all] [adc index 0-31, -1 for all] [7 bit configuration value in hex]
+	[Gotthard2] Sets  configuration for specific chip and adc, but configures 1 chip (all adcs for that chip) at a time. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 2) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+      try {
+        StringTo<int>(args[1]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to int");
+      }
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 3) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 3) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+      try {
+        StringTo<int>(args[1]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to int");
+      }
+      try {
+        StringTo<int>(args[2]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 2 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 2) {
+      auto arg0 = StringTo<int>(args[0]);
+      auto arg1 = StringTo<int>(args[1]);
+      auto t = det->getADCConfiguration(arg0, arg1, std::vector<int>{ det_id });
+      os << OutStringHex(t) << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 3) {
+      auto arg0 = StringTo<int>(args[0]);
+      auto arg1 = StringTo<int>(args[1]);
+      auto arg2 = StringTo<int>(args[2]);
+      det->setADCConfiguration(arg0, arg1, arg2, std::vector<int>{ det_id });
+      os << '[' << args[0] << ", " << args[1] << ", "
+         << ToStringHex(StringTo<int>(args[2])) << "]" << '\n';
+    }
+  }
+
+  return os.str();
+}
+
 std::string Caller::config(int action) {
 
   std::ostringstream os;
@@ -2181,6 +2275,87 @@ std::string Caller::dacname(int action) {
       det->setDacName(
           static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index), args[1]);
       os << ToString(args) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::datastream(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: datastream" << std::endl;
+    os << R"V0G0N([left|right] [0, 1]
+	[Eiger] Enables or disables data streaming from left or/and right side of detector for 10 GbE mode. 1 (enabled) by default. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      try {
+        StringTo<defs::portPosition>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError(
+            "Could not convert argument 0 to defs::portPosition");
+      }
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      try {
+        StringTo<defs::portPosition>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError(
+            "Could not convert argument 0 to defs::portPosition");
+      }
+      try {
+        StringTo<bool>(args[1]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to bool");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      auto arg0 = StringTo<defs::portPosition>(args[0]);
+      auto t = det->getDataStream(arg0, std::vector<int>{ det_id });
+      os << OutString(t) << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      auto arg0 = StringTo<defs::portPosition>(args[0]);
+      auto arg1 = StringTo<bool>(args[1]);
+      det->setDataStream(arg0, arg1, std::vector<int>{ det_id });
+      os << args[0] << args[1] << '\n';
     }
   }
 
@@ -5438,6 +5613,78 @@ std::string Caller::imagetest(int action) {
   return os.str();
 }
 
+std::string Caller::inj_ch(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: inj_ch" << std::endl;
+    os << R"V0G0N([offset] [increment]
+	[Gotthard2] Inject channels with current source for calibration. Offset is starting channel that is injected, increment determines succeeding channels to be injected. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+      try {
+        StringTo<int>(args[1]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      auto t = det->getInjectChannel(std::vector<int>{ det_id });
+      os << OutString(t) << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      auto arg0 = StringTo<int>(args[0]);
+      auto arg1 = StringTo<int>(args[1]);
+      det->setInjectChannel(arg0, arg1, { det_id });
+      os << ToString(args) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
 std::string Caller::interpolation(int action) {
 
   std::ostringstream os;
@@ -7170,6 +7417,160 @@ std::string Caller::powerchip(int action) {
   return os.str();
 }
 
+std::string Caller::pulse(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: pulse" << std::endl;
+    os << R"V0G0N([n_times] [x] [y]
+	[Eiger] Pulse pixel n number of times at coordinates (x, y). Advanced User! )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 3) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 3) {
+      defs::xy c = defs::xy(StringTo<int>(args[1]), StringTo<int>(args[2]));
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 3) {
+      defs::xy c = defs::xy(StringTo<int>(args[1]), StringTo<int>(args[2]));
+      auto arg0 = StringTo<int>(args[0]);
+      det->pulsePixel(arg0, c, std::vector<int>{ det_id });
+      os << ToString(args) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::pulsechip(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: pulsechip" << std::endl;
+    os << R"V0G0N([n_times] 
+	[Eiger] Pulse chip n times. If n is -1, resets to normal mode (reset chip completely at start of acquisition, where partialreset = 0). Advanced User! )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 1) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 1) {
+      auto arg0 = StringTo<int>(args[0]);
+      det->pulseChip(arg0, std::vector<int>{ det_id });
+      os << args.front() << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::pulsenmove(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: pulsenmove" << std::endl;
+    os << R"V0G0N([n_times] [x] [y]
+	[Eiger] Pulse pixel n number of times and moves relatively by (x, y). Advanced User! )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 3) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 3) {
+      defs::xy c = defs::xy(StringTo<int>(args[1]), StringTo<int>(args[2]));
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 3) {
+      defs::xy c = defs::xy(StringTo<int>(args[1]), StringTo<int>(args[2]));
+      auto arg0 = StringTo<int>(args[0]);
+      det->pulsePixelNMove(arg0, c, std::vector<int>{ det_id });
+      os << ToString(args) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
 std::string Caller::pumpprobe(int action) {
 
   std::ostringstream os;
@@ -7226,6 +7627,74 @@ std::string Caller::pumpprobe(int action) {
     if (args.size() == 1) {
       auto arg0 = StringTo<int>(args[0]);
       det->setPumpProbe(arg0, std::vector<int>{ det_id });
+      os << args.front() << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::quad(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: quad" << std::endl;
+    os << R"V0G0N([0, 1]
+	[Eiger] Sets detector size to a quad. 0 (disabled) is default. (Specific hardware required). )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 1) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      auto t = det->getQuad(std::vector<int>{ det_id });
+      os << OutString(t) << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 1) {
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute quad at module level");
+      }
+      auto arg0 = StringTo<int>(args[0]);
+      det->setQuad(arg0);
       os << args.front() << '\n';
     }
   }
@@ -7595,6 +8064,68 @@ std::string Caller::resetfpga(int action) {
       }
       det->resetFPGA(std::vector<int>{ det_id });
       os << "successful" << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::roi(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: roi" << std::endl;
+    os << R"V0G0N([xmin] [xmax] 
+	[Gotthard] Region of interest in detector.
+	Options: Only a single ROI per module. 
+	Either all channels or a single adc or 2 chips (256 channels). Default is all channels enabled (-1 -1).  )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      defs::ROI t = defs::ROI(StringTo<int>(args[0]), StringTo<int>(args[1]));
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      auto t = det->getROI(std::vector<int>{ det_id });
+      os << t << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      defs::ROI t = defs::ROI(StringTo<int>(args[0]), StringTo<int>(args[1]));
+      det->setROI(t, det_id);
+      os << t << '\n';
     }
   }
 
@@ -10974,6 +11505,65 @@ std::string Caller::temp_dcdc(int action) {
   return os.str();
 }
 
+std::string Caller::temp_event(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: temp_event" << std::endl;
+    os << R"V0G0N([0]
+	[Jungfrau][Moench] 1, if a temperature event occured. To clear this event, set it to 0.
+	If temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 1) {
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      auto t = det->getTemperatureEvent(std::vector<int>{ det_id });
+      os << OutString(t) << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 1) {
+      det->resetTemperatureEvent(std::vector<int>{ det_id });
+      os << "cleared" << '\n';
+    }
+  }
+
+  return os.str();
+}
+
 std::string Caller::temp_fpga(int action) {
 
   std::ostringstream os;
@@ -12087,6 +12677,81 @@ std::string Caller::tsamples(int action) {
     if (args.size() == 1) {
       auto arg0 = StringTo<int>(args[0]);
       det->setNumberOfTransceiverSamples(arg0, std::vector<int>{ det_id });
+      os << args.front() << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::txdelay(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: txdelay" << std::endl;
+    os << R"V0G0N([n_delay]
+	[Eiger][Jungfrau][Moench][Mythen3] Set transmission delay for all modules in the detector using the step size provided.Sets up 
+		[Eiger] txdelay_left to (2 * mod_index * n_delay), 
+		[Eiger] txdelay_right to ((2 * mod_index + 1) * n_delay) and 
+		[Eiger] txdelay_frame to (2 *num_modules * n_delay)  
+		[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules * n_delay)  
+for every module. )V0G0N" << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 1) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute txdelay at module level");
+      }
+      auto t = det->getTransmissionDelay();
+      os << OutString(t) << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 1) {
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute txdelay at module level");
+      }
+      auto arg0 = StringTo<int>(args[0]);
+      det->setTransmissionDelay(arg0);
       os << args.front() << '\n';
     }
   }
@@ -14045,6 +14710,268 @@ std::string Caller::veto(int action) {
   return os.str();
 }
 
+std::string Caller::vetoalg(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: vetoalg" << std::endl;
+    os << R"V0G0N([hits|raw] [lll|10gbe]
+	[Gotthard2] Set the veto algorithm. Default is hits. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      defs::streamingInterface interface =
+          StringTo<defs::streamingInterface>(args[0]);
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      defs::vetoAlgorithm alg = StringTo<defs::vetoAlgorithm>(args[0]);
+      defs::streamingInterface interface =
+          StringTo<defs::streamingInterface>(args[1]);
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      defs::streamingInterface interface =
+          StringTo<defs::streamingInterface>(args[0]);
+      auto t = det->getVetoAlgorithm(interface, std::vector<int>{ det_id });
+      os << OutString(t) << ' ' << ToString(interface) << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      defs::vetoAlgorithm alg = StringTo<defs::vetoAlgorithm>(args[0]);
+      defs::streamingInterface interface =
+          StringTo<defs::streamingInterface>(args[1]);
+      det->setVetoAlgorithm(alg, interface, std::vector<int>{ det_id });
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::vetofile(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: vetofile" << std::endl;
+    os << R"V0G0N([chip index 0-10, -1 for all] [file name] 
+	[Gotthard2] Set veto reference for each 128 channels for specific chip. The file should have 128 rows of gain index and 12 bit value in dec )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      auto arg0 = StringTo<int>(args[0]);
+      det->setVetoFile(arg0, args[1], std::vector<int>{ det_id });
+      os << ToString(args) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::vetophoton(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: vetophoton" << std::endl;
+    os << R"V0G0N([ichip] [#photons] [energy in keV] [reference file]
+	[Gotthard2] Set veto reference for 128 channels for chip ichip according to reference file and #photons and energy in keV.
+[ichip] [output file]
+	 Get gain indices and veto reference for 128 channels for chip ichip, saved to file. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 2) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 4) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 4) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+      try {
+        StringTo<int>(args[1]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to int");
+      }
+      try {
+        StringTo<int>(args[2]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 2 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 2) {
+      auto arg0 = StringTo<int>(args[0]);
+      det->getVetoPhoton(arg0, args[1], std::vector<int>{ det_id });
+      os << "saved to file " << args[1] << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 4) {
+      auto arg0 = StringTo<int>(args[0]);
+      auto arg1 = StringTo<int>(args[1]);
+      auto arg2 = StringTo<int>(args[2]);
+      det->setVetoPhoton(arg0, arg1, arg2, args[3], std::vector<int>{ det_id });
+      os << ToString(args) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::vetoref(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: vetoref" << std::endl;
+    os << R"V0G0N([gain index] [12 bit value]
+	[Gotthard2] Set veto reference for all 128 channels for all chips. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+      try {
+        StringTo<int>(args[1]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 1 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      auto arg0 = StringTo<int>(args[0]);
+      auto arg1 = StringTo<int>(args[1]);
+      det->setVetoReference(arg0, arg1, { det_id });
+      os << ToString(args) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
 std::string Caller::virtualFunction(int action) {
 
   std::ostringstream os;
@@ -14498,6 +15425,74 @@ std::string Caller::voltagevalues(int action) {
            << suffix;
       }
       os << "]\n";
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::zmqhwm(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: zmqhwm" << std::endl;
+    os << R"V0G0N([n_limit] 
+	Client's zmq receive high water mark. Default is the zmq library's default (1000), can also be set here using -1. 
+	This is a high number and can be set to 2 for gui purposes. 
+	One must also set the receiver's send high water mark to similar value. Final effect is sum of them.
+	 Setting it via command line is useful only before zmq enabled (before opening gui). )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // infer action based on number of arguments
+  if (action == -1) {
+    throw RuntimeError("infer_action is disabled");
+  }
+
+  auto detector_type = det->getDetectorType().squash();
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 1) {
+      try {
+        StringTo<int>(args[0]);
+      }
+      catch (...) {
+        throw RuntimeError("Could not convert argument 0 to int");
+      }
+    }
+
+  } else {
+
+    throw RuntimeError("Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      auto t = det->getClientZmqHwm();
+      os << t << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 1) {
+      auto arg0 = StringTo<int>(args[0]);
+      det->setClientZmqHwm(arg0);
+      os << det->getClientZmqHwm() << '\n';
     }
   }
 

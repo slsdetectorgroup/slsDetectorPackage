@@ -976,6 +976,307 @@ udp_dstlist:
         convert_det_id: false
         output: [ ToString(args) ]
 
+txdelay:
+  help: "[n_delay]\n\t[Eiger][Jungfrau][Moench][Mythen3] Set transmission delay for all modules in the detector using the step size provided.Sets up \n\t\t[Eiger] txdelay_left to (2 * mod_index * n_delay), \n\t\t[Eiger] txdelay_right to ((2 * mod_index + 1) * n_delay) and \n\t\t[Eiger] txdelay_frame to (2 *num_modules * n_delay)  \n\t\t[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules * n_delay)  \nfor every module."
+  actions:
+    GET:
+      argc: 0
+      check_det_id: true
+      function: getTransmissionDelay
+      output: [ OutString(t) ]
+    PUT:
+      argc: 1
+      check_det_id: true
+      function: setTransmissionDelay
+      input: [ 'args[0]' ]
+      input_types: [ int ]
+      cast_input: [ true ]
+      output: [ 'args.front()' ]
+
+
+zmqhwm:
+  help: "[n_limit] \n\tClient's zmq receive high water mark. Default is the zmq library's default (1000), can also be set here using -1. \n\tThis is a high number and can be set to 2 for gui purposes. \n\tOne must also set the receiver's send high water mark to similar value. Final effect is sum of them.\n\t Setting it via command line is useful only before zmq enabled (before opening gui)."
+  actions:
+    GET:
+      argc: 0
+      function: getClientZmqHwm
+      output: [ t ]
+    PUT:
+      argc: 1
+      function: setClientZmqHwm
+      input: [ 'args[0]' ]
+      input_types: [ int ]
+      cast_input: [ true ]
+      output: [ 'det->getClientZmqHwm()' ]
+
+
+pulse:
+  help: "[n_times] [x] [y]\n\t[Eiger] Pulse pixel n number of times at coordinates (x, y). Advanced User!"
+  actions:
+      PUT:
+        argc: 3
+        require_det_id: true
+        function: pulsePixel
+        extra_variables:
+          - name: c
+            type: defs::xy
+            value: defs::xy(StringTo<int>(args[1]), StringTo<int>(args[2]))
+        input: [ 'args[0]', c ]
+        input_types: [ int, defs::xy ]
+        cast_input: [ true, false ]
+        output: [ ToString(args) ]
+
+pulsenmove:
+  help: "[n_times] [x] [y]\n\t[Eiger] Pulse pixel n number of times and moves relatively by (x, y). Advanced User!"
+  actions:
+    PUT:
+      argc: 3
+      require_det_id: true
+      function: pulsePixelNMove
+      extra_variables:
+        - name: c
+          type: defs::xy
+          value: defs::xy(StringTo<int>(args[1]), StringTo<int>(args[2]))
+      input: [ 'args[0]', c ]
+      input_types: [ int, defs::xy ]
+      cast_input: [ true, false ]
+      output: [ ToString(args) ]
+
+
+pulsechip:
+  help: "[n_times] \n\t[Eiger] Pulse chip n times. If n is -1, resets to normal mode (reset chip completely at start of acquisition, where partialreset = 0). Advanced User!"
+  actions:
+      PUT:
+        argc: 1
+        require_det_id: true
+        function: pulseChip
+        input: [ 'args[0]' ]
+        input_types: [ int ]
+        cast_input: [ true ]
+        output: [ args.front() ]
+
+quad:
+  help: "[0, 1]\n\t[Eiger] Sets detector size to a quad. 0 (disabled) is default. (Specific hardware required)."
+  actions:
+    GET:
+        argc: 0
+        require_det_id: true
+        function: getQuad
+        output: [ OutString(t) ]
+    PUT:
+        argc: 1
+        check_det_id: true
+        function: setQuad
+        input: [ 'args[0]' ]
+        input_types: [ int ]
+        cast_input: [ true ]
+        output: [ args.front() ]
+
+datastream:
+  help: "[left|right] [0, 1]\n\t[Eiger] Enables or disables data streaming from left or/and right side of detector for 10 GbE mode. 1 (enabled) by default."
+  actions:
+    GET:
+        argc: 1
+        require_det_id: true
+        function: getDataStream
+        input: [ 'args[0]' ]
+        input_types: [ defs::portPosition ]
+        cast_input: [ true ]
+        output: [ OutString(t) ]
+    PUT:
+        argc: 2
+        require_det_id: true
+        function: setDataStream
+        input: [ 'args[0]', 'args[1]' ]
+        input_types: [ defs::portPosition, bool ]
+        cast_input: [ true, true ]
+        output: [ 'args[0]', 'args[1]' ]
+
+temp_event:
+  help: "[0]\n\t[Jungfrau][Moench] 1, if a temperature event occured. To clear this event, set it to 0.\n\tIf temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared."
+  actions:
+    GET:
+        argc: 0
+        require_det_id: true
+        function: getTemperatureEvent
+        output: [ OutString(t) ]
+    PUT:
+        argc: 1
+        exceptions:
+          - condition: 'StringTo<int>(args[0]) != 0'
+            message: '"Unknown argument for temp event: ( " + args[0] + " ). Did you mean 0 to reset event?"'
+        require_det_id: true
+        function: resetTemperatureEvent
+        output: [ '"cleared"' ]
+
+
+roi:
+  help: "[xmin] [xmax] \n\t[Gotthard] Region of interest in detector.\n\tOptions: Only a single ROI per module. \n\tEither all channels or a single adc or 2 chips (256 channels). Default is all channels enabled (-1 -1). "
+  actions:
+      GET:
+        argc: 0
+        require_det_id: true
+        function: getROI
+        output: [ t ]
+      PUT:
+        argc: 2
+        exceptions:
+            - condition: 'det_id == -1 && det->size() > 1'
+              message: '"Cannot execute ROI at multi module level"'
+        require_det_id: true
+        convert_det_id: false
+        function: setROI
+        extra_variables:
+          - name: t
+            type: defs::ROI
+            value: defs::ROI(StringTo<int>(args[0]), StringTo<int>(args[1]))
+        input: [ t ]
+        input_types: [ defs::ROI ]
+        output: [ 't' ]
+
+
+inj_ch:
+  help: "[offset] [increment]\n\t[Gotthard2] Inject channels with current source for calibration. Offset is starting channel that is injected, increment determines succeeding channels to be injected."
+  actions:
+    GET:
+        argc: 0
+        require_det_id: true
+        function: getInjectChannel
+        output: [ OutString(t) ]
+    PUT:
+        argc: 2
+        function: setInjectChannel
+        input: [ 'args[0]', 'args[1]', "{det_id}" ]
+        input_types: [ int, int , auto]
+        cast_input: [ true, true, false ]
+        output: [ ToString(args) ]
+
+
+vetophoton:
+  help: "[ichip] [#photons] [energy in keV] [reference file]\n\t[Gotthard2] Set veto reference for 128 channels for chip ichip according to reference file and #photons and energy in keV.\n[ichip] [output file]\n\t Get gain indices and veto reference for 128 channels for chip ichip, saved to file."
+  actions:
+    GET:
+        argc: 2
+        require_det_id: true
+        function: getVetoPhoton
+        store_result_in_t: false
+        input: [ 'args[0]', 'args[1]' ]
+        input_types: [ int, std::string ]
+        cast_input: [ true, false ]
+        output: [ '"saved to file "' , "args[1]" ]
+    PUT:
+        argc: 4
+        require_det_id: true
+        function: setVetoPhoton
+        input: [ 'args[0]', 'args[1]', "args[2]", "args[3]" ]
+        input_types: [ int, int, int, std::string ]
+        cast_input: [ true, true, true, false ]
+        output: [ ToString(args) ]
+
+
+vetoref:
+  help: "[gain index] [12 bit value]\n\t[Gotthard2] Set veto reference for all 128 channels for all chips."
+  actions:
+    PUT:
+      argc: 2
+      function: setVetoReference
+      input: [ 'args[0]', 'args[1]', "{det_id}" ]
+      input_types: [ int, int, auto ]
+      cast_input: [ true, true, false ]
+      output: [ ToString(args) ]
+
+vetofile:
+  help: "[chip index 0-10, -1 for all] [file name] \n\t[Gotthard2] Set veto reference for each 128 channels for specific chip. The file should have 128 rows of gain index and 12 bit value in dec"
+  actions:
+    PUT:
+        argc: 2
+        function: setVetoFile
+        input: [ 'args[0]', 'args[1]' ]
+        input_types: [ int, std::string ]
+        cast_input: [ true, false  ]
+        require_det_id: true
+        output: [ ToString(args) ]
+
+vetoalg:
+  help: "[hits|raw] [lll|10gbe]\n\t[Gotthard2] Set the veto algorithm. Default is hits."
+  actions:
+    GET:
+        argc: 1
+        extra_variables:
+            - name: interface
+              type: defs::streamingInterface
+              value: StringTo<defs::streamingInterface>(args[0])
+        exceptions:
+            - condition: 'interface == defs::streamingInterface::NONE'
+              message: '"Must specify an interface to set algorithm"'
+        require_det_id: true
+        function: getVetoAlgorithm
+        input: [ 'interface' ]
+        input_types: [ defs::streamingInterface ]
+        cast_input: [ false ]
+        output: [ OutString(t), "' '", ToString(interface) ]
+    PUT:
+      argc: 2
+      extra_variables:
+        - name: alg
+          type: defs::vetoAlgorithm
+          value: StringTo<defs::vetoAlgorithm>(args[0])
+        - name: interface
+          type: defs::streamingInterface
+          value: StringTo<defs::streamingInterface>(args[1])
+      exceptions:
+          - condition: 'interface == defs::streamingInterface::NONE'
+            message: '"Must specify an interface to set algorithm"'
+      require_det_id: true
+      function: setVetoAlgorithm
+      input: [ 'alg', 'interface' ]
+      input_types: [ defs::vetoAlgorithm, defs::streamingInterface ]
+      cast_input: [ false, false ]
+
+
+confadc:
+
+  help: "[chip index 0-9, -1 for all] [adc index 0-31, -1 for all] [7 bit configuration value in hex]\n\t[Gotthard2] Sets  configuration for specific chip and adc, but configures 1 chip (all adcs for that chip) at a time."
+  actions:
+    GET:
+      argc: 2
+      require_det_id: true
+      function: getADCConfiguration
+      input: [ 'args[0]', 'args[1]' ]
+      input_types: [ int, int ]
+      cast_input: [ true, true ]
+      output: [ OutStringHex(t) ]
+    PUT:
+        argc: 3
+        require_det_id: true
+        function: setADCConfiguration
+        input: [ 'args[0]', 'args[1]', 'args[2]' ]
+        input_types: [ int, int, int ]
+        cast_input: [ true, true, true ]
+        output: [ "'['", "args[0]", '", "', "args[1]", '", "', "ToStringHex( StringTo<int>(args[2]))", '"]"' ]
+
+
+#gatedelay:
+#  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Mythen3] Gate Delay of all gate signals in auto and trigger mode (internal gating)."
+#  actions:
+#    GET:
+#      function: getGateDelayForAllGates
+#      require_det_id: true
+#
+#      args:
+#        - argc: 0
+#          output: [ OutString(t) ]
+#        - argc: 1
+#          output: ["OutString(t, args[0])" ]
+#    PUT:
+#      argc: 1
+#      require_det_id: true
+#      function: setGateDelay
+#      input: [ 'args[0]' ]
+#      input_types: [ int ]
+#      cast_input: [ true ]
+#      output: [ 'args.front()' ]
+
 
 
 ################# CTB_GET_INDEX #############################

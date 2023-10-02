@@ -45,10 +45,12 @@ public:
   std::string clkphase(int action);
   std::string column(int action);
   std::string compdisabletime(int action);
+  std::string confadc(int action);
   std::string config(int action);
   std::string dac(int action);
   std::string dacindex(int action);
   std::string dacname(int action);
+  std::string datastream(int action);
   std::string dbitclk(int action);
   std::string dbitphase(int action);
   std::string dbitpipeline(int action);
@@ -99,6 +101,7 @@ public:
   std::string im_d(int action);
   std::string im_io(int action);
   std::string imagetest(int action);
+  std::string inj_ch(int action);
   std::string interpolation(int action);
   std::string interruptsubframe(int action);
   std::string kernelversion(int action);
@@ -130,7 +133,11 @@ public:
   std::string polarity(int action);
   std::string port(int action);
   std::string powerchip(int action);
+  std::string pulse(int action);
+  std::string pulsechip(int action);
+  std::string pulsenmove(int action);
   std::string pumpprobe(int action);
+  std::string quad(int action);
   std::string readnrows(int action);
   std::string readout(int action);
   std::string readoutspeed(int action);
@@ -138,6 +145,7 @@ public:
   std::string rebootcontroller(int action);
   std::string resetdacs(int action);
   std::string resetfpga(int action);
+  std::string roi(int action);
   std::string romode(int action);
   std::string row(int action);
   std::string runclk(int action);
@@ -197,6 +205,7 @@ public:
   std::string temp_adc(int action);
   std::string temp_control(int action);
   std::string temp_dcdc(int action);
+  std::string temp_event(int action);
   std::string temp_fpga(int action);
   std::string temp_fpgaext(int action);
   std::string temp_fpgafl(int action);
@@ -218,6 +227,7 @@ public:
   std::string trimbits(int action);
   std::string trimval(int action);
   std::string tsamples(int action);
+  std::string txdelay(int action);
   std::string txdelay_frame(int action);
   std::string txdelay_left(int action);
   std::string txdelay_right(int action);
@@ -249,6 +259,10 @@ public:
   std::string vchip_opa_fd(int action);
   std::string vchip_ref_comp_fe(int action);
   std::string veto(int action);
+  std::string vetoalg(int action);
+  std::string vetofile(int action);
+  std::string vetophoton(int action);
+  std::string vetoref(int action);
   std::string virtualFunction(int action);
   std::string vm_a(int action);
   std::string vm_b(int action);
@@ -258,6 +272,7 @@ public:
   std::string voltageindex(int action);
   std::string voltagename(int action);
   std::string voltagevalues(int action);
+  std::string zmqhwm(int action);
   std::string zmqip(int action);
   std::string zmqport(int action);
 
@@ -299,9 +314,11 @@ private:
                          { "clkphase", &Caller::clkphase },
                          { "column", &Caller::column },
                          { "compdisabletime", &Caller::compdisabletime },
+                         { "confadc", &Caller::confadc },
                          { "config", &Caller::config }, { "dac", &Caller::dac },
                          { "dacindex", &Caller::dacindex },
                          { "dacname", &Caller::dacname },
+                         { "datastream", &Caller::datastream },
                          { "dbitclk", &Caller::dbitclk },
                          { "dbitphase", &Caller::dbitphase },
                          { "dbitpipeline", &Caller::dbitpipeline },
@@ -350,6 +367,7 @@ private:
                          { "im_c", &Caller::im_c }, { "im_d", &Caller::im_d },
                          { "im_io", &Caller::im_io },
                          { "imagetest", &Caller::imagetest },
+                         { "inj_ch", &Caller::inj_ch },
                          { "interpolation", &Caller::interpolation },
                          { "interruptsubframe", &Caller::interruptsubframe },
                          { "kernelversion", &Caller::kernelversion },
@@ -380,7 +398,11 @@ private:
                          { "polarity", &Caller::polarity },
                          { "port", &Caller::port },
                          { "powerchip", &Caller::powerchip },
+                         { "pulse", &Caller::pulse },
+                         { "pulsechip", &Caller::pulsechip },
+                         { "pulsenmove", &Caller::pulsenmove },
                          { "pumpprobe", &Caller::pumpprobe },
+                         { "quad", &Caller::quad },
                          { "readnrows", &Caller::readnrows },
                          { "readout", &Caller::readout },
                          { "readoutspeed", &Caller::readoutspeed },
@@ -388,8 +410,8 @@ private:
                          { "rebootcontroller", &Caller::rebootcontroller },
                          { "resetdacs", &Caller::resetdacs },
                          { "resetfpga", &Caller::resetfpga },
-                         { "romode", &Caller::romode }, { "row", &Caller::row },
-                         { "runclk", &Caller::runclk },
+                         { "roi", &Caller::roi }, { "romode", &Caller::romode },
+                         { "row", &Caller::row }, { "runclk", &Caller::runclk },
                          { "runtime", &Caller::runtime },
                          { "rx_arping", &Caller::rx_arping },
                          { "rx_clearroi", &Caller::rx_clearroi },
@@ -446,6 +468,7 @@ private:
                          { "temp_adc", &Caller::temp_adc },
                          { "temp_control", &Caller::temp_control },
                          { "temp_dcdc", &Caller::temp_dcdc },
+                         { "temp_event", &Caller::temp_event },
                          { "temp_fpga", &Caller::temp_fpga },
                          { "temp_fpgaext", &Caller::temp_fpgaext },
                          { "temp_fpgafl", &Caller::temp_fpgafl },
@@ -467,6 +490,7 @@ private:
                          { "trimbits", &Caller::trimbits },
                          { "trimval", &Caller::trimval },
                          { "tsamples", &Caller::tsamples },
+                         { "txdelay", &Caller::txdelay },
                          { "txdelay_frame", &Caller::txdelay_frame },
                          { "txdelay_left", &Caller::txdelay_left },
                          { "txdelay_right", &Caller::txdelay_right },
@@ -495,6 +519,10 @@ private:
                          { "vchip_opa_fd", &Caller::vchip_opa_fd },
                          { "vchip_ref_comp_fe", &Caller::vchip_ref_comp_fe },
                          { "veto", &Caller::veto },
+                         { "vetoalg", &Caller::vetoalg },
+                         { "vetofile", &Caller::vetofile },
+                         { "vetophoton", &Caller::vetophoton },
+                         { "vetoref", &Caller::vetoref },
                          { "virtual", &Caller::virtualFunction },
                          { "vm_a", &Caller::vm_a }, { "vm_b", &Caller::vm_b },
                          { "vm_c", &Caller::vm_c }, { "vm_d", &Caller::vm_d },
@@ -502,6 +530,7 @@ private:
                          { "voltageindex", &Caller::voltageindex },
                          { "voltagename", &Caller::voltagename },
                          { "voltagevalues", &Caller::voltagevalues },
+                         { "zmqhwm", &Caller::zmqhwm },
                          { "zmqip", &Caller::zmqip },
                          { "zmqport", &Caller::zmqport } };
   // some helper functions to print

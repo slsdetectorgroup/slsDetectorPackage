@@ -8,8 +8,20 @@ CurrentSource (special)
 tempvalues (can be done if I extend ctb_output_list section in codegen.write_arg)
 dacvalues (can be done with the ctb_output_list)
 udp_srcip (could be done if I add condition functionality for logging)
-UDPSourceIP2 same as above
-UDPDestinationIP same as above
+UDPSourceIP2 (same as above)
+UDPDestinationIP (same as above)
+# day 2
+rx_hostname (split('+'))
+rx_roi (can be done if there;s condition support?)
+RateCorrection (can be done if there's condition support?)
+BurstMode (very special)
+VetoStreaming
+Counters
+
+
+
+
+
 # notes
 ReceiverStatus error on put is not done
 

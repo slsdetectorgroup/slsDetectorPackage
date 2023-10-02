@@ -1629,21 +1629,21 @@ class Detector {
     /** [CTB]  in MHZ */
     Result<int> getSYNCClock(Positions pos = {}) const;
 
-    /** gets list of voltage enums */
-    std::vector<defs::dacIndex> getVoltageList() const;
+    /** gets list of power enums */
+    std::vector<defs::dacIndex> getPowerList() const;
 
     /** gets list of slow adc enums */
     std::vector<defs::dacIndex> getSlowADCList() const;
 
     /** [CTB] */
-    Result<int> getVoltage(defs::dacIndex index, Positions pos = {}) const;
+    Result<int> getPower(defs::dacIndex index, Positions pos = {}) const;
 
     /**
      * [CTB] mV
      * [Ctb] Options: V_LIMIT, V_POWER_A, V_POWER_B, V_POWER_C,
      * V_POWER_D, V_POWER_IO, V_POWER_CHIP
      */
-    void setVoltage(defs::dacIndex index, int value, Positions pos = {});
+    void setPower(defs::dacIndex index, int value, Positions pos = {});
 
     /**
      * [CTB] Options: [0- 4] or [1V, 1.14V, 1.33V, 1.6V, 2V]
@@ -1711,8 +1711,8 @@ class Detector {
     /**
      * [CTB] mV
      * Options: V_POWER_A, V_POWER_B, V_POWER_C, V_POWER_D, V_POWER_IO */
-    Result<int> getMeasuredVoltage(defs::dacIndex index,
-                                   Positions pos = {}) const;
+    Result<int> getMeasuredPower(defs::dacIndex index,
+                                 Positions pos = {}) const;
 
     /**
      * [CTB] mA
@@ -1806,19 +1806,19 @@ class Detector {
     std::string getSignalName(const int i) const;
 
     /** [CTB] */
-    void setVoltageNames(const std::vector<std::string> names);
+    void setPowerNames(const std::vector<std::string> names);
 
     /** [CTB] */
-    std::vector<std::string> getVoltageNames() const;
+    std::vector<std::string> getPowerNames() const;
 
     /** [CTB] */
-    defs::dacIndex getVoltageIndex(const std::string &name) const;
+    defs::dacIndex getPowerIndex(const std::string &name) const;
 
     /** [CTB] */
-    void setVoltageName(const defs::dacIndex i, const std::string &name);
+    void setPowerName(const defs::dacIndex i, const std::string &name);
 
     /** [CTB] */
-    std::string getVoltageName(const defs::dacIndex i) const;
+    std::string getPowerName(const defs::dacIndex i) const;
 
     /** [CTB] */
     void setSlowADCNames(const std::vector<std::string> names);

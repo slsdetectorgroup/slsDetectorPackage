@@ -2726,6 +2726,7 @@ void *start_timer(void *arg) {
             if (i % pixelsPerPacket == 0) {
                 ++dataVal;
             }
+
             if ((i % 1024) < 300) {
                 gainVal = 1;
             } else if ((i % 1024) < 600) {
@@ -2765,6 +2766,28 @@ void *start_timer(void *arg) {
             struct timespec begin, end;
             clock_gettime(CLOCK_REALTIME, &begin);
             usleep(expUs);
+
+            // change gain and data for every frame
+            {
+                const int npixels = (NCHAN * NCHIP);
+                for (int i = 0; i < npixels; ++i) {
+                    int gainVal = 0;
+                    if ((i % 1024) < 300) {
+                        gainVal = 1 + iframes;
+                    } else if ((i % 1024) < 600) {
+                        gainVal = 2 + iframes;
+                    } else {
+                        gainVal = 3 + iframes;
+                    }
+                    int dataVal =
+                        *((uint16_t *)(imageData + i * sizeof(uint16_t)));
+                    dataVal += iframes;
+                    int pixelVal =
+                        (dataVal & ~GAIN_VAL_MSK) | (gainVal << GAIN_VAL_OFST);
+                    *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+                        (uint16_t)pixelVal;
+                }
+            }
 
             int srcOffset = 0;
             int srcOffset2 = DATA_BYTES / 2;

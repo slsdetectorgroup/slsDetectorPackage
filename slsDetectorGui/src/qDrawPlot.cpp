@@ -193,6 +193,7 @@ void qDrawPlot::SetupPlots() {
     gainplot2d = new SlsQt2DPlot(boxPlot, true);
     gainplot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, -0.5,
                         nPixelsY - 0.5, gainData);
+    gainplot2d->Update();
     gainplot2d->hide();
     connect(plot2d, SIGNAL(PlotZoomedSignal(const QRectF &)), this,
             SLOT(Zoom2DGainPlot(const QRectF &)));
@@ -1009,6 +1010,7 @@ void qDrawPlot::Update2dPlot() {
     if (isGainDataExtracted) {
         gainplot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, -0.5,
                             nPixelsY - 0.5, gainData);
+        gainplot2d->Update();
         if (!gainplot2d->isVisible()) {
             gainplot2d->setFixedWidth(plot2d->width() /
                                       qDefs::DATA_GAIN_PLOT_RATIO);

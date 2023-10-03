@@ -3323,6 +3323,27 @@ void *start_timer(void *arg) {
                 break;
             }
 
+            // change gain and data for every frame
+            {
+                const int nchannels = NCHIP * NCHAN;
+                int gainVal = 0;
+                for (int i = 0; i < nchannels; ++i) {
+                    if ((i % nchannels) < 400) {
+                        gainVal = 1 + frameNr;
+                    } else if ((i % nchannels) < 800) {
+                        gainVal = 2 + frameNr;
+                    } else {
+                        gainVal = 3 + frameNr;
+                    }
+                    int dataVal =
+                        *((uint16_t *)(imageData + i * sizeof(uint16_t)));
+                    dataVal += frameNr;
+                    int channelVal =
+                        (dataVal & ~GAIN_VAL_MSK) | (gainVal << GAIN_VAL_OFST);
+                    *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+                        (uint16_t)channelVal;
+                }
+            }
             // sleep for exposure time
             struct timespec begin, end;
             clock_gettime(CLOCK_REALTIME, &begin);

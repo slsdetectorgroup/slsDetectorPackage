@@ -56,79 +56,98 @@ class CodeGenerator:
 
     def write_arg(self, args, action, command_name):
         for arg in args:
-            with if_block(f'args.size() == {arg["argc"]}', block=False):
-                if 'extra_variables' in arg:
-                    for var in arg['extra_variables']:
-                        codegen.write_line(f'{var["type"]} {var["name"]} = {var["value"]};')
-                if 'separate_time_units' in arg and arg['separate_time_units']:
-                    self.write_line(f'std::string tmp_time({arg["separate_time_units"]["input"]});')
-                    self.write_line(f'std::string {arg["separate_time_units"]["output"][1]}'
-                                    f' = RemoveUnit(tmp_time);')
-                    self.write_line(f'auto {arg["separate_time_units"]["output"][0]} = '
-                                    f'StringTo < time::ns > (tmp_time,'
-                                    f' {arg["separate_time_units"]["output"][1]});')
-                if 'convert_to_time' in arg and arg['convert_to_time']:
-                    self.write_line(f'auto {arg["convert_to_time"]["output"]} = '
-                                    f'StringTo < time::ns > ({", ".join(arg["convert_to_time"]["input"])});')
-                input_arguments = []
-                if 'exception' in arg:
-                    for exception in arg['exception']:
-                        self.write_line(
-                            f'if ({exception["condition"]}) {{ throw RuntimeError({exception["message"]}); }}')
-                if 'check_det_id' in arg and arg['check_det_id']:
+            if arg['argc'] != -1:
+                if_block(f'args.size() == {arg["argc"]}', block=False).__enter__()
+            if 'pattern_command' in arg and arg['pattern_command']:
+                self.write_line(f'int level = -1, iArg = 0, '
+                                f'nGetArgs = {arg["pattern_command"]["nGetArgs"]},'
+                                f' nPutArgs = {arg["pattern_command"]["nPutArgs"]};\nGetLevelAndUpdateArgIndex(action, '
+                                f'"{arg["pattern_command"]["command_name"]}", level, iArg, nGetArgs,nPutArgs);'
+                                )
+                cond = " && ".join(f'cmd=="{arg["pattern_command"]["command_name"]}{i}"' for i in [0, 1, 2])
+                with if_block(cond):
+                    self.write_line("os << level << ' ';")
+
+            if 'extra_variables' in arg:
+                for var in arg['extra_variables']:
+                    codegen.write_line(f'{var["type"]} {var["name"]} = {var["value"]};')
+            if 'separate_time_units' in arg and arg['separate_time_units']:
+                self.write_line(f'std::string tmp_time({arg["separate_time_units"]["input"]});')
+                self.write_line(f'std::string {arg["separate_time_units"]["output"][1]}'
+                                f' = RemoveUnit(tmp_time);')
+                self.write_line(f'auto {arg["separate_time_units"]["output"][0]} = '
+                                f'StringTo < time::ns > (tmp_time,'
+                                f' {arg["separate_time_units"]["output"][1]});')
+            if 'convert_to_time' in arg and arg['convert_to_time']:
+                self.write_line(f'auto {arg["convert_to_time"]["output"]} = '
+                                f'StringTo < time::ns > ({", ".join(arg["convert_to_time"]["input"])});')
+            input_arguments = []
+            if 'exception' in arg:
+                for exception in arg['exception']:
                     self.write_line(
-                        f'if (det_id != -1) {{ throw RuntimeError("Cannot execute {command_name} at module level"); }} '
-                    )
-                # only used for two commands :(
-                if 'ctb_output_list' in arg:
+                        f'if ({exception["condition"]}) {{ throw RuntimeError({exception["message"]}); }}')
+            if 'check_det_id' in arg and arg['check_det_id']:
+                self.write_line(
+                    f'if (det_id != -1) {{ throw RuntimeError("Cannot execute {command_name} at module level"); }} '
+                )
+            # only used for 3 commands :(
+            if 'ctb_output_list' in arg:
+                self.write_line(f"""
+                    std::string suffix = " {arg['ctb_output_list']['suffix']}";                                        
+                    auto t = det->{arg['ctb_output_list']['GETFCNLIST']}();""")
+                if arg['ctb_output_list']['GETFCNNAME'] != '':
                     self.write_line(f"""
-                        std::string suffix = " mV";                                        
-                        auto t = det->{arg['ctb_output_list']['GETFCNLIST']}();                                        
-                        auto names = det->{arg['ctb_output_list']['GETFCNNAME']}();                                    
-                        auto name_it = names.begin();                                      
-                        os << '[';                                                         
-                        auto it = t.cbegin();                                              
-                        os << ToString(*name_it++) << ' ';                                 
-                        os << OutString(det->{arg['ctb_output_list']['GETFCN']}(*it++, std::vector<int>{{det_id}}))     
-                           << suffix;                                                      
-                        while (it != t.cend()) {{                                         
-                            os << ", " << ToString(*name_it++) << ' ';                     
-                            os << OutString(det->{arg['ctb_output_list']['GETFCN']}(*it++, std::vector<int>{{det_id}}))  
-                               << suffix;                                                  
-                        }}                                                                  
-                        os << "]\\n";                                                       
-                        """)
-                    return
+                    auto names = det->{arg['ctb_output_list']['GETFCNNAME']}();                                    
+                    auto name_it = names.begin();""")
+                self.write_line("os << '[';")
+                with if_block(f't.size() > 0'):
+                    self.write_line(f"""
+                    auto it = t.cbegin();                                              
+                    os << ToString({arg['ctb_output_list']['printable_name']}) << ' ';                                 
+                    os << OutString(det->{arg['ctb_output_list']['GETFCN']}(*it++, std::vector<int>{{det_id}}))<< suffix;                                                      
+                    while (it != t.cend()) {{                                         
+                        os << ", " << ToString({arg['ctb_output_list']['printable_name']}) << ' ';                     
+                        os << OutString(det->{arg['ctb_output_list']['GETFCN']}(*it++, std::vector<int>{{det_id}}))<< suffix;
+                    }}                                                                  
+                    """)
+                self.write_line('os << "]\\n";')
+                if arg['argc'] != -1:
+                    if_block().__exit__()
 
-                for i in range(len(arg['input'])):
-                    if arg['cast_input'][i] and arg["input_types"][i] not in ['time::ns', 'std::string']:
-                        self.write_line(
-                            f'auto arg{i} = StringTo<{arg["input_types"][i]}>({arg["input"][i]});')
-                        input_arguments.append(f'arg{i}')
-                    else:
-                        input_arguments.append(arg["input"][i])
-                if 'require_det_id' in arg and arg['require_det_id']:
-                    if 'convert_det_id' in arg and arg['convert_det_id']:
-                        input_arguments.append("std::vector<int>{ det_id }")
-                    else:
-                        input_arguments.append("det_id")
+                return
 
-                input_arguments = ", ".join(input_arguments)
-                # call function
-                if arg['store_result_in_t']:
-                    self.write_line(f'auto t = det->{arg["function"]}({input_arguments});')
+            for i in range(len(arg['input'])):
+                if arg['cast_input'][i]:
+                    self.write_line(
+                        f'auto arg{i} = StringTo<{arg["input_types"][i]}>({arg["input"][i]});')
+                    input_arguments.append(f'arg{i}')
                 else:
-                    self.write_line(f'det->{arg["function"]}({input_arguments});')
+                    input_arguments.append(arg["input"][i])
+            if 'require_det_id' in arg and arg['require_det_id']:
+                if 'convert_det_id' in arg and arg['convert_det_id']:
+                    input_arguments.append("std::vector<int>{ det_id }")
+                else:
+                    input_arguments.append("det_id")
 
-                output_args = []
-                for output in arg['output']:
-                    output_args.append(output)
-                if len(output_args) > 0:
-                    self.write_line(f"os << {'<< '.join(output_args)} << '\\n';")
+            input_arguments = ", ".join(input_arguments)
+            # call function
+            if arg['store_result_in_t']:
+                self.write_line(f'auto t = det->{arg["function"]}({input_arguments});')
+            else:
+                self.write_line(f'det->{arg["function"]}({input_arguments});')
+
+            output_args = []
+            for output in arg['output']:
+                output_args.append(output)
+            if len(output_args) > 0:
+                self.write_line(f"os << {'<< '.join(output_args)} << '\\n';")
+
+            if arg['argc'] != -1:
+                if_block().__exit__()
 
 
 class if_block:
-    def __init__(self, condition, elseif=False, block=False):
+    def __init__(self, condition="", elseif=False, block=False):
         self.condition = condition
         self.elseif = elseif
         self.block = False

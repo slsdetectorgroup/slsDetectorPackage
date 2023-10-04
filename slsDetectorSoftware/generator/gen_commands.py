@@ -1,5 +1,6 @@
 import argparse
 import os
+import subprocess
 from pathlib import Path
 
 import yaml
@@ -35,21 +36,21 @@ def generate(
                 codegen.write_line(f'os << "Command: {command_name}" << std::endl;')
                 codegen.write_line(f'os << R"V0G0N({command["help"]} )V0G0N" << std::endl;')
                 codegen.write_line('return os.str();')
-            # infer action based on number of arguments
-            codegen.write_line('// infer action based on number of arguments')
-            with if_block('action == -1'):
-                if command['infer_action']:
-                    first = True
-                    for action, action_params in command['actions'].items():
-                        for arg in action_params['args']:
-                            with if_block(f'args.size() == {arg["argc"]}', elseif=not first):
-                                codegen.write_line(f'std::cout << "inferred action: {action}" << std::endl;')
-                                codegen.write_line(f'action = {codegen.actions_dict[action]};')
-                            first = False
-                    with else_block():
-                        codegen.write_line('throw RuntimeError("Could not infer action: Wrong number of arguments");')
-                else:
-                    codegen.write_line('throw RuntimeError("infer_action is disabled");')
+            # # infer action based on number of arguments
+            # codegen.write_line('// infer action based on number of arguments')
+            # with if_block('action == -1'):
+            #     if command['infer_action']:
+            #         first = True
+            #         for action, action_params in command['actions'].items():
+            #             for arg in action_params['args']:
+            #                 with if_block(f'args.size() == {arg["argc"]}', elseif=not first):
+            #                     codegen.write_line(f'std::cout << "inferred action: {action}" << std::endl;')
+            #                     codegen.write_line(f'action = {codegen.actions_dict[action]};')
+            #                 first = False
+            #         with else_block():
+            #             codegen.write_line('throw RuntimeError("Could not infer action: Wrong number of arguments");')
+            #     else:
+            #         codegen.write_line('throw RuntimeError("infer_action is disabled");')
 
             # check if action and arguments are valid
             codegen.write_line('auto detector_type = det->getDetectorType().squash();')
@@ -59,16 +60,24 @@ def generate(
             for action, action_params in command['actions'].items():
                 with if_block(f'action == {codegen.actions_dict[action]}', elseif=not first):
 
-                    # check number of arguments
-                    condition = ""
+                    check_argc = True
                     for arg in action_params['args']:
-                        condition += f'args.size() != {arg["argc"]} && '
-                    else:
-                        condition = condition[:-4]
+                        if arg['argc'] == -1:
+                            check_argc = False
+                            break
+                    # check number of arguments
+                    condition = "1" if check_argc else "0"
+
+                    if check_argc:
+                        for arg in action_params['args']:
+                            condition += f' && args.size() != {arg["argc"]}'
 
                     with if_block(condition):
                         codegen.write_line(f'throw RuntimeError("Wrong number of arguments for action {action}");')
+
                     for arg in action_params['args']:
+                        if not check_argc:
+                            continue
                         with if_block(f'args.size() == {arg["argc"]}', block=True):
                             # check argument types
                             if 'extra_variables' in arg:
@@ -96,7 +105,7 @@ def generate(
                                     f'}} catch (...) {{  throw RuntimeError("Could not convert arguments to time::ns");}}')
 
                             for i in range(len(arg['input'])):
-                                if arg["input_types"][i] in ['std::string', 'time::ns'] or not arg['cast_input'][i]:
+                                if not arg['cast_input'][i]:
                                     continue
                                 codegen.write_line(f'try {{')
                                 codegen.write_line(f'StringTo<{arg["input_types"][i]}>({arg["input"][i]});')
@@ -139,8 +148,9 @@ def generate(
     codegen.write_closing()
     codegen.close()
     print('[X] .cpp code generated')
-
-    codegen.write_header(HEADER_INPUT_PATH, HEADER_OUTPUT_PATH, [(command_name, command['function_alias']) for command_name, command in commands_config.items()])
+    codegen.write_header(HEADER_INPUT_PATH, HEADER_OUTPUT_PATH,
+                         [(command['command_name'], command['function_alias']) for command_name, command in
+                          commands_config.items()])
     print('[X] header code generated')
 
 
@@ -152,10 +162,92 @@ if __name__ == '__main__':
                         help='format header and cpp file using clang-format')
     parser.add_argument('-p', '--parse', action='store_true', default=False, dest='parse',
                         help='parse the commands.yaml file into extended_commands.yaml')
+    parser.add_argument('-c', '--check', action='store_true', default=False, dest='check',
+                        help='check missing commands')
     cli_args = parser.parse_args()
+
+    if cli_args.check:
+        from commands_parser.commands_parser import command_parser
+
+        command_parser.verify_format()
+        command_parser.parse_all_commands()
+        # generate list of commands found in sls_detector_get
+        ret = subprocess.run(["sls_detector_get list | tail -n +2 | sort > glist"], shell=True, capture_output=True,
+                             check=True)
+        glist_path = GEN_PATH / 'glist'
+        if ret.stderr != b'':
+            print('[!] glist generation failed and glist not found')
+            exit(1)
+
+        commands_path = GEN_PATH / 'extended_commands.yaml'
+        if not commands_path.exists():
+            print('[!] extended_commands.yaml not found')
+            exit(1)
+        commands_config = yaml.unsafe_load(commands_path.open('r'))
+        detglist = set(command['command_name'] for __, command in commands_config.items())
+        detglist.add('free')
+        detglist.add('list')
+
+        g_path = GEN_PATH / 'glist'
+        if not g_path.exists():
+            print('[!] glist not found')
+            exit(1)
+        glist = set(g_path.read_text().split('\n'))
+        if "" in glist:
+            glist.remove("")
+        if "" in detglist:
+            detglist.remove("")
+
+        not_found = set()
+        for command in glist:
+            if command not in detglist:
+                not_found.add(command)
+        print(f'[X] found {len(not_found)} missing commands from detglist')
+        print(not_found)
+
+        for command in detglist:
+            if command not in glist:
+                print(f'[!] command {command} found in detglist but not found in glist')
+
+        # check for very special functions
+        very_special_functions_path = GEN_PATH / 'very_special_functions.txt'
+        if not very_special_functions_path.exists():
+            print('[!] very_special_functions.txt not found')
+            exit(1)
+        very_special_functions = very_special_functions_path.read_text().split('\n')
+        very_special_commands = set()
+        for command in very_special_functions:
+            command = command.split(' ')[0]
+            if command.startswith('#'):
+                continue
+            if command != '' and command not in glist:
+                print(f'[!] very special command {command} not found in glist')
+            else:
+                very_special_commands.add(command)
+        if "" in very_special_commands:
+            very_special_commands.remove("")
+
+        if not_found - very_special_commands:
+            print('[!] some commands are missing from very_special_functions.txt')
+            print(not_found - very_special_commands)
+        else:
+            print('[X] all missing commands are present in very_special_functions.txt')
+
+        if set(detglist).intersection(very_special_commands):
+            print('[!] some commands are present in both detglist and very_special_functions.txt')
+            print(set(detglist).intersection(very_special_commands))
+
+        if glist != detglist.union(very_special_commands):
+            print('[!] not all commands from glist are present in detglist and very_special_functions.txt')
+        print()
+        print(f'Total g commands: {len(glist)}')
+        print(f'Generated commands: {len(detglist)}, Manually implemented commands: {len(very_special_commands)}')
+
+        exit(0)
 
     if cli_args.parse:
         from commands_parser.commands_parser import command_parser
+
         command_parser.verify_format()
         command_parser.parse_all_commands()
 

@@ -4,8 +4,6 @@ import yaml
 from pathlib import Path
 
 
-
-
 class CommandParser:
     def __init__(
             self,
@@ -20,7 +18,7 @@ class CommandParser:
         self.extended_commands = {}
         self.argc_set = set()
         self.logger = logging.getLogger('command_parser')
-        self.__current_action :str= ''
+        self.__current_action: str = ''
         FORMAT = '[%(levelname)s] %(message)s'
         logging.basicConfig(format=FORMAT, level=logging.INFO)
 
@@ -42,7 +40,7 @@ class CommandParser:
         }
 
     def _verify_argument(self, arg, infer_action):
-        if arg['function'] == '':
+        if arg['function'] == '' and 'ctb_output_list' not in arg:
             raise ValueError(f'Argument {arg} does not have a function')
         if len(arg['input_types']) != len(arg['input']):
             raise ValueError(f'Argument {arg} does not have the correct number of inputs')
@@ -245,8 +243,8 @@ class CommandParser:
         return config
 
     def sanitize_argument(func):
-        def f(self,action_context, args, priority_context={}):
-            args = func(self,action_context, args, priority_context)
+        def f(self, action_context, args, priority_context={}):
+            args = func(self, action_context, args, priority_context)
             for arg in args:
                 if 'args' in arg:
                     del arg['args']
@@ -318,13 +316,18 @@ class CommandParser:
         :return: the parsed command
         """
         command = self.simple_commands[command_name]
-        if 'template' in command and command['template']:
-            # todo: cache templates
-            x = self._parse_command(command)
-            return x
         parsed_command = self._parse_command(command)
         if 'function_alias' not in command:
-            parsed_command['function_alias'] = command_name
+            if 'command_name' in command:
+                parsed_command['function_alias'] = command['command_name']
+            else:
+                parsed_command['function_alias'] = command_name
+
+        if 'command_name' not in command:
+            parsed_command['command_name'] = command_name
+
+        if 'template' in command and command['template']:
+            return parsed_command
         self.extended_commands[command_name] = parsed_command
         return self.extended_commands[command_name]
 
@@ -336,7 +339,7 @@ class CommandParser:
 
         for command_name in self.simple_commands:
             # todo remove this (added for debugging)
-            if command_name != 'xxtrimbits':
+            if command_name != 'xxxslowadcvalues':
                 self.parse_command(command_name)
         yaml.Dumper.ignore_aliases = lambda *args: True
         self.logger.info(f'parsed {len(self.extended_commands)} commands')

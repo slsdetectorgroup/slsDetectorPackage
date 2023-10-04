@@ -13,10 +13,18 @@ class Caller {
     Caller(Detector *ptr):det(ptr){}
     void call(const CmdParser &parser, int action, std::ostream &os=std::cout);
 
-    std::string list(int action);
     IpAddr getDstIpFromAuto();
     IpAddr getSrcIpFromAuto();
     UdpDestination getUdpEntry();
+    void GetLevelAndUpdateArgIndex(int action,
+                                   std::string levelSeparatedCommand,
+                                   int &level, int &iArg, size_t nGetArgs,
+                                   size_t nPutArgs);
+    void WrongNumberOfParameters(size_t expected);
+
+
+    std::string list(int action);
+
 
     // THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (1)
 

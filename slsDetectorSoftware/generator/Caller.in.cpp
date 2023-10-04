@@ -22,10 +22,11 @@ void Caller::call(const CmdParser &parser, int action, std::ostream &os) {
 }
 
 std::string Caller::list(int action) {
-  std::string ret;
+  std::string ret="free\n";
   for (auto &f : functions) {
     ret += f.first + "\n";
   }
+
   return ret;
 }
 
@@ -94,6 +95,40 @@ UdpDestination Caller::getUdpEntry() {
         }
     }
     return udpDestination;
+}
+void Caller::WrongNumberOfParameters(size_t expected) {
+    if (expected == 0) {
+        throw RuntimeError("Command " + cmd +
+                            " expected no parameter/s but got " +
+                            std::to_string(args.size()) + "\n");
+    }
+    throw RuntimeError("Command " + cmd + " expected (or >=) " +
+                        std::to_string(expected) + " parameter/s but got " +
+                        std::to_string(args.size()) + "\n");
+}
+
+void Caller::GetLevelAndUpdateArgIndex(int action,
+                                         std::string levelSeparatedCommand,
+                                         int &level, int &iArg, size_t nGetArgs,
+                                         size_t nPutArgs) {
+    if (cmd == levelSeparatedCommand) {
+        ++nGetArgs;
+        ++nPutArgs;
+    } else {
+        LOG(logWARNING) << "This command is deprecated and will be removed. "
+                           "Please migrate to "
+                        << levelSeparatedCommand;
+    }
+    if (action == defs::GET_ACTION && args.size() != nGetArgs) {
+        WrongNumberOfParameters(nGetArgs);
+    } else if (action == defs::PUT_ACTION && args.size() != nPutArgs) {
+        WrongNumberOfParameters(nPutArgs);
+    }
+    if (cmd == levelSeparatedCommand) {
+        level = StringTo<int>(args[iArg++]);
+    } else {
+        level = cmd[cmd.find_first_of("012")] - '0';
+    }
 }
 
 

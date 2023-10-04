@@ -2870,8 +2870,7 @@ void CmdProxy::GetLevelAndUpdateArgIndex(int action,
 }
 
 std::string CmdProxy::PatternLoopAddresses(int action) {
-    if (cmd != "patlimits" && cmd != "patloop0" && cmd != "patloop1" &&
-        cmd != "patloop2" && cmd != "patloop") {
+    if (cmd != "patlimits" && cmd != "patloop0" && cmd != "patloop1" && cmd != "patloop2" && cmd != "patloop") {
         throw RuntimeError("Unknown command, use list to list all commands");
     }
     std::ostringstream os;

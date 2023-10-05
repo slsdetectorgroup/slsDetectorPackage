@@ -2552,8 +2552,7 @@ void setPedestalMode(int enable, uint8_t frames, uint16_t loops) {
     if (enable) {
         LOG(logINFOBLUE, ("Enabling pedestal mode [frames: %hhu, loops: %hu]\n",
                           frames, loops));
-        // enable
-        bus_w(addr, bus_r(addr) | PEDESTAL_MODE_ENBLE_MSK);
+
         // frames
         bus_w(addr, bus_r(addr) & ~PEDESTAL_MODE_LNGTH_MSK);
         bus_w(addr, bus_r(addr) | ((frames << PEDESTAL_MODE_LNGTH_OFST) &
@@ -2562,6 +2561,8 @@ void setPedestalMode(int enable, uint8_t frames, uint16_t loops) {
         bus_w(addr, bus_r(addr) & ~PEDESTAL_MODE_ITRTNS_MSK);
         bus_w(addr, bus_r(addr) | ((loops << PEDESTAL_MODE_ITRTNS_OFST) &
                                    PEDESTAL_MODE_ITRTNS_MSK));
+        // enable
+        bus_w(addr, bus_r(addr) | PEDESTAL_MODE_ENBLE_MSK);
 
         // if it was switched off before, remember the #frames and #triggers
         if (prevPedestalEnable == 0) {

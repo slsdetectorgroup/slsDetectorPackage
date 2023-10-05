@@ -356,15 +356,29 @@ TEST_CASE("powerindex", "[.cmd]") {
 TEST_CASE("powervalues", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
-    REQUIRE_NOTHROW(proxy.Call("powervalues", {}, -1, GET));
-    REQUIRE_THROWS(proxy.Call("powervalues", {}, -1, PUT));
+
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        REQUIRE_NOTHROW(proxy.Call("powervalues", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("powervalues", {}, -1, PUT));
+    } else {
+        REQUIRE_THROWS(proxy.Call("powervalues", {}, -1, GET));
+    }
 }
 
 TEST_CASE("slowadcvalues", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
-    REQUIRE_NOTHROW(proxy.Call("slowadcvalues", {}, -1, GET));
-    REQUIRE_THROWS(proxy.Call("slowadcvalues", {}, -1, PUT));
+
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD) {
+        REQUIRE_NOTHROW(proxy.Call("slowadcvalues", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("slowadcvalues", {}, -1, PUT));
+    } else {
+        REQUIRE_THROWS(proxy.Call("slowadcvalues", {}, -1, GET));
+    }
 }
 
 TEST_CASE("slowadclist", "[.cmd]") {

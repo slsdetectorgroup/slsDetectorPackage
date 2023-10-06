@@ -128,6 +128,9 @@ template <class T, class Allocator = std::allocator<T>> class Result {
     /** Test whether all elements of the result are equal */
     bool equal() const noexcept { return allEqual(vec); }
 
+    /** Test whether any element of the result are equal to a value */
+    bool any(const T &value) const noexcept { return anyEqualTo(vec, value); }
+
     /** Convert Result<T> to std::vector<T> */
     operator std::vector<T>() { return vec; }
 };

@@ -81,7 +81,7 @@ constexpr int c6g1_ystart = c6g2_yend + 1;        // 448
 constexpr int c6g1_yend = c6g2_yend + 64 - gr;    // 502
 
 // y shift due to faulty bonding (relevant for M408)
-constexpr int bond_shift_y = 1; // CHANGE IF YOU CHANGE MODULE!
+constexpr int bond_shift_y = 0; // CHANGE IF YOU CHANGE MODULE!
 
 } // namespace strixelSingleChip
 

@@ -111,11 +111,6 @@ int main(int argc, char *argv[]) {
     const std::string jsonmastername(argv[3]);
     const std::string pedfilename(argv[4]);
 
-    int xmin = atoi(argv[5]);
-    int xmax = atoi(argv[6]);
-    int ymin = atoi(argv[7]);
-    int ymax = atoi(argv[8]);
-
     double thr = 0;
     double thr1 = 1;
     thr = atof(argv[9]);
@@ -172,6 +167,8 @@ int main(int argc, char *argv[]) {
 	rxroi_ymin = j["Receiver Roi"]["ymin"];
 	rxroi_ymax = j["Receiver Roi"]["ymax"];
 	masterfile.close();
+	std::cout << "Read rxROI [" << rxroi_xmin << ", " << rxroi_xmax << ", "
+		      << rxroi_ymin << ", " << rxroi_ymax << "]" << std::endl;
       } else 
 	std::cout << "Could not open master file " << jsonmastername << std::endl;
       
@@ -254,7 +251,16 @@ int main(int argc, char *argv[]) {
     decoder->getDetectorSize(nx, ny);
     std::cout << "Detector size is " << nx << " " << ny << std::endl;
 
+    //Cluster finder ROI
+    int xmin = 0, xmax = nx-1, ymin = 0, ymax = ny-1;
+    xmin = atoi(argv[5]);
+    xmax = atoi(argv[6]);
+    ymin = atoi(argv[7]);
+    ymax = atoi(argv[8]);
+    std::cout << "Cluster finder ROI: [" << xmin << ", " << xmax << ", " << ymin << ", " << ymax << "]"
+              << std::endl;
 
+    /* old
     if ( xmin == xmax ) {
       xmin = 0;
       xmax = nx;
@@ -265,6 +271,7 @@ int main(int argc, char *argv[]) {
     }
     std::cout << xmin << " " << xmax << " " << ymin << " " << ymax << " "
               << std::endl;
+    */
 
     /*
     char *gainfname = NULL;
@@ -436,7 +443,7 @@ int main(int argc, char *argv[]) {
       std::time(&end_time);
       std::cout << std::ctime(&end_time) << std::endl;
 
-      ifstream filebin(filenames[ifile], ios::in | ios::binary);
+      std::ifstream filebin(filenames[ifile], ios::in | ios::binary);
       //      //open file
       ioutfile = 0;
       if (filebin.is_open()) {

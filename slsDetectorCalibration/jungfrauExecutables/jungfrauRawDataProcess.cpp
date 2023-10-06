@@ -360,7 +360,7 @@ int main(int argc, char *argv[]) {
 
 	  mt->setFrameMode(ePedestal);
 
-	  ifstream pedefile(fname, ios::in | ios::binary);
+	  std::ifstream pedefile(fname, ios::in | ios::binary);
 	  //      //open file
 	  if (pedefile.is_open()) {
 	    std::cout << "bbbb " << std::ctime(&end_time) << std::endl;

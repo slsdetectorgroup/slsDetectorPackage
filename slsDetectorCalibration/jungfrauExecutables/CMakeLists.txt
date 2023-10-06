@@ -15,7 +15,7 @@ target_compile_definitions(jungfrauRawDataProcess PRIVATE MODULE)
 list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcess)
 
 # jungfrauRawDataProcessStrx
-add_executable(jungfrauRawDataProcessStrx jungfrauRawDataProcess.cpp)
+add_executable(jungfrauRawDataProcessStrx jungfrauRawDataProcess_filetxt.cpp)
 target_compile_definitions(jungfrauRawDataProcessStrx PRIVATE JFSTRX)
 list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcessStrx)
 

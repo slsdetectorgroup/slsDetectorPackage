@@ -14,6 +14,11 @@ add_executable(jungfrauRawDataProcess jungfrauRawDataProcess.cpp)
 target_compile_definitions(jungfrauRawDataProcess PRIVATE MODULE)
 list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcess)
 
+# jungfrauRawDataProcessChipAldo
+add_executable(jungfrauRawDataProcessChip jungfrauRawDataProcess.cpp)
+target_compile_definitions(jungfrauRawDataProcessChip PRIVATE CHIP ALDO)
+list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcessChipAldo)
+
 # jungfrauRawDataProcessStrx
 add_executable(jungfrauRawDataProcessStrx jungfrauRawDataProcess_filetxt.cpp)
 target_compile_definitions(jungfrauRawDataProcessStrx PRIVATE JFSTRX)

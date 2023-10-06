@@ -58,6 +58,9 @@ std::ostream &operator<<(std::ostream &os,
 std::string ToString(const slsDetectorDefs::currentSrcParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::currentSrcParameters &r);
+std::string ToString(const slsDetectorDefs::pedestalParameters &r);
+std::ostream &operator<<(std::ostream &os,
+                         const slsDetectorDefs::pedestalParameters &r);
 const std::string &ToString(const std::string &s);
 
 /** Convert std::chrono::duration with specified output unit */
@@ -316,6 +319,8 @@ template <> defs::vetoAlgorithm StringTo(const std::string &s);
 template <> defs::gainMode StringTo(const std::string &s);
 template <> defs::polarity StringTo(const std::string &s);
 
+template <> uint8_t StringTo(const std::string &s);
+template <> uint16_t StringTo(const std::string &s);
 template <> uint32_t StringTo(const std::string &s);
 template <> uint64_t StringTo(const std::string &s);
 template <> int StringTo(const std::string &s);

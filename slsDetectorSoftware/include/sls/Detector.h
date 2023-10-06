@@ -66,7 +66,7 @@ class Detector {
 
     /** connects to n servers at local host starting at specific control port.
      * Every virtual server will have a stop port (control port + 1) */
-    void setVirtualDetectorServers(int numServers, int startingPort);
+    void setVirtualDetectorServers(int numServers, uint16_t startingPort);
 
     /** Gets shared memory ID */
     int getShmId() const;
@@ -791,20 +791,20 @@ class Detector {
      */
     void setDestinationUDPMAC2(const MacAddr mac, Positions pos = {});
 
-    Result<int> getDestinationUDPPort(Positions pos = {}) const;
+    Result<uint16_t> getDestinationUDPPort(Positions pos = {}) const;
 
     /** Default is 50001. \n If module_id is -1, ports for each module is
      * calculated (incremented by 1 if no 2nd interface) */
-    void setDestinationUDPPort(int port, int module_id = -1);
+    void setDestinationUDPPort(uint16_t port, int module_id = -1);
 
     /** [Eiger] right port[Jungfrau][Moench] bottom half [Gotthard2] veto
      * debugging */
-    Result<int> getDestinationUDPPort2(Positions pos = {}) const;
+    Result<uint16_t> getDestinationUDPPort2(Positions pos = {}) const;
 
     /** [Eiger] right port[Jungfrau][Moench] bottom half [Gotthard2] veto
      * debugging \n Default is 50002. \n If module_id is -1, ports for each
      * module is calculated (incremented by 1 if no 2nd interface)*/
-    void setDestinationUDPPort2(int port, int module_id = -1);
+    void setDestinationUDPPort2(uint16_t port, int module_id = -1);
 
     /** Reconfigures Detector with UDP destination. More for debugging as the
      * configuration is done automatically when the detector has sufficient UDP
@@ -904,14 +904,14 @@ class Detector {
     /** multiple rx hostnames. Single element will set it for all */
     void setRxHostname(const std::vector<std::string> &name);
 
-    Result<int> getRxPort(Positions pos = {}) const;
+    Result<uint16_t> getRxPort(Positions pos = {}) const;
 
     /** TCP port for client-receiver communication. \n
      *  Default is 1954. \n  Must be different if multiple receivers on same pc.
      * \n Must be first command to set a receiver parameter to be able to
      * communicate. \n Multi command will automatically increment port for
      * individual modules.*/
-    void setRxPort(int port, int module_id = -1);
+    void setRxPort(uint16_t port, int module_id = -1);
 
     Result<int> getRxFifoDepth(Positions pos = {}) const;
 
@@ -1089,7 +1089,7 @@ class Detector {
      */
     void setRxZmqStartingFrame(int fnum, Positions pos = {});
 
-    Result<int> getRxZmqPort(Positions pos = {}) const;
+    Result<uint16_t> getRxZmqPort(Positions pos = {}) const;
 
     /** Zmq port for data to be streamed out of the receiver. \n
      * Also restarts receiver zmq streaming if enabled. \n Default is 30001. \n
@@ -1098,7 +1098,7 @@ class Detector {
      * no 2nd interface). \n Restarts receiver zmq sockets only if it was
      * already enabled
      */
-    void setRxZmqPort(int port, int module_id = -1);
+    void setRxZmqPort(uint16_t port, int module_id = -1);
 
     Result<IpAddr> getRxZmqIP(Positions pos = {}) const;
 
@@ -1108,7 +1108,7 @@ class Detector {
      * receiver. */
     void setRxZmqIP(const IpAddr ip, Positions pos = {});
 
-    Result<int> getClientZmqPort(Positions pos = {}) const;
+    Result<uint16_t> getClientZmqPort(Positions pos = {}) const;
 
     /** Port number to listen to zmq data streamed out from receiver or
      * intermediate process. \n Must be different for every detector (and udp
@@ -1117,7 +1117,7 @@ class Detector {
      * sockets only if it was already enabled \n Default connects to receiver
      * zmq streaming out port (30001).
      */
-    void setClientZmqPort(int port, int module_id = -1);
+    void setClientZmqPort(uint16_t port, int module_id = -1);
 
     Result<IpAddr> getClientZmqIp(Positions pos = {}) const;
 
@@ -1358,6 +1358,20 @@ class Detector {
     /** [Jungfrau] Advanced Options[0-12], only for chip v1.1
      */
     void setNumberOfFilterCells(int cell, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<defs::pedestalParameters> getPedestalMode(Positions pos = {}) const;
+
+    /** [Jungfrau] In pedestal mode, the number of frames or triggers is
+     * overwritten by \n(#pedestal_frames x #pedestal_loops x 2). \nIn
+     * auto timing mode or in trigger mode with #frames > 1, #frames is
+     * overwritten and #triggers = 1, \nelse #triggers is overwritten and
+     * #frames = 1. One cannot set #frames, #triggers or timing mode in pedestal
+     * mode (it will throw an exception). Disabling pedestal mode will set back
+     * the original values of #frames and #triggers
+     */
+    void setPedestalMode(const defs::pedestalParameters par,
+                         Positions pos = {});
 
     ///@}
 
@@ -1615,21 +1629,21 @@ class Detector {
     /** [CTB]  in MHZ */
     Result<int> getSYNCClock(Positions pos = {}) const;
 
-    /** gets list of voltage enums */
-    std::vector<defs::dacIndex> getVoltageList() const;
+    /** gets list of power enums */
+    std::vector<defs::dacIndex> getPowerList() const;
 
     /** gets list of slow adc enums */
     std::vector<defs::dacIndex> getSlowADCList() const;
 
     /** [CTB] */
-    Result<int> getVoltage(defs::dacIndex index, Positions pos = {}) const;
+    Result<int> getPower(defs::dacIndex index, Positions pos = {}) const;
 
     /**
      * [CTB] mV
      * [Ctb] Options: V_LIMIT, V_POWER_A, V_POWER_B, V_POWER_C,
      * V_POWER_D, V_POWER_IO, V_POWER_CHIP
      */
-    void setVoltage(defs::dacIndex index, int value, Positions pos = {});
+    void setPower(defs::dacIndex index, int value, Positions pos = {});
 
     /**
      * [CTB] Options: [0- 4] or [1V, 1.14V, 1.33V, 1.6V, 2V]
@@ -1697,8 +1711,8 @@ class Detector {
     /**
      * [CTB] mV
      * Options: V_POWER_A, V_POWER_B, V_POWER_C, V_POWER_D, V_POWER_IO */
-    Result<int> getMeasuredVoltage(defs::dacIndex index,
-                                   Positions pos = {}) const;
+    Result<int> getMeasuredPower(defs::dacIndex index,
+                                 Positions pos = {}) const;
 
     /**
      * [CTB] mA
@@ -1792,19 +1806,19 @@ class Detector {
     std::string getSignalName(const int i) const;
 
     /** [CTB] */
-    void setVoltageNames(const std::vector<std::string> names);
+    void setPowerNames(const std::vector<std::string> names);
 
     /** [CTB] */
-    std::vector<std::string> getVoltageNames() const;
+    std::vector<std::string> getPowerNames() const;
 
     /** [CTB] */
-    defs::dacIndex getVoltageIndex(const std::string &name) const;
+    defs::dacIndex getPowerIndex(const std::string &name) const;
 
     /** [CTB] */
-    void setVoltageName(const defs::dacIndex i, const std::string &name);
+    void setPowerName(const defs::dacIndex i, const std::string &name);
 
     /** [CTB] */
-    std::string getVoltageName(const defs::dacIndex i) const;
+    std::string getPowerName(const defs::dacIndex i) const;
 
     /** [CTB] */
     void setSlowADCNames(const std::vector<std::string> names);
@@ -2068,18 +2082,18 @@ class Detector {
      *                                                *
      * ************************************************/
 
-    Result<int> getControlPort(Positions pos = {}) const;
+    Result<uint16_t> getControlPort(Positions pos = {}) const;
 
     /** Detector Control TCP port (for client communication with Detector
      * control server) Default is 1952. Normally unchanged. Set different ports
      * for virtual servers on same pc */
-    void setControlPort(int value, Positions pos = {});
+    void setControlPort(uint16_t value, Positions pos = {});
 
-    Result<int> getStopPort(Positions pos = {}) const;
+    Result<uint16_t> getStopPort(Positions pos = {}) const;
 
     /** Port number of the stop server on detector for detector-client tcp
      * interface. Default is 1953. Normally unchanged. */
-    void setStopPort(int value, Positions pos = {});
+    void setStopPort(uint16_t value, Positions pos = {});
 
     Result<bool> getDetectorLock(Positions pos = {}) const;
 
@@ -2112,7 +2126,7 @@ class Detector {
     ///@}
 
   private:
-    std::vector<int> getPortNumbers(int start_port);
+    std::vector<uint16_t> getValidPortNumbers(uint16_t start_port);
     void updateRxRateCorrections();
     void setNumberofUDPInterfaces_(int n, Positions pos);
 };

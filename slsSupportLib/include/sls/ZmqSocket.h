@@ -103,7 +103,7 @@ class ZmqSocket {
      * @param hostname_or_ip hostname or ip of server
      * @param portnumber port number
      */
-    ZmqSocket(const char *const hostname_or_ip, const uint32_t portnumber);
+    ZmqSocket(const char *const hostname_or_ip, const uint16_t portnumber);
 
     /**
      * Constructor for a server
@@ -111,7 +111,7 @@ class ZmqSocket {
      * @param portnumber port number
      * @param ethip is the ip of the ethernet interface to stream zmq from
      */
-    ZmqSocket(const uint32_t portnumber, const char *ethip);
+    ZmqSocket(const uint16_t portnumber, const char *ethip);
 
     /** Returns high water mark for outbound messages */
     int GetSendHighWaterMark();
@@ -143,7 +143,7 @@ class ZmqSocket {
      * Returns Port Number
      * @returns Port Number
      */
-    uint32_t GetPortNumber() { return portno; }
+    uint16_t GetPortNumber() { return portno; }
 
     /**
      * Returns Server Address
@@ -251,7 +251,7 @@ class ZmqSocket {
     };
 
     /** Port Number */
-    uint32_t portno;
+    uint16_t portno;
 
     /** Socket descriptor */
     mySocketDescriptors sockfd;

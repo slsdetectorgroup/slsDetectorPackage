@@ -7,6 +7,7 @@ UDP socket class to receive data. The intended use is in the
 receiver listener loop. Should be used RAII style...
 */
 
+#include <stdint.h>
 #include <sys/types.h> //ssize_t
 namespace sls {
 
@@ -15,8 +16,8 @@ class UdpRxSocket {
     int sockfd_{-1};
 
   public:
-    UdpRxSocket(int port, ssize_t packet_size, const char *hostname = nullptr,
-                int kernel_buffer_size = 0);
+    UdpRxSocket(uint16_t port, ssize_t packet_size,
+                const char *hostname = nullptr, int kernel_buffer_size = 0);
     ~UdpRxSocket();
     bool ReceivePacket(char *dst) noexcept;
     int getBufferSize() const;

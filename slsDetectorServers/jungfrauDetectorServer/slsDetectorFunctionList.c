@@ -55,6 +55,9 @@ int32_t clkPhase[NUM_CLOCKS] = {};
 int detPos[4] = {};
 int chipConfigured = 0;
 
+uint64_t normal_mode_frames = -1;
+uint64_t normal_mode_triggers = -1;
+
 int isInitCheckDone() { return initCheckDone; }
 
 int getInitResult(char **mess) {
@@ -555,6 +558,13 @@ void setupDetector() {
         setFlipRows(DEFAULT_FLIP_ROWS);
         setReadNRows(MAX_ROWS_PER_READOUT);
     }
+#ifdef VIRTUAL
+    // setting pedestalmode depends on previous values
+    bus_w(PEDESTAL_MODE_REG,
+          bus_r(PEDESTAL_MODE_REG) & ~PEDESTAL_MODE_ENBLE_MSK);
+#endif
+    setPedestalMode(DEFAULT_PEDESTAL_MODE, DEFAULT_PEDESTAL_FRAMES,
+                    DEFAULT_PEDESTAL_LOOPS);
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -975,6 +985,9 @@ int getNextFrameNumber(uint64_t *retval) {
 }
 
 void setNumFrames(int64_t val) {
+    if (getPedestalMode()) {
+        return;
+    }
     if (val > 0) {
         LOG(logINFO, ("Setting number of frames %lld\n", (long long int)val));
         set64BitReg(val, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
@@ -986,6 +999,9 @@ int64_t getNumFrames() {
 }
 
 void setNumTriggers(int64_t val) {
+    if (getPedestalMode()) {
+        return;
+    }
     if (val > 0) {
         LOG(logINFO, ("Setting number of triggers %lld\n", (long long int)val));
         set64BitReg(val, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
@@ -1439,6 +1455,9 @@ void setSynchronization(int enable) {
 }
 
 void setTiming(enum timingMode arg) {
+    if (getPedestalMode()) {
+        return;
+    }
     switch (arg) {
     case AUTO_TIMING:
         LOG(logINFO, ("Set Timing: Auto\n"));
@@ -1532,8 +1551,8 @@ int getPrimaryInterface() {
 }
 
 void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
-                 uint64_t destmac, uint32_t destport, uint64_t sourcemac,
-                 uint32_t sourceip, uint32_t sourceport) {
+                 uint64_t destmac, uint16_t destport, uint64_t sourcemac,
+                 uint32_t sourceip, uint16_t sourceport) {
 
     // start addr
     uint32_t addr = (type == INNER ? RXR_ENDPOINT_INNER_START_REG
@@ -1628,10 +1647,10 @@ int configureMAC() {
         uint64_t srcmac2 = udpDetails[iRxEntry].srcmac2;
         uint64_t dstmac = udpDetails[iRxEntry].dstmac;
         uint64_t dstmac2 = udpDetails[iRxEntry].dstmac2;
-        int srcport = udpDetails[iRxEntry].srcport;
-        int srcport2 = udpDetails[iRxEntry].srcport2;
-        int dstport = udpDetails[iRxEntry].dstport;
-        int dstport2 = udpDetails[iRxEntry].dstport2;
+        uint16_t srcport = udpDetails[iRxEntry].srcport;
+        uint16_t srcport2 = udpDetails[iRxEntry].srcport2;
+        uint16_t dstport = udpDetails[iRxEntry].dstport;
+        uint16_t dstport2 = udpDetails[iRxEntry].dstport2;
 
         char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
             dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
@@ -1655,10 +1674,10 @@ int configureMAC() {
                                      : (selInterface ? "Not Used" : "Used")));
             LOG(logINFO, ("\tSource IP   : %s\n"
                           "\tSource MAC  : %s\n"
-                          "\tSource Port : %d\n"
+                          "\tSource Port : %hu\n"
                           "\tDest IP     : %s\n"
                           "\tDest MAC    : %s\n"
-                          "\tDest Port   : %d\n\n",
+                          "\tDest Port   : %hu\n\n",
                           src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
             LOG(logINFO,
@@ -1668,10 +1687,10 @@ int configureMAC() {
             LOG(logINFO,
                 ("\tSource IP2  : %s\n"
                  "\tSource MAC2 : %s\n"
-                 "\tSource Port2: %d\n"
+                 "\tSource Port2: %hu\n"
                  "\tDest IP2    : %s\n"
                  "\tDest MAC2   : %s\n"
-                 "\tDest Port2  : %d\n\n",
+                 "\tDest Port2  : %hu\n\n",
                  src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
         }
 #ifdef VIRTUAL
@@ -2513,6 +2532,82 @@ uint64_t getSelectCurrentSource() {
     }
 }
 
+int getPedestalMode() {
+    return ((bus_r(PEDESTAL_MODE_REG) & PEDESTAL_MODE_ENBLE_MSK) >>
+            PEDESTAL_MODE_ENBLE_OFST);
+}
+
+void getPedestalParameters(uint8_t *frames, uint16_t *loops) {
+    uint32_t addr = PEDESTAL_MODE_REG;
+    *frames =
+        ((bus_r(addr) & PEDESTAL_MODE_LNGTH_MSK) >> PEDESTAL_MODE_LNGTH_OFST);
+    *loops = ((bus_r(PEDESTAL_MODE_REG) & PEDESTAL_MODE_ITRTNS_MSK) >>
+              PEDESTAL_MODE_ITRTNS_OFST);
+}
+
+void setPedestalMode(int enable, uint8_t frames, uint16_t loops) {
+    int prevPedestalEnable = getPedestalMode();
+    uint32_t addr = PEDESTAL_MODE_REG;
+
+    if (enable) {
+        LOG(logINFOBLUE, ("Enabling pedestal mode [frames: %hhu, loops: %hu]\n",
+                          frames, loops));
+
+        // frames
+        bus_w(addr, bus_r(addr) & ~PEDESTAL_MODE_LNGTH_MSK);
+        bus_w(addr, bus_r(addr) | ((frames << PEDESTAL_MODE_LNGTH_OFST) &
+                                   PEDESTAL_MODE_LNGTH_MSK));
+        // loops
+        bus_w(addr, bus_r(addr) & ~PEDESTAL_MODE_ITRTNS_MSK);
+        bus_w(addr, bus_r(addr) | ((loops << PEDESTAL_MODE_ITRTNS_OFST) &
+                                   PEDESTAL_MODE_ITRTNS_MSK));
+        // enable
+        bus_w(addr, bus_r(addr) | PEDESTAL_MODE_ENBLE_MSK);
+
+        // if it was switched off before, remember the #frames and #triggers
+        if (prevPedestalEnable == 0) {
+            normal_mode_frames = getNumFrames();
+            normal_mode_triggers = getNumTriggers();
+            LOG(logINFO, ("\tRemembering Normal mode #frames and "
+                          "#triggers[%lld, %lld]\n",
+                          normal_mode_frames, normal_mode_triggers));
+        }
+
+        // overwrite #frames and #triggers to new values
+        int64_t expFrames = -1;
+        int64_t expTriggers = -1;
+        enum timingMode timing = getTiming();
+        if (timing == AUTO_TIMING ||
+            (timing == TRIGGER_EXPOSURE && normal_mode_frames > 1)) {
+            expFrames = frames * loops * 2;
+            expTriggers = 1;
+        } else {
+            expFrames = 1;
+            expTriggers = frames * loops * 2;
+        }
+        LOG(logINFO, ("\tOverwriting [#frames: %lld, #triggers: %lld]\n",
+                      expFrames, expTriggers));
+        set64BitReg(expFrames, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+        set64BitReg(expTriggers, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+
+    } else {
+        LOG(logINFOBLUE, ("Disabling pedestal mode\n"));
+        bus_w(addr, bus_r(addr) & ~PEDESTAL_MODE_ENBLE_MSK);
+
+        // if it was switched on before, reset the normal mode #frames and
+        // #triggers
+        if (prevPedestalEnable == 1) {
+            LOG(logINFO,
+                ("\tResetting to Normal mode [#frames:%lld, #triggers:%lld\n",
+                 normal_mode_frames, normal_mode_triggers));
+            set64BitReg(normal_mode_frames, SET_FRAMES_LSB_REG,
+                        SET_FRAMES_MSB_REG);
+            set64BitReg(normal_mode_triggers, SET_CYCLES_LSB_REG,
+                        SET_CYCLES_MSB_REG);
+        }
+    }
+}
+
 int getTenGigaFlowControl() {
     return ((bus_r(CONFIG_REG) & CONFIG_ETHRNT_FLW_CNTRL_MSK) >>
             CONFIG_ETHRNT_FLW_CNTRL_OFST);
@@ -2632,6 +2727,7 @@ void *start_timer(void *arg) {
             if (i % pixelsPerPacket == 0) {
                 ++dataVal;
             }
+
             if ((i % 1024) < 300) {
                 gainVal = 1;
             } else if ((i % 1024) < 600) {
@@ -2671,6 +2767,28 @@ void *start_timer(void *arg) {
             struct timespec begin, end;
             clock_gettime(CLOCK_REALTIME, &begin);
             usleep(expUs);
+
+            // change gain and data for every frame
+            {
+                const int npixels = (NCHAN * NCHIP);
+                for (int i = 0; i < npixels; ++i) {
+                    int gainVal = 0;
+                    if ((i % 1024) < 300) {
+                        gainVal = 1 + iframes;
+                    } else if ((i % 1024) < 600) {
+                        gainVal = 2 + iframes;
+                    } else {
+                        gainVal = 3 + iframes;
+                    }
+                    int dataVal =
+                        *((uint16_t *)(imageData + i * sizeof(uint16_t)));
+                    dataVal += iframes;
+                    int pixelVal =
+                        (dataVal & ~GAIN_VAL_MSK) | (gainVal << GAIN_VAL_OFST);
+                    *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+                        (uint16_t)pixelVal;
+                }
+            }
 
             int srcOffset = 0;
             int srcOffset2 = DATA_BYTES / 2;

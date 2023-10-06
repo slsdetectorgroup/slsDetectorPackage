@@ -41,10 +41,9 @@ ClientInterface::~ClientInterface() {
     tcpThread->join();
 }
 
-ClientInterface::ClientInterface(int portNumber)
-    : detType(GOTTHARD),
-      portNumber(portNumber > 0 ? portNumber : DEFAULT_TCP_RX_PORTNO),
-      server(portNumber) {
+ClientInterface::ClientInterface(uint16_t portNumber)
+    : detType(GOTTHARD), portNumber(portNumber), server(portNumber) {
+    validatePortNumber(portNumber);
     functionTable();
     parentThreadId = gettid();
     tcpThread =
@@ -1064,9 +1063,12 @@ int ClientInterface::get_file_format(Interface &socket) {
 }
 
 int ClientInterface::set_streaming_port(Interface &socket) {
-    auto port = socket.Receive<int>();
-    if (port < 0) {
-        throw RuntimeError("Invalid zmq port " + std::to_string(port));
+    auto port = socket.Receive<uint16_t>();
+    try {
+        validatePortNumber(port);
+    } catch (...) {
+        throw RuntimeError(
+            "Could not set streaming (zmq) port number. Invalid value.");
     }
     verifyIdle(socket);
     impl()->setStreamingPort(port);
@@ -1074,7 +1076,7 @@ int ClientInterface::set_streaming_port(Interface &socket) {
 }
 
 int ClientInterface::get_streaming_port(Interface &socket) {
-    int retval = impl()->getStreamingPort();
+    uint16_t retval = impl()->getStreamingPort();
     LOG(logDEBUG1) << "streaming port:" << retval;
     return socket.sendResult(retval);
 }
@@ -1449,7 +1451,7 @@ int ClientInterface::set_udp_ip2(Interface &socket) {
 }
 
 int ClientInterface::set_udp_port(Interface &socket) {
-    auto arg = socket.Receive<int>();
+    auto arg = socket.Receive<uint16_t>();
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting UDP Port:" << arg;
     impl()->setUDPPortNumber(arg);
@@ -1457,7 +1459,7 @@ int ClientInterface::set_udp_port(Interface &socket) {
 }
 
 int ClientInterface::set_udp_port2(Interface &socket) {
-    auto arg = socket.Receive<int>();
+    auto arg = socket.Receive<uint16_t>();
     verifyIdle(socket);
     if (detType != JUNGFRAU && detType != MOENCH && detType != EIGER &&
         detType != GOTTHARD2) {

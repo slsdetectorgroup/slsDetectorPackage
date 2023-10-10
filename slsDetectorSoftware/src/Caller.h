@@ -22,6 +22,33 @@ public:
   void WrongNumberOfParameters(size_t expected);
 
   std::string list(int action);
+  /**
+   * very special functions
+  */
+  std::string Acquire(int action);
+  std::string Versions(int action);
+  std::string Threshold(int action);
+  std::string TrimEnergies(int action);
+  std::string BadChannels(int action);
+  std::string CurrentSource(int action);
+  std::string DacValues(int action);
+  std::string UDPSourceIP(int action);
+  std::string UDPSourceIP2(int action);
+  std::string UDPDestinationIP(int action);
+  std::string UDPDestinationIP2(int action);
+  std::string ReceiverHostname(int action);
+  std::string Rx_ROI(int action);
+  std::string RateCorrection(int action);
+  std::string BurstMode(int action);
+  std::string VetoStreaming(int action);
+  std::string Counters(int action);
+  std::string GainCaps(int action);
+  std::string Samples(int action);
+  std::string SlowADC(int action);
+  std::string ReceiverDbitList(int action);
+  std::string AdditionalJsonHeader(int action);
+  std::string ExecuteCommand(int action);
+  std::string Hostname(int action);
 
   std::string activate(int action);
   std::string adcclk(int action);
@@ -335,6 +362,35 @@ private:
   Detector *ptr; // pointer to the detector that executes the command
 
   FunctionMap functions{ { "list", &Caller::list },
+                         /**
+                          * very special functions
+                         */
+                         { "hostname", &Caller::Hostname },
+                         { "acquire", &Caller::Acquire },
+                         { "versions", &Caller::Versions },
+                         { "threshold", &Caller::Threshold },
+                         { "trimen", &Caller::TrimEnergies },
+                         { "badchannels", &Caller::BadChannels },
+                         { "dacvalues", &Caller::DacValues },
+                         { "burstmode", &Caller::BurstMode },
+                         { "currentsource", &Caller::CurrentSource },
+                         { "udp_srcip", &Caller::UDPSourceIP },
+                         { "udp_srcip2", &Caller::UDPSourceIP2 },
+                         { "udp_dstip", &Caller::UDPDestinationIP },
+                         { "udp_dstip2", &Caller::UDPDestinationIP2 },
+                         { "rx_hostname", &Caller::ReceiverHostname },
+                         { "rx_roi", &Caller::Rx_ROI },
+                         { "ratecorr", &Caller::RateCorrection },
+                         { "burstmode", &Caller::BurstMode },
+                         { "vetostream", &Caller::VetoStreaming },
+                         { "counters", &Caller::Counters },
+                         { "gaincaps", &Caller::GainCaps },
+                         { "samples", &Caller::Samples },
+                         { "slowadc", &Caller::SlowADC },
+                         { "rx_dbitlist", &Caller::ReceiverDbitList },
+                         { "rx_jsonaddheader", &Caller::AdditionalJsonHeader },
+                         { "execcommand", &Caller::ExecuteCommand },
+                         { "thresholdnotb", &Caller::Threshold },
                          { "activate", &Caller::activate },
                          { "adcclk", &Caller::adcclk },
                          { "adcenable", &Caller::adcenable },

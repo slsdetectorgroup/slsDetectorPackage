@@ -25,4 +25,4 @@ execcommand (has for loop)
 thresholdnotb
 # notes
 # ReceiverStatus error on put is not done
-
+# ask about burstmode function

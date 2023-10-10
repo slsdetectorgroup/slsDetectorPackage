@@ -3,9 +3,9 @@
 #include "CmdParser.h"
 #include "sls/Detector.h"
 
+#include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
 namespace sls {
 
 class Caller {
@@ -24,7 +24,7 @@ public:
   std::string list(int action);
   /**
    * very special functions
-  */
+   */
   std::string Acquire(int action);
   std::string Versions(int action);
   std::string Threshold(int action);
@@ -364,7 +364,7 @@ private:
   FunctionMap functions{ { "list", &Caller::list },
                          /**
                           * very special functions
-                         */
+                          */
                          { "hostname", &Caller::Hostname },
                          { "acquire", &Caller::Acquire },
                          { "versions", &Caller::Versions },

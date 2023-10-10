@@ -3,15 +3,16 @@
 #include "CmdParser.h"
 #include "sls/Detector.h"
 
+#include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
 namespace sls {
 
 class Caller {
   public:
-    Caller(Detector *ptr):det(ptr){}
-    void call(const CmdParser &parser, int action, std::ostream &os=std::cout);
+    Caller(Detector *ptr) : det(ptr) {}
+    void call(const CmdParser &parser, int action,
+              std::ostream &os = std::cout);
 
     IpAddr getDstIpFromAuto();
     IpAddr getSrcIpFromAuto();
@@ -22,11 +23,10 @@ class Caller {
                                    size_t nPutArgs);
     void WrongNumberOfParameters(size_t expected);
 
-
     std::string list(int action);
     /**
      * very special functions
-    */
+     */
     std::string Acquire(int action);
     std::string Versions(int action);
     std::string Threshold(int action);
@@ -52,28 +52,25 @@ class Caller {
     std::string ExecuteCommand(int action);
     std::string Hostname(int action);
 
-
     // THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (1)
-
 
     std::vector<std::string> args;
     std::string cmd;
-    Detector* det;
+    Detector *det;
     int det_id{-1};
     int rx_id{-1};
 
   private:
     using FunctionMap = std::map<std::string, std::string (Caller::*)(int)>;
-    Detector *ptr; //pointer to the detector that executes the command
+    Detector *ptr; // pointer to the detector that executes the command
 
-
-    FunctionMap functions{{"list", &Caller::list},
-    /**
-     * very special functions
-    */
-            {"hostname", &Caller::Hostname},
-
-    {"acquire", &Caller::Acquire},
+    FunctionMap functions{
+        {"list", &Caller::list},
+        /**
+         * very special functions
+         */
+        {"hostname", &Caller::Hostname},
+        {"acquire", &Caller::Acquire},
         {"versions", &Caller::Versions},
         {"threshold", &Caller::Threshold},
         {"trimen", &Caller::TrimEnergies},
@@ -99,11 +96,10 @@ class Caller {
         {"execcommand", &Caller::ExecuteCommand},
         {"thresholdnotb", &Caller::Threshold},
 
-
-    // THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (2)
+        // THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (2)
 
     };
-    //some helper functions to print
+    // some helper functions to print
     template <typename V> std::string OutStringHex(const V &value) {
         if (value.equal())
             return ToStringHex(value.front());
@@ -132,9 +128,6 @@ class Caller {
             return ToString(value.front(), unit);
         return ToString(value, unit);
     }
-
 };
-
-
 
 } // namespace sls

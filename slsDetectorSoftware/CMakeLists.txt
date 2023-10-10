@@ -9,6 +9,7 @@ set(SOURCES
     src/Pattern.cpp
     src/CtbConfig.cpp
     src/Caller.cpp
+    src/CallerSpecial.cpp
 )
 
 add_library(slsDetectorObject OBJECT

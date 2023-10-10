@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 # command to generate the ast
-# clang version 14 on ubuntu
+# clang version: 14.0.0-1ubuntu1.1
 # clang++ -Xclang -ast-dump=json -Xclang -ast-dump-filter -Xclang StringTo  -c ToString.cpp -I ../include/ -std=gnu++11
 #
 

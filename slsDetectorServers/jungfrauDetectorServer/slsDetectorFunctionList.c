@@ -2928,10 +2928,17 @@ int softwareTrigger(int block) {
 #ifndef VIRTUAL
     // block till frame is sent out
     if (block) {
+        /*
         enum runStatus s = getRunStatus();
-        while (s == RUNNING || s == TRANSMITTING) {
+        while (s != IDLE && s != STOPPED && s != WAITING) {
             usleep(5000);
             s = getRunStatus();
+        }
+        */
+        uint32_t retval = bus_r(STATUS_REG);
+        while ((retval & RUN_BUSY_MSK) && !(retval & WAITING_FOR_TRIGGER_MSK)) {
+            usleep(5000);
+            retval = bus_r(STATUS_REG);
         }
     }
     LOG(logINFO, ("Ready for Next Trigger...\n"));
@@ -2966,7 +2973,11 @@ enum runStatus getRunStatus() {
 
     // running
     if (retval & RUN_BUSY_MSK) {
-        if (retval & WAITING_FOR_TRIGGER_MSK) {
+        if ((retval &
+             WAITING_FOR_TRIGGER_MSK) || // For user, only waiting for trigger
+                                         // is something they should do... not
+                                         // include waiting for start frame?...
+            (retval & WAITING_FOR_START_FRAME_MSK)) {
             LOG(logINFOBLUE, ("Status: WAITING\n"));
             s = WAITING;
         } else {
@@ -2977,19 +2988,13 @@ enum runStatus getRunStatus() {
 
     // not running
     else {
-        // stopped or error
+        // stopped or idle
         if (retval & STOPPED_MSK) {
             LOG(logINFOBLUE, ("Status: STOPPED\n"));
             s = STOPPED;
-        } else if (retval & RUNMACHINE_BUSY_MSK) {
-            LOG(logINFOBLUE, ("Status: READ MACHINE BUSY\n"));
-            s = TRANSMITTING;
-        } else if (!retval) {
+        } else {
             LOG(logINFOBLUE, ("Status: IDLE\n"));
             s = IDLE;
-        } else {
-            LOG(logERROR, ("Status: Unknown status %08x\n", retval));
-            s = ERROR;
         }
     }
 

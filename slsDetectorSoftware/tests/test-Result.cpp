@@ -204,16 +204,16 @@ TEST_CASE("Any element is equal"){
 
 TEST_CASE("Result contains only the specified elements"){
     Result<int> r{1,1,1};
-    REQUIRE(r.only(1));
-    REQUIRE(r.only(1,1));
+    REQUIRE(r.contains_only(1));
+    REQUIRE(r.contains_only(1,1));
 }
 
 TEST_CASE("Only with multiple values"){
     Result<int> r{1,1,2,1,2,1,1};
-    REQUIRE_FALSE(r.only(1));
-    REQUIRE_FALSE(r.only(2));
-    REQUIRE(r.only(1,2));
-    REQUIRE(r.only(2,1));
+    REQUIRE_FALSE(r.contains_only(1));
+    REQUIRE_FALSE(r.contains_only(2));
+    REQUIRE(r.contains_only(1,2));
+    REQUIRE(r.contains_only(2,1));
 }
 
 } // namespace sls

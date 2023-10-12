@@ -134,7 +134,7 @@ template <class T, class Allocator = std::allocator<T>> class Result {
 
     template <typename V, typename... Args, typename = AllSame<V, Args...>>
     typename std::enable_if<std::is_same<V, T>::value, bool>::type
-    only(const V &a, const Args &...args) const noexcept {
+    contains_only(const V &a, const Args &...args) const noexcept {
         auto values = {a, args...};
         for (const auto &element : vec) {
             int found = 0;

@@ -3,7 +3,7 @@
 
 ################# TEMPLATES #################
 TIME_COMMAND:
-  infer_action: false
+  infer_action: true
   help: ""
   template: true
   actions:
@@ -14,6 +14,7 @@ TIME_COMMAND:
         - argc: 0
           output: [ OutString(t) ]
         - argc: 1
+          arg_types: [ special::time_unit ]
           output: [ "OutString(t , args[0])" ]
     PUT:
       function: ''
@@ -22,18 +23,22 @@ TIME_COMMAND:
       input_types: [ time::ns ]
       args:
         - argc: 1
+          arg_types: [ std::string ]
+
           separate_time_units:
             input: 'args[0]'
             output: [ converted_time, unit ]
           output: [ 'args[0]' ]
         - argc: 2
+          arg_types: [ int, special::time_unit ]
+
           convert_to_time:
             input: [ 'args[0]', 'args[1]' ]
             output: converted_time
           output: [ 'args[0]', 'args[1]' ]
 
 TIME_GET_COMMAND:
-  infer_action: false
+  infer_action: true
   help: ""
   template: true
   actions:
@@ -44,10 +49,11 @@ TIME_GET_COMMAND:
         - argc: 0
           output: [ OutString(t) ]
         - argc: 1
+          arg_types: [ special::time_unit ]
           output: [ "OutString(t , args[0])" ]
 
 STRING_COMMAND:
-  infer_action: false
+  infer_action: true
   help: ""
   template: true
   actions:
@@ -66,7 +72,7 @@ STRING_COMMAND:
       argc: 1
 
 INTEGER_COMMAND_HEX_WIDTH16:
-  infer_action: false
+  infer_action: true
   help: ""
   template: true
   actions:
@@ -87,7 +93,7 @@ INTEGER_COMMAND_HEX_WIDTH16:
 
 INTEGER_COMMAND_HEX:
   template: true
-  infer_action: false
+  infer_action: true
   help: ""
   actions:
     GET:
@@ -106,7 +112,7 @@ INTEGER_COMMAND_HEX:
 
 INTEGER_COMMAND_VEC_ID_GET:
   template: true
-  infer_action: false
+  infer_action: true
   help: ""
   actions:
     GET:
@@ -127,7 +133,7 @@ INTEGER_COMMAND_VEC_ID_GET:
 
 INTEGER_COMMAND_VEC_ID:
   template: true
-  infer_action: false
+  infer_action: true
   help: ""
   actions:
     GET:
@@ -145,7 +151,7 @@ INTEGER_COMMAND_VEC_ID:
       argc: 1
 INTEGER_COMMAND_SET_NOID_GET_ID:
   template: true
-  infer_action: false
+  infer_action: true
   help: ""
   actions:
     GET:
@@ -164,7 +170,7 @@ INTEGER_COMMAND_SET_NOID_GET_ID:
 
 INTEGER_COMMAND_NOID:
   template: true
-  infer_action: false
+  infer_action: true
   help: ""
   actions:
     GET:
@@ -183,7 +189,7 @@ INTEGER_COMMAND_NOID:
 
 INTEGER_IND_COMMAND:
   template: true
-  infer_action: false
+  infer_action: true
   help: ""
   actions:
     GET:
@@ -207,7 +213,7 @@ INTEGER_IND_COMMAND:
 
 INTEGER_USER_IND_COMMAND:
   template: true
-  infer_action: false
+  infer_action: true
   help: ""
   actions:
     GET:
@@ -231,7 +237,7 @@ INTEGER_USER_IND_COMMAND:
 
 EXECUTE_SET_COMMAND_NOID:
   template: true
-  infer_action: false
+  infer_action: true
   help: ""
   actions:
     PUT:
@@ -242,7 +248,7 @@ EXECUTE_SET_COMMAND_NOID:
 
 EXECUTE_SET_COMMAND_NOID_1ARG:
   template: true
-  infer_action: false
+  infer_action: true
   help: ""
   actions:
     PUT:
@@ -256,7 +262,7 @@ EXECUTE_SET_COMMAND_NOID_1ARG:
 
 GET_COMMAND:
   template: true
-  infer_action: false
+  infer_action: true
   help: ""
   actions:
     GET:
@@ -267,7 +273,7 @@ GET_COMMAND:
 
 GET_COMMAND_NOID:
   template: true
-  infer_action: false
+  infer_action: true
   help: ""
   actions:
     GET:
@@ -277,7 +283,7 @@ GET_COMMAND_NOID:
 
 GET_IND_COMMAND:
   template: true
-  infer_action: false
+  infer_action: true
   help: ""
   actions:
     GET:
@@ -295,7 +301,7 @@ GET_IND_COMMAND:
 
 CTB_SINGLE_DACNAME:
   template: true
-  infer_action: false
+  infer_action: true
   actions:
     GET:
       extra_variables:
@@ -330,7 +336,7 @@ CTB_SINGLE_DACNAME:
 
 CTB_GET_DACINDEX:
   template: true
-  infer_action: false
+  infer_action: true
   actions:
     GET:
       extra_variables:
@@ -349,7 +355,7 @@ CTB_GET_DACINDEX:
 
 CTB_SINGLE_NAME:
   template: true
-  infer_action: false
+  infer_action: true
   actions:
     GET:
       check_det_id: true
@@ -374,7 +380,7 @@ CTB_SINGLE_NAME:
 
 CTB_GET_INDEX:
   template: true
-  infer_action: false
+  infer_action: true
   actions:
     GET:
       check_det_id: true
@@ -389,7 +395,7 @@ CTB_GET_INDEX:
 
 CTB_NAMED_LIST:
   template: true
-  infer_action: false
+  infer_action: true
   actions:
     GET:
       check_det_id: true
@@ -2147,7 +2153,7 @@ tempvalues:
 
 exptime:
   help: ""
-  infer_action: false # infer action based on actions' argc (they must be unique if true)
+  infer_action: true # infer action based on actions' argc (they must be unique if true)
   actions:
     GET:
       require_det_id: true
@@ -2156,6 +2162,7 @@ exptime:
         - argc: 0
           output: [ OutString(t) ]
         - argc: 1
+          arg_types: [ special::time_unit ]
           output: [ "OutString(t , args[0])" ]
       detectors:
         MYTHEN3:
@@ -2171,7 +2178,11 @@ exptime:
             input: 'args[0]'
             output: [ converted_time, unit ]
           output: [ 'args[0]' ]
+          arg_types: [ int ]
+
         - argc: 2
+          arg_types: [ int, special::time_unit ]
+
           convert_to_time:
             input: [ 'args[0]', 'args[1]' ]
             output: converted_time
@@ -2259,7 +2270,6 @@ firmwareversion:
         EIGER:
           output: [ OutString(t) ]
 
-
 packageversion:
   help: "\n\tPackage version (git branch)."
   actions:
@@ -2289,10 +2299,12 @@ detsize:
       function: setDetectorSize
       input: [ 'defs::xy(StringTo<int>(args[0]),StringTo<int>(args[1]))' ]
       input_types: [ defs::xy ]
+      arg_types: [int, int]
       output: [ 'ToString(args)' ]
 
 
 trimbits:
+  infer_action: true
   help: "[fname]\n\t[Eiger][Mythen3] Put will load the trimbit file to detector. If no extension specified, serial number of each module is attached. Get will save the trimbits from the detector to file with serial number added to file name."
   actions:
     GET:
@@ -2349,6 +2361,7 @@ readoutspeed:
 
 
 adcphase:
+  infer_action: true
   help: "[n_value] [(optional)deg]\n\t[Jungfrau][Moench][Ctb][Gotthard] Phase shift of ADC clock. \n\t[Jungfrau][Moench] Absolute phase shift. If deg used, then shift in degrees. Changing Speed also resets adcphase to recommended defaults.\n\t[Ctb] Absolute phase shift. If deg used, then shift in degrees. Changing adcclk also resets adcphase and sets it to previous values.\n\t[Gotthard] Relative phase shift. Cannot get"
   actions:
     GET:
@@ -2372,7 +2385,8 @@ adcphase:
             - condition: 'args[0] != "deg"'
               message: '"Unknown adcphase   argument " + args[0] + ". Did you mean deg?    "'
           function: getADCPhaseInDegrees
-          output: [ OutString(t), ' "deg"' ]
+          arg_types: [ special::deg ]
+          output: [ OutString(t), '" deg"' ]
 
     PUT:
       extra_variables:
@@ -2392,6 +2406,7 @@ adcphase:
           function: setADCPhase
           output: [ 'args.front()' ]
         - argc: 2
+          arg_types: [ int, special::deg ]
           exceptions:
             - condition: 'det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2'
               message: '"adcphase not implemented for this detector"'
@@ -2427,6 +2442,7 @@ dbitphase:
               message: '"Unknown dbitphase argument " + args[0] + ". Did you mean deg?  "'
           function: getDBITPhaseInDegrees
           require_det_id: true
+          arg_types: [ special::deg ]
           output: [ OutString(t), '" deg"' ]
     PUT:
       extra_variables:
@@ -2446,6 +2462,7 @@ dbitphase:
           function: setDBITPhase
           output: [ 'args.front()' ]
         - argc: 2
+          arg_types: [ int, special::deg ]
           exceptions:
             - condition: 'det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2 || det_type == defs::MOENCH'
               message: '"dbitphase not implemented for this detector"'
@@ -2501,6 +2518,7 @@ clkphase:
               message: '"clkphase not implemented for this detector."'
             - condition: 'args[1] != "deg"'
               message: '"Cannot scan argument" + args[1] + ". Did you mean deg?"'
+          arg_types: [ int , special::deg ]
           function: getClockPhaseinDegrees
           output: [ OutString(t), '" deg"' ]
 
@@ -2521,6 +2539,8 @@ clkphase:
           function: setClockPhase
           output: [ 'args[1]' ]
         - argc: 3
+          arg_types: [int, int , special::deg ]
+
           exceptions:
             - condition: 'type != defs::GOTTHARD2 && type != defs::MYTHEN3'
               message: '"clkphase not implemented for this detector."'
@@ -2578,6 +2598,7 @@ clkdiv:
       input_types: [ int, int, auto ]
       cast_input: [ true, true, false ]
       argc: 2
+      arg_types: [ int, int ]
       function: setClockDivider
       output: [ 'args[1]' ]
 
@@ -2607,12 +2628,12 @@ dac:
   actions:
     GET:
       exceptions:
-        - condition: "args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0]) && detector_type != defs::CHIPTESTBOARD"
+        - condition: "args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD"
           message: '"Dac indices can only be used for chip test board. Use daclist to get list of dac names for current detector."'
       extra_variables:
         - name: dacIndex
           type: defs::dacIndex
-          value: "(detector_type == defs::CHIPTESTBOARD && !is_int(args[0])) ? det->getDacIndex(args[0]) : StringTo<defs::dacIndex>(args[0])"
+          value: "(det->getDetectorType().squash() == defs::CHIPTESTBOARD && !is_int(args[0])) ? det->getDacIndex(args[0]) : StringTo<defs::dacIndex>(args[0])"
       function: getDAC
       input_types: [ defs::dacIndex, bool ]
       cast_input: [ false, true ]
@@ -2621,22 +2642,24 @@ dac:
         - argc: 1
           input: [ dacIndex, '"0"' ]
           output: [ OutString(t) ]
+          arg_types: [defs::dacIndex]
         - argc: 2
           exceptions:
-            - condition: "args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0]) && detector_type != defs::CHIPTESTBOARD"
+            - condition: "args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD"
               message: '"Dac indices can only be used for chip test board. Use daclist to get list of dac names for current detector."'
             - condition: "args[1] != 'mv' && args[1] != 'mV'"
               message: '"Unknown argument " + args[1] + ". Did you mean mV?"'
           input: [ dacIndex, '"1"' ]
+          arg_types: [defs::dacIndex, special::mv]
           output: [ OutString(t), '" mV"' ]
     PUT:
       exceptions:
-        - condition: "args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0]) && detector_type != defs::CHIPTESTBOARD"
+        - condition: "args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD"
           message: '"Dac indices can only be used for chip test board. Use daclist to get list of dac names for current detector."'
       extra_variables:
         - name: dacIndex
           type: defs::dacIndex
-          value: "(detector_type == defs::CHIPTESTBOARD && !is_int(args[0])) ? det->getDacIndex(args[0]) : StringTo<defs::dacIndex>(args[0])"
+          value: "(det->getDetectorType().squash() == defs::CHIPTESTBOARD && !is_int(args[0])) ? det->getDacIndex(args[0]) : StringTo<defs::dacIndex>(args[0])"
       function: setDAC
       require_det_id: true
       input_types: [ defs::dacIndex, int, bool ]
@@ -2645,9 +2668,11 @@ dac:
       args:
         - argc: 2
           input: [ dacIndex, "args[1]", '"0"' ]
+          arg_types: [defs::dacIndex, int]
           output: [ "args[0]", "' '", "args[1]" ]
         - argc: 3
           input: [ dacIndex, "args[1]", '"1"' ]
+          arg_types: [defs::dacIndex, int, special::mv]
           output: [ "args[0]", "' '", "args[1]", '" mV"' ]
 
 resetdacs:
@@ -2660,6 +2685,7 @@ resetdacs:
       input_types: [ bool ]
       args:
         - argc: 1
+          arg_types: [ special::hard ]
           exceptions:
             - condition: 'args[0] != "hard"'
               message: '"Unknown argument " + args[0] + ". Did you mean hard?"'
@@ -2736,15 +2762,19 @@ scan:
 
       args:
         - argc: 1
+          arg_types: [ int ]
           exceptions:
             - condition: 'StringTo<int>(args[0]) != 0'
               message: '"Unknown argument " + args[0] + ". Did you mean 0?"'
           input: [ "defs::scanParameters()" ]
           input_types: [ auto ]
         - argc: 4
+          arg_types: [ defs::dacIndex, int, int, int ]
+
           input: [ "defs::scanParameters(StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]), StringTo<int>(args[2]), StringTo<int>(args[3]))" ]
           input_types: [ auto ]
         - argc: 5
+          arg_types: [ defs::dacIndex, int, int, int, std::string ]
           separate_time_units:
             input: 'args[4]'
             output: [ t, unit ]
@@ -2805,6 +2835,7 @@ udp_dstlist:
       argc: 1
       input: [ getUdpEntry() ]
       input_types: [ auto ]
+      arg_types: [ std::string ]
       function: setDestinationUDPList
       require_det_id: true
       convert_det_id: false
@@ -2856,6 +2887,7 @@ pulse:
           type: defs::xy
           value: defs::xy(StringTo<int>(args[1]), StringTo<int>(args[2]))
       input: [ 'args[0]', c ]
+      arg_types: [int , int, int]
       input_types: [ int, defs::xy ]
       cast_input: [ true, false ]
       output: [ ToString(args) ]
@@ -2872,6 +2904,8 @@ pulsenmove:
           type: defs::xy
           value: defs::xy(StringTo<int>(args[1]), StringTo<int>(args[2]))
       input: [ 'args[0]', c ]
+      arg_types: [ int , int, int ]
+
       input_types: [ int, defs::xy ]
       cast_input: [ true, false ]
       output: [ ToString(args) ]
@@ -2940,6 +2974,7 @@ temp_event:
         - condition: 'StringTo<int>(args[0]) != 0'
           message: '"Unknown argument for temp event: ( " + args[0] + " ). Did you mean 0 to reset event?"'
       require_det_id: true
+      arg_types: [ int ]
       function: resetTemperatureEvent
       output: [ '"cleared"' ]
 
@@ -2965,6 +3000,7 @@ roi:
           type: defs::ROI
           value: defs::ROI(StringTo<int>(args[0]), StringTo<int>(args[1]))
       input: [ t ]
+      arg_types: [ int, int ]
       input_types: [ defs::ROI ]
       output: [ 't' ]
 
@@ -2982,6 +3018,7 @@ inj_ch:
       function: setInjectChannel
       input: [ 'args[0]', 'args[1]', "{det_id}" ]
       input_types: [ int, int , auto ]
+      arg_types: [int, int]
       cast_input: [ true, true, false ]
       output: [ ToString(args) ]
 
@@ -3100,6 +3137,7 @@ gatedelay:
         - argc: 0
           output: [ OutString(t) ]
         - argc: 1
+          arg_types: [ special::time_unit ]
           output: [ "OutString(t, args[0])" ]
     PUT:
       extra_variables:
@@ -3112,13 +3150,18 @@ gatedelay:
       input_types: [ int, time::ns ]
       args:
         - argc: 1
+          arg_types: [ std::string ]
+
           separate_time_units:
             input: 'args[0]'
             output: [ converted_time, unit ]
           output: [ 'args[0]' ]
         - argc: 2
+          arg_types: [ int, special::time_unit ]
+
           convert_to_time:
             input: [ 'args[0]', 'args[1]' ]
+
             output: converted_time
           output: [ 'args[0]', 'args[1]' ]
 
@@ -3194,6 +3237,7 @@ adcvpp:
             - condition: '(args[0] != "mv") && (args[0] != "mV")'
               message: '"Unknown argument " + args[0] + ". Did you mean mV?"'
           input: [ '"1"' ]
+          arg_type: [ special::mv ]
           input_types: [ bool ]
           cast_input: [ true ]
           output: [ OutString(t), '" mV"' ]
@@ -3207,6 +3251,7 @@ adcvpp:
           input_types: [ int, bool ]
           cast_input: [ true, true ]
         - argc: 1
+          arg_types: [ special::mv ]
           exceptions:
             - condition: '(args[1] != "mv") && (args[1] != "mV")'
               message: '"Unknown argument " + args[1] + ". Did you mean mV?"'
@@ -3221,6 +3266,7 @@ diodelay:
   actions:
     PUT:
       argc: 2
+
       require_det_id: true
       function: setDigitalIODelay
       input: [ 'args[0]', 'args[1]' ]
@@ -3280,6 +3326,7 @@ rx_jsonpara:
       args:
         - argc: 1
           input: [ 'args[0]', '""' ]
+          arg_types: [ std::string ]
           input_types: [ std::string, std::string ]
           cast_input: [ false, false ]
           output: [ 'args[0]', '" deleted"' ]
@@ -3300,9 +3347,11 @@ programfpga:
       args:
         - argc: 1
           input: [ 'args[0]', '"0"' ]
+          arg_types: [ std::string ]
           input_types: [ std::string, bool ]
           cast_input: [ false, true ]
         - argc: 2
+          arg_types: [std::string, special::force-delete-normal-file]
           exceptions:
             - condition: 'args[1] != "--force-delete-normal-file"'
               message: '"Could not scan second argument. Did you mean --force-delete-normal-file?"'

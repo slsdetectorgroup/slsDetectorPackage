@@ -12,6 +12,23 @@ AUTOCOMPLETE_PATH = Path(__file__).parent
 DUMP_PATH = AUTOCOMPLETE_PATH / 'dump.json'
 FIXED_PATH = AUTOCOMPLETE_PATH / 'fixed.json'
 
+type_values = {
+    'special::mv': ["mv", "mV"],
+    "special::deg": ["deg"],
+    "special::time_unit": ["s", "ms", "us", "ns"],
+    "special::hard": ["hard"],
+    "special::force-delete-normal-file": ["--force-delete-normal-file"],
+
+}
+def type_info(type_name):
+    if type_name.startswith('defs::') or type_name.startswith('slsDetectorDefs::'):
+        return 'enum'
+    if type_name.startswith('special::'):
+        return 'special'
+
+    return 'base'
+
+
 
 def get_enum(function):
     return function['type']['qualType'].split(' ')[0]
@@ -26,11 +43,11 @@ def get_literal(ifstmt):
         for cxxOperatorCall in expression['inner']:
             if cxxOperatorCall['kind'] == 'CXXOperatorCallExpr':
                 implicitCastExpr = cxxOperatorCall['inner'][2]
-                stringliteral.append(implicitCastExpr['inner'][0]['value'])
+                stringliteral.append(implicitCastExpr['inner'][0]['value'][1:-1])
     else:
         cxxOperatorCall = expression
         implicitCastExpr = cxxOperatorCall['inner'][2]
-        stringliteral = implicitCastExpr['inner'][0]['value']
+        stringliteral = implicitCastExpr['inner'][0]['value'][1:-1]
 
     retstmt = get_object_by_kind(ifstmt['inner'], 'ReturnStmt')
     declrefexpt = get_object_by_kind(retstmt['inner'], 'DeclRefExpr')
@@ -62,7 +79,6 @@ def main():
         if not function['loc']['file'].endswith('ToString.cpp'):
             continue
 
-        print(enum)
         compound_stmt = get_object_by_kind(function['inner'], 'CompoundStmt')
 
         for ifstmt in compound_stmt['inner']:
@@ -71,9 +87,11 @@ def main():
             enum_val, stringliteral = get_literal(ifstmt)
             if enum_val is None:
                 continue
-            print(f'{enum_val} {stringliteral}')
-        print()
 
+            if enum not in type_values or type_values[enum] is None:
+                type_values[enum] = []
+            type_values[enum].append(stringliteral)
+    print(json.dumps(type_values,indent=2))
 
 def fix_json():
     with DUMP_PATH.open('r') as f:
@@ -82,7 +100,7 @@ def fix_json():
             if line.startswith('}'):
                 tmp += line + ',\n'
             else:
-                tmp += line+'\n'
+                tmp += line + '\n'
         tmp = tmp[:-3] + '\n]'
     with FIXED_PATH.open('w') as f:
         f.write(tmp)

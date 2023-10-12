@@ -31,6 +31,7 @@ class CommandParser:
             'output': [],
             'cast_input': [],
             'check_det_id': False,
+            'arg_types': [],
             # 'store_result_in_t': False,  # always true in GET action
         }
         self.default_config = {
@@ -55,10 +56,10 @@ class CommandParser:
                 raise ValueError(f'Argument {arg} does not have the correct number of inputs for convert_to_time')
             if len(arg['convert_to_time']['output']) == "":
                 raise ValueError(f'Argument {arg} does not have the correct number of outputs for convert_to_time')
-        if infer_action:
-            if arg['argc'] in self.argc_set:
-                raise ValueError(f'Argument {arg} has a duplicate argc')
-            self.argc_set.add(arg['argc'])
+        # if infer_action:
+        #     if arg['argc'] in self.argc_set:
+        #         raise ValueError(f'Argument {arg} has a duplicate argc')
+        #     self.argc_set.add(arg['argc'])
 
     def verify_format(self):
         # todo verify detectors
@@ -72,7 +73,7 @@ class CommandParser:
                 continue
             self.argc_set = set()
             if 'infer_action' not in command:
-                command['infer_action'] = False
+                command['infer_action'] = True
             if 'actions' not in command:
                 raise ValueError(f'Command {command_name} does not have any actions')
             for action, action_params in command['actions'].items():
@@ -253,6 +254,8 @@ class CommandParser:
                 if not arg['cast_input']:
                     # if the cast_input is empty, then set it to False
                     arg['cast_input'] = [False] * len(arg['input'])
+                if not arg['arg_types'] and arg['argc'] not in [0, -1]:
+                    arg['arg_types'] = arg['input_types']
 
                 elif len(arg['cast_input']) != len(arg['input']):
                     # if the cast_input is not the same length as the input, then set it to False

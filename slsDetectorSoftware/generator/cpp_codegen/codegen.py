@@ -53,7 +53,8 @@ class CodeGenerator:
                         continue
 
                     fp.write(line)
-
+    def write_check_arg(self):
+        pass
     def write_arg(self, args, action, command_name):
         for arg in args:
             if arg['argc'] != -1:

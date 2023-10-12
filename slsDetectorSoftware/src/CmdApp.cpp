@@ -21,6 +21,9 @@ int main(int argc, char *argv[]){
 #ifdef HELP
     int action = slsDetectorDefs::HELP_ACTION;
 #endif
+#ifdef INFER
+    int action = -1;
+#endif
     std::cout << "Experimental command parsing\n";
 
     sls::CmdParser parser;
@@ -50,7 +53,6 @@ int main(int argc, char *argv[]){
     sls::Caller c(&d);
 
 
-    std::cout << "call with action get\n"<<std::endl;
     try
     {
     c.call(parser, action);

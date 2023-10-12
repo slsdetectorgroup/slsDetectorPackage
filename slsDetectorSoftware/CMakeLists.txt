@@ -113,8 +113,10 @@ if(SLS_USE_TEXTCLIENT)
     set(det_bin_names "detp" 
             "detg" 
             "deta" 
-            "deth")
-    set(det_cmd_name "PUT" "GET" "READOUT" "HELP")
+            "deth"
+            "det"
+            )
+    set(det_cmd_name "PUT" "GET" "READOUT" "HELP" "INFER")
     list(LENGTH det_bin_names len1)
     math(EXPR len2 "${len1} - 1")
 

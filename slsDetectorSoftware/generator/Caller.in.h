@@ -23,6 +23,34 @@ class Caller {
                                    size_t nPutArgs);
     void WrongNumberOfParameters(size_t expected);
 
+      template <typename V> std::string OutStringHex(const V &value) {
+    if (value.equal())
+      return ToStringHex(value.front());
+    return ToStringHex(value);
+  }
+
+  template <typename V> std::string OutStringHex(const V &value, int width) {
+    if (value.equal())
+      return ToStringHex(value.front(), width);
+    return ToStringHex(value, width);
+  }
+
+  template <typename V> std::string OutString(const Result<V> &value) {
+    if (value.equal())
+      return ToString(value.front());
+    return ToString(value);
+  }
+
+  template <typename V> std::string OutString(const V &value) {
+    return ToString(value);
+  }
+
+  template <typename V>  std::string OutString(const V &value, const std::string &unit) {
+    if (value.equal())
+      return ToString(value.front(), unit);
+    return ToString(value, unit);
+  }
+
     std::string list(int action);
     /**
      * very special functions
@@ -99,35 +127,6 @@ class Caller {
         // THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (2)
 
     };
-    // some helper functions to print
-    template <typename V> std::string OutStringHex(const V &value) {
-        if (value.equal())
-            return ToStringHex(value.front());
-        return ToStringHex(value);
-    }
-
-    template <typename V> std::string OutStringHex(const V &value, int width) {
-        if (value.equal())
-            return ToStringHex(value.front(), width);
-        return ToStringHex(value, width);
-    }
-
-    template <typename V> std::string OutString(const Result<V> &value) {
-        if (value.equal())
-            return ToString(value.front());
-        return ToString(value);
-    }
-
-    template <typename V> std::string OutString(const V &value) {
-        return ToString(value);
-    }
-
-    template <typename V>
-    std::string OutString(const V &value, const std::string &unit) {
-        if (value.equal())
-            return ToString(value.front(), unit);
-        return ToString(value, unit);
-    }
 };
 
 } // namespace sls

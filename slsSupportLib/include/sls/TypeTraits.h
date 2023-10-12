@@ -103,12 +103,14 @@ template <typename T> struct is_vector : public std::false_type {};
 template <typename T>
 struct is_vector<std::vector<T>> : public std::true_type {};
 
-template<bool...> struct bool_pack{};
 
-//credit to fluentcpp.com
-template<bool... Bs>
-using conjunction = std::is_same<bool_pack<true,Bs...>, bool_pack<Bs..., true>>;
+
+template<class...> struct Conjunction : std::true_type {};
+template<class B1> struct Conjunction<B1> : B1 {};
+template<class B1, class... Bn>
+struct Conjunction<B1, Bn...>
+    : std::conditional<bool(B1::value), Conjunction<Bn...>, B1>::type {};
+
 template<typename T, typename... Ts>
-using AllSame = std::enable_if_t<std::conjunction_v<std::is_same<T, Ts>...>>;
-
+using AllSame = typename std::enable_if<Conjunction<std::is_same<T, Ts>...>::value>::type;
 } // namespace sls

@@ -861,9 +861,7 @@ void Detector::stopDetector(Positions pos) {
     // idle before stopping will return running (after async start script) when
     // getting status after, which will then be stopped again.
 
-    while (std::set<defs::runStatus>{status.cbegin(), status.cend()} !=
-           std::set<defs::runStatus>{defs::runStatus::IDLE,
-                                     defs::runStatus::STOPPED}) {
+    while (!status.contains_only(defs::runStatus::IDLE, defs::runStatus::STOPPED)){
         if (status.any(defs::runStatus::ERROR)) {
             throw RuntimeError("Could not stop detector. At least one module "
                                "returned error status.");

@@ -2924,17 +2924,12 @@ int softwareTrigger(int block) {
     LOG(logINFO, ("Sending Software Trigger\n"));
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_SOFTWARE_TRIGGER_MSK);
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_SOFTWARE_TRIGGER_MSK);
+    // wait to make sure its out of this state and even 'wait for start frame'
+    usleep(100);
 
 #ifndef VIRTUAL
-    // block till frame is sent out
+    // block till frame sent out & back to wait for trigger (or not busy anymore)
     if (block) {
-        /*
-        enum runStatus s = getRunStatus();
-        while (s != IDLE && s != STOPPED && s != WAITING) {
-            usleep(5000);
-            s = getRunStatus();
-        }
-        */
         uint32_t retval = bus_r(STATUS_REG);
         while ((retval & RUN_BUSY_MSK) && !(retval & WAITING_FOR_TRIGGER_MSK)) {
             usleep(5000);
@@ -2974,9 +2969,7 @@ enum runStatus getRunStatus() {
     // running
     if (retval & RUN_BUSY_MSK) {
         if ((retval &
-             WAITING_FOR_TRIGGER_MSK) || // For user, only waiting for trigger
-                                         // is something they should do... not
-                                         // include waiting for start frame?...
+             WAITING_FOR_TRIGGER_MSK) || 
             (retval & WAITING_FOR_START_FRAME_MSK)) {
             LOG(logINFOBLUE, ("Status: WAITING\n"));
             s = WAITING;

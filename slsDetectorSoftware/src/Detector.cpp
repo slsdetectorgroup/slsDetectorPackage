@@ -869,7 +869,6 @@ void Detector::stopDetector(Positions pos) {
         pimpl->stopDetector(pos);
         status = getDetectorStatus(pos);
         ++retries;
-        std::cout << "retry:" << retries << std::endl;
 
         if (retries == 10)
             throw RuntimeError("Could not stop detector");

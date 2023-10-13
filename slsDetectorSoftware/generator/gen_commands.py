@@ -12,13 +12,29 @@ from autocomplete.autocomplete import type_values
 
 GEN_PATH = Path(__file__).parent
 
+COMMANDS_PATH = GEN_PATH / 'extended_commands.yaml'
+CPP_INPUT_PATH = GEN_PATH / 'Caller.in.cpp'
+HEADER_INPUT_PATH = GEN_PATH / 'Caller.in.h'
+CPP_OUTPUT_PATH = GEN_PATH.parent / 'src' / 'Caller.cpp'
+HEADER_OUTPUT_PATH = GEN_PATH.parent / 'src' / 'Caller.h'
+
+INFER_HEADER_INPUT_PATH = GEN_PATH / 'inferAction.in.h'
+INFER_CPP_INPUT_PATH = GEN_PATH / 'inferAction.in.cpp'
+INFER_HEADER_OUTPUT_PATH = GEN_PATH.parent / 'src' / 'inferAction.h'
+INFER_CPP_OUTPUT_PATH = GEN_PATH.parent / 'src' / 'inferAction.cpp'
+
 
 def generate(
-        COMMANDS_PATH=GEN_PATH / 'extended_commands.yaml',
-        CPP_INPUT_PATH=GEN_PATH / 'Caller.in.cpp',
-        HEADER_INPUT_PATH=GEN_PATH / 'Caller.in.h',
-        CPP_OUTPUT_PATH=GEN_PATH.parent / 'src' / 'Caller.cpp',
-        HEADER_OUTPUT_PATH=GEN_PATH.parent / 'src' / 'Caller.h',
+        commands_path=COMMANDS_PATH,
+        cpp_input_path=CPP_INPUT_PATH,
+        header_input_path=HEADER_INPUT_PATH,
+        cpp_output_path=CPP_OUTPUT_PATH,
+        header_output_path=HEADER_OUTPUT_PATH,
+        infer_header_input_path=INFER_HEADER_INPUT_PATH,
+        infer_cpp_input_path=INFER_CPP_INPUT_PATH,
+        infer_header_output_path=INFER_HEADER_OUTPUT_PATH,
+        infer_cpp_output_path=INFER_CPP_OUTPUT_PATH,
+
 ):
     commands_config = yaml.unsafe_load(COMMANDS_PATH.open('r'))
 
@@ -40,116 +56,11 @@ def generate(
                 codegen.write_line(f'os << R"V0G0N({command["help"]} )V0G0N" << std::endl;')
                 codegen.write_line('return os.str();')
 
-            # infer action based on number of arguments and types
-            type_dist, non_dist = check_infer(commands=commands_config)
-            codegen.write_line('// infer action based on number of arguments')
-
-            with if_block('action == -1'):
-                if (command_name, -1) in non_dist:
-                    codegen.write_line(f'throw RuntimeError("Cannot infer action for command: {command_name}");')
-                elif not command['infer_action']:
-                    codegen.write_line('throw RuntimeError("infer_action is disabled");')
-                else:
-                    first = True
-                    checked_argcs = set()
-
-                    for action, action_params in command['actions'].items():
-                        for arg in action_params['args']:
-                            if arg['argc'] in checked_argcs:
-                                continue
-                            checked_argcs.add(arg['argc'])
-
-                            with if_block(f'args.size() == {arg["argc"]}', elseif=not first):
-                                # check if this argc is not distinguishable
-                                if (command_name, arg["argc"]) in non_dist:
-                                    codegen.write_line(
-                                        f'throw RuntimeError("Cannot infer action for command: {command_name}.");')
-
-                                # check if this argc is only distinguishable by type
-                                elif (command_name, arg["argc"]) in type_dist:
-                                    get_arg_types, put_arg_types = type_dist[(command_name, arg["argc"])]
-                                    for index, (get_type, put_type) in enumerate(zip(get_arg_types, put_arg_types)):
-                                        if get_type != put_type:
-                                            break
-                                    # check if we are able to convert to get_type => action is get
-                                    # else check if we are able to convert to put_type => action is put
-                                    # else throw error
-
-                                    codegen.write_line(f'bool can_convert_to_get = true;')
-                                    if type_info(get_type) == 'special':
-                                        codegen.write_line(f'can_convert_to_get = false;')
-
-                                        values = type_values[get_type]
-                                        conditions = [f"args[{index}] == \"{value}\"" for value in values]
-                                        condition = " || ".join(conditions)
-                                        with if_block(condition):
-                                            codegen.write_line(f'action = {codegen.actions_dict["GET"]};')
-                                    elif get_type == 'std::string':
-                                        # if type is std::string we can always convert to it
-                                        pass
-                                    elif type_info(get_type) == 'enum' or type_info(get_type) == 'base':
-                                        codegen.write_line(f'try {{')
-                                        codegen.write_line(f'StringTo<{get_type}>(args[{index}]);')
-                                        codegen.write_line(f'}} catch (...) {{')
-                                        codegen.write_line(f'can_convert_to_get = false;')
-                                        codegen.write_line(f'}}')
-
-                                    codegen.write_line(f'bool can_convert_to_put = true;')
-                                    if type_info(put_type) == 'special':
-                                        codegen.write_line(f'can_convert_to_put = false;')
-
-                                        values = type_values[put_type]
-                                        conditions = [f"args[{index}] == \"{value}\"" for value in values]
-                                        condition = " || ".join(conditions)
-                                        with if_block(condition):
-                                            codegen.write_line(f'action = {codegen.actions_dict["PUT"]};')
-
-
-                                    elif put_type == 'std::string':
-                                        # if type is std::string we can always convert to it
-                                        pass
-                                    elif type_info(get_type) == 'enum' or type_info(get_type) == 'base':
-                                        codegen.write_line(f'try {{')
-                                        codegen.write_line(f'StringTo<{put_type}>(args[{index}]);')
-                                        codegen.write_line(f'}} catch (...) {{')
-                                        codegen.write_line(f'can_convert_to_put = false;')
-                                        codegen.write_line(f'}}')
-
-                                    # Todo: fix duplicated code
-                                    if get_type == 'std::string':
-                                        with if_block('can_convert_to_put'):
-                                            codegen.write_line(f'action = {codegen.actions_dict["PUT"]};')
-                                        with if_block('can_convert_to_get', elseif=True):
-                                            codegen.write_line(f'action = {codegen.actions_dict["GET"]};')
-                                    else:
-                                        with if_block('can_convert_to_get'):
-                                            codegen.write_line(f'action = {codegen.actions_dict["GET"]};')
-                                        with if_block('can_convert_to_put', elseif=True):
-                                            codegen.write_line(f'action = {codegen.actions_dict["PUT"]};')
-                                    with else_block():
-                                        codegen.write_line(f'throw RuntimeError("Could not infer action");')
-                                else:
-                                    codegen.write_line(f'action = {codegen.actions_dict[action]};')
-
-
-                            first = False
-
-                    with else_block():
-                        codegen.write_line('throw RuntimeError("Could not infer action: Wrong number of arguments");')
-
-            with if_block(f'action == {codegen.actions_dict["PUT"]}'):
-                codegen.write_line(f'std::cout << "inferred action: PUT" << std::endl;')
-            with if_block(f'action == {codegen.actions_dict["GET"]}', elseif=True):
-                codegen.write_line(f'std::cout << "inferred action: GET" << std::endl;')
-            with else_block():
-                codegen.write_line(f'throw RuntimeError("Could not infer action");')
-
             # check if action and arguments are valid
 
             codegen.write_line('// check if action and arguments are valid')
             first = True
             for action, action_params in command['actions'].items():
-
 
                 with if_block(f'action == {codegen.actions_dict[action]}', elseif=not first):
 
@@ -248,6 +159,17 @@ def generate(
                           commands_config.items()])
     print('[X] header code generated')
 
+    codegen.write_infer_header(INFER_HEADER_INPUT_PATH, INFER_HEADER_OUTPUT_PATH,
+                         [(command['command_name'], command['function_alias']) for command_name, command in
+                          commands_config.items()])
+    print('[X] infer header code generated')
+    codegen.open(INFER_CPP_OUTPUT_PATH)
+
+    codegen.write_infer_cpp(INFER_CPP_INPUT_PATH, INFER_CPP_OUTPUT_PATH,commands_config, non_dist, type_dist)
+    codegen.close()
+    print('[X] infer cpp code generated')
+
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -260,6 +182,11 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--check', action='store_true', default=False, dest='check',
                         help='check missing commands')
     cli_args = parser.parse_args()
+
+    commands_config = yaml.unsafe_load(COMMANDS_PATH.open('r'))
+
+    # infer action based on number of arguments and types
+    type_dist, non_dist = check_infer(commands=commands_config)
 
     if cli_args.check:
         from commands_parser.commands_parser import command_parser
@@ -274,11 +201,9 @@ if __name__ == '__main__':
             print('[!] glist generation failed and glist not found')
             exit(1)
 
-        commands_path = GEN_PATH / 'extended_commands.yaml'
-        if not commands_path.exists():
+        if not COMMANDS_PATH.exists():
             print('[!] extended_commands.yaml not found')
             exit(1)
-        commands_config = yaml.unsafe_load(commands_path.open('r'))
         detglist = set(command['command_name'] for __, command in commands_config.items())
         detglist.add('free')
         detglist.add('list')
@@ -349,6 +274,7 @@ if __name__ == '__main__':
     generate()
 
     if cli_args.format:
-        os.system(f'clang-format -i  --style="{{Standard: C++11}}" {GEN_PATH.parent.absolute() / "src" / "Caller.cpp"}')
-        os.system(f'clang-format -i  --style="{{Standard: C++11}}" {GEN_PATH.parent.absolute() / "src" / "Caller.h"}')
+        files = [CPP_OUTPUT_PATH, HEADER_OUTPUT_PATH, INFER_HEADER_OUTPUT_PATH, INFER_CPP_OUTPUT_PATH]
+        for file in files:
+            os.system(f'clang-format -i  --style="{{Standard: C++11}}" {file.absolute()}')
         print('[X] code formatted')

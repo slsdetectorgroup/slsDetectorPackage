@@ -2,6 +2,7 @@
 #include "CmdParser.h"
 #include "Caller.h"
 #include  "sls/logger.h"
+#include "inferAction.h"
 
 #include <iostream>
 int main(int argc, char *argv[]){
@@ -51,10 +52,17 @@ int main(int argc, char *argv[]){
     }
     sls::Detector d(parser.multi_id());
     sls::Caller c(&d);
+    sls::InferAction inferAction = sls::InferAction();
 
 
     try
     {
+    if (action==-1){
+        action = inferAction.infer(parser);
+        std::string actionString= (action==slsDetectorDefs::GET_ACTION) ? "GET" : "PUT";
+        std::cout << "inferred action: " << actionString << std::endl;
+    }
+
     c.call(parser, action);
     }
     catch(sls::RuntimeError& e){}

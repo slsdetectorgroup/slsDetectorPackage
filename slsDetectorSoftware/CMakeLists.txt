@@ -10,6 +10,7 @@ set(SOURCES
     src/CtbConfig.cpp
     src/Caller.cpp
     src/CallerSpecial.cpp
+    src/inferAction.cpp
 )
 
 add_library(slsDetectorObject OBJECT

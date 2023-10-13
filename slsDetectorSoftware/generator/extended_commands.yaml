@@ -165,7 +165,7 @@ adcindex:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         function: getAdcIndex
@@ -230,7 +230,7 @@ adclist:
         cast_input: []
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         function: getAdcNames
@@ -248,7 +248,7 @@ adclist:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
@@ -279,7 +279,7 @@ adcname:
         - true
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         function: getAdcName
@@ -304,7 +304,7 @@ adcname:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         function: setAdcName
@@ -1530,7 +1530,7 @@ dac:
             && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: '"Dac indices can only be used for chip test board. Use daclist
             to get list of dac names for current detector."'
-        - condition: args[1] != 'mv' && args[1] != 'mV'
+        - condition: args[1] != "mv" && args[1] != "mV"
           message: '"Unknown argument " + args[1] + ". Did you mean mV?"'
         extra_variables:
         - name: dacIndex
@@ -1638,7 +1638,7 @@ dacindex:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         extra_variables:
@@ -1668,7 +1668,7 @@ daclist:
         cast_input: []
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         function: getDacNames
@@ -1686,7 +1686,7 @@ daclist:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
@@ -1718,7 +1718,7 @@ dacname:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         extra_variables:
@@ -1747,7 +1747,7 @@ dacname:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         extra_variables:
@@ -7182,7 +7182,7 @@ readoutspeed:
         cast_input: []
         check_det_id: false
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: det->getDetectorType().squash() == defs::CHIPTESTBOARD
           message: '"ReadoutSpeed not implemented. Did you mean runclk?"'
         function: getReadoutSpeed
@@ -8872,7 +8872,7 @@ signalindex:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         function: getSignalIndex
@@ -8898,7 +8898,7 @@ signallist:
         cast_input: []
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         function: getSignalNames
@@ -8916,7 +8916,7 @@ signallist:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
@@ -8947,7 +8947,7 @@ signalname:
         - true
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         function: getSignalName
@@ -8972,7 +8972,7 @@ signalname:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         function: setSignalName
@@ -9003,7 +9003,7 @@ slowadcindex:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         extra_variables:
@@ -9033,7 +9033,7 @@ slowadclist:
         cast_input: []
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         function: getSlowADCNames
@@ -9051,7 +9051,7 @@ slowadclist:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
@@ -9082,7 +9082,7 @@ slowadcname:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         extra_variables:
@@ -9111,7 +9111,7 @@ slowadcname:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         extra_variables:
@@ -12262,7 +12262,7 @@ voltageindex:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         extra_variables:
@@ -12292,7 +12292,7 @@ voltagelist:
         cast_input: []
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         function: getVoltageNames
@@ -12310,7 +12310,7 @@ voltagelist:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
@@ -12341,7 +12341,7 @@ voltagename:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         extra_variables:
@@ -12370,7 +12370,7 @@ voltagename:
         - false
         check_det_id: true
         convert_det_id: true
-        exception:
+        exceptions:
         - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: cmd + " only allowed for CTB."
         extra_variables:

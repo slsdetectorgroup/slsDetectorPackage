@@ -53,8 +53,59 @@ class CodeGenerator:
                         continue
 
                     fp.write(line)
+
+    def write_infer_header(self, in_path, out_path, commands):
+        """Write the header file for the inferAction.h file"""
+        with out_path.open('w+') as fp:
+            with in_path.open('r') as fp2:
+                for line in fp2:
+                    if "THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (1) - DO NOT REMOVE" in line:
+                        for command in commands:
+                            fp.write(f'int {command[1]}();\n')
+                        continue
+                    if "THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (2) - DO NOT REMOVE" in line:
+                        map_string = ''
+                        for command in commands:
+                            map_string += f'{{"{command[0]}", &InferAction::{command[1]}}},'
+                        fp.write(map_string[:-1] + '\n')
+                        continue
+                    fp.write(line)
+
+    def write_infer_cpp(self, in_path, out_path, commands, non_dist, type_dist):
+        """Write the source file for the inferAction.cpp file"""
+        with in_path.open('r') as fp2:
+            for line in fp2:
+                if "THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (1) - DO NOT REMOVE" in line:
+                    for command_name, command in commands.items():
+                        with function('int', f"InferAction::{command['function_alias']}", []) as f:
+                            if (command_name, -1) in non_dist:
+                                self.write_line(
+                                    f'throw RuntimeError("det is disabled for command: {command_name}. Use detg or detp");')
+                            elif not command['infer_action']:
+                                self.write_line('throw RuntimeError("infer_action is disabled");')
+                            else:
+                                checked_argcs = set()
+                                for action, action_params in command['actions'].items():
+                                    for arg in action_params['args']:
+                                        if arg['argc'] in checked_argcs:
+                                            continue
+                                        checked_argcs.add(arg['argc'])
+                                        with if_block(f'args.size() == {arg["argc"]}'):
+                                            # check if this argc is not distinguishable
+                                            if (command_name, arg["argc"]) in non_dist | type_dist:
+                                                self.write_line(
+                                                    f'throw RuntimeError("det is disabled for command: {command_name} with number of arguments {arg["argc"]}. Use detg or detp");')
+                                            else:
+                                                self.write_line(f'return {self.actions_dict[action]};')
+                                with else_block():
+                                    self.write_line(
+                                        'throw RuntimeError("Could not infer action: Wrong number of arguments");')
+                    continue
+                self.write_line(line)
+
     def write_check_arg(self):
         pass
+
     def write_arg(self, args, action, command_name):
         for arg in args:
             if arg['argc'] != -1:
@@ -83,8 +134,8 @@ class CodeGenerator:
                 self.write_line(f'auto {arg["convert_to_time"]["output"]} = '
                                 f'StringTo < time::ns > ({", ".join(arg["convert_to_time"]["input"])});')
             input_arguments = []
-            if 'exception' in arg:
-                for exception in arg['exception']:
+            if 'exceptions' in arg:
+                for exception in arg['exceptions']:
                     self.write_line(
                         f'if ({exception["condition"]}) {{ throw RuntimeError({exception["message"]}); }}')
             if 'check_det_id' in arg and arg['check_det_id']:

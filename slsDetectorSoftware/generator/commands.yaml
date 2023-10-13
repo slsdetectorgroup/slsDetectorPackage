@@ -310,7 +310,7 @@ CTB_SINGLE_DACNAME:
           value: 0
 
       check_det_id: true
-      exception:
+      exceptions:
         - condition: 'det->getDetectorType().squash() != defs::CHIPTESTBOARD'
           message: 'cmd + " only allowed for CTB."'
       argc: 1
@@ -325,7 +325,7 @@ CTB_SINGLE_DACNAME:
           value: 0
 
       check_det_id: true
-      exception:
+      exceptions:
         - condition: 'det->getDetectorType().squash() != defs::CHIPTESTBOARD'
           message: 'cmd + " only allowed for CTB."'
       argc: 2
@@ -345,7 +345,7 @@ CTB_GET_DACINDEX:
           value: 0
 
       check_det_id: true
-      exception:
+      exceptions:
         - condition: 'det->getDetectorType().squash() != defs::CHIPTESTBOARD'
           message: 'cmd + " only allowed for CTB."'
       argc: 1
@@ -359,7 +359,7 @@ CTB_SINGLE_NAME:
   actions:
     GET:
       check_det_id: true
-      exception:
+      exceptions:
         - condition: 'det->getDetectorType().squash() != defs::CHIPTESTBOARD'
           message: 'cmd + " only allowed for CTB."'
       argc: 1
@@ -369,7 +369,7 @@ CTB_SINGLE_NAME:
       output: [ 'args[0]',"' '", 't' ]
     PUT:
       check_det_id: true
-      exception:
+      exceptions:
         - condition: 'det->getDetectorType().squash() != defs::CHIPTESTBOARD'
           message: 'cmd + " only allowed for CTB."'
       argc: 2
@@ -384,7 +384,7 @@ CTB_GET_INDEX:
   actions:
     GET:
       check_det_id: true
-      exception:
+      exceptions:
         - condition: 'det->getDetectorType().squash() != defs::CHIPTESTBOARD'
           message: 'cmd + " only allowed for CTB."'
       argc: 1
@@ -399,14 +399,14 @@ CTB_NAMED_LIST:
   actions:
     GET:
       check_det_id: true
-      exception:
+      exceptions:
         - condition: 'cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD'
           message: 'cmd + " only allowed for CTB."'
       argc: 0
       output: [ 'ToString(t)' ]
     PUT:
       check_det_id: true
-      exception:
+      exceptions:
         - condition: 'cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD'
           message: 'cmd + " only allowed for CTB."'
         - condition: 'cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD'
@@ -2343,7 +2343,7 @@ readoutspeed:
   help: "\n\t[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t[Eiger][Jungfrau][Moench] Readout speed of chip.\n\t[Eiger][Moench] Default speed is full_speed.\n\t[Jungfrau] Default speed is half_speed. full_speed option only available from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] Readout speed of chip in MHz. Default is 108."
   actions:
     GET:
-      exception:
+      exceptions:
         - condition: 'det->getDetectorType().squash() == defs::CHIPTESTBOARD'
           message: '"ReadoutSpeed not implemented. Did you mean runclk?"'
       argc: 0
@@ -2647,7 +2647,7 @@ dac:
           exceptions:
             - condition: "args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD"
               message: '"Dac indices can only be used for chip test board. Use daclist to get list of dac names for current detector."'
-            - condition: "args[1] != 'mv' && args[1] != 'mV'"
+            - condition: 'args[1] != "mv" && args[1] != "mV"'
               message: '"Unknown argument " + args[1] + ". Did you mean mV?"'
           input: [ dacIndex, '"1"' ]
           arg_types: [defs::dacIndex, special::mv]

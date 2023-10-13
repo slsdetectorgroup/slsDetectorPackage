@@ -2966,8 +2966,14 @@ enum runStatus getRunStatus() {
     u_int32_t retval = bus_r(STATUS_REG);
     LOG(logINFO, ("Status Register: %08x\n", retval));
 
+    // error
+    if (retval & INTERNAL_STOP_MSK) {
+        LOG(logINFOBLUE, ("Status: ERROR\n"));
+        s = ERROR;
+    }
+    
     // running
-    if (retval & RUN_BUSY_MSK) {
+    else if (retval & RUN_BUSY_MSK) {
         if ((retval &
              WAITING_FOR_TRIGGER_MSK) || 
             (retval & WAITING_FOR_START_FRAME_MSK)) {

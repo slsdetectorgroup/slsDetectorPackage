@@ -18,6 +18,7 @@
 
 #include <chrono>
 #include <fstream>
+#include <set>
 #include <thread>
 
 namespace sls {
@@ -848,18 +849,25 @@ void Detector::startDetectorReadout() {
 
 void Detector::stopDetector(Positions pos) {
 
-    // stop and check status X times
     int retries{0};
-    // avoid default construction of runStatus::IDLE on squash
-    auto status = getDetectorStatus().squash(defs::runStatus::RUNNING);
-    while (status != defs::runStatus::IDLE &&
-           status != defs::runStatus::STOPPED) {
-        if (status == defs::runStatus::ERROR) {
-            throw RuntimeError(
-                "Could not stop detector. Returned error status.");
+    auto status = getDetectorStatus(pos);
+
+    // jf sync fix: status [stopped or idle] = [stopped]
+    // sync issue: (master idle sometimes, slaves stopped)
+
+    // eiger fix: stop multiple times from multi client till all modules stopped
+    // issue: asynchronous start and stop scripts with a module being started
+    // (stop before) and waiting for the other to be done. So a module that was
+    // idle before stopping will return running (after async start script) when
+    // getting status after, which will then be stopped again.
+
+    while (!status.contains_only(defs::runStatus::IDLE, defs::runStatus::STOPPED)){
+        if (status.any(defs::runStatus::ERROR)) {
+            throw RuntimeError("Could not stop detector. At least one module "
+                               "returned error status.");
         }
         pimpl->stopDetector(pos);
-        status = getDetectorStatus().squash(defs::runStatus::RUNNING);
+        status = getDetectorStatus(pos);
         ++retries;
 
         if (retries == 10)
@@ -878,7 +886,7 @@ void Detector::stopDetector(Positions pos) {
             for (auto it : res) {
                 maxVal = std::max(maxVal, it);
             }
-            setNextFrameNumber(maxVal + 1);
+            setNextFrameNumber(maxVal + 1, pos);
         }
     } break;
     default:

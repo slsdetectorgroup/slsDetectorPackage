@@ -196,4 +196,24 @@ TEST_CASE("String conversions") {
             "[{one: 1}, {one: 1, three: 3, two: 2}, {one: 1}]");
 }
 
+TEST_CASE("Any element is equal"){
+    Result<int> r{1,2,3,4,5};
+    REQUIRE(r.any(3));
+    REQUIRE_FALSE(r.any(9));
+}
+
+TEST_CASE("Result contains only the specified elements"){
+    Result<int> r{1,1,1};
+    REQUIRE(r.contains_only(1));
+    REQUIRE(r.contains_only(1,1));
+}
+
+TEST_CASE("Only with multiple values"){
+    Result<int> r{1,1,2,1,2,1,1};
+    REQUIRE_FALSE(r.contains_only(1));
+    REQUIRE_FALSE(r.contains_only(2));
+    REQUIRE(r.contains_only(1,2));
+    REQUIRE(r.contains_only(2,1));
+}
+
 } // namespace sls

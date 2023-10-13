@@ -4662,10 +4662,10 @@ std::string Caller::fmaster(int action) {
 
     if (args.size() == 1) {
       try {
-        StringTo<int>(args[0]);
+        StringTo<bool>(args[0]);
       }
       catch (...) {
-        throw RuntimeError("Could not convert argument 0 to int");
+        throw RuntimeError("Could not convert argument 0 to bool");
       }
     }
 
@@ -4691,7 +4691,7 @@ std::string Caller::fmaster(int action) {
       if (det_id != -1) {
         throw RuntimeError("Cannot execute fmaster at module level");
       }
-      auto arg0 = StringTo<int>(args[0]);
+      auto arg0 = StringTo<bool>(args[0]);
       det->setMasterFileWrite(arg0);
       os << args.front() << '\n';
     }
@@ -5191,10 +5191,10 @@ std::string Caller::gappixels(int action) {
 
     if (args.size() == 1) {
       try {
-        StringTo<int>(args[0]);
+        StringTo<bool>(args[0]);
       }
       catch (...) {
-        throw RuntimeError("Could not convert argument 0 to int");
+        throw RuntimeError("Could not convert argument 0 to bool");
       }
     }
 
@@ -5220,7 +5220,7 @@ std::string Caller::gappixels(int action) {
       if (det_id != -1) {
         throw RuntimeError("Cannot execute gappixels at module level");
       }
-      auto arg0 = StringTo<int>(args[0]);
+      auto arg0 = StringTo<bool>(args[0]);
       det->setGapPixelsinCallback(arg0);
       os << args.front() << '\n';
     }
@@ -6090,10 +6090,10 @@ std::string Caller::initialchecks(int action) {
 
     if (args.size() == 1) {
       try {
-        StringTo<int>(args[0]);
+        StringTo<bool>(args[0]);
       }
       catch (...) {
-        throw RuntimeError("Could not convert argument 0 to int");
+        throw RuntimeError("Could not convert argument 0 to bool");
       }
     }
 
@@ -6119,7 +6119,7 @@ std::string Caller::initialchecks(int action) {
       if (det_id != -1) {
         throw RuntimeError("Cannot execute initialchecks at module level");
       }
-      auto arg0 = StringTo<int>(args[0]);
+      auto arg0 = StringTo<bool>(args[0]);
       det->setInitialChecks(arg0);
       os << args.front() << '\n';
     }
@@ -9156,10 +9156,10 @@ std::string Caller::quad(int action) {
 
     if (args.size() == 1) {
       try {
-        StringTo<int>(args[0]);
+        StringTo<bool>(args[0]);
       }
       catch (...) {
-        throw RuntimeError("Could not convert argument 0 to int");
+        throw RuntimeError("Could not convert argument 0 to bool");
       }
     }
 
@@ -9182,7 +9182,7 @@ std::string Caller::quad(int action) {
       if (det_id != -1) {
         throw RuntimeError("Cannot execute quad at module level");
       }
-      auto arg0 = StringTo<int>(args[0]);
+      auto arg0 = StringTo<bool>(args[0]);
       det->setQuad(arg0);
       os << args.front() << '\n';
     }
@@ -12757,10 +12757,10 @@ std::string Caller::sync(int action) {
 
     if (args.size() == 1) {
       try {
-        StringTo<int>(args[0]);
+        StringTo<bool>(args[0]);
       }
       catch (...) {
-        throw RuntimeError("Could not convert argument 0 to int");
+        throw RuntimeError("Could not convert argument 0 to bool");
       }
     }
 
@@ -12783,7 +12783,7 @@ std::string Caller::sync(int action) {
       if (det_id != -1) {
         throw RuntimeError("Cannot execute sync at module level");
       }
-      auto arg0 = StringTo<int>(args[0]);
+      auto arg0 = StringTo<bool>(args[0]);
       det->setSynchronization(arg0);
       os << args.front() << '\n';
     }

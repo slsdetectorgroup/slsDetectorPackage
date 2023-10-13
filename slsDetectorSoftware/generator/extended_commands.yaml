@@ -3845,7 +3845,7 @@ fmaster:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: false
@@ -4223,7 +4223,7 @@ gappixels:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -4233,7 +4233,7 @@ gappixels:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: false
@@ -5010,7 +5010,7 @@ initialchecks:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -5020,7 +5020,7 @@ initialchecks:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: false
@@ -7409,7 +7409,7 @@ quad:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -7419,7 +7419,7 @@ quad:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: false
@@ -10128,7 +10128,7 @@ sync:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: false

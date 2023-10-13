@@ -1171,7 +1171,7 @@ vchip_cs:
       input: [ 'defs::VB_CS', 'args[0]', 'args[1]' ]
 
 
-################# INTEGER_COMMAND_NOID #######################
+################# INTEGER_IND_COMMAND #######################
 v_limit:
   inherit_actions: INTEGER_IND_COMMAND
   help: "[n_value]\n\t[Ctb] Soft limit for power supplies (ctb only) and DACS in mV."
@@ -1254,6 +1254,7 @@ fmaster:
       function: getMasterFileWrite
     PUT:
       function: setMasterFileWrite
+      input_types: [ bool ]
 
 
 ################# INTEGER_COMMAND_SET_NOID_GET_ID ############
@@ -1265,6 +1266,8 @@ sync:
       function: getSynchronization
     PUT:
       function: setSynchronization
+      input_types: [ bool ]
+
 
 frames:
   inherit_actions: INTEGER_COMMAND_SET_NOID_GET_ID
@@ -2335,7 +2338,7 @@ gappixels:
       check_det_id: true
       function: setGapPixelsinCallback
       input: [ 'args[0]' ]
-      input_types: [ int ]
+      input_types: [ bool ]
       cast_input: [ true ]
       output: [ args.front() ]
 
@@ -2936,7 +2939,7 @@ quad:
       check_det_id: true
       function: setQuad
       input: [ 'args[0]' ]
-      input_types: [ int ]
+      input_types: [ bool ]
       cast_input: [ true ]
       output: [ args.front() ]
 
@@ -3491,7 +3494,7 @@ initialchecks:
       check_det_id: true
       function: setInitialChecks
       input: [ 'args[0]' ]
-      input_types: [ int ]
+      input_types: [ bool ]
       cast_input: [ true ]
       output: [ args.front() ]
 

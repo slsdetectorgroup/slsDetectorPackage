@@ -875,7 +875,7 @@ void Detector::startDetectorReadout() {
 void Detector::stopDetector(Positions pos) {
 
     int retries{0};
-    auto status = getDetectorStatus();
+    auto status = getDetectorStatus(pos);
 
     // jf sync fix: status [stopped or idle] = [stopped]
     // sync issue: (master idle sometimes, slaves stopped)
@@ -892,8 +892,9 @@ void Detector::stopDetector(Positions pos) {
                                "returned error status.");
         }
         pimpl->stopDetector(pos);
-        status = getDetectorStatus();
+        status = getDetectorStatus(pos);
         ++retries;
+        std::cout << "retry:" << retries << std::endl;
 
         if (retries == 10)
             throw RuntimeError("Could not stop detector");
@@ -911,7 +912,7 @@ void Detector::stopDetector(Positions pos) {
             for (auto it : res) {
                 maxVal = std::max(maxVal, it);
             }
-            setNextFrameNumber(maxVal + 1);
+            setNextFrameNumber(maxVal + 1, pos);
         }
     } break;
     default:

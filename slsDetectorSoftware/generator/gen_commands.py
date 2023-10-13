@@ -172,7 +172,7 @@ def generate(
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='generate cpp code for commands from the extended_commands.yaml file',
+        description='generate c++ code for cli commands from the commands.yaml file',
     )
     parser.add_argument('-f', '--format', action='store_true', default=False, dest='format',
                         help='format header and cpp file using clang-format')
@@ -180,8 +180,9 @@ if __name__ == '__main__':
                         help='parse the commands.yaml file into extended_commands.yaml')
     parser.add_argument('-c', '--check', action='store_true', default=False, dest='check',
                         help='check missing commands')
-    parser.add_argument('-g', '--generate', action='store_true', default=False, dest='generate',)
-    parser.add_argument('-a', '--autocomplete', action='store_true', default=False, dest='autocomplete')
+    parser.add_argument('-g', '--generate', action='store_true', default=False, dest='generate', help='generate code')
+    parser.add_argument('-a', '--autocomplete', action='store_true', default=False, dest='autocomplete',
+                        help='print bash autocomplete values')
     cli_args = parser.parse_args()
 
     if cli_args.autocomplete:

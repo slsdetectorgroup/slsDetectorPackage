@@ -51,34 +51,8 @@ public:
   }
 
   std::string list(int action);
-  /**
-   * very special functions
-   */
-  std::string Acquire(int action);
-  std::string Versions(int action);
-  std::string Threshold(int action);
-  std::string TrimEnergies(int action);
-  std::string BadChannels(int action);
-  std::string CurrentSource(int action);
-  std::string DacValues(int action);
-  std::string UDPSourceIP(int action);
-  std::string UDPSourceIP2(int action);
-  std::string UDPDestinationIP(int action);
-  std::string UDPDestinationIP2(int action);
-  std::string ReceiverHostname(int action);
-  std::string Rx_ROI(int action);
-  std::string RateCorrection(int action);
-  std::string BurstMode(int action);
-  std::string VetoStreaming(int action);
-  std::string Counters(int action);
-  std::string GainCaps(int action);
-  std::string Samples(int action);
-  std::string SlowADC(int action);
-  std::string ReceiverDbitList(int action);
-  std::string AdditionalJsonHeader(int action);
-  std::string ExecuteCommand(int action);
-  std::string Hostname(int action);
 
+  std::string acquire(int action);
   std::string activate(int action);
   std::string adcclk(int action);
   std::string adcenable(int action);
@@ -94,7 +68,9 @@ public:
   std::string apulse(int action);
   std::string asamples(int action);
   std::string autocompdisable(int action);
+  std::string badchannels(int action);
   std::string blockingtrigger(int action);
+  std::string burstmode(int action);
   std::string burstperiod(int action);
   std::string bursts(int action);
   std::string burstsl(int action);
@@ -112,10 +88,13 @@ public:
   std::string compdisabletime(int action);
   std::string confadc(int action);
   std::string config(int action);
+  std::string counters(int action);
+  std::string currentsource(int action);
   std::string dac(int action);
   std::string dacindex(int action);
   std::string daclist(int action);
   std::string dacname(int action);
+  std::string dacvalues(int action);
   std::string datastream(int action);
   std::string dbitclk(int action);
   std::string dbitphase(int action);
@@ -131,6 +110,7 @@ public:
   std::string dr(int action);
   std::string drlist(int action);
   std::string dsamples(int action);
+  std::string execcommand(int action);
   std::string exptime(int action);
   std::string exptime1(int action);
   std::string exptime2(int action);
@@ -157,6 +137,7 @@ public:
   std::string framesl(int action);
   std::string frametime(int action);
   std::string fwrite(int action);
+  std::string gaincaps(int action);
   std::string gainmode(int action);
   std::string gappixels(int action);
   std::string gatedelay(int action);
@@ -167,6 +148,7 @@ public:
   std::string getbit(int action);
   std::string hardwareversion(int action);
   std::string highvoltage(int action);
+  std::string hostname(int action);
   std::string im_a(int action);
   std::string im_b(int action);
   std::string im_c(int action);
@@ -231,6 +213,7 @@ public:
   std::string pulsenmove(int action);
   std::string pumpprobe(int action);
   std::string quad(int action);
+  std::string ratecorr(int action);
   std::string readnrows(int action);
   std::string readout(int action);
   std::string readoutspeed(int action);
@@ -246,12 +229,15 @@ public:
   std::string runtime(int action);
   std::string rx_arping(int action);
   std::string rx_clearroi(int action);
+  std::string rx_dbitlist(int action);
   std::string rx_dbitoffset(int action);
   std::string rx_discardpolicy(int action);
   std::string rx_fifodepth(int action);
   std::string rx_frameindex(int action);
   std::string rx_framescaught(int action);
   std::string rx_framesperfile(int action);
+  std::string rx_hostname(int action);
+  std::string rx_jsonaddheader(int action);
   std::string rx_jsonpara(int action);
   std::string rx_lastclient(int action);
   std::string rx_lock(int action);
@@ -259,6 +245,7 @@ public:
   std::string rx_padding(int action);
   std::string rx_printconfig(int action);
   std::string rx_realudpsocksize(int action);
+  std::string rx_roi(int action);
   std::string rx_silent(int action);
   std::string rx_start(int action);
   std::string rx_status(int action);
@@ -273,6 +260,7 @@ public:
   std::string rx_zmqport(int action);
   std::string rx_zmqstartfnum(int action);
   std::string rx_zmqstream(int action);
+  std::string samples(int action);
   std::string savepattern(int action);
   std::string scan(int action);
   std::string scanerrmsg(int action);
@@ -285,6 +273,7 @@ public:
   std::string signalindex(int action);
   std::string signallist(int action);
   std::string signalname(int action);
+  std::string slowadc(int action);
   std::string slowadcindex(int action);
   std::string slowadclist(int action);
   std::string slowadcname(int action);
@@ -315,6 +304,7 @@ public:
   std::string templist(int action);
   std::string tempvalues(int action);
   std::string tengiga(int action);
+  std::string threshold(int action);
   std::string timing(int action);
   std::string timinglist(int action);
   std::string timingsource(int action);
@@ -324,6 +314,7 @@ public:
   std::string triggers(int action);
   std::string triggersl(int action);
   std::string trimbits(int action);
+  std::string trimen(int action);
   std::string trimval(int action);
   std::string tsamples(int action);
   std::string txdelay(int action);
@@ -332,6 +323,8 @@ public:
   std::string txdelay_right(int action);
   std::string type(int action);
   std::string udp_cleardst(int action);
+  std::string udp_dstip(int action);
+  std::string udp_dstip2(int action);
   std::string udp_dstlist(int action);
   std::string udp_dstmac(int action);
   std::string udp_dstmac2(int action);
@@ -340,6 +333,8 @@ public:
   std::string udp_firstdst(int action);
   std::string udp_numdst(int action);
   std::string udp_reconfigure(int action);
+  std::string udp_srcip(int action);
+  std::string udp_srcip2(int action);
   std::string udp_srcmac(int action);
   std::string udp_srcmac2(int action);
   std::string udp_validate(int action);
@@ -361,11 +356,13 @@ public:
   std::string vchip_opa_1st(int action);
   std::string vchip_opa_fd(int action);
   std::string vchip_ref_comp_fe(int action);
+  std::string versions(int action);
   std::string veto(int action);
   std::string vetoalg(int action);
   std::string vetofile(int action);
   std::string vetophoton(int action);
   std::string vetoref(int action);
+  std::string vetostream(int action);
   std::string virtualFunction(int action);
   std::string vm_a(int action);
   std::string vm_b(int action);
@@ -391,35 +388,7 @@ private:
   Detector *ptr; // pointer to the detector that executes the command
 
   FunctionMap functions{ { "list", &Caller::list },
-                         /**
-                          * very special functions
-                          */
-                         { "hostname", &Caller::Hostname },
-                         { "acquire", &Caller::Acquire },
-                         { "versions", &Caller::Versions },
-                         { "threshold", &Caller::Threshold },
-                         { "trimen", &Caller::TrimEnergies },
-                         { "badchannels", &Caller::BadChannels },
-                         { "dacvalues", &Caller::DacValues },
-                         { "burstmode", &Caller::BurstMode },
-                         { "currentsource", &Caller::CurrentSource },
-                         { "udp_srcip", &Caller::UDPSourceIP },
-                         { "udp_srcip2", &Caller::UDPSourceIP2 },
-                         { "udp_dstip", &Caller::UDPDestinationIP },
-                         { "udp_dstip2", &Caller::UDPDestinationIP2 },
-                         { "rx_hostname", &Caller::ReceiverHostname },
-                         { "rx_roi", &Caller::Rx_ROI },
-                         { "ratecorr", &Caller::RateCorrection },
-                         { "burstmode", &Caller::BurstMode },
-                         { "vetostream", &Caller::VetoStreaming },
-                         { "counters", &Caller::Counters },
-                         { "gaincaps", &Caller::GainCaps },
-                         { "samples", &Caller::Samples },
-                         { "slowadc", &Caller::SlowADC },
-                         { "rx_dbitlist", &Caller::ReceiverDbitList },
-                         { "rx_jsonaddheader", &Caller::AdditionalJsonHeader },
-                         { "execcommand", &Caller::ExecuteCommand },
-                         { "thresholdnotb", &Caller::Threshold },
+                         { "acquire", &Caller::acquire },
                          { "activate", &Caller::activate },
                          { "adcclk", &Caller::adcclk },
                          { "adcenable", &Caller::adcenable },
@@ -435,7 +404,9 @@ private:
                          { "apulse", &Caller::apulse },
                          { "asamples", &Caller::asamples },
                          { "autocompdisable", &Caller::autocompdisable },
+                         { "badchannels", &Caller::badchannels },
                          { "blockingtrigger", &Caller::blockingtrigger },
+                         { "burstmode", &Caller::burstmode },
                          { "burstperiod", &Caller::burstperiod },
                          { "bursts", &Caller::bursts },
                          { "burstsl", &Caller::burstsl },
@@ -452,10 +423,14 @@ private:
                          { "column", &Caller::column },
                          { "compdisabletime", &Caller::compdisabletime },
                          { "confadc", &Caller::confadc },
-                         { "config", &Caller::config }, { "dac", &Caller::dac },
+                         { "config", &Caller::config },
+                         { "counters", &Caller::counters },
+                         { "currentsource", &Caller::currentsource },
+                         { "dac", &Caller::dac },
                          { "dacindex", &Caller::dacindex },
                          { "daclist", &Caller::daclist },
                          { "dacname", &Caller::dacname },
+                         { "dacvalues", &Caller::dacvalues },
                          { "datastream", &Caller::datastream },
                          { "dbitclk", &Caller::dbitclk },
                          { "dbitphase", &Caller::dbitphase },
@@ -471,6 +446,7 @@ private:
                          { "dpulse", &Caller::dpulse }, { "dr", &Caller::dr },
                          { "drlist", &Caller::drlist },
                          { "dsamples", &Caller::dsamples },
+                         { "execcommand", &Caller::execcommand },
                          { "exptime", &Caller::exptime },
                          { "exptime1", &Caller::exptime1 },
                          { "exptime2", &Caller::exptime2 },
@@ -497,6 +473,7 @@ private:
                          { "framesl", &Caller::framesl },
                          { "frametime", &Caller::frametime },
                          { "fwrite", &Caller::fwrite },
+                         { "gaincaps", &Caller::gaincaps },
                          { "gainmode", &Caller::gainmode },
                          { "gappixels", &Caller::gappixels },
                          { "gatedelay", &Caller::gatedelay },
@@ -507,6 +484,7 @@ private:
                          { "getbit", &Caller::getbit },
                          { "hardwareversion", &Caller::hardwareversion },
                          { "highvoltage", &Caller::highvoltage },
+                         { "hostname", &Caller::hostname },
                          { "im_a", &Caller::im_a }, { "im_b", &Caller::im_b },
                          { "im_c", &Caller::im_c }, { "im_d", &Caller::im_d },
                          { "im_io", &Caller::im_io },
@@ -546,7 +524,7 @@ private:
                          { "patnloop1", &Caller::patnloop1 },
                          { "patnloop2", &Caller::patnloop2 },
                          { "patsetbit", &Caller::patsetbit },
-                         { "pattern", &Caller::pattern },
+                         { "patternX", &Caller::pattern },
                          { "patternstart", &Caller::patternstart },
                          { "patwait", &Caller::patwait },
                          { "patwait0", &Caller::patwait0 },
@@ -568,6 +546,7 @@ private:
                          { "pulsenmove", &Caller::pulsenmove },
                          { "pumpprobe", &Caller::pumpprobe },
                          { "quad", &Caller::quad },
+                         { "ratecorr", &Caller::ratecorr },
                          { "readnrows", &Caller::readnrows },
                          { "readout", &Caller::readout },
                          { "readoutspeed", &Caller::readoutspeed },
@@ -581,12 +560,15 @@ private:
                          { "runtime", &Caller::runtime },
                          { "rx_arping", &Caller::rx_arping },
                          { "rx_clearroi", &Caller::rx_clearroi },
+                         { "rx_dbitlist", &Caller::rx_dbitlist },
                          { "rx_dbitoffset", &Caller::rx_dbitoffset },
                          { "rx_discardpolicy", &Caller::rx_discardpolicy },
                          { "rx_fifodepth", &Caller::rx_fifodepth },
                          { "rx_frameindex", &Caller::rx_frameindex },
                          { "rx_framescaught", &Caller::rx_framescaught },
                          { "rx_framesperfile", &Caller::rx_framesperfile },
+                         { "rx_hostname", &Caller::rx_hostname },
+                         { "rx_jsonaddheader", &Caller::rx_jsonaddheader },
                          { "rx_jsonpara", &Caller::rx_jsonpara },
                          { "rx_lastclient", &Caller::rx_lastclient },
                          { "rx_lock", &Caller::rx_lock },
@@ -594,6 +576,7 @@ private:
                          { "rx_padding", &Caller::rx_padding },
                          { "rx_printconfig", &Caller::rx_printconfig },
                          { "rx_realudpsocksize", &Caller::rx_realudpsocksize },
+                         { "rx_roi", &Caller::rx_roi },
                          { "rx_silent", &Caller::rx_silent },
                          { "rx_start", &Caller::rx_start },
                          { "rx_status", &Caller::rx_status },
@@ -608,6 +591,7 @@ private:
                          { "rx_zmqport", &Caller::rx_zmqport },
                          { "rx_zmqstartfnum", &Caller::rx_zmqstartfnum },
                          { "rx_zmqstream", &Caller::rx_zmqstream },
+                         { "samples", &Caller::samples },
                          { "savepattern", &Caller::savepattern },
                          { "scan", &Caller::scan },
                          { "scanerrmsg", &Caller::scanerrmsg },
@@ -620,6 +604,7 @@ private:
                          { "signalindex", &Caller::signalindex },
                          { "signallist", &Caller::signallist },
                          { "signalname", &Caller::signalname },
+                         { "slowadc", &Caller::slowadc },
                          { "slowadcindex", &Caller::slowadcindex },
                          { "slowadclist", &Caller::slowadclist },
                          { "slowadcname", &Caller::slowadcname },
@@ -650,6 +635,8 @@ private:
                          { "templist", &Caller::templist },
                          { "tempvalues", &Caller::tempvalues },
                          { "tengiga", &Caller::tengiga },
+                         { "threshold", &Caller::threshold },
+                         { "thresholdnotb", &Caller::threshold },
                          { "timing", &Caller::timing },
                          { "timinglist", &Caller::timinglist },
                          { "timingsource", &Caller::timingsource },
@@ -659,6 +646,7 @@ private:
                          { "triggers", &Caller::triggers },
                          { "triggersl", &Caller::triggersl },
                          { "trimbits", &Caller::trimbits },
+                         { "trimen", &Caller::trimen },
                          { "trimval", &Caller::trimval },
                          { "tsamples", &Caller::tsamples },
                          { "txdelay", &Caller::txdelay },
@@ -667,6 +655,8 @@ private:
                          { "txdelay_right", &Caller::txdelay_right },
                          { "type", &Caller::type },
                          { "udp_cleardst", &Caller::udp_cleardst },
+                         { "udp_dstip", &Caller::udp_dstip },
+                         { "udp_dstip2", &Caller::udp_dstip2 },
                          { "udp_dstlist", &Caller::udp_dstlist },
                          { "udp_dstmac", &Caller::udp_dstmac },
                          { "udp_dstmac2", &Caller::udp_dstmac2 },
@@ -675,6 +665,8 @@ private:
                          { "udp_firstdst", &Caller::udp_firstdst },
                          { "udp_numdst", &Caller::udp_numdst },
                          { "udp_reconfigure", &Caller::udp_reconfigure },
+                         { "udp_srcip", &Caller::udp_srcip },
+                         { "udp_srcip2", &Caller::udp_srcip2 },
                          { "udp_srcmac", &Caller::udp_srcmac },
                          { "udp_srcmac2", &Caller::udp_srcmac2 },
                          { "udp_validate", &Caller::udp_validate },
@@ -694,11 +686,13 @@ private:
                          { "vchip_opa_1st", &Caller::vchip_opa_1st },
                          { "vchip_opa_fd", &Caller::vchip_opa_fd },
                          { "vchip_ref_comp_fe", &Caller::vchip_ref_comp_fe },
+                         { "versions", &Caller::versions },
                          { "veto", &Caller::veto },
                          { "vetoalg", &Caller::vetoalg },
                          { "vetofile", &Caller::vetofile },
                          { "vetophoton", &Caller::vetophoton },
                          { "vetoref", &Caller::vetoref },
+                         { "vetostream", &Caller::vetostream },
                          { "virtual", &Caller::virtualFunction },
                          { "vm_a", &Caller::vm_a }, { "vm_b", &Caller::vm_b },
                          { "vm_c", &Caller::vm_c }, { "vm_d", &Caller::vm_d },

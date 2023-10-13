@@ -36,16 +36,19 @@ def generate(
         infer_cpp_output_path=INFER_CPP_OUTPUT_PATH,
 
 ):
-    commands_config = yaml.unsafe_load(COMMANDS_PATH.open('r'))
+    commands_config = yaml.unsafe_load(commands_path.open('r'))
+    type_dist, non_dist = check_infer(commands=commands_config)
 
-    codegen.open(CPP_OUTPUT_PATH)
+    codegen.open(cpp_output_path)
     # write call function
-    codegen.write_opening(CPP_INPUT_PATH)
+    codegen.write_opening(cpp_input_path)
 
     # iterate over the commands and generate code for each
     print(f"[X] found {len(commands_config)} commands")
     print('[*] generating code for commands')
     for command_name, command in commands_config.items():
+        if 'is_description' in command and command['is_description']:
+            continue
         with function('std::string', 'Caller::' + command['function_alias'], [('int', 'action')]) as fn:
             codegen.write_line('std::ostringstream os;')
 
@@ -154,18 +157,14 @@ def generate(
     codegen.write_closing()
     codegen.close()
     print('[X] .cpp code generated')
-    codegen.write_header(HEADER_INPUT_PATH, HEADER_OUTPUT_PATH,
-                         [(command['command_name'], command['function_alias']) for command_name, command in
-                          commands_config.items()])
+    codegen.write_header(header_input_path, header_output_path,commands_config)
     print('[X] header code generated')
 
-    codegen.write_infer_header(INFER_HEADER_INPUT_PATH, INFER_HEADER_OUTPUT_PATH,
-                         [(command['command_name'], command['function_alias']) for command_name, command in
-                          commands_config.items()])
+    codegen.write_infer_header(infer_header_input_path, infer_header_output_path,commands_config)
     print('[X] infer header code generated')
-    codegen.open(INFER_CPP_OUTPUT_PATH)
+    codegen.open(infer_cpp_output_path)
 
-    codegen.write_infer_cpp(INFER_CPP_INPUT_PATH, INFER_CPP_OUTPUT_PATH,commands_config, non_dist, type_dist)
+    codegen.write_infer_cpp(infer_cpp_input_path, infer_cpp_output_path,commands_config, non_dist, type_dist)
     codegen.close()
     print('[X] infer cpp code generated')
 
@@ -183,13 +182,14 @@ if __name__ == '__main__':
                         help='check missing commands')
     cli_args = parser.parse_args()
 
-    commands_config = yaml.unsafe_load(COMMANDS_PATH.open('r'))
-
-    # infer action based on number of arguments and types
-    type_dist, non_dist = check_infer(commands=commands_config)
 
     if cli_args.check:
         from commands_parser.commands_parser import command_parser
+
+        commands_config = yaml.unsafe_load(COMMANDS_PATH.open('r'))
+
+        # infer action based on number of arguments and types
+        type_dist, non_dist = check_infer(commands=commands_config)
 
         command_parser.verify_format()
         command_parser.parse_all_commands()

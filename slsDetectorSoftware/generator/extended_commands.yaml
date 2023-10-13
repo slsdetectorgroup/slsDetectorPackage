@@ -1,3 +1,36 @@
+acquire:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: acquire
+  function_alias: acquire
+  help: ''
+  infer_action: true
+  is_description: true
 activate:
   actions:
     GET:
@@ -711,6 +744,40 @@ autocompdisable:
   help: ''
   infer_action: true
   template: true
+badchannels:
+  actions:
+    GET:
+      args:
+      - arg_types:
+        - std::string
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types: []
+        argc: -1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: badchannels
+  function_alias: badchannels
+  help: ''
+  infer_action: true
+  is_description: true
 blockingtrigger:
   actions:
     PUT:
@@ -739,6 +806,40 @@ blockingtrigger:
   help: "\n\t[Eiger][Mythen3][Jungfrau][Moench] Sends software trigger signal to detector"
   infer_action: true
   template: true
+burstmode:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - defs::burstMode
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: burstmode
+  function_alias: burstmode
+  help: ''
+  infer_action: true
+  is_description: true
 burstperiod:
   actions:
     GET:
@@ -1483,6 +1584,102 @@ config:
   help: "\n\tFrees shared memory before loading configuration file. Set up once."
   infer_action: true
   template: true
+counters:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types: []
+        argc: -1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: counters
+  function_alias: counters
+  help: ''
+  infer_action: true
+  is_description: true
+currentsource:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - bool
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - bool
+        - special::currentSourceFix
+        - int
+        argc: 3
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - bool
+        - special::currentSourceFix
+        - int
+        - special::currentSourceLow
+        argc: 4
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: currentsource
+  function_alias: currentsource
+  help: ''
+  infer_action: true
+  is_description: true
 dac:
   actions:
     GET:
@@ -1771,6 +1968,38 @@ dacname:
     \ given name."
   infer_action: true
   template: true
+dacvalues:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+      - arg_types:
+        - special::mv
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+  command_name: dacvalues
+  function_alias: dacvalues
+  help: ''
+  infer_action: true
+  is_description: true
 datastream:
   actions:
     GET:
@@ -2480,6 +2709,26 @@ dsamples:
   help: ''
   infer_action: true
   template: true
+execcommand:
+  actions:
+    PUT:
+      args:
+      - arg_types: []
+        argc: -1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: execcommand
+  function_alias: execcommand
+  help: ''
+  infer_action: true
+  is_description: true
 exptime:
   actions:
     GET:
@@ -3882,6 +4131,40 @@ fwrite:
   help: ''
   infer_action: true
   template: true
+gaincaps:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - defs::defs::M3_GainCaps
+        argc: -1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: gaincaps
+  function_alias: gaincaps
+  help: ''
+  infer_action: true
+  is_description: true
 gainmode:
   actions:
     GET:
@@ -4510,6 +4793,40 @@ highvoltage:
   help: ''
   infer_action: true
   template: true
+hostname:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - std::string
+        argc: -1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: hostname
+  function_alias: hostname
+  help: ''
+  infer_action: true
+  is_description: true
 im_a:
   actions:
     GET:
@@ -7112,6 +7429,40 @@ quad:
   help: "[0, 1]\n\t[Eiger] Sets detector size to a quad. 0 (disabled) is default.\
     \ (Specific hardware required)."
   infer_action: true
+ratecorr:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - int
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: ratecorr
+  function_alias: ratecorr
+  help: ''
+  infer_action: true
+  is_description: true
 readnrows:
   actions:
     GET:
@@ -7635,6 +7986,39 @@ rx_clearroi:
   help: Resets Region of interest in receiver. Default is all channels/pixels enabled.
   infer_action: true
   template: true
+rx_dbitlist:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types: []
+        argc: -1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: rx_dbitlist
+  function_alias: rx_dbitlist
+  help: ''
+  infer_action: true
+  is_description: true
 rx_dbitoffset:
   actions:
     GET:
@@ -7833,6 +8217,72 @@ rx_framesperfile:
   help: ''
   infer_action: true
   template: true
+rx_hostname:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types: []
+        argc: -1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: rx_hostname
+  function_alias: rx_hostname
+  help: ''
+  infer_action: true
+  is_description: true
+rx_jsonaddheader:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types: []
+        argc: -1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: rx_jsonaddheader
+  function_alias: rx_jsonaddheader
+  help: ''
+  infer_action: true
+  is_description: true
 rx_jsonpara:
   actions:
     GET:
@@ -8069,6 +8519,56 @@ rx_realudpsocksize:
     \ to kernel bookkeeping."
   infer_action: true
   template: true
+rx_roi:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - int
+        - int
+        argc: 2
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - int
+        - int
+        - int
+        - int
+        argc: 4
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: rx_roi
+  function_alias: rx_roi
+  help: ''
+  infer_action: true
+  is_description: true
 rx_silent:
   actions:
     GET:
@@ -8532,6 +9032,40 @@ rx_zmqstream:
   help: ''
   infer_action: true
   template: true
+samples:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - int
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: samples
+  function_alias: samples
+  help: ''
+  infer_action: true
+  is_description: true
 savepattern:
   actions:
     PUT:
@@ -8992,6 +9526,27 @@ signalname:
     \ the given name."
   infer_action: true
   template: true
+slowadc:
+  actions:
+    GET:
+      args:
+      - arg_types:
+        - int
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+  command_name: slowadc
+  function_alias: slowadc
+  help: ''
+  infer_action: true
+  is_description: true
 slowadcindex:
   actions:
     GET:
@@ -10062,6 +10617,159 @@ tengiga:
   help: ''
   infer_action: true
   template: true
+threshold:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - int
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - int
+        - defs::detectorSettings
+        argc: 2
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - int
+        - int
+        - int
+        argc: 3
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - int
+        - int
+        - int
+        - defs::detectorSettings
+        argc: 4
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: threshold
+  function_alias: threshold
+  help: ''
+  infer_action: true
+  is_description: true
+thresholdnotb:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - int
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - int
+        - defs::detectorSettings
+        argc: 2
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - int
+        - int
+        - int
+        argc: 3
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - int
+        - int
+        - int
+        - defs::detectorSettings
+        argc: 4
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: thresholdnotb
+  duplicate_function: true
+  function_alias: threshold
+  help: ''
+  infer_action: true
+  is_description: true
 timing:
   actions:
     GET:
@@ -10372,6 +11080,39 @@ trimbits:
     \ no extension specified, serial number of each module is attached. Get will save\
     \ the trimbits from the detector to file with serial number added to file name."
   infer_action: true
+trimen:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types: []
+        argc: -1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: trimen
+  function_alias: trimen
+  help: ''
+  infer_action: true
+  is_description: true
 trimval:
   actions:
     GET:
@@ -10653,6 +11394,74 @@ udp_cleardst:
   help: "\n\tClears udp destination details on the detector."
   infer_action: true
   template: true
+udp_dstip:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - std::string
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: udp_dstip
+  function_alias: udp_dstip
+  help: ''
+  infer_action: true
+  is_description: true
+udp_dstip2:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - std::string
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: udp_dstip2
+  function_alias: udp_dstip2
+  help: ''
+  infer_action: true
+  is_description: true
 udp_dstlist:
   actions:
     GET:
@@ -10944,6 +11753,74 @@ udp_reconfigure:
     \ configuration is done automatically when the detector has sufficient UDP details."
   infer_action: true
   template: true
+udp_srcip:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - std::string
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: udp_srcip
+  function_alias: udp_srcip
+  help: ''
+  infer_action: true
+  is_description: true
+udp_srcip2:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - std::string
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: udp_srcip2
+  function_alias: udp_srcip2
+  help: ''
+  infer_action: true
+  is_description: true
 udp_srcmac:
   actions:
     GET:
@@ -11867,6 +12744,26 @@ vchip_ref_comp_fe:
     \ for reference voltage of the comparator of analogue front end."
   infer_action: true
   template: true
+versions:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+  command_name: versions
+  function_alias: versions
+  help: ''
+  infer_action: true
+  is_description: true
 veto:
   actions:
     GET:
@@ -12096,6 +12993,39 @@ vetoref:
   help: "[gain index] [12 bit value]\n\t[Gotthard2] Set veto reference for all 128\
     \ channels for all chips."
   infer_action: true
+vetostream:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types: []
+        argc: -1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: vetostream
+  function_alias: vetostream
+  help: ''
+  infer_action: true
+  is_description: true
 virtual:
   actions:
     PUT:

@@ -3707,7 +3707,241 @@ patwaittime2:
     help: "Depreciated command. Use patwaittime."
     inherit_actions: patwaittime
 
+######################### description only commands #############################
+## code is generated for these commands
+hostname:
+  is_description: true
+  actions:
+    GET:
+      argc: 0
+    PUT:
+      argc: -1
+      arg_types: [ std::string ]
+
+acquire:
+  is_description: true
+  actions:
+    GET:
+      argc: 0
+    PUT:
+      argc: 0
+
+versions:
+  is_description: true
+  actions:
+    GET:
+      argc: 0
+
+threshold:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          args:
+            - argc: 1
+              arg_types: [ int ]
+            - argc: 2
+              arg_types: [ int, defs::detectorSettings ]
+            - argc: 3
+              arg_types: [ int,int,int ]
+            - argc: 4
+              arg_types: [ int ,int,int,defs::detectorSettings]
+thresholdnotb:
+  is_description: true
+  duplicate_function: true
+  function_alias: threshold
+  actions:
+    GET:
+      argc: 0
+    PUT:
+      args:
+        - argc: 1
+          arg_types: [ int ]
+        - argc: 2
+          arg_types: [ int, defs::detectorSettings ]
+        - argc: 3
+          arg_types: [ int,int,int ]
+        - argc: 4
+          arg_types: [ int ,int,int,defs::detectorSettings ]
 
 
+trimen:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: -1
+
+badchannels:
+  is_description: true
+  actions:
+    GET:
+      argc: 1
+      arg_types: [ std::string ]
+    PUT:
+      argc: -1
+
+udp_srcip:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: 1
+          arg_types: [ std::string ]
 
 
+udp_srcip2:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: 1
+          arg_types: [ std::string ]
+
+udp_dstip:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: 1
+          arg_types: [ std::string ]
+
+udp_dstip2:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: 1
+          arg_types: [ std::string ]
+
+
+rx_hostname:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: -1
+
+rx_roi:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          args:
+            - argc: 2
+              arg_types: [ int, int ]
+            - argc: 4
+              arg_types: [ int, int, int, int ]
+
+ratecorr:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: 1
+          arg_types: [ int ]
+
+
+burstmode:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: 1
+          arg_types: [ defs::burstMode ]
+
+vetostream:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: -1
+
+counters:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: -1
+
+samples:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: 1
+          arg_types: [ int ]
+
+slowadc:
+    is_description: true
+    actions:
+        GET:
+          argc: 1
+          arg_types: [ int ]
+
+rx_dbitlist:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: -1
+
+rx_jsonaddheader:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: -1
+execcommand:
+    is_description: true
+    actions:
+        PUT:
+          argc: -1
+
+dacvalues:
+    is_description: true
+    actions:
+        GET:
+          args:
+            - argc: 0
+            - argc: 1
+              arg_types: [ special::mv ]
+
+
+currentsource:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          args:
+            - argc: 1
+              arg_types: [ bool ]
+            - argc: 3
+              arg_types: [ bool, special::currentSourceFix, int ]
+            - argc: 4
+              arg_types: [bool, special::currentSourceFix, int, special::currentSourceLow ]
+
+gaincaps:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: -1
+          arg_types: [ defs::defs::M3_GainCaps ]

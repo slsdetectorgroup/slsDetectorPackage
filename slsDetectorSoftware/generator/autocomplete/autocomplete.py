@@ -18,6 +18,8 @@ type_values = {
     "special::time_unit": ["s", "ms", "us", "ns"],
     "special::hard": ["hard"],
     "special::force-delete-normal-file": ["--force-delete-normal-file"],
+    "special::currentSourceFix": ["fix","nofix"],
+    "special::currentSourceLow": ["normal","low"]
 
 }
 def type_info(type_name):

@@ -69,7 +69,7 @@ class CommandParser:
         # todo verify that the same number of input_types and input are given
         # todo verify that each argument has argc (error can happen when inheriting)
         for command_name, command in self.simple_commands.items():
-            if 'inherit_actions' in command or 'template' in command and command['template']:
+            if 'inherit_actions' in command or 'template' in command and command['template'] or 'is_description' in command and command['is_description']:
                 continue
             self.argc_set = set()
             if 'infer_action' not in command:

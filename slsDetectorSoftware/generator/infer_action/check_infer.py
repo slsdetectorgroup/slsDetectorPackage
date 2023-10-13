@@ -14,8 +14,17 @@ def check_infer(EXTENDED_COMMANDS_PATH=Path(__file__).parent.parent / "extended_
     non_distinguishable = {}
 
     for command_name, command in commands.items():
-        if len(command["actions"]) != 2:
+        # todo: remove this (added for debug)
+        # if command_name != 'badchannels':
+        #     continue
+        if len(command["actions"]) == 1:
+            action = list(command["actions"].items())[0][1]
+            for arg in action['args']:
+                if arg['argc'] == -1:
+                    non_distinguishable[(command_name, arg['argc'])] = ([], arg['arg_types'])
             continue
+
+
         get_argcs = {}
         get_args = command['actions']['GET']['args']
         for arg in get_args:

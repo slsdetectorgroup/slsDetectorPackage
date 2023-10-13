@@ -132,7 +132,7 @@ void Caller::GetLevelAndUpdateArgIndex(int action,
     }
 }
 
-std::string Caller::Hostname(int action) {
+std::string Caller::hostname(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -170,7 +170,7 @@ std::string Caller::Hostname(int action) {
     }
     return os.str();
 }
-std::string Caller::Acquire(int action) {
+std::string Caller::acquire(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
         os << cmd
@@ -200,7 +200,7 @@ std::string Caller::Acquire(int action) {
     }
     return os.str();
 }
-std::string Caller::Versions(int action) {
+std::string Caller::versions(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -249,7 +249,7 @@ std::string Caller::Versions(int action) {
     }
     return os.str();
 }
-std::string Caller::Threshold(int action) {
+std::string Caller::threshold(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -330,7 +330,9 @@ std::string Caller::Threshold(int action) {
     }
     return os.str();
 }
-std::string Caller::TrimEnergies(int action) {
+
+
+std::string Caller::trimen(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -360,7 +362,7 @@ std::string Caller::TrimEnergies(int action) {
     }
     return os.str();
 }
-std::string Caller::BadChannels(int action) {
+std::string Caller::badchannels(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -400,7 +402,7 @@ std::string Caller::BadChannels(int action) {
     }
     return os.str();
 }
-std::string Caller::UDPSourceIP(int action) {
+std::string Caller::udp_srcip(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -437,7 +439,7 @@ std::string Caller::UDPSourceIP(int action) {
     }
     return os.str();
 }
-std::string Caller::UDPSourceIP2(int action) {
+std::string Caller::udp_srcip2(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -475,7 +477,7 @@ std::string Caller::UDPSourceIP2(int action) {
     }
     return os.str();
 }
-std::string Caller::UDPDestinationIP(int action) {
+std::string Caller::udp_dstip(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -509,7 +511,7 @@ std::string Caller::UDPDestinationIP(int action) {
     }
     return os.str();
 }
-std::string Caller::UDPDestinationIP2(int action) {
+std::string Caller::udp_dstip2(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -545,7 +547,7 @@ std::string Caller::UDPDestinationIP2(int action) {
     }
     return os.str();
 }
-std::string Caller::ReceiverHostname(int action) {
+std::string Caller::rx_hostname(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -606,7 +608,7 @@ std::string Caller::ReceiverHostname(int action) {
     }
     return os.str();
 }
-std::string Caller::Rx_ROI(int action) {
+std::string Caller::rx_roi(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -650,7 +652,7 @@ std::string Caller::Rx_ROI(int action) {
     }
     return os.str();
 }
-std::string Caller::RateCorrection(int action) {
+std::string Caller::ratecorr(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -683,7 +685,7 @@ std::string Caller::RateCorrection(int action) {
     }
     return os.str();
 }
-std::string Caller::BurstMode(int action) {
+std::string Caller::burstmode(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -732,7 +734,7 @@ std::string Caller::BurstMode(int action) {
     }
     return os.str();
 }
-std::string Caller::VetoStreaming(int action) {
+std::string Caller::vetostream(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -775,7 +777,7 @@ std::string Caller::VetoStreaming(int action) {
     }
     return os.str();
 }
-std::string Caller::Counters(int action) {
+std::string Caller::counters(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -818,7 +820,7 @@ std::string Caller::Counters(int action) {
     }
     return os.str();
 }
-std::string Caller::Samples(int action) {
+std::string Caller::samples(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -864,7 +866,7 @@ std::string Caller::Samples(int action) {
     }
     return os.str();
 }
-std::string Caller::SlowADC(int action) {
+std::string Caller::slowadc(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -895,7 +897,7 @@ std::string Caller::SlowADC(int action) {
     }
     return os.str();
 }
-std::string Caller::ReceiverDbitList(int action) {
+std::string Caller::rx_dbitlist(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -934,7 +936,7 @@ std::string Caller::ReceiverDbitList(int action) {
     }
     return os.str();
 }
-std::string Caller::AdditionalJsonHeader(int action) {
+std::string Caller::rx_jsonaddheader(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -968,7 +970,7 @@ std::string Caller::AdditionalJsonHeader(int action) {
     }
     return os.str();
 }
-std::string Caller::ExecuteCommand(int action) {
+std::string Caller::execcommand(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -988,7 +990,7 @@ std::string Caller::ExecuteCommand(int action) {
     }
     return os.str();
 }
-std::string Caller::DacValues(int action) {
+std::string Caller::dacvalues(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -1027,7 +1029,7 @@ std::string Caller::DacValues(int action) {
     }
     return os.str();
 }
-std::string Caller::CurrentSource(int action) {
+std::string Caller::currentsource(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -1089,7 +1091,7 @@ std::string Caller::CurrentSource(int action) {
     }
     return os.str();
 }
-std::string Caller::GainCaps(int action) {
+std::string Caller::gaincaps(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {

@@ -67,7 +67,7 @@ def get_object_by_kind(inner, kind, position=1):
     return None
 
 
-def main():
+def generate_type_values():
     functions = json.loads(FIXED_PATH.read_text())
     for function in functions:
         if function['kind'] != 'FunctionDecl' or function['name'] != 'StringTo':
@@ -93,7 +93,7 @@ def main():
             if enum not in type_values or type_values[enum] is None:
                 type_values[enum] = []
             type_values[enum].append(stringliteral)
-    print(json.dumps(type_values,indent=2))
+    return json.dumps(type_values, indent=2)
 
 def fix_json():
     with DUMP_PATH.open('r') as f:
@@ -115,4 +115,5 @@ if __name__ == '__main__':
     args = parser.parse_known_args()
     if args[0].fix:
         fix_json()
-    main()
+    ret = generate_type_values()
+    print(ret)

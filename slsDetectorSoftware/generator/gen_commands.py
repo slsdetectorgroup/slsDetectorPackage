@@ -180,7 +180,14 @@ if __name__ == '__main__':
                         help='parse the commands.yaml file into extended_commands.yaml')
     parser.add_argument('-c', '--check', action='store_true', default=False, dest='check',
                         help='check missing commands')
+    parser.add_argument('-g', '--generate', action='store_true', default=False, dest='generate',)
+    parser.add_argument('-a', '--autocomplete', action='store_true', default=False, dest='autocomplete')
     cli_args = parser.parse_args()
+
+    if cli_args.autocomplete:
+        from autocomplete.autocomplete import generate_type_values
+        ret = generate_type_values()
+        print(ret)
 
 
     if cli_args.check:
@@ -194,9 +201,9 @@ if __name__ == '__main__':
         command_parser.verify_format()
         command_parser.parse_all_commands()
         # generate list of commands found in sls_detector_get
-        ret = subprocess.run(["sls_detector_get list | tail -n +2 | sort > glist"], shell=True, capture_output=True,
-                             check=True)
         glist_path = GEN_PATH / 'glist'
+        ret = subprocess.run([f"sls_detector_get list | tail -n +2 | sort > {glist_path.absolute()}"], shell=True,
+                             capture_output=True,check=True)
         if ret.stderr != b'':
             print('[!] glist generation failed and glist not found')
             exit(1)
@@ -222,46 +229,16 @@ if __name__ == '__main__':
         for command in glist:
             if command not in detglist:
                 not_found.add(command)
-        print(f'[X] found {len(not_found)} missing commands from detglist')
-        print(not_found)
+        print()
+        if len(not_found) > 0:
+            print(f'[!] found {len(not_found)} missing')
+            print(f"not_found: {not_found}")
+        else:
+            print(f'[X] found no missing commands')
 
         for command in detglist:
             if command not in glist:
-                print(f'[!] command {command} found in detglist but not found in glist')
-
-        # check for very special functions
-        very_special_functions_path = GEN_PATH / 'very_special_functions.txt'
-        if not very_special_functions_path.exists():
-            print('[!] very_special_functions.txt not found')
-            exit(1)
-        very_special_functions = very_special_functions_path.read_text().split('\n')
-        very_special_commands = set()
-        for command in very_special_functions:
-            command = command.split(' ')[0]
-            if command.startswith('#'):
-                continue
-            if command != '' and command not in glist:
-                print(f'[!] very special command {command} not found in glist')
-            else:
-                very_special_commands.add(command)
-        if "" in very_special_commands:
-            very_special_commands.remove("")
-
-        if not_found - very_special_commands:
-            print('[!] some commands are missing from very_special_functions.txt')
-            print(not_found - very_special_commands)
-        else:
-            print('[X] all missing commands are present in very_special_functions.txt')
-
-        if set(detglist).intersection(very_special_commands):
-            print('[!] some commands are present in both detglist and very_special_functions.txt')
-            print(set(detglist).intersection(very_special_commands))
-
-        if glist != detglist.union(very_special_commands):
-            print('[!] not all commands from glist are present in detglist and very_special_functions.txt')
-        print()
-        print(f'Total g commands: {len(glist)}')
-        print(f'Generated commands: {len(detglist)}, Manually implemented commands: {len(very_special_commands)}')
+                print(f'[!] command {command} found in commands.yaml but not found in g list')
 
         exit(0)
 
@@ -271,7 +248,8 @@ if __name__ == '__main__':
         command_parser.verify_format()
         command_parser.parse_all_commands()
 
-    generate()
+    if cli_args.generate:
+        generate()
 
     if cli_args.format:
         files = [CPP_OUTPUT_PATH, HEADER_OUTPUT_PATH, INFER_HEADER_OUTPUT_PATH, INFER_CPP_OUTPUT_PATH]

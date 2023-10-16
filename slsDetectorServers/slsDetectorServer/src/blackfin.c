@@ -88,7 +88,7 @@ u_int32_t writeRegister(u_int32_t offset, u_int32_t data) {
     // if electron mode bit touched
 #ifdef JUNGFRAUD
     int electronCollectionModeChange = 0;
-    if (offset == (DAQ_REG >> MEM_MAP_SHIFT)) {
+    if ((offset  << MEM_MAP_SHIFT) == DAQ_REG) {
         if ((readRegister(offset) ^ data) & DAQ_ELCTRN_CLLCTN_MDE_MSK) {
             electronCollectionModeChange = 1;
         }

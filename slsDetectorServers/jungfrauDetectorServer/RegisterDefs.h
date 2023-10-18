@@ -24,16 +24,18 @@
 
 #define RUN_BUSY_OFST                       (0)
 #define RUN_BUSY_MSK                        (0x00000001 << RUN_BUSY_OFST)
-#define WAITING_FOR_TRIGGER_OFST            (3)
+#define WAITING_FOR_TRIGGER_OFST            (1)
 #define WAITING_FOR_TRIGGER_MSK             (0x00000001 << WAITING_FOR_TRIGGER_OFST)
-#define DELAYBEFORE_OFST                    (4) // Not used in software
-#define DELAYBEFORE_MSK                     (0x00000001 << DELAYBEFORE_OFST) // Not used in software
-#define DELAYAFTER_OFST                     (5) // Not used in software
-#define DELAYAFTER_MSK                      (0x00000001 << DELAYAFTER_OFST) // Not used in software
-#define STOPPED_OFST                        (15)
+#define WAITING_FOR_START_FRAME_OFST        (2)
+#define WAITING_FOR_START_FRAME_MSK         (0x00000001 << WAITING_FOR_START_FRAME_OFST)
+#define ACQUIRING_FRAME_OFST                (3) // Not used in software
+#define ACQUIRING_FRAME_MSK                 (0x00000001 << ACQUIRING_FRAME_OFST)
+#define WAITING_FOR_PERIOD_TO_ELAPSE_OFST   (4) // Not used in software
+#define WAITING_FOR_PERIOD_TO_ELAPSE_MSK    (0x00000001 << WAITING_FOR_PERIOD_TO_ELAPSE_OFST) 
+#define STOPPED_OFST                        (8)
 #define STOPPED_MSK                         (0x00000001 << STOPPED_OFST)
-#define RUNMACHINE_BUSY_OFST                (17)
-#define RUNMACHINE_BUSY_MSK                 (0x00000001 << RUNMACHINE_BUSY_OFST)
+#define INTERNAL_STOP_OFST                  (9)
+#define INTERNAL_STOP_MSK                   (0x00000001 << INTERNAL_STOP_OFST)
 
 /* Look at me register */
 #define LOOK_AT_ME_REG                      (0x03 << MEM_MAP_SHIFT) // Not used in firmware or software

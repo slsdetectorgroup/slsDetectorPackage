@@ -171,7 +171,7 @@ def generate_bash_autocomplete(output_path=Path(__file__).parent / 'autocomplete
         writeline(f'local SLS_COMMANDS="{" ".join(commands.keys())}"')
         # generate functions
         for command_name, command in commands.items():
-            if command_name != 'exptime':
+            if command_name == 'xxxexptime':
                 continue
             with function('__' + command_name):
                 writeline('FCN_RETURN=""')

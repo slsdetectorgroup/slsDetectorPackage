@@ -2924,14 +2924,16 @@ int softwareTrigger(int block) {
     LOG(logINFO, ("Sending Software Trigger\n"));
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_SOFTWARE_TRIGGER_MSK);
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_SOFTWARE_TRIGGER_MSK);
+    // wait to make sure its out of this state and even 'wait for start frame'
+    usleep(100);
 
 #ifndef VIRTUAL
-    // block till frame is sent out
+    // block till frame sent out & back to wait for trigger (or not busy anymore)
     if (block) {
-        enum runStatus s = getRunStatus();
-        while (s == RUNNING || s == TRANSMITTING) {
+        uint32_t retval = bus_r(STATUS_REG);
+        while ((retval & RUN_BUSY_MSK) && !(retval & WAITING_FOR_TRIGGER_MSK)) {
             usleep(5000);
-            s = getRunStatus();
+            retval = bus_r(STATUS_REG);
         }
     }
     LOG(logINFO, ("Ready for Next Trigger...\n"));
@@ -2964,9 +2966,17 @@ enum runStatus getRunStatus() {
     u_int32_t retval = bus_r(STATUS_REG);
     LOG(logINFO, ("Status Register: %08x\n", retval));
 
+    // error
+    if (retval & INTERNAL_STOP_MSK) {
+        LOG(logINFOBLUE, ("Status: ERROR\n"));
+        s = ERROR;
+    }
+    
     // running
-    if (retval & RUN_BUSY_MSK) {
-        if (retval & WAITING_FOR_TRIGGER_MSK) {
+    else if (retval & RUN_BUSY_MSK) {
+        if ((retval &
+             WAITING_FOR_TRIGGER_MSK) || 
+            (retval & WAITING_FOR_START_FRAME_MSK)) {
             LOG(logINFOBLUE, ("Status: WAITING\n"));
             s = WAITING;
         } else {
@@ -2977,19 +2987,13 @@ enum runStatus getRunStatus() {
 
     // not running
     else {
-        // stopped or error
+        // stopped or idle
         if (retval & STOPPED_MSK) {
             LOG(logINFOBLUE, ("Status: STOPPED\n"));
             s = STOPPED;
-        } else if (retval & RUNMACHINE_BUSY_MSK) {
-            LOG(logINFOBLUE, ("Status: READ MACHINE BUSY\n"));
-            s = TRANSMITTING;
-        } else if (!retval) {
+        } else {
             LOG(logINFOBLUE, ("Status: IDLE\n"));
             s = IDLE;
-        } else {
-            LOG(logERROR, ("Status: Unknown status %08x\n", retval));
-            s = ERROR;
         }
     }
 

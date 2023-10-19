@@ -117,7 +117,7 @@ class CodeGenerator:
     def write_arg(self, args, action, command_name):
         for arg in args:
             if arg['argc'] != -1:
-                if_block(f'args.size() == {arg["argc"]}', block=False).__enter__()
+                if_block(f'args.size() == {arg["argc"]}',).__enter__()
             if 'pattern_command' in arg and arg['pattern_command']:
                 self.write_line(f'int level = -1, iArg = 0, '
                                 f'nGetArgs = {arg["pattern_command"]["nGetArgs"]},'
@@ -144,8 +144,7 @@ class CodeGenerator:
             input_arguments = []
             if 'exceptions' in arg:
                 for exception in arg['exceptions']:
-                    self.write_line(
-                        f'if ({exception["condition"]}) {{ throw RuntimeError({exception["message"]}); }}')
+                    self.write_line(f'if ({exception["condition"]}) {{ throw RuntimeError({exception["message"]}); }}')
             if 'check_det_id' in arg and arg['check_det_id']:
                 self.write_line(
                     f'if (det_id != -1) {{ throw RuntimeError("Cannot execute {command_name} at module level"); }} '
@@ -207,7 +206,7 @@ class CodeGenerator:
 
 
 class if_block:
-    def __init__(self, condition="", elseif=False, block=False):
+    def __init__(self, condition="", elseif=False):
         self.condition = condition
         self.elseif = elseif
         self.block = False

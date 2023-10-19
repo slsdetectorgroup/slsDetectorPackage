@@ -1610,6 +1610,7 @@ activate:
       function: getActive
     PUT:
       function: setActive
+      input_types: [ bool ]
 partialreset:
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
@@ -2317,12 +2318,14 @@ trimbits:
       function: saveTrimbits
       input: [ 'args[0]' ]
       input_types: [ std::string ]
+      arg_types: [special::path]
       output: [ "args[0]" ]
     PUT:
       argc: 1
       function: loadTrimbits
       input: [ 'args[0]' ]
       input_types: [ std::string ]
+      arg_types: [special::path]
       output: [ "args[0]" ]
 
 gappixels:

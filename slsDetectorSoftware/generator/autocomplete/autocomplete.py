@@ -6,7 +6,7 @@ from pathlib import Path
 # clang version: 14.0.0-1ubuntu1.1
 # clang++ -Xclang -ast-dump=json -Xclang -ast-dump-filter -Xclang StringTo  -c ToString.cpp -I ../include/ -std=gnu++11
 #
-
+import yaml
 
 AUTOCOMPLETE_PATH = Path(__file__).parent
 DUMP_PATH = AUTOCOMPLETE_PATH / 'dump.json'
@@ -18,18 +18,31 @@ type_values = {
     "special::time_unit": ["s", "ms", "us", "ns"],
     "special::hard": ["hard"],
     "special::force-delete-normal-file": ["--force-delete-normal-file"],
-    "special::currentSourceFix": ["fix","nofix"],
-    "special::currentSourceLow": ["normal","low"]
+    "special::currentSourceFix": ["fix", "nofix"],
+    "special::currentSourceLow": ["normal", "low"],
+    "special::path": [],
 
 }
+
+
+def get_types(arg_types):
+    ret = set()
+    for arg_type in arg_types:
+        if type_info(arg_type) == 'base':
+            if arg_type == 'bool':
+                ret  = ret.union(["0", "1"])
+        else:
+            tmp = [not_list for not_list in type_values[arg_type] if not isinstance(not_list, list)]
+            ret = ret.union(tmp)
+    return ret
+
+
 def type_info(type_name):
     if type_name.startswith('defs::') or type_name.startswith('slsDetectorDefs::'):
         return 'enum'
     if type_name.startswith('special::'):
         return 'special'
-
     return 'base'
-
 
 
 def get_enum(function):
@@ -93,7 +106,19 @@ def generate_type_values():
             if enum not in type_values or type_values[enum] is None:
                 type_values[enum] = []
             type_values[enum].append(stringliteral)
+    items = list(type_values.items())
+    for key, val in items:
+        if key.startswith('defs::'):
+            new_key = key.split('::')[1]
+            new_key = 'slsDetectorDefs::' + new_key
+            type_values[new_key] = val
+        elif key.startswith('slsDetectorDefs::'):
+            new_key = key.split('::')[1]
+            new_key = 'defs::' + new_key
+            type_values[new_key] = val
+
     return json.dumps(type_values, indent=2)
+
 
 def fix_json():
     with DUMP_PATH.open('r') as f:
@@ -106,6 +131,97 @@ def fix_json():
         tmp = tmp[:-3] + '\n]'
     with FIXED_PATH.open('w') as f:
         f.write(tmp)
+
+
+def generate_bash_autocomplete(path=Path(__file__).parent / 'autocomplete.sh'):
+    generate_type_values()
+    file = path.open('w')
+
+    def writeline(line):
+        file.write(line + '\n')
+
+    class if_block:
+        def __init__(self, condition):
+            self.condition = condition
+
+        def __enter__(self):
+            file.write('if [[ ' + self.condition + ' ]]; then\n')
+
+        def __exit__(self, type, value, traceback):
+            file.write('fi\n')
+
+    class function:
+        def __init__(self, name):
+            self.name = name
+
+        def __enter__(self):
+            file.write(self.name + '() {\n')
+
+        def __exit__(self, type, value, traceback):
+            file.write('}\n')
+
+    command_path = Path(__file__).parent.parent / 'extended_commands.yaml'
+    commands = yaml.unsafe_load(command_path.open('r'))
+
+    with function('__sd'):
+        writeline('local cur=${COMP_WORDS[COMP_CWORD]}')
+        writeline('local FCN_RETURN=""')
+        writeline('local IS_PATH=0')
+        writeline("COMPREPLY=()")
+        # generate functions
+        for command_name, command in commands.items():
+            if command_name == 'xtiming':
+                continue
+            with function('__' + command_name):
+                writeline('FCN_RETURN=""')
+
+                actions = ['GET', 'PUT']
+                for action in actions:
+                    if action in command['actions'] and 'args' in command['actions'][action]:
+                        args = command['actions'][action]['args']
+                        possible_argc = {}
+                        for arg in args:
+                            if arg['argc'] == 0:
+                                pass
+                            for i in range(arg['argc']):
+                                if i + 1 not in possible_argc:
+                                    possible_argc[i + 1] = []
+                                possible_argc[i + 1].append(arg['arg_types'][i])
+                    if possible_argc:
+                        with if_block(f'$GET -eq {"1" if action == "GET" else "0"}'):
+                            for argc in possible_argc:
+                                with if_block(f'"${{COMP_CWORD}}" == "{argc + 1}"'):
+                                    choices = get_types(possible_argc[argc])
+                                    writeline(f'FCN_RETURN="{" ".join(sorted(choices))}"')
+                                    if 'special::path' in possible_argc[argc]:
+                                        writeline('IS_PATH=1')
+
+                writeline('return 0')
+
+        # check if the action is GET
+        with if_block('${COMP_WORDS[0]} == "sls_detector_get"'):
+            writeline('local GET=1')
+        with if_block('${COMP_WORDS[0]} == "sls_detector_put"'):
+            writeline('local GET=0')
+
+        # complete with command name
+        with if_block('${COMP_CWORD} -eq 1'):
+            writeline(f'COMPREPLY=( $(compgen -W "{" ".join(list(commands.keys()))}" -- "${{cur}}" ))')
+            writeline('return 0')
+
+        writeline('__"${COMP_WORDS[1]}"')
+
+        with if_block('${IS_PATH} -eq 1'):
+            writeline('COMPREPLY=( $(compgen -d -- "${cur}"))')
+            writeline('return 0')
+
+        writeline('COMPREPLY=( $(compgen -W "${FCN_RETURN}" -- "${cur}" ))')
+        writeline('return $?')
+
+    writeline('complete -F __sd -o filenames nosort sls_detector_get')
+    writeline('complete -F __sd -o filenames nosort sls_detector_put')
+
+    file.close()
 
 
 if __name__ == '__main__':

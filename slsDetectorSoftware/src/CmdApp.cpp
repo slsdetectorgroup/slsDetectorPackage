@@ -57,25 +57,16 @@ int main(int argc, char *argv[]){
 
     try
     {
-    if (action==-1){
-        action = inferAction.infer(parser);
-        std::string actionString= (action==slsDetectorDefs::GET_ACTION) ? "GET" : "PUT";
-        std::cout << "inferred action: " << actionString << std::endl;
-    }
+        if (action == -1){
+            action = inferAction.infer(parser);
+            std::string actionString= (action==slsDetectorDefs::GET_ACTION) ? "GET" : "PUT";
+            std::cout << "inferred action: " << actionString << std::endl;
+        }
 
-    c.call(parser, action);
+        c.call(parser, action);
     }
     catch(sls::RuntimeError& e){}
     catch ( const std::exception& e ){ LOG(sls::logERROR) << e.what() << std::endl;}
-
-//
-//    std::cout << "\ncall with 'infer action'\n";
-//    try
-//    {
-//    c.call(parser, default_action);
-//    }
-//    catch(sls::RuntimeError& e){}
-//    catch ( const std::exception& e ){LOG(sls::logERROR)  << e.what() << std::endl;}
 
 
 

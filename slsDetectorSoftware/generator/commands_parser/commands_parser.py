@@ -69,7 +69,8 @@ class CommandParser:
         # todo verify that the same number of input_types and input are given
         # todo verify that each argument has argc (error can happen when inheriting)
         for command_name, command in self.simple_commands.items():
-            if 'inherit_actions' in command or 'template' in command and command['template'] or 'is_description' in command and command['is_description']:
+            if 'inherit_actions' in command or 'template' in command and command[
+                'template'] or 'is_description' in command and command['is_description']:
                 continue
             self.argc_set = set()
             if 'infer_action' not in command:
@@ -244,9 +245,9 @@ class CommandParser:
         return config
 
     def sanitize_argument(func):
-        def f(self, action_context, args, priority_context={}):
-            args = func(self, action_context, args, priority_context)
-            for arg in args:
+        def f(self, action_context, args_old, priority_context={}):
+            args = func(self, action_context, args_old, priority_context)
+            for i, arg in enumerate(args):
                 if 'args' in arg:
                     del arg['args']
                 if 'detectors' in arg:
@@ -254,8 +255,6 @@ class CommandParser:
                 if not arg['cast_input']:
                     # if the cast_input is empty, then set it to False
                     arg['cast_input'] = [False] * len(arg['input'])
-                if not arg['arg_types'] and arg['argc'] not in [0, -1]:
-                    arg['arg_types'] = arg['input_types']
 
                 elif len(arg['cast_input']) != len(arg['input']):
                     # if the cast_input is not the same length as the input, then set it to False
@@ -342,11 +341,29 @@ class CommandParser:
 
         for command_name in self.simple_commands:
             # todo remove this (added for debugging)
-            if command_name != 'xxxslowadcvalues':
+            if command_name != 'xtiming':
                 self.parse_command(command_name)
+
+        # post-process the parsed commands
+        self.post_process_all_commands()
+
         yaml.Dumper.ignore_aliases = lambda *args: True
         self.logger.info(f'parsed {len(self.extended_commands)} commands')
         yaml.dump(self.extended_commands, self.output_file.open('w'), default_flow_style=False)
+
+    def post_process_all_commands(self):
+        for command_name, command in self.extended_commands.items():
+            if 'is_description' in command and command['is_description']:
+                continue
+            for action_name, action, in command['actions'].items():
+                for arg in action['args']:
+                    if arg['argc'] == 0:
+                        arg['arg_types'] = []
+                        continue
+                    if arg['argc'] == -1:
+                        pass
+                    if arg['arg_types'] == []:
+                        arg['arg_types'] = arg['input_types']
 
 
 # command_parser = CommandParser(Path(

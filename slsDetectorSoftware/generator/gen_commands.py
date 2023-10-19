@@ -85,7 +85,7 @@ def generate(
                     for arg in action_params['args']:
                         if not check_argc:
                             continue
-                        with if_block(f'args.size() == {arg["argc"]}', block=True):
+                        with if_block(f'args.size() == {arg["argc"]}'):
                             # check argument types
                             if 'extra_variables' in arg:
                                 for var in arg['extra_variables']:
@@ -157,17 +157,16 @@ def generate(
     codegen.write_closing()
     codegen.close()
     print('[X] .cpp code generated')
-    codegen.write_header(header_input_path, header_output_path,commands_config)
+    codegen.write_header(header_input_path, header_output_path, commands_config)
     print('[X] header code generated')
 
-    codegen.write_infer_header(infer_header_input_path, infer_header_output_path,commands_config)
+    codegen.write_infer_header(infer_header_input_path, infer_header_output_path, commands_config)
     print('[X] infer header code generated')
     codegen.open(infer_cpp_output_path)
 
-    codegen.write_infer_cpp(infer_cpp_input_path, infer_cpp_output_path,commands_config, non_dist, type_dist)
+    codegen.write_infer_cpp(infer_cpp_input_path, infer_cpp_output_path, commands_config, non_dist, type_dist)
     codegen.close()
     print('[X] infer cpp code generated')
-
 
 
 if __name__ == '__main__':
@@ -180,16 +179,22 @@ if __name__ == '__main__':
                         help='parse the commands.yaml file into extended_commands.yaml')
     parser.add_argument('-c', '--check', action='store_true', default=False, dest='check',
                         help='check missing commands')
-    parser.add_argument('-g', '--generate', action='store_true', default=False, dest='generate', help='generate code')
+    parser.add_argument('-g', '--generate', action='store_true', default=False, dest='generate', help='generate code (C++ or bash if -a is used)')
     parser.add_argument('-a', '--autocomplete', action='store_true', default=False, dest='autocomplete',
                         help='print bash autocomplete values')
     cli_args = parser.parse_args()
 
     if cli_args.autocomplete:
-        from autocomplete.autocomplete import generate_type_values
-        ret = generate_type_values()
-        print(ret)
+        from autocomplete.autocomplete import generate_type_values, generate_bash_autocomplete
 
+        if cli_args.generate:
+            generate_bash_autocomplete()
+            print('[X] bash autocomplete generated')
+            exit(0)
+        else:
+            ret = generate_type_values()
+            print(ret)
+            exit(0)
 
     if cli_args.check:
         from commands_parser.commands_parser import command_parser
@@ -204,7 +209,7 @@ if __name__ == '__main__':
         # generate list of commands found in sls_detector_get
         glist_path = GEN_PATH / 'glist'
         ret = subprocess.run([f"sls_detector_get list | tail -n +2 | sort > {glist_path.absolute()}"], shell=True,
-                             capture_output=True,check=True)
+                             capture_output=True, check=True)
         if ret.stderr != b'':
             print('[!] glist generation failed and glist not found')
             exit(1)

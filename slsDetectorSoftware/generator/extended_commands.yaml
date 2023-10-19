@@ -50,7 +50,7 @@ activate:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -60,7 +60,7 @@ activate:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
@@ -275,7 +275,8 @@ adclist:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - std::string
         argc: -1
         cast_input:
         - false
@@ -1025,7 +1026,7 @@ cdsgain:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -1877,7 +1878,8 @@ daclist:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - std::string
         argc: -1
         cast_input:
         - false
@@ -3544,7 +3546,7 @@ fformat:
     PUT:
       args:
       - arg_types:
-        - int
+        - slsDetectorDefs::fileFormat
         argc: 1
         cast_input:
         - true
@@ -3661,7 +3663,7 @@ findex:
     PUT:
       args:
       - arg_types:
-        - int
+        - uint64_t
         argc: 1
         cast_input:
         - true
@@ -3835,7 +3837,7 @@ fmaster:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -4013,7 +4015,7 @@ frames:
     PUT:
       args:
       - arg_types:
-        - int
+        - int64_t
         argc: 1
         cast_input:
         - true
@@ -4184,7 +4186,7 @@ gainmode:
     PUT:
       args:
       - arg_types:
-        - int
+        - slsDetectorDefs::gainMode
         argc: 1
         cast_input:
         - true
@@ -5501,7 +5503,7 @@ nextframenumber:
     PUT:
       args:
       - arg_types:
-        - int
+        - uint64_t
         argc: 1
         cast_input:
         - true
@@ -5810,7 +5812,8 @@ patlimits:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - true
@@ -5827,7 +5830,10 @@ patlimits:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
+        - int
         argc: -1
         cast_input:
         - true
@@ -5860,7 +5866,8 @@ patloop:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - false
@@ -5881,7 +5888,10 @@ patloop:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
+        - int
         argc: -1
         cast_input:
         - false
@@ -5926,7 +5936,8 @@ patloop0:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - false
@@ -5947,7 +5958,10 @@ patloop0:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
+        - int
         argc: -1
         cast_input:
         - false
@@ -5991,7 +6005,8 @@ patloop1:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - false
@@ -6012,7 +6027,10 @@ patloop1:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
+        - int
         argc: -1
         cast_input:
         - false
@@ -6056,7 +6074,8 @@ patloop2:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - false
@@ -6077,7 +6096,10 @@ patloop2:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
+        - int
         argc: -1
         cast_input:
         - false
@@ -6160,7 +6182,8 @@ patnloop:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - false
@@ -6181,7 +6204,9 @@ patnloop:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
         argc: -1
         cast_input:
         - false
@@ -6216,7 +6241,8 @@ patnloop0:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - false
@@ -6237,7 +6263,9 @@ patnloop0:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
         argc: -1
         cast_input:
         - false
@@ -6271,7 +6299,8 @@ patnloop1:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - false
@@ -6292,7 +6321,9 @@ patnloop1:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
         argc: -1
         cast_input:
         - false
@@ -6326,7 +6357,8 @@ patnloop2:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - false
@@ -6347,7 +6379,9 @@ patnloop2:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
         argc: -1
         cast_input:
         - false
@@ -6466,7 +6500,8 @@ patwait:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - false
@@ -6487,7 +6522,9 @@ patwait:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
         argc: -1
         cast_input:
         - false
@@ -6522,7 +6559,8 @@ patwait0:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - false
@@ -6543,7 +6581,9 @@ patwait0:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
         argc: -1
         cast_input:
         - false
@@ -6577,7 +6617,8 @@ patwait1:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - false
@@ -6598,7 +6639,9 @@ patwait1:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
         argc: -1
         cast_input:
         - false
@@ -6632,7 +6675,8 @@ patwait2:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - false
@@ -6653,7 +6697,9 @@ patwait2:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
         argc: -1
         cast_input:
         - false
@@ -6687,7 +6733,8 @@ patwaittime:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - false
@@ -6708,7 +6755,10 @@ patwaittime:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
+        - auto
         argc: -1
         cast_input:
         - false
@@ -6746,7 +6796,8 @@ patwaittime0:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - false
@@ -6767,7 +6818,10 @@ patwaittime0:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
+        - auto
         argc: -1
         cast_input:
         - false
@@ -6804,7 +6858,8 @@ patwaittime1:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - false
@@ -6825,7 +6880,10 @@ patwaittime1:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
+        - auto
         argc: -1
         cast_input:
         - false
@@ -6862,7 +6920,8 @@ patwaittime2:
   actions:
     GET:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
         argc: -1
         cast_input:
         - false
@@ -6883,7 +6942,10 @@ patwaittime2:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - int
+        - int
+        - auto
         argc: -1
         cast_input:
         - false
@@ -7104,7 +7166,7 @@ polarity:
     PUT:
       args:
       - arg_types:
-        - int
+        - defs::polarity
         argc: 1
         cast_input:
         - true
@@ -7794,7 +7856,7 @@ romode:
     PUT:
       args:
       - arg_types:
-        - int
+        - slsDetectorDefs::readoutMode
         argc: 1
         cast_input:
         - true
@@ -8077,7 +8139,7 @@ rx_discardpolicy:
     PUT:
       args:
       - arg_types:
-        - int
+        - slsDetectorDefs::frameDiscardPolicy
         argc: 1
         cast_input:
         - true
@@ -8895,7 +8957,7 @@ rx_zmqip:
     PUT:
       args:
       - arg_types:
-        - int
+        - IpAddr
         argc: 1
         cast_input:
         - false
@@ -9315,7 +9377,7 @@ settings:
     PUT:
       args:
       - arg_types:
-        - int
+        - slsDetectorDefs::detectorSettings
         argc: 1
         cast_input:
         - true
@@ -9444,7 +9506,8 @@ signallist:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - std::string
         argc: -1
         cast_input:
         - false
@@ -9600,7 +9663,8 @@ slowadclist:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - std::string
         argc: -1
         cast_input:
         - false
@@ -10118,7 +10182,7 @@ sync:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -10789,7 +10853,7 @@ timing:
     PUT:
       args:
       - arg_types:
-        - int
+        - slsDetectorDefs::timingMode
         argc: 1
         cast_input:
         - true
@@ -10849,7 +10913,7 @@ timingsource:
     PUT:
       args:
       - arg_types:
-        - int
+        - slsDetectorDefs::timingSourceType
         argc: 1
         cast_input:
         - true
@@ -10994,7 +11058,7 @@ triggers:
     PUT:
       args:
       - arg_types:
-        - int
+        - int64_t
         argc: 1
         cast_input:
         - true
@@ -11041,7 +11105,7 @@ trimbits:
     GET:
       args:
       - arg_types:
-        - std::string
+        - special::path
         argc: 1
         cast_input:
         - false
@@ -11059,7 +11123,7 @@ trimbits:
     PUT:
       args:
       - arg_types:
-        - std::string
+        - special::path
         argc: 1
         cast_input:
         - false
@@ -11532,7 +11596,7 @@ udp_dstmac:
     PUT:
       args:
       - arg_types:
-        - int
+        - MacAddr
         argc: 1
         cast_input:
         - false
@@ -11571,7 +11635,7 @@ udp_dstmac2:
     PUT:
       args:
       - arg_types:
-        - int
+        - MacAddr
         argc: 1
         cast_input:
         - false
@@ -11840,7 +11904,7 @@ udp_srcmac:
     PUT:
       args:
       - arg_types:
-        - int
+        - MacAddr
         argc: 1
         cast_input:
         - false
@@ -11879,7 +11943,7 @@ udp_srcmac2:
     PUT:
       args:
       - arg_types:
-        - int
+        - MacAddr
         argc: 1
         cast_input:
         - false
@@ -13234,7 +13298,8 @@ voltagelist:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
+      - arg_types:
+        - std::string
         argc: -1
         cast_input:
         - false
@@ -13410,7 +13475,7 @@ zmqip:
     PUT:
       args:
       - arg_types:
-        - int
+        - IpAddr
         argc: 1
         cast_input:
         - false

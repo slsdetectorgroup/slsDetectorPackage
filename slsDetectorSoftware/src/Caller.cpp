@@ -33,9 +33,9 @@ throw RuntimeError("Wrong number of arguments for action PUT");
 
 if (args.size() == 1) {
 try {
-StringTo<int>(args[0]);
+StringTo<bool>(args[0]);
 } catch (...) {
-  throw RuntimeError("Could not convert argument 0 to int");
+  throw RuntimeError("Could not convert argument 0 to bool");
 }
 }
 
@@ -57,7 +57,7 @@ os << OutString(t) << '\n';
 
 if (action == slsDetectorDefs::PUT_ACTION) {
 if (args.size() == 1) {
-auto arg0 = StringTo<int>(args[0]);
+auto arg0 = StringTo<bool>(args[0]);
 det->setActive(arg0, std::vector<int>{ det_id });
 os << args.front() << '\n';
 }

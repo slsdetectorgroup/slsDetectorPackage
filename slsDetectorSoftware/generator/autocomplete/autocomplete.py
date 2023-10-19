@@ -133,44 +133,45 @@ def fix_json():
         f.write(tmp)
 
 
-def generate_bash_autocomplete(path=Path(__file__).parent / 'autocomplete.sh'):
+def generate_bash_autocomplete(output_path=Path(__file__).parent / 'autocomplete.sh', input_path=Path(__file__).parent / 'autocomplete.in.sh'):
     generate_type_values()
-    file = path.open('w')
+    output_file = output_path.open('w')
+    template_file = input_path.open('r')
 
     def writeline(line):
-        file.write(line + '\n')
+        output_file.write(line + '\n')
 
     class if_block:
         def __init__(self, condition):
             self.condition = condition
 
         def __enter__(self):
-            file.write('if [[ ' + self.condition + ' ]]; then\n')
+            output_file.write('if [[ ' + self.condition + ' ]]; then\n')
 
         def __exit__(self, type, value, traceback):
-            file.write('fi\n')
+            output_file.write('fi\n')
 
     class function:
         def __init__(self, name):
             self.name = name
 
         def __enter__(self):
-            file.write(self.name + '() {\n')
+            output_file.write(self.name + '() {\n')
 
         def __exit__(self, type, value, traceback):
-            file.write('}\n')
+            output_file.write('}\n')
 
     command_path = Path(__file__).parent.parent / 'extended_commands.yaml'
     commands = yaml.unsafe_load(command_path.open('r'))
 
-    with function('__sd'):
-        writeline('local cur=${COMP_WORDS[COMP_CWORD]}')
-        writeline('local FCN_RETURN=""')
-        writeline('local IS_PATH=0')
-        writeline("COMPREPLY=()")
+    for line in template_file:
+        if '-- THIS LINE WILL BE REPLACED WITH GENERATED CODE --' not in line:
+            output_file.write(line)
+            continue
+        writeline(f'local SLS_COMMANDS="{" ".join(commands.keys())}"')
         # generate functions
         for command_name, command in commands.items():
-            if command_name == 'xtiming':
+            if command_name != 'exptime':
                 continue
             with function('__' + command_name):
                 writeline('FCN_RETURN=""')
@@ -188,7 +189,7 @@ def generate_bash_autocomplete(path=Path(__file__).parent / 'autocomplete.sh'):
                                     possible_argc[i + 1] = []
                                 possible_argc[i + 1].append(arg['arg_types'][i])
                     if possible_argc:
-                        with if_block(f'$GET -eq {"1" if action == "GET" else "0"}'):
+                        with if_block(f'IS_GET -eq {"1" if action == "GET" else "0"}'):
                             for argc in possible_argc:
                                 with if_block(f'"${{COMP_CWORD}}" == "{argc + 1}"'):
                                     choices = get_types(possible_argc[argc])
@@ -198,30 +199,9 @@ def generate_bash_autocomplete(path=Path(__file__).parent / 'autocomplete.sh'):
 
                 writeline('return 0')
 
-        # check if the action is GET
-        with if_block('${COMP_WORDS[0]} == "sls_detector_get"'):
-            writeline('local GET=1')
-        with if_block('${COMP_WORDS[0]} == "sls_detector_put"'):
-            writeline('local GET=0')
 
-        # complete with command name
-        with if_block('${COMP_CWORD} -eq 1'):
-            writeline(f'COMPREPLY=( $(compgen -W "{" ".join(list(commands.keys()))}" -- "${{cur}}" ))')
-            writeline('return 0')
 
-        writeline('__"${COMP_WORDS[1]}"')
-
-        with if_block('${IS_PATH} -eq 1'):
-            writeline('COMPREPLY=( $(compgen -d -- "${cur}"))')
-            writeline('return 0')
-
-        writeline('COMPREPLY=( $(compgen -W "${FCN_RETURN}" -- "${cur}" ))')
-        writeline('return $?')
-
-    writeline('complete -F __sd -o filenames nosort sls_detector_get')
-    writeline('complete -F __sd -o filenames nosort sls_detector_put')
-
-    file.close()
+    output_file.close()
 
 
 if __name__ == '__main__':

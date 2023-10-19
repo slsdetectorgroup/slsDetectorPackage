@@ -66,7 +66,7 @@ _sd() {
 
   # if a command is written, autocomplete with the options
   # call the function for the command
-  __"${COMP_WORDS[1]}"
+  __"${COMP_WORDS[1]##*:}"
 
   # if IS_PATH is activated, autocomplete with the path
   if [[ ${IS_PATH} -eq 1 ]]; then

@@ -21,7 +21,6 @@ _sd() {
 
   # if no command is written, autocomplete with the commands
   if [[ ${COMP_CWORD} -eq 1 ]]; then
-    local SLS_COMMANDS="trimbits exptime"
 
     case "$cur" in
 			[0-9]*)
@@ -35,9 +34,17 @@ _sd() {
     return 0
   fi
 
+  if [[ ${COMP_CWORD} -eq 2 ]] && [[ ${COMP_WORDS[1]} == "-h" ]]; then
+    COMPREPLY=( $( compgen -W "$SLS_COMMANDS" -- "$cur" ) )
+    return 0
+  fi
+
   # if a command is written, autocomplete with the options
   # call the function for the command
-  __"${COMP_WORDS[1]}"
+
+  if [[ "$SLS_COMMANDS" == *"${COMP_WORDS[1]##*:}"* ]]; then
+      __"${COMP_WORDS[1]##*:}"
+  fi
 
   # if IS_PATH is activated, autocomplete with the path
   if [[ ${IS_PATH} -eq 1 ]]; then

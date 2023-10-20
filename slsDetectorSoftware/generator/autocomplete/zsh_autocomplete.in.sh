@@ -2,25 +2,31 @@
 # ANY CHANGES TO THIS FILE WILL BE OVERWRITTEN
 
 _sd() {
-  local FCN_RETURN=""
-  local IS_PATH=0
 
 
   # -- THIS LINE WILL BE REPLACED WITH GENERATED CODE --
 
 
+  local FCN_RETURN=""
+  local IS_PATH=0
   COMPREPLY=()
   local OPTIONS_NEW=""
-  local cur=${COMP_WORDS[COMP_CWORD]}
+  words=("${COMP_WORDS[@]}")
+  cword=$COMP_CWORD
+
+  local cur=${words[cword]}
   #  check the action (get or put)
-  if [ "${COMP_WORDS[0]}" == "sls_detector_get" ]; then
-    local IS_GET=1
-  else
-    local IS_GET=0
-  fi
+  case "${words[0]}" in
+    "sls_detector_get" | "g" | "detg")
+      local IS_GET=1
+      ;;
+    *)
+      local IS_GET=0
+      ;;
+  esac
 
   # if no command is written, autocomplete with the commands
-  if [[ ${COMP_CWORD} -eq 1 ]]; then
+  if [[ ${cword} -eq 1 ]]; then
 
     case "$cur" in
 			[0-9]*)
@@ -34,7 +40,7 @@ _sd() {
     return 0
   fi
 
-  if [[ ${COMP_CWORD} -eq 2 ]] && [[ ${COMP_WORDS[1]} == "-h" ]]; then
+  if [[ ${cword} -eq 2 ]] && [[ ${words[1]} == "-h" ]]; then
     COMPREPLY=( $( compgen -W "$SLS_COMMANDS" -- "$cur" ) )
     return 0
   fi
@@ -42,13 +48,13 @@ _sd() {
   # if a command is written, autocomplete with the options
   # call the function for the command
 
-  if [[ "$SLS_COMMANDS" == *"${COMP_WORDS[1]##*:}"* ]]; then
-      __"${COMP_WORDS[1]##*:}"
+  if [[ "$SLS_COMMANDS" == *"${words[1]##*:}"* ]]; then
+      __"${words[1]##*:}"
   fi
 
   # if IS_PATH is activated, autocomplete with the path
   if [[ ${IS_PATH} -eq 1 ]]; then
-    COMPREPLY=($(compgen -d -- "${cur}"))
+    COMPREPLY=($(compgen -f -- "${cur}"))
     return 0
   fi
 
@@ -60,4 +66,9 @@ _sd() {
 }
 
 complete -F _sd -o filenames sls_detector_get
+complete -F _sd -o filenames g
+complete -F _sd -o filenames detg
+
 complete -F _sd -o filenames sls_detector_put
+complete -F _sd -o filenames p
+complete -F _sd -o filenames detp

@@ -1,9 +1,9 @@
-#### simpler version of autocomplete.sh to understand the logic
-#### each command has its own function when called it will produce the possible values for autocompletion
-
+# GENERATED FILE - DO NOT EDIT
+# ANY CHANGES TO THIS FILE WILL BE OVERWRITTEN
 
 _sd() {
 
+  # Taken from https://github.com/scop/bash-completion/blob/15b74b1050333f425877a7cbd99af2998b95c476/bash_completion#L770C12-L770C12
   # Reassemble command line words, excluding specified characters from the
   # list of word completion separators (COMP_WORDBREAKS).
   # @param $1 chars  Characters out of $COMP_WORDBREAKS which should
@@ -76,58 +76,43 @@ _sd() {
 }
 
 
-
-  __exptime(){
-    if [ "${IS_GET}" == "1" ]; then
-      if [ "${cword}" == "2" ]; then
-        FCN_RETURN="s ms us ns"
-      fi
-    else
-      if [ "${cword}" == "2" ]; then
-        FCN_RETURN=""
-      fi
-
-      if [ "${cword}" == "3" ]; then
-        FCN_RETURN="s ms us ns"
-      fi
-
-    fi
-  }
-
-  # trimbits will activate IS_PATH and signal that its input is a path
-  __trimbits(){
-    if [ "${IS_GET}" == "1" ]; then
-      if [ "${cword}" == "2" ]; then
-        FCN_RETURN=""
-        IS_PATH=1
-      fi
-    else
-      if [ "${cword}" == "2" ]; then
-        FCN_RETURN=""
-        IS_PATH=1
-      fi
-    fi
-  }
-
-  local cword words=()
-  _comp__reassemble_words ":" words cword
   local FCN_RETURN=""
   local IS_PATH=0
+
+
+  # -- THIS LINE WILL BE REPLACED WITH GENERATED CODE --
+
+
   COMPREPLY=()
   local OPTIONS_NEW=""
-#  _get_comp_words_by_ref -n : cur
-  local cur=${words[cword]}
-  #  check the action (get or put)
-  if [ "${words[0]}" == "sls_detector_get" ]; then
-    local IS_GET=1
-  else
-    local IS_GET=0
-  fi
 
+  # check if bash or zsh
+  # _get_comp_words_by_ref is a bash built-in function, we check if it exists
+  declare -Ff _get_comp_words_by_ref > /dev/null && IS_BASH=1 || IS_BASH=0
+
+
+  # bash interprets the colon character : as a special character and splits the argument in two
+  # different than what zsh does
+  # https://stackoverflow.com/a/3224910
+  # https://stackoverflow.com/a/12495727
+  local cur
+  local cword words=()
+  _comp__reassemble_words ":" words cword
+  cur=${words[cword]}
+
+  #  check the action (get or put)
+  case "${words[0]}" in
+    "sls_detector_get" | "g" | "detg")
+      local IS_GET=1
+      ;;
+    *)
+      local IS_GET=0
+      ;;
+  esac
 
   # if no command is written, autocomplete with the commands
   if [[ ${cword} -eq 1 ]]; then
-    local SLS_COMMANDS="trimbits exptime"
+#    local SLS_COMMANDS="trimbits exptime"
     local SLS_COMMANDS_NEW=""
 
     case "$cur" in
@@ -145,13 +130,21 @@ _sd() {
     return 0
   fi
 
+  if [[ ${cword} -eq 2 ]] && [[ ${words[1]} == "-h" ]]; then
+    COMPREPLY=( $( compgen -W "$SLS_COMMANDS" -- "$cur" ) )
+    return 0
+  fi
+
   # if a command is written, autocomplete with the options
   # call the function for the command
-  __"${words[1]##*:}"
+
+  if [[ "$SLS_COMMANDS" == *"${words[1]##*:}"* ]]; then
+      __"${words[1]##*:}"
+  fi
 
   # if IS_PATH is activated, autocomplete with the path
   if [[ ${IS_PATH} -eq 1 ]]; then
-    COMPREPLY=($(compgen -d -- "${cur}"))
+    COMPREPLY=($(compgen -f -- "${cur}"))
     return 0
   fi
 
@@ -163,4 +156,9 @@ _sd() {
 }
 
 complete -F _sd -o filenames sls_detector_get
+complete -F _sd -o filenames g
+complete -F _sd -o filenames detg
+
 complete -F _sd -o filenames sls_detector_put
+complete -F _sd -o filenames p
+complete -F _sd -o filenames detp

@@ -133,7 +133,7 @@ def fix_json():
         f.write(tmp)
 
 
-def generate_bash_autocomplete(output_path=Path(__file__).parent / 'autocomplete.sh', input_path=Path(__file__).parent / 'autocomplete.in.sh'):
+def generate_bash_autocomplete(output_path=Path(__file__).parent / 'bash_autocomplete.sh', input_path=Path(__file__).parent / 'bash_autocomplete.in.sh'):
     generate_type_values()
     output_file = output_path.open('w')
     template_file = input_path.open('r')
@@ -171,6 +171,7 @@ def generate_bash_autocomplete(output_path=Path(__file__).parent / 'autocomplete
         writeline(f'local SLS_COMMANDS="{" ".join(commands.keys())}"')
         # generate functions
         for command_name, command in commands.items():
+            # added for debugging
             if command_name == 'xxxexptime':
                 continue
             with function('__' + command_name):
@@ -189,9 +190,9 @@ def generate_bash_autocomplete(output_path=Path(__file__).parent / 'autocomplete
                                     possible_argc[i + 1] = []
                                 possible_argc[i + 1].append(arg['arg_types'][i])
                     if possible_argc:
-                        with if_block(f'IS_GET -eq {"1" if action == "GET" else "0"}'):
+                        with if_block(f'${{IS_GET}} -eq {"1" if action == "GET" else "0"}'):
                             for argc in possible_argc:
-                                with if_block(f'"${{COMP_CWORD}}" == "{argc + 1}"'):
+                                with if_block(f'"${{cword}}" == "{argc + 1}"'):
                                     choices = get_types(possible_argc[argc])
                                     writeline(f'FCN_RETURN="{" ".join(sorted(choices))}"')
                                     if 'special::path' in possible_argc[argc]:

@@ -67,7 +67,8 @@ activate:
         store_result_in_t: false
   command_name: activate
   function_alias: activate
-  help: ''
+  help: "[0, 1] \n\t[Eiger] 1 is default. 0 deactivates readout and does not send\
+    \ data."
   infer_action: true
   template: true
 adcclk:
@@ -106,7 +107,7 @@ adcclk:
         store_result_in_t: false
   command_name: adcclk
   function_alias: adcclk
-  help: ''
+  help: "[n_clk in MHz]\n\t[Ctb] ADC clock frequency in MHz."
   infer_action: true
   template: true
 adcenable:
@@ -145,7 +146,7 @@ adcenable:
         store_result_in_t: false
   command_name: adcenable
   function_alias: adcenable
-  help: ''
+  help: "[bitmask]\n\t[Ctb] ADC Enable Mask for 1Gb Enable for each 32 ADC channel."
   infer_action: true
   template: true
 adcenable10g:
@@ -184,7 +185,9 @@ adcenable10g:
         store_result_in_t: false
   command_name: adcenable10g
   function_alias: adcenable10g
-  help: ''
+  help: "[bitmask]\n\t[Ctb] ADC Enable Mask for 10Gb mode for each 32 ADC channel.\
+    \ However, if any of a consecutive 4 bits are enabled, the complete 4 bits are\
+    \ enabled."
   infer_action: true
   template: true
 adcindex:
@@ -251,7 +254,8 @@ adcinvert:
         store_result_in_t: false
   command_name: adcinvert
   function_alias: adcinvert
-  help: ''
+  help: "[bitmask]\n\t[Ctb][Jungfrau][Moench] ADC Inversion Mask.\n\t[Jungfrau][Moench]\
+    \ Inversions on top of the default mask."
   infer_action: true
   template: true
 adclist:
@@ -507,7 +511,7 @@ adcpipeline:
         store_result_in_t: false
   command_name: adcpipeline
   function_alias: adcpipeline
-  help: ''
+  help: "[n_value]\n\t[Ctb][Moench] Pipeline for ADC clock."
   infer_action: true
   template: true
 adcreg:
@@ -647,7 +651,7 @@ apulse:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -657,14 +661,14 @@ apulse:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: apulse
   function_alias: apulse
-  help: ''
+  help: "[0, 1]\n\t[Mythen3] Enables or disables analog pulsing. Default is disabled"
   infer_action: true
   template: true
 asamples:
@@ -703,7 +707,7 @@ asamples:
         store_result_in_t: false
   command_name: asamples
   function_alias: asamples
-  help: ''
+  help: "[n_samples]\n\t[CTB] Number of analog samples expected."
   infer_action: true
   template: true
 autocompdisable:
@@ -725,7 +729,7 @@ autocompdisable:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -735,14 +739,19 @@ autocompdisable:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: autocompdisable
   function_alias: autocompdisable
-  help: ''
+  help: "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, the on-chip\
+    \ gain switching is active during the entire exposure.This mode disables the on\
+    \ - chip gain switching comparator automatically after 93.75% (only for chipv1.0)\
+    \ of exposure time (only for longer than 100us). It is possible to set the duration\
+    \ for chipv1.1 using compdisabletime command.\n\tDefault is 0 or this mode disabled(comparator\
+    \ enabled throughout). 1 enables mode. 0 disables mode. "
   infer_action: true
   template: true
 badchannels:
@@ -918,7 +927,8 @@ burstperiod:
         store_result_in_t: false
   command_name: burstperiod
   function_alias: burstperiod
-  help: ''
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Gotthard2] Period between 2 bursts.\
+    \ Only in burst mode and auto timing mode."
   infer_action: true
   template: true
 bursts:
@@ -1043,7 +1053,7 @@ cdsgain:
         store_result_in_t: false
   command_name: cdsgain
   function_alias: cdsgain
-  help: ''
+  help: "[0, 1]\n\t[Gotthard2] Enable or disable CDS gain. Default is disabled."
   infer_action: true
   template: true
 chipversion:
@@ -1415,7 +1425,8 @@ column:
         store_result_in_t: false
   command_name: column
   function_alias: column
-  help: ''
+  help: "[value]\n\tSet Detector column (udp header) to value. \n\tGui uses it to\
+    \ rearrange for complete image"
   infer_action: true
   template: true
 compdisabletime:
@@ -1495,7 +1506,8 @@ compdisabletime:
         store_result_in_t: false
   command_name: compdisabletime
   function_alias: compdisabletime
-  help: ''
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Time before end of\
+    \ exposure when comparator is disabled. It is only possible for chipv1.1."
   infer_action: true
   template: true
 confadc:
@@ -2086,7 +2098,7 @@ dbitclk:
         store_result_in_t: false
   command_name: dbitclk
   function_alias: dbitclk
-  help: ''
+  help: "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz."
   infer_action: true
   template: true
 dbitphase:
@@ -2235,7 +2247,8 @@ dbitpipeline:
         store_result_in_t: false
   command_name: dbitpipeline
   function_alias: dbitpipeline
-  help: ''
+  help: "[n_value]\n\t[Ctb][Gotthard2] Pipeline of the clock for latching digital\
+    \ bits.\n\t[Gotthard2] Options: 0-7\n\t[CTB] Options: 0-255"
   infer_action: true
   template: true
 defaultdac:
@@ -2441,7 +2454,8 @@ delay:
         store_result_in_t: false
   command_name: delay
   function_alias: delay
-  help: ''
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Moench]\
+    \ Delay after trigger"
   infer_action: true
   template: true
 delayl:
@@ -2475,7 +2489,8 @@ delayl:
         store_result_in_t: true
   command_name: delayl
   function_alias: delayl
-  help: ''
+  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] DelayLeft Delay\
+    \ Left in Acquisition. \n\t[Gotthard2] only in continuous mode."
   infer_action: true
   template: true
 detectorserverversion:
@@ -2589,7 +2604,7 @@ dpulse:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -2599,14 +2614,14 @@ dpulse:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: dpulse
   function_alias: dpulse
-  help: ''
+  help: "[0, 1]\n\t[Mythen3] Enables or disables digital pulsing. Default is disabled"
   infer_action: true
   template: true
 dr:
@@ -2708,7 +2723,7 @@ dsamples:
         store_result_in_t: false
   command_name: dsamples
   function_alias: dsamples
-  help: ''
+  help: "[n_value]\n\t[CTB] Number of digital samples expected."
   infer_action: true
   template: true
 execcommand:
@@ -3351,7 +3366,8 @@ exptimel:
         store_result_in_t: true
   command_name: exptimel
   function_alias: exptimel
-  help: ''
+  help: "[(optional unit) ns|us|ms|s]\n\t[Gotthard] Exposure time left for current\
+    \ frame. "
   infer_action: true
   template: true
 extrastoragecells:
@@ -3414,7 +3430,7 @@ extsampling:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -3424,14 +3440,15 @@ extsampling:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: extsampling
   function_alias: extsampling
-  help: ''
+  help: "[0, 1]\n\t[Ctb] Enable for external sampling signal for digital data to signal\
+    \ by extsampling src command. For advanced users only."
   infer_action: true
   template: true
 extsamplingsrc:
@@ -3470,7 +3487,8 @@ extsamplingsrc:
         store_result_in_t: false
   command_name: extsamplingsrc
   function_alias: extsamplingsrc
-  help: ''
+  help: "[0-63]\n\t[Ctb] Sampling source signal for digital data. For advanced users\
+    \ only."
   infer_action: true
   template: true
 extsig:
@@ -3563,7 +3581,8 @@ fformat:
         store_result_in_t: false
   command_name: fformat
   function_alias: fformat
-  help: ''
+  help: "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be compiled\
+    \ with HDF5 flags. Default is binary."
   infer_action: true
   template: true
 filtercells:
@@ -3602,7 +3621,7 @@ filtercells:
         store_result_in_t: false
   command_name: filtercells
   function_alias: filtercells
-  help: ''
+  help: "[0-12]\n\t[Jungfrau] Set Filter Cell. Only for chipv1.1. Advanced user Command"
   infer_action: true
   template: true
 filterresistor:
@@ -3641,7 +3660,9 @@ filterresistor:
         store_result_in_t: false
   command_name: filterresistor
   function_alias: filterresistor
-  help: ''
+  help: "[value] [Gotthard2][Jungfrau] Set filter resistor. Increasing values for\
+    \ increasing resistance.\n\t[Gotthard2] Options: [0|1|2|3]. Default is 0.\n\t\
+    [Jungfrau] Options: [0|1]. Default is 1."
   infer_action: true
   template: true
 findex:
@@ -3680,7 +3701,7 @@ findex:
         store_result_in_t: false
   command_name: findex
   function_alias: findex
-  help: ''
+  help: "[n_value]\n\tFile or Acquisition index."
   infer_action: true
   template: true
 firmwaretest:
@@ -3759,7 +3780,7 @@ fliprows:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -3769,14 +3790,17 @@ fliprows:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: fliprows
   function_alias: fliprows
-  help: ''
+  help: "[0, 1]\n\t[Eiger] flips rows paramater sent to slsreceiver to stream as json\
+    \ parameter to flip rows in gui \n\t[Jungfrau][Moench] flips rows in the detector\
+    \ itself. For bottom module and number of interfaces must be set to 2. slsReceiver\
+    \ and slsDetectorGui does not handle."
   infer_action: true
   template: true
 flowcontrol10g:
@@ -3798,7 +3822,7 @@ flowcontrol10g:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -3808,14 +3832,14 @@ flowcontrol10g:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: flowcontrol10g
   function_alias: flowcontrol10g
-  help: ''
+  help: "[0, 1]\n\t[Eiger][Jungfrau][Moench] 10GbE Flow Control."
   infer_action: true
   template: true
 fmaster:
@@ -3893,7 +3917,8 @@ fname:
         store_result_in_t: false
   command_name: fname
   function_alias: fname
-  help: ''
+  help: "[name]\n\tFile name prefix for output data file. Default is run. File name:\
+    \ [file name prefix]_d[detector index]_f[sub file index]_[acquisition/file index].raw."
   infer_action: true
   template: true
 foverwrite:
@@ -3915,7 +3940,7 @@ foverwrite:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -3925,14 +3950,14 @@ foverwrite:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: foverwrite
   function_alias: foverwrite
-  help: ''
+  help: "[0, 1]\n\tEnable or disable file overwriting. Default is 1."
   infer_action: true
   template: true
 fpath:
@@ -3954,7 +3979,7 @@ fpath:
     PUT:
       args:
       - arg_types:
-        - std::string
+        - special::path
         argc: 1
         cast_input:
         - false
@@ -3971,7 +3996,8 @@ fpath:
         store_result_in_t: false
   command_name: fpath
   function_alias: fpath
-  help: ''
+  help: "[path]\n\tDirectory where output data files are written in receiver. Default\
+    \ is '/'. \n\tIf path does not exist, it will try to create it."
   infer_action: true
   template: true
 framecounter:
@@ -4091,7 +4117,8 @@ frametime:
         store_result_in_t: true
   command_name: frametime
   function_alias: frametime
-  help: ''
+  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][CTB]\
+    \ Timestamp at a frame start.\n\t[Gotthard2] not in burst and auto mode."
   infer_action: true
   template: true
 fwrite:
@@ -4113,7 +4140,7 @@ fwrite:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -4123,14 +4150,14 @@ fwrite:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: fwrite
   function_alias: fwrite
-  help: ''
+  help: "[0, 1]\n\tEnable or disable receiver file write. Default is 1."
   infer_action: true
   template: true
 gaincaps:
@@ -4203,7 +4230,9 @@ gainmode:
         store_result_in_t: false
   command_name: gainmode
   function_alias: gainmode
-  help: ''
+  help: "[dynamicgain|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t[Jungfrau]\
+    \ Gain mode.\n\tCAUTION: Do not use fixg0 without caution, you can damage the\
+    \ detector!!!"
   infer_action: true
   template: true
 gappixels:
@@ -4700,7 +4729,8 @@ gates:
         store_result_in_t: false
   command_name: gates
   function_alias: gates
-  help: ''
+  help: "[n_gates]\n\t[Mythen3] Number of external gates in gating or trigger_gating\
+    \ mode (external gating)."
   infer_action: true
   template: true
 getbit:
@@ -4792,7 +4822,8 @@ highvoltage:
         store_result_in_t: false
   command_name: highvoltage
   function_alias: highvoltage
-  help: ''
+  help: "[n_value]\n\tHigh voltage to the sensor in Voltage. \n\t[Gotthard] [0|90|110|120|150|180|200]\
+    \ \n\t[Eiger][Mythen3][Gotthard2] 0-200 \n\t[Jungfrau][Moench][Ctb] [0|60-200]"
   infer_action: true
   template: true
 hostname:
@@ -4973,7 +5004,7 @@ imagetest:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -4983,14 +5014,17 @@ imagetest:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: imagetest
   function_alias: imagetest
-  help: ''
+  help: "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated values when\
+    \ taking an acquisition. Default is 0.\n\t[Eiger][Jungfrau][Moench] Only for Virtual\
+    \ servers. If 0, each pixel intensity incremented by 1. If 1, all pixels almost\
+    \ saturated."
   infer_action: true
   template: true
 initialchecks:
@@ -5100,7 +5134,7 @@ interpolation:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -5110,14 +5144,16 @@ interpolation:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: interpolation
   function_alias: interpolation
-  help: ''
+  help: "[0, 1]\n\t[Mythen3] Enables or disables interpolation. Default is disabled.\
+    \  Interpolation mode enables all counters and disables vth3. Disabling sets back\
+    \ counter mask and vth3."
   infer_action: true
   template: true
 interruptsubframe:
@@ -5139,7 +5175,7 @@ interruptsubframe:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -5149,14 +5185,15 @@ interruptsubframe:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: interruptsubframe
   function_alias: interruptsubframe
-  help: ''
+  help: "[0, 1]\n\t[Eiger] 1 interrupts last subframe at required exposure time. 0\
+    \ will wait for last sub frame to finish exposing. 0 is default."
   infer_action: true
   template: true
 kernelversion:
@@ -5220,7 +5257,7 @@ led:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -5230,14 +5267,14 @@ led:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: led
   function_alias: led
-  help: ''
+  help: "[0, 1]\n\t[Ctb] Switches on/off all LEDs."
   infer_action: true
   template: true
 lock:
@@ -5259,7 +5296,7 @@ lock:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -5269,14 +5306,14 @@ lock:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: lock
   function_alias: lock
-  help: ''
+  help: "[0, 1]\n\tLock detector to one IP, 1: locks. Default is unlocked"
   infer_action: true
   template: true
 master:
@@ -5298,7 +5335,7 @@ master:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -5308,14 +5345,16 @@ master:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: master
   function_alias: master
-  help: ''
+  help: "[0, 1]\n\t[Eiger][Gotthard2][Jungfrau][Moench] Sets (half) module to master\
+    \ and other(s) to slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger][Jungfrau][Moench]\
+    \ Gets if the current (half) module is master."
   infer_action: true
   template: true
 maxadcphaseshift:
@@ -5424,7 +5463,8 @@ measuredperiod:
         store_result_in_t: true
   command_name: measuredperiod
   function_alias: measuredperiod
-  help: ''
+  help: "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured frame period between last\
+    \ frame and previous one. Can be measured with minimum 2 frames in an acquisition."
   infer_action: true
   template: true
 measuredsubperiod:
@@ -5458,7 +5498,8 @@ measuredsubperiod:
         store_result_in_t: true
   command_name: measuredsubperiod
   function_alias: measuredsubperiod
-  help: ''
+  help: "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured sub frame period between\
+    \ last sub frame and previous one."
   infer_action: true
   template: true
 moduleid:
@@ -5520,7 +5561,8 @@ nextframenumber:
         store_result_in_t: false
   command_name: nextframenumber
   function_alias: nextframenumber
-  help: ''
+  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][CTB] Next frame number. Stopping acquisition\
+    \ might result in different frame numbers for different modules."
   infer_action: true
   template: true
 nmod:
@@ -5580,7 +5622,11 @@ numinterfaces:
         store_result_in_t: false
   command_name: numinterfaces
   function_alias: numinterfaces
-  help: ''
+  help: "[1, 2]\n\t[Jungfrau][Moench] Number of udp interfaces to stream data from\
+    \ detector. Default: 1.\n\tAlso enables second interface in receiver for listening\
+    \ (Writes a file per interface if writing enabled).\n\tAlso restarts client and\
+    \ receiver zmq sockets if zmq streaming enabled.\n\t[Eiger] Only gets with result\
+    \ 2."
   infer_action: true
   template: true
 overflow:
@@ -5602,7 +5648,7 @@ overflow:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -5612,14 +5658,15 @@ overflow:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: overflow
   function_alias: overflow
-  help: ''
+  help: "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in 32 bit mode. Default\
+    \ is disabled."
   infer_action: true
   template: true
 packageversion:
@@ -5661,7 +5708,7 @@ parallel:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -5671,14 +5718,18 @@ parallel:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: parallel
   function_alias: parallel
-  help: ''
+  help: "[0, 1]\n\t[Eiger][Mythen3][Gotthard2][Moench] Enable or disable parallel\
+    \ mode.\n\t[Mythen3] If exptime is too short, the acquisition will return ERROR\
+    \ status and take fewer frames than expected.\n\t[Mythen3][Eiger][Moench] Default:\
+    \ Non parallel.\n\t[Gotthard2] Default: Parallel. Non parallel mode works only\
+    \ in continuous mode."
   infer_action: true
   template: true
 parameters:
@@ -5726,7 +5777,7 @@ partialreset:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -5736,14 +5787,16 @@ partialreset:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: partialreset
   function_alias: partialreset
-  help: ''
+  help: "[0, 1]\n\t[Eiger] Sets up detector to do partial or complete reset at start\
+    \ of acquisition. 0 complete reset, 1 partial reset. Default is complete reset.\
+    \ Advanced function!"
   infer_action: true
   template: true
 patfname:
@@ -5805,7 +5858,7 @@ patioctrl:
         store_result_in_t: false
   command_name: patioctrl
   function_alias: patioctrl
-  help: ''
+  help: "[64 bit mask]\n\t[Ctb] 64 bit mask defining input (0) and output (1) signals."
   infer_action: true
   template: true
 patlimits:
@@ -6175,7 +6228,8 @@ patmask:
         store_result_in_t: false
   command_name: patmask
   function_alias: patmask
-  help: ''
+  help: "[64 bit mask]\n\t[Ctb][Mythen3] Selects the bits that will have a pattern\
+    \ mask applied to the selected patmask for every pattern."
   infer_action: true
   template: true
 patnloop:
@@ -6447,7 +6501,8 @@ patsetbit:
         store_result_in_t: false
   command_name: patsetbit
   function_alias: patsetbit
-  help: ''
+  help: "[64 bit mask]\n\t[Ctb][Mythen3] Sets the mask applied to every pattern to\
+    \ the selected bits."
   infer_action: true
   template: true
 patternX:
@@ -7110,7 +7165,7 @@ period:
         store_result_in_t: false
   command_name: period
   function_alias: period
-  help: ''
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\tPeriod between frames"
   infer_action: true
   template: true
 periodl:
@@ -7144,7 +7199,8 @@ periodl:
         store_result_in_t: true
   command_name: periodl
   function_alias: periodl
-  help: ''
+  help: "\n\t[Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] Period left for\
+    \ current frame. \n\t[Gotthard2] only in continuous mode."
   infer_action: true
   template: true
 polarity:
@@ -7183,7 +7239,7 @@ polarity:
         store_result_in_t: false
   command_name: polarity
   function_alias: polarity
-  help: ''
+  help: "[pos|neg]\n\t[Mythen3] Sets negative or positive polarity. Default is positive"
   infer_action: true
   template: true
 port:
@@ -7222,7 +7278,9 @@ port:
         store_result_in_t: false
   command_name: port
   function_alias: port
-  help: ''
+  help: "[n]\n\tPort number of the control server on detector for detector-client\
+    \ tcp interface. Default is 1952. Normally unchanged. Set different ports for\
+    \ virtual servers on same pc."
   infer_action: true
   template: true
 powerchip:
@@ -7244,7 +7302,7 @@ powerchip:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -7254,14 +7312,18 @@ powerchip:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: powerchip
   function_alias: powerchip
-  help: ''
+  help: "[0, 1]\n\t[Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. \n\t[Jungfrau][Moench]\
+    \ Default is 0. Get will return power status. Can be off if temperature event\
+    \ occured (temperature over temp_threshold with temp_control enabled. Will configure\
+    \ chip (only chip v1.1)\n\t[Mythen3][Gotthard2] Default is 1. If module not connected\
+    \ or wrong module, powerchip will fail."
   infer_action: true
   template: true
 programfpga:
@@ -7269,7 +7331,7 @@ programfpga:
     PUT:
       args:
       - arg_types:
-        - std::string
+        - special::path
         argc: 1
         cast_input:
         - false
@@ -7288,7 +7350,7 @@ programfpga:
         require_det_id: true
         store_result_in_t: false
       - arg_types:
-        - std::string
+        - special::path
         - special::force-delete-normal-file
         argc: 2
         cast_input:
@@ -7432,7 +7494,7 @@ pumpprobe:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -7442,14 +7504,15 @@ pumpprobe:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: pumpprobe
   function_alias: pumpprobe
-  help: ''
+  help: "[0, 1]\n\t[Mythen3] Enables or disables pump probe mode. Default is disabled.\
+    \ Pump probe mode only enables vth2. Disabling sets back to previous value."
   infer_action: true
   template: true
 quad:
@@ -7561,7 +7624,12 @@ readnrows:
         store_result_in_t: false
   command_name: readnrows
   function_alias: readnrows
-  help: ''
+  help: "\n\t[1-256]\n\t\t[Eiger] Number of rows to readout per half module starting\
+    \ from the centre. Options: 0 - 256. 256 is default. The permissible values depend\
+    \ on dynamic range and 10Gbe enabled.\n\t[8-512 (multiple of 8)]\n\t\t[Jungfrau]\
+    \ Number of rows per module starting from the centre. Options: 8 - 512, must be\
+    \ multiples of 8. Default is 512.\n\t\t[Moench] Number of rows per module starting\
+    \ from the centre. Options:16 - 400, must be multiples of 16. Default is 400."
   infer_action: true
   template: true
 readout:
@@ -7873,7 +7941,8 @@ romode:
         store_result_in_t: false
   command_name: romode
   function_alias: romode
-  help: ''
+  help: "[analog|digital|analog_digital|transceiver|digital_transceiver]\n\t[CTB]\
+    \ Readout mode. Default is analog."
   infer_action: true
   template: true
 row:
@@ -7912,7 +7981,8 @@ row:
         store_result_in_t: false
   command_name: row
   function_alias: row
-  help: ''
+  help: "[value]\n\tSet Detector row (udp header) to value. \n\tGui uses it to rearrange\
+    \ for complete image"
   infer_action: true
   template: true
 runclk:
@@ -7951,7 +8021,7 @@ runclk:
         store_result_in_t: false
   command_name: runclk
   function_alias: runclk
-  help: ''
+  help: "[n_clk in MHz]\n\t[Ctb] Run clock in MHz."
   infer_action: true
   template: true
 runtime:
@@ -7985,7 +8055,8 @@ runtime:
         store_result_in_t: true
   command_name: runtime
   function_alias: runtime
-  help: ''
+  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][CTB]\
+    \ Time from detector start up.\n\t[Gotthard2] not in burst and auto mode."
   infer_action: true
   template: true
 rx_arping:
@@ -8007,7 +8078,7 @@ rx_arping:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -8017,14 +8088,15 @@ rx_arping:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: rx_arping
   function_alias: rx_arping
-  help: ''
+  help: "[0, 1]\n\tStarts a thread in slsReceiver to arping the interface it is listening\
+    \ to every minute. Useful in 10G mode."
   infer_action: true
   template: true
 rx_clearroi:
@@ -8117,7 +8189,7 @@ rx_dbitoffset:
         store_result_in_t: false
   command_name: rx_dbitoffset
   function_alias: rx_dbitoffset
-  help: ''
+  help: "[n_bytes]\n\t[Ctb] Offset in bytes in digital data to skip in receiver."
   infer_action: true
   template: true
 rx_discardpolicy:
@@ -8156,7 +8228,9 @@ rx_discardpolicy:
         store_result_in_t: false
   command_name: rx_discardpolicy
   function_alias: rx_discardpolicy
-  help: ''
+  help: "[nodiscard (default)|discardempty|discardpartial(fastest)]\n\tFrame discard\
+    \ policy of receiver. nodiscard does not discard frames, discardempty discards\
+    \ empty frames, discardpartial discards partial frames."
   infer_action: true
   template: true
 rx_fifodepth:
@@ -8195,7 +8269,8 @@ rx_fifodepth:
         store_result_in_t: false
   command_name: rx_fifodepth
   function_alias: rx_fifodepth
-  help: ''
+  help: "[n_frames]\n\tSet the number of frames in the receiver fifo depth (buffer\
+    \ between listener and writer threads)."
   infer_action: true
   template: true
 rx_frameindex:
@@ -8276,7 +8351,8 @@ rx_framesperfile:
         store_result_in_t: false
   command_name: rx_framesperfile
   function_alias: rx_framesperfile
-  help: ''
+  help: "[n_frames]\n\tNumber of frames per file in receiver in an acquisition. Default\
+    \ depends on detector type. 0 is infinite or all frames in single file."
   infer_action: true
   template: true
 rx_hostname:
@@ -8457,7 +8533,7 @@ rx_lock:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -8467,14 +8543,15 @@ rx_lock:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: rx_lock
   function_alias: rx_lock
-  help: ''
+  help: "[0, 1]\n\tLock receiver to one client IP, 1 locks, 0 unlocks. Default is\
+    \ unlocked."
   infer_action: true
   template: true
 rx_missingpackets:
@@ -8518,7 +8595,7 @@ rx_padding:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -8528,14 +8605,15 @@ rx_padding:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: rx_padding
   function_alias: rx_padding
-  help: ''
+  help: "[0, 1]\n\tPartial frames padding enable in the receiver. Default: enabled.\
+    \ Disabling is fastest."
   infer_action: true
   template: true
 rx_printconfig:
@@ -8650,7 +8728,7 @@ rx_silent:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -8660,14 +8738,14 @@ rx_silent:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: rx_silent
   function_alias: rx_silent
-  help: ''
+  help: "[0, 1]\n\tSwitch on or off receiver text output during acquisition."
   infer_action: true
   template: true
 rx_start:
@@ -8770,7 +8848,10 @@ rx_tcpport:
         store_result_in_t: false
   command_name: rx_tcpport
   function_alias: rx_tcpport
-  help: ''
+  help: "[port]\n\tTCP port for client-receiver communication. Default is 1954. Must\
+    \ be different if multiple receivers on same pc. Must be first command to set\
+    \ a receiver parameter. Multi command will automatically increment for individual\
+    \ modules."
   infer_action: true
   template: true
 rx_threads:
@@ -8832,7 +8913,8 @@ rx_udpsocksize:
         store_result_in_t: false
   command_name: rx_udpsocksize
   function_alias: rx_udpsocksize
-  help: ''
+  help: "[n_size]\n\tUDP socket buffer size in receiver. Tune rmem_default and rmem_max\
+    \ accordingly. Max value is INT_MAX/2."
   infer_action: true
   template: true
 rx_version:
@@ -8892,7 +8974,10 @@ rx_zmqfreq:
         store_result_in_t: false
   command_name: rx_zmqfreq
   function_alias: rx_zmqfreq
-  help: ''
+  help: "[nth frame]\n\tFrequency of frames streamed out from receiver via zmq\n\t\
+    Default: 1, Means every frame is streamed out. \n\tIf 2, every second frame is\
+    \ streamed out. \n\tIf 0, streaming timer is the timeout, after which current\
+    \ frame is sent out. (default timeout is 500 ms). Usually used for gui purposes."
   infer_action: true
   template: true
 rx_zmqhwm:
@@ -8974,7 +9059,9 @@ rx_zmqip:
         store_result_in_t: false
   command_name: rx_zmqip
   function_alias: rx_zmqip
-  help: ''
+  help: "[x.x.x.x]\n\tZmq Ip Address from which data is to be streamed out of the\
+    \ receiver. Also restarts receiver zmq streaming if enabled. Default is from rx_hostname.\
+    \ Modified only when using an intermediate process between receiver."
   infer_action: true
   template: true
 rx_zmqport:
@@ -9013,7 +9100,11 @@ rx_zmqport:
         store_result_in_t: false
   command_name: rx_zmqport
   function_alias: rx_zmqport
-  help: ''
+  help: "[port]\n\tZmq port for data to be streamed out of the receiver. Also restarts\
+    \ receiver zmq streaming if enabled. Default is 30001. Modified only when using\
+    \ an intermediate process between receiver and client(gui). Must be different\
+    \ for every detector (and udp port). Multi command will automatically increment\
+    \ for individual modules."
   infer_action: true
   template: true
 rx_zmqstartfnum:
@@ -9052,7 +9143,9 @@ rx_zmqstartfnum:
         store_result_in_t: false
   command_name: rx_zmqstartfnum
   function_alias: rx_zmqstartfnum
-  help: ''
+  help: "[fnum]\n\tThe starting frame index to stream out. 0 by default, which streams\
+    \ the first frame in an acquisition, and then depending on the rx zmq frequency/\
+    \ timer"
   infer_action: true
   template: true
 rx_zmqstream:
@@ -9074,7 +9167,7 @@ rx_zmqstream:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -9084,14 +9177,18 @@ rx_zmqstream:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: rx_zmqstream
   function_alias: rx_zmqstream
-  help: ''
+  help: "[0, 1]\n\tEnable/ disable data streaming from receiver via zmq (eg. to GUI\
+    \ or to another process for further processing). This creates/ destroys zmq streamer\
+    \ threads in receiver. \n\tSwitching to Gui automatically enables data streaming\
+    \ in receiver. \n\tSwitching back to command line acquire will require disabling\
+    \ data streaming in receiver for fast applications. "
   infer_action: true
   template: true
 samples:
@@ -9285,7 +9382,7 @@ selinterface:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -9295,14 +9392,15 @@ selinterface:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: selinterface
   function_alias: selinterface
-  help: ''
+  help: "[0, 1]\n\t[Jungfrau][Moench] The udp interface to stream data from detector.\
+    \ Effective only when number of interfaces is 1. Default: 0 (outer)"
   infer_action: true
   template: true
 serialnumber:
@@ -9394,7 +9492,16 @@ settings:
         store_result_in_t: false
   command_name: settings
   function_alias: settings
-  help: ''
+  help: "[standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain,\
+    \ highgain0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, verylowgain, g1_hg,\
+    \ g1_lg, g2_hc_hg, g2_hc_lg, g2_lc_hg, g2_lc_lg, g4_hg, g4_lg, gain0]\n\t Detector\
+    \ Settings\n\t[Jungfrau] - [ gain0 | highgain0]\n\t[Gotthard] - [dynamicgain |\
+    \ highgain | lowgain | mediumgain | veryhighgain]\n\t[Gotthard] Also loads default\
+    \ dacs on to the detector.\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]\n\
+    \t[Mythen3] - [standard | fast | highgain] Also changes vrshaper and vrpreamp.\
+    \ \n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] threshold and settings\
+    \ loaded from file found in settingspath. \n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg\
+    \ | g2_hc_lg | g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
   infer_action: true
   template: true
 settingslist:
@@ -9437,7 +9544,7 @@ settingspath:
     PUT:
       args:
       - arg_types:
-        - std::string
+        - special::path
         argc: 1
         cast_input:
         - false
@@ -9454,7 +9561,7 @@ settingspath:
         store_result_in_t: false
   command_name: settingspath
   function_alias: settingspath
-  help: ''
+  help: "[path]\n\t[Eiger][Mythen3] Directory where settings files are loaded from/to."
   infer_action: true
   template: true
 signalindex:
@@ -9881,7 +9988,8 @@ stopport:
         store_result_in_t: false
   command_name: stopport
   function_alias: stopport
-  help: ''
+  help: "[n]\n\tPort number of the stop server on detector for detector-client tcp\
+    \ interface. Default is 1953. Normally unchanged."
   infer_action: true
   template: true
 storagecell_delay:
@@ -9961,7 +10069,9 @@ storagecell_delay:
         store_result_in_t: false
   command_name: storagecell_delay
   function_alias: storagecell_delay
-  help: ''
+  help: "[duration (0-1638375 ns)] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Additional\
+    \ time delay between 2 consecutive exposures in burst mode (resolution of 25ns).\
+    \ Only applicable for chipv1.0. For advanced users only."
   infer_action: true
   template: true
 storagecell_start:
@@ -10000,7 +10110,9 @@ storagecell_start:
         store_result_in_t: false
   command_name: storagecell_start
   function_alias: storagecell_start
-  help: ''
+  help: "[0-max]\n\t[Jungfrau] Storage cell that stores the first acquisition of the\
+    \ series. max is 15 (default) for chipv1.0 and 3 (default) for chipv1.1. For advanced\
+    \ users only."
   infer_action: true
   template: true
 subdeadtime:
@@ -10080,7 +10192,8 @@ subdeadtime:
         store_result_in_t: false
   command_name: subdeadtime
   function_alias: subdeadtime
-  help: ''
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger] Dead time of EIGER subframes\
+    \ in 32 bit mode. Subperiod = subexptime + subdeadtime."
   infer_action: true
   template: true
 subexptime:
@@ -10160,7 +10273,8 @@ subexptime:
         store_result_in_t: false
   command_name: subexptime
   function_alias: subexptime
-  help: ''
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger] Exposure time of EIGER\
+    \ subframes in 32 bit mode."
   infer_action: true
   template: true
 sync:
@@ -10293,7 +10407,7 @@ temp_control:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -10303,14 +10417,18 @@ temp_control:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: temp_control
   function_alias: temp_control
-  help: ''
+  help: "[0, 1]\n\t[Jungfrau][Moench] Temperature control enable. Default is 0 (disabled).\
+    \ If temperature crosses threshold temperature and temperature control is enabled,\
+    \ power to chip will be switched off and temperature event occurs. To power on\
+    \ chip again, temperature has to be less than threshold temperature and temperature\
+    \ event has to be cleared."
   infer_action: true
   template: true
 temp_dcdc:
@@ -10593,7 +10711,11 @@ temp_threshold:
         store_result_in_t: false
   command_name: temp_threshold
   function_alias: temp_threshold
-  help: ''
+  help: "[n_temp (in degrees)]\n\t[Jungfrau][Moench] Threshold temperature in degrees.\
+    \ If temperature crosses threshold temperature and temperature control is enabled,\
+    \ power to chip will be switched off and temperature event occurs. To power on\
+    \ chip again, temperature has to be less than threshold temperature and temperature\
+    \ event has to be cleared."
   infer_action: true
   template: true
 templist:
@@ -10661,7 +10783,7 @@ tengiga:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -10671,14 +10793,14 @@ tengiga:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: tengiga
   function_alias: tengiga
-  help: ''
+  help: "[0, 1]\n\t[Eiger][Ctb][Mythen3] 10GbE Enable."
   infer_action: true
   template: true
 threshold:
@@ -10870,7 +10992,9 @@ timing:
         store_result_in_t: false
   command_name: timing
   function_alias: timing
-  help: ''
+  help: "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Moench][Gotthard][Ctb][Gotthard2]\
+    \ [auto|trigger]\n\t[Mythen3] [auto|trigger|gating|trigger_gating]\n\t[Eiger]\
+    \ [auto|trigger|gating|burst_trigger]"
   infer_action: true
   template: true
 timinglist:
@@ -10930,7 +11054,8 @@ timingsource:
         store_result_in_t: false
   command_name: timingsource
   function_alias: timingsource
-  help: ''
+  help: "[internal|external]\n\t[Gotthard2] Timing source. Internal is crystal and\
+    \ external is system timing. Default is internal."
   infer_action: true
   template: true
 top:
@@ -10952,7 +11077,7 @@ top:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -10962,14 +11087,14 @@ top:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: top
   function_alias: top
-  help: ''
+  help: "[0, 1]\n\t[Eiger] Sets half module to top (1), else bottom."
   infer_action: true
   template: true
 transceiverenable:
@@ -11008,7 +11133,8 @@ transceiverenable:
         store_result_in_t: false
   command_name: transceiverenable
   function_alias: transceiverenable
-  help: ''
+  help: "[bitmask]\n\t[Ctb] Transceiver Enable Mask. Enable for each 4 Transceiver\
+    \ channel."
   infer_action: true
   template: true
 trigger:
@@ -11213,7 +11339,8 @@ trimval:
         store_result_in_t: false
   command_name: trimval
   function_alias: trimval
-  help: ''
+  help: "[n_trimval]\n\t[Eiger][Mythen3] All trimbits set to this value. Returns -1\
+    \ if all trimbits are different values."
   infer_action: true
   template: true
 tsamples:
@@ -11252,7 +11379,7 @@ tsamples:
         store_result_in_t: false
   command_name: tsamples
   function_alias: tsamples
-  help: ''
+  help: "[n_value]\n\t[CTB] Number of transceiver samples expected."
   infer_action: true
   template: true
 txdelay:
@@ -11334,7 +11461,11 @@ txdelay_frame:
         store_result_in_t: false
   command_name: txdelay_frame
   function_alias: txdelay_frame
-  help: ''
+  help: "[n_delay]\n\t[Eiger][Jungfrau][Moench][Mythen3] Transmission delay of first\
+    \ udp packet being streamed out of the module.\n\t[Jungfrau][Moench] [0-31] Each\
+    \ value represents 1 ms\n\t[Eiger] Additional delay to txdelay_left and txdelay_right.\
+    \ Each value represents 10ns. Typical value is 50000.\n\t[Mythen3] [0-16777215]\
+    \ Each value represents 8 ns (125 MHz clock), max is 134 ms."
   infer_action: true
   template: true
 txdelay_left:
@@ -11373,7 +11504,9 @@ txdelay_left:
         store_result_in_t: false
   command_name: txdelay_left
   function_alias: txdelay_left
-  help: ''
+  help: "[n_delay]\n\t[Eiger] Transmission delay of first packet in an image being\
+    \ streamed out of the module's left UDP port. Each value represents 10ns. Typical\
+    \ value is 50000."
   infer_action: true
   template: true
 txdelay_right:
@@ -11412,7 +11545,9 @@ txdelay_right:
         store_result_in_t: false
   command_name: txdelay_right
   function_alias: txdelay_right
-  help: ''
+  help: "[n_delay]\n\t[Eiger] Transmission delay of first packet in an image being\
+    \ streamed out of the module's right UDP port. Each value represents 10ns. Typical\
+    \ value is 50000."
   infer_action: true
   template: true
 type:
@@ -11613,7 +11748,10 @@ udp_dstmac:
         store_result_in_t: false
   command_name: udp_dstmac
   function_alias: udp_dstmac
-  help: ''
+  help: "[x:x:x:x:x:x]\n\tMac address of the receiver (destination) udp interface.\
+    \ Not mandatory to set as udp_dstip retrieves it from slsReceiver process, but\
+    \ must be set if you use a custom receiver (not slsReceiver). Use router mac if\
+    \ router between detector and receiver."
   infer_action: true
   template: true
 udp_dstmac2:
@@ -11652,7 +11790,11 @@ udp_dstmac2:
         store_result_in_t: false
   command_name: udp_dstmac2
   function_alias: udp_dstmac2
-  help: ''
+  help: "[x:x:x:x:x:x]\n\t[Jungfrau][Moench] Mac address of the receiver (destination)\
+    \ udp interface 2. Not mandatory to set as udp_dstip2 retrieves it from slsReceiver\
+    \ process but must be set if you use a custom receiver (not slsReceiver). \n\t\
+    \ [Jungfrau][Moench] top half or inner interface \n\t [Gotthard2] veto debugging.\
+    \ Use router mac if router between detector and receiver."
   infer_action: true
   template: true
 udp_dstport:
@@ -11691,7 +11833,9 @@ udp_dstport:
         store_result_in_t: false
   command_name: udp_dstport
   function_alias: udp_dstport
-  help: ''
+  help: "[n]\n\tPort number of the receiver (destination) udp interface. Default is\
+    \ 50001. \n\tIf multi command, ports for each module is calculated (incremented\
+    \ by 1 if no 2nd interface)"
   infer_action: true
   template: true
 udp_dstport2:
@@ -11730,7 +11874,10 @@ udp_dstport2:
         store_result_in_t: false
   command_name: udp_dstport2
   function_alias: udp_dstport2
-  help: ''
+  help: "[n]\n\t[Jungfrau][Moench][Eiger][Gotthard2] Port number of the receiver (destination)\
+    \ udp interface 2. Default is 50002. \n\tIf multi command, ports for each module\
+    \ is calculated (incremented by 2) \n\t[Jungfrau][Moench] top half or inner interface\
+    \ \n\t[Eiger] right half \n\t[Gotthard2] veto debugging"
   infer_action: true
   template: true
 udp_firstdst:
@@ -11769,7 +11916,10 @@ udp_firstdst:
         store_result_in_t: false
   command_name: udp_firstdst
   function_alias: udp_firstdst
-  help: ''
+  help: "\n[0 - 31 (or number of udp destinations)]\n\t[Jungfrau][Moench][Gotthard2]\n\
+    [0-63]\n\t[Mythen3]\n\n\t One can set which is the first destination that the\
+    \ detector will stream images out from in a round robin fashion. The entry must\
+    \ not have been empty. Default: 0"
   infer_action: true
   template: true
 udp_numdst:
@@ -11921,7 +12071,9 @@ udp_srcmac:
         store_result_in_t: false
   command_name: udp_srcmac
   function_alias: udp_srcmac
-  help: ''
+  help: "[x:x:x:x:x:x]\n\tMac address of the detector (source) udp interface. \n\t\
+    [Eiger] Do not set as detector will replace with its own DHCP Mac (1G) or DHCP\
+    \ Mac + 1 (10G)."
   infer_action: true
   template: true
 udp_srcmac2:
@@ -11960,7 +12112,8 @@ udp_srcmac2:
         store_result_in_t: false
   command_name: udp_srcmac2
   function_alias: udp_srcmac2
-  help: ''
+  help: "[x:x:x:x:x:x]\n\t[Jungfrau][Moench] Mac address of the top half or inner\
+    \ (source) udp interface. "
   infer_action: true
   template: true
 udp_validate:
@@ -11991,7 +12144,7 @@ update:
       args:
       - arg_types:
         - std::string
-        - std::string
+        - special::path
         argc: 2
         cast_input:
         - false
@@ -12027,7 +12180,7 @@ updatedetectorserver:
     PUT:
       args:
       - arg_types:
-        - std::string
+        - special::path
         argc: 1
         cast_input:
         - false
@@ -12055,7 +12208,7 @@ updatekernel:
     PUT:
       args:
       - arg_types:
-        - std::string
+        - special::path
         argc: 1
         cast_input:
         - false
@@ -12112,7 +12265,9 @@ updatemode:
         store_result_in_t: false
   command_name: updatemode
   function_alias: updatemode
-  help: ''
+  help: "[0|1]\n\tRestart the detector server in update mode or not. This is useful\
+    \ when server-firmware compatibility is at its worst and server cannot start up\
+    \ normally"
   infer_action: true
   template: true
 user:
@@ -12847,7 +13002,7 @@ veto:
     PUT:
       args:
       - arg_types:
-        - int
+        - bool
         argc: 1
         cast_input:
         - true
@@ -12857,14 +13012,15 @@ veto:
         input:
         - args[0]
         input_types:
-        - int
+        - bool
         output:
         - args.front()
         require_det_id: true
         store_result_in_t: false
   command_name: veto
   function_alias: veto
-  help: ''
+  help: "[0, 1]\n\t[Gotthard2] Enable or disable veto data data from chip. Default\
+    \ is 0."
   infer_action: true
   template: true
 vetoalg:
@@ -13492,7 +13648,10 @@ zmqip:
         store_result_in_t: false
   command_name: zmqip
   function_alias: zmqip
-  help: ''
+  help: "[x.x.x.x]\n\tIp Address to listen to zmq data streamed out from receiver\
+    \ or intermediate process. Default connects to receiver zmq Ip Address (from rx_hostname).\
+    \ Modified only when using an intermediate process between receiver and client(gui).\
+    \ Also restarts client zmq streaming if enabled."
   infer_action: true
   template: true
 zmqport:
@@ -13531,6 +13690,11 @@ zmqport:
         store_result_in_t: false
   command_name: zmqport
   function_alias: zmqport
-  help: ''
+  help: "[port]\n\tZmq port in client(gui) or intermediate process for data to be\
+    \ streamed to from receiver. Default connects to receiver zmq streaming out port\
+    \ (30001). Modified only when using an intermediate process between receiver and\
+    \ client(gui). Also restarts client zmq streaming if enabled. Must be different\
+    \ for every detector (and udp port). Multi command will automatically increment\
+    \ for individual modules."
   infer_action: true
   template: true

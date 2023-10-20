@@ -190,6 +190,11 @@ if __name__ == '__main__':
         if cli_args.generate:
             generate_bash_autocomplete()
             print('[X] bash autocomplete generated')
+            generate_bash_autocomplete(
+                output_path=Path(__file__).parent / 'autocomplete' / 'zsh_autocomplete.sh',
+                input_path=Path(__file__).parent / 'autocomplete' / 'zsh_autocomplete.in.sh'
+            )
+            print('[X] zsh autocomplete generated')
             exit(0)
         else:
             ret = generate_type_values()

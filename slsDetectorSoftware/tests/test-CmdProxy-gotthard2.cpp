@@ -689,10 +689,10 @@ TEST_CASE("confadc", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::GOTTHARD2) {
-        int ndet = det.size();
-        int nchip = 10;
-        int nadc = 32;
-        int prev_val[ndet][nchip][nadc];
+        const int ndet = det.size();
+        const int nchip = 10;
+        const int nadc = 32;
+        std::vector<std::vector<std::vector<int>>> prev_val(ndet, std::vector<std::vector<int>>(nchip, std::vector<int>(nadc)));
         for (int i = 0; i != ndet; ++i) {
             for (int j = 0; j != nchip; ++j) {
                 for (int k = 0; k != nadc; ++k) {

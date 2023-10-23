@@ -178,13 +178,16 @@ int InferAction::adcreg() {
 int InferAction::adcvpp() {
 
   if (args.size() == 0) {
-    throw RuntimeError("det is disabled for command: adcvpp with number of "
-                       "arguments 0. Use detg or detp");
+    return slsDetectorDefs::GET_ACTION;
   }
 
   if (args.size() == 1) {
     throw RuntimeError("det is disabled for command: adcvpp with number of "
                        "arguments 1. Use detg or detp");
+  }
+
+  if (args.size() == 2) {
+    return slsDetectorDefs::PUT_ACTION;
   } else {
 
     throw RuntimeError("Could not infer action: Wrong number of arguments");

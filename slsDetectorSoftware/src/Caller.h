@@ -11,7 +11,9 @@ namespace sls {
 class Caller {
 public:
   Caller(Detector *ptr) : det(ptr) {}
-  void call(const CmdParser &parser, int action, std::ostream &os = std::cout);
+  void call(const std::string &command,
+            const std::vector<std::string> &arguments, int detector_id,
+            int action, std::ostream &os = std::cout, int receiver_id = -1);
 
   IpAddr getDstIpFromAuto();
   IpAddr getSrcIpFromAuto();
@@ -50,6 +52,7 @@ public:
     return ToString(value, unit);
   }
 
+  std::vector<std::string> getAllCommands();
   std::string list(int action);
 
   std::string acquire(int action);

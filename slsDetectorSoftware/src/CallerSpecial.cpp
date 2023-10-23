@@ -1,34 +1,43 @@
 #include "Caller.h"
-#include <iostream>
-#include "sls/string_utils.h"
-#include "sls/logger.h"
-#include "sls/file_utils.h"
 #include "sls/bit_utils.h"
+#include "sls/file_utils.h"
+#include "sls/logger.h"
+#include "sls/string_utils.h"
+#include <iostream>
 namespace sls {
-  // some helper functions to print
+// some helper functions to print
 
+std::vector<std::string> Caller::getAllCommands(){
+    std::vector<std::string> ret;
+    for(auto it : functions)
+        ret.push_back(it.first);
+    return ret;
+}
 
-void Caller::call(const CmdParser &parser, int action, std::ostream &os) {
-
-  args = parser.arguments();
-  cmd = parser.command();
-  det_id = parser.detector_id();
-  auto it = functions.find(parser.command());
-  if (it != functions.end()) {
-    os << ((*this).*(it->second))(action);
-  } else {
-    throw RuntimeError(parser.command() +
-                       " Unknown command, use list to list all commands");
-  }
+void Caller::call(const std::string &command,
+                  const std::vector<std::string> &arguments, int detector_id,
+                  int action, std::ostream &os,int receiver_id) {
+    cmd = command;
+    args = arguments;
+    det_id = detector_id;
+    rx_id = receiver_id;
+    auto it = functions.find(cmd);
+    if (it != functions.end()) {
+        os << cmd << ' ' ;
+        os << ((*this).*(it->second))(action);
+    } else {
+        throw RuntimeError(cmd +
+                           " Unknown command, use list to list all commands");
+    }
 }
 
 std::string Caller::list(int action) {
-  std::string ret="free\n";
-  for (auto &f : functions) {
-    ret += f.first + "\n";
-  }
+    std::string ret = "free\n";
+    for (auto &f : functions) {
+        ret += f.first + "\n";
+    }
 
-  return ret;
+    return ret;
 }
 
 /* Network Configuration (Detector<->Receiver) */
@@ -100,18 +109,18 @@ UdpDestination Caller::getUdpEntry() {
 void Caller::WrongNumberOfParameters(size_t expected) {
     if (expected == 0) {
         throw RuntimeError("Command " + cmd +
-                            " expected no parameter/s but got " +
-                            std::to_string(args.size()) + "\n");
+                           " expected no parameter/s but got " +
+                           std::to_string(args.size()) + "\n");
     }
     throw RuntimeError("Command " + cmd + " expected (or >=) " +
-                        std::to_string(expected) + " parameter/s but got " +
-                        std::to_string(args.size()) + "\n");
+                       std::to_string(expected) + " parameter/s but got " +
+                       std::to_string(args.size()) + "\n");
 }
 
 void Caller::GetLevelAndUpdateArgIndex(int action,
-                                         std::string levelSeparatedCommand,
-                                         int &level, int &iArg, size_t nGetArgs,
-                                         size_t nPutArgs) {
+                                       std::string levelSeparatedCommand,
+                                       int &level, int &iArg, size_t nGetArgs,
+                                       size_t nPutArgs) {
     if (cmd == levelSeparatedCommand) {
         ++nGetArgs;
         ++nPutArgs;
@@ -134,7 +143,6 @@ void Caller::GetLevelAndUpdateArgIndex(int action,
 
 std::string Caller::hostname(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "\n\tFrees shared memory and sets hostname (or IP address) of "
               "all modules concatenated by +.\n\t Virtual servers can already "
@@ -202,7 +210,6 @@ std::string Caller::acquire(int action) {
 }
 std::string Caller::versions(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "\n\tPrint all versions and detector type" << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -251,7 +258,6 @@ std::string Caller::versions(int action) {
 }
 std::string Caller::threshold(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[eV] [(optinal settings)"
               "\n\t[Eiger][Mythen3] Threshold in eV. It loads trim files from "
@@ -331,10 +337,8 @@ std::string Caller::threshold(int action) {
     return os.str();
 }
 
-
 std::string Caller::trimen(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[trim_ev1] [trim_Ev2 (optional)] [trim_ev3 (optional)] "
               "...\n\t[Eiger][Mythen3] Number of trim energies and list of "
@@ -364,7 +368,6 @@ std::string Caller::trimen(int action) {
 }
 std::string Caller::badchannels(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[fname|none|0]\n\t[Gotthard2][Mythen3] Sets the bad channels "
               "(from file of bad channel numbers) to be masked out. None or 0 "
@@ -404,7 +407,6 @@ std::string Caller::badchannels(int action) {
 }
 std::string Caller::udp_srcip(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[x.x.x.x] or auto\n\tIp address of the detector (source) udp "
               "interface. Must be same subnet as destination udp "
@@ -441,7 +443,6 @@ std::string Caller::udp_srcip(int action) {
 }
 std::string Caller::udp_srcip2(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[x.x.x.x] or auto\n\t[Jungfrau][Moench][Gotthard2] Ip address "
               "of the "
@@ -479,7 +480,6 @@ std::string Caller::udp_srcip2(int action) {
 }
 std::string Caller::udp_dstip(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[x.x.x.x] or auto\n\tIp address of the receiver (destination) "
               "udp interface. If 'auto' used, then ip is set to ip of "
@@ -513,7 +513,6 @@ std::string Caller::udp_dstip(int action) {
 }
 std::string Caller::udp_dstip2(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[x.x.x.x] or auto\n\t[Jungfrau][Moench][Gotthard2] Ip address "
               "of the "
@@ -549,7 +548,6 @@ std::string Caller::udp_dstip2(int action) {
 }
 std::string Caller::rx_hostname(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[hostname or ip address]\n\t"
               "[hostname or ip address]:[tcp port]\n\t"
@@ -610,7 +608,6 @@ std::string Caller::rx_hostname(int action) {
 }
 std::string Caller::rx_roi(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[xmin] [xmax] [ymin] [ymax]\n\tRegion of interest in "
               "receiver.\n\tOnly allowed at multi module level and without gap "
@@ -654,7 +651,6 @@ std::string Caller::rx_roi(int action) {
 }
 std::string Caller::ratecorr(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_rate (in ns)]\n\t[Eiger] Dead time correction constant in "
               "ns. -1 will set to default tau of settings from trimbit file. 0 "
@@ -687,7 +683,6 @@ std::string Caller::ratecorr(int action) {
 }
 std::string Caller::burstmode(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[burst_internal or 0, burst_external or 1, cw_internal or 2, "
               "cw_external or 3]\n\t[Gotthard2] Default is burst_internal "
@@ -736,7 +731,6 @@ std::string Caller::burstmode(int action) {
 }
 std::string Caller::vetostream(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[none|lll|10gbe|...]\n\t[Gotthard2] Enable or disable the 2 "
               "veto streaming interfaces available. Can include more than one "
@@ -779,7 +773,6 @@ std::string Caller::vetostream(int action) {
 }
 std::string Caller::counters(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[i0] [i1] [i2]... \n\t[Mythen3] List of counters indices "
               "enabled. Each element in list can be 0 - 2 and must be non "
@@ -822,7 +815,6 @@ std::string Caller::counters(int action) {
 }
 std::string Caller::samples(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_samples]\n\t[CTB] Number of samples (analog, digitial and "
               "transceiver) expected.\n"
@@ -868,7 +860,6 @@ std::string Caller::samples(int action) {
 }
 std::string Caller::slowadc(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_channel (0-7 for channel]\n\t[Ctb] Slow "
               "ADC channel in uV"
@@ -899,7 +890,6 @@ std::string Caller::slowadc(int action) {
 }
 std::string Caller::rx_dbitlist(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[all] or [i0] [i1] [i2]... \n\t[Ctb] List of digital signal "
               "bits read out. If all is used instead of a list, all digital "
@@ -938,7 +928,6 @@ std::string Caller::rx_dbitlist(int action) {
 }
 std::string Caller::rx_jsonaddheader(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[key1] [value1] [key2] [value2]...[keyn] [valuen]\n\tAdditional "
               "json header to be streamed out from receiver via zmq. Default "
@@ -972,7 +961,6 @@ std::string Caller::rx_jsonaddheader(int action) {
 }
 std::string Caller::execcommand(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[command]\n\tExecutes command on detector server console."
            << '\n';
@@ -992,7 +980,6 @@ std::string Caller::execcommand(int action) {
 }
 std::string Caller::dacvalues(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[(optional unit) mV] \n\tGets the values for every "
               "dac for this detector."
@@ -1031,7 +1018,6 @@ std::string Caller::dacvalues(int action) {
 }
 std::string Caller::currentsource(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "\n\t[0|1]\n\t\t[Gotthard2] Enable or disable current source. "
               "Default "
@@ -1093,7 +1079,6 @@ std::string Caller::currentsource(int action) {
 }
 std::string Caller::gaincaps(int action) {
     std::ostringstream os;
-    os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[cap1, cap2, ...]\n\t[Mythen3] gain, options: C10pre, C15sh, "
               "C30sh, C50sh, C225ACsh, C15pre"
@@ -1127,4 +1112,4 @@ std::string Caller::gaincaps(int action) {
     }
     return os.str();
 }
-}
+} // namespace sls

@@ -124,9 +124,6 @@ class CodeGenerator:
                                 f' nPutArgs = {arg["pattern_command"]["nPutArgs"]};\nGetLevelAndUpdateArgIndex(action, '
                                 f'"{arg["pattern_command"]["command_name"]}", level, iArg, nGetArgs,nPutArgs);'
                                 )
-                cond = " && ".join(f'cmd=="{arg["pattern_command"]["command_name"]}{i}"' for i in [0, 1, 2])
-                with if_block(cond):
-                    self.write_line("os << level << ' ';")
 
             if 'extra_variables' in arg:
                 for var in arg['extra_variables']:

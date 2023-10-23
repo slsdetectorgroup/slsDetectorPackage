@@ -586,8 +586,9 @@ adcvpp:
         store_result_in_t: true
     PUT:
       args:
-      - arg_types: []
-        argc: 0
+      - arg_types:
+        - int
+        argc: 1
         cast_input:
         - true
         - true
@@ -605,8 +606,9 @@ adcvpp:
         require_det_id: true
         store_result_in_t: false
       - arg_types:
+        - int
         - special::mv
-        argc: 1
+        argc: 2
         cast_input:
         - true
         - true
@@ -1093,7 +1095,7 @@ clearbit:
         exceptions:
         - condition: StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31
           message: '"Bit number out of range: " + args[1]'
-        function: setBit
+        function: clearBit
         input:
         - args[0]
         - args[1]
@@ -5853,7 +5855,7 @@ patioctrl:
         input_types:
         - uint64_t
         output:
-        - ToStringHex(args[0], 16)
+        - ToStringHex(arg0, 16)
         require_det_id: true
         store_result_in_t: false
   command_name: patioctrl
@@ -5932,6 +5934,8 @@ patloop:
         input_types:
         - int
         output:
+        - level
+        - ''' '''
         - OutStringHex(t, 4)
         pattern_command:
           command_name: patloop
@@ -5969,6 +5973,8 @@ patloop:
         - int
         - int
         output:
+        - level
+        - ''' '''
         - '''['''
         - ToStringHex(start, 4)
         - '", "'
@@ -6223,7 +6229,7 @@ patmask:
         input_types:
         - uint64_t
         output:
-        - ToStringHex(args[0], 16)
+        - ToStringHex(arg0, 16)
         require_det_id: true
         store_result_in_t: false
   command_name: patmask
@@ -6249,6 +6255,8 @@ patnloop:
         input_types:
         - int
         output:
+        - level
+        - ''' '''
         - OutString(t)
         pattern_command:
           command_name: patnloop
@@ -6279,6 +6287,8 @@ patnloop:
         - int
         - int
         output:
+        - level
+        - ''' '''
         - nloops
         pattern_command:
           command_name: patnloop
@@ -6496,7 +6506,7 @@ patsetbit:
         input_types:
         - uint64_t
         output:
-        - ToStringHex(args[0], 16)
+        - ToStringHex(arg0, 16)
         require_det_id: true
         store_result_in_t: false
   command_name: patsetbit
@@ -6568,6 +6578,8 @@ patwait:
         input_types:
         - int
         output:
+        - level
+        - ''' '''
         - OutStringHex(t, 4)
         pattern_command:
           command_name: patwait
@@ -6598,6 +6610,8 @@ patwait:
         - int
         - int
         output:
+        - level
+        - ''' '''
         - ToStringHex(addr, 4)
         pattern_command:
           command_name: patwait
@@ -6801,6 +6815,8 @@ patwaittime:
         input_types:
         - int
         output:
+        - level
+        - ''' '''
         - OutString(t)
         pattern_command:
           command_name: patwaittime
@@ -6835,6 +6851,8 @@ patwaittime:
         - int
         - auto
         output:
+        - level
+        - ''' '''
         - waittime
         pattern_command:
           command_name: patwaittime
@@ -7051,7 +7069,7 @@ patword:
         - int
         output:
         - '''['''
-        - ToStringHex(StringTo<int>(args[0]), 4)
+        - ToStringHex(arg0, 4)
         - '", "'
         - OutStringHex(t, 16)
         - '"]"'
@@ -7077,9 +7095,9 @@ patword:
         - uint64_t
         output:
         - '''['''
-        - ToStringHex(args[0], 4)
+        - ToStringHex(arg0, 4)
         - '", "'
-        - ToStringHex(args[1], 16)
+        - ToStringHex(arg1, 16)
         - '"]"'
         require_det_id: true
         store_result_in_t: false

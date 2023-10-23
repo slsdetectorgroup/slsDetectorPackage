@@ -25,7 +25,7 @@ int main(int argc, char *argv[]){
 #ifdef INFER
     int action = -1;
 #endif
-    std::cout << "Experimental command parsing\n";
+    // std::cout << "Experimental command parsing\n";
 
     sls::CmdParser parser;
     parser.Parse(argc, argv);
@@ -62,8 +62,8 @@ int main(int argc, char *argv[]){
             std::string actionString= (action==slsDetectorDefs::GET_ACTION) ? "GET" : "PUT";
             std::cout << "inferred action: " << actionString << std::endl;
         }
-
-        c.call(parser, action);
+        
+        c.call(parser.command(),parser.arguments(),parser.detector_id(), action);
     }
     catch(sls::RuntimeError& e){}
     catch ( const std::exception& e ){ LOG(sls::logERROR) << e.what() << std::endl;}

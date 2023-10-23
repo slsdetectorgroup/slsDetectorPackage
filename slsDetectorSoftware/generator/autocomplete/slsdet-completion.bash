@@ -151,7 +151,7 @@ _sd() {
 
   # if IS_PATH is activated, autocomplete with the path
   if [[ ${IS_PATH} -eq 1 ]]; then
-    COMPREPLY=($(compgen -d -- "${cur}"))
+    COMPREPLY=($(compgen -f -- "${cur}"))
     return 0
   fi
 
@@ -163,4 +163,9 @@ _sd() {
 }
 
 complete -F _sd -o filenames sls_detector_get
+complete -F _sd -o filenames g
+complete -F _sd -o filenames p
+complete -F _sd -o filenames detg
+complete -F _sd -o filenames detp
+
 complete -F _sd -o filenames sls_detector_put

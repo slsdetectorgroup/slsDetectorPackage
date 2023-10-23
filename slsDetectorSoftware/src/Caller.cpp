@@ -769,11 +769,11 @@ std::string Caller::adcvpp(int action) {
     }
 
   } else if (action == slsDetectorDefs::PUT_ACTION) {
-    if (1 && args.size() != 0 && args.size() != 1) {
+    if (1 && args.size() != 1 && args.size() != 2) {
       throw RuntimeError("Wrong number of arguments for action PUT");
     }
 
-    if (args.size() == 0) {
+    if (args.size() == 1) {
       try {
         StringTo<int>(args[0]);
       }
@@ -788,7 +788,7 @@ std::string Caller::adcvpp(int action) {
       }
     }
 
-    if (args.size() == 1) {
+    if (args.size() == 2) {
       try {
         StringTo<int>(args[0]);
       }
@@ -829,14 +829,14 @@ std::string Caller::adcvpp(int action) {
   }
 
   if (action == slsDetectorDefs::PUT_ACTION) {
-    if (args.size() == 0) {
+    if (args.size() == 1) {
       auto arg0 = StringTo<int>(args[0]);
       auto arg1 = StringTo<bool>("0");
       det->setADCVpp(arg0, arg1, std::vector<int>{ det_id });
       os << args[0] << '\n';
     }
 
-    if (args.size() == 1) {
+    if (args.size() == 2) {
       if ((args[1] != "mv") && (args[1] != "mV")) {
         throw RuntimeError("Unknown argument " + args[1] +
                            ". Did you mean mV?");
@@ -1446,7 +1446,7 @@ std::string Caller::clearbit(int action) {
       }
       auto arg0 = StringTo<uint32_t>(args[0]);
       auto arg1 = StringTo<int>(args[1]);
-      det->setBit(arg0, arg1, std::vector<int>{ det_id });
+      det->clearBit(arg0, arg1, std::vector<int>{ det_id });
       os << ToString(args) << '\n';
     }
   }
@@ -7414,7 +7414,7 @@ std::string Caller::patioctrl(int action) {
     if (args.size() == 1) {
       auto arg0 = StringTo<uint64_t>(args[0]);
       det->setPatternIOControl(arg0, std::vector<int>{ det_id });
-      os << ToStringHex(args[0], 16) << '\n';
+      os << ToStringHex(arg0, 16) << '\n';
     }
   }
 
@@ -7502,28 +7502,20 @@ std::string Caller::patloop(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
     GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patloop0" && cmd == "patloop1" && cmd == "patloop2") {
-      os << level << ' ';
-    }
-
     auto t = det->getPatternLoopAddresses(level, std::vector<int>{ det_id });
-    os << OutStringHex(t, 4) << '\n';
+    os << level << ' ' << OutStringHex(t, 4) << '\n';
   }
 
   if (action == slsDetectorDefs::PUT_ACTION) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
     GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patloop0" && cmd == "patloop1" && cmd == "patloop2") {
-      os << level << ' ';
-    }
-
     int start = StringTo<int>(args[iArg++]);
     int stop = StringTo<int>(args[iArg++]);
     det->setPatternLoopAddresses(level, start, stop,
                                  std::vector<int>{ det_id });
-    os << '[' << ToStringHex(start, 4) << ", " << ToStringHex(stop, 4) << ']'
-       << '\n';
+    os << level << ' ' << '[' << ToStringHex(start, 4) << ", "
+       << ToStringHex(stop, 4) << ']' << '\n';
   }
 
   return os.str();
@@ -7561,10 +7553,6 @@ std::string Caller::patloop0(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
     GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patloop0" && cmd == "patloop1" && cmd == "patloop2") {
-      os << level << ' ';
-    }
-
     auto t = det->getPatternLoopAddresses(level, std::vector<int>{ det_id });
     os << OutStringHex(t, 4) << '\n';
   }
@@ -7573,10 +7561,6 @@ std::string Caller::patloop0(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
     GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patloop0" && cmd == "patloop1" && cmd == "patloop2") {
-      os << level << ' ';
-    }
-
     int start = StringTo<int>(args[iArg++]);
     int stop = StringTo<int>(args[iArg++]);
     det->setPatternLoopAddresses(level, start, stop,
@@ -7620,10 +7604,6 @@ std::string Caller::patloop1(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
     GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patloop0" && cmd == "patloop1" && cmd == "patloop2") {
-      os << level << ' ';
-    }
-
     auto t = det->getPatternLoopAddresses(level, std::vector<int>{ det_id });
     os << OutStringHex(t, 4) << '\n';
   }
@@ -7632,10 +7612,6 @@ std::string Caller::patloop1(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
     GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patloop0" && cmd == "patloop1" && cmd == "patloop2") {
-      os << level << ' ';
-    }
-
     int start = StringTo<int>(args[iArg++]);
     int stop = StringTo<int>(args[iArg++]);
     det->setPatternLoopAddresses(level, start, stop,
@@ -7679,10 +7655,6 @@ std::string Caller::patloop2(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
     GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patloop0" && cmd == "patloop1" && cmd == "patloop2") {
-      os << level << ' ';
-    }
-
     auto t = det->getPatternLoopAddresses(level, std::vector<int>{ det_id });
     os << OutStringHex(t, 4) << '\n';
   }
@@ -7691,10 +7663,6 @@ std::string Caller::patloop2(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
     GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patloop0" && cmd == "patloop1" && cmd == "patloop2") {
-      os << level << ' ';
-    }
-
     int start = StringTo<int>(args[iArg++]);
     int stop = StringTo<int>(args[iArg++]);
     det->setPatternLoopAddresses(level, start, stop,
@@ -7759,7 +7727,7 @@ std::string Caller::patmask(int action) {
     if (args.size() == 1) {
       auto arg0 = StringTo<uint64_t>(args[0]);
       det->setPatternMask(arg0, std::vector<int>{ det_id });
-      os << ToStringHex(args[0], 16) << '\n';
+      os << ToStringHex(arg0, 16) << '\n';
     }
   }
 
@@ -7800,26 +7768,18 @@ std::string Caller::patnloop(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patnloop0" && cmd == "patnloop1" && cmd == "patnloop2") {
-      os << level << ' ';
-    }
-
     auto t = det->getPatternLoopCycles(level, std::vector<int>{ det_id });
-    os << OutString(t) << '\n';
+    os << level << ' ' << OutString(t) << '\n';
   }
 
   if (action == slsDetectorDefs::PUT_ACTION) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patnloop0" && cmd == "patnloop1" && cmd == "patnloop2") {
-      os << level << ' ';
-    }
-
     std::string nloops = args[iArg++];
     auto arg1 = StringTo<int>(nloops);
     det->setPatternLoopCycles(level, arg1, std::vector<int>{ det_id });
-    os << nloops << '\n';
+    os << level << ' ' << nloops << '\n';
   }
 
   return os.str();
@@ -7857,10 +7817,6 @@ std::string Caller::patnloop0(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patnloop0" && cmd == "patnloop1" && cmd == "patnloop2") {
-      os << level << ' ';
-    }
-
     auto t = det->getPatternLoopCycles(level, std::vector<int>{ det_id });
     os << OutString(t) << '\n';
   }
@@ -7869,10 +7825,6 @@ std::string Caller::patnloop0(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patnloop0" && cmd == "patnloop1" && cmd == "patnloop2") {
-      os << level << ' ';
-    }
-
     std::string nloops = args[iArg++];
     auto arg1 = StringTo<int>(nloops);
     det->setPatternLoopCycles(level, arg1, std::vector<int>{ det_id });
@@ -7914,10 +7866,6 @@ std::string Caller::patnloop1(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patnloop0" && cmd == "patnloop1" && cmd == "patnloop2") {
-      os << level << ' ';
-    }
-
     auto t = det->getPatternLoopCycles(level, std::vector<int>{ det_id });
     os << OutString(t) << '\n';
   }
@@ -7926,10 +7874,6 @@ std::string Caller::patnloop1(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patnloop0" && cmd == "patnloop1" && cmd == "patnloop2") {
-      os << level << ' ';
-    }
-
     std::string nloops = args[iArg++];
     auto arg1 = StringTo<int>(nloops);
     det->setPatternLoopCycles(level, arg1, std::vector<int>{ det_id });
@@ -7971,10 +7915,6 @@ std::string Caller::patnloop2(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patnloop0" && cmd == "patnloop1" && cmd == "patnloop2") {
-      os << level << ' ';
-    }
-
     auto t = det->getPatternLoopCycles(level, std::vector<int>{ det_id });
     os << OutString(t) << '\n';
   }
@@ -7983,10 +7923,6 @@ std::string Caller::patnloop2(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patnloop0" && cmd == "patnloop1" && cmd == "patnloop2") {
-      os << level << ' ';
-    }
-
     std::string nloops = args[iArg++];
     auto arg1 = StringTo<int>(nloops);
     det->setPatternLoopCycles(level, arg1, std::vector<int>{ det_id });
@@ -8049,7 +7985,7 @@ std::string Caller::patsetbit(int action) {
     if (args.size() == 1) {
       auto arg0 = StringTo<uint64_t>(args[0]);
       det->setPatternBitMask(arg0, std::vector<int>{ det_id });
-      os << ToStringHex(args[0], 16) << '\n';
+      os << ToStringHex(arg0, 16) << '\n';
     }
   }
 
@@ -8168,25 +8104,17 @@ std::string Caller::patwait(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patwait0" && cmd == "patwait1" && cmd == "patwait2") {
-      os << level << ' ';
-    }
-
     auto t = det->getPatternWaitAddr(level, std::vector<int>{ det_id });
-    os << OutStringHex(t, 4) << '\n';
+    os << level << ' ' << OutStringHex(t, 4) << '\n';
   }
 
   if (action == slsDetectorDefs::PUT_ACTION) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patwait0" && cmd == "patwait1" && cmd == "patwait2") {
-      os << level << ' ';
-    }
-
     int addr = StringTo<int>(args[iArg++]);
     det->setPatternWaitAddr(level, addr, std::vector<int>{ det_id });
-    os << ToStringHex(addr, 4) << '\n';
+    os << level << ' ' << ToStringHex(addr, 4) << '\n';
   }
 
   return os.str();
@@ -8224,10 +8152,6 @@ std::string Caller::patwait0(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patwait0" && cmd == "patwait1" && cmd == "patwait2") {
-      os << level << ' ';
-    }
-
     auto t = det->getPatternWaitAddr(level, std::vector<int>{ det_id });
     os << OutStringHex(t, 4) << '\n';
   }
@@ -8236,10 +8160,6 @@ std::string Caller::patwait0(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patwait0" && cmd == "patwait1" && cmd == "patwait2") {
-      os << level << ' ';
-    }
-
     int addr = StringTo<int>(args[iArg++]);
     det->setPatternWaitAddr(level, addr, std::vector<int>{ det_id });
     os << ToStringHex(addr, 4) << '\n';
@@ -8280,10 +8200,6 @@ std::string Caller::patwait1(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patwait0" && cmd == "patwait1" && cmd == "patwait2") {
-      os << level << ' ';
-    }
-
     auto t = det->getPatternWaitAddr(level, std::vector<int>{ det_id });
     os << OutStringHex(t, 4) << '\n';
   }
@@ -8292,10 +8208,6 @@ std::string Caller::patwait1(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patwait0" && cmd == "patwait1" && cmd == "patwait2") {
-      os << level << ' ';
-    }
-
     int addr = StringTo<int>(args[iArg++]);
     det->setPatternWaitAddr(level, addr, std::vector<int>{ det_id });
     os << ToStringHex(addr, 4) << '\n';
@@ -8336,10 +8248,6 @@ std::string Caller::patwait2(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patwait0" && cmd == "patwait1" && cmd == "patwait2") {
-      os << level << ' ';
-    }
-
     auto t = det->getPatternWaitAddr(level, std::vector<int>{ det_id });
     os << OutStringHex(t, 4) << '\n';
   }
@@ -8348,10 +8256,6 @@ std::string Caller::patwait2(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patwait0" && cmd == "patwait1" && cmd == "patwait2") {
-      os << level << ' ';
-    }
-
     int addr = StringTo<int>(args[iArg++]);
     det->setPatternWaitAddr(level, addr, std::vector<int>{ det_id });
     os << ToStringHex(addr, 4) << '\n';
@@ -8394,27 +8298,17 @@ std::string Caller::patwaittime(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patwaittime0" && cmd == "patwaittime1" &&
-        cmd == "patwaittime2") {
-      os << level << ' ';
-    }
-
     auto t = det->getPatternWaitTime(level, std::vector<int>{ det_id });
-    os << OutString(t) << '\n';
+    os << level << ' ' << OutString(t) << '\n';
   }
 
   if (action == slsDetectorDefs::PUT_ACTION) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patwaittime0" && cmd == "patwaittime1" &&
-        cmd == "patwaittime2") {
-      os << level << ' ';
-    }
-
     uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
     det->setPatternWaitTime(level, waittime, { det_id });
-    os << waittime << '\n';
+    os << level << ' ' << waittime << '\n';
   }
 
   return os.str();
@@ -8452,11 +8346,6 @@ std::string Caller::patwaittime0(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patwaittime0" && cmd == "patwaittime1" &&
-        cmd == "patwaittime2") {
-      os << level << ' ';
-    }
-
     auto t = det->getPatternWaitTime(level, std::vector<int>{ det_id });
     os << OutString(t) << '\n';
   }
@@ -8465,11 +8354,6 @@ std::string Caller::patwaittime0(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patwaittime0" && cmd == "patwaittime1" &&
-        cmd == "patwaittime2") {
-      os << level << ' ';
-    }
-
     uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
     det->setPatternWaitTime(level, waittime, { det_id });
     os << waittime << '\n';
@@ -8510,11 +8394,6 @@ std::string Caller::patwaittime1(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patwaittime0" && cmd == "patwaittime1" &&
-        cmd == "patwaittime2") {
-      os << level << ' ';
-    }
-
     auto t = det->getPatternWaitTime(level, std::vector<int>{ det_id });
     os << OutString(t) << '\n';
   }
@@ -8523,11 +8402,6 @@ std::string Caller::patwaittime1(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patwaittime0" && cmd == "patwaittime1" &&
-        cmd == "patwaittime2") {
-      os << level << ' ';
-    }
-
     uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
     det->setPatternWaitTime(level, waittime, { det_id });
     os << waittime << '\n';
@@ -8568,11 +8442,6 @@ std::string Caller::patwaittime2(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patwaittime0" && cmd == "patwaittime1" &&
-        cmd == "patwaittime2") {
-      os << level << ' ';
-    }
-
     auto t = det->getPatternWaitTime(level, std::vector<int>{ det_id });
     os << OutString(t) << '\n';
   }
@@ -8581,11 +8450,6 @@ std::string Caller::patwaittime2(int action) {
     int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
     GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
                               nPutArgs);
-    if (cmd == "patwaittime0" && cmd == "patwaittime1" &&
-        cmd == "patwaittime2") {
-      os << level << ' ';
-    }
-
     uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
     det->setPatternWaitTime(level, waittime, { det_id });
     os << waittime << '\n';
@@ -8652,8 +8516,8 @@ std::string Caller::patword(int action) {
     if (args.size() == 1) {
       auto arg0 = StringTo<int>(args[0]);
       auto t = det->getPatternWord(arg0, std::vector<int>{ det_id });
-      os << '[' << ToStringHex(StringTo<int>(args[0]), 4) << ", "
-         << OutStringHex(t, 16) << "]" << '\n';
+      os << '[' << ToStringHex(arg0, 4) << ", " << OutStringHex(t, 16) << "]"
+         << '\n';
     }
   }
 
@@ -8662,8 +8526,8 @@ std::string Caller::patword(int action) {
       auto arg0 = StringTo<int>(args[0]);
       auto arg1 = StringTo<uint64_t>(args[1]);
       det->setPatternWord(arg0, arg1, std::vector<int>{ det_id });
-      os << '[' << ToStringHex(args[0], 4) << ", " << ToStringHex(args[1], 16)
-         << "]" << '\n';
+      os << '[' << ToStringHex(arg0, 4) << ", " << ToStringHex(arg1, 16) << "]"
+         << '\n';
     }
   }
 

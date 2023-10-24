@@ -7125,7 +7125,7 @@ pedestalmode:
     PUT:
       args:
       - arg_types:
-        - defs::pedestalParameters
+        - special::pedestal_parameters
         argc: 1
         cast_input:
         - false
@@ -7153,10 +7153,9 @@ pedestalmode:
         convert_det_id: true
         function: setPedestalMode
         input:
-        - defs::pedestalParameters(arg0, arg1)
+        - defs::pedestalParameters(StringTo<uint8_t>(args[0]), StringTo<uint16_t>(args[1]))
         input_types:
-        - uint8_t
-        - uint16_t
+        - defs::pedestalParameters
         output:
         - ToString(args)
         require_det_id: false

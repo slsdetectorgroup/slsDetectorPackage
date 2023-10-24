@@ -8600,7 +8600,8 @@ pedestalmode [0]
     }
 
     if (args.size() == 2) {
-      det->setPedestalMode(defs::pedestalParameters(arg0, arg1));
+      det->setPedestalMode(defs::pedestalParameters(
+          StringTo<uint8_t>(args[0]), StringTo<uint16_t>(args[1])));
       os << ToString(args) << '\n';
     }
   }

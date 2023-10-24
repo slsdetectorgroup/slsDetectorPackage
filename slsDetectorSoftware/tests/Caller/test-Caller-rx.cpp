@@ -5,7 +5,7 @@
 #include "sls/Detector.h"
 #include "sls/Version.h"
 #include "sls/sls_detector_defs.h"
-#include "test-CmdProxy-global.h"
+#include "test-Caller-global.h"
 
 #include <sstream>
 
@@ -239,8 +239,8 @@ TEST_CASE("Caller::rx_tcpport", "[.cmd][.rx]") {
         caller.call("rx_tcpport", {}, i, GET, oss);
         REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');
     }
-    test_valid_port("rx_tcpport", {}, -1, PUT);
-    test_valid_port("rx_tcpport", {}, 0, PUT);
+    test_valid_port_caller("rx_tcpport", {}, -1, PUT);
+    test_valid_port_caller("rx_tcpport", {}, 0, PUT);
     // should fail for the second module
     if (det.size() > 1) {
         REQUIRE_THROWS(caller.call("rx_tcpport", {"65535"}, -1, PUT));
@@ -845,8 +845,8 @@ TEST_CASE("Caller::rx_zmqport", "[.cmd][.rx]") {
                                  std::to_string(port + i * socketsperdetector) +
                                  '\n');
     }
-    test_valid_port("rx_zmqport", {}, -1, PUT);
-    test_valid_port("rx_zmqport", {}, 0, PUT);
+    test_valid_port_caller("rx_zmqport", {}, -1, PUT);
+    test_valid_port_caller("rx_zmqport", {}, 0, PUT);
     // should fail for the second module
     if (det.size() > 1) {
         REQUIRE_THROWS(caller.call("rx_zmqport", {"65535"}, -1, PUT));

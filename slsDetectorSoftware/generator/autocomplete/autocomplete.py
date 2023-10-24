@@ -21,6 +21,7 @@ type_values = {
     "special::currentSourceFix": ["fix", "nofix"],
     "special::currentSourceLow": ["normal", "low"],
     "special::path": [],
+    "special::pedestal_parameters" : ["", "0"]
 
 }
 

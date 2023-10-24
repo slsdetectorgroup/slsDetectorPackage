@@ -4,7 +4,7 @@
 #include "sls/sls_detector_defs.h"
 
 namespace sls {
-void test_valid_port(const std::string &command,
+void test_valid_port_caller(const std::string &command,
                      const std::vector<std::string> &arguments, int detector_id,
                      int action);
 

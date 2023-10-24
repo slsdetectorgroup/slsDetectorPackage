@@ -10,7 +10,7 @@ namespace sls {
 
 using test::GET;
 using test::PUT;
-void test_valid_port(const std::string &command,
+void test_valid_port_caller(const std::string &command,
                      const std::vector<std::string> &arguments, int detector_id,
                      int action) {
     Detector det;

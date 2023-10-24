@@ -1360,6 +1360,7 @@ rx_tcpport:
   actions:
     GET:
       input_types: [ uint16_t ]
+      cast_input: [true]
       function: getRxPort
     PUT:
       input_types: [ uint16_t ]
@@ -3915,10 +3916,12 @@ pedestalmode:
             - condition: 'args[0] != "0"'
               message: '"Unknown argument " + args[0] + ". Did you mean 0?"'
           input: [ defs::pedestalParameters() ]
+          arg_types: [ special::pedestal_parameters ]
           input_types: [ defs::pedestalParameters ]
         - argc: 2
-          input_types: [ uint8_t, uint16_t ]
-          input: [ 'defs::pedestalParameters(arg0, arg1)' ]
+          arg_types: [ uint8_t, uint16_t ]
+          input_types: [ defs::pedestalParameters ]
+          input: [ 'defs::pedestalParameters(StringTo<uint8_t>(args[0]), StringTo<uint16_t>(args[1]))' ]
 
 ######################### description only commands #############################
 ## code is generated for these commands

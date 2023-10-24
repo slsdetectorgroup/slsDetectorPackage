@@ -104,7 +104,7 @@ TEST_CASE("CALLER::virtual", "[.cmd]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_THROWS(caller.call("virtual", {}, -1, GET));
-    test_valid_port("virtual", {"1"}, -1, PUT);
+    test_valid_port_caller("virtual", {"1"}, -1, PUT);
     REQUIRE_THROWS(caller.call("virtual", {"3", "65534"}, -1, PUT));
 }
 
@@ -2723,8 +2723,8 @@ TEST_CASE("CALLER::udp_dstport", "[.cmd]") {
         caller.call("udp_dstport", {"50084"}, -1, PUT, oss);
         REQUIRE(oss.str() == "udp_dstport 50084\n");
     }
-    test_valid_port("udp_dstport", {}, -1, PUT);
-    test_valid_port("udp_dstport", {}, 0, PUT);
+    test_valid_port_caller("udp_dstport", {}, -1, PUT);
+    test_valid_port_caller("udp_dstport", {}, 0, PUT);
     // should fail for the second module
     if (det.size() > 1) {
         REQUIRE_THROWS(caller.call("udp_dstport", {"65535"}, -1, PUT));
@@ -2818,8 +2818,8 @@ TEST_CASE("CALLER::udp_dstport2", "[.cmd]") {
             caller.call("udp_dstport2", {"50084"}, -1, PUT, oss);
             REQUIRE(oss.str() == "udp_dstport2 50084\n");
         }
-        test_valid_port("udp_dstport2", {}, -1, PUT);
-        test_valid_port("udp_dstport2", {}, 0, PUT);
+        test_valid_port_caller("udp_dstport2", {}, -1, PUT);
+        test_valid_port_caller("udp_dstport2", {}, 0, PUT);
         // should fail for the second module
         if (det.size() > 1) {
             REQUIRE_THROWS(caller.call("udp_dstport2", {"65535"}, -1, PUT));
@@ -3051,8 +3051,8 @@ TEST_CASE("CALLER::zmqport", "[.cmd]") {
                                  std::to_string(port + i * socketsperdetector) +
                                  '\n');
     }
-    test_valid_port("zmqport", {}, -1, PUT);
-    test_valid_port("zmqport", {}, 0, PUT);
+    test_valid_port_caller("zmqport", {}, -1, PUT);
+    test_valid_port_caller("zmqport", {}, 0, PUT);
     // should fail for the second module
     if (det.size() > 1) {
         REQUIRE_THROWS(caller.call("zmqport", {"65535"}, -1, PUT));
@@ -3437,8 +3437,8 @@ TEST_CASE("CALLER::port", "[.cmd]") {
         caller.call("port", {}, 0, GET, oss);
         REQUIRE(oss.str() == "port 1942\n");
     }
-    test_valid_port("port", {}, -1, PUT);
-    test_valid_port("port", {}, 0, PUT);
+    test_valid_port_caller("port", {}, -1, PUT);
+    test_valid_port_caller("port", {}, 0, PUT);
     // should fail for the second module
     if (det.size() > 1) {
         REQUIRE_THROWS(caller.call("port", {"65536"}, -1, PUT));
@@ -3461,8 +3461,8 @@ TEST_CASE("CALLER::stopport", "[.cmd]") {
         caller.call("stopport", {}, 0, GET, oss);
         REQUIRE(oss.str() == "stopport 1942\n");
     }
-    test_valid_port("stopport", {}, -1, PUT);
-    test_valid_port("stopport", {}, 0, PUT);
+    test_valid_port_caller("stopport", {}, -1, PUT);
+    test_valid_port_caller("stopport", {}, 0, PUT);
     // should fail for the second module
     if (det.size() > 1) {
         REQUIRE_THROWS(caller.call("stopport", {"65536"}, -1, PUT));

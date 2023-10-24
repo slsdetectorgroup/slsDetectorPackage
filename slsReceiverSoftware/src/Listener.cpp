@@ -71,7 +71,7 @@ void Listener::SetFifo(Fifo *f) { fifo = f; }
 
 void Listener::SetGeneralData(GeneralData *g) { generalData = g; }
 
-void Listener::SetUdpPortNumber(const uint32_t portNumber) {
+void Listener::SetUdpPortNumber(const uint16_t portNumber) {
     udpPortNumber = portNumber;
 }
 

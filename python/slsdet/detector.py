@@ -182,6 +182,7 @@ class Detector(CppDetectorApi):
 
     @port.setter
     def port(self, value):
+        ut.validate_port(value)
         ut.set_using_dict(self.setControlPort, value)
 
     @property
@@ -197,6 +198,7 @@ class Detector(CppDetectorApi):
 
     @stopport.setter
     def stopport(self, args):
+        ut.validate_port(args)
         ut.set_using_dict(self.setStopPort, args)
 
 
@@ -866,6 +868,7 @@ class Detector(CppDetectorApi):
 
     @rx_tcpport.setter
     def rx_tcpport(self, port):
+        ut.validate_port(port)
         ut.set_using_dict(self.setRxPort, port)
 
     @property
@@ -1145,11 +1148,14 @@ class Detector(CppDetectorApi):
     @rx_zmqport.setter
     def rx_zmqport(self, port):
         if isinstance(port, int):
+            ut.validate_port(port)
             self.setRxZmqPort(port, -1)
         elif isinstance(port, dict):
+            ut.validate_port(port)
             ut.set_using_dict(self.setRxZmqPort, port)
         elif is_iterable(port):
             for i, p in enumerate(port):
+                ut.validate_port(p)
                 self.setRxZmqPort(p, i)
         else:
             raise ValueError("Unknown argument type")
@@ -1179,11 +1185,14 @@ class Detector(CppDetectorApi):
     @zmqport.setter
     def zmqport(self, port):
         if isinstance(port, int):
+            ut.validate_port(port)
             self.setClientZmqPort(port, -1)
         elif isinstance(port, dict):
+            ut.validate_port(port)
             ut.set_using_dict(self.setClientZmqPort, port)
         elif is_iterable(port):
             for i, p in enumerate(port):
+                ut.validate_port(p)
                 self.setClientZmqPort(p, i)
         else:
             raise ValueError("Unknown argument type")
@@ -1493,6 +1502,7 @@ class Detector(CppDetectorApi):
 
     @udp_dstport.setter
     def udp_dstport(self, port):
+        ut.validate_port(port)
         ut.set_using_dict(self.setDestinationUDPPort, port)
 
     @property
@@ -1514,6 +1524,7 @@ class Detector(CppDetectorApi):
 
     @udp_dstport2.setter
     def udp_dstport2(self, port):
+        ut.validate_port(port)
         ut.set_using_dict(self.setDestinationUDPPort2, port)
 
     @property
@@ -1828,17 +1839,17 @@ class Detector(CppDetectorApi):
         self.setSignalNames(value)
 
     @property
-    def voltagelist(self):
+    def powerlist(self):
         """
-        List of names for every voltage for this board. 5 voltage supply
+        List of names for every power for this board. 5 power supply
         :setter: Only implemented for Chiptestboard
         
         """
-        return self.getVoltageNames()
+        return self.getPowerNames()
 
-    @voltagelist.setter
-    def voltagelist(self, value):
-        self.setVoltageNames(value)
+    @powerlist.setter
+    def powerlist(self, value):
+        self.setPowerNames(value)
 
     @property
     def slowadclist(self):
@@ -1862,11 +1873,11 @@ class Detector(CppDetectorApi):
         }
 
     @property
-    def voltagevalues(self):
-        """Gets the voltage values for every voltage for this detector."""
+    def powervalues(self):
+        """Gets the power values for every power for this detector."""
         return {
-            voltage.name.lower(): element_if_equal(np.array(self.getVoltage(voltage)))
-            for voltage in self.getVoltageList()
+            power.name.lower(): element_if_equal(np.array(self.getPower(power)))
+            for power in self.getPowerList()
         }
 
     @property
@@ -2026,6 +2037,7 @@ class Detector(CppDetectorApi):
     @virtual.setter
     def virtual(self, args):
         n_detectors, starting_port = args
+        ut.validate_port(starting_port)
         self.setVirtualDetectorServers(n_detectors, starting_port)
 
     
@@ -2854,7 +2866,27 @@ class Detector(CppDetectorApi):
     @filtercells.setter
     def filtercells(self, value):
         ut.set_using_dict(self.setNumberOfFilterCells, value)
+
+    @property
+    @element
+    def pedestalmode(self):
+        """
+        [Jungfrau] Enables or disables pedestal mode. Pass in a pedestalParameters object 
+        see python/examples/use_pedestalmode.py
         
+        Note
+        ----
+        The number of frames or triggers is overwritten by #pedestal_frames x  pedestal_loops x 2. \n
+        In auto timing mode or in trigger mode with #frames > 1, #frames is overwritten and #triggers = 1, else #triggers is overwritten and #frames = 1. \n
+        One cannot set #frames, #triggers or timing mode in pedestal mode (exception thrown).\n
+        Disabling pedestal mode will set back the normal mode values of #frames and #triggers."
+        """
+        return self.getPedestalMode()
+
+    @pedestalmode.setter
+    def pedestalmode(self, value):
+        ut.set_using_dict(self.setPedestalMode, value)
+
     @property
     def maxclkphaseshift(self):
         """
@@ -3814,73 +3846,73 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_a(self):
-        """[Ctb] Voltage supply a in mV."""
-        return self.getVoltage(dacIndex.V_POWER_A)
+        """[Ctb] Power supply a in mV."""
+        return self.getPower(dacIndex.V_POWER_A)
 
     @v_a.setter
     def v_a(self, value):
         value = ut.merge_args(dacIndex.V_POWER_A, value)
-        ut.set_using_dict(self.setVoltage, *value)
+        ut.set_using_dict(self.setPower, *value)
 
     @property
     @element
     def v_b(self):
-        """[Ctb] Voltage supply b in mV."""
-        return self.getVoltage(dacIndex.V_POWER_B)
+        """[Ctb] Power supply b in mV."""
+        return self.getPower(dacIndex.V_POWER_B)
 
     @v_b.setter
     def v_b(self, value):
         value = ut.merge_args(dacIndex.V_POWER_B, value)
-        ut.set_using_dict(self.setVoltage, *value)
+        ut.set_using_dict(self.setPower, *value)
 
     @property
     @element
     def v_c(self):
-        """[Ctb] Voltage supply c in mV."""
-        return self.getVoltage(dacIndex.V_POWER_C)
+        """[Ctb] Power supply c in mV."""
+        return self.getPower(dacIndex.V_POWER_C)
 
     @v_c.setter
     def v_c(self, value):
         value = ut.merge_args(dacIndex.V_POWER_C, value)
-        ut.set_using_dict(self.setVoltage, *value)
+        ut.set_using_dict(self.setPower, *value)
 
     @property
     @element
     def v_d(self):
-        """[Ctb] Voltage supply d in mV."""
-        return self.getVoltage(dacIndex.V_POWER_D)
+        """[Ctb] Power supply d in mV."""
+        return self.getPower(dacIndex.V_POWER_D)
 
     @v_d.setter
     def v_d(self, value):
         value = ut.merge_args(dacIndex.V_POWER_D, value)
-        ut.set_using_dict(self.setVoltage, *value)
+        ut.set_using_dict(self.setPower, *value)
 
     @property
     @element
     def v_io(self):
-        """[Ctb] Voltage supply io in mV. Minimum 1200 mV. 
+        """[Ctb] Power supply io in mV. Minimum 1200 mV. 
         
         Note
         ----
         Must be the first power regulator to be set after fpga reset (on-board detector server start up).
         """
-        return self.getVoltage(dacIndex.V_POWER_IO)
+        return self.getPower(dacIndex.V_POWER_IO)
 
     @v_io.setter
     def v_io(self, value):
         value = ut.merge_args(dacIndex.V_POWER_IO, value)
-        ut.set_using_dict(self.setVoltage, *value)
+        ut.set_using_dict(self.setPower, *value)
 
     @property
     @element
     def v_limit(self):
         """[Ctb] Soft limit for power supplies (ctb only) and DACS in mV."""
-        return self.getVoltage(dacIndex.V_LIMIT)
+        return self.getPower(dacIndex.V_LIMIT)
 
     @v_limit.setter
     def v_limit(self, value):
         value = ut.merge_args(dacIndex.V_LIMIT, value)
-        ut.set_using_dict(self.setVoltage, *value)
+        ut.set_using_dict(self.setPower, *value)
 
 
     @property

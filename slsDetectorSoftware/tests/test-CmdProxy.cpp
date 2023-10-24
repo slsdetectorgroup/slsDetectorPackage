@@ -5,6 +5,7 @@
 #include "sls/Detector.h"
 #include "sls/file_utils.h"
 #include "sls/sls_detector_defs.h"
+#include "test-CmdProxy-global.h"
 
 #include <chrono>
 #include <sstream>
@@ -76,7 +77,13 @@ TEST_CASE("hostname", "[.cmd]") {
     REQUIRE_NOTHROW(proxy.Call("hostname", {}, -1, GET));
 }
 
-// virtual: not testing
+TEST_CASE("virtual", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_THROWS(proxy.Call("virtual", {}, -1, GET));
+    test_valid_port("virtual", {"1"}, -1, PUT);
+    REQUIRE_THROWS(proxy.Call("virtual", {"3", "65534"}, -1, PUT));
+}
 
 TEST_CASE("versions", "[.cmd]") {
     Detector det;
@@ -2693,6 +2700,12 @@ TEST_CASE("udp_dstport", "[.cmd]") {
         proxy.Call("udp_dstport", {"50084"}, -1, PUT, oss);
         REQUIRE(oss.str() == "udp_dstport 50084\n");
     }
+    test_valid_port("udp_dstport", {}, -1, PUT);
+    test_valid_port("udp_dstport", {}, 0, PUT);
+    // should fail for the second module
+    if (det.size() > 1) {
+        REQUIRE_THROWS(proxy.Call("udp_dstport", {"65535"}, -1, PUT));
+    }
     for (int i = 0; i != det.size(); ++i) {
         det.setDestinationUDPPort(prev_val[i], {i});
     }
@@ -2781,8 +2794,18 @@ TEST_CASE("udp_dstport2", "[.cmd]") {
             proxy.Call("udp_dstport2", {"50084"}, -1, PUT, oss);
             REQUIRE(oss.str() == "udp_dstport2 50084\n");
         }
+
+        test_valid_port("udp_dstport2", {}, -1, PUT);
+        test_valid_port("udp_dstport2", {}, 0, PUT);
+        // should fail for the second module
+        if (det.size() > 1) {
+            REQUIRE_THROWS(proxy.Call("udp_dstport2", {"65535"}, -1, PUT));
+        }
+
         for (int i = 0; i != det.size(); ++i) {
-            det.setDestinationUDPPort2(prev_val[i], {i});
+            if (prev_val[i] != 0) {
+                det.setDestinationUDPPort2(prev_val[i], {i});
+            }
         }
     } else {
         REQUIRE_THROWS(proxy.Call("udp_dstport2", {}, -1, GET));
@@ -2976,7 +2999,7 @@ TEST_CASE("zmqport", "[.cmd]") {
         det.setNumberofUDPInterfaces(2);
         socketsperdetector *= 2;
     }
-    int port = 3500;
+    uint16_t port = 3500;
     auto port_str = std::to_string(port);
     {
         std::ostringstream oss;
@@ -3004,6 +3027,12 @@ TEST_CASE("zmqport", "[.cmd]") {
         REQUIRE(oss.str() == "zmqport " +
                                  std::to_string(port + i * socketsperdetector) +
                                  '\n');
+    }
+    test_valid_port("zmqport", {}, -1, PUT);
+    test_valid_port("zmqport", {}, 0, PUT);
+    // should fail for the second module
+    if (det.size() > 1) {
+        REQUIRE_THROWS(proxy.Call("zmqport", {"65535"}, -1, PUT));
     }
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         det.setNumberofUDPInterfaces(prev);
@@ -3384,6 +3413,12 @@ TEST_CASE("port", "[.cmd]") {
         proxy.Call("port", {}, 0, GET, oss);
         REQUIRE(oss.str() == "port 1942\n");
     }
+    test_valid_port("port", {}, -1, PUT);
+    test_valid_port("port", {}, 0, PUT);
+    // should fail for the second module
+    if (det.size() > 1) {
+        REQUIRE_THROWS(proxy.Call("port", {"65536"}, -1, PUT));
+    }
     det.setControlPort(prev_val, {0});
 }
 
@@ -3400,6 +3435,12 @@ TEST_CASE("stopport", "[.cmd]") {
         std::ostringstream oss;
         proxy.Call("stopport", {}, 0, GET, oss);
         REQUIRE(oss.str() == "stopport 1942\n");
+    }
+    test_valid_port("stopport", {}, -1, PUT);
+    test_valid_port("stopport", {}, 0, PUT);
+    // should fail for the second module
+    if (det.size() > 1) {
+        REQUIRE_THROWS(proxy.Call("stopport", {"65536"}, -1, PUT));
     }
     det.setStopPort(prev_val, {0});
 }

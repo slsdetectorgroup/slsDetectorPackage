@@ -24,16 +24,18 @@
 
 #define RUN_BUSY_OFST                       (0)
 #define RUN_BUSY_MSK                        (0x00000001 << RUN_BUSY_OFST)
-#define WAITING_FOR_TRIGGER_OFST            (3)
+#define WAITING_FOR_TRIGGER_OFST            (1)
 #define WAITING_FOR_TRIGGER_MSK             (0x00000001 << WAITING_FOR_TRIGGER_OFST)
-#define DELAYBEFORE_OFST                    (4) // Not used in software
-#define DELAYBEFORE_MSK                     (0x00000001 << DELAYBEFORE_OFST) // Not used in software
-#define DELAYAFTER_OFST                     (5) // Not used in software
-#define DELAYAFTER_MSK                      (0x00000001 << DELAYAFTER_OFST) // Not used in software
-#define STOPPED_OFST                        (15)
+#define WAITING_FOR_START_FRAME_OFST        (2)
+#define WAITING_FOR_START_FRAME_MSK         (0x00000001 << WAITING_FOR_START_FRAME_OFST)
+#define ACQUIRING_FRAME_OFST                (3) // Not used in software
+#define ACQUIRING_FRAME_MSK                 (0x00000001 << ACQUIRING_FRAME_OFST)
+#define WAITING_FOR_PERIOD_TO_ELAPSE_OFST   (4) // Not used in software
+#define WAITING_FOR_PERIOD_TO_ELAPSE_MSK    (0x00000001 << WAITING_FOR_PERIOD_TO_ELAPSE_OFST) 
+#define STOPPED_OFST                        (8)
 #define STOPPED_MSK                         (0x00000001 << STOPPED_OFST)
-#define RUNMACHINE_BUSY_OFST                (17)
-#define RUNMACHINE_BUSY_MSK                 (0x00000001 << RUNMACHINE_BUSY_OFST)
+#define INTERNAL_STOP_OFST                  (9)
+#define INTERNAL_STOP_MSK                   (0x00000001 << INTERNAL_STOP_OFST)
 
 /* Look at me register */
 #define LOOK_AT_ME_REG                      (0x03 << MEM_MAP_SHIFT) // Not used in firmware or software
@@ -254,6 +256,17 @@
 #define PLL_CNTRL_DBIT_WR_PRMTR_MSK         (0x00000001 << PLL_CNTRL_DBIT_WR_PRMTR_OFST)
 #define PLL_CNTRL_ADDR_OFST                 (16)
 #define PLL_CNTRL_ADDR_MSK                  (0x0000003F << PLL_CNTRL_ADDR_OFST)
+
+
+/* Pedestal Mode Regiser */
+#define PEDESTAL_MODE_REG                   (0x57 << MEM_MAP_SHIFT)
+
+#define PEDESTAL_MODE_ITRTNS_OFST           (0)
+#define PEDESTAL_MODE_ITRTNS_MSK            (0x0000FFFF << PEDESTAL_MODE_ITRTNS_OFST) 
+#define PEDESTAL_MODE_LNGTH_OFST            (16)
+#define PEDESTAL_MODE_LNGTH_MSK             (0x000000FF << PEDESTAL_MODE_LNGTH_OFST) 
+#define PEDESTAL_MODE_ENBLE_OFST            (31)
+#define PEDESTAL_MODE_ENBLE_MSK             (0x00000001 << PEDESTAL_MODE_ENBLE_OFST) 
 
 /* Config Register for chip 1.1 */
 #define CONFIG_V11_REG                      (0x58 << MEM_MAP_SHIFT)

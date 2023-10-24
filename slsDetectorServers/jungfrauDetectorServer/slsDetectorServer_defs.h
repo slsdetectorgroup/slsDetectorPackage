@@ -5,8 +5,8 @@
 #include "sls/sls_detector_defs.h"
 
 #define MIN_REQRD_VRSN_T_RD_API  0x171220
-#define REQRD_FRMWRE_VRSN_BOARD2 0x230516 // 1.0 pcb (version = 010)
-#define REQRD_FRMWRE_VRSN        0x230515 // 2.0 pcb (version = 011)
+#define REQRD_FRMWRE_VRSN_BOARD2 0x230920 // 1.0 pcb (version = 010)
+#define REQRD_FRMWRE_VRSN        0x230921 // 2.0 pcb (version = 011)
 
 #define NUM_HARDWARE_VERSIONS (2)
 #define HARDWARE_VERSION_NUMBERS                                               \
@@ -52,6 +52,9 @@
 #define DEFAULT_FLIP_ROWS             (0)
 #define DEFAULT_FILTER_RESISTOR       (1) // higher resistor
 #define DEFAULT_FILTER_CELL           (0)
+#define DEFAULT_PEDESTAL_MODE         (0)
+#define DEFAULT_PEDESTAL_FRAMES       (1)
+#define DEFAULT_PEDESTAL_LOOPS        (1)
 
 #define HIGHVOLTAGE_MIN      (60)
 #define HIGHVOLTAGE_MAX      (200)

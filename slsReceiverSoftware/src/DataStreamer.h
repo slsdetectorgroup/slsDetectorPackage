@@ -48,7 +48,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * @param ip streaming source ip
      * @param hwm streaming high water mark
      */
-    void CreateZmqSockets(uint32_t port, const IpAddr ip, int hwm);
+    void CreateZmqSockets(uint16_t port, const IpAddr ip, int hwm);
     void CloseZmqSocket();
     void RestreamStop();
 

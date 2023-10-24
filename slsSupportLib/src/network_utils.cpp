@@ -10,6 +10,7 @@
 #include <cstring>
 #include <ifaddrs.h>
 #include <iomanip>
+#include <limits>
 #include <net/if.h>
 #include <netdb.h>
 #include <sstream>
@@ -201,6 +202,20 @@ MacAddr InterfaceNameToMac(const std::string &inf) {
         close(sock);
     }
     return MacAddr(mac);
+}
+
+void validatePortNumber(uint16_t port) {
+    // random local port. might work if internal = bad practise
+    if (port == 0) {
+        throw RuntimeError("Invalid port number. Must be between 1 - 65535.");
+    }
+}
+
+void validatePortRange(uint16_t startPort, int numPorts) {
+    validatePortNumber(startPort);
+    if ((startPort + numPorts) > std::numeric_limits<uint16_t>::max()) {
+        throw RuntimeError("Invalid port range. Must be between 1 - 65535.");
+    }
 }
 
 } // namespace sls

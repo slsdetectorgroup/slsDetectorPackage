@@ -506,6 +506,161 @@ TEST_CASE("filtercells", "[.cmd]") {
     }
 }
 
+TEST_CASE("pedestalmode", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getPedestalMode();
+        auto prev_frames = det.getNumberOfFrames().tsquash(
+            "Inconsistent number of frames to test");
+        auto prev_triggers = det.getNumberOfTriggers().tsquash(
+            "Inconsistent number of triggers to test");
+        auto prev_timingmode =
+            det.getTimingMode().tsquash("Inconsistent timing mode to test");
+
+        REQUIRE_NOTHROW(proxy.Call("pedestalmode", {}, 0, GET));
+        REQUIRE_NOTHROW(proxy.Call("pedestalmode", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("pedestalmode", {"0"}, -1, GET));
+
+        REQUIRE_THROWS(proxy.Call("pedestalmode", {"256", "10"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("pedestalmode", {"-1", "10"}, 0, PUT));
+        REQUIRE_THROWS(proxy.Call("pedestalmode", {"20", "65536"}, 0, PUT));
+        REQUIRE_THROWS(proxy.Call("pedestalmode", {"20", "-1"}, 0, PUT));
+
+        {
+            std::ostringstream oss;
+            proxy.Call("pedestalmode", {"30", "1000"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pedestalmode [30, 1000]\n");
+        }
+        // cannot change any of these in pedestal mode
+        REQUIRE_THROWS_WITH(proxy.Call("frames", {"200"}, -1, PUT),
+                            "Detector returned: Cannot set frames in pedestal "
+                            "mode. It is overwritten anyway.\n");
+        REQUIRE_THROWS_WITH(proxy.Call("triggers", {"200"}, -1, PUT),
+                            "Detector returned: Cannot set triggers in "
+                            "pedestal mode. It is overwritten anyway.\n");
+        REQUIRE_THROWS_WITH(
+            proxy.Call("timing", {"auto"}, -1, PUT),
+            "Detector returned: Cannot set timing mode in pedestal mode. "
+            "Switch off pedestal mode to change timing mode.\n");
+        REQUIRE_THROWS_WITH(
+            proxy.Call("scan", {"vb_comp", "500", "1500", "10"}, -1, PUT),
+            "Detector returned: Cannot set scan when in pedestal mode.\n");
+        REQUIRE_THROWS_WITH(
+            proxy.Call("scan", {"0"}, -1, PUT),
+            "Detector returned: Cannot set scan when in pedestal mode.\n");
+        // should not throw to get these values though
+        REQUIRE_NOTHROW(proxy.Call("frames", {}, -1, GET));
+        REQUIRE_NOTHROW(proxy.Call("triggers", {}, -1, GET));
+        REQUIRE_NOTHROW(proxy.Call("timing", {}, -1, GET));
+        REQUIRE_NOTHROW(proxy.Call("scan", {}, -1, GET));
+
+        {
+            std::ostringstream oss;
+            proxy.Call("pedestalmode", {"50", "500"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pedestalmode [50, 500]\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("pedestalmode", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "pedestalmode [enabled, 50, 500]\n");
+        }
+        {
+            auto pedemode = det.getPedestalMode().tsquash(
+                "Inconsistent pedestal mode to test");
+            REQUIRE(pedemode.enable == true);
+            REQUIRE(pedemode.frames == 50);
+            REQUIRE(pedemode.loops == 500);
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("pedestalmode", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pedestalmode [0]\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("pedestalmode", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "pedestalmode [disabled]\n");
+        }
+
+        uint8_t pedestalFrames = 50;
+        uint16_t pedestalLoops = 1000;
+        int64_t expNumFrames = pedestalFrames * pedestalLoops * 2;
+        auto origFrames = det.getNumberOfFrames().squash(-1);
+        auto origTriggers = det.getNumberOfTriggers().squash(-1);
+
+        // auto mode
+        det.setTimingMode(defs::AUTO_TIMING);
+        REQUIRE_NOTHROW(proxy.Call(
+            "pedestalmode",
+            {std::to_string(pedestalFrames), std::to_string(pedestalLoops)}, -1,
+            PUT));
+        auto numTriggers = det.getNumberOfTriggers().squash(-1);
+        auto numFrames = det.getNumberOfFrames().squash(-1);
+        REQUIRE(numFrames == expNumFrames);
+        REQUIRE(numTriggers == 1);
+
+        // pedestal mode off
+        REQUIRE_NOTHROW(proxy.Call("pedestalmode", {"0"}, -1, PUT));
+        numTriggers = det.getNumberOfTriggers().squash(-1);
+        numFrames = det.getNumberOfFrames().squash(-1);
+        REQUIRE(numFrames == origFrames);
+        REQUIRE(numTriggers == origTriggers);
+
+        // trigger mode (frames > 1)
+        REQUIRE_NOTHROW(det.setTimingMode(defs::TRIGGER_EXPOSURE));
+        origFrames = 5;
+        REQUIRE_NOTHROW(det.setNumberOfFrames(origFrames));
+        REQUIRE_NOTHROW(proxy.Call(
+            "pedestalmode",
+            {std::to_string(pedestalFrames), std::to_string(pedestalLoops)}, -1,
+            PUT));
+        numTriggers = det.getNumberOfTriggers().squash(-1);
+        numFrames = det.getNumberOfFrames().squash(-1);
+        REQUIRE(numFrames == expNumFrames);
+        REQUIRE(numTriggers == 1);
+
+        // pedestal mode off
+        REQUIRE_NOTHROW(proxy.Call("pedestalmode", {"0"}, -1, PUT));
+        numTriggers = det.getNumberOfTriggers().squash(-1);
+        numFrames = det.getNumberOfFrames().squash(-1);
+        REQUIRE(numFrames == origFrames);
+        REQUIRE(numTriggers == origTriggers);
+
+        // trigger mode (frames = 1)
+        origFrames = 1;
+        REQUIRE_NOTHROW(det.setNumberOfFrames(origFrames));
+        origTriggers = 10;
+        REQUIRE_NOTHROW(det.setNumberOfTriggers(origTriggers));
+        REQUIRE_NOTHROW(proxy.Call(
+            "pedestalmode",
+            {std::to_string(pedestalFrames), std::to_string(pedestalLoops)}, -1,
+            PUT));
+        numTriggers = det.getNumberOfTriggers().squash(-1);
+        numFrames = det.getNumberOfFrames().squash(-1);
+        REQUIRE(numFrames == 1);
+        REQUIRE(numTriggers == expNumFrames);
+
+        // pedestal mode off
+        REQUIRE_NOTHROW(proxy.Call("pedestalmode", {"0"}, -1, PUT));
+        numTriggers = det.getNumberOfTriggers().squash(-1);
+        numFrames = det.getNumberOfFrames().squash(-1);
+        REQUIRE(numFrames == origFrames);
+        REQUIRE(numTriggers == origTriggers);
+
+        det.setNumberOfFrames(prev_frames);
+        det.setNumberOfTriggers(prev_triggers);
+        det.setTimingMode(prev_timingmode);
+        for (int i = 0; i != det.size(); ++i) {
+            det.setPedestalMode(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("pedestalmode", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("pedestalmode", {"0"}, -1, PUT));
+    }
+}
+
 TEST_CASE("sync", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

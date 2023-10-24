@@ -7106,6 +7106,72 @@ patword:
   help: "[step or address] [64 bit mask]\n\t[Ctb][Mythen3] 64 bit pattern at address\
     \ of pattern memory.\n\t[Ctb] read is same as executing pattern"
   infer_action: true
+pedestalmode:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getPedestalMode
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - defs::pedestalParameters
+        argc: 1
+        cast_input:
+        - false
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: args[0] != "0"
+          message: '"Unknown argument " + args[0] + ". Did you mean 0?"'
+        function: setPedestalMode
+        input:
+        - defs::pedestalParameters()
+        input_types:
+        - defs::pedestalParameters
+        output:
+        - ToString(args)
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - uint8_t
+        - uint16_t
+        argc: 2
+        cast_input:
+        - false
+        check_det_id: false
+        convert_det_id: true
+        function: setPedestalMode
+        input:
+        - defs::pedestalParameters(arg0, arg1)
+        input_types:
+        - uint8_t
+        - uint16_t
+        output:
+        - ToString(args)
+        require_det_id: false
+        store_result_in_t: false
+  command_name: pedestalmode
+  function_alias: pedestalmode
+  help: " [frames<uint8_t>] [loops<uint16_t>]\n\t\t[Jungfrau] Enable pedestal mode.\
+    \ \n\t\tThe number of frames or triggers is overwritten by: \n\t\t(#pedestal_frames\
+    \ x #pedestal_loops x 2). \n\t\tIn auto timing mode or in trigger mode with #frames\
+    \ > 1, \n\t\t#frames is overwritten and #triggers = 1, \n\t\telse #triggers is\
+    \ overwritten and #frames = 1. \n\t\tOne cannot set #frames, #triggers or timing\
+    \ mode in pedestal mode (exception thrown).\n\npedestalmode [0]\n\t\t[Jungfrau]\
+    \ Disable pedestal mode.\n\t\tDisabling pedestal mode will set back the normal\
+    \ mode values of #frames and #triggers."
+  infer_action: true
 period:
   actions:
     GET:
@@ -7272,6 +7338,8 @@ port:
         function: getControlPort
         input: []
         input_types: []
+        intput_types:
+        - uint16_t
         output:
         - OutString(t)
         require_det_id: true
@@ -7290,6 +7358,8 @@ port:
         - args[0]
         input_types:
         - int
+        intput_types:
+        - uint16_t
         output:
         - args.front()
         require_det_id: true
@@ -7344,6 +7414,175 @@ powerchip:
     \ or wrong module, powerchip will fail."
   infer_action: true
   template: true
+powerindex:
+  actions:
+    GET:
+      args:
+      - arg_types:
+        - std::string
+        argc: 1
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exceptions:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        extra_variables:
+        - name: index
+          type: defs::dacIndex
+          value: defs::V_POWER_A
+        function: getPowerIndex
+        input:
+        - args[0]
+        input_types:
+        - std::string
+        output:
+        - ToString(static_cast<int>(t) - index)
+        require_det_id: false
+        store_result_in_t: true
+  command_name: powerindex
+  function_alias: powerindex
+  help: "[name] \n\t\t[ChipTestBoard] Get the power index for the given name."
+  infer_action: true
+  template: true
+powerlist:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: true
+        convert_det_id: true
+        exceptions:
+        - condition: cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        function: getPowerNames
+        input: []
+        input_types: []
+        output:
+        - ToString(t)
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - std::string
+        argc: -1
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exceptions:
+        - condition: cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: '"This detector already has fixed dac names. Cannot change them."'
+        function: setPowerNames
+        input:
+        - args
+        input_types:
+        - std::string
+        output:
+        - ToString(args)
+        require_det_id: false
+        store_result_in_t: false
+  command_name: powerlist
+  function_alias: powerlist
+  help: "[powername1 powername2 .. powername4] \n\t\t[ChipTestBoard] Set the list\
+    \ of power names for this board."
+  infer_action: true
+  template: true
+powername:
+  actions:
+    GET:
+      args:
+      - arg_types:
+        - defs::dacIndex
+        argc: 1
+        cast_input:
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exceptions:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        extra_variables:
+        - name: index
+          type: defs::dacIndex
+          value: defs::V_POWER_A
+        function: getPowerName
+        input:
+        - static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)
+        input_types:
+        - defs::dacIndex
+        output:
+        - args[0]
+        - ''' '''
+        - t
+        require_det_id: false
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - defs::dacIndex
+        - std::string
+        argc: 2
+        cast_input:
+        - false
+        - false
+        check_det_id: true
+        convert_det_id: true
+        exceptions:
+        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
+          message: cmd + " only allowed for CTB."
+        extra_variables:
+        - name: index
+          type: defs::dacIndex
+          value: defs::V_POWER_A
+        function: setPowerName
+        input:
+        - static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)
+        - args[1]
+        input_types:
+        - defs::dacIndex
+        - std::string
+        output:
+        - ToString(args)
+        require_det_id: false
+        store_result_in_t: false
+  command_name: powername
+  function_alias: powername
+  help: "[0-4][name] \n\t\t[ChipTestBoard] Set the power at the given position to\
+    \ the given name."
+  infer_action: true
+  template: true
+powervalues:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        ctb_output_list:
+          GETFCN: getPower
+          GETFCNLIST: getPowerList
+          GETFCNNAME: getPowerNames
+          printable_name: '*name_it++'
+          suffix: mV
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
+  command_name: powervalues
+  function_alias: powervalues
+  help: "[name] \n\t\t[ChipTestBoard] Get values of all powers."
+  infer_action: true
 programfpga:
   actions:
     PUT:
@@ -8841,7 +9080,8 @@ rx_tcpport:
         convert_det_id: true
         function: getRxPort
         input: []
-        input_types: []
+        input_types:
+        - uint16_t
         output:
         - OutString(t)
         require_det_id: true
@@ -8849,7 +9089,7 @@ rx_tcpport:
     PUT:
       args:
       - arg_types:
-        - int
+        - uint16_t
         argc: 1
         cast_input:
         - true
@@ -8859,7 +9099,7 @@ rx_tcpport:
         input:
         - args[0]
         input_types:
-        - int
+        - uint16_t
         output:
         - args.front()
         require_det_id: true
@@ -9093,7 +9333,8 @@ rx_zmqport:
         convert_det_id: true
         function: getRxZmqPort
         input: []
-        input_types: []
+        input_types:
+        - uint16_t
         output:
         - OutString(t)
         require_det_id: true
@@ -9101,7 +9342,7 @@ rx_zmqport:
     PUT:
       args:
       - arg_types:
-        - int
+        - uint16_t
         argc: 1
         cast_input:
         - true
@@ -9111,7 +9352,7 @@ rx_zmqport:
         input:
         - args[0]
         input_types:
-        - int
+        - uint16_t
         output:
         - args.front()
         require_det_id: true
@@ -9982,6 +10223,8 @@ stopport:
         function: getStopPort
         input: []
         input_types: []
+        intput_types:
+        - uint16_t
         output:
         - OutString(t)
         require_det_id: true
@@ -10000,6 +10243,8 @@ stopport:
         - args[0]
         input_types:
         - int
+        intput_types:
+        - uint16_t
         output:
         - args.front()
         require_det_id: true
@@ -11826,7 +12071,8 @@ udp_dstport:
         convert_det_id: true
         function: getDestinationUDPPort
         input: []
-        input_types: []
+        input_types:
+        - uint16_t
         output:
         - OutString(t)
         require_det_id: true
@@ -11834,7 +12080,7 @@ udp_dstport:
     PUT:
       args:
       - arg_types:
-        - int
+        - uint16_t
         argc: 1
         cast_input:
         - true
@@ -11844,7 +12090,7 @@ udp_dstport:
         input:
         - args[0]
         input_types:
-        - int
+        - uint16_t
         output:
         - args.front()
         require_det_id: true
@@ -11867,7 +12113,8 @@ udp_dstport2:
         convert_det_id: true
         function: getDestinationUDPPort2
         input: []
-        input_types: []
+        input_types:
+        - uint16_t
         output:
         - OutString(t)
         require_det_id: true
@@ -11875,7 +12122,7 @@ udp_dstport2:
     PUT:
       args:
       - arg_types:
-        - int
+        - uint16_t
         argc: 1
         cast_input:
         - true
@@ -11885,7 +12132,7 @@ udp_dstport2:
         input:
         - args[0]
         input_types:
-        - int
+        - uint16_t
         output:
         - args.front()
         require_det_id: true
@@ -12318,7 +12565,7 @@ v_a:
         - false
         check_det_id: false
         convert_det_id: true
-        function: getVoltage
+        function: getPower
         input:
         - defs::V_POWER_A
         input_types:
@@ -12338,7 +12585,7 @@ v_a:
         - true
         check_det_id: false
         convert_det_id: true
-        function: setVoltage
+        function: setPower
         input:
         - defs::V_POWER_A
         - args[0]
@@ -12351,7 +12598,7 @@ v_a:
         store_result_in_t: false
   command_name: v_a
   function_alias: v_a
-  help: "[n_value]\n\t[Ctb] Voltage supply a in mV."
+  help: "[n_value]\n\t[Ctb] Power supply a in mV."
   infer_action: true
   template: true
 v_b:
@@ -12364,7 +12611,7 @@ v_b:
         - false
         check_det_id: false
         convert_det_id: true
-        function: getVoltage
+        function: getPower
         input:
         - defs::V_POWER_B
         input_types:
@@ -12384,7 +12631,7 @@ v_b:
         - true
         check_det_id: false
         convert_det_id: true
-        function: setVoltage
+        function: setPower
         input:
         - defs::V_POWER_B
         - args[0]
@@ -12397,7 +12644,7 @@ v_b:
         store_result_in_t: false
   command_name: v_b
   function_alias: v_b
-  help: "[n_value]\n\t[Ctb] Voltage supply b in mV."
+  help: "[n_value]\n\t[Ctb] Power supply b in mV."
   infer_action: true
   template: true
 v_c:
@@ -12410,7 +12657,7 @@ v_c:
         - false
         check_det_id: false
         convert_det_id: true
-        function: getVoltage
+        function: getPower
         input:
         - defs::V_POWER_C
         input_types:
@@ -12430,7 +12677,7 @@ v_c:
         - true
         check_det_id: false
         convert_det_id: true
-        function: setVoltage
+        function: setPower
         input:
         - defs::V_POWER_C
         - args[0]
@@ -12443,7 +12690,7 @@ v_c:
         store_result_in_t: false
   command_name: v_c
   function_alias: v_c
-  help: "[n_value]\n\t[Ctb] Voltage supply c in mV."
+  help: "[n_value]\n\t[Ctb] Power supply c in mV."
   infer_action: true
   template: true
 v_chip:
@@ -12456,7 +12703,7 @@ v_chip:
         - false
         check_det_id: false
         convert_det_id: true
-        function: getVoltage
+        function: getPower
         input:
         - defs::V_POWER_CHIP
         input_types:
@@ -12476,7 +12723,7 @@ v_chip:
         - true
         check_det_id: false
         convert_det_id: true
-        function: setVoltage
+        function: setPower
         input:
         - defs::V_POWER_CHIP
         - args[0]
@@ -12489,7 +12736,7 @@ v_chip:
         store_result_in_t: false
   command_name: v_chip
   function_alias: v_chip
-  help: "[n_value]\n\t[Ctb] Voltage supply chip in mV. Do not use it unless you are\
+  help: "[n_value]\n\t[Ctb] Power supply chip in mV. Do not use it unless you are\
     \ completely sure you will not fry the board."
   infer_action: true
   template: true
@@ -12503,7 +12750,7 @@ v_d:
         - false
         check_det_id: false
         convert_det_id: true
-        function: getVoltage
+        function: getPower
         input:
         - defs::V_POWER_D
         input_types:
@@ -12523,7 +12770,7 @@ v_d:
         - true
         check_det_id: false
         convert_det_id: true
-        function: setVoltage
+        function: setPower
         input:
         - defs::V_POWER_D
         - args[0]
@@ -12536,7 +12783,7 @@ v_d:
         store_result_in_t: false
   command_name: v_d
   function_alias: v_d
-  help: "[n_value]\n\t[Ctb] Voltage supply d in mV."
+  help: "[n_value]\n\t[Ctb] Power supply d in mV."
   infer_action: true
   template: true
 v_io:
@@ -12549,7 +12796,7 @@ v_io:
         - false
         check_det_id: false
         convert_det_id: true
-        function: getVoltage
+        function: getPower
         input:
         - defs::V_POWER_IO
         input_types:
@@ -12569,7 +12816,7 @@ v_io:
         - true
         check_det_id: false
         convert_det_id: true
-        function: setVoltage
+        function: setPower
         input:
         - defs::V_POWER_IO
         - args[0]
@@ -12582,9 +12829,8 @@ v_io:
         store_result_in_t: false
   command_name: v_io
   function_alias: v_io
-  help: "[n_value]\n\t[Ctb] Voltage supply io in mV. Minimum 1200 mV. Must be the\
-    \ first power regulator to be set after fpga reset (on-board detector server start\
-    \ up)."
+  help: "[n_value]\n\t[Ctb] Power supply io in mV. Minimum 1200 mV. Must be the first\
+    \ power regulator to be set after fpga reset (on-board detector server start up)."
   infer_action: true
   template: true
 v_limit:
@@ -12597,7 +12843,7 @@ v_limit:
         - false
         check_det_id: false
         convert_det_id: true
-        function: getVoltage
+        function: getPower
         input:
         - defs::V_LIMIT
         input_types:
@@ -12617,7 +12863,7 @@ v_limit:
         - true
         check_det_id: false
         convert_det_id: true
-        function: setVoltage
+        function: setPower
         input:
         - defs::V_LIMIT
         - args[0]
@@ -13270,7 +13516,7 @@ virtual:
       args:
       - arg_types:
         - int
-        - int
+        - uint16_t
         argc: 2
         cast_input:
         - true
@@ -13283,7 +13529,7 @@ virtual:
         - args[1]
         input_types:
         - int
-        - int
+        - uint16_t
         output:
         - ToString(args)
         require_det_id: false
@@ -13304,7 +13550,7 @@ vm_a:
         - false
         check_det_id: false
         convert_det_id: true
-        function: getMeasuredVoltage
+        function: getMeasuredPower
         input:
         - defs::V_POWER_A
         input_types:
@@ -13329,7 +13575,7 @@ vm_b:
         - false
         check_det_id: false
         convert_det_id: true
-        function: getMeasuredVoltage
+        function: getMeasuredPower
         input:
         - defs::V_POWER_B
         input_types:
@@ -13354,7 +13600,7 @@ vm_c:
         - false
         check_det_id: false
         convert_det_id: true
-        function: getMeasuredVoltage
+        function: getMeasuredPower
         input:
         - defs::V_POWER_C
         input_types:
@@ -13379,7 +13625,7 @@ vm_d:
         - false
         check_det_id: false
         convert_det_id: true
-        function: getMeasuredVoltage
+        function: getMeasuredPower
         input:
         - defs::V_POWER_D
         input_types:
@@ -13404,7 +13650,7 @@ vm_io:
         - false
         check_det_id: false
         convert_det_id: true
-        function: getMeasuredVoltage
+        function: getMeasuredPower
         input:
         - defs::V_POWER_IO
         input_types:
@@ -13419,175 +13665,6 @@ vm_io:
   help: "\n\t[Ctb] Measured voltage of power supply io in mV."
   infer_action: true
   template: true
-voltageindex:
-  actions:
-    GET:
-      args:
-      - arg_types:
-        - std::string
-        argc: 1
-        cast_input:
-        - false
-        check_det_id: true
-        convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
-        extra_variables:
-        - name: index
-          type: defs::dacIndex
-          value: defs::V_POWER_A
-        function: getVoltageIndex
-        input:
-        - args[0]
-        input_types:
-        - std::string
-        output:
-        - ToString(static_cast<int>(t) - index)
-        require_det_id: false
-        store_result_in_t: true
-  command_name: voltageindex
-  function_alias: voltageindex
-  help: "[name] \n\t\t[ChipTestBoard] Get the voltage index for the given name."
-  infer_action: true
-  template: true
-voltagelist:
-  actions:
-    GET:
-      args:
-      - arg_types: []
-        argc: 0
-        cast_input: []
-        check_det_id: true
-        convert_det_id: true
-        exceptions:
-        - condition: cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
-        function: getVoltageNames
-        input: []
-        input_types: []
-        output:
-        - ToString(t)
-        require_det_id: false
-        store_result_in_t: true
-    PUT:
-      args:
-      - arg_types:
-        - std::string
-        argc: -1
-        cast_input:
-        - false
-        check_det_id: true
-        convert_det_id: true
-        exceptions:
-        - condition: cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
-        - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
-          message: '"This detector already has fixed dac names. Cannot change them."'
-        function: setVoltageNames
-        input:
-        - args
-        input_types:
-        - std::string
-        output:
-        - ToString(args)
-        require_det_id: false
-        store_result_in_t: false
-  command_name: voltagelist
-  function_alias: voltagelist
-  help: "[voltagename1 voltagename2 .. voltagename4] \n\t\t[ChipTestBoard] Set the\
-    \ list of voltage names for this board."
-  infer_action: true
-  template: true
-voltagename:
-  actions:
-    GET:
-      args:
-      - arg_types:
-        - defs::dacIndex
-        argc: 1
-        cast_input:
-        - false
-        check_det_id: true
-        convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
-        extra_variables:
-        - name: index
-          type: defs::dacIndex
-          value: defs::V_POWER_A
-        function: getVoltageName
-        input:
-        - static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)
-        input_types:
-        - defs::dacIndex
-        output:
-        - args[0]
-        - ''' '''
-        - t
-        require_det_id: false
-        store_result_in_t: true
-    PUT:
-      args:
-      - arg_types:
-        - defs::dacIndex
-        - std::string
-        argc: 2
-        cast_input:
-        - false
-        - false
-        check_det_id: true
-        convert_det_id: true
-        exceptions:
-        - condition: det->getDetectorType().squash() != defs::CHIPTESTBOARD
-          message: cmd + " only allowed for CTB."
-        extra_variables:
-        - name: index
-          type: defs::dacIndex
-          value: defs::V_POWER_A
-        function: setVoltageName
-        input:
-        - static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)
-        - args[1]
-        input_types:
-        - defs::dacIndex
-        - std::string
-        output:
-        - ToString(args)
-        require_det_id: false
-        store_result_in_t: false
-  command_name: voltagename
-  function_alias: voltagename
-  help: "[0-4][name] \n\t\t[ChipTestBoard] Set the voltage at the given position to\
-    \ the given name."
-  infer_action: true
-  template: true
-voltagevalues:
-  actions:
-    GET:
-      args:
-      - arg_types: []
-        argc: 0
-        cast_input: []
-        check_det_id: false
-        convert_det_id: true
-        ctb_output_list:
-          GETFCN: getVoltage
-          GETFCNLIST: getVoltageList
-          GETFCNNAME: getVoltageNames
-          printable_name: '*name_it++'
-          suffix: mV
-        function: ''
-        input: []
-        input_types: []
-        output: []
-        require_det_id: false
-        store_result_in_t: true
-  command_name: voltagevalues
-  function_alias: voltagevalues
-  help: "[name] \n\t\t[ChipTestBoard] Get values of all voltages."
-  infer_action: true
 zmqhwm:
   actions:
     GET:
@@ -13683,7 +13760,8 @@ zmqport:
         convert_det_id: true
         function: getClientZmqPort
         input: []
-        input_types: []
+        input_types:
+        - uint16_t
         output:
         - OutString(t)
         require_det_id: true
@@ -13691,7 +13769,7 @@ zmqport:
     PUT:
       args:
       - arg_types:
-        - int
+        - uint16_t
         argc: 1
         cast_input:
         - true
@@ -13701,7 +13779,7 @@ zmqport:
         input:
         - args[0]
         input_types:
-        - int
+        - uint16_t
         output:
         - args.front()
         require_det_id: true

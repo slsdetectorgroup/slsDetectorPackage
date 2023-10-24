@@ -443,14 +443,14 @@ signallist:
         function: getSignalNames
       PUT:
         function: setSignalNames
-voltagelist:
+powerlist:
     inherit_actions: CTB_NAMED_LIST
-    help: "[voltagename1 voltagename2 .. voltagename4] \n\t\t[ChipTestBoard] Set the list of voltage names for this board."
+    help: "[powername1 powername2 .. powername4] \n\t\t[ChipTestBoard] Set the list of power names for this board."
     actions:
       GET:
-        function: getVoltageNames
+        function: getPowerNames
       PUT:
-        function: setVoltageNames
+        function: setPowerNames
 slowadclist:
     inherit_actions: CTB_NAMED_LIST
     help: "[slowadcname1 slowadcname2 .. slowadcname7] \n\t\t[ChipTestBoard] Set the list of slowadc names for this board."
@@ -508,12 +508,12 @@ dacindex:
           type: defs::dacIndex
           value: defs::DAC_0
 
-voltageindex:
+powerindex:
   inherit_actions: CTB_GET_DACINDEX
-  help: "[name] \n\t\t[ChipTestBoard] Get the voltage index for the given name."
+  help: "[name] \n\t\t[ChipTestBoard] Get the power index for the given name."
   actions:
     GET:
-      function: getVoltageIndex
+      function: getPowerIndex
       extra_variables:
         - name: index
           type: defs::dacIndex
@@ -549,18 +549,18 @@ dacname:
           type: defs::dacIndex
           value: defs::DAC_0
 
-voltagename:
+powername:
   inherit_actions: CTB_SINGLE_DACNAME
-  help: "[0-4][name] \n\t\t[ChipTestBoard] Set the voltage at the given position to the given name."
+  help: "[0-4][name] \n\t\t[ChipTestBoard] Set the power at the given position to the given name."
   actions:
     GET:
-      function: getVoltageName
+      function: getPowerName
       extra_variables:
         - name: index
           type: defs::dacIndex
           value: defs::V_POWER_A
     PUT:
-      function: setVoltageName
+      function: setPowerName
       extra_variables:
         - name: index
           type: defs::dacIndex
@@ -584,15 +584,15 @@ slowadcname:
           value: defs::SLOW_ADC0
 
 ################# CTB_VALUES ################################
-voltagevalues:
-  help: "[name] \n\t\t[ChipTestBoard] Get values of all voltages."
+powervalues:
+  help: "[name] \n\t\t[ChipTestBoard] Get values of all powers."
   actions:
     GET:
       argc: 0
       ctb_output_list:
-        GETFCNLIST: getVoltageList
-        GETFCNNAME: getVoltageNames
-        GETFCN: getVoltage
+        GETFCNLIST: getPowerList
+        GETFCNNAME: getPowerNames
+        GETFCN: getPower
         suffix: "mV"
         printable_name: "*name_it++"
 
@@ -689,35 +689,35 @@ vm_a:
   help: "\n\t[Ctb] Measured voltage of power supply a in mV."
   actions:
     GET:
-      function: getMeasuredVoltage
+      function: getMeasuredPower
       input: [ 'defs::V_POWER_A' ]
 vm_b:
   inherit_actions: GET_IND_COMMAND
   help: "\n\t[Ctb] Measured voltage of power supply b in mV."
   actions:
     GET:
-      function: getMeasuredVoltage
+      function: getMeasuredPower
       input: [ 'defs::V_POWER_B' ]
 vm_c:
   inherit_actions: GET_IND_COMMAND
   help: "\n\t[Ctb] Measured voltage of power supply c in mV."
   actions:
     GET:
-      function: getMeasuredVoltage
+      function: getMeasuredPower
       input: [ 'defs::V_POWER_C' ]
 vm_d:
   inherit_actions: GET_IND_COMMAND
   help: "\n\t[Ctb] Measured voltage of power supply d in mV."
   actions:
     GET:
-      function: getMeasuredVoltage
+      function: getMeasuredPower
       input: [ 'defs::V_POWER_D' ]
 vm_io:
   inherit_actions: GET_IND_COMMAND
   help: "\n\t[Ctb] Measured voltage of power supply io in mV."
   actions:
     GET:
-      function: getMeasuredVoltage
+      function: getMeasuredPower
       input: [ 'defs::V_POWER_IO' ]
 im_a:
   inherit_actions: GET_IND_COMMAND
@@ -1177,72 +1177,72 @@ v_limit:
   help: "[n_value]\n\t[Ctb] Soft limit for power supplies (ctb only) and DACS in mV."
   actions:
     GET:
-      function: getVoltage
+      function: getPower
       input: [ 'defs::V_LIMIT' ]
     PUT:
-      function: setVoltage
+      function: setPower
       input: [ 'defs::V_LIMIT', 'args[0]' ]
 
 
 v_a:
   inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb] Voltage supply a in mV."
+  help: "[n_value]\n\t[Ctb] Power supply a in mV."
   actions:
     GET:
-      function: getVoltage
+      function: getPower
       input: [ 'defs::V_POWER_A' ]
     PUT:
-      function: setVoltage
+      function: setPower
       input: [ 'defs::V_POWER_A', 'args[0]' ]
 v_b:
   inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb] Voltage supply b in mV."
+  help: "[n_value]\n\t[Ctb] Power supply b in mV."
   actions:
     GET:
-      function: getVoltage
+      function: getPower
       input: [ 'defs::V_POWER_B' ]
     PUT:
-      function: setVoltage
+      function: setPower
       input: [ 'defs::V_POWER_B', 'args[0]' ]
 v_c:
   inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb] Voltage supply c in mV."
+  help: "[n_value]\n\t[Ctb] Power supply c in mV."
   actions:
     GET:
-      function: getVoltage
+      function: getPower
       input: [ 'defs::V_POWER_C' ]
     PUT:
-      function: setVoltage
+      function: setPower
       input: [ 'defs::V_POWER_C', 'args[0]' ]
 v_d:
   inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb] Voltage supply d in mV."
+  help: "[n_value]\n\t[Ctb] Power supply d in mV."
   actions:
     GET:
-      function: getVoltage
+      function: getPower
       input: [ 'defs::V_POWER_D' ]
     PUT:
-      function: setVoltage
+      function: setPower
       input: [ 'defs::V_POWER_D', 'args[0]' ]
 v_io:
   inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb] Voltage supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up)."
+  help: "[n_value]\n\t[Ctb] Power supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up)."
   actions:
     GET:
-      function: getVoltage
+      function: getPower
       input: [ 'defs::V_POWER_IO' ]
     PUT:
-      function: setVoltage
+      function: setPower
       input: [ 'defs::V_POWER_IO', 'args[0]' ]
 v_chip:
   inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb] Voltage supply chip in mV. Do not use it unless you are completely sure you will not fry the board."
+  help: "[n_value]\n\t[Ctb] Power supply chip in mV. Do not use it unless you are completely sure you will not fry the board."
   actions:
     GET:
-      function: getVoltage
+      function: getPower
       input: [ 'defs::V_POWER_CHIP' ]
     PUT:
-      function: setVoltage
+      function: setPower
       input: [ 'defs::V_POWER_CHIP', 'args[0]' ]
 
 ################# INTEGER_COMMAND_NOID #######################
@@ -1339,40 +1339,50 @@ udp_dstport:
   help: "[n]\n\tPort number of the receiver (destination) udp interface. Default is 50001. \n\tIf multi command, ports for each module is calculated (incremented by 1 if no 2nd interface)"
   actions:
     GET:
+      input_types: [ uint16_t ]
       function: getDestinationUDPPort
     PUT:
+      input_types: [ uint16_t ]
       function: setDestinationUDPPort
 udp_dstport2:
   inherit_actions: INTEGER_COMMAND_VEC_ID_GET
   help: "[n]\n\t[Jungfrau][Moench][Eiger][Gotthard2] Port number of the receiver (destination) udp interface 2. Default is 50002. \n\tIf multi command, ports for each module is calculated (incremented by 2) \n\t[Jungfrau][Moench] top half or inner interface \n\t[Eiger] right half \n\t[Gotthard2] veto debugging"
   actions:
     GET:
+      input_types: [ uint16_t ]
       function: getDestinationUDPPort2
     PUT:
+      input_types: [ uint16_t ]
       function: setDestinationUDPPort2
 rx_tcpport:
   help: "[port]\n\tTCP port for client-receiver communication. Default is 1954. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter. Multi command will automatically increment for individual modules."
   inherit_actions: INTEGER_COMMAND_VEC_ID_GET
   actions:
     GET:
+      input_types: [ uint16_t ]
       function: getRxPort
     PUT:
+      input_types: [ uint16_t ]
       function: setRxPort
 rx_zmqport:
   help: "[port]\n\tZmq port for data to be streamed out of the receiver. Also restarts receiver zmq streaming if enabled. Default is 30001. Modified only when using an intermediate process between receiver and client(gui). Must be different for every detector (and udp port). Multi command will automatically increment for individual modules."
   inherit_actions: INTEGER_COMMAND_VEC_ID_GET
   actions:
     GET:
+      input_types: [ uint16_t ]
       function: getRxZmqPort
     PUT:
+      input_types: [ uint16_t ]
       function: setRxZmqPort
 zmqport:
   help: "[port]\n\tZmq port in client(gui) or intermediate process for data to be streamed to from receiver. Default connects to receiver zmq streaming out port (30001). Modified only when using an intermediate process between receiver and client(gui). Also restarts client zmq streaming if enabled. Must be different for every detector (and udp port). Multi command will automatically increment for individual modules."
   inherit_actions: INTEGER_COMMAND_VEC_ID_GET
   actions:
     GET:
+      input_types: [ uint16_t ]
       function: getClientZmqPort
     PUT:
+      input_types: [ uint16_t ]
       function: setClientZmqPort
 
 
@@ -1885,16 +1895,20 @@ port:
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
+      intput_types: [ uint16_t ]
       function: getControlPort
     PUT:
+      intput_types: [ uint16_t ]
       function: setControlPort
 stopport:
   help: "[n]\n\tPort number of the stop server on detector for detector-client tcp interface. Default is 1953. Normally unchanged."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
+      intput_types: [ uint16_t ]
       function: getStopPort
     PUT:
+      intput_types: [ uint16_t ]
       function: setStopPort
 lock:
   help: "[0, 1]\n\tLock detector to one IP, 1: locks. Default is unlocked"
@@ -2399,7 +2413,7 @@ virtual:
       argc: 2
       check_det_id: true
       input: [ 'args[0]', 'args[1]' ]
-      input_types: [ int, int ]
+      input_types: [ int, uint16_t ]
       cast_input: [ true, true ]
       output: [ 'ToString(args)' ]
 
@@ -3880,6 +3894,31 @@ patwaittime1:
 patwaittime2:
     help: "Depreciated command. Use patwaittime."
     inherit_actions: patwaittime0
+
+
+
+
+pedestalmode:
+  help: " [frames<uint8_t>] [loops<uint16_t>]\n\t\t[Jungfrau] Enable pedestal mode. \n\t\tThe number of frames or triggers is overwritten by: \n\t\t(#pedestal_frames x #pedestal_loops x 2). \n\t\tIn auto timing mode or in trigger mode with #frames > 1, \n\t\t#frames is overwritten and #triggers = 1, \n\t\telse #triggers is overwritten and #frames = 1. \n\t\tOne cannot set #frames, #triggers or timing mode in pedestal mode (exception thrown).\n\npedestalmode [0]\n\t\t[Jungfrau] Disable pedestal mode.\n\t\tDisabling pedestal mode will set back the normal mode values of #frames and #triggers."
+  actions: 
+    GET:
+      argc: 0
+      require_det_id: true
+      function: getPedestalMode
+      output: [ OutString(t) ]
+    PUT:
+      function: setPedestalMode
+      output: [ "ToString(args)" ]
+      args:
+        - argc: 1
+          exceptions:
+            - condition: 'args[0] != "0"'
+              message: '"Unknown argument " + args[0] + ". Did you mean 0?"'
+          input: [ defs::pedestalParameters() ]
+          input_types: [ defs::pedestalParameters ]
+        - argc: 2
+          input_types: [ uint8_t, uint16_t ]
+          input: [ 'defs::pedestalParameters(arg0, arg1)' ]
 
 ######################### description only commands #############################
 ## code is generated for these commands

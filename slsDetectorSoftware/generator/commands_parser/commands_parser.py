@@ -43,8 +43,8 @@ class CommandParser:
     def _verify_argument(self, arg, infer_action):
         if arg['function'] == '' and 'ctb_output_list' not in arg:
             raise ValueError(f'Argument {arg} does not have a function')
-        if len(arg['input_types']) != len(arg['input']):
-            raise ValueError(f'Argument {arg} does not have the correct number of inputs')
+        # if len(arg['input_types']) != len(arg['input']):
+        #     raise ValueError(f'Argument {arg} does not have the correct number of inputs')
         if 'separate_time_units' in arg:
 
             if arg['separate_time_units']['input'] == "":

@@ -8534,6 +8534,80 @@ std::string Caller::patword(int action) {
   return os.str();
 }
 
+std::string Caller::pedestalmode(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: pedestalmode" << std::endl;
+    os << R"V0G0N( [frames<uint8_t>] [loops<uint16_t>]
+		[Jungfrau] Enable pedestal mode. 
+		The number of frames or triggers is overwritten by: 
+		(#pedestal_frames x #pedestal_loops x 2). 
+		In auto timing mode or in trigger mode with #frames > 1, 
+		#frames is overwritten and #triggers = 1, 
+		else #triggers is overwritten and #frames = 1. 
+		One cannot set #frames, #triggers or timing mode in pedestal mode (exception thrown).
+
+pedestalmode [0]
+		[Jungfrau] Disable pedestal mode.
+		Disabling pedestal mode will set back the normal mode values of #frames and #triggers. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (1 && args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (1 && args.size() != 1 && args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 1) {
+    }
+
+    if (args.size() == 2) {
+    }
+
+  } else {
+
+    throw RuntimeError(
+        "INTERNAL ERROR: Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      auto t = det->getPedestalMode(std::vector<int>{ det_id });
+      os << OutString(t) << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 1) {
+      if (args[0] != "0") {
+        throw RuntimeError("Unknown argument " + args[0] + ". Did you mean 0?");
+      }
+      det->setPedestalMode(defs::pedestalParameters());
+      os << ToString(args) << '\n';
+    }
+
+    if (args.size() == 2) {
+      det->setPedestalMode(defs::pedestalParameters(arg0, arg1));
+      os << ToString(args) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
 std::string Caller::period(int action) {
 
   std::ostringstream os;
@@ -8842,6 +8916,246 @@ std::string Caller::powerchip(int action) {
       auto arg0 = StringTo<bool>(args[0]);
       det->setPowerChip(arg0, std::vector<int>{ det_id });
       os << args.front() << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::powerindex(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: powerindex" << std::endl;
+    os << R"V0G0N([name] 
+		[ChipTestBoard] Get the power index for the given name. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (1 && args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      defs::dacIndex index = defs::V_POWER_A;
+    }
+
+  } else {
+
+    throw RuntimeError(
+        "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      defs::dacIndex index = defs::V_POWER_A;
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute powerindex at module level");
+      }
+      auto t = det->getPowerIndex(args[0]);
+      os << ToString(static_cast<int>(t) - index) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::powerlist(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: powerlist" << std::endl;
+    os << R"V0G0N([powername1 powername2 .. powername4] 
+		[ChipTestBoard] Set the list of power names for this board. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (1 && args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (0) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+  } else {
+
+    throw RuntimeError(
+        "INTERNAL ERROR: Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+      if (cmd != "daclist" &&
+          det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute powerlist at module level");
+      }
+      auto t = det->getPowerNames();
+      os << ToString(t) << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (cmd != "daclist" &&
+        det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+      throw RuntimeError(cmd + " only allowed for CTB.");
+    }
+    if (cmd == "daclist" &&
+        det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+      throw RuntimeError(
+          "This detector already has fixed dac names. Cannot change them.");
+    }
+    if (det_id != -1) {
+      throw RuntimeError("Cannot execute powerlist at module level");
+    }
+    det->setPowerNames(args);
+    os << ToString(args) << '\n';
+  }
+
+  return os.str();
+}
+
+std::string Caller::powername(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: powername" << std::endl;
+    os << R"V0G0N([0-4][name] 
+		[ChipTestBoard] Set the power at the given position to the given name. )V0G0N"
+       << std::endl;
+    return os.str();
+  }
+
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (1 && args.size() != 1) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 1) {
+      defs::dacIndex index = defs::V_POWER_A;
+    }
+
+  } else if (action == slsDetectorDefs::PUT_ACTION) {
+    if (1 && args.size() != 2) {
+      throw RuntimeError("Wrong number of arguments for action PUT");
+    }
+
+    if (args.size() == 2) {
+      defs::dacIndex index = defs::V_POWER_A;
+    }
+
+  } else {
+
+    throw RuntimeError(
+        "INTERNAL ERROR: Invalid action: supported actions are ['GET', 'PUT']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 1) {
+      defs::dacIndex index = defs::V_POWER_A;
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute powername at module level");
+      }
+      auto t = det->getPowerName(
+          static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index));
+      os << args[0] << ' ' << t << '\n';
+    }
+  }
+
+  if (action == slsDetectorDefs::PUT_ACTION) {
+    if (args.size() == 2) {
+      defs::dacIndex index = defs::V_POWER_A;
+      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        throw RuntimeError(cmd + " only allowed for CTB.");
+      }
+      if (det_id != -1) {
+        throw RuntimeError("Cannot execute powername at module level");
+      }
+      det->setPowerName(
+          static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index), args[1]);
+      os << ToString(args) << '\n';
+    }
+  }
+
+  return os.str();
+}
+
+std::string Caller::powervalues(int action) {
+
+  std::ostringstream os;
+  // print help
+  if (action == slsDetectorDefs::HELP_ACTION) {
+    os << "Command: powervalues" << std::endl;
+    os << R"V0G0N([name] 
+		[ChipTestBoard] Get values of all powers. )V0G0N" << std::endl;
+    return os.str();
+  }
+
+  // check if action and arguments are valid
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (1 && args.size() != 0) {
+      throw RuntimeError("Wrong number of arguments for action GET");
+    }
+
+    if (args.size() == 0) {
+    }
+
+  } else {
+
+    throw RuntimeError(
+        "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
+  }
+
+  // generate code for each action
+  if (action == slsDetectorDefs::GET_ACTION) {
+    if (args.size() == 0) {
+
+      std::string suffix = " mV";
+      auto t = det->getPowerList();
+
+      auto names = det->getPowerNames();
+      auto name_it = names.begin();
+      os << '[';
+      if (t.size() > 0) {
+
+        auto it = t.cbegin();
+        os << ToString(*name_it++) << ' ';
+        os << OutString(det->getPower(*it++, std::vector<int>{ det_id }))
+           << suffix;
+        while (it != t.cend()) {
+          os << ", " << ToString(*name_it++) << ' ';
+          os << OutString(det->getPower(*it++, std::vector<int>{ det_id }))
+             << suffix;
+        }
+      }
+
+      os << "]\n";
     }
   }
 
@@ -10837,10 +11151,10 @@ std::string Caller::rx_tcpport(int action) {
 
     if (args.size() == 1) {
       try {
-        StringTo<int>(args[0]);
+        StringTo<uint16_t>(args[0]);
       }
       catch (...) {
-        throw RuntimeError("Could not convert argument 0 to int");
+        throw RuntimeError("Could not convert argument 0 to uint16_t");
       }
     }
 
@@ -10860,7 +11174,7 @@ std::string Caller::rx_tcpport(int action) {
 
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 1) {
-      auto arg0 = StringTo<int>(args[0]);
+      auto arg0 = StringTo<uint16_t>(args[0]);
       det->setRxPort(arg0, det_id);
       os << args.front() << '\n';
     }
@@ -11211,10 +11525,10 @@ std::string Caller::rx_zmqport(int action) {
 
     if (args.size() == 1) {
       try {
-        StringTo<int>(args[0]);
+        StringTo<uint16_t>(args[0]);
       }
       catch (...) {
-        throw RuntimeError("Could not convert argument 0 to int");
+        throw RuntimeError("Could not convert argument 0 to uint16_t");
       }
     }
 
@@ -11234,7 +11548,7 @@ std::string Caller::rx_zmqport(int action) {
 
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 1) {
-      auto arg0 = StringTo<int>(args[0]);
+      auto arg0 = StringTo<uint16_t>(args[0]);
       det->setRxZmqPort(arg0, det_id);
       os << args.front() << '\n';
     }
@@ -14731,10 +15045,10 @@ std::string Caller::udp_dstport(int action) {
 
     if (args.size() == 1) {
       try {
-        StringTo<int>(args[0]);
+        StringTo<uint16_t>(args[0]);
       }
       catch (...) {
-        throw RuntimeError("Could not convert argument 0 to int");
+        throw RuntimeError("Could not convert argument 0 to uint16_t");
       }
     }
 
@@ -14754,7 +15068,7 @@ std::string Caller::udp_dstport(int action) {
 
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 1) {
-      auto arg0 = StringTo<int>(args[0]);
+      auto arg0 = StringTo<uint16_t>(args[0]);
       det->setDestinationUDPPort(arg0, det_id);
       os << args.front() << '\n';
     }
@@ -14794,10 +15108,10 @@ std::string Caller::udp_dstport2(int action) {
 
     if (args.size() == 1) {
       try {
-        StringTo<int>(args[0]);
+        StringTo<uint16_t>(args[0]);
       }
       catch (...) {
-        throw RuntimeError("Could not convert argument 0 to int");
+        throw RuntimeError("Could not convert argument 0 to uint16_t");
       }
     }
 
@@ -14817,7 +15131,7 @@ std::string Caller::udp_dstport2(int action) {
 
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 1) {
-      auto arg0 = StringTo<int>(args[0]);
+      auto arg0 = StringTo<uint16_t>(args[0]);
       det->setDestinationUDPPort2(arg0, det_id);
       os << args.front() << '\n';
     }
@@ -15350,7 +15664,7 @@ std::string Caller::v_a(int action) {
   if (action == slsDetectorDefs::HELP_ACTION) {
     os << "Command: v_a" << std::endl;
     os << R"V0G0N([n_value]
-	[Ctb] Voltage supply a in mV. )V0G0N" << std::endl;
+	[Ctb] Power supply a in mV. )V0G0N" << std::endl;
     return os.str();
   }
 
@@ -15386,7 +15700,7 @@ std::string Caller::v_a(int action) {
   // generate code for each action
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
-      auto t = det->getVoltage(defs::V_POWER_A, std::vector<int>{ det_id });
+      auto t = det->getPower(defs::V_POWER_A, std::vector<int>{ det_id });
       os << OutString(t) << '\n';
     }
   }
@@ -15394,7 +15708,7 @@ std::string Caller::v_a(int action) {
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 1) {
       auto arg1 = StringTo<int>(args[0]);
-      det->setVoltage(defs::V_POWER_A, arg1, std::vector<int>{ det_id });
+      det->setPower(defs::V_POWER_A, arg1, std::vector<int>{ det_id });
       os << args.front() << '\n';
     }
   }
@@ -15409,7 +15723,7 @@ std::string Caller::v_b(int action) {
   if (action == slsDetectorDefs::HELP_ACTION) {
     os << "Command: v_b" << std::endl;
     os << R"V0G0N([n_value]
-	[Ctb] Voltage supply b in mV. )V0G0N" << std::endl;
+	[Ctb] Power supply b in mV. )V0G0N" << std::endl;
     return os.str();
   }
 
@@ -15445,7 +15759,7 @@ std::string Caller::v_b(int action) {
   // generate code for each action
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
-      auto t = det->getVoltage(defs::V_POWER_B, std::vector<int>{ det_id });
+      auto t = det->getPower(defs::V_POWER_B, std::vector<int>{ det_id });
       os << OutString(t) << '\n';
     }
   }
@@ -15453,7 +15767,7 @@ std::string Caller::v_b(int action) {
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 1) {
       auto arg1 = StringTo<int>(args[0]);
-      det->setVoltage(defs::V_POWER_B, arg1, std::vector<int>{ det_id });
+      det->setPower(defs::V_POWER_B, arg1, std::vector<int>{ det_id });
       os << args.front() << '\n';
     }
   }
@@ -15468,7 +15782,7 @@ std::string Caller::v_c(int action) {
   if (action == slsDetectorDefs::HELP_ACTION) {
     os << "Command: v_c" << std::endl;
     os << R"V0G0N([n_value]
-	[Ctb] Voltage supply c in mV. )V0G0N" << std::endl;
+	[Ctb] Power supply c in mV. )V0G0N" << std::endl;
     return os.str();
   }
 
@@ -15504,7 +15818,7 @@ std::string Caller::v_c(int action) {
   // generate code for each action
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
-      auto t = det->getVoltage(defs::V_POWER_C, std::vector<int>{ det_id });
+      auto t = det->getPower(defs::V_POWER_C, std::vector<int>{ det_id });
       os << OutString(t) << '\n';
     }
   }
@@ -15512,7 +15826,7 @@ std::string Caller::v_c(int action) {
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 1) {
       auto arg1 = StringTo<int>(args[0]);
-      det->setVoltage(defs::V_POWER_C, arg1, std::vector<int>{ det_id });
+      det->setPower(defs::V_POWER_C, arg1, std::vector<int>{ det_id });
       os << args.front() << '\n';
     }
   }
@@ -15527,7 +15841,7 @@ std::string Caller::v_chip(int action) {
   if (action == slsDetectorDefs::HELP_ACTION) {
     os << "Command: v_chip" << std::endl;
     os << R"V0G0N([n_value]
-	[Ctb] Voltage supply chip in mV. Do not use it unless you are completely sure you will not fry the board. )V0G0N"
+	[Ctb] Power supply chip in mV. Do not use it unless you are completely sure you will not fry the board. )V0G0N"
        << std::endl;
     return os.str();
   }
@@ -15564,7 +15878,7 @@ std::string Caller::v_chip(int action) {
   // generate code for each action
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
-      auto t = det->getVoltage(defs::V_POWER_CHIP, std::vector<int>{ det_id });
+      auto t = det->getPower(defs::V_POWER_CHIP, std::vector<int>{ det_id });
       os << OutString(t) << '\n';
     }
   }
@@ -15572,7 +15886,7 @@ std::string Caller::v_chip(int action) {
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 1) {
       auto arg1 = StringTo<int>(args[0]);
-      det->setVoltage(defs::V_POWER_CHIP, arg1, std::vector<int>{ det_id });
+      det->setPower(defs::V_POWER_CHIP, arg1, std::vector<int>{ det_id });
       os << args.front() << '\n';
     }
   }
@@ -15587,7 +15901,7 @@ std::string Caller::v_d(int action) {
   if (action == slsDetectorDefs::HELP_ACTION) {
     os << "Command: v_d" << std::endl;
     os << R"V0G0N([n_value]
-	[Ctb] Voltage supply d in mV. )V0G0N" << std::endl;
+	[Ctb] Power supply d in mV. )V0G0N" << std::endl;
     return os.str();
   }
 
@@ -15623,7 +15937,7 @@ std::string Caller::v_d(int action) {
   // generate code for each action
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
-      auto t = det->getVoltage(defs::V_POWER_D, std::vector<int>{ det_id });
+      auto t = det->getPower(defs::V_POWER_D, std::vector<int>{ det_id });
       os << OutString(t) << '\n';
     }
   }
@@ -15631,7 +15945,7 @@ std::string Caller::v_d(int action) {
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 1) {
       auto arg1 = StringTo<int>(args[0]);
-      det->setVoltage(defs::V_POWER_D, arg1, std::vector<int>{ det_id });
+      det->setPower(defs::V_POWER_D, arg1, std::vector<int>{ det_id });
       os << args.front() << '\n';
     }
   }
@@ -15646,7 +15960,7 @@ std::string Caller::v_io(int action) {
   if (action == slsDetectorDefs::HELP_ACTION) {
     os << "Command: v_io" << std::endl;
     os << R"V0G0N([n_value]
-	[Ctb] Voltage supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up). )V0G0N"
+	[Ctb] Power supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up). )V0G0N"
        << std::endl;
     return os.str();
   }
@@ -15683,7 +15997,7 @@ std::string Caller::v_io(int action) {
   // generate code for each action
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
-      auto t = det->getVoltage(defs::V_POWER_IO, std::vector<int>{ det_id });
+      auto t = det->getPower(defs::V_POWER_IO, std::vector<int>{ det_id });
       os << OutString(t) << '\n';
     }
   }
@@ -15691,7 +16005,7 @@ std::string Caller::v_io(int action) {
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 1) {
       auto arg1 = StringTo<int>(args[0]);
-      det->setVoltage(defs::V_POWER_IO, arg1, std::vector<int>{ det_id });
+      det->setPower(defs::V_POWER_IO, arg1, std::vector<int>{ det_id });
       os << args.front() << '\n';
     }
   }
@@ -15743,7 +16057,7 @@ std::string Caller::v_limit(int action) {
   // generate code for each action
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
-      auto t = det->getVoltage(defs::V_LIMIT, std::vector<int>{ det_id });
+      auto t = det->getPower(defs::V_LIMIT, std::vector<int>{ det_id });
       os << OutString(t) << '\n';
     }
   }
@@ -15751,7 +16065,7 @@ std::string Caller::v_limit(int action) {
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 1) {
       auto arg1 = StringTo<int>(args[0]);
-      det->setVoltage(defs::V_LIMIT, arg1, std::vector<int>{ det_id });
+      det->setPower(defs::V_LIMIT, arg1, std::vector<int>{ det_id });
       os << args.front() << '\n';
     }
   }
@@ -16546,10 +16860,10 @@ std::string Caller::virtualFunction(int action) {
         throw RuntimeError("Could not convert argument 0 to int");
       }
       try {
-        StringTo<int>(args[1]);
+        StringTo<uint16_t>(args[1]);
       }
       catch (...) {
-        throw RuntimeError("Could not convert argument 1 to int");
+        throw RuntimeError("Could not convert argument 1 to uint16_t");
       }
     }
 
@@ -16566,7 +16880,7 @@ std::string Caller::virtualFunction(int action) {
         throw RuntimeError("Cannot execute virtual at module level");
       }
       auto arg0 = StringTo<int>(args[0]);
-      auto arg1 = StringTo<int>(args[1]);
+      auto arg1 = StringTo<uint16_t>(args[1]);
       det->setVirtualDetectorServers(arg0, arg1);
       os << ToString(args) << '\n';
     }
@@ -16605,7 +16919,7 @@ std::string Caller::vm_a(int action) {
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t =
-          det->getMeasuredVoltage(defs::V_POWER_A, std::vector<int>{ det_id });
+          det->getMeasuredPower(defs::V_POWER_A, std::vector<int>{ det_id });
       os << OutString(t) << " °C" << '\n';
     }
   }
@@ -16643,7 +16957,7 @@ std::string Caller::vm_b(int action) {
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t =
-          det->getMeasuredVoltage(defs::V_POWER_B, std::vector<int>{ det_id });
+          det->getMeasuredPower(defs::V_POWER_B, std::vector<int>{ det_id });
       os << OutString(t) << " °C" << '\n';
     }
   }
@@ -16681,7 +16995,7 @@ std::string Caller::vm_c(int action) {
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t =
-          det->getMeasuredVoltage(defs::V_POWER_C, std::vector<int>{ det_id });
+          det->getMeasuredPower(defs::V_POWER_C, std::vector<int>{ det_id });
       os << OutString(t) << " °C" << '\n';
     }
   }
@@ -16719,7 +17033,7 @@ std::string Caller::vm_d(int action) {
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t =
-          det->getMeasuredVoltage(defs::V_POWER_D, std::vector<int>{ det_id });
+          det->getMeasuredPower(defs::V_POWER_D, std::vector<int>{ det_id });
       os << OutString(t) << " °C" << '\n';
     }
   }
@@ -16757,249 +17071,8 @@ std::string Caller::vm_io(int action) {
   if (action == slsDetectorDefs::GET_ACTION) {
     if (args.size() == 0) {
       auto t =
-          det->getMeasuredVoltage(defs::V_POWER_IO, std::vector<int>{ det_id });
+          det->getMeasuredPower(defs::V_POWER_IO, std::vector<int>{ det_id });
       os << OutString(t) << " °C" << '\n';
-    }
-  }
-
-  return os.str();
-}
-
-std::string Caller::voltageindex(int action) {
-
-  std::ostringstream os;
-  // print help
-  if (action == slsDetectorDefs::HELP_ACTION) {
-    os << "Command: voltageindex" << std::endl;
-    os << R"V0G0N([name] 
-		[ChipTestBoard] Get the voltage index for the given name. )V0G0N"
-       << std::endl;
-    return os.str();
-  }
-
-  // check if action and arguments are valid
-  if (action == slsDetectorDefs::GET_ACTION) {
-    if (1 && args.size() != 1) {
-      throw RuntimeError("Wrong number of arguments for action GET");
-    }
-
-    if (args.size() == 1) {
-      defs::dacIndex index = defs::V_POWER_A;
-    }
-
-  } else {
-
-    throw RuntimeError(
-        "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
-  }
-
-  // generate code for each action
-  if (action == slsDetectorDefs::GET_ACTION) {
-    if (args.size() == 1) {
-      defs::dacIndex index = defs::V_POWER_A;
-      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
-        throw RuntimeError(cmd + " only allowed for CTB.");
-      }
-      if (det_id != -1) {
-        throw RuntimeError("Cannot execute voltageindex at module level");
-      }
-      auto t = det->getVoltageIndex(args[0]);
-      os << ToString(static_cast<int>(t) - index) << '\n';
-    }
-  }
-
-  return os.str();
-}
-
-std::string Caller::voltagelist(int action) {
-
-  std::ostringstream os;
-  // print help
-  if (action == slsDetectorDefs::HELP_ACTION) {
-    os << "Command: voltagelist" << std::endl;
-    os << R"V0G0N([voltagename1 voltagename2 .. voltagename4] 
-		[ChipTestBoard] Set the list of voltage names for this board. )V0G0N"
-       << std::endl;
-    return os.str();
-  }
-
-  // check if action and arguments are valid
-  if (action == slsDetectorDefs::GET_ACTION) {
-    if (1 && args.size() != 0) {
-      throw RuntimeError("Wrong number of arguments for action GET");
-    }
-
-    if (args.size() == 0) {
-    }
-
-  } else if (action == slsDetectorDefs::PUT_ACTION) {
-    if (0) {
-      throw RuntimeError("Wrong number of arguments for action PUT");
-    }
-
-  } else {
-
-    throw RuntimeError(
-        "INTERNAL ERROR: Invalid action: supported actions are ['GET', 'PUT']");
-  }
-
-  // generate code for each action
-  if (action == slsDetectorDefs::GET_ACTION) {
-    if (args.size() == 0) {
-      if (cmd != "daclist" &&
-          det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
-        throw RuntimeError(cmd + " only allowed for CTB.");
-      }
-      if (det_id != -1) {
-        throw RuntimeError("Cannot execute voltagelist at module level");
-      }
-      auto t = det->getVoltageNames();
-      os << ToString(t) << '\n';
-    }
-  }
-
-  if (action == slsDetectorDefs::PUT_ACTION) {
-    if (cmd != "daclist" &&
-        det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
-      throw RuntimeError(cmd + " only allowed for CTB.");
-    }
-    if (cmd == "daclist" &&
-        det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
-      throw RuntimeError(
-          "This detector already has fixed dac names. Cannot change them.");
-    }
-    if (det_id != -1) {
-      throw RuntimeError("Cannot execute voltagelist at module level");
-    }
-    det->setVoltageNames(args);
-    os << ToString(args) << '\n';
-  }
-
-  return os.str();
-}
-
-std::string Caller::voltagename(int action) {
-
-  std::ostringstream os;
-  // print help
-  if (action == slsDetectorDefs::HELP_ACTION) {
-    os << "Command: voltagename" << std::endl;
-    os << R"V0G0N([0-4][name] 
-		[ChipTestBoard] Set the voltage at the given position to the given name. )V0G0N"
-       << std::endl;
-    return os.str();
-  }
-
-  // check if action and arguments are valid
-  if (action == slsDetectorDefs::GET_ACTION) {
-    if (1 && args.size() != 1) {
-      throw RuntimeError("Wrong number of arguments for action GET");
-    }
-
-    if (args.size() == 1) {
-      defs::dacIndex index = defs::V_POWER_A;
-    }
-
-  } else if (action == slsDetectorDefs::PUT_ACTION) {
-    if (1 && args.size() != 2) {
-      throw RuntimeError("Wrong number of arguments for action PUT");
-    }
-
-    if (args.size() == 2) {
-      defs::dacIndex index = defs::V_POWER_A;
-    }
-
-  } else {
-
-    throw RuntimeError(
-        "INTERNAL ERROR: Invalid action: supported actions are ['GET', 'PUT']");
-  }
-
-  // generate code for each action
-  if (action == slsDetectorDefs::GET_ACTION) {
-    if (args.size() == 1) {
-      defs::dacIndex index = defs::V_POWER_A;
-      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
-        throw RuntimeError(cmd + " only allowed for CTB.");
-      }
-      if (det_id != -1) {
-        throw RuntimeError("Cannot execute voltagename at module level");
-      }
-      auto t = det->getVoltageName(
-          static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index));
-      os << args[0] << ' ' << t << '\n';
-    }
-  }
-
-  if (action == slsDetectorDefs::PUT_ACTION) {
-    if (args.size() == 2) {
-      defs::dacIndex index = defs::V_POWER_A;
-      if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
-        throw RuntimeError(cmd + " only allowed for CTB.");
-      }
-      if (det_id != -1) {
-        throw RuntimeError("Cannot execute voltagename at module level");
-      }
-      det->setVoltageName(
-          static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index), args[1]);
-      os << ToString(args) << '\n';
-    }
-  }
-
-  return os.str();
-}
-
-std::string Caller::voltagevalues(int action) {
-
-  std::ostringstream os;
-  // print help
-  if (action == slsDetectorDefs::HELP_ACTION) {
-    os << "Command: voltagevalues" << std::endl;
-    os << R"V0G0N([name] 
-		[ChipTestBoard] Get values of all voltages. )V0G0N"
-       << std::endl;
-    return os.str();
-  }
-
-  // check if action and arguments are valid
-  if (action == slsDetectorDefs::GET_ACTION) {
-    if (1 && args.size() != 0) {
-      throw RuntimeError("Wrong number of arguments for action GET");
-    }
-
-    if (args.size() == 0) {
-    }
-
-  } else {
-
-    throw RuntimeError(
-        "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
-  }
-
-  // generate code for each action
-  if (action == slsDetectorDefs::GET_ACTION) {
-    if (args.size() == 0) {
-
-      std::string suffix = " mV";
-      auto t = det->getVoltageList();
-
-      auto names = det->getVoltageNames();
-      auto name_it = names.begin();
-      os << '[';
-      if (t.size() > 0) {
-
-        auto it = t.cbegin();
-        os << ToString(*name_it++) << ' ';
-        os << OutString(det->getVoltage(*it++, std::vector<int>{ det_id }))
-           << suffix;
-        while (it != t.cend()) {
-          os << ", " << ToString(*name_it++) << ' ';
-          os << OutString(det->getVoltage(*it++, std::vector<int>{ det_id }))
-             << suffix;
-        }
-      }
-
-      os << "]\n";
     }
   }
 
@@ -17150,10 +17223,10 @@ std::string Caller::zmqport(int action) {
 
     if (args.size() == 1) {
       try {
-        StringTo<int>(args[0]);
+        StringTo<uint16_t>(args[0]);
       }
       catch (...) {
-        throw RuntimeError("Could not convert argument 0 to int");
+        throw RuntimeError("Could not convert argument 0 to uint16_t");
       }
     }
 
@@ -17173,7 +17246,7 @@ std::string Caller::zmqport(int action) {
 
   if (action == slsDetectorDefs::PUT_ACTION) {
     if (args.size() == 1) {
-      auto arg0 = StringTo<int>(args[0]);
+      auto arg0 = StringTo<uint16_t>(args[0]);
       det->setClientZmqPort(arg0, det_id);
       os << args.front() << '\n';
     }

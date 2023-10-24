@@ -505,6 +505,160 @@ TEST_CASE("Caller::filtercells", "[.cmd]") {
         REQUIRE_THROWS(caller.call("filtercells", {"0"}, -1, PUT));
     }
 }
+TEST_CASE("Caller::pedestalmode", "[.cmd]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getPedestalMode();
+        auto prev_frames = det.getNumberOfFrames().tsquash(
+            "Inconsistent number of frames to test");
+        auto prev_triggers = det.getNumberOfTriggers().tsquash(
+            "Inconsistent number of triggers to test");
+        auto prev_timingmode =
+            det.getTimingMode().tsquash("Inconsistent timing mode to test");
+
+        REQUIRE_NOTHROW(caller.call("pedestalmode", {}, 0, GET));
+        REQUIRE_NOTHROW(caller.call("pedestalmode", {}, -1, GET));
+        REQUIRE_THROWS(caller.call("pedestalmode", {"0"}, -1, GET));
+
+        REQUIRE_THROWS(caller.call("pedestalmode", {"256", "10"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("pedestalmode", {"-1", "10"}, 0, PUT));
+        REQUIRE_THROWS(caller.call("pedestalmode", {"20", "65536"}, 0, PUT));
+        REQUIRE_THROWS(caller.call("pedestalmode", {"20", "-1"}, 0, PUT));
+
+        {
+            std::ostringstream oss;
+            caller.call("pedestalmode", {"30", "1000"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pedestalmode [30, 1000]\n");
+        }
+        // cannot change any of these in pedestal mode
+        REQUIRE_THROWS_WITH(caller.call("frames", {"200"}, -1, PUT),
+                            "Detector returned: Cannot set frames in pedestal "
+                            "mode. It is overwritten anyway.\n");
+        REQUIRE_THROWS_WITH(caller.call("triggers", {"200"}, -1, PUT),
+                            "Detector returned: Cannot set triggers in "
+                            "pedestal mode. It is overwritten anyway.\n");
+        REQUIRE_THROWS_WITH(
+            caller.call("timing", {"auto"}, -1, PUT),
+            "Detector returned: Cannot set timing mode in pedestal mode. "
+            "Switch off pedestal mode to change timing mode.\n");
+        REQUIRE_THROWS_WITH(
+            caller.call("scan", {"vb_comp", "500", "1500", "10"}, -1, PUT),
+            "Detector returned: Cannot set scan when in pedestal mode.\n");
+        REQUIRE_THROWS_WITH(
+            caller.call("scan", {"0"}, -1, PUT),
+            "Detector returned: Cannot set scan when in pedestal mode.\n");
+        // should not throw to get these values though
+        REQUIRE_NOTHROW(caller.call("frames", {}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("triggers", {}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("timing", {}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("scan", {}, -1, GET));
+
+        {
+            std::ostringstream oss;
+            caller.call("pedestalmode", {"50", "500"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pedestalmode [50, 500]\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("pedestalmode", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "pedestalmode [enabled, 50, 500]\n");
+        }
+        {
+            auto pedemode = det.getPedestalMode().tsquash(
+                "Inconsistent pedestal mode to test");
+            REQUIRE(pedemode.enable == true);
+            REQUIRE(pedemode.frames == 50);
+            REQUIRE(pedemode.loops == 500);
+        }
+        {
+            std::ostringstream oss;
+            caller.call("pedestalmode", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pedestalmode [0]\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("pedestalmode", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "pedestalmode [disabled]\n");
+        }
+
+        uint8_t pedestalFrames = 50;
+        uint16_t pedestalLoops = 1000;
+        int64_t expNumFrames = pedestalFrames * pedestalLoops * 2;
+        auto origFrames = det.getNumberOfFrames().squash(-1);
+        auto origTriggers = det.getNumberOfTriggers().squash(-1);
+
+        // auto mode
+        det.setTimingMode(defs::AUTO_TIMING);
+        REQUIRE_NOTHROW(caller.call(
+            "pedestalmode",
+            {std::to_string(pedestalFrames), std::to_string(pedestalLoops)}, -1,
+            PUT));
+        auto numTriggers = det.getNumberOfTriggers().squash(-1);
+        auto numFrames = det.getNumberOfFrames().squash(-1);
+        REQUIRE(numFrames == expNumFrames);
+        REQUIRE(numTriggers == 1);
+
+        // pedestal mode off
+        REQUIRE_NOTHROW(caller.call("pedestalmode", {"0"}, -1, PUT));
+        numTriggers = det.getNumberOfTriggers().squash(-1);
+        numFrames = det.getNumberOfFrames().squash(-1);
+        REQUIRE(numFrames == origFrames);
+        REQUIRE(numTriggers == origTriggers);
+
+        // trigger mode (frames > 1)
+        REQUIRE_NOTHROW(det.setTimingMode(defs::TRIGGER_EXPOSURE));
+        origFrames = 5;
+        REQUIRE_NOTHROW(det.setNumberOfFrames(origFrames));
+        REQUIRE_NOTHROW(caller.call(
+            "pedestalmode",
+            {std::to_string(pedestalFrames), std::to_string(pedestalLoops)}, -1,
+            PUT));
+        numTriggers = det.getNumberOfTriggers().squash(-1);
+        numFrames = det.getNumberOfFrames().squash(-1);
+        REQUIRE(numFrames == expNumFrames);
+        REQUIRE(numTriggers == 1);
+
+        // pedestal mode off
+        REQUIRE_NOTHROW(caller.call("pedestalmode", {"0"}, -1, PUT));
+        numTriggers = det.getNumberOfTriggers().squash(-1);
+        numFrames = det.getNumberOfFrames().squash(-1);
+        REQUIRE(numFrames == origFrames);
+        REQUIRE(numTriggers == origTriggers);
+
+        // trigger mode (frames = 1)
+        origFrames = 1;
+        REQUIRE_NOTHROW(det.setNumberOfFrames(origFrames));
+        origTriggers = 10;
+        REQUIRE_NOTHROW(det.setNumberOfTriggers(origTriggers));
+        REQUIRE_NOTHROW(caller.call(
+            "pedestalmode",
+            {std::to_string(pedestalFrames), std::to_string(pedestalLoops)}, -1,
+            PUT));
+        numTriggers = det.getNumberOfTriggers().squash(-1);
+        numFrames = det.getNumberOfFrames().squash(-1);
+        REQUIRE(numFrames == 1);
+        REQUIRE(numTriggers == expNumFrames);
+
+        // pedestal mode off
+        REQUIRE_NOTHROW(caller.call("pedestalmode", {"0"}, -1, PUT));
+        numTriggers = det.getNumberOfTriggers().squash(-1);
+        numFrames = det.getNumberOfFrames().squash(-1);
+        REQUIRE(numFrames == origFrames);
+        REQUIRE(numTriggers == origTriggers);
+
+        det.setNumberOfFrames(prev_frames);
+        det.setNumberOfTriggers(prev_triggers);
+        det.setTimingMode(prev_timingmode);
+        for (int i = 0; i != det.size(); ++i) {
+            det.setPedestalMode(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(caller.call("pedestalmode", {}, -1, GET));
+        REQUIRE_THROWS(caller.call("pedestalmode", {"0"}, -1, PUT));
+    }
+}
 
 TEST_CASE("Caller::sync", "[.cmd]") {
     Detector det;

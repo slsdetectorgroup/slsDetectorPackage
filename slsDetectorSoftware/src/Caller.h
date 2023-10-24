@@ -205,11 +205,16 @@ public:
   std::string patwaittime1(int action);
   std::string patwaittime2(int action);
   std::string patword(int action);
+  std::string pedestalmode(int action);
   std::string period(int action);
   std::string periodl(int action);
   std::string polarity(int action);
   std::string port(int action);
   std::string powerchip(int action);
+  std::string powerindex(int action);
+  std::string powerlist(int action);
+  std::string powername(int action);
+  std::string powervalues(int action);
   std::string programfpga(int action);
   std::string pulse(int action);
   std::string pulsechip(int action);
@@ -372,10 +377,6 @@ public:
   std::string vm_c(int action);
   std::string vm_d(int action);
   std::string vm_io(int action);
-  std::string voltageindex(int action);
-  std::string voltagelist(int action);
-  std::string voltagename(int action);
-  std::string voltagevalues(int action);
   std::string zmqhwm(int action);
   std::string zmqip(int action);
   std::string zmqport(int action);
@@ -538,11 +539,16 @@ private:
                          { "patwaittime1", &Caller::patwaittime1 },
                          { "patwaittime2", &Caller::patwaittime2 },
                          { "patword", &Caller::patword },
+                         { "pedestalmode", &Caller::pedestalmode },
                          { "period", &Caller::period },
                          { "periodl", &Caller::periodl },
                          { "polarity", &Caller::polarity },
                          { "port", &Caller::port },
                          { "powerchip", &Caller::powerchip },
+                         { "powerindex", &Caller::powerindex },
+                         { "powerlist", &Caller::powerlist },
+                         { "powername", &Caller::powername },
+                         { "powervalues", &Caller::powervalues },
                          { "programfpga", &Caller::programfpga },
                          { "pulse", &Caller::pulse },
                          { "pulsechip", &Caller::pulsechip },
@@ -700,10 +706,6 @@ private:
                          { "vm_a", &Caller::vm_a }, { "vm_b", &Caller::vm_b },
                          { "vm_c", &Caller::vm_c }, { "vm_d", &Caller::vm_d },
                          { "vm_io", &Caller::vm_io },
-                         { "voltageindex", &Caller::voltageindex },
-                         { "voltagelist", &Caller::voltagelist },
-                         { "voltagename", &Caller::voltagename },
-                         { "voltagevalues", &Caller::voltagevalues },
                          { "zmqhwm", &Caller::zmqhwm },
                          { "zmqip", &Caller::zmqip },
                          { "zmqport", &Caller::zmqport } };

@@ -1846,6 +1846,24 @@ int InferAction::patword() {
   }
 }
 
+int InferAction::pedestalmode() {
+
+  if (args.size() == 0) {
+    return slsDetectorDefs::GET_ACTION;
+  }
+
+  if (args.size() == 1) {
+    return slsDetectorDefs::PUT_ACTION;
+  }
+
+  if (args.size() == 2) {
+    return slsDetectorDefs::PUT_ACTION;
+  } else {
+
+    throw RuntimeError("Could not infer action: Wrong number of arguments");
+  }
+}
+
 int InferAction::period() {
 
   if (args.size() == 0) {
@@ -1915,6 +1933,46 @@ int InferAction::powerchip() {
 
   if (args.size() == 1) {
     return slsDetectorDefs::PUT_ACTION;
+  } else {
+
+    throw RuntimeError("Could not infer action: Wrong number of arguments");
+  }
+}
+
+int InferAction::powerindex() {
+
+  if (args.size() == 1) {
+    return slsDetectorDefs::GET_ACTION;
+  } else {
+
+    throw RuntimeError("Could not infer action: Wrong number of arguments");
+  }
+}
+
+int InferAction::powerlist() {
+
+  throw RuntimeError(
+      "det is disabled for command: powerlist. Use detg or detp");
+}
+
+int InferAction::powername() {
+
+  if (args.size() == 1) {
+    return slsDetectorDefs::GET_ACTION;
+  }
+
+  if (args.size() == 2) {
+    return slsDetectorDefs::PUT_ACTION;
+  } else {
+
+    throw RuntimeError("Could not infer action: Wrong number of arguments");
+  }
+}
+
+int InferAction::powervalues() {
+
+  if (args.size() == 0) {
+    return slsDetectorDefs::GET_ACTION;
   } else {
 
     throw RuntimeError("Could not infer action: Wrong number of arguments");
@@ -3900,46 +3958,6 @@ int InferAction::vm_d() {
 }
 
 int InferAction::vm_io() {
-
-  if (args.size() == 0) {
-    return slsDetectorDefs::GET_ACTION;
-  } else {
-
-    throw RuntimeError("Could not infer action: Wrong number of arguments");
-  }
-}
-
-int InferAction::voltageindex() {
-
-  if (args.size() == 1) {
-    return slsDetectorDefs::GET_ACTION;
-  } else {
-
-    throw RuntimeError("Could not infer action: Wrong number of arguments");
-  }
-}
-
-int InferAction::voltagelist() {
-
-  throw RuntimeError(
-      "det is disabled for command: voltagelist. Use detg or detp");
-}
-
-int InferAction::voltagename() {
-
-  if (args.size() == 1) {
-    return slsDetectorDefs::GET_ACTION;
-  }
-
-  if (args.size() == 2) {
-    return slsDetectorDefs::PUT_ACTION;
-  } else {
-
-    throw RuntimeError("Could not infer action: Wrong number of arguments");
-  }
-}
-
-int InferAction::voltagevalues() {
 
   if (args.size() == 0) {
     return slsDetectorDefs::GET_ACTION;

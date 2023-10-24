@@ -162,11 +162,16 @@ public:
   int patwaittime1();
   int patwaittime2();
   int patword();
+  int pedestalmode();
   int period();
   int periodl();
   int polarity();
   int port();
   int powerchip();
+  int powerindex();
+  int powerlist();
+  int powername();
+  int powervalues();
   int programfpga();
   int pulse();
   int pulsechip();
@@ -329,10 +334,6 @@ public:
   int vm_c();
   int vm_d();
   int vm_io();
-  int voltageindex();
-  int voltagelist();
-  int voltagename();
-  int voltagevalues();
   int zmqhwm();
   int zmqip();
   int zmqport();
@@ -467,10 +468,15 @@ private:
     { "patwaittime0", &InferAction::patwaittime0 },
     { "patwaittime1", &InferAction::patwaittime1 },
     { "patwaittime2", &InferAction::patwaittime2 },
-    { "patword", &InferAction::patword }, { "period", &InferAction::period },
-    { "periodl", &InferAction::periodl },
+    { "patword", &InferAction::patword },
+    { "pedestalmode", &InferAction::pedestalmode },
+    { "period", &InferAction::period }, { "periodl", &InferAction::periodl },
     { "polarity", &InferAction::polarity }, { "port", &InferAction::port },
     { "powerchip", &InferAction::powerchip },
+    { "powerindex", &InferAction::powerindex },
+    { "powerlist", &InferAction::powerlist },
+    { "powername", &InferAction::powername },
+    { "powervalues", &InferAction::powervalues },
     { "programfpga", &InferAction::programfpga },
     { "pulse", &InferAction::pulse }, { "pulsechip", &InferAction::pulsechip },
     { "pulsenmove", &InferAction::pulsenmove },
@@ -614,13 +620,8 @@ private:
     { "virtual", &InferAction::virtualFunction },
     { "vm_a", &InferAction::vm_a }, { "vm_b", &InferAction::vm_b },
     { "vm_c", &InferAction::vm_c }, { "vm_d", &InferAction::vm_d },
-    { "vm_io", &InferAction::vm_io },
-    { "voltageindex", &InferAction::voltageindex },
-    { "voltagelist", &InferAction::voltagelist },
-    { "voltagename", &InferAction::voltagename },
-    { "voltagevalues", &InferAction::voltagevalues },
-    { "zmqhwm", &InferAction::zmqhwm }, { "zmqip", &InferAction::zmqip },
-    { "zmqport", &InferAction::zmqport }
+    { "vm_io", &InferAction::vm_io }, { "zmqhwm", &InferAction::zmqhwm },
+    { "zmqip", &InferAction::zmqip }, { "zmqport", &InferAction::zmqport }
 
     //        {"frames",&InferAction::frames}
   };

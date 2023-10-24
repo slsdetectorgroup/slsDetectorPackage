@@ -261,15 +261,15 @@ TEST_CASE("CALLER::signalindex", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::voltagelist", "[.cmd]") {
+TEST_CASE("CALLER::powerlist", "[.cmd]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD) {
-        auto prev = det.getVoltageNames();
+        auto prev = det.getPowerNames();
 
-        REQUIRE_THROWS(caller.call("voltagelist", {"a", "s", "d"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("powerlist", {"a", "s", "d"}, -1, PUT));
 
         std::vector<std::string> names;
         for (int iarg = 0; iarg != 5; ++iarg) {
@@ -277,87 +277,87 @@ TEST_CASE("CALLER::voltagelist", "[.cmd]") {
         }
         {
             std::ostringstream oss;
-            REQUIRE_NOTHROW(caller.call("voltagelist", names, -1, PUT, oss));
+            REQUIRE_NOTHROW(caller.call("powerlist", names, -1, PUT, oss));
         }
         {
             std::ostringstream oss;
-            REQUIRE_NOTHROW(caller.call("voltagelist", {}, -1, GET, oss));
+            REQUIRE_NOTHROW(caller.call("powerlist", {}, -1, GET, oss));
             REQUIRE(oss.str() ==
-                    std::string("voltagelist ") + ToString(names) + '\n');
+                    std::string("powerlist ") + ToString(names) + '\n');
         }
-        det.setVoltageNames(prev);
+        det.setPowerNames(prev);
 
     } else {
-        REQUIRE_THROWS(caller.call("voltagelist", {"a", "b"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("voltagelist", {}, -1, GET));
+        REQUIRE_THROWS(caller.call("powerlist", {"a", "b"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("powerlist", {}, -1, GET));
     }
 }
 
-TEST_CASE("CALLER::voltagename", "[.cmd]") {
+TEST_CASE("CALLER::powername", "[.cmd]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD) {
         defs::dacIndex ind = static_cast<defs::dacIndex>(2 + defs::V_POWER_A);
-        std::string str_voltage_index = "2";
-        auto prev = det.getVoltageName(ind);
+        std::string str_power_index = "2";
+        auto prev = det.getPowerName(ind);
 
         // 1 arg throw
-        REQUIRE_THROWS(caller.call("voltagename", {"2", "3", "bname"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("powername", {"2", "3", "bname"}, -1, PUT));
         // invalid index
-        REQUIRE_THROWS(caller.call("voltagename", {"5", "bname"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("powername", {"5", "bname"}, -1, PUT));
         {
             std::ostringstream oss;
             REQUIRE_NOTHROW(caller.call(
-                "voltagename", {str_voltage_index, "bname"}, -1, PUT, oss));
+                "powername", {str_power_index, "bname"}, -1, PUT, oss));
         }
         {
             std::ostringstream oss;
             REQUIRE_NOTHROW(
-                caller.call("voltagename", {str_voltage_index}, -1, GET, oss));
-            REQUIRE(oss.str() == std::string("voltagename ") +
-                                     str_voltage_index + " bname\n");
+                caller.call("powername", {str_power_index}, -1, GET, oss));
+            REQUIRE(oss.str() == std::string("powername ") +
+                                     str_power_index + " bname\n");
         }
-        det.setVoltageName(ind, prev);
+        det.setPowerName(ind, prev);
 
     } else {
-        REQUIRE_THROWS(caller.call("voltagename", {"2", "b"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("voltagename", {"2"}, -1, GET));
+        REQUIRE_THROWS(caller.call("powername", {"2", "b"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("powername", {"2"}, -1, GET));
     }
 }
 
-TEST_CASE("CALLER::voltageindex", "[.cmd]") {
+TEST_CASE("CALLER::powerindex", "[.cmd]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD) {
         defs::dacIndex ind = static_cast<defs::dacIndex>(2 + defs::V_POWER_A);
-        std::string str_voltage_index = "2";
+        std::string str_power_index = "2";
 
         // 1 arg throw
-        REQUIRE_THROWS(caller.call("voltageindex", {"2", "2"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("powerindex", {"2", "2"}, -1, PUT));
         // invalid index
-        REQUIRE_THROWS(caller.call("voltageindex", {"5"}, -1, PUT));
-        auto voltagename = det.getVoltageName(ind);
+        REQUIRE_THROWS(caller.call("powerindex", {"5"}, -1, PUT));
+        auto powername = det.getPowerName(ind);
         {
             std::ostringstream oss;
             REQUIRE_NOTHROW(
-                caller.call("voltageindex", {voltagename}, -1, GET, oss));
+                caller.call("powerindex", {powername}, -1, GET, oss));
             REQUIRE(oss.str() ==
-                    std::string("voltageindex ") + str_voltage_index + '\n');
+                    std::string("powerindex ") + str_power_index + '\n');
         }
     } else {
-        REQUIRE_THROWS(caller.call("voltageindex", {"2"}, -1, GET));
+        REQUIRE_THROWS(caller.call("powerindex", {"2"}, -1, GET));
     }
 }
 
-TEST_CASE("CALLER::voltagevalues", "[.cmd]") {
+TEST_CASE("CALLER::powervalues", "[.cmd]") {
     Detector det;
     Caller caller(&det);
-    REQUIRE_NOTHROW(caller.call("voltagevalues", {}, -1, GET));
-    REQUIRE_THROWS(caller.call("voltagevalues", {}, -1, PUT));
+    REQUIRE_NOTHROW(caller.call("powervalues", {}, -1, GET));
+    REQUIRE_THROWS(caller.call("powervalues", {}, -1, PUT));
 }
 
 TEST_CASE("CALLER::slowadcvalues", "[.cmd]") {
@@ -733,7 +733,7 @@ TEST_CASE("CALLER::v_limit", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD) {
-        auto prev_val = det.getVoltage(defs::V_LIMIT);
+        auto prev_val = det.getPower(defs::V_LIMIT);
         {
             std::ostringstream oss;
             caller.call("v_limit", {"1500"}, -1, PUT, oss);
@@ -758,7 +758,7 @@ TEST_CASE("CALLER::v_limit", "[.cmd]") {
             if (prev_val[i] == -100) {
                 prev_val[i] = 0;
             }
-            det.setVoltage(defs::V_LIMIT, prev_val[i], {i});
+            det.setPower(defs::V_LIMIT, prev_val[i], {i});
         }
     } else {
         REQUIRE_THROWS(caller.call("v_limit", {}, -1, GET));
@@ -1006,7 +1006,7 @@ TEST_CASE("CALLER::v_a", "[.cmd]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::CHIPTESTBOARD) {
-        auto prev_val = det.getVoltage(defs::V_POWER_A);
+        auto prev_val = det.getPower(defs::V_POWER_A);
         {
             std::ostringstream oss1, oss2;
             caller.call("v_a", {"700"}, -1, PUT, oss1);
@@ -1015,7 +1015,7 @@ TEST_CASE("CALLER::v_a", "[.cmd]") {
             REQUIRE(oss2.str() == "v_a 700\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setVoltage(defs::V_POWER_A, prev_val[i], {i});
+            det.setPower(defs::V_POWER_A, prev_val[i], {i});
         }
     } else {
         REQUIRE_THROWS(caller.call("v_a", {}, -1, GET));
@@ -1027,7 +1027,7 @@ TEST_CASE("CALLER::v_b", "[.cmd]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::CHIPTESTBOARD) {
-        auto prev_val = det.getVoltage(defs::V_POWER_B);
+        auto prev_val = det.getPower(defs::V_POWER_B);
         {
             std::ostringstream oss1, oss2;
             caller.call("v_b", {"700"}, -1, PUT, oss1);
@@ -1036,7 +1036,7 @@ TEST_CASE("CALLER::v_b", "[.cmd]") {
             REQUIRE(oss2.str() == "v_b 700\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setVoltage(defs::V_POWER_B, prev_val[i], {i});
+            det.setPower(defs::V_POWER_B, prev_val[i], {i});
         }
     } else {
         REQUIRE_THROWS(caller.call("v_b", {}, -1, GET));
@@ -1048,7 +1048,7 @@ TEST_CASE("CALLER::v_c", "[.cmd]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::CHIPTESTBOARD) {
-        auto prev_val = det.getVoltage(defs::V_POWER_C);
+        auto prev_val = det.getPower(defs::V_POWER_C);
         {
             std::ostringstream oss1, oss2;
             caller.call("v_c", {"700"}, -1, PUT, oss1);
@@ -1057,7 +1057,7 @@ TEST_CASE("CALLER::v_c", "[.cmd]") {
             REQUIRE(oss2.str() == "v_c 700\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setVoltage(defs::V_POWER_C, prev_val[i], {i});
+            det.setPower(defs::V_POWER_C, prev_val[i], {i});
         }
     } else {
         REQUIRE_THROWS(caller.call("v_c", {}, -1, GET));
@@ -1069,7 +1069,7 @@ TEST_CASE("CALLER::v_d", "[.cmd]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::CHIPTESTBOARD) {
-        auto prev_val = det.getVoltage(defs::V_POWER_D);
+        auto prev_val = det.getPower(defs::V_POWER_D);
         {
             std::ostringstream oss1, oss2;
             caller.call("v_d", {"700"}, -1, PUT, oss1);
@@ -1078,7 +1078,7 @@ TEST_CASE("CALLER::v_d", "[.cmd]") {
             REQUIRE(oss2.str() == "v_d 700\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setVoltage(defs::V_POWER_D, prev_val[i], {i});
+            det.setPower(defs::V_POWER_D, prev_val[i], {i});
         }
     } else {
         REQUIRE_THROWS(caller.call("v_d", {}, -1, GET));

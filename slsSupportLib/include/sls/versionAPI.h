@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 /** API versions */
-#define RELEASE      "developer"
-#define APILIB       "developer 0x230224"
-#define APIRECEIVER  "developer 0x230224"
-#define APICTB       "developer 0x230922"
-#define APIGOTTHARD  "developer 0x230922"
-#define APIGOTTHARD2 "developer 0x230922"
-#define APIMYTHEN3   "developer 0x230922"
-#define APIMOENCH    "developer 0x230922"
-#define APIJUNGFRAU "developer 0x231018"
-#define APIEIGER "developer 0x231018"
+#define RELEASE      "8.0.0"
+#define APILIB "8.0.0 0x231025"
+#define APIRECEIVER "8.0.0 0x231025"
+#define APICTB "8.0.0 0x231025"
+#define APIGOTTHARD "8.0.0 0x231025"
+#define APIGOTTHARD2 "8.0.0 0x231025"
+#define APIJUNGFRAU "8.0.0 0x231025"
+#define APIMYTHEN3 "8.0.0 0x231025"
+#define APIMOENCH "8.0.0 0x231025"
+#define APIEIGER "8.0.0 0x231025"

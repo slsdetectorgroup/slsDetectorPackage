@@ -124,7 +124,7 @@ This document describes the differences between v7.0.3 and v7.0.2
 ========================
 
 
-    Eiger       20.02.2023 (v31)
+    Eiger       02.10.2023 (v32)
     
     Jungfrau    16.05.2023 (v1.4.1, HW v1.0) 
                 15.05.2023 (v2.4.1, HW v2.0)

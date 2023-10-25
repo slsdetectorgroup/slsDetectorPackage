@@ -470,7 +470,7 @@ TEST_CASE("CALLER::dac", "[.cmd][.dacs]") {
     if (det_type == defs::CHIPTESTBOARD) {
         for (int i = 0; i < 18; ++i) {
             SECTION("dac " + std::to_string(i)) {
-                test_dac(static_cast<defs::dacIndex>(i), "dac", 0);
+                test_dac_caller(static_cast<defs::dacIndex>(i), "dac", 0);
             }
         }
         // eiger

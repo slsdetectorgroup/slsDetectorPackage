@@ -133,23 +133,23 @@ TEST_CASE("CALLER::Setting and reading back EIGER dacs", "[.cmd][.dacs]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER) {
-        SECTION("vsvp") { test_dac(defs::VSVP, "vsvp", 5); }
-        SECTION("vtrim") { test_dac(defs::VTRIM, "vtrim", 1200); }
-        SECTION("vrpreamp") { test_dac(defs::VRPREAMP, "vrpreamp", 1500); }
-        SECTION("vrshaper") { test_dac(defs::VRSHAPER, "vrshaper", 1510); }
-        SECTION("vsvn") { test_dac(defs::VSVN, "vsvn", 3800); }
-        SECTION("vtgstv") { test_dac(defs::VTGSTV, "vtgstv", 2550); }
-        SECTION("vcmp_ll") { test_dac(defs::VCMP_LL, "vcmp_ll", 1400); }
-        SECTION("vcmp_lr") { test_dac(defs::VCMP_LR, "vcmp_lr", 1400); }
-        SECTION("vcal") { test_dac(defs::VCAL, "vcal", 1400); }
-        SECTION("vcmp_rl") { test_dac(defs::VCMP_RL, "vcmp_rl", 1400); }
-        SECTION("rxb_rb") { test_dac(defs::RXB_RB, "rxb_rb", 1400); }
-        SECTION("rxb_lb") { test_dac(defs::RXB_LB, "rxb_lb", 1400); }
-        SECTION("vcmp_rr") { test_dac(defs::VCMP_RR, "vcmp_rr", 1400); }
-        SECTION("vcp") { test_dac(defs::VCP, "vcp", 1400); }
-        SECTION("vcn") { test_dac(defs::VCN, "vcn", 1400); }
-        SECTION("vishaper") { test_dac(defs::VISHAPER, "vishaper", 1400); }
-        SECTION("iodelay") { test_dac(defs::IO_DELAY, "iodelay", 1400); }
+        SECTION("vsvp") { test_dac_caller(defs::VSVP, "vsvp", 5); }
+        SECTION("vtrim") { test_dac_caller(defs::VTRIM, "vtrim", 1200); }
+        SECTION("vrpreamp") { test_dac_caller(defs::VRPREAMP, "vrpreamp", 1500); }
+        SECTION("vrshaper") { test_dac_caller(defs::VRSHAPER, "vrshaper", 1510); }
+        SECTION("vsvn") { test_dac_caller(defs::VSVN, "vsvn", 3800); }
+        SECTION("vtgstv") { test_dac_caller(defs::VTGSTV, "vtgstv", 2550); }
+        SECTION("vcmp_ll") { test_dac_caller(defs::VCMP_LL, "vcmp_ll", 1400); }
+        SECTION("vcmp_lr") { test_dac_caller(defs::VCMP_LR, "vcmp_lr", 1400); }
+        SECTION("vcal") { test_dac_caller(defs::VCAL, "vcal", 1400); }
+        SECTION("vcmp_rl") { test_dac_caller(defs::VCMP_RL, "vcmp_rl", 1400); }
+        SECTION("rxb_rb") { test_dac_caller(defs::RXB_RB, "rxb_rb", 1400); }
+        SECTION("rxb_lb") { test_dac_caller(defs::RXB_LB, "rxb_lb", 1400); }
+        SECTION("vcmp_rr") { test_dac_caller(defs::VCMP_RR, "vcmp_rr", 1400); }
+        SECTION("vcp") { test_dac_caller(defs::VCP, "vcp", 1400); }
+        SECTION("vcn") { test_dac_caller(defs::VCN, "vcn", 1400); }
+        SECTION("vishaper") { test_dac_caller(defs::VISHAPER, "vishaper", 1400); }
+        SECTION("iodelay") { test_dac_caller(defs::IO_DELAY, "iodelay", 1400); }
         SECTION("vthreshold") {
             // Read out individual vcmp to be able to reset after
             // the test is done

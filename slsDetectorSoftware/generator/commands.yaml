@@ -1896,20 +1896,18 @@ port:
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
-      intput_types: [ uint16_t ]
       function: getControlPort
     PUT:
-      intput_types: [ uint16_t ]
+      input_types: [ uint16_t ]
       function: setControlPort
 stopport:
   help: "[n]\n\tPort number of the stop server on detector for detector-client tcp interface. Default is 1953. Normally unchanged."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
-      intput_types: [ uint16_t ]
       function: getStopPort
     PUT:
-      intput_types: [ uint16_t ]
+      input_types: [ uint16_t ]
       function: setStopPort
 lock:
   help: "[0, 1]\n\tLock detector to one IP, 1: locks. Default is unlocked"

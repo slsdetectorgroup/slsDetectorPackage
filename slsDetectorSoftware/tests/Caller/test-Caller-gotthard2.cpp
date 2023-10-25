@@ -117,29 +117,29 @@ TEST_CASE("Caller::Setting and reading back GOTTHARD2 dacs", "[.cmd][.dacs]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
         SECTION("vref_h_adc") {
-            test_dac(defs::VREF_H_ADC, "vref_h_adc", 2099);
+            test_dac_caller(defs::VREF_H_ADC, "vref_h_adc", 2099);
         }
-        SECTION("vb_comp_fe") { test_dac(defs::VB_COMP_FE, "vb_comp_fe", 0); }
+        SECTION("vb_comp_fe") { test_dac_caller(defs::VB_COMP_FE, "vb_comp_fe", 0); }
         SECTION("vb_comp_adc") {
-            test_dac(defs::VB_COMP_ADC, "vb_comp_adc", 0);
+            test_dac_caller(defs::VB_COMP_ADC, "vb_comp_adc", 0);
         }
-        SECTION("vcom_cds") { test_dac(defs::VCOM_CDS, "vcom_cds", 1400); }
+        SECTION("vcom_cds") { test_dac_caller(defs::VCOM_CDS, "vcom_cds", 1400); }
         SECTION("vref_rstore") {
-            test_dac(defs::VREF_RSTORE, "vref_rstore", 640);
+            test_dac_caller(defs::VREF_RSTORE, "vref_rstore", 640);
         }
-        SECTION("vb_opa_1st") { test_dac(defs::VB_OPA_1ST, "vb_opa_1st", 0); }
+        SECTION("vb_opa_1st") { test_dac_caller(defs::VB_OPA_1ST, "vb_opa_1st", 0); }
         SECTION("vref_comp_fe") {
-            test_dac(defs::VREF_COMP_FE, "vref_comp_fe", 0);
+            test_dac_caller(defs::VREF_COMP_FE, "vref_comp_fe", 0);
         }
-        SECTION("vcom_adc1") { test_dac(defs::VCOM_ADC1, "vcom_adc1", 1400); }
+        SECTION("vcom_adc1") { test_dac_caller(defs::VCOM_ADC1, "vcom_adc1", 1400); }
         SECTION("vref_prech") {
-            test_dac(defs::VREF_PRECH, "vref_prech", 1720);
+            test_dac_caller(defs::VREF_PRECH, "vref_prech", 1720);
         }
-        SECTION("vref_l_adc") { test_dac(defs::VREF_L_ADC, "vref_l_adc", 700); }
-        SECTION("vref_cds") { test_dac(defs::VREF_CDS, "vref_cds", 1200); }
-        SECTION("vb_cs") { test_dac(defs::VB_CS, "vb_cs", 2799); }
-        SECTION("vb_opa_fd") { test_dac(defs::VB_OPA_FD, "vb_opa_fd", 0); }
-        SECTION("vcom_adc2") { test_dac(defs::VCOM_ADC2, "vcom_adc2", 1400); }
+        SECTION("vref_l_adc") { test_dac_caller(defs::VREF_L_ADC, "vref_l_adc", 700); }
+        SECTION("vref_cds") { test_dac_caller(defs::VREF_CDS, "vref_cds", 1200); }
+        SECTION("vb_cs") { test_dac_caller(defs::VB_CS, "vb_cs", 2799); }
+        SECTION("vb_opa_fd") { test_dac_caller(defs::VB_OPA_FD, "vb_opa_fd", 0); }
+        SECTION("vcom_adc2") { test_dac_caller(defs::VCOM_ADC2, "vcom_adc2", 1400); }
         // eiger
         REQUIRE_THROWS(caller.call("dac", {"vthreshold"}, -1, GET));
         REQUIRE_THROWS(caller.call("dac", {"vsvp"}, -1, GET));
@@ -205,7 +205,7 @@ TEST_CASE("Caller::vchip_comp_fe", "[.cmd][.onchipdacs]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
         SECTION("vchip_comp_fe") {
-            test_onchip_dac(defs::VB_COMP_FE, "vchip_comp_fe", 0x137);
+            test_onchip_dac_caller(defs::VB_COMP_FE, "vchip_comp_fe", 0x137);
         }
     } else {
         REQUIRE_THROWS(caller.call("vchip_comp_fe", {}, -1, GET));
@@ -218,7 +218,7 @@ TEST_CASE("Caller::vchip_opa_1st", "[.cmd][.onchipdacs]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
         SECTION("vchip_opa_1st") {
-            test_onchip_dac(defs::VB_OPA_1ST, "vchip_opa_1st", 0x000);
+            test_onchip_dac_caller(defs::VB_OPA_1ST, "vchip_opa_1st", 0x000);
         }
     } else {
         REQUIRE_THROWS(caller.call("vchip_opa_1st", {}, -1, GET));
@@ -231,7 +231,7 @@ TEST_CASE("Caller::vchip_opa_fd", "[.cmd][.onchipdacs]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
         SECTION("vchip_opa_fd") {
-            test_onchip_dac(defs::VB_OPA_FD, "vchip_opa_fd", 0x134);
+            test_onchip_dac_caller(defs::VB_OPA_FD, "vchip_opa_fd", 0x134);
         }
     } else {
         REQUIRE_THROWS(caller.call("vchip_opa_fd", {}, -1, GET));
@@ -244,7 +244,7 @@ TEST_CASE("Caller::vchip_comp_adc", "[.cmd][.onchipdacs]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
         SECTION("vchip_comp_adc") {
-            test_onchip_dac(defs::VB_COMP_ADC, "vchip_comp_adc", 0x3FF);
+            test_onchip_dac_caller(defs::VB_COMP_ADC, "vchip_comp_adc", 0x3FF);
         }
     } else {
         REQUIRE_THROWS(caller.call("vchip_comp_adc", {}, -1, GET));
@@ -257,7 +257,7 @@ TEST_CASE("Caller::vchip_ref_comp_fe", "[.cmd][.onchipdacs]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
         SECTION("vchip_ref_comp_fe") {
-            test_onchip_dac(defs::VREF_COMP_FE, "vchip_ref_comp_fe", 0x100);
+            test_onchip_dac_caller(defs::VREF_COMP_FE, "vchip_ref_comp_fe", 0x100);
         }
     } else {
         REQUIRE_THROWS(caller.call("vchip_ref_comp_fe", {}, -1, GET));
@@ -269,7 +269,7 @@ TEST_CASE("Caller::vchip_cs", "[.cmd][.onchipdacs]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
-        SECTION("vchip_cs") { test_onchip_dac(defs::VB_CS, "vchip_cs", 0x0D0); }
+        SECTION("vchip_cs") { test_onchip_dac_caller(defs::VB_CS, "vchip_cs", 0x0D0); }
     } else {
         REQUIRE_THROWS(caller.call("vchip_cs", {}, -1, GET));
     }

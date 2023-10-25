@@ -7336,8 +7336,7 @@ port:
         convert_det_id: true
         function: getControlPort
         input: []
-        input_types: []
-        intput_types:
+        input_types:
         - uint16_t
         output:
         - OutString(t)
@@ -7346,7 +7345,7 @@ port:
     PUT:
       args:
       - arg_types:
-        - int
+        - uint16_t
         argc: 1
         cast_input:
         - true
@@ -7356,8 +7355,6 @@ port:
         input:
         - args[0]
         input_types:
-        - int
-        intput_types:
         - uint16_t
         output:
         - args.front()
@@ -10221,8 +10218,7 @@ stopport:
         convert_det_id: true
         function: getStopPort
         input: []
-        input_types: []
-        intput_types:
+        input_types:
         - uint16_t
         output:
         - OutString(t)
@@ -10231,7 +10227,7 @@ stopport:
     PUT:
       args:
       - arg_types:
-        - int
+        - uint16_t
         argc: 1
         cast_input:
         - true
@@ -10241,8 +10237,6 @@ stopport:
         input:
         - args[0]
         input_types:
-        - int
-        intput_types:
         - uint16_t
         output:
         - args.front()

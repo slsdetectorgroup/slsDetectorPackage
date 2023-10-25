@@ -64,6 +64,7 @@ This document describes the differences between v7.0.3 and v7.0.2
     *   Limit TCP port number (command line) to max of 65535
         Refer issue under 'Client'.
 
+
     
     Detector Simulator
     ------------------
@@ -78,6 +79,7 @@ This document describes the differences between v7.0.3 and v7.0.2
     *   [Jungfrau] Color map of gain plot
         Previously, color on the gain plot did not update after the first image, 
         unless there were x/y min/max changes or window resizing. Fixed.
+
 
 
     Data Processing

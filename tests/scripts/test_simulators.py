@@ -107,14 +107,13 @@ def loadConfig(name, rx_hostname, settingsdir):
         raise
 
 def startCmdTests(name, fp):
-    subprocess.run(['which', 'tests'], stdout=fp, stderr=fp)
-    #try:
-    #    p = subprocess.run(['tests', '--abort', '[.cmd]'], stdout=fp, stderr=fp)
-    #    if p.returncode != 0:
-    #        raise Exception 
-    #except:
-    #    Log(Fore.RED, 'Cmd tests failed for ' + name) 
-    #    raise
+    try:
+        p = subprocess.run(['tests', '--abort', '[.cmd]'], stdout=fp, stderr=fp)
+        if p.returncode != 0:
+            raise Exception 
+    except:
+        Log(Fore.RED, 'Cmd tests failed for ' + name) 
+        raise
 
 def startNormalTests(d, fp):
     try:

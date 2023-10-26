@@ -51,6 +51,13 @@ def test_basic_propagation(tmp_path, detector_file_commands):
     assert eiger[0]['function'] == 'do_eiger'
     assert eiger[0]['output'] == ['eigerOutput']
 
+# 16 test cases for inheritance
+# 1st bit: parent has args
+# 2nd bit: parent has detectors
+# 3rd bit: child has args
+# 4th bit: child has detectors
+# each test case is a combination of the above bits
+# all the possible combinations are tested 
 
 def test_inheritance_0100(tmp_path, detector_file_commands):
     command = detector_file_commands('case_0100')

@@ -186,7 +186,6 @@ if __name__ == '__main__':
 
     if cli_args.autocomplete:
         from autocomplete.autocomplete import generate_type_values, generate_bash_autocomplete
-
         if cli_args.generate:
             generate_bash_autocomplete()
             print('[X] bash autocomplete generated')

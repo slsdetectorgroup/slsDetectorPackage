@@ -7336,8 +7336,7 @@ port:
         convert_det_id: true
         function: getControlPort
         input: []
-        input_types:
-        - uint16_t
+        input_types: []
         output:
         - OutString(t)
         require_det_id: true
@@ -10218,8 +10217,7 @@ stopport:
         convert_det_id: true
         function: getStopPort
         input: []
-        input_types:
-        - uint16_t
+        input_types: []
         output:
         - OutString(t)
         require_det_id: true

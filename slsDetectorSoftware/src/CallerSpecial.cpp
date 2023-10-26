@@ -23,8 +23,8 @@ void Caller::call(const std::string &command,
     rx_id = receiver_id;
     auto it = functions.find(cmd);
     if (it != functions.end()) {
-        os << cmd << ' ' ;
-        os << ((*this).*(it->second))(action);
+        auto ret =((*this).*(it->second))(action);
+        os << cmd << ' ' << ret;
     } else {
         throw RuntimeError(cmd +
                            " Unknown command, use list to list all commands");

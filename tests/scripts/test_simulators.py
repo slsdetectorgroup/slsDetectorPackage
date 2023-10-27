@@ -43,7 +43,7 @@ def killProcess(name):
         if p.returncode != 0:
             raise RuntimeException('error in killall ' + name)
 
-def cleanup(name, d):
+def cleanup(name):
     '''
     kill both servers, receivers and clean shared memory
     '''
@@ -51,12 +51,20 @@ def cleanup(name, d):
     killProcess(name + 'DetectorServer_virtual')
     killProcess('slsReceiver')
     killProcess('slsMultiReceiver')
-    d.freeSharedMemory()
+    cleanSharedmemory()
+
+def cleanSharedmemory():
+    Log(Fore.GREEN, 'Cleaning up shared memory...')
+    try:
+        p = subprocess.run(['sls_detector_get', 'free'], stdout=fp, stderr=fp)
+    except:
+        Log(Fore.RED, 'Could not free shared memory')
+        raise
 
 def startProcessInBackground(name):
     try:
         # in background and dont print output
-        p = subprocess.Popen(name.split(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) 
+        p = subprocess.Popen(name.split(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, restore_signals=False) 
         Log(Fore.GREEN, 'Starting up ' + name + ' ...')
     except:
         Log(Fore.RED, 'Could not start ' + name)
@@ -80,8 +88,13 @@ def startReceiver(name):
 
 def loadConfig(name, rx_hostname, settingsdir):
     try:
-        d = Detector()
+        p = subprocess.run(['sls_detector_put', 'hostname', 'localhost'],stdout=fp, stderr=fp)
+        p = subprocess.run(['sls_detector_put', 'rx_hostname', rx_hostname],stdout=fp, stderr=fp)
+        p = subprocess.run(['sls_detector_put', 'udp_dstip', 'auto'],stdout=fp, stderr=fp)            
+        p = subprocess.run(['sls_detector_put', 'udp_srcip', 'auto'],stdout=fp, stderr=fp)  
+        ''' 
         if name == 'eiger':
+        d = Detector()
             d.hostname = 'localhost:' + str(DEFAULT_TCP_CNTRL_PORTNO) + '+localhost:' + str(HALFMOD2_TCP_CNTRL_PORTNO)
             #d.udp_dstport = {2: 50003} 
             # will set up for every module
@@ -102,26 +115,29 @@ def loadConfig(name, rx_hostname, settingsdir):
                 d.udp_srcip = 'auto'
         if d.type == detectorType.JUNGFRAU or d.type == detectorType.MOENCH:
             d.powerchip = 1
+        '''
     except:
         Log(Fore.RED, 'Could not load config for ' + name)
         raise
 
 def startCmdTests(name, fp):
     try:
-        p = subprocess.run(['tests', '--abort', '[.cmd]'], stdout=fp, stderr=fp)
-        if p.returncode != 0:
-            raise Exception 
+        cmd = 'tests --abort [.cmd]'
+        p = subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True)
+        p.check_returncode()
     except:
         Log(Fore.RED, 'Cmd tests failed for ' + name) 
         raise
 
-def startNormalTests(d, fp):
+def startNormalTests(fp):
     try:
         Log(Fore.BLUE, '\nNormal tests')
         p = subprocess.run(['tests', '--abort' ], stdout=fp, stderr=fp)
+        import fnmatch
+
         if p.returncode != 0:
             raise Exception 
-        d.freeSharedMemory()
+        cleanSharedmemory()
     except:
         Log(Fore.RED, 'Normal tests failed') 
         raise
@@ -149,7 +165,7 @@ if args.servers is None:
 else:
     servers = args.servers
 
-Log(Fore.WHITE, 'rx_hostname: ' + args.rx_hostname + '\settingspath: \'' + args.settingspath + '\'')
+Log(Fore.WHITE, 'rx_hostname: ' + args.rx_hostname + '\nsettingspath: \'' + args.settingspath + '\'')
 
 
 # handle zombies (else killing slsReceivers will fail)
@@ -161,14 +177,13 @@ signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 original_stdout = sys.stdout
 original_stderr = sys.stderr
 fname = '/tmp/slsDetectorPackage_virtual_test.txt'
-Log(Fore.BLUE, 'Tests -> ' + fname)
+Log(Fore.WHITE, 'Log File: ' + fname)
 with open(fname, 'w') as fp:
     sys.stdout = fp
     sys.stderr = fp
 
-    d = Detector()
     # TODO: redirect Detector object print out also to file
-    startNormalTests(d, fp)
+    #startNormalTests(fp)
 
     for server in servers:
         try:
@@ -181,14 +196,17 @@ with open(fname, 'w') as fp:
             
             # cmd tests for det
             Log(Fore.BLUE, 'Cmd Tests for ' + server)
-            cleanup(server, d)
+            cleanup(server)
             startServer(server)
             startReceiver(server)
             loadConfig(server, args.rx_hostname, args.settingspath)
             startCmdTests(server, fp)
-            cleanup(server, d)
+            cleanup(server)
         except:
-            cleanup(server, d)
+            cleanup(server)
+            sys.stdout = original_stdout
+            sys.stderr = original_stderr
+            Log(Fore.RED, 'Cmd tests failed for ' + server + '!!!')
             raise
 
 

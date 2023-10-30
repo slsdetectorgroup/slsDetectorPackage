@@ -71,6 +71,7 @@ def startProcessInBackground(name):
         raise
 
 def startServer(name):
+    
     startProcessInBackground(name + 'DetectorServer_virtual')
     # second half
     if name == 'eiger':
@@ -120,27 +121,36 @@ def loadConfig(name, rx_hostname, settingsdir):
         Log(Fore.RED, 'Could not load config for ' + name)
         raise
 
-def startCmdTests(name, fp):
-    try:
-        cmd = 'tests --abort [.cmd]'
-        p = subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True)
-        p.check_returncode()
-    except:
-        Log(Fore.RED, 'Cmd tests failed for ' + name) 
-        raise
+def startCmdTests(name, fp, fname):
+    Log(Fore.BLUE, 'Cmd Tests for ' + name)
+    cmd = 'tests --abort [.cmd] -s -o ' + fname
+    p = subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
+    p.check_returncode()
 
-def startNormalTests(fp):
-    try:
-        Log(Fore.BLUE, '\nNormal tests')
-        p = subprocess.run(['tests', '--abort' ], stdout=fp, stderr=fp)
-        import fnmatch
+    with open (fname, 'r') as f:
+        for line in f:
+            if "FAILED" in line:
+                msg = 'Cmd tests failed for ' + name + '!!!'
+                Log(Fore.RED, msg)
+                raise Exception(msg)
 
-        if p.returncode != 0:
-            raise Exception 
-        cleanSharedmemory()
-    except:
-        Log(Fore.RED, 'Normal tests failed') 
-        raise
+    Log(Fore.BLUE, 'Cmd Tests successful for ' + name)
+
+def startGeneralTests(fp, fname):
+    Log(Fore.BLUE, 'General Tests')
+    cmd = 'tests --abort -s -o ' + fname
+    p = subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
+    p.check_returncode()
+
+    with open (fname, 'r') as f:
+        for line in f:
+            if "FAILED" in line:
+                msg = 'General tests failed !!!'
+                Log(Fore.RED, msg)
+                raise Exception(msg)
+
+    Log(Fore.BLUE, 'General Tests successful')
+
 
 
 # parse cmd line for rx_hostname and settingspath using the argparse library
@@ -165,42 +175,43 @@ if args.servers is None:
 else:
     servers = args.servers
 
-Log(Fore.WHITE, 'rx_hostname: ' + args.rx_hostname + '\nsettingspath: \'' + args.settingspath + '\'')
+fname = '/tmp/slsDetectorPackage_virtual_test.txt'
 
-
-# handle zombies (else killing slsReceivers will fail)
-# dont care about child process success
-signal.signal(signal.SIGCHLD, signal.SIG_IGN)
+Log(Fore.WHITE, 'rx_hostname: ' + args.rx_hostname + '\nsettingspath: \'' + args.settingspath + '\'' +  '\nLog File: ' + fname) 
 
 
 # redirect to file
 original_stdout = sys.stdout
 original_stderr = sys.stderr
-fname = '/tmp/slsDetectorPackage_virtual_test.txt'
-Log(Fore.WHITE, 'Log File: ' + fname)
 with open(fname, 'w') as fp:
+
+    file_results = '/tmp/test_results_general.txt'
+    Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
+
     sys.stdout = fp
     sys.stderr = fp
 
-    # TODO: redirect Detector object print out also to file
-    #startNormalTests(fp)
+    startGeneralTests(fp, file_results)
 
     for server in servers:
         try:
             # print to terminal for progress
             sys.stdout = original_stdout
             sys.stderr = original_stderr
-            Log(Fore.BLUE, server + ' tests')
+            file_results = '/tmp/test_results_' + server + '.txt'
+            Log(Fore.BLUE, server + ' tests (results: ' + file_results + ')')
             sys.stdout = fp
             sys.stderr = fp
             
             # cmd tests for det
             Log(Fore.BLUE, 'Cmd Tests for ' + server)
+
+            
             cleanup(server)
             startServer(server)
             startReceiver(server)
             loadConfig(server, args.rx_hostname, args.settingspath)
-            startCmdTests(server, fp)
+            startCmdTests(server, fp, file_results)
             cleanup(server)
         except:
             cleanup(server)

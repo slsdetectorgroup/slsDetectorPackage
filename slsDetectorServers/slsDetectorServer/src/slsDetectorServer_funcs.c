@@ -552,7 +552,6 @@ void executeCommand(char *command, char *result, enum TLogLevel level) {
     if (strlen(result) == 0) {
         strcpy(result, "No result");
     }
-    system('sleep 1');
     int success = pclose(sysFile);
     if (success == -1) {
         ret = FAIL;

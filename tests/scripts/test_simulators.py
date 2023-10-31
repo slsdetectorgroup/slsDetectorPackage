@@ -21,6 +21,7 @@ class RuntimeException (Exception):
 def Log(color, message):
     print('\n' + color + message, flush=True)
 
+
 def checkIfProcessRunning(processName):
     '''
     Check if there is any running process that contains the given name processName.
@@ -33,15 +34,19 @@ def checkIfProcessRunning(processName):
             if processName.lower() in proc.name().lower():
                 return True
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            Log(Fore.RED, 'Exception ignored while checking if process ' + processName + ' is running')
             pass
     return False;
+
 
 def killProcess(name):
     if checkIfProcessRunning(name):
         Log(Fore.GREEN, 'killing ' + name)
-        p = subprocess.run(['killall', name])
+        p = subprocess.run(['killall', name], text=True)
         if p.returncode != 0:
-            raise RuntimeException('error in killall ' + name)
+            raise RuntimeException('killall failed for ' + name)
+    else:
+        print('process not running : ' + name)
 
 def cleanup(name):
     '''
@@ -210,6 +215,7 @@ with open(fname, 'w') as fp:
             startCmdTests(server, fp, file_results)
             cleanup(server)
         except:
+            Log(log.RED, 'Exception caught. Cleaning up.')
             cleanup(server)
             sys.stdout = original_stdout
             sys.stderr = original_stderr

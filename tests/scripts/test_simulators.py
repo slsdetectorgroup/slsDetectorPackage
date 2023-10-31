@@ -88,14 +88,10 @@ def startReceiver(name):
     time.sleep(2)
 
 def loadConfig(name, rx_hostname, settingsdir):
+    Log(Fore.GREEN, 'Loading config')
     try:
-        p = subprocess.run(['sls_detector_put', 'hostname', 'localhost'],stdout=fp, stderr=fp)
-        p = subprocess.run(['sls_detector_put', 'rx_hostname', rx_hostname],stdout=fp, stderr=fp)
-        p = subprocess.run(['sls_detector_put', 'udp_dstip', 'auto'],stdout=fp, stderr=fp)            
-        p = subprocess.run(['sls_detector_put', 'udp_srcip', 'auto'],stdout=fp, stderr=fp)  
-        ''' 
-        if name == 'eiger':
         d = Detector()
+        if name == 'eiger':
             d.hostname = 'localhost:' + str(DEFAULT_TCP_CNTRL_PORTNO) + '+localhost:' + str(HALFMOD2_TCP_CNTRL_PORTNO)
             #d.udp_dstport = {2: 50003} 
             # will set up for every module
@@ -116,13 +112,12 @@ def loadConfig(name, rx_hostname, settingsdir):
                 d.udp_srcip = 'auto'
         if d.type == detectorType.JUNGFRAU or d.type == detectorType.MOENCH:
             d.powerchip = 1
-        '''
     except:
         Log(Fore.RED, 'Could not load config for ' + name)
         raise
 
 def startCmdTests(name, fp, fname):
-    Log(Fore.BLUE, 'Cmd Tests for ' + name)
+    Log(Fore.GREEN, 'Cmd Tests for ' + name)
     cmd = 'tests --abort [.cmd] -s -o ' + fname
     p = subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
     p.check_returncode()
@@ -134,10 +129,10 @@ def startCmdTests(name, fp, fname):
                 Log(Fore.RED, msg)
                 raise Exception(msg)
 
-    Log(Fore.BLUE, 'Cmd Tests successful for ' + name)
+    Log(Fore.GREEN, 'Cmd Tests successful for ' + name)
 
 def startGeneralTests(fp, fname):
-    Log(Fore.BLUE, 'General Tests')
+    Log(Fore.GREEN, 'General Tests')
     cmd = 'tests --abort -s -o ' + fname
     p = subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
     p.check_returncode()
@@ -149,7 +144,7 @@ def startGeneralTests(fp, fname):
                 Log(Fore.RED, msg)
                 raise Exception(msg)
 
-    Log(Fore.BLUE, 'General Tests successful')
+    Log(Fore.GREEN, 'General Tests successful')
 
 
 
@@ -175,22 +170,25 @@ if args.servers is None:
 else:
     servers = args.servers
 
-fname = '/tmp/slsDetectorPackage_virtual_test.txt'
 
-Log(Fore.WHITE, 'rx_hostname: ' + args.rx_hostname + '\nsettingspath: \'' + args.settingspath + '\'' +  '\nLog File: ' + fname) 
+Log(Fore.WHITE, 'Arguments:\nrx_hostname: ' + args.rx_hostname + '\nsettingspath: \'' + args.settingspath + '\'') 
 
 
 # redirect to file
+prefix_fname = '/tmp/slsDetectorPackage_virtual_test'
 original_stdout = sys.stdout
 original_stderr = sys.stderr
+fname = prefix_fname + '_log.txt'
+Log(Fore.BLUE, '\nLog File: ' + fname) 
+
 with open(fname, 'w') as fp:
 
-    file_results = '/tmp/test_results_general.txt'
+    # general tests
+    file_results = prefix_fname + '_results_general.txt'
     Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
-
     sys.stdout = fp
     sys.stderr = fp
-
+    Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
     startGeneralTests(fp, file_results)
 
     for server in servers:
@@ -198,15 +196,13 @@ with open(fname, 'w') as fp:
             # print to terminal for progress
             sys.stdout = original_stdout
             sys.stderr = original_stderr
-            file_results = '/tmp/test_results_' + server + '.txt'
-            Log(Fore.BLUE, server + ' tests (results: ' + file_results + ')')
+            file_results = prefix_fname + '_results_cmd_' + server + '.txt'
+            Log(Fore.BLUE, 'Cmd tests for ' + server + ' (results: ' + file_results + ')')
             sys.stdout = fp
             sys.stderr = fp
+            Log(Fore.BLUE, 'Cmd tests for ' + server + ' (results: ' + file_results + ')')
             
             # cmd tests for det
-            Log(Fore.BLUE, 'Cmd Tests for ' + server)
-
-            
             cleanup(server)
             startServer(server)
             startReceiver(server)

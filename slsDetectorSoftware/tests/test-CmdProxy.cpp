@@ -3357,7 +3357,7 @@ TEST_CASE("lock", "[.cmd]") {
 TEST_CASE("execcommand", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
-    REQUIRE_NOTHROW(proxy.Call("execcommand", {"ls"}, -1, PUT));
+    REQUIRE_NOTHROW(proxy.Call("execcommand", {"ls *.txt"}, -1, PUT));
 }
 
 TEST_CASE("framecounter", "[.cmd]") {

@@ -499,7 +499,7 @@ void modeNotImplemented(char *modename, int mode) {
     LOG(logERROR, (mess));
 }
 
-int executeCommand(char *command, char *result, enum TLogLevel level) {
+void executeCommand(char *command, char *result, enum TLogLevel level) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
@@ -515,6 +515,11 @@ int executeCommand(char *command, char *result, enum TLogLevel level) {
 
     fflush(stdout);
     FILE *sysFile = popen(cmd, "r");
+    if (sysFile == NULL) {
+        ret = FAIL;
+        sprintf(mess, "Executing cmd[%s] failed\n", cmd);
+        return;
+    }
     while (fgets(temp, tempsize, sysFile) != NULL) {
         // size left excludes terminating character
         size_t sizeleft = MAX_STR_LENGTH - strlen(result) - 1;
@@ -530,17 +535,14 @@ int executeCommand(char *command, char *result, enum TLogLevel level) {
     if (strlen(result) == 0) {
         strcpy(result, "No result");
     }
-
-    int retval = OK;
     int success = pclose(sysFile);
-    if (success) {
-        retval = FAIL;
-        LOG(logERROR, ("Executing cmd[%s]:%s\n", cmd, result));
+    if (success == -1) {
+        ret = FAIL;
+        strcpy(mess, result);
+        LOG(logERROR, ("Executing cmd[%s] failed:%s\n", cmd, mess));
     } else {
         LOG(level, ("Result:\n[%s]\n", result));
     }
-
-    return retval;
 }
 
 int M_nofunc(int file_des) {
@@ -568,7 +570,7 @@ int exec_command(int file_des) {
 
     // set
     if (Server_VerifyLock() == OK) {
-        ret = executeCommand(cmd, retval, logINFO);
+        executeCommand(cmd, retval, logINFO);
     }
     return Server_SendResult(file_des, OTHER, retval, sizeof(retval));
 }

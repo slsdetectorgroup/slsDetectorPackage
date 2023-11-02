@@ -1239,7 +1239,7 @@ int DetectorImpl::acquire() {
             auto statusList = Parallel(&Module::getRunStatus, {});
             if (statusList.any(ERROR)) 
                 status = ERROR;
-            if (statusList.contains_only(IDLE, STOPPED)) 
+            else if (statusList.contains_only(IDLE, STOPPED)) 
                 status = STOPPED;
             else 
                 status = statusList.squash(RUNNING);

@@ -2064,7 +2064,7 @@ TEST_CASE("defaultdac", "[.cmd]") {
                 det.setDefaultDac(it, prev_val[i], {i});
             }
         }
-        if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+        if (det_type == defs::JUNGFRAU) {
             std::vector<defs::dacIndex> daclist = {
                 defs::VREF_PRECH, defs::VREF_DS, defs::VREF_COMP};
             for (auto it : daclist) {
@@ -2417,8 +2417,11 @@ TEST_CASE("scan", "[.cmd]") {
         notImplementedInd = defs::VCASCP_PB;
         break;
     case defs::JUNGFRAU:
-    case defs::MOENCH:
         ind = defs::VB_COMP;
+        notImplementedInd = defs::VSVP;
+        break;
+    case defs::MOENCH:
+        ind = defs::VIN_CM;
         notImplementedInd = defs::VSVP;
         break;
     case defs::GOTTHARD:

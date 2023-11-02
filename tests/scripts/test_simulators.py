@@ -23,26 +23,29 @@ def Log(color, message):
 
 
 def checkIfProcessRunning(processName):
-    '''
-    Check if there is any running process that contains the given name processName.
-    https://gist.github.com/Sanix-Darker/8cbed2ff6f8eb108ce2c8c51acd2aa5a
-    '''
-    # Iterate over the all the running process
-    for proc in psutil.process_iter():
-        try:
-            # Check if process name contains the given name string.
-            if processName.lower() in proc.name().lower():
-                return True
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            Log(Fore.RED, 'Exception ignored while checking if process ' + processName + ' is running')
-            pass
-    return False
+    cmd = "ps -ef | grep " + processName
+    print(cmd)
+    res=subprocess.getoutput(cmd)
+    print(res)
+    # eg. of output
+    #l_user  250506  243295  0 14:38 pts/5    00:00:00 /bin/sh -c ps -ef | grep slsReceiver
+    #l_user  250508  250506  0 14:38 pts/5    00:00:00 grep slsReceiver
+
+    print('how many')
+    cmd = "ps -ef | grep " + processName + " | wc -l"
+    print(cmd)
+    res=subprocess.getoutput(cmd)
+    print(res)
+
+    if res == '2':
+        return False
+    return True
 
 
 def killProcess(name):
     if checkIfProcessRunning(name):
         Log(Fore.GREEN, 'killing ' + name)
-        p = subprocess.run(['killall', name], text=True)
+        p = subprocess.run(['killall', name])
         if p.returncode != 0:
             raise RuntimeException('killall failed for ' + name)
     else:

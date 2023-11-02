@@ -28,7 +28,7 @@ TEST_CASE("Setting and reading back moench dacs", "[.cmd][.dacs]") {
         SECTION("vipre") { test_dac(defs::VIPRE, "vipre", 1000); }
         SECTION("vin_cm") { test_dac(defs::VIN_CM, "vin_cm", 1400); }
         SECTION("vb_sda") {
-            test_dac(defs::VREF_PRECH, "VB_SDA", 680);
+            test_dac(defs::VB_SDA, "vb_sda", 680);
         }
         SECTION("vcasc_sfp") { test_dac(defs::VCASC_SFP, "vcasc_sfp", 1428); }
         SECTION("vout_cm") { test_dac(defs::VOUT_CM, "vout_cm", 1200); }
@@ -54,19 +54,19 @@ TEST_CASE("Setting and reading back moench dacs", "[.cmd][.dacs]") {
         REQUIRE_THROWS(proxy.Call("vishaper", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("iodelay", {}, -1, GET));
         // gotthard
-        // REQUIRE_THROWS(proxy.Call("vref_ds", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vref_ds", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcascn_pb", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcascp_pb", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vout_cm", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vout_cm", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcasc_out", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vin_cm", {}, -1, GET));
-        // REQUIRE_THROWS(proxy.Call("vref_comp", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vin_cm", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vref_comp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("ib_test_c", {}, -1, GET));
         // mythen3
         REQUIRE_THROWS(proxy.Call("vrpreamp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vrshaper", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vrshaper_n", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vipre", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vipre", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vishaper", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vdcsh", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vth1", {}, -1, GET));

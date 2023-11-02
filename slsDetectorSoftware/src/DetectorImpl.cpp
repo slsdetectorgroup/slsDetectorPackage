@@ -1234,10 +1234,20 @@ int DetectorImpl::acquire() {
         dataProcessingThread.join();
 
         if (acquisition_finished != nullptr) {
-            int status = Parallel(&Module::getRunStatus, {}).squash(ERROR);
+            // status
+            runStatus status = IDLE;
+            auto statusList = Parallel(&Module::getRunStatus, {});
+            if (statusList.any(ERROR)) 
+                status = ERROR;
+            if (statusList.contains_only(IDLE, STOPPED)) 
+                status = STOPPED;
+            else 
+                status = statusList.squash(RUNNING);
+            // progress
             auto a = Parallel(&Module::getReceiverProgress, {});
             double progress = (*std::max_element(a.begin(), a.end()));
-            acquisition_finished(progress, status, acqFinished_p);
+            // callback
+            acquisition_finished(progress, static_cast<int>(status), acqFinished_p);
         }
 
         clock_gettime(CLOCK_REALTIME, &end);

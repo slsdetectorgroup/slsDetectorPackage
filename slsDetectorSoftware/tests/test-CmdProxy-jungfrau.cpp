@@ -23,7 +23,7 @@ TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmd][.dacs]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    if (det_type == defs::JUNGFRAU) {
         SECTION("vb_comp") { test_dac(defs::VB_COMP, "vb_comp", 1220); }
         SECTION("vdd_prot") { test_dac(defs::VDD_PROT, "vdd_prot", 3000); }
         SECTION("vin_com") { test_dac(defs::VIN_COM, "vin_com", 1053); }
@@ -163,7 +163,7 @@ TEST_CASE("chipversion", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    if (det_type == defs::JUNGFRAU) {
         REQUIRE_NOTHROW(proxy.Call("chipversion", {}, -1, GET));
     } else {
         REQUIRE_THROWS(proxy.Call("chipversion", {}, -1, GET));

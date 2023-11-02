@@ -36,7 +36,7 @@ def checkIfProcessRunning(processName):
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             Log(Fore.RED, 'Exception ignored while checking if process ' + processName + ' is running')
             pass
-    return False;
+    return False
 
 
 def killProcess(name):

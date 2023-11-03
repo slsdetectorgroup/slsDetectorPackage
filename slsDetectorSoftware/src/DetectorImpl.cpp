@@ -1237,15 +1237,21 @@ int DetectorImpl::acquire() {
             // status
             runStatus status = IDLE;
             auto statusList = Parallel(&Module::getRunStatus, {});
-            if (statusList.any(ERROR)) 
-                status = ERROR;
-            else if (statusList.contains_only(IDLE, STOPPED)) 
-                status = STOPPED;
-            else 
-                status = statusList.squash(RUNNING);
+            status = statusList.squash(ERROR);
+            // difference, but none error
+            if (status == ERROR && (!statusList.any(ERROR))) {
+                // handle jf sync issue (master idle, slaves stopped)
+                if (statusList.contains_only(IDLE, STOPPED)) {
+                    status = STOPPED;
+                }
+                else 
+                    status = statusList.squash(RUNNING);
+            }
+
             // progress
             auto a = Parallel(&Module::getReceiverProgress, {});
             double progress = (*std::max_element(a.begin(), a.end()));
+            
             // callback
             acquisition_finished(progress, static_cast<int>(status), acqFinished_p);
         }

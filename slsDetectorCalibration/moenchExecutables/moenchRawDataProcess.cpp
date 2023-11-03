@@ -304,18 +304,38 @@ int main(int argc, char *argv[]) {
     int ifile = 0;
 
     mt->setFrameMode(eFrame);
+    int filelist=0;
+    ifstream flist;
+    flist.open (fformat, std::ifstream::in);
+    if (flist.is_open()) {
+      runmin=0;
+      runmax=0;
+      while (flist.getline(ffname,10000)){
+	cout << ffname << endl;
+	runmax++;
+      }
+      runmax--;
+      flist.close();
+      cout << "Found " << runmax << " files " << endl;
+      flist.open (fformat, std::ifstream::in);
+    } 
 
     for (int irun = runmin; irun <= runmax; irun++) {
         cout << "DATA ";
         // sprintf(fn,fformat,irun);
-        sprintf(ffname, "%s/%s.raw", indir, fformat);
-        sprintf(fname, (const char*)ffname, irun);
-        sprintf(ffname, "%s/%s.tiff", outdir, fformat);
-        sprintf(imgfname, (const char*)ffname, irun);
-        sprintf(ffname, "%s/%s.clust", outdir, fformat);
-        sprintf(cfname, (const char*)ffname, irun);
+	if (flist.is_open()) {
+	  flist.getline(ffname,10000);
+	  cout << "file list " << ffname << endl;
+	} else {
+	  sprintf(ffname,(const char*)fformat,irun);
+	  cout << "loop " << ffname << endl;
+	}
+	cout << "ffname "<<ffname << endl;
+        sprintf(fname,  "%s/%s.raw",indir,ffname);
+        sprintf(imgfname,  "%s/%s.tiff",outdir,ffname);
+        sprintf(cfname,  "%s/%s.clust",outdir,ffname);
         cout << fname << " ";
-        cout << imgfname << endl;
+        cout << imgfname << " " << cfname << endl;
         std::time(&end_time);
         cout << std::ctime(&end_time) << endl;
         //  cout <<  fname << " " << outfname << " " << imgfname <<  endl;
@@ -349,13 +369,13 @@ int main(int argc, char *argv[]) {
                     mt->popFree(buff);
 
                     ifr++;
-		    if (ifr % 100 == 0)
+		    if (ifr % 10000 == 0)
                         cout << ifr << " " << ff << endl;
                     if (nframes > 0) {
                         if (ifr % nframes == 0) {
-                            sprintf(ffname, "%s/%s_f%05d.tiff", outdir, fformat,
-                                    ifile);
-                            sprintf(imgfname, (const char*)ffname, irun);
+
+			  sprintf(imgfname,  "%s/%s_f%05d.tiff",outdir,ffname,ifile);
+
 			    while (mt->isBusy()) 
 			      ;
                             mt->writeImage(imgfname, thr1);
@@ -376,11 +396,9 @@ int main(int argc, char *argv[]) {
             }
             if (nframes >= 0) {
                 if (nframes > 0) {
-                    sprintf(ffname, "%s/%s_f%05d.tiff", outdir, fformat, ifile);
-                    sprintf(imgfname, (const char*)ffname, irun);
+		  sprintf(imgfname,  "%s/%s_f%05d.tiff",outdir,ffname,ifile);
                 } else {
-                    sprintf(ffname, "%s/%s.tiff", outdir, fformat);
-                    sprintf(imgfname, (const char*)ffname, irun);
+		  sprintf(imgfname,  "%s/%s_f%05d.tiff",outdir,ffname,ifile);
                 }
                 cout << "Writing tiff to " << imgfname << " " << thr1 << endl;
 		while (mt->isBusy()) 
@@ -399,11 +417,12 @@ int main(int argc, char *argv[]) {
             cout << "Could not open " << fname << " for reading " << endl;
     }
     if (nframes < 0) {
-        sprintf(ffname, "%s/%s.tiff", outdir, fformat);
-        strcpy(imgfname, ffname);
-        cout << "Writing tiff to " << imgfname << " " << thr1 << endl;
-        mt->writeImage(imgfname, thr1);
+      sprintf(imgfname,  "%s/%s_tot.tiff",outdir,ffname);
+      cout << "Writing tiff to " << imgfname << " " << thr1 << endl;
+      mt->writeImage(imgfname, thr1);
     }
-
+    if (flist.is_open()) {
+      flist.close();
+    }
     return 0;
 }

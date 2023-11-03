@@ -288,6 +288,7 @@ void DetectorImpl::addModule(const std::string &hostname) {
     if (res.size() > 1) {
         host = res[0];
         port = StringTo<int>(res[1]);
+        validatePortNumber(port);
     }
 
     if (host != "localhost") {

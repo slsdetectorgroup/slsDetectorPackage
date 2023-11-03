@@ -1350,7 +1350,9 @@ void Module::setReceiverHostname(const std::string &receiverIP,
     auto res = split(host, ':');
     if (res.size() > 1) {
         host = res[0];
-        shm()->rxTCPPort = std::stoi(res[1]);
+        int port = StringTo<int>(res[1]);
+        validatePortNumber(port);
+        shm()->rxTCPPort = port;
     }
     strcpy_safe(shm()->rxHostname, host.c_str());
     shm()->useReceiverFlag = true;
@@ -3871,8 +3873,8 @@ void Module::sendProgram(bool blackfin, std::vector<char> buffer,
 
 void Module::simulatingActivityinDetector(const std::string &functionType,
                                           const int timeRequired) {
-    LOG(logINFO) << "(Simulating) " << functionType << " for module "
-                 << moduleIndex << " (" << shm()->hostname << ")";
+    LOG(logINFO) << functionType << " for module " << moduleIndex << " ("
+                 << shm()->hostname << ")";
     printf("%d%%\r", 0);
     std::cout << std::flush;
     const int ERASE_TIME = timeRequired;

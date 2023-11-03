@@ -88,5 +88,5 @@ IpAddr HostnameToIp(const char *hostname);
 std::string IpToInterfaceName(const std::string &ip);
 MacAddr InterfaceNameToMac(const std::string &inf);
 IpAddr InterfaceNameToIp(const std::string &ifn);
-
+void validatePortNumber(int port);
 } // namespace sls

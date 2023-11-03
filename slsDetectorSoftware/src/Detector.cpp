@@ -18,6 +18,7 @@
 
 #include <chrono>
 #include <fstream>
+#include <set>
 #include <thread>
 
 namespace sls {
@@ -108,6 +109,9 @@ void Detector::setHostname(const std::vector<std::string> &hostname) {
 }
 
 void Detector::setVirtualDetectorServers(int numServers, int startingPort) {
+    for (int i = 0; i != numServers; ++i) {
+        validatePortNumber(startingPort + i * 2);
+    }
     pimpl->setVirtualDetectorServers(numServers, startingPort);
 }
 
@@ -845,18 +849,26 @@ void Detector::startDetectorReadout() {
 
 void Detector::stopDetector(Positions pos) {
 
-    // stop and check status X times
     int retries{0};
-    // avoid default construction of runStatus::IDLE on squash
-    auto status = getDetectorStatus().squash(defs::runStatus::RUNNING);
-    while (status != defs::runStatus::IDLE &&
-           status != defs::runStatus::STOPPED) {
-        if (status == defs::runStatus::ERROR) {
-            throw RuntimeError(
-                "Could not stop detector. Returned error status.");
+    auto status = getDetectorStatus(pos);
+
+    // jf sync fix: status [stopped or idle] = [stopped]
+    // sync issue: (master idle sometimes, slaves stopped)
+
+    // eiger fix: stop multiple times from multi client till all modules stopped
+    // issue: asynchronous start and stop scripts with a module being started
+    // (stop before) and waiting for the other to be done. So a module that was
+    // idle before stopping will return running (after async start script) when
+    // getting status after, which will then be stopped again.
+
+    while (!status.contains_only(defs::runStatus::IDLE,
+                                 defs::runStatus::STOPPED)) {
+        if (status.any(defs::runStatus::ERROR)) {
+            throw RuntimeError("Could not stop detector. At least one module "
+                               "returned error status.");
         }
         pimpl->stopDetector(pos);
-        status = getDetectorStatus().squash(defs::runStatus::RUNNING);
+        status = getDetectorStatus(pos);
         ++retries;
 
         if (retries == 10)
@@ -875,7 +887,7 @@ void Detector::stopDetector(Positions pos) {
             for (auto it : res) {
                 maxVal = std::max(maxVal, it);
             }
-            setNextFrameNumber(maxVal + 1);
+            setNextFrameNumber(maxVal + 1, pos);
         }
     } break;
     default:
@@ -1087,12 +1099,13 @@ Result<int> Detector::getDestinationUDPPort(Positions pos) const {
 
 void Detector::setDestinationUDPPort(int port, int module_id) {
     if (module_id == -1) {
-        std::vector<int> port_list = getPortNumbers(port);
+        std::vector<int> port_list = getValidPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
             pimpl->Parallel(&Module::setDestinationUDPPort, {idet},
                             port_list[idet]);
         }
     } else {
+        validatePortNumber(port);
         pimpl->Parallel(&Module::setDestinationUDPPort, {module_id}, port);
     }
 }
@@ -1103,12 +1116,13 @@ Result<int> Detector::getDestinationUDPPort2(Positions pos) const {
 
 void Detector::setDestinationUDPPort2(int port, int module_id) {
     if (module_id == -1) {
-        std::vector<int> port_list = getPortNumbers(port);
+        std::vector<int> port_list = getValidPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
             pimpl->Parallel(&Module::setDestinationUDPPort2, {idet},
                             port_list[idet]);
         }
     } else {
+        validatePortNumber(port);
         pimpl->Parallel(&Module::setDestinationUDPPort2, {module_id}, port);
     }
 }
@@ -1220,9 +1234,11 @@ void Detector::setRxPort(int port, int module_id) {
             it = port++;
         }
         for (int idet = 0; idet < size(); ++idet) {
+            validatePortNumber(port_list[idet]);
             pimpl->Parallel(&Module::setReceiverPort, {idet}, port_list[idet]);
         }
     } else {
+        validatePortNumber(port);
         pimpl->Parallel(&Module::setReceiverPort, {module_id}, port);
     }
 }
@@ -1420,12 +1436,13 @@ void Detector::setRxZmqPort(int port, int module_id) {
     bool previouslyReceiverStreaming =
         getRxZmqDataStream(std::vector<int>{module_id}).squash(false);
     if (module_id == -1) {
-        std::vector<int> port_list = getPortNumbers(port);
+        std::vector<int> port_list = getValidPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
             pimpl->Parallel(&Module::setReceiverStreamingPort, {idet},
                             port_list[idet]);
         }
     } else {
+        validatePortNumber(port);
         pimpl->Parallel(&Module::setReceiverStreamingPort, {module_id}, port);
     }
     if (previouslyReceiverStreaming) {
@@ -1454,12 +1471,13 @@ Result<int> Detector::getClientZmqPort(Positions pos) const {
 void Detector::setClientZmqPort(int port, int module_id) {
     bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
     if (module_id == -1) {
-        std::vector<int> port_list = getPortNumbers(port);
+        std::vector<int> port_list = getValidPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
             pimpl->Parallel(&Module::setClientStreamingPort, {idet},
                             port_list[idet]);
         }
     } else {
+        validatePortNumber(port);
         pimpl->Parallel(&Module::setClientStreamingPort, {module_id}, port);
     }
     if (previouslyClientStreaming) {
@@ -2463,6 +2481,7 @@ Result<int> Detector::getControlPort(Positions pos) const {
 }
 
 void Detector::setControlPort(int value, Positions pos) {
+    validatePortNumber(value);
     pimpl->Parallel(&Module::setControlPort, pos, value);
 }
 
@@ -2471,6 +2490,7 @@ Result<int> Detector::getStopPort(Positions pos) const {
 }
 
 void Detector::setStopPort(int value, Positions pos) {
+    validatePortNumber(value);
     pimpl->Parallel(&Module::setStopPort, pos, value);
 }
 
@@ -2505,13 +2525,17 @@ Result<ns> Detector::getMeasurementTime(Positions pos) const {
 
 std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
 
-std::vector<int> Detector::getPortNumbers(int start_port) {
+std::vector<int> Detector::getValidPortNumbers(int start_port) {
     int num_sockets_per_detector = getNumberofUDPInterfaces({}).tsquash(
         "Number of UDP Interfaces is not consistent among modules");
     std::vector<int> res;
     res.reserve(size());
     for (int idet = 0; idet < size(); ++idet) {
-        res.push_back(start_port + (idet * num_sockets_per_detector));
+        int port = start_port + (idet * num_sockets_per_detector);
+        for (int i = 0; i != num_sockets_per_detector; ++i) {
+            validatePortNumber(port + i);
+        }
+        res.push_back(port);
     }
     return res;
 }

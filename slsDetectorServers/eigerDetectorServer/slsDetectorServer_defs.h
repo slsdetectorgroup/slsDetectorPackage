@@ -5,7 +5,7 @@
 
 #define LINKED_SERVER_NAME "eigerDetectorServer"
 
-#define REQUIRED_FIRMWARE_VERSION (31)
+#define REQUIRED_FIRMWARE_VERSION (32)
 // virtual ones renamed for consistency
 // real ones keep previous name for compatibility (already in production)
 #ifdef VIRTUAL

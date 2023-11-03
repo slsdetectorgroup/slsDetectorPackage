@@ -373,7 +373,9 @@ int main(int argc, char *argv[]) {
                         cout << ifr << " " << ff << endl;
                     if (nframes > 0) {
                         if (ifr % nframes == 0) {
+
 			  sprintf(imgfname,  "%s/%s_f%05d.tiff",outdir,ffname,ifile);
+
 			    while (mt->isBusy()) 
 			      ;
                             mt->writeImage(imgfname, thr1);

@@ -13,22 +13,7 @@ class etaInterpolationGlobal : public etaInterpolationBase {
 
     virtual void prepareInterpolation(int &ok) {
         ok = 1;
-#ifdef MYROOT1
-        if (hhx)
-            delete hhx;
-        if (hhy)
-            delete hhy;
 
-        hhx = new TH2D("hhx", "hhx", heta->GetNbinsX(),
-                       heta->GetXaxis()->GetXmin(), heta->GetXaxis()->GetXmax(),
-                       heta->GetNbinsY(), heta->GetYaxis()->GetXmin(),
-                       heta->GetYaxis()->GetXmax());
-        hhy = new TH2D("hhy", "hhy", heta->GetNbinsX(),
-                       heta->GetXaxis()->GetXmin(), heta->GetXaxis()->GetXmax(),
-                       heta->GetNbinsY(), heta->GetYaxis()->GetXmin(),
-                       heta->GetYaxis()->GetXmax());
-
-#endif
 
         ///*Eta Distribution Rebinning*///
         double bsize = 1. / nSubPixels; // precision

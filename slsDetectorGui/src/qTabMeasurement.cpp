@@ -803,8 +803,9 @@ void qTabMeasurement::GetNextFrameNumber() {
             "Inconsistent starting frame number for all detectors.");
         spinNextFrameNumber->setValue(retval);
     }
-    CATCH_DISPLAY("Could not get starting frame number.",
-                  "qTabMeasurement::GetNextFrameNumber")
+    CATCH_HANDLE("Could not get starting frame number.",
+                  "qTabMeasurement::GetNextFrameNumber", spinNextFrameNumber,
+            &QSpinBox::setValue, -1)
     connect(spinNextFrameNumber, SIGNAL(valueChanged(int)), this,
             SLOT(SetNextFrameNumber(int)));
 }

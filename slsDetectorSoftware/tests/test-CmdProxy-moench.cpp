@@ -19,17 +19,18 @@ using test::PUT;
 
 /* dacs */
 TEST_CASE("Setting and reading back moench dacs", "[.cmd][.dacs]") {
-    // vbp_colbuf, vipre, vin_cm, vb_sda, vcasc_sfp, vout_cm, vipre_cds, ibias_sfp
+    // vbp_colbuf, vipre, vin_cm, vb_sda, vcasc_sfp, vout_cm, vipre_cds,
+    // ibias_sfp
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::MOENCH) {
-        SECTION("vbp_colbuf") { test_dac(defs::VBP_COLBUF, "vbp_colbuf", 1300); }
+        SECTION("vbp_colbuf") {
+            test_dac(defs::VBP_COLBUF, "vbp_colbuf", 1300);
+        }
         SECTION("vipre") { test_dac(defs::VIPRE, "vipre", 1000); }
         SECTION("vin_cm") { test_dac(defs::VIN_CM, "vin_cm", 1400); }
-        SECTION("vb_sda") {
-            test_dac(defs::VB_SDA, "vb_sda", 680);
-        }
+        SECTION("vb_sda") { test_dac(defs::VB_SDA, "vb_sda", 680); }
         SECTION("vcasc_sfp") { test_dac(defs::VCASC_SFP, "vcasc_sfp", 1428); }
         SECTION("vout_cm") { test_dac(defs::VOUT_CM, "vout_cm", 1200); }
         SECTION("vipre_cds") { test_dac(defs::VIPRE_CDS, "vipre_cds", 800); }
@@ -104,6 +105,5 @@ TEST_CASE("Setting and reading back moench dacs", "[.cmd][.dacs]") {
         REQUIRE_THROWS(proxy.Call("vref_comp", {}, -1, GET));
     }
 }
-
 
 } // namespace sls

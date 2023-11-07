@@ -17,7 +17,7 @@ const char *getRetName();
 void function_table();
 void functionNotImplemented();
 void modeNotImplemented(char *modename, int mode);
-int executeCommand(char *command, char *result, enum TLogLevel level);
+void executeCommand(char *command, char *result, enum TLogLevel level);
 int M_nofunc(int);
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
 void rebootNiosControllerAndFPGA();

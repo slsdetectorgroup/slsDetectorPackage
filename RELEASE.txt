@@ -1,4 +1,4 @@
-SLS Detector Package Major Release 7.0.3 released on xx.xx.2023
+SLS Detector Package Major Release 7.0.3 released on 10.11.2023
 ===============================================================
 
 This document describes the differences between v7.0.3 and v7.0.2   
@@ -31,7 +31,7 @@ This document describes the differences between v7.0.3 and v7.0.2
     Client
     ------
 
-    *   Limit port number max of 65535
+    *   Limit port number max to 65535
         Previously, one could set the port numbers (TCP, UDP, ZMQ) to values 
         higher than 65535 and also to 0. However, it was truncated to 16 bit
         in the background, but not relayed to the user. 
@@ -48,11 +48,11 @@ This document describes the differences between v7.0.3 and v7.0.2
         Now, it does not throw and a fix will be added to the next firmware 
         release for the different states (with SW release: v8.0.0).
 
-    *   [Eiger] Error in Stop
+    *   [Eiger] Incorrect error message in Stop
         When stopping acquisition, if a half module were to give an error in a 
         rare case while the others succeeded, this would result in an re-attempt 
-        to stop 9 more times before throwing an incorrect exception that it 
-        could not stop.
+        to stop 9 more times before throwing an incorrect exception messsage that 
+        it could not stop.
         Now, it is handled and will throw an exception of the error status
         immediately.
 
@@ -73,12 +73,26 @@ This document describes the differences between v7.0.3 and v7.0.2
         Refer issue under 'Client'.
 
 
-    Gui
-    ---
 
-    *   [Jungfrau] Color map of gain plot
+    Gui/ Client Callback
+    --------------------
+
+    *   [Jungfrau] Gui: corrected color map of gain plot
         Previously, color on the gain plot did not update after the first image, 
         unless there were x/y min/max changes or window resizing. Fixed.
+
+    *   [Jungfrau] Acquisition finished callback error status in sync mode
+        When stopping acquisition in multi module Jungfrau sync mode, 
+        different status (master 'idle' and slaves 'stopped' in 
+        firmware 2.4.1 or 1.4.1) show as 'error' in acquisition finished call 
+        back (mainly used for gui). This is fixed.
+
+    *   [Jungfrau] Gui: Next frame number shown as 0 for inconsistency
+        When stopping an acquisition in a multi module Jungfrau, the next 
+        frame numbers might be different, for which the Gui shows an error message
+        but keeps the number as 0. Now, it is fixed to show -1 for inconsistency 
+        and error message shown. So, setting 0 will also prompt an error message
+        that 0 is an invalid input.
 
 
 
@@ -124,10 +138,10 @@ This document describes the differences between v7.0.3 and v7.0.2
 ========================
 
 
-    Eiger       02.10.2023 (v32)
+    Eiger       02.10.2023 (v32)                    (updated)
     
-    Jungfrau    16.05.2023 (v1.4.1, HW v1.0) 
-                15.05.2023 (v2.4.1, HW v2.0)
+    Jungfrau    16.05.2023 (v1.4.1, HW v1.0)        (updated)
+                15.05.2023 (v2.4.1, HW v2.0)        (updated)
 
     Mythen3     24.01.2023 (v1.4)
 

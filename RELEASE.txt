@@ -138,21 +138,21 @@ This document describes the differences between v7.0.3 and v7.0.2
 ========================
 
 
-    Eiger       02.10.2023 (v32)                    (updated)
+    Eiger       02.10.2023 (v32)                    (updated in 7.0.3)
     
-    Jungfrau    16.05.2023 (v1.4.1, HW v1.0)        (updated)
-                15.05.2023 (v2.4.1, HW v2.0)        (updated)
+    Jungfrau    16.05.2023 (v1.4.1, HW v1.0)        (updated in 7.0.3)
+                15.05.2023 (v2.4.1, HW v2.0)        (updated in 7.0.3)
 
-    Mythen3     24.01.2023 (v1.4)
+    Mythen3     24.01.2023 (v1.4)                   (updated in 7.0.0)
 
-    Gotthard2   23.11.2022 (v0.3)
+    Gotthard2   23.11.2022 (v0.3)                   (updated in 7.0.0)
 
     Gotthard    08.02.2018 (50um and 25um Master)
                 09.02.2018 (25 um Slave) 
 
-    Moench      05.12.2022 (v0.3)
+    Moench      05.12.2022 (v0.3)                   (updated in 7.0.0)
 
-    Ctb         05.12.2022 (v1.1)
+    Ctb         05.12.2022 (v1.1)                   (updated in 7.0.0)
 
 
     Detector Upgrade

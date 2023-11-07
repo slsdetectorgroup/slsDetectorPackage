@@ -1229,17 +1229,17 @@ int DetectorImpl::acquire() {
                 // handle jf sync issue (master idle, slaves stopped)
                 if (statusList.contains_only(IDLE, STOPPED)) {
                     status = STOPPED;
-                }
-                else 
+                } else
                     status = statusList.squash(RUNNING);
             }
 
             // progress
             auto a = Parallel(&Module::getReceiverProgress, {});
             double progress = (*std::max_element(a.begin(), a.end()));
-            
+
             // callback
-            acquisition_finished(progress, static_cast<int>(status), acqFinished_p);
+            acquisition_finished(progress, static_cast<int>(status),
+                                 acqFinished_p);
         }
 
         clock_gettime(CLOCK_REALTIME, &end);

@@ -2928,7 +2928,8 @@ int softwareTrigger(int block) {
     usleep(100);
 
 #ifndef VIRTUAL
-    // block till frame sent out & back to wait for trigger (or not busy anymore)
+    // block till frame sent out & back to wait for trigger (or not busy
+    // anymore)
     if (block) {
         uint32_t retval = bus_r(STATUS_REG);
         while ((retval & RUN_BUSY_MSK) && !(retval & WAITING_FOR_TRIGGER_MSK)) {
@@ -2971,11 +2972,10 @@ enum runStatus getRunStatus() {
         LOG(logINFOBLUE, ("Status: ERROR\n"));
         s = ERROR;
     }
-    
+
     // running
     else if (retval & RUN_BUSY_MSK) {
-        if ((retval &
-             WAITING_FOR_TRIGGER_MSK) || 
+        if ((retval & WAITING_FOR_TRIGGER_MSK) ||
             (retval & WAITING_FOR_START_FRAME_MSK)) {
             LOG(logINFOBLUE, ("Status: WAITING\n"));
             s = WAITING;

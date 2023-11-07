@@ -804,8 +804,8 @@ void qTabMeasurement::GetNextFrameNumber() {
         spinNextFrameNumber->setValue(retval);
     }
     CATCH_HANDLE("Could not get starting frame number.",
-                  "qTabMeasurement::GetNextFrameNumber", spinNextFrameNumber,
-            &QSpinBox::setValue, -1)
+                 "qTabMeasurement::GetNextFrameNumber", spinNextFrameNumber,
+                 &QSpinBox::setValue, -1)
     connect(spinNextFrameNumber, SIGNAL(valueChanged(int)), this,
             SLOT(SetNextFrameNumber(int)));
 }

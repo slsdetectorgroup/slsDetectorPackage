@@ -692,7 +692,8 @@ TEST_CASE("confadc", "[.cmd]") {
         const int ndet = det.size();
         const int nchip = 10;
         const int nadc = 32;
-        std::vector<std::vector<std::vector<int>>> prev_val(ndet, std::vector<std::vector<int>>(nchip, std::vector<int>(nadc)));
+        std::vector<std::vector<std::vector<int>>> prev_val(
+            ndet, std::vector<std::vector<int>>(nchip, std::vector<int>(nadc)));
         for (int i = 0; i != ndet; ++i) {
             for (int j = 0; j != nchip; ++j) {
                 for (int k = 0; k != nadc; ++k) {

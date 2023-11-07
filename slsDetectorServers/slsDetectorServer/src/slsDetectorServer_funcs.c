@@ -499,7 +499,7 @@ void modeNotImplemented(char *modename, int mode) {
     LOG(logERROR, (mess));
 }
 
-void executeCommand(char *command, char *result, enum TLogLevel level) {
+int executeCommand(char *command, char *result, enum TLogLevel level) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
@@ -518,7 +518,7 @@ void executeCommand(char *command, char *result, enum TLogLevel level) {
     if (sysFile == NULL) {
         ret = FAIL;
         sprintf(mess, "Executing cmd[%s] failed\n", cmd);
-        return;
+        return ret;
     }
     while (fgets(temp, tempsize, sysFile) != NULL) {
         // size left excludes terminating character
@@ -543,6 +543,7 @@ void executeCommand(char *command, char *result, enum TLogLevel level) {
     } else {
         LOG(level, ("Result:\n[%s]\n", result));
     }
+    return ret;
 }
 
 int M_nofunc(int file_des) {

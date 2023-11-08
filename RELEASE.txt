@@ -1,4 +1,4 @@
-SLS Detector Package Major Release 7.x.x released on 10.11.2023
+SLS Detector Package Major Release 8.0.0 released on 10.11.2023
 ===============================================================
 
 This document describes the differences between v8.0.0 and v7.0.3
@@ -7,47 +7,94 @@ This document describes the differences between v8.0.0 and v7.0.3
 
     CONTENTS
     --------
-    1           New, Changed or Resolved Features
-        1.1     Breaking API
-        1.2     Resolved or Changed Features
-        1.3     New Features
-    2           On-board Detector Server Compatibility
-    3           Firmware Requirements
-    4           Kernel Requirements
-    5           Download, Documentation & Support
+    1           Compilation Changes
+    2           New or Changed Features
+        2.1         Breaking API
+        2.2         Resolved or Changed Features
+        2.3         New Features
+    3           On-board Detector Server Compatibility
+    4           Firmware Requirements
+    5           Kernel Requirements
+    6           Download, Documentation & Support
 
 
 
 
-1 New, Changed or Resolved Features
+2 Compilation Changes
+=====================
+
+
+    *   Minimum CMake version changed from 3.12 to 3.14
+
+
+    *   Internal zmq lib
+        Building zmq from tar file in repo (libs/libzmq/libzmq-4.3.4.tar.gz), 
+        but added option (SLS_FETCH_ZMQ_FROM_GITHUB) to pull zmq version (v4.3.4) 
+        from github (https://github.com/zeromq/libzmq.git)
+
+
+    *   Internal pybind11 lib
+        Building pybind11 from tar file in repo (libs/pybind11/v2.11.0.tar.gz), 
+        but added option (SLS_FETCH_PYBIND11_FROM_GITHUB) to pull pybind11 version 
+        (v2.11.0) from github (https://github.com/pybind/pybind11)        
+
+
+
+2 New, Changed or Resolved Features
 =====================================
 
 
-1.1 Breaking API
+
+2.1 Breaking API
 ==================
 
 
-    Detector
+    Firmware
     --------
 
-    *   [Moench] Development mode
+    *   [Jungfrau] Status register and Sync mode fix
+        The regiser bit definition changed and fixes for stable control in sync mode.
+        Effect: Master and slaves give same status (previously master is sometimes 'idle' when acquisition is stopped), same #frames left and #nextframenumber.
+        Also ERROR status connected, but never noticed to occur.
+
+        For user, everything is transparent unless one touches status register
+        using advanced commands. 
+
+
+    *   [Moench] Status: Development mode
         Moench is now being made compatible with Jungfrau v2.0 readout boards. 
         Hence, firmware and software is in development mode. 
         7.x.x will continue to have fixes for Moench until this version is deployed.
 
 
+    *   [Ctb] Fixes and features described later on.
+
+
     Client
     ======
 
-    *   [Eiger] Febl and Febr firmware versions [fx30, fx70]
-        Command line: hardwareversion, versions (modified to include this)
-        API: Detector::getFrontEndFirmwareVersion, 
-        Detector::getHardwareVersion(modified to include for Eiger)
-        slsDetectorDefs::fpgaPosition {FRONT_LEFT, FRONT_RIGHT}
+
+    *   Datatype change of port numbers from int to uint16_t   
+        API: setVirtualDetectorServers, 
+        get/setRxPort, get/setControlPort, get/setStopPort,
+        get/setDestinationUDPPort(2), get/setRxZmqPort, get/setClientZmqPort
+
+
+    *   [Eiger] versions, hardware version, febl/r firmware version 
+        Versions command modified to give more info about hardware version ['fx30', 'fx70'] and Febl/r firmware versions.
+        Command line: versions (output modified), hardwareversion (added for Eiger)
+        API added for Eiger: getHardwareVersion, getFrontEndFirmwareVersion
+        Enums added: fpgaPosition {FRONT_LEFT, FRONT_RIGHT}
+    
+
+    *   [Ctb] Voltage->Power name change
+        Command line: voltagelist ->powerlist
+        API: get/setVoltage -> get/setPower, get/setVoltageList -> get/setPowerList,
+        getMeasuredVoltage -> getMeasuredPower
 
 
 
-1.2 Resolved or Changed Features
+2.2 Resolved or Changed Features
 ================================
 
 
@@ -59,14 +106,40 @@ This document describes the differences between v8.0.0 and v7.0.3
         Previously, validation expected all the other bits in the register to 
         not change. Now, it only validates the selected bit.
 
-        
-    *   [Ctb] Patioctrl, patsetbit, patbitmask
-        MSB (64 bit unsigned) could not be set as a value of -1 was interpreted 
-        as a 'get'. Fixed in server. 
-
     
-    *   [Ctb] Allow dac tristate when v_limit is set
-        Fixed.
+    *   [Jungfrau] Electron collection mode
+        Bit 14 of register 0x5D controls electron collection mode. Touching this
+        bit will reconfigure chip if chip is v1.1 and powered on.
+        Affected Command line: setbit, clearbit, reg
+        Affected API: setBit, clearBit, writeRegister
+
+        Permanent fix by introducing a command for the same in future release.
+
+
+    *   [Ctb] Fixes
+
+        -   Patioctrl, patsetbit, patbitmask
+            MSB (64 bit unsigned) could not be set as a value of -1 was interpreted 
+            as a 'get'. Fixed in server. 
+
+        -   Allow dac tristate when v_limit is set. Fixed.
+
+        -   Changing fw bit from disable analog to enable analog
+
+        -   Allow adc enable for 1 GbE and 10GbE to be 0.
+
+        -   Slow ADCs previously misread (a high 5k+ value). Firmware updated 
+            and software adjusted now.
+
+        -   Allow non blocking acquire for 1GbE. Added Transmitting status when it
+            might still be reading from fifo.
+
+        -   Clean memory before reading from fifo in 1GbE mode. Read fifo then
+            RD strobe (corresponding firmware fix) fixes number of reads, but 
+            increases all pipelines by 1.
+        
+        -   Fixed pattern viewer (auto legend buf without wait and loop), allow 
+            pyat files. (/patterngenerator)
 
 
     Simulator
@@ -79,47 +152,103 @@ This document describes the differences between v8.0.0 and v7.0.3
     Receiver
     --------
 
+
     *   Unique TCP port for multiple receivers
         7.x.x already has automatically increasing TCP ports in shared memory 
         for multiple receivers. Now, checks include unique TCP port-hostname 
         combo.
 
-    *   [Ctb] Readout mode updated
-        'rx_hostname' should configure the receiver with parameters from detector,
-        but readout mode in receiver always configured at start up to Analog only. 
-        Fixed.
+
+    *   [Ctb] Fixes
+
+        -   Readout mode updated
+            'rx_hostname' should configure the receiver with parameters from detector,
+            but readout mode in receiver always configured at start up to Analog only. 
+            Fixed.
+
+        -   Incorrect image size in zmq header, which happens when dbit list is 
+            less than 64 bits. Fixed.
+
+        -   Rearranging digital data when dbit list less than 64 bits fixed.
 
 
-1.3 New Features
+
+2.3 New Features
 ================
 
 
-    Detector Server
-    ---------------
+    Client
+    ------
+    
 
-
-    *   [Ctb] List for ADC, signal, power, slowadc 
-        Also allow their list to set names and to obtain their indices and values.
-
-        Command line: dacname, dacindex, 
-        adclist, adcname, adcindex, 
-        signallist, signalname,signalindex, 
-        powerlist, powername, powerindex, powervalues,
-        slowadclist, slowadcname, slowadcindex, slowadcvalues
-
-        API: get/setDacName, getDacIndex, 
-        get/setAdcNames, getAdcIndex, get/setAdcName,
-        get/setSignalNames, getSignalIndex, get/setSignalName,
-        get/setPowerNames, getPowerIndex, get/setPowerName, getPowerList,
-        get/setSlowADCNames, getSlowADCIndex, get/setSlowADCName, getSlowADCList
-
+    *   [Jungfrau] Pedestal mode
+        Command line: pedestalmode
+        API: get/setPedestalMode
+        Example: 
+            pedestalmode 0 # turns off pedestal mode
+            pedestalmode 50 10 # turns on pedestal mode (50 pedestal frames, 10 loops)
         
+        In pedestal mode, number of frames/triggers
+        is overwritten by '#pedestal_frames x #pedestal_loops x 2'.
+        In auto timing mode or trigger mode with #frames > 1, #frames is overwritten
+        with #triggers is 1. Otherwise, #triggers is overwritten with #frames is 1.
+        In pedestal mode, one cannot set #frames, #triggers or timing mode (exception).
+
+        Disabling pedestal mode will set back to normal mode with normal previous
+        values of #frames and #triggers.
+
+
+    *   Source UDP IP: Auto
+        Command line: udp_srcip, udp_srcip2
+        API: get/setSourceUDPIP(2)
+        Allow 'auto' for udp_srcip to pick up IP from detector hostname. Not allowed
+        for Gotthard1.
+
+
+    *   Custom row and column for detector UDP header
+        Command line: row, column
+        API: get/setRow, get/setColumn
+        By default, row and column of module is determined in a pre-determined 
+        manner or by custom detector size (Command line: detsize).
+        This is useful if user accesses row and column in multi- detector UDP header 
+        or for the GUI to rearrange for complete image.
+        Option now added to set custom row and column. 
 
 
 
 
+    *   [Ctb] Features
 
-- fix ctb slow adcs
+        -   List for ADC, signal, power, slowadc 
+            Also allow their list to set names and to obtain their indices and values.
+
+            Command line: dacname, dacindex, 
+            adclist, adcname, adcindex, 
+            signallist, signalname,signalindex, 
+            powerlist, powername, powerindex, powervalues,
+            slowadclist, slowadcname, slowadcindex, slowadcvalues
+
+            API: get/setDacName, getDacIndex, 
+            get/setAdcNames, getAdcIndex, get/setAdcName,
+            get/setSignalNames, getSignalIndex, get/setSignalName,
+            get/setPowerNames, getPowerIndex, get/setPowerName, getPowerList,
+            get/setSlowADCNames, getSlowADCIndex, get/setSlowADCName, getSlowADCList
+
+        -   Added more modes for transceiver in read out mode.
+            Allow to set number of samples and enable mask for transceiver.
+
+            Command line: romode (more modes: 'transceiver', 'digital_transceiver'),
+            tsamples, transceiverenable
+            API: get/setTransceiverEnableMask, get/setNumberOfTransceiverSamples,
+            get/setReadoutMode (more enums: TRANSCEIVER_ONLY, DIGITAL_AND_TRANSCEIVER)
+
+
+        -   Command to get file name with path of last pattern uploaded.
+            Command line: patfname
+            API: getPatterFileName
+
+
+    *   Automatic test script for all virtual simulators added.
 
 
 
@@ -156,8 +285,8 @@ This document describes the differences between v8.0.0 and v7.0.3
 
     Eiger       02.10.2023 (v32)                    (updated in 7.0.3)
     
-    Jungfrau    16.05.2023 (v1.4.1, HW v1.0)        (updated in 7.0.3)
-                15.05.2023 (v2.4.1, HW v2.0)        (updated in 7.0.3)
+    Jungfrau    20.09.2023 (v1.5, HW v1.0)          (updated in 8.0.0)
+                21.09.2023 (v2.5, HW v2.0)          (updated in 8.0.0)
 
     Mythen3     24.01.2023 (v1.4)                   (updated in 7.0.0)
 

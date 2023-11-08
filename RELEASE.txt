@@ -125,9 +125,9 @@ This document describes the differences between v8.0.0 and v7.0.3
     Gotthard    08.02.2018 (50um and 25um Master)
                 09.02.2018 (25 um Slave) 
 
-    Moench      10.07.2023 (v1.x?)                  (updated in 8.0.0)
+    Moench      10.07.2023 (v0.3.2)                (updated in 8.0.0, under development)
 
-    Ctb         05.07.2023 (v1.2?)                  (updated in 8.0.0)
+    Ctb         05.07.2023 (v1.2)                  (updated in 8.0.0)
 
 
     Detector Upgrade

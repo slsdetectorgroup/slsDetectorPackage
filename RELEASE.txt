@@ -107,13 +107,16 @@ This document describes the differences between v8.0.0 and v7.0.3
         not change. Now, it only validates the selected bit.
 
     
-    *   [Jungfrau] Electron collection mode
-        Bit 14 of register 0x5D controls electron collection mode. Touching this
-        bit will reconfigure chip if chip is v1.1 and powered on.
+    *   [Jungfrau] Electron collection mode (bit 14 of 0x5D register)
         Affected Command line: setbit, clearbit, reg
         Affected API: setBit, clearBit, writeRegister
+        Electron collection mode and requires chip reconfiguration. 
+        Temporary fix added that touching this bit will reconfigure chip if chip 
+        is v1.1 and powered on. Permanent fix by introducing a command for the 
+        same in future release.
 
-        Permanent fix by introducing a command for the same in future release.
+
+        
 
 
     *   [Ctb] Fixes

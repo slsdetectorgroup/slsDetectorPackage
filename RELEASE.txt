@@ -72,6 +72,8 @@ This document describes the differences between v7.0.3 and v7.0.2
     *   Limit TCP port number (command line) to max of 65535
         Refer issue under 'Client'.
 
+    *   Some commands such as 'readnrows' would complain that it cannot be set 
+        because the detector is not idle, but was setting it anyway. Fixed.
 
 
     Gui/ Client Callback

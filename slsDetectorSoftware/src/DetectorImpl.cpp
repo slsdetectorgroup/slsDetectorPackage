@@ -1309,7 +1309,7 @@ void DetectorImpl::startAcquisition(const bool blocking, Positions pos) {
         std::vector<int> masters;
         std::vector<int> slaves;
         getMasterSlaveList(pos, masters, slaves);
-        if (masters.empty() && shm()->detType == JUNGFRAU) {
+        if (masters.empty()) {
             throw RuntimeError("Cannot start acquisition in sync mode. No "
                                "master module found");
         }

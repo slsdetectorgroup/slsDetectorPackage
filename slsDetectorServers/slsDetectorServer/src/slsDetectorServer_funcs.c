@@ -4772,7 +4772,8 @@ int set_read_n_rows(int file_des) {
     functionNotImplemented();
 #else
     // only set
-    if (Server_VerifyLock() == OK) {
+    if ((Server_VerifyLock() == OK) &&
+        (check_detector_idle("set number of rows") == OK)) {
         if (arg < MIN_ROWS_PER_READOUT || arg > MAX_ROWS_PER_READOUT) {
             ret = FAIL;
             sprintf(mess,
@@ -4804,8 +4805,7 @@ int set_read_n_rows(int file_des) {
                 LOG(logERROR, (mess));
             } else
 #elif defined(JUNGFRAUD) || defined(MOENCHD)
-            if ((check_detector_idle("set number of rows") == OK) &&
-                (arg % READ_N_ROWS_MULTIPLE != 0)) {
+            if (arg % READ_N_ROWS_MULTIPLE != 0) {
                 ret = FAIL;
                 sprintf(mess,
                         "Could not set number of rows. %d must be a multiple "
@@ -8472,9 +8472,9 @@ int set_master(int file_des) {
     functionNotImplemented();
 #else
     // only set
-    if (Server_VerifyLock() == OK) {
-        if ((check_detector_idle("set master") == OK) &&
-            (arg != 0 && arg != 1)) {
+    if ((Server_VerifyLock() == OK) &&
+        (check_detector_idle("set master") == OK)) {
+        if (arg != 0 && arg != 1) {
             ret = FAIL;
             sprintf(mess, "Could not set master. Invalid argument %d.\n", arg);
             LOG(logERROR, (mess));
@@ -9028,9 +9028,9 @@ int set_flip_rows(int file_des) {
     functionNotImplemented();
 #else
     // only set
-    if (Server_VerifyLock() == OK) {
-        if ((check_detector_idle("set flip rows") == OK) &&
-            (arg != 0 && arg != 1)) {
+    if ((Server_VerifyLock() == OK) &&
+        (check_detector_idle("set flip rows") == OK)) {
+        if (arg != 0 && arg != 1) {
             ret = FAIL;
             sprintf(mess, "Could not set flip rows. Invalid argument %d.\n",
                     arg);
@@ -10365,9 +10365,9 @@ int set_synchronization(int file_des) {
     functionNotImplemented();
 #else
     // only set
-    if (Server_VerifyLock() == OK) {
-        if ((check_detector_idle("set synchronization") == OK) &&
-            (arg != 0 && arg != 1)) {
+    if ((Server_VerifyLock() == OK) &&
+        (check_detector_idle("set synchronization") == OK)) {
+        if (arg != 0 && arg != 1) {
             ret = FAIL;
             sprintf(mess,
                     "Could not set synchronization. Invalid argument %d.\n",

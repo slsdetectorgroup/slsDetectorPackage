@@ -705,6 +705,34 @@ TEST_CASE("sync", "[.cmd]") {
             proxy.Call("sync", {}, -1, GET, oss);
             REQUIRE(oss.str() == "sync 1\n");
         }
+        // setting sync when running
+        {
+            auto prev_timing =
+                det.getTimingMode().tsquash("inconsistent timing mode in test");
+            auto prev_frames =
+                det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+            auto prev_exptime =
+                det.getExptime().tsquash("inconsistent exptime in test");
+            auto prev_period =
+                det.getPeriod().tsquash("inconsistent period in test");
+            det.setTimingMode(defs::AUTO_TIMING);
+            det.setNumberOfFrames(10000);
+            det.setExptime(std::chrono::microseconds(200));
+            det.setPeriod(std::chrono::milliseconds(1000));
+            det.setSynchronization(1);
+            det.startDetector();
+            REQUIRE_THROWS(proxy.Call("sync", {"0"}, -1, PUT));
+            {
+                std::ostringstream oss;
+                proxy.Call("sync", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "sync 1\n");
+            }
+            det.stopDetector();
+            det.setTimingMode(prev_timing);
+            det.setNumberOfFrames(prev_frames);
+            det.setExptime(prev_exptime);
+            det.setPeriod(prev_period);
+        }
         det.setSynchronization(prev_val);
     } else {
         REQUIRE_THROWS(proxy.Call("sync", {}, -1, GET));

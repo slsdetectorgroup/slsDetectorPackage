@@ -4,7 +4,7 @@
 This file is used to start up simulators, receivers and run all the tests on them and finally kill the simulators and receivers.
 '''
 import argparse
-import os, sys, subprocess, time, colorama, signal, psutil
+import os, sys, subprocess, time, colorama, signal
 
 from colorama import Fore
 from slsdet import Detector, detectorType, detectorSettings

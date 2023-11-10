@@ -433,6 +433,7 @@ Cannot stop slaves in sync mode
 
 #. If cabling is accessible, ensure termination board and flatband cable between the masters and the slaves are connnected properly. Then try to stop.
 #. If cabling is inaccessible, unsync first so that the slaves can get the stop directly from the client using the command. Then, don't use sync mode until the cabling is fixed.
+
     .. code-block:: bash
         
         # unsync, slaves command will fail as it is still in waiting state

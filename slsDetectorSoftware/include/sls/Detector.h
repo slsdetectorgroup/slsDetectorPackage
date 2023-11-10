@@ -216,7 +216,10 @@ class Detector {
     /** [Jungfrau][Moench] **/
     Result<bool> getSynchronization(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench]  */
+    /** [Jungfrau][Moench]  Sync mode requires at least one master configured.
+       Also requires flatband cabling between master and slave with
+       termination board.
+     */
     void setSynchronization(bool value);
 
     /** [Gotthard2][Mythen3] */

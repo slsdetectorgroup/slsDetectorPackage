@@ -1316,19 +1316,17 @@ void DetectorImpl::startAcquisition(const bool blocking, Positions pos) {
         if (!slaves.empty()) {
             Parallel(&Module::startAcquisition, slaves);
         }
-        if (!masters.empty()) {
-            if (blocking) {
-                Parallel(&Module::startAndReadAll, masters);
-                // ensure all status normal (slaves not blocking)
-                // to catch those slaves that are still 'waiting'
-                auto status = Parallel(&Module::getRunStatus, pos);
-                if (!status.contains_only(IDLE, STOPPED, RUN_FINISHED)) {
-                    throw RuntimeError("Acquisition not successful. "
-                                       "Unexpected detector status");
-                }
-            } else {
-                Parallel(&Module::startAcquisition, masters);
+        if (blocking) {
+            Parallel(&Module::startAndReadAll, masters);
+            // ensure all status normal (slaves not blocking)
+            // to catch those slaves that are still 'waiting'
+            auto status = Parallel(&Module::getRunStatus, pos);
+            if (!status.contains_only(IDLE, STOPPED, RUN_FINISHED)) {
+                throw RuntimeError("Acquisition not successful. "
+                                   "Unexpected detector status");
             }
+        } else {
+            Parallel(&Module::startAcquisition, masters);
         }
     }
     // all in parallel

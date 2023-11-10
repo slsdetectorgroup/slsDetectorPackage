@@ -1673,6 +1673,11 @@ class Detector(CppDetectorApi):
     def sync(self):
         """
         [Jungfrau][Moench] Enables or disables synchronization between modules.
+
+        Note
+        ----
+        Sync mode requires at least one master configured. Also requires flatband cabling between master and slave with termination board.
+
         """
         return self.getSynchronization()
 

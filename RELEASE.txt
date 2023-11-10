@@ -172,6 +172,16 @@ This document describes the differences between v8.0.0 and v7.0.3
         -   Rearranging digital data when dbit list less than 64 bits fixed.
 
 
+    Client
+    ------
+
+    *   [Jungfrau][Mythen3][Gotthard2] Sync mode should have at least one master
+        Multi module synced detectors should have at least one master when 
+        starting acquisition, else it will throw. Once master is done acquiring
+        (blocking mode), status of all modules checked to ensure none of the 
+        slaves in waiting due to hardware issues such as cabling.
+
+
 
 2.3 New Features
 ================

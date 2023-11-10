@@ -57,7 +57,6 @@ We have three different packages available:
 Build from source
 -------------------
 
-
 1. Download Source Code from github
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -65,23 +64,9 @@ Build from source
 
     git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 6.1.1
 
+.. note ::   
 
-| **Pybind for Python**
-| v7.0.0+:
-|   pybind11 packaged into 'libs/pybind'. No longer a submodule. No need for "recursive" or "submodule update".
-| 
-| Older versions:
-|   pybind11 is a submodule. Must be cloned using "recursive" and updated when switching between versions using the following commands.
-
-.. code-block:: bash
-    
-    # clone using recursive to get pybind11 submodule
-    git clone --recursive https://github.com/slsdetectorgroup/slsDetectorPackage.git
-
-    # update submodule when switching between releases
-    cd slsDetectorPackage
-    git submodule update --init
-   
+      For v6.x.x of slsDetectorPackage and older, refer :ref:`pybind11 notes on cloning. <pybind for different slsDetectorPackage versions>`  
 
 .. _build from source using cmake:
 
@@ -118,20 +103,21 @@ Instead of the cmake command, one can use ccmake to get a list of options to con
     ccmake ..
  
     # choose the options
-    # first press [c] - configure
+    # first press [c] - configure (maybe multiple times till you see [g])
     # then press [g] - generate
 
 
-
-===============================     ===========================================
+===============================     ===============================
 Example cmake options               Comment
-===============================     ===========================================
+===============================     ===============================
 -DSLS_USE_PYTHON=ON                 Python
--DPython_FIND_VIRTUALENV=ONLY       Python from only the conda environment 
--DZeroMQ_HINT=/usr/lib64            Use system zmq instead
+-DPython_FIND_VIRTUALENV=ONLY       Python from the conda env 
 -DSLS_USE_GUI=ON                    GUI
-===============================     ===========================================
+===============================     ===============================
 
+.. note ::   
+
+    For v7.x.x of slsDetectorPackage and older, refer :ref:`zeromq notes for cmake option to hint library location. <zeromq for different slsDetectorPackage versions>` 
 
 
 Build using in-built cmk.sh script
@@ -142,9 +128,9 @@ Build using in-built cmk.sh script
 
     The binaries are generated in slsDetectorPackage/build/bin directory.
 
-    Usage: ./cmk.sh [-b] [-c] [-d <HDF5 directory>] [e] [g] [-h] [i] [-j <Number of threads>] 
-    [-k <CMake command>] [-l <Install directory>] [m] [n] [-p] [-q <Zmq hint directory>] 
-    [r] [s] [t] [u] [z]  
+    Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-h] [-i] 
+    [-j <Number of threads>] [-k <CMake command>] [-l <Install directory>] 
+    [-m] [-n] [-p] [-r] [-s] [-t] [-u] [-z]  
     -[no option]: only make
     -b: Builds/Rebuilds CMake files normal mode
     -c: Clean
@@ -159,7 +145,6 @@ Build using in-built cmk.sh script
     -m: Manuals
     -n: Manuals without compiling doxygen (only rst)
     -p: Builds/Rebuilds Python API
-    -q: Zmq hint directory
     -r: Build/Rebuilds only receiver
     -s: Simulator
     -t: Build/Rebuilds only text client
@@ -176,9 +161,13 @@ Build using in-built cmk.sh script
     # new build, python and compile in parallel:
     ./cmk.sh -cbpj5
 
-    #To use the system zmq (/usr/lib64) instead
-    ./cmk.sh -cbj5 -q /usr/lib64
+    #For rebuilding only certain sections
+    ./cmk.sh -tg #only text client and gui
+    ./cmk.sh -r #only receiver
 
+.. note ::   
+
+    For v7.x.x of slsDetectorPackage and older, refer :ref:`zeromq notes for cmk script option to hint library location. <zeromq for different slsDetectorPackage versions>` 
 
 
 Build on old distributions
@@ -191,13 +180,18 @@ using this compiler
 .. code-block:: bash
 
     #Create an environment with the dependencies
-    conda create -n myenv gxx_linux-64 cmake zmq
+    conda create -n myenv gxx_linux-64 cmake
     conda activate myenv
 
     # outside slsDetecorPackage folder
     mkdir build && cd build
     cmake ../slsDetectorPackage -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
     make -j12
+
+
+.. note ::   
+
+    For v7.x.x of slsDetectorPackage and older, refer :ref:`zeromq notes for dependencies for conda. <zeromq for different slsDetectorPackage versions>` 
 
 
 
@@ -228,9 +222,9 @@ Build slsDetectorGui (Qt5)
 
         # create environment to compile
         # on rhel7
-        conda create -n slsgui zeromq gxx_linux-64 gxx_linux-64 mesa-libgl-devel-cos6-x86_64 qt
+        conda create -n slsgui gxx_linux-64 gxx_linux-64 mesa-libgl-devel-cos6-x86_64 qt
         # on fedora or newer systems
-        conda create -n slsgui zeromq qt
+        conda create -n slsgui qt
 
         # when using conda compilers, would also need libgl, but no need for it on fedora unless maybe using it with ROOT
 
@@ -246,6 +240,9 @@ Build slsDetectorGui (Qt5)
         cd slsDetectorPackage
         ./cmk.sh -cbgj9
 
+.. note ::   
+
+    For v7.x.x of slsDetectorPackage and older, refer :ref:`zeromq notes for dependencies for conda. <zeromq for different slsDetectorPackage versions>` 
 
 
 
@@ -270,3 +267,51 @@ is to use conda
 
     make docs # generate API docs and build Sphinx RST
     make rst # rst only, saves time in case the API did not change
+
+
+Pybind and Zeromq
+^^^^^^^^^^^^^^^^^^^
+
+.. _pybind for different slsDetectorPackage versions:
+
+
+| **Pybind for Python**
+| v8.0.0+:
+|   pybind11 (v2.11.0) is built 
+|   * by default from tar file in repo (libs/pybind/v2.11.0.tar.gz) 
+|   * or use option SLS_FETCH_PYBIND11_FROM_GITHUB `[link] <https://github.com/pybind/pybind11>`__.
+|
+| v7.x.x:
+|   pybind11 packaged into 'libs/pybind'. No longer a submodule. No need for "recursive" or "submodule update".
+| 
+| Older versions:
+|   pybind11 is a submodule. Must be cloned using "recursive" and updated when switching between versions using the following commands.
+
+.. code-block:: bash
+
+    # Note: Only for v6.x.x versions and older
+
+    # clone using recursive to get pybind11 submodule
+    git clone --recursive https://github.com/slsdetectorgroup/slsDetectorPackage.git
+
+    # update submodule when switching between releases
+    cd slsDetectorPackage
+    git submodule update --init
+
+
+.. _zeromq for different slsDetectorPackage versions:
+
+
+
+| **Zeromq**
+| v8.0.0+:
+|   zeromq (v4.3.4) is built 
+|   * by default from tar file in repo (libs/libzmq/libzmq-4.3.4.tar.gz) 
+|   * or use option SLS_FETCH_ZMQ_FROM_GITHUB `[link] <https://github.com/zeromq/libzmq.git>`__.
+|
+| v7.x.x and older:
+|   zeromq must be installed and one can hint its location using
+|   * cmake option:'-DZeroMQ_HINT=/usr/lib64' or 
+|   * option '-q' in cmk.sh script: : ./cmk.sh -cbj5 -q /usr/lib64
+|   * 'zeromq' dependencies when installing using conda
+

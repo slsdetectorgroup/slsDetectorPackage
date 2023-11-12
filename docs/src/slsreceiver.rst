@@ -52,8 +52,13 @@ Client Commands
 
         # multi modules with custom ports
         rx_hostname xxx:1955+xxx:1956+
+        
+        
+        # multi modules using increasing tcp ports when using multi detector command
+        rx_tcpport 1955
+        rx_hostname xxx
 
-        # multi modules with custom ports on same rxr pc
+        # or specify multi modules with custom ports on same rxr pc
         0:rx_tcpport 1954
         1:rx_tcpport 1955
         2:rx_tcpport 1956

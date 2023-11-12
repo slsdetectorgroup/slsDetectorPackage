@@ -113,6 +113,8 @@ Example cmake options               Comment
 -DSLS_USE_PYTHON=ON                 Python
 -DPython_FIND_VIRTUALENV=ONLY       Python from the conda env 
 -DSLS_USE_GUI=ON                    GUI
+-DSLS_USE_HDF5=ON                   HDF5
+-DSLS_USE_SIMULATOR=ON              Simulator
 ===============================     ===============================
 
 .. note ::   
@@ -255,7 +257,7 @@ is to use conda
 
 .. code-block:: bash
 
-    conda create -n myenv python sphinx_rtd_theme breathe
+    conda create -n myenv python=3.12 sphinx sphinx_rtd_theme breathe doxygen numpy
 
 
 .. code-block:: bash
@@ -279,7 +281,7 @@ Pybind and Zeromq
 | v8.0.0+:
 |   pybind11 (v2.11.0) is built 
 |   * by default from tar file in repo (libs/pybind/v2.11.0.tar.gz) 
-|   * or use option SLS_FETCH_PYBIND11_FROM_GITHUB `[link] <https://github.com/pybind/pybind11>`__.
+|   * or use advanced option SLS_FETCH_PYBIND11_FROM_GITHUB [`link <https://github.com/pybind/pybind11>`__].
 |
 | v7.x.x:
 |   pybind11 packaged into 'libs/pybind'. No longer a submodule. No need for "recursive" or "submodule update".
@@ -307,11 +309,11 @@ Pybind and Zeromq
 | v8.0.0+:
 |   zeromq (v4.3.4) is built 
 |   * by default from tar file in repo (libs/libzmq/libzmq-4.3.4.tar.gz) 
-|   * or use option SLS_FETCH_ZMQ_FROM_GITHUB `[link] <https://github.com/zeromq/libzmq.git>`__.
+|   * or use advanced option SLS_FETCH_ZMQ_FROM_GITHUB [`link <https://github.com/zeromq/libzmq.git>`__].
 |
 | v7.x.x and older:
 |   zeromq must be installed and one can hint its location using
 |   * cmake option:'-DZeroMQ_HINT=/usr/lib64' or 
 |   * option '-q' in cmk.sh script: : ./cmk.sh -cbj5 -q /usr/lib64
-|   * 'zeromq' dependencies when installing using conda
+|   * 'zeromq' dependency added when installing using conda
 

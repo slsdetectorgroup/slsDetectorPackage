@@ -2529,11 +2529,18 @@ int set_exptime(int file_des) {
                 }
             }
         }
+#elif MOENCHD
+        if (val < MIN_EXPTIME_NS_VAL) {
+            ret = FAIL;
+            sprintf(mess, "Could not exposure time. Invalid value. Minimum: %d ns\n",
+                    MIN_EXPTIME_NS_VAL);
+            LOG(logERROR, (mess));
+        } else
 #else
         if (gateIndex != -1) {
             ret = FAIL;
             sprintf(mess,
-                    "Could not get exposure time. Gate index not implemented "
+                    "Could not set exposure time. Gate index not implemented "
                     "for this detector\n");
             LOG(logERROR, (mess));
         } else {

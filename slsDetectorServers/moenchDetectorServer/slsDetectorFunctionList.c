@@ -693,8 +693,8 @@ int64_t getNumTriggers() {
 }
 
 int setExpTime(int64_t val) {
-    if (val < 0) {
-        LOG(logERROR, ("Invalid exptime: %lld ns\n", (long long int)val));
+    if (val < MIN_EXPTIME_NS_VAL) {
+        LOG(logERROR, ("Invalid exptime: %lld ns (min: %d ns)\n", (long long int)val, MIN_EXPTIME_NS_VAL));
         return FAIL;
     }
     LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));

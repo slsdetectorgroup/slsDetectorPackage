@@ -5,7 +5,7 @@
 #include "sls/sls_detector_defs.h"
 
 #define REQRD_FRMWRE_VRSN_BOARD2 0x444445 // 1.0 pcb (version = 010)
-#define REQRD_FRMWRE_VRSN        0x230710 // 2.0 pcb (version = 011)
+#define REQRD_FRMWRE_VRSN        0x231026 // 2.0 pcb (version = 011)
 
 #define NUM_HARDWARE_VERSIONS (2)
 #define HARDWARE_VERSION_NUMBERS                                               \
@@ -55,7 +55,9 @@
 #define MAX_ROWS_PER_READOUT (400)
 #define ROWS_PER_PACKET      (8)
 
+
 /* Defines in the Firmware */
+#define MIN_EXPTIME_NS_VAL        (100) // 100 ns
 #define MAX_TIMESLOT_VAL          (0x1F)
 #define MAX_THRESHOLD_TEMP_VAL    (127999) // millidegrees
 #define ACQ_TIME_MIN_CLOCK        (2)

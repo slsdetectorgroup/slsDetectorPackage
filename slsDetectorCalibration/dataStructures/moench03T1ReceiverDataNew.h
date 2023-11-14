@@ -42,7 +42,7 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
     int sc_width;
     int sc_height;
     const int nSamples;
-
+    int headerSize;
     double ghost[200][25];
 
     // Single point of definition if we need to customize
@@ -62,7 +62,7 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
     moench03T1ReceiverDataNew(int ns = 5000)
         : slsDetectorData<uint16_t>(400, 400, ns * 2 * 32 + sizeof(header)),
           nSamples(ns) {
-
+	    headerSize=112;
         int nadc = 32;
         int sc_width = 25;
         int sc_height = 200;
@@ -250,13 +250,22 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
     virtual char *readNextFrame(std::ifstream &filebin, int &ff, int &np,
                                 char *data) {
         np = 0;
-        if (filebin.is_open()) {
-            if (filebin.read(data, dataSize)) {
-                ff = getFrameNumber(data);
-                np = getPacketNumber(data);
-                return data;
-            }
-        }
+        if (filebin.is_open()) { 
+	    
+	  if (filebin.read(data, headerSize)) {
+	    ff = getFrameNumber(data);
+	    np = getPacketNumber(data);
+	    if (np>0)
+	      filebin.read(data+headerSize, dataSize-headerSize);
+	    return data;
+	  }
+	  /* if (filebin.read(data, dataSize)) { */
+	  /*   ff = getFrameNumber(data); */
+	  /*   np = getPacketNumber(data); */
+	  /*   return data; */
+	  /* } */
+	}
+    
         return nullptr;
     }
 

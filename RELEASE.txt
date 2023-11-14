@@ -1,4 +1,4 @@
-SLS Detector Package Major Release 7.0.3 released on 13.11.2023
+SLS Detector Package Major Release 7.0.3 released on 14.11.2023
 ===============================================================
 
 This document describes the differences between v7.0.3 and v7.0.2   
@@ -113,7 +113,12 @@ This document describes the differences between v7.0.3 and v7.0.2
         Previously, it crashed when nframes > 0. Fixed.
 
 
-    *   [Moench] Moench interpolation issues fixed.
+    *   [Moench] Interpolation issues fixed.
+
+
+    *   [Moench] When receiver in discard_partial mode and gets an empty frame,
+        it sends a zmq packet with header and no data. This is handled in post
+        processing as a temporary solution.
 
 
 

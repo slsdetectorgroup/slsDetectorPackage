@@ -23,7 +23,7 @@ TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmd][.dacs]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    if (det_type == defs::JUNGFRAU) {
         SECTION("vb_comp") { test_dac(defs::VB_COMP, "vb_comp", 1220); }
         SECTION("vdd_prot") { test_dac(defs::VDD_PROT, "vdd_prot", 3000); }
         SECTION("vin_com") { test_dac(defs::VIN_COM, "vin_com", 1053); }
@@ -163,7 +163,7 @@ TEST_CASE("chipversion", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    if (det_type == defs::JUNGFRAU) {
         REQUIRE_NOTHROW(proxy.Call("chipversion", {}, -1, GET));
     } else {
         REQUIRE_THROWS(proxy.Call("chipversion", {}, -1, GET));
@@ -704,6 +704,34 @@ TEST_CASE("sync", "[.cmd]") {
             std::ostringstream oss;
             proxy.Call("sync", {}, -1, GET, oss);
             REQUIRE(oss.str() == "sync 1\n");
+        }
+        // setting sync when running
+        {
+            auto prev_timing =
+                det.getTimingMode().tsquash("inconsistent timing mode in test");
+            auto prev_frames =
+                det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+            auto prev_exptime =
+                det.getExptime().tsquash("inconsistent exptime in test");
+            auto prev_period =
+                det.getPeriod().tsquash("inconsistent period in test");
+            det.setTimingMode(defs::AUTO_TIMING);
+            det.setNumberOfFrames(10000);
+            det.setExptime(std::chrono::microseconds(200));
+            det.setPeriod(std::chrono::milliseconds(1000));
+            det.setSynchronization(1);
+            det.startDetector();
+            REQUIRE_THROWS(proxy.Call("sync", {"0"}, -1, PUT));
+            {
+                std::ostringstream oss;
+                proxy.Call("sync", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "sync 1\n");
+            }
+            det.stopDetector();
+            det.setTimingMode(prev_timing);
+            det.setNumberOfFrames(prev_frames);
+            det.setExptime(prev_exptime);
+            det.setPeriod(prev_period);
         }
         det.setSynchronization(prev_val);
     } else {

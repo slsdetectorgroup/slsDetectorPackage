@@ -532,6 +532,11 @@ int executeCommand(char *command, char *result, enum TLogLevel level) {
 
     fflush(stdout);
     FILE *sysFile = popen(cmd, "r");
+    if (sysFile == NULL) {
+        ret = FAIL;
+        sprintf(mess, "Executing cmd[%s] failed\n", cmd);
+        return ret;
+    }
     while (fgets(temp, tempsize, sysFile) != NULL) {
         // size left excludes terminating character
         size_t sizeleft = MAX_STR_LENGTH - strlen(result) - 1;
@@ -547,17 +552,15 @@ int executeCommand(char *command, char *result, enum TLogLevel level) {
     if (strlen(result) == 0) {
         strcpy(result, "No result");
     }
-
-    int retval = OK;
     int success = pclose(sysFile);
-    if (success) {
-        retval = FAIL;
-        LOG(logERROR, ("Executing cmd[%s]:%s\n", cmd, result));
+    if (success == -1) {
+        ret = FAIL;
+        strcpy(mess, result);
+        LOG(logERROR, ("Executing cmd[%s] failed:%s\n", cmd, mess));
     } else {
         LOG(level, ("Result:\n[%s]\n", result));
     }
-
-    return retval;
+    return ret;
 }
 
 int M_nofunc(int file_des) {
@@ -585,7 +588,7 @@ int exec_command(int file_des) {
 
     // set
     if (Server_VerifyLock() == OK) {
-        ret = executeCommand(cmd, retval, logINFO);
+        executeCommand(cmd, retval, logINFO);
     }
     return Server_SendResult(file_des, OTHER, retval, sizeof(retval));
 }
@@ -1948,59 +1951,57 @@ int acquire(int blocking, int file_des) {
 #ifdef EIGERD
             // check for hardware mac and hardware ip
             if (udpDetails[0].srcmac != getDetectorMAC()) {
-                ret = FAIL;
-                uint64_t sourcemac = getDetectorMAC();
-                char src_mac[MAC_ADDRESS_SIZE];
-                getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
-                sprintf(
-                    mess,
+            ret = FAIL;
+            uint64_t sourcemac = getDetectorMAC();
+            char src_mac[MAC_ADDRESS_SIZE];
+            getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
+            sprintf(mess,
                     "Invalid udp source mac address for this detector. Must be "
                     "same as hardware detector mac address %s\n",
                     src_mac);
-                LOG(logERROR, (mess));
-            } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                       (udpDetails[0].srcip != getDetectorIP())) {
-                ret = FAIL;
-                uint32_t sourceip = getDetectorIP();
-                char src_ip[INET_ADDRSTRLEN];
-                getIpAddressinString(src_ip, sourceip);
-                sprintf(
-                    mess,
+            LOG(logERROR, (mess));
+        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
+                   (udpDetails[0].srcip != getDetectorIP())) {
+            ret = FAIL;
+            uint32_t sourceip = getDetectorIP();
+            char src_ip[INET_ADDRSTRLEN];
+            getIpAddressinString(src_ip, sourceip);
+            sprintf(mess,
                     "Invalid udp source ip address for this detector. Must be "
                     "same as hardware detector ip address %s in 1G readout "
                     "mode \n",
                     src_ip);
-                LOG(logERROR, (mess));
-            } else
+            LOG(logERROR, (mess));
+        } else
 #endif
-                if (configured == FAIL) {
+            if (configured == FAIL) {
+            ret = FAIL;
+            strcpy(mess, "Could not start acquisition because ");
+            strcat(mess, configureMessage);
+            LOG(logERROR, (mess));
+        } else if (sharedMemory_getScanStatus() == RUNNING) {
+            ret = FAIL;
+            strcpy(mess, "Could not start acquisition because a scan is "
+                         "already running!\n");
+            LOG(logERROR, (mess));
+        } else {
+            memset(scanErrMessage, 0, MAX_STR_LENGTH);
+            sharedMemory_setScanStop(0);
+            sharedMemory_setScanStatus(IDLE); // if it was error
+            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                               &blocking)) {
                 ret = FAIL;
-                strcpy(mess, "Could not start acquisition because ");
-                strcat(mess, configureMessage);
-                LOG(logERROR, (mess));
-            } else if (sharedMemory_getScanStatus() == RUNNING) {
-                ret = FAIL;
-                strcpy(mess, "Could not start acquisition because a scan is "
-                             "already running!\n");
+                strcpy(mess, "Could not start acquisition thread!\n");
                 LOG(logERROR, (mess));
             } else {
-                memset(scanErrMessage, 0, MAX_STR_LENGTH);
-                sharedMemory_setScanStop(0);
-                sharedMemory_setScanStatus(IDLE); // if it was error
-                if (pthread_create(&pthread_tid, NULL, &start_state_machine,
-                                   &blocking)) {
-                    ret = FAIL;
-                    strcpy(mess, "Could not start acquisition thread!\n");
-                    LOG(logERROR, (mess));
-                } else {
-                    // wait for blocking always (scan or not)
-                    // non blocking-no scan also wait (for error message)
-                    // non blcoking-scan dont wait (there is scanErrorMessage)
-                    if (blocking || !scan) {
-                        pthread_join(pthread_tid, NULL);
-                    }
+                // wait for blocking always (scan or not)
+                // non blocking-no scan also wait (for error message)
+                // non blcoking-scan dont wait (there is scanErrorMessage)
+                if (blocking || !scan) {
+                    pthread_join(pthread_tid, NULL);
                 }
             }
+        }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -4771,7 +4772,8 @@ int set_read_n_rows(int file_des) {
     functionNotImplemented();
 #else
     // only set
-    if (Server_VerifyLock() == OK) {
+    if ((Server_VerifyLock() == OK) &&
+        (check_detector_idle("set number of rows") == OK)) {
         if (arg < MIN_ROWS_PER_READOUT || arg > MAX_ROWS_PER_READOUT) {
             ret = FAIL;
             sprintf(mess,
@@ -4803,8 +4805,7 @@ int set_read_n_rows(int file_des) {
                 LOG(logERROR, (mess));
             } else
 #elif defined(JUNGFRAUD) || defined(MOENCHD)
-            if ((check_detector_idle("set number of rows") == OK) &&
-                (arg % READ_N_ROWS_MULTIPLE != 0)) {
+            if (arg % READ_N_ROWS_MULTIPLE != 0) {
                 ret = FAIL;
                 sprintf(mess,
                         "Could not set number of rows. %d must be a multiple "
@@ -8471,9 +8472,9 @@ int set_master(int file_des) {
     functionNotImplemented();
 #else
     // only set
-    if (Server_VerifyLock() == OK) {
-        if ((check_detector_idle("set master") == OK) &&
-            (arg != 0 && arg != 1)) {
+    if ((Server_VerifyLock() == OK) &&
+        (check_detector_idle("set master") == OK)) {
+        if (arg != 0 && arg != 1) {
             ret = FAIL;
             sprintf(mess, "Could not set master. Invalid argument %d.\n", arg);
             LOG(logERROR, (mess));
@@ -9027,9 +9028,9 @@ int set_flip_rows(int file_des) {
     functionNotImplemented();
 #else
     // only set
-    if (Server_VerifyLock() == OK) {
-        if ((check_detector_idle("set flip rows") == OK) &&
-            (arg != 0 && arg != 1)) {
+    if ((Server_VerifyLock() == OK) &&
+        (check_detector_idle("set flip rows") == OK)) {
+        if (arg != 0 && arg != 1) {
             ret = FAIL;
             sprintf(mess, "Could not set flip rows. Invalid argument %d.\n",
                     arg);
@@ -10364,9 +10365,9 @@ int set_synchronization(int file_des) {
     functionNotImplemented();
 #else
     // only set
-    if (Server_VerifyLock() == OK) {
-        if ((check_detector_idle("set synchronization") == OK) &&
-            (arg != 0 && arg != 1)) {
+    if ((Server_VerifyLock() == OK) &&
+        (check_detector_idle("set synchronization") == OK)) {
+        if (arg != 0 && arg != 1) {
             ret = FAIL;
             sprintf(mess,
                     "Could not set synchronization. Invalid argument %d.\n",

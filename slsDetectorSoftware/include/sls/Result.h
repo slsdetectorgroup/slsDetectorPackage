@@ -8,7 +8,8 @@
  * from the detector. Since every module could have a different value, we need
  * to return a vector instead of just a single value.
  *
- * Easy conversions to single values are provided using the squash method.
+ * Easy conversions to single values are provided using the squash and tsquash
+ * method.
  */
 
 #include <algorithm>

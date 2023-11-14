@@ -109,12 +109,14 @@ For Multiple Modules
         # connects to mulitple modules
         hostname bchipxxx+bchipyyy+
 
-        # connects to receivers at ports 2012 and 2014
-        rx_hostname mpc1922:2012+mpc1922:2013+
+        # tcp port increases for each module (multi detector command)
+        rx_tcpport 2012
 
-        # sets differernt destination udp ports
-        0:udp_dstport 50012
-        1:udp_dstport 50014
+        # connects to receivers at ports 2012 and 2014
+        rx_hostname mpc1922
+
+        # increasing udp ports (multi detector command)
+        udp_dstport 50012
 
         # source udp ips must be same subnet at destintaion udp ips
         0:udp_srcip 192.168.1.112

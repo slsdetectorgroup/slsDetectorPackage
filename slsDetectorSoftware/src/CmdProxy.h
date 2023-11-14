@@ -1543,7 +1543,9 @@ class CmdProxy {
     INTEGER_COMMAND_SET_NOID_GET_ID(
         sync, getSynchronization, setSynchronization, StringTo<int>,
         "[0, 1]\n\t[Jungfrau][Moench] Enables or disables "
-        "synchronization between modules.");
+        "synchronization between modules. Sync mode requires at least one "
+        "master configured. Also requires flatband cabling between master and "
+        "slave with termination board.");
 
     INTEGER_COMMAND_VEC_ID(row, getRow, setRow, StringTo<int>,
                            "[value]\n\tSet Detector row (udp header) to value. "

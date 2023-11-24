@@ -10,12 +10,12 @@
 #include <string.h>
 #include <thread>
 #include <vector>
-
+#include <zmq.h>
 namespace sls {
 
 using namespace rapidjson;
 ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
-                     const uint32_t portnumber)
+                     const uint16_t portnumber)
     : portno(portnumber), sockfd(false) {
     // Extra check that throws if conversion fails, could be removed
     auto ipstr = HostnameToIp(hostname_or_ip).str();
@@ -55,7 +55,7 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
                   << GetReceiveHighWaterMark();
 }
 
-ZmqSocket::ZmqSocket(const uint32_t portnumber, const char *ethip)
+ZmqSocket::ZmqSocket(const uint16_t portnumber, const char *ethip)
     : portno(portnumber), sockfd(true) {
     // create context
     sockfd.contextDescriptor = zmq_ctx_new();
@@ -289,24 +289,24 @@ int ZmqSocket::ReceiveHeader(const int index, zmqHeader &zHeader,
                                         header_buffer.get(), MAX_STR_LENGTH, 0);
     if (bytes_received > 0) {
 #ifdef ZMQ_DETAIL
-        cprintf(BLUE, "Header %d [%d] Length: %d Header:%s \n", index, portno,
+        cprintf(BLUE, "Header %d [%hu] Length: %d Header:%s \n", index, portno,
                 bytes_received, header_buffer.get());
 #endif
         if (ParseHeader(index, bytes_received, header_buffer.get(), zHeader,
                         version)) {
 #ifdef ZMQ_DETAIL
-            cprintf(RED, "Parsed Header %d [%d] Length: %d Header:%s \n", index,
-                    portno, bytes_received, header_buffer.get());
+            cprintf(RED, "Parsed Header %d [%hu] Length: %d Header:%s \n",
+                    index, portno, bytes_received, header_buffer.get());
 #endif
             if (!zHeader.data) {
 #ifdef ZMQ_DETAIL
-                cprintf(RED, "%d [%d] Received end of acquisition\n", index,
+                cprintf(RED, "%d [%hu] Received end of acquisition\n", index,
                         portno);
 #endif
                 return 0;
             }
 #ifdef ZMQ_DETAIL
-            cprintf(GREEN, "%d [%d] data\n", index, portno);
+            cprintf(GREEN, "%d [%hu] data\n", index, portno);
 #endif
             return 1;
         }

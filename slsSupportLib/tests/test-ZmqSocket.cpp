@@ -6,7 +6,7 @@
 namespace sls {
 
 TEST_CASE("Throws when cannot create socket") {
-    REQUIRE_THROWS(ZmqSocket("sdiasodjajpvv", 5076001));
+    REQUIRE_THROWS(ZmqSocket("sdiasodjajpvv", 50001));
 }
 
 TEST_CASE("Get port number for sub") {

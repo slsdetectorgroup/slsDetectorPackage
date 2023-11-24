@@ -15,6 +15,11 @@ u_int32_t *csp0base = 0;
 #define CSP0     0x20200000
 #define MEM_SIZE 0x100000
 
+#ifdef JUNGFRAUD
+
+extern void configureChip();
+#endif
+
 void bus_w16(u_int32_t offset, u_int16_t data) {
     volatile u_int16_t *ptr1;
     ptr1 = (u_int16_t *)(csp0base + offset / 2);
@@ -80,7 +85,21 @@ u_int32_t readRegister(u_int32_t offset) {
 }
 
 u_int32_t writeRegister(u_int32_t offset, u_int32_t data) {
+    // if electron mode bit touched
+#ifdef JUNGFRAUD
+    int electronCollectionModeChange = 0;
+    if ((offset << MEM_MAP_SHIFT) == DAQ_REG) {
+        if ((readRegister(offset) ^ data) & DAQ_ELCTRN_CLLCTN_MDE_MSK) {
+            electronCollectionModeChange = 1;
+        }
+    }
+#endif
     bus_w(offset << MEM_MAP_SHIFT, data);
+#ifdef JUNGFRAUD
+    if (electronCollectionModeChange) {
+        configureChip();
+    }
+#endif
     return readRegister(offset);
 }
 

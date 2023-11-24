@@ -17,7 +17,7 @@ class ServerInterface;
 class ClientInterface : private virtual slsDetectorDefs {
     enum numberMode { DEC, HEX };
     detectorType detType;
-    int portNumber{0};
+    uint16_t portNumber{0};
     ServerSocket server;
     std::unique_ptr<Implementation> receiver;
     std::unique_ptr<std::thread> tcpThread;
@@ -29,7 +29,7 @@ class ClientInterface : private virtual slsDetectorDefs {
 
   public:
     virtual ~ClientInterface();
-    ClientInterface(int portNumber = -1);
+    ClientInterface(uint16_t portNumber = DEFAULT_TCP_RX_PORTNO);
     std::string getReceiverVersion();
 
     //***callback functions***

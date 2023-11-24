@@ -242,7 +242,8 @@ std::string DetectorImpl::exec(const char *cmd) {
     return result;
 }
 
-void DetectorImpl::setVirtualDetectorServers(const int numdet, const int port) {
+void DetectorImpl::setVirtualDetectorServers(const int numdet,
+                                             const uint16_t port) {
     std::vector<std::string> hostnames;
     for (int i = 0; i < numdet; ++i) {
         // * 2 is for control and stop port
@@ -283,7 +284,7 @@ void DetectorImpl::addModule(const std::string &name) {
     LOG(logINFO) << "Adding module " << name;
     auto host = verifyUniqueDetHost(name);
     std::string hostname = host.first;
-    int port = host.second;
+    uint16_t port = host.second;
 
     // get type by connecting
     detectorType type = Module::getTypeFromDetector(hostname, port);
@@ -1219,10 +1220,26 @@ int DetectorImpl::acquire() {
         dataProcessingThread.join();
 
         if (acquisition_finished != nullptr) {
-            int status = Parallel(&Module::getRunStatus, {}).squash(ERROR);
+            // status
+            runStatus status = IDLE;
+            auto statusList = Parallel(&Module::getRunStatus, {});
+            status = statusList.squash(ERROR);
+            // difference, but none error
+            if (status == ERROR && (!statusList.any(ERROR))) {
+                // handle jf sync issue (master idle, slaves stopped)
+                if (statusList.contains_only(IDLE, STOPPED)) {
+                    status = STOPPED;
+                } else
+                    status = statusList.squash(RUNNING);
+            }
+
+            // progress
             auto a = Parallel(&Module::getReceiverProgress, {});
             double progress = (*std::max_element(a.begin(), a.end()));
-            acquisition_finished(progress, status, acqFinished_p);
+
+            // callback
+            acquisition_finished(progress, static_cast<int>(status),
+                                 acqFinished_p);
         }
 
         clock_gettime(CLOCK_REALTIME, &end);
@@ -1292,13 +1309,24 @@ void DetectorImpl::startAcquisition(const bool blocking, Positions pos) {
         std::vector<int> masters;
         std::vector<int> slaves;
         getMasterSlaveList(pos, masters, slaves);
+        if (masters.empty()) {
+            throw RuntimeError("Cannot start acquisition in sync mode. No "
+                               "master module found");
+        }
         if (!slaves.empty()) {
             Parallel(&Module::startAcquisition, slaves);
         }
-        if (!masters.empty()) {
-            Parallel((blocking ? &Module::startAndReadAll
-                               : &Module::startAcquisition),
-                     masters);
+        if (blocking) {
+            Parallel(&Module::startAndReadAll, masters);
+            // ensure all status normal (slaves not blocking)
+            // to catch those slaves that are still 'waiting'
+            auto status = Parallel(&Module::getRunStatus, pos);
+            if (!status.contains_only(IDLE, STOPPED, RUN_FINISHED)) {
+                throw RuntimeError("Acquisition not successful. "
+                                   "Unexpected detector status");
+            }
+        } else {
+            Parallel(&Module::startAcquisition, masters);
         }
     }
     // all in parallel
@@ -1583,41 +1611,41 @@ defs::xy DetectorImpl::calculatePosition(int moduleIndex,
     return pos;
 }
 
-void DetectorImpl::verifyUniqueDetHost(const int port,
+void DetectorImpl::verifyUniqueDetHost(const uint16_t port,
                                        std::vector<int> positions) const {
     // port for given positions
     if (positions.empty() || (positions.size() == 1 && positions[0] == -1)) {
         positions.resize(modules.size());
         std::iota(begin(positions), end(positions), 0);
     }
-    std::vector<std::pair<std::string, int>> hosts(size());
+    std::vector<std::pair<std::string, uint16_t>> hosts(size());
     for (auto it : positions) {
         hosts[it].second = port;
     }
     verifyUniqueHost(true, hosts);
 }
 
-void DetectorImpl::verifyUniqueRxHost(const int port,
+void DetectorImpl::verifyUniqueRxHost(const uint16_t port,
                                       const int moduleId) const {
-    std::vector<std::pair<std::string, int>> hosts(size());
+    std::vector<std::pair<std::string, uint16_t>> hosts(size());
     hosts[moduleId].second = port;
     verifyUniqueHost(false, hosts);
 }
 
-std::pair<std::string, int>
+std::pair<std::string, uint16_t>
 DetectorImpl::verifyUniqueDetHost(const std::string &name) {
     // extract port
     // C++17 could be auto [hostname, port] = ParseHostPort(name);
     auto res = ParseHostPort(name);
     std::string hostname = res.first;
-    int port = res.second;
+    uint16_t port = res.second;
     if (port == 0) {
         port = DEFAULT_TCP_CNTRL_PORTNO;
     }
 
     int detSize = size();
     // mod not yet added
-    std::vector<std::pair<std::string, int>> hosts(detSize + 1);
+    std::vector<std::pair<std::string, uint16_t>> hosts(detSize + 1);
     hosts[detSize].first = hostname;
     hosts[detSize].second = port;
 
@@ -1625,7 +1653,7 @@ DetectorImpl::verifyUniqueDetHost(const std::string &name) {
     return std::make_pair(hostname, port);
 }
 
-std::pair<std::string, int>
+std::pair<std::string, uint16_t>
 DetectorImpl::verifyUniqueRxHost(const std::string &name,
                                  std::vector<int> positions) const {
     // no checks if setting to none
@@ -1636,7 +1664,7 @@ DetectorImpl::verifyUniqueRxHost(const std::string &name,
     // C++17 could be auto [hostname, port] = ParseHostPort(name);
     auto res = ParseHostPort(name);
     std::string hostname = res.first;
-    int port = res.second;
+    uint16_t port = res.second;
 
     // hostname and port for given positions
     if (positions.empty() || (positions.size() == 1 && positions[0] == -1)) {
@@ -1644,7 +1672,7 @@ DetectorImpl::verifyUniqueRxHost(const std::string &name,
         std::iota(begin(positions), end(positions), 0);
     }
 
-    std::vector<std::pair<std::string, int>> hosts(size());
+    std::vector<std::pair<std::string, uint16_t>> hosts(size());
     for (auto it : positions) {
         hosts[it].first = hostname;
         hosts[it].second = port;
@@ -1654,7 +1682,7 @@ DetectorImpl::verifyUniqueRxHost(const std::string &name,
     return std::make_pair(hostname, port);
 }
 
-std::vector<std::pair<std::string, int>>
+std::vector<std::pair<std::string, uint16_t>>
 DetectorImpl::verifyUniqueRxHost(const std::vector<std::string> &names) const {
     if ((int)names.size() != size()) {
         throw RuntimeError(
@@ -1663,7 +1691,7 @@ DetectorImpl::verifyUniqueRxHost(const std::vector<std::string> &names) const {
     }
 
     // extract ports
-    std::vector<std::pair<std::string, int>> hosts;
+    std::vector<std::pair<std::string, uint16_t>> hosts;
     for (const auto &name : names) {
         hosts.push_back(ParseHostPort(name));
     }
@@ -1673,7 +1701,7 @@ DetectorImpl::verifyUniqueRxHost(const std::vector<std::string> &names) const {
 }
 
 void DetectorImpl::verifyUniqueHost(
-    bool isDet, std::vector<std::pair<std::string, int>> &hosts) const {
+    bool isDet, std::vector<std::pair<std::string, uint16_t>> &hosts) const {
 
     // fill from shm if not provided
     for (int i = 0; i != size(); ++i) {
@@ -1689,7 +1717,7 @@ void DetectorImpl::verifyUniqueHost(
 
     // remove the ones without a hostname
     hosts.erase(std::remove_if(hosts.begin(), hosts.end(),
-                               [](const std::pair<std::string, int> &x) {
+                               [](const std::pair<std::string, uint16_t> &x) {
                                    return (x.first == "none" ||
                                            x.first.empty());
                                }),
@@ -2038,21 +2066,21 @@ void DetectorImpl::setCtbSignalName(const int index, const std::string &name) {
     ctb_shm()->setSignalName(index, name);
 }
 
-std::vector<std::string> DetectorImpl::getCtbVoltageNames() const {
-    return ctb_shm()->getVoltageNames();
+std::vector<std::string> DetectorImpl::getCtbPowerNames() const {
+    return ctb_shm()->getPowerNames();
 }
 
-void DetectorImpl::setCtbVoltageNames(const std::vector<std::string> &names) {
-    ctb_shm()->setVoltageNames(names);
+void DetectorImpl::setCtbPowerNames(const std::vector<std::string> &names) {
+    ctb_shm()->setPowerNames(names);
 }
 
-std::string DetectorImpl::getCtbVoltageName(const defs::dacIndex i) const {
-    return ctb_shm()->getVoltageName(static_cast<int>(i - defs::V_POWER_A));
+std::string DetectorImpl::getCtbPowerName(const defs::dacIndex i) const {
+    return ctb_shm()->getPowerName(static_cast<int>(i - defs::V_POWER_A));
 }
 
-void DetectorImpl::setCtbVoltageName(const defs::dacIndex index,
-                                     const std::string &name) {
-    ctb_shm()->setVoltageName(static_cast<int>(index - defs::V_POWER_A), name);
+void DetectorImpl::setCtbPowerName(const defs::dacIndex index,
+                                   const std::string &name) {
+    ctb_shm()->setPowerName(static_cast<int>(index - defs::V_POWER_A), name);
 }
 
 std::vector<std::string> DetectorImpl::getCtbSlowADCNames() const {

@@ -42,10 +42,10 @@ single detector.
 
 enum interfaceType { OUTER, INNER };
 typedef struct udpStruct_s {
-    int srcport;
-    int srcport2;
-    int dstport;
-    int dstport2;
+    uint16_t srcport;
+    uint16_t srcport2;
+    uint16_t dstport;
+    uint16_t dstport2;
     uint64_t srcmac;
     uint64_t srcmac2;
     uint64_t dstmac;
@@ -467,8 +467,8 @@ void setFirstUDPDestination(int value);
 void selectPrimaryInterface(int val);
 int getPrimaryInterface();
 void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
-                 uint64_t destmac, uint32_t destport, uint64_t sourcemac,
-                 uint32_t sourceip, uint32_t sourceport);
+                 uint64_t destmac, uint16_t destport, uint64_t sourcemac,
+                 uint32_t sourceip, uint16_t sourceport);
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARD2D) ||           \
     defined(MYTHEN3D) || defined(CHIPTESTBOARDD)
@@ -516,7 +516,7 @@ void setDigitalIODelay(uint64_t pinMask, int delay);
 
 // jungfrau/moench specific - powerchip, autocompdisable, clockdiv, asictimer,
 // clock, pll, flashing firmware
-#if defined(MOENCHED)
+#if defined(MOENCHD)
 void setADCPipeline(int val);
 int getADCPipeline();
 #endif
@@ -556,6 +556,9 @@ int getCurrentSource();
 int getFixCurrentSource();
 int getNormalCurrentSource();
 uint64_t getSelectCurrentSource();
+int getPedestalMode();
+void getPedestalParameters(uint8_t *frames, uint16_t *loops);
+void setPedestalMode(int enable, uint8_t frames, uint16_t loops);
 #endif
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter

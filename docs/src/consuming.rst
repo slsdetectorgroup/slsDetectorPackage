@@ -19,7 +19,7 @@ A minimal CMakeLists.txt could look like this:
 .. code-block:: cmake
 
     project(myDetectorIntegration)
-    cmake_minimum_required(VERSION 3.12)
+    cmake_minimum_required(VERSION 3.14)
     add_subdirectory(slsDetectorPackage)
 
     #Add your executable
@@ -43,7 +43,7 @@ should be needed, otherwise specify cmake prefix path.
 
 .. code-block:: cmake 
 
-    cmake_minimum_required(VERSION 3.12)
+    cmake_minimum_required(VERSION 3.14)
     project(myintegration)
 
     find_package(slsDetectorPackage 5.0 REQUIRED)

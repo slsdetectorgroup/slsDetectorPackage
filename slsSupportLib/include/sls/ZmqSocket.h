@@ -24,8 +24,9 @@
 #include <rapidjson/document.h> //json header in zmq stream
 #pragma GCC diagnostic pop
 
-#include <zmq.h>
+//#include <zmq.h>
 
+class zmq_msg_t;
 namespace sls {
 
 #define MAX_STR_LENGTH 1000

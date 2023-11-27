@@ -351,7 +351,6 @@ std::string CmdProxy::ClientVersion(int action) {
     }
     return os.str();
 }
-
 std::string CmdProxy::DetectorSize(int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -371,9 +370,7 @@ std::string CmdProxy::DetectorSize(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        defs::xy t;
-        t.x = StringTo<int>(args[0]);
-        t.y = StringTo<int>(args[1]);
+        defs::xy t = defs::xy(StringTo<int>(args[0]),StringTo<int>(args[1]));
         det->setDetectorSize(t);
         os << ToString(args) << '\n';
     } else {
@@ -381,6 +378,37 @@ std::string CmdProxy::DetectorSize(int action) {
     }
     return os.str();
 }
+
+// std::string CmdProxy::DetectorSize(int action) {
+//     std::ostringstream os;
+//     os << cmd << ' ';
+//     if (action == defs::HELP_ACTION) {
+//         os << "[nx] [ny]\n\tDetector size, ie. Number of channels in x and y "
+//               "dim. This is used to calculate module coordinates included in "
+//               "UDP data. \n\tBy default, it adds module in y dimension for 2d "
+//               "detectors and in x dimension for 1d detectors packet header."
+//            << '\n';
+//     } else if (action == defs::GET_ACTION) {
+//         if (!args.empty()) {
+//             WrongNumberOfParameters(0);
+//         }
+//         auto t = det->getDetectorSize();
+//         os << t << '\n';
+//     } else if (action == defs::PUT_ACTION) {
+//         if (args.size() != 2) {
+//             WrongNumberOfParameters(2);
+//         }
+//         defs::xy t;
+//         t.x = StringTo<int>(args[0]);
+//         t.y = StringTo<int>(args[1]);
+//         det->setDetectorSize(t);
+//         os << ToString(args) << '\n';
+//     } else {
+//         throw RuntimeError("Unknown action");
+//     }
+//     return os.str();
+// }
+
 
 std::string CmdProxy::Threshold(int action) {
     std::ostringstream os;
@@ -649,6 +677,8 @@ std::string CmdProxy::Exptime(int action) {
             } else if (args.size() == 1) {
                 os << OutString(t, args[0]) << '\n';
             }
+
+
         }
         // single exptime
         else {
@@ -2889,8 +2919,7 @@ void CmdProxy::GetLevelAndUpdateArgIndex(int action,
 }
 
 std::string CmdProxy::PatternLoopAddresses(int action) {
-    if (cmd != "patlimits" && cmd != "patloop0" && cmd != "patloop1" &&
-        cmd != "patloop2" && cmd != "patloop") {
+    if (cmd != "patlimits" && cmd != "patloop0" && cmd != "patloop1" && cmd != "patloop2" && cmd != "patloop") {
         throw RuntimeError("Unknown command, use list to list all commands");
     }
     std::ostringstream os;

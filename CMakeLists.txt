@@ -244,6 +244,7 @@ if(SLS_USE_SANITIZER)
     # target_link_libraries(slsProjectOptions INTERFACE -fsanitize=thread)
 endif()
 
+
 if(SLS_TUNE_LOCAL)
     target_compile_options(slsProjectOptions INTERFACE -mtune=native -march=native)
 endif()

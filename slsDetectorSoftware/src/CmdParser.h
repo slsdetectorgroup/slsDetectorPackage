@@ -20,7 +20,6 @@ reason that the header file is not exposed.
 #include <vector>
 
 namespace sls {
-
 class CmdParser {
   public:
     void Parse(int argc, const char *const argv[]);

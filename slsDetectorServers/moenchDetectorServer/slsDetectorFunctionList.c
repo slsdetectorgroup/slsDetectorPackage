@@ -693,6 +693,10 @@ int64_t getNumTriggers() {
 }
 
 int setExpTime(int64_t val) {
+    if (val < 0) {
+        LOG(logERROR, ("Invalid exptime: %lld ns\n", (long long int)val));
+        return FAIL;
+    }
     LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
     val *= (1E-3 * CLK_RUN);
     if (val < 0) {

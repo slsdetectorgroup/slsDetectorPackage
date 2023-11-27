@@ -2530,14 +2530,6 @@ int set_exptime(int file_des) {
             }
         }
 #else
-#if MOENCHD
-        if (val < MIN_EXPTIME_NS_VAL) {
-            ret = FAIL;
-            sprintf(mess, "Could not exposure time. Invalid value. Minimum: %d ns\n",
-                    MIN_EXPTIME_NS_VAL);
-            LOG(logERROR, (mess));
-        } else
-#endif
         if (gateIndex != -1) {
             ret = FAIL;
             sprintf(mess,

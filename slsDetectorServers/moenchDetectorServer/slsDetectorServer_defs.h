@@ -56,10 +56,8 @@
 #define ROWS_PER_PACKET      (8)
 
 /* Defines in the Firmware */
-#define MIN_EXPTIME_NS_VAL        (0) // 0 ns
 #define MAX_TIMESLOT_VAL          (0x1F)
 #define MAX_THRESHOLD_TEMP_VAL    (127999) // millidegrees
-#define ACQ_TIME_MIN_CLOCK        (0)
 #define ASIC_FILTER_MAX_RES_VALUE (1)
 #define MAX_SELECT_CHIP10_VAL     (63)
 

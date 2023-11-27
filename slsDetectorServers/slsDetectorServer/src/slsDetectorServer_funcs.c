@@ -2533,7 +2533,7 @@ int set_exptime(int file_des) {
         if (gateIndex != -1) {
             ret = FAIL;
             sprintf(mess,
-                    "Could not get exposure time. Gate index not implemented "
+                    "Could not set exposure time. Gate index not implemented "
                     "for this detector\n");
             LOG(logERROR, (mess));
         } else {

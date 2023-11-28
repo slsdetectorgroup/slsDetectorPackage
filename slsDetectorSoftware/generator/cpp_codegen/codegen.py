@@ -26,7 +26,7 @@ class CodeGenerator:
         """Write the opening file for the caller.cpp file"""
         self.template_file = path.open('r')
         for line in self.template_file:
-            if "THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE" in line:
+            if "THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE" in line:
                 return
             self.file.write(line)
 
@@ -41,13 +41,13 @@ class CodeGenerator:
         with out_path.open('w') as fp:
             with in_path.open('r') as fp2:
                 for line in fp2:
-                    if "THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (1)" in line:
+                    if "THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (1)" in line:
                         for command_name, command in commands.items():
                             if 'duplicate_function' in command and command['duplicate_function']:
                                 continue
                             fp.write(f'std::string {command["function_alias"]}(int action);\n')
                         continue
-                    if "THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (2)" in line:
+                    if "THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (2)" in line:
                         map_string = ''
                         for command_name, command in commands.items():
                             map_string += f'{{"{command_name}", &Caller::{command["function_alias"]}}},'
@@ -61,14 +61,14 @@ class CodeGenerator:
         with out_path.open('w+') as fp:
             with in_path.open('r') as fp2:
                 for line in fp2:
-                    if "THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (1) - DO NOT REMOVE" in line:
+                    if "THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (1) - DO NOT REMOVE" in line:
                         for command_name, command in commands.items():
                             if 'duplicate_function' in command and command['duplicate_function']:
                                 continue
 
                             fp.write(f'int {command["function_alias"]}();\n')
                         continue
-                    if "THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (2) - DO NOT REMOVE" in line:
+                    if "THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (2) - DO NOT REMOVE" in line:
                         map_string = ''
                         for command_name, command in commands.items():
                             map_string += f'{{"{command_name}", &InferAction::{command["function_alias"]}}},'
@@ -80,7 +80,7 @@ class CodeGenerator:
         """Write the source file for the inferAction.cpp file"""
         with in_path.open('r') as fp2:
             for line in fp2:
-                if "THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (1) - DO NOT REMOVE" in line:
+                if "THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (1) - DO NOT REMOVE" in line:
                     for command_name, command in commands.items():
                         if 'duplicate_function' in command and command['duplicate_function']:
                             continue

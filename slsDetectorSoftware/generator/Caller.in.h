@@ -55,7 +55,7 @@ class Caller {
     std::vector<std::string> getAllCommands();
     std::string list(int action);
 
-    // THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (1)
+    // THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (1)
 
     std::vector<std::string> args;
     std::string cmd;
@@ -70,7 +70,7 @@ class Caller {
     FunctionMap functions{
         {"list", &Caller::list},
 
-        // THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (2)
+        // THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (2)
 
     };
 };

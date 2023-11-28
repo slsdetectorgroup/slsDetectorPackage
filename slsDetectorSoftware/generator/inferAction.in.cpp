@@ -14,7 +14,7 @@ int InferAction::infer(sls::CmdParser &parser, std::ostream &os ) {
 }
 
 
-// THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (1) - DO NOT REMOVE
+// THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (1) - DO NOT REMOVE
 
 
 } // namespace sls

@@ -13,7 +13,7 @@ public:
     std::string cmd;
 
     // generated functions
-    // THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (1) - DO NOT REMOVE
+    // THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (1) - DO NOT REMOVE
 //     int frames();
 
 
@@ -22,7 +22,7 @@ private:
     FunctionMap functions{
         // generated functions
 
-        // THIS COMMENT IS GOING TO BE REPLACED BY THE ACTUAL CODE (2) - DO NOT REMOVE
+        // THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (2) - DO NOT REMOVE
 
 
 //        {"frames",&InferAction::frames}

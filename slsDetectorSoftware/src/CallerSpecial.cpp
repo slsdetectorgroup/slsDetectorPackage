@@ -7,23 +7,23 @@
 namespace sls {
 // some helper functions to print
 
-std::vector<std::string> Caller::getAllCommands(){
+std::vector<std::string> Caller::getAllCommands() {
     std::vector<std::string> ret;
-    for(auto it : functions)
+    for (auto it : functions)
         ret.push_back(it.first);
     return ret;
 }
 
 void Caller::call(const std::string &command,
                   const std::vector<std::string> &arguments, int detector_id,
-                  int action, std::ostream &os,int receiver_id) {
+                  int action, std::ostream &os, int receiver_id) {
     cmd = command;
     args = arguments;
     det_id = detector_id;
     rx_id = receiver_id;
     auto it = functions.find(cmd);
     if (it != functions.end()) {
-        auto ret =((*this).*(it->second))(action);
+        auto ret = ((*this).*(it->second))(action);
         os << cmd << ' ' << ret;
     } else {
         throw RuntimeError(cmd +

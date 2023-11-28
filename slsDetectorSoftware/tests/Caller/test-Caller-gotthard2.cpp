@@ -119,27 +119,43 @@ TEST_CASE("Caller::Setting and reading back GOTTHARD2 dacs", "[.cmd][.dacs]") {
         SECTION("vref_h_adc") {
             test_dac_caller(defs::VREF_H_ADC, "vref_h_adc", 2099);
         }
-        SECTION("vb_comp_fe") { test_dac_caller(defs::VB_COMP_FE, "vb_comp_fe", 0); }
+        SECTION("vb_comp_fe") {
+            test_dac_caller(defs::VB_COMP_FE, "vb_comp_fe", 0);
+        }
         SECTION("vb_comp_adc") {
             test_dac_caller(defs::VB_COMP_ADC, "vb_comp_adc", 0);
         }
-        SECTION("vcom_cds") { test_dac_caller(defs::VCOM_CDS, "vcom_cds", 1400); }
+        SECTION("vcom_cds") {
+            test_dac_caller(defs::VCOM_CDS, "vcom_cds", 1400);
+        }
         SECTION("vref_rstore") {
             test_dac_caller(defs::VREF_RSTORE, "vref_rstore", 640);
         }
-        SECTION("vb_opa_1st") { test_dac_caller(defs::VB_OPA_1ST, "vb_opa_1st", 0); }
+        SECTION("vb_opa_1st") {
+            test_dac_caller(defs::VB_OPA_1ST, "vb_opa_1st", 0);
+        }
         SECTION("vref_comp_fe") {
             test_dac_caller(defs::VREF_COMP_FE, "vref_comp_fe", 0);
         }
-        SECTION("vcom_adc1") { test_dac_caller(defs::VCOM_ADC1, "vcom_adc1", 1400); }
+        SECTION("vcom_adc1") {
+            test_dac_caller(defs::VCOM_ADC1, "vcom_adc1", 1400);
+        }
         SECTION("vref_prech") {
             test_dac_caller(defs::VREF_PRECH, "vref_prech", 1720);
         }
-        SECTION("vref_l_adc") { test_dac_caller(defs::VREF_L_ADC, "vref_l_adc", 700); }
-        SECTION("vref_cds") { test_dac_caller(defs::VREF_CDS, "vref_cds", 1200); }
+        SECTION("vref_l_adc") {
+            test_dac_caller(defs::VREF_L_ADC, "vref_l_adc", 700);
+        }
+        SECTION("vref_cds") {
+            test_dac_caller(defs::VREF_CDS, "vref_cds", 1200);
+        }
         SECTION("vb_cs") { test_dac_caller(defs::VB_CS, "vb_cs", 2799); }
-        SECTION("vb_opa_fd") { test_dac_caller(defs::VB_OPA_FD, "vb_opa_fd", 0); }
-        SECTION("vcom_adc2") { test_dac_caller(defs::VCOM_ADC2, "vcom_adc2", 1400); }
+        SECTION("vb_opa_fd") {
+            test_dac_caller(defs::VB_OPA_FD, "vb_opa_fd", 0);
+        }
+        SECTION("vcom_adc2") {
+            test_dac_caller(defs::VCOM_ADC2, "vcom_adc2", 1400);
+        }
         // eiger
         REQUIRE_THROWS(caller.call("dac", {"vthreshold"}, -1, GET));
         REQUIRE_THROWS(caller.call("dac", {"vsvp"}, -1, GET));
@@ -257,7 +273,8 @@ TEST_CASE("Caller::vchip_ref_comp_fe", "[.cmd][.onchipdacs]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
         SECTION("vchip_ref_comp_fe") {
-            test_onchip_dac_caller(defs::VREF_COMP_FE, "vchip_ref_comp_fe", 0x100);
+            test_onchip_dac_caller(defs::VREF_COMP_FE, "vchip_ref_comp_fe",
+                                   0x100);
         }
     } else {
         REQUIRE_THROWS(caller.call("vchip_ref_comp_fe", {}, -1, GET));
@@ -269,7 +286,9 @@ TEST_CASE("Caller::vchip_cs", "[.cmd][.onchipdacs]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
-        SECTION("vchip_cs") { test_onchip_dac_caller(defs::VB_CS, "vchip_cs", 0x0D0); }
+        SECTION("vchip_cs") {
+            test_onchip_dac_caller(defs::VB_CS, "vchip_cs", 0x0D0);
+        }
     } else {
         REQUIRE_THROWS(caller.call("vchip_cs", {}, -1, GET));
     }
@@ -420,11 +439,11 @@ TEST_CASE("Caller::vetophoton", "[.cmd]") {
         REQUIRE_NOTHROW(
             caller.call("vetophoton", {"-1", "/tmp/bla.txt"}, -1, GET));
         REQUIRE_THROWS(caller.call("vetophoton", {"12", "1", "39950"}, -1,
-                                  PUT)); // invalid chip index
+                                   PUT)); // invalid chip index
         REQUIRE_THROWS(caller.call("vetophoton", {"-1", "0"}, -1,
-                                  PUT)); // invalid photon number
+                                   PUT)); // invalid photon number
         REQUIRE_THROWS(caller.call("vetophoton", {"-1", "1", "39950"}, -1,
-                                  PUT)); // invald file
+                                   PUT)); // invald file
     } else {
         REQUIRE_THROWS(
             caller.call("vetophoton", {"-1", "/tmp/bla.txt"}, -1, GET));
@@ -439,7 +458,7 @@ TEST_CASE("Caller::vetoref", "[.cmd]") {
     if (det_type == defs::GOTTHARD2) {
         REQUIRE_THROWS(caller.call("vetoref", {}, -1, GET));
         REQUIRE_THROWS(caller.call("vetoref", {"3", "0x3ff"}, -1,
-                                  PUT)); // invalid chip index
+                                   PUT)); // invalid chip index
         REQUIRE_NOTHROW(caller.call("vetoref", {"1", "0x010"}, -1, PUT));
     } else {
         REQUIRE_THROWS(caller.call("vetoref", {"3", "0x0"}, -1, PUT));
@@ -454,7 +473,7 @@ TEST_CASE("Caller::vetofile", "[.cmd]") {
     if (det_type == defs::GOTTHARD2) {
         REQUIRE_THROWS(caller.call("vetofile", {}, -1, GET));
         REQUIRE_THROWS(caller.call("vetofile", {"12", "/tmp/bla.txt"}, -1,
-                                  PUT)); // invalid chip index
+                                   PUT)); // invalid chip index
     } else {
         REQUIRE_THROWS(caller.call("vetofile", {"-1"}, -1, GET));
     }
@@ -692,7 +711,8 @@ TEST_CASE("Caller::confadc", "[.cmd]") {
         const int ndet = det.size();
         const int nchip = 10;
         const int nadc = 32;
-        std::vector<std::vector<std::vector<int>>> prev_val(ndet, std::vector<std::vector<int>>(nchip, std::vector<int>(nadc)));
+        std::vector<std::vector<std::vector<int>>> prev_val(
+            ndet, std::vector<std::vector<int>>(nchip, std::vector<int>(nadc)));
         for (int i = 0; i != ndet; ++i) {
             for (int j = 0; j != nchip; ++j) {
                 for (int k = 0; k != nadc; ++k) {
@@ -703,11 +723,11 @@ TEST_CASE("Caller::confadc", "[.cmd]") {
         }
 
         REQUIRE_THROWS(caller.call("confadc", {"11", "2", "0x7f"}, -1,
-                                  PUT)); // invalid chip index
+                                   PUT)); // invalid chip index
         REQUIRE_THROWS(caller.call("confadc", {"-1", "32", "0x7f"}, -1,
-                                  PUT)); // invalid adc index
+                                   PUT)); // invalid adc index
         REQUIRE_THROWS(caller.call("confadc", {"-1", "10", "0x80"}, -1,
-                                  PUT)); // invalid value
+                                   PUT)); // invalid value
         {
             std::ostringstream oss;
             caller.call("confadc", {"-1", "-1", "0x11"}, -1, PUT, oss);

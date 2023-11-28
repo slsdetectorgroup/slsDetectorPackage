@@ -22,8 +22,9 @@ TEST_CASE("CALLER::Caller::Calling help doesn't throw or cause segfault") {
     // Dont add [.cmd] tag this should run with normal tests
     Caller caller(nullptr);
     std::ostringstream os;
-    for(std::string cmd : caller.getAllCommands())
-        REQUIRE_NOTHROW(caller.call(cmd, {}, -1, slsDetectorDefs::HELP_ACTION, os));
+    for (std::string cmd : caller.getAllCommands())
+        REQUIRE_NOTHROW(
+            caller.call(cmd, {}, -1, slsDetectorDefs::HELP_ACTION, os));
 }
 
 TEST_CASE("CALLER::Caller::period", "[.cmd]") {
@@ -49,7 +50,6 @@ TEST_CASE("CALLER::Caller::period", "[.cmd]") {
         det.setPeriod(prev_val[i], {i});
     }
 }
-
 
 TEST_CASE("CALLER::Unknown command", "[.cmd]") {
     Detector det;
@@ -358,20 +358,20 @@ TEST_CASE("CALLER::threshold", "[.cmd]") {
             std::string senergy3 = std::to_string(prev_energies[2]);
             std::ostringstream oss3, oss4;
             caller.call("threshold", {senergy, senergy2, senergy3, "standard"},
-                       -1, PUT, oss3);
+                        -1, PUT, oss3);
             REQUIRE(oss3.str() == "threshold [" + senergy + ", " + senergy2 +
                                       ", " + senergy3 + ", standard]\n");
             caller.call("threshold", {}, -1, GET, oss4);
             REQUIRE(oss4.str() == "threshold [" + senergy + ", " + senergy2 +
                                       ", " + senergy3 + "]\n");
 
-            REQUIRE_THROWS(caller.call("threshold",
-                                      {senergy, senergy, "standard"}, -1, PUT));
+            REQUIRE_THROWS(caller.call(
+                "threshold", {senergy, senergy, "standard"}, -1, PUT));
             REQUIRE_THROWS(
                 caller.call("threshold", {senergy, "undefined"}, -1, PUT));
             REQUIRE_NOTHROW(caller.call("threshold", {senergy}, -1, PUT));
-            REQUIRE_NOTHROW(caller.call("threshold",
-                                       {senergy, senergy2, senergy3}, -1, PUT));
+            REQUIRE_NOTHROW(caller.call(
+                "threshold", {senergy, senergy2, senergy3}, -1, PUT));
             det.setTrimEnergies(prev_energies);
             for (int i = 0; i != det.size(); ++i) {
                 if (prev_threshold[i][0] >= 0) {
@@ -406,8 +406,8 @@ TEST_CASE("CALLER::thresholdnotb", "[.cmd]") {
             caller.call("threshold", {}, -1, GET, oss2);
             REQUIRE(oss2.str() == "threshold " + senergy + "\n");
             REQUIRE_THROWS(caller.call("thresholdnotb",
-                                      {senergy, senergy, senergy, "standard"},
-                                      -1, PUT));
+                                       {senergy, senergy, senergy, "standard"},
+                                       -1, PUT));
             REQUIRE_THROWS(
                 caller.call("thresholdnotb", {senergy, "undefined"}, -1, PUT));
             det.setTrimEnergies(prev_energies);
@@ -438,8 +438,8 @@ TEST_CASE("CALLER::thresholdnotb", "[.cmd]") {
             std::string senergy3 = std::to_string(prev_energies[2]);
             std::ostringstream oss3, oss4;
             caller.call("thresholdnotb",
-                       {senergy, senergy2, senergy3, "standard"}, -1, PUT,
-                       oss3);
+                        {senergy, senergy2, senergy3, "standard"}, -1, PUT,
+                        oss3);
             REQUIRE(oss3.str() == "thresholdnotb [" + senergy + ", " +
                                       senergy2 + ", " + senergy3 +
                                       ", standard]\n");
@@ -447,13 +447,13 @@ TEST_CASE("CALLER::thresholdnotb", "[.cmd]") {
             REQUIRE(oss4.str() == "threshold [" + senergy + ", " + senergy2 +
                                       ", " + senergy3 + "]\n");
 
-            REQUIRE_THROWS(caller.call("thresholdnotb",
-                                      {senergy, senergy, "standard"}, -1, PUT));
+            REQUIRE_THROWS(caller.call(
+                "thresholdnotb", {senergy, senergy, "standard"}, -1, PUT));
             REQUIRE_THROWS(
                 caller.call("thresholdnotb", {senergy, "undefined"}, -1, PUT));
             REQUIRE_NOTHROW(caller.call("thresholdnotb", {senergy}, -1, PUT));
-            REQUIRE_NOTHROW(caller.call("thresholdnotb",
-                                       {senergy, senergy2, senergy3}, -1, PUT));
+            REQUIRE_NOTHROW(caller.call(
+                "thresholdnotb", {senergy, senergy2, senergy3}, -1, PUT));
             det.setTrimEnergies(prev_energies);
             for (int i = 0; i != det.size(); ++i) {
                 if (prev_threshold[i][0] >= 0) {
@@ -540,7 +540,8 @@ TEST_CASE("CALLER::trimen", "[.cmd][.this]") {
             det.setTrimEnergies(previous[i], {i});
         }
     } else {
-        REQUIRE_THROWS(caller.call("trimen", {"4500", "5400", "6400"}, -1, PUT));
+        REQUIRE_THROWS(
+            caller.call("trimen", {"4500", "5400", "6400"}, -1, PUT));
         REQUIRE_THROWS(caller.call("trimen", {}, -1, GET));
     }
 }
@@ -1192,8 +1193,10 @@ TEST_CASE("CALLER::readoutspeed", "[.cmd]") {
                 caller.call("readoutspeed", {}, -1, GET, oss2);
                 REQUIRE(oss2.str() == "readoutspeed 144\n");
             }
-            REQUIRE_THROWS(caller.call("readoutspeed", {"full_speed"}, -1, PUT));
-            REQUIRE_THROWS(caller.call("readoutspeed", {"half_speed"}, -1, PUT));
+            REQUIRE_THROWS(
+                caller.call("readoutspeed", {"full_speed"}, -1, PUT));
+            REQUIRE_THROWS(
+                caller.call("readoutspeed", {"half_speed"}, -1, PUT));
             REQUIRE_THROWS(
                 caller.call("readoutspeed", {"quarter_speed"}, -1, PUT));
             REQUIRE_THROWS(caller.call("readoutspeed", {"0"}, -1, PUT));
@@ -1583,7 +1586,7 @@ TEST_CASE("CALLER::extsig", "[.cmd]") {
         {
             std::ostringstream oss1, oss2;
             caller.call("extsig", {"0", "trigger_in_rising_edge"}, -1, PUT,
-                       oss1);
+                        oss1);
             REQUIRE(oss1.str() == "extsig 0 trigger_in_rising_edge\n");
             caller.call("extsig", {"0"}, -1, GET, oss2);
             REQUIRE(oss2.str() == "extsig 0 trigger_in_rising_edge\n");
@@ -1591,7 +1594,7 @@ TEST_CASE("CALLER::extsig", "[.cmd]") {
         {
             std::ostringstream oss1, oss2;
             caller.call("extsig", {"0", "trigger_in_falling_edge"}, -1, PUT,
-                       oss1);
+                        oss1);
             REQUIRE(oss1.str() == "extsig 0 trigger_in_falling_edge\n");
             caller.call("extsig", {"0"}, -1, GET, oss2);
             REQUIRE(oss2.str() == "extsig 0 trigger_in_falling_edge\n");
@@ -1613,7 +1616,7 @@ TEST_CASE("CALLER::extsig", "[.cmd]") {
         {
             std::ostringstream oss1, oss2;
             caller.call("extsig", {"0", "trigger_in_rising_edge"}, -1, PUT,
-                       oss1);
+                        oss1);
             REQUIRE(oss1.str() == "extsig 0 trigger_in_rising_edge\n");
             caller.call("extsig", {"0"}, -1, GET, oss2);
             REQUIRE(oss2.str() == "extsig 0 trigger_in_rising_edge\n");
@@ -1621,7 +1624,7 @@ TEST_CASE("CALLER::extsig", "[.cmd]") {
         {
             std::ostringstream oss1, oss2;
             caller.call("extsig", {"0", "trigger_in_falling_edge"}, -1, PUT,
-                       oss1);
+                        oss1);
             REQUIRE(oss1.str() == "extsig 0 trigger_in_falling_edge\n");
             caller.call("extsig", {"0"}, -1, GET, oss2);
             REQUIRE(oss2.str() == "extsig 0 trigger_in_falling_edge\n");
@@ -1853,7 +1856,7 @@ TEST_CASE("CALLER::currentsource", "[.cmd]") {
             REQUIRE_THROWS(
                 caller.call("currentsource", {"1", "fix", "42"}, -1, PUT));
             REQUIRE_THROWS(caller.call("currentsource",
-                                      {"1", "fix", "42", "normal"}, -1, PUT));
+                                       {"1", "fix", "42", "normal"}, -1, PUT));
         }
         // jungfrau
         else {
@@ -1876,7 +1879,7 @@ TEST_CASE("CALLER::currentsource", "[.cmd]") {
                 {
                     std::ostringstream oss;
                     caller.call("currentsource", {"1", "fix", "63"}, -1, PUT,
-                               oss);
+                                oss);
                     REQUIRE(oss.str() == "currentsource [1, fix, 63]\n");
                 }
                 {
@@ -1892,7 +1895,7 @@ TEST_CASE("CALLER::currentsource", "[.cmd]") {
                 {
                     std::ostringstream oss;
                     caller.call("currentsource", {"1", "nofix", "63"}, -1, PUT,
-                               oss);
+                                oss);
                     REQUIRE(oss.str() == "currentsource [1, nofix, 63]\n");
                 }
                 {
@@ -1917,8 +1920,8 @@ TEST_CASE("CALLER::currentsource", "[.cmd]") {
                 {
                     std::ostringstream oss;
                     caller.call("currentsource",
-                               {"1", "fix", "0x0000000000000041", "normal"}, -1,
-                               PUT, oss);
+                                {"1", "fix", "0x0000000000000041", "normal"},
+                                -1, PUT, oss);
                     REQUIRE(
                         oss.str() ==
                         "currentsource [1, fix, 0x0000000000000041, normal]\n");
@@ -1936,8 +1939,8 @@ TEST_CASE("CALLER::currentsource", "[.cmd]") {
                 {
                     std::ostringstream oss;
                     caller.call("currentsource",
-                               {"1", "nofix", "0x0000000000000041", "normal"},
-                               -1, PUT, oss);
+                                {"1", "nofix", "0x0000000000000041", "normal"},
+                                -1, PUT, oss);
                     REQUIRE(oss.str() == "currentsource [1, nofix, "
                                          "0x0000000000000041, normal]\n");
                 }
@@ -1950,8 +1953,8 @@ TEST_CASE("CALLER::currentsource", "[.cmd]") {
                 {
                     std::ostringstream oss;
                     caller.call("currentsource",
-                               {"1", "nofix", "0x0000000000000041", "low"}, -1,
-                               PUT, oss);
+                                {"1", "nofix", "0x0000000000000041", "low"}, -1,
+                                PUT, oss);
                     REQUIRE(
                         oss.str() ==
                         "currentsource [1, nofix, 0x0000000000000041, low]\n");
@@ -2096,7 +2099,7 @@ TEST_CASE("CALLER::defaultdac", "[.cmd]") {
                 {
                     std::ostringstream oss;
                     caller.call("defaultdac", {dacname, "1000", "gain0"}, -1,
-                               PUT, oss);
+                                PUT, oss);
                     REQUIRE(oss.str() == std::string("defaultdac ") + dacname +
                                              std::string(" gain0 1000\n"));
                 }
@@ -2470,7 +2473,7 @@ TEST_CASE("CALLER::scan", "[.cmd]") {
         {
             std::ostringstream oss;
             caller.call("scan", {ToString(ind), "500", "1500", "500"}, -1, PUT,
-                       oss);
+                        oss);
             CHECK(oss.str() ==
                   "scan [" + ToString(ind) + ", 500, 1500, 500]\n");
         }
@@ -2484,7 +2487,7 @@ TEST_CASE("CALLER::scan", "[.cmd]") {
         {
             std::ostringstream oss;
             caller.call("scan", {ToString(ind), "500", "1500", "500", "2s"}, -1,
-                       PUT, oss);
+                        PUT, oss);
             CHECK(oss.str() ==
                   "scan [" + ToString(ind) + ", 500, 1500, 500, 2s]\n");
         }
@@ -2508,7 +2511,7 @@ TEST_CASE("CALLER::scan", "[.cmd]") {
         {
             std::ostringstream oss;
             caller.call("scan", {ToString(ind), "1500", "500", "-500"}, -1, PUT,
-                       oss);
+                        oss);
             CHECK(oss.str() ==
                   "scan [" + ToString(ind) + ", 1500, 500, -500]\n");
         }
@@ -2516,15 +2519,15 @@ TEST_CASE("CALLER::scan", "[.cmd]") {
             "scan", {ToString(notImplementedInd), "500", "1500", "500"}, -1,
             PUT));
         CHECK_THROWS(caller.call("scan", {ToString(ind), "500", "1500", "-500"},
-                                -1, PUT));
-        CHECK_THROWS(
-            caller.call("scan", {ToString(ind), "1500", "500", "500"}, -1, PUT));
+                                 -1, PUT));
+        CHECK_THROWS(caller.call("scan", {ToString(ind), "1500", "500", "500"},
+                                 -1, PUT));
 
         if (det_type == defs::MYTHEN3 || defs::EIGER) {
             {
                 std::ostringstream oss;
-                caller.call("scan", {"trimbits", "0", "63", "16", "2s"}, -1, PUT,
-                           oss);
+                caller.call("scan", {"trimbits", "0", "63", "16", "2s"}, -1,
+                            PUT, oss);
                 CHECK(oss.str() == "scan [trimbits, 0, 63, 16, 2s]\n");
             }
             {
@@ -3565,4 +3568,4 @@ TEST_CASE("CALLER::user", "[.cmd]") {
     REQUIRE_NOTHROW(caller.call("user", {}, -1, GET));
 }
 
-}
+} // namespace sls

@@ -507,9 +507,9 @@ TEST_CASE("Caller::rx_roi", "[.cmd]") {
             {
                 std::ostringstream oss;
                 caller.call("rx_roi",
-                           {"1", std::to_string(detsize.x - 5), "1",
-                            std::to_string(detsize.y - 5)},
-                           -1, PUT, oss);
+                            {"1", std::to_string(detsize.x - 5), "1",
+                             std::to_string(detsize.y - 5)},
+                            -1, PUT, oss);
                 REQUIRE(oss.str() == std::string("rx_roi [1, ") +
                                          std::to_string(detsize.x - 5) +
                                          std::string(", 1, ") +
@@ -919,8 +919,8 @@ TEST_CASE("Caller::rx_dbitlist", "[.cmd][.rx]") {
         {
             std::ostringstream oss;
             caller.call("rx_dbitlist",
-                       {"0", "4", "5", "8", "9", "10", "52", "63"}, -1, PUT,
-                       oss);
+                        {"0", "4", "5", "8", "9", "10", "52", "63"}, -1, PUT,
+                        oss);
             REQUIRE(oss.str() == "rx_dbitlist [0, 4, 5, 8, 9, 10, 52, 63]\n");
         }
         {
@@ -980,8 +980,8 @@ TEST_CASE("Caller::rx_jsonaddheader", "[.cmd][.rx]") {
 
     {
         std::ostringstream oss;
-        caller.call("rx_jsonaddheader", {"key1", "value1", "key2", "value2"}, -1,
-                   PUT, oss);
+        caller.call("rx_jsonaddheader", {"key1", "value1", "key2", "value2"},
+                    -1, PUT, oss);
         REQUIRE(oss.str() == "rx_jsonaddheader {key1: value1, key2: value2}\n");
     }
     {

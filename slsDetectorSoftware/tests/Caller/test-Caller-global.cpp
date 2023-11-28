@@ -11,8 +11,8 @@ namespace sls {
 using test::GET;
 using test::PUT;
 void test_valid_port_caller(const std::string &command,
-                     const std::vector<std::string> &arguments, int detector_id,
-                     int action) {
+                            const std::vector<std::string> &arguments,
+                            int detector_id, int action) {
     Detector det;
     Caller caller(&det);
 
@@ -30,7 +30,8 @@ void test_valid_port_caller(const std::string &command,
     }
 }
 
-void test_dac_caller(defs::dacIndex index, const std::string &dacname, int dacvalue) {
+void test_dac_caller(defs::dacIndex index, const std::string &dacname,
+                     int dacvalue) {
     Detector det;
     Caller caller(&det);
     std::ostringstream oss_set, oss_get;
@@ -60,7 +61,7 @@ void test_dac_caller(defs::dacIndex index, const std::string &dacname, int dacva
 }
 
 void test_onchip_dac_caller(defs::dacIndex index, const std::string &dacname,
-                     int dacvalue) {
+                            int dacvalue) {
     Detector det;
     Caller caller(&det);
     REQUIRE_THROWS(caller.call(dacname, {}, -1, GET));

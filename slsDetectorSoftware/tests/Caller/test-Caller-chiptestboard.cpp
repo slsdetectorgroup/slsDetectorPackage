@@ -309,15 +309,15 @@ TEST_CASE("CALLER::powername", "[.cmd]") {
         REQUIRE_THROWS(caller.call("powername", {"5", "bname"}, -1, PUT));
         {
             std::ostringstream oss;
-            REQUIRE_NOTHROW(caller.call(
-                "powername", {str_power_index, "bname"}, -1, PUT, oss));
+            REQUIRE_NOTHROW(caller.call("powername", {str_power_index, "bname"},
+                                        -1, PUT, oss));
         }
         {
             std::ostringstream oss;
             REQUIRE_NOTHROW(
                 caller.call("powername", {str_power_index}, -1, GET, oss));
-            REQUIRE(oss.str() == std::string("powername ") +
-                                     str_power_index + " bname\n");
+            REQUIRE(oss.str() ==
+                    std::string("powername ") + str_power_index + " bname\n");
         }
         det.setPowerName(ind, prev);
 
@@ -410,7 +410,8 @@ TEST_CASE("CALLER::slowadcname", "[.cmd]") {
         auto prev = det.getSlowADCName(ind);
 
         // 1 arg throw
-        REQUIRE_THROWS(caller.call("slowadcname", {"2", "3", "bname"}, -1, PUT));
+        REQUIRE_THROWS(
+            caller.call("slowadcname", {"2", "3", "bname"}, -1, PUT));
         // invalid index
         REQUIRE_THROWS(caller.call("slowadcname", {"8", "bname"}, -1, PUT));
         {
@@ -1225,7 +1226,8 @@ TEST_CASE("CALLER::adc", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::CHIPTESTBOARD) {
         for (int i = 0; i <= 7; ++i) {
-            REQUIRE_NOTHROW(caller.call("slowadc", {std::to_string(i)}, -1, GET));
+            REQUIRE_NOTHROW(
+                caller.call("slowadc", {std::to_string(i)}, -1, GET));
             REQUIRE_THROWS(caller.call("slowadc", {"0"}, -1, PUT));
         }
     } else {

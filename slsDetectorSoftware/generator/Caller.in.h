@@ -12,8 +12,8 @@ class Caller {
   public:
     Caller(Detector *ptr) : det(ptr) {}
     void call(const std::string &command,
-                  const std::vector<std::string> &arguments, int detector_id,
-                  int action, std::ostream &os = std::cout, int receiver_id = -1);
+              const std::vector<std::string> &arguments, int detector_id,
+              int action, std::ostream &os = std::cout, int receiver_id = -1);
 
     IpAddr getDstIpFromAuto();
     IpAddr getSrcIpFromAuto();
@@ -24,33 +24,34 @@ class Caller {
                                    size_t nPutArgs);
     void WrongNumberOfParameters(size_t expected);
 
-      template <typename V> std::string OutStringHex(const V &value) {
-    if (value.equal())
-      return ToStringHex(value.front());
-    return ToStringHex(value);
-  }
+    template <typename V> std::string OutStringHex(const V &value) {
+        if (value.equal())
+            return ToStringHex(value.front());
+        return ToStringHex(value);
+    }
 
-  template <typename V> std::string OutStringHex(const V &value, int width) {
-    if (value.equal())
-      return ToStringHex(value.front(), width);
-    return ToStringHex(value, width);
-  }
+    template <typename V> std::string OutStringHex(const V &value, int width) {
+        if (value.equal())
+            return ToStringHex(value.front(), width);
+        return ToStringHex(value, width);
+    }
 
-  template <typename V> std::string OutString(const Result<V> &value) {
-    if (value.equal())
-      return ToString(value.front());
-    return ToString(value);
-  }
+    template <typename V> std::string OutString(const Result<V> &value) {
+        if (value.equal())
+            return ToString(value.front());
+        return ToString(value);
+    }
 
-  template <typename V> std::string OutString(const V &value) {
-    return ToString(value);
-  }
+    template <typename V> std::string OutString(const V &value) {
+        return ToString(value);
+    }
 
-  template <typename V>  std::string OutString(const V &value, const std::string &unit) {
-    if (value.equal())
-      return ToString(value.front(), unit);
-    return ToString(value, unit);
-  }
+    template <typename V>
+    std::string OutString(const V &value, const std::string &unit) {
+        if (value.equal())
+            return ToString(value.front(), unit);
+        return ToString(value, unit);
+    }
 
     std::vector<std::string> getAllCommands();
     std::string list(int action);

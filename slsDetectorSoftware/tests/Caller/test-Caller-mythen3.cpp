@@ -29,19 +29,27 @@ TEST_CASE("Caller::Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs]") {
     if (det_type == defs::MYTHEN3) {
         SECTION("vcassh") { test_dac_caller(defs::VCASSH, "vcassh", 1200); }
         SECTION("vth2") { test_dac_caller(defs::VTH2, "vth2", 2800); }
-        SECTION("vrshaper") { test_dac_caller(defs::VRSHAPER, "vrshaper", 1280); }
+        SECTION("vrshaper") {
+            test_dac_caller(defs::VRSHAPER, "vrshaper", 1280);
+        }
         SECTION("vrshaper_n") {
             test_dac_caller(defs::VRSHAPER_N, "vrshaper_n", 2800);
         }
-        SECTION("vipre_out") { test_dac_caller(defs::VIPRE_OUT, "vipre_out", 1220); }
+        SECTION("vipre_out") {
+            test_dac_caller(defs::VIPRE_OUT, "vipre_out", 1220);
+        }
         SECTION("vth3") { test_dac_caller(defs::VTH3, "vth3", 2800); }
         SECTION("vth1") { test_dac_caller(defs::VTH1, "vth1", 2880); }
         SECTION("vicin") { test_dac_caller(defs::VICIN, "vicin", 1708); }
         SECTION("vcas") { test_dac_caller(defs::VCAS, "vcas", 1800); }
-        SECTION("vrpreamp") { test_dac_caller(defs::VRPREAMP, "vrpreamp", 1100); }
+        SECTION("vrpreamp") {
+            test_dac_caller(defs::VRPREAMP, "vrpreamp", 1100);
+        }
         SECTION("vcal_n") { test_dac_caller(defs::VCAL_N, "vcal_n", 1100); }
         SECTION("vipre") { test_dac_caller(defs::VIPRE, "vipre", 2624); }
-        SECTION("vishaper") { test_dac_caller(defs::VISHAPER, "vishaper", 1708); }
+        SECTION("vishaper") {
+            test_dac_caller(defs::VISHAPER, "vishaper", 1708);
+        }
         SECTION("vcal_p") { test_dac_caller(defs::VCAL_P, "vcal_p", 1712); }
         SECTION("vtrim") { test_dac_caller(defs::VTRIM, "vtrim", 2800); }
         SECTION("vdcsh") { test_dac_caller(defs::VDCSH, "vdcsh", 800); }
@@ -76,7 +84,8 @@ TEST_CASE("Caller::Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs]") {
                 REQUIRE(oss3.str() == "dac vth3 2800\n");
             }
             // vthreshold changes vth for only enabled counters
-            REQUIRE_NOTHROW(caller.call("dac", {"vthreshold", "2100"}, -1, PUT));
+            REQUIRE_NOTHROW(
+                caller.call("dac", {"vthreshold", "2100"}, -1, PUT));
             {
                 std::ostringstream oss;
                 caller.call("dac", {"vthreshold"}, -1, GET, oss);

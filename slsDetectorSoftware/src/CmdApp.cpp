@@ -1,11 +1,11 @@
-#include "sls/Detector.h"
-#include "CmdParser.h"
 #include "Caller.h"
-#include  "sls/logger.h"
+#include "CmdParser.h"
 #include "inferAction.h"
+#include "sls/Detector.h"
+#include "sls/logger.h"
 
 #include <iostream>
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[]) {
     // To genereate sepereate binaries for put, get, acquire and help
 #ifdef PUT
     int action = slsDetectorDefs::PUT_ACTION;
@@ -54,21 +54,18 @@ int main(int argc, char *argv[]){
     sls::Caller c(&d);
     sls::InferAction inferAction = sls::InferAction();
 
-
-    try
-    {
-        if (action == -1){
+    try {
+        if (action == -1) {
             action = inferAction.infer(parser);
-            std::string actionString= (action==slsDetectorDefs::GET_ACTION) ? "GET" : "PUT";
+            std::string actionString =
+                (action == slsDetectorDefs::GET_ACTION) ? "GET" : "PUT";
             std::cout << "inferred action: " << actionString << std::endl;
         }
-        
-        c.call(parser.command(),parser.arguments(),parser.detector_id(), action);
+
+        c.call(parser.command(), parser.arguments(), parser.detector_id(),
+               action);
+    } catch (sls::RuntimeError &e) {
+    } catch (const std::exception &e) {
+        LOG(sls::logERROR) << e.what() << std::endl;
     }
-    catch(sls::RuntimeError& e){}
-    catch ( const std::exception& e ){ LOG(sls::logERROR) << e.what() << std::endl;}
-
-
-
-
 }

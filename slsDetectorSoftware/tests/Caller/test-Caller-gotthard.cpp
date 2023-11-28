@@ -28,13 +28,23 @@ TEST_CASE("Caller::Setting and reading back GOTTHARD dacs", "[.cmd][.dacs]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD) {
         SECTION("vref_ds") { test_dac_caller(defs::VREF_DS, "vref_ds", 660); }
-        SECTION("vcascn_pb") { test_dac_caller(defs::VCASCN_PB, "vcascn_pb", 650); }
-        SECTION("vcascp_pb") { test_dac_caller(defs::VCASCP_PB, "vcascp_pb", 1480); }
+        SECTION("vcascn_pb") {
+            test_dac_caller(defs::VCASCN_PB, "vcascn_pb", 650);
+        }
+        SECTION("vcascp_pb") {
+            test_dac_caller(defs::VCASCP_PB, "vcascp_pb", 1480);
+        }
         SECTION("vout_cm") { test_dac_caller(defs::VOUT_CM, "vout_cm", 1520); }
-        SECTION("vcasc_out") { test_dac_caller(defs::VCASC_OUT, "vcasc_out", 1320); }
+        SECTION("vcasc_out") {
+            test_dac_caller(defs::VCASC_OUT, "vcasc_out", 1320);
+        }
         SECTION("vin_cm") { test_dac_caller(defs::VIN_CM, "vin_cm", 1350); }
-        SECTION("vref_comp") { test_dac_caller(defs::VREF_COMP, "vref_comp", 350); }
-        SECTION("ib_test_c") { test_dac_caller(defs::IB_TESTC, "ib_test_c", 2001); }
+        SECTION("vref_comp") {
+            test_dac_caller(defs::VREF_COMP, "vref_comp", 350);
+        }
+        SECTION("ib_test_c") {
+            test_dac_caller(defs::IB_TESTC, "ib_test_c", 2001);
+        }
         // eiger
         REQUIRE_THROWS(caller.call("dac", {"vthreshold"}, -1, GET));
         REQUIRE_THROWS(caller.call("dac", {"vsvp"}, -1, GET));

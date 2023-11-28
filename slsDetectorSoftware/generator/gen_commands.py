@@ -264,5 +264,6 @@ if __name__ == '__main__':
     if cli_args.format:
         files = [CPP_OUTPUT_PATH, HEADER_OUTPUT_PATH, INFER_HEADER_OUTPUT_PATH, INFER_CPP_OUTPUT_PATH]
         for file in files:
-            os.system(f'clang-format -i  --style="{{Standard: C++11}}" {file.absolute()}')
+            os.system(f'clang-format -i  {file.absolute()}')
+            #os.system(f'clang-format -i  --style="{{Standard: C++11}}" {file.absolute()}')
         print('[X] code formatted')

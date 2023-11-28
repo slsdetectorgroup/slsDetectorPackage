@@ -26,7 +26,9 @@ std::string Caller::activate(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -39,7 +41,9 @@ std::string Caller::activate(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -85,7 +89,9 @@ std::string Caller::adcclk(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -98,7 +104,9 @@ std::string Caller::adcclk(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -144,7 +152,9 @@ std::string Caller::adcenable(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -157,7 +167,9 @@ std::string Caller::adcenable(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -203,7 +215,9 @@ std::string Caller::adcenable10g(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -216,7 +230,9 @@ std::string Caller::adcenable10g(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -262,7 +278,9 @@ std::string Caller::adcindex(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -307,7 +325,9 @@ std::string Caller::adcinvert(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -320,7 +340,9 @@ std::string Caller::adcinvert(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -366,12 +388,16 @@ std::string Caller::adclist(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -438,7 +464,9 @@ std::string Caller::adcname(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -451,7 +479,9 @@ std::string Caller::adcname(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -520,7 +550,9 @@ std::string Caller::adcphase(int action) {
             ;
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -545,7 +577,9 @@ std::string Caller::adcphase(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -638,7 +672,9 @@ std::string Caller::adcpipeline(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -651,7 +687,9 @@ std::string Caller::adcpipeline(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -707,7 +745,9 @@ std::string Caller::adcreg(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -762,7 +802,9 @@ std::string Caller::adcvpp(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -793,7 +835,9 @@ std::string Caller::adcvpp(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -862,7 +906,9 @@ std::string Caller::apulse(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -875,7 +921,9 @@ std::string Caller::apulse(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -921,7 +969,9 @@ std::string Caller::asamples(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -934,7 +984,9 @@ std::string Caller::asamples(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -981,7 +1033,9 @@ std::string Caller::autocompdisable(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -994,7 +1048,9 @@ std::string Caller::autocompdisable(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -1041,7 +1097,9 @@ std::string Caller::blockingtrigger(int action) {
             bool block = true;
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -1087,7 +1145,9 @@ std::string Caller::burstperiod(int action) {
         if (args.size() == 1) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -1110,7 +1170,9 @@ std::string Caller::burstperiod(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -1169,7 +1231,9 @@ std::string Caller::bursts(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -1182,7 +1246,9 @@ std::string Caller::bursts(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -1231,7 +1297,9 @@ std::string Caller::burstsl(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -1270,7 +1338,9 @@ std::string Caller::bustest(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -1311,7 +1381,9 @@ std::string Caller::cdsgain(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -1324,7 +1396,9 @@ std::string Caller::cdsgain(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -1370,7 +1444,9 @@ std::string Caller::chipversion(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -1418,7 +1494,9 @@ std::string Caller::clearbit(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -1461,7 +1539,9 @@ std::string Caller::clearbusy(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -1487,8 +1567,7 @@ std::string Caller::clearroi(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: clearroi" << std::endl;
-        os << R"V0G0N([Gotthard] Resets Region of interest in detector. All )V0G0N"
-              R"V0G0N(channels enabled. Default is all channels enabled. )V0G0N"
+        os << R"V0G0N([Gotthard] Resets Region of interest in detector. All channels enabled. Default is all channels enabled. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -1502,7 +1581,9 @@ std::string Caller::clearroi(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -1543,7 +1624,9 @@ std::string Caller::clientversion(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -1589,7 +1672,9 @@ std::string Caller::clkdiv(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -1610,7 +1695,9 @@ std::string Caller::clkdiv(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -1678,7 +1765,9 @@ std::string Caller::clkfreq(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -1743,7 +1832,9 @@ std::string Caller::clkphase(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2 && args.size() != 3) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -1780,7 +1871,9 @@ std::string Caller::clkphase(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -1879,7 +1972,9 @@ std::string Caller::column(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -1892,7 +1987,9 @@ std::string Caller::column(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -1941,7 +2038,9 @@ std::string Caller::compdisabletime(int action) {
         if (args.size() == 1) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -1964,7 +2063,9 @@ std::string Caller::compdisabletime(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -2035,7 +2136,9 @@ std::string Caller::confadc(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 3) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -2058,7 +2161,9 @@ std::string Caller::confadc(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -2111,7 +2216,9 @@ std::string Caller::config(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -2173,7 +2280,9 @@ std::string Caller::dac(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2 && args.size() != 3) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -2214,7 +2323,9 @@ std::string Caller::dac(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -2232,9 +2343,8 @@ std::string Caller::dac(int action) {
                 is_int(args[0]) &&
                 det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
                 throw RuntimeError(
-                    "Dac indices can only be used for chip test board. "
-                    "Use daclist to get list of dac names for current "
-                    "detector.");
+                    "Dac indices can only be used for chip test board. Use "
+                    "daclist to get list of dac names for current detector.");
             }
             auto arg1 = StringTo<bool>("0");
             auto t = det->getDAC(dacIndex, arg1, std::vector<int>{det_id});
@@ -2251,9 +2361,8 @@ std::string Caller::dac(int action) {
                 is_int(args[0]) &&
                 det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
                 throw RuntimeError(
-                    "Dac indices can only be used for chip test board. "
-                    "Use daclist to get list of dac names for current "
-                    "detector.");
+                    "Dac indices can only be used for chip test board. Use "
+                    "daclist to get list of dac names for current detector.");
             }
             if (args[1] != "mv" && args[1] != "mV") {
                 throw RuntimeError("Unknown argument " + args[1] +
@@ -2276,9 +2385,8 @@ std::string Caller::dac(int action) {
                 is_int(args[0]) &&
                 det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
                 throw RuntimeError(
-                    "Dac indices can only be used for chip test board. "
-                    "Use daclist to get list of dac names for current "
-                    "detector.");
+                    "Dac indices can only be used for chip test board. Use "
+                    "daclist to get list of dac names for current detector.");
             }
             auto arg1 = StringTo<int>(args[1]);
             auto arg2 = StringTo<bool>("0");
@@ -2296,9 +2404,8 @@ std::string Caller::dac(int action) {
                 is_int(args[0]) &&
                 det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
                 throw RuntimeError(
-                    "Dac indices can only be used for chip test board. "
-                    "Use daclist to get list of dac names for current "
-                    "detector.");
+                    "Dac indices can only be used for chip test board. Use "
+                    "daclist to get list of dac names for current detector.");
             }
             auto arg1 = StringTo<int>(args[1]);
             auto arg2 = StringTo<bool>("1");
@@ -2332,7 +2439,9 @@ std::string Caller::dacindex(int action) {
             defs::dacIndex index = defs::DAC_0;
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -2378,12 +2487,16 @@ std::string Caller::daclist(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -2446,7 +2559,9 @@ std::string Caller::dacname(int action) {
             defs::dacIndex index = defs::DAC_0;
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -2455,7 +2570,9 @@ std::string Caller::dacname(int action) {
             defs::dacIndex index = defs::DAC_0;
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -2523,7 +2640,9 @@ std::string Caller::datastream(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -2542,7 +2661,9 @@ std::string Caller::datastream(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -2590,7 +2711,9 @@ std::string Caller::dbitclk(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -2603,7 +2726,9 @@ std::string Caller::dbitclk(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -2657,7 +2782,9 @@ std::string Caller::dbitphase(int action) {
             ;
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -2682,7 +2809,9 @@ std::string Caller::dbitphase(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -2777,7 +2906,9 @@ std::string Caller::dbitpipeline(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -2790,7 +2921,9 @@ std::string Caller::dbitpipeline(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -2858,7 +2991,9 @@ std::string Caller::defaultdac(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2 && args.size() != 3) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -2897,7 +3032,9 @@ std::string Caller::defaultdac(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -2960,7 +3097,9 @@ std::string Caller::defaultpattern(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -3005,7 +3144,9 @@ std::string Caller::delay(int action) {
         if (args.size() == 1) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -3028,7 +3169,9 @@ std::string Caller::delay(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -3091,7 +3234,9 @@ std::string Caller::delayl(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -3134,7 +3279,9 @@ std::string Caller::detectorserverversion(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -3173,7 +3320,9 @@ std::string Caller::detsize(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -3181,7 +3330,9 @@ std::string Caller::detsize(int action) {
         if (args.size() == 2) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -3237,7 +3388,9 @@ std::string Caller::diodelay(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -3277,7 +3430,9 @@ std::string Caller::dpulse(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -3290,7 +3445,9 @@ std::string Caller::dpulse(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -3339,7 +3496,9 @@ std::string Caller::dr(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -3352,7 +3511,9 @@ std::string Caller::dr(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -3401,7 +3562,9 @@ std::string Caller::drlist(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -3439,7 +3602,9 @@ std::string Caller::dsamples(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -3452,7 +3617,9 @@ std::string Caller::dsamples(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -3499,7 +3666,9 @@ std::string Caller::exptime(int action) {
         if (args.size() == 1) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -3522,7 +3691,9 @@ std::string Caller::exptime(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -3542,7 +3713,9 @@ std::string Caller::exptime(int action) {
                 os << OutString(t, args[0]) << '\n';
             }
 
-        } else {
+        }
+
+        else {
 
             if (args.size() == 0) {
                 auto t = det->getExptime(std::vector<int>{det_id});
@@ -3599,7 +3772,9 @@ std::string Caller::exptime1(int action) {
             int gateIndex = 0;
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -3624,7 +3799,9 @@ std::string Caller::exptime1(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -3666,7 +3843,9 @@ std::string Caller::exptime1(int action) {
                 os << args[0] << args[1] << '\n';
             }
 
-        } else {
+        }
+
+        else {
 
             if (args.size() == 1) {
                 int gateIndex = 0;
@@ -3713,7 +3892,9 @@ std::string Caller::exptime2(int action) {
             int gateIndex = 1;
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -3738,7 +3919,9 @@ std::string Caller::exptime2(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -3780,7 +3963,9 @@ std::string Caller::exptime2(int action) {
                 os << args[0] << args[1] << '\n';
             }
 
-        } else {
+        }
+
+        else {
 
             if (args.size() == 1) {
                 int gateIndex = 1;
@@ -3827,7 +4012,9 @@ std::string Caller::exptime3(int action) {
             int gateIndex = 2;
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -3852,7 +4039,9 @@ std::string Caller::exptime3(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -3894,7 +4083,9 @@ std::string Caller::exptime3(int action) {
                 os << args[0] << args[1] << '\n';
             }
 
-        } else {
+        }
+
+        else {
 
             if (args.size() == 1) {
                 int gateIndex = 2;
@@ -3941,7 +4132,9 @@ std::string Caller::exptimel(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -3985,7 +4178,9 @@ std::string Caller::extrastoragecells(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -3998,7 +4193,9 @@ std::string Caller::extrastoragecells(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -4049,7 +4246,9 @@ std::string Caller::extsampling(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -4062,7 +4261,9 @@ std::string Caller::extsampling(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -4108,7 +4309,9 @@ std::string Caller::extsamplingsrc(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -4121,7 +4324,9 @@ std::string Caller::extsamplingsrc(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -4175,7 +4380,9 @@ std::string Caller::extsig(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -4194,7 +4401,9 @@ std::string Caller::extsig(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -4243,7 +4452,9 @@ std::string Caller::fformat(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -4257,7 +4468,9 @@ std::string Caller::fformat(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -4303,7 +4516,9 @@ std::string Caller::filtercells(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -4316,7 +4531,9 @@ std::string Caller::filtercells(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -4363,7 +4580,9 @@ std::string Caller::filterresistor(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -4376,7 +4595,9 @@ std::string Caller::filterresistor(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -4422,7 +4643,9 @@ std::string Caller::findex(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -4435,7 +4658,9 @@ std::string Caller::findex(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -4481,7 +4706,9 @@ std::string Caller::firmwaretest(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -4523,7 +4750,9 @@ std::string Caller::firmwareversion(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -4538,7 +4767,9 @@ std::string Caller::firmwareversion(int action) {
                 os << OutString(t) << '\n';
             }
 
-        } else {
+        }
+
+        else {
 
             if (args.size() == 0) {
                 auto t = det->getFirmwareVersion(std::vector<int>{det_id});
@@ -4572,7 +4803,9 @@ std::string Caller::fliprows(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -4585,7 +4818,9 @@ std::string Caller::fliprows(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -4631,7 +4866,9 @@ std::string Caller::flowcontrol10g(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -4644,7 +4881,9 @@ std::string Caller::flowcontrol10g(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -4690,7 +4929,9 @@ std::string Caller::fmaster(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -4703,7 +4944,9 @@ std::string Caller::fmaster(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -4755,7 +4998,9 @@ std::string Caller::fname(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -4763,7 +5008,9 @@ std::string Caller::fname(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -4808,7 +5055,9 @@ std::string Caller::foverwrite(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -4821,7 +5070,9 @@ std::string Caller::foverwrite(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -4868,7 +5119,9 @@ std::string Caller::fpath(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -4876,7 +5129,9 @@ std::string Caller::fpath(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -4922,7 +5177,9 @@ std::string Caller::framecounter(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -4963,7 +5220,9 @@ std::string Caller::frames(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -4976,7 +5235,9 @@ std::string Caller::frames(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -5026,7 +5287,9 @@ std::string Caller::framesl(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -5068,7 +5331,9 @@ std::string Caller::frametime(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -5111,7 +5376,9 @@ std::string Caller::fwrite(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -5124,7 +5391,9 @@ std::string Caller::fwrite(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -5171,7 +5440,9 @@ std::string Caller::gainmode(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -5185,7 +5456,9 @@ std::string Caller::gainmode(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -5231,7 +5504,9 @@ std::string Caller::gappixels(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -5244,7 +5519,9 @@ std::string Caller::gappixels(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -5299,7 +5576,9 @@ std::string Caller::gatedelay(int action) {
         if (args.size() == 1) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -5324,7 +5603,9 @@ std::string Caller::gatedelay(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -5392,7 +5673,9 @@ std::string Caller::gatedelay1(int action) {
             int gateIndex = 0;
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -5417,7 +5700,9 @@ std::string Caller::gatedelay1(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -5487,7 +5772,9 @@ std::string Caller::gatedelay2(int action) {
             int gateIndex = 1;
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -5512,7 +5799,9 @@ std::string Caller::gatedelay2(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -5582,7 +5871,9 @@ std::string Caller::gatedelay3(int action) {
             int gateIndex = 2;
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -5607,7 +5898,9 @@ std::string Caller::gatedelay3(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -5672,7 +5965,9 @@ std::string Caller::gates(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -5685,7 +5980,9 @@ std::string Caller::gates(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -5741,7 +6038,9 @@ std::string Caller::getbit(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -5785,7 +6084,9 @@ std::string Caller::hardwareversion(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -5826,7 +6127,9 @@ std::string Caller::highvoltage(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -5839,7 +6142,9 @@ std::string Caller::highvoltage(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -5885,7 +6190,9 @@ std::string Caller::im_a(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -5924,7 +6231,9 @@ std::string Caller::im_b(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -5963,7 +6272,9 @@ std::string Caller::im_c(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -6002,7 +6313,9 @@ std::string Caller::im_d(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -6041,7 +6354,9 @@ std::string Caller::im_io(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -6081,7 +6396,9 @@ std::string Caller::imagetest(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -6094,7 +6411,9 @@ std::string Caller::imagetest(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -6141,7 +6460,9 @@ std::string Caller::initialchecks(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -6154,7 +6475,9 @@ std::string Caller::initialchecks(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -6208,7 +6531,9 @@ std::string Caller::inj_ch(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -6226,7 +6551,9 @@ std::string Caller::inj_ch(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -6273,7 +6600,9 @@ std::string Caller::interpolation(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -6286,7 +6615,9 @@ std::string Caller::interpolation(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -6332,7 +6663,9 @@ std::string Caller::interruptsubframe(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -6345,7 +6678,9 @@ std::string Caller::interruptsubframe(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -6391,7 +6726,9 @@ std::string Caller::kernelversion(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -6429,7 +6766,9 @@ std::string Caller::lastclient(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -6467,7 +6806,9 @@ std::string Caller::led(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -6480,7 +6821,9 @@ std::string Caller::led(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -6526,7 +6869,9 @@ std::string Caller::lock(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -6539,7 +6884,9 @@ std::string Caller::lock(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -6586,7 +6933,9 @@ std::string Caller::master(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -6599,7 +6948,9 @@ std::string Caller::master(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -6645,7 +6996,9 @@ std::string Caller::maxadcphaseshift(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -6691,7 +7044,9 @@ std::string Caller::maxclkphaseshift(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -6737,7 +7092,9 @@ std::string Caller::maxdbitphaseshift(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -6778,7 +7135,9 @@ std::string Caller::measuredperiod(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -6824,7 +7183,9 @@ std::string Caller::measuredsubperiod(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -6867,7 +7228,9 @@ std::string Caller::moduleid(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -6905,7 +7268,9 @@ std::string Caller::nextframenumber(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -6918,7 +7283,9 @@ std::string Caller::nextframenumber(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -6964,7 +7331,9 @@ std::string Caller::nmod(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -7005,7 +7374,9 @@ std::string Caller::numinterfaces(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -7018,7 +7389,9 @@ std::string Caller::numinterfaces(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -7064,7 +7437,9 @@ std::string Caller::overflow(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -7077,7 +7452,9 @@ std::string Caller::overflow(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -7123,7 +7500,9 @@ std::string Caller::packageversion(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -7164,7 +7543,9 @@ std::string Caller::parallel(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -7177,7 +7558,9 @@ std::string Caller::parallel(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -7223,7 +7606,9 @@ std::string Caller::parameters(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -7264,7 +7649,9 @@ std::string Caller::partialreset(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -7277,7 +7664,9 @@ std::string Caller::partialreset(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -7323,7 +7712,9 @@ std::string Caller::patfname(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -7361,7 +7752,9 @@ std::string Caller::patioctrl(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -7374,7 +7767,9 @@ std::string Caller::patioctrl(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -7417,12 +7812,16 @@ std::string Caller::patlimits(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -7467,12 +7866,16 @@ std::string Caller::patloop(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -7518,12 +7921,16 @@ std::string Caller::patloop0(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -7569,12 +7976,16 @@ std::string Caller::patloop1(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -7620,12 +8031,16 @@ std::string Caller::patloop2(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -7676,7 +8091,9 @@ std::string Caller::patmask(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -7689,7 +8106,9 @@ std::string Caller::patmask(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -7733,12 +8152,16 @@ std::string Caller::patnloop(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -7782,12 +8205,16 @@ std::string Caller::patnloop0(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -7831,12 +8258,16 @@ std::string Caller::patnloop1(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -7880,12 +8311,16 @@ std::string Caller::patnloop2(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -7934,7 +8369,9 @@ std::string Caller::patsetbit(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -7947,7 +8384,9 @@ std::string Caller::patsetbit(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -7993,7 +8432,9 @@ std::string Caller::pattern(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -8031,7 +8472,9 @@ std::string Caller::patternstart(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -8071,12 +8514,16 @@ std::string Caller::patwait(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -8119,12 +8566,16 @@ std::string Caller::patwait0(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -8167,12 +8618,16 @@ std::string Caller::patwait1(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -8215,12 +8670,16 @@ std::string Caller::patwait2(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -8266,12 +8725,16 @@ std::string Caller::patwaittime(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -8315,12 +8778,16 @@ std::string Caller::patwaittime0(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -8364,12 +8831,16 @@ std::string Caller::patwaittime1(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -8413,12 +8884,16 @@ std::string Caller::patwaittime2(int action) {
             throw RuntimeError("Wrong number of arguments for action GET");
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -8472,7 +8947,9 @@ std::string Caller::patword(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -8490,7 +8967,9 @@ std::string Caller::patword(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -8550,7 +9029,9 @@ pedestalmode [0]
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -8561,7 +9042,9 @@ pedestalmode [0]
         if (args.size() == 2) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -8619,7 +9102,9 @@ std::string Caller::period(int action) {
         if (args.size() == 1) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -8642,7 +9127,9 @@ std::string Caller::period(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -8705,7 +9192,9 @@ std::string Caller::periodl(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -8748,7 +9237,9 @@ std::string Caller::polarity(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -8762,7 +9253,9 @@ std::string Caller::polarity(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -8808,7 +9301,9 @@ std::string Caller::port(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -8821,7 +9316,9 @@ std::string Caller::port(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -8869,7 +9366,9 @@ std::string Caller::powerchip(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -8882,7 +9381,9 @@ std::string Caller::powerchip(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -8929,7 +9430,9 @@ std::string Caller::powerindex(int action) {
             defs::dacIndex index = defs::V_POWER_A;
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -8974,12 +9477,16 @@ std::string Caller::powerlist(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -9042,7 +9549,9 @@ std::string Caller::powername(int action) {
             defs::dacIndex index = defs::V_POWER_A;
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -9051,7 +9560,9 @@ std::string Caller::powername(int action) {
             defs::dacIndex index = defs::V_POWER_A;
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -9113,7 +9624,9 @@ std::string Caller::powervalues(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -9186,7 +9699,9 @@ std::string Caller::programfpga(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -9202,9 +9717,8 @@ std::string Caller::programfpga(int action) {
 
         if (args.size() == 2) {
             if (args[1] != "--force-delete-normal-file") {
-                throw RuntimeError(
-                    "Could not scan second argument. Did you mean "
-                    "--force-delete-normal-file?");
+                throw RuntimeError("Could not scan second argument. Did you "
+                                   "mean --force-delete-normal-file?");
             }
             auto arg1 = StringTo<bool>("1");
             det->programFPGA(args[0], arg1, std::vector<int>{det_id});
@@ -9243,7 +9757,9 @@ std::string Caller::pulse(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -9289,7 +9805,9 @@ std::string Caller::pulsechip(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -9335,7 +9853,9 @@ std::string Caller::pulsenmove(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -9376,7 +9896,9 @@ std::string Caller::pumpprobe(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -9389,7 +9911,9 @@ std::string Caller::pumpprobe(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -9435,7 +9959,9 @@ std::string Caller::quad(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -9448,7 +9974,9 @@ std::string Caller::quad(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -9501,7 +10029,9 @@ std::string Caller::readnrows(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -9514,7 +10044,9 @@ std::string Caller::readnrows(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -9560,7 +10092,9 @@ std::string Caller::readout(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -9606,7 +10140,9 @@ std::string Caller::readoutspeed(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -9620,7 +10156,9 @@ std::string Caller::readoutspeed(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -9670,7 +10208,9 @@ std::string Caller::readoutspeedlist(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -9708,7 +10248,9 @@ std::string Caller::rebootcontroller(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -9757,7 +10299,9 @@ std::string Caller::reg(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -9775,7 +10319,9 @@ std::string Caller::reg(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -9826,7 +10372,9 @@ std::string Caller::resetdacs(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -9873,7 +10421,9 @@ std::string Caller::resetfpga(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -9916,7 +10466,9 @@ std::string Caller::roi(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -9926,7 +10478,9 @@ std::string Caller::roi(int action) {
                 defs::ROI(StringTo<int>(args[0]), StringTo<int>(args[1]));
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -9976,7 +10530,9 @@ std::string Caller::romode(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -9990,7 +10546,9 @@ std::string Caller::romode(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -10037,7 +10595,9 @@ std::string Caller::row(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -10050,7 +10610,9 @@ std::string Caller::row(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -10096,7 +10658,9 @@ std::string Caller::runclk(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -10109,7 +10673,9 @@ std::string Caller::runclk(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -10159,7 +10725,9 @@ std::string Caller::runtime(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -10202,7 +10770,9 @@ std::string Caller::rx_arping(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -10215,7 +10785,9 @@ std::string Caller::rx_arping(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -10246,8 +10818,7 @@ std::string Caller::rx_clearroi(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: rx_clearroi" << std::endl;
-        os << R"V0G0N(Resets Region of interest in receiver. Default is all )V0G0N"
-              R"V0G0N(channels/pixels enabled. )V0G0N"
+        os << R"V0G0N(Resets Region of interest in receiver. Default is all channels/pixels enabled. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -10261,7 +10832,9 @@ std::string Caller::rx_clearroi(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -10303,7 +10876,9 @@ std::string Caller::rx_dbitoffset(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -10316,7 +10891,9 @@ std::string Caller::rx_dbitoffset(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -10362,7 +10939,9 @@ std::string Caller::rx_discardpolicy(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -10376,7 +10955,9 @@ std::string Caller::rx_discardpolicy(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -10422,7 +11003,9 @@ std::string Caller::rx_fifodepth(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -10435,7 +11018,9 @@ std::string Caller::rx_fifodepth(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -10481,7 +11066,9 @@ std::string Caller::rx_frameindex(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -10519,7 +11106,9 @@ std::string Caller::rx_framescaught(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -10557,7 +11146,9 @@ std::string Caller::rx_framesperfile(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -10570,7 +11161,9 @@ std::string Caller::rx_framesperfile(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -10616,7 +11209,9 @@ std::string Caller::rx_jsonpara(int action) {
         if (args.size() == 1) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -10627,7 +11222,9 @@ std::string Caller::rx_jsonpara(int action) {
         if (args.size() == 2) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -10680,7 +11277,9 @@ std::string Caller::rx_lastclient(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -10718,7 +11317,9 @@ std::string Caller::rx_lock(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -10731,7 +11332,9 @@ std::string Caller::rx_lock(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -10777,7 +11380,9 @@ std::string Caller::rx_missingpackets(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -10815,7 +11420,9 @@ std::string Caller::rx_padding(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -10828,7 +11435,9 @@ std::string Caller::rx_padding(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -10874,7 +11483,9 @@ std::string Caller::rx_printconfig(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -10912,7 +11523,9 @@ std::string Caller::rx_realudpsocksize(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -10951,7 +11564,9 @@ std::string Caller::rx_silent(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -10964,7 +11579,9 @@ std::string Caller::rx_silent(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -11010,7 +11627,9 @@ std::string Caller::rx_start(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -11051,7 +11670,9 @@ std::string Caller::rx_status(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -11089,7 +11710,9 @@ std::string Caller::rx_stop(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -11130,7 +11753,9 @@ std::string Caller::rx_tcpport(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -11143,7 +11768,9 @@ std::string Caller::rx_tcpport(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -11189,7 +11816,9 @@ std::string Caller::rx_threads(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -11227,7 +11856,9 @@ std::string Caller::rx_udpsocksize(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -11240,7 +11871,9 @@ std::string Caller::rx_udpsocksize(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -11286,7 +11919,9 @@ std::string Caller::rx_version(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -11327,7 +11962,9 @@ std::string Caller::rx_zmqfreq(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -11340,7 +11977,9 @@ std::string Caller::rx_zmqfreq(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -11386,7 +12025,9 @@ std::string Caller::rx_zmqhwm(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -11399,7 +12040,9 @@ std::string Caller::rx_zmqhwm(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -11448,7 +12091,9 @@ std::string Caller::rx_zmqip(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -11456,7 +12101,9 @@ std::string Caller::rx_zmqip(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -11501,7 +12148,9 @@ std::string Caller::rx_zmqport(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -11514,7 +12163,9 @@ std::string Caller::rx_zmqport(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -11560,7 +12211,9 @@ std::string Caller::rx_zmqstartfnum(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -11573,7 +12226,9 @@ std::string Caller::rx_zmqstartfnum(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -11621,7 +12276,9 @@ std::string Caller::rx_zmqstream(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -11634,7 +12291,9 @@ std::string Caller::rx_zmqstream(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -11681,7 +12340,9 @@ std::string Caller::savepattern(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -11726,7 +12387,9 @@ std::string Caller::scan(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 4 && args.size() != 5) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -11747,7 +12410,9 @@ std::string Caller::scan(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -11822,7 +12487,9 @@ std::string Caller::scanerrmsg(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -11860,7 +12527,9 @@ std::string Caller::selinterface(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -11873,7 +12542,9 @@ std::string Caller::selinterface(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -11920,7 +12591,9 @@ Serial number of detector. )V0G0N"
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -11968,7 +12641,9 @@ std::string Caller::setbit(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -12019,7 +12694,9 @@ std::string Caller::settings(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -12033,7 +12710,9 @@ std::string Caller::settings(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -12079,7 +12758,9 @@ std::string Caller::settingslist(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -12117,7 +12798,9 @@ std::string Caller::settingspath(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -12125,7 +12808,9 @@ std::string Caller::settingspath(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -12170,7 +12855,9 @@ std::string Caller::signalindex(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -12215,12 +12902,16 @@ std::string Caller::signallist(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -12287,7 +12978,9 @@ std::string Caller::signalname(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -12300,7 +12993,9 @@ std::string Caller::signalname(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -12360,7 +13055,9 @@ std::string Caller::slowadcindex(int action) {
             defs::dacIndex index = defs::SLOW_ADC0;
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -12406,12 +13103,16 @@ std::string Caller::slowadclist(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -12475,7 +13176,9 @@ std::string Caller::slowadcname(int action) {
             defs::dacIndex index = defs::SLOW_ADC0;
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -12484,7 +13187,9 @@ std::string Caller::slowadcname(int action) {
             defs::dacIndex index = defs::SLOW_ADC0;
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -12548,7 +13253,9 @@ std::string Caller::slowadcvalues(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -12607,7 +13314,9 @@ std::string Caller::start(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -12648,7 +13357,9 @@ std::string Caller::status(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -12686,7 +13397,9 @@ std::string Caller::stop(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -12727,7 +13440,9 @@ std::string Caller::stopport(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -12740,7 +13455,9 @@ std::string Caller::stopport(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -12789,7 +13506,9 @@ std::string Caller::storagecell_delay(int action) {
         if (args.size() == 1) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -12812,7 +13531,9 @@ std::string Caller::storagecell_delay(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -12871,7 +13592,9 @@ std::string Caller::storagecell_start(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -12884,7 +13607,9 @@ std::string Caller::storagecell_start(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -12933,7 +13658,9 @@ std::string Caller::subdeadtime(int action) {
         if (args.size() == 1) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -12956,7 +13683,9 @@ std::string Caller::subdeadtime(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -13018,7 +13747,9 @@ std::string Caller::subexptime(int action) {
         if (args.size() == 1) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -13041,7 +13772,9 @@ std::string Caller::subexptime(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -13100,7 +13833,9 @@ std::string Caller::sync(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -13113,7 +13848,9 @@ std::string Caller::sync(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -13162,7 +13899,9 @@ std::string Caller::syncclk(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -13200,7 +13939,9 @@ std::string Caller::temp_10ge(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -13239,7 +13980,9 @@ std::string Caller::temp_adc(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -13278,7 +14021,9 @@ std::string Caller::temp_control(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -13291,7 +14036,9 @@ std::string Caller::temp_control(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -13337,7 +14084,9 @@ std::string Caller::temp_dcdc(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -13377,7 +14126,9 @@ std::string Caller::temp_event(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -13385,7 +14136,9 @@ std::string Caller::temp_event(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -13435,7 +14188,9 @@ std::string Caller::temp_fpga(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -13474,7 +14229,9 @@ std::string Caller::temp_fpgaext(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -13513,7 +14270,9 @@ std::string Caller::temp_fpgafl(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -13552,7 +14311,9 @@ std::string Caller::temp_fpgafr(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -13591,7 +14352,9 @@ std::string Caller::temp_slowadc(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -13630,7 +14393,9 @@ std::string Caller::temp_sodl(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -13669,7 +14434,9 @@ std::string Caller::temp_sodr(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -13708,7 +14475,9 @@ std::string Caller::temp_threshold(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -13721,7 +14490,9 @@ std::string Caller::temp_threshold(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -13767,7 +14538,9 @@ std::string Caller::templist(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -13805,7 +14578,9 @@ std::string Caller::tempvalues(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -13861,7 +14636,9 @@ std::string Caller::tengiga(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -13874,7 +14651,9 @@ std::string Caller::tengiga(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -13923,7 +14702,9 @@ std::string Caller::timing(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -13937,7 +14718,9 @@ std::string Caller::timing(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -13983,7 +14766,9 @@ std::string Caller::timinglist(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -14021,7 +14806,9 @@ std::string Caller::timingsource(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -14035,7 +14822,9 @@ std::string Caller::timingsource(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -14081,7 +14870,9 @@ std::string Caller::top(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -14094,7 +14885,9 @@ std::string Caller::top(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -14140,7 +14933,9 @@ std::string Caller::transceiverenable(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -14153,7 +14948,9 @@ std::string Caller::transceiverenable(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -14200,7 +14997,9 @@ std::string Caller::trigger(int action) {
             bool block = false;
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -14242,7 +15041,9 @@ std::string Caller::triggers(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -14255,7 +15056,9 @@ std::string Caller::triggers(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -14304,7 +15107,9 @@ std::string Caller::triggersl(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -14342,7 +15147,9 @@ std::string Caller::trimbits(int action) {
         if (args.size() == 1) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -14350,7 +15157,9 @@ std::string Caller::trimbits(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -14395,7 +15204,9 @@ std::string Caller::trimval(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -14408,7 +15219,9 @@ std::string Caller::trimval(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -14454,7 +15267,9 @@ std::string Caller::tsamples(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -14467,7 +15282,9 @@ std::string Caller::tsamples(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -14519,7 +15336,9 @@ for every module. )V0G0N"
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -14532,7 +15351,9 @@ for every module. )V0G0N"
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -14587,7 +15408,9 @@ std::string Caller::txdelay_frame(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -14600,7 +15423,9 @@ std::string Caller::txdelay_frame(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -14646,7 +15471,9 @@ std::string Caller::txdelay_left(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -14659,7 +15486,9 @@ std::string Caller::txdelay_left(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -14705,7 +15534,9 @@ std::string Caller::txdelay_right(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -14718,7 +15549,9 @@ std::string Caller::txdelay_right(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -14764,7 +15597,9 @@ std::string Caller::type(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -14802,7 +15637,9 @@ std::string Caller::udp_cleardst(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -14846,7 +15683,9 @@ std::string Caller::udp_dstlist(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -14854,7 +15693,9 @@ std::string Caller::udp_dstlist(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -14917,7 +15758,9 @@ std::string Caller::udp_dstmac(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -14925,7 +15768,9 @@ std::string Caller::udp_dstmac(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -14973,7 +15818,9 @@ std::string Caller::udp_dstmac2(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -14981,7 +15828,9 @@ std::string Caller::udp_dstmac2(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -15028,7 +15877,9 @@ std::string Caller::udp_dstport(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -15041,7 +15892,9 @@ std::string Caller::udp_dstport(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -15091,7 +15944,9 @@ std::string Caller::udp_dstport2(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -15104,7 +15959,9 @@ std::string Caller::udp_dstport2(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -15155,7 +16012,9 @@ std::string Caller::udp_firstdst(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -15168,7 +16027,9 @@ std::string Caller::udp_firstdst(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -15214,7 +16075,9 @@ std::string Caller::udp_numdst(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -15252,7 +16115,9 @@ std::string Caller::udp_reconfigure(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -15295,7 +16160,9 @@ std::string Caller::udp_srcmac(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -15303,7 +16170,9 @@ std::string Caller::udp_srcmac(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -15348,7 +16217,9 @@ std::string Caller::udp_srcmac2(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -15356,7 +16227,9 @@ std::string Caller::udp_srcmac2(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -15401,7 +16274,9 @@ std::string Caller::udp_validate(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -15447,7 +16322,9 @@ std::string Caller::update(int action) {
         if (args.size() == 2) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -15491,7 +16368,9 @@ std::string Caller::updatedetectorserver(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -15530,7 +16409,9 @@ std::string Caller::updatekernel(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -15568,7 +16449,9 @@ std::string Caller::updatemode(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -15581,7 +16464,9 @@ std::string Caller::updatemode(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -15627,7 +16512,9 @@ std::string Caller::user(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -15668,7 +16555,9 @@ std::string Caller::v_a(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -15681,7 +16570,9 @@ std::string Caller::v_a(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -15727,7 +16618,9 @@ std::string Caller::v_b(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -15740,7 +16633,9 @@ std::string Caller::v_b(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -15786,7 +16681,9 @@ std::string Caller::v_c(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -15799,7 +16696,9 @@ std::string Caller::v_c(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -15845,7 +16744,9 @@ std::string Caller::v_chip(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -15858,7 +16759,9 @@ std::string Caller::v_chip(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -15905,7 +16808,9 @@ std::string Caller::v_d(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -15918,7 +16823,9 @@ std::string Caller::v_d(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -15964,7 +16871,9 @@ std::string Caller::v_io(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -15977,7 +16886,9 @@ std::string Caller::v_io(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -16023,7 +16934,9 @@ std::string Caller::v_limit(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -16036,7 +16949,9 @@ std::string Caller::v_limit(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -16087,7 +17002,9 @@ std::string Caller::vchip_comp_adc(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -16105,7 +17022,9 @@ std::string Caller::vchip_comp_adc(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -16160,7 +17079,9 @@ std::string Caller::vchip_comp_fe(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -16178,7 +17099,9 @@ std::string Caller::vchip_comp_fe(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -16233,7 +17156,9 @@ std::string Caller::vchip_cs(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -16251,7 +17176,9 @@ std::string Caller::vchip_cs(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -16306,7 +17233,9 @@ std::string Caller::vchip_opa_1st(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -16324,7 +17253,9 @@ std::string Caller::vchip_opa_1st(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -16379,7 +17310,9 @@ std::string Caller::vchip_opa_fd(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -16397,7 +17330,9 @@ std::string Caller::vchip_opa_fd(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -16452,7 +17387,9 @@ std::string Caller::vchip_ref_comp_fe(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -16470,7 +17407,9 @@ std::string Caller::vchip_ref_comp_fe(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -16520,7 +17459,9 @@ std::string Caller::veto(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -16533,7 +17474,9 @@ std::string Caller::veto(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -16581,7 +17524,9 @@ std::string Caller::vetoalg(int action) {
                 StringTo<defs::streamingInterface>(args[0]);
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -16592,7 +17537,9 @@ std::string Caller::vetoalg(int action) {
                 StringTo<defs::streamingInterface>(args[1]);
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -16654,7 +17601,9 @@ std::string Caller::vetofile(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -16700,7 +17649,9 @@ std::string Caller::vetophoton(int action) {
             }
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 4) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -16723,7 +17674,9 @@ std::string Caller::vetophoton(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -16783,7 +17736,9 @@ std::string Caller::vetoref(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -16833,7 +17788,9 @@ std::string Caller::virtualFunction(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
@@ -16876,7 +17833,9 @@ std::string Caller::vm_a(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -16915,7 +17874,9 @@ std::string Caller::vm_b(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -16954,7 +17915,9 @@ std::string Caller::vm_c(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -16993,7 +17956,9 @@ std::string Caller::vm_d(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -17032,7 +17997,9 @@ std::string Caller::vm_io(int action) {
         if (args.size() == 0) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError(
             "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
@@ -17074,7 +18041,9 @@ std::string Caller::zmqhwm(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -17087,7 +18056,9 @@ std::string Caller::zmqhwm(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -17133,7 +18104,9 @@ std::string Caller::zmqip(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -17141,7 +18114,9 @@ std::string Caller::zmqip(int action) {
         if (args.size() == 1) {
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -17186,7 +18161,9 @@ std::string Caller::zmqport(int action) {
         if (args.size() == 0) {
         }
 
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -17199,7 +18176,9 @@ std::string Caller::zmqport(int action) {
             }
         }
 
-    } else {
+    }
+
+    else {
 
         throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
                            "are ['GET', 'PUT']");
@@ -17223,4 +18202,5 @@ std::string Caller::zmqport(int action) {
 
     return os.str();
 }
+
 } // namespace sls

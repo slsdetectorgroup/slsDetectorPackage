@@ -394,6 +394,7 @@ class Caller {
 
     FunctionMap functions{
         {"list", &Caller::list},
+
         {"acquire", &Caller::acquire},
         {"activate", &Caller::activate},
         {"adcclk", &Caller::adcclk},
@@ -719,7 +720,9 @@ class Caller {
         {"vm_io", &Caller::vm_io},
         {"zmqhwm", &Caller::zmqhwm},
         {"zmqip", &Caller::zmqip},
-        {"zmqport", &Caller::zmqport}};
+        {"zmqport", &Caller::zmqport}
+
+    };
 };
 
 } // namespace sls

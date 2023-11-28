@@ -343,6 +343,7 @@ class InferAction {
     using FunctionMap = std::map<std::string, int (InferAction::*)()>;
     FunctionMap functions{
         // generated functions
+
         {"acquire", &InferAction::acquire},
         {"activate", &InferAction::activate},
         {"adcclk", &InferAction::adcclk},
@@ -671,6 +672,8 @@ class InferAction {
         {"zmqport", &InferAction::zmqport}
 
         //        {"frames",&InferAction::frames}
+
     };
 };
+
 } // namespace sls

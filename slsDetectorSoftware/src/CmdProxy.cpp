@@ -320,7 +320,7 @@ std::string CmdProxy::PackageVersion(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "\n\tPackage version (git branch)." << '\n';
+        os << "\n\tPackage version." << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);

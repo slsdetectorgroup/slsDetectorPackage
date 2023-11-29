@@ -3650,7 +3650,10 @@ std::string Caller::exptime(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: exptime" << std::endl;
-        os << R"V0G0N( )V0G0N" << std::endl;
+        os << R"V0G0N([duration] [(optional unit) ns|us|ms|s]
+	[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb] Exposure time
+	[Mythen3] Exposure time of all gate signals in auto and trigger mode (internal gating). To specify gate index, use exptime1, exptime2, exptime3. )V0G0N"
+           << std::endl;
         return os.str();
     }
 
@@ -3754,7 +3757,9 @@ std::string Caller::exptime1(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: exptime1" << std::endl;
-        os << R"V0G0N( )V0G0N" << std::endl;
+        os << R"V0G0N([n_value]
+	[Mythen3] Exposure time of gate signal 1 in auto and trigger mode (internal gating). )V0G0N"
+           << std::endl;
         return os.str();
     }
 
@@ -3874,7 +3879,9 @@ std::string Caller::exptime2(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: exptime2" << std::endl;
-        os << R"V0G0N( )V0G0N" << std::endl;
+        os << R"V0G0N([n_value]
+	[Mythen3] Exposure time of gate signal 2 in auto and trigger mode (internal gating). )V0G0N"
+           << std::endl;
         return os.str();
     }
 
@@ -3994,7 +4001,9 @@ std::string Caller::exptime3(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: exptime3" << std::endl;
-        os << R"V0G0N( )V0G0N" << std::endl;
+        os << R"V0G0N([n_value]
+	[Mythen3] Exposure time of gate signal 3 in auto and trigger mode (internal gating). )V0G0N"
+           << std::endl;
         return os.str();
     }
 
@@ -6203,7 +6212,7 @@ std::string Caller::im_a(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredCurrent(defs::I_POWER_A,
                                              std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -6244,7 +6253,7 @@ std::string Caller::im_b(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredCurrent(defs::I_POWER_B,
                                              std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -6285,7 +6294,7 @@ std::string Caller::im_c(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredCurrent(defs::I_POWER_C,
                                              std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -6326,7 +6335,7 @@ std::string Caller::im_d(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredCurrent(defs::I_POWER_D,
                                              std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -6367,7 +6376,7 @@ std::string Caller::im_io(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredCurrent(defs::I_POWER_IO,
                                              std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -7486,7 +7495,7 @@ std::string Caller::packageversion(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: packageversion" << std::endl;
         os << R"V0G0N(
-	Package version (git branch). )V0G0N"
+	Package version. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -13819,7 +13828,7 @@ std::string Caller::sync(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: sync" << std::endl;
         os << R"V0G0N([0, 1]
-	[Jungfrau][Moench] Enables or disables synchronization between modules. )V0G0N"
+	[Jungfrau][Moench] Enables or disables synchronization between modules. Sync mode requires at least one master configured. Also requires flatband cabling between master and slave with termination board. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -14297,7 +14306,7 @@ std::string Caller::temp_fpgafr(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: temp_fpgafr" << std::endl;
         os << R"V0G0N([n_value]
-	[Eiger]Temperature of the left front end board fpga. )V0G0N"
+	[Eiger]Temperature of the right front end board fpga. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -17846,7 +17855,7 @@ std::string Caller::vm_a(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredPower(defs::V_POWER_A,
                                            std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -17887,7 +17896,7 @@ std::string Caller::vm_b(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredPower(defs::V_POWER_B,
                                            std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -17928,7 +17937,7 @@ std::string Caller::vm_c(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredPower(defs::V_POWER_C,
                                            std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -17969,7 +17978,7 @@ std::string Caller::vm_d(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredPower(defs::V_POWER_D,
                                            std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -18010,7 +18019,7 @@ std::string Caller::vm_io(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredPower(defs::V_POWER_IO,
                                            std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 

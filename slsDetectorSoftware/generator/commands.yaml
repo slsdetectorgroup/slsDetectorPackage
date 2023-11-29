@@ -290,7 +290,7 @@ GET_IND_COMMAND:
       require_det_id: true
       function: ''
       argc: 0
-      output: [ OutString(t), '" °C"' ]
+      output: [ OutString(t) ]
       input: [ 'VAL' ]
       input_types: [ int ]
       cast_input: [ false ]
@@ -620,6 +620,7 @@ temp_adc:
     GET:
       function: getTemperature
       input: [ 'slsDetectorDefs::TEMPERATURE_ADC' ]
+      output: [ OutString(t), '" °C"' ]
 temp_fpga:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Gotthard][Mythen3][Gotthard2] FPGA Temperature"
@@ -627,6 +628,7 @@ temp_fpga:
     GET:
       function: getTemperature
       input: [ 'slsDetectorDefs::TEMPERATURE_FPGA' ]
+      output: [ OutString(t), '" °C"' ]
 temp_fpgaext:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Eiger]Temperature close to the FPGA"
@@ -634,6 +636,7 @@ temp_fpgaext:
     GET:
       function: getTemperature
       input: [ 'slsDetectorDefs::TEMPERATURE_FPGAEXT' ]
+      output: [ OutString(t), '" °C"' ]
 temp_10ge:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Eiger]Temperature close to the 10GbE"
@@ -641,6 +644,7 @@ temp_10ge:
     GET:
       function: getTemperature
       input: [ 'slsDetectorDefs::TEMPERATURE_10GE' ]
+      output: [ OutString(t), '" °C"' ]
 temp_dcdc:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Eiger]Temperature close to the dc dc converter"
@@ -648,6 +652,7 @@ temp_dcdc:
     GET:
       function: getTemperature
       input: [ 'slsDetectorDefs::TEMPERATURE_DCDC' ]
+      output: [ OutString(t), '" °C"' ]
 temp_sodl:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Eiger]Temperature close to the left so-dimm memory"
@@ -655,6 +660,7 @@ temp_sodl:
     GET:
       function: getTemperature
       input: [ 'slsDetectorDefs::TEMPERATURE_SODL' ]
+      output: [ OutString(t), '" °C"' ]
 temp_sodr:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Eiger]Temperature close to the right so-dimm memory"
@@ -662,6 +668,7 @@ temp_sodr:
     GET:
       function: getTemperature
       input: [ 'slsDetectorDefs::TEMPERATURE_SODR' ]
+      output: [ OutString(t), '" °C"' ]
 temp_fpgafl:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Eiger]Temperature of the left front end board fpga."
@@ -669,13 +676,15 @@ temp_fpgafl:
     GET:
       function: getTemperature
       input: [ 'slsDetectorDefs::TEMPERATURE_FPGA2' ]
+      output: [ OutString(t), '" °C"' ]
 temp_fpgafr:
   inherit_actions: GET_IND_COMMAND
-  help: "[n_value]\n\t[Eiger]Temperature of the left front end board fpga."
+  help: "[n_value]\n\t[Eiger]Temperature of the right front end board fpga."
   actions:
     GET:
       function: getTemperature
       input: [ 'slsDetectorDefs::TEMPERATURE_FPGA3' ]
+      output: [ OutString(t), '" °C"' ]
 temp_slowadc:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Ctb]Temperature of the slow adc"
@@ -683,6 +692,7 @@ temp_slowadc:
     GET:
       function: getTemperature
       input: [ 'slsDetectorDefs::SLOW_ADC_TEMP' ]
+      output: [ OutString(t), '" °C"' ]
 
 vm_a:
   inherit_actions: GET_IND_COMMAND
@@ -1260,7 +1270,7 @@ fmaster:
 ################# INTEGER_COMMAND_SET_NOID_GET_ID ############
 sync:
   inherit_actions: INTEGER_COMMAND_SET_NOID_GET_ID
-  help: "[0, 1]\n\t[Jungfrau][Moench] Enables or disables synchronization between modules."
+  help: "[0, 1]\n\t[Jungfrau][Moench] Enables or disables synchronization between modules. Sync mode requires at least one master configured. Also requires flatband cabling between master and slave with termination board."
   actions:
     GET:
       function: getSynchronization
@@ -2310,7 +2320,7 @@ tempvalues:
 
 
 exptime:
-  help: ""
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb] Exposure time\n\t[Mythen3] Exposure time of all gate signals in auto and trigger mode (internal gating). To specify gate index, use exptime1, exptime2, exptime3."
   infer_action: true # infer action based on actions' argc (they must be unique if true)
   actions:
     GET:
@@ -2351,6 +2361,7 @@ exptime:
 
 exptime1:
   inherit_actions: exptime
+  help: "[n_value]\n\t[Mythen3] Exposure time of gate signal 1 in auto and trigger mode (internal gating)."
   actions:
     GET:
       extra_variables:
@@ -2375,6 +2386,7 @@ exptime1:
 
 exptime2:
   inherit_actions: exptime1
+  help: "[n_value]\n\t[Mythen3] Exposure time of gate signal 2 in auto and trigger mode (internal gating)."
   actions:
     GET:
       extra_variables:
@@ -2389,6 +2401,7 @@ exptime2:
 
 exptime3:
   inherit_actions: exptime1
+  help: "[n_value]\n\t[Mythen3] Exposure time of gate signal 3 in auto and trigger mode (internal gating)."
   actions:
     GET:
       extra_variables:
@@ -2429,7 +2442,7 @@ firmwareversion:
           output: [ OutString(t) ]
 
 packageversion:
-  help: "\n\tPackage version (git branch)."
+  help: "\n\tPackage version."
   actions:
     GET:
       argc: 0

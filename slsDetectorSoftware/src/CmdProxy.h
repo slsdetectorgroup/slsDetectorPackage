@@ -1735,7 +1735,7 @@ class CmdProxy {
 
     GET_IND_COMMAND(temp_fpgafr, getTemperature,
                     slsDetectorDefs::TEMPERATURE_FPGA3, " °C",
-                    "[n_value]\n\t[Eiger]Temperature of the left front end "
+                    "[n_value]\n\t[Eiger]Temperature of the right front end "
                     "board fpga.");
 
     GET_IND_COMMAND(temp_slowadc, getTemperature,

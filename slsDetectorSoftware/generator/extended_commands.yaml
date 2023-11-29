@@ -2852,7 +2852,9 @@ exptime:
         store_result_in_t: false
   command_name: exptime
   function_alias: exptime
-  help: ''
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb]\
+    \ Exposure time\n\t[Mythen3] Exposure time of all gate signals in auto and trigger\
+    \ mode (internal gating). To specify gate index, use exptime1, exptime2, exptime3."
   infer_action: true
 exptime1:
   actions:
@@ -3013,7 +3015,8 @@ exptime1:
           store_result_in_t: false
   command_name: exptime1
   function_alias: exptime1
-  help: ''
+  help: "[n_value]\n\t[Mythen3] Exposure time of gate signal 1 in auto and trigger\
+    \ mode (internal gating)."
   infer_action: true
 exptime2:
   actions:
@@ -3174,7 +3177,8 @@ exptime2:
           store_result_in_t: false
   command_name: exptime2
   function_alias: exptime2
-  help: ''
+  help: "[n_value]\n\t[Mythen3] Exposure time of gate signal 2 in auto and trigger\
+    \ mode (internal gating)."
   infer_action: true
 exptime3:
   actions:
@@ -3335,7 +3339,8 @@ exptime3:
           store_result_in_t: false
   command_name: exptime3
   function_alias: exptime3
-  help: ''
+  help: "[n_value]\n\t[Mythen3] Exposure time of gate signal 3 in auto and trigger\
+    \ mode (internal gating)."
   infer_action: true
 exptimel:
   actions:
@@ -4879,7 +4884,6 @@ im_a:
         - int
         output:
         - OutString(t)
-        - "\" \xB0C\""
         require_det_id: true
         store_result_in_t: true
   command_name: im_a
@@ -4904,7 +4908,6 @@ im_b:
         - int
         output:
         - OutString(t)
-        - "\" \xB0C\""
         require_det_id: true
         store_result_in_t: true
   command_name: im_b
@@ -4929,7 +4932,6 @@ im_c:
         - int
         output:
         - OutString(t)
-        - "\" \xB0C\""
         require_det_id: true
         store_result_in_t: true
   command_name: im_c
@@ -4954,7 +4956,6 @@ im_d:
         - int
         output:
         - OutString(t)
-        - "\" \xB0C\""
         require_det_id: true
         store_result_in_t: true
   command_name: im_d
@@ -4979,7 +4980,6 @@ im_io:
         - int
         output:
         - OutString(t)
-        - "\" \xB0C\""
         require_det_id: true
         store_result_in_t: true
   command_name: im_io
@@ -5689,7 +5689,7 @@ packageversion:
         store_result_in_t: true
   command_name: packageversion
   function_alias: packageversion
-  help: "\n\tPackage version (git branch)."
+  help: "\n\tPackage version."
   infer_action: true
 parallel:
   actions:
@@ -10568,7 +10568,8 @@ sync:
   command_name: sync
   function_alias: sync
   help: "[0, 1]\n\t[Jungfrau][Moench] Enables or disables synchronization between\
-    \ modules."
+    \ modules. Sync mode requires at least one master configured. Also requires flatband\
+    \ cabling between master and slave with termination board."
   infer_action: true
   template: true
 syncclk:
@@ -10851,7 +10852,7 @@ temp_fpgafr:
         store_result_in_t: true
   command_name: temp_fpgafr
   function_alias: temp_fpgafr
-  help: "[n_value]\n\t[Eiger]Temperature of the left front end board fpga."
+  help: "[n_value]\n\t[Eiger]Temperature of the right front end board fpga."
   infer_action: true
   template: true
 temp_slowadc:
@@ -13548,7 +13549,6 @@ vm_a:
         - int
         output:
         - OutString(t)
-        - "\" \xB0C\""
         require_det_id: true
         store_result_in_t: true
   command_name: vm_a
@@ -13573,7 +13573,6 @@ vm_b:
         - int
         output:
         - OutString(t)
-        - "\" \xB0C\""
         require_det_id: true
         store_result_in_t: true
   command_name: vm_b
@@ -13598,7 +13597,6 @@ vm_c:
         - int
         output:
         - OutString(t)
-        - "\" \xB0C\""
         require_det_id: true
         store_result_in_t: true
   command_name: vm_c
@@ -13623,7 +13621,6 @@ vm_d:
         - int
         output:
         - OutString(t)
-        - "\" \xB0C\""
         require_det_id: true
         store_result_in_t: true
   command_name: vm_d
@@ -13648,7 +13645,6 @@ vm_io:
         - int
         output:
         - OutString(t)
-        - "\" \xB0C\""
         require_det_id: true
         store_result_in_t: true
   command_name: vm_io

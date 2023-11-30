@@ -1708,8 +1708,7 @@ dac:
         check_det_id: false
         convert_det_id: true
         exceptions:
-        - condition: args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0])
-            && det->getDetectorType().squash() != defs::CHIPTESTBOARD
+        - condition: is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: '"Dac indices can only be used for chip test board. Use daclist
             to get list of dac names for current detector."'
         extra_variables:
@@ -1725,6 +1724,8 @@ dac:
         - defs::dacIndex
         - bool
         output:
+        - args[0]
+        - ''' '''
         - OutString(t)
         require_det_id: true
         store_result_in_t: true
@@ -1738,8 +1739,7 @@ dac:
         check_det_id: false
         convert_det_id: true
         exceptions:
-        - condition: args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0])
-            && det->getDetectorType().squash() != defs::CHIPTESTBOARD
+        - condition: is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: '"Dac indices can only be used for chip test board. Use daclist
             to get list of dac names for current detector."'
         - condition: args[1] != "mv" && args[1] != "mV"
@@ -1757,6 +1757,8 @@ dac:
         - defs::dacIndex
         - bool
         output:
+        - args[0]
+        - ''' '''
         - OutString(t)
         - '" mV"'
         require_det_id: true
@@ -1774,8 +1776,7 @@ dac:
         check_det_id: false
         convert_det_id: true
         exceptions:
-        - condition: args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0])
-            && det->getDetectorType().squash() != defs::CHIPTESTBOARD
+        - condition: is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: '"Dac indices can only be used for chip test board. Use daclist
             to get list of dac names for current detector."'
         extra_variables:
@@ -1810,8 +1811,7 @@ dac:
         check_det_id: false
         convert_det_id: true
         exceptions:
-        - condition: args.size() > 0 && action != defs::HELP_ACTION && is_int(args[0])
-            && det->getDetectorType().squash() != defs::CHIPTESTBOARD
+        - condition: is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: '"Dac indices can only be used for chip test board. Use daclist
             to get list of dac names for current detector."'
         extra_variables:
@@ -2321,7 +2321,7 @@ defaultdac:
         - args[0]
         - ''' '''
         - args[1]
-        require_det_id: false
+        require_det_id: true
         store_result_in_t: false
       - arg_types:
         - defs::dacIndex
@@ -12893,6 +12893,7 @@ vchip_comp_adc:
         - int
         output:
         - args[0]
+        - ''' '''
         - OutStringHex(t)
         require_det_id: true
         store_result_in_t: true
@@ -12920,12 +12921,13 @@ vchip_comp_adc:
         - int
         output:
         - args[0]
+        - ''' '''
         - args[1]
         require_det_id: true
         store_result_in_t: false
   command_name: vchip_comp_adc
   function_alias: vchip_comp_adc
-  help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
+  help: "[chip index 0-9, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
     \ for comparator current of ADC."
   infer_action: true
   template: true
@@ -12951,6 +12953,7 @@ vchip_comp_fe:
         - int
         output:
         - args[0]
+        - ''' '''
         - OutStringHex(t)
         require_det_id: true
         store_result_in_t: true
@@ -12978,12 +12981,13 @@ vchip_comp_fe:
         - int
         output:
         - args[0]
+        - ''' '''
         - args[1]
         require_det_id: true
         store_result_in_t: false
   command_name: vchip_comp_fe
   function_alias: vchip_comp_fe
-  help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
+  help: "[chip index 0-9, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
     \ for comparator current of analogue front end."
   infer_action: true
   template: true
@@ -13009,6 +13013,7 @@ vchip_cs:
         - int
         output:
         - args[0]
+        - ''' '''
         - OutStringHex(t)
         require_det_id: true
         store_result_in_t: true
@@ -13036,12 +13041,13 @@ vchip_cs:
         - int
         output:
         - args[0]
+        - ''' '''
         - args[1]
         require_det_id: true
         store_result_in_t: false
   command_name: vchip_cs
   function_alias: vchip_cs
-  help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
+  help: "[chip index 0-9, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
     \ for current injection into preamplifier."
   infer_action: true
   template: true
@@ -13067,6 +13073,7 @@ vchip_opa_1st:
         - int
         output:
         - args[0]
+        - ''' '''
         - OutStringHex(t)
         require_det_id: true
         store_result_in_t: true
@@ -13094,12 +13101,13 @@ vchip_opa_1st:
         - int
         output:
         - args[0]
+        - ''' '''
         - args[1]
         require_det_id: true
         store_result_in_t: false
   command_name: vchip_opa_1st
   function_alias: vchip_opa_1st
-  help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
+  help: "[chip index 0-9, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
     \ for opa current for driving the other DACs in chip."
   infer_action: true
   template: true
@@ -13125,6 +13133,7 @@ vchip_opa_fd:
         - int
         output:
         - args[0]
+        - ''' '''
         - OutStringHex(t)
         require_det_id: true
         store_result_in_t: true
@@ -13152,12 +13161,13 @@ vchip_opa_fd:
         - int
         output:
         - args[0]
+        - ''' '''
         - args[1]
         require_det_id: true
         store_result_in_t: false
   command_name: vchip_opa_fd
   function_alias: vchip_opa_fd
-  help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
+  help: "[chip index 0-9, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
     \ current for CDS opa stage."
   infer_action: true
   template: true
@@ -13183,6 +13193,7 @@ vchip_ref_comp_fe:
         - int
         output:
         - args[0]
+        - ''' '''
         - OutStringHex(t)
         require_det_id: true
         store_result_in_t: true
@@ -13210,12 +13221,13 @@ vchip_ref_comp_fe:
         - int
         output:
         - args[0]
+        - ''' '''
         - args[1]
         require_det_id: true
         store_result_in_t: false
   command_name: vchip_ref_comp_fe
   function_alias: vchip_ref_comp_fe
-  help: "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
+  help: "[chip index 0-9, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac\
     \ for reference voltage of the comparator of analogue front end."
   infer_action: true
   template: true
@@ -13370,7 +13382,7 @@ vetofile:
         store_result_in_t: false
   command_name: vetofile
   function_alias: vetofile
-  help: "[chip index 0-10, -1 for all] [file name] \n\t[Gotthard2] Set veto reference\
+  help: "[chip index 0-9, -1 for all] [file name] \n\t[Gotthard2] Set veto reference\
     \ for each 128 channels for specific chip. The file should have 128 rows of gain\
     \ index and 12 bit value in dec"
   infer_action: true

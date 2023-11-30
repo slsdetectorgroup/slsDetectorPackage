@@ -2339,8 +2339,7 @@ std::string Caller::dac(int action) {
                  !is_int(args[0]))
                     ? det->getDacIndex(args[0])
                     : StringTo<defs::dacIndex>(args[0]);
-            if (args.size() > 0 && action != defs::HELP_ACTION &&
-                is_int(args[0]) &&
+            if (is_int(args[0]) &&
                 det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
                 throw RuntimeError(
                     "Dac indices can only be used for chip test board. Use "
@@ -2348,7 +2347,7 @@ std::string Caller::dac(int action) {
             }
             auto arg1 = StringTo<bool>("0");
             auto t = det->getDAC(dacIndex, arg1, std::vector<int>{det_id});
-            os << OutString(t) << '\n';
+            os << args[0] << ' ' << OutString(t) << '\n';
         }
 
         if (args.size() == 2) {
@@ -2357,8 +2356,7 @@ std::string Caller::dac(int action) {
                  !is_int(args[0]))
                     ? det->getDacIndex(args[0])
                     : StringTo<defs::dacIndex>(args[0]);
-            if (args.size() > 0 && action != defs::HELP_ACTION &&
-                is_int(args[0]) &&
+            if (is_int(args[0]) &&
                 det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
                 throw RuntimeError(
                     "Dac indices can only be used for chip test board. Use "
@@ -2370,7 +2368,7 @@ std::string Caller::dac(int action) {
             }
             auto arg1 = StringTo<bool>("1");
             auto t = det->getDAC(dacIndex, arg1, std::vector<int>{det_id});
-            os << OutString(t) << " mV" << '\n';
+            os << args[0] << ' ' << OutString(t) << " mV" << '\n';
         }
     }
 
@@ -2381,8 +2379,7 @@ std::string Caller::dac(int action) {
                  !is_int(args[0]))
                     ? det->getDacIndex(args[0])
                     : StringTo<defs::dacIndex>(args[0]);
-            if (args.size() > 0 && action != defs::HELP_ACTION &&
-                is_int(args[0]) &&
+            if (is_int(args[0]) &&
                 det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
                 throw RuntimeError(
                     "Dac indices can only be used for chip test board. Use "
@@ -2400,8 +2397,7 @@ std::string Caller::dac(int action) {
                  !is_int(args[0]))
                     ? det->getDacIndex(args[0])
                     : StringTo<defs::dacIndex>(args[0]);
-            if (args.size() > 0 && action != defs::HELP_ACTION &&
-                is_int(args[0]) &&
+            if (is_int(args[0]) &&
                 det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
                 throw RuntimeError(
                     "Dac indices can only be used for chip test board. Use "
@@ -3060,7 +3056,7 @@ std::string Caller::defaultdac(int action) {
         if (args.size() == 2) {
             auto arg0 = StringTo<defs::dacIndex>(args[0]);
             auto arg1 = StringTo<int>(args[1]);
-            det->setDefaultDac(arg0, arg1);
+            det->setDefaultDac(arg0, arg1, std::vector<int>{det_id});
             os << args[0] << ' ' << args[1] << '\n';
         }
 
@@ -16991,7 +16987,7 @@ std::string Caller::vchip_comp_adc(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: vchip_comp_adc" << std::endl;
-        os << R"V0G0N([chip index 0-10, -1 for all][10 bit hex value] 
+        os << R"V0G0N([chip index 0-9, -1 for all][10 bit hex value] 
 	[Gotthard2] On chip Dac for comparator current of ADC. )V0G0N"
            << std::endl;
         return os.str();
@@ -17045,7 +17041,7 @@ std::string Caller::vchip_comp_adc(int action) {
             auto arg1 = StringTo<int>(args[0]);
             auto t = det->getOnChipDAC(defs::VB_COMP_ADC, arg1,
                                        std::vector<int>{det_id});
-            os << args[0] << OutStringHex(t) << '\n';
+            os << args[0] << ' ' << OutStringHex(t) << '\n';
         }
     }
 
@@ -17055,7 +17051,7 @@ std::string Caller::vchip_comp_adc(int action) {
             auto arg2 = StringTo<int>(args[1]);
             det->setOnChipDAC(defs::VB_COMP_ADC, arg1, arg2,
                               std::vector<int>{det_id});
-            os << args[0] << args[1] << '\n';
+            os << args[0] << ' ' << args[1] << '\n';
         }
     }
 
@@ -17068,7 +17064,7 @@ std::string Caller::vchip_comp_fe(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: vchip_comp_fe" << std::endl;
-        os << R"V0G0N([chip index 0-10, -1 for all][10 bit hex value] 
+        os << R"V0G0N([chip index 0-9, -1 for all][10 bit hex value] 
 	[Gotthard2] On chip Dac for comparator current of analogue front end. )V0G0N"
            << std::endl;
         return os.str();
@@ -17122,7 +17118,7 @@ std::string Caller::vchip_comp_fe(int action) {
             auto arg1 = StringTo<int>(args[0]);
             auto t = det->getOnChipDAC(defs::VB_COMP_FE, arg1,
                                        std::vector<int>{det_id});
-            os << args[0] << OutStringHex(t) << '\n';
+            os << args[0] << ' ' << OutStringHex(t) << '\n';
         }
     }
 
@@ -17132,7 +17128,7 @@ std::string Caller::vchip_comp_fe(int action) {
             auto arg2 = StringTo<int>(args[1]);
             det->setOnChipDAC(defs::VB_COMP_FE, arg1, arg2,
                               std::vector<int>{det_id});
-            os << args[0] << args[1] << '\n';
+            os << args[0] << ' ' << args[1] << '\n';
         }
     }
 
@@ -17145,7 +17141,7 @@ std::string Caller::vchip_cs(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: vchip_cs" << std::endl;
-        os << R"V0G0N([chip index 0-10, -1 for all][10 bit hex value] 
+        os << R"V0G0N([chip index 0-9, -1 for all][10 bit hex value] 
 	[Gotthard2] On chip Dac for current injection into preamplifier. )V0G0N"
            << std::endl;
         return os.str();
@@ -17199,7 +17195,7 @@ std::string Caller::vchip_cs(int action) {
             auto arg1 = StringTo<int>(args[0]);
             auto t =
                 det->getOnChipDAC(defs::VB_CS, arg1, std::vector<int>{det_id});
-            os << args[0] << OutStringHex(t) << '\n';
+            os << args[0] << ' ' << OutStringHex(t) << '\n';
         }
     }
 
@@ -17209,7 +17205,7 @@ std::string Caller::vchip_cs(int action) {
             auto arg2 = StringTo<int>(args[1]);
             det->setOnChipDAC(defs::VB_CS, arg1, arg2,
                               std::vector<int>{det_id});
-            os << args[0] << args[1] << '\n';
+            os << args[0] << ' ' << args[1] << '\n';
         }
     }
 
@@ -17222,7 +17218,7 @@ std::string Caller::vchip_opa_1st(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: vchip_opa_1st" << std::endl;
-        os << R"V0G0N([chip index 0-10, -1 for all][10 bit hex value] 
+        os << R"V0G0N([chip index 0-9, -1 for all][10 bit hex value] 
 	[Gotthard2] On chip Dac for opa current for driving the other DACs in chip. )V0G0N"
            << std::endl;
         return os.str();
@@ -17276,7 +17272,7 @@ std::string Caller::vchip_opa_1st(int action) {
             auto arg1 = StringTo<int>(args[0]);
             auto t = det->getOnChipDAC(defs::VB_OPA_1ST, arg1,
                                        std::vector<int>{det_id});
-            os << args[0] << OutStringHex(t) << '\n';
+            os << args[0] << ' ' << OutStringHex(t) << '\n';
         }
     }
 
@@ -17286,7 +17282,7 @@ std::string Caller::vchip_opa_1st(int action) {
             auto arg2 = StringTo<int>(args[1]);
             det->setOnChipDAC(defs::VB_OPA_1ST, arg1, arg2,
                               std::vector<int>{det_id});
-            os << args[0] << args[1] << '\n';
+            os << args[0] << ' ' << args[1] << '\n';
         }
     }
 
@@ -17299,7 +17295,7 @@ std::string Caller::vchip_opa_fd(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: vchip_opa_fd" << std::endl;
-        os << R"V0G0N([chip index 0-10, -1 for all][10 bit hex value] 
+        os << R"V0G0N([chip index 0-9, -1 for all][10 bit hex value] 
 	[Gotthard2] On chip Dac current for CDS opa stage. )V0G0N"
            << std::endl;
         return os.str();
@@ -17353,7 +17349,7 @@ std::string Caller::vchip_opa_fd(int action) {
             auto arg1 = StringTo<int>(args[0]);
             auto t = det->getOnChipDAC(defs::VB_OPA_FD, arg1,
                                        std::vector<int>{det_id});
-            os << args[0] << OutStringHex(t) << '\n';
+            os << args[0] << ' ' << OutStringHex(t) << '\n';
         }
     }
 
@@ -17363,7 +17359,7 @@ std::string Caller::vchip_opa_fd(int action) {
             auto arg2 = StringTo<int>(args[1]);
             det->setOnChipDAC(defs::VB_OPA_FD, arg1, arg2,
                               std::vector<int>{det_id});
-            os << args[0] << args[1] << '\n';
+            os << args[0] << ' ' << args[1] << '\n';
         }
     }
 
@@ -17376,7 +17372,7 @@ std::string Caller::vchip_ref_comp_fe(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: vchip_ref_comp_fe" << std::endl;
-        os << R"V0G0N([chip index 0-10, -1 for all][10 bit hex value] 
+        os << R"V0G0N([chip index 0-9, -1 for all][10 bit hex value] 
 	[Gotthard2] On chip Dac for reference voltage of the comparator of analogue front end. )V0G0N"
            << std::endl;
         return os.str();
@@ -17430,7 +17426,7 @@ std::string Caller::vchip_ref_comp_fe(int action) {
             auto arg1 = StringTo<int>(args[0]);
             auto t = det->getOnChipDAC(defs::VREF_COMP_FE, arg1,
                                        std::vector<int>{det_id});
-            os << args[0] << OutStringHex(t) << '\n';
+            os << args[0] << ' ' << OutStringHex(t) << '\n';
         }
     }
 
@@ -17440,7 +17436,7 @@ std::string Caller::vchip_ref_comp_fe(int action) {
             auto arg2 = StringTo<int>(args[1]);
             det->setOnChipDAC(defs::VREF_COMP_FE, arg1, arg2,
                               std::vector<int>{det_id});
-            os << args[0] << args[1] << '\n';
+            os << args[0] << ' ' << args[1] << '\n';
         }
     }
 
@@ -17590,7 +17586,7 @@ std::string Caller::vetofile(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: vetofile" << std::endl;
-        os << R"V0G0N([chip index 0-10, -1 for all] [file name] 
+        os << R"V0G0N([chip index 0-9, -1 for all] [file name] 
 	[Gotthard2] Set veto reference for each 128 channels for specific chip. The file should have 128 rows of gain index and 12 bit value in dec )V0G0N"
            << std::endl;
         return os.str();

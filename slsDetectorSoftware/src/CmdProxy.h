@@ -1820,31 +1820,31 @@ class CmdProxy {
     INTEGER_USER_IND_COMMAND(
         vchip_comp_fe, getOnChipDAC, setOnChipDAC, StringTo<int>,
         defs::VB_COMP_FE,
-        "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] "
+        "[chip index 0-9, -1 for all][10 bit hex value] \n\t[Gotthard2] "
         "On chip Dac for comparator current of analogue front end.");
 
     INTEGER_USER_IND_COMMAND(
         vchip_opa_1st, getOnChipDAC, setOnChipDAC, StringTo<int>,
         defs::VB_OPA_1ST,
-        "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] "
+        "[chip index 0-9, -1 for all][10 bit hex value] \n\t[Gotthard2] "
         "On "
         "chip Dac for opa current for driving the other DACs in chip.");
 
     INTEGER_USER_IND_COMMAND(vchip_opa_fd, getOnChipDAC, setOnChipDAC,
                              StringTo<int>, defs::VB_OPA_FD,
-                             "[chip index 0-10, -1 for all][10 bit hex "
+                             "[chip index 0-9, -1 for all][10 bit hex "
                              "value] \n\t[Gotthard2] On "
                              "chip Dac current for CDS opa stage.");
 
     INTEGER_USER_IND_COMMAND(vchip_comp_adc, getOnChipDAC, setOnChipDAC,
                              StringTo<int>, defs::VB_COMP_ADC,
-                             "[chip index 0-10, -1 for all][10 bit hex "
+                             "[chip index 0-9, -1 for all][10 bit hex "
                              "value] \n\t[Gotthard2] On "
                              "chip Dac for comparator current of ADC.");
 
     INTEGER_USER_IND_COMMAND(vchip_ref_comp_fe, getOnChipDAC, setOnChipDAC,
                              StringTo<int>, defs::VREF_COMP_FE,
-                             "[chip index 0-10, -1 for all][10 bit hex "
+                             "[chip index 0-9, -1 for all][10 bit hex "
                              "value] \n\t[Gotthard2] On "
                              "chip Dac for reference voltage of the "
                              "comparator of analogue front "
@@ -1852,7 +1852,7 @@ class CmdProxy {
 
     INTEGER_USER_IND_COMMAND(
         vchip_cs, getOnChipDAC, setOnChipDAC, StringTo<int>, defs::VB_CS,
-        "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] "
+        "[chip index 0-9, -1 for all][10 bit hex value] \n\t[Gotthard2] "
         "On chip Dac for current injection into preamplifier.");
 
     /* acquisition */

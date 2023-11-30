@@ -2910,7 +2910,11 @@ rx_status:
       function: getReceiverStatus
       require_det_id: true
       output: [ OutString(t) ]
-      # TODO add specific error on PUT
+    # TODO make better specific error on PUT
+    # PUT:
+    #   exceptions:
+    #     - condition: "1"
+    #       message: '"INTERNAL ERROR: Invalid action: supported actions are ['GET']. Did you mean to use command 'rx_start' or 'rx_stop'?"'
 
 status:
   help: "[running, error, transmitting, finished, waiting, idle]\n\tDetector status. Goes to stop server."
@@ -2921,6 +2925,7 @@ status:
       require_det_id: true
       output: [ OutString(t) ]
     # TODO add specific error on PUT
+    # "Cannot put. Did you mean to use command 'start' or 'stop'?");
 
 
 scan:
@@ -2929,6 +2934,7 @@ scan:
     GET:
       argc: 0
       function: getScan
+      require_det_id: true
       output: [ OutString(t) ]
     PUT:
       check_det_id: true
@@ -2940,7 +2946,7 @@ scan:
           arg_types: [ int ]
           exceptions:
             - condition: 'StringTo<int>(args[0]) != 0'
-              message: '"Unknown argument " + args[0] + ". Did you mean 0?"'
+              message: '"Unknown argument " + args[0] + ". Did you mean 0 to disable scan?"'
           input: [ "defs::scanParameters()" ]
           input_types: [ auto ]
         - argc: 4
@@ -2980,7 +2986,7 @@ trigger:
 
 blockingtrigger:
   inherit_actions: Trigger
-  help: "\n\t[Eiger][Mythen3][Jungfrau][Moench] Sends software trigger signal to detector"
+  help: "\n\t[Eiger][Jungfrau][Moench] Sends software trigger signal to detector and blocks till the frames are sent out for that trigger."
   actions:
     PUT:
       extra_variables:

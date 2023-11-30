@@ -1414,7 +1414,7 @@ std::string CmdProxy::Scan(int action) {
         if (args.size() != 0) {
             WrongNumberOfParameters(0);
         }
-        auto t = det->getScan();
+        auto t = det->getScan(std::vector<int>{det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (det_id != -1) {

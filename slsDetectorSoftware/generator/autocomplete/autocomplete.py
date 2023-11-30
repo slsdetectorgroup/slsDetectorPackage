@@ -194,8 +194,13 @@ def generate_bash_autocomplete(output_path=Path(__file__).parent / 'bash_autocom
                         with if_block(f'${{IS_GET}} -eq {"1" if action == "GET" else "0"}'):
                             for argc in possible_argc:
                                 with if_block(f'"${{cword}}" == "{argc + 1}"'):
-                                    choices = get_types(possible_argc[argc])
-                                    writeline(f'FCN_RETURN="{" ".join(sorted(choices))}"')
+                                    if command_name in ['dac']:
+                                        print(f'{command_name}')
+                                        s="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
+                                        writeline(f'FCN_RETURN={s}')
+                                    else:
+                                        choices = get_types(possible_argc[argc])
+                                        writeline(f'FCN_RETURN="{" ".join(sorted(choices))}"')
                                     if 'special::path' in possible_argc[argc]:
                                         writeline('IS_PATH=1')
 

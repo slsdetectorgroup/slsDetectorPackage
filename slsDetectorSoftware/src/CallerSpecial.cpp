@@ -18,14 +18,14 @@ void Caller::call(const std::string &command,
                   const std::vector<std::string> &arguments, int detector_id,
                   int action, std::ostream &os, int receiver_id) {
     cmd = command;
-
+    args = arguments; //copy args before replacing
     std::string temp;
     while (temp != cmd) {
         temp = cmd;
         ReplaceIfDepreciated(cmd);
     }
 
-    args = arguments;
+    
     det_id = detector_id;
     rx_id = receiver_id;
     auto it = functions.find(cmd);
@@ -41,13 +41,19 @@ void Caller::call(const std::string &command,
 bool Caller::ReplaceIfDepreciated(std::string &command) {
     auto d_it = depreciated_functions.find(command);
     if (d_it != depreciated_functions.end()) {
-        LOG(logWARNING)
-            << command
-            << " is deprecated and will be removed. Please migrate to: "
-            << d_it->second;
+        
         // insert old command into arguments (for dacs)
         if (d_it->second == "dac") {
             args.insert(args.begin(), command);
+            LOG(logWARNING)
+            << command
+            << " is deprecated and will be removed. Please migrate to: "
+            << d_it->second << " " << command;
+        }else{
+            LOG(logWARNING)
+            << command
+            << " is deprecated and will be removed. Please migrate to: "
+            << d_it->second;
         }
         command = d_it->second;
         return true;

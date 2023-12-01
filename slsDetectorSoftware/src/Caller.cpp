@@ -3208,7 +3208,7 @@ std::string Caller::delayl(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: delayl" << std::endl;
         os << R"V0G0N(
-	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] DelayLeft Delay Left in Acquisition. 
+	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Delay Left in Acquisition. 
 	[Gotthard2] only in continuous mode. )V0G0N"
            << std::endl;
         return os.str();

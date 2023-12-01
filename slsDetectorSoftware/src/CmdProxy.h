@@ -1592,7 +1592,7 @@ class CmdProxy {
 
     TIME_GET_COMMAND(delayl, getDelayAfterTriggerLeft,
                      "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB]"
-                     " DelayLeft Delay Left in Acquisition."
+                     " Delay Left in Acquisition."
                      "\n\t[Gotthard2] only in continuous mode.");
 
     TIME_GET_COMMAND(periodl, getPeriodLeft,

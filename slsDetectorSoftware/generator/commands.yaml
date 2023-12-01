@@ -82,13 +82,13 @@ INTEGER_COMMAND_HEX_WIDTH16:
       argc: 0
       output: [ "OutStringHex(t, 16)" ]
     PUT:
-      function: ''
-      output: [ "ToStringHex(arg0, 16)" ]
-      input: [ 'args[0]' ]
-      input_types: [ uint64_t ]
       require_det_id: true
-      cast_input: [ true ]
+      function: ''
       argc: 1
+      input: [ 'args[0]' ]
+      cast_input: [ true ]
+      input_types: [ uint64_t ]
+      output: [ "ToStringHex(arg0, 16)" ]
 
 INTEGER_COMMAND_HEX:
   template: true
@@ -101,13 +101,13 @@ INTEGER_COMMAND_HEX:
       argc: 0
       output: [ "OutStringHex(t)" ]
     PUT:
-      function: ''
-      output: [ "args.front()" ]
-      input: [ 'args[0]' ]
-      input_types: [ uint32_t ]
       require_det_id: true
-      cast_input: [ true ]
+      function: ''
       argc: 1
+      input: [ 'args[0]' ]
+      cast_input: [ true ]
+      input_types: [ uint32_t ]
+      output: [ "args.front()" ]
 
 INTEGER_COMMAND_VEC_ID:
   template: true
@@ -120,13 +120,13 @@ INTEGER_COMMAND_VEC_ID:
       argc: 0
       output: [ OutString(t) ]
     PUT:
-      function: ''
-      output: [ 'args.front()' ]
-      input: [ 'args[0]' ]
-      input_types: [ int ]
       require_det_id: true
-      cast_input: [ true ]
+      function: ''
       argc: 1
+      input: [ 'args[0]' ]
+      cast_input: [ true ]
+      input_types: [ int ]
+      output: [ 'args.front()' ]
 
 INTEGER_COMMAND_VEC_ID_GET:
   template: true
@@ -462,6 +462,7 @@ subdeadtime:
       function: getSubDeadTime
     PUT:
       function: setSubDeadTime
+
 compdisabletime:
   help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Time before end of exposure when comparator is disabled. It is only possible for chipv1.1."
   inherit_actions: TIME_COMMAND
@@ -479,6 +480,7 @@ storagecell_delay:
       function: getStorageCellDelay
     PUT:
       function: setStorageCellDelay
+
 burstperiod:
   help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Gotthard2] Period between 2 bursts. Only in burst mode and auto timing mode."
   inherit_actions: TIME_COMMAND
@@ -490,47 +492,53 @@ burstperiod:
 
 ################# TIME_GET_COMMAND #############
 delayl:
-  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] DelayLeft Delay Left in Acquisition. \n\t[Gotthard2] only in continuous mode."
+  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Delay Left in Acquisition. \n\t[Gotthard2] only in continuous mode."
   inherit_actions: TIME_GET_COMMAND
   actions:
     GET:
       function: getDelayAfterTriggerLeft
-frametime:
-  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Timestamp at a frame start.\n\t[Gotthard2] not in burst and auto mode."
-  inherit_actions: TIME_GET_COMMAND
-  actions:
-    GET:
-      function: getMeasurementTime
-runtime:
-  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Time from detector start up.\n\t[Gotthard2] not in burst and auto mode."
-  inherit_actions: TIME_GET_COMMAND
-  actions:
-    GET:
-      function: getActualTime
-exptimel:
-  help: "[(optional unit) ns|us|ms|s]\n\t[Gotthard] Exposure time left for current frame. "
-  inherit_actions: TIME_GET_COMMAND
-  actions:
-    GET:
-      function: getExptimeLeft
-measuredsubperiod:
-  help: "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured sub frame period between last sub frame and previous one."
-  inherit_actions: TIME_GET_COMMAND
-  actions:
-    GET:
-      function: getMeasuredSubFramePeriod
-measuredperiod:
-  help: "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured frame period between last frame and previous one. Can be measured with minimum 2 frames in an acquisition."
-  inherit_actions: TIME_GET_COMMAND
-  actions:
-    GET:
-      function: getMeasuredPeriod
+
 periodl:
   help: "\n\t[Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] Period left for current frame. \n\t[Gotthard2] only in continuous mode."
   inherit_actions: TIME_GET_COMMAND
   actions:
     GET:
       function: getPeriodLeft
+
+measuredperiod:
+  help: "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured frame period between last frame and previous one. Can be measured with minimum 2 frames in an acquisition."
+  inherit_actions: TIME_GET_COMMAND
+  actions:
+    GET:
+      function: getMeasuredPeriod
+
+measuredsubperiod:
+  help: "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured sub frame period between last sub frame and previous one."
+  inherit_actions: TIME_GET_COMMAND
+  actions:
+    GET:
+      function: getMeasuredSubFramePeriod
+
+exptimel:
+  help: "[(optional unit) ns|us|ms|s]\n\t[Gotthard] Exposure time left for current frame. "
+  inherit_actions: TIME_GET_COMMAND
+  actions:
+    GET:
+      function: getExptimeLeft
+
+runtime:
+  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Time from detector start up.\n\t[Gotthard2] not in burst and auto mode."
+  inherit_actions: TIME_GET_COMMAND
+  actions:
+    GET:
+      function: getActualTime
+
+frametime:
+  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Timestamp at a frame start.\n\t[Gotthard2] not in burst and auto mode."
+  inherit_actions: TIME_GET_COMMAND
+  actions:
+    GET:
+      function: getMeasurementTime
 
 ################# STRING_COMMAND #################
 settingspath:
@@ -542,6 +550,7 @@ settingspath:
     PUT:
       function: setSettingsPath
       arg_types: [ special::path ]
+
 fpath:
   help: "[path]\n\tDirectory where output data files are written in receiver. Default is '/'. \n\tIf path does not exist, it will try to create it."
   inherit_actions: STRING_COMMAND
@@ -551,6 +560,7 @@ fpath:
     PUT:
       function: setFilePath
       arg_types: [ special::path ]
+
 fname:
   help: "[name]\n\tFile name prefix for output data file. Default is run. File name: [file name prefix]_d[detector index]_f[sub file index]_[acquisition/file index].raw."
   inherit_actions: STRING_COMMAND
@@ -569,6 +579,7 @@ patioctrl:
       function: getPatternIOControl
     PUT:
       function: setPatternIOControl
+
 patmask:
   help: "[64 bit mask]\n\t[Ctb][Mythen3] Selects the bits that will have a pattern mask applied to the selected patmask for every pattern."
   inherit_actions: INTEGER_COMMAND_HEX_WIDTH16
@@ -577,6 +588,7 @@ patmask:
       function: getPatternMask
     PUT:
       function: setPatternMask
+
 patsetbit:
   help: "[64 bit mask]\n\t[Ctb][Mythen3] Sets the mask applied to every pattern to the selected bits."
   inherit_actions: INTEGER_COMMAND_HEX_WIDTH16
@@ -585,7 +597,6 @@ patsetbit:
       function: getPatternBitMask
     PUT:
       function: setPatternBitMask
-
 
 ################# INTEGER_COMMAND_HEX #################
 adcenable:
@@ -596,6 +607,7 @@ adcenable:
       function: getADCEnableMask
     PUT:
       function: setADCEnableMask
+
 adcenable10g:
   help: "[bitmask]\n\t[Ctb] ADC Enable Mask for 10Gb mode for each 32 ADC channel. However, if any of a consecutive 4 bits are enabled, the complete 4 bits are enabled."
   inherit_actions: INTEGER_COMMAND_HEX
@@ -604,6 +616,7 @@ adcenable10g:
       function: getTenGigaADCEnableMask
     PUT:
       function: setTenGigaADCEnableMask
+
 transceiverenable:
   help: "[bitmask]\n\t[Ctb] Transceiver Enable Mask. Enable for each 4 Transceiver channel."
   inherit_actions: INTEGER_COMMAND_HEX
@@ -612,6 +625,7 @@ transceiverenable:
       function: getTransceiverEnableMask
     PUT:
       function: setTransceiverEnableMask
+
 adcinvert:
   help: "[bitmask]\n\t[Ctb][Jungfrau][Moench] ADC Inversion Mask.\n\t[Jungfrau][Moench] Inversions on top of the default mask."
   inherit_actions: INTEGER_COMMAND_HEX
@@ -622,6 +636,15 @@ adcinvert:
       function: setADCInvert
 
 ################# INTEGER_COMMAND_VEC_ID #################
+settings:
+  help: "[standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, highgain0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, verylowgain, g1_hg, g1_lg, g2_hc_hg, g2_hc_lg, g2_lc_hg, g2_lc_lg, g4_hg, g4_lg, gain0]\n\t Detector Settings\n\t[Jungfrau] - [ gain0 | highgain0]\n\t[Gotthard] - [dynamicgain | highgain | lowgain | mediumgain | veryhighgain]\n\t[Gotthard] Also loads default dacs on to the detector.\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]\n\t[Mythen3] - [standard | fast | highgain] Also changes vrshaper and vrpreamp. \n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] threshold and settings loaded from file found in settingspath. \n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getSettings
+    PUT:
+      function: setSettings
+      input_types: [ slsDetectorDefs::detectorSettings ]
 
 trimval:
   help: "[n_trimval]\n\t[Eiger][Mythen3] All trimbits set to this value. Returns -1 if all trimbits are different values."
@@ -650,6 +673,7 @@ row:
       function: getRow
     PUT:
       function: setRow
+
 column:
   help: "[value]\n\tSet Detector column (udp header) to value. \n\tGui uses it to rearrange for complete image"
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -658,510 +682,7 @@ column:
       function: getColumn
     PUT:
       function: setColumn
-highvoltage:
-  help: "[n_value]\n\tHigh voltage to the sensor in Voltage. \n\t[Gotthard] [0|90|110|120|150|180|200] \n\t[Eiger][Mythen3][Gotthard2] 0-200 \n\t[Jungfrau][Moench][Ctb] [0|60-200]"
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getHighVoltage
-    PUT:
-      function: setHighVoltage
-powerchip:
-  help: "[0, 1]\n\t[Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. \n\t[Jungfrau][Moench] Default is 0. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1)\n\t[Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getPowerChip
-    PUT:
-      function: setPowerChip
-      input_types: [ bool ]
-imagetest:
-  help: "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated values when taking an acquisition. Default is 0.\n\t[Eiger][Jungfrau][Moench] Only for Virtual servers. If 0, each pixel intensity incremented by 1. If 1, all pixels almost saturated."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getImageTestMode
-    PUT:
-      function: setImageTestMode
-      input_types: [ bool ]
-parallel:
-  help: "[0, 1]\n\t[Eiger][Mythen3][Gotthard2][Moench] Enable or disable parallel mode.\n\t[Mythen3] If exptime is too short, the acquisition will return ERROR status and take fewer frames than expected.\n\t[Mythen3][Eiger][Moench] Default: Non parallel.\n\t[Gotthard2] Default: Parallel. Non parallel mode works only in continuous mode."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getParallelMode
-    PUT:
-      function: setParallelMode
-      input_types: [ bool ]
-filterresistor:
-  help: "[value] [Gotthard2][Jungfrau] Set filter resistor. Increasing values for increasing resistance.\n\t[Gotthard2] Options: [0|1|2|3]. Default is 0.\n\t[Jungfrau] Options: [0|1]. Default is 1."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getFilterResistor
-    PUT:
-      function: setFilterResistor
-dbitpipeline:
-  help: "[n_value]\n\t[Ctb][Gotthard2] Pipeline of the clock for latching digital bits.\n\t[Gotthard2] Options: 0-7\n\t[CTB] Options: 0-255"
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getDBITPipeline
-    PUT:
-      function: setDBITPipeline
-readnrows:
-  help: "\n\t[1-256]\n\t\t[Eiger] Number of rows to readout per half module starting from the centre. Options: 0 - 256. 256 is default. The permissible values depend on dynamic range and 10Gbe enabled.\n\t[8-512 (multiple of 8)]\n\t\t[Jungfrau] Number of rows per module starting from the centre. Options: 8 - 512, must be multiples of 8. Default is 512.\n\t\t[Moench] Number of rows per module starting from the centre. Options:16 - 400, must be multiples of 16. Default is 400."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getReadNRows
-    PUT:
-      function: setReadNRows
-numinterfaces:
-  help: "[1, 2]\n\t[Jungfrau][Moench] Number of udp interfaces to stream data from detector. Default: 1.\n\tAlso enables second interface in receiver for listening (Writes a file per interface if writing enabled).\n\tAlso restarts client and receiver zmq sockets if zmq streaming enabled.\n\t[Eiger] Only gets with result 2."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getNumberofUDPInterfaces
-    PUT:
-      function: setNumberofUDPInterfaces
-selinterface:
-  help: "[0, 1]\n\t[Jungfrau][Moench] The udp interface to stream data from detector. Effective only when number of interfaces is 1. Default: 0 (outer)"
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getSelectedUDPInterface
-    PUT:
-      function: selectUDPInterface
-      input_types: [ bool ]
-udp_firstdst:
-  help: "\n[0 - 31 (or number of udp destinations)]\n\t[Jungfrau][Moench][Gotthard2]\n[0-63]\n\t[Mythen3]\n\n\t One can set which is the first destination that the detector will stream images out from in a round robin fashion. The entry must not have been empty. Default: 0"
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getFirstUDPDestination
-    PUT:
-      function: setFirstUDPDestination
-tengiga:
-  help: "[0, 1]\n\t[Eiger][Ctb][Mythen3] 10GbE Enable."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getTenGiga
-    PUT:
-      function: setTenGiga
-      input_types: [ bool ]
-flowcontrol10g:
-  help: "[0, 1]\n\t[Eiger][Jungfrau][Moench] 10GbE Flow Control."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getTenGigaFlowControl
-    PUT:
-      function: setTenGigaFlowControl
-      input_types: [ bool ]
-txdelay_frame:
-  help: "[n_delay]\n\t[Eiger][Jungfrau][Moench][Mythen3] Transmission delay of first udp packet being streamed out of the module.\n\t[Jungfrau][Moench] [0-31] Each value represents 1 ms\n\t[Eiger] Additional delay to txdelay_left and txdelay_right. Each value represents 10ns. Typical value is 50000.\n\t[Mythen3] [0-16777215] Each value represents 8 ns (125 MHz clock), max is 134 ms."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getTransmissionDelayFrame
-    PUT:
-      function: setTransmissionDelayFrame
-txdelay_left:
-  help: "[n_delay]\n\t[Eiger] Transmission delay of first packet in an image being streamed out of the module's left UDP port. Each value represents 10ns. Typical value is 50000."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getTransmissionDelayLeft
-    PUT:
-      function: setTransmissionDelayLeft
-txdelay_right:
-  help: "[n_delay]\n\t[Eiger] Transmission delay of first packet in an image being streamed out of the module's right UDP port. Each value represents 10ns. Typical value is 50000."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getTransmissionDelayRight
-    PUT:
-      function: setTransmissionDelayRight
-rx_fifodepth:
-  help: "[n_frames]\n\tSet the number of frames in the receiver fifo depth (buffer between listener and writer threads)."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getRxFifoDepth
-    PUT:
-      function: setRxFifoDepth
-rx_silent:
-  help: "[0, 1]\n\tSwitch on or off receiver text output during acquisition."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getRxSilentMode
-    PUT:
-      function: setRxSilentMode
-      input_types: [ bool ]
-rx_padding:
-  help: "[0, 1]\n\tPartial frames padding enable in the receiver. Default: enabled. Disabling is fastest."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getPartialFramesPadding
-    PUT:
-      function: setPartialFramesPadding
-      input_types: [ bool ]
-rx_udpsocksize:
-  help: "[n_size]\n\tUDP socket buffer size in receiver. Tune rmem_default and rmem_max accordingly. Max value is INT_MAX/2."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getRxUDPSocketBufferSize
-    PUT:
-      function: setRxUDPSocketBufferSize
-rx_lock:
-  help: "[0, 1]\n\tLock receiver to one client IP, 1 locks, 0 unlocks. Default is unlocked."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getRxLock
-    PUT:
-      function: setRxLock
-      input_types: [ bool ]
-rx_arping:
-  help: "[0, 1]\n\tStarts a thread in slsReceiver to arping the interface it is listening to every minute. Useful in 10G mode."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getRxArping
-    PUT:
-      function: setRxArping
-      input_types: [ bool ]
-fwrite:
-  help: "[0, 1]\n\tEnable or disable receiver file write. Default is 1."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getFileWrite
-    PUT:
-      function: setFileWrite
-      input_types: [ bool ]
-foverwrite:
-  help: "[0, 1]\n\tEnable or disable file overwriting. Default is 1."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getFileOverWrite
-    PUT:
-      function: setFileOverWrite
-      input_types: [ bool ]
-rx_framesperfile:
-  help: "[n_frames]\n\tNumber of frames per file in receiver in an acquisition. Default depends on detector type. 0 is infinite or all frames in single file."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getFramesPerFile
-    PUT:
-      function: setFramesPerFile
-rx_zmqstream:
-  help: "[0, 1]\n\tEnable/ disable data streaming from receiver via zmq (eg. to GUI or to another process for further processing). This creates/ destroys zmq streamer threads in receiver. \n\tSwitching to Gui automatically enables data streaming in receiver. \n\tSwitching back to command line acquire will require disabling data streaming in receiver for fast applications. "
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getRxZmqDataStream
-    PUT:
-      function: setRxZmqDataStream
-      input_types: [ bool ]
-rx_zmqfreq:
-  help: "[nth frame]\n\tFrequency of frames streamed out from receiver via zmq\n\tDefault: 1, Means every frame is streamed out. \n\tIf 2, every second frame is streamed out. \n\tIf 0, streaming timer is the timeout, after which current frame is sent out. (default timeout is 500 ms). Usually used for gui purposes."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getRxZmqFrequency
-    PUT:
-      function: setRxZmqFrequency
-rx_zmqstartfnum:
-  help: "[fnum]\n\tThe starting frame index to stream out. 0 by default, which streams the first frame in an acquisition, and then depending on the rx zmq frequency/ timer"
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getRxZmqStartingFrame
-    PUT:
-      function: setRxZmqStartingFrame
-overflow:
-  help: "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in 32 bit mode. Default is disabled."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getOverFlowMode
-    PUT:
-      function: setOverFlowMode
-      input_types: [ bool ]
-interruptsubframe:
-  help: "[0, 1]\n\t[Eiger] 1 interrupts last subframe at required exposure time. 0 will wait for last sub frame to finish exposing. 0 is default."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getInterruptSubframe
-    PUT:
-      function: setInterruptSubframe
-      input_types: [ bool ]
-activate:
-  help: "[0, 1] \n\t[Eiger] 1 is default. 0 deactivates readout and does not send data."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getActive
-    PUT:
-      function: setActive
-      input_types: [ bool ]
-partialreset:
-  help: "[0, 1]\n\t[Eiger] Sets up detector to do partial or complete reset at start of acquisition. 0 complete reset, 1 partial reset. Default is complete reset. Advanced function!"
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getPartialReset
-    PUT:
-      function: setPartialReset
-      input_types: [ bool ]
-top:
-  help: "[0, 1]\n\t[Eiger] Sets half module to top (1), else bottom."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getTop
-    PUT:
-      function: setTop
-      input_types: [ bool ]
-temp_threshold:
-  help: "[n_temp (in degrees)]\n\t[Jungfrau][Moench] Threshold temperature in degrees. If temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getThresholdTemperature
-    PUT:
-      function: setThresholdTemperature
-temp_control:
-  help: "[0, 1]\n\t[Jungfrau][Moench] Temperature control enable. Default is 0 (disabled). If temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getTemperatureControl
-    PUT:
-      function: setTemperatureControl
-      input_types: [ bool ]
-autocompdisable:
-  help: "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, the on-chip gain switching is active during the entire exposure.This mode disables the on - chip gain switching comparator automatically after 93.75% (only for chipv1.0) of exposure time (only for longer than 100us). It is possible to set the duration for chipv1.1 using compdisabletime command.\n\tDefault is 0 or this mode disabled(comparator enabled throughout). 1 enables mode. 0 disables mode. "
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getAutoComparatorDisable
-    PUT:
-      function: setAutoComparatorDisable
-      input_types: [ bool ]
-storagecell_start:
-  help: "[0-max]\n\t[Jungfrau] Storage cell that stores the first acquisition of the series. max is 15 (default) for chipv1.0 and 3 (default) for chipv1.1. For advanced users only."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getStorageCellStart
-    PUT:
-      function: setStorageCellStart
-filtercells:
-  help: "[0-12]\n\t[Jungfrau] Set Filter Cell. Only for chipv1.1. Advanced user Command"
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getNumberOfFilterCells
-    PUT:
-      function: setNumberOfFilterCells
-veto:
-  help: "[0, 1]\n\t[Gotthard2] Enable or disable veto data data from chip. Default is 0."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getVeto
-    PUT:
-      function: setVeto
-      input_types: [ bool ]
-gates:
-  help: "[n_gates]\n\t[Mythen3] Number of external gates in gating or trigger_gating mode (external gating)."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getNumberOfGates
-    PUT:
-      function: setNumberOfGates
-interpolation:
-  help: "[0, 1]\n\t[Mythen3] Enables or disables interpolation. Default is disabled.  Interpolation mode enables all counters and disables vth3. Disabling sets back counter mask and vth3."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getInterpolation
-    PUT:
-      function: setInterpolation
-      input_types: [ bool ]
-pumpprobe:
-  help: "[0, 1]\n\t[Mythen3] Enables or disables pump probe mode. Default is disabled. Pump probe mode only enables vth2. Disabling sets back to previous value."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getPumpProbe
-    PUT:
-      function: setPumpProbe
-      input_types: [ bool ]
-apulse:
-  help: "[0, 1]\n\t[Mythen3] Enables or disables analog pulsing. Default is disabled"
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getAnalogPulsing
-    PUT:
-      function: setAnalogPulsing
-      input_types: [ bool ]
-dpulse:
-  help: "[0, 1]\n\t[Mythen3] Enables or disables digital pulsing. Default is disabled"
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getDigitalPulsing
-    PUT:
-      function: setDigitalPulsing
-      input_types: [ bool ]
-asamples:
-  help: "[n_samples]\n\t[CTB] Number of analog samples expected."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getNumberOfAnalogSamples
-    PUT:
-      function: setNumberOfAnalogSamples
-adcclk:
-  help: "[n_clk in MHz]\n\t[Ctb] ADC clock frequency in MHz."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getADCClock
-    PUT:
-      function: setADCClock
-runclk:
-  help: "[n_clk in MHz]\n\t[Ctb] Run clock in MHz."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getRUNClock
-    PUT:
-      function: setRUNClock
-dsamples:
-  help:  "[n_value]\n\t[CTB] Number of digital samples expected."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getNumberOfDigitalSamples
-    PUT:
-      function: setNumberOfDigitalSamples
-tsamples:
-  help: "[n_value]\n\t[CTB] Number of transceiver samples expected."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getNumberOfTransceiverSamples
-    PUT:
-      function: setNumberOfTransceiverSamples
-dbitclk:
-  help: "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getDBITClock
-    PUT:
-      function: setDBITClock
-extsampling:
-  help: "[0, 1]\n\t[Ctb] Enable for external sampling signal for digital data to signal by extsampling src command. For advanced users only."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getExternalSampling
-    PUT:
-      function: setExternalSampling
-      input_types: [ bool ]
-extsamplingsrc:
-  help: "[0-63]\n\t[Ctb] Sampling source signal for digital data. For advanced users only."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getExternalSamplingSource
-    PUT:
-      function: setExternalSamplingSource
-rx_dbitoffset:
-  help: "[n_bytes]\n\t[Ctb] Offset in bytes in digital data to skip in receiver."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getRxDbitOffset
-    PUT:
-      function: setRxDbitOffset
-led:
-  help: "[0, 1]\n\t[Ctb] Switches on/off all LEDs."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getLEDEnable
-    PUT:
-      function: setLEDEnable
-      input_types: [ bool ]
-adcpipeline:
-  help: "[n_value]\n\t[Ctb][Moench] Pipeline for ADC clock."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getADCPipeline
-    PUT:
-      function: setADCPipeline
-updatemode:
-  help: "[0|1]\n\tRestart the detector server in update mode or not. This is useful when server-firmware compatibility is at its worst and server cannot start up normally"
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getUpdateMode
-    PUT:
-      function: setUpdateMode
-port:
-  help: "[n]\n\tPort number of the control server on detector for detector-client tcp interface. Default is 1952. Normally unchanged. Set different ports for virtual servers on same pc."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getControlPort
-    PUT:
-      input_types: [ uint16_t ]
-      function: setControlPort
-stopport:
-  help: "[n]\n\tPort number of the stop server on detector for detector-client tcp interface. Default is 1953. Normally unchanged."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getStopPort
-    PUT:
-      input_types: [ uint16_t ]
-      function: setStopPort
-lock:
-  help: "[0, 1]\n\tLock detector to one IP, 1: locks. Default is unlocked"
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getDetectorLock
-    PUT:
-      function: setDetectorLock
-      input_types: [ bool ]
-#
-settings:
-  help: "[standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, highgain0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, verylowgain, g1_hg, g1_lg, g2_hc_hg, g2_hc_lg, g2_lc_hg, g2_lc_lg, g4_hg, g4_lg, gain0]\n\t Detector Settings\n\t[Jungfrau] - [ gain0 | highgain0]\n\t[Gotthard] - [dynamicgain | highgain | lowgain | mediumgain | veryhighgain]\n\t[Gotthard] Also loads default dacs on to the detector.\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]\n\t[Mythen3] - [standard | fast | highgain] Also changes vrshaper and vrpreamp. \n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] threshold and settings loaded from file found in settingspath. \n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getSettings
-    PUT:
-      function: setSettings
-      input_types: [ slsDetectorDefs::detectorSettings ]
+
 timing:
   help: "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Moench][Gotthard][Ctb][Gotthard2] [auto|trigger]\n\t[Mythen3] [auto|trigger|gating|trigger_gating]\n\t[Eiger] [auto|trigger|gating|burst_trigger]"
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -1171,6 +692,73 @@ timing:
     PUT:
       function: setTimingMode
       input_types: [ slsDetectorDefs::timingMode ]
+      
+highvoltage:
+  help: "[n_value]\n\tHigh voltage to the sensor in Voltage. \n\t[Gotthard] [0|90|110|120|150|180|200] \n\t[Eiger][Mythen3][Gotthard2] 0-200 \n\t[Jungfrau][Moench][Ctb] [0|60-200]"
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getHighVoltage
+    PUT:
+      function: setHighVoltage
+
+powerchip:
+  help: "[0, 1]\n\t[Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. \n\t[Jungfrau][Moench] Default is 0. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1)\n\t[Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getPowerChip
+    PUT:
+      function: setPowerChip
+      input_types: [ bool ]
+
+imagetest:
+  help: "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated values when taking an acquisition. Default is 0.\n\t[Eiger][Jungfrau][Moench] Only for Virtual servers. If 0, each pixel intensity incremented by 1. If 1, all pixels almost saturated."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getImageTestMode
+    PUT:
+      function: setImageTestMode
+      input_types: [ bool ]
+
+parallel:
+  help: "[0, 1]\n\t[Eiger][Mythen3][Gotthard2][Moench] Enable or disable parallel mode.\n\t[Mythen3] If exptime is too short, the acquisition will return ERROR status and take fewer frames than expected.\n\t[Mythen3][Eiger][Moench] Default: Non parallel.\n\t[Gotthard2] Default: Parallel. Non parallel mode works only in continuous mode."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getParallelMode
+    PUT:
+      function: setParallelMode
+      input_types: [ bool ]
+
+filterresistor:
+  help: "[value] [Gotthard2][Jungfrau] Set filter resistor. Increasing values for increasing resistance.\n\t[Gotthard2] Options: [0|1|2|3]. Default is 0.\n\t[Jungfrau] Options: [0|1]. Default is 1."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getFilterResistor
+    PUT:
+      function: setFilterResistor
+
+dbitpipeline:
+  help: "[n_value]\n\t[Ctb][Gotthard2] Pipeline of the clock for latching digital bits.\n\t[Gotthard2] Options: 0-7\n\t[CTB] Options: 0-255"
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getDBITPipeline
+    PUT:
+      function: setDBITPipeline
+
+readnrows:
+  help: "\n\t[1-256]\n\t\t[Eiger] Number of rows to readout per half module starting from the centre. Options: 0 - 256. 256 is default. The permissible values depend on dynamic range and 10Gbe enabled.\n\t[8-512 (multiple of 8)]\n\t\t[Jungfrau] Number of rows per module starting from the centre. Options: 8 - 512, must be multiples of 8. Default is 512.\n\t\t[Moench] Number of rows per module starting from the centre. Options:16 - 400, must be multiples of 16. Default is 400."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getReadNRows
+    PUT:
+      function: setReadNRows
+
 nextframenumber:
   help: "[n_value]\n\t[Eiger][Jungfrau][Moench][CTB] Next frame number. Stopping acquisition might result in different frame numbers for different modules."
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -1180,79 +768,34 @@ nextframenumber:
     PUT:
       function: setNextFrameNumber
       input_types: [ uint64_t ]
-findex:
-  help: "[n_value]\n\tFile or Acquisition index."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getAcquisitionIndex
-    PUT:
-      function: setAcquisitionIndex
-      input_types: [ uint64_t ]
 
-rx_discardpolicy:
-  help: "[nodiscard (default)|discardempty|discardpartial(fastest)]\n\tFrame discard policy of receiver. nodiscard does not discard frames, discardempty discards empty frames, discardpartial discards partial frames."
+numinterfaces:
+  help: "[1, 2]\n\t[Jungfrau][Moench] Number of udp interfaces to stream data from detector. Default: 1.\n\tAlso enables second interface in receiver for listening (Writes a file per interface if writing enabled).\n\tAlso restarts client and receiver zmq sockets if zmq streaming enabled.\n\t[Eiger] Only gets with result 2."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
-      function: getRxFrameDiscardPolicy
+      function: getNumberofUDPInterfaces
     PUT:
-      function: setRxFrameDiscardPolicy
-      input_types: [ slsDetectorDefs::frameDiscardPolicy ]
-fformat:
-  help: "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be compiled with HDF5 flags. Default is binary."
+      function: setNumberofUDPInterfaces
+
+selinterface:
+  help: "[0, 1]\n\t[Jungfrau][Moench] The udp interface to stream data from detector. Effective only when number of interfaces is 1. Default: 0 (outer)"
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
-      function: getFileFormat
+      function: getSelectedUDPInterface
     PUT:
-      function: setFileFormat
-      input_types: [ slsDetectorDefs::fileFormat ]
-cdsgain:
-  help: "[0, 1]\n\t[Gotthard2] Enable or disable CDS gain. Default is disabled."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getCDSGain
-    PUT:
-      function: setCDSGain
+      function: selectUDPInterface
       input_types: [ bool ]
-gainmode:
-  help: "[dynamicgain|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t[Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, you can damage the detector!!!"
+
+udp_firstdst:
+  help: "\n[0 - 31 (or number of udp destinations)]\n\t[Jungfrau][Moench][Gotthard2]\n[0-63]\n\t[Mythen3]\n\n\t One can set which is the first destination that the detector will stream images out from in a round robin fashion. The entry must not have been empty. Default: 0"
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
-      function: getGainMode
+      function: getFirstUDPDestination
     PUT:
-      function: setGainMode
-      input_types: [ slsDetectorDefs::gainMode ]
-timingsource:
-  help: "[internal|external]\n\t[Gotthard2] Timing source. Internal is crystal and external is system timing. Default is internal."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getTimingSource
-    PUT:
-      function: setTimingSource
-      input_types: [ slsDetectorDefs::timingSourceType ]
-romode:
-  help: "[analog|digital|analog_digital|transceiver|digital_transceiver]\n\t[CTB] Readout mode. Default is analog."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getReadoutMode
-    PUT:
-      function: setReadoutMode
-      input_types: [ slsDetectorDefs::readoutMode ]
-polarity:
-  help: "[pos|neg]\n\t[Mythen3] Sets negative or positive polarity. Default is positive"
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getPolarity
-    PUT:
-      function: setPolarity
-      input_types: [ defs::polarity ]
+      function: setFirstUDPDestination
 
 udp_srcmac:
   help: "[x:x:x:x:x:x]\n\tMac address of the detector (source) udp interface. \n\t[Eiger] Do not set as detector will replace with its own DHCP Mac (1G) or DHCP Mac + 1 (10G)."
@@ -1265,6 +808,7 @@ udp_srcmac:
       input_types: [ MacAddr ]
       input: [ 'MacAddr(args[0])' ]
       cast_input: [ false ]
+
 udp_srcmac2:
   help: "[x:x:x:x:x:x]\n\t[Jungfrau][Moench] Mac address of the top half or inner (source) udp interface. "
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -1276,6 +820,7 @@ udp_srcmac2:
       input_types: [ MacAddr ]
       input: [ 'MacAddr(args[0])' ]
       cast_input: [ false ]
+
 udp_dstmac:
   help: "[x:x:x:x:x:x]\n\tMac address of the receiver (destination) udp interface. Not mandatory to set as udp_dstip retrieves it from slsReceiver process, but must be set if you use a custom receiver (not slsReceiver). Use router mac if router between detector and receiver."
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -1287,6 +832,7 @@ udp_dstmac:
       input_types: [ MacAddr ]
       input: [ 'MacAddr(args[0])' ]
       cast_input: [ false ]
+
 udp_dstmac2:
   help: "[x:x:x:x:x:x]\n\t[Jungfrau][Moench] Mac address of the receiver (destination) udp interface 2. Not mandatory to set as udp_dstip2 retrieves it from slsReceiver process but must be set if you use a custom receiver (not slsReceiver). \n\t [Jungfrau][Moench] top half or inner interface \n\t [Gotthard2] veto debugging. Use router mac if router between detector and receiver."
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -1298,6 +844,199 @@ udp_dstmac2:
       input_types: [ MacAddr ]
       input: [ 'MacAddr(args[0])' ]
       cast_input: [ false ]
+
+tengiga:
+  help: "[0, 1]\n\t[Eiger][Ctb][Mythen3] 10GbE Enable."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTenGiga
+    PUT:
+      function: setTenGiga
+      input_types: [ bool ]
+
+flowcontrol10g:
+  help: "[0, 1]\n\t[Eiger][Jungfrau][Moench] 10GbE Flow Control."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTenGigaFlowControl
+    PUT:
+      function: setTenGigaFlowControl
+      input_types: [ bool ]
+
+txdelay_frame:
+  help: "[n_delay]\n\t[Eiger][Jungfrau][Moench][Mythen3] Transmission delay of first udp packet being streamed out of the module.\n\t[Jungfrau][Moench] [0-31] Each value represents 1 ms\n\t[Eiger] Additional delay to txdelay_left and txdelay_right. Each value represents 10ns. Typical value is 50000.\n\t[Mythen3] [0-16777215] Each value represents 8 ns (125 MHz clock), max is 134 ms."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTransmissionDelayFrame
+    PUT:
+      function: setTransmissionDelayFrame
+
+txdelay_left:
+  help: "[n_delay]\n\t[Eiger] Transmission delay of first packet in an image being streamed out of the module's left UDP port. Each value represents 10ns. Typical value is 50000."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTransmissionDelayLeft
+    PUT:
+      function: setTransmissionDelayLeft
+
+txdelay_right:
+  help: "[n_delay]\n\t[Eiger] Transmission delay of first packet in an image being streamed out of the module's right UDP port. Each value represents 10ns. Typical value is 50000."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTransmissionDelayRight
+    PUT:
+      function: setTransmissionDelayRight
+
+rx_fifodepth:
+  help: "[n_frames]\n\tSet the number of frames in the receiver fifo depth (buffer between listener and writer threads)."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxFifoDepth
+    PUT:
+      function: setRxFifoDepth
+
+rx_silent:
+  help: "[0, 1]\n\tSwitch on or off receiver text output during acquisition."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxSilentMode
+    PUT:
+      function: setRxSilentMode
+      input_types: [ bool ]
+
+rx_discardpolicy:
+  help: "[nodiscard (default)|discardempty|discardpartial(fastest)]\n\tFrame discard policy of receiver. nodiscard does not discard frames, discardempty discards empty frames, discardpartial discards partial frames."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxFrameDiscardPolicy
+    PUT:
+      function: setRxFrameDiscardPolicy
+      input_types: [ slsDetectorDefs::frameDiscardPolicy ]
+
+rx_padding:
+  help: "[0, 1]\n\tPartial frames padding enable in the receiver. Default: enabled. Disabling is fastest."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getPartialFramesPadding
+    PUT:
+      function: setPartialFramesPadding
+      input_types: [ bool ]
+
+rx_udpsocksize:
+  help: "[n_size]\n\tUDP socket buffer size in receiver. Tune rmem_default and rmem_max accordingly. Max value is INT_MAX/2."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxUDPSocketBufferSize
+    PUT:
+      function: setRxUDPSocketBufferSize
+
+rx_lock:
+  help: "[0, 1]\n\tLock receiver to one client IP, 1 locks, 0 unlocks. Default is unlocked."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxLock
+    PUT:
+      function: setRxLock
+      input_types: [ bool ]
+
+rx_arping:
+  help: "[0, 1]\n\tStarts a thread in slsReceiver to arping the interface it is listening to every minute. Useful in 10G mode."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxArping
+    PUT:
+      function: setRxArping
+      input_types: [ bool ]
+
+fformat:
+  help: "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be compiled with HDF5 flags. Default is binary."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getFileFormat
+    PUT:
+      function: setFileFormat
+      input_types: [ slsDetectorDefs::fileFormat ]
+
+findex:
+  help: "[n_value]\n\tFile or Acquisition index."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getAcquisitionIndex
+    PUT:
+      function: setAcquisitionIndex
+      input_types: [ uint64_t ]
+
+fwrite:
+  help: "[0, 1]\n\tEnable or disable receiver file write. Default is 1."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getFileWrite
+    PUT:
+      function: setFileWrite
+      input_types: [ bool ]
+
+foverwrite:
+  help: "[0, 1]\n\tEnable or disable file overwriting. Default is 1."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getFileOverWrite
+    PUT:
+      function: setFileOverWrite
+      input_types: [ bool ]
+
+rx_framesperfile:
+  help: "[n_frames]\n\tNumber of frames per file in receiver in an acquisition. Default depends on detector type. 0 is infinite or all frames in single file."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getFramesPerFile
+    PUT:
+      function: setFramesPerFile
+
+rx_zmqstream:
+  help: "[0, 1]\n\tEnable/ disable data streaming from receiver via zmq (eg. to GUI or to another process for further processing). This creates/ destroys zmq streamer threads in receiver. \n\tSwitching to Gui automatically enables data streaming in receiver. \n\tSwitching back to command line acquire will require disabling data streaming in receiver for fast applications. "
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxZmqDataStream
+    PUT:
+      function: setRxZmqDataStream
+      input_types: [ bool ]
+
+rx_zmqfreq:
+  help: "[nth frame]\n\tFrequency of frames streamed out from receiver via zmq\n\tDefault: 1, Means every frame is streamed out. \n\tIf 2, every second frame is streamed out. \n\tIf 0, streaming timer is the timeout, after which current frame is sent out. (default timeout is 500 ms). Usually used for gui purposes."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxZmqFrequency
+    PUT:
+      function: setRxZmqFrequency
+
+rx_zmqstartfnum:
+  help: "[fnum]\n\tThe starting frame index to stream out. 0 by default, which streams the first frame in an acquisition, and then depending on the rx zmq frequency/ timer"
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxZmqStartingFrame
+    PUT:
+      function: setRxZmqStartingFrame
+
 rx_zmqip:
   help: "[x.x.x.x]\n\tZmq Ip Address from which data is to be streamed out of the receiver. Also restarts receiver zmq streaming if enabled. Default is from rx_hostname. Modified only when using an intermediate process between receiver."
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -1309,6 +1048,7 @@ rx_zmqip:
       input_types: [ IpAddr ]
       input: [ 'IpAddr(args[0])' ]
       cast_input: [ false ]
+
 zmqip:
   help: "[x.x.x.x]\n\tIp Address to listen to zmq data streamed out from receiver or intermediate process. Default connects to receiver zmq Ip Address (from rx_hostname). Modified only when using an intermediate process between receiver and client(gui). Also restarts client zmq streaming if enabled."
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -1320,6 +1060,352 @@ zmqip:
       input_types: [ IpAddr ]
       input: [ 'IpAddr(args[0])' ]
       cast_input: [ false ]
+
+overflow:
+  help: "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in 32 bit mode. Default is disabled."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getOverFlowMode
+    PUT:
+      function: setOverFlowMode
+      input_types: [ bool ]
+
+interruptsubframe:
+  help: "[0, 1]\n\t[Eiger] 1 interrupts last subframe at required exposure time. 0 will wait for last sub frame to finish exposing. 0 is default."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getInterruptSubframe
+    PUT:
+      function: setInterruptSubframe
+      input_types: [ bool ]
+
+activate:
+  help: "[0, 1] \n\t[Eiger] 1 is default. 0 deactivates readout and does not send data."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getActive
+    PUT:
+      function: setActive
+      input_types: [ bool ]
+
+partialreset:
+  help: "[0, 1]\n\t[Eiger] Sets up detector to do partial or complete reset at start of acquisition. 0 complete reset, 1 partial reset. Default is complete reset. Advanced function!"
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getPartialReset
+    PUT:
+      function: setPartialReset
+      input_types: [ bool ]
+
+top:
+  help: "[0, 1]\n\t[Eiger] Sets half module to top (1), else bottom."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTop
+    PUT:
+      function: setTop
+      input_types: [ bool ]
+
+temp_threshold:
+  help: "[n_temp (in degrees)]\n\t[Jungfrau][Moench] Threshold temperature in degrees. If temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getThresholdTemperature
+    PUT:
+      function: setThresholdTemperature
+
+temp_control:
+  help: "[0, 1]\n\t[Jungfrau][Moench] Temperature control enable. Default is 0 (disabled). If temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTemperatureControl
+    PUT:
+      function: setTemperatureControl
+      input_types: [ bool ]
+
+autocompdisable:
+  help: "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, the on-chip gain switching is active during the entire exposure.This mode disables the on - chip gain switching comparator automatically after 93.75% (only for chipv1.0) of exposure time (only for longer than 100us). It is possible to set the duration for chipv1.1 using compdisabletime command.\n\tDefault is 0 or this mode disabled(comparator enabled throughout). 1 enables mode. 0 disables mode. "
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getAutoComparatorDisable
+    PUT:
+      function: setAutoComparatorDisable
+      input_types: [ bool ]
+
+storagecell_start:
+  help: "[0-max]\n\t[Jungfrau] Storage cell that stores the first acquisition of the series. max is 15 (default) for chipv1.0 and 3 (default) for chipv1.1. For advanced users only."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getStorageCellStart
+    PUT:
+      function: setStorageCellStart
+
+gainmode:
+  help: "[dynamicgain|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t[Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, you can damage the detector!!!"
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getGainMode
+    PUT:
+      function: setGainMode
+      input_types: [ slsDetectorDefs::gainMode ]
+
+filtercells:
+  help: "[0-12]\n\t[Jungfrau] Set Filter Cell. Only for chipv1.1. Advanced user Command"
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getNumberOfFilterCells
+    PUT:
+      function: setNumberOfFilterCells
+
+cdsgain:
+  help: "[0, 1]\n\t[Gotthard2] Enable or disable CDS gain. Default is disabled."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getCDSGain
+    PUT:
+      function: setCDSGain
+      input_types: [ bool ]
+
+timingsource:
+  help: "[internal|external]\n\t[Gotthard2] Timing source. Internal is crystal and external is system timing. Default is internal."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTimingSource
+    PUT:
+      function: setTimingSource
+      input_types: [ slsDetectorDefs::timingSourceType ]
+
+veto:
+  help: "[0, 1]\n\t[Gotthard2] Enable or disable veto data data from chip. Default is 0."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getVeto
+    PUT:
+      function: setVeto
+      input_types: [ bool ]
+
+gates:
+  help: "[n_gates]\n\t[Mythen3] Number of external gates in gating or trigger_gating mode (external gating)."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getNumberOfGates
+    PUT:
+      function: setNumberOfGates
+
+polarity:
+  help: "[pos|neg]\n\t[Mythen3] Sets negative or positive polarity. Default is positive"
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getPolarity
+    PUT:
+      function: setPolarity
+      input_types: [ defs::polarity ]
+
+interpolation:
+  help: "[0, 1]\n\t[Mythen3] Enables or disables interpolation. Default is disabled.  Interpolation mode enables all counters and disables vth3. Disabling sets back counter mask and vth3."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getInterpolation
+    PUT:
+      function: setInterpolation
+      input_types: [ bool ]
+
+pumpprobe:
+  help: "[0, 1]\n\t[Mythen3] Enables or disables pump probe mode. Default is disabled. Pump probe mode only enables vth2. Disabling sets back to previous value."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getPumpProbe
+    PUT:
+      function: setPumpProbe
+      input_types: [ bool ]
+
+apulse:
+  help: "[0, 1]\n\t[Mythen3] Enables or disables analog pulsing. Default is disabled"
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getAnalogPulsing
+    PUT:
+      function: setAnalogPulsing
+      input_types: [ bool ]
+
+dpulse:
+  help: "[0, 1]\n\t[Mythen3] Enables or disables digital pulsing. Default is disabled"
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getDigitalPulsing
+    PUT:
+      function: setDigitalPulsing
+      input_types: [ bool ]
+
+asamples:
+  help: "[n_samples]\n\t[CTB] Number of analog samples expected."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getNumberOfAnalogSamples
+    PUT:
+      function: setNumberOfAnalogSamples
+
+adcclk:
+  help: "[n_clk in MHz]\n\t[Ctb] ADC clock frequency in MHz."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getADCClock
+    PUT:
+      function: setADCClock
+
+runclk:
+  help: "[n_clk in MHz]\n\t[Ctb] Run clock in MHz."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRUNClock
+    PUT:
+      function: setRUNClock
+
+dsamples:
+  help:  "[n_value]\n\t[CTB] Number of digital samples expected."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getNumberOfDigitalSamples
+    PUT:
+      function: setNumberOfDigitalSamples
+
+tsamples:
+  help: "[n_value]\n\t[CTB] Number of transceiver samples expected."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getNumberOfTransceiverSamples
+    PUT:
+      function: setNumberOfTransceiverSamples
+
+romode:
+  help: "[analog|digital|analog_digital|transceiver|digital_transceiver]\n\t[CTB] Readout mode. Default is analog."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getReadoutMode
+    PUT:
+      function: setReadoutMode
+      input_types: [ slsDetectorDefs::readoutMode ]
+
+dbitclk:
+  help: "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getDBITClock
+    PUT:
+      function: setDBITClock
+
+extsampling:
+  help: "[0, 1]\n\t[Ctb] Enable for external sampling signal for digital data to signal by extsampling src command. For advanced users only."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getExternalSampling
+    PUT:
+      function: setExternalSampling
+      input_types: [ bool ]
+
+extsamplingsrc:
+  help: "[0-63]\n\t[Ctb] Sampling source signal for digital data. For advanced users only."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getExternalSamplingSource
+    PUT:
+      function: setExternalSamplingSource
+
+rx_dbitoffset:
+  help: "[n_bytes]\n\t[Ctb] Offset in bytes in digital data to skip in receiver."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getRxDbitOffset
+    PUT:
+      function: setRxDbitOffset
+
+led:
+  help: "[0, 1]\n\t[Ctb] Switches on/off all LEDs."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getLEDEnable
+    PUT:
+      function: setLEDEnable
+      input_types: [ bool ]
+
+adcpipeline:
+  help: "[n_value]\n\t[Ctb][Moench] Pipeline for ADC clock."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getADCPipeline
+    PUT:
+      function: setADCPipeline
+
+updatemode:
+  help: "[0|1]\n\tRestart the detector server in update mode or not. This is useful when server-firmware compatibility is at its worst and server cannot start up normally"
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getUpdateMode
+    PUT:
+      function: setUpdateMode
+
+port:
+  help: "[n]\n\tPort number of the control server on detector for detector-client tcp interface. Default is 1952. Normally unchanged. Set different ports for virtual servers on same pc."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getControlPort
+    PUT:
+      input_types: [ uint16_t ]
+      function: setControlPort
+
+stopport:
+  help: "[n]\n\tPort number of the stop server on detector for detector-client tcp interface. Default is 1953. Normally unchanged."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getStopPort
+    PUT:
+      input_types: [ uint16_t ]
+      function: setStopPort
+
+lock:
+  help: "[0, 1]\n\tLock detector to one IP, 1: locks. Default is unlocked"
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getDetectorLock
+    PUT:
+      function: setDetectorLock
+      input_types: [ bool ]
 
 ################# INTEGER_COMMAND_VEC_ID_GET #################
 

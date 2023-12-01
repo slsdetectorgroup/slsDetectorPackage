@@ -619,70 +619,70 @@ temp_adc:
   actions:
     GET:
       function: getTemperature
-      input: [ 'slsDetectorDefs::TEMPERATURE_ADC' ]
+      input: [ 'defs::TEMPERATURE_ADC' ]
 temp_fpga:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Gotthard][Mythen3][Gotthard2] FPGA Temperature"
   actions:
     GET:
       function: getTemperature
-      input: [ 'slsDetectorDefs::TEMPERATURE_FPGA' ]
+      input: [ 'defs::TEMPERATURE_FPGA' ]
 temp_fpgaext:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Eiger]Temperature close to the FPGA"
   actions:
     GET:
       function: getTemperature
-      input: [ 'slsDetectorDefs::TEMPERATURE_FPGAEXT' ]
+      input: [ 'defs::TEMPERATURE_FPGAEXT' ]
 temp_10ge:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Eiger]Temperature close to the 10GbE"
   actions:
     GET:
       function: getTemperature
-      input: [ 'slsDetectorDefs::TEMPERATURE_10GE' ]
+      input: [ 'defs::TEMPERATURE_10GE' ]
 temp_dcdc:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Eiger]Temperature close to the dc dc converter"
   actions:
     GET:
       function: getTemperature
-      input: [ 'slsDetectorDefs::TEMPERATURE_DCDC' ]
+      input: [ 'defs::TEMPERATURE_DCDC' ]
 temp_sodl:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Eiger]Temperature close to the left so-dimm memory"
   actions:
     GET:
       function: getTemperature
-      input: [ 'slsDetectorDefs::TEMPERATURE_SODL' ]
+      input: [ 'defs::TEMPERATURE_SODL' ]
 temp_sodr:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Eiger]Temperature close to the right so-dimm memory"
   actions:
     GET:
       function: getTemperature
-      input: [ 'slsDetectorDefs::TEMPERATURE_SODR' ]
+      input: [ 'defs::TEMPERATURE_SODR' ]
 temp_fpgafl:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Eiger]Temperature of the left front end board fpga."
   actions:
     GET:
       function: getTemperature
-      input: [ 'slsDetectorDefs::TEMPERATURE_FPGA2' ]
+      input: [ 'defs::TEMPERATURE_FPGA2' ]
 temp_fpgafr:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Eiger]Temperature of the left front end board fpga."
   actions:
     GET:
       function: getTemperature
-      input: [ 'slsDetectorDefs::TEMPERATURE_FPGA3' ]
+      input: [ 'defs::TEMPERATURE_FPGA3' ]
 temp_slowadc:
   inherit_actions: GET_IND_COMMAND
   help: "[n_value]\n\t[Ctb]Temperature of the slow adc"
   actions:
     GET:
       function: getTemperature
-      input: [ 'slsDetectorDefs::SLOW_ADC_TEMP' ]
+      input: [ 'defs::SLOW_ADC_TEMP' ]
 
 vm_a:
   inherit_actions: GET_IND_COMMAND
@@ -1927,7 +1927,7 @@ settings:
       function: getSettings
     PUT:
       function: setSettings
-      input_types: [ slsDetectorDefs::detectorSettings ]
+      input_types: [ defs::detectorSettings ]
 timing:
   help: "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Moench][Gotthard][Ctb][Gotthard2] [auto|trigger]\n\t[Mythen3] [auto|trigger|gating|trigger_gating]\n\t[Eiger] [auto|trigger|gating|burst_trigger]"
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -1936,7 +1936,7 @@ timing:
       function: getTimingMode
     PUT:
       function: setTimingMode
-      input_types: [ slsDetectorDefs::timingMode ]
+      input_types: [ defs::timingMode ]
 nextframenumber:
   help: "[n_value]\n\t[Eiger][Jungfrau][Moench][CTB] Next frame number. Stopping acquisition might result in different frame numbers for different modules."
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -1964,7 +1964,7 @@ rx_discardpolicy:
       function: getRxFrameDiscardPolicy
     PUT:
       function: setRxFrameDiscardPolicy
-      input_types: [ slsDetectorDefs::frameDiscardPolicy ]
+      input_types: [ defs::frameDiscardPolicy ]
 fformat:
   help: "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be compiled with HDF5 flags. Default is binary."
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -1973,7 +1973,7 @@ fformat:
       function: getFileFormat
     PUT:
       function: setFileFormat
-      input_types: [ slsDetectorDefs::fileFormat ]
+      input_types: [ defs::fileFormat ]
 cdsgain:
   help: "[0, 1]\n\t[Gotthard2] Enable or disable CDS gain. Default is disabled."
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -1991,7 +1991,7 @@ gainmode:
       function: getGainMode
     PUT:
       function: setGainMode
-      input_types: [ slsDetectorDefs::gainMode ]
+      input_types: [ defs::gainMode ]
 timingsource:
   help: "[internal|external]\n\t[Gotthard2] Timing source. Internal is crystal and external is system timing. Default is internal."
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -2000,7 +2000,7 @@ timingsource:
       function: getTimingSource
     PUT:
       function: setTimingSource
-      input_types: [ slsDetectorDefs::timingSourceType ]
+      input_types: [ defs::timingSourceType ]
 romode:
   help: "[analog|digital|analog_digital|transceiver|digital_transceiver]\n\t[CTB] Readout mode. Default is analog."
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -2009,7 +2009,7 @@ romode:
       function: getReadoutMode
     PUT:
       function: setReadoutMode
-      input_types: [ slsDetectorDefs::readoutMode ]
+      input_types: [ defs::readoutMode ]
 polarity:
   help: "[pos|neg]\n\t[Mythen3] Sets negative or positive polarity. Default is positive"
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -2778,7 +2778,7 @@ extsig:
       require_det_id: true
       function: setExternalSignalFlags
       input: [ 'args[0]', 'args[1]' ]
-      input_types: [ int, slsDetectorDefs::externalSignalFlag ]
+      input_types: [ int, defs::externalSignalFlag ]
       cast_input: [ true, true ]
       output: [ 'args[0]', "' '", 'args[1]' ]
 
@@ -2870,7 +2870,7 @@ defaultdac:
         - argc: 2
           cast_input: [ true, true ]
           input: [ "args[0]", "args[1]" ]
-          input_types: [ defs::dacIndex, slsDetectorDefs::detectorSettings ]
+          input_types: [ defs::dacIndex, defs::detectorSettings ]
           output: [ "args[0]", "' '", "args[1]", "' '", OutString(t) ]
     PUT:
       function: setDefaultDac
@@ -2883,7 +2883,7 @@ defaultdac:
         - argc: 3
           cast_input: [ true, true, true ]
           input: [ "args[0]", "args[1]", "args[2]" ]
-          input_types: [ defs::dacIndex, int, slsDetectorDefs::detectorSettings ]
+          input_types: [ defs::dacIndex, int, defs::detectorSettings ]
           output: [ "args[0]", "' '", "args[2]", "' '", "args[1]" ]
           require_det_id: true
 

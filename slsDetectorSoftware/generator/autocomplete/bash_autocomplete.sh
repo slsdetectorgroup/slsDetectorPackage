@@ -502,21 +502,21 @@ __dac() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN=`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`
+FCN_RETURN="mV mv"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN=`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`
+FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN=`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`
+FCN_RETURN="mV mv"
 fi
 fi
 return 0
@@ -543,12 +543,12 @@ __dacname() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -626,21 +626,21 @@ __defaultdac() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
+FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
+FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -649,13 +649,13 @@ __defaultpattern() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
+FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -1628,12 +1628,12 @@ __powername() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -2156,7 +2156,7 @@ __scan() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -2206,7 +2206,7 @@ __settings() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
+FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -2296,12 +2296,12 @@ __slowadcname() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -2498,13 +2498,13 @@ if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
+FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "4" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "5" ]]; then
-FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
+FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -2516,13 +2516,13 @@ if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
+FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "4" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "5" ]]; then
-FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
+FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -2531,7 +2531,7 @@ __timing() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="auto burst_trigger gating trigger trigger_gating"
+FCN_RETURN="`detg timinglist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 return 0

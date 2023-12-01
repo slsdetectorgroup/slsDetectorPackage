@@ -35,6 +35,18 @@ def get_types(arg_types):
         else:
             tmp = [not_list for not_list in type_values[arg_type] if not isinstance(not_list, list)]
             ret = ret.union(tmp)
+
+    #Intercept the options and in case detector specific options appear replace the
+    #list of options with a command line call that fetches them
+    #TODO! Rename detg 
+    if "defs::dacIndex" in arg_types:
+        return "`detg daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
+    elif "defs::detectorSettings" in arg_types:
+        return "`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
+    elif "defs::timingMode" in arg_types:
+        return "`detg timinglist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
+
+    
     return ret
 
 
@@ -194,13 +206,15 @@ def generate_bash_autocomplete(output_path=Path(__file__).parent / 'bash_autocom
                         with if_block(f'${{IS_GET}} -eq {"1" if action == "GET" else "0"}'):
                             for argc in possible_argc:
                                 with if_block(f'"${{cword}}" == "{argc + 1}"'):
-                                    if command_name in ['dac']:
-                                        print(f'{command_name}')
-                                        s="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
-                                        writeline(f'FCN_RETURN={s}')
-                                    else:
-                                        choices = get_types(possible_argc[argc])
+                                    if "defs::detectorSettings" in possible_argc[argc]:
+                                        print(argc, command_name, possible_argc[argc])
+                                    choices = get_types(possible_argc[argc])
+
+                                    #check if we got choices back or a bash command
+                                    if isinstance(choices, (list,set)):
                                         writeline(f'FCN_RETURN="{" ".join(sorted(choices))}"')
+                                    else:
+                                        writeline(f'FCN_RETURN="{choices}"')
                                     if 'special::path' in possible_argc[argc]:
                                         writeline('IS_PATH=1')
 

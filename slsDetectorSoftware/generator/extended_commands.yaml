@@ -815,7 +815,8 @@ blockingtrigger:
         store_result_in_t: false
   command_name: blockingtrigger
   function_alias: blockingtrigger
-  help: "\n\t[Eiger][Mythen3][Jungfrau][Moench] Sends software trigger signal to detector"
+  help: "\n\t[Eiger][Jungfrau][Moench] Sends software trigger signal to detector and\
+    \ blocks till the frames are sent out for that trigger."
   infer_action: true
   template: true
 burstmode:
@@ -9519,7 +9520,7 @@ scan:
         input_types: []
         output:
         - OutString(t)
-        require_det_id: false
+        require_det_id: true
         store_result_in_t: true
     PUT:
       args:
@@ -9532,7 +9533,7 @@ scan:
         convert_det_id: true
         exceptions:
         - condition: StringTo<int>(args[0]) != 0
-          message: '"Unknown argument " + args[0] + ". Did you mean 0?"'
+          message: '"Unknown argument " + args[0] + ". Did you mean 0 to disable scan?"'
         function: setScan
         input:
         - defs::scanParameters()
@@ -11924,11 +11925,13 @@ udp_dstlist:
         argc: 0
         cast_input:
         - false
-        check_det_id: true
+        check_det_id: false
         convert_det_id: true
         exceptions:
+        - condition: det_id == -1
+          message: '"Can execute udp_dstlist only at module level."'
         - condition: rx_id < 0 || rx_id >= MAX_UDP_DESTINATION
-          message: '"Invalid receiver index " + std::to_string(rx_id) + ".to set round
+          message: '"Invalid receiver index " + std::to_string(rx_id) + " to set round
             robin entry."'
         function: getDestinationUDPList
         input:
@@ -11943,14 +11946,19 @@ udp_dstlist:
       args:
       - arg_types:
         - std::string
-        argc: 1
+        argc: -1
         cast_input:
         - false
-        check_det_id: true
+        check_det_id: false
         convert_det_id: false
         exceptions:
+        - condition: det_id == -1
+          message: '"Can execute udp_dstlist only at module level."'
         - condition: rx_id < 0 || rx_id >= MAX_UDP_DESTINATION
-          message: '"Invalid receiver index to set round robin entry."'
+          message: '"Invalid receiver index " + std::to_string(rx_id) + " to set round
+            robin entry."'
+        - condition: args.empty()
+          message: '"udp_dstlist require at least one argument."'
         function: setDestinationUDPList
         input:
         - getUdpEntry()

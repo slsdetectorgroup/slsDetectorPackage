@@ -2999,9 +2999,10 @@ udp_dstlist:
   actions:
     GET:
       exceptions:
+        - condition: "det_id == -1"
+          message: '"Can execute udp_dstlist only at module level."'
         - condition: "rx_id < 0 || rx_id >= MAX_UDP_DESTINATION"
-          message: '"Invalid receiver index " + std::to_string(rx_id) + ".to set round robin entry."'
-      check_det_id: true
+          message: '"Invalid receiver index " + std::to_string(rx_id) + " to set round robin entry."'
       argc: 0
       input: [ rx_id ]
       input_types: [ auto ]
@@ -3010,10 +3011,13 @@ udp_dstlist:
       output: [ OutString(t) ]
     PUT:
       exceptions:
+        - condition: "det_id == -1"
+          message: '"Can execute udp_dstlist only at module level."'
         - condition: "rx_id < 0 || rx_id >= MAX_UDP_DESTINATION"
-          message: '"Invalid receiver index to set round robin entry."'
-      check_det_id: true
-      argc: 1
+          message: '"Invalid receiver index " + std::to_string(rx_id) + " to set round robin entry."'
+        - condition: "args.empty()"
+          message: '"udp_dstlist require at least one argument."'
+      argc: -1
       input: [ getUdpEntry() ]
       input_types: [ auto ]
       arg_types: [ std::string ]

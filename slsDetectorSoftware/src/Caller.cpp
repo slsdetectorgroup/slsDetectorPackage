@@ -1082,7 +1082,7 @@ std::string Caller::blockingtrigger(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: blockingtrigger" << std::endl;
         os << R"V0G0N(
-	[Eiger][Mythen3][Jungfrau][Moench] Sends software trigger signal to detector )V0G0N"
+	[Eiger][Jungfrau][Moench] Sends software trigger signal to detector and blocks till the frames are sent out for that trigger. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -12426,7 +12426,7 @@ std::string Caller::scan(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            auto t = det->getScan();
+            auto t = det->getScan(std::vector<int>{det_id});
             os << OutString(t) << '\n';
         }
     }
@@ -12435,7 +12435,7 @@ std::string Caller::scan(int action) {
         if (args.size() == 1) {
             if (StringTo<int>(args[0]) != 0) {
                 throw RuntimeError("Unknown argument " + args[0] +
-                                   ". Did you mean 0?");
+                                   ". Did you mean 0 to disable scan?");
             }
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute scan at module level");
@@ -15691,11 +15691,8 @@ std::string Caller::udp_dstlist(int action) {
     }
 
     else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (1 && args.size() != 1) {
+        if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
-        }
-
-        if (args.size() == 1) {
         }
 
     }
@@ -15709,14 +15706,14 @@ std::string Caller::udp_dstlist(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
+            if (det_id == -1) {
+                throw RuntimeError(
+                    "Can execute udp_dstlist only at module level.");
+            }
             if (rx_id < 0 || rx_id >= MAX_UDP_DESTINATION) {
                 throw RuntimeError("Invalid receiver index " +
                                    std::to_string(rx_id) +
-                                   ".to set round robin entry.");
-            }
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute udp_dstlist at module level");
+                                   " to set round robin entry.");
             }
             auto t =
                 det->getDestinationUDPList(rx_id, std::vector<int>{det_id});
@@ -15725,18 +15722,19 @@ std::string Caller::udp_dstlist(int action) {
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        if (args.size() == 1) {
-            if (rx_id < 0 || rx_id >= MAX_UDP_DESTINATION) {
-                throw RuntimeError(
-                    "Invalid receiver index to set round robin entry.");
-            }
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute udp_dstlist at module level");
-            }
-            det->setDestinationUDPList(getUdpEntry(), det_id);
-            os << ToString(args) << '\n';
+        if (det_id == -1) {
+            throw RuntimeError("Can execute udp_dstlist only at module level.");
         }
+        if (rx_id < 0 || rx_id >= MAX_UDP_DESTINATION) {
+            throw RuntimeError("Invalid receiver index " +
+                               std::to_string(rx_id) +
+                               " to set round robin entry.");
+        }
+        if (args.empty()) {
+            throw RuntimeError("udp_dstlist require at least one argument.");
+        }
+        det->setDestinationUDPList(getUdpEntry(), det_id);
+        os << ToString(args) << '\n';
     }
 
     return os.str();

@@ -235,6 +235,17 @@ INTEGER_USER_IND_COMMAND:
       cast_input: [ false, true, true ]
       argc: 2
 
+EXECUTE_SET_COMMAND:
+  template: true
+  infer_action: true
+  help: ""
+  actions:
+    PUT:
+      require_det_id: true
+      function: ''
+      output: [ '"successful"' ]
+      argc: 0
+
 EXECUTE_SET_COMMAND_NOID:
   template: true
   infer_action: true
@@ -411,6 +422,8 @@ CTB_NAMED_LIST:
           message: 'cmd + " only allowed for CTB."'
         - condition: 'cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD'
           message: '"This detector already has fixed dac names. Cannot change them."'
+        - condition: "args.empty()"
+          message: '"lists require at least one argument."'
       input: [ 'args' ]
       argc: -1 # unknown number of args
       input_types: [ std::string ]
@@ -991,91 +1004,88 @@ savepattern:
 
 ################# EXECUTE_SET_COMMAND ########################
 start:
-  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  inherit_actions: EXECUTE_SET_COMMAND
   help: "\n\tStarts detector acquisition. Status changes to RUNNING or WAITING and automatically returns to idle at the end of acquisition. If the acquisition was abruptly stopped, some detectors come back to STOPPED."
   actions:
     PUT:
-      require_det_id: true
       function: startDetector
 
-defaultpattern:
-  inherit_actions: EXECUTE_SET_COMMAND_NOID
-  help: "\n\t[Mythen3] Loads and runs default pattern in pattern generator. It is to go back to initial settings."
-  actions:
-    PUT:
-      require_det_id: true
-      function: loadDefaultPattern
-resetfpga:
-  inherit_actions: EXECUTE_SET_COMMAND_NOID
-  help: "\n\t[Jungfrau][Moench][Ctb] Reset FPGA."
-  actions:
-    PUT:
-      require_det_id: true
-      function: resetFPGA
-firmwaretest:
-  inherit_actions: EXECUTE_SET_COMMAND_NOID
-  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Firmware test, ie. reads a read fixed pattern from a register."
-  actions:
-    PUT:
-      require_det_id: true
-      function: executeFirmwareTest
-bustest:
-  inherit_actions: EXECUTE_SET_COMMAND_NOID
-  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Bus test, ie. Writes different values in a R/W register and confirms the writes to check bus.\n\tAdvanced User function!"
-  actions:
-    PUT:
-      require_det_id: true
-      function: executeBusTest
-rebootcontroller:
-  inherit_actions: EXECUTE_SET_COMMAND_NOID
-  help: "\n\t[Jungfrau][Moench][Ctb][Gotthard][Mythen3][Gotthard2] Reboot controller of detector."
-  actions:
-    PUT:
-      require_det_id: true
-      function: rebootController
-patternstart:
-  inherit_actions: EXECUTE_SET_COMMAND_NOID
-  help: "\n\t[Mythen3] Starts Pattern"
-  actions:
-    PUT:
-      require_det_id: true
-      function: startPattern
 stop:
-  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  inherit_actions: EXECUTE_SET_COMMAND
   help: "\n\tAbort detector acquisition. Status changes to IDLE or STOPPED. Goes to stop server."
   actions:
     PUT:
-      require_det_id: true
       function: stopDetector
+
 udp_cleardst:
-  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  inherit_actions: EXECUTE_SET_COMMAND
   help: "\n\tClears udp destination details on the detector."
   actions:
     PUT:
-      require_det_id: true
       function: clearUDPDestinations
+
 udp_reconfigure:
-  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  inherit_actions: EXECUTE_SET_COMMAND
   help: "\n\tReconfigures Detector with UDP destination. More for debugging as the configuration is done automatically when the detector has sufficient UDP details."
   actions:
     PUT:
-      require_det_id: true
       function: reconfigureUDPDestination
+
 udp_validate:
-  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  inherit_actions: EXECUTE_SET_COMMAND
   help: "\n\tValidates that UDP configuration in the detector is valid. If not configured, it will throw with error message requesting missing udp information."
   actions:
     PUT:
-      require_det_id: true
       function: validateUDPConfiguration
+
 clearroi:
-  inherit_actions: EXECUTE_SET_COMMAND_NOID
+  inherit_actions: EXECUTE_SET_COMMAND
   help: "[Gotthard] Resets Region of interest in detector. All channels enabled. Default is all channels enabled."
   actions:
     PUT:
-      require_det_id: true
       function: clearROI
 
+defaultpattern:
+  inherit_actions: EXECUTE_SET_COMMAND
+  help: "\n\t[Mythen3] Loads and runs default pattern in pattern generator. It is to go back to initial settings."
+  actions:
+    PUT:
+      function: loadDefaultPattern
+
+patternstart:
+  inherit_actions: EXECUTE_SET_COMMAND
+  help: "\n\t[Mythen3] Starts Pattern"
+  actions:
+    PUT:
+      function: startPattern
+
+resetfpga:
+  inherit_actions: EXECUTE_SET_COMMAND
+  help: "\n\t[Jungfrau][Moench][Ctb] Reset FPGA."
+  actions:
+    PUT:
+      function: resetFPGA
+
+rebootcontroller:
+  inherit_actions: EXECUTE_SET_COMMAND
+  help: "\n\t[Jungfrau][Moench][Ctb][Gotthard][Mythen3][Gotthard2] Reboot controller of detector."
+  actions:
+    PUT:
+      function: rebootController
+
+firmwaretest:
+  inherit_actions: EXECUTE_SET_COMMAND
+  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Firmware test, ie. reads a read fixed pattern from a register."
+  actions:
+    PUT:
+      function: executeFirmwareTest
+
+bustest:
+  inherit_actions: EXECUTE_SET_COMMAND
+  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Bus test, ie. Writes different values in a R/W register and confirms the writes to check bus.\n\tAdvanced User function!"
+  actions:
+    PUT:
+      function: executeBusTest
 
 ################# EXECUTE_SET_COMMAND_NOID #######################
 clearbusy:
@@ -1091,25 +1101,27 @@ rx_start:
   actions:
     PUT:
       function: startReceiver
+
 rx_stop:
   inherit_actions: EXECUTE_SET_COMMAND_NOID
   help: "\n\tStops receiver listener for detector data packets and closes current data file (if file write enabled)."
   actions:
     PUT:
       function: stopReceiver
+
 readout:
   inherit_actions: EXECUTE_SET_COMMAND_NOID
   help: "\n\t[Mythen3] Starts detector readout. Status changes to TRANSMITTING and automatically returns to idle at the end of readout."
   actions:
     PUT:
       function: startDetectorReadout
+
 rx_clearroi:
   inherit_actions: EXECUTE_SET_COMMAND_NOID
   help: "Resets Region of interest in receiver. Default is all channels/pixels enabled."
   actions:
     PUT:
       function: clearRxROI
-
 
 
 ################# INTEGER_USER_IND_COMMAND ###################
@@ -3954,6 +3966,9 @@ hostname:
     GET:
       argc: 0
     PUT:
+      exceptions:
+        - condition: "args.empty()"
+          message: '"hostname require at least one argument."'
       argc: -1
       arg_types: [ std::string ]
 

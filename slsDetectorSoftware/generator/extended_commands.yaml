@@ -291,6 +291,8 @@ adclist:
           message: cmd + " only allowed for CTB."
         - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: '"This detector already has fixed dac names. Cannot change them."'
+        - condition: args.empty()
+          message: '"lists require at least one argument."'
         function: setAdcNames
         input:
         - args
@@ -1004,7 +1006,7 @@ bustest:
       - arg_types: []
         argc: 0
         cast_input: []
-        check_det_id: true
+        check_det_id: false
         convert_det_id: true
         function: executeBusTest
         input: []
@@ -1140,7 +1142,7 @@ clearroi:
       - arg_types: []
         argc: 0
         cast_input: []
-        check_det_id: true
+        check_det_id: false
         convert_det_id: true
         function: clearROI
         input: []
@@ -1905,6 +1907,8 @@ daclist:
           message: cmd + " only allowed for CTB."
         - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: '"This detector already has fixed dac names. Cannot change them."'
+        - condition: args.empty()
+          message: '"lists require at least one argument."'
         function: setDacNames
         input:
         - args
@@ -2365,7 +2369,7 @@ defaultpattern:
       - arg_types: []
         argc: 0
         cast_input: []
-        check_det_id: true
+        check_det_id: false
         convert_det_id: true
         function: loadDefaultPattern
         input: []
@@ -3719,7 +3723,7 @@ firmwaretest:
       - arg_types: []
         argc: 0
         cast_input: []
-        check_det_id: true
+        check_det_id: false
         convert_det_id: true
         function: executeFirmwareTest
         input: []
@@ -4857,6 +4861,9 @@ hostname:
         cast_input: []
         check_det_id: false
         convert_det_id: true
+        exceptions:
+        - condition: args.empty()
+          message: '"hostname require at least one argument."'
         function: ''
         input: []
         input_types: []
@@ -6548,7 +6555,7 @@ patternstart:
       - arg_types: []
         argc: 0
         cast_input: []
-        check_det_id: true
+        check_det_id: false
         convert_det_id: true
         function: startPattern
         input: []
@@ -7475,6 +7482,8 @@ powerlist:
           message: cmd + " only allowed for CTB."
         - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: '"This detector already has fixed dac names. Cannot change them."'
+        - condition: args.empty()
+          message: '"lists require at least one argument."'
         function: setPowerNames
         input:
         - args
@@ -7981,7 +7990,7 @@ rebootcontroller:
       - arg_types: []
         argc: 0
         cast_input: []
-        check_det_id: true
+        check_det_id: false
         convert_det_id: true
         function: rebootController
         input: []
@@ -8096,7 +8105,7 @@ resetfpga:
       - arg_types: []
         argc: 0
         cast_input: []
-        check_det_id: true
+        check_det_id: false
         convert_det_id: true
         function: resetFPGA
         input: []
@@ -9880,6 +9889,8 @@ signallist:
           message: cmd + " only allowed for CTB."
         - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: '"This detector already has fixed dac names. Cannot change them."'
+        - condition: args.empty()
+          message: '"lists require at least one argument."'
         function: setSignalNames
         input:
         - args
@@ -10037,6 +10048,8 @@ slowadclist:
           message: cmd + " only allowed for CTB."
         - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: '"This detector already has fixed dac names. Cannot change them."'
+        - condition: args.empty()
+          message: '"lists require at least one argument."'
         function: setSlowADCNames
         input:
         - args
@@ -10148,7 +10161,7 @@ start:
       - arg_types: []
         argc: 0
         cast_input: []
-        check_det_id: true
+        check_det_id: false
         convert_det_id: true
         function: startDetector
         input: []
@@ -10192,7 +10205,7 @@ stop:
       - arg_types: []
         argc: 0
         cast_input: []
-        check_det_id: true
+        check_det_id: false
         convert_det_id: true
         function: stopDetector
         input: []
@@ -11835,7 +11848,7 @@ udp_cleardst:
       - arg_types: []
         argc: 0
         cast_input: []
-        check_det_id: true
+        check_det_id: false
         convert_det_id: true
         function: clearUDPDestinations
         input: []
@@ -12217,7 +12230,7 @@ udp_reconfigure:
       - arg_types: []
         argc: 0
         cast_input: []
-        check_det_id: true
+        check_det_id: false
         convert_det_id: true
         function: reconfigureUDPDestination
         input: []
@@ -12388,7 +12401,7 @@ udp_validate:
       - arg_types: []
         argc: 0
         cast_input: []
-        check_det_id: true
+        check_det_id: false
         convert_det_id: true
         function: validateUDPConfiguration
         input: []

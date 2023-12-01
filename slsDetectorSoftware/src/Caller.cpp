@@ -428,6 +428,9 @@ std::string Caller::adclist(int action) {
             throw RuntimeError("This detector already has fixed dac names. "
                                "Cannot change them.");
         }
+        if (args.empty()) {
+            throw RuntimeError("lists require at least one argument.");
+        }
         if (det_id != -1) {
             throw RuntimeError("Cannot execute adclist at module level");
         }
@@ -1349,9 +1352,6 @@ std::string Caller::bustest(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError("Cannot execute bustest at module level");
-            }
             det->executeBusTest(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -1592,9 +1592,6 @@ std::string Caller::clearroi(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError("Cannot execute clearroi at module level");
-            }
             det->clearROI(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -2523,6 +2520,9 @@ std::string Caller::daclist(int action) {
             throw RuntimeError("This detector already has fixed dac names. "
                                "Cannot change them.");
         }
+        if (args.empty()) {
+            throw RuntimeError("lists require at least one argument.");
+        }
         if (det_id != -1) {
             throw RuntimeError("Cannot execute daclist at module level");
         }
@@ -3104,10 +3104,6 @@ std::string Caller::defaultpattern(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute defaultpattern at module level");
-            }
             det->loadDefaultPattern(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -4722,10 +4718,6 @@ std::string Caller::firmwaretest(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute firmwaretest at module level");
-            }
             det->executeFirmwareTest(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -8488,10 +8480,6 @@ std::string Caller::patternstart(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute patternstart at module level");
-            }
             det->startPattern(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -9522,6 +9510,9 @@ std::string Caller::powerlist(int action) {
             throw RuntimeError("This detector already has fixed dac names. "
                                "Cannot change them.");
         }
+        if (args.empty()) {
+            throw RuntimeError("lists require at least one argument.");
+        }
         if (det_id != -1) {
             throw RuntimeError("Cannot execute powerlist at module level");
         }
@@ -10264,10 +10255,6 @@ std::string Caller::rebootcontroller(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute rebootcontroller at module level");
-            }
             det->rebootController(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -10437,9 +10424,6 @@ std::string Caller::resetfpga(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError("Cannot execute resetfpga at module level");
-            }
             det->resetFPGA(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -12947,6 +12931,9 @@ std::string Caller::signallist(int action) {
             throw RuntimeError("This detector already has fixed dac names. "
                                "Cannot change them.");
         }
+        if (args.empty()) {
+            throw RuntimeError("lists require at least one argument.");
+        }
         if (det_id != -1) {
             throw RuntimeError("Cannot execute signallist at module level");
         }
@@ -13149,6 +13136,9 @@ std::string Caller::slowadclist(int action) {
             throw RuntimeError("This detector already has fixed dac names. "
                                "Cannot change them.");
         }
+        if (args.empty()) {
+            throw RuntimeError("lists require at least one argument.");
+        }
         if (det_id != -1) {
             throw RuntimeError("Cannot execute slowadclist at module level");
         }
@@ -13330,9 +13320,6 @@ std::string Caller::start(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError("Cannot execute start at module level");
-            }
             det->startDetector(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -13413,9 +13400,6 @@ std::string Caller::stop(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError("Cannot execute stop at module level");
-            }
             det->stopDetector(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -15653,10 +15637,6 @@ std::string Caller::udp_cleardst(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute udp_cleardst at module level");
-            }
             det->clearUDPDestinations(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -16129,10 +16109,6 @@ std::string Caller::udp_reconfigure(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute udp_reconfigure at module level");
-            }
             det->reconfigureUDPDestination(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -16288,10 +16264,6 @@ std::string Caller::udp_validate(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute udp_validate at module level");
-            }
             det->validateUDPConfiguration(std::vector<int>{det_id});
             os << "successful" << '\n';
         }

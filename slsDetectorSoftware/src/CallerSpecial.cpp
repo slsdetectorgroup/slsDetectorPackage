@@ -19,8 +19,8 @@ void Caller::call(const std::string &command,
                   int action, std::ostream &os, int receiver_id) {
     cmd = command;
     args = arguments;
-    det_id = detector_id;std::cout << "det_id:"<<det_id<<std::endl;
-    rx_id = receiver_id; std::cout << "rx_id:"<<rx_id<<std::endl;
+    det_id = detector_id;
+    rx_id = receiver_id;
     auto it = functions.find(cmd);
     if (it != functions.end()) {
         auto ret = ((*this).*(it->second))(action);

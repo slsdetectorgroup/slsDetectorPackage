@@ -181,7 +181,7 @@ def generate_bash_autocomplete(output_path=Path(__file__).parent / 'bash_autocom
         if '-- THIS LINE WILL BE REPLACED WITH GENERATED CODE --' not in line:
             output_file.write(line)
             continue
-        writeline(f'local SLS_COMMANDS="{" ".join(commands.keys())}"')
+        writeline(f'local SLS_COMMANDS=" {" ".join(commands.keys())} "')
         # generate functions
         for command_name, command in commands.items():
             # added for debugging

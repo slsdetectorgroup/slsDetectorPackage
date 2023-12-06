@@ -930,7 +930,7 @@ std::string CmdProxy::ClockPhase(int action) {
                                        ". Did you mean deg?");
                 }
                 auto t = det->getClockPhaseinDegrees(StringTo<int>(args[0]),
-                                                     {det_id});
+                                                     std::vector<int>{det_id});
                 os << OutString(t) << " deg\n";
             } else {
                 WrongNumberOfParameters(1);
@@ -1013,7 +1013,7 @@ std::string CmdProxy::ClockDivider(int action) {
                 WrongNumberOfParameters(2);
             }
             det->setClockDivider(StringTo<int>(args[0]), StringTo<int>(args[1]),
-                                 {det_id});
+                                 std::vector<int>{det_id});
             os << args[1] << '\n';
         } else {
             throw RuntimeError("Unknown action");
@@ -2239,7 +2239,7 @@ std::string CmdProxy::InjectChannel(int action) {
             WrongNumberOfParameters(2);
         }
         det->setInjectChannel(StringTo<int>(args[0]), StringTo<int>(args[1]),
-                              {det_id});
+                              std::vector<int>{det_id});
         os << ToString(args) << '\n';
     } else {
         throw RuntimeError("Unknown action");
@@ -2292,7 +2292,7 @@ std::string CmdProxy::VetoReference(int action) {
             WrongNumberOfParameters(2);
         }
         det->setVetoReference(StringTo<int>(args[0]), StringTo<int>(args[1]),
-                              {det_id});
+                              std::vector<int>{det_id});
         os << ToString(args) << '\n';
     } else {
         throw RuntimeError("Unknown action");
@@ -3062,7 +3062,7 @@ std::string CmdProxy::PatternWaitTime(int action) {
             os << OutString(t) << '\n';
         } else if (action == defs::PUT_ACTION) {
             uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
-            det->setPatternWaitTime(level, waittime, {det_id});
+            det->setPatternWaitTime(level, waittime, std::vector<int>{det_id});
             os << waittime << '\n';
         } else {
             throw RuntimeError("Unknown action");

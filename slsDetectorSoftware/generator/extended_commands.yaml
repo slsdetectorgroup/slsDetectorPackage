@@ -291,8 +291,6 @@ adclist:
           message: cmd + " only allowed for CTB."
         - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: '"This detector already has fixed dac names. Cannot change them."'
-        - condition: args.empty()
-          message: '"lists require at least one argument."'
         function: setAdcNames
         input:
         - args
@@ -451,8 +449,7 @@ adcphase:
             == defs::GOTTHARD2
           message: '"adcphase not implemented for this detector"'
         - condition: args[1] != "deg"
-          message: '"Unknown adcphase   2nd argument " + args[1] + ". Did you    mean
-            deg?"'
+          message: '"Unknown adcphase 2nd argument " + args[1] + ". Did you mean deg?"'
         extra_variables:
         - name: det_type
           type: auto
@@ -955,7 +952,7 @@ bursts:
     PUT:
       args:
       - arg_types:
-        - int
+        - int64_t
         argc: 1
         cast_input:
         - true
@@ -965,7 +962,7 @@ bursts:
         input:
         - args[0]
         input_types:
-        - int
+        - int64_t
         output:
         - args.front()
         require_det_id: false
@@ -1113,6 +1110,7 @@ clearbit:
   function_alias: clearbit
   help: "[reg address in hex] [bit index]\n\tClears bit in address."
   infer_action: true
+  template: true
 clearbusy:
   actions:
     PUT:
@@ -1213,7 +1211,6 @@ clkdiv:
         cast_input:
         - true
         - true
-        - false
         check_det_id: false
         convert_det_id: true
         exceptions:
@@ -1227,14 +1224,12 @@ clkdiv:
         input:
         - args[0]
         - args[1]
-        - '{det_id}'
         input_types:
         - int
         - int
-        - auto
         output:
         - args[1]
-        require_det_id: false
+        require_det_id: true
         store_result_in_t: false
   command_name: clkdiv
   function_alias: clkdiv
@@ -1369,7 +1364,7 @@ clkphase:
         exceptions:
         - condition: type != defs::GOTTHARD2 && type != defs::MYTHEN3
           message: '"clkphase not implemented for this detector."'
-        - condition: args[1] != "deg"
+        - condition: args[2] != "deg"
           message: '"Cannot scan argument" + args[2] + ". Did you mean deg?"'
         extra_variables:
         - name: type
@@ -1907,8 +1902,6 @@ daclist:
           message: cmd + " only allowed for CTB."
         - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: '"This detector already has fixed dac names. Cannot change them."'
-        - condition: args.empty()
-          message: '"lists require at least one argument."'
         function: setDacNames
         input:
         - args
@@ -2060,8 +2053,7 @@ datastream:
         - defs::portPosition
         - bool
         output:
-        - args[0]
-        - args[1]
+        - ToString(args)
         require_det_id: true
         store_result_in_t: false
   command_name: datastream
@@ -2812,7 +2804,7 @@ exptime:
     PUT:
       args:
       - arg_types:
-        - int
+        - std::string
         argc: 1
         cast_input:
         - false
@@ -2904,12 +2896,40 @@ exptime1:
         - OutString(t , args[0])
         require_det_id: true
         store_result_in_t: true
+      detectors:
+        MYTHEN3:
+        - arg_types: []
+          argc: 0
+          cast_input: []
+          check_det_id: false
+          convert_det_id: true
+          function: getExptimeForAllGates
+          input: []
+          input_types: []
+          output:
+          - OutString(t)
+          require_det_id: true
+          store_result_in_t: true
+        - arg_types:
+          - special::time_unit
+          argc: 1
+          cast_input: []
+          check_det_id: false
+          convert_det_id: true
+          function: getExptimeForAllGates
+          input: []
+          input_types: []
+          output:
+          - OutString(t , args[0])
+          require_det_id: true
+          store_result_in_t: true
     PUT:
       args:
       - arg_types:
-        - int
+        - std::string
         argc: 1
         cast_input:
+        - false
         - false
         check_det_id: false
         convert_det_id: true
@@ -2919,8 +2939,10 @@ exptime1:
           value: 0
         function: setExptime
         input:
+        - gateIndex
         - converted_time
         input_types:
+        - int
         - time::ns
         output:
         - args[0]
@@ -2937,6 +2959,7 @@ exptime1:
         argc: 2
         cast_input:
         - false
+        - false
         check_det_id: false
         convert_det_id: true
         convert_to_time:
@@ -2950,74 +2973,16 @@ exptime1:
           value: 0
         function: setExptime
         input:
+        - gateIndex
         - converted_time
         input_types:
+        - int
         - time::ns
         output:
         - args[0]
         - args[1]
         require_det_id: true
         store_result_in_t: false
-      detectors:
-        MYTHEN3:
-        - arg_types:
-          - int
-          argc: 1
-          cast_input:
-          - false
-          - false
-          check_det_id: false
-          convert_det_id: true
-          extra_variables:
-          - name: gateIndex
-            type: int
-            value: 0
-          function: setExptime
-          input:
-          - gateIndex
-          - converted_time
-          input_types:
-          - int
-          - time::ns
-          output:
-          - args[0]
-          require_det_id: true
-          separate_time_units:
-            input: args[0]
-            output:
-            - converted_time
-            - unit
-          store_result_in_t: false
-        - arg_types:
-          - int
-          - special::time_unit
-          argc: 2
-          cast_input:
-          - false
-          - false
-          check_det_id: false
-          convert_det_id: true
-          convert_to_time:
-            input:
-            - args[0]
-            - args[1]
-            output: converted_time
-          extra_variables:
-          - name: gateIndex
-            type: int
-            value: 0
-          function: setExptime
-          input:
-          - gateIndex
-          - converted_time
-          input_types:
-          - int
-          - time::ns
-          output:
-          - args[0]
-          - args[1]
-          require_det_id: true
-          store_result_in_t: false
   command_name: exptime1
   function_alias: exptime1
   help: "[n_value]\n\t[Mythen3] Exposure time of gate signal 1 in auto and trigger\
@@ -3066,12 +3031,40 @@ exptime2:
         - OutString(t , args[0])
         require_det_id: true
         store_result_in_t: true
+      detectors:
+        MYTHEN3:
+        - arg_types: []
+          argc: 0
+          cast_input: []
+          check_det_id: false
+          convert_det_id: true
+          function: getExptimeForAllGates
+          input: []
+          input_types: []
+          output:
+          - OutString(t)
+          require_det_id: true
+          store_result_in_t: true
+        - arg_types:
+          - special::time_unit
+          argc: 1
+          cast_input: []
+          check_det_id: false
+          convert_det_id: true
+          function: getExptimeForAllGates
+          input: []
+          input_types: []
+          output:
+          - OutString(t , args[0])
+          require_det_id: true
+          store_result_in_t: true
     PUT:
       args:
       - arg_types:
-        - int
+        - std::string
         argc: 1
         cast_input:
+        - false
         - false
         check_det_id: false
         convert_det_id: true
@@ -3081,8 +3074,10 @@ exptime2:
           value: 1
         function: setExptime
         input:
+        - gateIndex
         - converted_time
         input_types:
+        - int
         - time::ns
         output:
         - args[0]
@@ -3099,6 +3094,7 @@ exptime2:
         argc: 2
         cast_input:
         - false
+        - false
         check_det_id: false
         convert_det_id: true
         convert_to_time:
@@ -3112,74 +3108,16 @@ exptime2:
           value: 1
         function: setExptime
         input:
+        - gateIndex
         - converted_time
         input_types:
+        - int
         - time::ns
         output:
         - args[0]
         - args[1]
         require_det_id: true
         store_result_in_t: false
-      detectors:
-        MYTHEN3:
-        - arg_types:
-          - int
-          argc: 1
-          cast_input:
-          - false
-          - false
-          check_det_id: false
-          convert_det_id: true
-          extra_variables:
-          - name: gateIndex
-            type: int
-            value: 0
-          function: setExptime
-          input:
-          - gateIndex
-          - converted_time
-          input_types:
-          - int
-          - time::ns
-          output:
-          - args[0]
-          require_det_id: true
-          separate_time_units:
-            input: args[0]
-            output:
-            - converted_time
-            - unit
-          store_result_in_t: false
-        - arg_types:
-          - int
-          - special::time_unit
-          argc: 2
-          cast_input:
-          - false
-          - false
-          check_det_id: false
-          convert_det_id: true
-          convert_to_time:
-            input:
-            - args[0]
-            - args[1]
-            output: converted_time
-          extra_variables:
-          - name: gateIndex
-            type: int
-            value: 0
-          function: setExptime
-          input:
-          - gateIndex
-          - converted_time
-          input_types:
-          - int
-          - time::ns
-          output:
-          - args[0]
-          - args[1]
-          require_det_id: true
-          store_result_in_t: false
   command_name: exptime2
   function_alias: exptime2
   help: "[n_value]\n\t[Mythen3] Exposure time of gate signal 2 in auto and trigger\
@@ -3228,12 +3166,40 @@ exptime3:
         - OutString(t , args[0])
         require_det_id: true
         store_result_in_t: true
+      detectors:
+        MYTHEN3:
+        - arg_types: []
+          argc: 0
+          cast_input: []
+          check_det_id: false
+          convert_det_id: true
+          function: getExptimeForAllGates
+          input: []
+          input_types: []
+          output:
+          - OutString(t)
+          require_det_id: true
+          store_result_in_t: true
+        - arg_types:
+          - special::time_unit
+          argc: 1
+          cast_input: []
+          check_det_id: false
+          convert_det_id: true
+          function: getExptimeForAllGates
+          input: []
+          input_types: []
+          output:
+          - OutString(t , args[0])
+          require_det_id: true
+          store_result_in_t: true
     PUT:
       args:
       - arg_types:
-        - int
+        - std::string
         argc: 1
         cast_input:
+        - false
         - false
         check_det_id: false
         convert_det_id: true
@@ -3243,8 +3209,10 @@ exptime3:
           value: 2
         function: setExptime
         input:
+        - gateIndex
         - converted_time
         input_types:
+        - int
         - time::ns
         output:
         - args[0]
@@ -3261,6 +3229,7 @@ exptime3:
         argc: 2
         cast_input:
         - false
+        - false
         check_det_id: false
         convert_det_id: true
         convert_to_time:
@@ -3274,74 +3243,16 @@ exptime3:
           value: 2
         function: setExptime
         input:
+        - gateIndex
         - converted_time
         input_types:
+        - int
         - time::ns
         output:
         - args[0]
         - args[1]
         require_det_id: true
         store_result_in_t: false
-      detectors:
-        MYTHEN3:
-        - arg_types:
-          - int
-          argc: 1
-          cast_input:
-          - false
-          - false
-          check_det_id: false
-          convert_det_id: true
-          extra_variables:
-          - name: gateIndex
-            type: int
-            value: 0
-          function: setExptime
-          input:
-          - gateIndex
-          - converted_time
-          input_types:
-          - int
-          - time::ns
-          output:
-          - args[0]
-          require_det_id: true
-          separate_time_units:
-            input: args[0]
-            output:
-            - converted_time
-            - unit
-          store_result_in_t: false
-        - arg_types:
-          - int
-          - special::time_unit
-          argc: 2
-          cast_input:
-          - false
-          - false
-          check_det_id: false
-          convert_det_id: true
-          convert_to_time:
-            input:
-            - args[0]
-            - args[1]
-            output: converted_time
-          extra_variables:
-          - name: gateIndex
-            type: int
-            value: 0
-          function: setExptime
-          input:
-          - gateIndex
-          - converted_time
-          input_types:
-          - int
-          - time::ns
-          output:
-          - args[0]
-          - args[1]
-          require_det_id: true
-          store_result_in_t: false
   command_name: exptime3
   function_alias: exptime3
   help: "[n_value]\n\t[Mythen3] Exposure time of gate signal 3 in auto and trigger\
@@ -4405,7 +4316,7 @@ gatedelay1:
         require_det_id: true
         store_result_in_t: true
       - arg_types:
-        - int
+        - special::time_unit
         argc: 1
         cast_input:
         - false
@@ -4513,7 +4424,7 @@ gatedelay2:
         require_det_id: true
         store_result_in_t: true
       - arg_types:
-        - int
+        - special::time_unit
         argc: 1
         cast_input:
         - false
@@ -4621,7 +4532,7 @@ gatedelay3:
         require_det_id: true
         store_result_in_t: true
       - arg_types:
-        - int
+        - special::time_unit
         argc: 1
         cast_input:
         - false
@@ -4861,9 +4772,6 @@ hostname:
         cast_input: []
         check_det_id: false
         convert_det_id: true
-        exceptions:
-        - condition: args.empty()
-          message: '"hostname require at least one argument."'
         function: ''
         input: []
         input_types: []
@@ -5103,21 +5011,18 @@ inj_ch:
         cast_input:
         - true
         - true
-        - false
         check_det_id: false
         convert_det_id: true
         function: setInjectChannel
         input:
         - args[0]
         - args[1]
-        - '{det_id}'
         input_types:
         - int
         - int
-        - auto
         output:
         - ToString(args)
-        require_det_id: false
+        require_det_id: true
         store_result_in_t: false
   command_name: inj_ch
   function_alias: inj_ch
@@ -5915,9 +5820,9 @@ patlimits:
         - int
         output:
         - '''['''
-        - ToStringHex(StringTo<int>(args[0]), 4)
+        - ToStringHex(arg1, 4)
         - '", "'
-        - ToStringHex(StringTo<int>(args[1]), 4)
+        - ToStringHex(arg2, 4)
         - ''']'''
         require_det_id: true
         store_result_in_t: false
@@ -6837,10 +6742,8 @@ patwaittime:
       - arg_types:
         - int
         - int
-        - auto
         argc: -1
         cast_input:
-        - false
         - false
         - false
         check_det_id: false
@@ -6853,11 +6756,9 @@ patwaittime:
         input:
         - level
         - waittime
-        - '{det_id}'
         input_types:
         - int
         - int
-        - auto
         output:
         - level
         - ''' '''
@@ -6866,7 +6767,7 @@ patwaittime:
           command_name: patwaittime
           nGetArgs: 0
           nPutArgs: 1
-        require_det_id: false
+        require_det_id: true
         store_result_in_t: false
   command_name: patwaittime
   function_alias: patwaittime
@@ -6902,10 +6803,8 @@ patwaittime0:
       - arg_types:
         - int
         - int
-        - auto
         argc: -1
         cast_input:
-        - false
         - false
         - false
         check_det_id: false
@@ -6918,18 +6817,16 @@ patwaittime0:
         input:
         - level
         - waittime
-        - '{det_id}'
         input_types:
         - int
         - int
-        - auto
         output:
         - waittime
         pattern_command:
           command_name: patwaittime
           nGetArgs: 0
           nPutArgs: 1
-        require_det_id: false
+        require_det_id: true
         store_result_in_t: false
   command_name: patwaittime0
   function_alias: patwaittime0
@@ -6964,10 +6861,8 @@ patwaittime1:
       - arg_types:
         - int
         - int
-        - auto
         argc: -1
         cast_input:
-        - false
         - false
         - false
         check_det_id: false
@@ -6980,18 +6875,16 @@ patwaittime1:
         input:
         - level
         - waittime
-        - '{det_id}'
         input_types:
         - int
         - int
-        - auto
         output:
         - waittime
         pattern_command:
           command_name: patwaittime
           nGetArgs: 0
           nPutArgs: 1
-        require_det_id: false
+        require_det_id: true
         store_result_in_t: false
   command_name: patwaittime1
   function_alias: patwaittime1
@@ -7026,10 +6919,8 @@ patwaittime2:
       - arg_types:
         - int
         - int
-        - auto
         argc: -1
         cast_input:
-        - false
         - false
         - false
         check_det_id: false
@@ -7042,18 +6933,16 @@ patwaittime2:
         input:
         - level
         - waittime
-        - '{det_id}'
         input_types:
         - int
         - int
-        - auto
         output:
         - waittime
         pattern_command:
           command_name: patwaittime
           nGetArgs: 0
           nPutArgs: 1
-        require_det_id: false
+        require_det_id: true
         store_result_in_t: false
   command_name: patwaittime2
   function_alias: patwaittime2
@@ -7141,7 +7030,8 @@ pedestalmode:
         convert_det_id: true
         exceptions:
         - condition: args[0] != "0"
-          message: '"Unknown argument " + args[0] + ". Did you mean 0?"'
+          message: '"Unknown argument " + args[0] + ". Did you mean 0 to disable pedestal
+            mode?"'
         function: setPedestalMode
         input:
         - defs::pedestalParameters()
@@ -7482,8 +7372,6 @@ powerlist:
           message: cmd + " only allowed for CTB."
         - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: '"This detector already has fixed dac names. Cannot change them."'
-        - condition: args.empty()
-          message: '"lists require at least one argument."'
         function: setPowerNames
         input:
         - args
@@ -7677,6 +7565,7 @@ pulse:
   help: "[n_times] [x] [y]\n\t[Eiger] Pulse pixel n number of times at coordinates\
     \ (x, y). Advanced User!"
   infer_action: true
+  template: true
 pulsechip:
   actions:
     PUT:
@@ -7737,6 +7626,7 @@ pulsenmove:
   help: "[n_times] [x] [y]\n\t[Eiger] Pulse pixel n number of times and moves relatively\
     \ by (x, y). Advanced User!"
   infer_action: true
+  template: true
 pumpprobe:
   actions:
     GET:
@@ -7944,6 +7834,9 @@ readoutspeed:
         - true
         check_det_id: false
         convert_det_id: true
+        exceptions:
+        - condition: det->getDetectorType().squash() == defs::CHIPTESTBOARD
+          message: '"ReadoutSpeed not implemented. Did you mean runclk?"'
         function: setReadoutSpeed
         input:
         - args[0]
@@ -8553,7 +8446,7 @@ rx_frameindex:
         store_result_in_t: true
   command_name: rx_frameindex
   function_alias: rx_frameindex
-  help: "\n\tCurrent frame index received for receiver during acquisition."
+  help: "\n\tCurrent frame index received for each port in receiver during acquisition."
   infer_action: true
   template: true
 rx_framescaught:
@@ -9085,8 +8978,7 @@ rx_tcpport:
         convert_det_id: true
         function: getRxPort
         input: []
-        input_types:
-        - uint16_t
+        input_types: []
         output:
         - OutString(t)
         require_det_id: true
@@ -9338,8 +9230,7 @@ rx_zmqport:
         convert_det_id: true
         function: getRxZmqPort
         input: []
-        input_types:
-        - uint16_t
+        input_types: []
         output:
         - OutString(t)
         require_det_id: true
@@ -9720,6 +9611,7 @@ setbit:
   function_alias: setbit
   help: "[reg address in hex] [bit index]\n\tSets bit in address."
   infer_action: true
+  template: true
 settings:
   actions:
     GET:
@@ -9889,8 +9781,6 @@ signallist:
           message: cmd + " only allowed for CTB."
         - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: '"This detector already has fixed dac names. Cannot change them."'
-        - condition: args.empty()
-          message: '"lists require at least one argument."'
         function: setSignalNames
         input:
         - args
@@ -10048,8 +9938,6 @@ slowadclist:
           message: cmd + " only allowed for CTB."
         - condition: cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD
           message: '"This detector already has fixed dac names. Cannot change them."'
-        - condition: args.empty()
-          message: '"lists require at least one argument."'
         function: setSlowADCNames
         input:
         - args
@@ -11531,7 +11419,7 @@ trimbits:
         - std::string
         output:
         - args[0]
-        require_det_id: false
+        require_det_id: true
         store_result_in_t: false
   command_name: trimbits
   function_alias: trimbits
@@ -12084,8 +11972,7 @@ udp_dstport:
         convert_det_id: true
         function: getDestinationUDPPort
         input: []
-        input_types:
-        - uint16_t
+        input_types: []
         output:
         - OutString(t)
         require_det_id: true
@@ -12126,8 +12013,7 @@ udp_dstport2:
         convert_det_id: true
         function: getDestinationUDPPort2
         input: []
-        input_types:
-        - uint16_t
+        input_types: []
         output:
         - OutString(t)
         require_det_id: true
@@ -12421,7 +12307,7 @@ update:
     PUT:
       args:
       - arg_types:
-        - std::string
+        - special::path
         - special::path
         argc: 2
         cast_input:
@@ -13369,7 +13255,10 @@ vetoalg:
         input_types:
         - defs::vetoAlgorithm
         - defs::streamingInterface
-        output: []
+        output:
+        - ToString(alg)
+        - ''' '''
+        - ToString(interface)
         require_det_id: true
         store_result_in_t: false
   command_name: vetoalg
@@ -13476,23 +13365,19 @@ vetoref:
       - arg_types:
         - int
         - int
-        - auto
         argc: 2
         cast_input:
         - true
         - true
-        - false
         check_det_id: false
         convert_det_id: true
         function: setVetoReference
         input:
         - args[0]
         - args[1]
-        - '{det_id}'
         input_types:
         - int
         - int
-        - auto
         output:
         - ToString(args)
         require_det_id: false
@@ -13780,8 +13665,7 @@ zmqport:
         convert_det_id: true
         function: getClientZmqPort
         input: []
-        input_types:
-        - uint16_t
+        input_types: []
         output:
         - OutString(t)
         require_det_id: true

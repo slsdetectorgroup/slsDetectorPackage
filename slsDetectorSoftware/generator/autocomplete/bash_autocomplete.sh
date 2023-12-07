@@ -629,7 +629,7 @@ if [[ "${cword}" == "2" ]]; then
 FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
@@ -640,7 +640,7 @@ if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
 fi
 fi
 return 0
@@ -655,7 +655,7 @@ if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
 fi
 fi
 return 0
@@ -2206,7 +2206,7 @@ __settings() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
 fi
 fi
 return 0
@@ -2531,7 +2531,7 @@ __timing() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="`detg timinglist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
+FCN_RETURN="auto burst_trigger gating trigger trigger_gating"
 fi
 fi
 return 0
@@ -3241,7 +3241,7 @@ return 0
   # if a command is written, autocomplete with the options
   # call the function for the command
 
-  if [[ "$SLS_COMMANDS" == *" ${COMP_WORDS[1]##*:} "* ]]; then
+  if [[ "$SLS_COMMANDS" == *"${words[1]##*:}"* ]]; then
       __"${words[1]##*:}"
   fi
 

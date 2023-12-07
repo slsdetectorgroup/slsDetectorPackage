@@ -2274,7 +2274,7 @@ defaultdac:
         store_result_in_t: true
       - arg_types:
         - defs::dacIndex
-        - defs::detectorSettings
+        - slsDetectorDefs::detectorSettings
         argc: 2
         cast_input:
         - true
@@ -2287,7 +2287,7 @@ defaultdac:
         - args[1]
         input_types:
         - defs::dacIndex
-        - defs::detectorSettings
+        - slsDetectorDefs::detectorSettings
         output:
         - args[0]
         - ''' '''
@@ -2323,7 +2323,7 @@ defaultdac:
       - arg_types:
         - defs::dacIndex
         - int
-        - defs::detectorSettings
+        - slsDetectorDefs::detectorSettings
         argc: 3
         cast_input:
         - true
@@ -2339,7 +2339,7 @@ defaultdac:
         input_types:
         - defs::dacIndex
         - int
-        - defs::detectorSettings
+        - slsDetectorDefs::detectorSettings
         output:
         - args[0]
         - ''' '''
@@ -3363,7 +3363,7 @@ extsig:
       args:
       - arg_types:
         - int
-        - defs::externalSignalFlag
+        - slsDetectorDefs::externalSignalFlag
         argc: 2
         cast_input:
         - true
@@ -3376,7 +3376,7 @@ extsig:
         - args[1]
         input_types:
         - int
-        - defs::externalSignalFlag
+        - slsDetectorDefs::externalSignalFlag
         output:
         - args[0]
         - ''' '''
@@ -3410,7 +3410,7 @@ fformat:
     PUT:
       args:
       - arg_types:
-        - defs::fileFormat
+        - slsDetectorDefs::fileFormat
         argc: 1
         cast_input:
         - true
@@ -3420,7 +3420,7 @@ fformat:
         input:
         - args[0]
         input_types:
-        - defs::fileFormat
+        - slsDetectorDefs::fileFormat
         output:
         - args.front()
         require_det_id: true
@@ -4059,7 +4059,7 @@ gainmode:
     PUT:
       args:
       - arg_types:
-        - defs::gainMode
+        - slsDetectorDefs::gainMode
         argc: 1
         cast_input:
         - true
@@ -4069,7 +4069,7 @@ gainmode:
         input:
         - args[0]
         input_types:
-        - defs::gainMode
+        - slsDetectorDefs::gainMode
         output:
         - args.front()
         require_det_id: true
@@ -8002,7 +8002,7 @@ romode:
     PUT:
       args:
       - arg_types:
-        - defs::readoutMode
+        - slsDetectorDefs::readoutMode
         argc: 1
         cast_input:
         - true
@@ -8012,7 +8012,7 @@ romode:
         input:
         - args[0]
         input_types:
-        - defs::readoutMode
+        - slsDetectorDefs::readoutMode
         output:
         - args.front()
         require_det_id: true
@@ -8289,7 +8289,7 @@ rx_discardpolicy:
     PUT:
       args:
       - arg_types:
-        - defs::frameDiscardPolicy
+        - slsDetectorDefs::frameDiscardPolicy
         argc: 1
         cast_input:
         - true
@@ -8299,7 +8299,7 @@ rx_discardpolicy:
         input:
         - args[0]
         input_types:
-        - defs::frameDiscardPolicy
+        - slsDetectorDefs::frameDiscardPolicy
         output:
         - args.front()
         require_det_id: true
@@ -9554,7 +9554,7 @@ settings:
     PUT:
       args:
       - arg_types:
-        - defs::detectorSettings
+        - slsDetectorDefs::detectorSettings
         argc: 1
         cast_input:
         - true
@@ -9564,7 +9564,7 @@ settings:
         input:
         - args[0]
         input_types:
-        - defs::detectorSettings
+        - slsDetectorDefs::detectorSettings
         output:
         - args.front()
         require_det_id: true
@@ -11055,7 +11055,7 @@ timing:
     PUT:
       args:
       - arg_types:
-        - defs::timingMode
+        - slsDetectorDefs::timingMode
         argc: 1
         cast_input:
         - true
@@ -11065,7 +11065,7 @@ timing:
         input:
         - args[0]
         input_types:
-        - defs::timingMode
+        - slsDetectorDefs::timingMode
         output:
         - args.front()
         require_det_id: true
@@ -11117,7 +11117,7 @@ timingsource:
     PUT:
       args:
       - arg_types:
-        - defs::timingSourceType
+        - slsDetectorDefs::timingSourceType
         argc: 1
         cast_input:
         - true
@@ -11127,7 +11127,7 @@ timingsource:
         input:
         - args[0]
         input_types:
-        - defs::timingSourceType
+        - slsDetectorDefs::timingSourceType
         output:
         - args.front()
         require_det_id: true

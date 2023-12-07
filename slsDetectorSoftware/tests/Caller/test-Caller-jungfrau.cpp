@@ -17,7 +17,7 @@ using test::PUT;
 
 /* dacs */
 
-TEST_CASE("Caller::Setting and reading back Jungfrau dacs", "[.cmd][.dacs]") {
+TEST_CASE("Caller::Setting and reading back Jungfrau dacs", "[.cmdcall][.dacs]") {
     // vb_comp, vdd_prot, vin_com, vref_prech, vb_pixbuf, vb_ds, vref_ds,
     // vref_comp
     Detector det;
@@ -104,7 +104,7 @@ TEST_CASE("Caller::Setting and reading back Jungfrau dacs", "[.cmd][.dacs]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
-TEST_CASE("Caller::selinterface", "[.cmd]") {
+TEST_CASE("Caller::selinterface", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -135,7 +135,7 @@ TEST_CASE("Caller::selinterface", "[.cmd]") {
 
 /* Jungfrau/moench Specific */
 
-TEST_CASE("Caller::temp_threshold", "[.cmd]") {
+TEST_CASE("Caller::temp_threshold", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -165,7 +165,7 @@ TEST_CASE("Caller::temp_threshold", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::chipversion", "[.cmd]") {
+TEST_CASE("Caller::chipversion", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -177,7 +177,7 @@ TEST_CASE("Caller::chipversion", "[.cmd]") {
     REQUIRE_THROWS(caller.call("chipversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("Caller::temp_control", "[.cmd]") {
+TEST_CASE("Caller::temp_control", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -207,7 +207,7 @@ TEST_CASE("Caller::temp_control", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::temp_event", "[.cmd]") {
+TEST_CASE("Caller::temp_event", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -228,7 +228,7 @@ TEST_CASE("Caller::temp_event", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::autocompdisable", "[.cmd]") {
+TEST_CASE("Caller::autocompdisable", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -258,7 +258,7 @@ TEST_CASE("Caller::autocompdisable", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::compdisabletime", "[.cmd]") {
+TEST_CASE("Caller::compdisabletime", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -289,7 +289,7 @@ TEST_CASE("Caller::compdisabletime", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::extrastoragecells", "[.cmd]") {
+TEST_CASE("Caller::extrastoragecells", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -332,7 +332,7 @@ TEST_CASE("Caller::extrastoragecells", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::storagecell_start", "[.cmd]") {
+TEST_CASE("Caller::storagecell_start", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -377,7 +377,7 @@ TEST_CASE("Caller::storagecell_start", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::storagecell_delay", "[.cmd]") {
+TEST_CASE("Caller::storagecell_delay", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -418,7 +418,7 @@ TEST_CASE("Caller::storagecell_delay", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::gainmode", "[.cmd]") {
+TEST_CASE("Caller::gainmode", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -467,7 +467,7 @@ TEST_CASE("Caller::gainmode", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::filtercells", "[.cmd]") {
+TEST_CASE("Caller::filtercells", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -511,7 +511,7 @@ TEST_CASE("Caller::filtercells", "[.cmd]") {
         REQUIRE_THROWS(caller.call("filtercells", {"0"}, -1, PUT));
     }
 }
-TEST_CASE("Caller::pedestalmode", "[.cmd]") {
+TEST_CASE("Caller::pedestalmode", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -666,7 +666,7 @@ TEST_CASE("Caller::pedestalmode", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::sync", "[.cmd]") {
+TEST_CASE("Caller::sync", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -726,10 +726,10 @@ TEST_CASE("Caller::sync", "[.cmd]") {
             det.setPeriod(std::chrono::milliseconds(1000));
             det.setSynchronization(1);
             det.startDetector();
-            REQUIRE_THROWS(caller.Call("sync", {"0"}, -1, PUT));
+            REQUIRE_THROWS(caller.call("sync", {"0"}, -1, PUT));
             {
                 std::ostringstream oss;
-                caller.Call("sync", {}, -1, GET, oss);
+                caller.call("sync", {}, -1, GET, oss);
                 REQUIRE(oss.str() == "sync 1\n");
             }
             det.stopDetector();

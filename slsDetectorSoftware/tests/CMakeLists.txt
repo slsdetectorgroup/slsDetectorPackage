@@ -6,17 +6,17 @@ target_sources(tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/test-SharedMemory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test-slsDetector.cpp
 
-    # ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy.cpp
-    # ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-rx.cpp
-    # ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-pattern.cpp
-    # ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-eiger.cpp
-    # ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-jungfrau.cpp
-    # ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-mythen3.cpp
-    # ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-gotthard2.cpp
-    # ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-gotthard.cpp
-    # ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-chiptestboard.cpp
-    # ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-moench.cpp
-    # ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-global.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-rx.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-pattern.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-eiger.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-jungfrau.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-mythen3.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-gotthard2.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-gotthard.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-chiptestboard.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-moench.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-global.cpp
 
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-rx.cpp

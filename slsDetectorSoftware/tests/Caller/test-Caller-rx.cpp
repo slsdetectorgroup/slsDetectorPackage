@@ -24,7 +24,7 @@ python/scripts/list_tested_cmd.py to check if all commands are covered
 
 /* configuration */
 
-TEST_CASE("Caller::rx_version", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_version", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     std::ostringstream oss;
@@ -38,7 +38,7 @@ TEST_CASE("Caller::rx_version", "[.cmd][.rx]") {
 }
 
 /* acquisition */
-TEST_CASE("Caller::rx_start", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_start", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     det.setFileWrite(false); // avoid writing or error on file creation
@@ -56,7 +56,7 @@ TEST_CASE("Caller::rx_start", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_stop", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_stop", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     // PUT only command
@@ -73,7 +73,7 @@ TEST_CASE("Caller::rx_stop", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_status", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_status", "[.cmdcall][.rx]") {
     Detector det;
     det.setFileWrite(false); // avoid writing or error on file creation
     Caller caller(&det);
@@ -91,7 +91,7 @@ TEST_CASE("Caller::rx_status", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_framescaught", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_framescaught", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
 
@@ -126,7 +126,7 @@ TEST_CASE("Caller::rx_framescaught", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_missingpackets", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_missingpackets", "[.cmdcall][.rx]") {
     Detector det;
     auto prev_val = det.getFileWrite();
     det.setFileWrite(false); // avoid writing or error on file creation
@@ -169,7 +169,7 @@ TEST_CASE("Caller::rx_missingpackets", "[.cmd][.rx]") {
     det.setNumberOfFrames(prev_frames);
 }
 
-TEST_CASE("Caller::rx_frameindex", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_frameindex", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     caller.call("rx_frameindex", {}, -1, GET);
@@ -180,7 +180,7 @@ TEST_CASE("Caller::rx_frameindex", "[.cmd][.rx]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
-TEST_CASE("Caller::rx_printconfig", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_printconfig", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("rx_printconfig", {}, -1, GET));
@@ -188,7 +188,7 @@ TEST_CASE("Caller::rx_printconfig", "[.cmd][.rx]") {
 
 /* Receiver Config */
 
-TEST_CASE("Caller::rx_hostname", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_hostname", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxHostname();
@@ -220,7 +220,7 @@ TEST_CASE("Caller::rx_hostname", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_tcpport", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_tcpport", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxPort();
@@ -259,7 +259,7 @@ TEST_CASE("Caller::rx_tcpport", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_fifodepth", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_fifodepth", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxFifoDepth();
@@ -283,7 +283,7 @@ TEST_CASE("Caller::rx_fifodepth", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_silent", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_silent", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxSilentMode();
@@ -307,7 +307,7 @@ TEST_CASE("Caller::rx_silent", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_discardpolicy", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_discardpolicy", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxFrameDiscardPolicy();
@@ -336,7 +336,7 @@ TEST_CASE("Caller::rx_discardpolicy", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_padding", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_padding", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getPartialFramesPadding();
@@ -360,7 +360,7 @@ TEST_CASE("Caller::rx_padding", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_udpsocksize", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_udpsocksize", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     int64_t prev_val = det.getRxUDPSocketBufferSize().tsquash(
@@ -380,7 +380,7 @@ TEST_CASE("Caller::rx_udpsocksize", "[.cmd][.rx]") {
     det.setRxUDPSocketBufferSize(prev_val);
 }
 
-TEST_CASE("Caller::rx_realudpsocksize", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_realudpsocksize", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     uint64_t val = 0;
@@ -399,7 +399,7 @@ TEST_CASE("Caller::rx_realudpsocksize", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_lock", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_lock", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxLock();
@@ -423,7 +423,7 @@ TEST_CASE("Caller::rx_lock", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_lastclient", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_lastclient", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     std::ostringstream oss;
@@ -433,14 +433,14 @@ TEST_CASE("Caller::rx_lastclient", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_threads", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_threads", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     std::ostringstream oss;
     REQUIRE_NOTHROW(caller.call("rx_threads", {}, -1, GET, oss));
 }
 
-TEST_CASE("Caller::rx_arping", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_arping", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxArping();
@@ -464,7 +464,7 @@ TEST_CASE("Caller::rx_arping", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_roi", "[.cmd]") {
+TEST_CASE("Caller::rx_roi", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -526,7 +526,7 @@ TEST_CASE("Caller::rx_roi", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::rx_clearroi", "[.cmd]") {
+TEST_CASE("Caller::rx_clearroi", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -548,7 +548,7 @@ TEST_CASE("Caller::rx_clearroi", "[.cmd]") {
 
 /* File */
 
-TEST_CASE("Caller::fformat", "[.cmd]") {
+TEST_CASE("Caller::fformat", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getFileFormat();
@@ -567,7 +567,7 @@ TEST_CASE("Caller::fformat", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::fpath", "[.cmd]") {
+TEST_CASE("Caller::fpath", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getFilePath();
@@ -586,7 +586,7 @@ TEST_CASE("Caller::fpath", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::fname", "[.cmd]") {
+TEST_CASE("Caller::fname", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getFileNamePrefix();
@@ -613,7 +613,7 @@ TEST_CASE("Caller::fname", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::findex", "[.cmd]") {
+TEST_CASE("Caller::findex", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getAcquisitionIndex();
@@ -637,7 +637,7 @@ TEST_CASE("Caller::findex", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::fwrite", "[.cmd]") {
+TEST_CASE("Caller::fwrite", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getFileWrite();
@@ -661,7 +661,7 @@ TEST_CASE("Caller::fwrite", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::fmaster", "[.cmd]") {
+TEST_CASE("Caller::fmaster", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getMasterFileWrite();
@@ -683,7 +683,7 @@ TEST_CASE("Caller::fmaster", "[.cmd]") {
     det.setMasterFileWrite(prev_val);
 }
 
-TEST_CASE("Caller::foverwrite", "[.cmd]") {
+TEST_CASE("Caller::foverwrite", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getFileOverWrite();
@@ -707,7 +707,7 @@ TEST_CASE("Caller::foverwrite", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::rx_framesperfile", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_framesperfile", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getFramesPerFile();
@@ -738,7 +738,7 @@ TEST_CASE("Caller::rx_framesperfile", "[.cmd][.rx]") {
 
 /* ZMQ Streaming Parameters (Receiver<->Client) */
 
-TEST_CASE("Caller::rx_zmqstream", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_zmqstream", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxZmqDataStream();
@@ -764,7 +764,7 @@ TEST_CASE("Caller::rx_zmqstream", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_zmqfreq", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_zmqfreq", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxZmqFrequency();
@@ -788,7 +788,7 @@ TEST_CASE("Caller::rx_zmqfreq", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_zmqstartfnum", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_zmqstartfnum", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxZmqStartingFrame();
@@ -812,7 +812,7 @@ TEST_CASE("Caller::rx_zmqstartfnum", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_zmqport", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_zmqport", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val_zmqport = det.getRxZmqPort();
@@ -860,7 +860,7 @@ TEST_CASE("Caller::rx_zmqport", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_zmqip", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_zmqip", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxZmqIP();
@@ -880,7 +880,7 @@ TEST_CASE("Caller::rx_zmqip", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_zmqhwm", "[.cmd]") {
+TEST_CASE("Caller::rx_zmqhwm", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val =
@@ -910,7 +910,7 @@ TEST_CASE("Caller::rx_zmqhwm", "[.cmd]") {
 
 /* CTB Specific */
 
-TEST_CASE("Caller::rx_dbitlist", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_dbitlist", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -939,7 +939,7 @@ TEST_CASE("Caller::rx_dbitlist", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_dbitoffset", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_dbitoffset", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -973,7 +973,7 @@ TEST_CASE("Caller::rx_dbitoffset", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_jsonaddheader", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_jsonaddheader", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getAdditionalJsonHeader();
@@ -999,7 +999,7 @@ TEST_CASE("Caller::rx_jsonaddheader", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_jsonpara", "[.cmd][.rx]") {
+TEST_CASE("Caller::rx_jsonpara", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getAdditionalJsonHeader();

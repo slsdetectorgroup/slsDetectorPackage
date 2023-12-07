@@ -19,7 +19,7 @@ using test::PUT;
 
 /* dacs */
 
-TEST_CASE("Caller::Setting and reading back GOTTHARD dacs", "[.cmd][.dacs]") {
+TEST_CASE("Caller::Setting and reading back GOTTHARD dacs", "[.cmdcall][.dacs]") {
     // vref_ds, vcascn_pb, vcascp_pb, vout_cm, vcasc_out, vin_cm, vref_comp,
     // ib_test_c
 
@@ -109,7 +109,7 @@ TEST_CASE("Caller::Setting and reading back GOTTHARD dacs", "[.cmd][.dacs]") {
 
 /* Gotthard Specific */
 
-TEST_CASE("Caller::roi", "[.cmd]") {
+TEST_CASE("Caller::roi", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -140,7 +140,7 @@ TEST_CASE("Caller::roi", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::clearroi", "[.cmd]") {
+TEST_CASE("Caller::clearroi", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -160,7 +160,7 @@ TEST_CASE("Caller::clearroi", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::exptimel", "[.cmd]") {
+TEST_CASE("Caller::exptimel", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();

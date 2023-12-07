@@ -18,7 +18,7 @@ using test::GET;
 using test::PUT;
 
 // time specific measurements for gotthard2
-TEST_CASE("Caller::timegotthard2", "[.cmd]") {
+TEST_CASE("Caller::timegotthard2", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -106,7 +106,7 @@ TEST_CASE("Caller::timegotthard2", "[.cmd]") {
 }
 /* dacs */
 
-TEST_CASE("Caller::Setting and reading back GOTTHARD2 dacs", "[.cmd][.dacs]") {
+TEST_CASE("Caller::Setting and reading back GOTTHARD2 dacs", "[.cmdcall][.dacs]") {
     // vref_h_adc,   vb_comp_fe, vb_comp_adc,  vcom_cds,
     // vref_restore, vb_opa_1st, vref_comp_fe, vcom_adc1,
     // vref_prech,   vref_l_adc, vref_cds,     vb_cs,
@@ -215,7 +215,7 @@ TEST_CASE("Caller::Setting and reading back GOTTHARD2 dacs", "[.cmd][.dacs]") {
 
 /* on chip dacs */
 
-TEST_CASE("Caller::vchip_comp_fe", "[.cmd][.onchipdacs]") {
+TEST_CASE("Caller::vchip_comp_fe", "[.cmdcall][.onchipdacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -228,7 +228,7 @@ TEST_CASE("Caller::vchip_comp_fe", "[.cmd][.onchipdacs]") {
     }
 }
 
-TEST_CASE("Caller::vchip_opa_1st", "[.cmd][.onchipdacs]") {
+TEST_CASE("Caller::vchip_opa_1st", "[.cmdcall][.onchipdacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -241,7 +241,7 @@ TEST_CASE("Caller::vchip_opa_1st", "[.cmd][.onchipdacs]") {
     }
 }
 
-TEST_CASE("Caller::vchip_opa_fd", "[.cmd][.onchipdacs]") {
+TEST_CASE("Caller::vchip_opa_fd", "[.cmdcall][.onchipdacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -254,7 +254,7 @@ TEST_CASE("Caller::vchip_opa_fd", "[.cmd][.onchipdacs]") {
     }
 }
 
-TEST_CASE("Caller::vchip_comp_adc", "[.cmd][.onchipdacs]") {
+TEST_CASE("Caller::vchip_comp_adc", "[.cmdcall][.onchipdacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -267,7 +267,7 @@ TEST_CASE("Caller::vchip_comp_adc", "[.cmd][.onchipdacs]") {
     }
 }
 
-TEST_CASE("Caller::vchip_ref_comp_fe", "[.cmd][.onchipdacs]") {
+TEST_CASE("Caller::vchip_ref_comp_fe", "[.cmdcall][.onchipdacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -281,7 +281,7 @@ TEST_CASE("Caller::vchip_ref_comp_fe", "[.cmd][.onchipdacs]") {
     }
 }
 
-TEST_CASE("Caller::vchip_cs", "[.cmd][.onchipdacs]") {
+TEST_CASE("Caller::vchip_cs", "[.cmdcall][.onchipdacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -296,7 +296,7 @@ TEST_CASE("Caller::vchip_cs", "[.cmd][.onchipdacs]") {
 
 /* Gotthard2 Specific */
 
-TEST_CASE("Caller::bursts", "[.cmd]") {
+TEST_CASE("Caller::bursts", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -370,7 +370,7 @@ TEST_CASE("Caller::bursts", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::burstperiod", "[.cmd]") {
+TEST_CASE("Caller::burstperiod", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -392,7 +392,7 @@ TEST_CASE("Caller::burstperiod", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::burstsl", "[.cmd]") {
+TEST_CASE("Caller::burstsl", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -403,7 +403,7 @@ TEST_CASE("Caller::burstsl", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::inj_ch", "[.cmd]") {
+TEST_CASE("Caller::inj_ch", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -428,7 +428,7 @@ TEST_CASE("Caller::inj_ch", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::vetophoton", "[.cmd]") {
+TEST_CASE("Caller::vetophoton", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -450,7 +450,7 @@ TEST_CASE("Caller::vetophoton", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::vetoref", "[.cmd]") {
+TEST_CASE("Caller::vetoref", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -465,7 +465,7 @@ TEST_CASE("Caller::vetoref", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::vetofile", "[.cmd]") {
+TEST_CASE("Caller::vetofile", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -479,7 +479,7 @@ TEST_CASE("Caller::vetofile", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::burstmode", "[.cmd]") {
+TEST_CASE("Caller::burstmode", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -510,7 +510,7 @@ TEST_CASE("Caller::burstmode", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::cdsgain", "[.cmd]") {
+TEST_CASE("Caller::cdsgain", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -540,7 +540,7 @@ TEST_CASE("Caller::cdsgain", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::timingsource", "[.cmd]") {
+TEST_CASE("Caller::timingsource", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -570,7 +570,7 @@ TEST_CASE("Caller::timingsource", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::veto", "[.cmd]") {
+TEST_CASE("Caller::veto", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -600,7 +600,7 @@ TEST_CASE("Caller::veto", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::vetostream", "[.cmd]") {
+TEST_CASE("Caller::vetostream", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -646,7 +646,7 @@ TEST_CASE("Caller::vetostream", "[.cmd]") {
     REQUIRE_THROWS(caller.call("vetostream", {"dfgd"}, -1, GET));
 }
 
-TEST_CASE("Caller::vetoalg", "[.cmd]") {
+TEST_CASE("Caller::vetoalg", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -702,7 +702,7 @@ TEST_CASE("Caller::vetoalg", "[.cmd]") {
     REQUIRE_THROWS(caller.call("vetoalg", {"dfgd"}, -1, GET));
 }
 
-TEST_CASE("Caller::confadc", "[.cmd]") {
+TEST_CASE("Caller::confadc", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();

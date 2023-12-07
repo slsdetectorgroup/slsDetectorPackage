@@ -4,7 +4,7 @@
 _sd() {
 
 
-local SLS_COMMANDS="acquire activate adcclk adcenable adcenable10g adcindex adcinvert adclist adcname adcphase adcpipeline adcreg adcvpp apulse asamples autocompdisable badchannels blockingtrigger burstmode burstperiod bursts burstsl bustest cdsgain chipversion clearbit clearbusy clearroi clientversion clkdiv clkfreq clkphase column compdisabletime confadc config counters currentsource dac dacindex daclist dacname dacvalues datastream dbitclk dbitphase dbitpipeline defaultdac defaultpattern delay delayl detectorserverversion detsize diodelay dpulse dr drlist dsamples execcommand exptime exptime1 exptime2 exptime3 exptimel extrastoragecells extsampling extsamplingsrc extsig fformat filtercells filterresistor findex firmwaretest firmwareversion fliprows flowcontrol10g fmaster fname foverwrite fpath framecounter frames framesl frametime fwrite gaincaps gainmode gappixels gatedelay gatedelay1 gatedelay2 gatedelay3 gates getbit hardwareversion highvoltage hostname im_a im_b im_c im_d im_io imagetest initialchecks inj_ch interpolation interruptsubframe kernelversion lastclient led lock master maxadcphaseshift maxclkphaseshift maxdbitphaseshift measuredperiod measuredsubperiod moduleid nextframenumber nmod numinterfaces overflow packageversion parallel parameters partialreset patfname patioctrl patlimits patloop patloop0 patloop1 patloop2 patmask patnloop patnloop0 patnloop1 patnloop2 patsetbit patternX patternstart patwait patwait0 patwait1 patwait2 patwaittime patwaittime0 patwaittime1 patwaittime2 patword pedestalmode period periodl polarity port powerchip powerindex powerlist powername powervalues programfpga pulse pulsechip pulsenmove pumpprobe quad ratecorr readnrows readout readoutspeed readoutspeedlist rebootcontroller reg resetdacs resetfpga roi romode row runclk runtime rx_arping rx_clearroi rx_dbitlist rx_dbitoffset rx_discardpolicy rx_fifodepth rx_frameindex rx_framescaught rx_framesperfile rx_hostname rx_jsonaddheader rx_jsonpara rx_lastclient rx_lock rx_missingpackets rx_padding rx_printconfig rx_realudpsocksize rx_roi rx_silent rx_start rx_status rx_stop rx_tcpport rx_threads rx_udpsocksize rx_version rx_zmqfreq rx_zmqhwm rx_zmqip rx_zmqport rx_zmqstartfnum rx_zmqstream samples savepattern scan scanerrmsg selinterface serialnumber setbit settings settingslist settingspath signalindex signallist signalname slowadc slowadcindex slowadclist slowadcname slowadcvalues start status stop stopport storagecell_delay storagecell_start subdeadtime subexptime sync syncclk temp_10ge temp_adc temp_control temp_dcdc temp_event temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr temp_threshold templist tempvalues tengiga threshold thresholdnotb timing timinglist timingsource top transceiverenable trigger triggers triggersl trimbits trimen trimval tsamples txdelay txdelay_frame txdelay_left txdelay_right type udp_cleardst udp_dstip udp_dstip2 udp_dstlist udp_dstmac udp_dstmac2 udp_dstport udp_dstport2 udp_firstdst udp_numdst udp_reconfigure udp_srcip udp_srcip2 udp_srcmac udp_srcmac2 udp_validate update updatedetectorserver updatekernel updatemode user v_a v_b v_c v_chip v_d v_io v_limit vchip_comp_adc vchip_comp_fe vchip_cs vchip_opa_1st vchip_opa_fd vchip_ref_comp_fe versions veto vetoalg vetofile vetophoton vetoref vetostream virtual vm_a vm_b vm_c vm_d vm_io zmqhwm zmqip zmqport"
+local SLS_COMMANDS=" acquire activate adcclk adcenable adcenable10g adcindex adcinvert adclist adcname adcphase adcpipeline adcreg adcvpp apulse asamples autocompdisable badchannels blockingtrigger burstmode burstperiod bursts burstsl bustest cdsgain chipversion clearbit clearbusy clearroi clientversion clkdiv clkfreq clkphase column compdisabletime confadc config counters currentsource dac dacindex daclist dacname dacvalues datastream dbitclk dbitphase dbitpipeline defaultdac defaultpattern delay delayl detectorserverversion detsize diodelay dpulse dr drlist dsamples execcommand exptime exptime1 exptime2 exptime3 exptimel extrastoragecells extsampling extsamplingsrc extsig fformat filtercells filterresistor findex firmwaretest firmwareversion fliprows flowcontrol10g fmaster fname foverwrite fpath framecounter frames framesl frametime fwrite gaincaps gainmode gappixels gatedelay gatedelay1 gatedelay2 gatedelay3 gates getbit hardwareversion highvoltage hostname im_a im_b im_c im_d im_io imagetest initialchecks inj_ch interpolation interruptsubframe kernelversion lastclient led lock master maxadcphaseshift maxclkphaseshift maxdbitphaseshift measuredperiod measuredsubperiod moduleid nextframenumber nmod numinterfaces overflow packageversion parallel parameters partialreset patfname patioctrl patlimits patloop patloop0 patloop1 patloop2 patmask patnloop patnloop0 patnloop1 patnloop2 patsetbit patternX patternstart patwait patwait0 patwait1 patwait2 patwaittime patwaittime0 patwaittime1 patwaittime2 patword pedestalmode period periodl polarity port powerchip powerindex powerlist powername powervalues programfpga pulse pulsechip pulsenmove pumpprobe quad ratecorr readnrows readout readoutspeed readoutspeedlist rebootcontroller reg resetdacs resetfpga roi romode row runclk runtime rx_arping rx_clearroi rx_dbitlist rx_dbitoffset rx_discardpolicy rx_fifodepth rx_frameindex rx_framescaught rx_framesperfile rx_hostname rx_jsonaddheader rx_jsonpara rx_lastclient rx_lock rx_missingpackets rx_padding rx_printconfig rx_realudpsocksize rx_roi rx_silent rx_start rx_status rx_stop rx_tcpport rx_threads rx_udpsocksize rx_version rx_zmqfreq rx_zmqhwm rx_zmqip rx_zmqport rx_zmqstartfnum rx_zmqstream samples savepattern scan scanerrmsg selinterface serialnumber setbit settings settingslist settingspath signalindex signallist signalname slowadc slowadcindex slowadclist slowadcname slowadcvalues start status stop stopport storagecell_delay storagecell_start subdeadtime subexptime sync syncclk temp_10ge temp_adc temp_control temp_dcdc temp_event temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr temp_threshold templist tempvalues tengiga threshold thresholdnotb timing timinglist timingsource top transceiverenable trigger triggers triggersl trimbits trimen trimval tsamples txdelay txdelay_frame txdelay_left txdelay_right type udp_cleardst udp_dstip udp_dstip2 udp_dstlist udp_dstmac udp_dstmac2 udp_dstport udp_dstport2 udp_firstdst udp_numdst udp_reconfigure udp_srcip udp_srcip2 udp_srcmac udp_srcmac2 udp_validate update updatedetectorserver updatekernel updatemode user v_a v_b v_c v_chip v_d v_io v_limit vchip_comp_adc vchip_comp_fe vchip_cs vchip_opa_1st vchip_opa_fd vchip_ref_comp_fe versions veto vetoalg vetofile vetophoton vetoref vetostream virtual vm_a vm_b vm_c vm_d vm_io zmqhwm zmqip zmqport "
 __acquire() {
 FCN_RETURN=""
 return 0
@@ -426,7 +426,7 @@ __dac() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN="mV mv"
@@ -434,7 +434,7 @@ fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -467,12 +467,12 @@ __dacname() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -550,21 +550,21 @@ __defaultdac() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
+FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
+FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -573,13 +573,13 @@ __defaultpattern() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "4" ]]; then
-FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
+FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -1552,12 +1552,12 @@ __powername() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -2080,7 +2080,7 @@ __scan() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -2130,7 +2130,7 @@ __settings() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
+FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -2220,12 +2220,12 @@ __slowadcname() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="highvoltage ib_test_c ibias_sfp iodelay rxb_lb rxb_rb temp_10ge temp_adc temp_dcdc temp_fpga temp_fpgaext temp_fpgafl temp_fpgafr temp_slowadc temp_sodl temp_sodr trimbits vb_comp vb_comp_adc vb_comp_fe vb_cs vb_ds vb_opa_1st vb_opa_fd vb_pixbuf vb_sda vbp_colbuf vcal vcal_n vcal_p vcas vcasc_out vcasc_sfp vcascn_pb vcascp_pb vcassh vcmp_ll vcmp_lr vcmp_rl vcmp_rr vcn vcom_adc1 vcom_adc2 vcom_cds vcp vdcsh vdd_prot vicin vin_cm vin_com vipre vipre_cds vipre_out vishaper vout_cm vref_cds vref_comp vref_comp_fe vref_ds vref_h_adc vref_l_adc vref_prech vref_rstore vrpreamp vrshaper vrshaper_n vsvn vsvp vtgstv vth1 vth2 vth3 vthreshold vtrim"
+FCN_RETURN="`detg daclist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -2422,13 +2422,13 @@ if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
+FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "4" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "5" ]]; then
-FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
+FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -2440,13 +2440,13 @@ if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "3" ]]; then
-FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
+FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 if [[ "${cword}" == "4" ]]; then
 FCN_RETURN=""
 fi
 if [[ "${cword}" == "5" ]]; then
-FCN_RETURN="dynamicgain fast fixgain1 fixgain2 g1_hg g1_lg g2_hc_hg g2_hc_lg g2_lc_hg g2_lc_lg g4_hg g4_lg gain0 highgain highgain0 lowgain mediumgain standard veryhighgain verylowgain"
+FCN_RETURN="`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 return 0
@@ -2455,7 +2455,7 @@ __timing() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="auto burst_trigger gating trigger trigger_gating"
+FCN_RETURN="`detg timinglist | sed -e 's/.*\[\(.*\)\].*/\1/' | sed 's/,//g'`"
 fi
 fi
 return 0

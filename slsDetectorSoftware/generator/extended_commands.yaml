@@ -2853,6 +2853,7 @@ exptime:
     \ Exposure time\n\t[Mythen3] Exposure time of all gate signals in auto and trigger\
     \ mode (internal gating). To specify gate index, use exptime1, exptime2, exptime3."
   infer_action: true
+  template: true
 exptime1:
   actions:
     GET:
@@ -2896,33 +2897,6 @@ exptime1:
         - OutString(t , args[0])
         require_det_id: true
         store_result_in_t: true
-      detectors:
-        MYTHEN3:
-        - arg_types: []
-          argc: 0
-          cast_input: []
-          check_det_id: false
-          convert_det_id: true
-          function: getExptimeForAllGates
-          input: []
-          input_types: []
-          output:
-          - OutString(t)
-          require_det_id: true
-          store_result_in_t: true
-        - arg_types:
-          - special::time_unit
-          argc: 1
-          cast_input: []
-          check_det_id: false
-          convert_det_id: true
-          function: getExptimeForAllGates
-          input: []
-          input_types: []
-          output:
-          - OutString(t , args[0])
-          require_det_id: true
-          store_result_in_t: true
     PUT:
       args:
       - arg_types:
@@ -2988,6 +2962,7 @@ exptime1:
   help: "[n_value]\n\t[Mythen3] Exposure time of gate signal 1 in auto and trigger\
     \ mode (internal gating)."
   infer_action: true
+  template: true
 exptime2:
   actions:
     GET:
@@ -3031,33 +3006,6 @@ exptime2:
         - OutString(t , args[0])
         require_det_id: true
         store_result_in_t: true
-      detectors:
-        MYTHEN3:
-        - arg_types: []
-          argc: 0
-          cast_input: []
-          check_det_id: false
-          convert_det_id: true
-          function: getExptimeForAllGates
-          input: []
-          input_types: []
-          output:
-          - OutString(t)
-          require_det_id: true
-          store_result_in_t: true
-        - arg_types:
-          - special::time_unit
-          argc: 1
-          cast_input: []
-          check_det_id: false
-          convert_det_id: true
-          function: getExptimeForAllGates
-          input: []
-          input_types: []
-          output:
-          - OutString(t , args[0])
-          require_det_id: true
-          store_result_in_t: true
     PUT:
       args:
       - arg_types:
@@ -3123,6 +3071,7 @@ exptime2:
   help: "[n_value]\n\t[Mythen3] Exposure time of gate signal 2 in auto and trigger\
     \ mode (internal gating)."
   infer_action: true
+  template: true
 exptime3:
   actions:
     GET:
@@ -3166,33 +3115,6 @@ exptime3:
         - OutString(t , args[0])
         require_det_id: true
         store_result_in_t: true
-      detectors:
-        MYTHEN3:
-        - arg_types: []
-          argc: 0
-          cast_input: []
-          check_det_id: false
-          convert_det_id: true
-          function: getExptimeForAllGates
-          input: []
-          input_types: []
-          output:
-          - OutString(t)
-          require_det_id: true
-          store_result_in_t: true
-        - arg_types:
-          - special::time_unit
-          argc: 1
-          cast_input: []
-          check_det_id: false
-          convert_det_id: true
-          function: getExptimeForAllGates
-          input: []
-          input_types: []
-          output:
-          - OutString(t , args[0])
-          require_det_id: true
-          store_result_in_t: true
     PUT:
       args:
       - arg_types:
@@ -3258,6 +3180,7 @@ exptime3:
   help: "[n_value]\n\t[Mythen3] Exposure time of gate signal 3 in auto and trigger\
     \ mode (internal gating)."
   infer_action: true
+  template: true
 exptimel:
   actions:
     GET:

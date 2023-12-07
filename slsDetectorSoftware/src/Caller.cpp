@@ -3799,34 +3799,17 @@ std::string Caller::exptime1(int action) {
     }
 
     // generate code for each action
-    auto detector_type = det->getDetectorType().squash();
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (detector_type == defs::MYTHEN3) {
-            if (args.size() == 0) {
-                auto t = det->getExptimeForAllGates(std::vector<int>{det_id});
-                os << OutString(t) << '\n';
-            }
-
-            if (args.size() == 1) {
-                auto t = det->getExptimeForAllGates(std::vector<int>{det_id});
-                os << OutString(t, args[0]) << '\n';
-            }
-
+        if (args.size() == 0) {
+            int gateIndex = 0;
+            auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
+            os << OutString(t) << '\n';
         }
 
-        else {
-
-            if (args.size() == 0) {
-                int gateIndex = 0;
-                auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
-                os << OutString(t) << '\n';
-            }
-
-            if (args.size() == 1) {
-                int gateIndex = 0;
-                auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
-                os << OutString(t, args[0]) << '\n';
-            }
+        if (args.size() == 1) {
+            int gateIndex = 0;
+            auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
+            os << OutString(t, args[0]) << '\n';
         }
     }
 
@@ -3915,34 +3898,17 @@ std::string Caller::exptime2(int action) {
     }
 
     // generate code for each action
-    auto detector_type = det->getDetectorType().squash();
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (detector_type == defs::MYTHEN3) {
-            if (args.size() == 0) {
-                auto t = det->getExptimeForAllGates(std::vector<int>{det_id});
-                os << OutString(t) << '\n';
-            }
-
-            if (args.size() == 1) {
-                auto t = det->getExptimeForAllGates(std::vector<int>{det_id});
-                os << OutString(t, args[0]) << '\n';
-            }
-
+        if (args.size() == 0) {
+            int gateIndex = 1;
+            auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
+            os << OutString(t) << '\n';
         }
 
-        else {
-
-            if (args.size() == 0) {
-                int gateIndex = 1;
-                auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
-                os << OutString(t) << '\n';
-            }
-
-            if (args.size() == 1) {
-                int gateIndex = 1;
-                auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
-                os << OutString(t, args[0]) << '\n';
-            }
+        if (args.size() == 1) {
+            int gateIndex = 1;
+            auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
+            os << OutString(t, args[0]) << '\n';
         }
     }
 
@@ -4031,34 +3997,17 @@ std::string Caller::exptime3(int action) {
     }
 
     // generate code for each action
-    auto detector_type = det->getDetectorType().squash();
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (detector_type == defs::MYTHEN3) {
-            if (args.size() == 0) {
-                auto t = det->getExptimeForAllGates(std::vector<int>{det_id});
-                os << OutString(t) << '\n';
-            }
-
-            if (args.size() == 1) {
-                auto t = det->getExptimeForAllGates(std::vector<int>{det_id});
-                os << OutString(t, args[0]) << '\n';
-            }
-
+        if (args.size() == 0) {
+            int gateIndex = 2;
+            auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
+            os << OutString(t) << '\n';
         }
 
-        else {
-
-            if (args.size() == 0) {
-                int gateIndex = 2;
-                auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
-                os << OutString(t) << '\n';
-            }
-
-            if (args.size() == 1) {
-                int gateIndex = 2;
-                auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
-                os << OutString(t, args[0]) << '\n';
-            }
+        if (args.size() == 1) {
+            int gateIndex = 2;
+            auto t = det->getExptime(gateIndex, std::vector<int>{det_id});
+            os << OutString(t, args[0]) << '\n';
         }
     }
 

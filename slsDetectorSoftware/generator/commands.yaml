@@ -2769,25 +2769,22 @@ gappixels:
       cast_input: [ true ]
       output: [ args.front() ]
 
-exptime:
-  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb] Exposure time\n\t[Mythen3] Exposure time of all gate signals in auto and trigger mode (internal gating). To specify gate index, use exptime1, exptime2, exptime3."
+Exptime:
+  template: true
   infer_action: true # infer action based on actions' argc (they must be unique if true)
   actions:
     GET:
       require_det_id: true
-      function: getExptime
+      function: ''
       args:
         - argc: 0
           output: [ OutString(t) ]
         - argc: 1
           arg_types: [ special::time_unit ]
           output: [ "OutString(t , args[0])" ]
-      detectors:
-        MYTHEN3:
-          function: getExptimeForAllGates
     PUT:
       require_det_id: true
-      function: setExptime
+      function: ''
       input: [ converted_time ]
       input_types: [ time::ns ]
       args:
@@ -2804,8 +2801,20 @@ exptime:
             output: converted_time
           output: [ 'args[0]', 'args[1]' ]
 
+exptime:
+  inherit_actions: Exptime
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb] Exposure time\n\t[Mythen3] Exposure time of all gate signals in auto and trigger mode (internal gating). To specify gate index, use exptime1, exptime2, exptime3."
+  actions:
+    GET:
+      function: getExptime
+      detectors:
+        MYTHEN3:
+          function: getExptimeForAllGates
+    PUT:
+      function: setExptime
+
 exptime1:
-  inherit_actions: exptime
+  inherit_actions: Exptime
   help: "[n_value]\n\t[Mythen3] Exposure time of gate signal 1 in auto and trigger mode (internal gating)."
   actions:
     GET:
@@ -2813,6 +2822,7 @@ exptime1:
         - name: gateIndex
           type: int
           value: 0
+      function: getExptime
       input: [ gateIndex ]
       input_types: [ int ]
     PUT:
@@ -2820,6 +2830,7 @@ exptime1:
         - name: gateIndex
           type: int
           value: 0
+      function: setExptime
       input: [ gateIndex,converted_time ]
       input_types: [ int, time::ns ]
 

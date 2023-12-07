@@ -167,12 +167,12 @@ TEST_CASE("CALLER::Setting and reading back EIGER dacs", "[.cmd][.dacs]") {
 
             {
                 std::ostringstream oss;
-                caller.call("vthreshold", {"1234"}, -1, PUT, oss);
+                caller.call("dac", {"vthreshold", "1234"}, -1, PUT, oss);
                 REQUIRE(oss.str() == "dac vthreshold 1234\n");
             }
             {
                 std::ostringstream oss;
-                caller.call("vthreshold", {}, -1, GET, oss);
+                caller.call("dac", {"vthreshold"}, -1, GET, oss);
                 REQUIRE(oss.str() == "dac vthreshold 1234\n");
             }
 
@@ -609,22 +609,22 @@ TEST_CASE("CALLER::datastream", "[.cmd]") {
         {
             std::ostringstream oss;
             caller.call("datastream", {"left", "0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "datastream left 0\n");
+            REQUIRE(oss.str() == "datastream [left, 0]\n");
         }
         {
             std::ostringstream oss;
             caller.call("datastream", {"right", "0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "datastream right 0\n");
+            REQUIRE(oss.str() == "datastream [right, 0]\n");
         }
         {
             std::ostringstream oss;
             caller.call("datastream", {"left", "1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "datastream left 1\n");
+            REQUIRE(oss.str() == "datastream [left, 1]\n");
         }
         {
             std::ostringstream oss;
             caller.call("datastream", {"right", "1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "datastream right 1\n");
+            REQUIRE(oss.str() == "datastream [right, 1]\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setDataStream(defs::LEFT, prev_val_left[i], {i});

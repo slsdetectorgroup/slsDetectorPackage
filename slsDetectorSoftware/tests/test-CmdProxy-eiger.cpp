@@ -161,12 +161,12 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd][.dacs]") {
 
             {
                 std::ostringstream oss;
-                proxy.Call("vthreshold", {"1234"}, -1, PUT, oss);
+                proxy.Call("dac", {"vthreshold", "1234"}, -1, PUT, oss);
                 REQUIRE(oss.str() == "dac vthreshold 1234\n");
             }
             {
                 std::ostringstream oss;
-                proxy.Call("vthreshold", {}, -1, GET, oss);
+                proxy.Call("dac", {"vthreshold"}, -1, GET, oss);
                 REQUIRE(oss.str() == "dac vthreshold 1234\n");
             }
 

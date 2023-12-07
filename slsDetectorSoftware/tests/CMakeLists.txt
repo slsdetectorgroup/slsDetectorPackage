@@ -27,7 +27,7 @@ target_sources(tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-gotthard2.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-gotthard.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-chiptestboard.cpp
-    # ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-moench.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-moench.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-global.cpp
 
     

@@ -379,38 +379,6 @@ std::string CmdProxy::DetectorSize(int action) {
     return os.str();
 }
 
-// std::string CmdProxy::DetectorSize(int action) {
-//     std::ostringstream os;
-//     os << cmd << ' ';
-//     if (action == defs::HELP_ACTION) {
-//         os << "[nx] [ny]\n\tDetector size, ie. Number of channels in x and y
-//         "
-//               "dim. This is used to calculate module coordinates included in
-//               " "UDP data. \n\tBy default, it adds module in y dimension for
-//               2d " "detectors and in x dimension for 1d detectors packet
-//               header."
-//            << '\n';
-//     } else if (action == defs::GET_ACTION) {
-//         if (!args.empty()) {
-//             WrongNumberOfParameters(0);
-//         }
-//         auto t = det->getDetectorSize();
-//         os << t << '\n';
-//     } else if (action == defs::PUT_ACTION) {
-//         if (args.size() != 2) {
-//             WrongNumberOfParameters(2);
-//         }
-//         defs::xy t;
-//         t.x = StringTo<int>(args[0]);
-//         t.y = StringTo<int>(args[1]);
-//         det->setDetectorSize(t);
-//         os << ToString(args) << '\n';
-//     } else {
-//         throw RuntimeError("Unknown action");
-//     }
-//     return os.str();
-// }
-
 std::string CmdProxy::Threshold(int action) {
     std::ostringstream os;
     os << cmd << ' ';

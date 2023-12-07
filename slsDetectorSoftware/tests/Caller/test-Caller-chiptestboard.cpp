@@ -356,15 +356,25 @@ TEST_CASE("CALLER::powerindex", "[.cmd]") {
 TEST_CASE("CALLER::powervalues", "[.cmd]") {
     Detector det;
     Caller caller(&det);
-    REQUIRE_NOTHROW(caller.call("powervalues", {}, -1, GET));
-    REQUIRE_THROWS(caller.call("powervalues", {}, -1, PUT));
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::CHIPTESTBOARD) {
+        REQUIRE_NOTHROW(caller.call("powervalues", {}, -1, GET));
+        REQUIRE_THROWS(caller.call("powervalues", {}, -1, PUT));
+    } else {
+        REQUIRE_THROWS(caller.Call("powervalues", {}, -1, GET));
+    }
 }
 
 TEST_CASE("CALLER::slowadcvalues", "[.cmd]") {
     Detector det;
     Caller caller(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::CHIPTESTBOARD) {
     REQUIRE_NOTHROW(caller.call("slowadcvalues", {}, -1, GET));
     REQUIRE_THROWS(caller.call("slowadcvalues", {}, -1, PUT));
+    } else {
+        REQUIRE_THROWS(caller.Call("slowadcvalues", {}, -1, GET));
+    }
 }
 
 TEST_CASE("CALLER::slowadclist", "[.cmd]") {

@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
         c.call(parser.command(), parser.arguments(), parser.detector_id(),
                action, std::cout, parser.receiver_id());
     } catch (sls::RuntimeError &e) {
-    } catch (const std::exception &e) {
-        LOG(sls::logERROR) << e.what() << std::endl;
+        exit(EXIT_FAILURE);
     }
+    exit(EXIT_SUCCESS);
 }

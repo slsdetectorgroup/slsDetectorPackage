@@ -13,7 +13,8 @@
 #include "sls/sls_detector_defs.h"
 #ifndef MOENCH04
 //#ifndef RECT
-#include "moench03T1ZmqDataNew.h"
+#include "moench03v2Data.h"
+//#include "moench03T1ZmqDataNew.h"
 //#endif
 //#ifdef RECT
 //#include "moench03T1ZmqDataNewRect.h"
@@ -142,8 +143,10 @@ int main(int argc, char *argv[]) {
 
     // slsDetectorData *det=new moench03T1ZmqDataNew();
 #ifndef MOENCH04
-    cout << "This is a Moench03" << endl;
-    moench03T1ZmqDataNew *det = new moench03T1ZmqDataNew();
+    cout << "This is a Moench03 v2" << endl;
+    //moench03T1ZmqDataNew *det = new moench03T1ZmqDataNew();
+    moench03v2Data *det = new moench03v2Data();
+    cout << "MOENCH03!" << endl;
 #endif
 #ifdef MOENCH04
     cout << "This is a Moench04" << endl;
@@ -722,6 +725,25 @@ int main(int argc, char *argv[]) {
 
             cprintf(MAGENTA, "%d %d %d %d\n", xmin, xmax, ymin, ymax);
             mt->setROI(xmin, xmax, ymin, ymax);
+
+             if (addJsonHeader.find("xMin") != addJsonHeader.end()) {
+                 istringstream(addJsonHeader.at("xMin")) >> xmin;
+             }
+ 
+             if (addJsonHeader.find("yMin") != addJsonHeader.end()) {
+                 istringstream(addJsonHeader.at("yMin")) >> ymin;
+             }
+ 
+             if (addJsonHeader.find("xMax") != addJsonHeader.end()) {
+                 istringstream(addJsonHeader.at("xMax")) >> xmax;
+             }
+ 
+             if (addJsonHeader.find("yMax") != addJsonHeader.end()) {
+                 istringstream(addJsonHeader.at("yMax")) >> ymax;
+             }
+
+
+
             if (addJsonHeader.find("dynamicRange") != addJsonHeader.end()) {
                 istringstream(addJsonHeader.at("dynamicRange")) >> dr;
                 dr = 32;
@@ -821,7 +843,7 @@ int main(int argc, char *argv[]) {
         // cout << acqIndex << " " << frameIndex << " " << subFrameIndex << "
         // "<< detSpec1 << " " << timestamp << " " << packetNumber << endl;
         // cprintf(GREEN, "frame\n");
-        if (packetNumber >= 40) {
+        if (packetNumber >= 50) {
             //*((int*)buff)=frameIndex;
             if (insubframe == 0)
                 f0 = frameIndex;

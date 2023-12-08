@@ -67,6 +67,7 @@ int main(int argc, char *argv[]) {
      *
      */ 
   std::map<std::string, std::string> args = {
+    {"numinterfaces","1"},	
     {"rx_zmqip","10.1.2.102"},	
     {"rx_zmqport","7770"},
     {"zmqip","129.129.202.153"},
@@ -76,7 +77,7 @@ int main(int argc, char *argv[]) {
     {"nsigma","5"},
     {"gainfile","none"},
     {"nbinsx","5"},
-      {"nbinsy","5"},
+    {"nbinsy","5"},
     {"etafile","none"},
     {"etabinsx","1000"},
     {"etamin","-1"},
@@ -125,10 +126,12 @@ int main(int argc, char *argv[]) {
       if (flist.is_open()) {
 	cout << "Using config file " <<argv[1] << endl;
        while (std::getline(flist,sline)){
-	 ic=sline.find(' ');
-	 name = sline.substr(0,ic); //
-	 value = sline.substr(ic+1,sline.size()-ic); 
-	 args[name]=value;
+	 if (sline.at(0)!='#') {
+	   ic=sline.find(' ');
+	   name = sline.substr(0,ic); 
+	   value = sline.substr(ic+1,sline.size()-ic); 
+	   args[name]=value;
+	 }
 
        } 
        flist.close();
@@ -180,7 +183,10 @@ int main(int argc, char *argv[]) {
     gainfname = args["gainfile"];
     etafname = args["etafilefile"];
     
-
+    if (atoi(args["nuninterfaces"].c_str())>1){
+      cprintf(RED, "Sorry, at the  moment only a single interface is supported instead of %d\n",atoi(args["nuninterfaces"].c_str()));
+      return EXIT_FAILURE;
+    }
 
 
     // slsDetectorData *det=new moench03T1ZmqDataNew();
@@ -885,7 +891,7 @@ int main(int argc, char *argv[]) {
         // cout << acqIndex << " " << frameIndex << " " << subFrameIndex << "
         // "<< detSpec1 << " " << timestamp << " " << packetNumber << endl;
         // cprintf(GREEN, "frame\n");
-        if (packetNumber >= 50) {
+        if (packetNumber <= 50) {
             //*((int*)buff)=frameIndex;
             if (insubframe == 0)
                 f0 = frameIndex;

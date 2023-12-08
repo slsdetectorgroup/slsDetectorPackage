@@ -699,14 +699,12 @@ int setExpTime(int64_t val) {
     }
     LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
     val *= (1E-3 * CLK_RUN);
-    val -= ACQ_TIME_MIN_CLOCK;
     if (val < 0) {
         val = 0;
     }
     set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG);
 
     // validate for tolerance
-    val += ACQ_TIME_MIN_CLOCK;
     int64_t retval = getExpTime();
     val /= (1E-3 * CLK_RUN);
     if (val != retval) {
@@ -716,8 +714,7 @@ int setExpTime(int64_t val) {
 }
 
 int64_t getExpTime() {
-    return (get64BitReg(SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) +
-            ACQ_TIME_MIN_CLOCK) /
+    return get64BitReg(SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) /
            (1E-3 * CLK_RUN);
 }
 
@@ -1120,8 +1117,8 @@ int getPrimaryInterface() {
 }
 
 void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
-                 uint64_t destmac, uint32_t destport, uint64_t sourcemac,
-                 uint32_t sourceip, uint32_t sourceport) {
+                 uint64_t destmac, uint16_t destport, uint64_t sourcemac,
+                 uint32_t sourceip, uint16_t sourceport) {
 
     // start addr
     uint32_t addr = (type == INNER ? RXR_ENDPOINT_INNER_START_REG
@@ -1216,10 +1213,10 @@ int configureMAC() {
         uint64_t srcmac2 = udpDetails[iRxEntry].srcmac2;
         uint64_t dstmac = udpDetails[iRxEntry].dstmac;
         uint64_t dstmac2 = udpDetails[iRxEntry].dstmac2;
-        int srcport = udpDetails[iRxEntry].srcport;
-        int srcport2 = udpDetails[iRxEntry].srcport2;
-        int dstport = udpDetails[iRxEntry].dstport;
-        int dstport2 = udpDetails[iRxEntry].dstport2;
+        uint16_t srcport = udpDetails[iRxEntry].srcport;
+        uint16_t srcport2 = udpDetails[iRxEntry].srcport2;
+        uint16_t dstport = udpDetails[iRxEntry].dstport;
+        uint16_t dstport2 = udpDetails[iRxEntry].dstport2;
 
         char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
             dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
@@ -1243,10 +1240,10 @@ int configureMAC() {
                                      : (selInterface ? "Not Used" : "Used")));
             LOG(logINFO, ("\tSource IP   : %s\n"
                           "\tSource MAC  : %s\n"
-                          "\tSource Port : %d\n"
+                          "\tSource Port : %hu\n"
                           "\tDest IP     : %s\n"
                           "\tDest MAC    : %s\n"
-                          "\tDest Port   : %d\n\n",
+                          "\tDest Port   : %hu\n\n",
                           src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
             LOG(logINFO,
@@ -1256,10 +1253,10 @@ int configureMAC() {
             LOG(logINFO,
                 ("\tSource IP2  : %s\n"
                  "\tSource MAC2 : %s\n"
-                 "\tSource Port2: %d\n"
+                 "\tSource Port2: %hu\n"
                  "\tDest IP2    : %s\n"
                  "\tDest MAC2   : %s\n"
-                 "\tDest Port2  : %d\n\n",
+                 "\tDest Port2  : %hu\n\n",
                  src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
         }
 #ifdef VIRTUAL

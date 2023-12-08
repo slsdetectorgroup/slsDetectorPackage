@@ -1140,17 +1140,17 @@ void Implementation::setEthernetInterface2(const std::string &c) {
     LOG(logINFO) << "Ethernet Interface 2: " << eth[1];
 }
 
-uint32_t Implementation::getUDPPortNumber() const { return udpPortNum[0]; }
+uint16_t Implementation::getUDPPortNumber() const { return udpPortNum[0]; }
 
-void Implementation::setUDPPortNumber(const uint32_t i) {
+void Implementation::setUDPPortNumber(const uint16_t i) {
     udpPortNum[0] = i;
     listener[0]->SetUdpPortNumber(i);
     LOG(logINFO) << "UDP Port Number[0]: " << udpPortNum[0];
 }
 
-uint32_t Implementation::getUDPPortNumber2() const { return udpPortNum[1]; }
+uint16_t Implementation::getUDPPortNumber2() const { return udpPortNum[1]; }
 
-void Implementation::setUDPPortNumber2(const uint32_t i) {
+void Implementation::setUDPPortNumber2(const uint16_t i) {
     udpPortNum[1] = i;
     if (listener.size() > 1) {
         listener[1]->SetUdpPortNumber(i);
@@ -1251,9 +1251,9 @@ void Implementation::setStreamingStartingFrameNumber(const uint32_t fnum) {
     LOG(logINFO) << "Streaming Start Frame num: " << streamingStartFnum;
 }
 
-uint32_t Implementation::getStreamingPort() const { return streamingPort; }
+uint16_t Implementation::getStreamingPort() const { return streamingPort; }
 
-void Implementation::setStreamingPort(const uint32_t i) {
+void Implementation::setStreamingPort(const uint16_t i) {
     streamingPort = i;
     LOG(logINFO) << "Streaming Port: " << streamingPort;
 }

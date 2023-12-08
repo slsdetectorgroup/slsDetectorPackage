@@ -18,7 +18,6 @@ requirements:
     - {{compiler('cxx')}}
     - cmake
     - qt 5.*
-    - zeromq
     - xorg-libx11
     - xorg-libice
     - xorg-libxext
@@ -37,7 +36,6 @@ requirements:
   host:
     - libstdcxx-ng
     - libgcc-ng
-    - zeromq
     - xorg-libx11
     - xorg-libice
     - xorg-libxext
@@ -48,7 +46,6 @@ requirements:
     - expat
 
   run:
-    - zeromq
     - libstdcxx-ng
     - libgcc-ng 
 
@@ -63,15 +60,11 @@ outputs:
         - {{compiler('cxx')}}
         - libstdcxx-ng
         - libgcc-ng
-        - zeromq
 
-      host:
-        - zeromq
 
       run: 
         - libstdcxx-ng
         - libgcc-ng
-        - zeromq
 
   - name: slsdet
 
@@ -84,10 +77,12 @@ outputs:
         - {{compiler('cxx')}}
         - {{ pin_subpackage('slsdetlib', exact=True) }}
         - setuptools
+        - pybind11=2.11
 
       host:
         - python
         - {{ pin_subpackage('slsdetlib', exact=True) }}
+        - pybind11=2.11
 
 
       run:

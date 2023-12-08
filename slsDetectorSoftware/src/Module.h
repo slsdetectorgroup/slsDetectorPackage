@@ -19,7 +19,7 @@ namespace sls {
 class ServerInterface;
 
 #define MODULE_SHMAPIVERSION 0x190726
-#define MODULE_SHMVERSION    0x200402
+#define MODULE_SHMVERSION    0x230913
 
 /**
  * @short structure allocated in shared memory to store Module settings for
@@ -36,8 +36,8 @@ struct sharedModule {
     /** END OF FIXED PATTERN -----------------------------------------------*/
 
     slsDetectorDefs::xy numberOfModule;
-    int controlPort;
-    int stopPort;
+    uint16_t controlPort;
+    uint16_t stopPort;
     char settingsDir[MAX_STR_LENGTH];
     /** list of the energies at which the Module has been trimmed  */
     StaticVector<int, MAX_TRIMEN> trimEnergies;
@@ -46,11 +46,11 @@ struct sharedModule {
     slsDetectorDefs::xy nChip;
     int nDacs;
     char rxHostname[MAX_STR_LENGTH];
-    int rxTCPPort;
+    uint16_t rxTCPPort;
     /** if rxHostname and rxTCPPort can be connected to */
     bool useReceiverFlag;
     /** Listening tcp port from gui (only data) */
-    int zmqport;
+    uint16_t zmqport;
     /**  Listening tcp ip address from gui (only data) **/
     IpAddr zmqip;
     int numUDPInterfaces;
@@ -102,7 +102,7 @@ class Module : public virtual slsDetectorDefs {
     std::string getReceiverSoftwareVersion() const;
     static detectorType
     getTypeFromDetector(const std::string &hostname,
-                        int cport = DEFAULT_TCP_CNTRL_PORTNO);
+                        uint16_t cport = DEFAULT_TCP_CNTRL_PORTNO);
 
     /** Get Detector type from shared memory */
     detectorType getDetectorType() const;
@@ -261,10 +261,10 @@ class Module : public virtual slsDetectorDefs {
     void setDestinationUDPMAC(const MacAddr mac);
     MacAddr getDestinationUDPMAC2() const;
     void setDestinationUDPMAC2(const MacAddr mac);
-    int getDestinationUDPPort() const;
-    void setDestinationUDPPort(int udpport);
-    int getDestinationUDPPort2() const;
-    void setDestinationUDPPort2(int udpport);
+    uint16_t getDestinationUDPPort() const;
+    void setDestinationUDPPort(uint16_t udpport);
+    uint16_t getDestinationUDPPort2() const;
+    void setDestinationUDPPort2(uint16_t udpport);
     void reconfigureUDPDestination();
     void validateUDPConfiguration();
     std::string printReceiverConfiguration();
@@ -286,10 +286,10 @@ class Module : public virtual slsDetectorDefs {
      * ************************************************/
     bool getUseReceiverFlag() const;
     std::string getReceiverHostname() const;
-    void setReceiverHostname(const std::string &hostname, const int port,
+    void setReceiverHostname(const std::string &hostname, const uint16_t port,
                              const bool initialChecks);
-    int getReceiverPort() const;
-    int setReceiverPort(int port_number);
+    uint16_t getReceiverPort() const;
+    void setReceiverPort(uint16_t port_number);
     int getReceiverFifoDepth() const;
     void setReceiverFifoDepth(int n_frames);
     bool getReceiverSilentMode() const;
@@ -349,12 +349,12 @@ class Module : public virtual slsDetectorDefs {
     void setReceiverStreamingTimer(int time_in_ms = 200);
     int getReceiverStreamingStartingFrame() const;
     void setReceiverStreamingStartingFrame(int fnum);
-    int getReceiverStreamingPort() const;
-    void setReceiverStreamingPort(int port);
+    uint16_t getReceiverStreamingPort() const;
+    void setReceiverStreamingPort(uint16_t port);
     IpAddr getReceiverStreamingIP() const;
     void setReceiverStreamingIP(const IpAddr ip);
-    int getClientStreamingPort() const;
-    void setClientStreamingPort(int port);
+    uint16_t getClientStreamingPort() const;
+    void setClientStreamingPort(uint16_t port);
     IpAddr getClientStreamingIP() const;
     void setClientStreamingIP(const IpAddr ip);
     int getReceiverStreamingHwm() const;
@@ -419,6 +419,8 @@ class Module : public virtual slsDetectorDefs {
     void setGainMode(const gainMode mode);
     int getNumberOfFilterCells() const;
     void setNumberOfFilterCells(int value);
+    defs::pedestalParameters getPedestalMode() const;
+    void setPedestalMode(defs::pedestalParameters par);
 
     /**************************************************
      *                                                *
@@ -597,10 +599,10 @@ class Module : public virtual slsDetectorDefs {
      *    Insignificant                               *
      *                                                *
      * ************************************************/
-    int getControlPort() const;
-    void setControlPort(int port_number);
-    int getStopPort() const;
-    void setStopPort(int port_number);
+    uint16_t getControlPort() const;
+    void setControlPort(uint16_t port_number);
+    uint16_t getStopPort() const;
+    void setStopPort(uint16_t port_number);
     bool getLockDetector() const;
     void setLockDetector(bool lock);
     IpAddr getLastClientIP() const;

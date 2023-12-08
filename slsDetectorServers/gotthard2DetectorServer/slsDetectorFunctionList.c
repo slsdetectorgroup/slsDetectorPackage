@@ -1902,8 +1902,8 @@ void setFirstUDPDestination(int value) {
 }
 
 void setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
-                 uint64_t destmac, uint32_t destport, uint64_t sourcemac,
-                 uint32_t sourceip, uint32_t sourceport) {
+                 uint64_t destmac, uint16_t destport, uint64_t sourcemac,
+                 uint32_t sourceip, uint16_t sourceport) {
 
     // start addr
     uint32_t addr = BASE_UDP_RAM;
@@ -1995,10 +1995,10 @@ int configureMAC() {
         uint64_t srcmac2 = udpDetails[iRxEntry].srcmac2;
         uint64_t dstmac = udpDetails[iRxEntry].dstmac;
         uint64_t dstmac2 = udpDetails[iRxEntry].dstmac2;
-        int srcport = udpDetails[iRxEntry].srcport;
-        int srcport2 = udpDetails[iRxEntry].srcport2;
-        int dstport = udpDetails[iRxEntry].dstport;
-        int dstport2 = udpDetails[iRxEntry].dstport2;
+        uint16_t srcport = udpDetails[iRxEntry].srcport;
+        uint16_t srcport2 = udpDetails[iRxEntry].srcport2;
+        uint16_t dstport = udpDetails[iRxEntry].dstport;
+        uint16_t dstport2 = udpDetails[iRxEntry].dstport2;
 
         char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
             dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
@@ -2020,10 +2020,10 @@ int configureMAC() {
             LOG(logINFO, ("\tData Interface \n"));
             LOG(logINFO, ("\tSource IP   : %s\n"
                           "\tSource MAC  : %s\n"
-                          "\tSource Port : %d\n"
+                          "\tSource Port : %hu\n"
                           "\tDest IP     : %s\n"
                           "\tDest MAC    : %s\n"
-                          "\tDest Port   : %d\n\n",
+                          "\tDest Port   : %hu\n\n",
                           src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
             if (getVetoStream()) {
@@ -2039,10 +2039,10 @@ int configureMAC() {
             LOG(logINFO,
                 ("\tSource IP2  : %s\n"
                  "\tSource MAC2 : %s\n"
-                 "\tSource Port2: %d\n"
+                 "\tSource Port2: %hu\n"
                  "\tDest IP2    : %s\n"
                  "\tDest MAC2   : %s\n"
-                 "\tDest Port2  : %d\n\n",
+                 "\tDest Port2  : %hu\n\n",
                  src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
         }
 #ifdef VIRTUAL
@@ -3323,6 +3323,27 @@ void *start_timer(void *arg) {
                 break;
             }
 
+            // change gain and data for every frame
+            {
+                const int nchannels = NCHIP * NCHAN;
+                int gainVal = 0;
+                for (int i = 0; i < nchannels; ++i) {
+                    if ((i % nchannels) < 400) {
+                        gainVal = 1 + frameNr;
+                    } else if ((i % nchannels) < 800) {
+                        gainVal = 2 + frameNr;
+                    } else {
+                        gainVal = 3 + frameNr;
+                    }
+                    int dataVal =
+                        *((uint16_t *)(imageData + i * sizeof(uint16_t)));
+                    dataVal += frameNr;
+                    int channelVal =
+                        (dataVal & ~GAIN_VAL_MSK) | (gainVal << GAIN_VAL_OFST);
+                    *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+                        (uint16_t)channelVal;
+                }
+            }
             // sleep for exposure time
             struct timespec begin, end;
             clock_gettime(CLOCK_REALTIME, &begin);

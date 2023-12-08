@@ -220,7 +220,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @param numdet number of modules
      * @param port starting port number
      */
-    void setVirtualDetectorServers(const int numdet, const int port);
+    void setVirtualDetectorServers(const int numdet, const uint16_t port);
 
     /** Sets the hostname of all sls modules in shared memory and updates
      * local cache */
@@ -307,14 +307,16 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setDefaultDac(defs::dacIndex index, int defaultValue,
                        defs::detectorSettings sett, Positions pos);
 
-    void verifyUniqueDetHost(const int port, std::vector<int> positions) const;
-    void verifyUniqueRxHost(const int port, const int moduleId) const;
+    void verifyUniqueDetHost(const uint16_t port,
+                             std::vector<int> positions) const;
+    void verifyUniqueRxHost(const uint16_t port, const int moduleId) const;
 
-    std::pair<std::string, int> verifyUniqueDetHost(const std::string &name);
-    std::pair<std::string, int>
+    std::pair<std::string, uint16_t>
+    verifyUniqueDetHost(const std::string &name);
+    std::pair<std::string, uint16_t>
     verifyUniqueRxHost(const std::string &name,
                        std::vector<int> positions) const;
-    std::vector<std::pair<std::string, int>>
+    std::vector<std::pair<std::string, uint16_t>>
     verifyUniqueRxHost(const std::vector<std::string> &names) const;
 
     defs::ROI getRxROI() const;
@@ -340,10 +342,10 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setCtbSignalNames(const std::vector<std::string> &names);
     void setCtbSignalName(const int index, const std::string &name);
 
-    std::vector<std::string> getCtbVoltageNames() const;
-    std::string getCtbVoltageName(const defs::dacIndex i) const;
-    void setCtbVoltageNames(const std::vector<std::string> &names);
-    void setCtbVoltageName(const defs::dacIndex index, const std::string &name);
+    std::vector<std::string> getCtbPowerNames() const;
+    std::string getCtbPowerName(const defs::dacIndex i) const;
+    void setCtbPowerNames(const std::vector<std::string> &names);
+    void setCtbPowerName(const defs::dacIndex index, const std::string &name);
 
     std::vector<std::string> getCtbSlowADCNames() const;
     std::string getCtbSlowADCName(const defs::dacIndex i) const;
@@ -439,9 +441,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     defs::xy getPortGeometry() const;
     defs::xy calculatePosition(int moduleIndex, defs::xy geometry) const;
 
-    void
-    verifyUniqueHost(bool isDet,
-                     std::vector<std::pair<std::string, int>> &hosts) const;
+    void verifyUniqueHost(
+        bool isDet, std::vector<std::pair<std::string, uint16_t>> &hosts) const;
 
     const int detectorIndex{0};
     SharedMemory<sharedDetector> shm{0, -1};

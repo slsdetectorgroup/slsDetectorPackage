@@ -165,11 +165,15 @@ std::string Module::getReceiverSoftwareVersion() const {
 
 // static function
 slsDetectorDefs::detectorType
-Module::getTypeFromDetector(const std::string &hostname, int cport) {
+Module::getTypeFromDetector(const std::string &hostname, uint16_t cport) {
     LOG(logDEBUG1) << "Getting Module type ";
     ClientSocket socket("Detector", hostname, cport);
     socket.Send(F_GET_DETECTOR_TYPE);
-    socket.Receive<int>(); // TODO! Should we look at this OK/FAIL?
+    if (socket.Receive<int>() == FAIL) {
+        throw RuntimeError("Detector (" + hostname + ", " +
+                           std::to_string(cport) +
+                           ") returned error at getting detector type");
+    }
     auto retval = socket.Receive<detectorType>();
     LOG(logDEBUG1) << "Module type is " << retval;
     return retval;
@@ -1241,22 +1245,22 @@ void Module::setDestinationUDPMAC2(const MacAddr mac) {
     sendToDetector(F_SET_DEST_UDP_MAC2, mac, nullptr);
 }
 
-int Module::getDestinationUDPPort() const {
-    return sendToDetector<int>(F_GET_DEST_UDP_PORT);
+uint16_t Module::getDestinationUDPPort() const {
+    return sendToDetector<uint16_t>(F_GET_DEST_UDP_PORT);
 }
 
-void Module::setDestinationUDPPort(const int port) {
+void Module::setDestinationUDPPort(const uint16_t port) {
     sendToDetector(F_SET_DEST_UDP_PORT, port, nullptr);
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_UDP_PORT, port, nullptr);
     }
 }
 
-int Module::getDestinationUDPPort2() const {
-    return sendToDetector<int>(F_GET_DEST_UDP_PORT2);
+uint16_t Module::getDestinationUDPPort2() const {
+    return sendToDetector<uint16_t>(F_GET_DEST_UDP_PORT2);
 }
 
-void Module::setDestinationUDPPort2(const int port) {
+void Module::setDestinationUDPPort2(const uint16_t port) {
     sendToDetector(F_SET_DEST_UDP_PORT2, port, nullptr);
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_UDP_PORT2, port, nullptr);
@@ -1354,7 +1358,8 @@ std::string Module::getReceiverHostname() const {
     return std::string(shm()->rxHostname);
 }
 
-void Module::setReceiverHostname(const std::string &hostname, const int port,
+void Module::setReceiverHostname(const std::string &hostname,
+                                 const uint16_t port,
                                  const bool initialChecks) {
     {
         std::ostringstream oss;
@@ -1427,13 +1432,10 @@ void Module::setReceiverHostname(const std::string &hostname, const int port,
     updateReceiverStreamingIP();
 }
 
-int Module::getReceiverPort() const { return shm()->rxTCPPort; }
+uint16_t Module::getReceiverPort() const { return shm()->rxTCPPort; }
 
-int Module::setReceiverPort(int port_number) {
-    if (port_number >= 0 && port_number != shm()->rxTCPPort) {
-        shm()->rxTCPPort = port_number;
-    }
-    return shm()->rxTCPPort;
+void Module::setReceiverPort(uint16_t port_number) {
+    shm()->rxTCPPort = port_number;
 }
 
 int Module::getReceiverFifoDepth() const {
@@ -1645,11 +1647,11 @@ void Module::setReceiverStreamingStartingFrame(int fnum) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_START_FNUM, fnum, nullptr);
 }
 
-int Module::getReceiverStreamingPort() const {
-    return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_PORT);
+uint16_t Module::getReceiverStreamingPort() const {
+    return sendToReceiver<uint16_t>(F_GET_RECEIVER_STREAMING_PORT);
 }
 
-void Module::setReceiverStreamingPort(int port) {
+void Module::setReceiverStreamingPort(uint16_t port) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
 }
 
@@ -1668,9 +1670,9 @@ void Module::setReceiverStreamingIP(const IpAddr ip) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
 }
 
-int Module::getClientStreamingPort() const { return shm()->zmqport; }
+uint16_t Module::getClientStreamingPort() const { return shm()->zmqport; }
 
-void Module::setClientStreamingPort(int port) { shm()->zmqport = port; }
+void Module::setClientStreamingPort(uint16_t port) { shm()->zmqport = port; }
 
 IpAddr Module::getClientStreamingIP() const { return shm()->zmqip; }
 
@@ -1936,6 +1938,20 @@ int Module::getNumberOfFilterCells() const {
 
 void Module::setNumberOfFilterCells(int value) {
     sendToDetector(F_SET_NUM_FILTER_CELLS, value, nullptr);
+}
+
+defs::pedestalParameters Module::getPedestalMode() const {
+    return sendToDetector<defs::pedestalParameters>(F_GET_PEDESTAL_MODE);
+}
+
+void Module::setPedestalMode(const defs::pedestalParameters par) {
+    sendToDetector(F_SET_PEDESTAL_MODE, par, nullptr);
+    if (shm()->useReceiverFlag) {
+        auto value = getNumberOfFrames();
+        sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, value, nullptr);
+        value = getNumberOfTriggers();
+        sendToReceiver(F_SET_RECEIVER_NUM_TRIGGERS, value, nullptr);
+    }
 }
 
 // Gotthard Specific
@@ -2839,15 +2855,17 @@ void Module::setADCInvert(uint32_t value) {
 }
 
 // Insignificant
-int Module::getControlPort() const { return shm()->controlPort; }
+uint16_t Module::getControlPort() const { return shm()->controlPort; }
 
-void Module::setControlPort(int port_number) {
+void Module::setControlPort(uint16_t port_number) {
     shm()->controlPort = port_number;
 }
 
-int Module::getStopPort() const { return shm()->stopPort; }
+uint16_t Module::getStopPort() const { return shm()->stopPort; }
 
-void Module::setStopPort(int port_number) { shm()->stopPort = port_number; }
+void Module::setStopPort(uint16_t port_number) {
+    shm()->stopPort = port_number;
+}
 
 bool Module::getLockDetector() const {
     return sendToDetector<int>(F_LOCK_SERVER, GET_FLAG);
@@ -3928,8 +3946,8 @@ void Module::sendProgram(bool blackfin, std::vector<char> buffer,
 
 void Module::simulatingActivityinDetector(const std::string &functionType,
                                           const int timeRequired) {
-    LOG(logINFO) << "(Simulating) " << functionType << " for module "
-                 << moduleIndex << " (" << shm()->hostname << ")";
+    LOG(logINFO) << functionType << " for module " << moduleIndex << " ("
+                 << shm()->hostname << ")";
     printf("%d%%\r", 0);
     std::cout << std::flush;
     const int ERASE_TIME = timeRequired;

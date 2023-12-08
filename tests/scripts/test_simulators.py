@@ -4,7 +4,7 @@
 This file is used to start up simulators, receivers and run all the tests on them and finally kill the simulators and receivers.
 '''
 import argparse
-import os, sys, subprocess, time, colorama, signal, psutil
+import os, sys, subprocess, time, colorama, signal
 
 from colorama import Fore
 from slsdet import Detector, detectorType, detectorSettings
@@ -21,29 +21,37 @@ class RuntimeException (Exception):
 def Log(color, message):
     print('\n' + color + message, flush=True)
 
+
 def checkIfProcessRunning(processName):
-    '''
-    Check if there is any running process that contains the given name processName.
-    https://gist.github.com/Sanix-Darker/8cbed2ff6f8eb108ce2c8c51acd2aa5a
-    '''
-    # Iterate over the all the running process
-    for proc in psutil.process_iter():
-        try:
-            # Check if process name contains the given name string.
-            if processName.lower() in proc.name().lower():
-                return True
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            pass
-    return False;
+    cmd = "ps -ef | grep " + processName
+    print(cmd)
+    res=subprocess.getoutput(cmd)
+    print(res)
+    # eg. of output
+    #l_user  250506  243295  0 14:38 pts/5    00:00:00 /bin/sh -c ps -ef | grep slsReceiver
+    #l_user  250508  250506  0 14:38 pts/5    00:00:00 grep slsReceiver
+
+    print('how many')
+    cmd = "ps -ef | grep " + processName + " | wc -l"
+    print(cmd)
+    res=subprocess.getoutput(cmd)
+    print(res)
+
+    if res == '2':
+        return False
+    return True
+
 
 def killProcess(name):
     if checkIfProcessRunning(name):
         Log(Fore.GREEN, 'killing ' + name)
         p = subprocess.run(['killall', name])
         if p.returncode != 0:
-            raise RuntimeException('error in killall ' + name)
+            raise RuntimeException('killall failed for ' + name)
+    else:
+        print('process not running : ' + name)
 
-def cleanup(name, d):
+def cleanup(name):
     '''
     kill both servers, receivers and clean shared memory
     '''
@@ -51,18 +59,27 @@ def cleanup(name, d):
     killProcess(name + 'DetectorServer_virtual')
     killProcess('slsReceiver')
     killProcess('slsMultiReceiver')
-    d.freeSharedMemory()
+    cleanSharedmemory()
+
+def cleanSharedmemory():
+    Log(Fore.GREEN, 'Cleaning up shared memory...')
+    try:
+        p = subprocess.run(['sls_detector_get', 'free'], stdout=fp, stderr=fp)
+    except:
+        Log(Fore.RED, 'Could not free shared memory')
+        raise
 
 def startProcessInBackground(name):
     try:
         # in background and dont print output
-        p = subprocess.Popen(name.split(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) 
+        p = subprocess.Popen(name.split(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, restore_signals=False) 
         Log(Fore.GREEN, 'Starting up ' + name + ' ...')
     except:
         Log(Fore.RED, 'Could not start ' + name)
         raise
 
 def startServer(name):
+    
     startProcessInBackground(name + 'DetectorServer_virtual')
     # second half
     if name == 'eiger':
@@ -79,6 +96,7 @@ def startReceiver(name):
     time.sleep(2)
 
 def loadConfig(name, rx_hostname, settingsdir):
+    Log(Fore.GREEN, 'Loading config')
     try:
         d = Detector()
         if name == 'eiger':
@@ -106,25 +124,36 @@ def loadConfig(name, rx_hostname, settingsdir):
         Log(Fore.RED, 'Could not load config for ' + name)
         raise
 
-def startCmdTests(name, fp):
-    try:
-        p = subprocess.run(['tests', '--abort', '[.cmd]'], stdout=fp, stderr=fp)
-        if p.returncode != 0:
-            raise Exception 
-    except:
-        Log(Fore.RED, 'Cmd tests failed for ' + name) 
-        raise
+def startCmdTests(name, fp, fname):
+    Log(Fore.GREEN, 'Cmd Tests for ' + name)
+    cmd = 'tests --abort [.cmd] -s -o ' + fname
+    p = subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
+    p.check_returncode()
 
-def startNormalTests(d, fp):
-    try:
-        Log(Fore.BLUE, '\nNormal tests')
-        p = subprocess.run(['tests', '--abort' ], stdout=fp, stderr=fp)
-        if p.returncode != 0:
-            raise Exception 
-        d.freeSharedMemory()
-    except:
-        Log(Fore.RED, 'Normal tests failed') 
-        raise
+    with open (fname, 'r') as f:
+        for line in f:
+            if "FAILED" in line:
+                msg = 'Cmd tests failed for ' + name + '!!!'
+                Log(Fore.RED, msg)
+                raise Exception(msg)
+
+    Log(Fore.GREEN, 'Cmd Tests successful for ' + name)
+
+def startGeneralTests(fp, fname):
+    Log(Fore.GREEN, 'General Tests')
+    cmd = 'tests --abort -s -o ' + fname
+    p = subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
+    p.check_returncode()
+
+    with open (fname, 'r') as f:
+        for line in f:
+            if "FAILED" in line:
+                msg = 'General tests failed !!!'
+                Log(Fore.RED, msg)
+                raise Exception(msg)
+
+    Log(Fore.GREEN, 'General Tests successful')
+
 
 
 # parse cmd line for rx_hostname and settingspath using the argparse library
@@ -149,46 +178,51 @@ if args.servers is None:
 else:
     servers = args.servers
 
-Log(Fore.WHITE, 'rx_hostname: ' + args.rx_hostname + '\settingspath: \'' + args.settingspath + '\'')
 
-
-# handle zombies (else killing slsReceivers will fail)
-# dont care about child process success
-signal.signal(signal.SIGCHLD, signal.SIG_IGN)
+Log(Fore.WHITE, 'Arguments:\nrx_hostname: ' + args.rx_hostname + '\nsettingspath: \'' + args.settingspath + '\'') 
 
 
 # redirect to file
+prefix_fname = '/tmp/slsDetectorPackage_virtual_test'
 original_stdout = sys.stdout
 original_stderr = sys.stderr
-fname = '/tmp/slsDetectorPackage_virtual_test.txt'
-Log(Fore.BLUE, 'Tests -> ' + fname)
+fname = prefix_fname + '_log.txt'
+Log(Fore.BLUE, '\nLog File: ' + fname) 
+
 with open(fname, 'w') as fp:
+
+    # general tests
+    file_results = prefix_fname + '_results_general.txt'
+    Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
     sys.stdout = fp
     sys.stderr = fp
-
-    d = Detector()
-    # TODO: redirect Detector object print out also to file
-    startNormalTests(d, fp)
+    Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
+    startGeneralTests(fp, file_results)
 
     for server in servers:
         try:
             # print to terminal for progress
             sys.stdout = original_stdout
             sys.stderr = original_stderr
-            Log(Fore.BLUE, server + ' tests')
+            file_results = prefix_fname + '_results_cmd_' + server + '.txt'
+            Log(Fore.BLUE, 'Cmd tests for ' + server + ' (results: ' + file_results + ')')
             sys.stdout = fp
             sys.stderr = fp
+            Log(Fore.BLUE, 'Cmd tests for ' + server + ' (results: ' + file_results + ')')
             
             # cmd tests for det
-            Log(Fore.BLUE, 'Cmd Tests for ' + server)
-            cleanup(server, d)
+            cleanup(server)
             startServer(server)
             startReceiver(server)
             loadConfig(server, args.rx_hostname, args.settingspath)
-            startCmdTests(server, fp)
-            cleanup(server, d)
+            startCmdTests(server, fp, file_results)
+            cleanup(server)
         except:
-            cleanup(server, d)
+            Log(log.RED, 'Exception caught. Cleaning up.')
+            cleanup(server)
+            sys.stdout = original_stdout
+            sys.stderr = original_stderr
+            Log(Fore.RED, 'Cmd tests failed for ' + server + '!!!')
             raise
 
 

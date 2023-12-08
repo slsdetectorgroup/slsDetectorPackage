@@ -2,6 +2,7 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "sls/Receiver.h"
 #include "ClientInterface.h"
+#include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
@@ -29,7 +30,7 @@ Receiver::~Receiver() = default;
 Receiver::Receiver(int argc, char *argv[]) : tcpipInterface(nullptr) {
 
     // options
-    int tcpip_port_no = 1954;
+    uint16_t tcpip_port_no = 1954;
     uid_t userid = -1;
 
     // parse command line for config
@@ -51,6 +52,15 @@ Receiver::Receiver(int argc, char *argv[]) : tcpipInterface(nullptr) {
     int option_index = 0;
     int c = 0;
 
+    std::string help_message =
+        "\nUsage: " + std::string(argv[0]) + " [arguments]\n" +
+        "Possible arguments are:\n" +
+        "\t-t, --rx_tcpport <port> : TCP Communication Port with "
+        "client. Non-zero and 16 bit.\n" +
+        "\t-u, --uid <user id>     : Set effective user id if receiver "
+        "\n" +
+        "\t                          started with privileges. \n\n";
+
     while (c != -1) {
         c = getopt_long(argc, argv, "hvf:t:u:", long_options, &option_index);
 
@@ -61,12 +71,18 @@ Receiver::Receiver(int argc, char *argv[]) : tcpipInterface(nullptr) {
         switch (c) {
 
         case 't':
-            sscanf(optarg, "%d", &tcpip_port_no);
+            try {
+                tcpip_port_no = sls::StringTo<uint16_t>(optarg);
+                validatePortNumber(tcpip_port_no);
+            } catch (...) {
+                throw RuntimeError("Could not scan TCP port number." +
+                                   help_message);
+            }
             break;
 
         case 'u':
             if (sscanf(optarg, "%u", &userid) != 1) {
-                throw RuntimeError("Could not scan uid");
+                throw RuntimeError("Could not scan uid" + help_message);
             }
             break;
 
@@ -76,19 +92,9 @@ Receiver::Receiver(int argc, char *argv[]) : tcpipInterface(nullptr) {
             exit(EXIT_SUCCESS);
 
         case 'h':
+            std::cout << help_message << std::endl;
+            exit(EXIT_SUCCESS);
         default:
-            std::cout << std::endl;
-
-            std::string help_message =
-                "Usage: " + std::string(argv[0]) + " [arguments]\n" +
-                "Possible arguments are:\n" +
-                "\t-t, --rx_tcpport <port> : TCP Communication Port with "
-                "client. \n" +
-                "\t-u, --uid <user id>     : Set effective user id if receiver "
-                "\n" +
-                "\t                          started with privileges. \n\n";
-
-            // std::cout << help_message << std::endl;
             throw RuntimeError(help_message);
         }
     }
@@ -118,7 +124,7 @@ Receiver::Receiver(int argc, char *argv[]) : tcpipInterface(nullptr) {
     tcpipInterface = make_unique<ClientInterface>(tcpip_port_no);
 }
 
-Receiver::Receiver(int tcpip_port_no) {
+Receiver::Receiver(uint16_t tcpip_port_no) {
     // might throw an exception
     tcpipInterface = make_unique<ClientInterface>(tcpip_port_no);
 }

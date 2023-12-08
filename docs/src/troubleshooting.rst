@@ -92,6 +92,9 @@ Common
             sls_detector_put rx_arping 1
 
 
+#. Only the slaves get no data 
+    * Check trigger cabling and trigger configuration
+    * When you cannot stop Jungfrau slaves in sync mode, refer to :ref:`Cannot stop slaves<Jungfrau Troubleshooting Sync Slaves Cannot Stop>`.
 
 .. _Receiver PC Tuning:
 
@@ -421,3 +424,20 @@ Cannot get multi module data
     * Comment out this line in the config file: powerchip 1
     * Powering on the chip increases the power consumption by a considerable amount. If commenting out this line aids in getting data (strange data due to powered off chip), then it could be the power supply current limit. Fix it (possibly to 8A current limit) and uncomment the powerchip line back in config file.
 
+
+
+.. _Jungfrau Troubleshooting Sync Slaves Cannot Stop:
+
+Cannot stop slaves in sync mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. If cabling is accessible, ensure termination board and flatband cable between the masters and the slaves are connnected properly. Then try to stop.
+#. If cabling is inaccessible, unsync first so that the slaves can get the stop directly from the client using the command. Then, don't use sync mode until the cabling is fixed.
+
+    .. code-block:: bash
+        
+        # unsync, slaves command will fail as it is still in waiting state
+        sls_detector_put sync 0
+
+        # stop should now be successful as master does not determine the stop anymore
+        sls_detector_put stop

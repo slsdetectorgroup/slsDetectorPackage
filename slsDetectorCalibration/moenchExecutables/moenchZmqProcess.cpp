@@ -32,6 +32,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <map>
 
 #include <rapidjson/document.h> //json header in zmq stream
 
@@ -64,36 +65,47 @@ int main(int argc, char *argv[]) {
      * trial.o [socket ip] [starting port number] [send_socket ip] [send port
      * number]
      *
-     */
-    FILE *of = NULL;
-    int fifosize = 5000;
+     */ 
+  std::map<std::string, std::string> args = {
+    {"rx_zmqip","10.1.2.102"},	
+    {"rx_zmqport","7770"},
+    {"zmqip","129.129.202.153"},
+    {"zmqport","7780"},
+    {"nthreads","5"},
+    {"fifosize","5000"},
+    {"nsigma","5"},
+    {"gainfile","none"},
+    {"nbinsx","5"},
+      {"nbinsy","5"},
+    {"etafile","none"},
+    {"etabinsx","1000"},
+    {"etamin","-1"},
+    {"etamax","2"}  };
+  FILE *of = NULL;
     int etabins = 1000, etabinsy = 1000; // nsubpix*2*100;
     double etamin = -1, etamax = 2;
     int nSubPixelsX = 2;
     int emin, emax;
     int nSubPixelsY = 2;
+    int nthreads = 5;
+    int fifosize = 5000;
+    uint32_t nSigma = 5;
 
-    // help
-    if (argc < 3) {
-        cprintf(RED, "Help: ./trial [receive socket ip] [receive starting port "
-                     "number] [send_socket ip] [send starting port number] "
-                     "[nthreads] [nsubpix] [gainmap]  [etafile]\n");
-        return EXIT_FAILURE;
-    }
+    string etafname;// = NULL;
+    string gainfname;// = NULL;
 
     // receive parameters
     bool send = false;
-    char *socketip = argv[1];
-    uint32_t portnum = atoi(argv[2]);
     // send parameters if any
-    char *socketip2 = 0;
-    uint32_t portnum2 = 0;
+    string socketip2;// = 0;
+    uint32_t portnum2 = 0;  
+    string socketip;// = 0;
+    uint32_t portnum = 0;
 
     sls::zmqHeader zHeader, outHeader;
     zHeader.jsonversion = SLS_DETECTOR_JSON_HEADER_VERSION;
     outHeader.jsonversion = SLS_DETECTOR_JSON_HEADER_VERSION;
 
-    uint32_t nSigma = 5;
 
     int ok;
 
@@ -103,43 +115,73 @@ int main(int argc, char *argv[]) {
     // time_t begin,end,finished;
     int rms = 0;
 
-    if (argc > 4) {
-        socketip2 = argv[3];
-        portnum2 = atoi(argv[4]);
-        if (portnum2 > 0)
-            send = true;
-    }
-    cout << "\nrx socket ip : " << socketip << "\nrx port num  : " << portnum;
-    if (send) {
-        cout << "\ntx socket ip : " << socketip2
-             << "\ntx port num  : " << portnum2;
-    }
-    int nthreads = 5;
-    if (argc > 5)
-        nthreads = atoi(argv[5]);
+    send = true;
+    // help
+    if (argc < 5) {
+      std::string name, value,sline;
+      int ic=0;
+      ifstream flist;
+      flist.open (argv[1], std::ifstream::in);
+      if (flist.is_open()) {
+	cout << "Using config file " <<argv[1] << endl;
+       while (std::getline(flist,sline)){
+	 ic=sline.find(' ');
+	 name = sline.substr(0,ic); //
+	 value = sline.substr(ic+1,sline.size()-ic); 
+	 args[name]=value;
 
-    cout << "Number of threads is: " << nthreads << endl;
-    if (argc > 6) {
-        nSubPixelsX = atoi(argv[6]);
-        nSubPixelsY = nSubPixelsX;
-#ifdef RECT
-        nSubPixelsX = 2;
-#endif
-    }
-    cout << "Number of subpixels is: " << nSubPixelsX << " " << nSubPixelsY
-         << endl;
+       } 
+       flist.close();
+      } else {
+        cprintf(RED, "Arguments are either: \n [config file] \n or the following list (deprecated): [receive socket ip] [receive starting port "
+		"number] [send_socket ip] [send starting port number] "
+		"[nthreads] [nsubpix] [gainmap]  [etafile]\n");
+        return EXIT_FAILURE;
+      }
+    } else {
+       args["rx_zmqip"]=argv[1];	
+       args["rx_zmqport"]=argv[2];
 
-    char *gainfname = NULL;
-    if (argc > 7) {
-        gainfname = argv[7];
-        cout << "Gain map file name is: " << gainfname << endl;
+       args["zmqip"]=argv[3];
+       args["zmqport"]=argv[4];
+       if (argc > 5)
+        args["nthreads"] = argv[5];
+       if (argc > 6) {
+	 args["nbinsx"]=argv[6];
+	 args["nbinsy"]=argv[6];
+       }
+       
+      if (argc > 7) {
+	args["gainfile"]=argv[7];
+      }
+      if (argc > 8) {
+	args["etafilefile"]=argv[8];
+      }
+
     }
 
-    char *etafname = NULL;
-    if (argc > 8) {
-        etafname = argv[8];
-        cout << "Eta file name is: " << etafname << endl;
-    }
+       for (auto const& x : args)
+	 {
+	   std::cout << x.first  // string (key)
+		     << ':' 
+		     << x.second // string's value 
+		     << std::endl;
+	 }
+
+    socketip = args["rx_zmqip"];
+    portnum = atoi(args["rx_zmqport"].c_str());
+    
+    socketip2 = args["zmqip"];
+    portnum2 = atoi(args["zmqport"].c_str());
+
+    nthreads = atoi(args["nthreads"].c_str());
+    nSubPixelsX =atoi(args["nbinsx"].c_str());
+    nSubPixelsY =atoi(args["nbinsy"].c_str());
+    gainfname = args["gainfile"];
+    etafname = args["etafilefile"];
+    
+
+
 
     // slsDetectorData *det=new moench03T1ZmqDataNew();
 #ifndef MOENCH04
@@ -180,8 +222,8 @@ int main(int argc, char *argv[]) {
     double *gmap = NULL;
 
     uint32_t nnnx, nnny;
-    if (gainfname) {
-        gm = ReadFromTiff(gainfname, nnny, nnnx);
+    //if (gainfname) {
+        gm = ReadFromTiff(gainfname.c_str(), nnny, nnnx);
         if (gm && nnnx == (uint)npx && nnny == (uint)npy) {
             gmap = new double[npx * npy];
             for (int i = 0; i < npx * npy; i++) {
@@ -190,7 +232,7 @@ int main(int argc, char *argv[]) {
             delete[] gm;
         } else
             cout << "Could not open gain map " << gainfname << endl;
-    }
+	//}
 
     // analogDetector<uint16_t> *filter=new
     // analogDetector<uint16_t>(det,1,NULL,1000);
@@ -208,8 +250,8 @@ int main(int argc, char *argv[]) {
     eta2InterpolationPosXY *interp = new eta2InterpolationPosXY(
         npx, npy, nSubPixelsX, nSubPixelsY, etabins, etabinsy, etamin, etamax);
 
-    if (etafname)
-        interp->readFlatField(etafname);
+    //if (etafname)
+    interp->readFlatField(etafname.c_str());
 
     interpolatingDetector *filter = new interpolatingDetector(
         det, interp, nSigma, 1, cm, 1000, 10, -1, -1, gainmap, gs);
@@ -229,13 +271,13 @@ int main(int argc, char *argv[]) {
     try {
 #endif
 
-      zmqsocket = new sls::ZmqSocket(socketip, portnum);
+      zmqsocket = new sls::ZmqSocket(socketip.c_str(), portnum);
 
 #ifdef NEWZMQ
     } catch (...) {
         cprintf(RED,
                 "Error: Could not create Zmq socket on port %d with ip %s\n",
-                portnum, socketip);
+                portnum, socketip.c_str());
         delete zmqsocket;
         return EXIT_FAILURE;
     }
@@ -245,7 +287,7 @@ int main(int argc, char *argv[]) {
     if (zmqsocket->IsError()) {
         cprintf(RED,
                 "Error: Could not create Zmq socket on port %d with ip %s\n",
-                portnum, socketip);
+                portnum, socketip.c_str());
         delete zmqsocket;
         return EXIT_FAILURE;
     }
@@ -266,14 +308,14 @@ int main(int argc, char *argv[]) {
         // receive socket
         try {
 #endif
-	  zmqsocket2 = new sls::ZmqSocket(portnum2, socketip2);
+	  zmqsocket2 = new sls::ZmqSocket(portnum2, socketip2.c_str());
 
 #ifdef NEWZMQ
         } catch (...) {
             cprintf(RED,
                     "Error: Could not create Zmq socket server on port %d and "
                     "ip %s\n",
-                    portnum2, socketip2);
+                    portnum2, socketip2.c_str());
             //	delete zmqsocket2;
             //	zmqsocket2=NULL;
             //	delete zmqsocket;
@@ -287,7 +329,7 @@ int main(int argc, char *argv[]) {
             cprintf(RED,
                     "AAA Error: Could not create Zmq socket server on port %d "
                     "and ip %s\n",
-                    portnum2, socketip2);
+                    portnum2, socketip2.c_str());
             //	delete zmqsocket2;
             // delete zmqsocket;
             //	return EXIT_FAILURE;

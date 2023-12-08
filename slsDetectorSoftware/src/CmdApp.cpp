@@ -3,6 +3,7 @@
 #include "inferAction.h"
 #include "sls/Detector.h"
 #include "sls/logger.h"
+#include "sls/versionAPI.h"
 
 #include <iostream>
 int main(int argc, char *argv[]) {
@@ -25,10 +26,18 @@ int main(int argc, char *argv[]) {
 #ifdef INFER
     int action = -1;
 #endif
-    // std::cout << "Experimental command parsing\n";
+
+    // Check for --version in the arguments
+    for (int i = 1; i < argc; ++i) {
+        if (!(strcmp(argv[i], "--version")) || !(strcmp(argv[i], "-v"))) {
+            std::cout << argv[0] << " " << APILIB << std::endl;
+            return 0;
+        }
+    }
 
     sls::CmdParser parser;
     parser.Parse(argc, argv);
+
     if (action == slsDetectorDefs::READOUT_ACTION)
         parser.setCommand("acquire");
 
@@ -50,8 +59,7 @@ int main(int argc, char *argv[]) {
     if (parser.command() == "config" && action == slsDetectorDefs::PUT_ACTION) {
         sls::freeSharedMemory(parser.multi_id());
     }
-    sls::Detector d(parser.multi_id());
-    sls::Caller c(&d);
+
     sls::InferAction inferAction = sls::InferAction();
 
     try {
@@ -62,8 +70,14 @@ int main(int argc, char *argv[]) {
             std::cout << "inferred action: " << actionString << std::endl;
         }
 
+        std::unique_ptr<sls::Detector> d{nullptr};
+        if (action != slsDetectorDefs::HELP_ACTION) {
+            d = sls::make_unique<sls::Detector>(parser.multi_id());
+        }
+        sls::Caller c(d.get());
+
         c.call(parser.command(), parser.arguments(), parser.detector_id(),
-               action);
+               action, std::cout, parser.receiver_id());
     } catch (sls::RuntimeError &e) {
         exit(EXIT_FAILURE);
     }

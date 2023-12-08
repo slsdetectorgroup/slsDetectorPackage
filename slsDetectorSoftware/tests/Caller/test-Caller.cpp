@@ -19,7 +19,7 @@ using test::GET;
 using test::PUT;
 
 TEST_CASE("CALLER::Caller::Calling help doesn't throw or cause segfault") {
-    // Dont add [.cmd] tag this should run with normal tests
+    // Dont add [.cmdcall] tag this should run with normal tests
     Caller caller(nullptr);
     std::ostringstream os;
     for (std::string cmd : caller.getAllCommands())
@@ -27,7 +27,7 @@ TEST_CASE("CALLER::Caller::Calling help doesn't throw or cause segfault") {
             caller.call(cmd, {}, -1, slsDetectorDefs::HELP_ACTION, os));
 }
 
-TEST_CASE("CALLER::Caller::period", "[.cmd]") {
+TEST_CASE("CALLER::Caller::period", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getPeriod();
@@ -51,7 +51,7 @@ TEST_CASE("CALLER::Caller::period", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::Unknown command", "[.cmd]") {
+TEST_CASE("CALLER::Unknown command", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_THROWS(caller.call("vsaevrreavv", {}, -1, PUT));
@@ -59,7 +59,7 @@ TEST_CASE("CALLER::Unknown command", "[.cmd]") {
 
 /* configuration */
 
-TEST_CASE("CALLER::config", "[.cmd]") {
+TEST_CASE("CALLER::config", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     // put only
@@ -68,7 +68,7 @@ TEST_CASE("CALLER::config", "[.cmd]") {
 
 // free: not testing
 
-TEST_CASE("CALLER::parameters", "[.cmd]") {
+TEST_CASE("CALLER::parameters", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     // put only
@@ -94,13 +94,13 @@ TEST_CASE("CALLER::parameters", "[.cmd]") {
         */
 }
 
-TEST_CASE("CALLER::hostname", "[.cmd]") {
+TEST_CASE("CALLER::hostname", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("hostname", {}, -1, GET));
 }
 
-TEST_CASE("CALLER::virtual", "[.cmd]") {
+TEST_CASE("CALLER::virtual", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_THROWS(caller.call("virtual", {}, -1, GET));
@@ -108,56 +108,56 @@ TEST_CASE("CALLER::virtual", "[.cmd]") {
     REQUIRE_THROWS(caller.call("virtual", {"3", "65534"}, -1, PUT));
 }
 
-TEST_CASE("CALLER::versions", "[.cmd]") {
+TEST_CASE("CALLER::versions", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("versions", {}, -1, GET));
     REQUIRE_THROWS(caller.call("versions", {"0"}, -1, PUT));
 }
 
-TEST_CASE("CALLER::packageversion", "[.cmd]") {
+TEST_CASE("CALLER::packageversion", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("packageversion", {}, -1, GET));
     REQUIRE_THROWS(caller.call("packageversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("CALLER::clientversion", "[.cmd]") {
+TEST_CASE("CALLER::clientversion", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("clientversion", {}, -1, GET));
     REQUIRE_THROWS(caller.call("clientversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("CALLER::firmwareversion", "[.cmd]") {
+TEST_CASE("CALLER::firmwareversion", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("firmwareversion", {}, -1, GET));
     REQUIRE_THROWS(caller.call("firmwareversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("CALLER::detectorserverversion", "[.cmd]") {
+TEST_CASE("CALLER::detectorserverversion", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("detectorserverversion", {}, -1, GET));
     REQUIRE_THROWS(caller.call("detectorserverversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("CALLER::hardwareversion", "[.cmd]") {
+TEST_CASE("CALLER::hardwareversion", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("hardwareversion", {}, -1, GET));
     REQUIRE_THROWS(caller.call("hardwareversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("CALLER::kernelversion", "[.cmd]") {
+TEST_CASE("CALLER::kernelversion", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("kernelversion", {}, -1, GET));
     REQUIRE_THROWS(caller.call("kernelversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("CALLER::serialnumber", "[.cmd]") {
+TEST_CASE("CALLER::serialnumber", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -168,7 +168,7 @@ TEST_CASE("CALLER::serialnumber", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::moduleid", "[.cmd]") {
+TEST_CASE("CALLER::moduleid", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -181,7 +181,7 @@ TEST_CASE("CALLER::moduleid", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::type", "[.cmd]") {
+TEST_CASE("CALLER::type", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto dt = det.getDetectorType().squash();
@@ -193,13 +193,13 @@ TEST_CASE("CALLER::type", "[.cmd]") {
     // REQUIRE(dt == test::type);
 }
 
-TEST_CASE("CALLER::detsize", "[.cmd]") {
+TEST_CASE("CALLER::detsize", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("detsize", {}, -1, GET));
 }
 
-TEST_CASE("CALLER::settingslist", "[.cmd]") {
+TEST_CASE("CALLER::settingslist", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -211,7 +211,7 @@ TEST_CASE("CALLER::settingslist", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::settings", "[.cmd]") {
+TEST_CASE("CALLER::settings", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -309,7 +309,7 @@ TEST_CASE("CALLER::settings", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::threshold", "[.cmd]") {
+TEST_CASE("CALLER::threshold", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
 
@@ -388,7 +388,7 @@ TEST_CASE("CALLER::threshold", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::thresholdnotb", "[.cmd]") {
+TEST_CASE("CALLER::thresholdnotb", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
 
@@ -468,7 +468,7 @@ TEST_CASE("CALLER::thresholdnotb", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::settingspath", "[.cmd]") {
+TEST_CASE("CALLER::settingspath", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getSettingsPath();
@@ -484,13 +484,13 @@ TEST_CASE("CALLER::settingspath", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::trimbits", "[.cmd]") {
+TEST_CASE("CALLER::trimbits", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_THROWS(caller.call("trimbits", {}, -1, GET));
 }
 
-TEST_CASE("CALLER::trimval", "[.cmd]") {
+TEST_CASE("CALLER::trimval", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -524,7 +524,7 @@ TEST_CASE("CALLER::trimval", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::trimen", "[.cmd][.this]") {
+TEST_CASE("CALLER::trimen", "[.cmdcall][.this]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -546,7 +546,7 @@ TEST_CASE("CALLER::trimen", "[.cmd][.this]") {
     }
 }
 
-TEST_CASE("CALLER::gappixels", "[.cmd]") {
+TEST_CASE("CALLER::gappixels", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -596,7 +596,7 @@ TEST_CASE("CALLER::gappixels", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::fliprows", "[.cmd]") {
+TEST_CASE("CALLER::fliprows", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -631,7 +631,7 @@ TEST_CASE("CALLER::fliprows", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::master", "[.cmd]") {
+TEST_CASE("CALLER::master", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -676,7 +676,7 @@ TEST_CASE("CALLER::master", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::badchannels", "[.cmd]") {
+TEST_CASE("CALLER::badchannels", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -746,7 +746,7 @@ TEST_CASE("CALLER::badchannels", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::row", "[.cmd]") {
+TEST_CASE("CALLER::row", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRow()[0];
@@ -769,7 +769,7 @@ TEST_CASE("CALLER::row", "[.cmd]") {
     det.setRow(prev_val, {0});
 }
 
-TEST_CASE("CALLER::column", "[.cmd]") {
+TEST_CASE("CALLER::column", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getColumn()[0];
@@ -796,7 +796,7 @@ TEST_CASE("CALLER::column", "[.cmd]") {
 
 // acquire: not testing
 
-TEST_CASE("CALLER::frames", "[.cmd]") {
+TEST_CASE("CALLER::frames", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val =
@@ -820,7 +820,7 @@ TEST_CASE("CALLER::frames", "[.cmd]") {
     det.setNumberOfFrames(prev_val);
 }
 
-TEST_CASE("CALLER::triggers", "[.cmd]") {
+TEST_CASE("CALLER::triggers", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val =
@@ -844,7 +844,7 @@ TEST_CASE("CALLER::triggers", "[.cmd]") {
     det.setNumberOfTriggers(prev_val);
 }
 
-TEST_CASE("CALLER::exptime", "[.cmd][.time]") {
+TEST_CASE("CALLER::exptime", "[.cmdcall][.time]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -894,7 +894,7 @@ TEST_CASE("CALLER::exptime", "[.cmd][.time]") {
     det.setExptime(-1, prev_val);
 }
 
-TEST_CASE("CALLER::period", "[.cmd]") {
+TEST_CASE("CALLER::period", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getPeriod();
@@ -918,7 +918,7 @@ TEST_CASE("CALLER::period", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::delay", "[.cmd]") {
+TEST_CASE("CALLER::delay", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -951,7 +951,7 @@ TEST_CASE("CALLER::delay", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::framesl", "[.cmd]") {
+TEST_CASE("CALLER::framesl", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -962,7 +962,7 @@ TEST_CASE("CALLER::framesl", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::triggersl", "[.cmd]") {
+TEST_CASE("CALLER::triggersl", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -973,7 +973,7 @@ TEST_CASE("CALLER::triggersl", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::delayl", "[.cmd]") {
+TEST_CASE("CALLER::delayl", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -990,7 +990,7 @@ TEST_CASE("CALLER::delayl", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::periodl", "[.cmd]") {
+TEST_CASE("CALLER::periodl", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1007,7 +1007,7 @@ TEST_CASE("CALLER::periodl", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::dr", "[.cmd]") {
+TEST_CASE("CALLER::dr", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1049,14 +1049,14 @@ TEST_CASE("CALLER::dr", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::drlist", "[.cmd]") {
+TEST_CASE("CALLER::drlist", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("drlist", {}, -1, GET));
     REQUIRE_THROWS(caller.call("drlist", {}, -1, PUT));
 }
 
-TEST_CASE("CALLER::timing", "[.cmd]") {
+TEST_CASE("CALLER::timing", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getTimingMode();
@@ -1118,14 +1118,14 @@ TEST_CASE("CALLER::timing", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::timinglist", "[.cmd]") {
+TEST_CASE("CALLER::timinglist", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("timinglist", {}, -1, GET));
     REQUIRE_THROWS(caller.call("timinglist", {}, -1, PUT));
 }
 
-TEST_CASE("CALLER::readoutspeed", "[.cmd]") {
+TEST_CASE("CALLER::readoutspeed", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1213,7 +1213,7 @@ TEST_CASE("CALLER::readoutspeed", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::readoutspeedlist", "[.cmd]") {
+TEST_CASE("CALLER::readoutspeedlist", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1226,7 +1226,7 @@ TEST_CASE("CALLER::readoutspeedlist", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::adcphase", "[.cmd]") {
+TEST_CASE("CALLER::adcphase", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1265,7 +1265,7 @@ TEST_CASE("CALLER::adcphase", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::maxadcphaseshift", "[.cmd]") {
+TEST_CASE("CALLER::maxadcphaseshift", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1279,7 +1279,7 @@ TEST_CASE("CALLER::maxadcphaseshift", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::dbitphase", "[.cmd]") {
+TEST_CASE("CALLER::dbitphase", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1308,7 +1308,7 @@ TEST_CASE("CALLER::dbitphase", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::maxdbitphaseshift", "[.cmd]") {
+TEST_CASE("CALLER::maxdbitphaseshift", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1321,7 +1321,7 @@ TEST_CASE("CALLER::maxdbitphaseshift", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::clkfreq", "[.cmd]") {
+TEST_CASE("CALLER::clkfreq", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1335,7 +1335,7 @@ TEST_CASE("CALLER::clkfreq", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::clkphase", "[.cmd]") {
+TEST_CASE("CALLER::clkphase", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1373,7 +1373,7 @@ TEST_CASE("CALLER::clkphase", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::clkdiv", "[.cmd]") {
+TEST_CASE("CALLER::clkdiv", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1399,7 +1399,7 @@ TEST_CASE("CALLER::clkdiv", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::maxclkphaseshift", "[.cmd]") {
+TEST_CASE("CALLER::maxclkphaseshift", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1413,7 +1413,7 @@ TEST_CASE("CALLER::maxclkphaseshift", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::highvoltage", "[.cmd]") {
+TEST_CASE("CALLER::highvoltage", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1511,7 +1511,7 @@ TEST_CASE("CALLER::highvoltage", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::powerchip", "[.cmd]") {
+TEST_CASE("CALLER::powerchip", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1542,7 +1542,7 @@ TEST_CASE("CALLER::powerchip", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::imagetest", "[.cmd]") {
+TEST_CASE("CALLER::imagetest", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1573,7 +1573,7 @@ TEST_CASE("CALLER::imagetest", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::extsig", "[.cmd]") {
+TEST_CASE("CALLER::extsig", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1652,7 +1652,7 @@ TEST_CASE("CALLER::extsig", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::parallel", "[.cmd]") {
+TEST_CASE("CALLER::parallel", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1683,7 +1683,7 @@ TEST_CASE("CALLER::parallel", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::filterresistor", "[.cmd]") {
+TEST_CASE("CALLER::filterresistor", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1727,7 +1727,7 @@ TEST_CASE("CALLER::filterresistor", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::dbitpipeline", "[.cmd]") {
+TEST_CASE("CALLER::dbitpipeline", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1777,7 +1777,7 @@ TEST_CASE("CALLER::dbitpipeline", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::readnrows", "[.cmd]") {
+TEST_CASE("CALLER::readnrows", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1829,7 +1829,7 @@ TEST_CASE("CALLER::readnrows", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::currentsource", "[.cmd]") {
+TEST_CASE("CALLER::currentsource", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1971,21 +1971,21 @@ TEST_CASE("CALLER::currentsource", "[.cmd]") {
 
 /** temperature */
 
-TEST_CASE("CALLER::templist", "[.cmd]") {
+TEST_CASE("CALLER::templist", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("templist", {}, -1, GET));
     REQUIRE_THROWS(caller.call("templist", {}, -1, PUT));
 }
 
-TEST_CASE("CALLER::tempvalues", "[.cmd]") {
+TEST_CASE("CALLER::tempvalues", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("tempvalues", {}, -1, GET));
     REQUIRE_THROWS(caller.call("tempvalues", {}, -1, PUT));
 }
 
-TEST_CASE("CALLER::temp_adc", "[.cmd]") {
+TEST_CASE("CALLER::temp_adc", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2001,7 +2001,7 @@ TEST_CASE("CALLER::temp_adc", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::temp_fpga", "[.cmd]") {
+TEST_CASE("CALLER::temp_fpga", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2018,7 +2018,7 @@ TEST_CASE("CALLER::temp_fpga", "[.cmd]") {
 
 /* list */
 
-TEST_CASE("CALLER::daclist", "[.cmd]") {
+TEST_CASE("CALLER::daclist", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2053,14 +2053,14 @@ TEST_CASE("CALLER::daclist", "[.cmd]") {
 
 /* dacs */
 
-TEST_CASE("CALLER::dacvalues", "[.cmd]") {
+TEST_CASE("CALLER::dacvalues", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("dacvalues", {}, -1, GET));
     REQUIRE_THROWS(caller.call("dacvalues", {}, -1, PUT));
 }
 
-TEST_CASE("CALLER::defaultdac", "[.cmd]") {
+TEST_CASE("CALLER::defaultdac", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2090,7 +2090,7 @@ TEST_CASE("CALLER::defaultdac", "[.cmd]") {
                 det.setDefaultDac(it, prev_val[i], {i});
             }
         }
-        if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+        if (det_type == defs::JUNGFRAU) {
             std::vector<defs::dacIndex> daclist = {
                 defs::VREF_PRECH, defs::VREF_DS, defs::VREF_COMP};
             for (auto it : daclist) {
@@ -2119,7 +2119,7 @@ TEST_CASE("CALLER::defaultdac", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::resetdacs", "[.cmd]") {
+TEST_CASE("CALLER::resetdacs", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2143,7 +2143,7 @@ TEST_CASE("CALLER::resetdacs", "[.cmd]") {
 
 /* acquisition */
 
-TEST_CASE("CALLER::trigger", "[.cmd]") {
+TEST_CASE("CALLER::trigger", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_THROWS(caller.call("trigger", {}, -1, GET));
@@ -2186,7 +2186,7 @@ TEST_CASE("CALLER::trigger", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::blockingtrigger", "[.cmd]") {
+TEST_CASE("CALLER::blockingtrigger", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_THROWS(caller.call("blockingtrigger", {}, -1, GET));
@@ -2230,7 +2230,7 @@ TEST_CASE("CALLER::blockingtrigger", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::clearbusy", "[.cmd]") {
+TEST_CASE("CALLER::clearbusy", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("clearbusy", {}, -1, PUT));
@@ -2238,7 +2238,7 @@ TEST_CASE("CALLER::clearbusy", "[.cmd]") {
     REQUIRE_THROWS(caller.call("clearbusy", {}, -1, GET));
 }
 
-TEST_CASE("CALLER::start", "[.cmd]") {
+TEST_CASE("CALLER::start", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     // PUT only command
@@ -2277,7 +2277,7 @@ TEST_CASE("CALLER::start", "[.cmd]") {
     det.setNumberOfFrames(prev_frames);
 }
 
-TEST_CASE("CALLER::stop", "[.cmd]") {
+TEST_CASE("CALLER::stop", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     // PUT only command
@@ -2322,7 +2322,7 @@ TEST_CASE("CALLER::stop", "[.cmd]") {
     det.setNumberOfFrames(prev_frames);
 }
 
-TEST_CASE("CALLER::status", "[.cmd]") {
+TEST_CASE("CALLER::status", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2361,7 +2361,7 @@ TEST_CASE("CALLER::status", "[.cmd]") {
     det.setNumberOfFrames(prev_frames);
 }
 
-TEST_CASE("CALLER::nextframenumber", "[.cmd]") {
+TEST_CASE("CALLER::nextframenumber", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2427,7 +2427,7 @@ TEST_CASE("CALLER::nextframenumber", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::scan", "[.cmd]") {
+TEST_CASE("CALLER::scan", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     defs::dacIndex ind = defs::DAC_0;
@@ -2443,8 +2443,11 @@ TEST_CASE("CALLER::scan", "[.cmd]") {
         notImplementedInd = defs::VCASCP_PB;
         break;
     case defs::JUNGFRAU:
-    case defs::MOENCH:
         ind = defs::VB_COMP;
+        notImplementedInd = defs::VSVP;
+        break;
+    case defs::MOENCH:
+        ind = defs::VIN_CM;
         notImplementedInd = defs::VSVP;
         break;
     case defs::GOTTHARD:
@@ -2553,7 +2556,7 @@ TEST_CASE("CALLER::scan", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::scanerrmsg", "[.cmd]") {
+TEST_CASE("CALLER::scanerrmsg", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_NOTHROW(caller.call("scanerrmsg", {}, -1, GET));
@@ -2562,7 +2565,7 @@ TEST_CASE("CALLER::scanerrmsg", "[.cmd]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
-TEST_CASE("CALLER::numinterfaces", "[.cmd]") {
+TEST_CASE("CALLER::numinterfaces", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2602,7 +2605,7 @@ TEST_CASE("CALLER::numinterfaces", "[.cmd]") {
     REQUIRE_THROWS(caller.call("numinterfaces", {"0"}, -1, PUT));
 }
 
-TEST_CASE("CALLER::udp_srcip", "[.cmd]") {
+TEST_CASE("CALLER::udp_srcip", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getSourceUDPIP();
@@ -2617,7 +2620,7 @@ TEST_CASE("CALLER::udp_srcip", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::udp_dstlist", "[.cmd]") {
+TEST_CASE("CALLER::udp_dstlist", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2633,7 +2636,7 @@ TEST_CASE("CALLER::udp_dstlist", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::udp_numdst", "[.cmd]") {
+TEST_CASE("CALLER::udp_numdst", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2646,7 +2649,7 @@ TEST_CASE("CALLER::udp_numdst", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::udp_cleardst", "[.cmd]") {
+TEST_CASE("CALLER::udp_cleardst", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_THROWS(caller.call("udp_cleardst", {}, -1, GET));
@@ -2654,7 +2657,7 @@ TEST_CASE("CALLER::udp_cleardst", "[.cmd]") {
     /*REQUIRE_NOTHROW(caller.call("udp_cleardst", {}, -1, PUT));*/
 }
 
-TEST_CASE("CALLER::udp_firstdst", "[.cmd]") {
+TEST_CASE("CALLER::udp_firstdst", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2688,13 +2691,13 @@ TEST_CASE("CALLER::udp_firstdst", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::udp_dstip", "[.cmd]") {
+TEST_CASE("CALLER::udp_dstip", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_THROWS(caller.call("udp_dstip", {"0.0.0.0"}, -1, PUT));
 }
 
-TEST_CASE("CALLER::udp_srcmac", "[.cmd]") {
+TEST_CASE("CALLER::udp_srcmac", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getSourceUDPMAC();
@@ -2711,13 +2714,13 @@ TEST_CASE("CALLER::udp_srcmac", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::udp_dstmac", "[.cmd]") {
+TEST_CASE("CALLER::udp_dstmac", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_THROWS(caller.call("udp_dstmac", {"00:00:00:00:00:00"}, -1, PUT));
 }
 
-TEST_CASE("CALLER::udp_dstport", "[.cmd]") {
+TEST_CASE("CALLER::udp_dstport", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getDestinationUDPPort();
@@ -2738,7 +2741,7 @@ TEST_CASE("CALLER::udp_dstport", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::udp_srcip2", "[.cmd]") {
+TEST_CASE("CALLER::udp_srcip2", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2760,7 +2763,7 @@ TEST_CASE("CALLER::udp_srcip2", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::udp_dstip2", "[.cmd]") {
+TEST_CASE("CALLER::udp_dstip2", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2772,7 +2775,7 @@ TEST_CASE("CALLER::udp_dstip2", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::udp_srcmac2", "[.cmd]") {
+TEST_CASE("CALLER::udp_srcmac2", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2796,7 +2799,7 @@ TEST_CASE("CALLER::udp_srcmac2", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::udp_dstmac2", "[.cmd]") {
+TEST_CASE("CALLER::udp_dstmac2", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2809,7 +2812,7 @@ TEST_CASE("CALLER::udp_dstmac2", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::udp_dstport2", "[.cmd]") {
+TEST_CASE("CALLER::udp_dstport2", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2838,21 +2841,21 @@ TEST_CASE("CALLER::udp_dstport2", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::udp_reconfigure", "[.cmd]") {
+TEST_CASE("CALLER::udp_reconfigure", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_THROWS(caller.call("udp_reconfigure", {}, -1, GET));
     REQUIRE_NOTHROW(caller.call("udp_reconfigure", {}, -1, PUT));
 }
 
-TEST_CASE("CALLER::udp_validate", "[.cmd]") {
+TEST_CASE("CALLER::udp_validate", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_THROWS(caller.call("udp_validate", {}, -1, GET));
     REQUIRE_NOTHROW(caller.call("udp_validate", {}, -1, PUT));
 }
 
-TEST_CASE("CALLER::tengiga", "[.cmd]") {
+TEST_CASE("CALLER::tengiga", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
 
@@ -2876,7 +2879,7 @@ TEST_CASE("CALLER::tengiga", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::flowcontrol10g", "[.cmd]") {
+TEST_CASE("CALLER::flowcontrol10g", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2907,7 +2910,7 @@ TEST_CASE("CALLER::flowcontrol10g", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::txdelay_frame", "[.cmd]") {
+TEST_CASE("CALLER::txdelay_frame", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2935,7 +2938,7 @@ TEST_CASE("CALLER::txdelay_frame", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::txdelay", "[.cmd]") {
+TEST_CASE("CALLER::txdelay", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3011,7 +3014,7 @@ TEST_CASE("CALLER::txdelay", "[.cmd]") {
 
 /* ZMQ Streaming Parameters (Receiver<->Client) */
 
-TEST_CASE("CALLER::zmqport", "[.cmd]") {
+TEST_CASE("CALLER::zmqport", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
 
@@ -3066,7 +3069,7 @@ TEST_CASE("CALLER::zmqport", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::zmqip", "[.cmd]") {
+TEST_CASE("CALLER::zmqip", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     std::ostringstream oss1, oss2;
@@ -3082,7 +3085,7 @@ TEST_CASE("CALLER::zmqip", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::zmqhwm", "[.cmd]") {
+TEST_CASE("CALLER::zmqhwm", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getClientZmqHwm();
@@ -3111,7 +3114,7 @@ TEST_CASE("CALLER::zmqhwm", "[.cmd]") {
 
 /* Advanced */
 
-TEST_CASE("CALLER::adcpipeline", "[.cmd]") {
+TEST_CASE("CALLER::adcpipeline", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3146,7 +3149,7 @@ TEST_CASE("CALLER::adcpipeline", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::programfpga", "[.cmd]") {
+TEST_CASE("CALLER::programfpga", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3162,7 +3165,7 @@ TEST_CASE("CALLER::programfpga", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::resetfpga", "[.cmd]") {
+TEST_CASE("CALLER::resetfpga", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3178,7 +3181,7 @@ TEST_CASE("CALLER::resetfpga", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::updatekernel", "[.cmd]") {
+TEST_CASE("CALLER::updatekernel", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3197,7 +3200,7 @@ TEST_CASE("CALLER::updatekernel", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::rebootcontroller", "[.cmd]") {
+TEST_CASE("CALLER::rebootcontroller", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3213,7 +3216,7 @@ TEST_CASE("CALLER::rebootcontroller", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::update", "[.cmd]") {
+TEST_CASE("CALLER::update", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3231,7 +3234,7 @@ TEST_CASE("CALLER::update", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::reg", "[.cmd]") {
+TEST_CASE("CALLER::reg", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3256,7 +3259,7 @@ TEST_CASE("CALLER::reg", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::adcreg", "[.cmd]") {
+TEST_CASE("CALLER::adcreg", "[.cmdcall]") {
     // TODO! what is a safe value to use?
     Detector det;
     Caller caller(&det);
@@ -3274,7 +3277,7 @@ TEST_CASE("CALLER::adcreg", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::setbit", "[.cmd]") {
+TEST_CASE("CALLER::setbit", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3296,7 +3299,7 @@ TEST_CASE("CALLER::setbit", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::clearbit", "[.cmd]") {
+TEST_CASE("CALLER::clearbit", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3318,7 +3321,7 @@ TEST_CASE("CALLER::clearbit", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::getbit", "[.cmd]") {
+TEST_CASE("CALLER::getbit", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3342,7 +3345,7 @@ TEST_CASE("CALLER::getbit", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::firmwaretest", "[.cmd]") {
+TEST_CASE("CALLER::firmwaretest", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3359,7 +3362,7 @@ TEST_CASE("CALLER::firmwaretest", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::bustest", "[.cmd]") {
+TEST_CASE("CALLER::bustest", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3376,7 +3379,7 @@ TEST_CASE("CALLER::bustest", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::initialchecks", "[.cmd]") {
+TEST_CASE("CALLER::initialchecks", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto check = det.getInitialChecks();
@@ -3398,7 +3401,7 @@ TEST_CASE("CALLER::initialchecks", "[.cmd]") {
     det.setInitialChecks(check);
 }
 
-TEST_CASE("CALLER::adcinvert", "[.cmd]") {
+TEST_CASE("CALLER::adcinvert", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3426,7 +3429,7 @@ TEST_CASE("CALLER::adcinvert", "[.cmd]") {
 
 /* Insignificant */
 
-TEST_CASE("CALLER::port", "[.cmd]") {
+TEST_CASE("CALLER::port", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getControlPort({0}).squash();
@@ -3450,7 +3453,7 @@ TEST_CASE("CALLER::port", "[.cmd]") {
     det.setControlPort(prev_val, {0});
 }
 
-TEST_CASE("CALLER::stopport", "[.cmd]") {
+TEST_CASE("CALLER::stopport", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getStopPort({0}).squash();
@@ -3474,7 +3477,7 @@ TEST_CASE("CALLER::stopport", "[.cmd]") {
     det.setStopPort(prev_val, {0});
 }
 
-TEST_CASE("CALLER::lock", "[.cmd]") {
+TEST_CASE("CALLER::lock", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getDetectorLock();
@@ -3498,13 +3501,13 @@ TEST_CASE("CALLER::lock", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::execcommand", "[.cmd]") {
+TEST_CASE("CALLER::execcommand", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    REQUIRE_NOTHROW(caller.call("execcommand", {"ls"}, -1, PUT));
+    REQUIRE_NOTHROW(caller.call("execcommand", {"ls *.txt"}, -1, PUT));
 }
 
-TEST_CASE("CALLER::framecounter", "[.cmd]") {
+TEST_CASE("CALLER::framecounter", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -3522,7 +3525,7 @@ TEST_CASE("CALLER::framecounter", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::runtime", "[.cmd]") {
+TEST_CASE("CALLER::runtime", "[.cmdcall]") {
     // TODO! can we test this?
     Detector det;
     Caller caller(&det);
@@ -3540,7 +3543,7 @@ TEST_CASE("CALLER::runtime", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::frametime", "[.cmd]") {
+TEST_CASE("CALLER::frametime", "[.cmdcall]") {
     // TODO! can we test this?
     Detector det;
     Caller caller(&det);
@@ -3558,7 +3561,7 @@ TEST_CASE("CALLER::frametime", "[.cmd]") {
     }
 }
 
-TEST_CASE("CALLER::user", "[.cmd]") {
+TEST_CASE("CALLER::user", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     caller.call("user", {}, -1, GET);

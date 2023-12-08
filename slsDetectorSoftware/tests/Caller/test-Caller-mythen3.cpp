@@ -19,7 +19,7 @@ using test::PUT;
 
 /* dacs */
 
-TEST_CASE("Caller::Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs]") {
+TEST_CASE("Caller::Setting and reading back MYTHEN3 dacs", "[.cmdcall][.dacs]") {
     // vcassh, vth2, vshaper, vshaperneg, vipre_out, vth3, vth1,
     // vicin, vcas, vpreamp, vpl, vipre, viinsh, vph, vtrim, vdcsh,
 
@@ -184,7 +184,7 @@ TEST_CASE("Caller::Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs]") {
 
 /* acquisition */
 
-TEST_CASE("Caller::readout", "[.cmd]") {
+TEST_CASE("Caller::readout", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     // PUT only command
@@ -201,7 +201,7 @@ TEST_CASE("Caller::readout", "[.cmd]") {
 
 /* Mythen3 Specific */
 
-TEST_CASE("Caller::counters", "[.cmd]") {
+TEST_CASE("Caller::counters", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -233,7 +233,7 @@ TEST_CASE("Caller::counters", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::gates", "[.cmd]") {
+TEST_CASE("Caller::gates", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -263,7 +263,7 @@ TEST_CASE("Caller::gates", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::exptime1", "[.cmd]") {
+TEST_CASE("Caller::exptime1", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -292,7 +292,7 @@ TEST_CASE("Caller::exptime1", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::exptime2", "[.cmd]") {
+TEST_CASE("Caller::exptime2", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -321,7 +321,7 @@ TEST_CASE("Caller::exptime2", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::exptime3", "[.cmd]") {
+TEST_CASE("Caller::exptime3", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -350,7 +350,7 @@ TEST_CASE("Caller::exptime3", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::gatedelay", "[.cmd]") {
+TEST_CASE("Caller::gatedelay", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -386,7 +386,7 @@ TEST_CASE("Caller::gatedelay", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::gatedelay1", "[.cmd]") {
+TEST_CASE("Caller::gatedelay1", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -415,7 +415,7 @@ TEST_CASE("Caller::gatedelay1", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::gatedelay2", "[.cmd]") {
+TEST_CASE("Caller::gatedelay2", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -444,7 +444,7 @@ TEST_CASE("Caller::gatedelay2", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::gatedelay3", "[.cmd]") {
+TEST_CASE("Caller::gatedelay3", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -473,7 +473,7 @@ TEST_CASE("Caller::gatedelay3", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::polarity", "[.cmd]") {
+TEST_CASE("Caller::polarity", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     if (det.getDetectorType().squash() == defs::MYTHEN3) {
@@ -501,7 +501,7 @@ TEST_CASE("Caller::polarity", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::interpolation", "[.cmd]") {
+TEST_CASE("Caller::interpolation", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     if (det.getDetectorType().squash() == defs::MYTHEN3) {
@@ -555,7 +555,7 @@ TEST_CASE("Caller::interpolation", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::pumpprobe", "[.cmd]") {
+TEST_CASE("Caller::pumpprobe", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     if (det.getDetectorType().squash() == defs::MYTHEN3) {
@@ -632,7 +632,7 @@ TEST_CASE("Caller::pumpprobe", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::apulse", "[.cmd]") {
+TEST_CASE("Caller::apulse", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     if (det.getDetectorType().squash() == defs::MYTHEN3) {
@@ -660,7 +660,7 @@ TEST_CASE("Caller::apulse", "[.cmd]") {
     }
 }
 
-TEST_CASE("Caller::dpulse", "[.cmd]") {
+TEST_CASE("Caller::dpulse", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     if (det.getDetectorType().squash() == defs::MYTHEN3) {

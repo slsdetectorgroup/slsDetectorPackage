@@ -320,7 +320,7 @@ std::string CmdProxy::PackageVersion(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "\n\tPackage version (git branch)." << '\n';
+        os << "\n\tPackage version." << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
@@ -378,38 +378,6 @@ std::string CmdProxy::DetectorSize(int action) {
     }
     return os.str();
 }
-
-// std::string CmdProxy::DetectorSize(int action) {
-//     std::ostringstream os;
-//     os << cmd << ' ';
-//     if (action == defs::HELP_ACTION) {
-//         os << "[nx] [ny]\n\tDetector size, ie. Number of channels in x and y
-//         "
-//               "dim. This is used to calculate module coordinates included in
-//               " "UDP data. \n\tBy default, it adds module in y dimension for
-//               2d " "detectors and in x dimension for 1d detectors packet
-//               header."
-//            << '\n';
-//     } else if (action == defs::GET_ACTION) {
-//         if (!args.empty()) {
-//             WrongNumberOfParameters(0);
-//         }
-//         auto t = det->getDetectorSize();
-//         os << t << '\n';
-//     } else if (action == defs::PUT_ACTION) {
-//         if (args.size() != 2) {
-//             WrongNumberOfParameters(2);
-//         }
-//         defs::xy t;
-//         t.x = StringTo<int>(args[0]);
-//         t.y = StringTo<int>(args[1]);
-//         det->setDetectorSize(t);
-//         os << ToString(args) << '\n';
-//     } else {
-//         throw RuntimeError("Unknown action");
-//     }
-//     return os.str();
-// }
 
 std::string CmdProxy::Threshold(int action) {
     std::ostringstream os;
@@ -930,7 +898,7 @@ std::string CmdProxy::ClockPhase(int action) {
                                        ". Did you mean deg?");
                 }
                 auto t = det->getClockPhaseinDegrees(StringTo<int>(args[0]),
-                                                     {det_id});
+                                                     std::vector<int>{det_id});
                 os << OutString(t) << " deg\n";
             } else {
                 WrongNumberOfParameters(1);
@@ -1013,7 +981,7 @@ std::string CmdProxy::ClockDivider(int action) {
                 WrongNumberOfParameters(2);
             }
             det->setClockDivider(StringTo<int>(args[0]), StringTo<int>(args[1]),
-                                 {det_id});
+                                 std::vector<int>{det_id});
             os << args[1] << '\n';
         } else {
             throw RuntimeError("Unknown action");
@@ -1345,7 +1313,7 @@ std::string CmdProxy::DefaultDac(int action) {
             os << args[0] << ' ' << args[2] << ' ' << args[1] << '\n';
         } else {
             det->setDefaultDac(StringTo<defs::dacIndex>(args[0]),
-                               StringTo<int>(args[1]));
+                               StringTo<int>(args[1]), std::vector<int>{det_id});
             os << args[0] << ' ' << args[1] << '\n';
         }
     } else {
@@ -1414,7 +1382,7 @@ std::string CmdProxy::Scan(int action) {
         if (args.size() != 0) {
             WrongNumberOfParameters(0);
         }
-        auto t = det->getScan();
+        auto t = det->getScan(std::vector<int>{det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (det_id != -1) {
@@ -2239,7 +2207,7 @@ std::string CmdProxy::InjectChannel(int action) {
             WrongNumberOfParameters(2);
         }
         det->setInjectChannel(StringTo<int>(args[0]), StringTo<int>(args[1]),
-                              {det_id});
+                              std::vector<int>{det_id});
         os << ToString(args) << '\n';
     } else {
         throw RuntimeError("Unknown action");
@@ -2292,7 +2260,7 @@ std::string CmdProxy::VetoReference(int action) {
             WrongNumberOfParameters(2);
         }
         det->setVetoReference(StringTo<int>(args[0]), StringTo<int>(args[1]),
-                              {det_id});
+                              std::vector<int>{det_id});
         os << ToString(args) << '\n';
     } else {
         throw RuntimeError("Unknown action");
@@ -3062,7 +3030,7 @@ std::string CmdProxy::PatternWaitTime(int action) {
             os << OutString(t) << '\n';
         } else if (action == defs::PUT_ACTION) {
             uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
-            det->setPatternWaitTime(level, waittime, {det_id});
+            det->setPatternWaitTime(level, waittime, std::vector<int>{det_id});
             os << waittime << '\n';
         } else {
             throw RuntimeError("Unknown action");

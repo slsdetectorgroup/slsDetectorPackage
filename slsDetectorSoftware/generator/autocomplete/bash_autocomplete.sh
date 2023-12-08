@@ -1080,7 +1080,7 @@ __gatedelay1() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=""
+FCN_RETURN="ms ns s us"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
@@ -1097,7 +1097,7 @@ __gatedelay2() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=""
+FCN_RETURN="ms ns s us"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
@@ -1114,7 +1114,7 @@ __gatedelay3() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=""
+FCN_RETURN="ms ns s us"
 fi
 fi
 if [[ ${IS_GET} -eq 0 ]]; then
@@ -2691,11 +2691,6 @@ return 0
 }
 __udp_dstlist() {
 FCN_RETURN=""
-if [[ ${IS_GET} -eq 0 ]]; then
-if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=""
-fi
-fi
 return 0
 }
 __udp_dstmac() {
@@ -2801,6 +2796,7 @@ FCN_RETURN=""
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
+IS_PATH=1
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -2814,6 +2810,7 @@ FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
+IS_PATH=1
 fi
 if [[ "${cword}" == "3" ]]; then
 FCN_RETURN=""
@@ -3244,7 +3241,7 @@ return 0
   # if a command is written, autocomplete with the options
   # call the function for the command
 
-  if [[ "$SLS_COMMANDS" == *" ${COMP_WORDS[1]##*:} "* ]]; then
+  if [[ "$SLS_COMMANDS" == *"${words[1]##*:}"* ]]; then
       __"${words[1]##*:}"
   fi
 

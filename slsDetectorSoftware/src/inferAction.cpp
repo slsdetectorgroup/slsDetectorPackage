@@ -3935,18 +3935,8 @@ int InferAction::udp_dstip2() {
 
 int InferAction::udp_dstlist() {
 
-    if (args.size() == 0) {
-        return slsDetectorDefs::GET_ACTION;
-    }
-
-    if (args.size() == 1) {
-        return slsDetectorDefs::PUT_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
+    throw RuntimeError(
+        "det is disabled for command: udp_dstlist. Use detg or detp");
 }
 
 int InferAction::udp_dstmac() {

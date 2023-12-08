@@ -639,8 +639,8 @@ std::string Caller::adcphase(int action) {
                     "adcphase not implemented for this detector");
             }
             if (args[1] != "deg") {
-                throw RuntimeError("Unknown adcphase   2nd argument " +
-                                   args[1] + ". Did you    mean deg?");
+                throw RuntimeError("Unknown adcphase 2nd argument " + args[1] +
+                                   ". Did you mean deg?");
             }
             auto arg0 = StringTo<int>(args[0]);
             det->setADCPhaseInDegrees(arg0, std::vector<int>{det_id});
@@ -1082,7 +1082,7 @@ std::string Caller::blockingtrigger(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: blockingtrigger" << std::endl;
         os << R"V0G0N(
-	[Eiger][Mythen3][Jungfrau][Moench] Sends software trigger signal to detector )V0G0N"
+	[Eiger][Jungfrau][Moench] Sends software trigger signal to detector and blocks till the frames are sent out for that trigger. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -1240,9 +1240,9 @@ std::string Caller::bursts(int action) {
 
         if (args.size() == 1) {
             try {
-                StringTo<int>(args[0]);
+                StringTo<int64_t>(args[0]);
             } catch (...) {
-                throw RuntimeError("Could not convert argument 0 to int");
+                throw RuntimeError("Could not convert argument 0 to int64_t");
             }
         }
 
@@ -1267,7 +1267,7 @@ std::string Caller::bursts(int action) {
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute bursts at module level");
             }
-            auto arg0 = StringTo<int>(args[0]);
+            auto arg0 = StringTo<int64_t>(args[0]);
             det->setNumberOfBursts(arg0);
             os << args.front() << '\n';
         }
@@ -1349,9 +1349,6 @@ std::string Caller::bustest(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError("Cannot execute bustest at module level");
-            }
             det->executeBusTest(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -1592,9 +1589,6 @@ std::string Caller::clearroi(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError("Cannot execute clearroi at module level");
-            }
             det->clearROI(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -1728,7 +1722,7 @@ std::string Caller::clkdiv(int action) {
             }
             auto arg0 = StringTo<int>(args[0]);
             auto arg1 = StringTo<int>(args[1]);
-            det->setClockDivider(arg0, arg1, {det_id});
+            det->setClockDivider(arg0, arg1, std::vector<int>{det_id});
             os << args[1] << '\n';
         }
     }
@@ -1936,7 +1930,7 @@ std::string Caller::clkphase(int action) {
                 throw RuntimeError(
                     "clkphase not implemented for this detector.");
             }
-            if (args[1] != "deg") {
+            if (args[2] != "deg") {
                 throw RuntimeError("Cannot scan argument" + args[2] +
                                    ". Did you mean deg?");
             }
@@ -2339,8 +2333,7 @@ std::string Caller::dac(int action) {
                  !is_int(args[0]))
                     ? det->getDacIndex(args[0])
                     : StringTo<defs::dacIndex>(args[0]);
-            if (args.size() > 0 && action != defs::HELP_ACTION &&
-                is_int(args[0]) &&
+            if (is_int(args[0]) &&
                 det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
                 throw RuntimeError(
                     "Dac indices can only be used for chip test board. Use "
@@ -2348,7 +2341,7 @@ std::string Caller::dac(int action) {
             }
             auto arg1 = StringTo<bool>("0");
             auto t = det->getDAC(dacIndex, arg1, std::vector<int>{det_id});
-            os << OutString(t) << '\n';
+            os << args[0] << ' ' << OutString(t) << '\n';
         }
 
         if (args.size() == 2) {
@@ -2357,8 +2350,7 @@ std::string Caller::dac(int action) {
                  !is_int(args[0]))
                     ? det->getDacIndex(args[0])
                     : StringTo<defs::dacIndex>(args[0]);
-            if (args.size() > 0 && action != defs::HELP_ACTION &&
-                is_int(args[0]) &&
+            if (is_int(args[0]) &&
                 det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
                 throw RuntimeError(
                     "Dac indices can only be used for chip test board. Use "
@@ -2370,7 +2362,7 @@ std::string Caller::dac(int action) {
             }
             auto arg1 = StringTo<bool>("1");
             auto t = det->getDAC(dacIndex, arg1, std::vector<int>{det_id});
-            os << OutString(t) << " mV" << '\n';
+            os << args[0] << ' ' << OutString(t) << " mV" << '\n';
         }
     }
 
@@ -2381,8 +2373,7 @@ std::string Caller::dac(int action) {
                  !is_int(args[0]))
                     ? det->getDacIndex(args[0])
                     : StringTo<defs::dacIndex>(args[0]);
-            if (args.size() > 0 && action != defs::HELP_ACTION &&
-                is_int(args[0]) &&
+            if (is_int(args[0]) &&
                 det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
                 throw RuntimeError(
                     "Dac indices can only be used for chip test board. Use "
@@ -2400,8 +2391,7 @@ std::string Caller::dac(int action) {
                  !is_int(args[0]))
                     ? det->getDacIndex(args[0])
                     : StringTo<defs::dacIndex>(args[0]);
-            if (args.size() > 0 && action != defs::HELP_ACTION &&
-                is_int(args[0]) &&
+            if (is_int(args[0]) &&
                 det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
                 throw RuntimeError(
                     "Dac indices can only be used for chip test board. Use "
@@ -2683,7 +2673,7 @@ std::string Caller::datastream(int action) {
             auto arg0 = StringTo<defs::portPosition>(args[0]);
             auto arg1 = StringTo<bool>(args[1]);
             det->setDataStream(arg0, arg1, std::vector<int>{det_id});
-            os << args[0] << args[1] << '\n';
+            os << ToString(args) << '\n';
         }
     }
 
@@ -3060,7 +3050,7 @@ std::string Caller::defaultdac(int action) {
         if (args.size() == 2) {
             auto arg0 = StringTo<defs::dacIndex>(args[0]);
             auto arg1 = StringTo<int>(args[1]);
-            det->setDefaultDac(arg0, arg1);
+            det->setDefaultDac(arg0, arg1, std::vector<int>{det_id});
             os << args[0] << ' ' << args[1] << '\n';
         }
 
@@ -3108,10 +3098,6 @@ std::string Caller::defaultpattern(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute defaultpattern at module level");
-            }
             det->loadDefaultPattern(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -3216,7 +3202,7 @@ std::string Caller::delayl(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: delayl" << std::endl;
         os << R"V0G0N(
-	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] DelayLeft Delay Left in Acquisition. 
+	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Delay Left in Acquisition. 
 	[Gotthard2] only in continuous mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -3650,7 +3636,10 @@ std::string Caller::exptime(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: exptime" << std::endl;
-        os << R"V0G0N( )V0G0N" << std::endl;
+        os << R"V0G0N([duration] [(optional unit) ns|us|ms|s]
+	[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb] Exposure time
+	[Mythen3] Exposure time of all gate signals in auto and trigger mode (internal gating). To specify gate index, use exptime1, exptime2, exptime3. )V0G0N"
+           << std::endl;
         return os.str();
     }
 
@@ -3754,7 +3743,9 @@ std::string Caller::exptime1(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: exptime1" << std::endl;
-        os << R"V0G0N( )V0G0N" << std::endl;
+        os << R"V0G0N([n_value]
+	[Mythen3] Exposure time of gate signal 1 in auto and trigger mode (internal gating). )V0G0N"
+           << std::endl;
         return os.str();
     }
 
@@ -3822,46 +3813,23 @@ std::string Caller::exptime1(int action) {
         }
     }
 
-    auto detector_type = det->getDetectorType().squash();
     if (action == slsDetectorDefs::PUT_ACTION) {
-        if (detector_type == defs::MYTHEN3) {
-            if (args.size() == 1) {
-                int gateIndex = 0;
-                std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
-                auto converted_time = StringTo<time::ns>(tmp_time, unit);
-                det->setExptime(gateIndex, converted_time,
-                                std::vector<int>{det_id});
-                os << args[0] << '\n';
-            }
-
-            if (args.size() == 2) {
-                int gateIndex = 0;
-                auto converted_time = StringTo<time::ns>(args[0], args[1]);
-                det->setExptime(gateIndex, converted_time,
-                                std::vector<int>{det_id});
-                os << args[0] << args[1] << '\n';
-            }
-
+        if (args.size() == 1) {
+            int gateIndex = 0;
+            std::string tmp_time(args[0]);
+            std::string unit = RemoveUnit(tmp_time);
+            auto converted_time = StringTo<time::ns>(tmp_time, unit);
+            det->setExptime(gateIndex, converted_time,
+                            std::vector<int>{det_id});
+            os << args[0] << '\n';
         }
 
-        else {
-
-            if (args.size() == 1) {
-                int gateIndex = 0;
-                std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
-                auto converted_time = StringTo<time::ns>(tmp_time, unit);
-                det->setExptime(converted_time, std::vector<int>{det_id});
-                os << args[0] << '\n';
-            }
-
-            if (args.size() == 2) {
-                int gateIndex = 0;
-                auto converted_time = StringTo<time::ns>(args[0], args[1]);
-                det->setExptime(converted_time, std::vector<int>{det_id});
-                os << args[0] << args[1] << '\n';
-            }
+        if (args.size() == 2) {
+            int gateIndex = 0;
+            auto converted_time = StringTo<time::ns>(args[0], args[1]);
+            det->setExptime(gateIndex, converted_time,
+                            std::vector<int>{det_id});
+            os << args[0] << args[1] << '\n';
         }
     }
 
@@ -3874,7 +3842,9 @@ std::string Caller::exptime2(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: exptime2" << std::endl;
-        os << R"V0G0N( )V0G0N" << std::endl;
+        os << R"V0G0N([n_value]
+	[Mythen3] Exposure time of gate signal 2 in auto and trigger mode (internal gating). )V0G0N"
+           << std::endl;
         return os.str();
     }
 
@@ -3942,46 +3912,23 @@ std::string Caller::exptime2(int action) {
         }
     }
 
-    auto detector_type = det->getDetectorType().squash();
     if (action == slsDetectorDefs::PUT_ACTION) {
-        if (detector_type == defs::MYTHEN3) {
-            if (args.size() == 1) {
-                int gateIndex = 0;
-                std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
-                auto converted_time = StringTo<time::ns>(tmp_time, unit);
-                det->setExptime(gateIndex, converted_time,
-                                std::vector<int>{det_id});
-                os << args[0] << '\n';
-            }
-
-            if (args.size() == 2) {
-                int gateIndex = 0;
-                auto converted_time = StringTo<time::ns>(args[0], args[1]);
-                det->setExptime(gateIndex, converted_time,
-                                std::vector<int>{det_id});
-                os << args[0] << args[1] << '\n';
-            }
-
+        if (args.size() == 1) {
+            int gateIndex = 1;
+            std::string tmp_time(args[0]);
+            std::string unit = RemoveUnit(tmp_time);
+            auto converted_time = StringTo<time::ns>(tmp_time, unit);
+            det->setExptime(gateIndex, converted_time,
+                            std::vector<int>{det_id});
+            os << args[0] << '\n';
         }
 
-        else {
-
-            if (args.size() == 1) {
-                int gateIndex = 1;
-                std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
-                auto converted_time = StringTo<time::ns>(tmp_time, unit);
-                det->setExptime(converted_time, std::vector<int>{det_id});
-                os << args[0] << '\n';
-            }
-
-            if (args.size() == 2) {
-                int gateIndex = 1;
-                auto converted_time = StringTo<time::ns>(args[0], args[1]);
-                det->setExptime(converted_time, std::vector<int>{det_id});
-                os << args[0] << args[1] << '\n';
-            }
+        if (args.size() == 2) {
+            int gateIndex = 1;
+            auto converted_time = StringTo<time::ns>(args[0], args[1]);
+            det->setExptime(gateIndex, converted_time,
+                            std::vector<int>{det_id});
+            os << args[0] << args[1] << '\n';
         }
     }
 
@@ -3994,7 +3941,9 @@ std::string Caller::exptime3(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: exptime3" << std::endl;
-        os << R"V0G0N( )V0G0N" << std::endl;
+        os << R"V0G0N([n_value]
+	[Mythen3] Exposure time of gate signal 3 in auto and trigger mode (internal gating). )V0G0N"
+           << std::endl;
         return os.str();
     }
 
@@ -4062,46 +4011,23 @@ std::string Caller::exptime3(int action) {
         }
     }
 
-    auto detector_type = det->getDetectorType().squash();
     if (action == slsDetectorDefs::PUT_ACTION) {
-        if (detector_type == defs::MYTHEN3) {
-            if (args.size() == 1) {
-                int gateIndex = 0;
-                std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
-                auto converted_time = StringTo<time::ns>(tmp_time, unit);
-                det->setExptime(gateIndex, converted_time,
-                                std::vector<int>{det_id});
-                os << args[0] << '\n';
-            }
-
-            if (args.size() == 2) {
-                int gateIndex = 0;
-                auto converted_time = StringTo<time::ns>(args[0], args[1]);
-                det->setExptime(gateIndex, converted_time,
-                                std::vector<int>{det_id});
-                os << args[0] << args[1] << '\n';
-            }
-
+        if (args.size() == 1) {
+            int gateIndex = 2;
+            std::string tmp_time(args[0]);
+            std::string unit = RemoveUnit(tmp_time);
+            auto converted_time = StringTo<time::ns>(tmp_time, unit);
+            det->setExptime(gateIndex, converted_time,
+                            std::vector<int>{det_id});
+            os << args[0] << '\n';
         }
 
-        else {
-
-            if (args.size() == 1) {
-                int gateIndex = 2;
-                std::string tmp_time(args[0]);
-                std::string unit = RemoveUnit(tmp_time);
-                auto converted_time = StringTo<time::ns>(tmp_time, unit);
-                det->setExptime(converted_time, std::vector<int>{det_id});
-                os << args[0] << '\n';
-            }
-
-            if (args.size() == 2) {
-                int gateIndex = 2;
-                auto converted_time = StringTo<time::ns>(args[0], args[1]);
-                det->setExptime(converted_time, std::vector<int>{det_id});
-                os << args[0] << args[1] << '\n';
-            }
+        if (args.size() == 2) {
+            int gateIndex = 2;
+            auto converted_time = StringTo<time::ns>(args[0], args[1]);
+            det->setExptime(gateIndex, converted_time,
+                            std::vector<int>{det_id});
+            os << args[0] << args[1] << '\n';
         }
     }
 
@@ -4717,10 +4643,6 @@ std::string Caller::firmwaretest(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute firmwaretest at module level");
-            }
             det->executeFirmwareTest(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -6203,7 +6125,7 @@ std::string Caller::im_a(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredCurrent(defs::I_POWER_A,
                                              std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -6244,7 +6166,7 @@ std::string Caller::im_b(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredCurrent(defs::I_POWER_B,
                                              std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -6285,7 +6207,7 @@ std::string Caller::im_c(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredCurrent(defs::I_POWER_C,
                                              std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -6326,7 +6248,7 @@ std::string Caller::im_d(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredCurrent(defs::I_POWER_D,
                                              std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -6367,7 +6289,7 @@ std::string Caller::im_io(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredCurrent(defs::I_POWER_IO,
                                              std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -6571,7 +6493,7 @@ std::string Caller::inj_ch(int action) {
         if (args.size() == 2) {
             auto arg0 = StringTo<int>(args[0]);
             auto arg1 = StringTo<int>(args[1]);
-            det->setInjectChannel(arg0, arg1, {det_id});
+            det->setInjectChannel(arg0, arg1, std::vector<int>{det_id});
             os << ToString(args) << '\n';
         }
     }
@@ -7486,7 +7408,7 @@ std::string Caller::packageversion(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: packageversion" << std::endl;
         os << R"V0G0N(
-	Package version (git branch). )V0G0N"
+	Package version. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -7840,8 +7762,8 @@ std::string Caller::patlimits(int action) {
         auto arg2 = StringTo<int>(args[1]);
         det->setPatternLoopAddresses(arg0, arg1, arg2,
                                      std::vector<int>{det_id});
-        os << '[' << ToStringHex(StringTo<int>(args[0]), 4) << ", "
-           << ToStringHex(StringTo<int>(args[1]), 4) << ']' << '\n';
+        os << '[' << ToStringHex(arg1, 4) << ", " << ToStringHex(arg2, 4) << ']'
+           << '\n';
     }
 
     return os.str();
@@ -8483,10 +8405,6 @@ std::string Caller::patternstart(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute patternstart at module level");
-            }
             det->startPattern(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -8754,7 +8672,7 @@ std::string Caller::patwaittime(int action) {
         GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
                                   nPutArgs);
         uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
-        det->setPatternWaitTime(level, waittime, {det_id});
+        det->setPatternWaitTime(level, waittime, std::vector<int>{det_id});
         os << level << ' ' << waittime << '\n';
     }
 
@@ -8807,7 +8725,7 @@ std::string Caller::patwaittime0(int action) {
         GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
                                   nPutArgs);
         uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
-        det->setPatternWaitTime(level, waittime, {det_id});
+        det->setPatternWaitTime(level, waittime, std::vector<int>{det_id});
         os << waittime << '\n';
     }
 
@@ -8860,7 +8778,7 @@ std::string Caller::patwaittime1(int action) {
         GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
                                   nPutArgs);
         uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
-        det->setPatternWaitTime(level, waittime, {det_id});
+        det->setPatternWaitTime(level, waittime, std::vector<int>{det_id});
         os << waittime << '\n';
     }
 
@@ -8913,7 +8831,7 @@ std::string Caller::patwaittime2(int action) {
         GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
                                   nPutArgs);
         uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
-        det->setPatternWaitTime(level, waittime, {det_id});
+        det->setPatternWaitTime(level, waittime, std::vector<int>{det_id});
         os << waittime << '\n';
     }
 
@@ -9061,8 +8979,9 @@ pedestalmode [0]
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
             if (args[0] != "0") {
-                throw RuntimeError("Unknown argument " + args[0] +
-                                   ". Did you mean 0?");
+                throw RuntimeError(
+                    "Unknown argument " + args[0] +
+                    ". Did you mean 0 to disable pedestal mode?");
             }
             det->setPedestalMode(defs::pedestalParameters());
             os << ToString(args) << '\n';
@@ -10178,6 +10097,10 @@ std::string Caller::readoutspeed(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
+            if (det->getDetectorType().squash() == defs::CHIPTESTBOARD) {
+                throw RuntimeError(
+                    "ReadoutSpeed not implemented. Did you mean runclk?");
+            }
             auto arg0 = StringTo<defs::speedLevel>(args[0]);
             det->setReadoutSpeed(arg0, std::vector<int>{det_id});
             os << ToString(StringTo<defs::speedLevel>(args[0])) << '\n';
@@ -10259,10 +10182,6 @@ std::string Caller::rebootcontroller(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute rebootcontroller at module level");
-            }
             det->rebootController(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -10432,9 +10351,6 @@ std::string Caller::resetfpga(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError("Cannot execute resetfpga at module level");
-            }
             det->resetFPGA(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -11052,7 +10968,7 @@ std::string Caller::rx_frameindex(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: rx_frameindex" << std::endl;
         os << R"V0G0N(
-	Current frame index received for receiver during acquisition. )V0G0N"
+	Current frame index received for each port in receiver during acquisition. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -12421,7 +12337,7 @@ std::string Caller::scan(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            auto t = det->getScan();
+            auto t = det->getScan(std::vector<int>{det_id});
             os << OutString(t) << '\n';
         }
     }
@@ -12430,7 +12346,7 @@ std::string Caller::scan(int action) {
         if (args.size() == 1) {
             if (StringTo<int>(args[0]) != 0) {
                 throw RuntimeError("Unknown argument " + args[0] +
-                                   ". Did you mean 0?");
+                                   ". Did you mean 0 to disable scan?");
             }
             if (det_id != -1) {
                 throw RuntimeError("Cannot execute scan at module level");
@@ -13325,9 +13241,6 @@ std::string Caller::start(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError("Cannot execute start at module level");
-            }
             det->startDetector(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -13408,9 +13321,6 @@ std::string Caller::stop(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError("Cannot execute stop at module level");
-            }
             det->stopDetector(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -13819,7 +13729,7 @@ std::string Caller::sync(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: sync" << std::endl;
         os << R"V0G0N([0, 1]
-	[Jungfrau][Moench] Enables or disables synchronization between modules. )V0G0N"
+	[Jungfrau][Moench] Enables or disables synchronization between modules. Sync mode requires at least one master configured. Also requires flatband cabling between master and slave with termination board. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -14297,7 +14207,7 @@ std::string Caller::temp_fpgafr(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: temp_fpgafr" << std::endl;
         os << R"V0G0N([n_value]
-	[Eiger]Temperature of the left front end board fpga. )V0G0N"
+	[Eiger]Temperature of the right front end board fpga. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -15175,7 +15085,7 @@ std::string Caller::trimbits(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
-            det->loadTrimbits(args[0]);
+            det->loadTrimbits(args[0], std::vector<int>{det_id});
             os << args[0] << '\n';
         }
     }
@@ -15648,10 +15558,6 @@ std::string Caller::udp_cleardst(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute udp_cleardst at module level");
-            }
             det->clearUDPDestinations(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -15686,11 +15592,8 @@ std::string Caller::udp_dstlist(int action) {
     }
 
     else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (1 && args.size() != 1) {
+        if (0) {
             throw RuntimeError("Wrong number of arguments for action PUT");
-        }
-
-        if (args.size() == 1) {
         }
 
     }
@@ -15704,14 +15607,14 @@ std::string Caller::udp_dstlist(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
+            if (det_id == -1) {
+                throw RuntimeError(
+                    "Can execute udp_dstlist only at module level.");
+            }
             if (rx_id < 0 || rx_id >= MAX_UDP_DESTINATION) {
                 throw RuntimeError("Invalid receiver index " +
                                    std::to_string(rx_id) +
-                                   ".to set round robin entry.");
-            }
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute udp_dstlist at module level");
+                                   " to set round robin entry.");
             }
             auto t =
                 det->getDestinationUDPList(rx_id, std::vector<int>{det_id});
@@ -15720,18 +15623,19 @@ std::string Caller::udp_dstlist(int action) {
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        if (args.size() == 1) {
-            if (rx_id < 0 || rx_id >= MAX_UDP_DESTINATION) {
-                throw RuntimeError(
-                    "Invalid receiver index to set round robin entry.");
-            }
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute udp_dstlist at module level");
-            }
-            det->setDestinationUDPList(getUdpEntry(), det_id);
-            os << ToString(args) << '\n';
+        if (det_id == -1) {
+            throw RuntimeError("Can execute udp_dstlist only at module level.");
         }
+        if (rx_id < 0 || rx_id >= MAX_UDP_DESTINATION) {
+            throw RuntimeError("Invalid receiver index " +
+                               std::to_string(rx_id) +
+                               " to set round robin entry.");
+        }
+        if (args.empty()) {
+            throw RuntimeError("udp_dstlist require at least one argument.");
+        }
+        det->setDestinationUDPList(getUdpEntry(), det_id);
+        os << ToString(args) << '\n';
     }
 
     return os.str();
@@ -16126,10 +16030,6 @@ std::string Caller::udp_reconfigure(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute udp_reconfigure at module level");
-            }
             det->reconfigureUDPDestination(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -16285,10 +16185,6 @@ std::string Caller::udp_validate(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError(
-                    "Cannot execute udp_validate at module level");
-            }
             det->validateUDPConfiguration(std::vector<int>{det_id});
             os << "successful" << '\n';
         }
@@ -16982,7 +16878,7 @@ std::string Caller::vchip_comp_adc(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: vchip_comp_adc" << std::endl;
-        os << R"V0G0N([chip index 0-10, -1 for all][10 bit hex value] 
+        os << R"V0G0N([chip index 0-9, -1 for all][10 bit hex value] 
 	[Gotthard2] On chip Dac for comparator current of ADC. )V0G0N"
            << std::endl;
         return os.str();
@@ -17036,7 +16932,7 @@ std::string Caller::vchip_comp_adc(int action) {
             auto arg1 = StringTo<int>(args[0]);
             auto t = det->getOnChipDAC(defs::VB_COMP_ADC, arg1,
                                        std::vector<int>{det_id});
-            os << args[0] << OutStringHex(t) << '\n';
+            os << args[0] << ' ' << OutStringHex(t) << '\n';
         }
     }
 
@@ -17046,7 +16942,7 @@ std::string Caller::vchip_comp_adc(int action) {
             auto arg2 = StringTo<int>(args[1]);
             det->setOnChipDAC(defs::VB_COMP_ADC, arg1, arg2,
                               std::vector<int>{det_id});
-            os << args[0] << args[1] << '\n';
+            os << args[0] << ' ' << args[1] << '\n';
         }
     }
 
@@ -17059,7 +16955,7 @@ std::string Caller::vchip_comp_fe(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: vchip_comp_fe" << std::endl;
-        os << R"V0G0N([chip index 0-10, -1 for all][10 bit hex value] 
+        os << R"V0G0N([chip index 0-9, -1 for all][10 bit hex value] 
 	[Gotthard2] On chip Dac for comparator current of analogue front end. )V0G0N"
            << std::endl;
         return os.str();
@@ -17113,7 +17009,7 @@ std::string Caller::vchip_comp_fe(int action) {
             auto arg1 = StringTo<int>(args[0]);
             auto t = det->getOnChipDAC(defs::VB_COMP_FE, arg1,
                                        std::vector<int>{det_id});
-            os << args[0] << OutStringHex(t) << '\n';
+            os << args[0] << ' ' << OutStringHex(t) << '\n';
         }
     }
 
@@ -17123,7 +17019,7 @@ std::string Caller::vchip_comp_fe(int action) {
             auto arg2 = StringTo<int>(args[1]);
             det->setOnChipDAC(defs::VB_COMP_FE, arg1, arg2,
                               std::vector<int>{det_id});
-            os << args[0] << args[1] << '\n';
+            os << args[0] << ' ' << args[1] << '\n';
         }
     }
 
@@ -17136,7 +17032,7 @@ std::string Caller::vchip_cs(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: vchip_cs" << std::endl;
-        os << R"V0G0N([chip index 0-10, -1 for all][10 bit hex value] 
+        os << R"V0G0N([chip index 0-9, -1 for all][10 bit hex value] 
 	[Gotthard2] On chip Dac for current injection into preamplifier. )V0G0N"
            << std::endl;
         return os.str();
@@ -17190,7 +17086,7 @@ std::string Caller::vchip_cs(int action) {
             auto arg1 = StringTo<int>(args[0]);
             auto t =
                 det->getOnChipDAC(defs::VB_CS, arg1, std::vector<int>{det_id});
-            os << args[0] << OutStringHex(t) << '\n';
+            os << args[0] << ' ' << OutStringHex(t) << '\n';
         }
     }
 
@@ -17200,7 +17096,7 @@ std::string Caller::vchip_cs(int action) {
             auto arg2 = StringTo<int>(args[1]);
             det->setOnChipDAC(defs::VB_CS, arg1, arg2,
                               std::vector<int>{det_id});
-            os << args[0] << args[1] << '\n';
+            os << args[0] << ' ' << args[1] << '\n';
         }
     }
 
@@ -17213,7 +17109,7 @@ std::string Caller::vchip_opa_1st(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: vchip_opa_1st" << std::endl;
-        os << R"V0G0N([chip index 0-10, -1 for all][10 bit hex value] 
+        os << R"V0G0N([chip index 0-9, -1 for all][10 bit hex value] 
 	[Gotthard2] On chip Dac for opa current for driving the other DACs in chip. )V0G0N"
            << std::endl;
         return os.str();
@@ -17267,7 +17163,7 @@ std::string Caller::vchip_opa_1st(int action) {
             auto arg1 = StringTo<int>(args[0]);
             auto t = det->getOnChipDAC(defs::VB_OPA_1ST, arg1,
                                        std::vector<int>{det_id});
-            os << args[0] << OutStringHex(t) << '\n';
+            os << args[0] << ' ' << OutStringHex(t) << '\n';
         }
     }
 
@@ -17277,7 +17173,7 @@ std::string Caller::vchip_opa_1st(int action) {
             auto arg2 = StringTo<int>(args[1]);
             det->setOnChipDAC(defs::VB_OPA_1ST, arg1, arg2,
                               std::vector<int>{det_id});
-            os << args[0] << args[1] << '\n';
+            os << args[0] << ' ' << args[1] << '\n';
         }
     }
 
@@ -17290,7 +17186,7 @@ std::string Caller::vchip_opa_fd(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: vchip_opa_fd" << std::endl;
-        os << R"V0G0N([chip index 0-10, -1 for all][10 bit hex value] 
+        os << R"V0G0N([chip index 0-9, -1 for all][10 bit hex value] 
 	[Gotthard2] On chip Dac current for CDS opa stage. )V0G0N"
            << std::endl;
         return os.str();
@@ -17344,7 +17240,7 @@ std::string Caller::vchip_opa_fd(int action) {
             auto arg1 = StringTo<int>(args[0]);
             auto t = det->getOnChipDAC(defs::VB_OPA_FD, arg1,
                                        std::vector<int>{det_id});
-            os << args[0] << OutStringHex(t) << '\n';
+            os << args[0] << ' ' << OutStringHex(t) << '\n';
         }
     }
 
@@ -17354,7 +17250,7 @@ std::string Caller::vchip_opa_fd(int action) {
             auto arg2 = StringTo<int>(args[1]);
             det->setOnChipDAC(defs::VB_OPA_FD, arg1, arg2,
                               std::vector<int>{det_id});
-            os << args[0] << args[1] << '\n';
+            os << args[0] << ' ' << args[1] << '\n';
         }
     }
 
@@ -17367,7 +17263,7 @@ std::string Caller::vchip_ref_comp_fe(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: vchip_ref_comp_fe" << std::endl;
-        os << R"V0G0N([chip index 0-10, -1 for all][10 bit hex value] 
+        os << R"V0G0N([chip index 0-9, -1 for all][10 bit hex value] 
 	[Gotthard2] On chip Dac for reference voltage of the comparator of analogue front end. )V0G0N"
            << std::endl;
         return os.str();
@@ -17421,7 +17317,7 @@ std::string Caller::vchip_ref_comp_fe(int action) {
             auto arg1 = StringTo<int>(args[0]);
             auto t = det->getOnChipDAC(defs::VREF_COMP_FE, arg1,
                                        std::vector<int>{det_id});
-            os << args[0] << OutStringHex(t) << '\n';
+            os << args[0] << ' ' << OutStringHex(t) << '\n';
         }
     }
 
@@ -17431,7 +17327,7 @@ std::string Caller::vchip_ref_comp_fe(int action) {
             auto arg2 = StringTo<int>(args[1]);
             det->setOnChipDAC(defs::VREF_COMP_FE, arg1, arg2,
                               std::vector<int>{det_id});
-            os << args[0] << args[1] << '\n';
+            os << args[0] << ' ' << args[1] << '\n';
         }
     }
 
@@ -17569,6 +17465,7 @@ std::string Caller::vetoalg(int action) {
                     "Must specify an interface to set algorithm");
             }
             det->setVetoAlgorithm(alg, interface, std::vector<int>{det_id});
+            os << ToString(alg) << ' ' << ToString(interface) << '\n';
         }
     }
 
@@ -17581,7 +17478,7 @@ std::string Caller::vetofile(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: vetofile" << std::endl;
-        os << R"V0G0N([chip index 0-10, -1 for all] [file name] 
+        os << R"V0G0N([chip index 0-9, -1 for all] [file name] 
 	[Gotthard2] Set veto reference for each 128 channels for specific chip. The file should have 128 rows of gain index and 12 bit value in dec )V0G0N"
            << std::endl;
         return os.str();
@@ -17749,7 +17646,7 @@ std::string Caller::vetoref(int action) {
         if (args.size() == 2) {
             auto arg0 = StringTo<int>(args[0]);
             auto arg1 = StringTo<int>(args[1]);
-            det->setVetoReference(arg0, arg1, {det_id});
+            det->setVetoReference(arg0, arg1);
             os << ToString(args) << '\n';
         }
     }
@@ -17846,7 +17743,7 @@ std::string Caller::vm_a(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredPower(defs::V_POWER_A,
                                            std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -17887,7 +17784,7 @@ std::string Caller::vm_b(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredPower(defs::V_POWER_B,
                                            std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -17928,7 +17825,7 @@ std::string Caller::vm_c(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredPower(defs::V_POWER_C,
                                            std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -17969,7 +17866,7 @@ std::string Caller::vm_d(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredPower(defs::V_POWER_D,
                                            std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 
@@ -18010,7 +17907,7 @@ std::string Caller::vm_io(int action) {
         if (args.size() == 0) {
             auto t = det->getMeasuredPower(defs::V_POWER_IO,
                                            std::vector<int>{det_id});
-            os << OutString(t) << " °C" << '\n';
+            os << OutString(t) << '\n';
         }
     }
 

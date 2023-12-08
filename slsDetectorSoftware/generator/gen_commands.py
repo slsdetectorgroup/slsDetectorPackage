@@ -57,9 +57,12 @@ def generate(
             # print help
             codegen.write_line('// print help')
             with if_block('action == slsDetectorDefs::HELP_ACTION'):
-                codegen.write_line(f'os << "Command: {command_name}" << std::endl;')
-                codegen.write_line(f'os << R"V0G0N({command["help"]} )V0G0N" << std::endl;')
-                codegen.write_line('return os.str();')
+                if command["help"].startswith('code:'):
+                    codegen.write_line(command["help"].strip('code:'))
+                else:
+                    codegen.write_line(f'os << "Command: {command_name}" << std::endl;')
+                    codegen.write_line(f'os << R"V0G0N({command["help"]} )V0G0N" << std::endl;')
+                    codegen.write_line('return os.str();')
 
             # check if action and arguments are valid
 

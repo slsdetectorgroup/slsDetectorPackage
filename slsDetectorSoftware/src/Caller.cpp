@@ -2237,9 +2237,7 @@ std::string Caller::dac(int action) {
     std::ostringstream os;
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
-        os << "Command: dac" << std::endl;
-        os << R"V0G0N( )V0G0N" << std::endl;
-        return os.str();
+        return GetHelpDacWrapper(cmd, args);
     }
 
     // check if action and arguments are valid

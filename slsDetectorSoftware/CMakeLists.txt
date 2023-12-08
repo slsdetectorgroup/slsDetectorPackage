@@ -4,6 +4,7 @@ set(SOURCES
     src/DetectorImpl.cpp 
     src/Module.cpp 
     src/Detector.cpp
+    src/HelpDacs.cpp
     src/CmdProxy.cpp
     src/CmdParser.cpp
     src/Pattern.cpp

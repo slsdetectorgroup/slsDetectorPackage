@@ -17,7 +17,8 @@ using test::PUT;
 
 /* dacs */
 
-TEST_CASE("Caller::Setting and reading back Jungfrau dacs", "[.cmdcall][.dacs]") {
+TEST_CASE("Caller::Setting and reading back Jungfrau dacs",
+          "[.cmdcall][.dacs]") {
     // vb_comp, vdd_prot, vin_com, vref_prech, vb_pixbuf, vb_ds, vref_ds,
     // vref_comp
     Detector det;

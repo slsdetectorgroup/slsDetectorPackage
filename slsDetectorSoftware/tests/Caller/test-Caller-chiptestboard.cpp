@@ -370,8 +370,8 @@ TEST_CASE("CALLER::slowadcvalues", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::CHIPTESTBOARD) {
-    REQUIRE_NOTHROW(caller.call("slowadcvalues", {}, -1, GET));
-    REQUIRE_THROWS(caller.call("slowadcvalues", {}, -1, PUT));
+        REQUIRE_NOTHROW(caller.call("slowadcvalues", {}, -1, GET));
+        REQUIRE_THROWS(caller.call("slowadcvalues", {}, -1, PUT));
     } else {
         REQUIRE_THROWS(caller.call("slowadcvalues", {}, -1, GET));
     }

@@ -30,10 +30,16 @@ TEST_CASE("Caller::Setting and reading back moench dacs", "[.cmdcall][.dacs]") {
         SECTION("vipre") { test_dac_caller(defs::VIPRE, "vipre", 1000); }
         SECTION("vin_cm") { test_dac_caller(defs::VIN_CM, "vin_cm", 1400); }
         SECTION("vb_sda") { test_dac_caller(defs::VB_SDA, "vb_sda", 680); }
-        SECTION("vcasc_sfp") { test_dac_caller(defs::VCASC_SFP, "vcasc_sfp", 1428); }
+        SECTION("vcasc_sfp") {
+            test_dac_caller(defs::VCASC_SFP, "vcasc_sfp", 1428);
+        }
         SECTION("vout_cm") { test_dac_caller(defs::VOUT_CM, "vout_cm", 1200); }
-        SECTION("vipre_cds") { test_dac_caller(defs::VIPRE_CDS, "vipre_cds", 800); }
-        SECTION("ibias_sfp") { test_dac_caller(defs::IBIAS_SFP, "ibias_sfp", 900); }
+        SECTION("vipre_cds") {
+            test_dac_caller(defs::VIPRE_CDS, "vipre_cds", 800);
+        }
+        SECTION("ibias_sfp") {
+            test_dac_caller(defs::IBIAS_SFP, "ibias_sfp", 900);
+        }
         // eiger
         REQUIRE_THROWS(caller.call("vthreshold", {}, -1, GET));
         REQUIRE_THROWS(caller.call("vsvp", {}, -1, GET));

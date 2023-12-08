@@ -19,7 +19,8 @@ using test::PUT;
 
 /* dacs */
 
-TEST_CASE("Caller::Setting and reading back GOTTHARD dacs", "[.cmdcall][.dacs]") {
+TEST_CASE("Caller::Setting and reading back GOTTHARD dacs",
+          "[.cmdcall][.dacs]") {
     // vref_ds, vcascn_pb, vcascp_pb, vout_cm, vcasc_out, vin_cm, vref_comp,
     // ib_test_c
 

@@ -1313,7 +1313,8 @@ std::string CmdProxy::DefaultDac(int action) {
             os << args[0] << ' ' << args[2] << ' ' << args[1] << '\n';
         } else {
             det->setDefaultDac(StringTo<defs::dacIndex>(args[0]),
-                               StringTo<int>(args[1]), std::vector<int>{det_id});
+                               StringTo<int>(args[1]),
+                               std::vector<int>{det_id});
             os << args[0] << ' ' << args[1] << '\n';
         }
     } else {

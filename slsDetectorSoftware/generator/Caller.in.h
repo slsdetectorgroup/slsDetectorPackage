@@ -79,7 +79,7 @@ class Caller {
 
     StringMap depreciated_functions{
 
-    // THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (3)
+        // THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (3)
 
     };
 };

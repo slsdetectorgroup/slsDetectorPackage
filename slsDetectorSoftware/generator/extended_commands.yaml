@@ -1835,7 +1835,9 @@ dac:
         store_result_in_t: false
   command_name: dac
   function_alias: dac
-  help: ''
+  help: 'code: return GetHelpDacWrapper(cmd, args);
+
+    '
   infer_action: true
 dacindex:
   actions:

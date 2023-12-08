@@ -2974,10 +2974,10 @@ std::string Caller::defaultdac(int action) {
                     "Could not convert argument 0 to defs::dacIndex");
             }
             try {
-                StringTo<slsDetectorDefs::detectorSettings>(args[1]);
+                StringTo<defs::detectorSettings>(args[1]);
             } catch (...) {
-                throw RuntimeError("Could not convert argument 1 to "
-                                   "slsDetectorDefs::detectorSettings");
+                throw RuntimeError(
+                    "Could not convert argument 1 to defs::detectorSettings");
             }
         }
 
@@ -3015,10 +3015,10 @@ std::string Caller::defaultdac(int action) {
                 throw RuntimeError("Could not convert argument 1 to int");
             }
             try {
-                StringTo<slsDetectorDefs::detectorSettings>(args[2]);
+                StringTo<defs::detectorSettings>(args[2]);
             } catch (...) {
-                throw RuntimeError("Could not convert argument 2 to "
-                                   "slsDetectorDefs::detectorSettings");
+                throw RuntimeError(
+                    "Could not convert argument 2 to defs::detectorSettings");
             }
         }
 
@@ -3040,7 +3040,7 @@ std::string Caller::defaultdac(int action) {
 
         if (args.size() == 2) {
             auto arg0 = StringTo<defs::dacIndex>(args[0]);
-            auto arg1 = StringTo<slsDetectorDefs::detectorSettings>(args[1]);
+            auto arg1 = StringTo<defs::detectorSettings>(args[1]);
             auto t = det->getDefaultDac(arg0, arg1, std::vector<int>{det_id});
             os << args[0] << ' ' << args[1] << ' ' << OutString(t) << '\n';
         }
@@ -3057,7 +3057,7 @@ std::string Caller::defaultdac(int action) {
         if (args.size() == 3) {
             auto arg0 = StringTo<defs::dacIndex>(args[0]);
             auto arg1 = StringTo<int>(args[1]);
-            auto arg2 = StringTo<slsDetectorDefs::detectorSettings>(args[2]);
+            auto arg2 = StringTo<defs::detectorSettings>(args[2]);
             det->setDefaultDac(arg0, arg1, arg2, std::vector<int>{det_id});
             os << args[0] << ' ' << args[2] << ' ' << args[1] << '\n';
         }
@@ -4320,10 +4320,10 @@ std::string Caller::extsig(int action) {
                 throw RuntimeError("Could not convert argument 0 to int");
             }
             try {
-                StringTo<slsDetectorDefs::externalSignalFlag>(args[1]);
+                StringTo<defs::externalSignalFlag>(args[1]);
             } catch (...) {
-                throw RuntimeError("Could not convert argument 1 to "
-                                   "slsDetectorDefs::externalSignalFlag");
+                throw RuntimeError(
+                    "Could not convert argument 1 to defs::externalSignalFlag");
             }
         }
 
@@ -4348,7 +4348,7 @@ std::string Caller::extsig(int action) {
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
             auto arg0 = StringTo<int>(args[0]);
-            auto arg1 = StringTo<slsDetectorDefs::externalSignalFlag>(args[1]);
+            auto arg1 = StringTo<defs::externalSignalFlag>(args[1]);
             det->setExternalSignalFlags(arg0, arg1, std::vector<int>{det_id});
             os << args[0] << ' ' << args[1] << '\n';
         }
@@ -4387,10 +4387,10 @@ std::string Caller::fformat(int action) {
 
         if (args.size() == 1) {
             try {
-                StringTo<slsDetectorDefs::fileFormat>(args[0]);
+                StringTo<defs::fileFormat>(args[0]);
             } catch (...) {
-                throw RuntimeError("Could not convert argument 0 to "
-                                   "slsDetectorDefs::fileFormat");
+                throw RuntimeError(
+                    "Could not convert argument 0 to defs::fileFormat");
             }
         }
 
@@ -4412,7 +4412,7 @@ std::string Caller::fformat(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
-            auto arg0 = StringTo<slsDetectorDefs::fileFormat>(args[0]);
+            auto arg0 = StringTo<defs::fileFormat>(args[0]);
             det->setFileFormat(arg0, std::vector<int>{det_id});
             os << args.front() << '\n';
         }
@@ -5371,10 +5371,10 @@ std::string Caller::gainmode(int action) {
 
         if (args.size() == 1) {
             try {
-                StringTo<slsDetectorDefs::gainMode>(args[0]);
+                StringTo<defs::gainMode>(args[0]);
             } catch (...) {
-                throw RuntimeError("Could not convert argument 0 to "
-                                   "slsDetectorDefs::gainMode");
+                throw RuntimeError(
+                    "Could not convert argument 0 to defs::gainMode");
             }
         }
 
@@ -5396,7 +5396,7 @@ std::string Caller::gainmode(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
-            auto arg0 = StringTo<slsDetectorDefs::gainMode>(args[0]);
+            auto arg0 = StringTo<defs::gainMode>(args[0]);
             det->setGainMode(arg0, std::vector<int>{det_id});
             os << args.front() << '\n';
         }
@@ -10455,10 +10455,10 @@ std::string Caller::romode(int action) {
 
         if (args.size() == 1) {
             try {
-                StringTo<slsDetectorDefs::readoutMode>(args[0]);
+                StringTo<defs::readoutMode>(args[0]);
             } catch (...) {
-                throw RuntimeError("Could not convert argument 0 to "
-                                   "slsDetectorDefs::readoutMode");
+                throw RuntimeError(
+                    "Could not convert argument 0 to defs::readoutMode");
             }
         }
 
@@ -10480,7 +10480,7 @@ std::string Caller::romode(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
-            auto arg0 = StringTo<slsDetectorDefs::readoutMode>(args[0]);
+            auto arg0 = StringTo<defs::readoutMode>(args[0]);
             det->setReadoutMode(arg0, std::vector<int>{det_id});
             os << args.front() << '\n';
         }
@@ -10864,10 +10864,10 @@ std::string Caller::rx_discardpolicy(int action) {
 
         if (args.size() == 1) {
             try {
-                StringTo<slsDetectorDefs::frameDiscardPolicy>(args[0]);
+                StringTo<defs::frameDiscardPolicy>(args[0]);
             } catch (...) {
-                throw RuntimeError("Could not convert argument 0 to "
-                                   "slsDetectorDefs::frameDiscardPolicy");
+                throw RuntimeError(
+                    "Could not convert argument 0 to defs::frameDiscardPolicy");
             }
         }
 
@@ -10889,7 +10889,7 @@ std::string Caller::rx_discardpolicy(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
-            auto arg0 = StringTo<slsDetectorDefs::frameDiscardPolicy>(args[0]);
+            auto arg0 = StringTo<defs::frameDiscardPolicy>(args[0]);
             det->setRxFrameDiscardPolicy(arg0, std::vector<int>{det_id});
             os << args.front() << '\n';
         }
@@ -12619,10 +12619,10 @@ std::string Caller::settings(int action) {
 
         if (args.size() == 1) {
             try {
-                StringTo<slsDetectorDefs::detectorSettings>(args[0]);
+                StringTo<defs::detectorSettings>(args[0]);
             } catch (...) {
-                throw RuntimeError("Could not convert argument 0 to "
-                                   "slsDetectorDefs::detectorSettings");
+                throw RuntimeError(
+                    "Could not convert argument 0 to defs::detectorSettings");
             }
         }
 
@@ -12644,7 +12644,7 @@ std::string Caller::settings(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
-            auto arg0 = StringTo<slsDetectorDefs::detectorSettings>(args[0]);
+            auto arg0 = StringTo<defs::detectorSettings>(args[0]);
             det->setSettings(arg0, std::vector<int>{det_id});
             os << args.front() << '\n';
         }
@@ -14621,10 +14621,10 @@ std::string Caller::timing(int action) {
 
         if (args.size() == 1) {
             try {
-                StringTo<slsDetectorDefs::timingMode>(args[0]);
+                StringTo<defs::timingMode>(args[0]);
             } catch (...) {
-                throw RuntimeError("Could not convert argument 0 to "
-                                   "slsDetectorDefs::timingMode");
+                throw RuntimeError(
+                    "Could not convert argument 0 to defs::timingMode");
             }
         }
 
@@ -14646,7 +14646,7 @@ std::string Caller::timing(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
-            auto arg0 = StringTo<slsDetectorDefs::timingMode>(args[0]);
+            auto arg0 = StringTo<defs::timingMode>(args[0]);
             det->setTimingMode(arg0, std::vector<int>{det_id});
             os << args.front() << '\n';
         }
@@ -14725,10 +14725,10 @@ std::string Caller::timingsource(int action) {
 
         if (args.size() == 1) {
             try {
-                StringTo<slsDetectorDefs::timingSourceType>(args[0]);
+                StringTo<defs::timingSourceType>(args[0]);
             } catch (...) {
-                throw RuntimeError("Could not convert argument 0 to "
-                                   "slsDetectorDefs::timingSourceType");
+                throw RuntimeError(
+                    "Could not convert argument 0 to defs::timingSourceType");
             }
         }
 
@@ -14750,7 +14750,7 @@ std::string Caller::timingsource(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
-            auto arg0 = StringTo<slsDetectorDefs::timingSourceType>(args[0]);
+            auto arg0 = StringTo<defs::timingSourceType>(args[0]);
             det->setTimingSource(arg0, std::vector<int>{det_id});
             os << args.front() << '\n';
         }

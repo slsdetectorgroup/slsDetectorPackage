@@ -641,7 +641,7 @@ settings:
       function: getSettings
     PUT:
       function: setSettings
-      input_types: [ slsDetectorDefs::detectorSettings ]
+      input_types: [ defs::detectorSettings ]
 
 trimval:
   help: "[n_trimval]\n\t[Eiger][Mythen3] All trimbits set to this value. Returns -1 if all trimbits are different values."
@@ -688,7 +688,7 @@ timing:
       function: getTimingMode
     PUT:
       function: setTimingMode
-      input_types: [ slsDetectorDefs::timingMode ]
+      input_types: [ defs::timingMode ]
       
 highvoltage:
   help: "[n_value]\n\tHigh voltage to the sensor in Voltage. \n\t[Gotthard] [0|90|110|120|150|180|200] \n\t[Eiger][Mythen3][Gotthard2] 0-200 \n\t[Jungfrau][Moench][Ctb] [0|60-200]"
@@ -916,7 +916,7 @@ rx_discardpolicy:
       function: getRxFrameDiscardPolicy
     PUT:
       function: setRxFrameDiscardPolicy
-      input_types: [ slsDetectorDefs::frameDiscardPolicy ]
+      input_types: [ defs::frameDiscardPolicy ]
 
 rx_padding:
   help: "[0, 1]\n\tPartial frames padding enable in the receiver. Default: enabled. Disabling is fastest."
@@ -965,7 +965,7 @@ fformat:
       function: getFileFormat
     PUT:
       function: setFileFormat
-      input_types: [ slsDetectorDefs::fileFormat ]
+      input_types: [ defs::fileFormat ]
 
 findex:
   help: "[n_value]\n\tFile or Acquisition index."
@@ -1154,7 +1154,7 @@ gainmode:
       function: getGainMode
     PUT:
       function: setGainMode
-      input_types: [ slsDetectorDefs::gainMode ]
+      input_types: [ defs::gainMode ]
 
 filtercells:
   help: "[0-12]\n\t[Jungfrau] Set Filter Cell. Only for chipv1.1. Advanced user Command"
@@ -1183,7 +1183,7 @@ timingsource:
       function: getTimingSource
     PUT:
       function: setTimingSource
-      input_types: [ slsDetectorDefs::timingSourceType ]
+      input_types: [ defs::timingSourceType ]
 
 veto:
   help: "[0, 1]\n\t[Gotthard2] Enable or disable veto data data from chip. Default is 0."
@@ -1307,7 +1307,7 @@ romode:
       function: getReadoutMode
     PUT:
       function: setReadoutMode
-      input_types: [ slsDetectorDefs::readoutMode ]
+      input_types: [ defs::readoutMode ]
 
 dbitclk:
   help: "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz."
@@ -3140,7 +3140,7 @@ extsig:
       require_det_id: true
       function: setExternalSignalFlags
       input: [ 'args[0]', 'args[1]' ]
-      input_types: [ int, slsDetectorDefs::externalSignalFlag ]
+      input_types: [ int, defs::externalSignalFlag ]
       cast_input: [ true, true ]
       output: [ 'args[0]', "' '", 'args[1]' ]
 
@@ -3228,7 +3228,7 @@ defaultdac:
         - argc: 2
           input: [ "args[0]", "args[1]" ]
           cast_input: [ true, true ]
-          input_types: [ defs::dacIndex, slsDetectorDefs::detectorSettings ]
+          input_types: [ defs::dacIndex, defs::detectorSettings ]
           output: [ "args[0]", "' '", "args[1]", "' '", OutString(t) ]
     PUT:
       function: setDefaultDac
@@ -3243,7 +3243,7 @@ defaultdac:
         - argc: 3
           cast_input: [ true, true, true ]
           input: [ "args[0]", "args[1]", "args[2]" ]
-          input_types: [ defs::dacIndex, int, slsDetectorDefs::detectorSettings ]
+          input_types: [ defs::dacIndex, int, defs::detectorSettings ]
           output: [ "args[0]", "' '", "args[2]", "' '", "args[1]" ]
 
 rx_status:

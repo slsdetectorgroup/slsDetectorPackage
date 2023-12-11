@@ -396,6 +396,7 @@ fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
+IS_PATH=1
 fi
 fi
 return 0
@@ -1308,6 +1309,7 @@ fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
+IS_PATH=1
 fi
 fi
 return 0
@@ -2072,6 +2074,7 @@ fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
+IS_PATH=1
 fi
 fi
 return 0

@@ -267,6 +267,7 @@ EXECUTE_SET_COMMAND_NOID_1ARG:
       argc: 1
       input: [ 'args[0]' ]
       cast_input: [ false ]
+      arg_types: [special::path]
       input_types: [ std::string ]
       output: [ 'args.front()' ]
 

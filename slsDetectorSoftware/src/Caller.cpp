@@ -3057,7 +3057,7 @@ std::string Caller::defaultdac(int action) {
             auto arg1 = StringTo<int>(args[1]);
             auto arg2 = StringTo<defs::detectorSettings>(args[2]);
             det->setDefaultDac(arg0, arg1, arg2, std::vector<int>{det_id});
-            os << args[0] << ' ' << args[1] << ' ' << args[2] << '\n';
+            os << args[0] << ' ' << args[2] << ' ' << args[1] << '\n';
         }
     }
 

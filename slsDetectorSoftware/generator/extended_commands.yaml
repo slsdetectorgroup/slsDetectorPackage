@@ -2349,9 +2349,9 @@ defaultdac:
         output:
         - args[0]
         - ''' '''
-        - args[1]
-        - ''' '''
         - args[2]
+        - ''' '''
+        - args[1]
         require_det_id: true
         store_result_in_t: false
   command_name: defaultdac

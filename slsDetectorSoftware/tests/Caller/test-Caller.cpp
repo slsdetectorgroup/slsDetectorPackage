@@ -1387,9 +1387,9 @@ TEST_CASE("CALLER::clkdiv", "[.cmdcall]") {
         {
             std::ostringstream oss1, oss2;
             caller.call("clkdiv", {"0", "3"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "clkdiv 3\n");
+            REQUIRE(oss1.str() == "clkdiv 0 3\n");
             caller.call("clkdiv", {"0"}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "clkdiv 3\n");
+            REQUIRE(oss2.str() == "clkdiv 0 3\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setClockDivider(0, prev_val[i], {i});

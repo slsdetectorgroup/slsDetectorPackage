@@ -3106,7 +3106,7 @@ clkdiv:
       input: [ 'args[0]' ]
       input_types: [ int ]
       cast_input: [ true ]
-      output: [ OutString(t) ]
+      output: [ 'args[0]', "' '", OutString(t) ]
     PUT:
       extra_variables:
         - name: type
@@ -3122,7 +3122,7 @@ clkdiv:
       input: [ 'args[0]', 'args[1]']
       input_types: [ int, int ]
       cast_input: [ true, true ]
-      output: [ 'args[1]' ]
+      output: [ 'args[0]', "' '", 'args[1]' ]
 
 extsig:
   help: "[n_signal] [signal_type]\n\t[Gotthard][Mythen3] External signal mode for trigger timing mode.\n\t[Gotthard] [0] [trigger_in_rising_edge|trigger_in_falling_edge]\n\t[Mythen3] [0-7] [trigger_in_rising_edge|trigger_in_falling_edge|inversion_on|inversion_off]\n\t where 0 is master input trigger signal, 1-3 is master input gate signals, 4 is busy out signal and 5-7 is master output gate signals."
@@ -3244,7 +3244,7 @@ defaultdac:
           cast_input: [ true, true, true ]
           input: [ "args[0]", "args[1]", "args[2]" ]
           input_types: [ defs::dacIndex, int, defs::detectorSettings ]
-          output: [ "args[0]", "' '", "args[2]", "' '", "args[1]" ]
+          output: [ "args[0]", "' '", "args[1]", "' '", "args[2]" ]
 
 rx_status:
   help: "[running, idle, transmitting]\n\tReceiver listener status."

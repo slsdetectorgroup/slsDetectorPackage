@@ -1199,6 +1199,8 @@ clkdiv:
         input_types:
         - int
         output:
+        - args[0]
+        - ''' '''
         - OutString(t)
         require_det_id: true
         store_result_in_t: true
@@ -1228,6 +1230,8 @@ clkdiv:
         - int
         - int
         output:
+        - args[0]
+        - ''' '''
         - args[1]
         require_det_id: true
         store_result_in_t: false
@@ -2345,9 +2349,9 @@ defaultdac:
         output:
         - args[0]
         - ''' '''
-        - args[2]
-        - ''' '''
         - args[1]
+        - ''' '''
+        - args[2]
         require_det_id: true
         store_result_in_t: false
   command_name: defaultdac

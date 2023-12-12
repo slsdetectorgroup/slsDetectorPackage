@@ -72,7 +72,7 @@ uint64_t getFirmwareVersion() {
 #ifdef VIRTUAL
     return REQRD_FRMWRE_VRSN;
 #endif
-    return ((bus_r(FPGAVERSION1REG) & COMPDATE_MSK) >> COMPDATE_OFST);
+    return ((bus_r(FPGAVERSIONREG) & COMPDATE_MSK) >> COMPDATE_OFST);
 }
 
 

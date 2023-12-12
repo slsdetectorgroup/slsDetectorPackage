@@ -96,6 +96,7 @@ class InferAction {
     int frames();
     int framesl();
     int frametime();
+    int free();
     int fwrite();
     int gaincaps();
     int gainmode();
@@ -428,6 +429,7 @@ class InferAction {
         {"frames", &InferAction::frames},
         {"framesl", &InferAction::framesl},
         {"frametime", &InferAction::frametime},
+        {"free", &InferAction::free},
         {"fwrite", &InferAction::fwrite},
         {"gaincaps", &InferAction::gaincaps},
         {"gainmode", &InferAction::gainmode},

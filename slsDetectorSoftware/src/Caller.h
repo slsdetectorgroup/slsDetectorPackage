@@ -141,6 +141,7 @@ class Caller {
     std::string frames(int action);
     std::string framesl(int action);
     std::string frametime(int action);
+    std::string free(int action);
     std::string fwrite(int action);
     std::string gaincaps(int action);
     std::string gainmode(int action);
@@ -482,6 +483,7 @@ class Caller {
         {"frames", &Caller::frames},
         {"framesl", &Caller::framesl},
         {"frametime", &Caller::frametime},
+        {"free", &Caller::free},
         {"fwrite", &Caller::fwrite},
         {"gaincaps", &Caller::gaincaps},
         {"gainmode", &Caller::gainmode},

@@ -2838,14 +2838,8 @@ int InferAction::rx_start() {
 
 int InferAction::rx_status() {
 
-    if (args.size() == 0) {
-        return slsDetectorDefs::GET_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
+    throw RuntimeError(
+        "det is disabled for command: rx_status. Use detg or detp");
 }
 
 int InferAction::rx_stop() {
@@ -3266,14 +3260,7 @@ int InferAction::start() {
 
 int InferAction::status() {
 
-    if (args.size() == 0) {
-        return slsDetectorDefs::GET_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
+    throw RuntimeError("det is disabled for command: status. Use detg or detp");
 }
 
 int InferAction::stop() {
@@ -4437,14 +4424,8 @@ int InferAction::vetoalg() {
 
 int InferAction::vetofile() {
 
-    if (args.size() == 2) {
-        return slsDetectorDefs::PUT_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
+    throw RuntimeError(
+        "det is disabled for command: vetofile. Use detg or detp");
 }
 
 int InferAction::vetophoton() {
@@ -4465,14 +4446,8 @@ int InferAction::vetophoton() {
 
 int InferAction::vetoref() {
 
-    if (args.size() == 2) {
-        return slsDetectorDefs::PUT_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
+    throw RuntimeError(
+        "det is disabled for command: vetoref. Use detg or detp");
 }
 
 int InferAction::vetostream() {

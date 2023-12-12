@@ -192,10 +192,13 @@ class CodeGenerator:
 
             input_arguments = ", ".join(input_arguments)
             # call function
-            if arg['store_result_in_t']:
-                self.write_line(f'auto t = det->{arg["function"]}({input_arguments});')
+            if arg["function"]:
+                if arg['store_result_in_t']:
+                    self.write_line(f'auto t = det->{arg["function"]}({input_arguments});')
+                else:
+                    self.write_line(f'det->{arg["function"]}({input_arguments});')
             else:
-                self.write_line(f'det->{arg["function"]}({input_arguments});')
+                pass #We have no function so skip block
 
             output_args = []
             for output in arg['output']:

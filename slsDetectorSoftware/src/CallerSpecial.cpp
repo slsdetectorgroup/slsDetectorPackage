@@ -170,6 +170,11 @@ void Caller::GetLevelAndUpdateArgIndex(int action,
     }
 }
 
+std::string Caller::free(int action) {
+    // This  function is purely for help, actual functionality is in the caller
+    return "free\n\tFree detector shared memory\n";
+}
+
 std::string Caller::hostname(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {

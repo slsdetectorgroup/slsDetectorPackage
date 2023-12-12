@@ -2438,6 +2438,14 @@ signalindex:
 
 ######################### description only commands #############################
 ## code is generated for these commands
+free:
+  is_description: true
+  actions:
+    GET:
+      argc: 0
+    PUT:
+      argc: 0
+
 hostname:
   is_description: true
   actions:

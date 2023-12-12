@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cassert>
+#include <cstdint>
 #include <cstring>
 #include <string>
 #include <utility>
@@ -60,6 +61,6 @@ bool is_int(const std::string &s);
 bool replace_first(std::string *s, const std::string &substr,
                    const std::string &repl);
 
-std::pair<std::string, int> ParseHostPort(const std::string &s);
+std::pair<std::string, uint16_t> ParseHostPort(const std::string &s);
 
 } // namespace sls

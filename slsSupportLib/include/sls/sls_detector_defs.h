@@ -30,8 +30,8 @@
 // C includes
 #include <stdint.h>
 #endif
-//Need macros for C compatibility
-//NOLINTBEGIN(cppcoreguidelines-macro-usage)
+// Need macros for C compatibility
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
 #define BIT32_MASK  0xFFFFFFFF
 #define MAX_RX_DBIT 64
 
@@ -80,7 +80,7 @@
 #define DEFAULT_STREAMING_TIMER_IN_MS 500
 
 #define NUM_RX_THREAD_IDS 9
-//NOLINTEND(cppcoreguidelines-macro-usage)
+// NOLINTEND(cppcoreguidelines-macro-usage)
 #ifdef __cplusplus
 class slsDetectorDefs {
   public:
@@ -548,6 +548,29 @@ enum streamingInterface {
         }
     } __attribute__((packed));
 
+    struct pedestalParameters {
+        int enable;
+        uint8_t frames;
+        uint16_t loops;
+
+        /** [Jungfrau] disable */
+        pedestalParameters() : enable(0), frames(0), loops(0) {}
+
+        /** [Jungfrau] enable */
+        pedestalParameters(uint8_t pedestalFrames, uint16_t pedestalLoops)
+            : enable(1), frames(pedestalFrames), loops(pedestalLoops) {
+            if (frames == 0 || loops == 0) {
+                throw sls::RuntimeError(
+                    "Pedestal frames or loops cannot be 0.");
+            }
+        }
+
+        bool operator==(const pedestalParameters &other) const {
+            return ((enable == other.enable) && (frames == other.frames) &&
+                    (loops == other.loops));
+        }
+    } __attribute__((packed));
+
     /**
      * structure to udpate receiver
      */
@@ -557,10 +580,10 @@ enum streamingInterface {
         int moduleIndex{0};
         char hostname[MAX_STR_LENGTH];
         int udpInterfaces{1};
-        int udp_dstport{0};
+        uint16_t udp_dstport{0};
         uint32_t udp_dstip{0U};
         uint64_t udp_dstmac{0LU};
-        int udp_dstport2{0};
+        uint16_t udp_dstport2{0};
         uint32_t udp_dstip2{0U};
         uint64_t udp_dstmac2{0LU};
         int64_t frames{0};

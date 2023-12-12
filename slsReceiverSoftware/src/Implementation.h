@@ -117,11 +117,11 @@ class Implementation : private virtual slsDetectorDefs {
     std::string getEthernetInterface2() const;
     /* [Jungfrau][Moench] */
     void setEthernetInterface2(const std::string &c);
-    uint32_t getUDPPortNumber() const;
-    void setUDPPortNumber(const uint32_t i);
-    uint32_t getUDPPortNumber2() const;
+    uint16_t getUDPPortNumber() const;
+    void setUDPPortNumber(const uint16_t i);
+    uint16_t getUDPPortNumber2() const;
     /* [Eiger][Jungfrau][Moench] */
-    void setUDPPortNumber2(const uint32_t i);
+    void setUDPPortNumber2(const uint16_t i);
     int getUDPSocketBufferSize() const;
     void setUDPSocketBufferSize(const int s);
     int getActualUDPSocketBufferSize() const;
@@ -140,8 +140,8 @@ class Implementation : private virtual slsDetectorDefs {
     void setStreamingTimer(const uint32_t time_in_ms);
     uint32_t getStreamingStartingFrameNumber() const;
     void setStreamingStartingFrameNumber(const uint32_t fnum);
-    uint32_t getStreamingPort() const;
-    void setStreamingPort(const uint32_t i);
+    uint16_t getStreamingPort() const;
+    void setStreamingPort(const uint16_t i);
     IpAddr getStreamingSourceIP() const;
     void setStreamingSourceIP(const IpAddr ip);
     int getStreamingHwm() const;
@@ -336,7 +336,7 @@ class Implementation : private virtual slsDetectorDefs {
 
     // network configuration (UDP)
     std::array<std::string, MAX_NUMBER_OF_LISTENING_THREADS> eth;
-    std::array<uint32_t, MAX_NUMBER_OF_LISTENING_THREADS> udpPortNum{
+    std::array<uint16_t, MAX_NUMBER_OF_LISTENING_THREADS> udpPortNum{
         {DEFAULT_UDP_DST_PORTNO, DEFAULT_UDP_DST_PORTNO + 1}};
     int actualUDPSocketBufferSize{0};
 
@@ -345,7 +345,7 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t streamingFrequency{1};
     uint32_t streamingTimerInMs{DEFAULT_STREAMING_TIMER_IN_MS};
     uint32_t streamingStartFnum{0};
-    uint32_t streamingPort{0};
+    uint16_t streamingPort{0};
     IpAddr streamingSrcIP = IpAddr{};
     int streamingHwm{-1};
     std::map<std::string, std::string> additionalJsonHeader;

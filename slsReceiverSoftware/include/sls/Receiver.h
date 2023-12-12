@@ -28,7 +28,7 @@ class Receiver : private virtual slsDetectorDefs {
      * throws an exception in case of failure
      * @param tcpip_port_no TCP/IP port number
      */
-    Receiver(int tcpip_port_no = 1954);
+    Receiver(uint16_t tcpip_port_no = 1954);
 
     ~Receiver();
 

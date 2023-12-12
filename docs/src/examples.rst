@@ -1,3 +1,4 @@
+.. _Cplusplus Api Examples:
 
 
 
@@ -53,8 +54,8 @@ then set up the detector.
 
     jungfrauDetectorServer_virtual
 
-This launches a virtual Jungfrau detector server. As default is uses port 1952 and 1953
-for communication over TCP. Most commands go on 1952 and only stop and status on 1953. 
+This launches a virtual Jungfrau detector server. As default it uses port 1952 and 1953
+for communication over TCP. Most commands go on 1952 and only a few such as stop and status on 1953. 
 
 **Run example to configure**
 
@@ -90,7 +91,10 @@ std::vector.
     sls::Result<int> res1{1, 1, 1};
     std::cout << "res1: " << res1 << '\n';
     res1.squash();
+    # return -1 if different
     res1.squash(-1);
+    # throw exception with custom message if different
+    res1.tsquash("Values are different);
 
 
 

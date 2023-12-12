@@ -56,7 +56,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     void CreateFirstFiles(const std::string &fileNamePrefix,
                           const uint64_t fileIndex, const bool overWriteEnable,
-                          const bool silentMode, const uint32_t udpPortNumber,
+                          const bool silentMode, const uint16_t udpPortNumber,
                           const uint64_t numImages,
                           const bool detectorDataStream);
 #ifdef HDF5C

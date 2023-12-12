@@ -26,7 +26,7 @@ TEST_CASE("Default construction") {
     REQUIRE(adcnames[1] == "ADC1");
     REQUIRE(adcnames[2] == "ADC2");
     REQUIRE(adcnames[3] == "ADC3");
-    auto powernames = c.getVoltageNames();
+    auto powernames = c.getPowerNames();
     REQUIRE(powernames.size() == 5);
     REQUIRE(powernames[0] == "VA");
     REQUIRE(powernames[1] == "VB");

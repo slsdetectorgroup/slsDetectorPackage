@@ -182,6 +182,7 @@ class Detector(CppDetectorApi):
 
     @port.setter
     def port(self, value):
+        ut.validate_port(value)
         ut.set_using_dict(self.setControlPort, value)
 
     @property
@@ -197,6 +198,7 @@ class Detector(CppDetectorApi):
 
     @stopport.setter
     def stopport(self, args):
+        ut.validate_port(args)
         ut.set_using_dict(self.setStopPort, args)
 
 
@@ -358,7 +360,8 @@ class Detector(CppDetectorApi):
     @property
     def settings(self):
         """
-        Detector settings. Enum: detectorSettings
+        Detector settings. 
+        Enum: detectorSettings
 
         Note
         -----
@@ -398,6 +401,9 @@ class Detector(CppDetectorApi):
     def framesl(self):
         """
         [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of frames left in acquisition.\n
+
+        Note
+        ----
         [Gotthard2] only in continuous auto mode.
 
         :setter: Not Implemented
@@ -473,7 +479,8 @@ class Detector(CppDetectorApi):
     @element
     def gaincaps(self):
         """
-        [Mythen3] Gain caps. Enum: M3_GainCaps \n
+        [Mythen3] Gain caps. 
+        Enum: M3_GainCaps
         
         Note
         ----
@@ -571,8 +578,6 @@ class Detector(CppDetectorApi):
         """
         Period between frames, accepts either a value in seconds or datetime.timedelta
 
-        Note
-        -----
         :getter: always returns in seconds. To get in DurationWrapper, use getPeriod
 
         Example
@@ -638,9 +643,6 @@ class Detector(CppDetectorApi):
     def delay(self):
         """
         [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] Delay after trigger, accepts either a value in seconds, DurationWrapper or datetime.timedelta
-
-        Note
-        -----
 
         :getter: always returns in seconds. To get in DurationWrapper, use getDelayAfterTrigger
 
@@ -866,6 +868,7 @@ class Detector(CppDetectorApi):
 
     @rx_tcpport.setter
     def rx_tcpport(self, port):
+        ut.validate_port(port)
         ut.set_using_dict(self.setRxPort, port)
 
     @property
@@ -892,7 +895,8 @@ class Detector(CppDetectorApi):
     @element
     def rx_discardpolicy(self):
         """
-        Frame discard policy of receiver. Enum: frameDiscardPolicy
+        Frame discard policy of receiver. 
+        Enum: frameDiscardPolicy
         
         Note
         -----
@@ -966,7 +970,8 @@ class Detector(CppDetectorApi):
     @property
     @element
     def fformat(self):
-        """ File format of data file in receiver. Enum: fileFormat
+        """ File format of data file in receiver. 
+        Enum: fileFormat
     
         Note
         -----
@@ -1145,11 +1150,14 @@ class Detector(CppDetectorApi):
     @rx_zmqport.setter
     def rx_zmqport(self, port):
         if isinstance(port, int):
+            ut.validate_port(port)
             self.setRxZmqPort(port, -1)
         elif isinstance(port, dict):
+            ut.validate_port(port)
             ut.set_using_dict(self.setRxZmqPort, port)
         elif is_iterable(port):
             for i, p in enumerate(port):
+                ut.validate_port(p)
                 self.setRxZmqPort(p, i)
         else:
             raise ValueError("Unknown argument type")
@@ -1179,11 +1187,14 @@ class Detector(CppDetectorApi):
     @zmqport.setter
     def zmqport(self, port):
         if isinstance(port, int):
+            ut.validate_port(port)
             self.setClientZmqPort(port, -1)
         elif isinstance(port, dict):
+            ut.validate_port(port)
             ut.set_using_dict(self.setClientZmqPort, port)
         elif is_iterable(port):
             for i, p in enumerate(port):
+                ut.validate_port(p)
                 self.setClientZmqPort(p, i)
         else:
             raise ValueError("Unknown argument type")
@@ -1493,6 +1504,7 @@ class Detector(CppDetectorApi):
 
     @udp_dstport.setter
     def udp_dstport(self, port):
+        ut.validate_port(port)
         ut.set_using_dict(self.setDestinationUDPPort, port)
 
     @property
@@ -1514,6 +1526,7 @@ class Detector(CppDetectorApi):
 
     @udp_dstport2.setter
     def udp_dstport2(self, port):
+        ut.validate_port(port)
         ut.set_using_dict(self.setDestinationUDPPort2, port)
 
     @property
@@ -1554,7 +1567,8 @@ class Detector(CppDetectorApi):
     @property
     @element
     def status(self):
-        """Gets detector status. Enum: runStatus
+        """Gets detector status. 
+        Enum: runStatus
         
         Note
         -----
@@ -1568,7 +1582,8 @@ class Detector(CppDetectorApi):
     @property
     @element
     def rx_status(self):
-        """Gets receiver listener status. Enum: runStatus
+        """Gets receiver listener status. 
+        Enum: runStatus
         
         Note
         -----
@@ -1662,6 +1677,11 @@ class Detector(CppDetectorApi):
     def sync(self):
         """
         [Jungfrau][Moench] Enables or disables synchronization between modules.
+
+        Note
+        ----
+        Sync mode requires at least one master configured. Also requires flatband cabling between master and slave with termination board.
+
         """
         return self.getSynchronization()
 
@@ -1792,6 +1812,7 @@ class Detector(CppDetectorApi):
     def daclist(self):
         """
         List of enums/names for every dac for this detector
+
         :setter: Only implemented for Chiptestboard
         
         """
@@ -1804,9 +1825,7 @@ class Detector(CppDetectorApi):
     @property
     def adclist(self):
         """
-        List of names for every adc for this board. 32 adcs
-        :setter: Only implemented for Chiptestboard
-        
+        [Chiptestboard] List of names for every adc for this board. 32 adcs
         """
         return self.getAdcNames()
 
@@ -1817,9 +1836,7 @@ class Detector(CppDetectorApi):
     @property
     def signallist(self):
         """
-        List of names for every io signal for this board. 64 signals
-        :setter: Only implemented for Chiptestboard
-        
+        [Chiptestboard] List of names for every io signal for this board. 64 signals        
         """
         return self.getSignalNames()
 
@@ -1828,30 +1845,28 @@ class Detector(CppDetectorApi):
         self.setSignalNames(value)
 
     @property
-    def voltagelist(self):
+    def powerlist(self):
         """
-        List of names for every voltage for this board. 5 voltage supply
-        :setter: Only implemented for Chiptestboard
+        [Chiptestboard] List of names for every power for this board. 5 power supply
         
         """
-        return self.getVoltageNames()
+        return self.getPowerNames()
 
-    @voltagelist.setter
-    def voltagelist(self, value):
-        self.setVoltageNames(value)
+    @powerlist.setter
+    def powerlist(self, value):
+        self.setPowerNames(value)
 
     @property
     def slowadclist(self):
         """
-        List of names for every slowadc for this board. 8 slowadc
-        :setter: Only implemented for Chiptestboard
+        [Chiptestboard] List of names for every slowadc for this board. 8 slowadc
         
         """
         return self.getSlowADCNames()
 
     @slowadclist.setter
     def slowadclist(self, value):
-        self.setSlowAdcNames(value)
+        self.setSlowADCNames(value)
         
     @property
     def dacvalues(self):
@@ -1862,16 +1877,16 @@ class Detector(CppDetectorApi):
         }
 
     @property
-    def voltagevalues(self):
-        """Gets the voltage values for every voltage for this detector."""
+    def powervalues(self):
+        """[Chiptestboard] Gets the power values for every power for this detector."""
         return {
-            voltage.name.lower(): element_if_equal(np.array(self.getVoltage(voltage)))
-            for voltage in self.getVoltageList()
+            power.name.lower(): element_if_equal(np.array(self.getPower(power)))
+            for power in self.getPowerList()
         }
 
     @property
     def slowadcvalues(self):
-        """Gets the slow adc values for every slow adc for this detector."""
+        """[Chiptestboard] Gets the slow adc values for every slow adc for this detector."""
         return {
             slowadc.name.lower(): element_if_equal(np.array(self.getSlowADC(slowadc)))
             for slowadc in self.getSlowADCList()
@@ -2026,6 +2041,7 @@ class Detector(CppDetectorApi):
     @virtual.setter
     def virtual(self, args):
         n_detectors, starting_port = args
+        ut.validate_port(starting_port)
         self.setVirtualDetectorServers(n_detectors, starting_port)
 
     
@@ -2044,8 +2060,7 @@ class Detector(CppDetectorApi):
         -----
         To set default rate correction from trimbit file, use setDefaultRateCorrection
 
-        Known Issue
-        ------------
+        Known Issue:
 
         :getter: Always give 0 due to the microseconds precision.
         :setter: Use scientific notation to set custom rate correction, since timedelta resolution is 1 microseconds. \n
@@ -2069,7 +2084,8 @@ class Detector(CppDetectorApi):
     @element
     def readoutspeed(self):
         """
-        [Eiger][Jungfrau|Gotthard2] Readout speed of chip. Enum: speedLevel
+        [Eiger][Jungfrau|Gotthard2] Readout speed of chip. 
+        Enum: speedLevel
         
         Note
         -----
@@ -2158,7 +2174,8 @@ class Detector(CppDetectorApi):
     @element
     def timing(self):
         """
-        Set Timing Mode of detector. Enum: timingMode
+        Set Timing Mode of detector. 
+        Enum: timingMode
         
         Note
         -----
@@ -2218,13 +2235,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def type(self):
-        """ Returns detector type. Enum: detectorType
-        
-        Note
-        ----
+        """ Returns detector type. 
+        Enum: detectorType
+        [EIGER, JUNGFRAU, GOTTHARD, MOENCH, MYTHEN3, GOTTHARD2, CHIPTESTBOARD]
 
         :setter: Not implemented
-        Values: EIGER, JUNGFRAU, GOTTHARD, MOENCH, MYTHEN3, GOTTHARD2, CHIPTESTBOARD
         """
         return self.getDetectorType()
 
@@ -2484,9 +2499,6 @@ class Detector(CppDetectorApi):
     def measuredsubperiod(self):
         """
         [Eiger] Measured sub frame period between last sub frame and previous one. 
-        
-        Note
-        -----
         
         :setter: Not implemented
         """
@@ -2765,7 +2777,8 @@ class Detector(CppDetectorApi):
     @property
     def gainmode(self):
         """
-        [Jungfrau] Detector gain mode. Enum: gainMode
+        [Jungfrau] Detector gain mode. 
+        Enum: gainMode
         
         Note
         -----
@@ -2854,15 +2867,32 @@ class Detector(CppDetectorApi):
     @filtercells.setter
     def filtercells(self, value):
         ut.set_using_dict(self.setNumberOfFilterCells, value)
-        
+
     @property
-    def maxclkphaseshift(self):
+    @element
+    def pedestalmode(self):
         """
-        [Gotthard2][Mythen3] Absolute maximum Phase shift of  clocks.
+        [Jungfrau] Enables or disables pedestal mode. Pass in a pedestalParameters object 
+        see python/examples/use_pedestalmode.py
         
         Note
         ----
-        
+        The number of frames or triggers is overwritten by #pedestal_frames x  pedestal_loops x 2. \n
+        In auto timing mode or in trigger mode with #frames > 1, #frames is overwritten and #triggers = 1, else #triggers is overwritten and #frames = 1. \n
+        One cannot set #frames, #triggers or timing mode in pedestal mode (exception thrown).\n
+        Disabling pedestal mode will set back the normal mode values of #frames and #triggers."
+        """
+        return self.getPedestalMode()
+
+    @pedestalmode.setter
+    def pedestalmode(self, value):
+        ut.set_using_dict(self.setPedestalMode, value)
+
+    @property
+    def maxclkphaseshift(self):
+        """
+        [Gotthard2][Mythen3] Absolute maximum Phase shift of clocks.
+               
         :setter: Not Implemented
         
         Example
@@ -2880,7 +2910,8 @@ class Detector(CppDetectorApi):
     @element
     def timingsource(self):
         """
-        [Gotthard2] Timing source. Enum: timingSourceType
+        [Gotthard2] Timing source. 
+        Enum: timingSourceType
         
         Note
         -----
@@ -2924,7 +2955,8 @@ class Detector(CppDetectorApi):
     @property
     @element
     def burstmode(self):
-        """[Gotthard2] Burst mode of detector. Enum: burstMode
+        """[Gotthard2] Burst mode of detector. 
+        Enum: burstMode
         
         Note
         ----
@@ -2941,9 +2973,6 @@ class Detector(CppDetectorApi):
     def burstperiod(self):
         """
         [Gotthard2] Period between 2 bursts. Only in burst mode and auto timing mode.
-        
-        Note
-        -----
         
         :getter: always returns in seconds. To get in DurationWrapper, use getBurstPeriod
         :setter: Not Implemented
@@ -3067,7 +3096,8 @@ class Detector(CppDetectorApi):
 
     @property
     def vetoalg(self):
-        """[Gotthard2] Algorithm used for veto. Enum: vetoAlgorithm, streamingInterface
+        """[Gotthard2] Algorithm used for veto. 
+        Enum: vetoAlgorithm, streamingInterface
         
         Note
         ----
@@ -3241,7 +3271,8 @@ class Detector(CppDetectorApi):
     @element
     def romode(self):
         """
-        [CTB] Readout mode of detector. Enum: readoutMode
+        [CTB] Readout mode of detector. 
+        Enum: readoutMode
         
         Note
         ------
@@ -3347,9 +3378,6 @@ class Detector(CppDetectorApi):
     def maxdbitphaseshift(self):
         """[CTB][Jungfrau] Absolute maximum Phase shift of of the clock to latch digital bits.
         
-        Note
-        -----
-        
         :setter: Not Implemented
         """
         return self.getMaxDBITPhaseShift()
@@ -3393,9 +3421,6 @@ class Detector(CppDetectorApi):
     @element
     def maxadcphaseshift(self):
         """[Jungfrau][Moench][CTB] Absolute maximum Phase shift of ADC clock.
-        
-        Note
-        -----
         
         :setter: Not Implemented
         """
@@ -3446,9 +3471,6 @@ class Detector(CppDetectorApi):
         """
         [Ctb] Sync clock in MHz.
         
-        Note
-        -----
-        
         :setter: Not implemented
         """
         return self.getSYNCClock()
@@ -3456,10 +3478,7 @@ class Detector(CppDetectorApi):
     @property
     def pattern(self):
         """[Mythen3][Ctb] Loads ASCII pattern file directly to server (instead of executing line by line).
-        
-        Note
-        ----
-        
+               
         :getter: Not Implemented
         
         Example
@@ -3814,83 +3833,80 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_a(self):
-        """[Ctb] Voltage supply a in mV."""
-        return self.getVoltage(dacIndex.V_POWER_A)
+        """[Ctb] Power supply a in mV."""
+        return self.getPower(dacIndex.V_POWER_A)
 
     @v_a.setter
     def v_a(self, value):
         value = ut.merge_args(dacIndex.V_POWER_A, value)
-        ut.set_using_dict(self.setVoltage, *value)
+        ut.set_using_dict(self.setPower, *value)
 
     @property
     @element
     def v_b(self):
-        """[Ctb] Voltage supply b in mV."""
-        return self.getVoltage(dacIndex.V_POWER_B)
+        """[Ctb] Power supply b in mV."""
+        return self.getPower(dacIndex.V_POWER_B)
 
     @v_b.setter
     def v_b(self, value):
         value = ut.merge_args(dacIndex.V_POWER_B, value)
-        ut.set_using_dict(self.setVoltage, *value)
+        ut.set_using_dict(self.setPower, *value)
 
     @property
     @element
     def v_c(self):
-        """[Ctb] Voltage supply c in mV."""
-        return self.getVoltage(dacIndex.V_POWER_C)
+        """[Ctb] Power supply c in mV."""
+        return self.getPower(dacIndex.V_POWER_C)
 
     @v_c.setter
     def v_c(self, value):
         value = ut.merge_args(dacIndex.V_POWER_C, value)
-        ut.set_using_dict(self.setVoltage, *value)
+        ut.set_using_dict(self.setPower, *value)
 
     @property
     @element
     def v_d(self):
-        """[Ctb] Voltage supply d in mV."""
-        return self.getVoltage(dacIndex.V_POWER_D)
+        """[Ctb] Power supply d in mV."""
+        return self.getPower(dacIndex.V_POWER_D)
 
     @v_d.setter
     def v_d(self, value):
         value = ut.merge_args(dacIndex.V_POWER_D, value)
-        ut.set_using_dict(self.setVoltage, *value)
+        ut.set_using_dict(self.setPower, *value)
 
     @property
     @element
     def v_io(self):
-        """[Ctb] Voltage supply io in mV. Minimum 1200 mV. 
+        """[Ctb] Power supply io in mV. Minimum 1200 mV. 
         
         Note
         ----
         Must be the first power regulator to be set after fpga reset (on-board detector server start up).
         """
-        return self.getVoltage(dacIndex.V_POWER_IO)
+        return self.getPower(dacIndex.V_POWER_IO)
 
     @v_io.setter
     def v_io(self, value):
         value = ut.merge_args(dacIndex.V_POWER_IO, value)
-        ut.set_using_dict(self.setVoltage, *value)
+        ut.set_using_dict(self.setPower, *value)
 
     @property
     @element
     def v_limit(self):
         """[Ctb] Soft limit for power supplies (ctb only) and DACS in mV."""
-        return self.getVoltage(dacIndex.V_LIMIT)
+        return self.getPower(dacIndex.V_LIMIT)
 
     @v_limit.setter
     def v_limit(self, value):
         value = ut.merge_args(dacIndex.V_LIMIT, value)
-        ut.set_using_dict(self.setVoltage, *value)
+        ut.set_using_dict(self.setPower, *value)
 
 
     @property
     @element
     def im_a(self):
         """[Ctb] Measured current of power supply a in mA.
-        
-        Note
-        -----
-        
+              
         :setter: Not implemented
         """
         return self.getMeasuredCurrent(dacIndex.I_POWER_A)
@@ -3899,9 +3915,6 @@ class Detector(CppDetectorApi):
     @element
     def im_b(self):
         """[Ctb] Measured current of power supply b in mA.
-        
-        Note
-        -----
         
         :setter: Not implemented
         """
@@ -3912,9 +3925,6 @@ class Detector(CppDetectorApi):
     def im_c(self):
         """[Ctb] Measured current of power supply c in mA.
                 
-        Note
-        -----
-        
         :setter: Not implemented
         """
         return self.getMeasuredCurrent(dacIndex.I_POWER_C)
@@ -3924,9 +3934,6 @@ class Detector(CppDetectorApi):
     def im_d(self):
         """[Ctb] Measured current of power supply d in mA.
                 
-        Note
-        -----
-        
         :setter: Not implemented
         """
         return self.getMeasuredCurrent(dacIndex.I_POWER_D)
@@ -3936,9 +3943,6 @@ class Detector(CppDetectorApi):
     def im_io(self):
         """[Ctb] Measured current of power supply io in mA.
                 
-        Note
-        -----
-        
         :setter: Not implemented
         """
         return self.getMeasuredCurrent(dacIndex.I_POWER_IO)
@@ -3988,9 +3992,6 @@ class Detector(CppDetectorApi):
     def exptimel(self):
         """[Gotthard] Exposure time left for current frame.
         
-        Note
-        -----
-        
         :getter: always returns in seconds. To get in DurationWrapper, use getExptimeLeft
         :setter: Not Implemented
         
@@ -4025,9 +4026,6 @@ class Detector(CppDetectorApi):
         """
         [Gotthard2][Mythen3] Frequency of clock in Hz. 
         
-        Note
-        ----
-        
         :setter: Not implemented. Use clkdiv to set frequency
 
         Example
@@ -4047,7 +4045,9 @@ class Detector(CppDetectorApi):
     @property
     @element
     def polarity(self):
-        """[Mythen3] Set positive or negative polarity. Enum: polarity"""
+        """[Mythen3] Set positive or negative polarity. 
+        Enum: polarity
+        """
         return self.getPolarity()
 
     @polarity.setter

@@ -1789,8 +1789,8 @@ int configureMAC() {
     uint32_t dstip = udpDetails[0].dstip;
     uint64_t srcmac = udpDetails[0].srcmac;
     uint64_t dstmac = udpDetails[0].dstmac;
-    int srcport = udpDetails[0].srcport;
-    int dstport = udpDetails[0].dstport;
+    uint16_t srcport = udpDetails[0].srcport;
+    uint16_t dstport = udpDetails[0].dstport;
 
     LOG(logINFOBLUE, ("Configuring MAC\n"));
     char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
@@ -1802,10 +1802,10 @@ int configureMAC() {
 
     LOG(logINFO, ("\tSource IP   : %s\n"
                   "\tSource MAC  : %s\n"
-                  "\tSource Port : %d\n"
+                  "\tSource Port : %hu\n"
                   "\tDest IP     : %s\n"
                   "\tDest MAC    : %s\n"
-                  "\tDest Port   : %d\n",
+                  "\tDest Port   : %hu\n",
                   src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
     // 1 giga udp

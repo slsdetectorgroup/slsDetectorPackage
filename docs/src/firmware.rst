@@ -120,7 +120,7 @@ Program from console
         # removes old server from respawn, sets up new lnked server to respawn
         # programs fpga, reboots
 
-        # v5.0.0 - 6.0.0 (copies server from tftp folder of the pc)
+        #  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc
         sls_detector_put update jungfrauDetectorServervxxx pcxxx xx.pof
 
         # v6.1.1 - present (copies server from the full path provided)
@@ -190,7 +190,7 @@ Program from console
         # removes old server from respawn, sets up new lnked server to respawn
         # programs fpga, reboots
 
-        # v5.0.0 - 6.0.0 (copies server from tftp folder of the pc)
+        #  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc
         sls_detector_put update mythen3DetectorServervxxx pcxxx xxx.rbf
 
         # v6.1.1 - present (copies server from the full path provided)
@@ -224,7 +224,7 @@ Program from console
         # removes old server from respawn, sets up new lnked server to respawn
         # programs fpga, reboots
 
-        # v5.0.0 - 6.0.0 (copies server from tftp folder of the pc)
+        #  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc
         sls_detector_put update gotthard2DetectorServervxxx pcxxx xxx.rbf
 
         # v6.1.1 - present (copies server from the full path provided)
@@ -275,7 +275,7 @@ Program from console
         # removes old server from respawn, sets up new lnked server to respawn
         # programs fpga, reboots
 
-        # v5.0.0 - 6.0.0 (copies server from tftp folder of the pc)
+        #  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc
         sls_detector_put update moenchDetectorServervxxx pcxxx xx.pof
 
         # v6.1.1 - present (copies server from the full path provided)
@@ -310,7 +310,7 @@ Program from console
         # removes old server from respawn, sets up new lnked server to respawn
         # programs fpga, reboots
 
-        # v5.0.0 - 6.0.0 (copies server from tftp folder of the pc)
+        #  older versions: v5.0.0 - 6.0.0 using tftp from tftp folder of pc
         sls_detector_put update ctbDetectorServervxxx pcxxx xx.pof
 
         # v6.1.1 - present (copies server from the full path provided)

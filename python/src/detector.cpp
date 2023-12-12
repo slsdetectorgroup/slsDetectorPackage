@@ -48,7 +48,7 @@ void init_det(py::module &m) {
                            Detector::setHostname,
                        py::arg());
     CppDetectorApi.def("setVirtualDetectorServers",
-                       (void (Detector::*)(int, int)) &
+                       (void (Detector::*)(int, uint16_t)) &
                            Detector::setVirtualDetectorServers,
                        py::arg(), py::arg());
     CppDetectorApi.def("getShmId",
@@ -751,19 +751,19 @@ void init_det(py::module &m) {
             Detector::setDestinationUDPMAC2,
         py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getDestinationUDPPort",
-                       (Result<int>(Detector::*)(sls::Positions) const) &
+                       (Result<uint16_t>(Detector::*)(sls::Positions) const) &
                            Detector::getDestinationUDPPort,
                        py::arg() = Positions{});
     CppDetectorApi.def("setDestinationUDPPort",
-                       (void (Detector::*)(int, int)) &
+                       (void (Detector::*)(uint16_t, int)) &
                            Detector::setDestinationUDPPort,
                        py::arg(), py::arg() = -1);
     CppDetectorApi.def("getDestinationUDPPort2",
-                       (Result<int>(Detector::*)(sls::Positions) const) &
+                       (Result<uint16_t>(Detector::*)(sls::Positions) const) &
                            Detector::getDestinationUDPPort2,
                        py::arg() = Positions{});
     CppDetectorApi.def("setDestinationUDPPort2",
-                       (void (Detector::*)(int, int)) &
+                       (void (Detector::*)(uint16_t, int)) &
                            Detector::setDestinationUDPPort2,
                        py::arg(), py::arg() = -1);
     CppDetectorApi.def("reconfigureUDPDestination",
@@ -844,12 +844,12 @@ void init_det(py::module &m) {
                            Detector::setRxHostname,
                        py::arg());
     CppDetectorApi.def("getRxPort",
-                       (Result<int>(Detector::*)(sls::Positions) const) &
+                       (Result<uint16_t>(Detector::*)(sls::Positions) const) &
                            Detector::getRxPort,
                        py::arg() = Positions{});
-    CppDetectorApi.def("setRxPort",
-                       (void (Detector::*)(int, int)) & Detector::setRxPort,
-                       py::arg(), py::arg() = -1);
+    CppDetectorApi.def(
+        "setRxPort", (void (Detector::*)(uint16_t, int)) & Detector::setRxPort,
+        py::arg(), py::arg() = -1);
     CppDetectorApi.def("getRxFifoDepth",
                        (Result<int>(Detector::*)(sls::Positions) const) &
                            Detector::getRxFifoDepth,
@@ -1032,11 +1032,12 @@ void init_det(py::module &m) {
                            Detector::setRxZmqStartingFrame,
                        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getRxZmqPort",
-                       (Result<int>(Detector::*)(sls::Positions) const) &
+                       (Result<uint16_t>(Detector::*)(sls::Positions) const) &
                            Detector::getRxZmqPort,
                        py::arg() = Positions{});
     CppDetectorApi.def("setRxZmqPort",
-                       (void (Detector::*)(int, int)) & Detector::setRxZmqPort,
+                       (void (Detector::*)(uint16_t, int)) &
+                           Detector::setRxZmqPort,
                        py::arg(), py::arg() = -1);
     CppDetectorApi.def(
         "getRxZmqIP",
@@ -1048,11 +1049,11 @@ void init_det(py::module &m) {
                            Detector::setRxZmqIP,
                        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getClientZmqPort",
-                       (Result<int>(Detector::*)(sls::Positions) const) &
+                       (Result<uint16_t>(Detector::*)(sls::Positions) const) &
                            Detector::getClientZmqPort,
                        py::arg() = Positions{});
     CppDetectorApi.def("setClientZmqPort",
-                       (void (Detector::*)(int, int)) &
+                       (void (Detector::*)(uint16_t, int)) &
                            Detector::setClientZmqPort,
                        py::arg(), py::arg() = -1);
     CppDetectorApi.def(
@@ -1269,6 +1270,16 @@ void init_det(py::module &m) {
                        (void (Detector::*)(int, sls::Positions)) &
                            Detector::setNumberOfFilterCells,
                        py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getPedestalMode",
+        (Result<defs::pedestalParameters>(Detector::*)(sls::Positions) const) &
+            Detector::getPedestalMode,
+        py::arg() = Positions{});
+    CppDetectorApi.def(
+        "setPedestalMode",
+        (void (Detector::*)(const defs::pedestalParameters, sls::Positions)) &
+            Detector::setPedestalMode,
+        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getROI",
                        (Result<defs::ROI>(Detector::*)(sls::Positions) const) &
                            Detector::getROI,
@@ -1524,29 +1535,21 @@ void init_det(py::module &m) {
                        (Result<int>(Detector::*)(sls::Positions) const) &
                            Detector::getSYNCClock,
                        py::arg() = Positions{});
-    CppDetectorApi.def("getADCPipeline",
-                       (Result<int>(Detector::*)(sls::Positions) const) &
-                           Detector::getADCPipeline,
-                       py::arg() = Positions{});
-    CppDetectorApi.def("setADCPipeline",
-                       (void (Detector::*)(int, sls::Positions)) &
-                           Detector::setADCPipeline,
-                       py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("getVoltageList",
+    CppDetectorApi.def("getPowerList",
                        (std::vector<defs::dacIndex>(Detector::*)() const) &
-                           Detector::getVoltageList);
+                           Detector::getPowerList);
     CppDetectorApi.def("getSlowADCList",
                        (std::vector<defs::dacIndex>(Detector::*)() const) &
                            Detector::getSlowADCList);
     CppDetectorApi.def(
-        "getVoltage",
+        "getPower",
         (Result<int>(Detector::*)(defs::dacIndex, sls::Positions) const) &
-            Detector::getVoltage,
+            Detector::getPower,
         py::arg(), py::arg() = Positions{});
     CppDetectorApi.def(
-        "setVoltage",
+        "setPower",
         (void (Detector::*)(defs::dacIndex, int, sls::Positions)) &
-            Detector::setVoltage,
+            Detector::setPower,
         py::arg(), py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getADCVpp",
                        (Result<int>(Detector::*)(bool, sls::Positions) const) &
@@ -1614,9 +1617,9 @@ void init_det(py::module &m) {
                            Detector::setDBITClock,
                        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def(
-        "getMeasuredVoltage",
+        "getMeasuredPower",
         (Result<int>(Detector::*)(defs::dacIndex, sls::Positions) const) &
-            Detector::getMeasuredVoltage,
+            Detector::getMeasuredPower,
         py::arg(), py::arg() = Positions{});
     CppDetectorApi.def(
         "getMeasuredCurrent",
@@ -1733,26 +1736,26 @@ void init_det(py::module &m) {
                        (std::string(Detector::*)(const int) const) &
                            Detector::getSignalName,
                        py::arg());
-    CppDetectorApi.def("setVoltageNames",
+    CppDetectorApi.def("setPowerNames",
                        (void (Detector::*)(const std::vector<std::string>)) &
-                           Detector::setVoltageNames,
+                           Detector::setPowerNames,
                        py::arg());
-    CppDetectorApi.def("getVoltageNames",
+    CppDetectorApi.def("getPowerNames",
                        (std::vector<std::string>(Detector::*)() const) &
-                           Detector::getVoltageNames);
+                           Detector::getPowerNames);
     CppDetectorApi.def(
-        "getVoltageIndex",
+        "getPowerIndex",
         (defs::dacIndex(Detector::*)(const std::string &) const) &
-            Detector::getVoltageIndex,
+            Detector::getPowerIndex,
         py::arg());
     CppDetectorApi.def(
-        "setVoltageName",
+        "setPowerName",
         (void (Detector::*)(const defs::dacIndex, const std::string &)) &
-            Detector::setVoltageName,
+            Detector::setPowerName,
         py::arg(), py::arg());
-    CppDetectorApi.def("getVoltageName",
+    CppDetectorApi.def("getPowerName",
                        (std::string(Detector::*)(const defs::dacIndex) const) &
-                           Detector::getVoltageName,
+                           Detector::getPowerName,
                        py::arg());
     CppDetectorApi.def("setSlowADCNames",
                        (void (Detector::*)(const std::vector<std::string>)) &
@@ -1891,6 +1894,14 @@ void init_det(py::module &m) {
                             sls::Positions)) &
             Detector::setAdditionalJsonParameter,
         py::arg(), py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("getADCPipeline",
+                       (Result<int>(Detector::*)(sls::Positions) const) &
+                           Detector::getADCPipeline,
+                       py::arg() = Positions{});
+    CppDetectorApi.def("setADCPipeline",
+                       (void (Detector::*)(int, sls::Positions)) &
+                           Detector::setADCPipeline,
+                       py::arg(), py::arg() = Positions{});
     CppDetectorApi.def(
         "programFPGA",
         (void (Detector::*)(const std::string &, const bool, sls::Positions)) &
@@ -1978,19 +1989,19 @@ void init_det(py::module &m) {
                            Detector::setADCInvert,
                        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getControlPort",
-                       (Result<int>(Detector::*)(sls::Positions) const) &
+                       (Result<uint16_t>(Detector::*)(sls::Positions) const) &
                            Detector::getControlPort,
                        py::arg() = Positions{});
     CppDetectorApi.def("setControlPort",
-                       (void (Detector::*)(int, sls::Positions)) &
+                       (void (Detector::*)(uint16_t, sls::Positions)) &
                            Detector::setControlPort,
                        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getStopPort",
-                       (Result<int>(Detector::*)(sls::Positions) const) &
+                       (Result<uint16_t>(Detector::*)(sls::Positions) const) &
                            Detector::getStopPort,
                        py::arg() = Positions{});
     CppDetectorApi.def("setStopPort",
-                       (void (Detector::*)(int, sls::Positions)) &
+                       (void (Detector::*)(uint16_t, sls::Positions)) &
                            Detector::setStopPort,
                        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getDetectorLock",

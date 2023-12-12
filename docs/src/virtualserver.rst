@@ -86,7 +86,8 @@ For a Single Module (With Options)
         udp_dstport 50012
 
         # source udp ips must be same subnet at destintaion udp ips
-        udp_srcip 192.168.1.112
+        # takes the same ip as hostname
+        udp_srcip auto
 
         # destination udp ip picked up from rx_hostname (if auto)
         udp_dstip auto
@@ -101,12 +102,14 @@ For Multiple Modules
         virtual 2 1912
         # or hostname localhost:1912+localhost:1914+
 
-        # connects to receivers at ports 2012 and 2014
-        rx_hostname mpc1922:2012+mpc1922:2013+
+        # increasing receiver tcp ports (multi detector command)
+        rx_tcpport 2012
 
-        # sets differernt destination udp ports
-        0:udp_dstport 50012
-        1:udp_dstport 50014
+        # connects to reciever at port 2012 and 2013
+        rx_hostname mpc1922
+
+        # sets increasing destination udp ports
+        udp_dstport 50012
 
         # source udp ips must be same subnet at destintaion udp ips
         0:udp_srcip 192.168.1.112

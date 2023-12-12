@@ -4,7 +4,6 @@
 #define RELEASE      "developer"
 #define APILIB       "developer 0x230224"
 #define APIRECEIVER  "developer 0x230224"
-#define APIEIGER     "developer 0x231109"
 #define APIXILINXCTB "developer 0x000000"
 #define APICTB "developer 0x231212"
 #define APIGOTTHARD "developer 0x231212"
@@ -12,3 +11,4 @@
 #define APIJUNGFRAU "developer 0x231212"
 #define APIMYTHEN3 "developer 0x231212"
 #define APIMOENCH "developer 0x231212"
+#define APIEIGER "developer 0x231212"

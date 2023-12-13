@@ -43,7 +43,7 @@ class CommandParser:
     def _verify_argument(self, arg, infer_action, command_name, action):
         if arg['function'] == '' and 'ctb_output_list' not in arg:
             special_exception_message_list = ["Cannot put", "Cannot get"]
-            if 'exceptions' in arg and any(ele in arg['exceptions'][0]['message'] for ele in special_exception_message_list):
+            if 'exceptions' in arg and arg['exceptions'][0]['condition'] == 'true' and any(ele in arg['exceptions'][0]['message'] for ele in special_exception_message_list):
                 self.logger.warning(f"{command_name} has a special exception message for {action}.")
             else:
                 self.logger.warning(f"{command_name} [{action}] does not have a function")

@@ -126,7 +126,7 @@ def loadConfig(name, rx_hostname, settingsdir):
 
 def startCmdTests(name, fp, fname):
     Log(Fore.GREEN, 'Cmd Tests for ' + name)
-    cmd = 'tests --abort [.cmd] -s -o ' + fname
+    cmd = 'tests --abort [.cmdcall] -s -o ' + fname
     p = subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
     p.check_returncode()
 

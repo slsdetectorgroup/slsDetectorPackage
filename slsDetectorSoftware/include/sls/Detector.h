@@ -71,7 +71,6 @@ class Detector {
     /** Gets shared memory ID */
     int getShmId() const;
 
-    /** package git branch */
     std::string getPackageVersion() const;
 
     std::string getClientVersion() const;

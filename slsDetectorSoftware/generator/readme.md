@@ -194,12 +194,12 @@ Now for C++ code generation. After parsing the commands.yaml file and producing 
 
 ### infer action
 
-the generated code will produce 5 new targets: "detg detp deta deth det"
+the generated code will produce 5 new targets: "sls_detector_get sls_detector_put sls_detector_acquire sls_detector_help sls_detector"
 
-`detg` will set the action as GET  
-`detp` will the action as PUT
+`sls_detector_get` will set the action as GET  
+`sls_detector_put` will the action as PUT
 
-`det` will guess the action depending on the number of arguments
+`sls_detector` will guess the action depending on the number of arguments
 
 the codegen module will generate a function for every command that will return the action based on the number of arguments
 
@@ -221,7 +221,7 @@ int InferAction::activate() {
 
 the `inferAction` class will be called from  `CmdApp.cpp` to infer the action and the command function will be called with the appropriate action.
 
-some commands have the same number of argument count for both get and put. These commands can be found using the the `check_infer.py` script. in the generated code it will say that "det is disabled"
+some commands have the same number of argument count for both get and put. These commands can be found using the the `check_infer.py` script. in the generated code it will say that "sls_detector is disabled"
 ```bash
 # to see these commands
 python infer_action/check_infer.py 
@@ -257,7 +257,7 @@ write_arg in codegen reads the argument fields and generate c++ code accordingly
 - check_det_id: if true it will check the detector id and throw an error if it is not valid
 - convert_det_id: if true it will convert the detector id to the correct type `std::vector<int>{ det_id }`
 - store_result_in_t: if true it will store the result of the function in the variable t (more on it in tricky things)
-- infer_action: if true it will infer the action (only if det is used)
+- infer_action: if true it will infer the action (only if sls_detector is used)
 - detectors: the detectors that have specific behaviour
 - args: the arguments of the command
 - argc: the number of arguments

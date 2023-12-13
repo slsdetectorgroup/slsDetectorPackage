@@ -18,7 +18,7 @@ int InferAction::infer(sls::CmdParser &parser, std::ostream &os) {
 
     } else {
 
-        throw RuntimeError("det not implemented for command: " +
+        throw RuntimeError("sls_detector not implemented for command: " +
 
                            parser.command());
     }
@@ -27,8 +27,8 @@ int InferAction::infer(sls::CmdParser &parser, std::ostream &os) {
 int InferAction::acquire() {
 
     if (args.size() == 0) {
-        throw RuntimeError("det is disabled for command: acquire with number "
-                           "of arguments 0. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: acquire with "
+                           "number of arguments 0. Use detg or detp");
     }
 
     else {
@@ -132,7 +132,7 @@ int InferAction::adcinvert() {
 int InferAction::adclist() {
 
     throw RuntimeError(
-        "det is disabled for command: adclist. Use detg or detp");
+        "sls_detector is disabled for command: adclist. Use detg or detp");
 }
 
 int InferAction::adcname() {
@@ -158,8 +158,8 @@ int InferAction::adcphase() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: adcphase with number "
-                           "of arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: adcphase "
+                           "with number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -207,8 +207,8 @@ int InferAction::adcvpp() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: adcvpp with number of "
-                           "arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: adcvpp with "
+                           "number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -272,7 +272,7 @@ int InferAction::autocompdisable() {
 int InferAction::badchannels() {
 
     throw RuntimeError(
-        "det is disabled for command: badchannels. Use detg or detp");
+        "sls_detector is disabled for command: badchannels. Use detg or detp");
 }
 
 int InferAction::blockingtrigger() {
@@ -310,8 +310,8 @@ int InferAction::burstperiod() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: burstperiod with "
-                           "number of arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: burstperiod "
+                           "with number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -475,8 +475,8 @@ int InferAction::clkphase() {
     }
 
     if (args.size() == 2) {
-        throw RuntimeError("det is disabled for command: clkphase with number "
-                           "of arguments 2. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: clkphase "
+                           "with number of arguments 2. Use detg or detp");
     }
 
     if (args.size() == 3) {
@@ -512,8 +512,9 @@ int InferAction::compdisabletime() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: compdisabletime with "
-                           "number of arguments 1. Use detg or detp");
+        throw RuntimeError(
+            "sls_detector is disabled for command: compdisabletime with number "
+            "of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -557,7 +558,7 @@ int InferAction::config() {
 int InferAction::counters() {
 
     throw RuntimeError(
-        "det is disabled for command: counters. Use detg or detp");
+        "sls_detector is disabled for command: counters. Use detg or detp");
 }
 
 int InferAction::currentsource() {
@@ -591,8 +592,8 @@ int InferAction::dac() {
     }
 
     if (args.size() == 2) {
-        throw RuntimeError("det is disabled for command: dac with number of "
-                           "arguments 2. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: dac with "
+                           "number of arguments 2. Use detg or detp");
     }
 
     if (args.size() == 3) {
@@ -620,7 +621,7 @@ int InferAction::dacindex() {
 int InferAction::daclist() {
 
     throw RuntimeError(
-        "det is disabled for command: daclist. Use detg or detp");
+        "sls_detector is disabled for command: daclist. Use detg or detp");
 }
 
 int InferAction::dacname() {
@@ -694,8 +695,8 @@ int InferAction::dbitphase() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: dbitphase with number "
-                           "of arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: dbitphase "
+                           "with number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -731,8 +732,8 @@ int InferAction::defaultdac() {
     }
 
     if (args.size() == 2) {
-        throw RuntimeError("det is disabled for command: defaultdac with "
-                           "number of arguments 2. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: defaultdac "
+                           "with number of arguments 2. Use detg or detp");
     }
 
     if (args.size() == 3) {
@@ -764,8 +765,8 @@ int InferAction::delay() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: delay with number of "
-                           "arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: delay with "
+                           "number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -897,7 +898,7 @@ int InferAction::dsamples() {
 int InferAction::execcommand() {
 
     throw RuntimeError(
-        "det is disabled for command: execcommand. Use detg or detp");
+        "sls_detector is disabled for command: execcommand. Use detg or detp");
 }
 
 int InferAction::exptime() {
@@ -907,8 +908,8 @@ int InferAction::exptime() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: exptime with number "
-                           "of arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: exptime with "
+                           "number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -928,8 +929,8 @@ int InferAction::exptime1() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: exptime1 with number "
-                           "of arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: exptime1 "
+                           "with number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -949,8 +950,8 @@ int InferAction::exptime2() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: exptime2 with number "
-                           "of arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: exptime2 "
+                           "with number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -970,8 +971,8 @@ int InferAction::exptime3() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: exptime3 with number "
-                           "of arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: exptime3 "
+                           "with number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -1307,8 +1308,8 @@ int InferAction::frametime() {
 int InferAction::free() {
 
     if (args.size() == 0) {
-        throw RuntimeError("det is disabled for command: free with number of "
-                           "arguments 0. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: free with "
+                           "number of arguments 0. Use detg or detp");
     }
 
     else {
@@ -1336,7 +1337,7 @@ int InferAction::fwrite() {
 int InferAction::gaincaps() {
 
     throw RuntimeError(
-        "det is disabled for command: gaincaps. Use detg or detp");
+        "sls_detector is disabled for command: gaincaps. Use detg or detp");
 }
 
 int InferAction::gainmode() {
@@ -1378,8 +1379,8 @@ int InferAction::gatedelay() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: gatedelay with number "
-                           "of arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: gatedelay "
+                           "with number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -1399,8 +1400,8 @@ int InferAction::gatedelay1() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: gatedelay1 with "
-                           "number of arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: gatedelay1 "
+                           "with number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -1420,8 +1421,8 @@ int InferAction::gatedelay2() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: gatedelay2 with "
-                           "number of arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: gatedelay2 "
+                           "with number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -1441,8 +1442,8 @@ int InferAction::gatedelay3() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: gatedelay3 with "
-                           "number of arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: gatedelay3 "
+                           "with number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -1514,7 +1515,7 @@ int InferAction::highvoltage() {
 int InferAction::hostname() {
 
     throw RuntimeError(
-        "det is disabled for command: hostname. Use detg or detp");
+        "sls_detector is disabled for command: hostname. Use detg or detp");
 }
 
 int InferAction::im_a() {
@@ -1956,31 +1957,31 @@ int InferAction::patioctrl() {
 int InferAction::patlimits() {
 
     throw RuntimeError(
-        "det is disabled for command: patlimits. Use detg or detp");
+        "sls_detector is disabled for command: patlimits. Use detg or detp");
 }
 
 int InferAction::patloop() {
 
     throw RuntimeError(
-        "det is disabled for command: patloop. Use detg or detp");
+        "sls_detector is disabled for command: patloop. Use detg or detp");
 }
 
 int InferAction::patloop0() {
 
     throw RuntimeError(
-        "det is disabled for command: patloop0. Use detg or detp");
+        "sls_detector is disabled for command: patloop0. Use detg or detp");
 }
 
 int InferAction::patloop1() {
 
     throw RuntimeError(
-        "det is disabled for command: patloop1. Use detg or detp");
+        "sls_detector is disabled for command: patloop1. Use detg or detp");
 }
 
 int InferAction::patloop2() {
 
     throw RuntimeError(
-        "det is disabled for command: patloop2. Use detg or detp");
+        "sls_detector is disabled for command: patloop2. Use detg or detp");
 }
 
 int InferAction::patmask() {
@@ -2002,25 +2003,25 @@ int InferAction::patmask() {
 int InferAction::patnloop() {
 
     throw RuntimeError(
-        "det is disabled for command: patnloop. Use detg or detp");
+        "sls_detector is disabled for command: patnloop. Use detg or detp");
 }
 
 int InferAction::patnloop0() {
 
     throw RuntimeError(
-        "det is disabled for command: patnloop0. Use detg or detp");
+        "sls_detector is disabled for command: patnloop0. Use detg or detp");
 }
 
 int InferAction::patnloop1() {
 
     throw RuntimeError(
-        "det is disabled for command: patnloop1. Use detg or detp");
+        "sls_detector is disabled for command: patnloop1. Use detg or detp");
 }
 
 int InferAction::patnloop2() {
 
     throw RuntimeError(
-        "det is disabled for command: patnloop2. Use detg or detp");
+        "sls_detector is disabled for command: patnloop2. Use detg or detp");
 }
 
 int InferAction::patsetbit() {
@@ -2066,49 +2067,49 @@ int InferAction::patternstart() {
 int InferAction::patwait() {
 
     throw RuntimeError(
-        "det is disabled for command: patwait. Use detg or detp");
+        "sls_detector is disabled for command: patwait. Use detg or detp");
 }
 
 int InferAction::patwait0() {
 
     throw RuntimeError(
-        "det is disabled for command: patwait0. Use detg or detp");
+        "sls_detector is disabled for command: patwait0. Use detg or detp");
 }
 
 int InferAction::patwait1() {
 
     throw RuntimeError(
-        "det is disabled for command: patwait1. Use detg or detp");
+        "sls_detector is disabled for command: patwait1. Use detg or detp");
 }
 
 int InferAction::patwait2() {
 
     throw RuntimeError(
-        "det is disabled for command: patwait2. Use detg or detp");
+        "sls_detector is disabled for command: patwait2. Use detg or detp");
 }
 
 int InferAction::patwaittime() {
 
     throw RuntimeError(
-        "det is disabled for command: patwaittime. Use detg or detp");
+        "sls_detector is disabled for command: patwaittime. Use detg or detp");
 }
 
 int InferAction::patwaittime0() {
 
     throw RuntimeError(
-        "det is disabled for command: patwaittime0. Use detg or detp");
+        "sls_detector is disabled for command: patwaittime0. Use detg or detp");
 }
 
 int InferAction::patwaittime1() {
 
     throw RuntimeError(
-        "det is disabled for command: patwaittime1. Use detg or detp");
+        "sls_detector is disabled for command: patwaittime1. Use detg or detp");
 }
 
 int InferAction::patwaittime2() {
 
     throw RuntimeError(
-        "det is disabled for command: patwaittime2. Use detg or detp");
+        "sls_detector is disabled for command: patwaittime2. Use detg or detp");
 }
 
 int InferAction::patword() {
@@ -2154,8 +2155,8 @@ int InferAction::period() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: period with number of "
-                           "arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: period with "
+                           "number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -2247,7 +2248,7 @@ int InferAction::powerindex() {
 int InferAction::powerlist() {
 
     throw RuntimeError(
-        "det is disabled for command: powerlist. Use detg or detp");
+        "sls_detector is disabled for command: powerlist. Use detg or detp");
 }
 
 int InferAction::powername() {
@@ -2601,7 +2602,7 @@ int InferAction::rx_clearroi() {
 int InferAction::rx_dbitlist() {
 
     throw RuntimeError(
-        "det is disabled for command: rx_dbitlist. Use detg or detp");
+        "sls_detector is disabled for command: rx_dbitlist. Use detg or detp");
 }
 
 int InferAction::rx_dbitoffset() {
@@ -2695,20 +2696,20 @@ int InferAction::rx_framesperfile() {
 int InferAction::rx_hostname() {
 
     throw RuntimeError(
-        "det is disabled for command: rx_hostname. Use detg or detp");
+        "sls_detector is disabled for command: rx_hostname. Use detg or detp");
 }
 
 int InferAction::rx_jsonaddheader() {
 
-    throw RuntimeError(
-        "det is disabled for command: rx_jsonaddheader. Use detg or detp");
+    throw RuntimeError("sls_detector is disabled for command: "
+                       "rx_jsonaddheader. Use detg or detp");
 }
 
 int InferAction::rx_jsonpara() {
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: rx_jsonpara with "
-                           "number of arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: rx_jsonpara "
+                           "with number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -2852,7 +2853,7 @@ int InferAction::rx_start() {
 int InferAction::rx_status() {
 
     throw RuntimeError(
-        "det is disabled for command: rx_status. Use detg or detp");
+        "sls_detector is disabled for command: rx_status. Use detg or detp");
 }
 
 int InferAction::rx_stop() {
@@ -3182,7 +3183,7 @@ int InferAction::signalindex() {
 int InferAction::signallist() {
 
     throw RuntimeError(
-        "det is disabled for command: signallist. Use detg or detp");
+        "sls_detector is disabled for command: signallist. Use detg or detp");
 }
 
 int InferAction::signalname() {
@@ -3228,7 +3229,7 @@ int InferAction::slowadcindex() {
 int InferAction::slowadclist() {
 
     throw RuntimeError(
-        "det is disabled for command: slowadclist. Use detg or detp");
+        "sls_detector is disabled for command: slowadclist. Use detg or detp");
 }
 
 int InferAction::slowadcname() {
@@ -3273,7 +3274,8 @@ int InferAction::start() {
 
 int InferAction::status() {
 
-    throw RuntimeError("det is disabled for command: status. Use detg or detp");
+    throw RuntimeError(
+        "sls_detector is disabled for command: status. Use detg or detp");
 }
 
 int InferAction::stop() {
@@ -3311,8 +3313,9 @@ int InferAction::storagecell_delay() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: storagecell_delay "
-                           "with number of arguments 1. Use detg or detp");
+        throw RuntimeError(
+            "sls_detector is disabled for command: storagecell_delay with "
+            "number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -3348,8 +3351,8 @@ int InferAction::subdeadtime() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: subdeadtime with "
-                           "number of arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: subdeadtime "
+                           "with number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -3369,8 +3372,8 @@ int InferAction::subexptime() {
     }
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: subexptime with "
-                           "number of arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: subexptime "
+                           "with number of arguments 1. Use detg or detp");
     }
 
     if (args.size() == 2) {
@@ -3766,8 +3769,8 @@ int InferAction::triggersl() {
 int InferAction::trimbits() {
 
     if (args.size() == 1) {
-        throw RuntimeError("det is disabled for command: trimbits with number "
-                           "of arguments 1. Use detg or detp");
+        throw RuntimeError("sls_detector is disabled for command: trimbits "
+                           "with number of arguments 1. Use detg or detp");
     }
 
     else {
@@ -3778,7 +3781,8 @@ int InferAction::trimbits() {
 
 int InferAction::trimen() {
 
-    throw RuntimeError("det is disabled for command: trimen. Use detg or detp");
+    throw RuntimeError(
+        "sls_detector is disabled for command: trimen. Use detg or detp");
 }
 
 int InferAction::trimval() {
@@ -3936,7 +3940,7 @@ int InferAction::udp_dstip2() {
 int InferAction::udp_dstlist() {
 
     throw RuntimeError(
-        "det is disabled for command: udp_dstlist. Use detg or detp");
+        "sls_detector is disabled for command: udp_dstlist. Use detg or detp");
 }
 
 int InferAction::udp_dstmac() {
@@ -4438,7 +4442,7 @@ int InferAction::vetoalg() {
 int InferAction::vetofile() {
 
     throw RuntimeError(
-        "det is disabled for command: vetofile. Use detg or detp");
+        "sls_detector is disabled for command: vetofile. Use detg or detp");
 }
 
 int InferAction::vetophoton() {
@@ -4460,13 +4464,13 @@ int InferAction::vetophoton() {
 int InferAction::vetoref() {
 
     throw RuntimeError(
-        "det is disabled for command: vetoref. Use detg or detp");
+        "sls_detector is disabled for command: vetoref. Use detg or detp");
 }
 
 int InferAction::vetostream() {
 
     throw RuntimeError(
-        "det is disabled for command: vetostream. Use detg or detp");
+        "sls_detector is disabled for command: vetostream. Use detg or detp");
 }
 
 int InferAction::virtualFunction() {

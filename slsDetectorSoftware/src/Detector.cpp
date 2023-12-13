@@ -3,8 +3,8 @@
 #include "sls/Detector.h"
 #include "sls/detectorData.h"
 
-#include "CmdParser.h"
 #include "Caller.h"
+#include "CmdParser.h"
 #include "CtbConfig.h"
 #include "DetectorImpl.h"
 #include "Module.h"
@@ -96,7 +96,7 @@ void Detector::loadParameters(const std::vector<std::string> &parameters) {
     for (const auto &current_line : parameters) {
         parser.Parse(current_line);
         caller.call(parser.command(), parser.arguments(), parser.detector_id(),
-                   defs::PUT_ACTION, std::cout, parser.receiver_id());
+                    defs::PUT_ACTION, std::cout, parser.receiver_id());
     }
 }
 

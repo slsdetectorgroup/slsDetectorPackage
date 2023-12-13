@@ -3250,3 +3250,6 @@ complete -F _sd -o filenames detg
 complete -F _sd -o filenames sls_detector_put
 complete -F _sd -o filenames p
 complete -F _sd -o filenames detp
+
+complete -F _sd -o filenames sls_detector
+complete -F _sd -o filenames det

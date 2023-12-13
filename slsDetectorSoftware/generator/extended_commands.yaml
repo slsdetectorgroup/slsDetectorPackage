@@ -13271,7 +13271,7 @@ vetofile:
         convert_det_id: true
         exceptions:
         - condition: 'true'
-          message: '"Cannot get vetofile"'
+          message: '"Cannot get vetofile. Did you mean vetophoton?"'
         function: ''
         input: []
         input_types: []

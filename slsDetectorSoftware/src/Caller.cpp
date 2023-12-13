@@ -17542,7 +17542,7 @@ std::string Caller::vetofile(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (true) {
-            throw RuntimeError("Cannot get vetofile");
+            throw RuntimeError("Cannot get vetofile. Did you mean vetophoton?");
         }
     }
 

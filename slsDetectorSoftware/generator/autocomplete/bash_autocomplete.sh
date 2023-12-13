@@ -3058,14 +3058,6 @@ return 0
 }
 __vetofile() {
 FCN_RETURN=""
-if [[ ${IS_GET} -eq 1 ]]; then
-if [[ "${cword}" == "2" ]]; then
-FCN_RETURN="hits raw"
-fi
-if [[ "${cword}" == "3" ]]; then
-FCN_RETURN="10gbe lll none"
-fi
-fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""
@@ -3104,20 +3096,6 @@ return 0
 }
 __vetoref() {
 FCN_RETURN=""
-if [[ ${IS_GET} -eq 1 ]]; then
-if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=""
-fi
-if [[ "${cword}" == "3" ]]; then
-FCN_RETURN=""
-fi
-if [[ "${cword}" == "4" ]]; then
-FCN_RETURN=""
-fi
-if [[ "${cword}" == "5" ]]; then
-FCN_RETURN=""
-fi
-fi
 if [[ ${IS_GET} -eq 0 ]]; then
 if [[ "${cword}" == "2" ]]; then
 FCN_RETURN=""

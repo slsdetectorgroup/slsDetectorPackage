@@ -3154,7 +3154,7 @@ extsig:
       output: [ 'args[0]', "' '", 'args[1]' ]
 
 dac:
-  help: "code: return GetHelpDacWrapper(cmd, args);\n" # TODO
+  help: "code: return GetHelpDacWrapper(cmd, args);\n" # this is a special case
   actions:
     GET:
       exceptions:
@@ -3263,14 +3263,11 @@ rx_status:
       function: getReceiverStatus
       require_det_id: true
       output: [ OutString(t) ]
-    # TODO make better specific error on PUT
-    #PUT:
-    #  exceptions:
-    #    - condition: "1"
-    #      message: '"INTERNAL ERROR: Invalid action: supported actions are ['GET']. Did you mean to use command 'rx_start' or 'rx_stop'?"'
-    #  argc: -1
-    #  function: ''
-    #  output: [ ' ' ]
+    PUT:
+      argc: -1
+      exceptions:
+            - condition: 'true'
+              message: '"Cannot put. Did you mean to use command: \"rx_start\" or \"rx_stop\"?"'
 
 status:
   help: "[running, error, transmitting, finished, waiting, idle]\n\tDetector status. Goes to stop server."
@@ -3280,8 +3277,12 @@ status:
       function: getDetectorStatus
       require_det_id: true
       output: [ OutString(t) ]
-    # TODO add specific error on PUT
-    # "Cannot put. Did you mean to use command 'start' or 'stop'?");
+    PUT:
+      argc: -1
+      exceptions:
+            - condition: 'true'
+              message: '"Cannot put. Did you mean to use command: \"start\" or \"stop\"?"'
+
 
 scan:
   help: "[dac_name|0|trimbits] [start_val] [stop_val] [step_size] [dac settling time ns|us|ms|s]\n\tEnables/ disables scans for dac and trimbits \n\tEnabling scan sets number of frames to number of steps in receiver. \n\tTo cancel scan configuration, set dac to '0', which also sets number of frames to 1. \n\t[Eiger][Mythen3] Use trimbits as dac name for a trimbit scan."
@@ -3601,8 +3602,12 @@ vetophoton:
 vetoref:
   help: "[gain index] [12 bit value]\n\t[Gotthard2] Set veto reference for all 128 channels for all chips."
   actions:
-    # TODO add specific error on GET
-    # "cannot get vetoref. Did you mean vetophoton?"
+    GET:
+      argc: -1
+      exceptions:
+            - condition: 'true'
+              message: '"Cannot get vetoref. Did you mean vetophoton?"'
+
     PUT:
       argc: 2
       function: setVetoReference
@@ -3614,8 +3619,11 @@ vetoref:
 vetofile:
   help: "[chip index 0-9, -1 for all] [file name] \n\t[Gotthard2] Set veto reference for each 128 channels for specific chip. The file should have 128 rows of gain index and 12 bit value in dec"
   actions:
-    # TODO add specific error on GET
-    # "cannot get vetoref. Did you mean vetophoton?"
+    GET:
+      argc: -1
+      exceptions:
+            - condition: 'true'
+              message: '"Cannot get vetofile. Did you mean vetophoton?"'
     PUT:
       argc: 2
       function: setVetoFile

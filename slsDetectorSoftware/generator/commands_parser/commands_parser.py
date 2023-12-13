@@ -40,9 +40,13 @@ class CommandParser:
             'actions': {}
         }
 
-    def _verify_argument(self, arg, infer_action):
+    def _verify_argument(self, arg, infer_action, command_name, action):
         if arg['function'] == '' and 'ctb_output_list' not in arg:
-            raise ValueError(f'Argument {arg} does not have a function')
+            special_exception_message_list = ["Cannot put", "Cannot get"]
+            if 'exceptions' in arg and arg['exceptions'][0]['condition'] == 'true' and any(ele in arg['exceptions'][0]['message'] for ele in special_exception_message_list):
+                self.logger.warning(f"{command_name} has a special exception message for {action}.")
+            else:
+                self.logger.warning(f"{command_name} [{action}] does not have a function")
         if len(arg['input_types']) != len(arg['input']):
             raise ValueError(f'Argument {arg} does not have the correct number of inputs')
         if 'separate_time_units' in arg:
@@ -82,7 +86,7 @@ class CommandParser:
                     if 'args' in action_params:
                         raise ValueError(f'Action {action} has both argc and args')
                     arg = {**self.propagate_config, **action_params}
-                    self._verify_argument(arg, command['infer_action'])
+                    self._verify_argument(arg, command['infer_action'], command_name, action)
                 elif 'args' in action_params:
                     if type(action_params['args']) is not list:
                         raise ValueError(f'Action {action} args is not a list')
@@ -92,7 +96,7 @@ class CommandParser:
                     del action_args['args']
                     for arg in action_params['args']:
                         arg = {**action_args, **arg}
-                        self._verify_argument(arg, command['infer_action'])
+                        self._verify_argument(arg, command['infer_action'], command_name, action)
         self.logger.info('Commands file is valid ✅️')
         return True
 

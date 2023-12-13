@@ -4,7 +4,7 @@
 #include "sls/detectorData.h"
 
 #include "CmdParser.h"
-#include "CmdProxy.h"
+#include "Caller.h"
 #include "CtbConfig.h"
 #include "DetectorImpl.h"
 #include "Module.h"
@@ -91,11 +91,11 @@ void Detector::loadParameters(const std::string &fname) {
 }
 
 void Detector::loadParameters(const std::vector<std::string> &parameters) {
-    CmdProxy proxy(this);
+    Caller caller(this);
     CmdParser parser;
     for (const auto &current_line : parameters) {
         parser.Parse(current_line);
-        proxy.Call(parser.command(), parser.arguments(), parser.detector_id(),
+        caller.call(parser.command(), parser.arguments(), parser.detector_id(),
                    defs::PUT_ACTION, std::cout, parser.receiver_id());
     }
 }

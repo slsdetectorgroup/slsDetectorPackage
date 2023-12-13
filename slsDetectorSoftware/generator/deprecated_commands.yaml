@@ -1,0 +1,176 @@
+#configuration
+detectorversion:  firmwareversion
+softwareversion:  detectorserverversion
+receiverversion:  rx_version
+detectornumber:  serialnumber
+thisversion:  clientversion
+detsizechan:  detsize
+trimdir:  settingspath
+settingsdir:  settingspath
+flippeddatax:  fliprows
+
+#acquisition parameters
+cycles:  triggers
+cyclesl:  triggersl
+clkdivider:  readoutspeed
+speed:  readoutspeed
+vhighvoltage:  highvoltage
+digitest:  imagetest
+filter:  filterresistor
+readnlines:  readnrows
+
+# temperature
+
+# super old dacs
+vtr:  vtrim
+vrf:  vrpreamp
+vrs:  vrshaper
+vcall:  vcal
+vis:  vishaper
+vshaper:  vrshaper
+vpreamp:  vrpreamp
+vshaperneg:  vrshaper_n
+viinsh:  vishaper
+vpl:  vcal_n
+vph:  vcal_p
+
+# dacs
+vthreshold:  dac
+vsvp:  dac
+vsvn:  dac
+vtrim:  dac
+vrpreamp:  dac
+vrshaper:  dac
+vtgstv:  dac
+vcmp_ll:  dac
+vcmp_lr:  dac
+vcal:  dac
+vcmp_rl:  dac
+vcmp_rr:  dac
+rxb_rb:  dac
+rxb_lb:  dac
+vcp:  dac
+vcn:  dac
+vishaper:  dac
+iodelay:  dac
+vref_ds:  dac
+vcascn_pb:  dac
+vcascp_pb:  dac
+vout_cm:  dac
+vcasc_out:  dac
+vin_cm:  dac
+vref_comp:  dac
+ib_test_c:  dac
+vrshaper_n:  dac
+vipre:  dac
+vdcsh:  dac
+vth1:  dac
+vth2:  dac
+vth3:  dac
+vcal_n:  dac
+vcal_p:  dac
+vcassh:  dac
+vcas:  dac
+vicin:  dac
+vipre_out:  dac
+vref_h_adc:  dac
+vb_comp_fe:  dac
+vb_comp_adc:  dac
+vcom_cds:  dac
+vref_rstore:  dac
+vb_opa_1st:  dac
+vref_comp_fe:  dac
+vcom_adc1:  dac
+vref_prech:  dac
+vref_l_adc:  dac
+vref_cds:  dac
+vb_cs:  dac
+vb_opa_fd:  dac
+vcom_adc2:  dac
+vb_ds:  dac
+vb_comp:  dac
+vb_pixbuf:  dac
+vin_com:  dac
+vdd_prot:  dac
+vbp_colbuf:  dac
+vb_sda:  dac
+vcasc_sfp:  dac
+vipre_cds:  dac
+ibias_sfp:  dac
+
+defaultdacs:  resetdacs
+
+#acquisition
+busy:  clearbusy
+receiver:  rx_status
+framescaught:  rx_framescaught
+startingfnum:  nextframenumber
+
+#Network Configuration (Detector<->Receiver)
+detectorip:  udp_srcip
+detectorip2:  udp_srcip2
+detectormac:  udp_srcmac
+detectormac2:  udp_srcmac2
+rx_udpip:  udp_dstip
+rx_udpip2:  udp_dstip2
+rx_udpmac:  udp_dstmac
+rx_udpmac2:  udp_dstmac2
+rx_udpport:  udp_dstport
+rx_udpport2:  udp_dstport2
+flowcontrol_10g:  flowcontrol10g
+txndelay_frame:  txdelay_frame
+txndelay_left:  txdelay_left
+txndelay_right:  txdelay_right
+
+#Receiver Config
+r_silent:  rx_silent
+r_discardpolicy:  rx_discardpolicy
+r_padding:  rx_padding
+r_lock:  rx_lock
+r_lastclient:  rx_lastclient
+
+#File
+fileformat:  fformat
+outdir:  fpath
+index:  findex
+enablefwrite:  fwrite
+masterfile:  fmaster
+overwrite:  foverwrite
+r_framesperfile:  rx_framesperfile
+
+#ZMQ Streaming Parameters (Receiver<->Client)
+r_readfreq:  rx_zmqfreq
+rx_readfreq:  rx_zmqfreq
+rx_datastream:  rx_zmqstream
+
+#Eiger Specific
+resmat:  partialreset
+
+#Jungfrau Specific
+storagecells:  extrastoragecells
+auto_comp_disable:  autocompdisable
+comp_disable_time:  compdisabletime
+
+#Gotthard Specific
+#Gotthard2 Specific
+#Mythen3 Specific
+#CTB Specific
+adc:  slowadc
+flags:  romode
+i_a:  im_a
+i_b:  im_b
+i_c:  im_c
+i_d:  im_d
+i_io:  im_io
+
+#Pattern
+#Moench
+
+#Advanced
+copydetectorserver:  updatedetectorserver
+
+#Insignificant
+nframes:  framecounter
+now:  runtime
+timestamp:  frametime
+frameindex:  rx_frameindex

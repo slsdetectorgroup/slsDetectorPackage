@@ -1304,6 +1304,19 @@ int InferAction::frametime() {
     }
 }
 
+int InferAction::free() {
+
+    if (args.size() == 0) {
+        throw RuntimeError("det is disabled for command: free with number of "
+                           "arguments 0. Use detg or detp");
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
 int InferAction::fwrite() {
 
     if (args.size() == 0) {

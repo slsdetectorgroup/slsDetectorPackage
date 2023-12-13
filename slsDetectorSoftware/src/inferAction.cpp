@@ -18,10 +18,11 @@ int InferAction::infer(sls::CmdParser &parser, std::ostream &os) {
 
     } else {
 
-        throw RuntimeError("sls_detector not implemented for command: " +
+        throw RuntimeError(
 
-                           parser.command() +
-                           ". Use sls_detector_get or sls_detector_put.");
+            "sls_detector not implemented for command: " + parser.command() +
+
+            ". Use sls_detector_get or sls_detector_put.");
     }
 }
 

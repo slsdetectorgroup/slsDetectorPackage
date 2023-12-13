@@ -111,7 +111,7 @@ if(SLS_USE_TEXTCLIENT)
             set_property(TARGET ${val1} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
         endif()
     endforeach()
-    install(TARGETS ${det_bin_names} DESTINATION bin) # was not there for detp. Include? FIXME
+    install(TARGETS ${det_bin_names} DESTINATION bin)
 
 
 endif(SLS_USE_TEXTCLIENT)

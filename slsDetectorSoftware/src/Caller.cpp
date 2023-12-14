@@ -11661,10 +11661,17 @@ std::string Caller::rx_status(int action) {
 
     }
 
+    else if (action == slsDetectorDefs::PUT_ACTION) {
+        if (0) {
+            throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+    }
+
     else {
 
-        throw RuntimeError(
-            "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
+        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
+                           "are ['GET', 'PUT']");
     }
 
     // generate code for each action
@@ -11672,6 +11679,13 @@ std::string Caller::rx_status(int action) {
         if (args.size() == 0) {
             auto t = det->getReceiverStatus(std::vector<int>{det_id});
             os << OutString(t) << '\n';
+        }
+    }
+
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (true) {
+            throw RuntimeError("Cannot put. Did you mean to use command: "
+                               "\"rx_start\" or \"rx_stop\"?");
         }
     }
 
@@ -13375,10 +13389,17 @@ std::string Caller::status(int action) {
 
     }
 
+    else if (action == slsDetectorDefs::PUT_ACTION) {
+        if (0) {
+            throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+    }
+
     else {
 
-        throw RuntimeError(
-            "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
+        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
+                           "are ['GET', 'PUT']");
     }
 
     // generate code for each action
@@ -13386,6 +13407,13 @@ std::string Caller::status(int action) {
         if (args.size() == 0) {
             auto t = det->getDetectorStatus(std::vector<int>{det_id});
             os << OutString(t) << '\n';
+        }
+    }
+
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (true) {
+            throw RuntimeError("Cannot put. Did you mean to use command: "
+                               "\"start\" or \"stop\"?");
         }
     }
 
@@ -17588,7 +17616,14 @@ std::string Caller::vetofile(int action) {
     }
 
     // check if action and arguments are valid
-    if (action == slsDetectorDefs::PUT_ACTION) {
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (0) {
+            throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -17605,11 +17640,17 @@ std::string Caller::vetofile(int action) {
 
     else {
 
-        throw RuntimeError(
-            "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
+        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
+                           "are ['GET', 'PUT']");
     }
 
     // generate code for each action
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (true) {
+            throw RuntimeError("Cannot get vetofile. Did you mean vetophoton?");
+        }
+    }
+
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
             auto arg0 = StringTo<int>(args[0]);
@@ -17718,7 +17759,14 @@ std::string Caller::vetoref(int action) {
     }
 
     // check if action and arguments are valid
-    if (action == slsDetectorDefs::PUT_ACTION) {
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (0) {
+            throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
         if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
@@ -17740,11 +17788,17 @@ std::string Caller::vetoref(int action) {
 
     else {
 
-        throw RuntimeError(
-            "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
+        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
+                           "are ['GET', 'PUT']");
     }
 
     // generate code for each action
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (true) {
+            throw RuntimeError("Cannot get vetoref. Did you mean vetophoton?");
+        }
+    }
+
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
             auto arg0 = StringTo<int>(args[0]);

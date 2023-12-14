@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "slsDetectorFunctionList.h"
+#include "arm64.h"
 #include "clogger.h"
+#include "common.h"
 #include "sharedMemory.h"
 #include "sls/versionAPI.h"
-#include "common.h"
-#include "arm64.h"
 
 #include <string.h>
 #include <unistd.h> // usleep
@@ -20,7 +20,6 @@ extern int isControlServer;
 int initError = OK;
 int initCheckDone = 0;
 char initErrorMessage[MAX_STR_LENGTH];
-
 
 int detPos[2] = {0, 0};
 
@@ -51,7 +50,7 @@ void basictests() {
     int64_t fwversion = getFirmwareVersion();
     char swversion[MAX_STR_LENGTH] = {0};
     memset(swversion, 0, MAX_STR_LENGTH);
-    getServerVersion(swversion);   
+    getServerVersion(swversion);
     uint32_t requiredFirmwareVersion = REQRD_FRMWRE_VRSN;
 
     LOG(logINFOBLUE,
@@ -60,8 +59,7 @@ void basictests() {
          "Software Version:\t\t %s\n"
          "Required Firmware Version:\t 0x%x\n"
          "********************************************************\n",
-         (long long int)fwversion, swversion,
-         requiredFirmwareVersion));
+         (long long int)fwversion, swversion, requiredFirmwareVersion));
 }
 
 /* Ids */
@@ -74,8 +72,6 @@ uint64_t getFirmwareVersion() {
 #endif
     return ((bus_r(FPGAVERSIONREG) & COMPDATE_MSK) >> COMPDATE_OFST);
 }
-
-
 
 /* initialization */
 
@@ -110,10 +106,9 @@ void setupDetector() {
     LOG(logINFO, ("This Server is for 1 Xilinx Chip Test Board\n"));
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
-#endif  
+#endif
     LOG(logINFO, ("Goodbye...\n"));
 }
-
 
 int setDetectorPosition(int pos[]) {
     memcpy(detPos, pos, sizeof(detPos));

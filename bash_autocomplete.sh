@@ -1,0 +1,1 @@
+slsDetectorSoftware/generator/autocomplete/bash_autocomplete.sh

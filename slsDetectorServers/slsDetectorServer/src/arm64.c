@@ -15,7 +15,6 @@ u_int32_t *csp0base = 0;
 #define CSP0     0x20200000
 #define MEM_SIZE 0x100000
 
-
 int mapCSP0(void) {
     // if not mapped
     if (csp0base == 0) {

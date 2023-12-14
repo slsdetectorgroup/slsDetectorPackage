@@ -11,8 +11,7 @@
 #define CTRL_SRVR_INIT_TIME_US (2 * 1000 * 1000)
 
 /* Hardware Definitions */
-#define NCHAN                   (1)
+#define NCHAN (1)
 
-
-enum ADCINDEX {V_PWR_IO};
-enum DACINDEX {D0};
+enum ADCINDEX { V_PWR_IO };
+enum DACINDEX { D0 };

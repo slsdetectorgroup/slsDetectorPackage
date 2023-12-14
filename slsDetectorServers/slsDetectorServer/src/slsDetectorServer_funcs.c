@@ -12,7 +12,6 @@
 #include "loadPattern.h"
 #endif
 
-
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <string.h>
@@ -1664,7 +1663,7 @@ int get_module(int file_des) {
     module.dacs = NULL;
     module.chanregs = NULL;
 
-#if !defined(MYTHEN3D) && !defined(EIGERD) 
+#if !defined(MYTHEN3D) && !defined(EIGERD)
     functionNotImplemented();
 #else
 
@@ -5603,7 +5602,8 @@ int set_num_interfaces(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting number of interfaces: %d\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARD2D) && !defined(XLINX_CHIPTESTBOARDD)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARD2D) &&        \
+    !defined(XLINX_CHIPTESTBOARDD)
     // fixed number of udp interfaces
     int num_interfaces = getNumberofUDPInterfaces();
     if (arg != num_interfaces) {
@@ -9827,7 +9827,8 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
             LOG(logINFO, ("\tServer Name: %s\n", serverName));
         }
 
-#if !defined(GOTTHARD2D) && !defined(MYTHEN3D) && !defined(EIGERD) && !defined (XILINX_CHIPTESTBOARDD)
+#if !defined(GOTTHARD2D) && !defined(MYTHEN3D) && !defined(EIGERD) &&          \
+    !defined(XILINX_CHIPTESTBOARDD)
         int forceDeleteNormalFile = 0;
         if (receiveData(file_des, &forceDeleteNormalFile,
                         sizeof(forceDeleteNormalFile), INT32) < 0)
@@ -9863,7 +9864,8 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
         }
 
         if (ret == OK) {
-#if defined(GOTTHARD2D) || defined(MYTHEN3D) || defined(EIGERD) || defined (XILINX_CHIPTESTBOARDD)
+#if defined(GOTTHARD2D) || defined(MYTHEN3D) || defined(EIGERD) ||             \
+    defined(XILINX_CHIPTESTBOARDD)
             receive_program_default(file_des, index, functionType, filesize,
                                     checksum, serverName);
 #else
@@ -10009,7 +10011,8 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
 void receive_program_default(int file_des, enum PROGRAM_INDEX index,
                              char *functionType, uint64_t filesize,
                              char *checksum, char *serverName) {
-#if !defined(GOTTHARD2D) && !defined(MYTHEN3D) && !defined(EIGERD) && !defined (XILINX_CHIPTESTBOARDD)
+#if !defined(GOTTHARD2D) && !defined(MYTHEN3D) && !defined(EIGERD) &&          \
+    !defined(XILINX_CHIPTESTBOARDD)
     ret = FAIL;
     sprintf(mess,
             "Could not %s. program via blackfin not implmented for this "

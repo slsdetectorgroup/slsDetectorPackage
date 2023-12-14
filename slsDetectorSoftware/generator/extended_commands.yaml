@@ -8961,6 +8961,22 @@ rx_status:
         - OutString(t)
         require_det_id: true
         store_result_in_t: true
+    PUT:
+      args:
+      - arg_types: []
+        argc: -1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: 'true'
+          message: '"Cannot put. Did you mean to use command: \"rx_start\" or \"rx_stop\"?"'
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
   command_name: rx_status
   function_alias: rx_status
   help: "[running, idle, transmitting]\n\tReceiver listener status."
@@ -10129,6 +10145,22 @@ status:
         - OutString(t)
         require_det_id: true
         store_result_in_t: true
+    PUT:
+      args:
+      - arg_types: []
+        argc: -1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: 'true'
+          message: '"Cannot put. Did you mean to use command: \"start\" or \"stop\"?"'
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
   command_name: status
   function_alias: status
   help: "[running, error, transmitting, finished, waiting, idle]\n\tDetector status.\
@@ -13316,6 +13348,22 @@ vetoalg:
   infer_action: true
 vetofile:
   actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: -1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: 'true'
+          message: '"Cannot get vetofile. Did you mean vetophoton?"'
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
     PUT:
       args:
       - arg_types:
@@ -13408,6 +13456,22 @@ vetophoton:
   infer_action: true
 vetoref:
   actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: -1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: 'true'
+          message: '"Cannot get vetoref. Did you mean vetophoton?"'
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: true
     PUT:
       args:
       - arg_types:

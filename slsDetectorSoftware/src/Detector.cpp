@@ -3,8 +3,8 @@
 #include "sls/Detector.h"
 #include "sls/detectorData.h"
 
-#include "CmdParser.h"
 #include "Caller.h"
+#include "CmdParser.h"
 #include "CtbConfig.h"
 #include "DetectorImpl.h"
 #include "Module.h"
@@ -96,7 +96,7 @@ void Detector::loadParameters(const std::vector<std::string> &parameters) {
     for (const auto &current_line : parameters) {
         parser.Parse(current_line);
         caller.call(parser.command(), parser.arguments(), parser.detector_id(),
-                   defs::PUT_ACTION, std::cout, parser.receiver_id());
+                    defs::PUT_ACTION, std::cout, parser.receiver_id());
     }
 }
 
@@ -908,7 +908,7 @@ void Detector::stopDetector(Positions pos) {
     case defs::EIGER:
     case defs::JUNGFRAU:
     case defs::MOENCH:
-    case defs::CHIPTESTBOARD: 
+    case defs::CHIPTESTBOARD:
     case defs::XILINX_CHIPTESTBOARD: {
         auto res = getNextFrameNumber(pos);
         if (!res.equal()) {
@@ -2084,7 +2084,8 @@ Result<int> Detector::getSYNCClock(Positions pos) const {
 
 std::vector<defs::dacIndex> Detector::getPowerList() const {
     auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD) {
+    if (dettype != defs::CHIPTESTBOARD &&
+        dettype != defs::XILINX_CHIPTESTBOARD) {
         throw RuntimeError("Power list not implemented for this detector");
     }
     return std::vector<defs::dacIndex>{defs::V_POWER_A, defs::V_POWER_B,
@@ -2094,7 +2095,8 @@ std::vector<defs::dacIndex> Detector::getPowerList() const {
 
 std::vector<defs::dacIndex> Detector::getSlowADCList() const {
     auto dettype = getDetectorType().squash();
-    if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD) {
+    if (dettype != defs::CHIPTESTBOARD &&
+        dettype != defs::XILINX_CHIPTESTBOARD) {
         throw RuntimeError("Slow ADC list not implemented for this detector");
     }
     return std::vector<defs::dacIndex>{
@@ -2406,7 +2408,8 @@ std::string Detector::getSignalName(const int i) const {
 
 void Detector::setPowerNames(const std::vector<std::string> names) {
     auto dettype = getDetectorType().squash();
-    if (getDetectorType().squash() != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD &&
+        dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");
     pimpl->setCtbPowerNames(names);
 }
@@ -2430,7 +2433,7 @@ defs::dacIndex Detector::getPowerIndex(const std::string &name) const {
 }
 
 void Detector::setPowerName(const defs::dacIndex index,
-                              const std::string &name) {
+                            const std::string &name) {
     auto dettype = getDetectorType().squash();
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named powers only for CTB");

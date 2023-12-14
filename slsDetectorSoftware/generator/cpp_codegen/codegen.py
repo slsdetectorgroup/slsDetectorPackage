@@ -93,7 +93,7 @@ class CodeGenerator:
                         with function('int', f"InferAction::{command['function_alias']}", []) as f:
                             if (command_name, -1) in non_dist| type_dist:
                                 self.write_line(
-                                    f'throw RuntimeError("det is disabled for command: {command_name}. Use detg or detp");')
+                                    f'throw RuntimeError("sls_detector is disabled for command: {command_name}. Use sls_detector_get or sls_detector_put");')
                             elif not command['infer_action']:
                                 self.write_line('throw RuntimeError("infer_action is disabled");')
                             else:
@@ -107,7 +107,7 @@ class CodeGenerator:
                                             # check if this argc is not distinguishable
                                             if (command_name, arg["argc"]) in non_dist | type_dist:
                                                 self.write_line(
-                                                    f'throw RuntimeError("det is disabled for command: {command_name} with number of arguments {arg["argc"]}. Use detg or detp");')
+                                                    f'throw RuntimeError("sls_detector is disabled for command: {command_name} with number of arguments {arg["argc"]}. Use sls_detector_get or sls_detector_put");')
                                             else:
                                                 self.write_line(f'return {self.actions_dict[action]};')
                                 with else_block():
@@ -192,10 +192,13 @@ class CodeGenerator:
 
             input_arguments = ", ".join(input_arguments)
             # call function
-            if arg['store_result_in_t']:
-                self.write_line(f'auto t = det->{arg["function"]}({input_arguments});')
+            if arg["function"]:
+                if arg['store_result_in_t']:
+                    self.write_line(f'auto t = det->{arg["function"]}({input_arguments});')
+                else:
+                    self.write_line(f'det->{arg["function"]}({input_arguments});')
             else:
-                self.write_line(f'det->{arg["function"]}({input_arguments});')
+                pass #We have no function so skip block
 
             output_args = []
             for output in arg['output']:

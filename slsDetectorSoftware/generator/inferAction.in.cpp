@@ -9,8 +9,9 @@ int InferAction::infer(sls::CmdParser &parser, std::ostream &os) {
     if (it != functions.end()) {
         return ((*this).*(it->second))();
     } else {
-        throw RuntimeError("det not implemented for command: " +
-                           parser.command());
+        throw RuntimeError(
+            "sls_detector not implemented for command: " + parser.command() +
+            ". Use sls_detector_get or sls_detector_put.");
     }
 }
 

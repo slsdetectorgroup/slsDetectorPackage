@@ -38,13 +38,13 @@ def get_types(arg_types):
 
     #Intercept the options and in case detector specific options appear replace the
     #list of options with a command line call that fetches them
-    #TODO! Rename detg 
+    #TODO! Rename sls_detector_get 
     if "defs::dacIndex" in arg_types:
-        return "`detg daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
+        return "`sls_detector_get daclist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
     elif "defs::detectorSettings" in arg_types:
-        return "`detg settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
+        return "`sls_detector_get settingslist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
     elif "defs::timingMode" in arg_types:
-        return "`detg timinglist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
+        return "`sls_detector_get timinglist | sed -e 's/.*\[\(.*\)\].*/\\1/' | sed 's/,//g'`"
 
     
     return ret

@@ -22,7 +22,7 @@ target_include_directories(xilinx_ctbDetectorServer_virtual
 )
 
 target_compile_definitions(xilinx_ctbDetectorServer_virtual
-    PUBLIC XILINX_CHIPTESTBOARDD VIRTUAL STOP_SERVER
+    PUBLIC XILINX_CHIPTESTBOARDD ARMPROCESSOR VIRTUAL STOP_SERVER
 )
 
 target_link_libraries(xilinx_ctbDetectorServer_virtual

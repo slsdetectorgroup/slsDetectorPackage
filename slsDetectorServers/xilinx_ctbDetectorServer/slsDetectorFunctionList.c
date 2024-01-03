@@ -11,6 +11,7 @@
 #include <unistd.h> // usleep
 
 // Global variable from slsDetectorServer_funcs
+extern int debugflag;
 extern int updateFlag;
 extern const enum detectorType myDetectorType;
 
@@ -47,6 +48,24 @@ void basictests() {
         return;
     }
 
+#ifndef VIRTUAL
+    /*if ((!debugflag) && (!updateFlag) &&
+        ((validateKernelVersion(KERNEL_DATE_VRSN) == FAIL) ||
+         (checkType() == FAIL) || (testFpga() == FAIL) ||
+         (testBus() == FAIL))) {*/
+    if ((!debugflag) && (!updateFlag) &&
+        ((validateKernelVersion(KERNEL_DATE_VRSN) == FAIL) ||
+         (checkType() == FAIL) /*|| (testFpga() == FAIL) ||
+         (testBus() == FAIL)*/)) {
+        sprintf(initErrorMessage,
+                "Could not pass basic tests of FPGA and bus. Cannot proceed. "
+                "Check Firmware. (Firmware version:0x%lx) \n",
+                getFirmwareVersion());
+        LOG(logERROR, ("%s\n\n", initErrorMessage));
+        initError = FAIL;
+        return;
+    }
+#endif
     int64_t fwversion = getFirmwareVersion();
     char swversion[MAX_STR_LENGTH] = {0};
     memset(swversion, 0, MAX_STR_LENGTH);
@@ -55,11 +74,26 @@ void basictests() {
 
     LOG(logINFOBLUE,
         ("**************************************************\n"
-         "Reg [0x0]:\t\t 0x%llx\n"
+         "Firmware Version:\t\t 0x%lx\n"
          "Software Version:\t\t %s\n"
          "Required Firmware Version:\t 0x%x\n"
          "********************************************************\n",
-         (long long int)fwversion, swversion, requiredFirmwareVersion));
+         fwversion, swversion, requiredFirmwareVersion));
+}
+
+int checkType() {
+#ifdef VIRTUAL
+    return OK;
+#endif
+    u_int32_t type =
+        ((bus_r(FPGAVERSIONREG) & DETTYPE_MSK) >> DETTYPE_OFST);
+    if (type != XILINX_CHIPTESTBOARD) {
+        LOG(logERROR,
+            ("This is not a Xilinx CTB firmware (read %d, expected %d)\n", type,
+             XILINX_CHIPTESTBOARD));
+        return FAIL;
+    }
+    return OK;
 }
 
 /* Ids */

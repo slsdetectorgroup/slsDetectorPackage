@@ -9,8 +9,10 @@ md5_dir = ../../slsSupportLib/src/
 
 CROSS  		= aarch64-none-linux-gnu-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -std=gnu99 -DXILINX_CHIPTESTBOARDD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir)  #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
-LDLIBS		+= 	-lm -lrt -pthread
+#TODO: allow these warnings and fix code
+CFLAGS		+=  -Wall -std=gnu99 -Wno-format-overflow -Wno-format-truncation -DXILINX_CHIPTESTBOARDD -DARMPROCESSOR -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir)  #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
+#CFLAGS		+=  -Wall -std=gnu99  -DXILINX_CHIPTESTBOARDD -DARMPROCESSOR -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir)  #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
+LDLIBS		+= 	-lm -lrt -pthread 
 PROGS		= 	xilinx_ctbDetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777

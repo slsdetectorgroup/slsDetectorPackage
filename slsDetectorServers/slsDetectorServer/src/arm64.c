@@ -12,9 +12,33 @@
 
 
 /* global variables */
-u_int32_t *csp0base = 0;
 #define CSP0     (0xB0010000)/// 0xB008_0000
 #define MEM_SIZE 0x100000
+
+u_int32_t *csp0base = 0;
+
+void bus_w(u_int32_t offset, u_int32_t data) {
+    volatile u_int32_t *ptr1;
+    ptr1 = (u_int32_t *)(csp0base + offset / (sizeof(u_int32_t)));
+    *ptr1 = data;
+}
+
+u_int32_t bus_r(u_int32_t offset) {
+    volatile u_int32_t *ptr1;
+    ptr1 = (u_int32_t *)(csp0base + offset / (sizeof(u_int32_t)));
+    return *ptr1;
+}
+
+uint64_t getU64BitReg(int aLSB, int aMSB) {
+    uint64_t retval = bus_r(aMSB);
+    retval = (retval << 32) | bus_r(aLSB);
+    return retval;
+}
+
+void setU64BitReg(uint64_t value, int aLSB, int aMSB) {
+    bus_w(aLSB, value & (0xffffffff));
+    bus_w(aMSB, (value >> 32) & (0xffffffff));
+}
 
 int mapCSP0(void) {
     // if not mapped
@@ -49,14 +73,3 @@ int mapCSP0(void) {
     return OK;
 }
 
-void bus_w(u_int32_t offset, u_int32_t data) {
-    volatile u_int32_t *ptr1;
-    ptr1 = (u_int32_t *)(csp0base + offset / (sizeof(u_int32_t)));
-    *ptr1 = data;
-}
-
-u_int32_t bus_r(u_int32_t offset) {
-    volatile u_int32_t *ptr1;
-    ptr1 = (u_int32_t *)(csp0base + offset / (sizeof(u_int32_t)));
-    return *ptr1;
-}

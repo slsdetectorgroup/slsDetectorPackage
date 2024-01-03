@@ -120,11 +120,8 @@ int updateModuleId();
 void setModuleId(int modid);
 #endif
 #endif
-
-#ifndef XILINX_CHIPTESTBOARDD
 u_int64_t getDetectorMAC();
 u_int32_t getDetectorIP();
-#endif
 
 // initialization
 void initControlServer();

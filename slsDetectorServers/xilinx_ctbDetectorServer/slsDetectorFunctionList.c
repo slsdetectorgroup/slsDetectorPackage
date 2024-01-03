@@ -9,6 +9,8 @@
 
 #include <string.h>
 #include <unistd.h> // usleep
+#include <arpa/inet.h> // INET_ADDRSTRLEN
+
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
@@ -66,6 +68,8 @@ void basictests() {
         return;
     }
 #endif
+    uint32_t ipadd = getDetectorIP();
+    uint64_t macadd = getDetectorMAC();
     int64_t fwversion = getFirmwareVersion();
     char swversion[MAX_STR_LENGTH] = {0};
     memset(swversion, 0, MAX_STR_LENGTH);
@@ -74,11 +78,14 @@ void basictests() {
 
     LOG(logINFOBLUE,
         ("**************************************************\n"
+         "Detector IP Addr:\t\t 0x%x\n"
+         "Detector MAC Addr:\t\t 0x%lx\n\n"
+
          "Firmware Version:\t\t 0x%lx\n"
          "Software Version:\t\t %s\n"
          "Required Firmware Version:\t 0x%x\n"
          "********************************************************\n",
-         fwversion, swversion, requiredFirmwareVersion));
+         ipadd, macadd, fwversion, swversion, requiredFirmwareVersion));
 }
 
 int checkType() {
@@ -105,6 +112,56 @@ uint64_t getFirmwareVersion() {
     return REQRD_FRMWRE_VRSN;
 #endif
     return ((bus_r(FPGAVERSIONREG) & COMPDATE_MSK) >> COMPDATE_OFST);
+}
+
+u_int64_t getDetectorMAC() {
+#ifdef VIRTUAL
+    return 0;
+#else
+    char output[255], mac[255] = "";
+    u_int64_t res = 0;
+    FILE *sysFile =
+        popen("ifconfig eth0 | grep ether |  awk '{ print $2 }'", "r");
+    fgets(output, sizeof(output), sysFile);
+    pclose(sysFile);
+    // getting rid of ":"
+    char *pch;
+    pch = strtok(output, ":");
+    while (pch != NULL) {
+        strcat(mac, pch);
+        pch = strtok(NULL, ":");
+    }
+    sscanf(mac, "%lx", &res);
+    return res;
+#endif
+}
+
+u_int32_t getDetectorIP() {
+#ifdef VIRTUAL
+    return 0;
+#endif
+    char temp[INET_ADDRSTRLEN] = "";
+    u_int32_t res = 0;
+    // execute and get address
+    char output[255];
+    FILE *sysFile = popen(
+        "ifconfig  | grep 'inet '| grep -v '127.0.0.1' | awk '{ print $2 }'",
+        "r");
+    fgets(output, sizeof(output), sysFile);
+    pclose(sysFile);
+
+    // converting IPaddress to hex.
+    char *pcword = strtok(output, ".");
+    while (pcword != NULL) {
+        sprintf(output, "%02x", atoi(pcword));
+        strcat(temp, output);
+        pcword = strtok(NULL, ".");
+    }
+    strcpy(output, temp);
+    sscanf(output, "%x", &res);
+    // LOG(logINFO, ("ip:%x\n",res);
+
+    return res;
 }
 
 /* initialization */

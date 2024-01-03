@@ -10,9 +10,10 @@
 #include <fcntl.h>    // open
 #include <sys/mman.h> // mmap
 
+
 /* global variables */
 u_int32_t *csp0base = 0;
-#define CSP0     0x20200000
+#define CSP0     (0xB0010000)/// 0xB008_0000
 #define MEM_SIZE 0x100000
 
 int mapCSP0(void) {
@@ -34,7 +35,7 @@ int mapCSP0(void) {
             return FAIL;
         }
         LOG(logDEBUG1, ("/dev/mem opened\n"));
-        csp0base = mmap(0, MEM_SIZE, PROT_READ | PROT_WRITE,
+        csp0base = (u_int32_t*)mmap(0, MEM_SIZE, PROT_READ | PROT_WRITE,
                         MAP_FILE | MAP_SHARED, fd, CSP0);
         if (csp0base == MAP_FAILED) {
             LOG(logERROR, ("Can't map memmory area\n"));

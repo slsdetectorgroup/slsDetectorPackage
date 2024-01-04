@@ -4397,7 +4397,7 @@ int reboot_controller(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
-#if defined(EIGERD) && defined(XILINX_CHIPTESTBOARDD)
+#if defined(EIGERD) || defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #elif VIRTUAL
     ret = GOODBYE;

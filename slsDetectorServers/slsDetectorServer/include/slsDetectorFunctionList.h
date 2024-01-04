@@ -25,7 +25,7 @@
 #include "blackfin.h"
 #endif
 
-#ifdef XILINX_CHIPTESTBOARDD
+#ifdef ARMPROCESSOR
 #include "arm64.h"
 #endif
 

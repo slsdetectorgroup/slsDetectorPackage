@@ -264,7 +264,7 @@ std::string Caller::adcindex(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: adcindex" << std::endl;
         os << R"V0G0N([name] 
-		[ChipTestBoard] Get the adc index for the given name. )V0G0N"
+		[Ctb][Xilinx_Ctb] Get the adc index for the given name. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -289,7 +289,10 @@ std::string Caller::adcindex(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            if (det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -374,7 +377,7 @@ std::string Caller::adclist(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: adclist" << std::endl;
         os << R"V0G0N([adcname1 adcname2 .. adcname32] 
-		[ChipTestBoard] Set the list of adc names for this board. )V0G0N"
+		[Ctb][Xilinx_Ctb] Set the list of adc names for this board. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -386,6 +389,8 @@ std::string Caller::adclist(int action) {
         }
 
         if (args.size() == 0) {
+            auto det_type = det->getDetectorType().squash(defs::GENERIC);
+            ;
         }
 
     }
@@ -406,8 +411,10 @@ std::string Caller::adclist(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            if (cmd != "daclist" &&
-                det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            auto det_type = det->getDetectorType().squash(defs::GENERIC);
+            ;
+            if (cmd != "daclist" && det_type != defs::CHIPTESTBOARD &&
+                det_type != defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -419,12 +426,14 @@ std::string Caller::adclist(int action) {
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        if (cmd != "daclist" &&
-            det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        auto det_type = det->getDetectorType().squash(defs::GENERIC);
+        ;
+        if (cmd != "daclist" && det_type != defs::CHIPTESTBOARD &&
+            det_type != defs::XILINX_CHIPTESTBOARD) {
             throw RuntimeError(cmd + " only allowed for CTB.");
         }
-        if (cmd == "daclist" &&
-            det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        if (cmd == "daclist" && det_type != defs::CHIPTESTBOARD &&
+            det_type != defs::XILINX_CHIPTESTBOARD) {
             throw RuntimeError("This detector already has fixed dac names. "
                                "Cannot change them.");
         }
@@ -445,7 +454,7 @@ std::string Caller::adcname(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: adcname" << std::endl;
         os << R"V0G0N([0-31][name] 
-		[ChipTestBoard] Set the adc at the given position to the given name. )V0G0N"
+		[Ctb][Xilinx_Ctb] Set the adc at the given position to the given name. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -490,7 +499,10 @@ std::string Caller::adcname(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            if (det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -504,7 +516,10 @@ std::string Caller::adcname(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            if (det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -955,7 +970,7 @@ std::string Caller::asamples(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: asamples" << std::endl;
         os << R"V0G0N([n_samples]
-	[CTB] Number of analog samples expected. )V0G0N"
+	[Ctb] Number of analog samples expected. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -2248,7 +2263,9 @@ std::string Caller::dac(int action) {
 
         if (args.size() == 1) {
             defs::dacIndex dacIndex =
-                (det->getDetectorType().squash() == defs::CHIPTESTBOARD &&
+                ((det->getDetectorType().squash() == defs::CHIPTESTBOARD ||
+                  det->getDetectorType().squash() ==
+                      defs::XILINX_CHIPTESTBOARD) &&
                  !is_int(args[0]))
                     ? det->getDacIndex(args[0])
                     : StringTo<defs::dacIndex>(args[0]);
@@ -2261,7 +2278,9 @@ std::string Caller::dac(int action) {
 
         if (args.size() == 2) {
             defs::dacIndex dacIndex =
-                (det->getDetectorType().squash() == defs::CHIPTESTBOARD &&
+                ((det->getDetectorType().squash() == defs::CHIPTESTBOARD ||
+                  det->getDetectorType().squash() ==
+                      defs::XILINX_CHIPTESTBOARD) &&
                  !is_int(args[0]))
                     ? det->getDacIndex(args[0])
                     : StringTo<defs::dacIndex>(args[0]);
@@ -2281,7 +2300,9 @@ std::string Caller::dac(int action) {
 
         if (args.size() == 2) {
             defs::dacIndex dacIndex =
-                (det->getDetectorType().squash() == defs::CHIPTESTBOARD &&
+                ((det->getDetectorType().squash() == defs::CHIPTESTBOARD ||
+                  det->getDetectorType().squash() ==
+                      defs::XILINX_CHIPTESTBOARD) &&
                  !is_int(args[0]))
                     ? det->getDacIndex(args[0])
                     : StringTo<defs::dacIndex>(args[0]);
@@ -2299,7 +2320,9 @@ std::string Caller::dac(int action) {
 
         if (args.size() == 3) {
             defs::dacIndex dacIndex =
-                (det->getDetectorType().squash() == defs::CHIPTESTBOARD &&
+                ((det->getDetectorType().squash() == defs::CHIPTESTBOARD ||
+                  det->getDetectorType().squash() ==
+                      defs::XILINX_CHIPTESTBOARD) &&
                  !is_int(args[0]))
                     ? det->getDacIndex(args[0])
                     : StringTo<defs::dacIndex>(args[0]);
@@ -2327,12 +2350,15 @@ std::string Caller::dac(int action) {
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
             defs::dacIndex dacIndex =
-                (det->getDetectorType().squash() == defs::CHIPTESTBOARD &&
+                ((det->getDetectorType().squash() == defs::CHIPTESTBOARD ||
+                  det->getDetectorType().squash() ==
+                      defs::XILINX_CHIPTESTBOARD) &&
                  !is_int(args[0]))
                     ? det->getDacIndex(args[0])
                     : StringTo<defs::dacIndex>(args[0]);
             if (is_int(args[0]) &&
-                det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+                det->getDetectorType().squash() != defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(
                     "Dac indices can only be used for chip test board. Use "
                     "daclist to get list of dac names for current detector.");
@@ -2344,12 +2370,15 @@ std::string Caller::dac(int action) {
 
         if (args.size() == 2) {
             defs::dacIndex dacIndex =
-                (det->getDetectorType().squash() == defs::CHIPTESTBOARD &&
+                ((det->getDetectorType().squash() == defs::CHIPTESTBOARD ||
+                  det->getDetectorType().squash() ==
+                      defs::XILINX_CHIPTESTBOARD) &&
                  !is_int(args[0]))
                     ? det->getDacIndex(args[0])
                     : StringTo<defs::dacIndex>(args[0]);
             if (is_int(args[0]) &&
-                det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+                det->getDetectorType().squash() != defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(
                     "Dac indices can only be used for chip test board. Use "
                     "daclist to get list of dac names for current detector.");
@@ -2367,12 +2396,15 @@ std::string Caller::dac(int action) {
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
             defs::dacIndex dacIndex =
-                (det->getDetectorType().squash() == defs::CHIPTESTBOARD &&
+                ((det->getDetectorType().squash() == defs::CHIPTESTBOARD ||
+                  det->getDetectorType().squash() ==
+                      defs::XILINX_CHIPTESTBOARD) &&
                  !is_int(args[0]))
                     ? det->getDacIndex(args[0])
                     : StringTo<defs::dacIndex>(args[0]);
             if (is_int(args[0]) &&
-                det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+                det->getDetectorType().squash() != defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(
                     "Dac indices can only be used for chip test board. Use "
                     "daclist to get list of dac names for current detector.");
@@ -2385,12 +2417,15 @@ std::string Caller::dac(int action) {
 
         if (args.size() == 3) {
             defs::dacIndex dacIndex =
-                (det->getDetectorType().squash() == defs::CHIPTESTBOARD &&
+                ((det->getDetectorType().squash() == defs::CHIPTESTBOARD ||
+                  det->getDetectorType().squash() ==
+                      defs::XILINX_CHIPTESTBOARD) &&
                  !is_int(args[0]))
                     ? det->getDacIndex(args[0])
                     : StringTo<defs::dacIndex>(args[0]);
             if (is_int(args[0]) &&
-                det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+                det->getDetectorType().squash() != defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(
                     "Dac indices can only be used for chip test board. Use "
                     "daclist to get list of dac names for current detector.");
@@ -2412,7 +2447,7 @@ std::string Caller::dacindex(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: dacindex" << std::endl;
         os << R"V0G0N([name] 
-		[ChipTestBoard] Get the dac index for the given name. )V0G0N"
+		[Ctb][Xilinx_Ctb] Get the dac index for the given name. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -2439,7 +2474,10 @@ std::string Caller::dacindex(int action) {
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
             defs::dacIndex index = defs::DAC_0;
-            if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            if (det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -2460,7 +2498,7 @@ std::string Caller::daclist(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: daclist" << std::endl;
         os << R"V0G0N([dacname1 dacname2 .. dacname18] 
-		[ChipTestBoard] Set the list of dac names for this detector.
+		[Ctb][Xilinx_Ctb] Set the list of dac names for this detector.
 		[All] Gets the list of dac names for every dac for this detector. )V0G0N"
            << std::endl;
         return os.str();
@@ -2473,6 +2511,8 @@ std::string Caller::daclist(int action) {
         }
 
         if (args.size() == 0) {
+            auto det_type = det->getDetectorType().squash(defs::GENERIC);
+            ;
         }
 
     }
@@ -2493,8 +2533,10 @@ std::string Caller::daclist(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            if (cmd != "daclist" &&
-                det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            auto det_type = det->getDetectorType().squash(defs::GENERIC);
+            ;
+            if (cmd != "daclist" && det_type != defs::CHIPTESTBOARD &&
+                det_type != defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -2506,12 +2548,14 @@ std::string Caller::daclist(int action) {
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        if (cmd != "daclist" &&
-            det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        auto det_type = det->getDetectorType().squash(defs::GENERIC);
+        ;
+        if (cmd != "daclist" && det_type != defs::CHIPTESTBOARD &&
+            det_type != defs::XILINX_CHIPTESTBOARD) {
             throw RuntimeError(cmd + " only allowed for CTB.");
         }
-        if (cmd == "daclist" &&
-            det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        if (cmd == "daclist" && det_type != defs::CHIPTESTBOARD &&
+            det_type != defs::XILINX_CHIPTESTBOARD) {
             throw RuntimeError("This detector already has fixed dac names. "
                                "Cannot change them.");
         }
@@ -2532,7 +2576,7 @@ std::string Caller::dacname(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: dacname" << std::endl;
         os << R"V0G0N([0-17][name] 
-		[ChipTestBoard] Set the dac at the given position to the given name. )V0G0N"
+		[Ctb][Xilinx_Ctb] Set the dac at the given position to the given name. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -2570,7 +2614,10 @@ std::string Caller::dacname(int action) {
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
             defs::dacIndex index = defs::DAC_0;
-            if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            if (det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -2585,7 +2632,10 @@ std::string Caller::dacname(int action) {
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
             defs::dacIndex index = defs::DAC_0;
-            if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            if (det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -2880,7 +2930,7 @@ std::string Caller::dbitpipeline(int action) {
         os << R"V0G0N([n_value]
 	[Ctb][Gotthard2] Pipeline of the clock for latching digital bits.
 	[Gotthard2] Options: 0-7
-	[CTB] Options: 0-255 )V0G0N"
+	[Ctb] Options: 0-255 )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -3200,7 +3250,7 @@ std::string Caller::delayl(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: delayl" << std::endl;
         os << R"V0G0N(
-	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Delay Left in Acquisition. 
+	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Delay Left in Acquisition. 
 	[Gotthard2] only in continuous mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -3572,7 +3622,7 @@ std::string Caller::dsamples(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: dsamples" << std::endl;
         os << R"V0G0N([n_value]
-	[CTB] Number of digital samples expected. )V0G0N"
+	[Ctb] Number of digital samples expected. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -5082,7 +5132,7 @@ std::string Caller::framecounter(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: framecounter" << std::endl;
         os << R"V0G0N(
-	[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of frames from start run control.
+	[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Number of frames from start run control.
 	[Gotthard2] only in continuous mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -5192,7 +5242,7 @@ std::string Caller::framesl(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: framesl" << std::endl;
         os << R"V0G0N(
-	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of frames left in acquisition. 
+	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Number of frames left in acquisition. 
 	[Gotthard2] only in continuous auto mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -5233,7 +5283,7 @@ std::string Caller::frametime(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: frametime" << std::endl;
         os << R"V0G0N([(optional unit) ns|us|ms|s]
-	[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Timestamp at a frame start.
+	[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Timestamp at a frame start.
 	[Gotthard2] not in burst and auto mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -6902,7 +6952,7 @@ std::string Caller::maxadcphaseshift(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: maxadcphaseshift" << std::endl;
         os << R"V0G0N(
-	[Jungfrau][Moench][CTB] Absolute maximum Phase shift of ADC clock. )V0G0N"
+	[Jungfrau][Moench][Ctb] Absolute maximum Phase shift of ADC clock. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -6998,7 +7048,7 @@ std::string Caller::maxdbitphaseshift(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: maxdbitphaseshift" << std::endl;
         os << R"V0G0N(
-	[CTB][Jungfrau] Absolute maximum Phase shift of of the clock to latch digital bits. )V0G0N"
+	[Ctb][Jungfrau] Absolute maximum Phase shift of of the clock to latch digital bits. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -7174,7 +7224,7 @@ std::string Caller::nextframenumber(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: nextframenumber" << std::endl;
         os << R"V0G0N([n_value]
-	[Eiger][Jungfrau][Moench][CTB] Next frame number. Stopping acquisition might result in different frame numbers for different modules. )V0G0N"
+	[Eiger][Jungfrau][Moench][Ctb] Next frame number. Stopping acquisition might result in different frame numbers for different modules. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -9091,7 +9141,7 @@ std::string Caller::periodl(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: periodl" << std::endl;
         os << R"V0G0N(
-	[Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] Period left for current frame. 
+	[Gotthard][Jungfrau][Moench][Ctb][Mythen3][Gotthard2] Period left for current frame. 
 	[Gotthard2] only in continuous mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -9332,7 +9382,7 @@ std::string Caller::powerindex(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: powerindex" << std::endl;
         os << R"V0G0N([name] 
-		[ChipTestBoard] Get the power index for the given name. )V0G0N"
+		[Ctb][Xilinx_Ctb] Get the power index for the given name. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -9359,7 +9409,10 @@ std::string Caller::powerindex(int action) {
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
             defs::dacIndex index = defs::V_POWER_A;
-            if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            if (det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -9380,7 +9433,7 @@ std::string Caller::powerlist(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: powerlist" << std::endl;
         os << R"V0G0N([powername1 powername2 .. powername4] 
-		[ChipTestBoard] Set the list of power names for this board. )V0G0N"
+		[Ctb][Xilinx_Ctb] Set the list of power names for this board. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -9392,6 +9445,8 @@ std::string Caller::powerlist(int action) {
         }
 
         if (args.size() == 0) {
+            auto det_type = det->getDetectorType().squash(defs::GENERIC);
+            ;
         }
 
     }
@@ -9412,8 +9467,10 @@ std::string Caller::powerlist(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            if (cmd != "daclist" &&
-                det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            auto det_type = det->getDetectorType().squash(defs::GENERIC);
+            ;
+            if (cmd != "daclist" && det_type != defs::CHIPTESTBOARD &&
+                det_type != defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -9425,12 +9482,14 @@ std::string Caller::powerlist(int action) {
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        if (cmd != "daclist" &&
-            det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        auto det_type = det->getDetectorType().squash(defs::GENERIC);
+        ;
+        if (cmd != "daclist" && det_type != defs::CHIPTESTBOARD &&
+            det_type != defs::XILINX_CHIPTESTBOARD) {
             throw RuntimeError(cmd + " only allowed for CTB.");
         }
-        if (cmd == "daclist" &&
-            det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        if (cmd == "daclist" && det_type != defs::CHIPTESTBOARD &&
+            det_type != defs::XILINX_CHIPTESTBOARD) {
             throw RuntimeError("This detector already has fixed dac names. "
                                "Cannot change them.");
         }
@@ -9451,7 +9510,7 @@ std::string Caller::powername(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: powername" << std::endl;
         os << R"V0G0N([0-4][name] 
-		[ChipTestBoard] Set the power at the given position to the given name. )V0G0N"
+		[Ctb][Xilinx_Ctb] Set the power at the given position to the given name. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -9489,7 +9548,10 @@ std::string Caller::powername(int action) {
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
             defs::dacIndex index = defs::V_POWER_A;
-            if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            if (det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -9504,7 +9566,10 @@ std::string Caller::powername(int action) {
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
             defs::dacIndex index = defs::V_POWER_A;
-            if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            if (det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -9527,7 +9592,7 @@ std::string Caller::powervalues(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: powervalues" << std::endl;
         os << R"V0G0N([name] 
-		[ChipTestBoard] Get values of all powers. )V0G0N"
+		[Ctb][Xilinx_Ctb] Get values of all powers. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -10055,6 +10120,8 @@ std::string Caller::readoutspeed(int action) {
         }
 
         if (args.size() == 0) {
+            auto det_type = det->getDetectorType().squash(defs::GENERIC);
+            ;
         }
 
     }
@@ -10065,6 +10132,8 @@ std::string Caller::readoutspeed(int action) {
         }
 
         if (args.size() == 1) {
+            auto det_type = det->getDetectorType().squash(defs::GENERIC);
+            ;
             try {
                 StringTo<defs::speedLevel>(args[0]);
             } catch (...) {
@@ -10084,7 +10153,10 @@ std::string Caller::readoutspeed(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            if (det->getDetectorType().squash() == defs::CHIPTESTBOARD) {
+            auto det_type = det->getDetectorType().squash(defs::GENERIC);
+            ;
+            if (det_type == defs::CHIPTESTBOARD ||
+                det_type == defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(
                     "ReadoutSpeed not implemented. Did you mean runclk?");
             }
@@ -10095,7 +10167,10 @@ std::string Caller::readoutspeed(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 1) {
-            if (det->getDetectorType().squash() == defs::CHIPTESTBOARD) {
+            auto det_type = det->getDetectorType().squash(defs::GENERIC);
+            ;
+            if (det_type == defs::CHIPTESTBOARD ||
+                det_type == defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(
                     "ReadoutSpeed not implemented. Did you mean runclk?");
             }
@@ -10430,7 +10505,7 @@ std::string Caller::romode(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: romode" << std::endl;
         os << R"V0G0N([analog|digital|analog_digital|transceiver|digital_transceiver]
-	[CTB] Readout mode. Default is analog. )V0G0N"
+	[Ctb] Readout mode. Default is analog. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -10621,7 +10696,7 @@ std::string Caller::runtime(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: runtime" << std::endl;
         os << R"V0G0N([(optional unit) ns|us|ms|s]
-	[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Time from detector start up.
+	[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Time from detector start up.
 	[Gotthard2] not in burst and auto mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -12504,7 +12579,7 @@ std::string Caller::serialnumber(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: serialnumber" << std::endl;
         os << R"V0G0N(
-	[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][CTB]
+	[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb]
 Serial number of detector. )V0G0N"
            << std::endl;
         return os.str();
@@ -12769,7 +12844,7 @@ std::string Caller::signalindex(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: signalindex" << std::endl;
         os << R"V0G0N([name] 
-		[ChipTestBoard] Get the signal index for the given name. )V0G0N"
+		[Ctb][Xilinx_Ctb] Get the signal index for the given name. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -12794,7 +12869,10 @@ std::string Caller::signalindex(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            if (det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -12816,7 +12894,7 @@ std::string Caller::signallist(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: signallist" << std::endl;
         os << R"V0G0N([signalname1 signalname2 .. signalname63] 
-		[ChipTestBoard] Set the list of signal names for this board. )V0G0N"
+		[Ctb][Xilinx_Ctb] Set the list of signal names for this board. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -12828,6 +12906,8 @@ std::string Caller::signallist(int action) {
         }
 
         if (args.size() == 0) {
+            auto det_type = det->getDetectorType().squash(defs::GENERIC);
+            ;
         }
 
     }
@@ -12848,8 +12928,10 @@ std::string Caller::signallist(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            if (cmd != "daclist" &&
-                det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            auto det_type = det->getDetectorType().squash(defs::GENERIC);
+            ;
+            if (cmd != "daclist" && det_type != defs::CHIPTESTBOARD &&
+                det_type != defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -12861,12 +12943,14 @@ std::string Caller::signallist(int action) {
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        if (cmd != "daclist" &&
-            det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        auto det_type = det->getDetectorType().squash(defs::GENERIC);
+        ;
+        if (cmd != "daclist" && det_type != defs::CHIPTESTBOARD &&
+            det_type != defs::XILINX_CHIPTESTBOARD) {
             throw RuntimeError(cmd + " only allowed for CTB.");
         }
-        if (cmd == "daclist" &&
-            det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        if (cmd == "daclist" && det_type != defs::CHIPTESTBOARD &&
+            det_type != defs::XILINX_CHIPTESTBOARD) {
             throw RuntimeError("This detector already has fixed dac names. "
                                "Cannot change them.");
         }
@@ -12887,7 +12971,7 @@ std::string Caller::signalname(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: signalname" << std::endl;
         os << R"V0G0N([0-63][name] 
-		[ChipTestBoard] Set the signal at the given position to the given name. )V0G0N"
+		[Ctb][Xilinx_Ctb] Set the signal at the given position to the given name. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -12932,7 +13016,10 @@ std::string Caller::signalname(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
-            if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            if (det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -12946,7 +13033,10 @@ std::string Caller::signalname(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            if (det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -12968,7 +13058,7 @@ std::string Caller::slowadcindex(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: slowadcindex" << std::endl;
         os << R"V0G0N([name] 
-		[ChipTestBoard] Get the slowadc index for the given name. )V0G0N"
+		[Ctb][Xilinx_Ctb] Get the slowadc index for the given name. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -12995,7 +13085,10 @@ std::string Caller::slowadcindex(int action) {
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
             defs::dacIndex index = defs::SLOW_ADC0;
-            if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            if (det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -13017,7 +13110,7 @@ std::string Caller::slowadclist(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: slowadclist" << std::endl;
         os << R"V0G0N([slowadcname1 slowadcname2 .. slowadcname7] 
-		[ChipTestBoard] Set the list of slowadc names for this board. )V0G0N"
+		[Ctb][Xilinx_Ctb] Set the list of slowadc names for this board. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -13029,6 +13122,8 @@ std::string Caller::slowadclist(int action) {
         }
 
         if (args.size() == 0) {
+            auto det_type = det->getDetectorType().squash(defs::GENERIC);
+            ;
         }
 
     }
@@ -13049,8 +13144,10 @@ std::string Caller::slowadclist(int action) {
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
-            if (cmd != "daclist" &&
-                det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            auto det_type = det->getDetectorType().squash(defs::GENERIC);
+            ;
+            if (cmd != "daclist" && det_type != defs::CHIPTESTBOARD &&
+                det_type != defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -13063,12 +13160,14 @@ std::string Caller::slowadclist(int action) {
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        if (cmd != "daclist" &&
-            det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        auto det_type = det->getDetectorType().squash(defs::GENERIC);
+        ;
+        if (cmd != "daclist" && det_type != defs::CHIPTESTBOARD &&
+            det_type != defs::XILINX_CHIPTESTBOARD) {
             throw RuntimeError(cmd + " only allowed for CTB.");
         }
-        if (cmd == "daclist" &&
-            det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        if (cmd == "daclist" && det_type != defs::CHIPTESTBOARD &&
+            det_type != defs::XILINX_CHIPTESTBOARD) {
             throw RuntimeError("This detector already has fixed dac names. "
                                "Cannot change them.");
         }
@@ -13089,7 +13188,7 @@ std::string Caller::slowadcname(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: slowadcname" << std::endl;
         os << R"V0G0N([0-7][name] 
-		[ChipTestBoard] Set the slowadc at the given position to the given name. )V0G0N"
+		[Ctb][Xilinx_Ctb] Set the slowadc at the given position to the given name. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -13127,7 +13226,10 @@ std::string Caller::slowadcname(int action) {
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 1) {
             defs::dacIndex index = defs::SLOW_ADC0;
-            if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            if (det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -13143,7 +13245,10 @@ std::string Caller::slowadcname(int action) {
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
             defs::dacIndex index = defs::SLOW_ADC0;
-            if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            if (det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::CHIPTESTBOARD &&
+                det->getDetectorType().squash(defs::GENERIC) !=
+                    defs::XILINX_CHIPTESTBOARD) {
                 throw RuntimeError(cmd + " only allowed for CTB.");
             }
             if (det_id != -1) {
@@ -13167,7 +13272,7 @@ std::string Caller::slowadcvalues(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: slowadcvalues" << std::endl;
         os << R"V0G0N([name] 
-		[ChipTestBoard] Get values of all slow adcs. )V0G0N"
+		[Ctb][Xilinx_Ctb] Get values of all slow adcs. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -15029,7 +15134,7 @@ std::string Caller::triggersl(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: triggersl" << std::endl;
         os << R"V0G0N(
-	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of triggers left in acquisition. Only when external trigger used. )V0G0N"
+	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Number of triggers left in acquisition. Only when external trigger used. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -15189,7 +15294,7 @@ std::string Caller::tsamples(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: tsamples" << std::endl;
         os << R"V0G0N([n_value]
-	[CTB] Number of transceiver samples expected. )V0G0N"
+	[Ctb] Number of transceiver samples expected. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -15519,7 +15624,7 @@ std::string Caller::type(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: type" << std::endl;
         os << R"V0G0N(
-	Returns detector type. Can be Eiger, Jungfrau, Gotthard, Moench, Mythen3, Gotthard2, ChipTestBoard )V0G0N"
+	Returns detector type. Can be Eiger, Jungfrau, Gotthard, Moench, Mythen3, Gotthard2, ChipTestBoard, Xilinx_ChipTestBoard )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -16227,7 +16332,7 @@ std::string Caller::update(int action) {
         os << "Command: update" << std::endl;
         os << R"V0G0N(
 	Without tftp: [server_name (incl fullpath)] [fname.pof (incl full path)] This does not use tftp.
-		[Jungfrau][Moench][Gotthard][CTB] Updates the firmware, detector server, deletes old server, creates the symbolic link and then reboots detector controller. 
+		[Jungfrau][Moench][Gotthard][Ctb] Updates the firmware, detector server, deletes old server, creates the symbolic link and then reboots detector controller. 
 		[Mythen3][Gotthard2] will require a script to start up the shorter named server link at start up. 
 		server_name is full path name of detector server binary
 		fname is full path of programming file )V0G0N"

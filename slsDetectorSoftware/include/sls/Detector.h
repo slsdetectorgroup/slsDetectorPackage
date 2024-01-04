@@ -98,7 +98,7 @@ class Detector {
     Result<std::string> getReceiverVersion(Positions pos = {}) const;
 
     /** Options: EIGER, JUNGFRAU, GOTTHARD, MOENCH, MYTHEN3, GOTTHARD2,
-     * CHIPTESTBOARD */
+     * CHIPTESTBOARD, XILINX_CHIPTESTBOARD */
     Result<defs::detectorType> getDetectorType(Positions pos = {}) const;
 
     /** Gets the total number of modules in shared memory */

@@ -311,19 +311,27 @@ CTB_NAMED_LIST:
   infer_action: true
   actions:
     GET:
-      check_det_id: true
+      extra_variables:
+        - name: det_type
+          type: auto
+          value: det->getDetectorType().squash(defs::GENERIC);    
       exceptions:
-        - condition: 'cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD'
+        - condition: 'cmd != "daclist" && det_type != defs::CHIPTESTBOARD && det_type != defs::XILINX_CHIPTESTBOARD'
           message: 'cmd + " only allowed for CTB."'
+      check_det_id: true
       argc: 0
       output: [ 'ToString(t)' ]
     PUT:
-      check_det_id: true
+      extra_variables:
+        - name: det_type
+          type: auto
+          value: det->getDetectorType().squash(defs::GENERIC);  
       exceptions:
-        - condition: 'cmd != "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD'
+        - condition: 'cmd != "daclist" && det_type != defs::CHIPTESTBOARD && det_type != defs::XILINX_CHIPTESTBOARD'
           message: 'cmd + " only allowed for CTB."'
-        - condition: 'cmd == "daclist" && det->getDetectorType().squash() != defs::CHIPTESTBOARD'
+        - condition: 'cmd == "daclist" && det_type != defs::CHIPTESTBOARD && det_type != defs::XILINX_CHIPTESTBOARD'
           message: '"This detector already has fixed dac names. Cannot change them."'
+      check_det_id: true
       input: [ 'args' ]
       argc: -1 # unknown number of args
       input_types: [ std::string ]
@@ -337,12 +345,11 @@ CTB_SINGLE_DACNAME:
       extra_variables:
         - name: index
           type: defs::dacIndex
-          value: 0
-
-      check_det_id: true
+          value: 0  
       exceptions:
-        - condition: 'det->getDetectorType().squash() != defs::CHIPTESTBOARD'
+        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
           message: 'cmd + " only allowed for CTB."'
+      check_det_id: true
       argc: 1
       input: [ "static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)" ]
       input_types: [ defs::dacIndex ]
@@ -353,11 +360,10 @@ CTB_SINGLE_DACNAME:
         - name: index
           type: defs::dacIndex
           value: 0
-
-      check_det_id: true
       exceptions:
-        - condition: 'det->getDetectorType().squash() != defs::CHIPTESTBOARD'
+        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
           message: 'cmd + " only allowed for CTB."'
+      check_det_id: true
       argc: 2
       input: [ "static_cast<defs::dacIndex>(StringTo<int>(args[0]) + index)","args[1]" ]
       input_types: [ defs::dacIndex , std::string ]
@@ -375,7 +381,7 @@ CTB_GET_DACINDEX:
 
       check_det_id: true
       exceptions:
-        - condition: 'det->getDetectorType().squash() != defs::CHIPTESTBOARD'
+        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
           message: 'cmd + " only allowed for CTB."'
       argc: 1
       input: [ 'args[0]' ]
@@ -389,7 +395,7 @@ CTB_SINGLE_NAME:
     GET:
       check_det_id: true
       exceptions:
-        - condition: 'det->getDetectorType().squash() != defs::CHIPTESTBOARD'
+        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
           message: 'cmd + " only allowed for CTB."'
       argc: 1
       input: [ "args[0]" ]
@@ -399,7 +405,7 @@ CTB_SINGLE_NAME:
     PUT:
       check_det_id: true
       exceptions:
-        - condition: 'det->getDetectorType().squash() != defs::CHIPTESTBOARD'
+        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
           message: 'cmd + " only allowed for CTB."'
       argc: 2
       cast_input: [ true, false ]
@@ -414,7 +420,7 @@ CTB_GET_INDEX:
     GET:
       check_det_id: true
       exceptions:
-        - condition: 'det->getDetectorType().squash() != defs::CHIPTESTBOARD'
+        - condition: 'det->getDetectorType().squash(defs::GENERIC) != defs::CHIPTESTBOARD && det->getDetectorType().squash(defs::GENERIC) != defs::XILINX_CHIPTESTBOARD'
           message: 'cmd + " only allowed for CTB."'
       argc: 1
       input: [ 'args[0]' ]
@@ -490,14 +496,14 @@ burstperiod:
 
 ################# TIME_GET_COMMAND #############
 delayl:
-  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Delay Left in Acquisition. \n\t[Gotthard2] only in continuous mode."
+  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Delay Left in Acquisition. \n\t[Gotthard2] only in continuous mode."
   inherit_actions: TIME_GET_COMMAND
   actions:
     GET:
       function: getDelayAfterTriggerLeft
 
 periodl:
-  help: "\n\t[Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] Period left for current frame. \n\t[Gotthard2] only in continuous mode."
+  help: "\n\t[Gotthard][Jungfrau][Moench][Ctb][Mythen3][Gotthard2] Period left for current frame. \n\t[Gotthard2] only in continuous mode."
   inherit_actions: TIME_GET_COMMAND
   actions:
     GET:
@@ -525,14 +531,14 @@ exptimel:
       function: getExptimeLeft
 
 runtime:
-  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Time from detector start up.\n\t[Gotthard2] not in burst and auto mode."
+  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Time from detector start up.\n\t[Gotthard2] not in burst and auto mode."
   inherit_actions: TIME_GET_COMMAND
   actions:
     GET:
       function: getActualTime
 
 frametime:
-  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Timestamp at a frame start.\n\t[Gotthard2] not in burst and auto mode."
+  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Timestamp at a frame start.\n\t[Gotthard2] not in burst and auto mode."
   inherit_actions: TIME_GET_COMMAND
   actions:
     GET:
@@ -740,7 +746,7 @@ filterresistor:
       function: setFilterResistor
 
 dbitpipeline:
-  help: "[n_value]\n\t[Ctb][Gotthard2] Pipeline of the clock for latching digital bits.\n\t[Gotthard2] Options: 0-7\n\t[CTB] Options: 0-255"
+  help: "[n_value]\n\t[Ctb][Gotthard2] Pipeline of the clock for latching digital bits.\n\t[Gotthard2] Options: 0-7\n\t[Ctb] Options: 0-255"
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -758,7 +764,7 @@ readnrows:
       function: setReadNRows
 
 nextframenumber:
-  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][CTB] Next frame number. Stopping acquisition might result in different frame numbers for different modules."
+  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Ctb] Next frame number. Stopping acquisition might result in different frame numbers for different modules."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1256,7 +1262,7 @@ dpulse:
       input_types: [ bool ]
 
 asamples:
-  help: "[n_samples]\n\t[CTB] Number of analog samples expected."
+  help: "[n_samples]\n\t[Ctb] Number of analog samples expected."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1283,7 +1289,7 @@ runclk:
       function: setRUNClock
 
 dsamples:
-  help:  "[n_value]\n\t[CTB] Number of digital samples expected."
+  help:  "[n_value]\n\t[Ctb] Number of digital samples expected."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1292,7 +1298,7 @@ dsamples:
       function: setNumberOfDigitalSamples
 
 tsamples:
-  help: "[n_value]\n\t[CTB] Number of transceiver samples expected."
+  help: "[n_value]\n\t[Ctb] Number of transceiver samples expected."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1301,7 +1307,7 @@ tsamples:
       function: setNumberOfTransceiverSamples
 
 romode:
-  help: "[analog|digital|analog_digital|transceiver|digital_transceiver]\n\t[CTB] Readout mode. Default is analog."
+  help: "[analog|digital|analog_digital|transceiver|digital_transceiver]\n\t[Ctb] Readout mode. Default is analog."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1872,35 +1878,35 @@ moduleid:
 
 type:
   inherit_actions: GET_COMMAND
-  help: "\n\tReturns detector type. Can be Eiger, Jungfrau, Gotthard, Moench, Mythen3, Gotthard2, ChipTestBoard"
+  help: "\n\tReturns detector type. Can be Eiger, Jungfrau, Gotthard, Moench, Mythen3, Gotthard2, ChipTestBoard, Xilinx_ChipTestBoard"
   actions:
     GET:
       function: getDetectorType
 
 framesl:
   inherit_actions: GET_COMMAND
-  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of frames left in acquisition. \n\t[Gotthard2] only in continuous auto mode."
+  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Number of frames left in acquisition. \n\t[Gotthard2] only in continuous auto mode."
   actions:
     GET:
       function: getNumberOfFramesLeft
 
 triggersl:
   inherit_actions: GET_COMMAND
-  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of triggers left in acquisition. Only when external trigger used."
+  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Number of triggers left in acquisition. Only when external trigger used."
   actions:
     GET:
       function: getNumberOfTriggersLeft
 
 maxadcphaseshift:
   inherit_actions: GET_COMMAND
-  help: "\n\t[Jungfrau][Moench][CTB] Absolute maximum Phase shift of ADC clock."
+  help: "\n\t[Jungfrau][Moench][Ctb] Absolute maximum Phase shift of ADC clock."
   actions:
     GET:
       function: getMaxADCPhaseShift
 
 maxdbitphaseshift:
   inherit_actions: GET_COMMAND
-  help: "\n\t[CTB][Jungfrau] Absolute maximum Phase shift of of the clock to latch digital bits."
+  help: "\n\t[Ctb][Jungfrau] Absolute maximum Phase shift of of the clock to latch digital bits."
   actions:
     GET:
       function: getMaxDBITPhaseShift
@@ -2005,7 +2011,7 @@ lastclient:
 
 framecounter:
   inherit_actions: GET_COMMAND
-  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of frames from start run control.\n\t[Gotthard2] only in continuous mode."
+  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Number of frames from start run control.\n\t[Gotthard2] only in continuous mode."
   actions:
     GET:
       function: getNumberOfFramesFromStart
@@ -2013,7 +2019,7 @@ framecounter:
 ################# GET_COMMAND_HEX ############################
 serialnumber:
   inherit_actions: GET_COMMAND
-  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][CTB]\nSerial number of detector."
+  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb]\nSerial number of detector."
   actions:
     GET:
       function: getSerialNumber
@@ -2236,7 +2242,7 @@ im_io:
 ################# CTB_NAMED_LIST #############################
 daclist:
     inherit_actions: CTB_NAMED_LIST
-    help: "[dacname1 dacname2 .. dacname18] \n\t\t[ChipTestBoard] Set the list of dac names for this detector.\n\t\t[All] Gets the list of dac names for every dac for this detector."
+    help: "[dacname1 dacname2 .. dacname18] \n\t\t[Ctb][Xilinx_Ctb] Set the list of dac names for this detector.\n\t\t[All] Gets the list of dac names for every dac for this detector."
     actions:
       GET:
         function: getDacNames
@@ -2245,7 +2251,7 @@ daclist:
 
 adclist:
   inherit_actions: CTB_NAMED_LIST
-  help: "[adcname1 adcname2 .. adcname32] \n\t\t[ChipTestBoard] Set the list of adc names for this board."
+  help: "[adcname1 adcname2 .. adcname32] \n\t\t[Ctb][Xilinx_Ctb] Set the list of adc names for this board."
   actions:
       GET:
           function: getAdcNames
@@ -2254,7 +2260,7 @@ adclist:
 
 signallist:
     inherit_actions: CTB_NAMED_LIST
-    help: "[signalname1 signalname2 .. signalname63] \n\t\t[ChipTestBoard] Set the list of signal names for this board."
+    help: "[signalname1 signalname2 .. signalname63] \n\t\t[Ctb][Xilinx_Ctb] Set the list of signal names for this board."
     actions:
       GET:
         function: getSignalNames
@@ -2263,7 +2269,7 @@ signallist:
 
 powerlist:
     inherit_actions: CTB_NAMED_LIST
-    help: "[powername1 powername2 .. powername4] \n\t\t[ChipTestBoard] Set the list of power names for this board."
+    help: "[powername1 powername2 .. powername4] \n\t\t[Ctb][Xilinx_Ctb] Set the list of power names for this board."
     actions:
       GET:
         function: getPowerNames
@@ -2272,7 +2278,7 @@ powerlist:
 
 slowadclist:
     inherit_actions: CTB_NAMED_LIST
-    help: "[slowadcname1 slowadcname2 .. slowadcname7] \n\t\t[ChipTestBoard] Set the list of slowadc names for this board."
+    help: "[slowadcname1 slowadcname2 .. slowadcname7] \n\t\t[Ctb][Xilinx_Ctb] Set the list of slowadc names for this board."
     actions:
       GET:
         function: getSlowADCNames
@@ -2281,7 +2287,7 @@ slowadclist:
 
 ################# CTB_VALUES ################################
 powervalues:
-  help: "[name] \n\t\t[ChipTestBoard] Get values of all powers."
+  help: "[name] \n\t\t[Ctb][Xilinx_Ctb] Get values of all powers."
   actions:
     GET:
       argc: 0
@@ -2293,7 +2299,7 @@ powervalues:
         printable_name: "*name_it++"
 
 slowadcvalues:
-  help: "[name] \n\t\t[ChipTestBoard] Get values of all slow adcs."
+  help: "[name] \n\t\t[Ctb][Xilinx_Ctb] Get values of all slow adcs."
   actions:
     GET:
       argc: 0
@@ -2319,7 +2325,7 @@ tempvalues:
 ################# CTB_SINGLE_DACNAME ########################
 dacname:
   inherit_actions: CTB_SINGLE_DACNAME
-  help: "[0-17][name] \n\t\t[ChipTestBoard] Set the dac at the given position to the given name."
+  help: "[0-17][name] \n\t\t[Ctb][Xilinx_Ctb] Set the dac at the given position to the given name."
   actions:
     GET:
       function: getDacName
@@ -2336,7 +2342,7 @@ dacname:
 
 powername:
   inherit_actions: CTB_SINGLE_DACNAME
-  help: "[0-4][name] \n\t\t[ChipTestBoard] Set the power at the given position to the given name."
+  help: "[0-4][name] \n\t\t[Ctb][Xilinx_Ctb] Set the power at the given position to the given name."
   actions:
     GET:
       function: getPowerName
@@ -2353,7 +2359,7 @@ powername:
 
 slowadcname:
   inherit_actions: CTB_SINGLE_DACNAME
-  help: "[0-7][name] \n\t\t[ChipTestBoard] Set the slowadc at the given position to the given name."
+  help: "[0-7][name] \n\t\t[Ctb][Xilinx_Ctb] Set the slowadc at the given position to the given name."
   actions:
     GET:
       function: getSlowADCName
@@ -2371,7 +2377,7 @@ slowadcname:
 ################# CTB_GET_DACINDEX ##########################
 dacindex:
   inherit_actions: CTB_GET_DACINDEX
-  help: "[name] \n\t\t[ChipTestBoard] Get the dac index for the given name."
+  help: "[name] \n\t\t[Ctb][Xilinx_Ctb] Get the dac index for the given name."
   actions:
     GET:
       function: getDacIndex
@@ -2382,7 +2388,7 @@ dacindex:
 
 powerindex:
   inherit_actions: CTB_GET_DACINDEX
-  help: "[name] \n\t\t[ChipTestBoard] Get the power index for the given name."
+  help: "[name] \n\t\t[Ctb][Xilinx_Ctb] Get the power index for the given name."
   actions:
     GET:
       function: getPowerIndex
@@ -2393,7 +2399,7 @@ powerindex:
 
 slowadcindex:
   inherit_actions: CTB_GET_DACINDEX
-  help: "[name] \n\t\t[ChipTestBoard] Get the slowadc index for the given name."
+  help: "[name] \n\t\t[Ctb][Xilinx_Ctb] Get the slowadc index for the given name."
   actions:
     GET:
       function: getSlowADCIndex
@@ -2405,7 +2411,7 @@ slowadcindex:
 ################# CTB_SINGLE_NAME ###########################
 adcname:
   inherit_actions: CTB_SINGLE_NAME
-  help: "[0-31][name] \n\t\t[ChipTestBoard] Set the adc at the given position to the given name."
+  help: "[0-31][name] \n\t\t[Ctb][Xilinx_Ctb] Set the adc at the given position to the given name."
   actions:
     GET:
       function: getAdcName
@@ -2414,7 +2420,7 @@ adcname:
 
 signalname:
   inherit_actions: CTB_SINGLE_NAME
-  help: "[0-63][name] \n\t\t[ChipTestBoard] Set the signal at the given position to the given name."
+  help: "[0-63][name] \n\t\t[Ctb][Xilinx_Ctb] Set the signal at the given position to the given name."
   actions:
     GET:
       function: getSignalName
@@ -2424,14 +2430,14 @@ signalname:
 ################# CTB_GET_INDEX #############################
 adcindex:
   inherit_actions: CTB_GET_INDEX
-  help: "[name] \n\t\t[ChipTestBoard] Get the adc index for the given name."
+  help: "[name] \n\t\t[Ctb][Xilinx_Ctb] Get the adc index for the given name."
   actions:
     GET:
       function: getAdcIndex
 
 signalindex:
   inherit_actions: CTB_GET_INDEX
-  help: "[name] \n\t\t[ChipTestBoard] Get the signal index for the given name."
+  help: "[name] \n\t\t[Ctb][Xilinx_Ctb] Get the signal index for the given name."
   actions:
     GET:
       function: getSignalIndex
@@ -2877,16 +2883,24 @@ readoutspeed:
   help: "\n\t[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t[Eiger][Jungfrau][Moench] Readout speed of chip.\n\t[Eiger][Moench] Default speed is full_speed.\n\t[Jungfrau] Default speed is half_speed. full_speed option only available from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] Readout speed of chip in MHz. Default is 108."
   actions:
     GET:
+      extra_variables:
+        - name: det_type
+          type: auto
+          value: det->getDetectorType().squash(defs::GENERIC);
       exceptions:
-        - condition: 'det->getDetectorType().squash() == defs::CHIPTESTBOARD'
+        - condition: 'det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD'
           message: '"ReadoutSpeed not implemented. Did you mean runclk?"'
       argc: 0
       require_det_id: true
       function: getReadoutSpeed
       output: [ OutString(t) ]
     PUT:
+      extra_variables:
+        - name: det_type
+          type: auto
+          value: det->getDetectorType().squash(defs::GENERIC);
       exceptions:
-        - condition: 'det->getDetectorType().squash() == defs::CHIPTESTBOARD'
+        - condition: 'det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD'
           message: '"ReadoutSpeed not implemented. Did you mean runclk?"'
       argc: 1
       require_det_id: true
@@ -3158,12 +3172,12 @@ dac:
   actions:
     GET:
       exceptions:
-        - condition: "is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD"
+        - condition: "is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD && det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD"
           message: '"Dac indices can only be used for chip test board. Use daclist to get list of dac names for current detector."'
       extra_variables:
         - name: dacIndex
           type: defs::dacIndex
-          value: "(det->getDetectorType().squash() == defs::CHIPTESTBOARD && !is_int(args[0])) ? det->getDacIndex(args[0]) : StringTo<defs::dacIndex>(args[0])"
+          value: "((det->getDetectorType().squash() == defs::CHIPTESTBOARD || det->getDetectorType().squash() == defs::XILINX_CHIPTESTBOARD) && !is_int(args[0])) ? det->getDacIndex(args[0]) : StringTo<defs::dacIndex>(args[0])"
       function: getDAC
       require_det_id: true
       input_types: [ defs::dacIndex, bool ]
@@ -3175,7 +3189,7 @@ dac:
           output: [ 'args[0]', "' '", OutString(t) ]
         - argc: 2
           exceptions:
-            - condition: "is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD"
+            - condition: "is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD && det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD"
               message: '"Dac indices can only be used for chip test board. Use daclist to get list of dac names for current detector."'
             - condition: 'args[1] != "mv" && args[1] != "mV"'
               message: '"Unknown argument " + args[1] + ". Did you mean mV?"'
@@ -3184,12 +3198,12 @@ dac:
           output: [ 'args[0]', "' '" , OutString(t), '" mV"' ]
     PUT:
       exceptions:
-        - condition: "is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD"
+        - condition: "is_int(args[0]) && det->getDetectorType().squash() != defs::CHIPTESTBOARD && det->getDetectorType().squash() != defs::XILINX_CHIPTESTBOARD"
           message: '"Dac indices can only be used for chip test board. Use daclist to get list of dac names for current detector."'
       extra_variables:
         - name: dacIndex
           type: defs::dacIndex
-          value: "(det->getDetectorType().squash() == defs::CHIPTESTBOARD && !is_int(args[0])) ? det->getDacIndex(args[0]) : StringTo<defs::dacIndex>(args[0])"
+          value: "((det->getDetectorType().squash() == defs::CHIPTESTBOARD || det->getDetectorType().squash() == defs::XILINX_CHIPTESTBOARD) && !is_int(args[0])) ? det->getDacIndex(args[0]) : StringTo<defs::dacIndex>(args[0])"
       function: setDAC
       require_det_id: true
       input_types: [ defs::dacIndex, int, bool ]
@@ -4141,7 +4155,7 @@ updatekernel:
       output: [ '"successful"' ]
 
 update:
-  help: "\n\tWithout tftp: [server_name (incl fullpath)] [fname.pof (incl full path)] This does not use tftp.\n\t\t[Jungfrau][Moench][Gotthard][CTB] Updates the firmware, detector server, deletes old server, creates the symbolic link and then reboots detector controller. \n\t\t[Mythen3][Gotthard2] will require a script to start up the shorter named server link at start up. \n\t\tserver_name is full path name of detector server binary\n\t\tfname is full path of programming file"
+  help: "\n\tWithout tftp: [server_name (incl fullpath)] [fname.pof (incl full path)] This does not use tftp.\n\t\t[Jungfrau][Moench][Gotthard][Ctb] Updates the firmware, detector server, deletes old server, creates the symbolic link and then reboots detector controller. \n\t\t[Mythen3][Gotthard2] will require a script to start up the shorter named server link at start up. \n\t\tserver_name is full path name of detector server binary\n\t\tfname is full path of programming file"
   actions:
     PUT:
       argc: 2

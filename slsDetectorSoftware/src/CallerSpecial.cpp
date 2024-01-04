@@ -850,7 +850,8 @@ std::string Caller::counters(int action) {
 std::string Caller::samples(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << "[n_samples]\n\t[CTB] Number of samples (analog, digitial and "
+        os << "[n_samples]\n\t[Ctb][Xilinx_Ctb] Number of samples (analog, "
+              "digitial and "
               "transceiver) expected.\n"
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -859,7 +860,9 @@ std::string Caller::samples(int action) {
         }
         auto a = det->getNumberOfAnalogSamples(std::vector<int>{det_id});
         // get also digital samples for ctb and compare with analog
-        if (det->getDetectorType().squash() == defs::CHIPTESTBOARD) {
+        auto det_type = det->getDetectorType().squash(defs::GENERIC);
+        if (det_type == defs::CHIPTESTBOARD ||
+            det_type == defs::XILINX_CHIPTESTBOARD) {
             auto d = det->getNumberOfDigitalSamples(std::vector<int>{det_id});
             auto t =
                 det->getNumberOfTransceiverSamples(std::vector<int>{det_id});
@@ -880,7 +883,9 @@ std::string Caller::samples(int action) {
         det->setNumberOfAnalogSamples(StringTo<int>(args[0]),
                                       std::vector<int>{det_id});
         // set also digital samples for ctb
-        if (det->getDetectorType().squash() == defs::CHIPTESTBOARD) {
+        auto det_type = det->getDetectorType().squash(defs::GENERIC);
+        if (det_type == defs::CHIPTESTBOARD ||
+            det_type == defs::XILINX_CHIPTESTBOARD) {
             det->setNumberOfDigitalSamples(StringTo<int>(args[0]),
                                            std::vector<int>{det_id});
             det->setNumberOfTransceiverSamples(StringTo<int>(args[0]),

@@ -207,6 +207,8 @@ std::string ToString(const defs::detectorType s) {
         return std::string("Mythen3");
     case defs::GOTTHARD2:
         return std::string("Gotthard2");
+    case defs::XILINX_CHIPTESTBOARD:
+        return std::string("Xilinx_ChipTestBoard");
     default:
         return std::string("Unknown");
     }
@@ -694,6 +696,8 @@ template <> defs::detectorType StringTo(const std::string &s) {
         return defs::MYTHEN3;
     if (s == "Gotthard2")
         return defs::GOTTHARD2;
+    if (s == "Xilinx_ChipTestBoard")
+        return defs::XILINX_CHIPTESTBOARD;
     throw RuntimeError("Unknown detector type " + s);
 }
 

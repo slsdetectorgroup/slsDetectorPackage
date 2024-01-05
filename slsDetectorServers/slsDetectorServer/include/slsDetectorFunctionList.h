@@ -65,10 +65,8 @@ typedef struct udpStruct_s {
 int isInitCheckDone();
 int getInitResult(char **mess);
 void basictests();
+#if !defined(EIGERD)
 int checkType();
-
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MOENCHD) ||            \
-    defined(CHIPTESTBOARDD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int testFpga();
 int testBus();
 #endif
@@ -251,11 +249,11 @@ int getMaxStoragecellStart();
 int setNextFrameNumber(uint64_t value);
 int getNextFrameNumber(uint64_t *value);
 #endif
-#ifndef XILINX_CHIPTESTBOARDD
 void setNumFrames(int64_t val);
 int64_t getNumFrames();
 void setNumTriggers(int64_t val);
 int64_t getNumTriggers();
+#ifndef XILINX_CHIPTESTBOARDD
 #ifndef MYTHEN3D
 int setExpTime(int64_t val);
 int64_t getExpTime();
@@ -501,9 +499,7 @@ void calcChecksum(udp_header *udp);
 int getAdcConfigured();
 #endif
 
-#ifndef XILINX_CHIPTESTBOARDD
 int configureMAC();
-#endif
 int setDetectorPosition(int pos[]);
 int *getDetectorPosition();
 
@@ -715,9 +711,7 @@ int softwareTrigger(int block);
 #if defined(EIGERD) || defined(MYTHEN3D) || defined(CHIPTESTBOARDD)
 int startReadOut();
 #endif
-#ifndef XILINX_CHIPTESTBOARDD
 enum runStatus getRunStatus();
-#endif
 #ifdef EIGERD
 void waitForAcquisitionEnd(int *ret, char *mess);
 #else
@@ -748,9 +742,11 @@ u_int32_t runState(enum TLogLevel lev);
 #ifndef XILINX_CHIPTESTBOARDD
 int calculateDataBytes();
 int getTotalNumberOfChannels();
-#if defined(CHIPTESTBOARDD)
+#endif
+#if defined(CHIPTESTBOARDD) || defined (XILINX_CHIPTESTBOARDD)
 void getNumberOfChannels(int *nchanx, int *nchany);
 #endif
+#ifndef XILINX_CHIPTESTBOARDD
 int getNumberOfChips();
 int getNumberOfDACs();
 int getNumberOfChannelsPerChip();

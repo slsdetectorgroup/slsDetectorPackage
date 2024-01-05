@@ -51,14 +51,10 @@ void basictests() {
     }
 
 #ifndef VIRTUAL
-    /*if ((!debugflag) && (!updateFlag) &&
-        ((validateKernelVersion(KERNEL_DATE_VRSN) == FAIL) ||
-         (checkType() == FAIL) || (testFpga() == FAIL) ||
-         (testBus() == FAIL))) {*/
     if ((!debugflag) && (!updateFlag) &&
         ((validateKernelVersion(KERNEL_DATE_VRSN) == FAIL) ||
-         (checkType() == FAIL) /*|| (testFpga() == FAIL) ||
-         (testBus() == FAIL)*/)) {
+         (checkType() == FAIL) || (testFpga() == FAIL) ||
+         (testBus() == FAIL))) {
         sprintf(initErrorMessage,
                 "Could not pass basic tests of FPGA and bus. Cannot proceed. "
                 "Check Firmware. (Firmware version:0x%lx) \n",
@@ -101,6 +97,123 @@ int checkType() {
         return FAIL;
     }
     return OK;
+}
+
+
+int testFpga() {
+#ifdef VIRTUAL
+    return OK;
+#endif
+    LOG(logINFO, ("Testing FPGA:\n"));
+
+    // fixed pattern
+    int ret = OK;
+    
+    /* TODO: FIX PATTERN not defined in firmware
+    uint32_t val = bus_r(FIX_PATT_REG);
+    if (val == FIX_PATT_VAL) {
+        LOG(logINFO, ("\tFixed pattern: successful match (0x%08x)\n", val));
+    } else {
+        LOG(logERROR,
+            ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n",
+             val, FIX_PATT_VAL));
+        ret = FAIL;
+    }
+    */
+
+    if (ret == OK) {
+        // Delay LSB reg
+        LOG(logINFO, ("\tTesting Delay LSB Register:\n"));
+        uint32_t addr = DELAYINREG1;
+
+        // store previous delay value
+        uint32_t previousValue = bus_r(addr);
+
+        volatile uint32_t val = 0, readval = 0;
+        int times = 1000 * 1000;
+        for (int i = 0; i < times; ++i) {
+            val = 0x5A5A5A5A - i;
+            bus_w(addr, val);
+            readval = bus_r(addr);
+            if (readval != val) {
+                LOG(logERROR, ("1:Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
+                               i, val, readval));
+                ret = FAIL;
+                break;
+            }
+            val = (i + (i << 10) + (i << 20));
+            bus_w(addr, val);
+            readval = bus_r(addr);
+            if (readval != val) {
+                LOG(logERROR, ("2:Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
+                               i, val, readval));
+                ret = FAIL;
+                break;
+            }
+            val = 0x0F0F0F0F;
+            bus_w(addr, val);
+            readval = bus_r(addr);
+            if (readval != val) {
+                LOG(logERROR, ("3:Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
+                               i, val, readval));
+                ret = FAIL;
+                break;
+            }
+            val = 0xF0F0F0F0;
+            bus_w(addr, val);
+            readval = bus_r(addr);
+            if (readval != val) {
+                LOG(logERROR, ("4:Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
+                               i, val, readval));
+                ret = FAIL;
+                break;
+            }
+        }
+        // write back previous value
+        bus_w(addr, previousValue);
+        if (ret == OK) {
+            LOG(logINFO,
+                ("\tSuccessfully tested FPGA Delay LSB Register %d times\n",
+                 times));
+        }
+    }
+
+    return ret;
+}
+
+int testBus() {
+#ifdef VIRTUAL
+    return OK;
+#endif
+    LOG(logINFO, ("Testing Bus:\n"));
+
+    int ret = OK;
+    uint32_t addr = DELAYINREG1;
+
+    // store previous delay value
+    uint32_t previousValue = bus_r(addr);
+
+    volatile uint32_t val = 0, readval = 0;
+    int times = 1000 * 1000;
+
+    for (int i = 0; i < times; ++i) {
+        val += 0xbbbbb;
+        bus_w(addr, val);
+        readval = bus_r(addr);
+        if (readval != val) {
+            LOG(logERROR, ("Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n", i,
+                           val, readval));
+            ret = FAIL;
+        }
+    }
+
+    // write back previous value
+    bus_w(addr, previousValue);
+
+    if (ret == OK) {
+        LOG(logINFO, ("\tSuccessfully tested bus %d times\n", times));
+    }
+    return ret;
 }
 
 /* Ids */
@@ -194,18 +307,81 @@ void initStopServer() {
 /* set up detector */
 
 void setupDetector() {
-    LOG(logINFO, ("This Server is for 1 Xilinx Chip Test Board\n"));
+    LOG(logINFO, ("Setting up Server for 1 Xilinx Chip Test Board\n"));
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
 #endif
-    LOG(logINFO, ("Goodbye...\n"));
+
+    LOG(logINFOBLUE, ("Setting Default parameters\n"));
+
+    setNumFrames(DEFAULT_NUM_FRAMES);
+    setNumTriggers(DEFAULT_NUM_CYCLES);
 }
+
+/* parameters - timer */
+
+void setNumFrames(int64_t val) {
+    if (val > 0) {
+        LOG(logINFO, ("Setting number of frames %ld\n", val));
+        setU64BitReg(val, FRAMESINREG1, FRAMESINREG2);
+    }
+}
+
+int64_t getNumFrames() { return getU64BitReg(FRAMESINREG1, FRAMESINREG2); }
+
+void setNumTriggers(int64_t val) {
+    if (val > 0) {
+        LOG(logINFO, ("Setting number of triggers %ld\n", val));
+        setU64BitReg(val, CYCLESINREG1, CYCLESINREG2);
+    }
+}
+
+int64_t getNumTriggers() { return getU64BitReg(CYCLESINREG1, CYCLESINREG2); }
 
 int setDetectorPosition(int pos[]) {
     memcpy(detPos, pos, sizeof(detPos));
+    // TODO
+    return OK;
+}
+
+int configureMAC() {
+    // TODO
+    LOG(logINFO, ("Configuring MAC\n"));
     return OK;
 }
 
 int *getDetectorPosition() { return detPos; }
 
 int getNumberofUDPInterfaces() { return 1; }
+
+/* aquisition */
+
+enum runStatus getRunStatus() {
+    LOG(logDEBUG1, ("Getting status\n"));
+    // scan error or running
+    if (sharedMemory_getScanStatus() == ERROR) {
+        LOG(logINFOBLUE, ("Status: scan ERROR\n"));
+        return ERROR;
+    }
+    if (sharedMemory_getScanStatus() == RUNNING) {
+        LOG(logINFOBLUE, ("Status: scan RUNNING\n"));
+        return RUNNING;
+    }
+#ifdef VIRTUAL
+    if (sharedMemory_getStatus() == RUNNING) {
+        LOG(logINFOBLUE, ("Status: RUNNING\n"));
+        return RUNNING;
+    }
+    LOG(logINFOBLUE, ("Status: IDLE\n"));
+    return IDLE;
+#endif
+    //TODO: get status
+    LOG(logINFOBLUE, ("Status: IDLE\n"));   
+    return IDLE;
+}
+
+void getNumberOfChannels(int *nchanx, int *nchany) {
+    // TODO
+    *nchanx = NCHAN;
+    *nchany = 1;
+}

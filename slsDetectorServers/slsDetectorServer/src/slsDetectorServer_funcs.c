@@ -2219,9 +2219,6 @@ int get_num_frames(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // get only
     if (!scan) {
         retval = getNumFrames();
@@ -2231,7 +2228,6 @@ int get_num_frames(int file_des) {
         LOG(logDEBUG1, ("retval num frames (num scan steps) %lld\n",
                         (long long int)retval));
     }
-#endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -2244,9 +2240,6 @@ int set_num_frames(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting number of frames %lld\n", (long long int)arg));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
         // only set number of frames if normal mode (not scan)
@@ -2292,7 +2285,6 @@ int set_num_frames(int file_des) {
             }
         }
     }
-#endif
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
@@ -2301,13 +2293,9 @@ int get_num_triggers(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // get only
     retval = getNumTriggers();
     LOG(logDEBUG1, ("retval num triggers %lld\n", (long long int)retval));
-#endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -2320,9 +2308,6 @@ int set_num_triggers(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting number of triggers %lld\n", (long long int)arg));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
 #if JUNGFRAUD
@@ -2342,7 +2327,6 @@ int set_num_triggers(int file_des) {
             validate64(&ret, mess, arg, retval, "set number of triggers", DEC);
         }
     }
-#endif
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
@@ -5026,9 +5010,6 @@ int set_detector_position(int file_des) {
     LOG(logDEBUG, ("Setting detector positions: [maxy:%u, modIndex:%u]\n",
                    args[0], args[1]));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
         // if in update mode, there is no need to do this (also detector not set
@@ -5039,14 +5020,10 @@ int set_detector_position(int file_des) {
             calculate_and_set_position();
         }
     }
-#endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int check_detector_idle(const char *s) {
-#ifdef XILINX_CHIPTESTBOARDD
-    return FAIL;
-#else
     enum runStatus status = getRunStatus();
     if (status != IDLE && status != RUN_FINISHED && status != STOPPED &&
         status != ERROR) {
@@ -5058,7 +5035,6 @@ int check_detector_idle(const char *s) {
         LOG(logERROR, (mess));
     }
     return ret;
-#endif
 }
 
 int is_udp_configured() {
@@ -5125,7 +5101,6 @@ int is_udp_configured() {
 }
 
 void configure_mac() {
-#ifndef XILINX_CHIPTESTBOARDD
     if (isControlServer) {
         if (is_udp_configured() == OK) {
             ret = configureMAC();
@@ -5152,7 +5127,6 @@ void configure_mac() {
     }
     configured = FAIL;
     LOG(logWARNING, ("Configure FAIL, not all parameters configured yet\n"));
-#endif
 }
 
 int set_source_udp_ip(int file_des) {
@@ -7105,7 +7079,7 @@ int get_num_channels(int file_des) {
 
     LOG(logDEBUG1, ("Getting number of channels\n"));
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only

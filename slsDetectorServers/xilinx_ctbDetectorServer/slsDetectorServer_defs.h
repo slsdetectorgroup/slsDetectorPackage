@@ -16,3 +16,8 @@
 
 enum ADCINDEX { V_PWR_IO };
 enum DACINDEX { D0 };
+
+
+/** Default Parameters */
+#define DEFAULT_NUM_FRAMES            (1)
+#define DEFAULT_NUM_CYCLES            (1)

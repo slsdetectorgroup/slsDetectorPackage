@@ -232,7 +232,7 @@ class Detector(CppDetectorApi):
     @element
     def hardwareversion(self):
         """
-        [Jungfrau][Moench][Gotthard2][Myhten3][Gotthard][Ctb] Hardware version of detector. \n
+        Hardware version of detector. \n
         [Eiger] Hardware version of front FPGA on detector.
         """
         return self.getHardwareVersion()
@@ -400,7 +400,7 @@ class Detector(CppDetectorApi):
     @element
     def framesl(self):
         """
-        [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of frames left in acquisition.\n
+        [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx CTB] Number of frames left in acquisition.\n
 
         Note
         ----
@@ -1951,7 +1951,7 @@ class Detector(CppDetectorApi):
     @element
     def triggersl(self):
         """
-        [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of triggers left in acquisition.\n
+        [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx CTB] Number of triggers left in acquisition.\n
         
         Note
         ----

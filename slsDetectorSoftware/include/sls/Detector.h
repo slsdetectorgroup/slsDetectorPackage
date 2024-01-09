@@ -322,11 +322,11 @@ class Detector {
     /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] */
     void setDelayAfterTrigger(ns value, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3]
+    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Xilinx CTB]
      * [Gotthard2] only in continuous auto mode */
     Result<int64_t> getNumberOfFramesLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3]
+    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Xilinx CTB]
      * Only when external trigger used */
     Result<int64_t> getNumberOfTriggersLeft(Positions pos = {}) const;
 

@@ -1850,7 +1850,7 @@ detectorserverversion:
 
 hardwareversion:
   inherit_actions: GET_COMMAND
-  help: "\n\t[Jungfrau][Gotthard2][Myhten3][Gotthard][Ctb][Moench] Hardware version of detector. \n\t[Eiger] Hardware version of front FPGA on detector."
+  help: "\n\tHardware version of detector. \n\t[Eiger] Hardware version of front FPGA on detector."
   actions:
     GET:
       function: getHardwareVersion
@@ -1885,14 +1885,14 @@ type:
 
 framesl:
   inherit_actions: GET_COMMAND
-  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Number of frames left in acquisition. \n\t[Gotthard2] only in continuous auto mode."
+  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of frames left in acquisition. \n\t[Gotthard2] only in continuous auto mode."
   actions:
     GET:
       function: getNumberOfFramesLeft
 
 triggersl:
   inherit_actions: GET_COMMAND
-  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Number of triggers left in acquisition. Only when external trigger used."
+  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of triggers left in acquisition. Only when external trigger used."
   actions:
     GET:
       function: getNumberOfTriggersLeft

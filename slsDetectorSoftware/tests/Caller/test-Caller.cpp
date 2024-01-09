@@ -87,13 +87,8 @@ TEST_CASE("CALLER::virtual", "[.cmdcall]") {
 TEST_CASE("CALLER::versions", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_NOTHROW(caller.call("versions", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("versions", {"0"}, -1, PUT));
-    } else {
-        REQUIRE_THROWS(caller.call("versions", {}, -1, GET));
-    }
+    REQUIRE_NOTHROW(caller.call("versions", {}, -1, GET));
+    REQUIRE_THROWS(caller.call("versions", {"0"}, -1, PUT));
 }
 
 TEST_CASE("CALLER::packageversion", "[.cmdcall]") {
@@ -127,25 +122,15 @@ TEST_CASE("CALLER::detectorserverversion", "[.cmdcall]") {
 TEST_CASE("CALLER::hardwareversion", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_NOTHROW(caller.call("hardwareversion", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("hardwareversion", {"0"}, -1, PUT));
-    } else {
-        REQUIRE_THROWS(caller.call("hardwareversion", {}, -1, GET));
-    }
+    REQUIRE_NOTHROW(caller.call("hardwareversion", {}, -1, GET));
+    REQUIRE_THROWS(caller.call("hardwareversion", {"0"}, -1, PUT));
 }
 
 TEST_CASE("CALLER::kernelversion", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_NOTHROW(caller.call("kernelversion", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("kernelversion", {"0"}, -1, PUT));
-    } else {
-        REQUIRE_THROWS(caller.call("kernelversion", {}, -1, GET));
-    }
+    REQUIRE_NOTHROW(caller.call("kernelversion", {}, -1, GET));
+    REQUIRE_THROWS(caller.call("kernelversion", {"0"}, -1, PUT));
 }
 
 TEST_CASE("CALLER::serialnumber", "[.cmdcall]") {
@@ -959,7 +944,7 @@ TEST_CASE("CALLER::framesl", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::XILINX_CHIPTESTBOARD) {
+    if (det_type == defs::EIGER) {
         REQUIRE_THROWS(caller.call("framesl", {}, -1, GET));
     } else {
         REQUIRE_NOTHROW(caller.call("framesl", {}, -1, GET));
@@ -970,7 +955,7 @@ TEST_CASE("CALLER::triggersl", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::XILINX_CHIPTESTBOARD) {
+    if (det_type == defs::EIGER) {
         REQUIRE_THROWS(caller.call("triggersl", {}, -1, GET));
     } else {
         REQUIRE_NOTHROW(caller.call("triggersl", {}, -1, GET));

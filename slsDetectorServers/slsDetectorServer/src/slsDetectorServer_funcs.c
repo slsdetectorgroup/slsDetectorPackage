@@ -2880,7 +2880,7 @@ int get_frames_left(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -2896,7 +2896,7 @@ int get_triggers_left(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -9727,9 +9727,7 @@ int get_kernel_version(int file_des) {
     memset(retvals, 0, MAX_STR_LENGTH);
 
     LOG(logDEBUG1, ("Getting kernel version\n"));
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
+
     // get only
     ret = getKernelVersion(retvals);
     if (ret == FAIL) {
@@ -9742,7 +9740,6 @@ int get_kernel_version(int file_des) {
     } else {
         LOG(logDEBUG1, ("kernel version: [%s]\n", retvals));
     }
-#endif
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 
@@ -10504,12 +10501,10 @@ int get_hardware_version(int file_des) {
     memset(mess, 0, sizeof(mess));
     char retvals[MAX_STR_LENGTH];
     memset(retvals, 0, MAX_STR_LENGTH);
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
+
     getHardwareVersion(retvals);
     LOG(logDEBUG1, ("hardware version retval: %s\n", retvals));
-#endif
+    
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 

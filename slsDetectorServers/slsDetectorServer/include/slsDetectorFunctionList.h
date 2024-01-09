@@ -84,10 +84,8 @@ u_int64_t getFirmwareVersion();
 #ifdef EIGERD
 uint64_t getFrontEndFirmwareVersion(enum fpgaPosition fpgaPosition);
 #endif
-#ifndef XILINX_CHIPTESTBOARDD
 u_int64_t getFirmwareAPIVersion();
 void getHardwareVersion(char *version);
-#endif
 #ifdef EIGERD
 int getHardwareVersionNumber();
 #else
@@ -309,12 +307,15 @@ uint32_t getCounterMask();
 void updatePacketizing();
 #endif
 
+#ifndef EIGERD
+int64_t getNumFramesLeft();
+int64_t getNumTriggersLeft();
+#endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARDD) ||            \
     defined(CHIPTESTBOARDD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int setDelayAfterTrigger(int64_t val);
 int64_t getDelayAfterTrigger();
-int64_t getNumFramesLeft();
-int64_t getNumTriggersLeft();
+
 int64_t getDelayAfterTriggerLeft();
 int64_t getPeriodLeft();
 #endif

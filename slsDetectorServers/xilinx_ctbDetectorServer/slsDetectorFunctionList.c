@@ -227,6 +227,10 @@ uint64_t getFirmwareVersion() {
     return ((bus_r(FPGAVERSIONREG) & COMPDATE_MSK) >> COMPDATE_OFST);
 }
 
+void getHardwareVersion(char *version) {
+    strcpy(version, "Not applicable");
+}
+
 u_int64_t getDetectorMAC() {
 #ifdef VIRTUAL
     return 0;
@@ -337,6 +341,14 @@ void setNumTriggers(int64_t val) {
 }
 
 int64_t getNumTriggers() { return getU64BitReg(CYCLESINREG1, CYCLESINREG2); }
+
+int64_t getNumFramesLeft() {
+    return getU64BitReg(FRAMESOUTREG1, FRAMESOUTREG2);
+}
+
+int64_t getNumTriggersLeft() {
+    return getU64BitReg(CYCLESOUTREG1, CYCLESOUTREG2);
+}
 
 int setDetectorPosition(int pos[]) {
     memcpy(detPos, pos, sizeof(detPos));

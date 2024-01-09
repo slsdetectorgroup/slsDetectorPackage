@@ -99,7 +99,9 @@ def loadConfig(name, rx_hostname, settingsdir):
     Log(Fore.GREEN, 'Loading config')
     try:
         d = Detector()
-        if name == 'eiger':
+        if name == 'xilinx_ctb':
+            d.hostname = 'localhost'
+        elif name == 'eiger':
             d.hostname = 'localhost:' + str(DEFAULT_TCP_CNTRL_PORTNO) + '+localhost:' + str(HALFMOD2_TCP_CNTRL_PORTNO)
             #d.udp_dstport = {2: 50003} 
             # will set up for every module
@@ -174,6 +176,7 @@ if args.servers is None:
         'gotthard',
         'ctb',
         'moench',
+        'xilinx_ctb'
     ]
 else:
     servers = args.servers

@@ -653,7 +653,6 @@ std::vector<defs::dacIndex> Detector::getTemperatureList() const {
     std::vector<defs::dacIndex> retval;
     switch (getDetectorType().squash()) {
     case defs::CHIPTESTBOARD:
-    case defs::XILINX_CHIPTESTBOARD:
         return std::vector<defs::dacIndex>{defs::SLOW_ADC_TEMP};
     case defs::JUNGFRAU:
     case defs::MOENCH:

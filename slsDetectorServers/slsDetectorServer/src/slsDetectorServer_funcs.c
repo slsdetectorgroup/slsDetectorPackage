@@ -3606,7 +3606,7 @@ int write_adc_register(int file_des) {
     uint32_t val = args[1];
     LOG(logDEBUG1, ("Writing 0x%x to ADC Register 0x%x\n", val, addr));
 
-#if defined(EIGERD) || defined(GOTTHARD2D) || defined(MYTHEN3D)
+#if defined(EIGERD) || defined(GOTTHARD2D) || defined(MYTHEN3D) || defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
 #ifndef VIRTUAL
@@ -4001,7 +4001,7 @@ int reset_fpga(int file_des) {
 
     LOG(logDEBUG1, ("Reset FPGA\n"));
 #if defined(EIGERD) || defined(GOTTHARDD) || defined(GOTTHARD2D) ||            \
-    defined(MYTHEN3D)
+    defined(MYTHEN3D) || defined (XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set

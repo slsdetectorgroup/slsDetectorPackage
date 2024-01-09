@@ -3046,9 +3046,6 @@ int set_dynamic_range(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting dr to %d\n", dr));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // set & get
     if ((dr == GET_FLAG) || (Server_VerifyLock() == OK)) {
         // check dr
@@ -3069,7 +3066,7 @@ int set_dynamic_range(int file_des) {
         case 32:
 #endif
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MOENCHD) ||            \
-    defined(CHIPTESTBOARDD) || defined(GOTTHARD2D)
+    defined(CHIPTESTBOARDD) || defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
         case 16:
 #endif
             if (dr >= 0) {
@@ -3097,7 +3094,6 @@ int set_dynamic_range(int file_des) {
             break;
         }
     }
-#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 

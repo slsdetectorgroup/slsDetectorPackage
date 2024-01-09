@@ -322,6 +322,19 @@ void setupDetector() {
     setNumTriggers(DEFAULT_NUM_CYCLES);
 }
 
+/* set parameters -  dr */
+
+int setDynamicRange(int dr) {
+    if (dr == 16)
+        return OK;
+    return FAIL;
+}
+
+int getDynamicRange(int *retval) {
+    *retval = DYNAMIC_RANGE;
+    return OK;
+}
+
 /* parameters - timer */
 
 void setNumFrames(int64_t val) {

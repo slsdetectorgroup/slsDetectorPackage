@@ -19,5 +19,7 @@ enum DACINDEX { D0 };
 
 
 /** Default Parameters */
-#define DEFAULT_NUM_FRAMES            (1)
-#define DEFAULT_NUM_CYCLES            (1)
+#define DEFAULT_NUM_FRAMES          (1)
+#define DEFAULT_NUM_CYCLES          (1)
+#define DYNAMIC_RANGE               (16)
+

@@ -1506,7 +1506,7 @@ triggers:
 
 dr:
   inherit_actions: INTEGER_COMMAND_SET_NOID_GET_ID
-  help: "[value]\n\tDynamic Range or number of bits per pixel in detector.\n\t[Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets clkdivider to 2, else to 0.\n\t[Mythen3] Options: 8, 16, 32\n\t[Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2] 16"
+  help: "[value]\n\tDynamic Range or number of bits per pixel in detector.\n\t[Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets clkdivider to 2, else to 0.\n\t[Mythen3] Options: 8, 16, 32\n\t[Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2][Xilinx Ctb] 16"
   actions:
     GET:
       function: getDynamicRange

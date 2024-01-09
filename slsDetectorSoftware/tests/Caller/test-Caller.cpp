@@ -1002,45 +1002,41 @@ TEST_CASE("CALLER::dr", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        if (det_type == defs::EIGER) {
-            auto dr = det.getDynamicRange().squash();
-            std::array<int, 4> vals{4, 8, 16, 32};
-            for (const auto val : vals) {
-                std::ostringstream oss1, oss2;
-                caller.call("dr", {std::to_string(val)}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "dr " + std::to_string(val) + '\n');
-                caller.call("dr", {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "dr " + std::to_string(val) + '\n');
-            }
-            det.setDynamicRange(dr);
-        } else if (det_type == defs::MYTHEN3) {
-            auto dr = det.getDynamicRange().squash();
-            // not updated in firmware to support dr 1
-            std::array<int, 3> vals{8, 16, 32};
-            for (const auto val : vals) {
-                std::ostringstream oss1, oss2;
-                caller.call("dr", {std::to_string(val)}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "dr " + std::to_string(val) + '\n');
-                caller.call("dr", {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "dr " + std::to_string(val) + '\n');
-            }
-            det.setDynamicRange(dr);
-        } else {
-            // For the other detectors we should get an error message
-            // except for dr 16
-            REQUIRE_THROWS(caller.call("dr", {"4"}, -1, PUT));
-            REQUIRE_THROWS(caller.call("dr", {"8"}, -1, PUT));
-            REQUIRE_THROWS(caller.call("dr", {"32"}, -1, PUT));
-
+    if (det_type == defs::EIGER) {
+        auto dr = det.getDynamicRange().squash();
+        std::array<int, 4> vals{4, 8, 16, 32};
+        for (const auto val : vals) {
             std::ostringstream oss1, oss2;
-            caller.call("dr", {"16"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "dr 16\n");
-            caller.call("dr", {"16"}, -1, PUT, oss2);
-            REQUIRE(oss2.str() == "dr 16\n");
+            caller.call("dr", {std::to_string(val)}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "dr " + std::to_string(val) + '\n');
+            caller.call("dr", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "dr " + std::to_string(val) + '\n');
         }
+        det.setDynamicRange(dr);
+    } else if (det_type == defs::MYTHEN3) {
+        auto dr = det.getDynamicRange().squash();
+        // not updated in firmware to support dr 1
+        std::array<int, 3> vals{8, 16, 32};
+        for (const auto val : vals) {
+            std::ostringstream oss1, oss2;
+            caller.call("dr", {std::to_string(val)}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "dr " + std::to_string(val) + '\n');
+            caller.call("dr", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "dr " + std::to_string(val) + '\n');
+        }
+        det.setDynamicRange(dr);
     } else {
-        REQUIRE_THROWS(caller.call("dr", {}, -1, GET));
+        // For the other detectors we should get an error message
+        // except for dr 16
+        REQUIRE_THROWS(caller.call("dr", {"4"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("dr", {"8"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("dr", {"32"}, -1, PUT));
+
+        std::ostringstream oss1, oss2;
+        caller.call("dr", {"16"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "dr 16\n");
+        caller.call("dr", {"16"}, -1, PUT, oss2);
+        REQUIRE(oss2.str() == "dr 16\n");
     }
 }
 

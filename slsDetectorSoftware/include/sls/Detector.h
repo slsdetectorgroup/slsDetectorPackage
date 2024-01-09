@@ -343,7 +343,7 @@ class Detector {
     /**
      * [Eiger] Options: 4, 8, 12, 16, 32. If i is 32, also sets clkdivider to 2,
      * else sets clkdivider to 1 \n [Mythen3] Options: 8, 16, 32 \n
-     * [Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2] 16
+     * [Jungfrau][Moench][Gotthard][CTB][Mythen3][Gotthard2][Xilinx CTB] 16
      */
     void setDynamicRange(int value);
 

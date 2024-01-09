@@ -195,10 +195,8 @@ void setMasterSlaveConfiguration();
 #endif
 
 // parameters - dr, roi
-#ifndef XILINX_CHIPTESTBOARDD
 int setDynamicRange(int dr);
 int getDynamicRange(int *retval);
-#endif
 #ifdef GOTTHARDD
 int setROI(ROI arg);
 ROI getROI();

@@ -585,7 +585,7 @@ patioctrl:
       function: setPatternIOControl
 
 patmask:
-  help: "[64 bit mask]\n\t[Ctb][Mythen3] Selects the bits that will have a pattern mask applied to the selected patmask for every pattern."
+  help: "[64 bit mask]\n\t[Ctb][Mythen3][Xilinx Ctb] Selects the bits that will have a pattern mask applied to the selected patmask for every pattern."
   inherit_actions: INTEGER_COMMAND_HEX_WIDTH16
   actions:
     GET:
@@ -594,7 +594,7 @@ patmask:
       function: setPatternMask
 
 patsetbit:
-  help: "[64 bit mask]\n\t[Ctb][Mythen3] Sets the mask applied to every pattern to the selected bits."
+  help: "[64 bit mask]\n\t[Ctb][Mythen3][Xilinx Ctb] Sets the mask applied to every pattern to the selected bits."
   inherit_actions: INTEGER_COMMAND_HEX_WIDTH16
   actions:
     GET:
@@ -1835,7 +1835,7 @@ parameters:
 
 savepattern:
   inherit_actions: EXECUTE_SET_COMMAND_NOID_1ARG
-  help: "\n\t[Ctb][Mythen3] Saves pattern to file (ascii). \n\t[Ctb] Also executes pattern."
+  help: "\n\t[Ctb][Mythen3][Xilinx Ctb] Saves pattern to file (ascii). \n\t[Ctb] Also executes pattern."
   actions:
     PUT:
       function: savePattern
@@ -1997,7 +1997,7 @@ syncclk:
 
 patfname:
   inherit_actions: GET_COMMAND
-  help: "\n\t[Ctb][Mythen3] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default file"
+  help: "\n\t[Ctb][Mythen3][Xilinx Ctb] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default file"
   actions:
     GET:
       function: getPatterFileName
@@ -3842,7 +3842,7 @@ diodelay:
 
 # pattern is a keyword in yaml, so patternX is used to avoid it
 patternX:
-  help: "[fname]\n\t[Mythen3][Ctb] Loads ASCII pattern file directly to server (instead of executing line by line)"
+  help: "[fname]\n\t[Mythen3][Ctb][Xilinx Ctb] Loads ASCII pattern file directly to server (instead of executing line by line)"
   command_name: "pattern"
   actions:
     PUT:
@@ -3855,7 +3855,7 @@ patternX:
       output: [ 'args.front()' ]
 
 patword:
-  help: "[step or address] [64 bit mask]\n\t[Ctb][Mythen3] 64 bit pattern at address of pattern memory.\n\t[Ctb] read is same as executing pattern"
+  help: "[step or address] [64 bit mask]\n\t[Ctb][Mythen3][Xilinx Ctb] 64 bit pattern at address of pattern memory.\n\t[Ctb] read is same as executing pattern"
   actions:
     GET:
       argc: 1
@@ -3875,7 +3875,7 @@ patword:
       output: [ "'['", "ToStringHex(arg0, 4)", '", "', "ToStringHex(arg1, 16)", '"]"' ]
 
 patlimits:
-  help: "[start addr] [stop addr] \n\t[Ctb][Mythen3] Limits of complete pattern"
+  help: "[start addr] [stop addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Limits of complete pattern"
   actions:
     GET:
       argc: -1
@@ -3895,7 +3895,7 @@ patlimits:
       output: [ "'['" , "ToStringHex(arg1, 4)" , '", "' , "ToStringHex(arg2, 4)", "']'" ]
 
 patloop:
-  help: "[0-6] [start addr] [stop addr] \n\t[Ctb][Mythen3] Limits of the loop level provided.\n\t[Mythen3] Level options: 0-3 only."
+  help: "[0-6] [start addr] [stop addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Limits of the loop level provided.\n\t[Mythen3] Level options: 0-3 only."
   actions:
     GET:
       argc: -1
@@ -3944,7 +3944,7 @@ patloop2:
     inherit_actions: patloop0
 
 patnloop:
-  help: "[0-6] [n_cycles] \n\t[Ctb][Mythen3] Number of cycles of the loop level provided.\n\t[Mythen3] Level options: 0-3 only."
+  help: "[0-6] [n_cycles] \n\t[Ctb][Mythen3][Xilinx Ctb] Number of cycles of the loop level provided.\n\t[Mythen3] Level options: 0-3 only."
   actions:
     GET:
       argc: -1
@@ -3991,7 +3991,7 @@ patnloop2:
     inherit_actions: patnloop0
 
 patwait:
-  help: "[0-6] [addr] \n\t[Ctb][Mythen3] Wait address for loop level provided. \n\t[Mythen3] Level options: 0-3 only."
+  help: "[0-6] [addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait address for loop level provided. \n\t[Mythen3] Level options: 0-3 only."
   actions:
     GET:
       argc: -1
@@ -4037,7 +4037,7 @@ patwait2:
     inherit_actions: patwait0
 
 patwaittime:
-  help: "[0-6] [n_clk] \n\t[Ctb][Mythen3] Wait time in clock cycles for the loop provided.\n\t[Mythen3] Level options: 0-3 only."
+  help: "[0-6] [n_clk] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles for the loop provided.\n\t[Mythen3] Level options: 0-3 only."
   actions:
     GET:
       argc: -1

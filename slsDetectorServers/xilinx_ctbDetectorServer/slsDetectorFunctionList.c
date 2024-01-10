@@ -7,6 +7,9 @@
 #include "sharedMemory.h"
 #include "sls/versionAPI.h"
 
+#include "loadPattern.h"
+
+
 #include <string.h>
 #include <unistd.h> // usleep
 #include <arpa/inet.h> // INET_ADDRSTRLEN
@@ -314,9 +317,12 @@ void setupDetector() {
     LOG(logINFO, ("Setting up Server for 1 Xilinx Chip Test Board\n"));
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
+    initializePatternWord();
 #endif
 
     LOG(logINFOBLUE, ("Setting Default parameters\n"));
+    initializePatternAddresses();
+
 
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);

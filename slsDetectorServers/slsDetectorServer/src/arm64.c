@@ -12,7 +12,7 @@
 
 
 /* global variables */
-#define CSP0     (0xB0010000)/// 0xB008_0000
+#define CSP0     (0xB0010000)
 #define MEM_SIZE 0x100000
 
 u_int32_t *csp0base = 0;

@@ -13,7 +13,7 @@
 extern enum TLogLevel trimmingPrint;
 #endif
 
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 #ifdef VIRTUAL
 uint64_t virtual_pattern[MAX_PATTERN_LENGTH];
 #endif
@@ -21,8 +21,8 @@ uint64_t virtual_pattern[MAX_PATTERN_LENGTH];
 
 extern void bus_w(u_int32_t offset, u_int32_t data);
 extern u_int32_t bus_r(u_int32_t offset);
-extern int64_t get64BitReg(int aLSB, int aMSB);
-extern int64_t set64BitReg(int64_t value, int aLSB, int aMSB);
+//extern int64_t get64BitReg(int aLSB, int aMSB);
+//extern int64_t set64BitReg(int64_t value, int aLSB, int aMSB);
 extern uint64_t getU64BitReg(int aLSB, int aMSB);
 extern void setU64BitReg(uint64_t value, int aLSB, int aMSB);
 
@@ -44,13 +44,15 @@ void initializePatternAddresses() {
     }
 }
 
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 #ifdef VIRTUAL
 void initializePatternWord() {
     memset(virtual_pattern, 0, sizeof(virtual_pattern));
 }
 #endif
+#endif
 
+#if defined(CHIPTESTBOARDD) // TODO || defined(XILINX_CHIPTESTBOARDD)
 uint64_t validate_readPatternIOControl() {
     return getU64BitReg(PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);
 }
@@ -101,7 +103,7 @@ uint64_t readPatternWord(int addr) {
     // the first word in RAM as base plus the offset of the word to write (addr)
     uint32_t reg_lsb = PATTERN_STEP0_LSB_REG + addr * REG_OFFSET * 2;
     uint32_t reg_msb = PATTERN_STEP0_MSB_REG + addr * REG_OFFSET * 2;
-    return get64BitReg(reg_lsb, reg_msb);
+    return getU64BitReg(reg_lsb, reg_msb);
 #else
     LOG(logDEBUG1, ("  Reading (Executing) Pattern Word (addr:0x%x)\n", addr));
     uint32_t reg = PATTERN_CNTRL_REG;
@@ -118,7 +120,7 @@ uint64_t readPatternWord(int addr) {
 
     // read value
 #ifndef VIRTUAL
-    return get64BitReg(PATTERN_OUT_LSB_REG, PATTERN_OUT_MSB_REG);
+    return getU64BitReg(PATTERN_OUT_LSB_REG, PATTERN_OUT_MSB_REG);
 #else
     return virtual_pattern[addr];
 #endif
@@ -160,7 +162,7 @@ void writePatternWord(int addr, uint64_t word) {
     uint32_t reg = PATTERN_CNTRL_REG;
 
     // write word
-    set64BitReg(word, PATTERN_IN_LSB_REG, PATTERN_IN_MSB_REG);
+    setU64BitReg(word, PATTERN_IN_LSB_REG, PATTERN_IN_MSB_REG);
 
     // overwrite with  only addr
     bus_w(reg, ((addr << PATTERN_CNTRL_ADDR_OFST) & PATTERN_CNTRL_ADDR_MSK));
@@ -178,7 +180,7 @@ void writePatternWord(int addr, uint64_t word) {
     // the first word in RAM as base plus the offset of the word to write (addr)
     uint32_t reg_lsb = PATTERN_STEP0_LSB_REG + addr * REG_OFFSET * 2;
     uint32_t reg_msb = PATTERN_STEP0_MSB_REG + addr * REG_OFFSET * 2;
-    set64BitReg(word, reg_lsb, reg_msb);
+    setU64BitReg(word, reg_lsb, reg_msb);
 #endif
 }
 
@@ -311,23 +313,23 @@ int validate_getPatternWaitTime(char *message, int level, uint64_t *waittime) {
 uint64_t getPatternWaitTime(int level) {
     switch (level) {
     case 0:
-        return get64BitReg(PATTERN_WAIT_TIMER_0_LSB_REG,
+        return getU64BitReg(PATTERN_WAIT_TIMER_0_LSB_REG,
                            PATTERN_WAIT_TIMER_0_MSB_REG);
     case 1:
-        return get64BitReg(PATTERN_WAIT_TIMER_1_LSB_REG,
+        return getU64BitReg(PATTERN_WAIT_TIMER_1_LSB_REG,
                            PATTERN_WAIT_TIMER_1_MSB_REG);
     case 2:
-        return get64BitReg(PATTERN_WAIT_TIMER_2_LSB_REG,
+        return getU64BitReg(PATTERN_WAIT_TIMER_2_LSB_REG,
                            PATTERN_WAIT_TIMER_2_MSB_REG);
 #ifndef MYTHEN3D
     case 3:
-        return get64BitReg(PATTERN_WAIT_TIMER_3_LSB_REG,
+        return getU64BitReg(PATTERN_WAIT_TIMER_3_LSB_REG,
                            PATTERN_WAIT_TIMER_3_MSB_REG);
     case 4:
-        return get64BitReg(PATTERN_WAIT_TIMER_4_LSB_REG,
+        return getU64BitReg(PATTERN_WAIT_TIMER_4_LSB_REG,
                            PATTERN_WAIT_TIMER_4_MSB_REG);
     case 5:
-        return get64BitReg(PATTERN_WAIT_TIMER_5_LSB_REG,
+        return getU64BitReg(PATTERN_WAIT_TIMER_5_LSB_REG,
                            PATTERN_WAIT_TIMER_5_MSB_REG);
 #endif
     default:
@@ -369,28 +371,28 @@ void setPatternWaitTime(int level, uint64_t t) {
          (long long int)t));
     switch (level) {
     case 0:
-        set64BitReg(t, PATTERN_WAIT_TIMER_0_LSB_REG,
+        setU64BitReg(t, PATTERN_WAIT_TIMER_0_LSB_REG,
                     PATTERN_WAIT_TIMER_0_MSB_REG);
         break;
     case 1:
-        set64BitReg(t, PATTERN_WAIT_TIMER_1_LSB_REG,
+        setU64BitReg(t, PATTERN_WAIT_TIMER_1_LSB_REG,
                     PATTERN_WAIT_TIMER_1_MSB_REG);
         break;
     case 2:
-        set64BitReg(t, PATTERN_WAIT_TIMER_2_LSB_REG,
+        setU64BitReg(t, PATTERN_WAIT_TIMER_2_LSB_REG,
                     PATTERN_WAIT_TIMER_2_MSB_REG);
         break;
 #ifndef MYTHEN3D
     case 3:
-        set64BitReg(t, PATTERN_WAIT_TIMER_3_LSB_REG,
+        setU64BitReg(t, PATTERN_WAIT_TIMER_3_LSB_REG,
                     PATTERN_WAIT_TIMER_3_MSB_REG);
         break;
     case 4:
-        set64BitReg(t, PATTERN_WAIT_TIMER_4_LSB_REG,
+        setU64BitReg(t, PATTERN_WAIT_TIMER_4_LSB_REG,
                     PATTERN_WAIT_TIMER_4_MSB_REG);
         break;
     case 5:
-        set64BitReg(t, PATTERN_WAIT_TIMER_5_LSB_REG,
+        setU64BitReg(t, PATTERN_WAIT_TIMER_5_LSB_REG,
                     PATTERN_WAIT_TIMER_5_MSB_REG);
         break;
 #endif
@@ -775,7 +777,7 @@ int loadPattern(char *message, enum TLogLevel printLevel,
         }
     }
     // iocontrol
-#ifndef MYTHEN3D
+#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD) //TODO
     if (ret == OK) {
         ret = validate_writePatternIOControl(message, pat->ioctrl);
     }
@@ -835,7 +837,7 @@ int getPattern(char *message, patternParameters *pat) {
         pat->word[i] = retval64;
     }
     // iocontrol
-#ifndef MYTHEN3D
+#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD) //TODO
     if (ret == OK) {
         validate_readPatternIOControl();
     }
@@ -956,7 +958,7 @@ int loadPatternFile(char *patFname, char *errMessage) {
             uint64_t word = 0;
 
             // cannot scan values
-#ifdef VIRTUAL
+#if defined(VIRTUAL) || defined(XILINX_CHIPTESTBOARDD)
             if (sscanf(line, "%s 0x%x 0x%lx", command, &addr, &word) != 3) {
 #else
             if (sscanf(line, "%s 0x%x 0x%llx", command, &addr, &word) != 3) {
@@ -971,7 +973,7 @@ int loadPatternFile(char *patFname, char *errMessage) {
         }
 
         // patioctrl
-#ifndef MYTHEN3D
+#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD) //TODO
         if (!strncmp(line, "patioctrl", strlen("patioctrl"))) {
             uint64_t arg = 0;
 
@@ -1063,7 +1065,7 @@ int loadPatternFile(char *patFname, char *errMessage) {
             uint64_t waittime = 0;
 
             // cannot scan values
-#ifdef VIRTUAL
+#if defined(VIRTUAL) || defined(XILINX_CHIPTESTBOARDD)
             if (sscanf(line, "%s %d %ld", command, &level, &waittime) != 3) {
 #else
             if (sscanf(line, "%s %d %lld", command, &level, &waittime) != 3) {

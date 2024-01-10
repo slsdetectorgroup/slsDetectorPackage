@@ -1846,20 +1846,20 @@ class Detector {
      *    Pattern                                     *
      *                                                *
      * ************************************************/
-    /** [CTB][Mythen3] Gets the pattern file name including path of the last
+    /** [CTB][Mythen3][Xilinx CTB] Gets the pattern file name including path of the last
      * pattern uploaded. \n Returns an empty if nothing was uploaded or via a
      * server default file*/
     Result<std::string> getPatterFileName(Positions pos = {}) const;
 
-    /** [CTB][Mythen3]  Loads ASCII pattern file directly to server
+    /** [CTB][Mythen3][Xilinx CTB] Loads ASCII pattern file directly to server
      * (instead of executing line by line)*/
     void setPattern(const std::string &fname, Positions pos = {});
 
-    /** [CTB][Mythen3]  Loads pattern parameters structure directly to
+    /** [CTB][Mythen3][Xilinx CTB] Loads pattern parameters structure directly to
      * server */
     void setPattern(const Pattern &pat, Positions pos = {});
 
-    /** [CTB][Mythen3] [Ctb][Mythen3] Saves pattern to file
+    /** [CTB][Mythen3][Xilinx CTB] Saves pattern to file
      * (ascii). \n [Ctb] Also executes pattern.*/
     void savePattern(const std::string &fname);
 
@@ -1872,57 +1872,57 @@ class Detector {
     /** [CTB] */
     void setPatternIOControl(uint64_t word, Positions pos = {});
 
-    /** [CTB][Mythen3] same as executing for ctb */
+    /** [CTB][Mythen3][Xilinx CTB] same as executing for ctb */
     Result<uint64_t> getPatternWord(int addr, Positions pos = {});
 
-    /** [CTB] Caution: If word is  -1  reads the addr (same as
+    /** [CTB][Xilinx CTB] Caution: If word is  -1  reads the addr (same as
      * executing the pattern)
      * [Mythen3] */
     void setPatternWord(int addr, uint64_t word, Positions pos = {});
 
-    /**[CTB][Mythen3] Options: level: -1 (complete pattern) and 0-2
+    /**[CTB][Mythen3][Xilinx CTB] Options: level: -1 (complete pattern) and 0-2
      * levels
      * @returns array of start address and stop address
      */
     Result<std::array<int, 2>>
     getPatternLoopAddresses(int level, Positions pos = {}) const;
 
-    /** [CTB][Mythen3] Options: level: -1 (complete pattern) and 0-2
+    /** [CTB][Mythen3][Xilinx CTB] Options: level: -1 (complete pattern) and 0-2
      * levels */
     void setPatternLoopAddresses(int level, int start, int stop,
                                  Positions pos = {});
 
-    /**[CTB][Mythen3] Options: level: -1 (complete pattern) and 0-2
+    /**[CTB][Mythen3][Xilinx CTB] Options: level: -1 (complete pattern) and 0-2
      * levels  */
     Result<int> getPatternLoopCycles(int level, Positions pos = {}) const;
 
-    /** [CTB][Mythen3] n: 0-2, level: -1 (complete pattern) and 0-2
+    /** [CTB][Mythen3][Xilinx CTB] n: 0-2, level: -1 (complete pattern) and 0-2
      * levels */
     void setPatternLoopCycles(int level, int n, Positions pos = {});
 
-    /**[CTB][Mythen3] */
+    /**[CTB][Mythen3][Xilinx CTB] */
     Result<int> getPatternWaitAddr(int level, Positions pos = {}) const;
 
-    /** [CTB][Mythen3] Options: level 0-2 */
+    /** [CTB][Mythen3][Xilinx CTB] Options: level 0-2 */
     void setPatternWaitAddr(int level, int addr, Positions pos = {});
 
-    /** [CTB][Mythen3]  */
+    /** [CTB][Mythen3][Xilinx CTB]  */
     Result<uint64_t> getPatternWaitTime(int level, Positions pos = {}) const;
 
-    /** [CTB][Mythen3] Options: level 0-2 */
+    /** [CTB][Mythen3][Xilinx CTB] Options: level 0-2 */
     void setPatternWaitTime(int level, uint64_t t, Positions pos = {});
 
-    /** [CTB][Mythen3] */
+    /** [CTB][Mythen3][Xilinx CTB] */
     Result<uint64_t> getPatternMask(Positions pos = {});
 
-    /** [CTB][Mythen3] Selects the bits that will have a pattern mask
+    /** [CTB][Mythen3][Xilinx CTB] Selects the bits that will have a pattern mask
      * applied to the selected patmask for every pattern. */
     void setPatternMask(uint64_t mask, Positions pos = {});
 
-    /** [CTB][Mythen3]  */
+    /** [CTB][Mythen3][Xilinx CTB]  */
     Result<uint64_t> getPatternBitMask(Positions pos = {}) const;
 
-    /** [CTB][Mythen3] Sets the mask applied to every pattern to the
+    /** [CTB][Mythen3][Xilinx CTB] Sets the mask applied to every pattern to the
      * selected bits */
     void setPatternBitMask(uint64_t mask, Positions pos = {});
 

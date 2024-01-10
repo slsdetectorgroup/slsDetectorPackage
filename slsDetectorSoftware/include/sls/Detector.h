@@ -353,7 +353,7 @@ class Detector {
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 
     /**
-     * [Gotthard][Jungfrau][Moench][Gotthard][CTB][Gotthard2] Options:
+     * [Gotthard][Jungfrau][Moench][Gotthard][CTB][Gotthard2][Xilinx CTB] Options:
      * AUTO_TIMING, TRIGGER_EXPOSURE \n
      * [Mythen3] Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n
      * [Eiger] Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER

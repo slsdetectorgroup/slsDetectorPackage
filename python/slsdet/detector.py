@@ -2180,7 +2180,7 @@ class Detector(CppDetectorApi):
         Note
         -----
         Default: AUTO_TIMING \n
-        [Jungfrau][Moench][Gotthard][Ctb][Gotthard2] AUTO_TIMING, TRIGGER_EXPOSURE \n
+        [Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx Ctb] AUTO_TIMING, TRIGGER_EXPOSURE \n
         [Mythen3] AUTO_TIMING, TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n
         [Eiger] AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
         """

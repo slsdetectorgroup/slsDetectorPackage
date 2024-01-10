@@ -719,9 +719,6 @@ int set_timing_mode(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting external communication mode to %d\n", arg));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // set
     if (((int)arg != GET_FLAG) && (Server_VerifyLock() == OK)) {
         switch (arg) {
@@ -758,7 +755,7 @@ int set_timing_mode(int file_des) {
     validate(&ret, mess, (int)arg, (int)retval, "set timing mode", DEC);
 #endif
     LOG(logDEBUG1, ("Timing Mode: %d\n", retval));
-#endif
+    
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 

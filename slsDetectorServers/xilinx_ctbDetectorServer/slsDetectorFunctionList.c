@@ -320,6 +320,7 @@ void setupDetector() {
 
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
+    setTiming(DEFAULT_TIMING_MODE);
 }
 
 /* set parameters -  dr */
@@ -361,6 +362,29 @@ int64_t getNumFramesLeft() {
 
 int64_t getNumTriggersLeft() {
     return getU64BitReg(CYCLESOUTREG1, CYCLESOUTREG2);
+}
+
+/* parameters - timing, extsig */
+
+void setTiming(enum timingMode arg) {
+    switch (arg) {
+    case AUTO_TIMING:
+        LOG(logINFO, ("Set Timing: Auto\n"));
+        bus_w(FLOWCONTROLREG, bus_r(FLOWCONTROLREG) & ~TRIGGERENABLE_MSK);
+        break;
+    case TRIGGER_EXPOSURE:
+        LOG(logINFO, ("Set Timing: Trigger\n"));
+        bus_w(FLOWCONTROLREG, bus_r(FLOWCONTROLREG) | TRIGGERENABLE_MSK);
+        break;
+    default:
+        LOG(logERROR, ("Unknown timing mode %d\n", arg));
+    }
+}
+
+enum timingMode getTiming() {
+    if (bus_r(FLOWCONTROLREG) == TRIGGERENABLE_MSK)
+        return TRIGGER_EXPOSURE;
+    return AUTO_TIMING;
 }
 
 int setDetectorPosition(int pos[]) {

@@ -444,10 +444,8 @@ void setSynchronization(int enable);
 void updatingRegisters();
 int updateClockDivs();
 #endif
-#ifndef XILINX_CHIPTESTBOARDD
 void setTiming(enum timingMode arg);
 enum timingMode getTiming();
-#endif
 #ifdef MYTHEN3D
 void setInitialExtSignals();
 int setChipStatusRegister(int csr);

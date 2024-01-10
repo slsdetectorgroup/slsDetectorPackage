@@ -1051,66 +1051,61 @@ TEST_CASE("CALLER::timing", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getTimingMode();
-        det.setTimingMode(defs::AUTO_TIMING);
+    auto prev_val = det.getTimingMode();
+    det.setTimingMode(defs::AUTO_TIMING);
+    {
+        std::ostringstream oss1, oss2;
+        caller.call("timing", {"auto"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "timing auto\n");
+        caller.call("timing", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "timing auto\n");
+    }
+    {
+        std::ostringstream oss1, oss2;
+        caller.call("timing", {"trigger"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "timing trigger\n");
+        caller.call("timing", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "timing trigger\n");
+    }
+    if (det_type == defs::EIGER) {
         {
             std::ostringstream oss1, oss2;
-            caller.call("timing", {"auto"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "timing auto\n");
+            caller.call("timing", {"gating"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "timing gating\n");
             caller.call("timing", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "timing auto\n");
+            REQUIRE(oss2.str() == "timing gating\n");
         }
         {
             std::ostringstream oss1, oss2;
-            caller.call("timing", {"trigger"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "timing trigger\n");
+            caller.call("timing", {"burst_trigger"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "timing burst_trigger\n");
             caller.call("timing", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "timing trigger\n");
+            REQUIRE(oss2.str() == "timing burst_trigger\n");
         }
-        if (det_type == defs::EIGER) {
-            {
-                std::ostringstream oss1, oss2;
-                caller.call("timing", {"gating"}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "timing gating\n");
-                caller.call("timing", {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "timing gating\n");
-            }
-            {
-                std::ostringstream oss1, oss2;
-                caller.call("timing", {"burst_trigger"}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "timing burst_trigger\n");
-                caller.call("timing", {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "timing burst_trigger\n");
-            }
-            REQUIRE_THROWS(caller.call("timing", {"trigger_gating"}, -1, PUT));
-        } else if (det_type == defs::MYTHEN3) {
-            {
-                std::ostringstream oss1, oss2;
-                caller.call("timing", {"gating"}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "timing gating\n");
-                caller.call("timing", {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "timing gating\n");
-            }
-            {
-                std::ostringstream oss1, oss2;
-                caller.call("timing", {"trigger_gating"}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "timing trigger_gating\n");
-                caller.call("timing", {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "timing trigger_gating\n");
-            }
-            REQUIRE_THROWS(caller.call("timing", {"burst_trigger"}, -1, PUT));
-        } else {
-            REQUIRE_THROWS(caller.call("timing", {"gating"}, -1, PUT));
-            REQUIRE_THROWS(caller.call("timing", {"burst_trigger"}, -1, PUT));
-            REQUIRE_THROWS(caller.call("timing", {"trigger_gating"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("timing", {"trigger_gating"}, -1, PUT));
+    } else if (det_type == defs::MYTHEN3) {
+        {
+            std::ostringstream oss1, oss2;
+            caller.call("timing", {"gating"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "timing gating\n");
+            caller.call("timing", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "timing gating\n");
         }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setTimingMode(prev_val[i], {i});
+        {
+            std::ostringstream oss1, oss2;
+            caller.call("timing", {"trigger_gating"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "timing trigger_gating\n");
+            caller.call("timing", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "timing trigger_gating\n");
         }
+        REQUIRE_THROWS(caller.call("timing", {"burst_trigger"}, -1, PUT));
     } else {
-        REQUIRE_THROWS(caller.call("timing", {}, -1, GET));
-    
+        REQUIRE_THROWS(caller.call("timing", {"gating"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("timing", {"burst_trigger"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("timing", {"trigger_gating"}, -1, PUT));
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setTimingMode(prev_val[i], {i});
     }
 }
 

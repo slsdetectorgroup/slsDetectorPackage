@@ -87,13 +87,8 @@ TEST_CASE("CALLER::virtual", "[.cmdcall]") {
 TEST_CASE("CALLER::versions", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_NOTHROW(caller.call("versions", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("versions", {"0"}, -1, PUT));
-    } else {
-        REQUIRE_THROWS(caller.call("versions", {}, -1, GET));
-    }
+    REQUIRE_NOTHROW(caller.call("versions", {}, -1, GET));
+    REQUIRE_THROWS(caller.call("versions", {"0"}, -1, PUT));
 }
 
 TEST_CASE("CALLER::packageversion", "[.cmdcall]") {
@@ -127,25 +122,15 @@ TEST_CASE("CALLER::detectorserverversion", "[.cmdcall]") {
 TEST_CASE("CALLER::hardwareversion", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_NOTHROW(caller.call("hardwareversion", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("hardwareversion", {"0"}, -1, PUT));
-    } else {
-        REQUIRE_THROWS(caller.call("hardwareversion", {}, -1, GET));
-    }
+    REQUIRE_NOTHROW(caller.call("hardwareversion", {}, -1, GET));
+    REQUIRE_THROWS(caller.call("hardwareversion", {"0"}, -1, PUT));
 }
 
 TEST_CASE("CALLER::kernelversion", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_NOTHROW(caller.call("kernelversion", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("kernelversion", {"0"}, -1, PUT));
-    } else {
-        REQUIRE_THROWS(caller.call("kernelversion", {}, -1, GET));
-    }
+    REQUIRE_NOTHROW(caller.call("kernelversion", {}, -1, GET));
+    REQUIRE_THROWS(caller.call("kernelversion", {"0"}, -1, PUT));
 }
 
 TEST_CASE("CALLER::serialnumber", "[.cmdcall]") {
@@ -959,7 +944,7 @@ TEST_CASE("CALLER::framesl", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::XILINX_CHIPTESTBOARD) {
+    if (det_type == defs::EIGER) {
         REQUIRE_THROWS(caller.call("framesl", {}, -1, GET));
     } else {
         REQUIRE_NOTHROW(caller.call("framesl", {}, -1, GET));
@@ -970,7 +955,7 @@ TEST_CASE("CALLER::triggersl", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::XILINX_CHIPTESTBOARD) {
+    if (det_type == defs::EIGER) {
         REQUIRE_THROWS(caller.call("triggersl", {}, -1, GET));
     } else {
         REQUIRE_NOTHROW(caller.call("triggersl", {}, -1, GET));
@@ -1017,45 +1002,41 @@ TEST_CASE("CALLER::dr", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        if (det_type == defs::EIGER) {
-            auto dr = det.getDynamicRange().squash();
-            std::array<int, 4> vals{4, 8, 16, 32};
-            for (const auto val : vals) {
-                std::ostringstream oss1, oss2;
-                caller.call("dr", {std::to_string(val)}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "dr " + std::to_string(val) + '\n');
-                caller.call("dr", {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "dr " + std::to_string(val) + '\n');
-            }
-            det.setDynamicRange(dr);
-        } else if (det_type == defs::MYTHEN3) {
-            auto dr = det.getDynamicRange().squash();
-            // not updated in firmware to support dr 1
-            std::array<int, 3> vals{8, 16, 32};
-            for (const auto val : vals) {
-                std::ostringstream oss1, oss2;
-                caller.call("dr", {std::to_string(val)}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "dr " + std::to_string(val) + '\n');
-                caller.call("dr", {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "dr " + std::to_string(val) + '\n');
-            }
-            det.setDynamicRange(dr);
-        } else {
-            // For the other detectors we should get an error message
-            // except for dr 16
-            REQUIRE_THROWS(caller.call("dr", {"4"}, -1, PUT));
-            REQUIRE_THROWS(caller.call("dr", {"8"}, -1, PUT));
-            REQUIRE_THROWS(caller.call("dr", {"32"}, -1, PUT));
-
+    if (det_type == defs::EIGER) {
+        auto dr = det.getDynamicRange().squash();
+        std::array<int, 4> vals{4, 8, 16, 32};
+        for (const auto val : vals) {
             std::ostringstream oss1, oss2;
-            caller.call("dr", {"16"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "dr 16\n");
-            caller.call("dr", {"16"}, -1, PUT, oss2);
-            REQUIRE(oss2.str() == "dr 16\n");
+            caller.call("dr", {std::to_string(val)}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "dr " + std::to_string(val) + '\n');
+            caller.call("dr", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "dr " + std::to_string(val) + '\n');
         }
+        det.setDynamicRange(dr);
+    } else if (det_type == defs::MYTHEN3) {
+        auto dr = det.getDynamicRange().squash();
+        // not updated in firmware to support dr 1
+        std::array<int, 3> vals{8, 16, 32};
+        for (const auto val : vals) {
+            std::ostringstream oss1, oss2;
+            caller.call("dr", {std::to_string(val)}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "dr " + std::to_string(val) + '\n');
+            caller.call("dr", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "dr " + std::to_string(val) + '\n');
+        }
+        det.setDynamicRange(dr);
     } else {
-        REQUIRE_THROWS(caller.call("dr", {}, -1, GET));
+        // For the other detectors we should get an error message
+        // except for dr 16
+        REQUIRE_THROWS(caller.call("dr", {"4"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("dr", {"8"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("dr", {"32"}, -1, PUT));
+
+        std::ostringstream oss1, oss2;
+        caller.call("dr", {"16"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "dr 16\n");
+        caller.call("dr", {"16"}, -1, PUT, oss2);
+        REQUIRE(oss2.str() == "dr 16\n");
     }
 }
 
@@ -1070,66 +1051,61 @@ TEST_CASE("CALLER::timing", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getTimingMode();
-        det.setTimingMode(defs::AUTO_TIMING);
+    auto prev_val = det.getTimingMode();
+    det.setTimingMode(defs::AUTO_TIMING);
+    {
+        std::ostringstream oss1, oss2;
+        caller.call("timing", {"auto"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "timing auto\n");
+        caller.call("timing", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "timing auto\n");
+    }
+    {
+        std::ostringstream oss1, oss2;
+        caller.call("timing", {"trigger"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "timing trigger\n");
+        caller.call("timing", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "timing trigger\n");
+    }
+    if (det_type == defs::EIGER) {
         {
             std::ostringstream oss1, oss2;
-            caller.call("timing", {"auto"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "timing auto\n");
+            caller.call("timing", {"gating"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "timing gating\n");
             caller.call("timing", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "timing auto\n");
+            REQUIRE(oss2.str() == "timing gating\n");
         }
         {
             std::ostringstream oss1, oss2;
-            caller.call("timing", {"trigger"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "timing trigger\n");
+            caller.call("timing", {"burst_trigger"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "timing burst_trigger\n");
             caller.call("timing", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "timing trigger\n");
+            REQUIRE(oss2.str() == "timing burst_trigger\n");
         }
-        if (det_type == defs::EIGER) {
-            {
-                std::ostringstream oss1, oss2;
-                caller.call("timing", {"gating"}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "timing gating\n");
-                caller.call("timing", {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "timing gating\n");
-            }
-            {
-                std::ostringstream oss1, oss2;
-                caller.call("timing", {"burst_trigger"}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "timing burst_trigger\n");
-                caller.call("timing", {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "timing burst_trigger\n");
-            }
-            REQUIRE_THROWS(caller.call("timing", {"trigger_gating"}, -1, PUT));
-        } else if (det_type == defs::MYTHEN3) {
-            {
-                std::ostringstream oss1, oss2;
-                caller.call("timing", {"gating"}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "timing gating\n");
-                caller.call("timing", {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "timing gating\n");
-            }
-            {
-                std::ostringstream oss1, oss2;
-                caller.call("timing", {"trigger_gating"}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "timing trigger_gating\n");
-                caller.call("timing", {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "timing trigger_gating\n");
-            }
-            REQUIRE_THROWS(caller.call("timing", {"burst_trigger"}, -1, PUT));
-        } else {
-            REQUIRE_THROWS(caller.call("timing", {"gating"}, -1, PUT));
-            REQUIRE_THROWS(caller.call("timing", {"burst_trigger"}, -1, PUT));
-            REQUIRE_THROWS(caller.call("timing", {"trigger_gating"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("timing", {"trigger_gating"}, -1, PUT));
+    } else if (det_type == defs::MYTHEN3) {
+        {
+            std::ostringstream oss1, oss2;
+            caller.call("timing", {"gating"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "timing gating\n");
+            caller.call("timing", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "timing gating\n");
         }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setTimingMode(prev_val[i], {i});
+        {
+            std::ostringstream oss1, oss2;
+            caller.call("timing", {"trigger_gating"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "timing trigger_gating\n");
+            caller.call("timing", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "timing trigger_gating\n");
         }
+        REQUIRE_THROWS(caller.call("timing", {"burst_trigger"}, -1, PUT));
     } else {
-        REQUIRE_THROWS(caller.call("timing", {}, -1, GET));
-    
+        REQUIRE_THROWS(caller.call("timing", {"gating"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("timing", {"burst_trigger"}, -1, PUT));
+        REQUIRE_THROWS(caller.call("timing", {"trigger_gating"}, -1, PUT));
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setTimingMode(prev_val[i], {i});
     }
 }
 

@@ -7,6 +7,9 @@
 #include "sharedMemory.h"
 #include "sls/versionAPI.h"
 
+#include "loadPattern.h"
+
+
 #include <string.h>
 #include <unistd.h> // usleep
 #include <arpa/inet.h> // INET_ADDRSTRLEN
@@ -227,6 +230,10 @@ uint64_t getFirmwareVersion() {
     return ((bus_r(FPGAVERSIONREG) & COMPDATE_MSK) >> COMPDATE_OFST);
 }
 
+void getHardwareVersion(char *version) {
+    strcpy(version, "Not applicable");
+}
+
 u_int64_t getDetectorMAC() {
 #ifdef VIRTUAL
     return 0;
@@ -310,12 +317,29 @@ void setupDetector() {
     LOG(logINFO, ("Setting up Server for 1 Xilinx Chip Test Board\n"));
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
+    initializePatternWord();
 #endif
 
     LOG(logINFOBLUE, ("Setting Default parameters\n"));
+    initializePatternAddresses();
+
 
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
+    setTiming(DEFAULT_TIMING_MODE);
+}
+
+/* set parameters -  dr */
+
+int setDynamicRange(int dr) {
+    if (dr == 16)
+        return OK;
+    return FAIL;
+}
+
+int getDynamicRange(int *retval) {
+    *retval = DYNAMIC_RANGE;
+    return OK;
 }
 
 /* parameters - timer */
@@ -337,6 +361,37 @@ void setNumTriggers(int64_t val) {
 }
 
 int64_t getNumTriggers() { return getU64BitReg(CYCLESINREG1, CYCLESINREG2); }
+
+int64_t getNumFramesLeft() {
+    return getU64BitReg(FRAMESOUTREG1, FRAMESOUTREG2);
+}
+
+int64_t getNumTriggersLeft() {
+    return getU64BitReg(CYCLESOUTREG1, CYCLESOUTREG2);
+}
+
+/* parameters - timing, extsig */
+
+void setTiming(enum timingMode arg) {
+    switch (arg) {
+    case AUTO_TIMING:
+        LOG(logINFO, ("Set Timing: Auto\n"));
+        bus_w(FLOWCONTROLREG, bus_r(FLOWCONTROLREG) & ~TRIGGERENABLE_MSK);
+        break;
+    case TRIGGER_EXPOSURE:
+        LOG(logINFO, ("Set Timing: Trigger\n"));
+        bus_w(FLOWCONTROLREG, bus_r(FLOWCONTROLREG) | TRIGGERENABLE_MSK);
+        break;
+    default:
+        LOG(logERROR, ("Unknown timing mode %d\n", arg));
+    }
+}
+
+enum timingMode getTiming() {
+    if (bus_r(FLOWCONTROLREG) == TRIGGERENABLE_MSK)
+        return TRIGGER_EXPOSURE;
+    return AUTO_TIMING;
+}
 
 int setDetectorPosition(int pos[]) {
     memcpy(detPos, pos, sizeof(detPos));

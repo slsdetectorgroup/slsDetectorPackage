@@ -232,7 +232,7 @@ class Detector(CppDetectorApi):
     @element
     def hardwareversion(self):
         """
-        [Jungfrau][Moench][Gotthard2][Myhten3][Gotthard][Ctb] Hardware version of detector. \n
+        Hardware version of detector. \n
         [Eiger] Hardware version of front FPGA on detector.
         """
         return self.getHardwareVersion()
@@ -308,7 +308,7 @@ class Detector(CppDetectorApi):
         -----
         [Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets clkdivider to 2 (quarter speed), else to 0 (full speed)\n
         [Mythen3] Options: 8, 16, 32 \n
-        [Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2] 16
+        [Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2][Xilinx Ctb] 16
         """
         return self.getDynamicRange()
 
@@ -400,7 +400,7 @@ class Detector(CppDetectorApi):
     @element
     def framesl(self):
         """
-        [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of frames left in acquisition.\n
+        [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx CTB] Number of frames left in acquisition.\n
 
         Note
         ----
@@ -1951,7 +1951,7 @@ class Detector(CppDetectorApi):
     @element
     def triggersl(self):
         """
-        [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of triggers left in acquisition.\n
+        [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx CTB] Number of triggers left in acquisition.\n
         
         Note
         ----
@@ -2180,7 +2180,7 @@ class Detector(CppDetectorApi):
         Note
         -----
         Default: AUTO_TIMING \n
-        [Jungfrau][Moench][Gotthard][Ctb][Gotthard2] AUTO_TIMING, TRIGGER_EXPOSURE \n
+        [Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx Ctb] AUTO_TIMING, TRIGGER_EXPOSURE \n
         [Mythen3] AUTO_TIMING, TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n
         [Eiger] AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
         """
@@ -3477,7 +3477,7 @@ class Detector(CppDetectorApi):
 
     @property
     def pattern(self):
-        """[Mythen3][Ctb] Loads ASCII pattern file directly to server (instead of executing line by line).
+        """[Mythen3][Ctb][Xilinx Ctb] Loads ASCII pattern file directly to server (instead of executing line by line).
                
         :getter: Not Implemented
         
@@ -3495,7 +3495,7 @@ class Detector(CppDetectorApi):
     @property
     def patfname(self):
         """
-        [Ctb][Mythen3] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default
+        [Ctb][Mythen3][Xilinx Ctb] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default
         file
         """
         return self.getPatterFileName()
@@ -3520,7 +3520,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patlimits(self):
-        """[Ctb][Mythen3] Limits (start and stop address) of complete pattern.
+        """[Ctb][Mythen3][Xilinx Ctb] Limits (start and stop address) of complete pattern.
         
         Example
         ---------
@@ -3540,7 +3540,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patsetbit(self):
-        """[Ctb][Mythen3] Sets the mask applied to every pattern to the selected bits. 
+        """[Ctb][Mythen3][Xilinx Ctb] Sets the mask applied to every pattern to the selected bits. 
         
         Example
         --------
@@ -3557,7 +3557,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patmask(self):
-        """[Ctb][Mythen3] Selects the bits that will have a pattern mask applied to the selected patmask for every pattern.
+        """[Ctb][Mythen3][Xilinx Ctb] Selects the bits that will have a pattern mask applied to the selected patmask for every pattern.
         
         Example
         --------
@@ -3575,7 +3575,7 @@ class Detector(CppDetectorApi):
     # @element
     def patwait(self):
         """
-        [Ctb][Mythen3] Wait address of loop level provided.
+        [Ctb][Mythen3][Xilinx Ctb] Wait address of loop level provided.
         
         Example
         -------
@@ -3592,7 +3592,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patwait0(self):
-        """[Ctb][Mythen3] Wait 0 address.
+        """[Ctb][Mythen3][Xilinx Ctb] Wait 0 address.
                 
         Example
         --------
@@ -3612,7 +3612,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patwait1(self):
-        """[Ctb][Mythen3] Wait 1 address.
+        """[Ctb][Mythen3][Xilinx Ctb] Wait 1 address.
                 
         Example
         --------
@@ -3632,7 +3632,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patwait2(self):
-        """[Ctb][Mythen3] Wait 2 address.
+        """[Ctb][Mythen3][Xilinx Ctb] Wait 2 address.
                 
         Example
         --------
@@ -3652,7 +3652,7 @@ class Detector(CppDetectorApi):
     @property
     def patwaittime(self):
         """
-        [Ctb][Mythen3] Wait time in clock cycles of loop level provided.
+        [Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles of loop level provided.
         
         Example
         -------
@@ -3669,7 +3669,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patwaittime0(self):
-        """[Ctb][Mythen3] Wait 0 time in clock cycles."""
+        """[Ctb][Mythen3][Xilinx Ctb] Wait 0 time in clock cycles."""
         return self.getPatternWaitTime(0)
 
     @patwaittime0.setter
@@ -3680,7 +3680,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patwaittime1(self):
-        """[Ctb][Mythen3] Wait 1 time in clock cycles."""
+        """[Ctb][Mythen3][Xilinx Ctb] Wait 1 time in clock cycles."""
         return self.getPatternWaitTime(1)
 
     @patwaittime1.setter
@@ -3691,7 +3691,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patwaittime2(self):
-        """[Ctb][Mythen3] Wait 2 time in clock cycles."""
+        """[Ctb][Mythen3][Xilinx Ctb] Wait 2 time in clock cycles."""
         return self.getPatternWaitTime(2)
 
     @patwaittime2.setter
@@ -3703,7 +3703,7 @@ class Detector(CppDetectorApi):
     @property
     def patloop(self):
         """
-        [Ctb][Mythen3] Limits (start and stop address) of the loop provided.
+        [Ctb][Mythen3][Xilinx Ctb] Limits (start and stop address) of the loop provided.
         
         Example
         -------
@@ -3720,7 +3720,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patloop0(self):
-        """[Ctb][Mythen3] Limits (start and stop address) of loop 0.
+        """[Ctb][Mythen3][Xilinx Ctb] Limits (start and stop address) of loop 0.
         
         Example
         ---------
@@ -3740,7 +3740,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patloop1(self):
-        """[Ctb][Mythen3] Limits (start and stop address) of loop 1.
+        """[Ctb][Mythen3][Xilinx Ctb] Limits (start and stop address) of loop 1.
         
         Example
         ---------
@@ -3761,7 +3761,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patloop2(self):
-        """[Ctb][Mythen3] Limits (start and stop address) of loop 2.
+        """[Ctb][Mythen3][Xilinx Ctb] Limits (start and stop address) of loop 2.
         
         Example
         ---------
@@ -3783,7 +3783,7 @@ class Detector(CppDetectorApi):
     @property
     def patnloop(self):
         """
-        [Ctb][Mythen3] Number of cycles of the loop provided.
+        [Ctb][Mythen3][Xilinx Ctb] Number of cycles of the loop provided.
         
         Example
         -------
@@ -3800,7 +3800,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patnloop0(self):
-        """[Ctb][Mythen3] Number of cycles of loop 0."""
+        """[Ctb][Mythen3][Xilinx Ctb] Number of cycles of loop 0."""
         return self.getPatternLoopCycles(0)
 
     @patnloop0.setter
@@ -3811,7 +3811,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patnloop1(self):
-        """[Ctb][Mythen3] Number of cycles of loop 1."""
+        """[Ctb][Mythen3][Xilinx Ctb] Number of cycles of loop 1."""
         return self.getPatternLoopCycles(1)
 
     @patnloop1.setter
@@ -3822,7 +3822,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patnloop2(self):
-        """[Ctb][Mythen3] Number of cycles of loop 2."""
+        """[Ctb][Mythen3][Xilinx Ctb] Number of cycles of loop 2."""
         return self.getPatternLoopCycles(2)
 
     @patnloop2.setter

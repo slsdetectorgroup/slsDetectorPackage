@@ -86,8 +86,8 @@ uint64_t getFrontEndFirmwareVersion(enum fpgaPosition fpgaPosition);
 #endif
 #ifndef XILINX_CHIPTESTBOARDD
 u_int64_t getFirmwareAPIVersion();
-void getHardwareVersion(char *version);
 #endif
+void getHardwareVersion(char *version);
 #ifdef EIGERD
 int getHardwareVersionNumber();
 #else
@@ -197,10 +197,8 @@ void setMasterSlaveConfiguration();
 #endif
 
 // parameters - dr, roi
-#ifndef XILINX_CHIPTESTBOARDD
 int setDynamicRange(int dr);
 int getDynamicRange(int *retval);
-#endif
 #ifdef GOTTHARDD
 int setROI(ROI arg);
 ROI getROI();
@@ -309,12 +307,15 @@ uint32_t getCounterMask();
 void updatePacketizing();
 #endif
 
+#ifndef EIGERD
+int64_t getNumFramesLeft();
+int64_t getNumTriggersLeft();
+#endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARDD) ||            \
     defined(CHIPTESTBOARDD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int setDelayAfterTrigger(int64_t val);
 int64_t getDelayAfterTrigger();
-int64_t getNumFramesLeft();
-int64_t getNumTriggersLeft();
+
 int64_t getDelayAfterTriggerLeft();
 int64_t getPeriodLeft();
 #endif
@@ -445,10 +446,8 @@ void setSynchronization(int enable);
 void updatingRegisters();
 int updateClockDivs();
 #endif
-#ifndef XILINX_CHIPTESTBOARDD
 void setTiming(enum timingMode arg);
 enum timingMode getTiming();
-#endif
 #ifdef MYTHEN3D
 void setInitialExtSignals();
 int setChipStatusRegister(int csr);

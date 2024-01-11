@@ -23,7 +23,7 @@ TEST_CASE("Caller::patfname", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         REQUIRE_THROWS(caller.call("patfname", {}, -1, PUT));
         REQUIRE_NOTHROW(caller.call("patfname", {}, -1, GET));
     } else {
@@ -35,7 +35,7 @@ TEST_CASE("Caller::pattern", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         // no proper test for put
         REQUIRE_THROWS(caller.call("pattern", {}, -1, GET));
     } else {
@@ -47,7 +47,7 @@ TEST_CASE("Caller::savepattern", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         REQUIRE_THROWS(
             caller.call("savepattern", {"/tmp/pattern.txt"}, -1, GET));
         if (det.size() == 1) {
@@ -108,7 +108,7 @@ TEST_CASE("Caller::patword", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         int addr = 0x23;
         std::string saddr = ToStringHex(addr, 4);
         auto prev_val = det.getPatternWord(addr);
@@ -117,6 +117,12 @@ TEST_CASE("Caller::patword", "[.cmdcall]") {
             caller.call("patword", {saddr, "0xc15004808d0a21a4"}, -1, PUT, oss);
             REQUIRE(oss.str() ==
                     "patword [" + saddr + ", 0xc15004808d0a21a4]\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("patword", {saddr, "0x815004808d0a21a4"}, -1, PUT, oss);
+            REQUIRE(oss.str() ==
+                    "patword [" + saddr + ", 0x815004808d0a21a4]\n");
         }
         {
             std::ostringstream oss;
@@ -143,7 +149,7 @@ TEST_CASE("Caller::patlimits", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         auto prev_val = det.getPatternLoopAddresses(-1);
         {
             std::ostringstream oss;
@@ -169,7 +175,7 @@ TEST_CASE("Caller::patloop", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         for (int iLoop = 0; iLoop != MAX_PATTERN_LEVELS; ++iLoop) {
             // m3 only has 3 levels
             if (det_type == defs::MYTHEN3 && iLoop >= 3) {
@@ -217,7 +223,7 @@ TEST_CASE("Caller::patnloop", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         for (int iLoop = 0; iLoop != MAX_PATTERN_LEVELS; ++iLoop) {
             // m3 only has 3 levels
             if (det_type == defs::MYTHEN3 && iLoop >= 3) {
@@ -262,7 +268,7 @@ TEST_CASE("Caller::patwait", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         for (int iLoop = 0; iLoop != MAX_PATTERN_LEVELS; ++iLoop) {
             // m3 only has 3 levels
             if (det_type == defs::MYTHEN3 && iLoop >= 3) {
@@ -307,7 +313,7 @@ TEST_CASE("Caller::patwaittime", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         for (int iLoop = 0; iLoop != MAX_PATTERN_LEVELS; ++iLoop) {
             // m3 only has 3 levels
             if (det_type == defs::MYTHEN3 && iLoop >= 3) {
@@ -352,7 +358,7 @@ TEST_CASE("Caller::patmask", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         auto prev_val = det.getPatternMask();
         {
             std::ostringstream oss;
@@ -377,7 +383,7 @@ TEST_CASE("Caller::patsetbit", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         auto prev_val = det.getPatternBitMask();
         {
             std::ostringstream oss;

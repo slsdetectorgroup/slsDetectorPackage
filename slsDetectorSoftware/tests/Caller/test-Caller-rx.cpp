@@ -177,7 +177,8 @@ TEST_CASE("Caller::rx_missingpackets", "[.cmdcall][.rx]") {
         }
         auto det_type = det.getDetectorType().squash();
         if (det_type != defs::CHIPTESTBOARD && det_type != defs::MOENCH) {
-            // 0 missing packets (takes into account that acquisition is stopped)
+            // 0 missing packets (takes into account that acquisition is
+            // stopped)
             det.startReceiver();
             det.startDetector();
             det.stopDetector();
@@ -236,8 +237,8 @@ TEST_CASE("Caller::rx_hostname", "[.cmdcall][.rx]") {
     if (det_type != defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getRxHostname();
 
-        // Cannot set rx_hostname (will reset parameters in rxr and no shm variables
-        // to update)
+        // Cannot set rx_hostname (will reset parameters in rxr and no shm
+        // variables to update)
         // {
         //     // disable receiver
         //     std::ostringstream oss;
@@ -597,20 +598,21 @@ TEST_CASE("Caller::rx_roi", "[.cmdcall]") {
                 }
                 {
                     std::ostringstream oss;
-                    caller.call("rx_roi", {"10", "22", "18", "19"}, -1, PUT, oss);
+                    caller.call("rx_roi", {"10", "22", "18", "19"}, -1, PUT,
+                                oss);
                     REQUIRE(oss.str() == "rx_roi [10, 22, 18, 19]\n");
                 }
                 {
                     std::ostringstream oss;
                     caller.call("rx_roi",
                                 {"1", std::to_string(detsize.x - 5), "1",
-                                std::to_string(detsize.y - 5)},
+                                 std::to_string(detsize.y - 5)},
                                 -1, PUT, oss);
                     REQUIRE(oss.str() == std::string("rx_roi [1, ") +
-                                            std::to_string(detsize.x - 5) +
-                                            std::string(", 1, ") +
-                                            std::to_string(detsize.y - 5) +
-                                            std::string("]\n"));
+                                             std::to_string(detsize.x - 5) +
+                                             std::string(", 1, ") +
+                                             std::to_string(detsize.y - 5) +
+                                             std::string("]\n"));
                 }
                 REQUIRE_THROWS(
                     caller.call("rx_roi", {"-1", "-1", "-1", "-1"}, -1, PUT));
@@ -966,7 +968,6 @@ TEST_CASE("Caller::rx_zmqstartfnum", "[.cmdcall][.rx]") {
         }
     } else {
         REQUIRE_THROWS(caller.call("rx_zmqstartfnum", {}, -1, GET));
-    
     }
 }
 
@@ -992,18 +993,18 @@ TEST_CASE("Caller::rx_zmqport", "[.cmdcall][.rx]") {
         for (int i = 0; i != det.size(); ++i) {
             std::ostringstream oss;
             caller.call("rx_zmqport", {}, i, GET, oss);
-            REQUIRE(oss.str() == "rx_zmqport " +
-                                    std::to_string(port + i * socketsperdetector) +
-                                    '\n');
+            REQUIRE(oss.str() ==
+                    "rx_zmqport " +
+                        std::to_string(port + i * socketsperdetector) + '\n');
         }
         port = 30001;
         caller.call("rx_zmqport", {std::to_string(port)}, -1, PUT);
         for (int i = 0; i != det.size(); ++i) {
             std::ostringstream oss;
             caller.call("rx_zmqport", {}, i, GET, oss);
-            REQUIRE(oss.str() == "rx_zmqport " +
-                                    std::to_string(port + i * socketsperdetector) +
-                                    '\n');
+            REQUIRE(oss.str() ==
+                    "rx_zmqport " +
+                        std::to_string(port + i * socketsperdetector) + '\n');
         }
         test_valid_port_caller("rx_zmqport", {}, -1, PUT);
         test_valid_port_caller("rx_zmqport", {}, 0, PUT);
@@ -1053,8 +1054,8 @@ TEST_CASE("Caller::rx_zmqhwm", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val =
-            det.getRxZmqHwm().tsquash("Inconsistent values for rx_zmqhwm to test");
+        auto prev_val = det.getRxZmqHwm().tsquash(
+            "Inconsistent values for rx_zmqhwm to test");
         {
             std::ostringstream oss;
             caller.call("rx_zmqhwm", {"50"}, -1, PUT, oss);
@@ -1155,14 +1156,16 @@ TEST_CASE("Caller::rx_jsonaddheader", "[.cmdcall][.rx]") {
 
         {
             std::ostringstream oss;
-            caller.call("rx_jsonaddheader", {"key1", "value1", "key2", "value2"},
-                        -1, PUT, oss);
-            REQUIRE(oss.str() == "rx_jsonaddheader {key1: value1, key2: value2}\n");
+            caller.call("rx_jsonaddheader",
+                        {"key1", "value1", "key2", "value2"}, -1, PUT, oss);
+            REQUIRE(oss.str() ==
+                    "rx_jsonaddheader {key1: value1, key2: value2}\n");
         }
         {
             std::ostringstream oss;
             caller.call("rx_jsonaddheader", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "rx_jsonaddheader {key1: value1, key2: value2}\n");
+            REQUIRE(oss.str() ==
+                    "rx_jsonaddheader {key1: value1, key2: value2}\n");
         }
         {
             std::ostringstream oss;

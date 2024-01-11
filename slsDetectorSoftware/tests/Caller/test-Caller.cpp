@@ -179,7 +179,8 @@ TEST_CASE("CALLER::settingslist", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         REQUIRE_THROWS(caller.call("settingslist", {}, -1, GET));
     } else {
         REQUIRE_NOTHROW(caller.call("settingslist", {}, -1, GET));
@@ -829,8 +830,8 @@ TEST_CASE("CALLER::exptime", "[.cmdcall][.time]") {
         if (det_type != defs::MYTHEN3) {
             prev_val = det.getExptime().tsquash("inconsistent exptime to test");
         } else {
-            auto t =
-                det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+            auto t = det.getExptimeForAllGates().tsquash(
+                "inconsistent exptime to test");
             if (t[0] != t[1] || t[1] != t[2]) {
                 throw RuntimeError("inconsistent exptime for all gates");
             }
@@ -1430,7 +1431,7 @@ TEST_CASE("CALLER::highvoltage", "[.cmdcall]") {
         }
         // range 0, 60 - 200
         else if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-                det_type == defs::CHIPTESTBOARD) {
+                 det_type == defs::CHIPTESTBOARD) {
             REQUIRE_THROWS(caller.call("highvoltage", {"50"}, -1, PUT));
             {
                 std::ostringstream oss1, oss2;
@@ -2001,7 +2002,8 @@ TEST_CASE("CALLER::temp_fpga", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::CHIPTESTBOARD && det_type != defs::XILINX_CHIPTESTBOARD) {
+    if (det_type != defs::CHIPTESTBOARD &&
+        det_type != defs::XILINX_CHIPTESTBOARD) {
         REQUIRE_NOTHROW(caller.call("temp_fpga", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(caller.call("temp_fpga", {}, 0, GET, oss));
@@ -2058,7 +2060,6 @@ TEST_CASE("CALLER::dacvalues", "[.cmdcall]") {
         REQUIRE_THROWS(caller.call("dacvalues", {}, -1, PUT));
     } else {
         REQUIRE_THROWS(caller.call("dacvalues", {}, -1, GET));
-    
     }
 }
 
@@ -2066,7 +2067,8 @@ TEST_CASE("CALLER::defaultdac", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::CHIPTESTBOARD && det_type != defs::XILINX_CHIPTESTBOARD) {
+    if (det_type != defs::CHIPTESTBOARD &&
+        det_type != defs::XILINX_CHIPTESTBOARD) {
         REQUIRE_THROWS(caller.call("defaultdac", {}, -1, GET));
         REQUIRE_THROWS(caller.call("defaultdac", {"blabla"}, -1, PUT));
         auto daclist = det.getDacList();
@@ -2125,7 +2127,8 @@ TEST_CASE("CALLER::resetdacs", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::CHIPTESTBOARD && det_type != defs::XILINX_CHIPTESTBOARD) {
+    if (det_type != defs::CHIPTESTBOARD &&
+        det_type != defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getSettings();
 
         REQUIRE_THROWS(caller.call("resetdacs", {}, -1, GET));
@@ -2252,8 +2255,8 @@ TEST_CASE("CALLER::start", "[.cmdcall]") {
         if (det_type != defs::MYTHEN3) {
             prev_val = det.getExptime().tsquash("inconsistent exptime to test");
         } else {
-            auto t =
-                det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+            auto t = det.getExptimeForAllGates().tsquash(
+                "inconsistent exptime to test");
             if (t[0] != t[1] || t[1] != t[2]) {
                 throw RuntimeError("inconsistent exptime for all gates");
             }
@@ -2261,7 +2264,8 @@ TEST_CASE("CALLER::start", "[.cmdcall]") {
         }
         auto prev_frames =
             det.getNumberOfFrames().tsquash("inconsistent #frames in test");
-        auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
+        auto prev_period =
+            det.getPeriod().tsquash("inconsistent period in test");
         det.setExptime(-1, std::chrono::microseconds(200));
         det.setPeriod(std::chrono::milliseconds(1));
         det.setNumberOfFrames(2000);
@@ -2296,8 +2300,8 @@ TEST_CASE("CALLER::stop", "[.cmdcall]") {
         if (det_type != defs::MYTHEN3) {
             prev_val = det.getExptime().tsquash("inconsistent exptime to test");
         } else {
-            auto t =
-                det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+            auto t = det.getExptimeForAllGates().tsquash(
+                "inconsistent exptime to test");
             if (t[0] != t[1] || t[1] != t[2]) {
                 throw RuntimeError("inconsistent exptime for all gates");
             }
@@ -2305,7 +2309,8 @@ TEST_CASE("CALLER::stop", "[.cmdcall]") {
         }
         auto prev_frames =
             det.getNumberOfFrames().tsquash("inconsistent #frames in test");
-        auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
+        auto prev_period =
+            det.getPeriod().tsquash("inconsistent period in test");
         det.setExptime(-1, std::chrono::microseconds(200));
         det.setPeriod(std::chrono::milliseconds(1));
         det.setNumberOfFrames(2000);
@@ -2324,7 +2329,7 @@ TEST_CASE("CALLER::stop", "[.cmdcall]") {
             std::ostringstream oss;
             caller.call("status", {}, -1, GET, oss);
             REQUIRE(((oss.str() == "status stopped\n") ||
-                    (oss.str() == "status idle\n")));
+                     (oss.str() == "status idle\n")));
         }
         det.setExptime(-1, prev_val);
         det.setPeriod(prev_period);
@@ -2343,8 +2348,8 @@ TEST_CASE("CALLER::status", "[.cmdcall]") {
         if (det_type != defs::MYTHEN3) {
             prev_val = det.getExptime().tsquash("inconsistent exptime to test");
         } else {
-            auto t =
-                det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+            auto t = det.getExptimeForAllGates().tsquash(
+                "inconsistent exptime to test");
             if (t[0] != t[1] || t[1] != t[2]) {
                 throw RuntimeError("inconsistent exptime for all gates");
             }
@@ -2352,7 +2357,8 @@ TEST_CASE("CALLER::status", "[.cmdcall]") {
         }
         auto prev_frames =
             det.getNumberOfFrames().tsquash("inconsistent #frames in test");
-        auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
+        auto prev_period =
+            det.getPeriod().tsquash("inconsistent period in test");
         det.setExptime(-1, std::chrono::microseconds(200));
         det.setPeriod(std::chrono::milliseconds(1));
         det.setNumberOfFrames(2000);
@@ -2367,7 +2373,7 @@ TEST_CASE("CALLER::status", "[.cmdcall]") {
             std::ostringstream oss;
             caller.call("status", {}, -1, GET, oss);
             REQUIRE(((oss.str() == "status stopped\n") ||
-                    (oss.str() == "status idle\n")));
+                     (oss.str() == "status idle\n")));
         }
         det.setExptime(-1, prev_val);
         det.setPeriod(prev_period);
@@ -2492,31 +2498,31 @@ TEST_CASE("CALLER::scan", "[.cmdcall]") {
         } else {
             {
                 std::ostringstream oss;
-                caller.call("scan", {ToString(ind), "500", "1500", "500"}, -1, PUT,
-                            oss);
-                CHECK(oss.str() ==
-                    "scan [" + ToString(ind) + ", 500, 1500, 500]\n");
-            }
-            {
-                std::ostringstream oss;
-                caller.call("scan", {}, -1, GET, oss);
-                CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
-                                    "\nstart 500\nstop 1500\nstep "
-                                    "500\nsettleTime 1ms\n]\n");
-            }
-            {
-                std::ostringstream oss;
-                caller.call("scan", {ToString(ind), "500", "1500", "500", "2s"}, -1,
+                caller.call("scan", {ToString(ind), "500", "1500", "500"}, -1,
                             PUT, oss);
                 CHECK(oss.str() ==
-                    "scan [" + ToString(ind) + ", 500, 1500, 500, 2s]\n");
+                      "scan [" + ToString(ind) + ", 500, 1500, 500]\n");
             }
             {
                 std::ostringstream oss;
                 caller.call("scan", {}, -1, GET, oss);
                 CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
-                                    "\nstart 500\nstop 1500\nstep "
-                                    "500\nsettleTime 2s\n]\n");
+                                       "\nstart 500\nstop 1500\nstep "
+                                       "500\nsettleTime 1ms\n]\n");
+            }
+            {
+                std::ostringstream oss;
+                caller.call("scan", {ToString(ind), "500", "1500", "500", "2s"},
+                            -1, PUT, oss);
+                CHECK(oss.str() ==
+                      "scan [" + ToString(ind) + ", 500, 1500, 500, 2s]\n");
+            }
+            {
+                std::ostringstream oss;
+                caller.call("scan", {}, -1, GET, oss);
+                CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
+                                       "\nstart 500\nstop 1500\nstep "
+                                       "500\nsettleTime 2s\n]\n");
             }
             {
                 std::ostringstream oss;
@@ -2530,18 +2536,18 @@ TEST_CASE("CALLER::scan", "[.cmdcall]") {
             }
             {
                 std::ostringstream oss;
-                caller.call("scan", {ToString(ind), "1500", "500", "-500"}, -1, PUT,
-                            oss);
+                caller.call("scan", {ToString(ind), "1500", "500", "-500"}, -1,
+                            PUT, oss);
                 CHECK(oss.str() ==
-                    "scan [" + ToString(ind) + ", 1500, 500, -500]\n");
+                      "scan [" + ToString(ind) + ", 1500, 500, -500]\n");
             }
             CHECK_THROWS(caller.call(
                 "scan", {ToString(notImplementedInd), "500", "1500", "500"}, -1,
                 PUT));
-            CHECK_THROWS(caller.call("scan", {ToString(ind), "500", "1500", "-500"},
-                                    -1, PUT));
-            CHECK_THROWS(caller.call("scan", {ToString(ind), "1500", "500", "500"},
-                                    -1, PUT));
+            CHECK_THROWS(caller.call(
+                "scan", {ToString(ind), "500", "1500", "-500"}, -1, PUT));
+            CHECK_THROWS(caller.call(
+                "scan", {ToString(ind), "1500", "500", "500"}, -1, PUT));
 
             if (det_type == defs::MYTHEN3 || defs::EIGER) {
                 {
@@ -2554,8 +2560,8 @@ TEST_CASE("CALLER::scan", "[.cmdcall]") {
                     std::ostringstream oss;
                     caller.call("scan", {}, -1, GET, oss);
                     CHECK(oss.str() ==
-                        "scan [enabled\ndac trimbits\nstart 0\nstop 48\nstep "
-                        "16\nsettleTime 2s\n]\n");
+                          "scan [enabled\ndac trimbits\nstart 0\nstop 48\nstep "
+                          "16\nsettleTime 2s\n]\n");
                 }
             }
 
@@ -2567,12 +2573,13 @@ TEST_CASE("CALLER::scan", "[.cmdcall]") {
             // Reset all dacs to previous value
             // for (int i = 0; i != det.size(); ++i) {
             //     det.setDAC(ind, previous[i], false, {i});
-            //     det.setDAC(notImplementedInd, notImplementedPrevious[i], false,
-            //     {i});
+            //     det.setDAC(notImplementedInd, notImplementedPrevious[i],
+            //     false, {i});
             // }
         }
     } else {
-        REQUIRE_THROWS(caller.call("scan", {ToString(defs::DAC_0), "500", "1500", "500"}, -1, PUT));
+        REQUIRE_THROWS(caller.call(
+            "scan", {ToString(defs::DAC_0), "500", "1500", "500"}, -1, PUT));
     }
 }
 
@@ -2684,7 +2691,6 @@ TEST_CASE("CALLER::udp_cleardst", "[.cmdcall]") {
         /*REQUIRE_NOTHROW(caller.call("udp_cleardst", {}, -1, PUT));*/
     } else {
         REQUIRE_THROWS(caller.call("udp_cleardst", {}, -1, PUT));
-    
     }
 }
 
@@ -2734,7 +2740,8 @@ TEST_CASE("CALLER::udp_srcmac", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type != defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getSourceUDPMAC();
-        REQUIRE_THROWS(caller.call("udp_srcmac", {"00:00:00:00:00:00"}, -1, PUT));
+        REQUIRE_THROWS(
+            caller.call("udp_srcmac", {"00:00:00:00:00:00"}, -1, PUT));
         {
             std::ostringstream oss;
             caller.call("udp_srcmac", {"00:50:c2:42:34:12"}, -1, PUT, oss);
@@ -2903,7 +2910,6 @@ TEST_CASE("CALLER::udp_validate", "[.cmdcall]") {
         REQUIRE_NOTHROW(caller.call("udp_validate", {}, -1, PUT));
     } else {
         REQUIRE_THROWS(caller.call("udp_validate", {}, -1, PUT));
-    
     }
 }
 

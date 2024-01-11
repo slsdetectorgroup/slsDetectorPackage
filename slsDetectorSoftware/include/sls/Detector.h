@@ -353,10 +353,10 @@ class Detector {
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 
     /**
-     * [Gotthard][Jungfrau][Moench][Gotthard][CTB][Gotthard2][Xilinx CTB] Options:
-     * AUTO_TIMING, TRIGGER_EXPOSURE \n
-     * [Mythen3] Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n
-     * [Eiger] Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
+     * [Gotthard][Jungfrau][Moench][Gotthard][CTB][Gotthard2][Xilinx CTB]
+     * Options: AUTO_TIMING, TRIGGER_EXPOSURE \n [Mythen3] Options: AUTO_TIMING,
+     * TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n [Eiger] Options: AUTO_TIMING,
+     * TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
      */
     void setTimingMode(defs::timingMode value, Positions pos = {});
 
@@ -1846,17 +1846,17 @@ class Detector {
      *    Pattern                                     *
      *                                                *
      * ************************************************/
-    /** [CTB][Mythen3][Xilinx CTB] Gets the pattern file name including path of the last
-     * pattern uploaded. \n Returns an empty if nothing was uploaded or via a
-     * server default file*/
+    /** [CTB][Mythen3][Xilinx CTB] Gets the pattern file name including path of
+     * the last pattern uploaded. \n Returns an empty if nothing was uploaded or
+     * via a server default file*/
     Result<std::string> getPatterFileName(Positions pos = {}) const;
 
     /** [CTB][Mythen3][Xilinx CTB] Loads ASCII pattern file directly to server
      * (instead of executing line by line)*/
     void setPattern(const std::string &fname, Positions pos = {});
 
-    /** [CTB][Mythen3][Xilinx CTB] Loads pattern parameters structure directly to
-     * server */
+    /** [CTB][Mythen3][Xilinx CTB] Loads pattern parameters structure directly
+     * to server */
     void setPattern(const Pattern &pat, Positions pos = {});
 
     /** [CTB][Mythen3][Xilinx CTB] Saves pattern to file
@@ -1915,8 +1915,8 @@ class Detector {
     /** [CTB][Mythen3][Xilinx CTB] */
     Result<uint64_t> getPatternMask(Positions pos = {});
 
-    /** [CTB][Mythen3][Xilinx CTB] Selects the bits that will have a pattern mask
-     * applied to the selected patmask for every pattern. */
+    /** [CTB][Mythen3][Xilinx CTB] Selects the bits that will have a pattern
+     * mask applied to the selected patmask for every pattern. */
     void setPatternMask(uint64_t mask, Positions pos = {});
 
     /** [CTB][Mythen3][Xilinx CTB]  */

@@ -9,11 +9,9 @@
 
 #include "loadPattern.h"
 
-
+#include <arpa/inet.h> // INET_ADDRSTRLEN
 #include <string.h>
 #include <unistd.h> // usleep
-#include <arpa/inet.h> // INET_ADDRSTRLEN
-
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
@@ -91,8 +89,7 @@ int checkType() {
 #ifdef VIRTUAL
     return OK;
 #endif
-    u_int32_t type =
-        ((bus_r(FPGAVERSIONREG) & DETTYPE_MSK) >> DETTYPE_OFST);
+    u_int32_t type = ((bus_r(FPGAVERSIONREG) & DETTYPE_MSK) >> DETTYPE_OFST);
     if (type != XILINX_CHIPTESTBOARD) {
         LOG(logERROR,
             ("This is not a Xilinx CTB firmware (read %d, expected %d)\n", type,
@@ -102,7 +99,6 @@ int checkType() {
     return OK;
 }
 
-
 int testFpga() {
 #ifdef VIRTUAL
     return OK;
@@ -111,7 +107,7 @@ int testFpga() {
 
     // fixed pattern
     int ret = OK;
-    
+
     /* TODO: FIX PATTERN not defined in firmware
     uint32_t val = bus_r(FIX_PATT_REG);
     if (val == FIX_PATT_VAL) {
@@ -230,9 +226,7 @@ uint64_t getFirmwareVersion() {
     return ((bus_r(FPGAVERSIONREG) & COMPDATE_MSK) >> COMPDATE_OFST);
 }
 
-void getHardwareVersion(char *version) {
-    strcpy(version, "Not applicable");
-}
+void getHardwareVersion(char *version) { strcpy(version, "Not applicable"); }
 
 u_int64_t getDetectorMAC() {
 #ifdef VIRTUAL
@@ -322,7 +316,6 @@ void setupDetector() {
 
     LOG(logINFOBLUE, ("Setting Default parameters\n"));
     initializePatternAddresses();
-
 
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
@@ -430,8 +423,8 @@ enum runStatus getRunStatus() {
     LOG(logINFOBLUE, ("Status: IDLE\n"));
     return IDLE;
 #endif
-    //TODO: get status
-    LOG(logINFOBLUE, ("Status: IDLE\n"));   
+    // TODO: get status
+    LOG(logINFOBLUE, ("Status: IDLE\n"));
     return IDLE;
 }
 

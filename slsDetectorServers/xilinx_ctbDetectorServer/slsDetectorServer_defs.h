@@ -17,12 +17,11 @@
 enum ADCINDEX { V_PWR_IO };
 enum DACINDEX { D0 };
 
-
 /** Default Parameters */
-#define DEFAULT_NUM_FRAMES          (1)
-#define DEFAULT_NUM_CYCLES          (1)
-#define DYNAMIC_RANGE               (16)
-#define DEFAULT_TIMING_MODE         (AUTO_TIMING)
+#define DEFAULT_NUM_FRAMES  (1)
+#define DEFAULT_NUM_CYCLES  (1)
+#define DYNAMIC_RANGE       (16)
+#define DEFAULT_TIMING_MODE (AUTO_TIMING)
 
 /* Defines in the Firmware */
-#define WAIT_TIME_PATTERN_READ     (10)
+#define WAIT_TIME_PATTERN_READ (10)

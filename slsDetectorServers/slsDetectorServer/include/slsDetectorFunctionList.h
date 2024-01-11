@@ -742,7 +742,7 @@ u_int32_t runState(enum TLogLevel lev);
 int calculateDataBytes();
 int getTotalNumberOfChannels();
 #endif
-#if defined(CHIPTESTBOARDD) || defined (XILINX_CHIPTESTBOARDD)
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 void getNumberOfChannels(int *nchanx, int *nchany);
 #endif
 #ifndef XILINX_CHIPTESTBOARDD

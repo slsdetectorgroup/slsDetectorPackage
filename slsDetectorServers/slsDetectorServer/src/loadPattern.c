@@ -21,8 +21,8 @@ uint64_t virtual_pattern[MAX_PATTERN_LENGTH];
 
 extern void bus_w(u_int32_t offset, u_int32_t data);
 extern u_int32_t bus_r(u_int32_t offset);
-//extern int64_t get64BitReg(int aLSB, int aMSB); TODO for all servers (only uint64_t)
-//extern int64_t set64BitReg(int64_t value, int aLSB, int aMSB);
+// extern int64_t get64BitReg(int aLSB, int aMSB); TODO for all servers (only
+// uint64_t) extern int64_t set64BitReg(int64_t value, int aLSB, int aMSB);
 extern uint64_t getU64BitReg(int aLSB, int aMSB);
 extern void setU64BitReg(uint64_t value, int aLSB, int aMSB);
 
@@ -314,23 +314,23 @@ uint64_t getPatternWaitTime(int level) {
     switch (level) {
     case 0:
         return getU64BitReg(PATTERN_WAIT_TIMER_0_LSB_REG,
-                           PATTERN_WAIT_TIMER_0_MSB_REG);
+                            PATTERN_WAIT_TIMER_0_MSB_REG);
     case 1:
         return getU64BitReg(PATTERN_WAIT_TIMER_1_LSB_REG,
-                           PATTERN_WAIT_TIMER_1_MSB_REG);
+                            PATTERN_WAIT_TIMER_1_MSB_REG);
     case 2:
         return getU64BitReg(PATTERN_WAIT_TIMER_2_LSB_REG,
-                           PATTERN_WAIT_TIMER_2_MSB_REG);
+                            PATTERN_WAIT_TIMER_2_MSB_REG);
 #ifndef MYTHEN3D
     case 3:
         return getU64BitReg(PATTERN_WAIT_TIMER_3_LSB_REG,
-                           PATTERN_WAIT_TIMER_3_MSB_REG);
+                            PATTERN_WAIT_TIMER_3_MSB_REG);
     case 4:
         return getU64BitReg(PATTERN_WAIT_TIMER_4_LSB_REG,
-                           PATTERN_WAIT_TIMER_4_MSB_REG);
+                            PATTERN_WAIT_TIMER_4_MSB_REG);
     case 5:
         return getU64BitReg(PATTERN_WAIT_TIMER_5_LSB_REG,
-                           PATTERN_WAIT_TIMER_5_MSB_REG);
+                            PATTERN_WAIT_TIMER_5_MSB_REG);
 #endif
     default:
         return -1;
@@ -372,28 +372,28 @@ void setPatternWaitTime(int level, uint64_t t) {
     switch (level) {
     case 0:
         setU64BitReg(t, PATTERN_WAIT_TIMER_0_LSB_REG,
-                    PATTERN_WAIT_TIMER_0_MSB_REG);
+                     PATTERN_WAIT_TIMER_0_MSB_REG);
         break;
     case 1:
         setU64BitReg(t, PATTERN_WAIT_TIMER_1_LSB_REG,
-                    PATTERN_WAIT_TIMER_1_MSB_REG);
+                     PATTERN_WAIT_TIMER_1_MSB_REG);
         break;
     case 2:
         setU64BitReg(t, PATTERN_WAIT_TIMER_2_LSB_REG,
-                    PATTERN_WAIT_TIMER_2_MSB_REG);
+                     PATTERN_WAIT_TIMER_2_MSB_REG);
         break;
 #ifndef MYTHEN3D
     case 3:
         setU64BitReg(t, PATTERN_WAIT_TIMER_3_LSB_REG,
-                    PATTERN_WAIT_TIMER_3_MSB_REG);
+                     PATTERN_WAIT_TIMER_3_MSB_REG);
         break;
     case 4:
         setU64BitReg(t, PATTERN_WAIT_TIMER_4_LSB_REG,
-                    PATTERN_WAIT_TIMER_4_MSB_REG);
+                     PATTERN_WAIT_TIMER_4_MSB_REG);
         break;
     case 5:
         setU64BitReg(t, PATTERN_WAIT_TIMER_5_LSB_REG,
-                    PATTERN_WAIT_TIMER_5_MSB_REG);
+                     PATTERN_WAIT_TIMER_5_MSB_REG);
         break;
 #endif
     default:
@@ -777,7 +777,7 @@ int loadPattern(char *message, enum TLogLevel printLevel,
         }
     }
     // iocontrol
-#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD) //TODO
+#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD) // TODO
     if (ret == OK) {
         ret = validate_writePatternIOControl(message, pat->ioctrl);
     }
@@ -837,7 +837,7 @@ int getPattern(char *message, patternParameters *pat) {
         pat->word[i] = retval64;
     }
     // iocontrol
-#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD) //TODO
+#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD) // TODO
     if (ret == OK) {
         validate_readPatternIOControl();
     }
@@ -973,7 +973,7 @@ int loadPatternFile(char *patFname, char *errMessage) {
         }
 
         // patioctrl
-#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD) //TODO
+#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD) // TODO
         if (!strncmp(line, "patioctrl", strlen("patioctrl"))) {
             uint64_t arg = 0;
 

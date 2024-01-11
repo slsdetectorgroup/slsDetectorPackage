@@ -7,7 +7,8 @@
 #include "sls/sls_detector_funcs.h"
 #include "slsDetectorFunctionList.h"
 
-#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD) || defined(MYTHEN3D)
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD) ||               \
+    defined(MYTHEN3D)
 #include "Pattern.h"
 #include "loadPattern.h"
 #endif
@@ -2877,7 +2878,8 @@ int get_frames_left(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
+    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&  \
+    !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -2893,7 +2895,8 @@ int get_triggers_left(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
+    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&  \
+    !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -3063,7 +3066,8 @@ int set_dynamic_range(int file_des) {
         case 32:
 #endif
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MOENCHD) ||            \
-    defined(CHIPTESTBOARDD) || defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
+    defined(CHIPTESTBOARDD) || defined(GOTTHARD2D) ||                          \
+    defined(XILINX_CHIPTESTBOARDD)
         case 16:
 #endif
             if (dr >= 0) {
@@ -3336,7 +3340,8 @@ int set_pattern_word(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT64) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int addr = (int)args[0];
@@ -3364,7 +3369,8 @@ int set_pattern_loop_addresses(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int loopLevel = args[0];
@@ -3410,7 +3416,8 @@ int set_pattern_loop_cycles(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int loopLevel = args[0];
@@ -3439,7 +3446,8 @@ int set_pattern_wait_addr(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int loopLevel = args[0];
@@ -3468,7 +3476,8 @@ int set_pattern_wait_time(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int loopLevel = (int)args[0];
@@ -3498,7 +3507,8 @@ int set_pattern_mask(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Set Pattern Mask to %d\n", arg));
 
-#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
@@ -3526,7 +3536,8 @@ int get_pattern_mask(int file_des) {
 
     LOG(logDEBUG1, ("Get Pattern Mask\n"));
 
-#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only get
@@ -3547,7 +3558,8 @@ int set_pattern_bit_mask(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Set Pattern Bit Mask to %d\n", arg));
 
-#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
@@ -3576,7 +3588,8 @@ int get_pattern_bit_mask(int file_des) {
 
     LOG(logDEBUG1, ("Get Pattern Bit Mask\n"));
 
-#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only get
@@ -3599,7 +3612,8 @@ int write_adc_register(int file_des) {
     uint32_t val = args[1];
     LOG(logDEBUG1, ("Writing 0x%x to ADC Register 0x%x\n", val, addr));
 
-#if defined(EIGERD) || defined(GOTTHARD2D) || defined(MYTHEN3D) || defined(XILINX_CHIPTESTBOARDD)
+#if defined(EIGERD) || defined(GOTTHARD2D) || defined(MYTHEN3D) ||             \
+    defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
 #ifndef VIRTUAL
@@ -3994,7 +4008,7 @@ int reset_fpga(int file_des) {
 
     LOG(logDEBUG1, ("Reset FPGA\n"));
 #if defined(EIGERD) || defined(GOTTHARDD) || defined(GOTTHARD2D) ||            \
-    defined(MYTHEN3D) || defined (XILINX_CHIPTESTBOARDD)
+    defined(MYTHEN3D) || defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set
@@ -7794,7 +7808,8 @@ int set_pattern(int file_des) {
     char args[MAX_STR_LENGTH];
     memset(args, 0, MAX_STR_LENGTH);
 
-#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
 
@@ -7831,7 +7846,8 @@ int get_pattern_file(int file_des) {
 
     LOG(logDEBUG1, ("Getting pattern file name\n"));
 
-#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // get only
@@ -7845,7 +7861,8 @@ int get_pattern(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
-#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
     return Server_SendResult(file_des, INT32, NULL, 0);
 #else
@@ -10497,7 +10514,7 @@ int get_hardware_version(int file_des) {
 
     getHardwareVersion(retvals);
     LOG(logDEBUG1, ("hardware version retval: %s\n", retvals));
-    
+
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 

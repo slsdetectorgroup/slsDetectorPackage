@@ -482,7 +482,6 @@ void setupDetector() {
         return;
     }
 
-    setReadoutSpeed(DEFAULT_SPEED);
     cleanFifos();
     resetCore();
 
@@ -496,6 +495,7 @@ void setupDetector() {
     initReadoutConfiguration();
 
     // Initialization of acquistion parameters
+    setReadoutSpeed(DEFAULT_SPEED);
     setSettings(DEFAULT_SETTINGS);
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);

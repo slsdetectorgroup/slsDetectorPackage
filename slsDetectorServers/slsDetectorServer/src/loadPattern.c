@@ -21,7 +21,7 @@ uint64_t virtual_pattern[MAX_PATTERN_LENGTH];
 
 extern void bus_w(u_int32_t offset, u_int32_t data);
 extern u_int32_t bus_r(u_int32_t offset);
-//extern int64_t get64BitReg(int aLSB, int aMSB);
+//extern int64_t get64BitReg(int aLSB, int aMSB); TODO for all servers (only uint64_t)
 //extern int64_t set64BitReg(int64_t value, int aLSB, int aMSB);
 extern uint64_t getU64BitReg(int aLSB, int aMSB);
 extern void setU64BitReg(uint64_t value, int aLSB, int aMSB);

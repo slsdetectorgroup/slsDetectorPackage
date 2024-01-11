@@ -25,4 +25,4 @@ enum DACINDEX { D0 };
 #define DEFAULT_TIMING_MODE         (AUTO_TIMING)
 
 /* Defines in the Firmware */
-#define WAIT_TIME_PATTERN_READ     (10) // TODO?
+#define WAIT_TIME_PATTERN_READ     (10)

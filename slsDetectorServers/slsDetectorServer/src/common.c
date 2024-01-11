@@ -134,7 +134,6 @@ int getKernelVersion(char *retvals) {
     return OK;
 }
 
-
 int validateKernelVersion(char *expectedVersion) {
     // extract kernel date string
     char version[255] = {0};
@@ -167,7 +166,7 @@ int validateKernelVersion(char *expectedVersion) {
 #endif
 #endif
     currentVersion[sizeof(currentVersion) - 1] = '\0';
-    
+
     // convert kernel date string into time
     time_t kernelDate;
     if (getTimeFromString(currentVersion, &kernelDate) == FAIL) {

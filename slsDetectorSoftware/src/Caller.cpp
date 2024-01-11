@@ -3516,7 +3516,7 @@ std::string Caller::dr(int action) {
 	Dynamic Range or number of bits per pixel in detector.
 	[Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets clkdivider to 2, else to 0.
 	[Mythen3] Options: 8, 16, 32
-	[Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2] 16 )V0G0N"
+	[Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2][Xilinx Ctb] 16 )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -5242,7 +5242,7 @@ std::string Caller::framesl(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: framesl" << std::endl;
         os << R"V0G0N(
-	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Number of frames left in acquisition. 
+	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of frames left in acquisition. 
 	[Gotthard2] only in continuous auto mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -6039,7 +6039,7 @@ std::string Caller::hardwareversion(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: hardwareversion" << std::endl;
         os << R"V0G0N(
-	[Jungfrau][Gotthard2][Myhten3][Gotthard][Ctb][Moench] Hardware version of detector. 
+	Hardware version of detector. 
 	[Eiger] Hardware version of front FPGA on detector. )V0G0N"
            << std::endl;
         return os.str();
@@ -7668,7 +7668,7 @@ std::string Caller::patfname(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patfname" << std::endl;
         os << R"V0G0N(
-	[Ctb][Mythen3] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default file )V0G0N"
+	[Ctb][Mythen3][Xilinx Ctb] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default file )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -7771,7 +7771,7 @@ std::string Caller::patlimits(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patlimits" << std::endl;
         os << R"V0G0N([start addr] [stop addr] 
-	[Ctb][Mythen3] Limits of complete pattern )V0G0N"
+	[Ctb][Mythen3][Xilinx Ctb] Limits of complete pattern )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -7824,7 +7824,7 @@ std::string Caller::patloop(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patloop" << std::endl;
         os << R"V0G0N([0-6] [start addr] [stop addr] 
-	[Ctb][Mythen3] Limits of the loop level provided.
+	[Ctb][Mythen3][Xilinx Ctb] Limits of the loop level provided.
 	[Mythen3] Level options: 0-3 only. )V0G0N"
            << std::endl;
         return os.str();
@@ -8047,7 +8047,7 @@ std::string Caller::patmask(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patmask" << std::endl;
         os << R"V0G0N([64 bit mask]
-	[Ctb][Mythen3] Selects the bits that will have a pattern mask applied to the selected patmask for every pattern. )V0G0N"
+	[Ctb][Mythen3][Xilinx Ctb] Selects the bits that will have a pattern mask applied to the selected patmask for every pattern. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -8110,7 +8110,7 @@ std::string Caller::patnloop(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patnloop" << std::endl;
         os << R"V0G0N([0-6] [n_cycles] 
-	[Ctb][Mythen3] Number of cycles of the loop level provided.
+	[Ctb][Mythen3][Xilinx Ctb] Number of cycles of the loop level provided.
 	[Mythen3] Level options: 0-3 only. )V0G0N"
            << std::endl;
         return os.str();
@@ -8325,7 +8325,7 @@ std::string Caller::patsetbit(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patsetbit" << std::endl;
         os << R"V0G0N([64 bit mask]
-	[Ctb][Mythen3] Sets the mask applied to every pattern to the selected bits. )V0G0N"
+	[Ctb][Mythen3][Xilinx Ctb] Sets the mask applied to every pattern to the selected bits. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -8388,7 +8388,7 @@ std::string Caller::pattern(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patternX" << std::endl;
         os << R"V0G0N([fname]
-	[Mythen3][Ctb] Loads ASCII pattern file directly to server (instead of executing line by line) )V0G0N"
+	[Mythen3][Ctb][Xilinx Ctb] Loads ASCII pattern file directly to server (instead of executing line by line) )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -8468,7 +8468,7 @@ std::string Caller::patwait(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patwait" << std::endl;
         os << R"V0G0N([0-6] [addr] 
-	[Ctb][Mythen3] Wait address for loop level provided. 
+	[Ctb][Mythen3][Xilinx Ctb] Wait address for loop level provided. 
 	[Mythen3] Level options: 0-3 only. )V0G0N"
            << std::endl;
         return os.str();
@@ -8679,7 +8679,7 @@ std::string Caller::patwaittime(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patwaittime" << std::endl;
         os << R"V0G0N([0-6] [n_clk] 
-	[Ctb][Mythen3] Wait time in clock cycles for the loop provided.
+	[Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles for the loop provided.
 	[Mythen3] Level options: 0-3 only. )V0G0N"
            << std::endl;
         return os.str();
@@ -8893,7 +8893,7 @@ std::string Caller::patword(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patword" << std::endl;
         os << R"V0G0N([step or address] [64 bit mask]
-	[Ctb][Mythen3] 64 bit pattern at address of pattern memory.
+	[Ctb][Mythen3][Xilinx Ctb] 64 bit pattern at address of pattern memory.
 	[Ctb] read is same as executing pattern )V0G0N"
            << std::endl;
         return os.str();
@@ -12328,7 +12328,7 @@ std::string Caller::savepattern(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: savepattern" << std::endl;
         os << R"V0G0N(
-	[Ctb][Mythen3] Saves pattern to file (ascii). 
+	[Ctb][Mythen3][Xilinx Ctb] Saves pattern to file (ascii). 
 	[Ctb] Also executes pattern. )V0G0N"
            << std::endl;
         return os.str();
@@ -14727,7 +14727,7 @@ std::string Caller::timing(int action) {
         os << "Command: timing" << std::endl;
         os << R"V0G0N([auto|trigger|gating|burst_trigger]
 	Timing Mode of detector.
-	[Jungfrau][Moench][Gotthard][Ctb][Gotthard2] [auto|trigger]
+	[Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx Ctb] [auto|trigger]
 	[Mythen3] [auto|trigger|gating|trigger_gating]
 	[Eiger] [auto|trigger|gating|burst_trigger] )V0G0N"
            << std::endl;
@@ -15134,7 +15134,7 @@ std::string Caller::triggersl(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: triggersl" << std::endl;
         os << R"V0G0N(
-	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Number of triggers left in acquisition. Only when external trigger used. )V0G0N"
+	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of triggers left in acquisition. Only when external trigger used. )V0G0N"
            << std::endl;
         return os.str();
     }

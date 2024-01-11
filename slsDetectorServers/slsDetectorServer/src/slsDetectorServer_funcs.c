@@ -7,7 +7,8 @@
 #include "sls/sls_detector_funcs.h"
 #include "slsDetectorFunctionList.h"
 
-#if defined(CHIPTESTBOARDD) || defined(MYTHEN3D)
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD) ||               \
+    defined(MYTHEN3D)
 #include "Pattern.h"
 #include "loadPattern.h"
 #endif
@@ -719,9 +720,6 @@ int set_timing_mode(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting external communication mode to %d\n", arg));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // set
     if (((int)arg != GET_FLAG) && (Server_VerifyLock() == OK)) {
         switch (arg) {
@@ -758,7 +756,7 @@ int set_timing_mode(int file_des) {
     validate(&ret, mess, (int)arg, (int)retval, "set timing mode", DEC);
 #endif
     LOG(logDEBUG1, ("Timing Mode: %d\n", retval));
-#endif
+
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
@@ -2219,9 +2217,6 @@ int get_num_frames(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // get only
     if (!scan) {
         retval = getNumFrames();
@@ -2231,7 +2226,6 @@ int get_num_frames(int file_des) {
         LOG(logDEBUG1, ("retval num frames (num scan steps) %lld\n",
                         (long long int)retval));
     }
-#endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -2244,9 +2238,6 @@ int set_num_frames(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting number of frames %lld\n", (long long int)arg));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
         // only set number of frames if normal mode (not scan)
@@ -2292,7 +2283,6 @@ int set_num_frames(int file_des) {
             }
         }
     }
-#endif
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
@@ -2301,13 +2291,9 @@ int get_num_triggers(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // get only
     retval = getNumTriggers();
     LOG(logDEBUG1, ("retval num triggers %lld\n", (long long int)retval));
-#endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -2320,9 +2306,6 @@ int set_num_triggers(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting number of triggers %lld\n", (long long int)arg));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
 #if JUNGFRAUD
@@ -2342,7 +2325,6 @@ int set_num_triggers(int file_des) {
             validate64(&ret, mess, arg, retval, "set number of triggers", DEC);
         }
     }
-#endif
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
@@ -2896,7 +2878,8 @@ int get_frames_left(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&  \
+    !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -2912,7 +2895,8 @@ int get_triggers_left(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&  \
+    !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -3062,9 +3046,6 @@ int set_dynamic_range(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting dr to %d\n", dr));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // set & get
     if ((dr == GET_FLAG) || (Server_VerifyLock() == OK)) {
         // check dr
@@ -3085,7 +3066,8 @@ int set_dynamic_range(int file_des) {
         case 32:
 #endif
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MOENCHD) ||            \
-    defined(CHIPTESTBOARDD) || defined(GOTTHARD2D)
+    defined(CHIPTESTBOARDD) || defined(GOTTHARD2D) ||                          \
+    defined(XILINX_CHIPTESTBOARDD)
         case 16:
 #endif
             if (dr >= 0) {
@@ -3113,7 +3095,6 @@ int set_dynamic_range(int file_des) {
             break;
         }
     }
-#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
@@ -3359,7 +3340,8 @@ int set_pattern_word(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT64) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int addr = (int)args[0];
@@ -3387,7 +3369,8 @@ int set_pattern_loop_addresses(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int loopLevel = args[0];
@@ -3433,7 +3416,8 @@ int set_pattern_loop_cycles(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int loopLevel = args[0];
@@ -3462,7 +3446,8 @@ int set_pattern_wait_addr(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int loopLevel = args[0];
@@ -3491,7 +3476,8 @@ int set_pattern_wait_time(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int loopLevel = (int)args[0];
@@ -3521,7 +3507,8 @@ int set_pattern_mask(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Set Pattern Mask to %d\n", arg));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
@@ -3549,7 +3536,8 @@ int get_pattern_mask(int file_des) {
 
     LOG(logDEBUG1, ("Get Pattern Mask\n"));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only get
@@ -3570,7 +3558,8 @@ int set_pattern_bit_mask(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Set Pattern Bit Mask to %d\n", arg));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
@@ -3599,7 +3588,8 @@ int get_pattern_bit_mask(int file_des) {
 
     LOG(logDEBUG1, ("Get Pattern Bit Mask\n"));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only get
@@ -3622,7 +3612,8 @@ int write_adc_register(int file_des) {
     uint32_t val = args[1];
     LOG(logDEBUG1, ("Writing 0x%x to ADC Register 0x%x\n", val, addr));
 
-#if defined(EIGERD) || defined(GOTTHARD2D) || defined(MYTHEN3D)
+#if defined(EIGERD) || defined(GOTTHARD2D) || defined(MYTHEN3D) ||             \
+    defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
 #ifndef VIRTUAL
@@ -4017,7 +4008,7 @@ int reset_fpga(int file_des) {
 
     LOG(logDEBUG1, ("Reset FPGA\n"));
 #if defined(EIGERD) || defined(GOTTHARDD) || defined(GOTTHARD2D) ||            \
-    defined(MYTHEN3D)
+    defined(MYTHEN3D) || defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set
@@ -5026,9 +5017,6 @@ int set_detector_position(int file_des) {
     LOG(logDEBUG, ("Setting detector positions: [maxy:%u, modIndex:%u]\n",
                    args[0], args[1]));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
         // if in update mode, there is no need to do this (also detector not set
@@ -5039,14 +5027,10 @@ int set_detector_position(int file_des) {
             calculate_and_set_position();
         }
     }
-#endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int check_detector_idle(const char *s) {
-#ifdef XILINX_CHIPTESTBOARDD
-    return FAIL;
-#else
     enum runStatus status = getRunStatus();
     if (status != IDLE && status != RUN_FINISHED && status != STOPPED &&
         status != ERROR) {
@@ -5058,7 +5042,6 @@ int check_detector_idle(const char *s) {
         LOG(logERROR, (mess));
     }
     return ret;
-#endif
 }
 
 int is_udp_configured() {
@@ -5125,7 +5108,6 @@ int is_udp_configured() {
 }
 
 void configure_mac() {
-#ifndef XILINX_CHIPTESTBOARDD
     if (isControlServer) {
         if (is_udp_configured() == OK) {
             ret = configureMAC();
@@ -5152,7 +5134,6 @@ void configure_mac() {
     }
     configured = FAIL;
     LOG(logWARNING, ("Configure FAIL, not all parameters configured yet\n"));
-#endif
 }
 
 int set_source_udp_ip(int file_des) {
@@ -7105,7 +7086,7 @@ int get_num_channels(int file_des) {
 
     LOG(logDEBUG1, ("Getting number of channels\n"));
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -7827,7 +7808,8 @@ int set_pattern(int file_des) {
     char args[MAX_STR_LENGTH];
     memset(args, 0, MAX_STR_LENGTH);
 
-#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
 
@@ -7864,7 +7846,8 @@ int get_pattern_file(int file_des) {
 
     LOG(logDEBUG1, ("Getting pattern file name\n"));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // get only
@@ -7878,7 +7861,8 @@ int get_pattern(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
     functionNotImplemented();
     return Server_SendResult(file_des, INT32, NULL, 0);
 #else
@@ -9753,9 +9737,7 @@ int get_kernel_version(int file_des) {
     memset(retvals, 0, MAX_STR_LENGTH);
 
     LOG(logDEBUG1, ("Getting kernel version\n"));
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
+
     // get only
     ret = getKernelVersion(retvals);
     if (ret == FAIL) {
@@ -9768,7 +9750,6 @@ int get_kernel_version(int file_des) {
     } else {
         LOG(logDEBUG1, ("kernel version: [%s]\n", retvals));
     }
-#endif
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 
@@ -10530,12 +10511,10 @@ int get_hardware_version(int file_des) {
     memset(mess, 0, sizeof(mess));
     char retvals[MAX_STR_LENGTH];
     memset(retvals, 0, MAX_STR_LENGTH);
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
+
     getHardwareVersion(retvals);
     LOG(logDEBUG1, ("hardware version retval: %s\n", retvals));
-#endif
+
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 

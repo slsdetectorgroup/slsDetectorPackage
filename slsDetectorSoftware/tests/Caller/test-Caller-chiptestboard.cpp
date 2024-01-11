@@ -24,7 +24,8 @@ TEST_CASE("CALLER::dacname", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         defs::dacIndex ind = static_cast<defs::dacIndex>(2);
         std::string str_dac_index = "2";
         auto prev = det.getDacName(ind);
@@ -58,7 +59,8 @@ TEST_CASE("CALLER::dacindex", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         defs::dacIndex ind = static_cast<defs::dacIndex>(2);
         std::string str_dac_index = "2";
 
@@ -83,7 +85,8 @@ TEST_CASE("CALLER::adclist", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev = det.getAdcNames();
 
         REQUIRE_THROWS(caller.call("adclist", {"a", "s", "d"}, -1, PUT));
@@ -115,7 +118,8 @@ TEST_CASE("CALLER::adcname", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         int ind = 2;
         std::string str_adc_index = "2";
         auto prev = det.getAdcName(ind);
@@ -149,7 +153,8 @@ TEST_CASE("CALLER::adcindex", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         int ind = 2;
         std::string str_adc_index = "2";
 
@@ -174,7 +179,8 @@ TEST_CASE("CALLER::signallist", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev = det.getSignalNames();
 
         REQUIRE_THROWS(caller.call("signallist", {"a", "s", "d"}, -1, PUT));
@@ -206,7 +212,8 @@ TEST_CASE("CALLER::signalname", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         int ind = 2;
         std::string str_signal_index = "2";
         auto prev = det.getSignalName(ind);
@@ -240,7 +247,8 @@ TEST_CASE("CALLER::signalindex", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         int ind = 2;
         std::string str_signal_index = "2";
 
@@ -266,7 +274,8 @@ TEST_CASE("CALLER::powerlist", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev = det.getPowerNames();
 
         REQUIRE_THROWS(caller.call("powerlist", {"a", "s", "d"}, -1, PUT));
@@ -298,7 +307,8 @@ TEST_CASE("CALLER::powername", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         defs::dacIndex ind = static_cast<defs::dacIndex>(2 + defs::V_POWER_A);
         std::string str_power_index = "2";
         auto prev = det.getPowerName(ind);
@@ -332,7 +342,8 @@ TEST_CASE("CALLER::powerindex", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         defs::dacIndex ind = static_cast<defs::dacIndex>(2 + defs::V_POWER_A);
         std::string str_power_index = "2";
 
@@ -382,7 +393,8 @@ TEST_CASE("CALLER::slowadclist", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev = det.getSlowADCNames();
 
         REQUIRE_THROWS(caller.call("slowadclist", {"a", "s", "d"}, -1, PUT));
@@ -414,7 +426,8 @@ TEST_CASE("CALLER::slowadcname", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         defs::dacIndex ind = static_cast<defs::dacIndex>(2 + defs::SLOW_ADC0);
         std::string str_slowadc_index = "2";
         auto prev = det.getSlowADCName(ind);
@@ -449,7 +462,8 @@ TEST_CASE("CALLER::slowadcindex", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         defs::dacIndex ind = static_cast<defs::dacIndex>(2 + defs::SLOW_ADC0);
         std::string str_slowadc_index = "2";
 
@@ -478,12 +492,19 @@ TEST_CASE("CALLER::dac", "[.cmdcall][.dacs]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         for (int i = 0; i < 18; ++i) {
             SECTION("dac " + std::to_string(i)) {
-                test_dac_caller(static_cast<defs::dacIndex>(i), "dac", 0);
+                if (det_type == defs::CHIPTESTBOARD) {
+                    test_dac_caller(static_cast<defs::dacIndex>(i), "dac", 0);
+                } else {
+                    REQUIRE_THROWS(
+                        caller.call("dac", {std::to_string(i)}, -1, GET));
+                }
             }
         }
+
         // eiger
         // REQUIRE_THROWS(caller.call("dac", {"vthreshold"}, -1, GET));
         // REQUIRE_THROWS(caller.call("dac", {"vsvp"}, -1, GET));

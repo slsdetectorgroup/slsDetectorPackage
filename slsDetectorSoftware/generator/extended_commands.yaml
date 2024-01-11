@@ -2703,8 +2703,8 @@ dr:
   function_alias: dr
   help: "[value]\n\tDynamic Range or number of bits per pixel in detector.\n\t[Eiger]\
     \ Options: 4, 8, 12, 16, 32. If set to 32, also sets clkdivider to 2, else to\
-    \ 0.\n\t[Mythen3] Options: 8, 16, 32\n\t[Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2]\
-    \ 16"
+    \ 0.\n\t[Mythen3] Options: 8, 16, 32\n\t[Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2][Xilinx\
+    \ Ctb] 16"
   infer_action: true
   template: true
 drlist:
@@ -3970,8 +3970,8 @@ framesl:
         store_result_in_t: true
   command_name: framesl
   function_alias: framesl
-  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Number of frames\
-    \ left in acquisition. \n\t[Gotthard2] only in continuous auto mode."
+  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number\
+    \ of frames left in acquisition. \n\t[Gotthard2] only in continuous auto mode."
   infer_action: true
   template: true
 frametime:
@@ -4703,8 +4703,8 @@ hardwareversion:
         store_result_in_t: true
   command_name: hardwareversion
   function_alias: hardwareversion
-  help: "\n\t[Jungfrau][Gotthard2][Myhten3][Gotthard][Ctb][Moench] Hardware version\
-    \ of detector. \n\t[Eiger] Hardware version of front FPGA on detector."
+  help: "\n\tHardware version of detector. \n\t[Eiger] Hardware version of front FPGA\
+    \ on detector."
   infer_action: true
   template: true
 highvoltage:
@@ -5730,9 +5730,9 @@ patfname:
         store_result_in_t: true
   command_name: patfname
   function_alias: patfname
-  help: "\n\t[Ctb][Mythen3] Gets the pattern file name including path of the last\
-    \ pattern uploaded. Returns an empty if nothing was uploaded or via a server default\
-    \ file"
+  help: "\n\t[Ctb][Mythen3][Xilinx Ctb] Gets the pattern file name including path\
+    \ of the last pattern uploaded. Returns an empty if nothing was uploaded or via\
+    \ a server default file"
   infer_action: true
   template: true
 patioctrl:
@@ -5826,7 +5826,8 @@ patlimits:
         store_result_in_t: false
   command_name: patlimits
   function_alias: patlimits
-  help: "[start addr] [stop addr] \n\t[Ctb][Mythen3] Limits of complete pattern"
+  help: "[start addr] [stop addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Limits of complete\
+    \ pattern"
   infer_action: true
 patloop:
   actions:
@@ -5899,8 +5900,8 @@ patloop:
         store_result_in_t: false
   command_name: patloop
   function_alias: patloop
-  help: "[0-6] [start addr] [stop addr] \n\t[Ctb][Mythen3] Limits of the loop level\
-    \ provided.\n\t[Mythen3] Level options: 0-3 only."
+  help: "[0-6] [start addr] [stop addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Limits of the\
+    \ loop level provided.\n\t[Mythen3] Level options: 0-3 only."
   infer_action: true
 patloop0:
   actions:
@@ -6145,8 +6146,8 @@ patmask:
         store_result_in_t: false
   command_name: patmask
   function_alias: patmask
-  help: "[64 bit mask]\n\t[Ctb][Mythen3] Selects the bits that will have a pattern\
-    \ mask applied to the selected patmask for every pattern."
+  help: "[64 bit mask]\n\t[Ctb][Mythen3][Xilinx Ctb] Selects the bits that will have\
+    \ a pattern mask applied to the selected patmask for every pattern."
   infer_action: true
   template: true
 patnloop:
@@ -6209,8 +6210,8 @@ patnloop:
         store_result_in_t: false
   command_name: patnloop
   function_alias: patnloop
-  help: "[0-6] [n_cycles] \n\t[Ctb][Mythen3] Number of cycles of the loop level provided.\n\
-    \t[Mythen3] Level options: 0-3 only."
+  help: "[0-6] [n_cycles] \n\t[Ctb][Mythen3][Xilinx Ctb] Number of cycles of the loop\
+    \ level provided.\n\t[Mythen3] Level options: 0-3 only."
   infer_action: true
 patnloop0:
   actions:
@@ -6422,8 +6423,8 @@ patsetbit:
         store_result_in_t: false
   command_name: patsetbit
   function_alias: patsetbit
-  help: "[64 bit mask]\n\t[Ctb][Mythen3] Sets the mask applied to every pattern to\
-    \ the selected bits."
+  help: "[64 bit mask]\n\t[Ctb][Mythen3][Xilinx Ctb] Sets the mask applied to every\
+    \ pattern to the selected bits."
   infer_action: true
   template: true
 patternX:
@@ -6448,8 +6449,8 @@ patternX:
         store_result_in_t: false
   command_name: pattern
   function_alias: pattern
-  help: "[fname]\n\t[Mythen3][Ctb] Loads ASCII pattern file directly to server (instead\
-    \ of executing line by line)"
+  help: "[fname]\n\t[Mythen3][Ctb][Xilinx Ctb] Loads ASCII pattern file directly to\
+    \ server (instead of executing line by line)"
   infer_action: true
 patternstart:
   actions:
@@ -6532,8 +6533,8 @@ patwait:
         store_result_in_t: false
   command_name: patwait
   function_alias: patwait
-  help: "[0-6] [addr] \n\t[Ctb][Mythen3] Wait address for loop level provided. \n\t\
-    [Mythen3] Level options: 0-3 only."
+  help: "[0-6] [addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait address for loop level provided.\
+    \ \n\t[Mythen3] Level options: 0-3 only."
   infer_action: true
 patwait0:
   actions:
@@ -6769,8 +6770,8 @@ patwaittime:
         store_result_in_t: false
   command_name: patwaittime
   function_alias: patwaittime
-  help: "[0-6] [n_clk] \n\t[Ctb][Mythen3] Wait time in clock cycles for the loop provided.\n\
-    \t[Mythen3] Level options: 0-3 only."
+  help: "[0-6] [n_clk] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles for\
+    \ the loop provided.\n\t[Mythen3] Level options: 0-3 only."
   infer_action: true
 patwaittime0:
   actions:
@@ -6998,8 +6999,8 @@ patword:
         store_result_in_t: false
   command_name: patword
   function_alias: patword
-  help: "[step or address] [64 bit mask]\n\t[Ctb][Mythen3] 64 bit pattern at address\
-    \ of pattern memory.\n\t[Ctb] read is same as executing pattern"
+  help: "[step or address] [64 bit mask]\n\t[Ctb][Mythen3][Xilinx Ctb] 64 bit pattern\
+    \ at address of pattern memory.\n\t[Ctb] read is same as executing pattern"
   infer_action: true
 pedestalmode:
   actions:
@@ -9438,8 +9439,8 @@ savepattern:
         store_result_in_t: false
   command_name: savepattern
   function_alias: savepattern
-  help: "\n\t[Ctb][Mythen3] Saves pattern to file (ascii). \n\t[Ctb] Also executes\
-    \ pattern."
+  help: "\n\t[Ctb][Mythen3][Xilinx Ctb] Saves pattern to file (ascii). \n\t[Ctb] Also\
+    \ executes pattern."
   infer_action: true
   template: true
 scan:
@@ -11229,8 +11230,8 @@ timing:
         store_result_in_t: false
   command_name: timing
   function_alias: timing
-  help: "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Moench][Gotthard][Ctb][Gotthard2]\
-    \ [auto|trigger]\n\t[Mythen3] [auto|trigger|gating|trigger_gating]\n\t[Eiger]\
+  help: "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx\
+    \ Ctb] [auto|trigger]\n\t[Mythen3] [auto|trigger|gating|trigger_gating]\n\t[Eiger]\
     \ [auto|trigger|gating|burst_trigger]"
   infer_action: true
   template: true
@@ -11459,8 +11460,8 @@ triggersl:
         store_result_in_t: true
   command_name: triggersl
   function_alias: triggersl
-  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Number of triggers\
-    \ left in acquisition. Only when external trigger used."
+  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number\
+    \ of triggers left in acquisition. Only when external trigger used."
   infer_action: true
   template: true
 trimbits:

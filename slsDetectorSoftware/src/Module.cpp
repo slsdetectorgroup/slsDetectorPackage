@@ -184,7 +184,8 @@ slsDetectorDefs::detectorType Module::getDetectorType() const {
 }
 
 void Module::updateNumberOfChannels() {
-    if (shm()->detType == CHIPTESTBOARD) {
+    if (shm()->detType == CHIPTESTBOARD ||
+        shm()->detType == XILINX_CHIPTESTBOARD) {
         std::array<int, 2> retvals{};
         sendToDetector(F_GET_NUM_CHANNELS, nullptr, retvals);
         shm()->nChan.x = retvals[0];
@@ -2461,7 +2462,8 @@ void Module::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
     sendToDetector(F_SET_READOUT_MODE, arg, nullptr);
     sendToDetectorStop(F_SET_READOUT_MODE, arg, nullptr);
     // update #nchan, as it depends on #samples, adcmask,
-    if (shm()->detType == CHIPTESTBOARD) {
+    if (shm()->detType == CHIPTESTBOARD ||
+        shm()->detType == XILINX_CHIPTESTBOARD) {
         updateNumberOfChannels();
     }
     if (shm()->useReceiverFlag) {
@@ -3407,6 +3409,8 @@ const std::string Module::getDetectorAPI() const {
         return APIMYTHEN3;
     case GOTTHARD2:
         return APIGOTTHARD2;
+    case XILINX_CHIPTESTBOARD:
+        return APIXILINXCTB;
     default:
         throw NotImplementedError(
             "Detector type not implemented to get Detector API");

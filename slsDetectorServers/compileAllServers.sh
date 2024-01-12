@@ -8,7 +8,8 @@ det_list=("ctbDetectorServer
 	gotthard2DetectorServer 
 	jungfrauDetectorServer 
 	mythen3DetectorServer 
-	moenchDetectorServer" 
+	moenchDetectorServer
+	xilinx_ctbDetectorServer" 
 	)
 usage="\nUsage: compileAllServers.sh [server|all(opt)] [branch(opt)]. \n\tNo arguments mean all servers with 'developer' branch. \n\tNo 'branch' input means 'developer branch'"
 

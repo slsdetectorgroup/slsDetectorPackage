@@ -1,0 +1,28 @@
+hostname (find +)
+acquire
+versions (maybe with few tweaks)
+threshold (+++++)
+trimen (maybe with few tweaks)
+badchannels (somewhat special)
+currentsource (special)
+dacvalues (can be done with the ctb_output_list)
+udp_srcip (could be done if I add condition functionality for logging)
+udp_srcip2 (same as above)
+udp_dstip (same as above)
+udp_dstip2
+rx_hostname (split('+'))
+rx_roi (can be done if there;s condition support?)
+ratecorr (can be done if there's condition support?)
+burstmode (very special)
+vetostream
+counters
+gaincaps (has for loop and condition)
+samples (ask Dhanya if it is okay to change the order of calling the ctb functions in PUT)
+slowadc (has for loop)
+rx_dbitlist (very special)
+rx_jsonaddheader (very special)
+execcommand (has for loop)
+thresholdnotb
+# notes
+# ReceiverStatus error on put is not done
+# ask about burstmode function

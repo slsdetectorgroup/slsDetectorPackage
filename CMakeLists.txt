@@ -33,7 +33,7 @@ else()
     # Standard behaviour use libzmq included in this repo (libs/libzmq)
     FetchContent_Declare(
         libzmq
-        URL ${CMAKE_SOURCE_DIR}/libs/libzmq/libzmq-4.3.4.tar.gz
+        URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq-4.3.4.tar.gz
         URL_HASH MD5=cc20b769ac10afa352e5ed2769bb23b3
     )
 endif()
@@ -243,6 +243,7 @@ if(SLS_USE_SANITIZER)
     # target_compile_options(slsProjectOptions INTERFACE -fsanitize=thread)
     # target_link_libraries(slsProjectOptions INTERFACE -fsanitize=thread)
 endif()
+
 
 if(SLS_TUNE_LOCAL)
     target_compile_options(slsProjectOptions INTERFACE -mtune=native -march=native)

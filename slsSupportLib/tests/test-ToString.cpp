@@ -136,6 +136,7 @@ TEST_CASE("string to detectorType") {
     REQUIRE(StringTo<dt>("Moench") == dt::MOENCH);
     REQUIRE(StringTo<dt>("Mythen3") == dt::MYTHEN3);
     REQUIRE(StringTo<dt>("Gotthard2") == dt::GOTTHARD2);
+    REQUIRE(StringTo<dt>("Xilinx_ChipTestBoard") == dt::XILINX_CHIPTESTBOARD);
 }
 
 TEST_CASE("vec") {

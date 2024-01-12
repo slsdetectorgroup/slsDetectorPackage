@@ -272,7 +272,8 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
     // Here we know the detector type and can add ctb shared memory
     // if needed, CTB dac names are only on detector level
 
-    if (shm()->detType == defs::CHIPTESTBOARD) {
+    if (shm()->detType == defs::CHIPTESTBOARD ||
+        shm()->detType == defs::XILINX_CHIPTESTBOARD) {
         if (ctb_shm.exists())
             ctb_shm.openSharedMemory(true);
         else
@@ -711,7 +712,8 @@ void DetectorImpl::readFrameFromReceiver() {
                     uint32_t yoffset = coordY * nPixelsY;
                     uint32_t singledetrowoffset = nPixelsX * bytesPerPixel;
                     uint32_t rowoffset = nX * singledetrowoffset;
-                    if (shm()->detType == CHIPTESTBOARD) {
+                    if (shm()->detType == CHIPTESTBOARD ||
+                        shm()->detType == defs::XILINX_CHIPTESTBOARD) {
                         singledetrowoffset = size;
                     }
                     LOG(logDEBUG1)
@@ -1735,7 +1737,8 @@ void DetectorImpl::verifyUniqueHost(
 }
 
 defs::ROI DetectorImpl::getRxROI() const {
-    if (shm()->detType == CHIPTESTBOARD) {
+    if (shm()->detType == CHIPTESTBOARD ||
+        shm()->detType == defs::XILINX_CHIPTESTBOARD) {
         throw RuntimeError("RxRoi not implemented for this Detector");
     }
     if (modules.size() == 0) {
@@ -1810,7 +1813,8 @@ defs::ROI DetectorImpl::getRxROI() const {
 }
 
 void DetectorImpl::setRxROI(const defs::ROI arg) {
-    if (shm()->detType == CHIPTESTBOARD) {
+    if (shm()->detType == CHIPTESTBOARD ||
+        shm()->detType == defs::XILINX_CHIPTESTBOARD) {
         throw RuntimeError("RxRoi not implemented for this Detector");
     }
     if (modules.size() == 0) {

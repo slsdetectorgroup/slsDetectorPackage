@@ -99,7 +99,9 @@ def loadConfig(name, rx_hostname, settingsdir):
     Log(Fore.GREEN, 'Loading config')
     try:
         d = Detector()
-        if name == 'eiger':
+        if name == 'xilinx_ctb':
+            d.hostname = 'localhost'
+        elif name == 'eiger':
             d.hostname = 'localhost:' + str(DEFAULT_TCP_CNTRL_PORTNO) + '+localhost:' + str(HALFMOD2_TCP_CNTRL_PORTNO)
             #d.udp_dstport = {2: 50003} 
             # will set up for every module
@@ -126,7 +128,7 @@ def loadConfig(name, rx_hostname, settingsdir):
 
 def startCmdTests(name, fp, fname):
     Log(Fore.GREEN, 'Cmd Tests for ' + name)
-    cmd = 'tests --abort [.cmd] -s -o ' + fname
+    cmd = 'tests --abort [.cmdcall] -s -o ' + fname
     p = subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
     p.check_returncode()
 
@@ -174,6 +176,7 @@ if args.servers is None:
         'gotthard',
         'ctb',
         'moench',
+        'xilinx_ctb'
     ]
 else:
     servers = args.servers

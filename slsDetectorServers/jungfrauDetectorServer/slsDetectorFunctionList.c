@@ -88,6 +88,7 @@ void basictests() {
                "Could not map to memory. Cannot proceed. Check Firmware.\n");
         LOG(logERROR, (initErrorMessage));
         initError = FAIL;
+        return;
     }
 #ifndef VIRTUAL
     // does check only if flag is 0 (by default), set by command line

@@ -82,6 +82,7 @@ void basictests() {
                "Could not map to memory. Cannot proceed. Check Firmware.\n");
         LOG(logERROR, ("%s\n\n", initErrorMessage));
         initError = FAIL;
+        return;
     }
 #ifndef VIRTUAL
     // does check only if flag is 0 (by default), set by command line
@@ -481,7 +482,6 @@ void setupDetector() {
         return;
     }
 
-    setReadoutSpeed(DEFAULT_SPEED);
     cleanFifos();
     resetCore();
 
@@ -495,6 +495,7 @@ void setupDetector() {
     initReadoutConfiguration();
 
     // Initialization of acquistion parameters
+    setReadoutSpeed(DEFAULT_SPEED);
     setSettings(DEFAULT_SETTINGS);
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);

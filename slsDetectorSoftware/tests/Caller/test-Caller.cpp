@@ -825,82 +825,73 @@ TEST_CASE("CALLER::exptime", "[.cmdcall][.time]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        std::chrono::nanoseconds prev_val;
-        if (det_type != defs::MYTHEN3) {
-            prev_val = det.getExptime().tsquash("inconsistent exptime to test");
-        } else {
-            auto t = det.getExptimeForAllGates().tsquash(
-                "inconsistent exptime to test");
-            if (t[0] != t[1] || t[1] != t[2]) {
-                throw RuntimeError("inconsistent exptime for all gates");
-            }
-            prev_val = t[0];
-        }
-        {
-            std::ostringstream oss;
-            caller.call("exptime", {"0.05"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "exptime 0.05\n");
-        }
-        if (det_type != defs::MYTHEN3) {
-            std::ostringstream oss;
-            caller.call("exptime", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "exptime 50ms\n");
-        }
-        {
-            std::ostringstream oss;
-            caller.call("exptime", {"1s"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "exptime 1s\n");
-        }
-        if (det_type != defs::JUNGFRAU && det_type != defs::MOENCH) {
-            {
-                std::ostringstream oss;
-                caller.call("exptime", {"0"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "exptime 0\n");
-            }
-            {
-                // Get exptime of single module
-                std::ostringstream oss;
-                caller.call("exptime", {}, 0, GET, oss);
-                if (det_type == defs::MYTHEN3) {
-                    REQUIRE(oss.str() == "exptime [0ns, 0ns, 0ns]\n");
-                } else {
-                    REQUIRE(oss.str() == "exptime 0ns\n");
-                }
-            }
-        }
-        det.setExptime(-1, prev_val);
+    std::chrono::nanoseconds prev_val;
+    if (det_type != defs::MYTHEN3) {
+        prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
-        REQUIRE_THROWS(caller.call("exptime", {}, -1, GET));
+        auto t = det.getExptimeForAllGates().tsquash(
+            "inconsistent exptime to test");
+        if (t[0] != t[1] || t[1] != t[2]) {
+            throw RuntimeError("inconsistent exptime for all gates");
+        }
+        prev_val = t[0];
     }
+    {
+        std::ostringstream oss;
+        caller.call("exptime", {"0.05"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "exptime 0.05\n");
+    }
+    if (det_type != defs::MYTHEN3) {
+        std::ostringstream oss;
+        caller.call("exptime", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "exptime 50ms\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("exptime", {"1s"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "exptime 1s\n");
+    }
+    if (det_type != defs::JUNGFRAU && det_type != defs::MOENCH) {
+        {
+            std::ostringstream oss;
+            caller.call("exptime", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "exptime 0\n");
+        }
+        {
+            // Get exptime of single module
+            std::ostringstream oss;
+            caller.call("exptime", {}, 0, GET, oss);
+            if (det_type == defs::MYTHEN3) {
+                REQUIRE(oss.str() == "exptime [0ns, 0ns, 0ns]\n");
+            } else {
+                REQUIRE(oss.str() == "exptime 0ns\n");
+            }
+        }
+    }
+    det.setExptime(-1, prev_val);
 }
 
 TEST_CASE("CALLER::period", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getPeriod();
-        {
-            std::ostringstream oss;
-            caller.call("period", {"1.25s"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "period 1.25s\n");
-        }
-        {
-            std::ostringstream oss;
-            caller.call("period", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "period 1.25s\n");
-        }
-        {
-            std::ostringstream oss;
-            caller.call("period", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "period 0\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPeriod(prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(caller.call("period", {}, -1, GET));
+    auto prev_val = det.getPeriod();
+    {
+        std::ostringstream oss;
+        caller.call("period", {"1.25s"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "period 1.25s\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("period", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "period 1.25s\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("period", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "period 0\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setPeriod(prev_val[i], {i});
     }
 }
 

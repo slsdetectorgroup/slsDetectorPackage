@@ -251,14 +251,12 @@ void setNumFrames(int64_t val);
 int64_t getNumFrames();
 void setNumTriggers(int64_t val);
 int64_t getNumTriggers();
-#ifndef XILINX_CHIPTESTBOARDD
 #ifndef MYTHEN3D
 int setExpTime(int64_t val);
 int64_t getExpTime();
 #endif
 int setPeriod(int64_t val);
 int64_t getPeriod();
-#endif
 #ifdef MYTHEN3D
 void setNumIntGates(int val);
 void setNumGates(int val);

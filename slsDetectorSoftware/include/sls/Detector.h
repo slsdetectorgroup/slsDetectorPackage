@@ -303,11 +303,11 @@ class Detector {
 
     void setNumberOfTriggers(int64_t value);
 
-    /** [Gotthard][Jungfrau][Moench][Eiger][CTB][Gotthard2]  \n
+    /** [Gotthard][Jungfrau][Moench][Eiger][CTB][Xilinx CTB][Gotthard2]  \n
      * [Mythen3] use function with gate index **/
     Result<ns> getExptime(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][Eiger][CTB][Gotthard2]  \n
+    /** [Gotthard][Jungfrau][Moench][Eiger][CTB][Xilinx CTB][Gotthard2]  \n
      * [Mythen3] sets exptime for all gate signals. To specify gate index, use
      * function with gate index **/
     void setExptime(ns t, Positions pos = {});

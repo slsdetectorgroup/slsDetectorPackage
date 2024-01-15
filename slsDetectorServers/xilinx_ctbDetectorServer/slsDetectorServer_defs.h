@@ -22,6 +22,12 @@ enum DACINDEX { D0 };
 #define DEFAULT_NUM_CYCLES  (1)
 #define DYNAMIC_RANGE       (16)
 #define DEFAULT_TIMING_MODE (AUTO_TIMING)
+#define DEFAULT_EXPTIME     (0)
+#define DEFAULT_PERIOD      (300 * 1000) // 300us
+
+#define TICK_CLK (20) // MHz
+#define RUN_CLK  (100) // MHz
 
 /* Defines in the Firmware */
 #define WAIT_TIME_PATTERN_READ (10)
+

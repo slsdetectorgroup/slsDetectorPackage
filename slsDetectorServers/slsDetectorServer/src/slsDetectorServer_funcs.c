@@ -2484,10 +2484,7 @@ int get_exptime(int file_des) {
     if (receiveData(file_des, &gateIndex, sizeof(gateIndex), INT32) < 0)
         return printSocketReadError();
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
-        // get only
+    // get only
 #ifdef MYTHEN3D
     if (gateIndex < 0 || gateIndex > 2) {
         ret = FAIL;
@@ -2511,7 +2508,6 @@ int get_exptime(int file_des) {
         LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
     }
 #endif
-#endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -2527,9 +2523,6 @@ int set_exptime(int file_des) {
     LOG(logDEBUG1, ("Setting exptime %lld ns (gateIndex:%d)\n",
                     (long long int)val, gateIndex));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
 #ifdef MYTHEN3D
@@ -2594,7 +2587,6 @@ int set_exptime(int file_des) {
         }
 #endif
     }
-#endif
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
@@ -2603,13 +2595,9 @@ int get_period(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // get only
     retval = getPeriod();
     LOG(logDEBUG1, ("retval period %lld ns\n", (long long int)retval));
-#endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -2622,9 +2610,6 @@ int set_period(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting period %lld ns\n", (long long int)arg));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
         ret = setPeriod(arg);
@@ -2636,7 +2621,6 @@ int set_period(int file_des) {
             LOG(logERROR, (mess));
         }
     }
-#endif
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
 

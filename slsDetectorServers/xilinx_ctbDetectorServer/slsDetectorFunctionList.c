@@ -320,6 +320,8 @@ void setupDetector() {
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
     setTiming(DEFAULT_TIMING_MODE);
+    setExpTime(DEFAULT_EXPTIME);
+    setPeriod(DEFAULT_PERIOD);
 }
 
 /* set parameters -  dr */
@@ -354,6 +356,51 @@ void setNumTriggers(int64_t val) {
 }
 
 int64_t getNumTriggers() { return getU64BitReg(CYCLESINREG1, CYCLESINREG2); }
+
+int setExpTime(int64_t val) {
+    if (val < 0) {
+        LOG(logERROR, ("Invalid exptime: %lld ns\n", (long long int)val));
+        return FAIL;
+    }
+    LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
+    val *= (1E-3 * RUN_CLK);
+    setPatternWaitTime(0, val);
+
+    // validate for tolerance
+    int64_t retval = getExpTime();
+    val /= (1E-3 * RUN_CLK);
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t getExpTime() {
+    return getPatternWaitTime(0) / (1E-3 * RUN_CLK);
+}
+
+int setPeriod(int64_t val) {
+    if (val < 0) {
+        LOG(logERROR, ("Invalid period: %lld ns\n", (long long int)val));
+        return FAIL;
+    }
+    LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
+    val *= (1E-3 * RUN_CLK);
+    set64BitReg(val, PERIODINREG1, PERIODINREG2);
+
+    // validate for tolerance
+    int64_t retval = getPeriod();
+    val /= (1E-3 * RUN_CLK);
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t getPeriod() {
+    return get64BitReg(PERIODINREG1, PERIODINREG2) /
+           (1E-3 * RUN_CLK);
+}
 
 int64_t getNumFramesLeft() {
     return getU64BitReg(FRAMESOUTREG1, FRAMESOUTREG2);

@@ -2,7 +2,7 @@
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 cmake_minimum_required(VERSION 3.14)
 project(slsDetectorPackage)
-set(PROJECT_VERSION 8.0.0)
+set(PROJECT_VERSION 8.0.1)
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
@@ -33,7 +33,7 @@ else()
     # Standard behaviour use libzmq included in this repo (libs/libzmq)
     FetchContent_Declare(
         libzmq
-        URL ${CMAKE_SOURCE_DIR}/libs/libzmq/libzmq-4.3.4.tar.gz
+        URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq-4.3.4.tar.gz
         URL_HASH MD5=cc20b769ac10afa352e5ed2769bb23b3
     )
 endif()

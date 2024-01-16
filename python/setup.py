@@ -7,7 +7,6 @@ Build upon the pybind11 example found here: https://github.com/pybind/python_exa
 
 import os
 import sys
-sys.path.append('../libs/pybind')
 from setuptools import setup, find_packages
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 
@@ -41,11 +40,10 @@ ext_modules = [
         
         ,
         include_dirs=[
-            os.path.join('../libs/pybind/include'),
             os.path.join(get_conda_path(), 'include'),
 
         ],
-        libraries=['SlsDetector', 'SlsSupport', 'SlsReceiver', 'zmq'],
+        libraries=['SlsDetector', 'SlsSupport', 'SlsReceiver'],
         library_dirs=[
             os.path.join(get_conda_path(), 'lib'),
         ],

@@ -4,7 +4,7 @@
 #include "RegisterDefs.h"
 #include "sls/sls_detector_defs.h"
 
-#define REQRD_FRMWRE_VRSN (0x230000)
+#define REQRD_FRMWRE_VRSN (0x230000) //230710
 #define KERNEL_DATE_VRSN  "Wed Nov 29 17:32:14 CET 2023"
 
 #define LINKED_SERVER_NAME "xilinx_ctbDetectorServer"

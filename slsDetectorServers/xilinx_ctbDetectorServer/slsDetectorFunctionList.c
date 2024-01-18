@@ -65,31 +65,82 @@ void basictests() {
         return;
     }
 #endif
+    char hversion[MAX_STR_LENGTH] = {0};
+    memset(hversion, 0, MAX_STR_LENGTH);
+    getHardwareVersion(hversion);
     uint32_t ipadd = getDetectorIP();
     uint64_t macadd = getDetectorMAC();
     int64_t fwversion = getFirmwareVersion();
     char swversion[MAX_STR_LENGTH] = {0};
     memset(swversion, 0, MAX_STR_LENGTH);
     getServerVersion(swversion);
-    uint32_t requiredFirmwareVersion = REQRD_FRMWRE_VRSN;
+    int64_t sw_fw_apiversion = getFirmwareAPIVersion();
+    uint64_t requiredfwversion = REQRD_FRMWRE_VRSN;
 
     LOG(logINFOBLUE,
         ("**************************************************\n"
+         "Hardware Version:\t\t %s\n"
+
          "Detector IP Addr:\t\t 0x%x\n"
          "Detector MAC Addr:\t\t 0x%lx\n\n"
 
          "Firmware Version:\t\t 0x%lx\n"
          "Software Version:\t\t %s\n"
-         "Required Firmware Version:\t 0x%x\n"
+         "F/w-S/w API Version:\t\t 0x%lx\n"
+         "Required Firmware Version:\t 0x%lx\n"
          "********************************************************\n",
-         ipadd, macadd, fwversion, swversion, requiredFirmwareVersion));
+         hversion, ipadd, macadd, fwversion, swversion, sw_fw_apiversion, requiredfwversion));
+
+#ifndef VIRTUAL
+    // return if flag is not zero, debug mode
+    if (debugflag || updateFlag) {
+        return;
+    }
+
+    // cant read versions
+    LOG(logINFO, ("Testing Firmware-software compatibility:\n"));
+    if (!fwversion || !sw_fw_apiversion) {
+        strcpy(initErrorMessage,
+               "Cant read versions from FPGA. Please update firmware.\n");
+        LOG(logERROR, (initErrorMessage));
+        initError = FAIL;
+        return;
+    }
+
+    // check for API compatibility - old server
+    if (sw_fw_apiversion > requiredfwversion) {
+        sprintf(initErrorMessage,
+                "This firmware-software api version (0x%lx) is incompatible "
+                "with the software's minimum required firmware version "
+                "(0x%lx).\nPlease update detector software to be compatible "
+                "with this firmware.\n",
+                sw_fw_apiversion,
+                requiredfwversion);
+        LOG(logERROR, (initErrorMessage));
+        initError = FAIL;
+        return;
+    }
+
+    // check for firmware compatibility - old firmware
+    if (requiredfwversion > fwversion) {
+        sprintf(initErrorMessage,
+                "This firmware version (0x%lx) is incompatible.\n"
+                "Please update firmware (min. 0x%lx) to be compatible with "
+                "this server.\n",
+                fwversion, requiredfwversion);
+        LOG(logERROR, (initErrorMessage));
+        initError = FAIL;
+        return;
+    }
+    LOG(logINFO, ("\tCompatibility - success\n"));
+#endif
 }
 
 int checkType() {
 #ifdef VIRTUAL
     return OK;
 #endif
-    u_int32_t type = ((bus_r(FPGAVERSIONREG) & DETTYPE_MSK) >> DETTYPE_OFST);
+    u_int32_t type = ((bus_r(FPGAVERSIONREG) & FPGADETTYPE_MSK) >> FPGADETTYPE_OFST);
     if (type != XILINX_CHIPTESTBOARD) {
         LOG(logERROR,
             ("This is not a Xilinx CTB firmware (read %d, expected %d)\n", type,
@@ -108,17 +159,15 @@ int testFpga() {
     // fixed pattern
     int ret = OK;
 
-    /* TODO: FIX PATTERN not defined in firmware
-    uint32_t val = bus_r(FIX_PATT_REG);
-    if (val == FIX_PATT_VAL) {
+    uint32_t val = bus_r(FIXEDPATTERNREG);
+    if (val == FIXEDPATTERNVAL) {
         LOG(logINFO, ("\tFixed pattern: successful match (0x%08x)\n", val));
     } else {
         LOG(logERROR,
             ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n",
-             val, FIX_PATT_VAL));
+             val, FIXEDPATTERNVAL));
         ret = FAIL;
     }
-    */
 
     if (ret == OK) {
         // Delay LSB reg
@@ -223,7 +272,14 @@ uint64_t getFirmwareVersion() {
 #ifdef VIRTUAL
     return REQRD_FRMWRE_VRSN;
 #endif
-    return ((bus_r(FPGAVERSIONREG) & COMPDATE_MSK) >> COMPDATE_OFST);
+    return ((bus_r(FPGAVERSIONREG) & FPGACOMPDATE_MSK) >> FPGACOMPDATE_OFST);
+}
+
+uint64_t getFirmwareAPIVersion() {
+#ifdef VIRTUAL
+    return 0;
+#endif
+    return ((bus_r(APIVERSIONREG) & APICOMPDATE_MSK) >> APICOMPDATE_OFST);
 }
 
 void getHardwareVersion(char *version) { strcpy(version, "Not applicable"); }
@@ -386,7 +442,7 @@ int setPeriod(int64_t val) {
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
     val *= (1E-3 * RUN_CLK);
-    set64BitReg(val, PERIODINREG1, PERIODINREG2);
+    setU64BitReg(val, PERIODINREG1, PERIODINREG2);
 
     // validate for tolerance
     int64_t retval = getPeriod();
@@ -398,7 +454,7 @@ int setPeriod(int64_t val) {
 }
 
 int64_t getPeriod() {
-    return get64BitReg(PERIODINREG1, PERIODINREG2) /
+    return getU64BitReg(PERIODINREG1, PERIODINREG2) /
            (1E-3 * RUN_CLK);
 }
 

@@ -84,9 +84,7 @@ u_int64_t getFirmwareVersion();
 #ifdef EIGERD
 uint64_t getFrontEndFirmwareVersion(enum fpgaPosition fpgaPosition);
 #endif
-#ifndef XILINX_CHIPTESTBOARDD
 u_int64_t getFirmwareAPIVersion();
-#endif
 void getHardwareVersion(char *version);
 #ifdef EIGERD
 int getHardwareVersionNumber();

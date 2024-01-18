@@ -3685,7 +3685,7 @@ std::string Caller::exptime(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: exptime" << std::endl;
         os << R"V0G0N([duration] [(optional unit) ns|us|ms|s]
-	[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb] Exposure time
+	[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb][Xilinx Ctb] Exposure time
 	[Mythen3] Exposure time of all gate signals in auto and trigger mode (internal gating). To specify gate index, use exptime1, exptime2, exptime3. )V0G0N"
            << std::endl;
         return os.str();

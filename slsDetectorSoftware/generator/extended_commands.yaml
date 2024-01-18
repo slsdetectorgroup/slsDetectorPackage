@@ -2891,9 +2891,10 @@ exptime:
         store_result_in_t: false
   command_name: exptime
   function_alias: exptime
-  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb]\
-    \ Exposure time\n\t[Mythen3] Exposure time of all gate signals in auto and trigger\
-    \ mode (internal gating). To specify gate index, use exptime1, exptime2, exptime3."
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb][Xilinx\
+    \ Ctb] Exposure time\n\t[Mythen3] Exposure time of all gate signals in auto and\
+    \ trigger mode (internal gating). To specify gate index, use exptime1, exptime2,\
+    \ exptime3."
   infer_action: true
   template: true
 exptime1:

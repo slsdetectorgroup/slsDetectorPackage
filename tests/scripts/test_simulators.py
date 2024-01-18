@@ -221,7 +221,7 @@ with open(fname, 'w') as fp:
             startCmdTests(server, fp, file_results)
             cleanup(server)
         except:
-            Log(log.RED, 'Exception caught. Cleaning up.')
+            Log(Fore.RED, 'Exception caught. Cleaning up.')
             cleanup(server)
             sys.stdout = original_stdout
             sys.stderr = original_stderr

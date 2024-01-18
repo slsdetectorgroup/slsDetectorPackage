@@ -176,6 +176,9 @@ uint32_t readRegister16And32(uint32_t offset);
 #endif
 
 // firmware functions (resets)
+#if defined(XILINX_CHIPTESTBOARDD)
+void resetFlow();
+#endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) ||       \
     defined(MYTHEN3D) || defined(GOTTHARD2D)
 void cleanFifos();
@@ -215,6 +218,10 @@ uint32_t getTransceiverEnableMask();
 void setADCInvertRegister(uint32_t val);
 uint32_t getADCInvertRegister();
 #endif
+#ifdef XILINX_CHIPTESTBOARDD
+int setTransceiverEnableMask(uint32_t mask);
+uint32_t getTransceiverEnableMask();
+#endif
 #if defined(CHIPTESTBOARDD)
 int setExternalSamplingSource(int val);
 int setExternalSampling(int val);
@@ -230,7 +237,7 @@ int getParallelMode();
 int setOverFlowMode(int mode);
 int getOverFlowMode();
 #endif
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 int setReadoutMode(enum readoutMode mode);
 int getReadoutMode();
 #endif
@@ -293,6 +300,8 @@ int getNumAnalogSamples();
 #ifdef CHIPTESTBOARDD
 int setNumDigitalSamples(int val);
 int getNumDigitalSamples();
+#endif
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 int setNumTransceiverSamples(int val);
 int getNumTransceiverSamples();
 #endif

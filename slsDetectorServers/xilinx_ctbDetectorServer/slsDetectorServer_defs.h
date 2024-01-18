@@ -24,6 +24,12 @@ enum DACINDEX { D0 };
 #define DEFAULT_TIMING_MODE (AUTO_TIMING)
 #define DEFAULT_EXPTIME     (0)
 #define DEFAULT_PERIOD      (300 * 1000) // 300us
+#define DEFAULT_READOUT_MODE (TRANSCEIVER_ONLY)
+#define DEFAULT_READOUT_MODE_STR "transceiver_only"
+#define DEFAULT_TRANSCEIVER_MASK (0x3) // TODO: check
+#define DEFAULT_NUM_TSAMPLES (200)
+
+#define MAX_TSAMPLES (0x1FFF)
 
 #define TICK_CLK (20)  // MHz
 #define RUN_CLK  (100) // MHz

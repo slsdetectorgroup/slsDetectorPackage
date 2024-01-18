@@ -366,19 +366,36 @@ void initStopServer() {
 
 void setupDetector() {
     LOG(logINFO, ("Setting up Server for 1 Xilinx Chip Test Board\n"));
+
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
     initializePatternWord();
 #endif
+    resetFlow();
 
     LOG(logINFOBLUE, ("Setting Default parameters\n"));
     initializePatternAddresses();
+
+    setTransceiverEnableMask(DEFAULT_TRANSCEIVER_MASK);
+    setNumTransceiverSamples(DEFAULT_NUM_TSAMPLES);
+    setReadoutMode(DEFAULT_READOUT_MODE);
 
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
     setTiming(DEFAULT_TIMING_MODE);
     setExpTime(DEFAULT_EXPTIME);
     setPeriod(DEFAULT_PERIOD);
+}
+
+/* firmware functions (resets) */
+
+void resetFlow() {
+#ifdef VIRTUAL
+    return;
+#endif
+    LOG(logINFO, ("Resetting Core\n"));
+    bus_w(FLOWCONTROLREG, bus_r(FLOWCONTROLREG) | RSTF_MSK);
+    bus_w(FLOWCONTROLREG, bus_r(FLOWCONTROLREG) & ~RSTF_MSK);
 }
 
 /* set parameters -  dr */
@@ -392,6 +409,104 @@ int setDynamicRange(int dr) {
 int getDynamicRange(int *retval) {
     *retval = DYNAMIC_RANGE;
     return OK;
+}
+
+int setTransceiverEnableMask(uint32_t mask) {
+    LOG(logINFO, ("Setting transceivermask to 0x%08x\n", mask));
+    //TODO (allow readoutmode, transceiermask, numtsamples in client and test)
+    // add transciver enable variable
+    // get new csv
+
+    return OK;
+}
+
+uint32_t getTransceiverEnableMask() { 
+    //TODO
+    return transceiverMask; 
+}
+
+/* parameters - readout */
+
+int setReadoutMode(enum readoutMode mode) {
+    uint32_t val = 0;
+    switch (mode) {
+    /* Not implemented yet
+    case ANALOG_ONLY:
+        LOG(logINFO, ("Setting Analog Only Readout\n"));
+        val |= CONFIG_ENBLE_ANLG_OTPT_MSK;
+        analogEnable = 1;
+        break;
+    case DIGITAL_ONLY:
+        LOG(logINFO, ("Setting Digital Only Readout\n"));
+        val |= CONFIG_ENBLE_DGTL_OTPT_MSK;
+        break;
+    case ANALOG_AND_DIGITAL:
+        LOG(logINFO, ("Setting Analog & Digital Readout\n"));
+        val |= CONFIG_ENBLE_ANLG_OTPT_MSK;
+        val |= CONFIG_ENBLE_DGTL_OTPT_MSK;
+        break;
+    */
+    case TRANSCEIVER_ONLY:
+        LOG(logINFO, ("Setting Transceiver Only Readout\n"));
+        val |= CONFIG_ENBLE_TRNSCVR_OTPT_MSK;
+        break;
+    /* Not implemented yet
+    case DIGITAL_AND_TRANSCEIVER:
+        LOG(logINFO, ("Setting Digital & Transceiver Readout\n"));
+        val |= CONFIG_ENBLE_DGTL_OTPT_MSK;
+        val |= CONFIG_ENBLE_TRNSCVR_OTPT_MSK;
+        break;
+    */
+    default:
+        LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", mode));
+        return FAIL;
+    }
+
+    uint32_t addr = FIFOTOGBCONTROLREG;
+    bus_w(addr, bus_r(addr) & ~ROMODE_MSK);
+    bus_w(addr, bus_r(addr) | val);
+
+    return OK;
+}
+
+int getReadoutMode() {
+    int analogEnable = 0, digitalEnable = 0, transceiverEnable = 0;
+    uint32_t mode = bus_r(FIFOTOGBCONTROLREG) & ROMODE_MSK;
+    switch (mode) {
+        case CONFIG_ENBLE_ANLG_OTPT_MSK:
+            analogEnable = 1;
+            break;
+        case CONFIG_ENBLE_DGTL_OTPT_MSK:
+            digitalEnable = 1;
+            break;
+        case CONFIG_ENBLE_TRNSCVR_OTPT_MSK:
+            transceiverEnable = 1;
+            break;
+        default:
+            break;
+    }
+
+    if (analogEnable && digitalEnable && !transceiverEnable) {
+        LOG(logDEBUG1, ("Getting readout: Analog & Digita\n"));
+        return ANALOG_AND_DIGITAL;
+    } else if (analogEnable && !digitalEnable && !transceiverEnable) {
+        LOG(logDEBUG1, ("Getting readout: Analog Only\n"));
+        return ANALOG_ONLY;
+    } else if (!analogEnable && digitalEnable && !transceiverEnable) {
+        LOG(logDEBUG1, ("Getting readout: Digital Only\n"));
+        return DIGITAL_ONLY;
+    } else if (!analogEnable && !digitalEnable && transceiverEnable) {
+        LOG(logDEBUG1, ("Getting readout: Transceiver Only\n"));
+        return TRANSCEIVER_ONLY;
+    } else if (!analogEnable && digitalEnable && transceiverEnable) {
+        LOG(logDEBUG1, ("Getting readout: Digital & Transceiver\n"));
+        return DIGITAL_AND_TRANSCEIVER;
+    } else {
+        LOG(logERROR, ("Read unknown readout (analog enable:%d digital "
+                       "enable:%d transceiver enable:%d)\n",
+                       analogEnable, digitalEnable, transceiverEnable));
+        return -1;
+    }
 }
 
 /* parameters - timer */
@@ -413,6 +528,25 @@ void setNumTriggers(int64_t val) {
 }
 
 int64_t getNumTriggers() { return getU64BitReg(CYCLESINREG1, CYCLESINREG2); }
+
+int setNumTransceiverSamples(int val) {
+    if (val < 0 || val > MAX_NUM_TSAMPLES) {
+        LOG(logERROR, ("Invalid transceiver samples: %d\n", val));
+        return FAIL;
+    }
+    LOG(logINFO, ("Setting number of transceiver samples %d\n", val));
+
+    ntSamples = val;
+    uint32_t addr = NOSAMPLESXREG;
+    bus_w(addr, bus_r(addr) & ~NOSAMPLESX_MSK);
+    bus_w(addr, bus_r(addr) | ((val << NOSAMPLESX_OFST) &
+                               NOSAMPLESX_MSK));
+    return OK;
+}
+
+int getNumTransceiverSamples() { 
+    return ((bus_r(NOSAMPLESXREG) & NOSAMPLESX_MSK) >> NOSAMPLESX_OFST); 
+}
 
 int setExpTime(int64_t val) {
     if (val < 0) {

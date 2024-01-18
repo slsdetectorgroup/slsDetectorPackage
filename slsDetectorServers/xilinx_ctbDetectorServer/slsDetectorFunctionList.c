@@ -89,7 +89,8 @@ void basictests() {
          "F/w-S/w API Version:\t\t 0x%lx\n"
          "Required Firmware Version:\t 0x%lx\n"
          "********************************************************\n",
-         hversion, ipadd, macadd, fwversion, swversion, sw_fw_apiversion, requiredfwversion));
+         hversion, ipadd, macadd, fwversion, swversion, sw_fw_apiversion,
+         requiredfwversion));
 
 #ifndef VIRTUAL
     // return if flag is not zero, debug mode
@@ -114,8 +115,7 @@ void basictests() {
                 "with the software's minimum required firmware version "
                 "(0x%lx).\nPlease update detector software to be compatible "
                 "with this firmware.\n",
-                sw_fw_apiversion,
-                requiredfwversion);
+                sw_fw_apiversion, requiredfwversion);
         LOG(logERROR, (initErrorMessage));
         initError = FAIL;
         return;
@@ -140,7 +140,8 @@ int checkType() {
 #ifdef VIRTUAL
     return OK;
 #endif
-    u_int32_t type = ((bus_r(FPGAVERSIONREG) & FPGADETTYPE_MSK) >> FPGADETTYPE_OFST);
+    u_int32_t type =
+        ((bus_r(FPGAVERSIONREG) & FPGADETTYPE_MSK) >> FPGADETTYPE_OFST);
     if (type != XILINX_CHIPTESTBOARD) {
         LOG(logERROR,
             ("This is not a Xilinx CTB firmware (read %d, expected %d)\n", type,
@@ -431,9 +432,7 @@ int setExpTime(int64_t val) {
     return OK;
 }
 
-int64_t getExpTime() {
-    return getPatternWaitTime(0) / (1E-3 * RUN_CLK);
-}
+int64_t getExpTime() { return getPatternWaitTime(0) / (1E-3 * RUN_CLK); }
 
 int setPeriod(int64_t val) {
     if (val < 0) {
@@ -454,8 +453,7 @@ int setPeriod(int64_t val) {
 }
 
 int64_t getPeriod() {
-    return getU64BitReg(PERIODINREG1, PERIODINREG2) /
-           (1E-3 * RUN_CLK);
+    return getU64BitReg(PERIODINREG1, PERIODINREG2) / (1E-3 * RUN_CLK);
 }
 
 int64_t getNumFramesLeft() {

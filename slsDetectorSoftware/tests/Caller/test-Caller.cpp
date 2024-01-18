@@ -829,8 +829,8 @@ TEST_CASE("CALLER::exptime", "[.cmdcall][.time]") {
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
-        auto t = det.getExptimeForAllGates().tsquash(
-            "inconsistent exptime to test");
+        auto t =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
         if (t[0] != t[1] || t[1] != t[2]) {
             throw RuntimeError("inconsistent exptime for all gates");
         }

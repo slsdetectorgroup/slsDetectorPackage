@@ -4,7 +4,7 @@
 #include "RegisterDefs.h"
 #include "sls/sls_detector_defs.h"
 
-#define REQRD_FRMWRE_VRSN (0x230000) //230710
+#define REQRD_FRMWRE_VRSN (0x230000) // 230710
 #define KERNEL_DATE_VRSN  "Wed Nov 29 17:32:14 CET 2023"
 
 #define LINKED_SERVER_NAME "xilinx_ctbDetectorServer"
@@ -25,9 +25,8 @@ enum DACINDEX { D0 };
 #define DEFAULT_EXPTIME     (0)
 #define DEFAULT_PERIOD      (300 * 1000) // 300us
 
-#define TICK_CLK (20) // MHz
+#define TICK_CLK (20)  // MHz
 #define RUN_CLK  (100) // MHz
 
 /* Defines in the Firmware */
 #define WAIT_TIME_PATTERN_READ (10)
-

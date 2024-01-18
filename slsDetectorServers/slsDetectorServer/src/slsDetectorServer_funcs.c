@@ -2484,7 +2484,7 @@ int get_exptime(int file_des) {
     if (receiveData(file_des, &gateIndex, sizeof(gateIndex), INT32) < 0)
         return printSocketReadError();
 
-    // get only
+        // get only
 #ifdef MYTHEN3D
     if (gateIndex < 0 || gateIndex > 2) {
         ret = FAIL;

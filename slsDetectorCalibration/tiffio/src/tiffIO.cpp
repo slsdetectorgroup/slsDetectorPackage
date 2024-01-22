@@ -3,7 +3,8 @@
 
 #include "sls/tiffIO.h"
 #include <iostream>
-#include <tiffio.h>
+#include "/usr/include/tiffio.h"
+//#include <tiffio.h>
 
 void *WriteToTiff(float *imgData, const char *imgname, int ncol, int nrow) {
     constexpr uint32_t sampleperpixel = 1;

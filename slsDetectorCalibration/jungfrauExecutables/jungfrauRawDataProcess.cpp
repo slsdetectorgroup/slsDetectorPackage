@@ -2,8 +2,12 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 //#include "sls/ansi.h"
 #include <iostream>
-#undef CORR
+//enable common mode subtraction
+//#define CMS
 
+//disable common mode subtraction
+//#undef CMS
+#undef CORR
 #define C_GHOST 0.0004
 
 #define CM_ROWS 50
@@ -36,6 +40,7 @@
 #include <map>
 #include <stdio.h>
 #include <sys/stat.h>
+//#include "jungfrauCommonMode.h"
 
 #include <ctime>
 using namespace std;
@@ -44,7 +49,7 @@ int main(int argc, char *argv[]) {
 
     if (argc < 6) {
         cout << "Usage is " << argv[0]
-             << "indir outdir fname(no extension) fextension csize [runmin] [runmax] [pedfile (raw or tiff)] [threshold]"
+             << " indir outdir fname(no extension) fextension csize [runmin] [runmax] [pedfile (raw or tiff)] [threshold]"
                 "[nframes] [xmin xmax ymin ymax] [gainmap]"
              << endl;
         cout << "threshold <0 means analog; threshold=0 means cluster finder; "
@@ -81,7 +86,7 @@ int main(int argc, char *argv[]) {
     cout << "Jungfrau strixel full module readout" << endl;
     jungfrauLGADStrixelsData *decoder = new jungfrauLGADStrixelsData();
     int nx = 1024/5, ny = 512*5;
-#endif
+#endif 
 #ifdef JFSTRXCHIP1
     std::cout << "Jungfrau strixel LGAD single chip 1" << std::endl;
     jungfrauLGADStrixelsDataSingleChip *decoder = new jungfrauLGADStrixelsDataSingleChip(1);
@@ -179,7 +184,11 @@ int main(int argc, char *argv[]) {
     cout << "Nframes is " << nframes << endl;
 
     uint32_t nnx, nny;
-
+//    commonModeSubtraction *cm = NULL;
+//#ifdef CMS
+//    cm = new commonModeSubtractionSuperColumnJF();
+//    std::cout << "Enabled common mode subtraction" << std::endl;
+//#endif
     singlePhotonDetector *filter = new singlePhotonDetector(
         decoder, 3, nsigma, 1, NULL, nped, 200, -1, -1, gainmap, NULL);
 

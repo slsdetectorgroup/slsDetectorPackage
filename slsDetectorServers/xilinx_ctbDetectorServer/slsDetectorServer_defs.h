@@ -29,10 +29,44 @@ enum DACINDEX { D0 };
 #define DEFAULT_TRANSCEIVER_MASK (0x3) // TODO: check
 #define DEFAULT_NUM_TSAMPLES (200)
 
-#define MAX_TSAMPLES (0x1FFF)
+#define MAX_TRANSCEIVER_MASK    (0xF)
+#define MAX_TRANSCEIVER_SAMPLES (0x1FFF)
 
-#define TICK_CLK (20)  // MHz
-#define RUN_CLK  (100) // MHz
+#define TICK_CLK (20)  // MHz (trig_timeFromStart, frametime, timeFromStart)
+#define RUN_CLK  (100) // MHz (framesFromStart, c_swTrigger, run, waitForTrigger, starting, acquiring, waitForPeriod, internalStop, c_framesFromSTart_reset, s_start, c_stop, triggerEnable, period, frames, cycles, delay)
 
 /* Defines in the Firmware */
 #define WAIT_TIME_PATTERN_READ (10)
+
+
+#define BIT32_MSK       (0xFFFFFFFF)
+#define BIT16_MASK      (0xFFFF)
+
+/* Struct Definitions */
+typedef struct udp_header_struct {
+    uint32_t udp_destmac_msb;
+    uint16_t udp_srcmac_msb;
+    uint16_t udp_destmac_lsb;
+    uint32_t udp_srcmac_lsb;
+    uint8_t ip_tos;
+    uint8_t ip_ihl : 4, ip_ver : 4;
+    uint16_t udp_ethertype;
+    uint16_t ip_identification;
+    uint16_t ip_totallength;
+    uint8_t ip_protocol;
+    uint8_t ip_ttl;
+    uint16_t ip_fragmentoffset : 13, ip_flags : 3;
+    uint16_t ip_srcip_msb;
+    uint16_t ip_checksum;
+    uint16_t ip_destip_msb;
+    uint16_t ip_srcip_lsb;
+    uint16_t udp_srcport;
+    uint16_t ip_destip_lsb;
+    uint16_t udp_checksum;
+    uint16_t udp_destport;
+} udp_header;
+
+#define IP_HEADER_SIZE             (20)
+#define UDP_IP_HEADER_LENGTH_BYTES (28)
+
+

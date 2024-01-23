@@ -11,10 +11,13 @@
 #include <sys/mman.h> // mmap
 
 /* global variables */
-#define CSP0     (0xB0010000)
-#define MEM_SIZE 0x100000
-
+#define CSP0     (0xB0080000)
+#define CSP1     (0xB0050000) // udp
+#define MEM_SIZE (0x10000)
+//#define MEM_SIZE_CSP0 (4096)
+//#define MEM_SIZE_CSP1 (2 * 4096)
 u_int32_t *csp0base = 0;
+u_int32_t *csp1base = 0;
 
 void bus_w(u_int32_t offset, u_int32_t data) {
     volatile u_int32_t *ptr1;
@@ -39,35 +42,54 @@ void setU64BitReg(uint64_t value, int aLSB, int aMSB) {
     bus_w(aMSB, (value >> 32) & (0xffffffff));
 }
 
+u_int32_t readRegister(u_int32_t offset) { return bus_r(offset); }
+
+u_int32_t writeRegister(u_int32_t offset, u_int32_t data) {
+    bus_w(offset, data);
+    return readRegister(offset);
+}
+
 int mapCSP0(void) {
-    // if not mapped
-    if (csp0base == 0) {
-        LOG(logINFO, ("Mapping memory\n"));
+    u_int32_t csps[2] = {CSP0, CSP1};
+    u_int32_t **cspbases[2] = {&csp0base, &csp1base};
+    char names[2][10] = {"csp0base", "csp1base"};
+
+    for (int i = 0; i < 2; ++i) {
+        // if not mapped
+        if (*cspbases[i] == 0) {
+            LOG(logINFO, ("Mapping memory for %s\n", names[i]));
 #ifdef VIRTUAL
-        csp0base = malloc(MEM_SIZE);
-        if (csp0base == NULL) {
-            LOG(logERROR, ("Could not allocate virtual memory.\n"));
-            return FAIL;
-        }
-        LOG(logINFO, ("memory allocated\n"));
+            *cspbases[i] = malloc(MEM_SIZE);
+            if (*cspbases[i] == NULL) {
+                LOG(logERROR,
+                    ("Could not allocate virtual memory for %s.\n", names[i]));
+                return FAIL;
+            }
+            LOG(logINFO, ("memory allocated for %s\n", names[i]));
 #else
-        int fd;
-        fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
-        if (fd == -1) {
-            LOG(logERROR, ("Can't find /dev/mem\n"));
-            return FAIL;
-        }
-        LOG(logDEBUG1, ("/dev/mem opened\n"));
-        csp0base = (u_int32_t *)mmap(0, MEM_SIZE, PROT_READ | PROT_WRITE,
-                                     MAP_FILE | MAP_SHARED, fd, CSP0);
-        if (csp0base == MAP_FAILED) {
-            LOG(logERROR, ("Can't map memmory area\n"));
-            return FAIL;
-        }
+            int fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
+            if (fd == -1) {
+                LOG(logERROR, ("Can't find /dev/mem for %s\n", names[i]));
+                return FAIL;
+            }
+            LOG(logDEBUG1,
+                ("/dev/mem opened for %s, (CSP:0x%x)\n", names[i], csps[i]));
+            *cspbases[i] =
+                (u_int32_t *)mmap(0, MEM_SIZE, PROT_READ | PROT_WRITE,
+                                  MAP_FILE | MAP_SHARED, fd, csps[i]);
+            if (*cspbases[i] == MAP_FAILED) {
+                LOG(logERROR, ("Can't map memmory area for %s\n", names[i]));
+                return FAIL;
+            }
 #endif
-        LOG(logINFO, ("csp0base mapped from %p to %p\n", csp0base,
-                      (csp0base + MEM_SIZE)));
-    } else
-        LOG(logINFO, ("Memory already mapped before\n"));
+            LOG(logINFO, ("%s mapped from %p to %p,(CSP:0x%x) \n", names[i],
+                          *cspbases[i], *cspbases[i] + MEM_SIZE, csps[i]));
+            // LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
+        } else
+            LOG(logINFO, ("Memory %s already mapped before\n", names[i]));
+    }
     return OK;
 }
+
+u_int32_t *Arm_getUDPBaseAddress() { return csp1base; }
+

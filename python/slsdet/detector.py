@@ -3237,7 +3237,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def transceiverenable(self):
-        """[Ctb] Transceiver Enable Mask. Enable for each 4 transceiver channel."""
+        """[CTB][Xilinx CTB] Transceiver Enable Mask. Enable for each 4 transceiver channel."""
         return self.getTransceiverEnableMask()
 
     @transceiverenable.setter
@@ -3276,8 +3276,10 @@ class Detector(CppDetectorApi):
         
         Note
         ------
-        Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL, TRANSCEIVER_ONLY, DIGITAL_AND_TRANSCEIVER
-        Default: ANALOG_ONLY
+        [CTB] Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL, TRANSCEIVER_ONLY, DIGITAL_AND_TRANSCEIVER
+        [CTB] Default: ANALOG_ONLY
+        [Xilinx CTB] Options: TRANSCEIVER_ONLY
+        [Xilinx CTB] Default: TRANSCEIVER_ONLY
 
         Example
         --------
@@ -3314,7 +3316,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def tsamples(self):
-        """[CTB] Number of transceiver samples expected. """
+        """[CTB][Xilinx CTB] Number of transceiver samples expected. """
         return self.getNumberOfTransceiverSamples()
 
     @tsamples.setter

@@ -55,7 +55,9 @@
 #define DEFAULT_SYNC_CLK              (40)  // 20
 #define DEFAULT_DBIT_CLK              (200)
 #define DEFAULT_TRANSCEIVER_MASK      (0x3)
+
 #define MAX_TRANSCEIVER_MASK          (0xF)
+#define MAX_TRANSCEIVER_SAMPLES       (0xFFFF)
 
 #define UDP_HEADER_MAX_FRAME_VALUE (0xFFFFFFFFFFFF)
 

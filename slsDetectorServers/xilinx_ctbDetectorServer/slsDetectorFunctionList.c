@@ -8,6 +8,9 @@
 #include "sls/versionAPI.h"
 
 #include "loadPattern.h"
+#ifdef VIRTUAL
+#include "communication_funcs_UDP.h"
+#endif
 
 #include <arpa/inet.h> // INET_ADDRSTRLEN
 #include <string.h>
@@ -16,16 +19,24 @@
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern int updateFlag;
+extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern const enum detectorType myDetectorType;
 
 // Global variable from communication_funcs.c
 extern int isControlServer;
+extern void getMacAddressinString(char *cmac, int size, uint64_t mac);
+extern void getIpAddressinString(char *cip, uint32_t ip);
 
 int initError = OK;
 int initCheckDone = 0;
 char initErrorMessage[MAX_STR_LENGTH];
 
 int detPos[2] = {0, 0};
+
+int chipConfigured = 0;
+int analogEnable = 0;
+int digitalEnable = 0;
+int transceiverEnable = 0;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -173,7 +184,7 @@ int testFpga() {
     if (ret == OK) {
         // Delay LSB reg
         LOG(logINFO, ("\tTesting Delay LSB Register:\n"));
-        uint32_t addr = DELAYINREG1;
+        uint32_t addr = DELAY_IN_REG_1;
 
         // store previous delay value
         uint32_t previousValue = bus_r(addr);
@@ -237,7 +248,7 @@ int testBus() {
     LOG(logINFO, ("Testing Bus:\n"));
 
     int ret = OK;
-    uint32_t addr = DELAYINREG1;
+    uint32_t addr = DELAY_IN_REG_1;
 
     // store previous delay value
     uint32_t previousValue = bus_r(addr);
@@ -367,19 +378,33 @@ void initStopServer() {
 void setupDetector() {
     LOG(logINFO, ("Setting up Server for 1 Xilinx Chip Test Board\n"));
 
+    // default variables
+    chipConfigured = 0;
+    analogEnable = 0;
+    digitalEnable = 0;
+    transceiverEnable = 0;
+    
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
+    setupUDPCommParameters();
     initializePatternWord();
 #endif
     resetFlow();
+    cleanFifos();
 
-    LOG(logINFOBLUE, ("Setting Default parameters\n"));
     initializePatternAddresses();
 
+    LOG(logINFOBLUE, ("Setting Default readout\n"));
     setTransceiverEnableMask(DEFAULT_TRANSCEIVER_MASK);
     setNumTransceiverSamples(DEFAULT_NUM_TSAMPLES);
     setReadoutMode(DEFAULT_READOUT_MODE);
 
+    // initialization only at start up
+    waitTranseiverInitialized();
+    configureChip();
+    waitTransceiverAligned();
+
+    LOG(logINFOBLUE, ("Setting Default parameters\n"));
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
     setTiming(DEFAULT_TIMING_MODE);
@@ -389,14 +414,72 @@ void setupDetector() {
 
 /* firmware functions (resets) */
 
+void cleanFifos() {
+#ifdef VIRTUAL
+    return;
+#endif
+    LOG(logINFO, ("Clearing Acquisition Fifos\n"));
+    bus_w(A_FIFO_CLEAN_REG, bus_r(A_FIFO_CLEAN_REG) | BIT32_MSK);
+    bus_w(A_FIFO_CLEAN_REG, 0);
+    
+    bus_w(D_FIFO_CLEAN_REG, bus_r(D_FIFO_CLEAN_REG) | D_FIFO_CLEAN_MSK);
+    bus_w(D_FIFO_CLEAN_REG, bus_r(D_FIFO_CLEAN_REG) & ~D_FIFO_CLEAN_MSK);
+    
+    bus_w(X_FIFO_CLEAN_REG, bus_r(X_FIFO_CLEAN_REG) | X_FIFO_CLEAN_MSK);
+    bus_w(X_FIFO_CLEAN_REG, bus_r(X_FIFO_CLEAN_REG) & ~X_FIFO_CLEAN_MSK);
+}
+
 void resetFlow() {
 #ifdef VIRTUAL
     return;
 #endif
     LOG(logINFO, ("Resetting Core\n"));
-    bus_w(FLOWCONTROLREG, bus_r(FLOWCONTROLREG) | RSTF_MSK);
-    bus_w(FLOWCONTROLREG, bus_r(FLOWCONTROLREG) & ~RSTF_MSK);
+    bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | RST_F_MSK);
+    bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) & ~RST_F_MSK);
 }
+
+void waitTranseiverInitialized() {
+    int resetTransceiverDone = (bus_r(TRANSCEIVERSTATUS) & RESETRXDONE_MSK);
+	while (resetTransceiverDone == 0) {
+        usleep(0);
+        resetTransceiverDone = (bus_r(TRANSCEIVERSTATUS) & RESETRXDONE_MSK);
+    }
+}
+
+void waitTransceiverAligned() {
+    int transceiverWordAligned = (bus_r(TRANSCEIVERSTATUS) & RXBYTEISALIGNED_MSK);
+	while (transceiverWordAligned == 0) {
+        usleep(0);
+        transceiverWordAligned = (bus_r(TRANSCEIVERSTATUS) & RXBYTEISALIGNED_MSK);
+    }
+}
+
+int isChipConfigured() { return chipConfigured; }
+
+void configureChip() {
+    LOG(logINFOBLUE, ("\tConfiguring chip\n"));
+    
+    // enable correct endianness (Only for MH_PR_2)
+	//uint32_t addr = MATTERHORNSPIREG1;
+    //bus_w(addr, bus_r(addr) &~MATTERHORNSPI1_MSK);
+    //bus_w(addr, bus_r(addr) | ((0x40000 << MATTERHORNSPI1_OFST) & MATTERHORNSPI1_MSK));
+	
+    // start configuration
+    uint32_t addr = MATTERHORNSPICTRL;
+    bus_w(addr, bus_r(addr) | CONFIGSTART_MSK);
+    bus_w(addr, bus_r(addr) & ~CONFIGSTART_MSK);
+
+	// wait until configuration is done
+	int configDone =  (bus_r(MATTERHORNSPICTRL) & BUSY_MSK);
+	while (configDone != 0) {
+        usleep(0);
+        configDone = (bus_r(MATTERHORNSPICTRL) & BUSY_MSK);
+    }
+    
+    LOG(logINFOBLUE, ("\tChip configured\n"));
+    chipConfigured = 1;
+}
+// TODO: power off chip also sets chipConfigured = 0
 
 /* set parameters -  dr */
 
@@ -412,49 +495,52 @@ int getDynamicRange(int *retval) {
 }
 
 int setTransceiverEnableMask(uint32_t mask) {
-    LOG(logINFO, ("Setting transceivermask to 0x%08x\n", mask));
-    //TODO (allow readoutmode, transceiermask, numtsamples in client and test)
-    // add transciver enable variable
-    // get new csv
+    if (mask < 0 || mask > MAX_TRANSCEIVER_MASK) {
+        LOG(logERROR, ("Invalid transceiver mask: 0x%x\n", mask));
+        return FAIL;
+    }
+    LOG(logINFO, ("Setting transceivermask to 0x%x\n", mask));
+
+    uint32_t addr = FIFO_TO_GB_CONTROL_REG;
+    bus_w(addr, bus_r(addr) & ~ENABLED_CHANNELS_X_MSK);
+    bus_w(addr, bus_r(addr) | ((mask  << ENABLED_CHANNELS_X_OFST) & ENABLED_CHANNELS_X_MSK));
 
     return OK;
 }
 
 uint32_t getTransceiverEnableMask() { 
-    //TODO
-    return transceiverMask; 
+    return ((bus_r(FIFO_TO_GB_CONTROL_REG) & ENABLED_CHANNELS_X_MSK) >> ENABLED_CHANNELS_X_OFST);
 }
 
 /* parameters - readout */
 
 int setReadoutMode(enum readoutMode mode) {
-    uint32_t val = 0;
+    int a = 0, d = 0, t = 0;
     switch (mode) {
     /* Not implemented yet
     case ANALOG_ONLY:
         LOG(logINFO, ("Setting Analog Only Readout\n"));
-        val |= CONFIG_ENBLE_ANLG_OTPT_MSK;
-        analogEnable = 1;
+        a = 1;
         break;
     case DIGITAL_ONLY:
         LOG(logINFO, ("Setting Digital Only Readout\n"));
-        val |= CONFIG_ENBLE_DGTL_OTPT_MSK;
+        d = 1;
         break;
     case ANALOG_AND_DIGITAL:
         LOG(logINFO, ("Setting Analog & Digital Readout\n"));
-        val |= CONFIG_ENBLE_ANLG_OTPT_MSK;
-        val |= CONFIG_ENBLE_DGTL_OTPT_MSK;
+        a = 1;
+        d = 1;
         break;
     */
     case TRANSCEIVER_ONLY:
         LOG(logINFO, ("Setting Transceiver Only Readout\n"));
-        val |= CONFIG_ENBLE_TRNSCVR_OTPT_MSK;
+        t = 1;
         break;
     /* Not implemented yet
     case DIGITAL_AND_TRANSCEIVER:
         LOG(logINFO, ("Setting Digital & Transceiver Readout\n"));
-        val |= CONFIG_ENBLE_DGTL_OTPT_MSK;
-        val |= CONFIG_ENBLE_TRNSCVR_OTPT_MSK;
+        d = 1;
+        t = 1;
         break;
     */
     default:
@@ -462,28 +548,37 @@ int setReadoutMode(enum readoutMode mode) {
         return FAIL;
     }
 
-    uint32_t addr = FIFOTOGBCONTROLREG;
-    bus_w(addr, bus_r(addr) & ~ROMODE_MSK);
+    uint32_t val = 0;
+    if (a == 1) {
+        val |= RO_MODE_ADC_MSK;
+        analogEnable = 1;
+    } 
+    if (d == 1) {
+        val |= RO_MODE_D_MSK;
+        digitalEnable = 1;  
+    }
+    if (t == 1) {
+        val |= RO_MODE_X_MSK;
+        transceiverEnable = 1;  
+    }
+
+    uint32_t addr = FIFO_TO_GB_CONTROL_REG;
+    bus_w(addr, bus_r(addr) & ~(RO_MODE_ADC_MSK | RO_MODE_D_MSK | RO_MODE_X_MSK));
     bus_w(addr, bus_r(addr) | val);
 
     return OK;
 }
 
 int getReadoutMode() {
-    int analogEnable = 0, digitalEnable = 0, transceiverEnable = 0;
-    uint32_t mode = bus_r(FIFOTOGBCONTROLREG) & ROMODE_MSK;
-    switch (mode) {
-        case CONFIG_ENBLE_ANLG_OTPT_MSK:
-            analogEnable = 1;
-            break;
-        case CONFIG_ENBLE_DGTL_OTPT_MSK:
-            digitalEnable = 1;
-            break;
-        case CONFIG_ENBLE_TRNSCVR_OTPT_MSK:
-            transceiverEnable = 1;
-            break;
-        default:
-            break;
+    uint32_t retval = bus_r(FIFO_TO_GB_CONTROL_REG);
+    if (retval & RO_MODE_ADC_MSK) {
+        analogEnable = 1;
+    }
+    if (retval & RO_MODE_D_MSK) {
+        digitalEnable = 1;
+    }
+    if (retval & RO_MODE_X_MSK) {
+        transceiverEnable = 1;
     }
 
     if (analogEnable && digitalEnable && !transceiverEnable) {
@@ -514,38 +609,37 @@ int getReadoutMode() {
 void setNumFrames(int64_t val) {
     if (val > 0) {
         LOG(logINFO, ("Setting number of frames %ld\n", val));
-        setU64BitReg(val, FRAMESINREG1, FRAMESINREG2);
+        setU64BitReg(val, FRAMES_IN_REG_1, FRAMES_IN_REG_2);
     }
 }
 
-int64_t getNumFrames() { return getU64BitReg(FRAMESINREG1, FRAMESINREG2); }
+int64_t getNumFrames() { return getU64BitReg(FRAMES_IN_REG_1, FRAMES_IN_REG_2); }
 
 void setNumTriggers(int64_t val) {
     if (val > 0) {
         LOG(logINFO, ("Setting number of triggers %ld\n", val));
-        setU64BitReg(val, CYCLESINREG1, CYCLESINREG2);
+        setU64BitReg(val, CYCLES_IN_REG_1, CYCLES_IN_REG_2);
     }
 }
 
-int64_t getNumTriggers() { return getU64BitReg(CYCLESINREG1, CYCLESINREG2); }
+int64_t getNumTriggers() { return getU64BitReg(CYCLES_IN_REG_1, CYCLES_IN_REG_2); }
 
 int setNumTransceiverSamples(int val) {
-    if (val < 0 || val > MAX_NUM_TSAMPLES) {
+    if (val < 0 || val > MAX_TRANSCEIVER_SAMPLES) {
         LOG(logERROR, ("Invalid transceiver samples: %d\n", val));
         return FAIL;
     }
     LOG(logINFO, ("Setting number of transceiver samples %d\n", val));
 
-    ntSamples = val;
-    uint32_t addr = NOSAMPLESXREG;
-    bus_w(addr, bus_r(addr) & ~NOSAMPLESX_MSK);
-    bus_w(addr, bus_r(addr) | ((val << NOSAMPLESX_OFST) &
-                               NOSAMPLESX_MSK));
+    uint32_t addr = NO_SAMPLES_X_REG;
+    bus_w(addr, bus_r(addr) & ~NO_SAMPLES_X_MSK);
+    bus_w(addr, bus_r(addr) | ((val << NO_SAMPLES_X_OFST) &
+                               NO_SAMPLES_X_MSK));
     return OK;
 }
 
 int getNumTransceiverSamples() { 
-    return ((bus_r(NOSAMPLESXREG) & NOSAMPLESX_MSK) >> NOSAMPLESX_OFST); 
+    return ((bus_r(NO_SAMPLES_X_REG) & NO_SAMPLES_X_MSK) >> NO_SAMPLES_X_OFST); 
 }
 
 int setExpTime(int64_t val) {
@@ -575,7 +669,7 @@ int setPeriod(int64_t val) {
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
     val *= (1E-3 * RUN_CLK);
-    setU64BitReg(val, PERIODINREG1, PERIODINREG2);
+    setU64BitReg(val, PERIOD_IN_REG_1, PERIOD_IN_REG_2);
 
     // validate for tolerance
     int64_t retval = getPeriod();
@@ -587,15 +681,15 @@ int setPeriod(int64_t val) {
 }
 
 int64_t getPeriod() {
-    return getU64BitReg(PERIODINREG1, PERIODINREG2) / (1E-3 * RUN_CLK);
+    return getU64BitReg(PERIOD_IN_REG_1, PERIOD_IN_REG_2) / (1E-3 * RUN_CLK);
 }
 
 int64_t getNumFramesLeft() {
-    return getU64BitReg(FRAMESOUTREG1, FRAMESOUTREG2);
+    return getU64BitReg(FRAMES_OUT_REG_1, FRAMES_OUT_REG_2);
 }
 
 int64_t getNumTriggersLeft() {
-    return getU64BitReg(CYCLESOUTREG1, CYCLESOUTREG2);
+    return getU64BitReg(CYCLES_OUT_REG_1, CYCLES_OUT_REG_2);
 }
 
 /* parameters - timing, extsig */
@@ -604,11 +698,11 @@ void setTiming(enum timingMode arg) {
     switch (arg) {
     case AUTO_TIMING:
         LOG(logINFO, ("Set Timing: Auto\n"));
-        bus_w(FLOWCONTROLREG, bus_r(FLOWCONTROLREG) & ~TRIGGERENABLE_MSK);
+        bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) & ~TRIGGER_ENABLE_MSK);
         break;
     case TRIGGER_EXPOSURE:
         LOG(logINFO, ("Set Timing: Trigger\n"));
-        bus_w(FLOWCONTROLREG, bus_r(FLOWCONTROLREG) | TRIGGERENABLE_MSK);
+        bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | TRIGGER_ENABLE_MSK);
         break;
     default:
         LOG(logERROR, ("Unknown timing mode %d\n", arg));
@@ -616,7 +710,7 @@ void setTiming(enum timingMode arg) {
 }
 
 enum timingMode getTiming() {
-    if (bus_r(FLOWCONTROLREG) == TRIGGERENABLE_MSK)
+    if (bus_r(FLOW_CONTROL_REG) == TRIGGER_ENABLE_MSK)
         return TRIGGER_EXPOSURE;
     return AUTO_TIMING;
 }
@@ -627,17 +721,314 @@ int setDetectorPosition(int pos[]) {
     return OK;
 }
 
-int configureMAC() {
-    // TODO
-    LOG(logINFO, ("Configuring MAC\n"));
-    return OK;
-}
-
 int *getDetectorPosition() { return detPos; }
 
 int getNumberofUDPInterfaces() { return 1; }
 
+
+void calcChecksum(udp_header *udp) {
+    int count = IP_HEADER_SIZE;
+    long int sum = 0;
+
+    // start at ip_tos as the memory is not continous for ip header
+    uint16_t *addr = (uint16_t *)(&(udp->ip_tos));
+
+    sum += *addr++;
+    count -= 2;
+
+    // ignore ethertype (from udp header)
+    addr++;
+
+    // from identification to srcip_lsb
+    while (count > 2) {
+        sum += *addr++;
+        count -= 2;
+    }
+
+    // ignore src udp port (from udp header)
+    addr++;
+
+    if (count > 0)
+        sum += *addr; // Add left-over byte, if any
+    while (sum >> 16)
+        sum = (sum & 0xffff) + (sum >> 16); // Fold 32-bit sum to 16 bits
+    long int checksum = sum & 0xffff;
+    checksum += UDP_IP_HEADER_LENGTH_BYTES;
+    udp->ip_checksum = checksum;
+}
+
+
+int configureMAC() {
+    uint32_t srcip = udpDetails[0].srcip;
+    uint32_t dstip = udpDetails[0].dstip;
+    uint64_t srcmac = udpDetails[0].srcmac;
+    uint64_t dstmac = udpDetails[0].dstmac;
+    uint16_t srcport = udpDetails[0].srcport;
+    uint16_t dstport = udpDetails[0].dstport;
+
+    LOG(logINFOBLUE, ("Configuring MAC\n"));
+    char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
+        dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
+    getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, srcmac);
+    getMacAddressinString(dst_mac, MAC_ADDRESS_SIZE, dstmac);
+    getIpAddressinString(src_ip, srcip);
+    getIpAddressinString(dst_ip, dstip);
+
+    LOG(logINFO, ("\tSource IP   : %s\n"
+                  "\tSource MAC  : %s\n"
+                  "\tSource Port : %hu\n"
+                  "\tDest IP     : %s\n"
+                  "\tDest MAC    : %s\n"
+                  "\tDest Port   : %hu\n",
+                  src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
+
+#ifdef VIRTUAL
+        if (setUDPDestinationDetails(0, 0, dst_ip, dstport) == FAIL) {
+            LOG(logERROR, ("could not set udp destination IP and port\n"));
+            return FAIL;
+        } 
+#endif
+
+    // get struct memory
+    udp_header *udp = (udp_header *)(Arm_getUDPBaseAddress());
+    memset(udp, 0, sizeof(udp_header));
+
+    //  mac addresses
+    // msb (32) + lsb (16)
+    udp->udp_destmac_msb = ((dstmac >> 16) & BIT32_MASK);
+    udp->udp_destmac_lsb = ((dstmac >> 0) & BIT16_MASK);
+    // msb (16) + lsb (32)
+    udp->udp_srcmac_msb = ((srcmac >> 32) & BIT16_MASK);
+    udp->udp_srcmac_lsb = ((srcmac >> 0) & BIT32_MASK);
+
+    // ip addresses
+    udp->ip_srcip_msb = ((srcip >> 16) & BIT16_MASK);
+    udp->ip_srcip_lsb = ((srcip >> 0) & BIT16_MASK);
+    udp->ip_destip_msb = ((dstip >> 16) & BIT16_MASK);
+    udp->ip_destip_lsb = ((dstip >> 0) & BIT16_MASK);
+
+    // source port
+    udp->udp_srcport = srcport;
+    udp->udp_destport = dstport;
+
+    // other defines
+    udp->udp_ethertype = 0x800;
+    udp->ip_ver = 0x4;
+    udp->ip_ihl = 0x5;
+    udp->ip_flags = 0x2; // FIXME
+    udp->ip_ttl = 0x40;
+    udp->ip_protocol = 0x11;
+    // total length is redefined in firmware
+
+    calcChecksum(udp);
+
+    cleanFifos(); // FIXME: resetPerpheral() for ctb?
+   //TODO resetPeripheral();? resetCore? alignDeserializer?
+    //TODO LOG(logINFO, ("Waiting for %d s for mac to be up\n",
+                 // WAIT_TIME_CONFIGURE_MAC / (1000 * 1000)));
+    //TODO usleep(WAIT_TIME_CONFIGURE_MAC); // todo maybe without
+
+    return OK;
+}
+
 /* aquisition */
+
+int startStateMachine() {
+#ifdef VIRTUAL
+    // create udp socket
+    if (createUDPSocket(0) != OK) {
+        return FAIL;
+    }
+    LOG(logINFOBLUE, ("Starting State Machine\n"));
+    if (sharedMemory_getStop() != 0) {
+        LOG(logERROR, ("Cant start acquisition. "
+                       "Stop server has not updated stop status to 0\n"));
+        return FAIL;
+    }
+    sharedMemory_setStatus(RUNNING);
+    if (pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
+        LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
+        sharedMemory_setStatus(IDLE);
+        return FAIL;
+    }
+    LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
+    return OK;
+#endif
+
+    LOG(logINFOBLUE, ("Starting State Machine\n"));
+    cleanFifos();
+
+    // start state machine
+    bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
+    
+    LOG(logINFORED, ("Waiting for exposing to be done\n"));
+    int exposingDone = (bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK);
+	while (exposingDone != 0) {
+        usleep(0);
+        exposingDone = (bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK);
+    }
+    
+    LOG(logINFORED, ("Starting readout of chip to fifo\n"));
+    bus_w(MATTERHORNSPICTRL, bus_r(MATTERHORNSPICTRL) | STARTREAD_P_MSK);
+    
+    LOG(logINFORED, ("Waiting until k-words or end of acquisition\n"));
+    usleep(0);
+    int commaDet = (bus_r(TRANSCEIVERSTATUS) & RXCOMMADET_MSK);
+	while (commaDet == 0) {
+        usleep(0);
+        commaDet = (bus_r(TRANSCEIVERSTATUS) & RXCOMMADET_MSK);
+    }
+
+    return OK;
+}
+
+#ifdef VIRTUAL
+void *start_timer(void *arg) {
+    if (!isControlServer) {
+        return NULL;
+    }
+
+    int64_t periodNs = getPeriod();
+    int numFrames = (getNumFrames() * getNumTriggers());
+    int64_t expUs = getExpTime() / 1000;
+
+    int imageSize = dataBytes;
+    int dataSize = 8192;
+    int packetSize = sizeof(sls_detector_header) + dataSize;
+    int packetsPerFrame = ceil((double)imageSize / (double)dataSize);
+
+    // Generate Data
+    char imageData[imageSize];
+    memset(imageData, 0, imageSize);
+    for (int i = 0; i < imageSize; i += sizeof(uint16_t)) {
+        *((uint16_t *)(imageData + i)) = i;
+    }
+
+    // Send data
+    uint64_t frameNr = 0;
+    getNextFrameNumber(&frameNr);
+    // loop over number of frames
+    for (int iframes = 0; iframes != numFrames; ++iframes) {
+
+        // check if manual stop
+        if (sharedMemory_getStop() == 1) {
+            setNextFrameNumber(frameNr + iframes + 1);
+            break;
+        }
+
+        // sleep for exposure time
+        struct timespec begin, end;
+        clock_gettime(CLOCK_REALTIME, &begin);
+        usleep(expUs);
+
+        int srcOffset = 0;
+        // loop packet
+        for (int i = 0; i != packetsPerFrame; ++i) {
+
+            char packetData[packetSize];
+            memset(packetData, 0, packetSize);
+            // set header
+            sls_detector_header *header = (sls_detector_header *)(packetData);
+            header->detType = (uint16_t)myDetectorType;
+            header->version = SLS_DETECTOR_HEADER_VERSION;
+            header->frameNumber = frameNr + iframes;
+            header->packetNumber = i;
+            header->modId = 0;
+            header->row = detPos[Y];
+            header->column = detPos[X];
+
+            // fill data
+            memcpy(packetData + sizeof(sls_detector_header),
+                   imageData + srcOffset, dataSize);
+            srcOffset += dataSize;
+
+            sendUDPPacket(0, 0, packetData, packetSize);
+            // LOG(logINFOBLUE, ("packetsize:%d\n", packetSize));
+        }
+        LOG(logINFO, ("Sent frame: %d [%lld]\n", iframes, frameNr + iframes));
+        clock_gettime(CLOCK_REALTIME, &end);
+        int64_t timeNs =
+            ((end.tv_sec - begin.tv_sec) * 1E9 + (end.tv_nsec - begin.tv_nsec));
+
+        // sleep for (period - exptime)
+        if (iframes < numFrames) { // if there is a next frame
+            if (periodNs > timeNs) {
+                usleep((periodNs - timeNs) / 1000);
+            }
+        }
+        setNextFrameNumber(frameNr + numFrames);
+    }
+    closeUDPSocket(0);
+
+    sharedMemory_setStatus(IDLE);
+    LOG(logINFOBLUE, ("Transmitting frames done\n"));
+    return NULL;
+}
+#endif
+
+int stopStateMachine() {
+    LOG(logINFORED, ("Stopping State Machine\n"));
+    // if scan active, stop scan
+    if (sharedMemory_getScanStatus() == RUNNING) {
+        sharedMemory_setScanStop(1);
+    }
+#ifdef VIRTUAL
+    sharedMemory_setStop(1);
+    // read till status is idle
+    while (sharedMemory_getStatus() == RUNNING)
+        usleep(500);
+    sharedMemory_setStop(0);
+    LOG(logINFO, ("Stopped State Machine\n"));
+    return OK;
+#endif
+    // stop state machine
+    bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | STOP_F_MSK);
+
+    return OK;
+}
+
+int startReadOut() {
+    LOG(logINFOBLUE, ("Starting Readout\n"));
+#ifdef VIRTUAL
+    // cannot set #frames and exptiem temporarily to 1 and 0,
+    // because have to set it back after readout (but this is non blocking)
+    return startStateMachine();
+#endif
+    // check if data in fifo
+    if (transceiverEnable) {
+        if ((bus_r(X_FIFO_EMPTY_STATUS_REG) & X_FIFO_EMPTY_STATUS_MSK) == X_FIFO_EMPTY_STATUS_MSK) {
+            LOG(logERROR, ("No data in fifo\n"));
+            return FAIL;
+        }
+    }
+
+    LOG(logINFOBLUE, ("Streaming data from fifo\n"));
+    bus_w(FIFO_TO_GB_CONTROL_REG, bus_r(FIFO_TO_GB_CONTROL_REG) | START_STREAMING_P_MSK);
+
+    // wait until streaming is done (not same as fifo empty)
+    int streamingBusy = (bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK);
+    while (streamingBusy != 0) {
+        usleep(0);
+        streamingBusy = (bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK);
+    }
+    return OK;
+}
+
+int softwareTrigger() {
+#ifndef VIRTUAL
+    // ready for trigger
+    if (getRunStatus() != WAITING) {
+        LOG(logWARNING, ("Not yet ready for trigger!\n"));
+        return FAIL;
+    }
+#endif
+    LOG(logINFO, ("Sending Software Trigger\n"));
+    bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | SW_TRIGGER_F_MSK);
+    // wait to make sure its out of this state and even 'wait for start frame'
+   //TODO: usleep(100);
+
+    return OK;
+}
 
 enum runStatus getRunStatus() {
     LOG(logDEBUG1, ("Getting status\n"));
@@ -658,9 +1049,40 @@ enum runStatus getRunStatus() {
     LOG(logINFOBLUE, ("Status: IDLE\n"));
     return IDLE;
 #endif
-    // TODO: get status
+    uint32_t retval = bus_r(FLOW_STATUS_REG);
+    LOG(logINFO, ("Flow Status Register: %08x\n", retval));
+
+    if (retval & RSM_BUSY_MSK) {
+        if (retval & RSM_TRG_WAIT_MSK) {
+
+        } else if (retval & RSM_TRG_WAIT_MSK) {
+            LOG(logINFOBLUE, ("Status: WAITING\n"));
+            return WAITING;
+        }
+    } else if (bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK) {
+        LOG(logINFOBLUE, ("Status: TRANSMITTING\n"));
+        return TRANSMITTING;
+    }
     LOG(logINFOBLUE, ("Status: IDLE\n"));
     return IDLE;
+    // TODO: STOPPED, ERROR?
+}
+
+void waitForAcquisitionEnd() {
+    uint32_t busy = bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK;
+    uint32_t streaming = bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK;
+    while (busy != 0 && streaming != 0) {
+        usleep(100);
+        busy = bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK;
+        bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK;
+    }
+#ifndef VIRTUAL
+    int64_t retval = getNumFramesLeft() + 1;
+    if (retval > 0) {
+        LOG(logINFORED, ("%lld frames left\n", (long long int)retval));
+    }
+#endif
+    LOG(logINFOGREEN, ("Blocking Acquisition done\n"));
 }
 
 void getNumberOfChannels(int *nchanx, int *nchany) {

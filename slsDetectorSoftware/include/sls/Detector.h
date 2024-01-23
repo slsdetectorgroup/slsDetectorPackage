@@ -1607,7 +1607,7 @@ class Detector {
     ///@{
     /**************************************************
      *                                                *
-     *    CTB Specific                                *
+     *    CTB / Xilinx CTB Specific                   *
      *                                                *
      * ************************************************/
     /** [CTB] */
@@ -1668,21 +1668,11 @@ class Detector {
         "complete 4 bits are enabled */
     void setTenGigaADCEnableMask(uint32_t mask, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     Result<uint32_t> getTransceiverEnableMask(Positions pos = {}) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setTransceiverEnableMask(uint32_t mask, Positions pos = {});
-
-    ///@}
-
-    /** @name CTB Specific */
-    ///@{
-    /**************************************************
-     *                                                *
-     *    CTB Specific                                *
-     *                                                *
-     * ************************************************/
 
     /** [CTB] */
     Result<int> getNumberOfDigitalSamples(Positions pos = {}) const;
@@ -1690,17 +1680,18 @@ class Detector {
     /** [CTB] */
     void setNumberOfDigitalSamples(int value, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     Result<int> getNumberOfTransceiverSamples(Positions pos = {}) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setNumberOfTransceiverSamples(int value, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     Result<defs::readoutMode> getReadoutMode(Positions pos = {}) const;
 
     /** [CTB] Options: ANALOG_ONLY (default), DIGITAL_ONLY, ANALOG_AND_DIGITAL,
      * TRANSCEIVER_ONLY, DIGITAL_AND_TRANSCEIVER
+     * [Xilinx CTB] Options: TRANSCEIVER_ONLY (default)
      */
     void setReadoutMode(defs::readoutMode value, Positions pos = {});
 

@@ -622,7 +622,7 @@ adcenable10g:
       function: setTenGigaADCEnableMask
 
 transceiverenable:
-  help: "[bitmask]\n\t[Ctb] Transceiver Enable Mask. Enable for each 4 Transceiver channel."
+  help: "[bitmask]\n\t[Ctb][Xilinx Ctb] Transceiver Enable Mask. Enable for each 4 Transceiver channel."
   inherit_actions: INTEGER_COMMAND_HEX
   actions:
     GET:
@@ -1298,7 +1298,7 @@ dsamples:
       function: setNumberOfDigitalSamples
 
 tsamples:
-  help: "[n_value]\n\t[Ctb] Number of transceiver samples expected."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Number of transceiver samples expected."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1307,7 +1307,7 @@ tsamples:
       function: setNumberOfTransceiverSamples
 
 romode:
-  help: "[analog|digital|analog_digital|transceiver|digital_transceiver]\n\t[Ctb] Readout mode. Default is analog."
+  help: "[analog|digital|analog_digital|transceiver|digital_transceiver]\n\t[Ctb][xilinx Ctb] Readout mode. [Ctb] Default is analog. [Xilinx Ctb] Default is Transceiver (only one implemented so far)"
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:

@@ -862,7 +862,7 @@ TEST_CASE("CALLER::transceiverenable", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getTransceiverEnableMask();
         {
             std::ostringstream oss;
@@ -924,7 +924,7 @@ TEST_CASE("CALLER::tsamples", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getNumberOfTransceiverSamples();
         {
             std::ostringstream oss;
@@ -953,30 +953,32 @@ TEST_CASE("CALLER::romode", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_romode = det.getReadoutMode();
         auto prev_asamples = det.getNumberOfAnalogSamples();
         auto prev_dsamples = det.getNumberOfDigitalSamples();
         auto prev_tsamples = det.getNumberOfTransceiverSamples();
-        det.setNumberOfAnalogSamples(5000);
-        det.setNumberOfDigitalSamples(5000);
+        if (det_type == defs::CHIPTESTBOARD) {
+            det.setNumberOfAnalogSamples(5000);
+            det.setNumberOfDigitalSamples(5000);
+        }
         det.setNumberOfTransceiverSamples(5000);
-        {
+        if (det_type == defs::CHIPTESTBOARD) {
             std::ostringstream oss;
             caller.call("romode", {"digital"}, -1, PUT, oss);
             REQUIRE(oss.str() == "romode digital\n");
         }
-        {
+        if (det_type == defs::CHIPTESTBOARD) {
             std::ostringstream oss;
             caller.call("romode", {"analog_digital"}, -1, PUT, oss);
             REQUIRE(oss.str() == "romode analog_digital\n");
         }
-        {
+        if (det_type == defs::CHIPTESTBOARD) {
             std::ostringstream oss;
             caller.call("romode", {"analog"}, -1, PUT, oss);
             REQUIRE(oss.str() == "romode analog\n");
         }
-        {
+        if (det_type == defs::CHIPTESTBOARD) {
             std::ostringstream oss;
             caller.call("romode", {}, -1, GET, oss);
             REQUIRE(oss.str() == "romode analog\n");
@@ -986,15 +988,17 @@ TEST_CASE("CALLER::romode", "[.cmdcall]") {
             caller.call("romode", {"transceiver"}, -1, PUT, oss);
             REQUIRE(oss.str() == "romode transceiver\n");
         }
-        {
+        if (det_type == defs::CHIPTESTBOARD) {
             std::ostringstream oss;
             caller.call("romode", {"digital_transceiver"}, -1, PUT, oss);
             REQUIRE(oss.str() == "romode digital_transceiver\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setReadoutMode(prev_romode[i], {i});
-            det.setNumberOfAnalogSamples(prev_asamples[i], {i});
-            det.setNumberOfDigitalSamples(prev_dsamples[i], {i});
+            if (det_type == defs::CHIPTESTBOARD) {
+                det.setNumberOfAnalogSamples(prev_asamples[i], {i});
+                det.setNumberOfDigitalSamples(prev_dsamples[i], {i});
+            }
             det.setNumberOfTransceiverSamples(prev_tsamples[i], {i});
         }
     } else {

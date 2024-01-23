@@ -1575,9 +1575,6 @@ int write_register(int file_des) {
     uint32_t val = args[1];
     LOG(logDEBUG1, ("Writing to register 0x%x, data 0x%x\n", addr, val));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
 #ifdef GOTTHARDD
@@ -1612,7 +1609,6 @@ int write_register(int file_des) {
         }
         LOG(logDEBUG1, ("Write register (0x%x): 0x%x\n", retval));
     }
-#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
@@ -1626,10 +1622,6 @@ int read_register(int file_des) {
         return printSocketReadError();
 
     LOG(logDEBUG1, ("Reading from register 0x%x\n", addr));
-
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
 
     // get
 #ifdef GOTTHARDD
@@ -1647,7 +1639,6 @@ int read_register(int file_des) {
     retval = readRegister(addr);
 #endif
     LOG(logINFO, ("Read register (0x%x): 0x%x\n", addr, retval));
-#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
@@ -1928,11 +1919,16 @@ int acquire(int blocking, int file_des) {
     } else {
         LOG(logINFOBLUE, ("Unblocking Acquisition\n"));
     }
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
+#if defined(XILINX_CHIPTESTBOARDD)
+        if (!isChipConfigured()) {
+            ret = FAIL;
+            strcpy(mess, "Could not start acquisition. Chip is not configured. "
+                            "Power it on to configure it.\n");
+            LOG(logERROR, (mess));
+        } else 
+#endif
 #if defined(JUNGFRAUD)
         // chipv1.1 has to be configured before acquisition
         if (getChipVersion() == 11 && !isChipConfigured()) {
@@ -1942,7 +1938,7 @@ int acquire(int blocking, int file_des) {
             LOG(logERROR, (mess));
         } else
 #endif
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD)
             if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
                  getReadoutMode() == ANALOG_ONLY) &&
                 (getNumAnalogSamples() <= 0)) {
@@ -1964,6 +1960,18 @@ int acquire(int blocking, int file_des) {
             LOG(logERROR, (mess));
         } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
                     getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                   (getNumTransceiverSamples() <= 0)) {
+            ret = FAIL;
+            sprintf(
+                mess,
+                "Could not start acquisition. Invalid number of transceiver "
+                "samples: %d.\n",
+                getNumTransceiverSamples());
+            LOG(logERROR, (mess));
+        } else
+#endif
+#if defined(XILINX_CHIPTESTBOARDD)
+        if ((getReadoutMode() == TRANSCEIVER_ONLY) &&
                    (getNumTransceiverSamples() <= 0)) {
             ret = FAIL;
             sprintf(
@@ -2029,12 +2037,10 @@ int acquire(int blocking, int file_des) {
             }
         }
     }
-#endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 void *start_state_machine(void *arg) {
-#ifndef XILINX_CHIPTESTBOARDD
     int *blocking = (int *)arg;
     int times = 1;
     // start of scan
@@ -2047,6 +2053,7 @@ void *start_state_machine(void *arg) {
         if (scan == 0) {
             LOG(logINFOBLUE, ("Normal Acquisition (not scan)\n"));
         }
+#ifndef XILINX_CHIPTESTBOARDD
         // scan
         else {
             // check scan stop
@@ -2089,6 +2096,7 @@ void *start_state_machine(void *arg) {
             }
             usleep(scanSettleTime_ns / 1000);
         }
+#endif
         ret = startStateMachine();
         LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
         if (ret == FAIL) {
@@ -2160,7 +2168,6 @@ void *start_state_machine(void *arg) {
     if (scan && sharedMemory_getScanStatus() != ERROR) {
         sharedMemory_setScanStatus(IDLE);
     }
-#endif
     return NULL;
 }
 
@@ -2178,9 +2185,6 @@ int stop_acquisition(int file_des) {
     memset(mess, 0, sizeof(mess));
 
     LOG(logDEBUG1, ("Stopping Acquisition\n"));
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
         ret = stopStateMachine();
@@ -2190,7 +2194,6 @@ int stop_acquisition(int file_des) {
         }
         LOG(logDEBUG1, ("Stopping Acquisition ret: %d\n", ret));
     }
-#endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
@@ -2200,13 +2203,9 @@ int get_run_status(int file_des) {
     enum runStatus retval = ERROR;
 
     LOG(logDEBUG1, ("Getting status\n"));
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only get
     retval = getRunStatus();
     LOG(logDEBUG1, ("Status: %d\n", retval));
-#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
@@ -3290,7 +3289,7 @@ int set_pattern_io_control(int file_des) {
 
     if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     LOG(logDEBUG1,
@@ -3307,7 +3306,7 @@ int get_pattern_io_control(int file_des) {
     memset(mess, 0, sizeof(mess));
     uint64_t retval64 = -1;
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     LOG(logDEBUG1, ("Getting Pattern IO Control\n"));
@@ -5130,9 +5129,6 @@ int set_source_udp_ip(int file_des) {
     arg = __builtin_bswap32(arg);
     LOG(logINFO, ("Setting udp source ip: 0x%x\n", arg));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("configure mac") == OK) {
@@ -5145,7 +5141,6 @@ int set_source_udp_ip(int file_des) {
             }
         }
     }
-#endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
@@ -5155,14 +5150,10 @@ int get_source_udp_ip(int file_des) {
     uint32_t retval = -1;
     LOG(logDEBUG1, ("Getting udp source ip\n"));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // get only
     retval = udpDetails[0].srcip;
     retval = __builtin_bswap32(retval);
     LOG(logDEBUG1, ("udp soure ip retval: 0x%x\n", retval));
-#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
@@ -5222,9 +5213,6 @@ int set_dest_udp_ip(int file_des) {
     arg = __builtin_bswap32(arg);
     LOG(logINFO, ("Setting udp destination ip: 0x%x\n", arg));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("configure mac") == OK) {
@@ -5234,7 +5222,6 @@ int set_dest_udp_ip(int file_des) {
             }
         }
     }
-#endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
@@ -5244,14 +5231,10 @@ int get_dest_udp_ip(int file_des) {
     uint32_t retval = -1;
     LOG(logDEBUG1, ("Getting destination ip\n"));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // get only
     retval = udpDetails[0].dstip;
     retval = __builtin_bswap32(retval);
     LOG(logDEBUG1, ("udp destination ip retval: 0x%x\n", retval));
-#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
@@ -5307,9 +5290,6 @@ int set_source_udp_mac(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting udp source mac: 0x%lx\n", arg));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("configure mac") == OK) {
@@ -5331,7 +5311,6 @@ int set_source_udp_mac(int file_des) {
             }
         }
     }
-#endif
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
@@ -5340,13 +5319,9 @@ int get_source_udp_mac(int file_des) {
     memset(mess, 0, sizeof(mess));
     uint64_t retval = -1;
     LOG(logDEBUG1, ("Getting udp source mac\n"));
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // get only
     retval = udpDetails[0].srcmac;
     LOG(logDEBUG1, ("udp soure mac retval: 0x%lx\n", retval));
-#endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -5403,9 +5378,6 @@ int set_dest_udp_mac(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting udp destination mac: 0x%lx\n", arg));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("configure mac") == OK) {
@@ -5415,7 +5387,6 @@ int set_dest_udp_mac(int file_des) {
             }
         }
     }
-#endif
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
@@ -5424,13 +5395,9 @@ int get_dest_udp_mac(int file_des) {
     memset(mess, 0, sizeof(mess));
     uint64_t retval = -1;
     LOG(logDEBUG1, ("Getting udp destination mac\n"));
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // get only
     retval = udpDetails[0].dstmac;
     LOG(logDEBUG1, ("udp destination mac retval: 0x%lx\n", retval));
-#endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -5484,9 +5451,6 @@ int set_dest_udp_port(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting udp destination port: %hu\n", arg));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("configure mac") == OK) {
@@ -5496,7 +5460,6 @@ int set_dest_udp_port(int file_des) {
             }
         }
     }
-#endif
     return Server_SendResult(file_des, INT16, NULL, 0);
 }
 
@@ -5505,13 +5468,9 @@ int get_dest_udp_port(int file_des) {
     memset(mess, 0, sizeof(mess));
     uint16_t retval = -1;
     LOG(logDEBUG1, ("Getting destination port"));
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // get only
     retval = udpDetails[0].dstport;
     LOG(logDEBUG, ("udp destination port retval: %hu\n", retval));
-#endif
     return Server_SendResult(file_des, INT16, &retval, sizeof(retval));
 }
 
@@ -5567,8 +5526,7 @@ int set_num_interfaces(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting number of interfaces: %d\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARD2D) &&        \
-    !defined(XLINX_CHIPTESTBOARDD)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARD2D) 
     // fixed number of udp interfaces
     int num_interfaces = getNumberofUDPInterfaces();
     if (arg != num_interfaces) {
@@ -5801,17 +5759,21 @@ int set_readout_mode(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting readout mode: %u\n", arg));
 
-#ifndef CHIPTESTBOARDD
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set
     if (Server_VerifyLock() == OK) {
         switch (arg) {
+#ifdef CHIPTESTBOARDD
         case ANALOG_ONLY:
         case DIGITAL_ONLY:
         case ANALOG_AND_DIGITAL:
+#endif
         case TRANSCEIVER_ONLY:
+#ifdef CHIPTESTBOARDD
         case DIGITAL_AND_TRANSCEIVER:
+#endif
             break;
         default:
             modeNotImplemented("Readout mode", (int)arg);
@@ -5847,7 +5809,7 @@ int get_readout_mode(int file_des) {
 
     LOG(logDEBUG1, ("Getting readout mode\n"));
 
-#ifndef CHIPTESTBOARDD
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -8358,9 +8320,6 @@ int reconfigure_udp(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     if (Server_VerifyLock() == OK) {
         LOG(logINFO, ("Reconfiguring UDP\n"));
         if (check_detector_idle("configure mac") == OK) {
@@ -8373,7 +8332,6 @@ int reconfigure_udp(int file_des) {
             }
         }
     }
-#endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
@@ -8410,7 +8368,7 @@ int get_bursts_left(int file_des) {
 int start_readout(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-#if !defined(MYTHEN3D) && !defined(CHIPTESTBOARDD)
+#if !defined(MYTHEN3D) && !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     if (Server_VerifyLock() == OK) {
@@ -9550,10 +9508,6 @@ int clear_all_udp_dst(int file_des) {
 
     LOG(logINFO, ("Clearing all udp destinations\n"));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
-
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("clear all udp destinations") == OK) {
             memset(udpDetails, 0, sizeof(udpDetails));
@@ -9581,7 +9535,6 @@ int clear_all_udp_dst(int file_des) {
             }
         }
     }
-#endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
@@ -10551,9 +10504,6 @@ int set_bit(int file_des) {
     int nBit = (int)args[1];
     LOG(logDEBUG1, ("Setting bit %d of reg 0x%x\n", nBit, addr));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
 
     // only set
     if (Server_VerifyLock() == OK) {
@@ -10585,7 +10535,6 @@ int set_bit(int file_des) {
             }
         }
     }
-#endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
@@ -10600,9 +10549,6 @@ int clear_bit(int file_des) {
     int nBit = (int)args[1];
     LOG(logDEBUG1, ("Clearing bit %d of reg 0x%x\n", nBit, addr));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
         if (nBit < 0 || nBit > 31) {
@@ -10633,7 +10579,6 @@ int clear_bit(int file_des) {
             }
         }
     }
-#endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
@@ -10649,9 +10594,6 @@ int get_bit(int file_des) {
     int nBit = (int)args[1];
     LOG(logDEBUG1, ("Getting bit %d of reg 0x%x\n", nBit, addr));
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     if (nBit < 0 || nBit > 31) {
         ret = FAIL;
         sprintf(mess,
@@ -10676,7 +10618,6 @@ int get_bit(int file_des) {
         LOG(logDEBUG1, ("regval: 0x%x bit value:0%d\n", regval, retval));
 #endif
     }
-#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
@@ -10685,7 +10626,7 @@ int get_num_transceiver_samples(int file_des) {
     memset(mess, 0, sizeof(mess));
     int retval = -1;
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -10704,24 +10645,33 @@ int set_num_transceiver_samples(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting number of transceiver samples %d\n", arg));
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        ret = setNumTransceiverSamples(arg);
-        if (ret == FAIL) {
-            sprintf(
-                mess,
-                "Could not set number of transceiver samples to %d. Could not "
-                "allocate RAM\n",
-                arg);
+        if (arg < 0 || arg > MAX_TRANSCEIVER_SAMPLES) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set number of transceiver samples. Invalid "
+                    "value %d. Must be 0-%d\n",
+                    arg, MAX_TRANSCEIVER_SAMPLES);
             LOG(logERROR, (mess));
         } else {
-            int retval = getNumTransceiverSamples();
-            LOG(logDEBUG1, ("retval num transceiver samples %d\n", retval));
-            validate(&ret, mess, arg, retval,
-                     "set number of transceiver samples", DEC);
+            ret = setNumTransceiverSamples(arg);
+            if (ret == FAIL) {
+                sprintf(
+                    mess,
+                    "Could not set number of transceiver samples to %d. Could not "
+                    "allocate RAM\n",
+                    arg);
+                LOG(logERROR, (mess));
+            } else {
+                int retval = getNumTransceiverSamples();
+                LOG(logDEBUG1, ("retval num transceiver samples %d\n", retval));
+                validate(&ret, mess, arg, retval,
+                        "set number of transceiver samples", DEC);
+            }
         }
     }
 #endif
@@ -10737,14 +10687,14 @@ int set_transceiver_enable(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting Transceiver Enable Mask to %u\n", arg));
 
-#if (!defined(CHIPTESTBOARDD))
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (arg > MAX_TRANSCEIVER_MASK) {
+        if (arg < 0 || arg > MAX_TRANSCEIVER_MASK) {
             ret = FAIL;
-            sprintf(mess, "Invalid Transceiver Mask. Max: 0x%x\n",
+            sprintf(mess, "Invalid Transceiver Mask. Option: 0 - 0x%x\n",
                     MAX_TRANSCEIVER_MASK);
             LOG(logERROR, (mess));
         } else {
@@ -10779,7 +10729,7 @@ int get_transceiver_enable(int file_des) {
 
     LOG(logDEBUG1, ("Getting Transceiver Enable Mask \n"));
 
-#if (!defined(CHIPTESTBOARDD))
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get

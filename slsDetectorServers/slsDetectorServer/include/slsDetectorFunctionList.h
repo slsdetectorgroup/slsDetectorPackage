@@ -177,7 +177,10 @@ uint32_t readRegister16And32(uint32_t offset);
 
 // firmware functions (resets)
 #if defined(XILINX_CHIPTESTBOARDD)
+void cleanFifos();
 void resetFlow();
+void waitTranseiverInitialized();
+void waitTransceiverAligned();
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) ||       \
     defined(MYTHEN3D) || defined(GOTTHARD2D)
@@ -496,7 +499,7 @@ void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
                  uint32_t sourceip, uint16_t sourceport);
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARD2D) ||           \
-    defined(MYTHEN3D) || defined(CHIPTESTBOARDD)
+    defined(MYTHEN3D) || defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 void calcChecksum(udp_header *udp);
 #endif
 #ifdef GOTTHARDD
@@ -537,6 +540,12 @@ void setDBITPipeline(int val);
 int getDBITPipeline();
 int setLEDEnable(int enable);
 void setDigitalIODelay(uint64_t pinMask, int delay);
+#endif
+
+// xilinx chip test board specific - configurechip
+#if defined(XILINX_CHIPTESTBOARDD)
+int isChipConfigured();
+void configureChip();
 #endif
 
 // jungfrau/moench specific - powerchip, autocompdisable, clockdiv, asictimer,
@@ -699,29 +708,25 @@ int setTransmissionDelayRight(int value);
 #endif
 
 // aquisition
-#ifndef XILINX_CHIPTESTBOARDD
 int startStateMachine();
 #ifdef VIRTUAL
 void *start_timer(void *arg);
 #endif
 int stopStateMachine();
-#endif
-#ifdef MYTHEN3D
+#if defined(MYTHEN3D) || defined(XILINX_CHIPTESTBOARDD)
 int softwareTrigger();
 #endif
 #if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)
 int softwareTrigger(int block);
 #endif
-#if defined(EIGERD) || defined(MYTHEN3D) || defined(CHIPTESTBOARDD)
+#if defined(EIGERD) || defined(MYTHEN3D) || defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 int startReadOut();
 #endif
 enum runStatus getRunStatus();
 #ifdef EIGERD
 void waitForAcquisitionEnd(int *ret, char *mess);
 #else
-#ifndef XILINX_CHIPTESTBOARDD
 void waitForAcquisitionEnd();
-#endif
 #endif
 #if defined(CHIPTESTBOARDD)
 int validateUDPSocket();

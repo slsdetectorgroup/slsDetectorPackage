@@ -3290,28 +3290,24 @@ TEST_CASE("CALLER::reg", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        if (det_type != defs::EIGER) {
-            uint32_t addr = 0x64;
-            std::string saddr = ToStringHex(addr);
-            auto prev_val = det.readRegister(addr);
-            {
-                std::ostringstream oss1, oss2;
-                caller.call("reg", {saddr, "0x5"}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "reg [" + saddr + ", 0x5]\n");
-                caller.call("reg", {saddr}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "reg 0x5\n");
-            }
-            for (int i = 0; i != det.size(); ++i) {
-                det.writeRegister(addr, prev_val[i], {i});
-            }
+    if (det_type != defs::EIGER) {
+        uint32_t addr = 0x64;
+        std::string saddr = ToStringHex(addr);
+        auto prev_val = det.readRegister(addr);
+        {
+            std::ostringstream oss1, oss2;
+            caller.call("reg", {saddr, "0x5"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "reg [" + saddr + ", 0x5]\n");
+            caller.call("reg", {saddr}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "reg 0x5\n");
         }
-        // cannot check for eiger virtual server
-        else {
-            REQUIRE_NOTHROW(caller.call("reg", {"0x64"}, -1, GET));
+        for (int i = 0; i != det.size(); ++i) {
+            det.writeRegister(addr, prev_val[i], {i});
         }
-    } else {
-        REQUIRE_THROWS(caller.call("reg", {}, -1, GET));
+    }
+    // cannot check for eiger virtual server
+    else {
+        REQUIRE_NOTHROW(caller.call("reg", {"0x64"}, -1, GET));
     }
 }
 

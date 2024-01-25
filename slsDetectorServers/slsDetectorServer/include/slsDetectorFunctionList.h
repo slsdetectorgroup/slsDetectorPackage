@@ -27,6 +27,7 @@
 
 #ifdef ARMPROCESSOR
 #include "arm64.h"
+#include "programViaArm.h"
 #endif
 
 #ifdef MYTHEN3D
@@ -68,7 +69,11 @@ void basictests();
 #if !defined(EIGERD)
 int checkType();
 int testFpga();
+#ifdef XILINX_CHIPTESTBOARDD
+int testFixedFPGAPattern();
+#else
 int testBus();
+#endif
 #endif
 
 #if defined(GOTTHARDD) ||                                                      \
@@ -179,7 +184,7 @@ uint32_t readRegister16And32(uint32_t offset);
 #if defined(XILINX_CHIPTESTBOARDD)
 void cleanFifos();
 void resetFlow();
-void waitTranseiverInitialized();
+void waitTranseiverReset();
 void waitTransceiverAligned();
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) ||       \
@@ -222,6 +227,8 @@ void setADCInvertRegister(uint32_t val);
 uint32_t getADCInvertRegister();
 #endif
 #ifdef XILINX_CHIPTESTBOARDD
+void setADCEnableMask_10G(uint32_t mask);
+uint32_t getADCEnableMask_10G();
 int setTransceiverEnableMask(uint32_t mask);
 uint32_t getTransceiverEnableMask();
 #endif
@@ -296,15 +303,11 @@ int getNumAdditionalStorageCells();
 int setStorageCellDelay(int64_t val);
 int64_t getStorageCellDelay();
 #endif
-#if defined(CHIPTESTBOARDD)
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 int setNumAnalogSamples(int val);
 int getNumAnalogSamples();
-#endif
-#ifdef CHIPTESTBOARDD
 int setNumDigitalSamples(int val);
 int getNumDigitalSamples();
-#endif
-#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 int setNumTransceiverSamples(int val);
 int getNumTransceiverSamples();
 #endif
@@ -748,15 +751,11 @@ u_int32_t runState(enum TLogLevel lev);
 #endif
 
 // common
-#ifndef XILINX_CHIPTESTBOARDD
 int calculateDataBytes();
 int getTotalNumberOfChannels();
-#endif
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 void getNumberOfChannels(int *nchanx, int *nchany);
 #endif
-#ifndef XILINX_CHIPTESTBOARDD
 int getNumberOfChips();
 int getNumberOfDACs();
 int getNumberOfChannelsPerChip();
-#endif

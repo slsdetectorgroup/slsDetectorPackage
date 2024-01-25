@@ -2,6 +2,7 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "slsDetectorFunctionList.h"
 #include "arm64.h"
+#include "programViaArm.h"
 #include "clogger.h"
 #include "common.h"
 #include "sharedMemory.h"
@@ -54,6 +55,17 @@ void basictests() {
 #else
     LOG(logINFOBLUE, ("********** Xilinx Chip Test Board Server **********\n"));
 #endif
+
+    initError = resetFPGA(initErrorMessage);
+    if (initError == FAIL) {
+        return;
+    }
+    
+    initError = loadDeviceTree(initErrorMessage);
+    if (initError == FAIL) {
+        return;
+    }
+
     if (mapCSP0() == FAIL) {
         strcpy(initErrorMessage,
                "Could not map to memory. Cannot proceed. Check Firmware.\n");
@@ -65,8 +77,7 @@ void basictests() {
 #ifndef VIRTUAL
     if ((!debugflag) && (!updateFlag) &&
         ((validateKernelVersion(KERNEL_DATE_VRSN) == FAIL) ||
-         (checkType() == FAIL) || (testFpga() == FAIL) ||
-         (testBus() == FAIL))) {
+         (checkType() == FAIL) || (testFixedFPGAPattern() == FAIL))) {
         sprintf(initErrorMessage,
                 "Could not pass basic tests of FPGA and bus. Cannot proceed. "
                 "Check Firmware. (Firmware version:0x%lx) \n",
@@ -163,23 +174,10 @@ int checkType() {
 }
 
 int testFpga() {
-#ifdef VIRTUAL
-    return OK;
-#endif
     LOG(logINFO, ("Testing FPGA:\n"));
 
     // fixed pattern
-    int ret = OK;
-
-    uint32_t val = bus_r(FIXEDPATTERNREG);
-    if (val == FIXEDPATTERNVAL) {
-        LOG(logINFO, ("\tFixed pattern: successful match (0x%08x)\n", val));
-    } else {
-        LOG(logERROR,
-            ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n",
-             val, FIXEDPATTERNVAL));
-        ret = FAIL;
-    }
+    int ret = testFixedFPGAPattern();
 
     if (ret == OK) {
         // Delay LSB reg
@@ -229,6 +227,7 @@ int testFpga() {
                 break;
             }
         }
+
         // write back previous value
         bus_w(addr, previousValue);
         if (ret == OK) {
@@ -237,43 +236,24 @@ int testFpga() {
                  times));
         }
     }
-
     return ret;
 }
 
-int testBus() {
-#ifdef VIRTUAL
-    return OK;
+int testFixedFPGAPattern() {
+    LOG(logINFO, ("Testing FPGA Fixed Pattern:\n"));
+#ifndef VIRTUAL
+    uint32_t val = bus_r(FIXEDPATTERNREG);
+    if (val == FIXEDPATTERNVAL) {
+        LOG(logINFO, ("\tFixed pattern: successful match (0x%08x)\n", val));
+    } else {
+        LOG(logERROR,
+            ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n",
+             val, FIXEDPATTERNVAL));
+        return FAIL;
+    }
 #endif
-    LOG(logINFO, ("Testing Bus:\n"));
-
-    int ret = OK;
-    uint32_t addr = DELAY_IN_REG_1;
-
-    // store previous delay value
-    uint32_t previousValue = bus_r(addr);
-
-    volatile uint32_t val = 0, readval = 0;
-    int times = 1000 * 1000;
-
-    for (int i = 0; i < times; ++i) {
-        val += 0xbbbbb;
-        bus_w(addr, val);
-        readval = bus_r(addr);
-        if (readval != val) {
-            LOG(logERROR, ("Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n", i,
-                           val, readval));
-            ret = FAIL;
-        }
-    }
-
-    // write back previous value
-    bus_w(addr, previousValue);
-
-    if (ret == OK) {
-        LOG(logINFO, ("\tSuccessfully tested bus %d times\n", times));
-    }
-    return ret;
+    LOG(logINFO, ("\tSuccessfully read FPGA Fixed Pattern (0x%x)\n", FIXEDPATTERNVAL));
+    return OK;
 }
 
 /* Ids */
@@ -358,6 +338,7 @@ void initControlServer() {
 void initStopServer() {
     if (!updateFlag && initError == OK) {
         usleep(CTRL_SRVR_INIT_TIME_US);
+        LOG(logINFOBLUE, ("Configuring Stop server\n"));
         if (mapCSP0() == FAIL) {
             initError = FAIL;
             strcpy(initErrorMessage,
@@ -389,20 +370,24 @@ void setupDetector() {
     setupUDPCommParameters();
     initializePatternWord();
 #endif
+    // initialization only at start up (restart fpga)
+    waitTranseiverReset();
+
     resetFlow();
     cleanFifos();
 
     initializePatternAddresses();
 
     LOG(logINFOBLUE, ("Setting Default readout\n"));
+    setNumAnalogSamples(DEFAULT_NUM_ASAMPLES);
+    setNumDigitalSamples(DEFAULT_NUM_DSAMPLES);
+    setADCEnableMask_10G(BIT32_MSK);
+
     setTransceiverEnableMask(DEFAULT_TRANSCEIVER_MASK);
     setNumTransceiverSamples(DEFAULT_NUM_TSAMPLES);
     setReadoutMode(DEFAULT_READOUT_MODE);
 
-    // initialization only at start up
-    waitTranseiverInitialized();
-    configureChip();
-    waitTransceiverAligned();
+
 
     LOG(logINFOBLUE, ("Setting Default parameters\n"));
     setNumFrames(DEFAULT_NUM_FRAMES);
@@ -420,13 +405,13 @@ void cleanFifos() {
 #endif
     LOG(logINFO, ("Clearing Acquisition Fifos\n"));
     bus_w(A_FIFO_CLEAN_REG, bus_r(A_FIFO_CLEAN_REG) | BIT32_MSK);
-    bus_w(A_FIFO_CLEAN_REG, 0);
-    
     bus_w(D_FIFO_CLEAN_REG, bus_r(D_FIFO_CLEAN_REG) | D_FIFO_CLEAN_MSK);
-    bus_w(D_FIFO_CLEAN_REG, bus_r(D_FIFO_CLEAN_REG) & ~D_FIFO_CLEAN_MSK);
-    
     bus_w(X_FIFO_CLEAN_REG, bus_r(X_FIFO_CLEAN_REG) | X_FIFO_CLEAN_MSK);
+
+    bus_w(A_FIFO_CLEAN_REG, 0);
+    bus_w(D_FIFO_CLEAN_REG, bus_r(D_FIFO_CLEAN_REG) & ~D_FIFO_CLEAN_MSK);
     bus_w(X_FIFO_CLEAN_REG, bus_r(X_FIFO_CLEAN_REG) & ~X_FIFO_CLEAN_MSK);
+
 }
 
 void resetFlow() {
@@ -435,10 +420,11 @@ void resetFlow() {
 #endif
     LOG(logINFO, ("Resetting Core\n"));
     bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | RST_F_MSK);
+    usleep(0);
     bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) & ~RST_F_MSK);
 }
 
-void waitTranseiverInitialized() {
+void waitTranseiverReset() {
     int resetTransceiverDone = (bus_r(TRANSCEIVERSTATUS) & RESETRXDONE_MSK);
 	while (resetTransceiverDone == 0) {
         usleep(0);
@@ -448,7 +434,7 @@ void waitTranseiverInitialized() {
 
 void waitTransceiverAligned() {
     int transceiverWordAligned = (bus_r(TRANSCEIVERSTATUS) & RXBYTEISALIGNED_MSK);
-	while (transceiverWordAligned == 0) {
+    while (transceiverWordAligned == 0) {
         usleep(0);
         transceiverWordAligned = (bus_r(TRANSCEIVERSTATUS) & RXBYTEISALIGNED_MSK);
     }
@@ -471,14 +457,14 @@ void configureChip() {
 
 	// wait until configuration is done
 	int configDone =  (bus_r(MATTERHORNSPICTRL) & BUSY_MSK);
-	while (configDone != 0) {
+	while (configDone == 0) {
         usleep(0);
         configDone = (bus_r(MATTERHORNSPICTRL) & BUSY_MSK);
     }
     
     LOG(logINFOBLUE, ("\tChip configured\n"));
-    chipConfigured = 1;
 }
+
 // TODO: power off chip also sets chipConfigured = 0
 
 /* set parameters -  dr */
@@ -493,6 +479,47 @@ int getDynamicRange(int *retval) {
     *retval = DYNAMIC_RANGE;
     return OK;
 }
+
+void setADCEnableMask_10G(uint32_t mask) {
+    // convert 32 bit mask to 8 bit mask
+    uint8_t actualMask = 0;
+    int ival = 0;
+    for (int ich = 0; ich < NCHAN_ANALOG; ich = ich + 4) {
+        if ((1 << ich) & mask) {
+            actualMask |= (1 << ival);
+        }
+        ++ival;
+    }
+
+    LOG(logINFO, ("Setting adcEnableMask 10G to 0x%x (from 0x%08x)\n",
+                  actualMask, mask));
+        uint32_t addr = FIFO_TO_GB_CONTROL_REG;
+        bus_w(addr, bus_r(addr) & (~ENABLED_CHANNELS_ADC_MSK));
+        bus_w(addr, bus_r(addr) |
+                        ((actualMask << ENABLED_CHANNELS_ADC_OFST) &
+                         ENABLED_CHANNELS_ADC_MSK));
+}
+
+uint32_t getADCEnableMask_10G() {
+    uint32_t mask = ((bus_r(FIFO_TO_GB_CONTROL_REG) & ENABLED_CHANNELS_ADC_MSK) >>
+             ENABLED_CHANNELS_ADC_OFST);
+
+    // convert 8 bit mask to 32 bit mask
+    uint32_t retval = 0;
+    if (mask) {
+        for (int ival = 0; ival < 8; ++ival) {
+            // if bit in 8 bit mask set
+            if ((1 << ival) & mask) {
+                // set it for 4 bits in 32 bit mask
+                for (int iloop = 0; iloop < 4; ++iloop) {
+                    retval |= (1 << (ival * 4 + iloop));
+                }
+            }
+        }
+    }
+    return retval;
+}
+
 
 int setTransceiverEnableMask(uint32_t mask) {
     if (mask < 0 || mask > MAX_TRANSCEIVER_MASK) {
@@ -515,51 +542,44 @@ uint32_t getTransceiverEnableMask() {
 /* parameters - readout */
 
 int setReadoutMode(enum readoutMode mode) {
-    int a = 0, d = 0, t = 0;
+    int analogEnable = 0, digitalEnable = 0, transceiverEnable = 0;
     switch (mode) {
-    /* Not implemented yet
     case ANALOG_ONLY:
         LOG(logINFO, ("Setting Analog Only Readout\n"));
-        a = 1;
+        analogEnable = 1;
         break;
     case DIGITAL_ONLY:
         LOG(logINFO, ("Setting Digital Only Readout\n"));
-        d = 1;
+        digitalEnable = 1;
         break;
     case ANALOG_AND_DIGITAL:
         LOG(logINFO, ("Setting Analog & Digital Readout\n"));
-        a = 1;
-        d = 1;
+        analogEnable = 1;
+        digitalEnable = 1;
         break;
-    */
     case TRANSCEIVER_ONLY:
         LOG(logINFO, ("Setting Transceiver Only Readout\n"));
-        t = 1;
+        transceiverEnable = 1;
         break;
-    /* Not implemented yet
     case DIGITAL_AND_TRANSCEIVER:
         LOG(logINFO, ("Setting Digital & Transceiver Readout\n"));
-        d = 1;
-        t = 1;
+        digitalEnable = 1;
+        transceiverEnable = 1;
         break;
-    */
     default:
         LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", mode));
         return FAIL;
     }
 
     uint32_t val = 0;
-    if (a == 1) {
+    if (analogEnable == 1) {
         val |= RO_MODE_ADC_MSK;
-        analogEnable = 1;
     } 
-    if (d == 1) {
+    if (digitalEnable == 1) {
         val |= RO_MODE_D_MSK;
-        digitalEnable = 1;  
     }
-    if (t == 1) {
+    if (transceiverEnable == 1) {
         val |= RO_MODE_X_MSK;
-        transceiverEnable = 1;  
     }
 
     uint32_t addr = FIFO_TO_GB_CONTROL_REG;
@@ -623,6 +643,42 @@ void setNumTriggers(int64_t val) {
 }
 
 int64_t getNumTriggers() { return getU64BitReg(CYCLES_IN_REG_1, CYCLES_IN_REG_2); }
+
+int setNumAnalogSamples(int val) {
+    if (val < 0 || val > MAX_ANALOG_SAMPLES) {
+        LOG(logERROR, ("Invalid analog samples: %d\n", val));
+        return FAIL;
+    }
+    LOG(logINFO, ("Setting number of analog samples %d\n", val));
+
+    uint32_t addr = NO_SAMPLES_A_REG;
+    bus_w(addr, bus_r(addr) & ~NO_SAMPLES_A_MSK);
+    bus_w(addr, bus_r(addr) | ((val << NO_SAMPLES_A_OFST) &
+                               NO_SAMPLES_A_MSK));
+    return OK;
+}
+
+int getNumAnalogSamples() { 
+    return ((bus_r(NO_SAMPLES_A_REG) & NO_SAMPLES_A_MSK) >> NO_SAMPLES_A_OFST); 
+}
+
+int setNumDigitalSamples(int val) {
+    if (val < 0 || val > MAX_DIGITAL_SAMPLES) {
+        LOG(logERROR, ("Invalid digital samples: %d\n", val));
+        return FAIL;
+    }
+    LOG(logINFO, ("Setting number of digital samples %d\n", val));
+
+    uint32_t addr = NO_SAMPLES_D_REG;
+    bus_w(addr, bus_r(addr) & ~NO_SAMPLES_D_MSK);
+    bus_w(addr, bus_r(addr) | ((val << NO_SAMPLES_D_OFST) &
+                               NO_SAMPLES_D_MSK));
+    return OK;
+}
+
+int getNumDigitalSamples() { 
+    return ((bus_r(NO_SAMPLES_X_REG) & NO_SAMPLES_D_MSK) >> NO_SAMPLES_D_OFST); 
+}
 
 int setNumTransceiverSamples(int val) {
     if (val < 0 || val > MAX_TRANSCEIVER_SAMPLES) {
@@ -822,12 +878,6 @@ int configureMAC() {
 
     calcChecksum(udp);
 
-    cleanFifos(); // FIXME: resetPerpheral() for ctb?
-   //TODO resetPeripheral();? resetCore? alignDeserializer?
-    //TODO LOG(logINFO, ("Waiting for %d s for mac to be up\n",
-                 // WAIT_TIME_CONFIGURE_MAC / (1000 * 1000)));
-    //TODO usleep(WAIT_TIME_CONFIGURE_MAC); // todo maybe without
-
     return OK;
 }
 
@@ -892,7 +942,7 @@ void *start_timer(void *arg) {
     int numFrames = (getNumFrames() * getNumTriggers());
     int64_t expUs = getExpTime() / 1000;
 
-    int imageSize = dataBytes;
+    int imageSize = calculateDataBytes();
     int dataSize = 8192;
     int packetSize = sizeof(sls_detector_header) + dataSize;
     int packetsPerFrame = ceil((double)imageSize / (double)dataSize);
@@ -1006,11 +1056,12 @@ int startReadOut() {
     bus_w(FIFO_TO_GB_CONTROL_REG, bus_r(FIFO_TO_GB_CONTROL_REG) | START_STREAMING_P_MSK);
 
     // wait until streaming is done (not same as fifo empty)
-    int streamingBusy = (bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK);
+    /*TODO int streamingBusy = (bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK);
     while (streamingBusy != 0) {
         usleep(0);
         streamingBusy = (bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK);
     }
+    */
     return OK;
 }
 
@@ -1059,23 +1110,28 @@ enum runStatus getRunStatus() {
             LOG(logINFOBLUE, ("Status: WAITING\n"));
             return WAITING;
         }
-    } else if (bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK) {
+    } 
+    
+    /* TODO else if (bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK) {
         LOG(logINFOBLUE, ("Status: TRANSMITTING\n"));
         return TRANSMITTING;
     }
+    */
     LOG(logINFOBLUE, ("Status: IDLE\n"));
     return IDLE;
     // TODO: STOPPED, ERROR?
 }
 
 void waitForAcquisitionEnd() {
-    uint32_t busy = bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK;
+   /* uint32_t busy = bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK;
+    TODO
     uint32_t streaming = bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK;
     while (busy != 0 && streaming != 0) {
         usleep(100);
         busy = bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK;
         bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK;
     }
+    */
 #ifndef VIRTUAL
     int64_t retval = getNumFramesLeft() + 1;
     if (retval > 0) {
@@ -1085,8 +1141,75 @@ void waitForAcquisitionEnd() {
     LOG(logINFOGREEN, ("Blocking Acquisition done\n"));
 }
 
+int calculateDataBytes() { 
+    int nchanx = 0, nchany = 0;
+    getNumberOfChannels(&nchanx, &nchany);
+
+    int analogDataBytes = 0;
+    int digitalDataBytes = 0;
+    int transceiverDataBytes = 0;
+    int nachans = 0, ndchans = 0, ntchans = 0;
+
+    if (analogEnable) {
+        nachans = __builtin_popcount(getADCEnableMask_10G());
+        analogDataBytes = nachans * (DYNAMIC_RANGE / 8) * getNumAnalogSamples();
+        LOG(logINFO, ("\t#Analog Channels:%d, Databytes:%d\n", nachans,
+                      analogDataBytes));
+    }
+
+    if (digitalEnable) {
+        ndchans = 64;
+        digitalDataBytes = (sizeof(uint64_t) * getNumDigitalSamples());
+        LOG(logINFO, ("\t#Digital Channels:%d, Databytes:%d\n", ndchans,
+                      digitalDataBytes));
+    }
+
+    if (transceiverEnable) {
+        ntchans = __builtin_popcount(getTransceiverEnableMask());
+        transceiverDataBytes =
+            ntchans * (NBITS_PER_TRANSCEIVER / 8) * getNumTransceiverSamples();
+        LOG(logINFO, ("\t#Transceiver Channels:%d, Databytes:%d\n", ntchans,
+                      transceiverDataBytes));
+    }
+
+    // total
+    int nchans = nachans + ndchans + ntchans;
+    int dataBytes = analogDataBytes + digitalDataBytes + transceiverDataBytes;
+
+    LOG(logINFO,
+        ("\t#Total Channels:%d, Total Databytes:%d\n", nchans, dataBytes));
+    return dataBytes; 
+
+}
+
+int getTotalNumberOfChannels() {
+    int nchanx = 0, nchany = 0;
+    getNumberOfChannels(&nchanx, &nchany);
+    return nchanx * nchany;
+}
+
 void getNumberOfChannels(int *nchanx, int *nchany) {
-    // TODO
-    *nchanx = NCHAN;
+    int nachans = 0, ndchans = 0, ntchans = 0;
+
+    if (analogEnable) {
+        nachans = __builtin_popcount(getADCEnableMask_10G());
+        LOG(logDEBUG1, ("Analog Channels: %d\n", nachans));
+    }
+
+    if (digitalEnable) {
+        ndchans = 64;
+        LOG(logDEBUG, ("Digital Channels: %d\n", ndchans));
+    }
+
+    if (transceiverEnable) {
+        ntchans = __builtin_popcount(getTransceiverEnableMask());
+        LOG(logDEBUG1, ("Transceiver Channels: %d\n", ntchans));
+    }
+    *nchanx = nachans + ndchans + ntchans;
+    LOG(logDEBUG, ("Total #Channels: %d\n", *nchanx));
     *nchany = 1;
 }
+
+int getNumberOfChips() { return NCHIP; }
+int getNumberOfDACs() { return NDAC; }
+int getNumberOfChannelsPerChip() { return NCHAN; }

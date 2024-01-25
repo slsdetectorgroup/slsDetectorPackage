@@ -1938,7 +1938,7 @@ int acquire(int blocking, int file_des) {
             LOG(logERROR, (mess));
         } else
 #endif
-#if defined(CHIPTESTBOARDD)
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
             if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
                  getReadoutMode() == ANALOG_ONLY) &&
                 (getNumAnalogSamples() <= 0)) {
@@ -1960,18 +1960,6 @@ int acquire(int blocking, int file_des) {
             LOG(logERROR, (mess));
         } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
                     getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                   (getNumTransceiverSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(
-                mess,
-                "Could not start acquisition. Invalid number of transceiver "
-                "samples: %d.\n",
-                getNumTransceiverSamples());
-            LOG(logERROR, (mess));
-        } else
-#endif
-#if defined(XILINX_CHIPTESTBOARDD)
-        if ((getReadoutMode() == TRANSCEIVER_ONLY) &&
                    (getNumTransceiverSamples() <= 0)) {
             ret = FAIL;
             sprintf(
@@ -2383,7 +2371,7 @@ int get_num_analog_samples(int file_des) {
     memset(mess, 0, sizeof(mess));
     int retval = -1;
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -2402,7 +2390,7 @@ int set_num_analog_samples(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting number of analog samples %d\n", arg));
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set
@@ -2432,7 +2420,7 @@ int get_num_digital_samples(int file_des) {
     memset(mess, 0, sizeof(mess));
     int retval = -1;
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -2451,7 +2439,7 @@ int set_num_digital_samples(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting number of digital samples %d\n", arg));
 
-#if !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set
@@ -4452,7 +4440,7 @@ int set_adc_enable_mask_10g(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Seting 10Gb ADC Enable Mask to %u\n", arg));
 
-#if (!defined(CHIPTESTBOARDD))
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set
@@ -4479,7 +4467,7 @@ int get_adc_enable_mask_10g(int file_des) {
 
     LOG(logDEBUG1, ("Getting 10Gb ADC Enable Mask\n"));
 
-#if (!defined(CHIPTESTBOARDD))
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get

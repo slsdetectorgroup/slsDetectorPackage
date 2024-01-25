@@ -10,6 +10,7 @@
 #include <fcntl.h>    // open
 #include <sys/mman.h> // mmap
 
+
 /* global variables */
 #define CSP0     (0xB0080000)
 #define CSP1     (0xB0050000) // udp
@@ -18,6 +19,8 @@
 //#define MEM_SIZE_CSP1 (2 * 4096)
 u_int32_t *csp0base = 0;
 u_int32_t *csp1base = 0;
+
+
 
 void bus_w(u_int32_t offset, u_int32_t data) {
     volatile u_int32_t *ptr1;

@@ -9,6 +9,7 @@ add_executable(xilinx_ctbDetectorServer_virtual
     ../slsDetectorServer/src/common.c
     ../slsDetectorServer/src/sharedMemory.c
     ../slsDetectorServer/src/loadPattern.c
+    ../slsDetectorServer/src/programViaArm.c
     ../../slsSupportLib/src/md5.c
 )
 

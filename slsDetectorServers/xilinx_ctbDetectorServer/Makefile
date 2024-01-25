@@ -18,7 +18,7 @@ DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
 SRCS 		= 	slsDetectorFunctionList.c  
-SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)arm64.c $(main_src)common.c $(main_src)/sharedMemory.c $(main_src)/loadPattern.c $(md5_dir)md5.c
+SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)arm64.c $(main_src)common.c $(main_src)/sharedMemory.c $(main_src)/loadPattern.c $(md5_dir)md5.c $(main_src)programViaArm.c 
 
 OBJS 		= 	$(SRCS:.c=.o) 
  

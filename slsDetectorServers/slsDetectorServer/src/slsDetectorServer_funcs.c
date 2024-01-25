@@ -1927,7 +1927,15 @@ int acquire(int blocking, int file_des) {
             strcpy(mess, "Could not start acquisition. Chip is not configured. "
                             "Power it on to configure it.\n");
             LOG(logERROR, (mess));
-        } else 
+        } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
+                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                   (isTransceiverAligned() == 0)) {
+            ret = FAIL;
+            strcpy(
+                mess,
+                "Could not start acquisition. Transceiver not aligned\n");
+            LOG(logERROR, (mess));
+        } else
 #endif
 #if defined(JUNGFRAUD)
         // chipv1.1 has to be configured before acquisition
@@ -3979,7 +3987,7 @@ int reset_fpga(int file_des) {
 
     LOG(logDEBUG1, ("Reset FPGA\n"));
 #if defined(EIGERD) || defined(GOTTHARDD) || defined(GOTTHARD2D) ||            \
-    defined(MYTHEN3D) || defined(XILINX_CHIPTESTBOARDD)
+    defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
@@ -4041,10 +4049,27 @@ int power_chip(int file_des) {
         }
 #endif
         if (ret == OK) {
+#ifdef XILINX_CHIPTESTBOARDD
+            if (arg != -1) {
+                if (arg != 0 && arg != 1) {
+                    ret = FAIL;
+                    sprintf(mess, "Power chip %d should be 0 or 1\n", arg);
+                    LOG(logERROR, (mess));
+                } else  {
+                    ret = powerChip(arg, mess);          
+                }
+            }
+            if (ret == OK) {
+                retval = getPowerChip();
+                LOG(logDEBUG1, ("Power chip: %d\n", retval));
+                validate(&ret, mess, arg, retval, "power on/off chip", DEC);
+            }
+#else
             retval = powerChip(arg);
             LOG(logDEBUG1, ("Power chip: %d\n", retval));
         }
         validate(&ret, mess, arg, retval, "power on/off chip", DEC);
+#endif
 #if defined(JUNGFRAUD) || defined(MOENCHD)
         // narrow down error when powering on
         if (ret == FAIL && arg > 0) {
@@ -4359,7 +4384,7 @@ int reboot_controller(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
-#if defined(EIGERD) || defined(XILINX_CHIPTESTBOARDD)
+#if defined(EIGERD)
     functionNotImplemented();
 #elif VIRTUAL
     ret = GOODBYE;

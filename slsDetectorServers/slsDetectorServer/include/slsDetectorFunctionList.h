@@ -184,8 +184,15 @@ uint32_t readRegister16And32(uint32_t offset);
 #if defined(XILINX_CHIPTESTBOARDD)
 void cleanFifos();
 void resetFlow();
-void waitTranseiverReset();
-void waitTransceiverAligned();
+int waitTranseiverReset(char* mess);
+int isTransceiverAligned();
+int waitTransceiverAligned(char* mess);
+int configureTransceiver(char* mess);
+int isChipConfigured();
+int powerChip(int on, char* mess);
+int getPowerChip();
+int configureChip(char* mess);
+void startPeriphery();
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) ||       \
     defined(MYTHEN3D) || defined(GOTTHARD2D)
@@ -543,12 +550,6 @@ void setDBITPipeline(int val);
 int getDBITPipeline();
 int setLEDEnable(int enable);
 void setDigitalIODelay(uint64_t pinMask, int delay);
-#endif
-
-// xilinx chip test board specific - configurechip
-#if defined(XILINX_CHIPTESTBOARDD)
-int isChipConfigured();
-void configureChip();
 #endif
 
 // jungfrau/moench specific - powerchip, autocompdisable, clockdiv, asictimer,

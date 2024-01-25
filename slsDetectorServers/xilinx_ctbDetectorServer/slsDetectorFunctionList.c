@@ -371,7 +371,10 @@ void setupDetector() {
     initializePatternWord();
 #endif
     // initialization only at start up (restart fpga)
-    waitTranseiverReset();
+    initError = waitTranseiverReset(initErrorMessage);
+    if (initError == FAIL) {
+        return;
+    }
 
     resetFlow();
     cleanFifos();
@@ -382,12 +385,9 @@ void setupDetector() {
     setNumAnalogSamples(DEFAULT_NUM_ASAMPLES);
     setNumDigitalSamples(DEFAULT_NUM_DSAMPLES);
     setADCEnableMask_10G(BIT32_MSK);
-
     setTransceiverEnableMask(DEFAULT_TRANSCEIVER_MASK);
     setNumTransceiverSamples(DEFAULT_NUM_TSAMPLES);
     setReadoutMode(DEFAULT_READOUT_MODE);
-
-
 
     LOG(logINFOBLUE, ("Setting Default parameters\n"));
     setNumFrames(DEFAULT_NUM_FRAMES);
@@ -424,25 +424,99 @@ void resetFlow() {
     bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) & ~RST_F_MSK);
 }
 
-void waitTranseiverReset() {
+int waitTranseiverReset(char* mess) {
+#ifndef VIRTUAL
     int resetTransceiverDone = (bus_r(TRANSCEIVERSTATUS) & RESETRXDONE_MSK);
-	while (resetTransceiverDone == 0) {
+	int times = 0;
+    while (resetTransceiverDone == 0) {
+        if (times++ > WAIT_TIME_OUT_0US_TIMES) {
+            sprintf(mess, "Resetting transceiver timed out\n");
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
         usleep(0);
         resetTransceiverDone = (bus_r(TRANSCEIVERSTATUS) & RESETRXDONE_MSK);
     }
+#endif
+    LOG(logINFOBLUE, ("Transceiver reset done\n"));
+    return OK;
 }
 
-void waitTransceiverAligned() {
-    int transceiverWordAligned = (bus_r(TRANSCEIVERSTATUS) & RXBYTEISALIGNED_MSK);
+int isTransceiverAligned() {return (bus_r(TRANSCEIVERSTATUS) & RXBYTEISALIGNED_MSK);}
+
+int waitTransceiverAligned(char* mess) {
+#ifndef VIRTUAL
+    int transceiverWordAligned = isTransceiverAligned();
+	int times = 0;
     while (transceiverWordAligned == 0) {
+        if (times++ > WAIT_TIME_OUT_0US_TIMES) {
+            sprintf(mess, "Transceiver alignment timed out\n");
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
         usleep(0);
-        transceiverWordAligned = (bus_r(TRANSCEIVERSTATUS) & RXBYTEISALIGNED_MSK);
+        transceiverWordAligned = isTransceiverAligned();
     }
+#endif
+    LOG(logINFOBLUE, ("Transceiver alignment done\n"));
+    return OK;
+}
+
+int configureTransceiver(char* mess) {
+    LOG(logINFOBLUE, ("\tConfiguring transceiver\n"));
+    
+    if (chipConfigured == 0) {
+        sprintf(mess, "Chip not configured. Use powerchip to power on chip first.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return waitTransceiverAligned(mess);
 }
 
 int isChipConfigured() { return chipConfigured; }
 
-void configureChip() {
+//TODO powerchip and configurechip should be separate commands (not requirement) in the future
+int powerChip(int on, char* mess) {
+    uint32_t addr = CTRL_REG;
+    uint32_t mask = POWER_VIO_MSK | POWER_VCC_A_MSK | POWER_VCC_B_MSK |
+                    POWER_VCC_C_MSK | POWER_VCC_D_MSK;
+    if (on) {
+        LOG(logINFOBLUE, ("Powering chip: on\n"));
+        bus_w(addr, bus_r(addr) | mask);
+
+        if (configureChip(mess) == FAIL)
+            return FAIL;
+
+        startPeriphery();
+
+        chipConfigured = 1;
+    } else {
+        LOG(logINFOBLUE, ("Powering chip: off\n"));
+        bus_w(addr, bus_r(addr) & ~mask);
+
+        chipConfigured = 0;
+
+#ifndef VIRTUAL
+        // transceiver alignment should be reset at power off
+        if (isTransceiverAligned()) {
+            sprintf(mess, "Transceiver alignment not reset\n");
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        LOG(logINFO, ("\tTransceiver alignment has been reset\n"));
+    }
+#endif
+    return OK;
+}
+
+int getPowerChip() {
+    uint32_t addr = CTRL_REG;
+    uint32_t mask = POWER_VIO_MSK | POWER_VCC_A_MSK | POWER_VCC_B_MSK |
+                    POWER_VCC_C_MSK | POWER_VCC_D_MSK;
+    return ((bus_r(addr) & mask) == mask);
+}
+
+int configureChip(char* mess) {
     LOG(logINFOBLUE, ("\tConfiguring chip\n"));
     
     // enable correct endianness (Only for MH_PR_2)
@@ -456,16 +530,28 @@ void configureChip() {
     bus_w(addr, bus_r(addr) & ~CONFIGSTART_MSK);
 
 	// wait until configuration is done
+#ifndef VIRTUAL
 	int configDone =  (bus_r(MATTERHORNSPICTRL) & BUSY_MSK);
+	int times = 0;
 	while (configDone == 0) {
+        if (times++ > WAIT_TIME_OUT_0US_TIMES) {
+            sprintf(mess, "Configuration of chip timed out\n");
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
         usleep(0);
         configDone = (bus_r(MATTERHORNSPICTRL) & BUSY_MSK);
     }
-    
+#endif
     LOG(logINFOBLUE, ("\tChip configured\n"));
+    return OK;
 }
 
-// TODO: power off chip also sets chipConfigured = 0
+void startPeriphery() {
+    LOG(logINFOBLUE, ("\tStarting periphery\n"));
+    //TODO
+}
+
 
 /* set parameters -  dr */
 

@@ -265,7 +265,7 @@ int selectStoragecellStart(int pos);
 int getMaxStoragecellStart();
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(EIGERD) ||               \
-    defined(CHIPTESTBOARDD)
+    defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 int setNextFrameNumber(uint64_t value);
 int getNextFrameNumber(uint64_t *value);
 #endif

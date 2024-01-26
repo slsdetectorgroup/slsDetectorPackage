@@ -4029,7 +4029,7 @@ int power_chip(int file_des) {
     LOG(logDEBUG1, ("Powering chip to %d\n", arg));
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(MYTHEN3D) &&          \
-    !defined(GOTTHARD2D)
+    !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // set & get
@@ -4048,8 +4048,8 @@ int power_chip(int file_des) {
             }
         }
 #endif
-        if (ret == OK) {
 #ifdef XILINX_CHIPTESTBOARDD
+        if (ret == OK) {
             if (arg != -1) {
                 if (arg != 0 && arg != 1) {
                     ret = FAIL;
@@ -4064,7 +4064,9 @@ int power_chip(int file_des) {
                 LOG(logDEBUG1, ("Power chip: %d\n", retval));
                 validate(&ret, mess, arg, retval, "power on/off chip", DEC);
             }
+        }
 #else
+        if (ret == OK) {
             retval = powerChip(arg);
             LOG(logDEBUG1, ("Power chip: %d\n", retval));
         }
@@ -4615,7 +4617,7 @@ int set_next_frame_number(int file_des) {
     LOG(logDEBUG1, ("Setting next frame number to %llu\n", arg));
 
 #if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&            \
-    !defined(CHIPTESTBOARDD)
+    !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set
@@ -4665,7 +4667,7 @@ int set_next_frame_number(int file_des) {
                 } else {
                     if (arg != retval) {
                         ret = FAIL;
-#ifdef VIRTUAL
+#if defined(VIRTUAL) || defined(XILINX_CHIPTESTBOARDD)
                         sprintf(mess,
                                 "Could not set next frame number. Set "
                                 "0x%lx, but read 0x%lx\n",
@@ -4694,7 +4696,7 @@ int get_next_frame_number(int file_des) {
     LOG(logDEBUG1, ("Getting next frame number \n"));
 
 #if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&            \
-    !defined(CHIPTESTBOARDD)
+    !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get
@@ -10705,7 +10707,7 @@ int set_transceiver_enable(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (arg < 0 || arg > MAX_TRANSCEIVER_MASK) {
+        if (arg > MAX_TRANSCEIVER_MASK) {
             ret = FAIL;
             sprintf(mess, "Invalid Transceiver Mask. Option: 0 - 0x%x\n",
                     MAX_TRANSCEIVER_MASK);

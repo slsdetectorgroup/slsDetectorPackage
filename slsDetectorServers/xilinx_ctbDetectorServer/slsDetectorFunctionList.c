@@ -11,6 +11,8 @@
 #include "loadPattern.h"
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
+#include <math.h> //ceil
+#include <pthread.h>
 #endif
 
 #include <arpa/inet.h> // INET_ADDRSTRLEN
@@ -38,6 +40,10 @@ int chipConfigured = 0;
 int analogEnable = 0;
 int digitalEnable = 0;
 int transceiverEnable = 0;
+
+#ifdef VIRTUAL
+pthread_t pthread_virtual_tid;
+#endif
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -395,6 +401,8 @@ void setupDetector() {
     setTiming(DEFAULT_TIMING_MODE);
     setExpTime(DEFAULT_EXPTIME);
     setPeriod(DEFAULT_PERIOD);
+
+    setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 }
 
 /* firmware functions (resets) */
@@ -510,8 +518,8 @@ int powerChip(int on, char* mess) {
             return FAIL;
         }
         LOG(logINFO, ("\tTransceiver alignment has been reset\n"));
-    }
 #endif
+    }
     return OK;
 }
 
@@ -555,9 +563,9 @@ int configureChip(char* mess) {
 
 void startPeriphery() {
     LOG(logINFOBLUE, ("\tStarting periphery\n"));
-    //TODO
+    bus_w(MATTERHORNSPICTRL, bus_r(MATTERHORNSPICTRL) | START_P_MSK);
+    //TODO ?
 }
-
 
 /* set parameters -  dr */
 
@@ -614,7 +622,7 @@ uint32_t getADCEnableMask_10G() {
 
 
 int setTransceiverEnableMask(uint32_t mask) {
-    if (mask < 0 || mask > MAX_TRANSCEIVER_MASK) {
+    if (mask > MAX_TRANSCEIVER_MASK) {
         LOG(logERROR, ("Invalid transceiver mask: 0x%x\n", mask));
         return FAIL;
     }
@@ -634,7 +642,7 @@ uint32_t getTransceiverEnableMask() {
 /* parameters - readout */
 
 int setReadoutMode(enum readoutMode mode) {
-    int analogEnable = 0, digitalEnable = 0, transceiverEnable = 0;
+    analogEnable = 0, digitalEnable = 0, transceiverEnable = 0;
     switch (mode) {
     case ANALOG_ONLY:
         LOG(logINFO, ("Setting Analog Only Readout\n"));
@@ -717,6 +725,19 @@ int getReadoutMode() {
 }
 
 /* parameters - timer */
+int setNextFrameNumber(uint64_t value) {
+    LOG(logINFO,
+        ("Setting next frame number: %llu\n", (long long unsigned int)value));
+    setU64BitReg(value, LOCAL_FRAME_NUMBER_REG_1,
+                 LOCAL_FRAME_NUMBER_REG_2);
+    return OK;
+}
+
+int getNextFrameNumber(uint64_t *retval) {
+    *retval = getU64BitReg(LOCAL_FRAME_NUMBER_REG_1,
+                           LOCAL_FRAME_NUMBER_REG_2);
+    return OK;
+}
 
 void setNumFrames(int64_t val) {
     if (val > 0) {
@@ -1047,7 +1068,7 @@ void *start_timer(void *arg) {
     }
 
     // Send data
-    uint64_t frameNr = 0;
+    uint64_t frameNr = 1;
     getNextFrameNumber(&frameNr);
     // loop over number of frames
     for (int iframes = 0; iframes != numFrames; ++iframes) {
@@ -1148,12 +1169,12 @@ int startReadOut() {
     bus_w(FIFO_TO_GB_CONTROL_REG, bus_r(FIFO_TO_GB_CONTROL_REG) | START_STREAMING_P_MSK);
 
     // wait until streaming is done (not same as fifo empty)
-    /*TODO int streamingBusy = (bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK);
+    int streamingBusy = (bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK);
     while (streamingBusy != 0) {
         usleep(0);
-        streamingBusy = (bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK);
+        streamingBusy = (bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK);
     }
-    */
+    
     return OK;
 }
 
@@ -1195,35 +1216,35 @@ enum runStatus getRunStatus() {
     uint32_t retval = bus_r(FLOW_STATUS_REG);
     LOG(logINFO, ("Flow Status Register: %08x\n", retval));
 
-    if (retval & RSM_BUSY_MSK) {
-        if (retval & RSM_TRG_WAIT_MSK) {
-
-        } else if (retval & RSM_TRG_WAIT_MSK) {
-            LOG(logINFOBLUE, ("Status: WAITING\n"));
-            return WAITING;
-        }
-    } 
-    
-    /* TODO else if (bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK) {
+    if (retval & RSM_TRG_WAIT_MSK) {
+        LOG(logINFOBLUE, ("Status: WAITING\n"));
+        return WAITING;
+    } else if (retval & RSM_BUSY_MSK) {
+        LOG(logINFOBLUE, ("Status: RUNNING (exposing)\n"));
+        return RUNNING;
+    } else if (bus_r(MATTERHORNSPICTRL) & READOUTFROMASIC_MSK) {
+        LOG(logINFOBLUE, ("Status: RUNNING (data from chip to fifo)\n"));
+        return RUNNING;
+    } else if (bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK) {
         LOG(logINFOBLUE, ("Status: TRANSMITTING\n"));
         return TRANSMITTING;
     }
-    */
+    
     LOG(logINFOBLUE, ("Status: IDLE\n"));
     return IDLE;
     // TODO: STOPPED, ERROR?
 }
 
 void waitForAcquisitionEnd() {
-   /* uint32_t busy = bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK;
-    TODO
-    uint32_t streaming = bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK;
-    while (busy != 0 && streaming != 0) {
+    uint32_t exposingBusy = bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK;
+    uint32_t fillingFifoBusy = bus_r(MATTERHORNSPICTRL) & READOUTFROMASIC_MSK;
+    uint32_t streamingBusy = bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK;
+    while (exposingBusy != 0 || fillingFifoBusy != 0 || streamingBusy != 0) {
         usleep(100);
-        busy = bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK;
-        bus_r(FIFO_TO_GB_CONTROL_REG) & STREAMING_BSY_MSK;
+        exposingBusy = bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK;
+        fillingFifoBusy = bus_r(MATTERHORNSPICTRL) & READOUTFROMASIC_MSK;
+        streamingBusy = bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK;
     }
-    */
 #ifndef VIRTUAL
     int64_t retval = getNumFramesLeft() + 1;
     if (retval > 0) {
@@ -1234,9 +1255,6 @@ void waitForAcquisitionEnd() {
 }
 
 int calculateDataBytes() { 
-    int nchanx = 0, nchany = 0;
-    getNumberOfChannels(&nchanx, &nchany);
-
     int analogDataBytes = 0;
     int digitalDataBytes = 0;
     int transceiverDataBytes = 0;
@@ -1298,7 +1316,7 @@ void getNumberOfChannels(int *nchanx, int *nchany) {
         LOG(logDEBUG1, ("Transceiver Channels: %d\n", ntchans));
     }
     *nchanx = nachans + ndchans + ntchans;
-    LOG(logDEBUG, ("Total #Channels: %d\n", *nchanx));
+    LOG(logDEBUG1, ("Total #Channels: %d\n", *nchanx));
     *nchany = 1;
 }
 

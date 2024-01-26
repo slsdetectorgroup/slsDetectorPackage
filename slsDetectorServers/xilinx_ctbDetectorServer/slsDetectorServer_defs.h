@@ -51,7 +51,7 @@ enum DACINDEX { D0 };
 
 /* Defines in the Firmware */
 #define WAIT_TIME_PATTERN_READ (10)
-#define WAIT_TIME_OUT_0US_TIMES     (50)
+#define WAIT_TIME_OUT_0US_TIMES     (35000)
 
 
 #define BIT32_MSK       (0xFFFFFFFF)

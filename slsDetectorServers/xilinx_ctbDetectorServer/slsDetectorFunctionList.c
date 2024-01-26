@@ -428,9 +428,15 @@ int waitTranseiverReset(char* mess) {
 #ifndef VIRTUAL
     int resetTransceiverDone = (bus_r(TRANSCEIVERSTATUS) & RESETRXDONE_MSK);
 	int times = 0;
+    struct timespec begin, end;
+    clock_gettime(CLOCK_REALTIME, &begin);
     while (resetTransceiverDone == 0) {
         if (times++ > WAIT_TIME_OUT_0US_TIMES) {
-            sprintf(mess, "Resetting transceiver timed out\n");
+            clock_gettime(CLOCK_REALTIME, &end);
+            int64_t timeNs =
+            ((end.tv_sec - begin.tv_sec) * 1E9 + (end.tv_nsec - begin.tv_nsec));
+
+            sprintf(mess, "Resetting transceiver timed out, time:%.2fs\n", (timeNs/(1E9)));
             LOG(logERROR, (mess));
             return FAIL;
         }

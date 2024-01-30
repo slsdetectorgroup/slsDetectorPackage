@@ -61,7 +61,7 @@
 #define ASIC_FILTER_MAX_RES_VALUE (1)
 #define MAX_SELECT_CHIP10_VAL     (63)
 
-#define MAX_PHASE_SHIFTS (240)
+#define MAX_PHASE_SHIFTS (200)
 #define BIT16_MASK       (0xFFFF)
 
 #define ADC_DECMT_QUARTER_SPEED (0x3)

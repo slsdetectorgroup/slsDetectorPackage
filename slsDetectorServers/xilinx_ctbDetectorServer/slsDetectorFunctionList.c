@@ -2,9 +2,9 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "slsDetectorFunctionList.h"
 #include "arm64.h"
-#include "programViaArm.h"
 #include "clogger.h"
 #include "common.h"
+#include "programViaArm.h"
 #include "sharedMemory.h"
 #include "sls/versionAPI.h"
 
@@ -66,7 +66,7 @@ void basictests() {
     if (initError == FAIL) {
         return;
     }
-    
+
     initError = loadDeviceTree(initErrorMessage);
     if (initError == FAIL) {
         return;
@@ -258,7 +258,8 @@ int testFixedFPGAPattern() {
         return FAIL;
     }
 #endif
-    LOG(logINFO, ("\tSuccessfully read FPGA Fixed Pattern (0x%x)\n", FIXEDPATTERNVAL));
+    LOG(logINFO,
+        ("\tSuccessfully read FPGA Fixed Pattern (0x%x)\n", FIXEDPATTERNVAL));
     return OK;
 }
 
@@ -370,7 +371,7 @@ void setupDetector() {
     analogEnable = 0;
     digitalEnable = 0;
     transceiverEnable = 0;
-    
+
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
     setupUDPCommParameters();
@@ -419,7 +420,6 @@ void cleanFifos() {
     bus_w(A_FIFO_CLEAN_REG, 0);
     bus_w(D_FIFO_CLEAN_REG, bus_r(D_FIFO_CLEAN_REG) & ~D_FIFO_CLEAN_MSK);
     bus_w(X_FIFO_CLEAN_REG, bus_r(X_FIFO_CLEAN_REG) & ~X_FIFO_CLEAN_MSK);
-
 }
 
 void resetFlow() {
@@ -432,19 +432,20 @@ void resetFlow() {
     bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) & ~RST_F_MSK);
 }
 
-int waitTranseiverReset(char* mess) {
+int waitTranseiverReset(char *mess) {
 #ifndef VIRTUAL
     int resetTransceiverDone = (bus_r(TRANSCEIVERSTATUS) & RESETRXDONE_MSK);
-	int times = 0;
+    int times = 0;
     struct timespec begin, end;
     clock_gettime(CLOCK_REALTIME, &begin);
     while (resetTransceiverDone == 0) {
         if (times++ > WAIT_TIME_OUT_0US_TIMES) {
             clock_gettime(CLOCK_REALTIME, &end);
-            int64_t timeNs =
-            ((end.tv_sec - begin.tv_sec) * 1E9 + (end.tv_nsec - begin.tv_nsec));
+            int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
+                              (end.tv_nsec - begin.tv_nsec));
 
-            sprintf(mess, "Resetting transceiver timed out, time:%.2fs\n", (timeNs/(1E9)));
+            sprintf(mess, "Resetting transceiver timed out, time:%.2fs\n",
+                    (timeNs / (1E9)));
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -456,12 +457,14 @@ int waitTranseiverReset(char* mess) {
     return OK;
 }
 
-int isTransceiverAligned() {return (bus_r(TRANSCEIVERSTATUS) & RXBYTEISALIGNED_MSK);}
+int isTransceiverAligned() {
+    return (bus_r(TRANSCEIVERSTATUS) & RXBYTEISALIGNED_MSK);
+}
 
-int waitTransceiverAligned(char* mess) {
+int waitTransceiverAligned(char *mess) {
 #ifndef VIRTUAL
     int transceiverWordAligned = isTransceiverAligned();
-	int times = 0;
+    int times = 0;
     while (transceiverWordAligned == 0) {
         if (times++ > WAIT_TIME_OUT_0US_TIMES) {
             sprintf(mess, "Transceiver alignment timed out\n");
@@ -476,11 +479,12 @@ int waitTransceiverAligned(char* mess) {
     return OK;
 }
 
-int configureTransceiver(char* mess) {
+int configureTransceiver(char *mess) {
     LOG(logINFOBLUE, ("\tConfiguring transceiver\n"));
-    
+
     if (chipConfigured == 0) {
-        sprintf(mess, "Chip not configured. Use powerchip to power on chip first.\n");
+        sprintf(mess,
+                "Chip not configured. Use powerchip to power on chip first.\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -489,8 +493,9 @@ int configureTransceiver(char* mess) {
 
 int isChipConfigured() { return chipConfigured; }
 
-//TODO powerchip and configurechip should be separate commands (not requirement) in the future
-int powerChip(int on, char* mess) {
+// TODO powerchip and configurechip should be separate commands (not
+// requirement) in the future
+int powerChip(int on, char *mess) {
     uint32_t addr = CTRL_REG;
     uint32_t mask = POWER_VIO_MSK | POWER_VCC_A_MSK | POWER_VCC_B_MSK |
                     POWER_VCC_C_MSK | POWER_VCC_D_MSK;
@@ -530,24 +535,25 @@ int getPowerChip() {
     return ((bus_r(addr) & mask) == mask);
 }
 
-int configureChip(char* mess) {
+int configureChip(char *mess) {
     LOG(logINFOBLUE, ("\tConfiguring chip\n"));
-    
+
     // enable correct endianness (Only for MH_PR_2)
-	//uint32_t addr = MATTERHORNSPIREG1;
-    //bus_w(addr, bus_r(addr) &~MATTERHORNSPI1_MSK);
-    //bus_w(addr, bus_r(addr) | ((0x40000 << MATTERHORNSPI1_OFST) & MATTERHORNSPI1_MSK));
-	
+    // uint32_t addr = MATTERHORNSPIREG1;
+    // bus_w(addr, bus_r(addr) &~MATTERHORNSPI1_MSK);
+    // bus_w(addr, bus_r(addr) | ((0x40000 << MATTERHORNSPI1_OFST) &
+    // MATTERHORNSPI1_MSK));
+
     // start configuration
     uint32_t addr = MATTERHORNSPICTRL;
     bus_w(addr, bus_r(addr) | CONFIGSTART_MSK);
     bus_w(addr, bus_r(addr) & ~CONFIGSTART_MSK);
 
-	// wait until configuration is done
+    // wait until configuration is done
 #ifndef VIRTUAL
-	int configDone =  (bus_r(MATTERHORNSPICTRL) & BUSY_MSK);
-	int times = 0;
-	while (configDone == 0) {
+    int configDone = (bus_r(MATTERHORNSPICTRL) & BUSY_MSK);
+    int times = 0;
+    while (configDone == 0) {
         if (times++ > WAIT_TIME_OUT_0US_TIMES) {
             sprintf(mess, "Configuration of chip timed out\n");
             LOG(logERROR, (mess));
@@ -564,7 +570,7 @@ int configureChip(char* mess) {
 void startPeriphery() {
     LOG(logINFOBLUE, ("\tStarting periphery\n"));
     bus_w(MATTERHORNSPICTRL, bus_r(MATTERHORNSPICTRL) | START_P_MSK);
-    //TODO ?
+    // TODO ?
 }
 
 /* set parameters -  dr */
@@ -593,16 +599,16 @@ void setADCEnableMask_10G(uint32_t mask) {
 
     LOG(logINFO, ("Setting adcEnableMask 10G to 0x%x (from 0x%08x)\n",
                   actualMask, mask));
-        uint32_t addr = FIFO_TO_GB_CONTROL_REG;
-        bus_w(addr, bus_r(addr) & (~ENABLED_CHANNELS_ADC_MSK));
-        bus_w(addr, bus_r(addr) |
-                        ((actualMask << ENABLED_CHANNELS_ADC_OFST) &
-                         ENABLED_CHANNELS_ADC_MSK));
+    uint32_t addr = FIFO_TO_GB_CONTROL_REG;
+    bus_w(addr, bus_r(addr) & (~ENABLED_CHANNELS_ADC_MSK));
+    bus_w(addr, bus_r(addr) | ((actualMask << ENABLED_CHANNELS_ADC_OFST) &
+                               ENABLED_CHANNELS_ADC_MSK));
 }
 
 uint32_t getADCEnableMask_10G() {
-    uint32_t mask = ((bus_r(FIFO_TO_GB_CONTROL_REG) & ENABLED_CHANNELS_ADC_MSK) >>
-             ENABLED_CHANNELS_ADC_OFST);
+    uint32_t mask =
+        ((bus_r(FIFO_TO_GB_CONTROL_REG) & ENABLED_CHANNELS_ADC_MSK) >>
+         ENABLED_CHANNELS_ADC_OFST);
 
     // convert 8 bit mask to 32 bit mask
     uint32_t retval = 0;
@@ -620,7 +626,6 @@ uint32_t getADCEnableMask_10G() {
     return retval;
 }
 
-
 int setTransceiverEnableMask(uint32_t mask) {
     if (mask > MAX_TRANSCEIVER_MASK) {
         LOG(logERROR, ("Invalid transceiver mask: 0x%x\n", mask));
@@ -630,13 +635,15 @@ int setTransceiverEnableMask(uint32_t mask) {
 
     uint32_t addr = FIFO_TO_GB_CONTROL_REG;
     bus_w(addr, bus_r(addr) & ~ENABLED_CHANNELS_X_MSK);
-    bus_w(addr, bus_r(addr) | ((mask  << ENABLED_CHANNELS_X_OFST) & ENABLED_CHANNELS_X_MSK));
+    bus_w(addr, bus_r(addr) | ((mask << ENABLED_CHANNELS_X_OFST) &
+                               ENABLED_CHANNELS_X_MSK));
 
     return OK;
 }
 
-uint32_t getTransceiverEnableMask() { 
-    return ((bus_r(FIFO_TO_GB_CONTROL_REG) & ENABLED_CHANNELS_X_MSK) >> ENABLED_CHANNELS_X_OFST);
+uint32_t getTransceiverEnableMask() {
+    return ((bus_r(FIFO_TO_GB_CONTROL_REG) & ENABLED_CHANNELS_X_MSK) >>
+            ENABLED_CHANNELS_X_OFST);
 }
 
 /* parameters - readout */
@@ -674,7 +681,7 @@ int setReadoutMode(enum readoutMode mode) {
     uint32_t val = 0;
     if (analogEnable == 1) {
         val |= RO_MODE_ADC_MSK;
-    } 
+    }
     if (digitalEnable == 1) {
         val |= RO_MODE_D_MSK;
     }
@@ -683,7 +690,8 @@ int setReadoutMode(enum readoutMode mode) {
     }
 
     uint32_t addr = FIFO_TO_GB_CONTROL_REG;
-    bus_w(addr, bus_r(addr) & ~(RO_MODE_ADC_MSK | RO_MODE_D_MSK | RO_MODE_X_MSK));
+    bus_w(addr,
+          bus_r(addr) & ~(RO_MODE_ADC_MSK | RO_MODE_D_MSK | RO_MODE_X_MSK));
     bus_w(addr, bus_r(addr) | val);
 
     return OK;
@@ -728,14 +736,12 @@ int getReadoutMode() {
 int setNextFrameNumber(uint64_t value) {
     LOG(logINFO,
         ("Setting next frame number: %llu\n", (long long unsigned int)value));
-    setU64BitReg(value, LOCAL_FRAME_NUMBER_REG_1,
-                 LOCAL_FRAME_NUMBER_REG_2);
+    setU64BitReg(value, LOCAL_FRAME_NUMBER_REG_1, LOCAL_FRAME_NUMBER_REG_2);
     return OK;
 }
 
 int getNextFrameNumber(uint64_t *retval) {
-    *retval = getU64BitReg(LOCAL_FRAME_NUMBER_REG_1,
-                           LOCAL_FRAME_NUMBER_REG_2);
+    *retval = getU64BitReg(LOCAL_FRAME_NUMBER_REG_1, LOCAL_FRAME_NUMBER_REG_2);
     return OK;
 }
 
@@ -746,7 +752,9 @@ void setNumFrames(int64_t val) {
     }
 }
 
-int64_t getNumFrames() { return getU64BitReg(FRAMES_IN_REG_1, FRAMES_IN_REG_2); }
+int64_t getNumFrames() {
+    return getU64BitReg(FRAMES_IN_REG_1, FRAMES_IN_REG_2);
+}
 
 void setNumTriggers(int64_t val) {
     if (val > 0) {
@@ -755,7 +763,9 @@ void setNumTriggers(int64_t val) {
     }
 }
 
-int64_t getNumTriggers() { return getU64BitReg(CYCLES_IN_REG_1, CYCLES_IN_REG_2); }
+int64_t getNumTriggers() {
+    return getU64BitReg(CYCLES_IN_REG_1, CYCLES_IN_REG_2);
+}
 
 int setNumAnalogSamples(int val) {
     if (val < 0 || val > MAX_ANALOG_SAMPLES) {
@@ -766,13 +776,12 @@ int setNumAnalogSamples(int val) {
 
     uint32_t addr = NO_SAMPLES_A_REG;
     bus_w(addr, bus_r(addr) & ~NO_SAMPLES_A_MSK);
-    bus_w(addr, bus_r(addr) | ((val << NO_SAMPLES_A_OFST) &
-                               NO_SAMPLES_A_MSK));
+    bus_w(addr, bus_r(addr) | ((val << NO_SAMPLES_A_OFST) & NO_SAMPLES_A_MSK));
     return OK;
 }
 
-int getNumAnalogSamples() { 
-    return ((bus_r(NO_SAMPLES_A_REG) & NO_SAMPLES_A_MSK) >> NO_SAMPLES_A_OFST); 
+int getNumAnalogSamples() {
+    return ((bus_r(NO_SAMPLES_A_REG) & NO_SAMPLES_A_MSK) >> NO_SAMPLES_A_OFST);
 }
 
 int setNumDigitalSamples(int val) {
@@ -784,13 +793,12 @@ int setNumDigitalSamples(int val) {
 
     uint32_t addr = NO_SAMPLES_D_REG;
     bus_w(addr, bus_r(addr) & ~NO_SAMPLES_D_MSK);
-    bus_w(addr, bus_r(addr) | ((val << NO_SAMPLES_D_OFST) &
-                               NO_SAMPLES_D_MSK));
+    bus_w(addr, bus_r(addr) | ((val << NO_SAMPLES_D_OFST) & NO_SAMPLES_D_MSK));
     return OK;
 }
 
-int getNumDigitalSamples() { 
-    return ((bus_r(NO_SAMPLES_X_REG) & NO_SAMPLES_D_MSK) >> NO_SAMPLES_D_OFST); 
+int getNumDigitalSamples() {
+    return ((bus_r(NO_SAMPLES_X_REG) & NO_SAMPLES_D_MSK) >> NO_SAMPLES_D_OFST);
 }
 
 int setNumTransceiverSamples(int val) {
@@ -802,13 +810,12 @@ int setNumTransceiverSamples(int val) {
 
     uint32_t addr = NO_SAMPLES_X_REG;
     bus_w(addr, bus_r(addr) & ~NO_SAMPLES_X_MSK);
-    bus_w(addr, bus_r(addr) | ((val << NO_SAMPLES_X_OFST) &
-                               NO_SAMPLES_X_MSK));
+    bus_w(addr, bus_r(addr) | ((val << NO_SAMPLES_X_OFST) & NO_SAMPLES_X_MSK));
     return OK;
 }
 
-int getNumTransceiverSamples() { 
-    return ((bus_r(NO_SAMPLES_X_REG) & NO_SAMPLES_X_MSK) >> NO_SAMPLES_X_OFST); 
+int getNumTransceiverSamples() {
+    return ((bus_r(NO_SAMPLES_X_REG) & NO_SAMPLES_X_MSK) >> NO_SAMPLES_X_OFST);
 }
 
 int setExpTime(int64_t val) {
@@ -894,7 +901,6 @@ int *getDetectorPosition() { return detPos; }
 
 int getNumberofUDPInterfaces() { return 1; }
 
-
 void calcChecksum(udp_header *udp) {
     int count = IP_HEADER_SIZE;
     long int sum = 0;
@@ -926,7 +932,6 @@ void calcChecksum(udp_header *udp) {
     udp->ip_checksum = checksum;
 }
 
-
 int configureMAC() {
     uint32_t srcip = udpDetails[0].srcip;
     uint32_t dstip = udpDetails[0].dstip;
@@ -952,10 +957,10 @@ int configureMAC() {
                   src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
 #ifdef VIRTUAL
-        if (setUDPDestinationDetails(0, 0, dst_ip, dstport) == FAIL) {
-            LOG(logERROR, ("could not set udp destination IP and port\n"));
-            return FAIL;
-        } 
+    if (setUDPDestinationDetails(0, 0, dst_ip, dstport) == FAIL) {
+        LOG(logERROR, ("could not set udp destination IP and port\n"));
+        return FAIL;
+    }
 #endif
 
     // get struct memory
@@ -1023,21 +1028,21 @@ int startStateMachine() {
 
     // start state machine
     bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
-    
+
     LOG(logINFORED, ("Waiting for exposing to be done\n"));
     int exposingDone = (bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK);
-	while (exposingDone != 0) {
+    while (exposingDone != 0) {
         usleep(0);
         exposingDone = (bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK);
     }
-    
+
     LOG(logINFORED, ("Starting readout of chip to fifo\n"));
     bus_w(MATTERHORNSPICTRL, bus_r(MATTERHORNSPICTRL) | STARTREAD_P_MSK);
-    
+
     LOG(logINFORED, ("Waiting until k-words or end of acquisition\n"));
     usleep(0);
     int commaDet = (bus_r(TRANSCEIVERSTATUS) & RXCOMMADET_MSK);
-	while (commaDet == 0) {
+    while (commaDet == 0) {
         usleep(0);
         commaDet = (bus_r(TRANSCEIVERSTATUS) & RXCOMMADET_MSK);
     }
@@ -1159,14 +1164,16 @@ int startReadOut() {
 #endif
     // check if data in fifo
     if (transceiverEnable) {
-        if ((bus_r(X_FIFO_EMPTY_STATUS_REG) & X_FIFO_EMPTY_STATUS_MSK) == X_FIFO_EMPTY_STATUS_MSK) {
+        if ((bus_r(X_FIFO_EMPTY_STATUS_REG) & X_FIFO_EMPTY_STATUS_MSK) ==
+            X_FIFO_EMPTY_STATUS_MSK) {
             LOG(logERROR, ("No data in fifo\n"));
             return FAIL;
         }
     }
 
     LOG(logINFOBLUE, ("Streaming data from fifo\n"));
-    bus_w(FIFO_TO_GB_CONTROL_REG, bus_r(FIFO_TO_GB_CONTROL_REG) | START_STREAMING_P_MSK);
+    bus_w(FIFO_TO_GB_CONTROL_REG,
+          bus_r(FIFO_TO_GB_CONTROL_REG) | START_STREAMING_P_MSK);
 
     // wait until streaming is done (not same as fifo empty)
     int streamingBusy = (bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK);
@@ -1174,7 +1181,7 @@ int startReadOut() {
         usleep(0);
         streamingBusy = (bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK);
     }
-    
+
     return OK;
 }
 
@@ -1189,7 +1196,7 @@ int softwareTrigger() {
     LOG(logINFO, ("Sending Software Trigger\n"));
     bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | SW_TRIGGER_F_MSK);
     // wait to make sure its out of this state and even 'wait for start frame'
-   //TODO: usleep(100);
+    // TODO: usleep(100);
 
     return OK;
 }
@@ -1229,7 +1236,7 @@ enum runStatus getRunStatus() {
         LOG(logINFOBLUE, ("Status: TRANSMITTING\n"));
         return TRANSMITTING;
     }
-    
+
     LOG(logINFOBLUE, ("Status: IDLE\n"));
     return IDLE;
     // TODO: STOPPED, ERROR?
@@ -1254,7 +1261,7 @@ void waitForAcquisitionEnd() {
     LOG(logINFOGREEN, ("Blocking Acquisition done\n"));
 }
 
-int calculateDataBytes() { 
+int calculateDataBytes() {
     int analogDataBytes = 0;
     int digitalDataBytes = 0;
     int transceiverDataBytes = 0;
@@ -1288,8 +1295,7 @@ int calculateDataBytes() {
 
     LOG(logINFO,
         ("\t#Total Channels:%d, Total Databytes:%d\n", nchans, dataBytes));
-    return dataBytes; 
-
+    return dataBytes;
 }
 
 int getTotalNumberOfChannels() {

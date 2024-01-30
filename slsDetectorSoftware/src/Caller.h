@@ -93,6 +93,7 @@ class Caller {
     std::string compdisabletime(int action);
     std::string confadc(int action);
     std::string config(int action);
+    std::string configtransceiver(int action);
     std::string counters(int action);
     std::string currentsource(int action);
     std::string dac(int action);
@@ -435,6 +436,7 @@ class Caller {
         {"compdisabletime", &Caller::compdisabletime},
         {"confadc", &Caller::confadc},
         {"config", &Caller::config},
+        {"configtransceiver", &Caller::configtransceiver},
         {"counters", &Caller::counters},
         {"currentsource", &Caller::currentsource},
         {"dac", &Caller::dac},

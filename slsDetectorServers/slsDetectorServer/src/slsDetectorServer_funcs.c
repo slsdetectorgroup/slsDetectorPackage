@@ -806,7 +806,8 @@ int set_firmware_test(int file_des) {
     LOG(logDEBUG1, ("Executing firmware test\n"));
 
 #if !defined(GOTTHARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD)
+    !defined(CHIPTESTBOARDD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D) &&  \
+    !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     ret = testFpga();
@@ -1926,21 +1927,20 @@ int acquire(int blocking, int file_des) {
         if (!isChipConfigured()) {
             ret = FAIL;
             strcpy(mess, "Could not start acquisition. Chip is not configured. "
-                            "Power it on to configure it.\n");
+                         "Power it on to configure it.\n");
             LOG(logERROR, (mess));
         } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
                     getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
                    (isTransceiverAligned() == 0)) {
             ret = FAIL;
-            strcpy(
-                mess,
-                "Could not start acquisition. Transceiver not aligned\n");
+            strcpy(mess,
+                   "Could not start acquisition. Transceiver not aligned\n");
             LOG(logERROR, (mess));
         } else
 #endif
 #if defined(JUNGFRAUD)
-        // chipv1.1 has to be configured before acquisition
-        if (getChipVersion() == 11 && !isChipConfigured()) {
+            // chipv1.1 has to be configured before acquisition
+            if (getChipVersion() == 11 && !isChipConfigured()) {
             ret = FAIL;
             strcpy(mess, "Could not start acquisition. Chip is not configured. "
                          "Power it on to configure it.\n");
@@ -4056,8 +4056,8 @@ int power_chip(int file_des) {
                     ret = FAIL;
                     sprintf(mess, "Power chip %d should be 0 or 1\n", arg);
                     LOG(logERROR, (mess));
-                } else  {
-                    ret = powerChip(arg, mess);          
+                } else {
+                    ret = powerChip(arg, mess);
                 }
             }
             if (ret == OK) {
@@ -5542,7 +5542,7 @@ int set_num_interfaces(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting number of interfaces: %d\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARD2D) 
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARD2D)
     // fixed number of udp interfaces
     int num_interfaces = getNumberofUDPInterfaces();
     if (arg != num_interfaces) {
@@ -8384,7 +8384,8 @@ int get_bursts_left(int file_des) {
 int start_readout(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-#if !defined(MYTHEN3D) && !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+#if !defined(MYTHEN3D) && !defined(CHIPTESTBOARDD) &&                          \
+    !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     if (Server_VerifyLock() == OK) {
@@ -10520,7 +10521,6 @@ int set_bit(int file_des) {
     int nBit = (int)args[1];
     LOG(logDEBUG1, ("Setting bit %d of reg 0x%x\n", nBit, addr));
 
-
     // only set
     if (Server_VerifyLock() == OK) {
         if (nBit < 0 || nBit > 31) {
@@ -10676,17 +10676,17 @@ int set_num_transceiver_samples(int file_des) {
         } else {
             ret = setNumTransceiverSamples(arg);
             if (ret == FAIL) {
-                sprintf(
-                    mess,
-                    "Could not set number of transceiver samples to %d. Could not "
-                    "allocate RAM\n",
-                    arg);
+                sprintf(mess,
+                        "Could not set number of transceiver samples to %d. "
+                        "Could not "
+                        "allocate RAM\n",
+                        arg);
                 LOG(logERROR, (mess));
             } else {
                 int retval = getNumTransceiverSamples();
                 LOG(logDEBUG1, ("retval num transceiver samples %d\n", retval));
                 validate(&ret, mess, arg, retval,
-                        "set number of transceiver samples", DEC);
+                         "set number of transceiver samples", DEC);
             }
         }
     }

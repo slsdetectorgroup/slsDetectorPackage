@@ -7,6 +7,6 @@
 int resetFPGA(char *mess);
 int loadDeviceTree(char *mess);
 
-int checksBeforeCreatingDeviceTree(char *mess); 
+int checksBeforeCreatingDeviceTree(char *mess);
 int createDeviceTree(char *mess);
-int verifyDeviceTree(char* mess);
+int verifyDeviceTree(char *mess);

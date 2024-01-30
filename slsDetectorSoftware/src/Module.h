@@ -533,7 +533,7 @@ class Module : public virtual slsDetectorDefs {
      *    Xilinx Ctb Specific                         *
      *                                                *
      * ************************************************/
-    void configureTransceiver(); 
+    void configureTransceiver();
 
     /**************************************************
      *                                                *

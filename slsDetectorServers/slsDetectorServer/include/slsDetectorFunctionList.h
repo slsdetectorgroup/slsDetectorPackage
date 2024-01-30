@@ -184,14 +184,14 @@ uint32_t readRegister16And32(uint32_t offset);
 #if defined(XILINX_CHIPTESTBOARDD)
 void cleanFifos();
 void resetFlow();
-int waitTranseiverReset(char* mess);
+int waitTranseiverReset(char *mess);
 int isTransceiverAligned();
-int waitTransceiverAligned(char* mess);
-int configureTransceiver(char* mess);
+int waitTransceiverAligned(char *mess);
+int configureTransceiver(char *mess);
 int isChipConfigured();
-int powerChip(int on, char* mess);
+int powerChip(int on, char *mess);
 int getPowerChip();
-int configureChip(char* mess);
+int configureChip(char *mess);
 void startPeriphery();
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) ||       \
@@ -509,7 +509,8 @@ void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
                  uint32_t sourceip, uint16_t sourceport);
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARD2D) ||           \
-    defined(MYTHEN3D) || defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    defined(MYTHEN3D) || defined(CHIPTESTBOARDD) ||                            \
+    defined(XILINX_CHIPTESTBOARDD)
 void calcChecksum(udp_header *udp);
 #endif
 #ifdef GOTTHARDD
@@ -723,7 +724,8 @@ int softwareTrigger();
 #if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)
 int softwareTrigger(int block);
 #endif
-#if defined(EIGERD) || defined(MYTHEN3D) || defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+#if defined(EIGERD) || defined(MYTHEN3D) || defined(CHIPTESTBOARDD) ||         \
+    defined(XILINX_CHIPTESTBOARDD)
 int startReadOut();
 #endif
 enum runStatus getRunStatus();

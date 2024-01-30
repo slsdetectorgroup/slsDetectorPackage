@@ -2247,6 +2247,46 @@ std::string Caller::config(int action) {
     return os.str();
 }
 
+std::string Caller::configtransceiver(int action) {
+
+    std::ostringstream os;
+    // print help
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << "Command: configtransceiver" << std::endl;
+        os << R"V0G0N(
+	[Xilinx Ctb] Waits for transceiver to be aligned. Chip had to be configured (powered on) before this. )V0G0N"
+           << std::endl;
+        return os.str();
+    }
+
+    // check if action and arguments are valid
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (1 && args.size() != 0) {
+            throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 0) {
+        }
+
+    }
+
+    else {
+
+        throw RuntimeError(
+            "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
+    }
+
+    // generate code for each action
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (args.size() == 0) {
+            det->configureTransceiver(std::vector<int>{det_id});
+            os << "successful" << '\n';
+        }
+    }
+
+    return os.str();
+}
+
 std::string Caller::dac(int action) {
 
     std::ostringstream os;
@@ -4666,7 +4706,7 @@ std::string Caller::firmwaretest(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: firmwaretest" << std::endl;
         os << R"V0G0N(
-	[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Firmware test, ie. reads a read fixed pattern from a register. )V0G0N"
+	[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Firmware test, ie. reads a read fixed pattern from a register. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -9317,9 +9357,10 @@ std::string Caller::powerchip(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: powerchip" << std::endl;
         os << R"V0G0N([0, 1]
-	[Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. 
+	[Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip. 
 	[Jungfrau][Moench] Default is 0. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1)
-	[Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail. )V0G0N"
+	[Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail.
+	[Xilinx Ctb] Default is 0. Also configures the chip if powered on. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -10230,7 +10271,7 @@ std::string Caller::rebootcontroller(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: rebootcontroller" << std::endl;
         os << R"V0G0N(
-	[Jungfrau][Moench][Ctb][Gotthard][Mythen3][Gotthard2] Reboot controller of detector. )V0G0N"
+	[Jungfrau][Moench][Ctb][Gotthard][Mythen3][Gotthard2][Xilinx Ctb] Reboot controller of detector. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -10399,7 +10440,7 @@ std::string Caller::resetfpga(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: resetfpga" << std::endl;
         os << R"V0G0N(
-	[Jungfrau][Moench][Ctb] Reset FPGA. )V0G0N"
+	[Jungfrau][Moench][Ctb][Xilinx Ctb] Reset FPGA. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -10505,7 +10546,7 @@ std::string Caller::romode(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: romode" << std::endl;
         os << R"V0G0N([analog|digital|analog_digital|transceiver|digital_transceiver]
-	[Ctb] Readout mode. Default is analog. )V0G0N"
+	[Ctb][xilinx Ctb] Readout mode. [Ctb] Default is analog. [Xilinx Ctb] Default is Transceiver (only one implemented so far) )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -14960,7 +15001,7 @@ std::string Caller::transceiverenable(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: transceiverenable" << std::endl;
         os << R"V0G0N([bitmask]
-	[Ctb] Transceiver Enable Mask. Enable for each 4 Transceiver channel. )V0G0N"
+	[Ctb][Xilinx Ctb] Transceiver Enable Mask. Enable for each 4 Transceiver channel. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -15294,7 +15335,7 @@ std::string Caller::tsamples(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: tsamples" << std::endl;
         os << R"V0G0N([n_value]
-	[Ctb] Number of transceiver samples expected. )V0G0N"
+	[Ctb][Xilinx Ctb] Number of transceiver samples expected. )V0G0N"
            << std::endl;
         return os.str();
     }

@@ -862,7 +862,8 @@ TEST_CASE("CALLER::transceiverenable", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getTransceiverEnableMask();
         {
             std::ostringstream oss;
@@ -924,7 +925,8 @@ TEST_CASE("CALLER::tsamples", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getNumberOfTransceiverSamples();
         {
             std::ostringstream oss;
@@ -953,7 +955,8 @@ TEST_CASE("CALLER::romode", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_romode = det.getReadoutMode();
         auto prev_asamples = det.getNumberOfAnalogSamples();
         auto prev_dsamples = det.getNumberOfDigitalSamples();

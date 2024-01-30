@@ -1505,7 +1505,8 @@ TEST_CASE("CALLER::powerchip", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2 || det_type == defs::XILINX_CHIPTESTBOARD) {
+        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2 ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getPowerChip();
         {
             std::ostringstream oss;
@@ -3259,7 +3260,7 @@ TEST_CASE("CALLER::rebootcontroller", "[.cmdcall]") {
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
         det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
         det_type == defs::GOTTHARD2 || det_type == defs::GOTTHARD ||
-         det_type == defs::XILINX_CHIPTESTBOARD) {
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         // TODO: reboot real server?
         // REQUIRE_NOTHROW(caller.call("rebootcontroller", {}, -1, PUT));
         REQUIRE_THROWS(caller.call("rebootcontroller", {}, -1, GET));

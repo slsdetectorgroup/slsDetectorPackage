@@ -48,6 +48,7 @@ class InferAction {
     int compdisabletime();
     int confadc();
     int config();
+    int configtransceiver();
     int counters();
     int currentsource();
     int dac();
@@ -381,6 +382,7 @@ class InferAction {
         {"compdisabletime", &InferAction::compdisabletime},
         {"confadc", &InferAction::confadc},
         {"config", &InferAction::config},
+        {"configtransceiver", &InferAction::configtransceiver},
         {"counters", &InferAction::counters},
         {"currentsource", &InferAction::currentsource},
         {"dac", &InferAction::dac},

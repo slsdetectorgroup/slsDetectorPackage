@@ -465,7 +465,7 @@ class Detector {
      * be off if temperature event occured (temperature over temp_threshold with
      * temp_control enabled. Will configure chip (only chip v1.1)\n
      * [Mythen3][Gotthard2] Default is 1. If module not connected or wrong
-     * module, powerchip will fail.\n 
+     * module, powerchip will fail.\n
      * [Xilinx CTB] Default is 0. Also configures chip if powered on.
      */
     void setPowerChip(bool on, Positions pos = {});
@@ -1829,7 +1829,6 @@ class Detector {
     /** [CTB] */
     std::string getSlowADCName(const defs::dacIndex i) const;
 
-
     ///@}
 
     /** @name CTB Specific */
@@ -2009,8 +2008,8 @@ class Detector {
      */
     void updateKernel(const std::string &fname, Positions pos = {});
 
-    /** [Jungfrau][Moench][Gotthard][CTB][Mythen3][Gotthard2][Xilinx CTB] Advanced user
-     * Function! */
+    /** [Jungfrau][Moench][Gotthard][CTB][Mythen3][Gotthard2][Xilinx CTB]
+     * Advanced user Function! */
     void rebootController(Positions pos = {});
 
     /**

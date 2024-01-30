@@ -1615,6 +1615,28 @@ config:
   help: "\n\tFrees shared memory before loading configuration file. Set up once."
   infer_action: true
   template: true
+configtransceiver:
+  actions:
+    PUT:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: configureTransceiver
+        input: []
+        input_types: []
+        output:
+        - '"successful"'
+        require_det_id: true
+        store_result_in_t: false
+  command_name: configtransceiver
+  function_alias: configtransceiver
+  help: "\n\t[Xilinx Ctb] Waits for transceiver to be aligned. Chip had to be configured\
+    \ (powered on) before this."
+  infer_action: true
+  template: true
 counters:
   actions:
     GET:
@@ -3611,8 +3633,8 @@ firmwaretest:
         store_result_in_t: false
   command_name: firmwaretest
   function_alias: firmwaretest
-  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Firmware test,\
-    \ ie. reads a read fixed pattern from a register."
+  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Firmware\
+    \ test, ie. reads a read fixed pattern from a register."
   infer_action: true
   template: true
 firmwareversion:
@@ -7300,11 +7322,12 @@ powerchip:
         store_result_in_t: false
   command_name: powerchip
   function_alias: powerchip
-  help: "[0, 1]\n\t[Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. \n\t[Jungfrau][Moench]\
-    \ Default is 0. Get will return power status. Can be off if temperature event\
-    \ occured (temperature over temp_threshold with temp_control enabled. Will configure\
-    \ chip (only chip v1.1)\n\t[Mythen3][Gotthard2] Default is 1. If module not connected\
-    \ or wrong module, powerchip will fail."
+  help: "[0, 1]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip.\
+    \ \n\t[Jungfrau][Moench] Default is 0. Get will return power status. Can be off\
+    \ if temperature event occured (temperature over temp_threshold with temp_control\
+    \ enabled. Will configure chip (only chip v1.1)\n\t[Mythen3][Gotthard2] Default\
+    \ is 1. If module not connected or wrong module, powerchip will fail.\n\t[Xilinx\
+    \ Ctb] Default is 0. Also configures the chip if powered on."
   infer_action: true
   template: true
 powerindex:
@@ -7916,8 +7939,8 @@ rebootcontroller:
         store_result_in_t: false
   command_name: rebootcontroller
   function_alias: rebootcontroller
-  help: "\n\t[Jungfrau][Moench][Ctb][Gotthard][Mythen3][Gotthard2] Reboot controller\
-    \ of detector."
+  help: "\n\t[Jungfrau][Moench][Ctb][Gotthard][Mythen3][Gotthard2][Xilinx Ctb] Reboot\
+    \ controller of detector."
   infer_action: true
   template: true
 reg:
@@ -8031,7 +8054,7 @@ resetfpga:
         store_result_in_t: false
   command_name: resetfpga
   function_alias: resetfpga
-  help: "\n\t[Jungfrau][Moench][Ctb] Reset FPGA."
+  help: "\n\t[Jungfrau][Moench][Ctb][Xilinx Ctb] Reset FPGA."
   infer_action: true
   template: true
 roi:
@@ -8118,8 +8141,9 @@ romode:
         store_result_in_t: false
   command_name: romode
   function_alias: romode
-  help: "[analog|digital|analog_digital|transceiver|digital_transceiver]\n\t[Ctb]\
-    \ Readout mode. Default is analog."
+  help: "[analog|digital|analog_digital|transceiver|digital_transceiver]\n\t[Ctb][xilinx\
+    \ Ctb] Readout mode. [Ctb] Default is analog. [Xilinx Ctb] Default is Transceiver\
+    \ (only one implemented so far)"
   infer_action: true
   template: true
 row:
@@ -11372,8 +11396,8 @@ transceiverenable:
         store_result_in_t: false
   command_name: transceiverenable
   function_alias: transceiverenable
-  help: "[bitmask]\n\t[Ctb] Transceiver Enable Mask. Enable for each 4 Transceiver\
-    \ channel."
+  help: "[bitmask]\n\t[Ctb][Xilinx Ctb] Transceiver Enable Mask. Enable for each 4\
+    \ Transceiver channel."
   infer_action: true
   template: true
 trigger:
@@ -11618,7 +11642,7 @@ tsamples:
         store_result_in_t: false
   command_name: tsamples
   function_alias: tsamples
-  help: "[n_value]\n\t[Ctb] Number of transceiver samples expected."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Number of transceiver samples expected."
   infer_action: true
   template: true
 txdelay:

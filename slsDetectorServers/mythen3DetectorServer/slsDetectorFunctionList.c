@@ -483,7 +483,7 @@ void setupDetector() {
     // hv
     DAC6571_SetDefines(HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
     // dac
-    LTC2620_D_SetDefines(DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC);
+    LTC2620_D_SetDefines(DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC, 1, 0);
 
     resetCore();
     resetPeripheral();

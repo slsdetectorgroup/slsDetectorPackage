@@ -496,12 +496,7 @@ TEST_CASE("CALLER::dac", "[.cmdcall][.dacs]") {
         det_type == defs::XILINX_CHIPTESTBOARD) {
         for (int i = 0; i < 18; ++i) {
             SECTION("dac " + std::to_string(i)) {
-                if (det_type == defs::CHIPTESTBOARD) {
-                    test_dac_caller(static_cast<defs::dacIndex>(i), "dac", 0);
-                } else {
-                    REQUIRE_THROWS(
-                        caller.call("dac", {std::to_string(i)}, -1, GET));
-                }
+                test_dac_caller(static_cast<defs::dacIndex>(i), "dac", 0);
             }
         }
 
@@ -761,8 +756,10 @@ TEST_CASE("CALLER::v_limit", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
-        auto prev_val = det.getPower(defs::V_LIMIT);
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD) {
+        sls::Result<int> prev_val;
+        if (det_type == defs::XILINX_CHIPTESTBOARD)
+            prev_val = det.getPower(defs::V_LIMIT);
         {
             std::ostringstream oss;
             caller.call("v_limit", {"1500"}, -1, PUT, oss);
@@ -787,7 +784,8 @@ TEST_CASE("CALLER::v_limit", "[.cmdcall]") {
             if (prev_val[i] == -100) {
                 prev_val[i] = 0;
             }
-            det.setPower(defs::V_LIMIT, prev_val[i], {i});
+            if (det_type == defs::XILINX_CHIPTESTBOARD)
+                det.setPower(defs::V_LIMIT, prev_val[i], {i});
         }
     } else {
         REQUIRE_THROWS(caller.call("v_limit", {}, -1, GET));

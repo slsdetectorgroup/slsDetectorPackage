@@ -1642,8 +1642,8 @@ class Detector {
     Result<int> getPower(defs::dacIndex index, Positions pos = {}) const;
 
     /**
-     * [CTB] mV
-     * [Ctb] Options: V_LIMIT, V_POWER_A, V_POWER_B, V_POWER_C,
+     * [CTB][Xilinx CTB] mV
+     * [Ctb][Xilinx CTB] Options: V_LIMIT, V_POWER_A, V_POWER_B, V_POWER_C,
      * V_POWER_D, V_POWER_IO, V_POWER_CHIP
      */
     void setPower(defs::dacIndex index, int value, Positions pos = {});
@@ -1756,86 +1756,88 @@ class Detector {
     /** [CTB] Default is enabled. */
     void setLEDEnable(bool enable, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setDacNames(const std::vector<std::string> names);
 
+    /** [CTB][Xilinx CTB] */
     std::vector<std::string> getDacNames() const;
 
+    /** [CTB][Xilinx CTB] */
     defs::dacIndex getDacIndex(const std::string &name) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setDacName(const defs::dacIndex i, const std::string &name);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::string getDacName(const defs::dacIndex i) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setAdcNames(const std::vector<std::string> names);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::vector<std::string> getAdcNames() const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     int getAdcIndex(const std::string &name) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setAdcName(const int i, const std::string &name);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::string getAdcName(const int i) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setSignalNames(const std::vector<std::string> names);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::vector<std::string> getSignalNames() const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     int getSignalIndex(const std::string &name) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setSignalName(const int i, const std::string &name);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::string getSignalName(const int i) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setPowerNames(const std::vector<std::string> names);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::vector<std::string> getPowerNames() const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     defs::dacIndex getPowerIndex(const std::string &name) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setPowerName(const defs::dacIndex i, const std::string &name);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::string getPowerName(const defs::dacIndex i) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setSlowADCNames(const std::vector<std::string> names);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::vector<std::string> getSlowADCNames() const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     defs::dacIndex getSlowADCIndex(const std::string &name) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setSlowADCName(const defs::dacIndex i, const std::string &name);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::string getSlowADCName(const defs::dacIndex i) const;
 
     ///@}
 
-    /** @name CTB Specific */
+    /** @name Xilinx CTB Specific */
     ///@{
     /**************************************************
      *                                                *
-     *    CTB / Xilinx CTB Specific                   *
+     *    Xilinx CTB Specific                         *
      *                                                *
      * ************************************************/
     ///@}

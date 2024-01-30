@@ -10,12 +10,10 @@
  * @param driverfname driver file name
  * @param numdacs number of dacs
  */
-void LTC2620_D_SetDefines(int hardMaxV, char *driverfname, int numdacs);
+void LTC2620_D_SetDefines(int hardMaxV, char *driverfname, int numdacs, int numdevices, int startingDeviceIndex);
 
-/**
- * Get max number of steps
- */
 int LTC2620_D_GetMaxNumSteps();
+int LTC2620_D_GetPowerDownValue();
 
 /**
  * Convert voltage to dac units

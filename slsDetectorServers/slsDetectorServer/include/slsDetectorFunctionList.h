@@ -397,15 +397,11 @@ void setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck);
 void setGeneralDAC(enum DACINDEX ind, int val, int mV);
 void setVthDac(int index, int enable);
 #else
-#ifndef XILINX_CHIPTESTBOARDD
 void setDAC(enum DACINDEX ind, int val, int mV);
 #endif
-#endif
-#ifndef XILINX_CHIPTESTBOARDD
 int getDAC(enum DACINDEX ind, int mV);
 int getMaxDacSteps();
-#endif
-#if defined(CHIPTESTBOARDD)
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 int dacToVoltage(int dac);
 int checkVLimitCompliant(int mV);
 int checkVLimitDacCompliant(int dac);

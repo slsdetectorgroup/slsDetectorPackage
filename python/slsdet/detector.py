@@ -3906,7 +3906,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_limit(self):
-        """[Ctb] Soft limit for power supplies (ctb only) and DACS in mV."""
+        """[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and DACS in mV."""
         return self.getPower(dacIndex.V_LIMIT)
 
     @v_limit.setter

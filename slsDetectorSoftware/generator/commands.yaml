@@ -1555,7 +1555,7 @@ fmaster:
 ################# INTEGER_IND_COMMAND #######################
 v_limit:
   inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb] Soft limit for power supplies (ctb only) and DACS in mV."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and DACS in mV."
   actions:
     GET:
       function: getPower

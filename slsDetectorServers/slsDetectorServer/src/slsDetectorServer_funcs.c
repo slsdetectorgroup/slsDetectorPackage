@@ -1124,12 +1124,11 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
     case IBIAS_SFP:
         serverDacIndex = MO_IBIAS_SFP;
         break;
-#elif XILINX_CHIPTESTBOARDD
 
 #endif
 
     default:
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
         if (ind < NDAC_ONLY) {
             // For CTB use the index directly, no conversion
             serverDacIndex = (enum DACINDEX)ind;
@@ -1145,16 +1144,19 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
 int validateAndSetDac(enum dacIndex ind, int val, int mV) {
     int retval = -1;
 
-#ifndef XILINX_CHIPTESTBOARDD
     enum DACINDEX serverDacIndex = 0;
     // valid enums
     switch (ind) {
+#ifndef XILINX_CHIPTESTBOARDD
     case HIGH_VOLTAGE:
+#endif
 #ifdef EIGERD
     case IO_DELAY:
 #elif CHIPTESTBOARDD
     case ADC_VPP:
     case V_LIMIT:
+#elif XILINX_CHIPTESTBOARDD
+    case V_LIMIT:   
 #endif
         break;
     default:
@@ -1195,6 +1197,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
 #endif
 
     // high voltage
+#ifndef XILINX_CHIPTESTBOARDD
     case HIGH_VOLTAGE:
         retval = setHighVoltage(val);
         LOG(logDEBUG1, ("High Voltage: %d\n", retval));
@@ -1228,8 +1231,8 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
         }
 #endif
         break;
-
-        // power, vlimit
+#endif
+        // power
 #ifdef CHIPTESTBOARDD
     case V_POWER_A:
     case V_POWER_B:
@@ -1299,7 +1302,8 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
         break;
 #endif
 
-#if defined(CHIPTESTBOARDD)
+    // vlimit
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     case V_LIMIT:
         if (val >= 0) {
             if (!mV) {
@@ -1333,7 +1337,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                     ind, val, getMaxDacSteps());
             LOG(logERROR, (mess));
         } else {
-#if defined(CHIPTESTBOARDD)
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
             if ((val != GET_FLAG && mV && checkVLimitCompliant(val) == FAIL) ||
                 (val != GET_FLAG && !mV &&
                  checkVLimitDacCompliant(val) == FAIL)) {
@@ -1397,7 +1401,6 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
 #endif
         break;
     }
-#endif
     return retval;
 }
 
@@ -1410,9 +1413,6 @@ int set_dac(int file_des) {
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     enum dacIndex ind = args[0];
     int mV = args[1];
     int val = args[2];
@@ -1423,7 +1423,6 @@ int set_dac(int file_des) {
     if ((val == GET_FLAG) || (Server_VerifyLock() == OK)) {
         retval = validateAndSetDac(ind, val, mV);
     }
-#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
@@ -7882,9 +7881,6 @@ int set_scan(int file_des) {
     if (receiveData(file_des, &dacTime, sizeof(dacTime), INT64) < 0)
         return printSocketReadError();
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
         int enable = args[0];
@@ -7974,7 +7970,6 @@ int set_scan(int file_des) {
             }
         }
     }
-#endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 

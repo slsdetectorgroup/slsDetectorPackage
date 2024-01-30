@@ -18,14 +18,65 @@
 #define NCHAN_TRANSCEIVER     (4)
 #define NBITS_PER_TRANSCEIVER (64)
 #define NCHIP                 (1)
-#define NDAC                  (3)
+#define NDAC                  (24)
+#define NPWR                    (6)
+#define NDAC_ONLY               (NDAC - NPWR)
 
 #define DYNAMIC_RANGE       (16)
 #define NUM_BYTES_PER_PIXEL (DYNAMIC_RANGE / 8)
 
-enum ADCINDEX { V_PWR_IO };
-enum DACINDEX { D0 };
 
+#define DAC_DRIVER_NUM_DEVICES (3)
+#define DAC_DRIVER_FILE_NAME ("/sys/bus/iio/devices/iio:device%d/out_voltage_%d.raw")
+#define DAC_DRIVER_STARTING_DEVICE_INDEX (2)
+
+
+enum ADCINDEX {
+    V_PWR_IO,
+    V_PWR_A,
+    V_PWR_B,
+    V_PWR_C,
+    V_PWR_D,
+    I_PWR_IO,
+    I_PWR_A,
+    I_PWR_B,
+    I_PWR_C,
+    I_PWR_D,
+    S_ADC0,
+    S_ADC1,
+    S_ADC2,
+    S_ADC3,
+    S_ADC4,
+    S_ADC5,
+    S_ADC6,
+    S_ADC7
+};
+enum DACINDEX {
+    D0,
+    D1,
+    D2,
+    D3,
+    D4,
+    D5,
+    D6,
+    D7,
+    D8,
+    D9,
+    D10,
+    D11,
+    D12,
+    D13,
+    D14,
+    D15,
+    D16,
+    D17,
+    D_PWR_D,
+    D_PWR_CHIP,
+    D_PWR_C,
+    D_PWR_B,
+    D_PWR_A,
+    D_PWR_IO
+};
 /** Default Parameters */
 #define DEFAULT_NUM_FRAMES            (1)
 #define DEFAULT_NUM_CYCLES            (1)
@@ -39,12 +90,18 @@ enum DACINDEX { D0 };
 #define DEFAULT_NUM_DSAMPLES          (1)
 #define DEFAULT_NUM_TSAMPLES          (200)
 #define DEFAULT_STARTING_FRAME_NUMBER (1)
+#define DEFAULT_VLIMIT                (-100)
+
 
 #define MAX_TRANSCEIVER_MASK    (0xF)
 #define MAX_TRANSCEIVER_SAMPLES (0x1FFF)
 
 #define MAX_ANALOG_SAMPLES  (0x3FFF)
 #define MAX_DIGITAL_SAMPLES (0x3FFF)
+
+#define DAC_MIN_MV      (0)
+#define DAC_MAX_MV      (2500)
+
 
 #define TICK_CLK (20) // MHz (trig_timeFromStart, frametime, timeFromStart)
 #define RUN_CLK                                                                \

@@ -8,6 +8,8 @@
 #include "sharedMemory.h"
 #include "sls/versionAPI.h"
 
+#include "LTC2620_Driver.h"
+
 #include "loadPattern.h"
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
@@ -40,6 +42,9 @@ int chipConfigured = 0;
 int analogEnable = 0;
 int digitalEnable = 0;
 int transceiverEnable = 0;
+int dacValues[NDAC] = {};
+// software limit that depends on the current chip on the ctb
+int vLimit = 0;
 
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
@@ -371,6 +376,9 @@ void setupDetector() {
     analogEnable = 0;
     digitalEnable = 0;
     transceiverEnable = 0;
+    for (int i = 0; i < NDAC; ++i)
+        dacValues[i] = -1;
+    vLimit = DEFAULT_VLIMIT;
 
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
@@ -381,6 +389,14 @@ void setupDetector() {
     initError = waitTranseiverReset(initErrorMessage);
     if (initError == FAIL) {
         return;
+    }
+
+    LTC2620_D_SetDefines(DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC, DAC_DRIVER_NUM_DEVICES, DAC_DRIVER_STARTING_DEVICE_INDEX);
+    // switch off dacs (power regulators most likely only sets to minimum (if
+    // power enable on))
+    LOG(logINFOBLUE, ("Powering down all dacs\n"));
+    for (int idac = 0; idac < NDAC; ++idac) {
+        setDAC(idac, LTC2620_D_GetPowerDownValue(), 0);
     }
 
     resetFlow();
@@ -866,6 +882,81 @@ int64_t getNumFramesLeft() {
 
 int64_t getNumTriggersLeft() {
     return getU64BitReg(CYCLES_OUT_REG_1, CYCLES_OUT_REG_2);
+}
+/* parameters - dac, adc, hv */
+
+
+void setDAC(enum DACINDEX ind, int val, int mV) {
+    char dacName[MAX_STR_LENGTH] = {0};
+    memset(dacName, 0, MAX_STR_LENGTH);
+    sprintf(dacName, "dac%d", (int)ind);
+
+    if (val < 0 && val != LTC2620_D_GetPowerDownValue())
+        return;
+
+    LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dacName, val, (mV ? "mV" : "dac units")));
+    int dacval = val;
+
+#ifdef VIRTUAL
+    LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dacName, val, (mV ? "mV" : "dac units")));
+    if (!mV) {
+        dacValues[ind] = val;
+    }
+    // convert to dac units
+    else if (LTC2620_D_VoltageToDac(val, &dacval) == OK) {
+        dacValues[ind] = dacval;
+    }
+#else
+    if (LTC2620_D_SetDACValue((int)ind, val, mV, dacName, &dacval) == OK)
+        dacValues[ind] = dacval;
+#endif
+}
+
+int getDAC(enum DACINDEX ind, int mV) {
+    if (!mV) {
+        LOG(logDEBUG1, ("Getting DAC %d : %d dac\n", ind, dacValues[ind]));
+        return dacValues[ind];
+    }
+    int voltage = -1;
+    LTC2620_D_DacToVoltage(dacValues[ind], &voltage);
+    LOG(logDEBUG1,
+        ("Getting DAC %d : %d dac (%d mV)\n", ind, dacValues[ind], voltage));
+    return voltage;
+}
+
+int getMaxDacSteps() { return LTC2620_D_GetMaxNumSteps(); }
+
+int dacToVoltage(int dac) {
+    int val;
+    if (LTC2620_D_DacToVoltage(dac, &val) == FAIL) {
+        return -1;
+    }
+    return val;
+}
+
+int checkVLimitCompliant(int mV) {
+    if (vLimit > 0 && mV > vLimit)
+        return FAIL;
+    return OK;
+}
+
+int checkVLimitDacCompliant(int dac) {
+    if (vLimit > 0 && dac != -1 && dac != LTC2620_D_GetPowerDownValue()) {
+        int mv = 0;
+        // could not convert
+        if (LTC2620_D_DacToVoltage(dac, &mv) == FAIL)
+            return FAIL;
+        if (mv > vLimit)
+            return FAIL;
+    }
+    return OK;
+}
+
+int getVLimit() { return vLimit; }
+
+void setVLimit(int l) {
+    if (l >= 0)
+        vLimit = l;
 }
 
 /* parameters - timing, extsig */

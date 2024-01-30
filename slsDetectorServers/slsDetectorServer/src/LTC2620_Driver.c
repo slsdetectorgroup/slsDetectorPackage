@@ -16,8 +16,11 @@
 int LTC2620_D_HardMaxVoltage = 0;
 char LTC2620_D_DriverFileName[MAX_STR_LENGTH];
 int LTC2620_D_NumDacs = 0;
+int LTC2620_D_NumDevices = 0;
+int LTC2620_D_NumChannelsPerDevice = 0;
+int LTC2620_D_DacDriverStartingDeviceIndex = 0;
 
-void LTC2620_D_SetDefines(int hardMaxV, char *driverfname, int numdacs) {
+void LTC2620_D_SetDefines(int hardMaxV, char *driverfname, int numdacs, int numdevices, int startingDeviceIndex) {
     LOG(logINFOBLUE,
         ("Configuring DACs (LTC2620) to %s (numdacs:%d, hard max: %dmV)\n",
          driverfname, numdacs, hardMaxV));
@@ -25,9 +28,14 @@ void LTC2620_D_SetDefines(int hardMaxV, char *driverfname, int numdacs) {
     memset(LTC2620_D_DriverFileName, 0, MAX_STR_LENGTH);
     strcpy(LTC2620_D_DriverFileName, driverfname);
     LTC2620_D_NumDacs = numdacs;
+    LTC2620_D_NumDevices = numdevices;
+    LTC2620_D_NumChannelsPerDevice = LTC2620_D_NumDacs / LTC2620_D_NumDevices;
+    LTC2620_D_DacDriverStartingDeviceIndex = startingDeviceIndex;
 }
 
 int LTC2620_D_GetMaxNumSteps() { return LTC2620_D_MAX_STEPS; }
+
+int LTC2620_D_GetPowerDownValue() { return LTC2620_D_PWR_DOWN_VAL; }
 
 int LTC2620_D_VoltageToDac(int voltage, int *dacval) {
     return ConvertToDifferentRange(0, LTC2620_D_HardMaxVoltage, 0,
@@ -78,11 +86,13 @@ int LTC2620_D_SetDACValue(int dacnum, int val, int mV, char *dacname,
 
 #ifndef VIRTUAL
         char fname[MAX_STR_LENGTH];
-        strcpy(fname, LTC2620_D_DriverFileName);
-        char temp[20];
-        memset(temp, 0, sizeof(temp));
-        sprintf(temp, "%d", dacnum);
-        strcat(fname, temp);
+#ifdef XILINX_CHIPTESTBOARDD
+        int idev = LTC2620_D_DacDriverStartingDeviceIndex + (dacnum/LTC2620_D_NumChannelsPerDevice);
+        int idac = dacnum % LTC2620_D_NumChannelsPerDevice;
+        sprintf(fname, LTC2620_D_DriverFileName, idev, idac);
+#else
+        sprintf(fname, "%s%d", LTC2620_D_DriverFileName, dacnum);
+#endif
         LOG(logDEBUG1, ("fname %s\n", fname));
 
         // open file

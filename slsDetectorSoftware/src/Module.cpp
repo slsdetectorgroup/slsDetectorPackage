@@ -2531,6 +2531,13 @@ void Module::setLEDEnable(bool enable) {
     sendToDetector<int>(F_LED, static_cast<int>(enable));
 }
 
+// Xilinx Ctb Specific
+void Module::configureTransceiver() {
+    sendToDetector(F_CONFIG_TRANSCEIVER);
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): Transceiver configured successfully!";
+}
+
 // Pattern
 std::string Module::getPatterFileName() const {
     char retval[MAX_STR_LENGTH]{};

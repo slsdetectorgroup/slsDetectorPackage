@@ -456,16 +456,17 @@ class Detector {
      */
     void setHighVoltage(int value, Positions pos = {});
 
-    /** [Jungfrau][Moench][Mythen3][Gotthard2] */
+    /** [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] */
     Result<bool> getPowerChip(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. \n
+    /** [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip. \n
      *  Default is disabled. \n
      * [Jungfrau][Moench] Default is disabled. Get will return power status. Can
      * be off if temperature event occured (temperature over temp_threshold with
      * temp_control enabled. Will configure chip (only chip v1.1)\n
      * [Mythen3][Gotthard2] Default is 1. If module not connected or wrong
-     * module, powerchip will fail.
+     * module, powerchip will fail.\n 
+     * [Xilinx CTB] Default is 0. Also configures chip if powered on.
      */
     void setPowerChip(bool on, Positions pos = {});
 
@@ -1828,7 +1829,20 @@ class Detector {
     /** [CTB] */
     std::string getSlowADCName(const defs::dacIndex i) const;
 
+
     ///@}
+
+    /** @name CTB Specific */
+    ///@{
+    /**************************************************
+     *                                                *
+     *    CTB / Xilinx CTB Specific                   *
+     *                                                *
+     * ************************************************/
+    ///@}
+
+    /** [Xilinx Ctb] */
+    void configureTransceiver(Positions pos = {});
 
     /** @name Pattern */
     ///@{
@@ -1977,7 +1991,7 @@ class Detector {
     void programFPGA(const std::string &fname, const bool forceDeleteNormalFile,
                      Positions pos = {});
 
-    /** [Jungfrau][Moench][CTB]  Advanced user Function!  */
+    /** [Jungfrau][Moench][CTB][Xilinx CTB]  Advanced user Function!  */
     void resetFPGA(Positions pos = {});
 
     /** [Jungfrau][Moench][Eiger][Ctb][Mythen3][Gotthard2] Copies detector
@@ -1995,7 +2009,7 @@ class Detector {
      */
     void updateKernel(const std::string &fname, Positions pos = {});
 
-    /** [Jungfrau][Moench][Gotthard][CTB][Mythen3][Gotthard2] Advanced user
+    /** [Jungfrau][Moench][Gotthard][CTB][Mythen3][Gotthard2][Xilinx CTB] Advanced user
      * Function! */
     void rebootController(Positions pos = {});
 

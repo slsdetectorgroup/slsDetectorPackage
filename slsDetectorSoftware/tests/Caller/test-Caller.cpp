@@ -1505,7 +1505,7 @@ TEST_CASE("CALLER::powerchip", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
+        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2 || det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getPowerChip();
         {
             std::ostringstream oss;
@@ -3222,7 +3222,7 @@ TEST_CASE("CALLER::resetfpga", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MOENCH) {
+        det_type == defs::MOENCH || det_type == defs::XILINX_CHIPTESTBOARD) {
         // reset will also reset udp info from config file (comment out for
         // invdividual tests) std::ostringstream oss; caller.call("resetfpga",
         // {}, -1, PUT, oss); REQUIRE(oss.str() == "resetfpga successful\n");
@@ -3258,7 +3258,8 @@ TEST_CASE("CALLER::rebootcontroller", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
         det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD2 || det_type == defs::GOTTHARD) {
+        det_type == defs::GOTTHARD2 || det_type == defs::GOTTHARD ||
+         det_type == defs::XILINX_CHIPTESTBOARD) {
         // TODO: reboot real server?
         // REQUIRE_NOTHROW(caller.call("rebootcontroller", {}, -1, PUT));
         REQUIRE_THROWS(caller.call("rebootcontroller", {}, -1, GET));
@@ -3405,7 +3406,8 @@ TEST_CASE("CALLER::firmwaretest", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
         det_type == defs::CHIPTESTBOARD || det_type == defs::GOTTHARD ||
-        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
+        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2 ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         std::ostringstream oss;
         caller.call("firmwaretest", {}, -1, PUT, oss);
         REQUIRE(oss.str() == "firmwaretest successful\n");

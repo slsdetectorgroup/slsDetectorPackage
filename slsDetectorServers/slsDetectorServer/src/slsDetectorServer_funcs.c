@@ -491,6 +491,7 @@ void function_table() {
     flist[F_SET_COLUMN] = &set_column;
     flist[F_GET_PEDESTAL_MODE] = &get_pedestal_mode;
     flist[F_SET_PEDESTAL_MODE] = &set_pedestal_mode;
+    flist[F_CONFIG_TRANSCEIVER] = &config_transceiver;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -805,7 +806,7 @@ int set_firmware_test(int file_des) {
     LOG(logDEBUG1, ("Executing firmware test\n"));
 
 #if !defined(GOTTHARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
+    !defined(CHIPTESTBOARDD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     ret = testFpga();
@@ -10979,5 +10980,19 @@ int set_pedestal_mode(int file_des) {
         }
     }
 #endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int config_transceiver(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+
+    if (Server_VerifyLock() == OK) {
+        LOG(logINFO, ("Configuring Transceiver\n"));
+        ret = configureTransceiver(mess);
+        if (ret == FAIL) {
+            LOG(logERROR, (mess));
+        }
+    }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }

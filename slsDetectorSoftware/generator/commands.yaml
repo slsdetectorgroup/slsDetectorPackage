@@ -707,7 +707,7 @@ highvoltage:
       function: setHighVoltage
 
 powerchip:
-  help: "[0, 1]\n\t[Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. \n\t[Jungfrau][Moench] Default is 0. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1)\n\t[Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail."
+  help: "[0, 1]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip. \n\t[Jungfrau][Moench] Default is 0. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1)\n\t[Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail.\n\t[Xilinx Ctb] Default is 0. Also configures the chip if powered on."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1792,21 +1792,21 @@ patternstart:
 
 resetfpga:
   inherit_actions: EXECUTE_SET_COMMAND
-  help: "\n\t[Jungfrau][Moench][Ctb] Reset FPGA."
+  help: "\n\t[Jungfrau][Moench][Ctb][Xilinx Ctb] Reset FPGA."
   actions:
     PUT:
       function: resetFPGA
 
 rebootcontroller:
   inherit_actions: EXECUTE_SET_COMMAND
-  help: "\n\t[Jungfrau][Moench][Ctb][Gotthard][Mythen3][Gotthard2] Reboot controller of detector."
+  help: "\n\t[Jungfrau][Moench][Ctb][Gotthard][Mythen3][Gotthard2][Xilinx Ctb] Reboot controller of detector."
   actions:
     PUT:
       function: rebootController
 
 firmwaretest:
   inherit_actions: EXECUTE_SET_COMMAND
-  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Firmware test, ie. reads a read fixed pattern from a register."
+  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Firmware test, ie. reads a read fixed pattern from a register."
   actions:
     PUT:
       function: executeFirmwareTest
@@ -1817,6 +1817,13 @@ bustest:
   actions:
     PUT:
       function: executeBusTest
+
+configtransceiver:
+  inherit_actions: EXECUTE_SET_COMMAND
+  help: "\n\t[Xilinx Ctb] Waits for transceiver to be aligned. Chip had to be configured (powered on) before this."
+  actions:
+    PUT:
+      function: configureTransceiver
 
 ################# EXECUTE_SET_COMMAND_NOID_1ARG ##############
 config:

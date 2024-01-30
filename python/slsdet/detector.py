@@ -443,18 +443,29 @@ class Detector(CppDetectorApi):
     @element
     def powerchip(self):
         """
-        [Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. 
+        [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip. 
 
         Note
         ----
         [Jungfrau][Moench] Default is disabled. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1).\n
         [Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail.
+        [Xilinx Ctb] Default is 0. Also configures the chip if powered on.
         """
         return self.getPowerChip()
 
     @powerchip.setter
     def powerchip(self, value):
         ut.set_using_dict(self.setPowerChip, value)
+
+    def configtransceiver(self):
+        """
+        [Xilinx Ctb] Waits for transceiver to be aligned. 
+        
+        Note
+        ----
+        Chip had to be configured (powered on) before this.
+        """
+        self.configureTransceiver()
 
     @property
     @element

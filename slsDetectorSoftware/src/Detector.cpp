@@ -2486,6 +2486,12 @@ std::string Detector::getSlowADCName(const defs::dacIndex i) const {
     return pimpl->getCtbSlowADCName(i);
 }
 
+// Xilinx Ctb Specific
+
+void Detector::configureTransceiver(Positions pos) {
+    pimpl->Parallel(&Module::configureTransceiver, pos);
+}
+
 // Pattern
 
 Result<std::string> Detector::getPatterFileName(Positions pos) const {

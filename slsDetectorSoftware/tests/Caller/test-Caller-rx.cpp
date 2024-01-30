@@ -220,12 +220,7 @@ TEST_CASE("Caller::rx_frameindex", "[.cmdcall][.rx]") {
 TEST_CASE("Caller::rx_printconfig", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_NOTHROW(caller.call("rx_printconfig", {}, -1, GET));
-    } else {
-        REQUIRE_THROWS(caller.call("rx_printconfig", {}, -1, GET));
-    }
+    REQUIRE_NOTHROW(caller.call("rx_printconfig", {}, -1, GET));
 }
 
 /* Receiver Config */
@@ -262,8 +257,6 @@ TEST_CASE("Caller::rx_hostname", "[.cmdcall][.rx]") {
             caller.call("rx_hostname", {}, 0, GET, oss);
             REQUIRE(oss.str() == "rx_hostname " + prev_val[0] + "\n");
         }
-    } else {
-        REQUIRE_THROWS(caller.call("rx_hostname", {"localhost"}, -1, PUT));
     }
 }
 

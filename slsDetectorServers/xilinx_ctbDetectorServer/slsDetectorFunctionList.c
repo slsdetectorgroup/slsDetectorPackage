@@ -798,7 +798,7 @@ int setNumDigitalSamples(int val) {
 }
 
 int getNumDigitalSamples() {
-    return ((bus_r(NO_SAMPLES_X_REG) & NO_SAMPLES_D_MSK) >> NO_SAMPLES_D_OFST);
+    return ((bus_r(NO_SAMPLES_D_REG) & NO_SAMPLES_D_MSK) >> NO_SAMPLES_D_OFST);
 }
 
 int setNumTransceiverSamples(int val) {

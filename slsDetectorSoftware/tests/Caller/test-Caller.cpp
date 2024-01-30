@@ -2370,8 +2370,6 @@ TEST_CASE("CALLER::status", "[.cmdcall]") {
         det.setExptime(-1, prev_val);
         det.setPeriod(prev_period);
         det.setNumberOfFrames(prev_frames);
-    } else {
-        REQUIRE_THROWS(caller.call("status", {}, -1, GET));
     }
 }
 
@@ -2380,7 +2378,8 @@ TEST_CASE("CALLER::nextframenumber", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
-        det_type == defs::MOENCH || det_type == defs::CHIPTESTBOARD) {
+        det_type == defs::MOENCH || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_sfnum = det.getNextFrameNumber();
         REQUIRE_THROWS(caller.call("nextframenumber", {"0"}, -1, PUT));
         {
@@ -2399,42 +2398,44 @@ TEST_CASE("CALLER::nextframenumber", "[.cmdcall]") {
             REQUIRE(oss.str() == "nextframenumber 1\n");
         }
 
-        auto prev_timing =
-            det.getTimingMode().tsquash("inconsistent timing mode in test");
-        auto prev_frames =
-            det.getNumberOfFrames().tsquash("inconsistent #frames in test");
-        auto prev_exptime =
-            det.getExptime().tsquash("inconsistent exptime in test");
-        auto prev_period =
-            det.getPeriod().tsquash("inconsistent period in test");
-        det.setTimingMode(defs::AUTO_TIMING);
-        det.setNumberOfFrames(1);
-        det.setExptime(std::chrono::microseconds(200));
-        det.setPeriod(std::chrono::milliseconds(1));
-        det.startDetector();
-        std::this_thread::sleep_for(std::chrono::seconds(2));
-        auto currentfnum =
-            det.getNextFrameNumber().tsquash("inconsistent frame nr in test");
-        REQUIRE(currentfnum == 2);
-        if (det_type == defs::EIGER) {
-            auto prev_tengiga =
-                det.getTenGiga().tsquash("inconsistent ten giga enable");
-            det.setTenGiga(true);
-            det.setNextFrameNumber(1);
+        if (det_type != defs::XILINX_CHIPTESTBOARD) {
+            auto prev_timing =
+                det.getTimingMode().tsquash("inconsistent timing mode in test");
+            auto prev_frames =
+                det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+            auto prev_exptime =
+                det.getExptime().tsquash("inconsistent exptime in test");
+            auto prev_period =
+                det.getPeriod().tsquash("inconsistent period in test");
+            det.setTimingMode(defs::AUTO_TIMING);
+            det.setNumberOfFrames(1);
+            det.setExptime(std::chrono::microseconds(200));
+            det.setPeriod(std::chrono::milliseconds(1));
             det.startDetector();
             std::this_thread::sleep_for(std::chrono::seconds(2));
             auto currentfnum = det.getNextFrameNumber().tsquash(
                 "inconsistent frame nr in test");
             REQUIRE(currentfnum == 2);
-            det.setTenGiga(prev_tengiga);
-        }
+            if (det_type == defs::EIGER) {
+                auto prev_tengiga =
+                    det.getTenGiga().tsquash("inconsistent ten giga enable");
+                det.setTenGiga(true);
+                det.setNextFrameNumber(1);
+                det.startDetector();
+                std::this_thread::sleep_for(std::chrono::seconds(2));
+                auto currentfnum = det.getNextFrameNumber().tsquash(
+                    "inconsistent frame nr in test");
+                REQUIRE(currentfnum == 2);
+                det.setTenGiga(prev_tengiga);
+            }
 
-        det.setTimingMode(prev_timing);
-        det.setNumberOfFrames(prev_frames);
-        det.setExptime(prev_exptime);
-        det.setPeriod(prev_period);
-        for (int i = 0; i != det.size(); ++i) {
-            det.setNextFrameNumber(prev_sfnum[i], {i});
+            det.setTimingMode(prev_timing);
+            det.setNumberOfFrames(prev_frames);
+            det.setExptime(prev_exptime);
+            det.setPeriod(prev_period);
+            for (int i = 0; i != det.size(); ++i) {
+                det.setNextFrameNumber(prev_sfnum[i], {i});
+            }
         }
     } else {
         REQUIRE_THROWS(caller.call("nextframenumber", {}, -1, GET));
@@ -2627,20 +2628,15 @@ TEST_CASE("CALLER::numinterfaces", "[.cmdcall]") {
 TEST_CASE("CALLER::udp_srcip", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getSourceUDPIP();
-        REQUIRE_THROWS(caller.call("udp_srcip", {"0.0.0.0"}, -1, PUT));
-        {
-            std::ostringstream oss;
-            caller.call("udp_srcip", {"129.129.205.12"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "udp_srcip 129.129.205.12\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setSourceUDPIP(prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(caller.call("udp_srcip", {}, -1, GET));
+    auto prev_val = det.getSourceUDPIP();
+    REQUIRE_THROWS(caller.call("udp_srcip", {"0.0.0.0"}, -1, PUT));
+    {
+        std::ostringstream oss;
+        caller.call("udp_srcip", {"129.129.205.12"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "udp_srcip 129.129.205.12\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setSourceUDPIP(prev_val[i], {i});
     }
 }
 
@@ -2676,14 +2672,9 @@ TEST_CASE("CALLER::udp_numdst", "[.cmdcall]") {
 TEST_CASE("CALLER::udp_cleardst", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_THROWS(caller.call("udp_cleardst", {}, -1, GET));
-        /* dont clear all udp destinations */
-        /*REQUIRE_NOTHROW(caller.call("udp_cleardst", {}, -1, PUT));*/
-    } else {
-        REQUIRE_THROWS(caller.call("udp_cleardst", {}, -1, PUT));
-    }
+    REQUIRE_THROWS(caller.call("udp_cleardst", {}, -1, GET));
+    /* dont clear all udp destinations */
+    /*REQUIRE_NOTHROW(caller.call("udp_cleardst", {}, -1, PUT));*/
 }
 
 TEST_CASE("CALLER::udp_firstdst", "[.cmdcall]") {
@@ -2729,23 +2720,17 @@ TEST_CASE("CALLER::udp_dstip", "[.cmdcall]") {
 TEST_CASE("CALLER::udp_srcmac", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getSourceUDPMAC();
-        REQUIRE_THROWS(
-            caller.call("udp_srcmac", {"00:00:00:00:00:00"}, -1, PUT));
-        {
-            std::ostringstream oss;
-            caller.call("udp_srcmac", {"00:50:c2:42:34:12"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "udp_srcmac 00:50:c2:42:34:12\n");
+    auto prev_val = det.getSourceUDPMAC();
+    REQUIRE_THROWS(caller.call("udp_srcmac", {"00:00:00:00:00:00"}, -1, PUT));
+    {
+        std::ostringstream oss;
+        caller.call("udp_srcmac", {"00:50:c2:42:34:12"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "udp_srcmac 00:50:c2:42:34:12\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        if (prev_val[i].str() != "00:00:00:00:00:00") {
+            det.setSourceUDPMAC(prev_val[i], {i});
         }
-        for (int i = 0; i != det.size(); ++i) {
-            if (prev_val[i].str() != "00:00:00:00:00:00") {
-                det.setSourceUDPMAC(prev_val[i], {i});
-            }
-        }
-    } else {
-        REQUIRE_THROWS(caller.call("udp_srcmac", {}, -1, GET));
     }
 }
 
@@ -2758,26 +2743,21 @@ TEST_CASE("CALLER::udp_dstmac", "[.cmdcall]") {
 TEST_CASE("CALLER::udp_dstport", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getDestinationUDPPort();
-        {
-            std::ostringstream oss;
-            caller.call("udp_dstport", {"50084"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "udp_dstport 50084\n");
-        }
-        test_valid_port_caller("udp_dstport", {}, -1, PUT);
-        test_valid_port_caller("udp_dstport", {}, 0, PUT);
-        // should fail for the second module
-        if (det.size() > 1) {
-            REQUIRE_THROWS(caller.call("udp_dstport", {"65535"}, -1, PUT));
-        }
+    auto prev_val = det.getDestinationUDPPort();
+    {
+        std::ostringstream oss;
+        caller.call("udp_dstport", {"50084"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "udp_dstport 50084\n");
+    }
+    test_valid_port_caller("udp_dstport", {}, -1, PUT);
+    test_valid_port_caller("udp_dstport", {}, 0, PUT);
+    // should fail for the second module
+    if (det.size() > 1) {
+        REQUIRE_THROWS(caller.call("udp_dstport", {"65535"}, -1, PUT));
+    }
 
-        for (int i = 0; i != det.size(); ++i) {
-            det.setDestinationUDPPort(prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(caller.call("udp_dstport", {}, -1, GET));
+    for (int i = 0; i != det.size(); ++i) {
+        det.setDestinationUDPPort(prev_val[i], {i});
     }
 }
 
@@ -2884,25 +2864,15 @@ TEST_CASE("CALLER::udp_dstport2", "[.cmdcall]") {
 TEST_CASE("CALLER::udp_reconfigure", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_THROWS(caller.call("udp_reconfigure", {}, -1, GET));
-        REQUIRE_NOTHROW(caller.call("udp_reconfigure", {}, -1, PUT));
-    } else {
-        REQUIRE_THROWS(caller.call("udp_reconfigure", {}, -1, PUT));
-    }
+    REQUIRE_THROWS(caller.call("udp_reconfigure", {}, -1, GET));
+    REQUIRE_NOTHROW(caller.call("udp_reconfigure", {}, -1, PUT));
 }
 
 TEST_CASE("CALLER::udp_validate", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_THROWS(caller.call("udp_validate", {}, -1, GET));
-        REQUIRE_NOTHROW(caller.call("udp_validate", {}, -1, PUT));
-    } else {
-        REQUIRE_THROWS(caller.call("udp_validate", {}, -1, PUT));
-    }
+    REQUIRE_THROWS(caller.call("udp_validate", {}, -1, GET));
+    REQUIRE_NOTHROW(caller.call("udp_validate", {}, -1, PUT));
 }
 
 TEST_CASE("CALLER::tengiga", "[.cmdcall]") {
@@ -3379,9 +3349,7 @@ TEST_CASE("CALLER::getbit", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_THROWS(caller.call("getbit", {"0x64", "1"}, -1, GET));
-    } else if (det_type != defs::EIGER) {
+    if (det_type != defs::EIGER) {
         uint32_t addr = 0x64;
         std::string saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);

@@ -764,7 +764,7 @@ readnrows:
       function: setReadNRows
 
 nextframenumber:
-  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Ctb] Next frame number. Stopping acquisition might result in different frame numbers for different modules."
+  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Ctb][Xilinx Ctb] Next frame number. Stopping acquisition might result in different frame numbers for different modules."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:

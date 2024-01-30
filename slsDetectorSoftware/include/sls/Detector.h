@@ -658,11 +658,11 @@ class Detector {
     Result<std::vector<int64_t>>
     getRxCurrentFrameIndex(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau][Moench][CTB] */
+    /** [Eiger][Jungfrau][Moench][CTB][Xilinx CTB] */
     Result<uint64_t> getNextFrameNumber(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau][Moench][CTB] Stopping acquisition might result in
-     * different frame numbers for different modules.*/
+    /** [Eiger][Jungfrau][Moench][CTB][Xilinx CTB] Stopping acquisition might
+     * result in different frame numbers for different modules.*/
     void setNextFrameNumber(uint64_t value, Positions pos = {});
 
     /** [Eiger][Mythen3][Jungfrau][Moench] Sends an internal software trigger to

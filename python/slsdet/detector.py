@@ -743,7 +743,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def nextframenumber(self):
-        """[Eiger][Jungfrau][Moench][CTB] Next frame number. Stopping acquisition might result in different frame numbers for different modules. """
+        """[Eiger][Jungfrau][Moench][CTB][Xilinx CTB] Next frame number. Stopping acquisition might result in different frame numbers for different modules. """
         return self.getNextFrameNumber()
 
     @nextframenumber.setter

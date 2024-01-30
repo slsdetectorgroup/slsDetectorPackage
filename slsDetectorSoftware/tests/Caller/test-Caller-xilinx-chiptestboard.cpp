@@ -25,11 +25,11 @@ TEST_CASE("CALLER::configtransceiver", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_THROWS(caller.call("configtransceiver", {""}, -1, GET));
-        REQUIRE_NOTHROW(caller.call("configtransceiver", {""}, -1, PUT));
+        REQUIRE_THROWS(caller.call("configtransceiver", {}, -1, GET));
+        REQUIRE_NOTHROW(caller.call("configtransceiver", {}, -1, PUT));
     } else {
-        REQUIRE_THROWS(caller.call("configtransceiver", {""}, -1, PUT));
-        REQUIRE_THROWS(caller.call("configtransceiver", {""}, -1, GET));
+        REQUIRE_THROWS(caller.call("configtransceiver", {}, -1, PUT));
+        REQUIRE_THROWS(caller.call("configtransceiver", {}, -1, GET));
     }
 }
 } // namespace sls

@@ -5781,15 +5781,11 @@ int set_readout_mode(int file_des) {
     // only set
     if (Server_VerifyLock() == OK) {
         switch (arg) {
-#ifdef CHIPTESTBOARDD
         case ANALOG_ONLY:
         case DIGITAL_ONLY:
         case ANALOG_AND_DIGITAL:
-#endif
         case TRANSCEIVER_ONLY:
-#ifdef CHIPTESTBOARDD
         case DIGITAL_AND_TRANSCEIVER:
-#endif
             break;
         default:
             modeNotImplemented("Readout mode", (int)arg);
@@ -10987,6 +10983,9 @@ int config_transceiver(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
+#if !defined(XILINX_CHIPTESTBOARDD)
+    functionNotImplemented();
+#else
     if (Server_VerifyLock() == OK) {
         LOG(logINFO, ("Configuring Transceiver\n"));
         ret = configureTransceiver(mess);
@@ -10994,5 +10993,6 @@ int config_transceiver(int file_des) {
             LOG(logERROR, (mess));
         }
     }
+#endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }

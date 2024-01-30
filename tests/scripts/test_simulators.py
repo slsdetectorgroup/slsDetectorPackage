@@ -101,6 +101,9 @@ def loadConfig(name, rx_hostname, settingsdir):
         d = Detector()
         if name == 'xilinx_ctb':
             d.hostname = 'localhost'
+            d.udp_dstip = '127.0.0.1'
+            d.udp_srcip = '127.0.0.1'
+            d.powerchip = 1
         elif name == 'eiger':
             d.hostname = 'localhost:' + str(DEFAULT_TCP_CNTRL_PORTNO) + '+localhost:' + str(HALFMOD2_TCP_CNTRL_PORTNO)
             #d.udp_dstport = {2: 50003} 
@@ -216,7 +219,8 @@ with open(fname, 'w') as fp:
             # cmd tests for det
             cleanup(server)
             startServer(server)
-            startReceiver(server)
+            if server != 'xilinx_ctb':
+                startReceiver(server)
             loadConfig(server, args.rx_hostname, args.settingspath)
             startCmdTests(server, fp, file_results)
             cleanup(server)

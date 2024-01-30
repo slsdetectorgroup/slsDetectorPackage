@@ -81,9 +81,10 @@ TEST_CASE("Caller::patioctrl", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getPatternIOControl();
-        {
+        if (det_type == defs::CHIPTESTBOARD) {
             std::ostringstream oss;
             caller.call("patioctrl", {"0xc15004808d0a21a4"}, -1, PUT, oss);
             REQUIRE(oss.str() == "patioctrl 0xc15004808d0a21a4\n");

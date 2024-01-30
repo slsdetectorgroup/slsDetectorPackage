@@ -5497,8 +5497,8 @@ nextframenumber:
         store_result_in_t: false
   command_name: nextframenumber
   function_alias: nextframenumber
-  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Ctb] Next frame number. Stopping acquisition\
-    \ might result in different frame numbers for different modules."
+  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Ctb][Xilinx Ctb] Next frame number.\
+    \ Stopping acquisition might result in different frame numbers for different modules."
   infer_action: true
   template: true
 nmod:

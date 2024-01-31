@@ -390,10 +390,13 @@ void setupDetector() {
     if (initError == FAIL) {
         return;
     }
+    // power off chip
+    initError = powerChip(0, initErrorMessage);
+    if (initError == FAIL) {
+        return;
+    }
 
     LTC2620_D_SetDefines(DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC, DAC_DRIVER_NUM_DEVICES, DAC_DRIVER_STARTING_DEVICE_INDEX);
-    // switch off dacs (power regulators most likely only sets to minimum (if
-    // power enable on))
     LOG(logINFOBLUE, ("Powering down all dacs\n"));
     for (int idac = 0; idac < NDAC; ++idac) {
         setDAC(idac, LTC2620_D_GetPowerDownValue(), 0);
@@ -511,6 +514,7 @@ int isChipConfigured() { return chipConfigured; }
 
 // TODO powerchip and configurechip should be separate commands (not
 // requirement) in the future
+// TODO differentiate between power on board (va, vb, vc, vd, vio) and power chip (only chip with voltage vchip)?
 int powerChip(int on, char *mess) {
     uint32_t addr = CTRL_REG;
     uint32_t mask = POWER_VIO_MSK | POWER_VCC_A_MSK | POWER_VCC_B_MSK |
@@ -958,6 +962,75 @@ void setVLimit(int l) {
     if (l >= 0)
         vLimit = l;
 }
+
+int getPower(enum DACINDEX ind) {
+    // check power enable first
+    uint32_t addr = CTRL_REG;
+    uint32_t offset = POWER_VCC_A_OFST + (int)(D_PWR_A - ind);
+    if (ind == D_PWR_IO)
+        offset = POWER_VIO_OFST;
+    uint32_t mask = (1 << offset);
+    if ((bus_r(addr) & mask) == 0) {
+        LOG(logINFO, ("Power for dac %d is off\n", ind));
+        return 0;
+    }   
+
+    // check dac value
+    // not set yet
+    if (dacValues[ind] == -1) {
+        LOG(logERROR,
+            ("Power enabled, but unknown dac value for power index %d!", ind));
+        return -1;
+    }
+
+    // dac powered off
+    if (dacValues[ind] == LTC2620_D_GetPowerDownValue()) {
+        LOG(logWARNING,
+            ("Power %d enabled, dac value %d, voltage at minimum or 0\n", ind,
+             LTC2620_D_GetPowerDownValue()));
+        return LTC2620_D_GetPowerDownValue();
+    }
+
+    // get dac in mV 
+    // (unless its a different voltage range compared to other dacs)
+    return getDAC(ind, 1);
+}
+
+void setPower(enum DACINDEX ind, int val) {
+
+    uint32_t addr = CTRL_REG;
+    uint32_t offset = POWER_VCC_A_OFST + (int)(D_PWR_A - ind);
+    if (ind == D_PWR_IO)
+        offset = POWER_VIO_OFST;
+    uint32_t mask = (1 << offset);
+    
+    if (val >= 0 || val == LTC2620_D_GetPowerDownValue()) {
+        if (val > 0) {
+            LOG(logINFO, ("Setting Power to %d mV\n", val));
+        }
+
+        // switch off power enable
+        LOG(logINFO, ("\tSwitching off enable for P%d (ctrl reg)\n", (int)(ind - D_PWR_A)));
+        bus_w(addr, bus_r(addr) & ~mask);
+
+        // power down dac
+        LOG(logINFO, ("\tPowering down P%d\n", (int)(ind - D_PWR_A)));
+        setDAC(ind, LTC2620_D_GetPowerDownValue(), 0);
+
+        // set dac in mV             
+        if (val > 0) {
+            LOG(logINFO, ("\tSetting Power P%d (DAC %d) to %d mV\n", (int)(ind - D_PWR_A), (int)ind, val));
+            setDAC(ind, val, 1);
+        }
+
+        // switch on power enable
+        if (getDAC(ind, 1) == val || val == LTC2620_D_GetPowerDownValue()) {
+            LOG(logINFO, ("\tSwitching on enable for P%d (ctrl reg)\n", (int)(ind - D_PWR_A)));
+            bus_w(addr, bus_r(addr) | mask);
+        }
+    }
+}
+
 
 /* parameters - timing, extsig */
 

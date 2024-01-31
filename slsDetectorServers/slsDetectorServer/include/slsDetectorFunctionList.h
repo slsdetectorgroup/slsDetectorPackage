@@ -420,7 +420,11 @@ int isPowerValid(enum DACINDEX ind, int val);
 int getPower();
 void setPower(enum DACINDEX ind, int val);
 void powerOff();
+#elif XILINX_CHIPTESTBOARDD
+int getPower();
+void setPower(enum DACINDEX ind, int val);
 #endif
+
 
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
 int getADC(enum ADCINDEX ind, int *value);

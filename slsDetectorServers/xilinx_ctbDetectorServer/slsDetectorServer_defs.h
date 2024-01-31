@@ -32,16 +32,6 @@
 
 
 enum ADCINDEX {
-    V_PWR_IO,
-    V_PWR_A,
-    V_PWR_B,
-    V_PWR_C,
-    V_PWR_D,
-    I_PWR_IO,
-    I_PWR_A,
-    I_PWR_B,
-    I_PWR_C,
-    I_PWR_D,
     S_ADC0,
     S_ADC1,
     S_ADC2,
@@ -70,11 +60,10 @@ enum DACINDEX {
     D15,
     D16,
     D17,
-    D_PWR_D,
-    D_PWR_CHIP,
-    D_PWR_C,
-    D_PWR_B,
     D_PWR_A,
+    D_PWR_B,
+    D_PWR_C,
+    D_PWR_D,
     D_PWR_IO
 };
 /** Default Parameters */

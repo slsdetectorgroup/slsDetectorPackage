@@ -3846,7 +3846,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_a(self):
-        """[Ctb] Power supply a in mV."""
+        """[Ctb][Xilinx Ctb] Power supply a in mV."""
         return self.getPower(dacIndex.V_POWER_A)
 
     @v_a.setter
@@ -3857,7 +3857,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_b(self):
-        """[Ctb] Power supply b in mV."""
+        """[Ctb][Xilinx Ctb] Power supply b in mV."""
         return self.getPower(dacIndex.V_POWER_B)
 
     @v_b.setter
@@ -3868,7 +3868,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_c(self):
-        """[Ctb] Power supply c in mV."""
+        """[Ctb][Xilinx Ctb] Power supply c in mV."""
         return self.getPower(dacIndex.V_POWER_C)
 
     @v_c.setter
@@ -3879,7 +3879,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_d(self):
-        """[Ctb] Power supply d in mV."""
+        """[Ctb][Xilinx Ctb] Power supply d in mV."""
         return self.getPower(dacIndex.V_POWER_D)
 
     @v_d.setter
@@ -3890,7 +3890,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_io(self):
-        """[Ctb] Power supply io in mV. Minimum 1200 mV. 
+        """[Ctb][Xilinx Ctb] Power supply io in mV. Minimum 1200 mV. 
         
         Note
         ----

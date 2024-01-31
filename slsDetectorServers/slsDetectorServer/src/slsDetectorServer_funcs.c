@@ -973,6 +973,22 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
     case V_POWER_CHIP:
         serverDacIndex = D_PWR_CHIP;
         break;
+#elif XILINX_CHIPTESTBOARDD
+    case V_POWER_A:
+        serverDacIndex = D_PWR_A;
+        break;
+    case V_POWER_B:
+        serverDacIndex = D_PWR_B;
+        break;
+    case V_POWER_C:
+        serverDacIndex = D_PWR_C;
+        break;
+    case V_POWER_D:
+        serverDacIndex = D_PWR_D;
+        break;
+    case V_POWER_IO:
+        serverDacIndex = D_PWR_IO;
+        break;
 #elif MYTHEN3D
     case VCASSH:
         serverDacIndex = M_VCASSH;
@@ -1124,7 +1140,6 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
     case IBIAS_SFP:
         serverDacIndex = MO_IBIAS_SFP;
         break;
-
 #endif
 
     default:
@@ -1233,7 +1248,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
         break;
 #endif
         // power
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     case V_POWER_A:
     case V_POWER_B:
     case V_POWER_C:
@@ -1254,7 +1269,9 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                         "exceeds voltage limit %d.\n",
                         ind, getVLimit());
                 LOG(logERROR, (mess));
-            } else if (!isPowerValid(serverDacIndex, val)) {
+            } 
+#ifdef CHIPTESTBOARDD
+            else if (!isPowerValid(serverDacIndex, val)) {
                 ret = FAIL;
                 sprintf(
                     mess,
@@ -1264,15 +1281,21 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                     (serverDacIndex == D_PWR_IO ? VIO_MIN_MV : POWER_RGLTR_MIN),
                     (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT));
                 LOG(logERROR, (mess));
-            } else {
+            } 
+#endif      
+            else {
                 setPower(serverDacIndex, val);
             }
         }
-        retval = getPower(serverDacIndex);
-        LOG(logDEBUG1, ("Power regulator(%d): %d\n", ind, retval));
-        validate(&ret, mess, val, retval, "set power regulator", DEC);
+        if (ret == OK) {
+            retval = getPower(serverDacIndex);
+            LOG(logDEBUG1, ("Power regulator(%d): %d\n", ind, retval));
+            validate(&ret, mess, val, retval, "set power regulator", DEC);
+        }
         break;
+#endif
 
+#ifdef CHIPTESTBOARDD
     case V_POWER_CHIP:
         if (val >= 0) {
             ret = FAIL;

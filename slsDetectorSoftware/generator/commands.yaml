@@ -1566,7 +1566,7 @@ v_limit:
 
 v_a:
   inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb] Power supply a in mV."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply a in mV."
   actions:
     GET:
       function: getPower
@@ -1577,7 +1577,7 @@ v_a:
 
 v_b:
   inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb] Power supply b in mV."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply b in mV."
   actions:
     GET:
       function: getPower
@@ -1588,7 +1588,7 @@ v_b:
 
 v_c:
   inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb] Power supply c in mV."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply c in mV."
   actions:
     GET:
       function: getPower
@@ -1599,7 +1599,7 @@ v_c:
 
 v_d:
   inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb] Power supply d in mV."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply d in mV."
   actions:
     GET:
       function: getPower
@@ -1610,7 +1610,7 @@ v_d:
 
 v_io:
   inherit_actions: INTEGER_IND_COMMAND
-  help: "[n_value]\n\t[Ctb] Power supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up)."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up)."
   actions:
     GET:
       function: getPower

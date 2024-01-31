@@ -1638,7 +1638,7 @@ class Detector {
     /** gets list of slow adc enums */
     std::vector<defs::dacIndex> getSlowADCList() const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     Result<int> getPower(defs::dacIndex index, Positions pos = {}) const;
 
     /**

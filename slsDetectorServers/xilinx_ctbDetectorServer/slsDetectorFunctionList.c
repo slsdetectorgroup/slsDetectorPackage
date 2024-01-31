@@ -396,7 +396,9 @@ void setupDetector() {
         return;
     }
 
-    LTC2620_D_SetDefines(DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC, DAC_DRIVER_NUM_DEVICES, DAC_DRIVER_STARTING_DEVICE_INDEX);
+    LTC2620_D_SetDefines(DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC,
+                         DAC_DRIVER_NUM_DEVICES,
+                         DAC_DRIVER_STARTING_DEVICE_INDEX);
     LOG(logINFOBLUE, ("Powering down all dacs\n"));
     for (int idac = 0; idac < NDAC; ++idac) {
         setDAC(idac, LTC2620_D_GetPowerDownValue(), 0);
@@ -466,6 +468,11 @@ int waitTranseiverReset(char *mess) {
             sprintf(mess, "Resetting transceiver timed out, time:%.2fs\n",
                     (timeNs / (1E9)));
             LOG(logERROR, (mess));
+
+            LOG(logINFORED, ("Waiting for Firmware to be fixed here. Skipping "
+                             "this error for now.\n"));
+            return OK;
+
             return FAIL;
         }
         usleep(0);
@@ -514,7 +521,8 @@ int isChipConfigured() { return chipConfigured; }
 
 // TODO powerchip and configurechip should be separate commands (not
 // requirement) in the future
-// TODO differentiate between power on board (va, vb, vc, vd, vio) and power chip (only chip with voltage vchip)?
+// TODO differentiate between power on board (va, vb, vc, vd, vio) and power
+// chip (only chip with voltage vchip)?
 int powerChip(int on, char *mess) {
     uint32_t addr = CTRL_REG;
     uint32_t mask = POWER_VIO_MSK | POWER_VCC_A_MSK | POWER_VCC_B_MSK |
@@ -889,7 +897,6 @@ int64_t getNumTriggersLeft() {
 }
 /* parameters - dac, adc, hv */
 
-
 void setDAC(enum DACINDEX ind, int val, int mV) {
     char dacName[MAX_STR_LENGTH] = {0};
     memset(dacName, 0, MAX_STR_LENGTH);
@@ -898,11 +905,13 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     if (val < 0 && val != LTC2620_D_GetPowerDownValue())
         return;
 
-    LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dacName, val, (mV ? "mV" : "dac units")));
+    LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dacName, val,
+                    (mV ? "mV" : "dac units")));
     int dacval = val;
 
 #ifdef VIRTUAL
-    LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dacName, val, (mV ? "mV" : "dac units")));
+    LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dacName, val,
+                  (mV ? "mV" : "dac units")));
     if (!mV) {
         dacValues[ind] = val;
     }
@@ -973,7 +982,7 @@ int getPower(enum DACINDEX ind) {
     if ((bus_r(addr) & mask) == 0) {
         LOG(logINFO, ("Power for dac %d is off\n", ind));
         return 0;
-    }   
+    }
 
     // check dac value
     // not set yet
@@ -991,7 +1000,7 @@ int getPower(enum DACINDEX ind) {
         return LTC2620_D_GetPowerDownValue();
     }
 
-    // get dac in mV 
+    // get dac in mV
     // (unless its a different voltage range compared to other dacs)
     return getDAC(ind, 1);
 }
@@ -1003,34 +1012,95 @@ void setPower(enum DACINDEX ind, int val) {
     if (ind == D_PWR_IO)
         offset = POWER_VIO_OFST;
     uint32_t mask = (1 << offset);
-    
+
     if (val >= 0 || val == LTC2620_D_GetPowerDownValue()) {
         if (val > 0) {
             LOG(logINFO, ("Setting Power to %d mV\n", val));
         }
 
         // switch off power enable
-        LOG(logINFO, ("\tSwitching off enable for P%d (ctrl reg)\n", (int)(ind - D_PWR_A)));
+        LOG(logINFO, ("\tSwitching off enable for P%d (ctrl reg)\n",
+                      (int)(ind - D_PWR_A)));
         bus_w(addr, bus_r(addr) & ~mask);
 
         // power down dac
         LOG(logINFO, ("\tPowering down P%d\n", (int)(ind - D_PWR_A)));
         setDAC(ind, LTC2620_D_GetPowerDownValue(), 0);
 
-        // set dac in mV             
+        // set dac in mV
         if (val > 0) {
-            LOG(logINFO, ("\tSetting Power P%d (DAC %d) to %d mV\n", (int)(ind - D_PWR_A), (int)ind, val));
+            LOG(logINFO, ("\tSetting Power P%d (DAC %d) to %d mV\n",
+                          (int)(ind - D_PWR_A), (int)ind, val));
             setDAC(ind, val, 1);
         }
 
         // switch on power enable
         if (getDAC(ind, 1) == val || val == LTC2620_D_GetPowerDownValue()) {
-            LOG(logINFO, ("\tSwitching on enable for P%d (ctrl reg)\n", (int)(ind - D_PWR_A)));
+            LOG(logINFO, ("\tSwitching on enable for P%d (ctrl reg)\n",
+                          (int)(ind - D_PWR_A)));
             bus_w(addr, bus_r(addr) | mask);
         }
     }
 }
 
+int getADC(enum ADCINDEX ind, int *value) {
+    *value = 0;
+#ifdef VIRTUAL
+    return OK;
+#endif
+    switch (ind) {
+        // slow adcs
+    case S_ADC0:
+    case S_ADC1:
+    case S_ADC2:
+    case S_ADC3:
+    case S_ADC4:
+    case S_ADC5:
+    case S_ADC6:
+    case S_ADC7:
+        LOG(logDEBUG1, ("Reading Slow ADC Channel %d\n", (int)ind - S_ADC0));
+        return getSlowADC((int)ind - S_ADC0, value);
+    default:
+        LOG(logERROR, ("Adc Index %d not defined \n", (int)ind));
+        return FAIL;
+    }
+}
+
+int getSlowADC(int ichan, int *retval) {
+    *retval = 0;
+#ifndef VIRTUAL
+    char fname[MAX_STR_LENGTH];
+    memset(fname, 0, MAX_STR_LENGTH);
+    sprintf(fname, SLOWADC_DRIVER_FILE_NAME, ichan);
+    LOG(logDEBUG1, ("fname %s\n", fname));
+
+    if (readADCFromFile(fname, retval) == FAIL) {
+        return FAIL;
+    }
+
+    // TODO assuming already converted to uV
+    // convert to uV
+    // double value = SLOWDAC_CONVERTION_FACTOR_TO_UV * (double)(*retval);
+    // LOG(logINFO, ("Slow ADC [%d]: %f uV\n", ichan, value));
+    //*retval = (int)value;
+
+    LOG(logINFO, ("Slow ADC [%d]: %d uV\n", ichan, (*retval)));
+#endif
+    return OK;
+}
+
+int getTemperature(int *retval) {
+    *retval = 0;
+#ifndef VIRTUAL
+    if (readADCFromFile(TEMP_DRIVER_FILE_NAME, retval) == FAIL) {
+        return FAIL;
+    }
+
+    // value already in millidegree celsius
+    LOG(logINFO, ("Temperature: %.2f °C\n", (double)(*retval) / 1000.00));
+#endif
+    return OK;
+}
 
 /* parameters - timing, extsig */
 

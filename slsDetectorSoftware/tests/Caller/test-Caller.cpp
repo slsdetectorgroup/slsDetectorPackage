@@ -1994,8 +1994,7 @@ TEST_CASE("CALLER::temp_fpga", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::CHIPTESTBOARD &&
-        det_type != defs::XILINX_CHIPTESTBOARD) {
+    if (det_type != defs::CHIPTESTBOARD) {
         REQUIRE_NOTHROW(caller.call("temp_fpga", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(caller.call("temp_fpga", {}, 0, GET, oss));
@@ -2013,7 +2012,8 @@ TEST_CASE("CALLER::daclist", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::XILINX_CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         REQUIRE_NOTHROW(caller.call("daclist", {}, -1, GET));
 
         auto prev = det.getDacNames();
@@ -2486,31 +2486,31 @@ TEST_CASE("CALLER::scan", "[.cmdcall]") {
     } else {
         {
             std::ostringstream oss;
-            caller.call("scan", {ToString(ind), "500", "1500", "500"}, -1,
+            caller.call("scan", {ToString(ind), "500", "1500", "500"}, -1, PUT,
+                        oss);
+            CHECK(oss.str() ==
+                  "scan [" + ToString(ind) + ", 500, 1500, 500]\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("scan", {}, -1, GET, oss);
+            CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
+                                   "\nstart 500\nstop 1500\nstep "
+                                   "500\nsettleTime 1ms\n]\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("scan", {ToString(ind), "500", "1500", "500", "2s"}, -1,
                         PUT, oss);
             CHECK(oss.str() ==
-                    "scan [" + ToString(ind) + ", 500, 1500, 500]\n");
+                  "scan [" + ToString(ind) + ", 500, 1500, 500, 2s]\n");
         }
         {
             std::ostringstream oss;
             caller.call("scan", {}, -1, GET, oss);
             CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
-                                    "\nstart 500\nstop 1500\nstep "
-                                    "500\nsettleTime 1ms\n]\n");
-        }
-        {
-            std::ostringstream oss;
-            caller.call("scan", {ToString(ind), "500", "1500", "500", "2s"},
-                        -1, PUT, oss);
-            CHECK(oss.str() ==
-                    "scan [" + ToString(ind) + ", 500, 1500, 500, 2s]\n");
-        }
-        {
-            std::ostringstream oss;
-            caller.call("scan", {}, -1, GET, oss);
-            CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
-                                    "\nstart 500\nstop 1500\nstep "
-                                    "500\nsettleTime 2s\n]\n");
+                                   "\nstart 500\nstop 1500\nstep "
+                                   "500\nsettleTime 2s\n]\n");
         }
         {
             std::ostringstream oss;
@@ -2524,18 +2524,18 @@ TEST_CASE("CALLER::scan", "[.cmdcall]") {
         }
         {
             std::ostringstream oss;
-            caller.call("scan", {ToString(ind), "1500", "500", "-500"}, -1,
-                        PUT, oss);
+            caller.call("scan", {ToString(ind), "1500", "500", "-500"}, -1, PUT,
+                        oss);
             CHECK(oss.str() ==
-                    "scan [" + ToString(ind) + ", 1500, 500, -500]\n");
+                  "scan [" + ToString(ind) + ", 1500, 500, -500]\n");
         }
         CHECK_THROWS(caller.call(
             "scan", {ToString(notImplementedInd), "500", "1500", "500"}, -1,
             PUT));
-        CHECK_THROWS(caller.call(
-            "scan", {ToString(ind), "500", "1500", "-500"}, -1, PUT));
-        CHECK_THROWS(caller.call(
-            "scan", {ToString(ind), "1500", "500", "500"}, -1, PUT));
+        CHECK_THROWS(caller.call("scan", {ToString(ind), "500", "1500", "-500"},
+                                 -1, PUT));
+        CHECK_THROWS(caller.call("scan", {ToString(ind), "1500", "500", "500"},
+                                 -1, PUT));
 
         if (det_type == defs::MYTHEN3 || defs::EIGER) {
             {
@@ -2548,8 +2548,8 @@ TEST_CASE("CALLER::scan", "[.cmdcall]") {
                 std::ostringstream oss;
                 caller.call("scan", {}, -1, GET, oss);
                 CHECK(oss.str() ==
-                        "scan [enabled\ndac trimbits\nstart 0\nstop 48\nstep "
-                        "16\nsettleTime 2s\n]\n");
+                      "scan [enabled\ndac trimbits\nstart 0\nstop 48\nstep "
+                      "16\nsettleTime 2s\n]\n");
             }
         }
 

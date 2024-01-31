@@ -1171,7 +1171,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
     case ADC_VPP:
     case V_LIMIT:
 #elif XILINX_CHIPTESTBOARDD
-    case V_LIMIT:   
+    case V_LIMIT:
 #endif
         break;
     default:
@@ -1211,7 +1211,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
         break;
 #endif
 
-    // high voltage
+        // high voltage
 #ifndef XILINX_CHIPTESTBOARDD
     case HIGH_VOLTAGE:
         retval = setHighVoltage(val);
@@ -1269,7 +1269,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                         "exceeds voltage limit %d.\n",
                         ind, getVLimit());
                 LOG(logERROR, (mess));
-            } 
+            }
 #ifdef CHIPTESTBOARDD
             else if (!isPowerValid(serverDacIndex, val)) {
                 ret = FAIL;
@@ -1281,8 +1281,8 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                     (serverDacIndex == D_PWR_IO ? VIO_MIN_MV : POWER_RGLTR_MIN),
                     (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT));
                 LOG(logERROR, (mess));
-            } 
-#endif      
+            }
+#endif
             else {
                 setPower(serverDacIndex, val);
             }
@@ -1325,7 +1325,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
         break;
 #endif
 
-    // vlimit
+        // vlimit
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     case V_LIMIT:
         if (val >= 0) {
@@ -1458,9 +1458,6 @@ int get_adc(int file_des) {
     if (receiveData(file_des, &ind, sizeof(ind), INT32) < 0)
         return printSocketReadError();
 
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-#else
     enum ADCINDEX serverAdcIndex = 0;
 
     // get
@@ -1560,6 +1557,34 @@ int get_adc(int file_des) {
     case SLOW_ADC_TEMP:
         serverAdcIndex = S_TMP;
         break;
+#elif XILINX_CHIPTESTBOARDD
+    case TEMPERATURE_FPGA:
+        serverAdcIndex = TEMP_FPGA;
+        break;
+    case SLOW_ADC0:
+        serverAdcIndex = S_ADC0;
+        break;
+    case SLOW_ADC1:
+        serverAdcIndex = S_ADC1;
+        break;
+    case SLOW_ADC2:
+        serverAdcIndex = S_ADC2;
+        break;
+    case SLOW_ADC3:
+        serverAdcIndex = S_ADC3;
+        break;
+    case SLOW_ADC4:
+        serverAdcIndex = S_ADC4;
+        break;
+    case SLOW_ADC5:
+        serverAdcIndex = S_ADC5;
+        break;
+    case SLOW_ADC6:
+        serverAdcIndex = S_ADC6;
+        break;
+    case SLOW_ADC7:
+        serverAdcIndex = S_ADC7;
+        break;
 #endif
     default:
         modeNotImplemented("Adc Index", (int)ind);
@@ -1569,10 +1594,14 @@ int get_adc(int file_des) {
     // valid index
     if (ret == OK) {
         LOG(logDEBUG1, ("Getting ADC %d\n", serverAdcIndex));
-#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+#if defined(MYTHEN3D) || defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
         ret = getADC(serverAdcIndex, &retval);
         if (ret == FAIL) {
-            strcpy(mess, "Could not get temperature\n");
+            if (ind == TEMPERATURE_FPGA) {
+                strcpy(mess, "Could not get temperature\n");
+            } else {
+                strcpy(mess, "Could not get ADC\n");
+            }
             LOG(logERROR, (mess));
         } else {
             LOG(logDEBUG1, ("ADC(%d): %d\n", serverAdcIndex, retval));
@@ -1582,7 +1611,6 @@ int get_adc(int file_des) {
         LOG(logDEBUG1, ("ADC(%d): %d\n", serverAdcIndex, retval));
 #endif
     }
-#endif
 
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }

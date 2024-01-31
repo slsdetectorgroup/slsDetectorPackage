@@ -11,4 +11,4 @@
 #define APIMYTHEN3   "developer 0x240110"
 #define APIMOENCH    "developer 0x240110"
 #define APIEIGER     "developer 0x240110"
-#define APIXILINXCTB "developer 0x240126"
+#define APIXILINXCTB "developer 0x240131"

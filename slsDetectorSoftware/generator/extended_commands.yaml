@@ -10121,7 +10121,7 @@ slowadcvalues:
           GETFCNLIST: getSlowADCList
           GETFCNNAME: getSlowADCNames
           printable_name: '*name_it++'
-          suffix: mV
+          suffix: uV
         function: ''
         input: []
         input_types: []
@@ -10784,8 +10784,8 @@ temp_fpga:
         store_result_in_t: true
   command_name: temp_fpga
   function_alias: temp_fpga
-  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Gotthard][Mythen3][Gotthard2] FPGA\
-    \ Temperature"
+  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Xilinx\
+    \ CTB] FPGA Temperature"
   infer_action: true
   template: true
 temp_fpgaext:
@@ -12603,7 +12603,7 @@ v_a:
         store_result_in_t: false
   command_name: v_a
   function_alias: v_a
-  help: "[n_value]\n\t[Ctb] Power supply a in mV."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply a in mV."
   infer_action: true
   template: true
 v_b:
@@ -12649,7 +12649,7 @@ v_b:
         store_result_in_t: false
   command_name: v_b
   function_alias: v_b
-  help: "[n_value]\n\t[Ctb] Power supply b in mV."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply b in mV."
   infer_action: true
   template: true
 v_c:
@@ -12695,7 +12695,7 @@ v_c:
         store_result_in_t: false
   command_name: v_c
   function_alias: v_c
-  help: "[n_value]\n\t[Ctb] Power supply c in mV."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply c in mV."
   infer_action: true
   template: true
 v_chip:
@@ -12788,7 +12788,7 @@ v_d:
         store_result_in_t: false
   command_name: v_d
   function_alias: v_d
-  help: "[n_value]\n\t[Ctb] Power supply d in mV."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply d in mV."
   infer_action: true
   template: true
 v_io:
@@ -12834,8 +12834,9 @@ v_io:
         store_result_in_t: false
   command_name: v_io
   function_alias: v_io
-  help: "[n_value]\n\t[Ctb] Power supply io in mV. Minimum 1200 mV. Must be the first\
-    \ power regulator to be set after fpga reset (on-board detector server start up)."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply io in mV. Minimum 1200 mV. Must\
+    \ be the first power regulator to be set after fpga reset (on-board detector server\
+    \ start up)."
   infer_action: true
   template: true
 v_limit:
@@ -12881,7 +12882,8 @@ v_limit:
         store_result_in_t: false
   command_name: v_limit
   function_alias: v_limit
-  help: "[n_value]\n\t[Ctb] Soft limit for power supplies (ctb only) and DACS in mV."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and\
+    \ DACS in mV."
   infer_action: true
   template: true
 vchip_comp_adc:

@@ -2087,7 +2087,7 @@ temp_adc:
 
 temp_fpga:
   inherit_actions: GET_IND_COMMAND
-  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Gotthard][Mythen3][Gotthard2] FPGA Temperature"
+  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Xilinx CTB] FPGA Temperature"
   actions:
     GET:
       function: getTemperature
@@ -2314,7 +2314,7 @@ slowadcvalues:
         GETFCNLIST: getSlowADCList
         GETFCNNAME: getSlowADCNames
         GETFCN: getSlowADC
-        suffix: "mV"
+        suffix: "uV"
         printable_name: "*name_it++"
 
 tempvalues:

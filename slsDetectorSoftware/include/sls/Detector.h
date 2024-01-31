@@ -484,7 +484,7 @@ class Detector {
 
     /**
      * (Degrees)
-     * [Mythen3][Gotthard2] Options: TEMPERATURE_FPGA
+     * [Mythen3][Gotthard2][Xilinx Ctb] Options: TEMPERATURE_FPGA
      * [Gotthard] Options: TEMPERATURE_ADC, TEMPERATURE_FPGA \n
      * [Jungfrau][Moench] Options: TEMPERATURE_ADC, TEMPERATURE_FPGA \n
      * [Eiger] Options: TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT, TEMPERATURE_10GE,
@@ -1714,7 +1714,7 @@ class Detector {
     Result<int> getMeasuredCurrent(defs::dacIndex index,
                                    Positions pos = {}) const;
 
-    /** [CTB] Options: SLOW_ADC0 - SLOW_ADC7  in uV */
+    /** [CTB][Xilinx CTB] Options: SLOW_ADC0 - SLOW_ADC7  in uV */
     Result<int> getSlowADC(defs::dacIndex index, Positions pos = {}) const;
 
     /** [CTB] */

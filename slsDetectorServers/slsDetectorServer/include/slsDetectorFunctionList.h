@@ -425,19 +425,19 @@ int getPower();
 void setPower(enum DACINDEX ind, int val);
 #endif
 
-
-#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+#if defined(MYTHEN3D) || defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
 int getADC(enum ADCINDEX ind, int *value);
 #else
-#ifndef XILINX_CHIPTESTBOARDD
 int getADC(enum ADCINDEX ind);
-#endif
 #endif
 #ifdef CHIPTESTBOARDD
 int getSlowADC(int ichan);
 int getSlowADCTemperature();
 #endif
-#ifndef XILINX_CHIPTESTBOARDD
+#ifdef XILINX_CHIPTESTBOARDD
+int getSlowADC(int ichan, int *retval);
+int getTemperature(int *retval);
+#else
 int setHighVoltage(int val);
 #endif
 

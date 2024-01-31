@@ -20,7 +20,8 @@ int LTC2620_D_NumDevices = 0;
 int LTC2620_D_NumChannelsPerDevice = 0;
 int LTC2620_D_DacDriverStartingDeviceIndex = 0;
 
-void LTC2620_D_SetDefines(int hardMaxV, char *driverfname, int numdacs, int numdevices, int startingDeviceIndex) {
+void LTC2620_D_SetDefines(int hardMaxV, char *driverfname, int numdacs,
+                          int numdevices, int startingDeviceIndex) {
     LOG(logINFOBLUE,
         ("Configuring DACs (LTC2620) to %s (numdacs:%d, hard max: %dmV)\n",
          driverfname, numdacs, hardMaxV));
@@ -80,14 +81,21 @@ int LTC2620_D_SetDACValue(int dacnum, int val, int mV, char *dacname,
     }
 
     // set
+#ifdef XILINX_CHIPTESTBOARDD
+    if ((*dacval >= 0) || (*dacval == LTC2620_D_PWR_DOWN_VAL)) {
+        LOG(logINFO, ("Setting DAC %2d [%-6s] : %d dac (%d mV)\n", dacnum,
+                      dacname, *dacval, dacmV));
+#else
     if ((*dacval >= 0) || (*dacval == LTC2620_D_PWR_DOWN_VAL)) {
         LOG(logINFO, ("Setting DAC %2d [%-12s] : %d dac (%d mV)\n", dacnum,
                       dacname, *dacval, dacmV));
-
+#endif
 #ifndef VIRTUAL
         char fname[MAX_STR_LENGTH];
+        memset(fname, 0, MAX_STR_LENGTH);
 #ifdef XILINX_CHIPTESTBOARDD
-        int idev = LTC2620_D_DacDriverStartingDeviceIndex + (dacnum/LTC2620_D_NumChannelsPerDevice);
+        int idev = LTC2620_D_DacDriverStartingDeviceIndex +
+                   (dacnum / LTC2620_D_NumChannelsPerDevice);
         int idac = dacnum % LTC2620_D_NumChannelsPerDevice;
         sprintf(fname, LTC2620_D_DriverFileName, idev, idac);
 #else

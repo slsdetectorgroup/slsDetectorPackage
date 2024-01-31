@@ -13339,7 +13339,7 @@ std::string Caller::slowadcvalues(int action) {
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
 
-            std::string suffix = " mV";
+            std::string suffix = " uV";
             auto t = det->getSlowADCList();
 
             auto names = det->getSlowADCNames();
@@ -14256,7 +14256,7 @@ std::string Caller::temp_fpga(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: temp_fpga" << std::endl;
         os << R"V0G0N([n_value]
-	[Eiger][Jungfrau][Moench][Gotthard][Mythen3][Gotthard2] FPGA Temperature )V0G0N"
+	[Eiger][Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Xilinx CTB] FPGA Temperature )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -16609,7 +16609,7 @@ std::string Caller::v_a(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: v_a" << std::endl;
         os << R"V0G0N([n_value]
-	[Ctb] Power supply a in mV. )V0G0N"
+	[Ctb][Xilinx Ctb] Power supply a in mV. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -16672,7 +16672,7 @@ std::string Caller::v_b(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: v_b" << std::endl;
         os << R"V0G0N([n_value]
-	[Ctb] Power supply b in mV. )V0G0N"
+	[Ctb][Xilinx Ctb] Power supply b in mV. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -16735,7 +16735,7 @@ std::string Caller::v_c(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: v_c" << std::endl;
         os << R"V0G0N([n_value]
-	[Ctb] Power supply c in mV. )V0G0N"
+	[Ctb][Xilinx Ctb] Power supply c in mV. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -16862,7 +16862,7 @@ std::string Caller::v_d(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: v_d" << std::endl;
         os << R"V0G0N([n_value]
-	[Ctb] Power supply d in mV. )V0G0N"
+	[Ctb][Xilinx Ctb] Power supply d in mV. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -16925,7 +16925,7 @@ std::string Caller::v_io(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: v_io" << std::endl;
         os << R"V0G0N([n_value]
-	[Ctb] Power supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up). )V0G0N"
+	[Ctb][Xilinx Ctb] Power supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up). )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -16988,7 +16988,7 @@ std::string Caller::v_limit(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: v_limit" << std::endl;
         os << R"V0G0N([n_value]
-	[Ctb] Soft limit for power supplies (ctb only) and DACS in mV. )V0G0N"
+	[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and DACS in mV. )V0G0N"
            << std::endl;
         return os.str();
     }

@@ -19,17 +19,23 @@
 #define NBITS_PER_TRANSCEIVER (64)
 #define NCHIP                 (1)
 #define NDAC                  (24)
-#define NPWR                    (6)
-#define NDAC_ONLY               (NDAC - NPWR)
+#define NPWR                  (6)
+#define NDAC_ONLY             (NDAC - NPWR)
 
 #define DYNAMIC_RANGE       (16)
 #define NUM_BYTES_PER_PIXEL (DYNAMIC_RANGE / 8)
 
-
 #define DAC_DRIVER_NUM_DEVICES (3)
-#define DAC_DRIVER_FILE_NAME ("/sys/bus/iio/devices/iio:device%d/out_voltage_%d.raw")
+#define DAC_DRIVER_FILE_NAME                                                   \
+    ("/sys/bus/iio/devices/iio:device%d/out_voltage%d_raw")
 #define DAC_DRIVER_STARTING_DEVICE_INDEX (2)
 
+#define SLOWADC_DRIVER_FILE_NAME                                               \
+    ("/sys/bus/iio/devices/iio:device1/in_voltage%d_raw")
+//#define SLOWDAC_CONVERTION_FACTOR_TO_UV (62.500953)
+
+#define TEMP_DRIVER_FILE_NAME                                                  \
+    ("/sys/bus/iio/devices/iio:device0/in_temp7_input")
 
 enum ADCINDEX {
     S_ADC0,
@@ -39,7 +45,8 @@ enum ADCINDEX {
     S_ADC4,
     S_ADC5,
     S_ADC6,
-    S_ADC7
+    S_ADC7,
+    TEMP_FPGA
 };
 enum DACINDEX {
     D0,
@@ -81,16 +88,14 @@ enum DACINDEX {
 #define DEFAULT_STARTING_FRAME_NUMBER (1)
 #define DEFAULT_VLIMIT                (-100)
 
-
 #define MAX_TRANSCEIVER_MASK    (0xF)
 #define MAX_TRANSCEIVER_SAMPLES (0x1FFF)
 
 #define MAX_ANALOG_SAMPLES  (0x3FFF)
 #define MAX_DIGITAL_SAMPLES (0x3FFF)
 
-#define DAC_MIN_MV      (0)
-#define DAC_MAX_MV      (2500)
-
+#define DAC_MIN_MV (0)
+#define DAC_MAX_MV (2500)
 
 #define TICK_CLK (20) // MHz (trig_timeFromStart, frametime, timeFromStart)
 #define RUN_CLK                                                                \

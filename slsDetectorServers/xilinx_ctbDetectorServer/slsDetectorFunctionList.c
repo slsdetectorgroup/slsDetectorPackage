@@ -1060,6 +1060,9 @@ int getADC(enum ADCINDEX ind, int *value) {
     case S_ADC7:
         LOG(logDEBUG1, ("Reading Slow ADC Channel %d\n", (int)ind - S_ADC0));
         return getSlowADC((int)ind - S_ADC0, value);
+    case TEMP_FPGA:
+        LOG(logDEBUG1, ("Reading FPGA Temperature\n"));
+        return getTemperature(value);   
     default:
         LOG(logERROR, ("Adc Index %d not defined \n", (int)ind));
         return FAIL;

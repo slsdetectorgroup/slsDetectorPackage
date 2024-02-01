@@ -19,7 +19,7 @@ class commonModeSubtractionSuperColumnJF : public commonModeSubtraction {
                 mean2[iroi] += val * val;
                 nCm[iroi]++;
                 if (nCm[iroi] > 64*256)
-                    std::cout << "Too many pixels added " << nCm[iroi] << std::endl
+                    std::cout << "Too many pixels added " << nCm[iroi] << std::endl;
            
         }
     };
@@ -27,8 +27,6 @@ class commonModeSubtractionSuperColumnJF : public commonModeSubtraction {
     virtual commonModeSubtractionSuperColumnJF *Clone() {
         return new commonModeSubtractionSuperColumnJF();
     };
-
-  
 };
 
 

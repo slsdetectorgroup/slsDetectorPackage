@@ -2,11 +2,11 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 //#include "sls/ansi.h"
 #include <iostream>
+
 //enable common mode subtraction
 //#define CMS
-
 //disable common mode subtraction
-//#undef CMS
+#undef CMS
 #undef CORR
 #define C_GHOST 0.0004
 
@@ -184,11 +184,13 @@ int main(int argc, char *argv[]) {
     cout << "Nframes is " << nframes << endl;
 
     uint32_t nnx, nny;
-//    commonModeSubtraction *cm = NULL;
+    //commonModeSubtraction *cm = NULL;
 //#ifdef CMS
-//    cm = new commonModeSubtractionSuperColumnJF();
-//    std::cout << "Enabled common mode subtraction" << std::endl;
+    //cm = new commonModeSubtractionSuperColumnJF();
+    //std::cout << "Enabled common mode subtraction" << std::endl;
 //#endif
+    //singlePhotonDetector *filter = new singlePhotonDetector(
+    //    decoder, 3, nsigma, 1, cm, nped, 200, -1, -1, gainmap, NULL);
     singlePhotonDetector *filter = new singlePhotonDetector(
         decoder, 3, nsigma, 1, NULL, nped, 200, -1, -1, gainmap, NULL);
 

@@ -10,7 +10,7 @@
 
 #define RAWDATA
 
-#if !defined JFSTRX && !defined JFSTRXOLD && !defined JFSTRXCHIP1 &&           \
+#if !defined JFSTRX && !defined JFSTRXQ && !defined JFSTRXOLD && !defined JFSTRXCHIP1 &&           \
     !defined JFSTRXCHIP6 && !defined CHIP
 #ifndef MODULE
 #include "jungfrauHighZSingleChipData.h"
@@ -26,6 +26,9 @@
 
 #ifdef JFSTRX
 #include "jungfrauLGADStrixelsData_new.h"
+#endif
+#ifdef JFSTRXQ
+#include "jungfrauLGADStrixelsDataQuad.h"
 #endif
 #if defined JFSTRXCHIP1 || defined JFSTRXCHIP6
 #include "jungfrauLGADStrixelsDataSingleChip.h"
@@ -179,7 +182,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Define decoders...
-#if !defined JFSTRX && !defined JFSTRXOLD && !defined JFSTRXCHIP1 &&           \
+#if !defined JFSTRX !defined JFSTRXQ && !defined JFSTRXOLD && !defined JFSTRXCHIP1 &&           \
     !defined JFSTRXCHIP6 && !defined CHIP
 #ifndef MODULE
     jungfrauHighZSingleChipData *decoder = new jungfrauHighZSingleChipData();
@@ -198,7 +201,7 @@ int main(int argc, char *argv[]) {
 #endif
 
 #ifdef JFSTRX
-    cout << "Jungfrau strixel full module readout" << endl;
+    std::cout << "Jungfrau strixel full module readout" << std::endl;
 
 #ifndef ALDO
     if (readrxroifromdatafile)
@@ -238,6 +241,12 @@ int main(int argc, char *argv[]) {
     jungfrauLGADStrixelsData *decoder =
         new jungfrauLGADStrixelsData(rxroi_xmin, rxroi_xmax, rxroi_ymin, rxroi_ymax);
     int nx = 1024 / 3, ny = 512 * 5;
+#endif
+#ifdef JFSTRXQ
+    std::cout << "Jungfrau strixel quad" << std::endl;
+    jungfrauLGADStrixelsDataQuad *decoder =
+        new jungfrauLGADStrixelsDataQuad(rxroi_xmin, rxroi_xmax, rxroi_ymin, rxroi_ymax);
+    int nx = 1024 / 3, ny = 512 * 3;
 #endif
 #ifdef JFSTRXCHIP1
     std::cout << "Jungfrau strixel LGAD single chip 1" << std::endl;

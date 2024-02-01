@@ -15,14 +15,19 @@ target_compile_definitions(jungfrauRawDataProcess PRIVATE MODULE)
 list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcess)
 
 # jungfrauRawDataProcessChipAldo
-add_executable(jungfrauRawDataProcessChip jungfrauRawDataProcess.cpp)
-target_compile_definitions(jungfrauRawDataProcessChip PRIVATE CHIP ALDO)
+add_executable(jungfrauRawDataProcessChipAldo jungfrauRawDataProcess_filetxt.cpp)
+target_compile_definitions(jungfrauRawDataProcessChipAldo PRIVATE CHIP ALDO)
 list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcessChipAldo)
 
 # jungfrauRawDataProcessStrx
 add_executable(jungfrauRawDataProcessStrx jungfrauRawDataProcess_filetxt.cpp)
 target_compile_definitions(jungfrauRawDataProcessStrx PRIVATE JFSTRX)
 list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcessStrx)
+
+# jungfrauRawDataProcessStrxQuad
+add_executable(jungfrauRawDataProcessStrxQuad jungfrauRawDataProcess_filetxt.cpp)
+target_compile_definitions(jungfrauRawDataProcessStrxQuad PRIVATE JFSTRXQ)
+list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcessStrxQuad)
 
 
 # jungfrauRawDataProcessStrxChip1

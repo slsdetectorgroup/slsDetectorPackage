@@ -184,15 +184,13 @@ int main(int argc, char *argv[]) {
     cout << "Nframes is " << nframes << endl;
 
     uint32_t nnx, nny;
-    //commonModeSubtraction *cm = NULL;
-//#ifdef CMS
-    //cm = new commonModeSubtractionSuperColumnJF();
-    //std::cout << "Enabled common mode subtraction" << std::endl;
-//#endif
-    //singlePhotonDetector *filter = new singlePhotonDetector(
-    //    decoder, 3, nsigma, 1, cm, nped, 200, -1, -1, gainmap, NULL);
+    commonModeSubtraction *cm = NULL;
+#ifdef CMS
+    cm = new commonModeSubtractionSuperColumnJF();
+    std::cout << "Enabled common mode subtraction" << std::endl;
+#endif
     singlePhotonDetector *filter = new singlePhotonDetector(
-        decoder, 3, nsigma, 1, NULL, nped, 200, -1, -1, gainmap, NULL);
+        decoder, 3, nsigma, 1, cm, nped, 200, -1, -1, gainmap, NULL);
 
     if (gainfname) {
 

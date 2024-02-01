@@ -331,7 +331,7 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
     void remapROI(std::tuple< int, int, uint16_t, uint16_t, uint16_t, uint16_t > roi) {
         // determine group and chip selected by ROI
       int group, xmin, xmax, ymin, ymax;
-	std::tie( mchip, group, xmin, xmax, ymin, ymax ) = roi;
+      std::tie( mchip, group, xmin, xmax, ymin, ymax ) = roi;
 	/*
         if (ymax <= c1g1_yend + bond_shift_y) {
             group = 1;
@@ -359,13 +359,13 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 	  mchip = -1;
 	}
 	*/
-        int multiplicator = getMultiplicator(group);
-        setMappingShifts(group);
-
-        std::cout << "remapping chip: " << mchip << ", group: " << group << ", m: " << multiplicator
-                  << ", x0: " << x0 << ", x1: " << x1 << ", y0: " << y0
-                  << ", y1: " << y1 << std::endl;
-	std::cout << "Adjusted roi: [" << xmin << ", " << xmax << ", " << ymin << ", " << ymax << "]" << std::endl;
+      int multiplicator = getMultiplicator(group);
+      setMappingShifts(group);
+      
+      std::cout << "remapping chip: " << mchip << ", group: " << group << ", m: " << multiplicator
+		<< ", x0: " << x0 << ", x1: " << x1 << ", y0: " << y0
+		<< ", y1: " << y1 << std::endl;
+      std::cout << "Adjusted roi: [" << xmin << ", " << xmax << ", " << ymin << ", " << ymax << "]" << std::endl;
 
         // make sure loop bounds are correct
 	/*
@@ -381,24 +381,24 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 	*/
 
         // remapping loop
-        int ix, iy = 0;
-        for (int ipy = y0; ipy <= y1; ++ipy) {
-            for (int ipx = x0; ipx <= x1; ++ipx) {
+      int ix, iy = 0;
+      for (int ipy = y0; ipy <= y1; ++ipy) {
+	for (int ipx = x0; ipx <= x1; ++ipx) {
 
-                ix = int((ipx - x0 /*-xmin*/) / multiplicator);
-                for (int m = 0; m < multiplicator; m++) {
-                    if ((ipx - x0 /*-xmin*/) % multiplicator == m)
-                        iy = (ipy - y0 /*-ymin*/) * multiplicator + m + shifty;
-                }
-
-                //	  if (iy< 40)	  cout << iy << "  " << ix <<endl;
-		if ( ipx>=xmin && ipx<=xmax && ipy>=ymin && ipy <=ymax )
-		  dataMap[iy][ix] =
-                    sizeof(header) + (globalROI.nc * (ipy - globalROI.ymin) + (ipx - globalROI.xmin)) * 2;
-		else dataMap[iy][ix] = sizeof(header);
-                groupmap[iy][ix] = group - 1;
-            }
-        }
+	  ix = int((ipx - x0 /*-xmin*/) / multiplicator);
+	  for (int m = 0; m < multiplicator; m++) {
+	    if ((ipx - x0 /*-xmin*/) % multiplicator == m)
+	      iy = (ipy - y0 /*-ymin*/) * multiplicator + m + shifty;
+	  }
+	  
+	  //	  if (iy< 40)	  cout << iy << "  " << ix <<endl;
+	  if ( ipx>=xmin && ipx<=xmax && ipy>=ymin && ipy <=ymax )
+	    dataMap[iy][ix] =
+	      sizeof(header) + (globalROI.nc * (ipy - globalROI.ymin) + (ipx - globalROI.xmin)) * 2;
+	  else dataMap[iy][ix] = sizeof(header);
+	  groupmap[iy][ix] = group - 1;
+	}
+      }
     }
 
   public:

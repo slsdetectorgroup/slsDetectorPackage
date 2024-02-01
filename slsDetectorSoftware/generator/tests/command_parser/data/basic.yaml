@@ -1,0 +1,16 @@
+basic:
+  infer_action: false
+  help: "xx11"
+  actions:
+    GET:
+      function: 'func1'
+      output: [ OutString(t) ]
+      args:
+        - argc: 0
+    PUT:
+      function: 'func2'
+      output: [ 'args.front()' ]
+      input: [ 'args[0]' ]
+      input_types: [ int ]
+      cast_input: [ true ]
+      argc: 1

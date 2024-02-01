@@ -96,6 +96,7 @@ class slsDetectorDefs {
         MOENCH,
         MYTHEN3,
         GOTTHARD2,
+        XILINX_CHIPTESTBOARD
     };
 
     /**  return values */
@@ -683,6 +684,7 @@ struct detParameters {
             nChipY = 2;
             nDacs = 8;
             break;
+        case slsDetectorDefs::detectorType::XILINX_CHIPTESTBOARD:
         case slsDetectorDefs::detectorType::CHIPTESTBOARD:
             nChanX = 36;
             nChanY = 1;

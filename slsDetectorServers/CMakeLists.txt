@@ -11,6 +11,7 @@ install(TARGETS slsProjectCSettings
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 add_subdirectory(ctbDetectorServer)
+add_subdirectory(xilinx_ctbDetectorServer)
 add_subdirectory(eigerDetectorServer)
 add_subdirectory(gotthardDetectorServer)
 add_subdirectory(jungfrauDetectorServer)

@@ -26,7 +26,7 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [-b] [-c] [-d <HDF5 directory>] [e] [g] [-h] [i] [-j <Number of threads>] [-k <CMake command>] [-l <Install directory>] [m] [n] [-p] [r] [s] [t] [u] [z]  
+Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-h] [-i] [-j <Number of threads>] [-k <CMake command>] [-l <Install directory>] [-m] [-n] [-p] [-r] [-s] [-t] [-u] [-z]  
  -[no option]: only make
  -b: Builds/Rebuilds CMake files normal mode
  -c: Clean

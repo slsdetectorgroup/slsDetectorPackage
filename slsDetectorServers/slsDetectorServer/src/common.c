@@ -114,6 +114,11 @@ int getTimeFromString(char *buf, time_t *result) {
          t.tm_mday, t.tm_mon, t.tm_year + 1900, t.tm_hour, t.tm_min, t.tm_sec));
 
     *result = mktime(&t);
+    /*  Do not check as it fails with nios
+    if (*result == (time_t)-1) {
+        LOG(logERROR, ("Could not convert time structure to time_t\n"));
+        return FAIL;
+    }*/
     return OK;
 }
 
@@ -143,14 +148,25 @@ int validateKernelVersion(char *expectedVersion) {
 #ifdef VIRTUAL
     strcpy(currentVersion, expectedVersion);
 #else
+#ifndef ARMPROCESSOR
     // remove first word (#version number)
-    const char *ptr = strchr(version, ' ');
+    const char *ptr = strstr(version, " ");
     if (ptr == NULL) {
         LOG(logERROR, ("Could not parse kernel version\n"));
         return FAIL;
     }
-    strcpy(currentVersion, version + (ptr - version + 1));
+    strcpy(currentVersion, ptr + 1);
+#else
+    // remove first two words (#version number and SMP)
+    const char *ptr = strstr(version, "SMP ");
+    if (ptr == NULL) {
+        LOG(logERROR, ("Could not parse kernel version\n"));
+        return FAIL;
+    }
+    strcpy(currentVersion, ptr + 4);
 #endif
+#endif
+    currentVersion[sizeof(currentVersion) - 1] = '\0';
 
     // convert kernel date string into time
     time_t kernelDate;
@@ -159,6 +175,7 @@ int validateKernelVersion(char *expectedVersion) {
             ("Could not parse retrieved kernel date, %s\n", currentVersion));
         return FAIL;
     }
+    LOG(logDEBUG, ("Kernel Date: [%s]\n", ctime(&kernelDate)));
 
     // convert expected date into time
     time_t expDate;
@@ -167,11 +184,12 @@ int validateKernelVersion(char *expectedVersion) {
             ("Could not parse expected kernel date, %s\n", expectedVersion));
         return FAIL;
     }
+    LOG(logDEBUG, ("Expected Date: [%s]\n", ctime(&expDate)));
 
     // compare if kernel time is older than expected time
     if (kernelDate < expDate) {
-        LOG(logERROR, ("Kernel Version Incompatible (too old)! Expected: [%s], "
-                       "Got [%s]\n",
+        LOG(logERROR, ("Kernel Version Incompatible (too old)!\nExpected: '%s'"
+                       "\nGot     : '%s'\n",
                        expectedVersion, currentVersion));
         return FAIL;
     }

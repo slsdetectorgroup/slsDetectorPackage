@@ -8,7 +8,8 @@
  * from the detector. Since every module could have a different value, we need
  * to return a vector instead of just a single value.
  *
- * Easy conversions to single values are provided using the squash method.
+ * Easy conversions to single values are provided using the squash and tsquash
+ * method.
  */
 
 #include <algorithm>
@@ -16,6 +17,7 @@
 #include <vector>
 
 #include "sls/ToString.h"
+#include "sls/TypeTraits.h"
 #include "sls/container_utils.h"
 
 namespace sls {
@@ -127,6 +129,25 @@ template <class T, class Allocator = std::allocator<T>> class Result {
 
     /** Test whether all elements of the result are equal */
     bool equal() const noexcept { return allEqual(vec); }
+
+    /** Test whether any element of the result are equal to a value */
+    bool any(const T &value) const noexcept { return anyEqualTo(vec, value); }
+
+    template <typename V, typename... Args, typename = AllSame<V, Args...>>
+    typename std::enable_if<std::is_same<V, T>::value, bool>::type
+    contains_only(const V &a, const Args &...args) const noexcept {
+        auto values = {a, args...};
+        for (const auto &element : vec) {
+            int found = 0;
+            for (const auto &value : values) {
+                if (value == element)
+                    found++;
+            }
+            if (!found)
+                return false;
+        }
+        return true;
+    }
 
     /** Convert Result<T> to std::vector<T> */
     operator std::vector<T>() { return vec; }

@@ -866,7 +866,7 @@ template <class dataType> class analogDetector {
             for (ix = xmin; ix < xmax; ++ix) {
                 if (det->isGood(ix, iy)) {
                     // addToPedestal(data,ix,iy,1);
-                    addToPedestal(data, ix, iy, cm);
+                    addToPedestal(data, ix, iy, 0);
                     /* if (ix==50 && iy==50) */
                     /*   cout<< "*ped* " << id << " " << ix << " " << iy << " "
                      * << det->getChannel(data,ix,iy) << " " <<
@@ -1097,8 +1097,7 @@ template <class dataType> class analogDetector {
         return thr;
     };
 
-    virtual int setClusterSize(int n = -1) { 
-    };
+    virtual int setClusterSize(int n = -1) { return 0;     };
 
     /**
        gets threshold value for conversion into number of photons

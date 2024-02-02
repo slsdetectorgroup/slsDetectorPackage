@@ -4,9 +4,9 @@
 #include <iostream>
 
 //enable common mode subtraction
-//#define CMS
+#define CMS
 //disable common mode subtraction
-#undef CMS
+//#undef CMS
 #undef CORR
 #define C_GHOST 0.0004
 
@@ -40,7 +40,8 @@
 #include <map>
 #include <stdio.h>
 #include <sys/stat.h>
-//#include "jungfrauCommonMode.h"
+//#include "commonModeSubtractionNew.h"
+#include "jungfrauCommonMode.h"
 
 #include <ctime>
 using namespace std;
@@ -63,7 +64,7 @@ int main(int argc, char *argv[]) {
     }
 
     int fifosize = 1000;
-    int nthreads = 10;
+    int nthreads = 1;
     int csize = 3; //3
     int nsigma = 5;
     int nped = 10000;
@@ -73,10 +74,12 @@ int main(int argc, char *argv[]) {
 
 #if !defined JFSTRX && !defined JFSTRXOLD && !defined JFSTRXCHIP1 && !defined JFSTRXCHIP6
 #ifndef MODULE
+    cout << "This is a JF single chip!" <<endl;
     jungfrauHighZSingleChipData *decoder = new jungfrauHighZSingleChipData();
     int nx = 256, ny = 256;
 #endif
 #ifdef MODULE
+    cout << "This is a JF module!" <<endl;
     jungfrauModuleData *decoder = new jungfrauModuleData();
     int nx = 1024, ny = 512;
 #endif
@@ -186,7 +189,7 @@ int main(int argc, char *argv[]) {
     uint32_t nnx, nny;
     commonModeSubtraction *cm = NULL;
 #ifdef CMS
-    cm = new commonModeSubtractionSuperColumnJF();
+    cm = new commonModeSubtractionChip();//commonModeSubtraction(1,5);//commonModeSubtractionSuperColumnJF();
     std::cout << "Enabled common mode subtraction" << std::endl;
 #endif
     singlePhotonDetector *filter = new singlePhotonDetector(
@@ -250,6 +253,7 @@ int main(int argc, char *argv[]) {
     double *ped=new double[nx * ny];//, *ped1;
 
     int pos,pos1;
+    int ipixX=351, ipixY=331;
 
     if (pedfile) {
 
@@ -277,19 +281,43 @@ int main(int argc, char *argv[]) {
                 ff = -1;
                 while (decoder->readNextFrame(filebin, ff, np, buff)) {
 		  // if (np == 40) {
-		  if ((ifr+1) % 100 == 0) {
-		    cout << " ****" << decoder->getValue(buff,20,20);// << endl;
-		  }
+		  // if ((ifr+1) % 100 == 0) {
+		  //   cout << " ****" << decoder->getValue(buff,20,20);// << endl;
+		  // }
                         mt->pushData(buff);
+
+
+			// while (mt->isBusy()) 
+			//   ;
+			//if ((ifr+1) % 100 == 0)
+
+			// double pix=0,ped=0,sub=0,cmp=0, sub0=0;
+
+			// for (int ix=-1; ix<2; ix++) {
+			//   for (int iy=-1; iy<2; iy++) {
+			//     pix+=decoder->getValue(buff, ipixX+ix, ipixY+iy);
+			//     sub+=filter->subtractPedestal(buff, ipixX+ix, ipixY+iy, 1);
+			//     sub0+=filter->subtractPedestal(buff, ipixX+ix, ipixY+iy, 0);
+			//     ped+=filter->getPedestal(ipixX+ix, ipixY+iy);
+			//     cmp+=filter->getCommonMode(ipixX+ix, ipixY+iy);
+			//   }
+			// }
+
+			// cout << pix << " " << sub << " " sub0 << " " << ped << " " << cmp  << endl;
+
+
                         mt->nextThread();
                         mt->popFree(buff);
                         ifr++;
-                        if (ifr % 100 == 0) {
-			  cout << " ****" << ifr << " " << ff << " " << np << endl;
-			} //else
+                        // if (ifr % 100 == 0) {
+			//   cout << " ****" << ifr << " " << ff << " " << np << endl;
+			// } 
+
+			//else
                         //cout << ifr << " " << ff << " " << np << endl;
-			if (ifr>=1000)
-			  break;
+			// if (ifr>=1000)
+			//   break;
+			
                     ff = -1;
                 }
                 filebin.close();
@@ -370,7 +398,25 @@ int main(int argc, char *argv[]) {
 		  if ((ifr+1) % 100 == 0) {
 		    cout << " ****" << decoder->getValue(buff,20,20);// << endl;
 		  }
-                    mt->pushData(buff);
+                    mt->pushData(buff);	
+
+
+		    // while (mt->isBusy()) 
+
+			// double pix=0,ped=0,sub=0,cmp=0, sub0=0;
+
+			// for (int ix=-1; ix<2; ix++) {
+			//   for (int iy=-1; iy<2; iy++) {
+			//     pix+=decoder->getValue(buff, ipixX+ix, ipixY+iy);
+			//     sub+=filter->subtractPedestal(buff, ipixX+ix, ipixY+iy, 1);
+			//     sub0+=filter->subtractPedestal(buff, ipixX+ix, ipixY+iy, 0);
+			//     ped+=filter->getPedestal(ipixX+ix, ipixY+iy);
+			//     cmp+=filter->getCommonMode(ipixX+ix, ipixY+iy);
+			//   }
+			// }
+
+			// cout << pix << " " << sub << " " sub0 << " " << ped << " " << cmp  << endl;
+
                     // 	//         //pop
                     mt->nextThread();
                     mt->popFree(buff);

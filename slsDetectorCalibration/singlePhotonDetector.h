@@ -396,14 +396,14 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
             return 0;
         }
         newFrame(data);
-
+	/*
         if (cmSub) {
             addToCommonMode(data);
             cm = 1;
         }
-
+	*/
         double *val = new double[ny * nx];
-
+	cm=0;
         for (iy = ymin; iy < ymax; ++iy) {
             for (ix = xmin; ix < xmax; ++ix) {
                 if (det->isGood(ix, iy) == 0)
@@ -547,12 +547,50 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
 
                 } else if (ee == PEDESTAL) {
                     addToPedestal(data, ix, iy, cm);
+		    if (cmSub) {
+		      addToCommonMode(data, ix, iy);
+		    }
                 } /*else {
                     eventMask[iy][ix]=PHOTON;
                     }*/
                   // eventMask[iy][ix]=ee;
             }
         }
+	
+	if (cmSub) {
+	  
+	  double cmv=0;
+	  for (int iph=0; iph<nph; iph++) {
+	    ix=(clusters + iph)->x ;
+	    iy=(clusters + nph)->y;
+	    
+	    for (ir = -(clusterSizeY / 2); ir < (clusterSizeY / 2) + 1;
+		 ir++) {
+	      for (ic = -(clusterSize / 2);
+		   ic < (clusterSize / 2) + 1; ic++) {
+		if ((iy + ir) >= 0 && (iy + ir) < ny &&
+		    (ix + ic) >= 0 && (ix + ic) < nx) {
+		  
+		  cmv=getCommonMode(ix+ic, iy+ir);
+		  //if (ir==0 && ic==0)
+		    //cout << cmv << endl;
+		  (clusters + iph)
+		    ->set_data((clusters + iph)
+		    ->get_data(ic,ir)-cmv, ic,ir);
+		}
+		
+	      }
+	      
+	    }
+	    
+	  }
+	  
+	  
+	}
+	
+
+	
+
 
         nphFrame = nph;
         nphTot += nph;

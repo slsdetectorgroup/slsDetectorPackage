@@ -100,7 +100,10 @@ class commonModeSubtraction {
         if (iroi >= 0 && iroi < nROI) {
             if (nCm[iroi] > 0)
                 return mean[iroi] / nCm[iroi];
-        }
+	    else
+	      std::cout << ix << " " << iy << " no data in cm " << iroi << std::endl; 
+        } else
+	  std::cout << ix << " " << iy << " bad roi " << iroi << std::endl; 
         return 0;
     };
 
@@ -117,6 +120,8 @@ class commonModeSubtraction {
                 return sqrt(mean2[iroi] / nCm[iroi] -
                             (mean[iroi] / nCm[iroi]) *
                                 (mean[iroi] / nCm[iroi]));
+	    else
+	      std::cout << ix << " " << iy << " no data in cm " << iroi << std::endl; 
         }
         return 0;
     };

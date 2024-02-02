@@ -27,6 +27,8 @@ enum quadrant {
 //#ifdef MYROOT1
 //: public TObject
 //#endif
+using namespace std;
+
 class slsInterpolation {
 
   public:

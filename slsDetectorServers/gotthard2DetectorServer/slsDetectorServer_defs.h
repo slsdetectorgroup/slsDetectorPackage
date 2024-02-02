@@ -35,6 +35,7 @@
 #define TEMPERATURE_FILE_NAME ("/sys/class/hwmon/hwmon0/temp1_input")
 #endif
 #define CONFIG_FILE                           ("config_gotthard2.txt")
+#define DAC_MIN_MV                            (0)
 #define DAC_MAX_MV                            (2048)
 #define ONCHIP_DAC_MAX_VAL                    (0x3FF)
 #define ADU_MAX_VAL                           (0xFFF)

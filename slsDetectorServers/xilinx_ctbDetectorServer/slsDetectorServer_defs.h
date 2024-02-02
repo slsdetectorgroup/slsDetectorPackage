@@ -28,10 +28,11 @@
 #define DAC_DRIVER_NUM_DEVICES (3)
 #define DAC_DRIVER_FILE_NAME                                                   \
     ("/sys/bus/iio/devices/iio:device%d/out_voltage%d_raw")
-#define DAC_DRIVER_STARTING_DEVICE_INDEX (2)
+#define DAC_POWERDOWN_DRIVER_FILE_NAME                                         \
+    ("/sys/bus/iio/devices/iio:device%d/out_voltage%d_powerdown")
 
 #define SLOWADC_DRIVER_FILE_NAME                                               \
-    ("/sys/bus/iio/devices/iio:device1/in_voltage%d_raw")
+    ("/sys/bus/iio/devices/iio:device%d/in_voltage%d_raw")
 //#define SLOWDAC_CONVERTION_FACTOR_TO_UV (62.500953)
 
 #define TEMP_DRIVER_FILE_NAME                                                  \
@@ -67,11 +68,12 @@ enum DACINDEX {
     D15,
     D16,
     D17,
+    D_PWR_D,
+    D_PWR_EMPTY,
+    D_PWR_IO,
     D_PWR_A,
     D_PWR_B,
-    D_PWR_C,
-    D_PWR_D,
-    D_PWR_IO
+    D_PWR_C
 };
 /** Default Parameters */
 #define DEFAULT_NUM_FRAMES            (1)

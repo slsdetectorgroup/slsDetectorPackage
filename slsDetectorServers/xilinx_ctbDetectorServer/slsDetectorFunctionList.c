@@ -38,6 +38,8 @@ char initErrorMessage[MAX_STR_LENGTH];
 
 int detPos[2] = {0, 0};
 
+int adcDeviceIndex = 0;
+int dacDeviceIndex = 0;
 int chipConfigured = 0;
 int analogEnable = 0;
 int digitalEnable = 0;
@@ -72,7 +74,8 @@ void basictests() {
         return;
     }
 
-    initError = loadDeviceTree(initErrorMessage);
+    initError =
+        loadDeviceTree(initErrorMessage, &adcDeviceIndex, &dacDeviceIndex);
     if (initError == FAIL) {
         return;
     }
@@ -396,9 +399,9 @@ void setupDetector() {
         return;
     }
 
-    LTC2620_D_SetDefines(DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC,
-                         DAC_DRIVER_NUM_DEVICES,
-                         DAC_DRIVER_STARTING_DEVICE_INDEX);
+    LTC2620_D_SetDefines(DAC_MAX_MV, DAC_MIN_MV, DAC_DRIVER_FILE_NAME, NDAC,
+                         DAC_DRIVER_NUM_DEVICES, dacDeviceIndex,
+                         DAC_POWERDOWN_DRIVER_FILE_NAME);
     LOG(logINFOBLUE, ("Powering down all dacs\n"));
     for (int idac = 0; idac < NDAC; ++idac) {
         setDAC(idac, LTC2620_D_GetPowerDownValue(), 0);
@@ -529,7 +532,7 @@ int powerChip(int on, char *mess) {
                     POWER_VCC_C_MSK | POWER_VCC_D_MSK;
     if (on) {
         LOG(logINFOBLUE, ("Powering chip: on\n"));
-        bus_w(addr, bus_r(addr) | mask);
+        bus_w(addr, bus_r(addr) & ~mask);
 
         if (configureChip(mess) == FAIL)
             return FAIL;
@@ -539,7 +542,7 @@ int powerChip(int on, char *mess) {
         chipConfigured = 1;
     } else {
         LOG(logINFOBLUE, ("Powering chip: off\n"));
-        bus_w(addr, bus_r(addr) & ~mask);
+        bus_w(addr, bus_r(addr) | mask);
 
         chipConfigured = 0;
 
@@ -560,7 +563,7 @@ int getPowerChip() {
     uint32_t addr = CTRL_REG;
     uint32_t mask = POWER_VIO_MSK | POWER_VCC_A_MSK | POWER_VCC_B_MSK |
                     POWER_VCC_C_MSK | POWER_VCC_D_MSK;
-    return ((bus_r(addr) & mask) == mask);
+    return (((bus_r(addr) & mask) == mask) ? 0 : 1);
 }
 
 int configureChip(char *mess) {
@@ -979,7 +982,7 @@ int getPower(enum DACINDEX ind) {
     if (ind == D_PWR_IO)
         offset = POWER_VIO_OFST;
     uint32_t mask = (1 << offset);
-    if ((bus_r(addr) & mask) == 0) {
+    if ((bus_r(addr) & mask) != 0) {
         LOG(logINFO, ("Power for dac %d is off\n", ind));
         return 0;
     }
@@ -1021,7 +1024,7 @@ void setPower(enum DACINDEX ind, int val) {
         // switch off power enable
         LOG(logINFO, ("\tSwitching off enable for P%d (ctrl reg)\n",
                       (int)(ind - D_PWR_A)));
-        bus_w(addr, bus_r(addr) & ~mask);
+        bus_w(addr, bus_r(addr) | mask);
 
         // power down dac
         LOG(logINFO, ("\tPowering down P%d\n", (int)(ind - D_PWR_A)));
@@ -1038,7 +1041,7 @@ void setPower(enum DACINDEX ind, int val) {
         if (getDAC(ind, 1) == val || val == LTC2620_D_GetPowerDownValue()) {
             LOG(logINFO, ("\tSwitching on enable for P%d (ctrl reg)\n",
                           (int)(ind - D_PWR_A)));
-            bus_w(addr, bus_r(addr) | mask);
+            bus_w(addr, bus_r(addr) & ~mask);
         }
     }
 }
@@ -1062,7 +1065,7 @@ int getADC(enum ADCINDEX ind, int *value) {
         return getSlowADC((int)ind - S_ADC0, value);
     case TEMP_FPGA:
         LOG(logDEBUG1, ("Reading FPGA Temperature\n"));
-        return getTemperature(value);   
+        return getTemperature(value);
     default:
         LOG(logERROR, ("Adc Index %d not defined \n", (int)ind));
         return FAIL;
@@ -1074,7 +1077,7 @@ int getSlowADC(int ichan, int *retval) {
 #ifndef VIRTUAL
     char fname[MAX_STR_LENGTH];
     memset(fname, 0, MAX_STR_LENGTH);
-    sprintf(fname, SLOWADC_DRIVER_FILE_NAME, ichan);
+    sprintf(fname, SLOWADC_DRIVER_FILE_NAME, adcDeviceIndex, ichan);
     LOG(logDEBUG1, ("fname %s\n", fname));
 
     if (readADCFromFile(fname, retval) == FAIL) {

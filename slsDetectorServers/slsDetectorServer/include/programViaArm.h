@@ -5,8 +5,8 @@
 #include <sys/types.h>
 
 int resetFPGA(char *mess);
-int loadDeviceTree(char *mess);
+int loadDeviceTree(char *mess, int *adcDeviceIndex, int *dacDeviceIndex);
 
 int checksBeforeCreatingDeviceTree(char *mess);
 int createDeviceTree(char *mess);
-int verifyDeviceTree(char *mess);
+int verifyDeviceTree(char *mess, int *adcDeviceIndex, int *dacDeviceIndex);

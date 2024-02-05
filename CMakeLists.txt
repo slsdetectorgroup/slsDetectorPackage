@@ -232,6 +232,8 @@ if (NOT TARGET slsProjectCSettings)
                                                 -Wredundant-decls
                                                 -Wdouble-promotion
                                                 -Werror=return-type
+                                                -Wno-format-overflow 
+                                                -Wno-format-truncation
                                     )
     sls_disable_c_warning("-Wstringop-truncation")
 endif()

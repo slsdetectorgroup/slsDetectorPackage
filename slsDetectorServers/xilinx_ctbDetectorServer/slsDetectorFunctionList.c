@@ -486,12 +486,24 @@ int waitTranseiverReset(char *mess) {
     return OK;
 }
 
+#ifdef VIRTUAL
+void setTransceiverAlignment(int align) {
+    if (align) {
+        bus_w(TRANSCEIVERSTATUS, (bus_r(TRANSCEIVERSTATUS) | RXBYTEISALIGNED_MSK));
+    } else {
+        bus_w(TRANSCEIVERSTATUS, (bus_r(TRANSCEIVERSTATUS) &~ RXBYTEISALIGNED_MSK));
+    }
+}
+#endif
+
 int isTransceiverAligned() {
     return (bus_r(TRANSCEIVERSTATUS) & RXBYTEISALIGNED_MSK);
 }
 
 int waitTransceiverAligned(char *mess) {
-#ifndef VIRTUAL
+#ifdef VIRTUAL
+    setTransceiverAlignment(1);
+#else
     int transceiverWordAligned = isTransceiverAligned();
     int times = 0;
     while (transceiverWordAligned == 0) {
@@ -546,7 +558,9 @@ int powerChip(int on, char *mess) {
 
         chipConfigured = 0;
 
-#ifndef VIRTUAL
+#ifdef VIRTUAL
+        setTransceiverAlignment(0);
+#endif
         // transceiver alignment should be reset at power off
         if (isTransceiverAligned()) {
             sprintf(mess, "Transceiver alignment not reset\n");
@@ -554,7 +568,6 @@ int powerChip(int on, char *mess) {
             return FAIL;
         }
         LOG(logINFO, ("\tTransceiver alignment has been reset\n"));
-#endif
     }
     return OK;
 }

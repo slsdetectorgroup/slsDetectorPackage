@@ -37,8 +37,7 @@ target_compile_definitions(ctbDetectorServer_virtual
 )
 
 target_link_libraries(ctbDetectorServer_virtual
-    PUBLIC pthread rt slsProjectCSettings
-    m
+    PUBLIC pthread rt m slsProjectCSettings
 )
 
 set_target_properties(ctbDetectorServer_virtual PROPERTIES

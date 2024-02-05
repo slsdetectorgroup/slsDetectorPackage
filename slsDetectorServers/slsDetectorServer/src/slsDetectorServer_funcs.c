@@ -1984,7 +1984,7 @@ int acquire(int blocking, int file_des) {
                    (isTransceiverAligned() == 0)) {
             ret = FAIL;
             strcpy(mess,
-                   "Could not start acquisition. Transceiver not aligned\n");
+                   "Could not start acquisition. Transceiver not aligned. Use configtransceiver command.\n");
             LOG(logERROR, (mess));
         } else
 #endif

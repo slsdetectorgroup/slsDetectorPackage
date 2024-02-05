@@ -185,6 +185,9 @@ uint32_t readRegister16And32(uint32_t offset);
 void cleanFifos();
 void resetFlow();
 int waitTranseiverReset(char *mess);
+#ifdef VIRTUAL
+void setTransceiverAlignment(int align);
+#endif
 int isTransceiverAligned();
 int waitTransceiverAligned(char *mess);
 int configureTransceiver(char *mess);

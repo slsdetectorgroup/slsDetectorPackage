@@ -778,8 +778,7 @@ int getReadoutMode() {
 
 /* parameters - timer */
 int setNextFrameNumber(uint64_t value) {
-    LOG(logINFO,
-        ("Setting next frame number: %llu\n", (long long unsigned int)value));
+    LOG(logINFO, ("Setting next frame number: %lu\n", value));
     setU64BitReg(value, LOCAL_FRAME_NUMBER_REG_1, LOCAL_FRAME_NUMBER_REG_2);
     return OK;
 }
@@ -1314,9 +1313,14 @@ void *start_timer(void *arg) {
     int64_t expUs = getExpTime() / 1000;
 
     int imageSize = calculateDataBytes();
-    int dataSize = 8192;
-    int packetSize = sizeof(sls_detector_header) + dataSize;
-    int packetsPerFrame = ceil((double)imageSize / (double)dataSize);
+    int maxDataSize = 8192;
+    int packetSize = sizeof(sls_detector_header) + maxDataSize;
+    int packetsPerFrame = ceil((double)imageSize / (double)maxDataSize);
+
+    LOG(logDEBUG1, ("period: %lld ns, exp: %lld us, numFrames: %d, "
+                     "imageSize: %d, maxDataSize: %d, packetsize: %d, packetsPerFrame: %d\n",
+                     periodNs, expUs, numFrames, imageSize, maxDataSize, packetSize,
+                     packetsPerFrame));
 
     // Generate Data
     char imageData[imageSize];
@@ -1326,11 +1330,11 @@ void *start_timer(void *arg) {
     }
 
     // Send data
-    uint64_t frameNr = 1;
+    uint64_t frameNr = 0;
     getNextFrameNumber(&frameNr);
     // loop over number of frames
     for (int iframes = 0; iframes != numFrames; ++iframes) {
-
+        
         // check if manual stop
         if (sharedMemory_getStop() == 1) {
             setNextFrameNumber(frameNr + iframes + 1);
@@ -1360,11 +1364,10 @@ void *start_timer(void *arg) {
 
             // fill data
             memcpy(packetData + sizeof(sls_detector_header),
-                   imageData + srcOffset, dataSize);
-            srcOffset += dataSize;
+                   imageData + srcOffset,  (imageSize < maxDataSize ? imageSize : maxDataSize));
+            srcOffset += maxDataSize;
 
             sendUDPPacket(0, 0, packetData, packetSize);
-            // LOG(logINFOBLUE, ("packetsize:%d\n", packetSize));
         }
         LOG(logINFO, ("Sent frame: %d [%lld]\n", iframes, frameNr + iframes));
         clock_gettime(CLOCK_REALTIME, &end);
@@ -1377,8 +1380,8 @@ void *start_timer(void *arg) {
                 usleep((periodNs - timeNs) / 1000);
             }
         }
-        setNextFrameNumber(frameNr + numFrames);
     }
+    setNextFrameNumber(frameNr + numFrames);
     closeUDPSocket(0);
 
     sharedMemory_setStatus(IDLE);
@@ -1495,15 +1498,19 @@ enum runStatus getRunStatus() {
     // TODO: STOPPED, ERROR?
 }
 
-void waitForAcquisitionEnd() {
+u_int32_t runBusy() {
+#ifdef VIRTUAL
+    return ((sharedMemory_getStatus() == RUNNING) ? 1 : 0);
+#endif
     uint32_t exposingBusy = bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK;
     uint32_t fillingFifoBusy = bus_r(MATTERHORNSPICTRL) & READOUTFROMASIC_MSK;
     uint32_t streamingBusy = bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK;
-    while (exposingBusy != 0 || fillingFifoBusy != 0 || streamingBusy != 0) {
-        usleep(100);
-        exposingBusy = bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK;
-        fillingFifoBusy = bus_r(MATTERHORNSPICTRL) & READOUTFROMASIC_MSK;
-        streamingBusy = bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK;
+    return (exposingBusy || fillingFifoBusy || streamingBusy);
+}
+
+void waitForAcquisitionEnd() {
+    while (runBusy()) {
+        usleep(500);
     }
 #ifndef VIRTUAL
     int64_t retval = getNumFramesLeft() + 1;

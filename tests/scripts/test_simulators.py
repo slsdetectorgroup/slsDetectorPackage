@@ -121,7 +121,7 @@ def loadConfig(name, rx_hostname, settingsdir):
         if d.type == detectorType.JUNGFRAU or d.type == detectorType.MOENCH or d.type == detectorType.XILINX_CHIPTESTBOARD:
             d.powerchip = 1
         if d.type == detectorType.XILINX_CHIPTESTBOARD:
-            d.configtransceiver
+            d.configureTransceiver()
     except:
         Log(Fore.RED, 'Could not load config for ' + name)
         raise

@@ -1313,7 +1313,7 @@ void *start_timer(void *arg) {
     int64_t expUs = getExpTime() / 1000;
 
     int imageSize = calculateDataBytes();
-    int maxDataSize = 8192;
+    int maxDataSize = MAX_DATA_SIZE_IN_PACKET;
     int packetSize = sizeof(sls_detector_header) + maxDataSize;
     int packetsPerFrame = ceil((double)imageSize / (double)maxDataSize);
 

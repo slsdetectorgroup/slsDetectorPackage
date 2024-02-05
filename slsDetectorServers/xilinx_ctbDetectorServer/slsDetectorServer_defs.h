@@ -112,6 +112,8 @@ enum DACINDEX {
 #define BIT32_MSK  (0xFFFFFFFF)
 #define BIT16_MASK (0xFFFF)
 
+#define MAX_DATA_SIZE_IN_PACKET (8144)
+
 /* Struct Definitions */
 typedef struct udp_header_struct {
     uint32_t udp_destmac_msb;

@@ -7126,10 +7126,6 @@ int get_receiver_parameters(int file_des) {
     memset(mess, 0, sizeof(mess));
 
     LOG(logDEBUG1, ("Getting receiver parameters\n"));
-#ifdef XILINX_CHIPTESTBOARDD
-    functionNotImplemented();
-    Server_SendResult(file_des, INT32, NULL, 0);
-#else
     // get only
     Server_SendResult(file_des, INT32, NULL, 0);
 
@@ -7253,7 +7249,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // analog samples
-#if defined(CHIPTESTBOARDD)
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     i32 = getNumAnalogSamples();
 #else
     i32 = 0;
@@ -7263,7 +7259,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // digital samples
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     i32 = getNumDigitalSamples();
 #else
     i32 = 0;
@@ -7402,7 +7398,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // readout mode
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     i32 = getReadoutMode();
 #else
     i32 = 0;
@@ -7422,7 +7418,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // 10g adc mask
-#if defined(CHIPTESTBOARDD)
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     u32 = getADCEnableMask_10G();
 #else
     u32 = 0;
@@ -7567,7 +7563,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // transceiver samples
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     i32 = getNumTransceiverSamples();
 #else
     i32 = 0;
@@ -7577,7 +7573,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // transceiver mask
-#if defined(CHIPTESTBOARDD)
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     u32 = getTransceiverEnableMask();
 #else
     u32 = 0;
@@ -7587,7 +7583,6 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
     LOG(logINFO, ("Sent %d bytes for receiver parameters\n", n));
-#endif
     return OK;
 }
 

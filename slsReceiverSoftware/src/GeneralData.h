@@ -648,4 +648,122 @@ class ChipTestBoardData : public GeneralData {
     };
 };
 
+class XilinxChipTestBoardData : public GeneralData {
+  private:
+    const int NCHAN_DIGITAL = 64;
+    const int NUM_BYTES_PER_ANALOG_CHANNEL = 2;
+    const int NUM_BYTES_PER_TRANSCEIVER_CHANNEL = 8;
+    int nAnalogBytes = 0;
+    int nDigitalBytes = 0;
+    int nTransceiverBytes = 0;
+
+  public:
+    /** Constructor */
+    XilinxChipTestBoardData() {
+        detType = slsDetectorDefs::XILINX_CHIPTESTBOARD;
+        nPixelsY = 1; // number of samples
+        headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
+        frameIndexMask = 0xFFFFFF; // 10g
+        frameIndexOffset = 8;      // 10g
+        packetIndexMask = 0xFF;    // 10g
+        framesPerFile = XILINX_CTB_MAX_FRAMES_PER_FILE;
+        fifoDepth = 2500;
+        standardheader = true;
+        dataSize = 8144;
+        packetSize = headerSizeinPacket + dataSize;
+        tengigaEnable = true;
+        UpdateImageSize();
+    };
+
+  public:
+    int GetNumberOfAnalogDatabytes() { return nAnalogBytes; };
+
+    int GetNumberOfDigitalDatabytes() { return nDigitalBytes; };
+
+    int GetNumberOfTransceiverDatabytes() { return nTransceiverBytes; };
+
+    void SetNumberOfAnalogSamples(int n) {
+        nAnalogSamples = n;
+        UpdateImageSize();
+    };
+
+    void SetNumberOfDigitalSamples(int n) {
+        nDigitalSamples = n;
+        UpdateImageSize();
+    };
+
+    void SetNumberOfTransceiverSamples(int n) {
+        nTransceiverSamples = n;
+        UpdateImageSize();
+    };
+
+    void SetOneGigaAdcEnableMask(int n) {
+        adcEnableMaskOneGiga = n;
+        UpdateImageSize();
+    };
+
+    void SetTenGigaAdcEnableMask(int n) {
+        adcEnableMaskTenGiga = n;
+        UpdateImageSize();
+    };
+
+    void SetTransceiverEnableMask(int n) {
+        transceiverMask = n;
+        UpdateImageSize();
+    };
+
+    void SetReadoutMode(slsDetectorDefs::readoutMode r) {
+        readoutType = r;
+        UpdateImageSize();
+    };
+
+  private:
+    void UpdateImageSize() {
+        nAnalogBytes = 0;
+        nDigitalBytes = 0;
+        nTransceiverBytes = 0;
+        int nAnalogChans = 0, nDigitalChans = 0, nTransceiverChans = 0;
+
+        // analog channels (normal, analog/digital readout)
+        if (readoutType == slsDetectorDefs::ANALOG_ONLY ||
+            readoutType == slsDetectorDefs::ANALOG_AND_DIGITAL) {
+            uint32_t adcEnableMask = adcEnableMaskTenGiga;
+            nAnalogChans = __builtin_popcount(adcEnableMask);
+
+            nAnalogBytes =
+                nAnalogChans * NUM_BYTES_PER_ANALOG_CHANNEL * nAnalogSamples;
+            LOG(logDEBUG1) << " Number of Analog Channels:" << nAnalogChans
+                           << " Databytes: " << nAnalogBytes;
+        }
+        // digital channels
+        if (readoutType == slsDetectorDefs::DIGITAL_ONLY ||
+            readoutType == slsDetectorDefs::ANALOG_AND_DIGITAL ||
+            readoutType == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
+            nDigitalChans = NCHAN_DIGITAL;
+            nDigitalBytes = (sizeof(uint64_t) * nDigitalSamples);
+            LOG(logDEBUG1) << "Number of Digital Channels:" << nDigitalChans
+                           << " Databytes: " << nDigitalBytes;
+        }
+        // transceiver channels
+        if (readoutType == slsDetectorDefs::TRANSCEIVER_ONLY ||
+            readoutType == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
+            nTransceiverChans = __builtin_popcount(transceiverMask);
+            ;
+            nTransceiverBytes = nTransceiverChans *
+                                NUM_BYTES_PER_TRANSCEIVER_CHANNEL *
+                                nTransceiverSamples;
+            LOG(logDEBUG1) << "Number of Transceiver Channels:"
+                           << nTransceiverChans
+                           << " Databytes: " << nTransceiverBytes;
+        }
+        nPixelsX = nAnalogChans + nDigitalChans + nTransceiverChans;
+        
+        imageSize = nAnalogBytes + nDigitalBytes + nTransceiverBytes;
+        packetsPerFrame = ceil((double)imageSize / (double)dataSize);
+
+        LOG(logDEBUG1) << "Total Number of Channels:" << nPixelsX
+                       << " Databytes: " << imageSize;
+    };
+};
+
 } // namespace sls

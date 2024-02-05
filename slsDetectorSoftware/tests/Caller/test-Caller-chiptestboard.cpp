@@ -634,7 +634,8 @@ TEST_CASE("CALLER::samples", "[.cmdcall]") {
             caller.call("asamples", {}, -1, GET, oss);
             REQUIRE(oss.str() == "asamples 450\n");
         }
-        if (det_type == defs::CHIPTESTBOARD) {
+        if (det_type == defs::CHIPTESTBOARD ||
+            det_type == defs::XILINX_CHIPTESTBOARD) {
             std::ostringstream oss;
             caller.call("dsamples", {}, -1, GET, oss);
             REQUIRE(oss.str() == "dsamples 450\n");

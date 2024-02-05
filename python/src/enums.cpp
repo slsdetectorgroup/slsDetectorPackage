@@ -25,6 +25,8 @@ void init_enums(py::module &m) {
         .value("MOENCH", slsDetectorDefs::detectorType::MOENCH)
         .value("MYTHEN3", slsDetectorDefs::detectorType::MYTHEN3)
         .value("GOTTHARD2", slsDetectorDefs::detectorType::GOTTHARD2)
+        .value("XILINX_CHIPTESTBOARD",
+               slsDetectorDefs::detectorType::XILINX_CHIPTESTBOARD)
         .export_values();
 
     py::enum_<slsDetectorDefs::runStatus>(Defs, "runStatus")

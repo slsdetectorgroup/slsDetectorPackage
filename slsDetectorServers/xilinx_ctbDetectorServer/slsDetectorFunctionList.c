@@ -490,9 +490,11 @@ int waitTranseiverReset(char *mess) {
 #ifdef VIRTUAL
 void setTransceiverAlignment(int align) {
     if (align) {
-        bus_w(TRANSCEIVERSTATUS, (bus_r(TRANSCEIVERSTATUS) | RXBYTEISALIGNED_MSK));
+        bus_w(TRANSCEIVERSTATUS,
+              (bus_r(TRANSCEIVERSTATUS) | RXBYTEISALIGNED_MSK));
     } else {
-        bus_w(TRANSCEIVERSTATUS, (bus_r(TRANSCEIVERSTATUS) &~ RXBYTEISALIGNED_MSK));
+        bus_w(TRANSCEIVERSTATUS,
+              (bus_r(TRANSCEIVERSTATUS) & ~RXBYTEISALIGNED_MSK));
     }
 }
 #endif
@@ -923,10 +925,8 @@ int setDelayAfterTrigger(int64_t val) {
 }
 
 int64_t getDelayAfterTrigger() {
-    return getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2) /
-           (1E-3 * RUN_CLK);
+    return getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2) / (1E-3 * RUN_CLK);
 }
-
 
 int64_t getNumFramesLeft() {
     return getU64BitReg(FRAMES_OUT_REG_1, FRAMES_OUT_REG_2);
@@ -937,18 +937,16 @@ int64_t getNumTriggersLeft() {
 }
 
 int64_t getDelayAfterTriggerLeft() {
-    return getU64BitReg(DELAY_OUT_REG_1, DELAY_OUT_REG_2) /
-           (1E-3 * RUN_CLK);
+    return getU64BitReg(DELAY_OUT_REG_1, DELAY_OUT_REG_2) / (1E-3 * RUN_CLK);
 }
 
 int64_t getPeriodLeft() {
-    return getU64BitReg(PERIOD_OUT_REG_1, PERIOD_OUT_REG_2) /
-           (1E-3 * RUN_CLK);
+    return getU64BitReg(PERIOD_OUT_REG_1, PERIOD_OUT_REG_2) / (1E-3 * RUN_CLK);
 }
 
 int64_t getFramesFromStart() {
     return getU64BitReg(FRAMES_FROM_START_OUT_REG_1,
-                       FRAMES_FROM_START_OUT_REG_2);
+                        FRAMES_FROM_START_OUT_REG_2);
 }
 
 int64_t getActualTime() {
@@ -1369,9 +1367,10 @@ void *start_timer(void *arg) {
     int packetsPerFrame = ceil((double)imageSize / (double)maxDataSize);
 
     LOG(logDEBUG1, ("period: %lld ns, exp: %lld us, numFrames: %d, "
-                     "imageSize: %d, maxDataSize: %d, packetsize: %d, packetsPerFrame: %d\n",
-                     periodNs, expUs, numFrames, imageSize, maxDataSize, packetSize,
-                     packetsPerFrame));
+                    "imageSize: %d, maxDataSize: %d, packetsize: %d, "
+                    "packetsPerFrame: %d\n",
+                    periodNs, expUs, numFrames, imageSize, maxDataSize,
+                    packetSize, packetsPerFrame));
 
     // Generate Data
     char imageData[imageSize];
@@ -1385,7 +1384,7 @@ void *start_timer(void *arg) {
     getNextFrameNumber(&frameNr);
     // loop over number of frames
     for (int iframes = 0; iframes != numFrames; ++iframes) {
-        
+
         // check if manual stop
         if (sharedMemory_getStop() == 1) {
             setNextFrameNumber(frameNr + iframes + 1);
@@ -1415,7 +1414,8 @@ void *start_timer(void *arg) {
 
             // fill data
             memcpy(packetData + sizeof(sls_detector_header),
-                   imageData + srcOffset,  (imageSize < maxDataSize ? imageSize : maxDataSize));
+                   imageData + srcOffset,
+                   (imageSize < maxDataSize ? imageSize : maxDataSize));
             srcOffset += maxDataSize;
 
             sendUDPPacket(0, 0, packetData, packetSize);

@@ -757,7 +757,7 @@ class XilinxChipTestBoardData : public GeneralData {
                            << " Databytes: " << nTransceiverBytes;
         }
         nPixelsX = nAnalogChans + nDigitalChans + nTransceiverChans;
-        
+
         imageSize = nAnalogBytes + nDigitalBytes + nTransceiverBytes;
         packetsPerFrame = ceil((double)imageSize / (double)dataSize);
 

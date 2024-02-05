@@ -68,7 +68,7 @@ void MasterAttributes::WriteHDF5Attributes(H5::H5File *fd, H5::Group *group) {
         break;
     case slsDetectorDefs::XILINX_CHIPTESTBOARD:
         WriteXilinxCtbHDF5Attributes(fd, group);
-        break;        
+        break;
     default:
         throw RuntimeError("Unknown Detector type to get master attributes");
     }
@@ -850,7 +850,7 @@ void MasterAttributes::GetXilinxCtbBinaryAttributes(
 
 #ifdef HDF5C
 void MasterAttributes::WriteXilinxCtbHDF5Attributes(H5::H5File *fd,
-                                              H5::Group *group) {
+                                                    H5::Group *group) {
     MasterAttributes::WriteHDF5Exptime(fd, group);
     MasterAttributes::WriteHDF5Period(fd, group);
     MasterAttributes::WriteHDF5AdcMask(fd, group);

@@ -38,7 +38,6 @@
 #define TEMP_DRIVER_FILE_NAME                                                  \
     ("/sys/bus/iio/devices/iio:device0/in_temp7_input")
 
-
 /** Default Parameters */
 #define DEFAULT_NUM_FRAMES            (1)
 #define DEFAULT_NUM_CYCLES            (1)
@@ -78,7 +77,6 @@
 #define BIT16_MASK (0xFFFF)
 
 #define MAX_DATA_SIZE_IN_PACKET (8144)
-
 
 /* Enum Definitions */
 enum ADCINDEX {

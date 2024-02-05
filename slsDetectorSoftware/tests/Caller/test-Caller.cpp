@@ -2221,139 +2221,124 @@ TEST_CASE("CALLER::clearbusy", "[.cmdcall]") {
 TEST_CASE("CALLER::start", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
+    // PUT only command
+    REQUIRE_THROWS(caller.call("start", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        // PUT only command
-        REQUIRE_THROWS(caller.call("start", {}, -1, GET));
-        auto det_type = det.getDetectorType().squash();
-        std::chrono::nanoseconds prev_val;
-        if (det_type != defs::MYTHEN3) {
-            prev_val = det.getExptime().tsquash("inconsistent exptime to test");
-        } else {
-            auto t = det.getExptimeForAllGates().tsquash(
-                "inconsistent exptime to test");
-            if (t[0] != t[1] || t[1] != t[2]) {
-                throw RuntimeError("inconsistent exptime for all gates");
-            }
-            prev_val = t[0];
-        }
-        auto prev_frames =
-            det.getNumberOfFrames().tsquash("inconsistent #frames in test");
-        auto prev_period =
-            det.getPeriod().tsquash("inconsistent period in test");
-        det.setExptime(-1, std::chrono::microseconds(200));
-        det.setPeriod(std::chrono::milliseconds(1));
-        det.setNumberOfFrames(2000);
-        {
-            std::ostringstream oss;
-            caller.call("start", {}, -1, PUT, oss);
-            REQUIRE(oss.str() == "start successful\n");
-        }
-        if (det_type != defs::CHIPTESTBOARD && det_type != defs::MOENCH) {
-            std::ostringstream oss;
-            caller.call("status", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "status running\n");
-        }
-        det.stopDetector();
-        det.setExptime(-1, prev_val);
-        det.setPeriod(prev_period);
-        det.setNumberOfFrames(prev_frames);
+    std::chrono::nanoseconds prev_val;
+    if (det_type != defs::MYTHEN3) {
+        prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
-        REQUIRE_THROWS(caller.call("start", {}, -1, GET));
+        auto t =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        if (t[0] != t[1] || t[1] != t[2]) {
+            throw RuntimeError("inconsistent exptime for all gates");
+        }
+        prev_val = t[0];
     }
+    auto prev_frames =
+        det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+    auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
+    det.setExptime(-1, std::chrono::microseconds(200));
+    det.setPeriod(std::chrono::milliseconds(1));
+    det.setNumberOfFrames(2000);
+    {
+        std::ostringstream oss;
+        caller.call("start", {}, -1, PUT, oss);
+        REQUIRE(oss.str() == "start successful\n");
+    }
+    if (det_type != defs::CHIPTESTBOARD && det_type != defs::MOENCH) {
+        std::ostringstream oss;
+        caller.call("status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "status running\n");
+    }
+    det.stopDetector();
+    det.setExptime(-1, prev_val);
+    det.setPeriod(prev_period);
+    det.setNumberOfFrames(prev_frames);
 }
 
 TEST_CASE("CALLER::stop", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
+    // PUT only command
+    REQUIRE_THROWS(caller.call("stop", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        // PUT only command
-        REQUIRE_THROWS(caller.call("stop", {}, -1, GET));
-        auto det_type = det.getDetectorType().squash();
-        std::chrono::nanoseconds prev_val;
-        if (det_type != defs::MYTHEN3) {
-            prev_val = det.getExptime().tsquash("inconsistent exptime to test");
-        } else {
-            auto t = det.getExptimeForAllGates().tsquash(
-                "inconsistent exptime to test");
-            if (t[0] != t[1] || t[1] != t[2]) {
-                throw RuntimeError("inconsistent exptime for all gates");
-            }
-            prev_val = t[0];
-        }
-        auto prev_frames =
-            det.getNumberOfFrames().tsquash("inconsistent #frames in test");
-        auto prev_period =
-            det.getPeriod().tsquash("inconsistent period in test");
-        det.setExptime(-1, std::chrono::microseconds(200));
-        det.setPeriod(std::chrono::milliseconds(1));
-        det.setNumberOfFrames(2000);
-        det.startDetector();
-        if (det_type != defs::CHIPTESTBOARD && det_type != defs::MOENCH) {
-            std::ostringstream oss;
-            caller.call("status", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "status running\n");
-        }
-        {
-            std::ostringstream oss;
-            caller.call("stop", {}, -1, PUT, oss);
-            REQUIRE(oss.str() == "stop successful\n");
-        }
-        {
-            std::ostringstream oss;
-            caller.call("status", {}, -1, GET, oss);
-            REQUIRE(((oss.str() == "status stopped\n") ||
-                     (oss.str() == "status idle\n")));
-        }
-        det.setExptime(-1, prev_val);
-        det.setPeriod(prev_period);
-        det.setNumberOfFrames(prev_frames);
+    std::chrono::nanoseconds prev_val;
+    if (det_type != defs::MYTHEN3) {
+        prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
-        REQUIRE_THROWS(caller.call("stop", {}, -1, GET));
+        auto t =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        if (t[0] != t[1] || t[1] != t[2]) {
+            throw RuntimeError("inconsistent exptime for all gates");
+        }
+        prev_val = t[0];
     }
+    auto prev_frames =
+        det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+    auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
+    det.setExptime(-1, std::chrono::microseconds(200));
+    det.setPeriod(std::chrono::milliseconds(1));
+    det.setNumberOfFrames(2000);
+    det.startDetector();
+    if (det_type != defs::CHIPTESTBOARD && det_type != defs::MOENCH) {
+        std::ostringstream oss;
+        caller.call("status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "status running\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("stop", {}, -1, PUT, oss);
+        REQUIRE(oss.str() == "stop successful\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("status", {}, -1, GET, oss);
+        REQUIRE(((oss.str() == "status stopped\n") ||
+                 (oss.str() == "status idle\n")));
+    }
+    det.setExptime(-1, prev_val);
+    det.setPeriod(prev_period);
+    det.setNumberOfFrames(prev_frames);
 }
 
 TEST_CASE("CALLER::status", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        std::chrono::nanoseconds prev_val;
-        if (det_type != defs::MYTHEN3) {
-            prev_val = det.getExptime().tsquash("inconsistent exptime to test");
-        } else {
-            auto t = det.getExptimeForAllGates().tsquash(
-                "inconsistent exptime to test");
-            if (t[0] != t[1] || t[1] != t[2]) {
-                throw RuntimeError("inconsistent exptime for all gates");
-            }
-            prev_val = t[0];
+    std::chrono::nanoseconds prev_val;
+    if (det_type != defs::MYTHEN3) {
+        prev_val = det.getExptime().tsquash("inconsistent exptime to test");
+    } else {
+        auto t =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        if (t[0] != t[1] || t[1] != t[2]) {
+            throw RuntimeError("inconsistent exptime for all gates");
         }
-        auto prev_frames =
-            det.getNumberOfFrames().tsquash("inconsistent #frames in test");
-        auto prev_period =
-            det.getPeriod().tsquash("inconsistent period in test");
-        det.setExptime(-1, std::chrono::microseconds(200));
-        det.setPeriod(std::chrono::milliseconds(1));
-        det.setNumberOfFrames(2000);
-        det.startDetector();
-        if (det_type != defs::CHIPTESTBOARD && det_type != defs::MOENCH) {
-            std::ostringstream oss;
-            caller.call("status", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "status running\n");
-        }
-        det.stopDetector();
-        {
-            std::ostringstream oss;
-            caller.call("status", {}, -1, GET, oss);
-            REQUIRE(((oss.str() == "status stopped\n") ||
-                     (oss.str() == "status idle\n")));
-        }
-        det.setExptime(-1, prev_val);
-        det.setPeriod(prev_period);
-        det.setNumberOfFrames(prev_frames);
+        prev_val = t[0];
     }
+    auto prev_frames =
+        det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+    auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
+    det.setExptime(-1, std::chrono::microseconds(200));
+    det.setPeriod(std::chrono::milliseconds(1));
+    det.setNumberOfFrames(2000);
+    det.startDetector();
+    if (det_type != defs::CHIPTESTBOARD && det_type != defs::MOENCH) {
+        std::ostringstream oss;
+        caller.call("status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "status running\n");
+    }
+    det.stopDetector();
+    {
+        std::ostringstream oss;
+        caller.call("status", {}, -1, GET, oss);
+        REQUIRE(((oss.str() == "status stopped\n") ||
+                 (oss.str() == "status idle\n")));
+    }
+    det.setExptime(-1, prev_val);
+    det.setPeriod(prev_period);
+    det.setNumberOfFrames(prev_frames);
 }
 
 TEST_CASE("CALLER::nextframenumber", "[.cmdcall]") {
@@ -2381,44 +2366,42 @@ TEST_CASE("CALLER::nextframenumber", "[.cmdcall]") {
             REQUIRE(oss.str() == "nextframenumber 1\n");
         }
 
-        if (det_type != defs::XILINX_CHIPTESTBOARD) {
-            auto prev_timing =
-                det.getTimingMode().tsquash("inconsistent timing mode in test");
-            auto prev_frames =
-                det.getNumberOfFrames().tsquash("inconsistent #frames in test");
-            auto prev_exptime =
-                det.getExptime().tsquash("inconsistent exptime in test");
-            auto prev_period =
-                det.getPeriod().tsquash("inconsistent period in test");
-            det.setTimingMode(defs::AUTO_TIMING);
-            det.setNumberOfFrames(1);
-            det.setExptime(std::chrono::microseconds(200));
-            det.setPeriod(std::chrono::milliseconds(1));
+        auto prev_timing =
+            det.getTimingMode().tsquash("inconsistent timing mode in test");
+        auto prev_frames =
+            det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+        auto prev_exptime =
+            det.getExptime().tsquash("inconsistent exptime in test");
+        auto prev_period =
+            det.getPeriod().tsquash("inconsistent period in test");
+        det.setTimingMode(defs::AUTO_TIMING);
+        det.setNumberOfFrames(1);
+        det.setExptime(std::chrono::microseconds(200));
+        det.setPeriod(std::chrono::milliseconds(1));
+        det.startDetector();
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        auto currentfnum =
+            det.getNextFrameNumber().tsquash("inconsistent frame nr in test");
+        REQUIRE(currentfnum == 2);
+        if (det_type == defs::EIGER) {
+            auto prev_tengiga =
+                det.getTenGiga().tsquash("inconsistent ten giga enable");
+            det.setTenGiga(true);
+            det.setNextFrameNumber(1);
             det.startDetector();
             std::this_thread::sleep_for(std::chrono::seconds(2));
             auto currentfnum = det.getNextFrameNumber().tsquash(
                 "inconsistent frame nr in test");
             REQUIRE(currentfnum == 2);
-            if (det_type == defs::EIGER) {
-                auto prev_tengiga =
-                    det.getTenGiga().tsquash("inconsistent ten giga enable");
-                det.setTenGiga(true);
-                det.setNextFrameNumber(1);
-                det.startDetector();
-                std::this_thread::sleep_for(std::chrono::seconds(2));
-                auto currentfnum = det.getNextFrameNumber().tsquash(
-                    "inconsistent frame nr in test");
-                REQUIRE(currentfnum == 2);
-                det.setTenGiga(prev_tengiga);
-            }
+            det.setTenGiga(prev_tengiga);
+        }
 
-            det.setTimingMode(prev_timing);
-            det.setNumberOfFrames(prev_frames);
-            det.setExptime(prev_exptime);
-            det.setPeriod(prev_period);
-            for (int i = 0; i != det.size(); ++i) {
-                det.setNextFrameNumber(prev_sfnum[i], {i});
-            }
+        det.setTimingMode(prev_timing);
+        det.setNumberOfFrames(prev_frames);
+        det.setExptime(prev_exptime);
+        det.setPeriod(prev_period);
+        for (int i = 0; i != det.size(); ++i) {
+            det.setNextFrameNumber(prev_sfnum[i], {i});
         }
     } else {
         REQUIRE_THROWS(caller.call("nextframenumber", {}, -1, GET));
@@ -3281,7 +3264,7 @@ TEST_CASE("CALLER::setbit", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::EIGER && det_type != defs::XILINX_CHIPTESTBOARD) {
+    if (det_type != defs::EIGER) {
         uint32_t addr = 0x64;
         std::string saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
@@ -3303,7 +3286,7 @@ TEST_CASE("CALLER::clearbit", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::EIGER && det_type != defs::XILINX_CHIPTESTBOARD) {
+    if (det_type != defs::EIGER) {
         uint32_t addr = 0x64;
         std::string saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);

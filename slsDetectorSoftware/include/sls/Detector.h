@@ -2119,12 +2119,12 @@ class Detector {
      * [Gotthard2] only in continuous mode */
     Result<int64_t> getNumberOfFramesFromStart(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench][Mythen3][CTB][Xilinx CTB] Get time from detector start
-     * [Gotthard2] not in burst and auto mode */
+    /** [Jungfrau][Moench][Mythen3][CTB][Xilinx CTB] Get time from detector
+     * start [Gotthard2] not in burst and auto mode */
     Result<ns> getActualTime(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench][Mythen3][CTB][Xilinx CTB] Get timestamp at a frame start
-     * [Gotthard2] not in burst and auto mode */
+    /** [Jungfrau][Moench][Mythen3][CTB][Xilinx CTB] Get timestamp at a frame
+     * start [Gotthard2] not in burst and auto mode */
     Result<ns> getMeasurementTime(Positions pos = {}) const;
 
     /** get user details from shared memory  (hostname, type, PID, User, Date)

@@ -1983,8 +1983,8 @@ int acquire(int blocking, int file_des) {
                     getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
                    (isTransceiverAligned() == 0)) {
             ret = FAIL;
-            strcpy(mess,
-                   "Could not start acquisition. Transceiver not aligned. Use configtransceiver command.\n");
+            strcpy(mess, "Could not start acquisition. Transceiver not "
+                         "aligned. Use configtransceiver command.\n");
             LOG(logERROR, (mess));
         } else
 #endif
@@ -2676,7 +2676,8 @@ int get_delay_after_trigger(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
+    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&  \
+    !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -2698,7 +2699,8 @@ int set_delay_after_trigger(int file_des) {
         ("Setting delay after trigger %lld ns\n", (long long int)arg));
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
+    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&  \
+    !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set
@@ -2956,9 +2958,9 @@ int get_period_left(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD) &&                                \
-    !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD)                         \
-&& !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
+    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&  \
+    !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -2973,9 +2975,9 @@ int get_delay_after_trigger_left(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD) &&                                \
-    !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD)                         \
-&& !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
+    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&  \
+    !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -3023,7 +3025,8 @@ int get_frames_from_start(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&    \
-    !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
+    !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&                              \
+    !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -3039,7 +3042,8 @@ int get_actual_time(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&    \
-    !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
+    !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&                              \
+    !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -3055,7 +3059,8 @@ int get_measurement_time(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&    \
-    !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
+    !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&                              \
+    !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only

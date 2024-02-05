@@ -3201,7 +3201,7 @@ std::string Caller::delay(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: delay" << std::endl;
         os << R"V0G0N([duration] [(optional unit) ns|us|ms|s]
-	[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Moench] Delay after trigger )V0G0N"
+	[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Moench][Xilinx Ctb] Delay after trigger )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -3290,7 +3290,7 @@ std::string Caller::delayl(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: delayl" << std::endl;
         os << R"V0G0N(
-	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Delay Left in Acquisition. 
+	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Delay Left in Acquisition. 
 	[Gotthard2] only in continuous mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -5172,7 +5172,7 @@ std::string Caller::framecounter(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: framecounter" << std::endl;
         os << R"V0G0N(
-	[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Number of frames from start run control.
+	[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of frames from start run control.
 	[Gotthard2] only in continuous mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -5323,7 +5323,7 @@ std::string Caller::frametime(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: frametime" << std::endl;
         os << R"V0G0N([(optional unit) ns|us|ms|s]
-	[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Timestamp at a frame start.
+	[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Timestamp at a frame start.
 	[Gotthard2] not in burst and auto mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -9181,7 +9181,7 @@ std::string Caller::periodl(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: periodl" << std::endl;
         os << R"V0G0N(
-	[Gotthard][Jungfrau][Moench][Ctb][Mythen3][Gotthard2] Period left for current frame. 
+	[Gotthard][Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx Ctb] Period left for current frame. 
 	[Gotthard2] only in continuous mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -10737,7 +10737,7 @@ std::string Caller::runtime(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: runtime" << std::endl;
         os << R"V0G0N([(optional unit) ns|us|ms|s]
-	[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Time from detector start up.
+	[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Time from detector start up.
 	[Gotthard2] not in burst and auto mode. )V0G0N"
            << std::endl;
         return os.str();

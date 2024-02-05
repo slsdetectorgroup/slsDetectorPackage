@@ -333,7 +333,8 @@ int64_t getNumFramesLeft();
 int64_t getNumTriggersLeft();
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARDD) ||            \
-    defined(CHIPTESTBOARDD) || defined(MYTHEN3D) || defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
+    defined(CHIPTESTBOARDD) || defined(MYTHEN3D) || defined(GOTTHARD2D) ||     \
+    defined(XILINX_CHIPTESTBOARDD)
 int setDelayAfterTrigger(int64_t val);
 int64_t getDelayAfterTrigger();
 int64_t getDelayAfterTriggerLeft();
@@ -747,7 +748,8 @@ int readFrameFromFifo();
 #endif
 
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MOENCHD) ||            \
-    defined(CHIPTESTBOARDD) || defined(MYTHEN3D) || defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
+    defined(CHIPTESTBOARDD) || defined(MYTHEN3D) || defined(GOTTHARD2D) ||     \
+    defined(XILINX_CHIPTESTBOARDD)
 u_int32_t runBusy();
 #endif
 

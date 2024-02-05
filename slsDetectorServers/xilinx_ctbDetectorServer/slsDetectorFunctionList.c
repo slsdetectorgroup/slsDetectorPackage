@@ -426,6 +426,7 @@ void setupDetector() {
     setTiming(DEFAULT_TIMING_MODE);
     setExpTime(DEFAULT_EXPTIME);
     setPeriod(DEFAULT_PERIOD);
+    setDelayAfterTrigger(DEFAULT_DELAY);
 
     setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 }
@@ -903,6 +904,30 @@ int64_t getPeriod() {
     return getU64BitReg(PERIOD_IN_REG_1, PERIOD_IN_REG_2) / (1E-3 * RUN_CLK);
 }
 
+int setDelayAfterTrigger(int64_t val) {
+    if (val < 0) {
+        LOG(logERROR, ("Invalid delay after trigger: %ld ns\n", val));
+        return FAIL;
+    }
+    LOG(logINFO, ("Setting delay after trigger %ld ns\n", val));
+    val *= (1E-3 * RUN_CLK);
+    setU64BitReg(val, DELAY_IN_REG_1, DELAY_IN_REG_2);
+
+    // validate for tolerance
+    int64_t retval = getDelayAfterTrigger();
+    val /= (1E-3 * RUN_CLK);
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t getDelayAfterTrigger() {
+    return getU64BitReg(DELAY_IN_REG_1, DELAY_IN_REG_2) /
+           (1E-3 * RUN_CLK);
+}
+
+
 int64_t getNumFramesLeft() {
     return getU64BitReg(FRAMES_OUT_REG_1, FRAMES_OUT_REG_2);
 }
@@ -910,6 +935,32 @@ int64_t getNumFramesLeft() {
 int64_t getNumTriggersLeft() {
     return getU64BitReg(CYCLES_OUT_REG_1, CYCLES_OUT_REG_2);
 }
+
+int64_t getDelayAfterTriggerLeft() {
+    return getU64BitReg(DELAY_OUT_REG_1, DELAY_OUT_REG_2) /
+           (1E-3 * RUN_CLK);
+}
+
+int64_t getPeriodLeft() {
+    return getU64BitReg(PERIOD_OUT_REG_1, PERIOD_OUT_REG_2) /
+           (1E-3 * RUN_CLK);
+}
+
+int64_t getFramesFromStart() {
+    return getU64BitReg(FRAMES_FROM_START_OUT_REG_1,
+                       FRAMES_FROM_START_OUT_REG_2);
+}
+
+int64_t getActualTime() {
+    return getU64BitReg(TIME_FROM_START_OUT_REG_1, TIME_FROM_START_OUT_REG_2) /
+           (1E-3 * TICK_CLK);
+}
+
+int64_t getMeasurementTime() {
+    return getU64BitReg(FRAME_TIME_OUT_REG_1, FRAME_TIME_OUT_REG_2) /
+           (1E-3 * TICK_CLK);
+}
+
 /* parameters - dac, adc, hv */
 
 void setDAC(enum DACINDEX ind, int val, int mV) {

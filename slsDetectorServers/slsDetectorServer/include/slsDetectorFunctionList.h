@@ -333,10 +333,9 @@ int64_t getNumFramesLeft();
 int64_t getNumTriggersLeft();
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARDD) ||            \
-    defined(CHIPTESTBOARDD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
+    defined(CHIPTESTBOARDD) || defined(MYTHEN3D) || defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
 int setDelayAfterTrigger(int64_t val);
 int64_t getDelayAfterTrigger();
-
 int64_t getDelayAfterTriggerLeft();
 int64_t getPeriodLeft();
 #endif
@@ -347,7 +346,7 @@ int64_t getNumBurstsLeft();
 int64_t getExpTimeLeft();
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) ||       \
-    defined(MYTHEN3D) || defined(GOTTHARD2D)
+    defined(MYTHEN3D) || defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
 int64_t getFramesFromStart();
 int64_t getActualTime();
 int64_t getMeasurementTime();

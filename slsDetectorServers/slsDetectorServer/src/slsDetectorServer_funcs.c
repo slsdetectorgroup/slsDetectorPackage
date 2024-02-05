@@ -2676,7 +2676,7 @@ int get_delay_after_trigger(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -2698,7 +2698,7 @@ int set_delay_after_trigger(int file_des) {
         ("Setting delay after trigger %lld ns\n", (long long int)arg));
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set
@@ -2957,8 +2957,8 @@ int get_period_left(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) &&                                \
-    !defined(GOTTHARDD) /* && !defined(CHIPTESTBOARDD)                         \
-&& !defined(MYTHEN3D) && !defined(GOTTHARD2D)*/
+    !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD)                         \
+&& !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -2974,8 +2974,8 @@ int get_delay_after_trigger_left(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) &&                                \
-    !defined(GOTTHARDD) /* && !defined(CHIPTESTBOARDD)                         \
-&& !defined(MYTHEN3D) && !defined(GOTTHARD2D)*/
+    !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD)                         \
+&& !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -3023,7 +3023,7 @@ int get_frames_from_start(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&    \
-    !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+    !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -3039,7 +3039,7 @@ int get_actual_time(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&    \
-    !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+    !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -3055,7 +3055,7 @@ int get_measurement_time(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&    \
-    !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+    !defined(MYTHEN3D) && !defined(GOTTHARD2D) && !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only

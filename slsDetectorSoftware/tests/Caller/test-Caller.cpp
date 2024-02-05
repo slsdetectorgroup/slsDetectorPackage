@@ -899,36 +899,32 @@ TEST_CASE("CALLER::delay", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        if (det_type == defs::EIGER) {
-            REQUIRE_THROWS(caller.call("delay", {"1"}, -1, PUT));
-            REQUIRE_THROWS(caller.call("delay", {}, -1, GET));
-        } else if (det_type == defs::GOTTHARD) {
-            // extra delays for master (can throw when setting)
-            REQUIRE_NOTHROW(caller.call("delay", {}, -1, GET));
-        } else {
-            auto prev_val = det.getDelayAfterTrigger();
-            {
-                std::ostringstream oss;
-                caller.call("delay", {"1.25s"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "delay 1.25s\n");
-            }
-            {
-                std::ostringstream oss;
-                caller.call("delay", {}, -1, GET, oss);
-                REQUIRE(oss.str() == "delay 1.25s\n");
-            }
-            {
-                std::ostringstream oss;
-                caller.call("delay", {"0s"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "delay 0s\n");
-            }
-            for (int i = 0; i != det.size(); ++i) {
-                det.setDelayAfterTrigger(prev_val[i], {i});
-            }
-        }
-    } else {
+    if (det_type == defs::EIGER) {
+        REQUIRE_THROWS(caller.call("delay", {"1"}, -1, PUT));
         REQUIRE_THROWS(caller.call("delay", {}, -1, GET));
+    } else if (det_type == defs::GOTTHARD) {
+        // extra delays for master (can throw when setting)
+        REQUIRE_NOTHROW(caller.call("delay", {}, -1, GET));
+    } else {
+        auto prev_val = det.getDelayAfterTrigger();
+        {
+            std::ostringstream oss;
+            caller.call("delay", {"1.25s"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "delay 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("delay", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "delay 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("delay", {"0s"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "delay 0s\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setDelayAfterTrigger(prev_val[i], {i});
+        }
     }
 }
 
@@ -960,10 +956,6 @@ TEST_CASE("CALLER::delayl", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     switch (det_type) {
     case defs::EIGER:
-    case defs::CHIPTESTBOARD:
-    case defs::XILINX_CHIPTESTBOARD:
-    case defs::GOTTHARD2:
-    case defs::MYTHEN3:
         REQUIRE_THROWS(caller.call("delayl", {}, -1, GET));
         break;
     default:
@@ -978,10 +970,6 @@ TEST_CASE("CALLER::periodl", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     switch (det_type) {
     case defs::EIGER:
-    case defs::CHIPTESTBOARD:
-    case defs::XILINX_CHIPTESTBOARD:
-    case defs::GOTTHARD2:
-    case defs::MYTHEN3:
         REQUIRE_THROWS(caller.call("periodl", {}, -1, GET));
         break;
     default:
@@ -3083,19 +3071,16 @@ TEST_CASE("CALLER::zmqport", "[.cmdcall]") {
 TEST_CASE("CALLER::zmqip", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        std::ostringstream oss1, oss2;
-        auto zmqip = det.getClientZmqIp();
-        caller.call("zmqip", {}, 0, GET, oss1);
-        REQUIRE(oss1.str() == "zmqip " + zmqip[0].str() + '\n');
+    std::ostringstream oss1, oss2;
+    auto zmqip = det.getClientZmqIp();
+    caller.call("zmqip", {}, 0, GET, oss1);
+    REQUIRE(oss1.str() == "zmqip " + zmqip[0].str() + '\n');
 
-        caller.call("zmqip", {zmqip[0].str()}, 0, PUT, oss2);
-        REQUIRE(oss2.str() == "zmqip " + zmqip[0].str() + '\n');
+    caller.call("zmqip", {zmqip[0].str()}, 0, PUT, oss2);
+    REQUIRE(oss2.str() == "zmqip " + zmqip[0].str() + '\n');
 
-        for (int i = 0; i != det.size(); ++i) {
-            det.setRxZmqIP(zmqip[i], {i});
-        }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setRxZmqIP(zmqip[i], {i});
     }
 }
 
@@ -3529,7 +3514,7 @@ TEST_CASE("CALLER::framecounter", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
         det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD2) {
+        det_type == defs::GOTTHARD2 || det_type == defs::XILINX_CHIPTESTBOARD) {
         auto framecounter = det.getNumberOfFramesFromStart().squash();
         std::ostringstream oss;
         caller.call("framecounter", {}, -1, GET, oss);
@@ -3548,7 +3533,7 @@ TEST_CASE("CALLER::runtime", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
         det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD2) {
+        det_type == defs::GOTTHARD2 || det_type == defs::XILINX_CHIPTESTBOARD) {
         std::ostringstream oss;
         caller.call("runtime", {}, -1, GET, oss);
         // Get only
@@ -3566,7 +3551,7 @@ TEST_CASE("CALLER::frametime", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
         det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD2) {
+        det_type == defs::GOTTHARD2 || det_type == defs::XILINX_CHIPTESTBOARD) {
         std::ostringstream oss;
         caller.call("frametime", {}, -1, GET, oss);
         // Get only

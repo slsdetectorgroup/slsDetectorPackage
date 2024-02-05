@@ -316,10 +316,10 @@ class Detector {
 
     void setPeriod(ns t, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx CTB] */
     Result<ns> getDelayAfterTrigger(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx CTB] */
     void setDelayAfterTrigger(ns value, Positions pos = {});
 
     /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Xilinx CTB]
@@ -330,11 +330,11 @@ class Detector {
      * Only when external trigger used */
     Result<int64_t> getNumberOfTriggersLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2]
+    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx CTB]
      * [Gotthard2] only in continuous mode */
     Result<ns> getPeriodLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3]
+    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Xilinx CTB]
      * [Gotthard2] only in continuous mode */
     Result<ns> getDelayAfterTriggerLeft(Positions pos = {}) const;
 
@@ -2115,15 +2115,15 @@ class Detector {
     Result<std::string> executeCommand(const std::string &value,
                                        Positions pos = {});
 
-    /** [Jungfrau][Moench][Mythen3][CTB]
+    /** [Jungfrau][Moench][Mythen3][CTB][Xilinx CTB]
      * [Gotthard2] only in continuous mode */
     Result<int64_t> getNumberOfFramesFromStart(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench][Mythen3][CTB] Get time from detector start
+    /** [Jungfrau][Moench][Mythen3][CTB][Xilinx CTB] Get time from detector start
      * [Gotthard2] not in burst and auto mode */
     Result<ns> getActualTime(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench][Mythen3][CTB] Get timestamp at a frame start
+    /** [Jungfrau][Moench][Mythen3][CTB][Xilinx CTB] Get timestamp at a frame start
      * [Gotthard2] not in burst and auto mode */
     Result<ns> getMeasurementTime(Positions pos = {}) const;
 

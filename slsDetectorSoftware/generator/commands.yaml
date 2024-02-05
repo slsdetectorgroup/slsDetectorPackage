@@ -441,7 +441,7 @@ period:
       function: setPeriod
 
 delay:
-  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Moench] Delay after trigger"
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Moench][Xilinx Ctb] Delay after trigger"
   inherit_actions: TIME_COMMAND
   actions:
     GET:
@@ -496,14 +496,14 @@ burstperiod:
 
 ################# TIME_GET_COMMAND #############
 delayl:
-  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Delay Left in Acquisition. \n\t[Gotthard2] only in continuous mode."
+  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Delay Left in Acquisition. \n\t[Gotthard2] only in continuous mode."
   inherit_actions: TIME_GET_COMMAND
   actions:
     GET:
       function: getDelayAfterTriggerLeft
 
 periodl:
-  help: "\n\t[Gotthard][Jungfrau][Moench][Ctb][Mythen3][Gotthard2] Period left for current frame. \n\t[Gotthard2] only in continuous mode."
+  help: "\n\t[Gotthard][Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx Ctb] Period left for current frame. \n\t[Gotthard2] only in continuous mode."
   inherit_actions: TIME_GET_COMMAND
   actions:
     GET:
@@ -531,14 +531,14 @@ exptimel:
       function: getExptimeLeft
 
 runtime:
-  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Time from detector start up.\n\t[Gotthard2] not in burst and auto mode."
+  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Time from detector start up.\n\t[Gotthard2] not in burst and auto mode."
   inherit_actions: TIME_GET_COMMAND
   actions:
     GET:
       function: getActualTime
 
 frametime:
-  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Timestamp at a frame start.\n\t[Gotthard2] not in burst and auto mode."
+  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Timestamp at a frame start.\n\t[Gotthard2] not in burst and auto mode."
   inherit_actions: TIME_GET_COMMAND
   actions:
     GET:
@@ -2018,7 +2018,7 @@ lastclient:
 
 framecounter:
   inherit_actions: GET_COMMAND
-  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Number of frames from start run control.\n\t[Gotthard2] only in continuous mode."
+  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of frames from start run control.\n\t[Gotthard2] only in continuous mode."
   actions:
     GET:
       function: getNumberOfFramesFromStart

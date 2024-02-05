@@ -414,7 +414,7 @@ class Detector(CppDetectorApi):
     @element
     def framecounter(self):
         """
-        [Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of frames from start run control.
+        [Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx Ctb] Number of frames from start run control.
 
         Note
         -----
@@ -631,7 +631,7 @@ class Detector(CppDetectorApi):
     @element
     def periodl(self):
         """
-        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] Period left for current frame.
+        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Period left for current frame.
 
         Note
         -----
@@ -653,7 +653,7 @@ class Detector(CppDetectorApi):
     @element
     def delay(self):
         """
-        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] Delay after trigger, accepts either a value in seconds, DurationWrapper or datetime.timedelta
+        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Delay after trigger, accepts either a value in seconds, DurationWrapper or datetime.timedelta
 
         :getter: always returns in seconds. To get in DurationWrapper, use getDelayAfterTrigger
 
@@ -695,7 +695,7 @@ class Detector(CppDetectorApi):
     @element
     def delayl(self):
         """
-        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] Delay left after trigger during acquisition, accepts either a value in seconds, datetime.timedelta or DurationWrapper
+        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Delay left after trigger during acquisition, accepts either a value in seconds, datetime.timedelta or DurationWrapper
 
         Note
         -----
@@ -1975,7 +1975,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def frametime(self):
-        """[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Timestamp at a frame start.
+        """[Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx Ctb] Timestamp at a frame start.
         
         Note
         ----
@@ -2613,7 +2613,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def runtime(self):
-        """[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Time from detector start up.
+        """[Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx Ctb] Time from detector start up.
         
         Note
         -----

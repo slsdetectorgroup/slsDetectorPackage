@@ -3337,7 +3337,7 @@ void Module::initializeModuleStructure(detectorType type) {
         strcpy_safe(shm()->settingsDir, home_directory);
     else {
         strcpy_safe(shm()->settingsDir, "");
-        std::cout << "Warning, HOME directory not set" << std::endl;
+        LOG(logWARNING) << "HOME directory not set";
     }
     strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_TCP_RX_PORTNO + moduleIndex;

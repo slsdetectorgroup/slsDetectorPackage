@@ -114,10 +114,11 @@ int getTimeFromString(char *buf, time_t *result) {
          t.tm_mday, t.tm_mon, t.tm_year + 1900, t.tm_hour, t.tm_min, t.tm_sec));
 
     *result = mktime(&t);
-    if (*result == -1) {
+    /*  Do not check as it fails with nios
+    if (*result == (time_t)-1) {
         LOG(logERROR, ("Could not convert time structure to time_t\n"));
         return FAIL;
-    }
+    }*/
     return OK;
 }
 

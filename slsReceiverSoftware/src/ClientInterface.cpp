@@ -1738,7 +1738,7 @@ int ClientInterface::get_receiver_roi(Interface &socket) {
 
 int ClientInterface::set_receiver_roi(Interface &socket) {
     auto arg = socket.Receive<ROI>();
-    if (detType == CHIPTESTBOARD)
+    if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
     LOG(logDEBUG1) << "Set Receiver ROI: " << ToString(arg);
     verifyIdle(socket);

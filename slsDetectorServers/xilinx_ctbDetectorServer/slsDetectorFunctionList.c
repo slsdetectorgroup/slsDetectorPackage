@@ -511,7 +511,8 @@ int waitTransceiverAligned(char *mess) {
 
     // no module: transceiver will never get aligned
     if (!checkModuleFlag) {
-        LOG(logWARNING, ("No module: Transceiver will never get aligned. Ignoring alignment check.\n"));
+        LOG(logWARNING, ("No module: Transceiver will never get aligned. "
+                         "Ignoring alignment check.\n"));
         return OK;
     }
 

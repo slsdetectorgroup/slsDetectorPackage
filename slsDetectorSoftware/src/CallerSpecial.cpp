@@ -232,7 +232,6 @@ std::string Caller::acquire(int action) {
         if (det_id >= 0) {
             throw RuntimeError("Individual detectors not allowed for readout.");
         }
-
         det->acquire();
 
         if (det->getUseReceiverFlag().squash(false)) {

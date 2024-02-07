@@ -2383,6 +2383,7 @@ void Module::setNumberOfAnalogSamples(int value) {
     // update #nchan, as it depends on #samples, adcmask
     updateNumberOfChannels();
     if (shm()->useReceiverFlag) {
+        LOG(logINFORED) << "receiver up!";
         sendToReceiver(F_RECEIVER_SET_NUM_ANALOG_SAMPLES, value, nullptr);
     }
 }
@@ -2529,6 +2530,13 @@ bool Module::getLEDEnable() const {
 
 void Module::setLEDEnable(bool enable) {
     sendToDetector<int>(F_LED, static_cast<int>(enable));
+}
+
+// Xilinx Ctb Specific
+void Module::configureTransceiver() {
+    sendToDetector(F_CONFIG_TRANSCEIVER);
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): Transceiver configured successfully!";
 }
 
 // Pattern

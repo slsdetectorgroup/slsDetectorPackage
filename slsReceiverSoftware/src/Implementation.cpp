@@ -116,6 +116,7 @@ void Implementation::setDetectorType(const detectorType d) {
     case JUNGFRAU:
     case MOENCH:
     case CHIPTESTBOARD:
+    case XILINX_CHIPTESTBOARD:
     case MYTHEN3:
     case GOTTHARD2:
         LOG(logINFO) << " ***** " << ToString(d) << " Receiver *****";
@@ -144,6 +145,9 @@ void Implementation::setDetectorType(const detectorType d) {
         break;
     case CHIPTESTBOARD:
         generalData = new ChipTestBoardData();
+        break;
+    case XILINX_CHIPTESTBOARD:
+        generalData = new XilinxChipTestBoardData();
         break;
     case MYTHEN3:
         generalData = new Mythen3Data();

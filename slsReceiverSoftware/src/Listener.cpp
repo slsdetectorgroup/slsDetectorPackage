@@ -471,6 +471,7 @@ void Listener::CopyPacket(char *dst, char *src, uint32_t dataSize,
             memcpy(dst + dataSize - 2, &src[detHeaderSize], dataSize + 2);
         break;
     case CHIPTESTBOARD:
+    case XILINX_CHIPTESTBOARD:
         if (pnum == (generalData->packetsPerFrame - 1))
             memcpy(dst + (pnum * dataSize), &src[detHeaderSize],
                    correctedDataSize);

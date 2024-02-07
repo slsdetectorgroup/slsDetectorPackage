@@ -52,12 +52,26 @@ void initializePatternWord() {
 #endif
 #endif
 
-#if defined(CHIPTESTBOARDD) // TODO || defined(XILINX_CHIPTESTBOARDD)
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 uint64_t validate_readPatternIOControl() {
+#if defined(CHIPTESTBOARDD)
     return getU64BitReg(PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);
+#elif defined(XILINX_CHIPTESTBOARDD)
+    return (uint64_t)(bus_r(PINIOCTRLREG));
+#endif
 }
 
 int validate_writePatternIOControl(char *message, uint64_t arg) {
+    // validate input
+#ifdef XILINX_CHIPTESTBOARDD
+    if (arg > BIT32_MSK) {
+        strcpy(message, "Could not set pattern IO Control. Must be 32 bit for "
+                        "this detector\n");
+        LOG(logERROR, (message));
+        return FAIL;
+    }
+#endif
+
     writePatternIOControl(arg);
 
     // validate result
@@ -77,9 +91,15 @@ int validate_writePatternIOControl(char *message, uint64_t arg) {
 }
 
 void writePatternIOControl(uint64_t word) {
+#ifdef CHIPTESTBOARDD
     LOG(logINFO,
         ("Setting Pattern I/O Control: 0x%llx\n", (long long int)word));
     setU64BitReg(word, PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);
+#elif defined(XILINX_CHIPTESTBOARDD)
+    uint32_t val = (uint32_t)word;
+    LOG(logINFO, ("Setting Pattern I/O Control: 0x%x\n", val));
+    bus_w(PINIOCTRLREG, val);
+#endif
 }
 #endif
 

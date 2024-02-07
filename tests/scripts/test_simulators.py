@@ -99,9 +99,7 @@ def loadConfig(name, rx_hostname, settingsdir):
     Log(Fore.GREEN, 'Loading config')
     try:
         d = Detector()
-        if name == 'xilinx_ctb':
-            d.hostname = 'localhost'
-        elif name == 'eiger':
+        if name == 'eiger':
             d.hostname = 'localhost:' + str(DEFAULT_TCP_CNTRL_PORTNO) + '+localhost:' + str(HALFMOD2_TCP_CNTRL_PORTNO)
             #d.udp_dstport = {2: 50003} 
             # will set up for every module
@@ -120,8 +118,10 @@ def loadConfig(name, rx_hostname, settingsdir):
                 d.udp_srcip = d.udp_dstip
             else:
                 d.udp_srcip = 'auto'
-        if d.type == detectorType.JUNGFRAU or d.type == detectorType.MOENCH:
+        if d.type == detectorType.JUNGFRAU or d.type == detectorType.MOENCH or d.type == detectorType.XILINX_CHIPTESTBOARD:
             d.powerchip = 1
+        if d.type == detectorType.XILINX_CHIPTESTBOARD:
+            d.configureTransceiver()
     except:
         Log(Fore.RED, 'Could not load config for ' + name)
         raise
@@ -221,7 +221,7 @@ with open(fname, 'w') as fp:
             startCmdTests(server, fp, file_results)
             cleanup(server)
         except:
-            Log(log.RED, 'Exception caught. Cleaning up.')
+            Log(Fore.RED, 'Exception caught. Cleaning up.')
             cleanup(server)
             sys.stdout = original_stdout
             sys.stderr = original_stderr

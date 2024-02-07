@@ -11,7 +11,7 @@ void initializePatternAddresses();
 void initializePatternWord();
 #endif
 #endif
-#if defined(CHIPTESTBOARDD) // TODO || defined(XILINX_CHIPTESTBOARDD)
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 uint64_t validate_readPatternIOControl();
 int validate_writePatternIOControl(char *message, uint64_t arg);
 void writePatternIOControl(uint64_t word);

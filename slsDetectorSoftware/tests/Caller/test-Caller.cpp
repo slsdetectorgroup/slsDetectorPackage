@@ -825,82 +825,73 @@ TEST_CASE("CALLER::exptime", "[.cmdcall][.time]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        std::chrono::nanoseconds prev_val;
-        if (det_type != defs::MYTHEN3) {
-            prev_val = det.getExptime().tsquash("inconsistent exptime to test");
-        } else {
-            auto t = det.getExptimeForAllGates().tsquash(
-                "inconsistent exptime to test");
-            if (t[0] != t[1] || t[1] != t[2]) {
-                throw RuntimeError("inconsistent exptime for all gates");
-            }
-            prev_val = t[0];
-        }
-        {
-            std::ostringstream oss;
-            caller.call("exptime", {"0.05"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "exptime 0.05\n");
-        }
-        if (det_type != defs::MYTHEN3) {
-            std::ostringstream oss;
-            caller.call("exptime", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "exptime 50ms\n");
-        }
-        {
-            std::ostringstream oss;
-            caller.call("exptime", {"1s"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "exptime 1s\n");
-        }
-        if (det_type != defs::JUNGFRAU && det_type != defs::MOENCH) {
-            {
-                std::ostringstream oss;
-                caller.call("exptime", {"0"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "exptime 0\n");
-            }
-            {
-                // Get exptime of single module
-                std::ostringstream oss;
-                caller.call("exptime", {}, 0, GET, oss);
-                if (det_type == defs::MYTHEN3) {
-                    REQUIRE(oss.str() == "exptime [0ns, 0ns, 0ns]\n");
-                } else {
-                    REQUIRE(oss.str() == "exptime 0ns\n");
-                }
-            }
-        }
-        det.setExptime(-1, prev_val);
+    std::chrono::nanoseconds prev_val;
+    if (det_type != defs::MYTHEN3) {
+        prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
-        REQUIRE_THROWS(caller.call("exptime", {}, -1, GET));
+        auto t =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        if (t[0] != t[1] || t[1] != t[2]) {
+            throw RuntimeError("inconsistent exptime for all gates");
+        }
+        prev_val = t[0];
     }
+    {
+        std::ostringstream oss;
+        caller.call("exptime", {"0.05"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "exptime 0.05\n");
+    }
+    if (det_type != defs::MYTHEN3) {
+        std::ostringstream oss;
+        caller.call("exptime", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "exptime 50ms\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("exptime", {"1s"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "exptime 1s\n");
+    }
+    if (det_type != defs::JUNGFRAU && det_type != defs::MOENCH) {
+        {
+            std::ostringstream oss;
+            caller.call("exptime", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "exptime 0\n");
+        }
+        {
+            // Get exptime of single module
+            std::ostringstream oss;
+            caller.call("exptime", {}, 0, GET, oss);
+            if (det_type == defs::MYTHEN3) {
+                REQUIRE(oss.str() == "exptime [0ns, 0ns, 0ns]\n");
+            } else {
+                REQUIRE(oss.str() == "exptime 0ns\n");
+            }
+        }
+    }
+    det.setExptime(-1, prev_val);
 }
 
 TEST_CASE("CALLER::period", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getPeriod();
-        {
-            std::ostringstream oss;
-            caller.call("period", {"1.25s"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "period 1.25s\n");
-        }
-        {
-            std::ostringstream oss;
-            caller.call("period", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "period 1.25s\n");
-        }
-        {
-            std::ostringstream oss;
-            caller.call("period", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "period 0\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPeriod(prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(caller.call("period", {}, -1, GET));
+    auto prev_val = det.getPeriod();
+    {
+        std::ostringstream oss;
+        caller.call("period", {"1.25s"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "period 1.25s\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("period", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "period 1.25s\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("period", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "period 0\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setPeriod(prev_val[i], {i});
     }
 }
 
@@ -908,36 +899,32 @@ TEST_CASE("CALLER::delay", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        if (det_type == defs::EIGER) {
-            REQUIRE_THROWS(caller.call("delay", {"1"}, -1, PUT));
-            REQUIRE_THROWS(caller.call("delay", {}, -1, GET));
-        } else if (det_type == defs::GOTTHARD) {
-            // extra delays for master (can throw when setting)
-            REQUIRE_NOTHROW(caller.call("delay", {}, -1, GET));
-        } else {
-            auto prev_val = det.getDelayAfterTrigger();
-            {
-                std::ostringstream oss;
-                caller.call("delay", {"1.25s"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "delay 1.25s\n");
-            }
-            {
-                std::ostringstream oss;
-                caller.call("delay", {}, -1, GET, oss);
-                REQUIRE(oss.str() == "delay 1.25s\n");
-            }
-            {
-                std::ostringstream oss;
-                caller.call("delay", {"0s"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "delay 0s\n");
-            }
-            for (int i = 0; i != det.size(); ++i) {
-                det.setDelayAfterTrigger(prev_val[i], {i});
-            }
-        }
-    } else {
+    if (det_type == defs::EIGER) {
+        REQUIRE_THROWS(caller.call("delay", {"1"}, -1, PUT));
         REQUIRE_THROWS(caller.call("delay", {}, -1, GET));
+    } else if (det_type == defs::GOTTHARD) {
+        // extra delays for master (can throw when setting)
+        REQUIRE_NOTHROW(caller.call("delay", {}, -1, GET));
+    } else {
+        auto prev_val = det.getDelayAfterTrigger();
+        {
+            std::ostringstream oss;
+            caller.call("delay", {"1.25s"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "delay 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("delay", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "delay 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("delay", {"0s"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "delay 0s\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setDelayAfterTrigger(prev_val[i], {i});
+        }
     }
 }
 
@@ -969,10 +956,6 @@ TEST_CASE("CALLER::delayl", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     switch (det_type) {
     case defs::EIGER:
-    case defs::CHIPTESTBOARD:
-    case defs::XILINX_CHIPTESTBOARD:
-    case defs::GOTTHARD2:
-    case defs::MYTHEN3:
         REQUIRE_THROWS(caller.call("delayl", {}, -1, GET));
         break;
     default:
@@ -987,10 +970,6 @@ TEST_CASE("CALLER::periodl", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     switch (det_type) {
     case defs::EIGER:
-    case defs::CHIPTESTBOARD:
-    case defs::XILINX_CHIPTESTBOARD:
-    case defs::GOTTHARD2:
-    case defs::MYTHEN3:
         REQUIRE_THROWS(caller.call("periodl", {}, -1, GET));
         break;
     default:
@@ -1514,7 +1493,8 @@ TEST_CASE("CALLER::powerchip", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
+        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2 ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getPowerChip();
         {
             std::ostringstream oss;
@@ -1533,6 +1513,9 @@ TEST_CASE("CALLER::powerchip", "[.cmdcall]") {
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPowerChip(prev_val[i], {i});
+            if (det_type == defs::XILINX_CHIPTESTBOARD) {
+                det.configureTransceiver();
+            }
         }
     } else {
         REQUIRE_THROWS(caller.call("powerchip", {}, -1, GET));
@@ -2002,8 +1985,7 @@ TEST_CASE("CALLER::temp_fpga", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::CHIPTESTBOARD &&
-        det_type != defs::XILINX_CHIPTESTBOARD) {
+    if (det_type != defs::CHIPTESTBOARD) {
         REQUIRE_NOTHROW(caller.call("temp_fpga", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(caller.call("temp_fpga", {}, 0, GET, oss));
@@ -2021,7 +2003,8 @@ TEST_CASE("CALLER::daclist", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         REQUIRE_NOTHROW(caller.call("daclist", {}, -1, GET));
 
         auto prev = det.getDacNames();
@@ -2054,13 +2037,8 @@ TEST_CASE("CALLER::daclist", "[.cmdcall]") {
 TEST_CASE("CALLER::dacvalues", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_NOTHROW(caller.call("dacvalues", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("dacvalues", {}, -1, PUT));
-    } else {
-        REQUIRE_THROWS(caller.call("dacvalues", {}, -1, GET));
-    }
+    REQUIRE_NOTHROW(caller.call("dacvalues", {}, -1, GET));
+    REQUIRE_THROWS(caller.call("dacvalues", {}, -1, PUT));
 }
 
 TEST_CASE("CALLER::defaultdac", "[.cmdcall]") {
@@ -2246,141 +2224,124 @@ TEST_CASE("CALLER::clearbusy", "[.cmdcall]") {
 TEST_CASE("CALLER::start", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
+    // PUT only command
+    REQUIRE_THROWS(caller.call("start", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        // PUT only command
-        REQUIRE_THROWS(caller.call("start", {}, -1, GET));
-        auto det_type = det.getDetectorType().squash();
-        std::chrono::nanoseconds prev_val;
-        if (det_type != defs::MYTHEN3) {
-            prev_val = det.getExptime().tsquash("inconsistent exptime to test");
-        } else {
-            auto t = det.getExptimeForAllGates().tsquash(
-                "inconsistent exptime to test");
-            if (t[0] != t[1] || t[1] != t[2]) {
-                throw RuntimeError("inconsistent exptime for all gates");
-            }
-            prev_val = t[0];
-        }
-        auto prev_frames =
-            det.getNumberOfFrames().tsquash("inconsistent #frames in test");
-        auto prev_period =
-            det.getPeriod().tsquash("inconsistent period in test");
-        det.setExptime(-1, std::chrono::microseconds(200));
-        det.setPeriod(std::chrono::milliseconds(1));
-        det.setNumberOfFrames(2000);
-        {
-            std::ostringstream oss;
-            caller.call("start", {}, -1, PUT, oss);
-            REQUIRE(oss.str() == "start successful\n");
-        }
-        if (det_type != defs::CHIPTESTBOARD && det_type != defs::MOENCH) {
-            std::ostringstream oss;
-            caller.call("status", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "status running\n");
-        }
-        det.stopDetector();
-        det.setExptime(-1, prev_val);
-        det.setPeriod(prev_period);
-        det.setNumberOfFrames(prev_frames);
+    std::chrono::nanoseconds prev_val;
+    if (det_type != defs::MYTHEN3) {
+        prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
-        REQUIRE_THROWS(caller.call("start", {}, -1, GET));
+        auto t =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        if (t[0] != t[1] || t[1] != t[2]) {
+            throw RuntimeError("inconsistent exptime for all gates");
+        }
+        prev_val = t[0];
     }
+    auto prev_frames =
+        det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+    auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
+    det.setExptime(-1, std::chrono::microseconds(200));
+    det.setPeriod(std::chrono::milliseconds(1));
+    det.setNumberOfFrames(2000);
+    {
+        std::ostringstream oss;
+        caller.call("start", {}, -1, PUT, oss);
+        REQUIRE(oss.str() == "start successful\n");
+    }
+    if (det_type != defs::CHIPTESTBOARD && det_type != defs::MOENCH) {
+        std::ostringstream oss;
+        caller.call("status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "status running\n");
+    }
+    det.stopDetector();
+    det.setExptime(-1, prev_val);
+    det.setPeriod(prev_period);
+    det.setNumberOfFrames(prev_frames);
 }
 
 TEST_CASE("CALLER::stop", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
+    // PUT only command
+    REQUIRE_THROWS(caller.call("stop", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        // PUT only command
-        REQUIRE_THROWS(caller.call("stop", {}, -1, GET));
-        auto det_type = det.getDetectorType().squash();
-        std::chrono::nanoseconds prev_val;
-        if (det_type != defs::MYTHEN3) {
-            prev_val = det.getExptime().tsquash("inconsistent exptime to test");
-        } else {
-            auto t = det.getExptimeForAllGates().tsquash(
-                "inconsistent exptime to test");
-            if (t[0] != t[1] || t[1] != t[2]) {
-                throw RuntimeError("inconsistent exptime for all gates");
-            }
-            prev_val = t[0];
-        }
-        auto prev_frames =
-            det.getNumberOfFrames().tsquash("inconsistent #frames in test");
-        auto prev_period =
-            det.getPeriod().tsquash("inconsistent period in test");
-        det.setExptime(-1, std::chrono::microseconds(200));
-        det.setPeriod(std::chrono::milliseconds(1));
-        det.setNumberOfFrames(2000);
-        det.startDetector();
-        if (det_type != defs::CHIPTESTBOARD && det_type != defs::MOENCH) {
-            std::ostringstream oss;
-            caller.call("status", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "status running\n");
-        }
-        {
-            std::ostringstream oss;
-            caller.call("stop", {}, -1, PUT, oss);
-            REQUIRE(oss.str() == "stop successful\n");
-        }
-        {
-            std::ostringstream oss;
-            caller.call("status", {}, -1, GET, oss);
-            REQUIRE(((oss.str() == "status stopped\n") ||
-                     (oss.str() == "status idle\n")));
-        }
-        det.setExptime(-1, prev_val);
-        det.setPeriod(prev_period);
-        det.setNumberOfFrames(prev_frames);
+    std::chrono::nanoseconds prev_val;
+    if (det_type != defs::MYTHEN3) {
+        prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
-        REQUIRE_THROWS(caller.call("stop", {}, -1, GET));
+        auto t =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        if (t[0] != t[1] || t[1] != t[2]) {
+            throw RuntimeError("inconsistent exptime for all gates");
+        }
+        prev_val = t[0];
     }
+    auto prev_frames =
+        det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+    auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
+    det.setExptime(-1, std::chrono::microseconds(200));
+    det.setPeriod(std::chrono::milliseconds(1));
+    det.setNumberOfFrames(2000);
+    det.startDetector();
+    if (det_type != defs::CHIPTESTBOARD && det_type != defs::MOENCH) {
+        std::ostringstream oss;
+        caller.call("status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "status running\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("stop", {}, -1, PUT, oss);
+        REQUIRE(oss.str() == "stop successful\n");
+    }
+    {
+        std::ostringstream oss;
+        caller.call("status", {}, -1, GET, oss);
+        REQUIRE(((oss.str() == "status stopped\n") ||
+                 (oss.str() == "status idle\n")));
+    }
+    det.setExptime(-1, prev_val);
+    det.setPeriod(prev_period);
+    det.setNumberOfFrames(prev_frames);
 }
 
 TEST_CASE("CALLER::status", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        std::chrono::nanoseconds prev_val;
-        if (det_type != defs::MYTHEN3) {
-            prev_val = det.getExptime().tsquash("inconsistent exptime to test");
-        } else {
-            auto t = det.getExptimeForAllGates().tsquash(
-                "inconsistent exptime to test");
-            if (t[0] != t[1] || t[1] != t[2]) {
-                throw RuntimeError("inconsistent exptime for all gates");
-            }
-            prev_val = t[0];
-        }
-        auto prev_frames =
-            det.getNumberOfFrames().tsquash("inconsistent #frames in test");
-        auto prev_period =
-            det.getPeriod().tsquash("inconsistent period in test");
-        det.setExptime(-1, std::chrono::microseconds(200));
-        det.setPeriod(std::chrono::milliseconds(1));
-        det.setNumberOfFrames(2000);
-        det.startDetector();
-        if (det_type != defs::CHIPTESTBOARD && det_type != defs::MOENCH) {
-            std::ostringstream oss;
-            caller.call("status", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "status running\n");
-        }
-        det.stopDetector();
-        {
-            std::ostringstream oss;
-            caller.call("status", {}, -1, GET, oss);
-            REQUIRE(((oss.str() == "status stopped\n") ||
-                     (oss.str() == "status idle\n")));
-        }
-        det.setExptime(-1, prev_val);
-        det.setPeriod(prev_period);
-        det.setNumberOfFrames(prev_frames);
+    std::chrono::nanoseconds prev_val;
+    if (det_type != defs::MYTHEN3) {
+        prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
-        REQUIRE_THROWS(caller.call("status", {}, -1, GET));
+        auto t =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        if (t[0] != t[1] || t[1] != t[2]) {
+            throw RuntimeError("inconsistent exptime for all gates");
+        }
+        prev_val = t[0];
     }
+    auto prev_frames =
+        det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+    auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
+    det.setExptime(-1, std::chrono::microseconds(200));
+    det.setPeriod(std::chrono::milliseconds(1));
+    det.setNumberOfFrames(2000);
+    det.startDetector();
+    if (det_type != defs::CHIPTESTBOARD && det_type != defs::MOENCH) {
+        std::ostringstream oss;
+        caller.call("status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "status running\n");
+    }
+    det.stopDetector();
+    {
+        std::ostringstream oss;
+        caller.call("status", {}, -1, GET, oss);
+        REQUIRE(((oss.str() == "status stopped\n") ||
+                 (oss.str() == "status idle\n")));
+    }
+    det.setExptime(-1, prev_val);
+    det.setPeriod(prev_period);
+    det.setNumberOfFrames(prev_frames);
 }
 
 TEST_CASE("CALLER::nextframenumber", "[.cmdcall]") {
@@ -2388,7 +2349,8 @@ TEST_CASE("CALLER::nextframenumber", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
-        det_type == defs::MOENCH || det_type == defs::CHIPTESTBOARD) {
+        det_type == defs::MOENCH || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_sfnum = det.getNextFrameNumber();
         REQUIRE_THROWS(caller.call("nextframenumber", {"0"}, -1, PUT));
         {
@@ -2455,131 +2417,127 @@ TEST_CASE("CALLER::scan", "[.cmdcall]") {
     defs::dacIndex ind = defs::DAC_0;
     defs::dacIndex notImplementedInd = defs::DAC_0;
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        switch (det_type) {
-        case defs::CHIPTESTBOARD:
-            ind = defs::DAC_0;
-            notImplementedInd = defs::VSVP;
-            break;
-        case defs::EIGER:
-            ind = defs::VCMP_LL;
-            notImplementedInd = defs::VCASCP_PB;
-            break;
-        case defs::JUNGFRAU:
-            ind = defs::VB_COMP;
-            notImplementedInd = defs::VSVP;
-            break;
-        case defs::MOENCH:
-            ind = defs::VIN_CM;
-            notImplementedInd = defs::VSVP;
-            break;
-        case defs::GOTTHARD:
-            ind = defs::VREF_DS;
-            notImplementedInd = defs::VSVP;
-            break;
-        case defs::GOTTHARD2:
-            ind = defs::VB_COMP_FE;
-            notImplementedInd = defs::VSVP;
-            break;
-        case defs::MYTHEN3:
-            ind = defs::VTH2;
-            notImplementedInd = defs::VSVP;
-            break;
-        default:
-            break;
+    switch (det_type) {
+    case defs::CHIPTESTBOARD:
+    case defs::XILINX_CHIPTESTBOARD:
+        ind = defs::DAC_0;
+        notImplementedInd = defs::VSVP;
+        break;
+    case defs::EIGER:
+        ind = defs::VCMP_LL;
+        notImplementedInd = defs::VCASCP_PB;
+        break;
+    case defs::JUNGFRAU:
+        ind = defs::VB_COMP;
+        notImplementedInd = defs::VSVP;
+        break;
+    case defs::MOENCH:
+        ind = defs::VIN_CM;
+        notImplementedInd = defs::VSVP;
+        break;
+    case defs::GOTTHARD:
+        ind = defs::VREF_DS;
+        notImplementedInd = defs::VSVP;
+        break;
+    case defs::GOTTHARD2:
+        ind = defs::VB_COMP_FE;
+        notImplementedInd = defs::VSVP;
+        break;
+    case defs::MYTHEN3:
+        ind = defs::VTH2;
+        notImplementedInd = defs::VSVP;
+        break;
+    default:
+        break;
+    }
+
+    // when taking acquisition
+    // auto previous = det.getDAC(ind, false);
+    // auto notImplementedPrevious = det.getDAC(notImplementedInd, false);
+
+    if (det_type == defs::MYTHEN3 && det.size() > 1) {
+        ; // scan only allowed for single module due to sync
+    } else {
+        {
+            std::ostringstream oss;
+            caller.call("scan", {ToString(ind), "500", "1500", "500"}, -1, PUT,
+                        oss);
+            CHECK(oss.str() ==
+                  "scan [" + ToString(ind) + ", 500, 1500, 500]\n");
         }
+        {
+            std::ostringstream oss;
+            caller.call("scan", {}, -1, GET, oss);
+            CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
+                                   "\nstart 500\nstop 1500\nstep "
+                                   "500\nsettleTime 1ms\n]\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("scan", {ToString(ind), "500", "1500", "500", "2s"}, -1,
+                        PUT, oss);
+            CHECK(oss.str() ==
+                  "scan [" + ToString(ind) + ", 500, 1500, 500, 2s]\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("scan", {}, -1, GET, oss);
+            CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
+                                   "\nstart 500\nstop 1500\nstep "
+                                   "500\nsettleTime 2s\n]\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("scan", {"0"}, -1, PUT, oss);
+            CHECK(oss.str() == "scan [0]\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("scan", {}, -1, GET, oss);
+            CHECK(oss.str() == "scan [disabled]\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("scan", {ToString(ind), "1500", "500", "-500"}, -1, PUT,
+                        oss);
+            CHECK(oss.str() ==
+                  "scan [" + ToString(ind) + ", 1500, 500, -500]\n");
+        }
+        CHECK_THROWS(caller.call(
+            "scan", {ToString(notImplementedInd), "500", "1500", "500"}, -1,
+            PUT));
+        CHECK_THROWS(caller.call("scan", {ToString(ind), "500", "1500", "-500"},
+                                 -1, PUT));
+        CHECK_THROWS(caller.call("scan", {ToString(ind), "1500", "500", "500"},
+                                 -1, PUT));
+
+        if (det_type == defs::MYTHEN3 || defs::EIGER) {
+            {
+                std::ostringstream oss;
+                caller.call("scan", {"trimbits", "0", "63", "16", "2s"}, -1,
+                            PUT, oss);
+                CHECK(oss.str() == "scan [trimbits, 0, 63, 16, 2s]\n");
+            }
+            {
+                std::ostringstream oss;
+                caller.call("scan", {}, -1, GET, oss);
+                CHECK(oss.str() ==
+                      "scan [enabled\ndac trimbits\nstart 0\nstop 48\nstep "
+                      "16\nsettleTime 2s\n]\n");
+            }
+        }
+
+        // Switch off scan for future tests
+        det.setScan(defs::scanParameters());
+        // acquire for each?
 
         // when taking acquisition
-        // auto previous = det.getDAC(ind, false);
-        // auto notImplementedPrevious = det.getDAC(notImplementedInd, false);
-
-        if (det_type == defs::MYTHEN3 && det.size() > 1) {
-            ; // scan only allowed for single module due to sync
-        } else {
-            {
-                std::ostringstream oss;
-                caller.call("scan", {ToString(ind), "500", "1500", "500"}, -1,
-                            PUT, oss);
-                CHECK(oss.str() ==
-                      "scan [" + ToString(ind) + ", 500, 1500, 500]\n");
-            }
-            {
-                std::ostringstream oss;
-                caller.call("scan", {}, -1, GET, oss);
-                CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
-                                       "\nstart 500\nstop 1500\nstep "
-                                       "500\nsettleTime 1ms\n]\n");
-            }
-            {
-                std::ostringstream oss;
-                caller.call("scan", {ToString(ind), "500", "1500", "500", "2s"},
-                            -1, PUT, oss);
-                CHECK(oss.str() ==
-                      "scan [" + ToString(ind) + ", 500, 1500, 500, 2s]\n");
-            }
-            {
-                std::ostringstream oss;
-                caller.call("scan", {}, -1, GET, oss);
-                CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
-                                       "\nstart 500\nstop 1500\nstep "
-                                       "500\nsettleTime 2s\n]\n");
-            }
-            {
-                std::ostringstream oss;
-                caller.call("scan", {"0"}, -1, PUT, oss);
-                CHECK(oss.str() == "scan [0]\n");
-            }
-            {
-                std::ostringstream oss;
-                caller.call("scan", {}, -1, GET, oss);
-                CHECK(oss.str() == "scan [disabled]\n");
-            }
-            {
-                std::ostringstream oss;
-                caller.call("scan", {ToString(ind), "1500", "500", "-500"}, -1,
-                            PUT, oss);
-                CHECK(oss.str() ==
-                      "scan [" + ToString(ind) + ", 1500, 500, -500]\n");
-            }
-            CHECK_THROWS(caller.call(
-                "scan", {ToString(notImplementedInd), "500", "1500", "500"}, -1,
-                PUT));
-            CHECK_THROWS(caller.call(
-                "scan", {ToString(ind), "500", "1500", "-500"}, -1, PUT));
-            CHECK_THROWS(caller.call(
-                "scan", {ToString(ind), "1500", "500", "500"}, -1, PUT));
-
-            if (det_type == defs::MYTHEN3 || defs::EIGER) {
-                {
-                    std::ostringstream oss;
-                    caller.call("scan", {"trimbits", "0", "63", "16", "2s"}, -1,
-                                PUT, oss);
-                    CHECK(oss.str() == "scan [trimbits, 0, 63, 16, 2s]\n");
-                }
-                {
-                    std::ostringstream oss;
-                    caller.call("scan", {}, -1, GET, oss);
-                    CHECK(oss.str() ==
-                          "scan [enabled\ndac trimbits\nstart 0\nstop 48\nstep "
-                          "16\nsettleTime 2s\n]\n");
-                }
-            }
-
-            // Switch off scan for future tests
-            det.setScan(defs::scanParameters());
-            // acquire for each?
-
-            // when taking acquisition
-            // Reset all dacs to previous value
-            // for (int i = 0; i != det.size(); ++i) {
-            //     det.setDAC(ind, previous[i], false, {i});
-            //     det.setDAC(notImplementedInd, notImplementedPrevious[i],
-            //     false, {i});
-            // }
-        }
-    } else {
-        REQUIRE_THROWS(caller.call(
-            "scan", {ToString(defs::DAC_0), "500", "1500", "500"}, -1, PUT));
+        // Reset all dacs to previous value
+        // for (int i = 0; i != det.size(); ++i) {
+        //     det.setDAC(ind, previous[i], false, {i});
+        //     det.setDAC(notImplementedInd, notImplementedPrevious[i],
+        //     false, {i});
+        // }
     }
 }
 
@@ -2635,20 +2593,15 @@ TEST_CASE("CALLER::numinterfaces", "[.cmdcall]") {
 TEST_CASE("CALLER::udp_srcip", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getSourceUDPIP();
-        REQUIRE_THROWS(caller.call("udp_srcip", {"0.0.0.0"}, -1, PUT));
-        {
-            std::ostringstream oss;
-            caller.call("udp_srcip", {"129.129.205.12"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "udp_srcip 129.129.205.12\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setSourceUDPIP(prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(caller.call("udp_srcip", {}, -1, GET));
+    auto prev_val = det.getSourceUDPIP();
+    REQUIRE_THROWS(caller.call("udp_srcip", {"0.0.0.0"}, -1, PUT));
+    {
+        std::ostringstream oss;
+        caller.call("udp_srcip", {"129.129.205.12"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "udp_srcip 129.129.205.12\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setSourceUDPIP(prev_val[i], {i});
     }
 }
 
@@ -2684,14 +2637,9 @@ TEST_CASE("CALLER::udp_numdst", "[.cmdcall]") {
 TEST_CASE("CALLER::udp_cleardst", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_THROWS(caller.call("udp_cleardst", {}, -1, GET));
-        /* dont clear all udp destinations */
-        /*REQUIRE_NOTHROW(caller.call("udp_cleardst", {}, -1, PUT));*/
-    } else {
-        REQUIRE_THROWS(caller.call("udp_cleardst", {}, -1, PUT));
-    }
+    REQUIRE_THROWS(caller.call("udp_cleardst", {}, -1, GET));
+    /* dont clear all udp destinations */
+    /*REQUIRE_NOTHROW(caller.call("udp_cleardst", {}, -1, PUT));*/
 }
 
 TEST_CASE("CALLER::udp_firstdst", "[.cmdcall]") {
@@ -2737,23 +2685,17 @@ TEST_CASE("CALLER::udp_dstip", "[.cmdcall]") {
 TEST_CASE("CALLER::udp_srcmac", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getSourceUDPMAC();
-        REQUIRE_THROWS(
-            caller.call("udp_srcmac", {"00:00:00:00:00:00"}, -1, PUT));
-        {
-            std::ostringstream oss;
-            caller.call("udp_srcmac", {"00:50:c2:42:34:12"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "udp_srcmac 00:50:c2:42:34:12\n");
+    auto prev_val = det.getSourceUDPMAC();
+    REQUIRE_THROWS(caller.call("udp_srcmac", {"00:00:00:00:00:00"}, -1, PUT));
+    {
+        std::ostringstream oss;
+        caller.call("udp_srcmac", {"00:50:c2:42:34:12"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "udp_srcmac 00:50:c2:42:34:12\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        if (prev_val[i].str() != "00:00:00:00:00:00") {
+            det.setSourceUDPMAC(prev_val[i], {i});
         }
-        for (int i = 0; i != det.size(); ++i) {
-            if (prev_val[i].str() != "00:00:00:00:00:00") {
-                det.setSourceUDPMAC(prev_val[i], {i});
-            }
-        }
-    } else {
-        REQUIRE_THROWS(caller.call("udp_srcmac", {}, -1, GET));
     }
 }
 
@@ -2766,26 +2708,21 @@ TEST_CASE("CALLER::udp_dstmac", "[.cmdcall]") {
 TEST_CASE("CALLER::udp_dstport", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        auto prev_val = det.getDestinationUDPPort();
-        {
-            std::ostringstream oss;
-            caller.call("udp_dstport", {"50084"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "udp_dstport 50084\n");
-        }
-        test_valid_port_caller("udp_dstport", {}, -1, PUT);
-        test_valid_port_caller("udp_dstport", {}, 0, PUT);
-        // should fail for the second module
-        if (det.size() > 1) {
-            REQUIRE_THROWS(caller.call("udp_dstport", {"65535"}, -1, PUT));
-        }
+    auto prev_val = det.getDestinationUDPPort();
+    {
+        std::ostringstream oss;
+        caller.call("udp_dstport", {"50084"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "udp_dstport 50084\n");
+    }
+    test_valid_port_caller("udp_dstport", {}, -1, PUT);
+    test_valid_port_caller("udp_dstport", {}, 0, PUT);
+    // should fail for the second module
+    if (det.size() > 1) {
+        REQUIRE_THROWS(caller.call("udp_dstport", {"65535"}, -1, PUT));
+    }
 
-        for (int i = 0; i != det.size(); ++i) {
-            det.setDestinationUDPPort(prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(caller.call("udp_dstport", {}, -1, GET));
+    for (int i = 0; i != det.size(); ++i) {
+        det.setDestinationUDPPort(prev_val[i], {i});
     }
 }
 
@@ -2892,25 +2829,15 @@ TEST_CASE("CALLER::udp_dstport2", "[.cmdcall]") {
 TEST_CASE("CALLER::udp_reconfigure", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_THROWS(caller.call("udp_reconfigure", {}, -1, GET));
-        REQUIRE_NOTHROW(caller.call("udp_reconfigure", {}, -1, PUT));
-    } else {
-        REQUIRE_THROWS(caller.call("udp_reconfigure", {}, -1, PUT));
-    }
+    REQUIRE_THROWS(caller.call("udp_reconfigure", {}, -1, GET));
+    REQUIRE_NOTHROW(caller.call("udp_reconfigure", {}, -1, PUT));
 }
 
 TEST_CASE("CALLER::udp_validate", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_THROWS(caller.call("udp_validate", {}, -1, GET));
-        REQUIRE_NOTHROW(caller.call("udp_validate", {}, -1, PUT));
-    } else {
-        REQUIRE_THROWS(caller.call("udp_validate", {}, -1, PUT));
-    }
+    REQUIRE_THROWS(caller.call("udp_validate", {}, -1, GET));
+    REQUIRE_NOTHROW(caller.call("udp_validate", {}, -1, PUT));
 }
 
 TEST_CASE("CALLER::tengiga", "[.cmdcall]") {
@@ -3130,19 +3057,16 @@ TEST_CASE("CALLER::zmqport", "[.cmdcall]") {
 TEST_CASE("CALLER::zmqip", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        std::ostringstream oss1, oss2;
-        auto zmqip = det.getClientZmqIp();
-        caller.call("zmqip", {}, 0, GET, oss1);
-        REQUIRE(oss1.str() == "zmqip " + zmqip[0].str() + '\n');
+    std::ostringstream oss1, oss2;
+    auto zmqip = det.getClientZmqIp();
+    caller.call("zmqip", {}, 0, GET, oss1);
+    REQUIRE(oss1.str() == "zmqip " + zmqip[0].str() + '\n');
 
-        caller.call("zmqip", {zmqip[0].str()}, 0, PUT, oss2);
-        REQUIRE(oss2.str() == "zmqip " + zmqip[0].str() + '\n');
+    caller.call("zmqip", {zmqip[0].str()}, 0, PUT, oss2);
+    REQUIRE(oss2.str() == "zmqip " + zmqip[0].str() + '\n');
 
-        for (int i = 0; i != det.size(); ++i) {
-            det.setRxZmqIP(zmqip[i], {i});
-        }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setRxZmqIP(zmqip[i], {i});
     }
 }
 
@@ -3231,7 +3155,7 @@ TEST_CASE("CALLER::resetfpga", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MOENCH) {
+        det_type == defs::MOENCH || det_type == defs::XILINX_CHIPTESTBOARD) {
         // reset will also reset udp info from config file (comment out for
         // invdividual tests) std::ostringstream oss; caller.call("resetfpga",
         // {}, -1, PUT, oss); REQUIRE(oss.str() == "resetfpga successful\n");
@@ -3267,7 +3191,8 @@ TEST_CASE("CALLER::rebootcontroller", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
         det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD2 || det_type == defs::GOTTHARD) {
+        det_type == defs::GOTTHARD2 || det_type == defs::GOTTHARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         // TODO: reboot real server?
         // REQUIRE_NOTHROW(caller.call("rebootcontroller", {}, -1, PUT));
         REQUIRE_THROWS(caller.call("rebootcontroller", {}, -1, GET));
@@ -3299,28 +3224,24 @@ TEST_CASE("CALLER::reg", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::XILINX_CHIPTESTBOARD) {
-        if (det_type != defs::EIGER) {
-            uint32_t addr = 0x64;
-            std::string saddr = ToStringHex(addr);
-            auto prev_val = det.readRegister(addr);
-            {
-                std::ostringstream oss1, oss2;
-                caller.call("reg", {saddr, "0x5"}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "reg [" + saddr + ", 0x5]\n");
-                caller.call("reg", {saddr}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "reg 0x5\n");
-            }
-            for (int i = 0; i != det.size(); ++i) {
-                det.writeRegister(addr, prev_val[i], {i});
-            }
+    if (det_type != defs::EIGER) {
+        uint32_t addr = 0x64;
+        std::string saddr = ToStringHex(addr);
+        auto prev_val = det.readRegister(addr);
+        {
+            std::ostringstream oss1, oss2;
+            caller.call("reg", {saddr, "0x5"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "reg [" + saddr + ", 0x5]\n");
+            caller.call("reg", {saddr}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "reg 0x5\n");
         }
-        // cannot check for eiger virtual server
-        else {
-            REQUIRE_NOTHROW(caller.call("reg", {"0x64"}, -1, GET));
+        for (int i = 0; i != det.size(); ++i) {
+            det.writeRegister(addr, prev_val[i], {i});
         }
-    } else {
-        REQUIRE_THROWS(caller.call("reg", {}, -1, GET));
+    }
+    // cannot check for eiger virtual server
+    else {
+        REQUIRE_NOTHROW(caller.call("reg", {"0x64"}, -1, GET));
     }
 }
 
@@ -3346,7 +3267,7 @@ TEST_CASE("CALLER::setbit", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::EIGER && det_type != defs::XILINX_CHIPTESTBOARD) {
+    if (det_type != defs::EIGER) {
         uint32_t addr = 0x64;
         std::string saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
@@ -3368,7 +3289,7 @@ TEST_CASE("CALLER::clearbit", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::EIGER && det_type != defs::XILINX_CHIPTESTBOARD) {
+    if (det_type != defs::EIGER) {
         uint32_t addr = 0x64;
         std::string saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
@@ -3390,9 +3311,7 @@ TEST_CASE("CALLER::getbit", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::XILINX_CHIPTESTBOARD) {
-        REQUIRE_THROWS(caller.call("getbit", {"0x64", "1"}, -1, GET));
-    } else if (det_type != defs::EIGER) {
+    if (det_type != defs::EIGER) {
         uint32_t addr = 0x64;
         std::string saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
@@ -3418,7 +3337,8 @@ TEST_CASE("CALLER::firmwaretest", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
         det_type == defs::CHIPTESTBOARD || det_type == defs::GOTTHARD ||
-        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
+        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2 ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         std::ostringstream oss;
         caller.call("firmwaretest", {}, -1, PUT, oss);
         REQUIRE(oss.str() == "firmwaretest successful\n");
@@ -3580,7 +3500,7 @@ TEST_CASE("CALLER::framecounter", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
         det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD2) {
+        det_type == defs::GOTTHARD2 || det_type == defs::XILINX_CHIPTESTBOARD) {
         auto framecounter = det.getNumberOfFramesFromStart().squash();
         std::ostringstream oss;
         caller.call("framecounter", {}, -1, GET, oss);
@@ -3599,7 +3519,7 @@ TEST_CASE("CALLER::runtime", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
         det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD2) {
+        det_type == defs::GOTTHARD2 || det_type == defs::XILINX_CHIPTESTBOARD) {
         std::ostringstream oss;
         caller.call("runtime", {}, -1, GET, oss);
         // Get only
@@ -3617,7 +3537,7 @@ TEST_CASE("CALLER::frametime", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
         det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD2) {
+        det_type == defs::GOTTHARD2 || det_type == defs::XILINX_CHIPTESTBOARD) {
         std::ostringstream oss;
         caller.call("frametime", {}, -1, GET, oss);
         // Get only

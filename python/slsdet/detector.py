@@ -414,7 +414,7 @@ class Detector(CppDetectorApi):
     @element
     def framecounter(self):
         """
-        [Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of frames from start run control.
+        [Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx Ctb] Number of frames from start run control.
 
         Note
         -----
@@ -443,18 +443,29 @@ class Detector(CppDetectorApi):
     @element
     def powerchip(self):
         """
-        [Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. 
+        [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip. 
 
         Note
         ----
         [Jungfrau][Moench] Default is disabled. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1).\n
         [Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail.
+        [Xilinx Ctb] Default is 0. Also configures the chip if powered on.
         """
         return self.getPowerChip()
 
     @powerchip.setter
     def powerchip(self, value):
         ut.set_using_dict(self.setPowerChip, value)
+
+    def configtransceiver(self):
+        """
+        [Xilinx Ctb] Waits for transceiver to be aligned. 
+        
+        Note
+        ----
+        Chip had to be configured (powered on) before this.
+        """
+        self.configureTransceiver()
 
     @property
     @element
@@ -620,7 +631,7 @@ class Detector(CppDetectorApi):
     @element
     def periodl(self):
         """
-        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] Period left for current frame.
+        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Period left for current frame.
 
         Note
         -----
@@ -642,7 +653,7 @@ class Detector(CppDetectorApi):
     @element
     def delay(self):
         """
-        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] Delay after trigger, accepts either a value in seconds, DurationWrapper or datetime.timedelta
+        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Delay after trigger, accepts either a value in seconds, DurationWrapper or datetime.timedelta
 
         :getter: always returns in seconds. To get in DurationWrapper, use getDelayAfterTrigger
 
@@ -684,7 +695,7 @@ class Detector(CppDetectorApi):
     @element
     def delayl(self):
         """
-        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] Delay left after trigger during acquisition, accepts either a value in seconds, datetime.timedelta or DurationWrapper
+        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Delay left after trigger during acquisition, accepts either a value in seconds, datetime.timedelta or DurationWrapper
 
         Note
         -----
@@ -732,7 +743,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def nextframenumber(self):
-        """[Eiger][Jungfrau][Moench][CTB] Next frame number. Stopping acquisition might result in different frame numbers for different modules. """
+        """[Eiger][Jungfrau][Moench][CTB][Xilinx CTB] Next frame number. Stopping acquisition might result in different frame numbers for different modules. """
         return self.getNextFrameNumber()
 
     @nextframenumber.setter
@@ -1964,7 +1975,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def frametime(self):
-        """[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Timestamp at a frame start.
+        """[Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx Ctb] Timestamp at a frame start.
         
         Note
         ----
@@ -2602,7 +2613,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def runtime(self):
-        """[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Time from detector start up.
+        """[Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx Ctb] Time from detector start up.
         
         Note
         -----
@@ -3237,7 +3248,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def transceiverenable(self):
-        """[Ctb] Transceiver Enable Mask. Enable for each 4 transceiver channel."""
+        """[CTB][Xilinx CTB] Transceiver Enable Mask. Enable for each 4 transceiver channel."""
         return self.getTransceiverEnableMask()
 
     @transceiverenable.setter
@@ -3276,8 +3287,10 @@ class Detector(CppDetectorApi):
         
         Note
         ------
-        Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL, TRANSCEIVER_ONLY, DIGITAL_AND_TRANSCEIVER
-        Default: ANALOG_ONLY
+        [CTB] Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL, TRANSCEIVER_ONLY, DIGITAL_AND_TRANSCEIVER
+        [CTB] Default: ANALOG_ONLY
+        [Xilinx CTB] Options: TRANSCEIVER_ONLY
+        [Xilinx CTB] Default: TRANSCEIVER_ONLY
 
         Example
         --------
@@ -3314,7 +3327,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def tsamples(self):
-        """[CTB] Number of transceiver samples expected. """
+        """[CTB][Xilinx CTB] Number of transceiver samples expected. """
         return self.getNumberOfTransceiverSamples()
 
     @tsamples.setter
@@ -3833,7 +3846,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_a(self):
-        """[Ctb] Power supply a in mV."""
+        """[Ctb][Xilinx Ctb] Power supply a in mV."""
         return self.getPower(dacIndex.V_POWER_A)
 
     @v_a.setter
@@ -3844,7 +3857,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_b(self):
-        """[Ctb] Power supply b in mV."""
+        """[Ctb][Xilinx Ctb] Power supply b in mV."""
         return self.getPower(dacIndex.V_POWER_B)
 
     @v_b.setter
@@ -3855,7 +3868,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_c(self):
-        """[Ctb] Power supply c in mV."""
+        """[Ctb][Xilinx Ctb] Power supply c in mV."""
         return self.getPower(dacIndex.V_POWER_C)
 
     @v_c.setter
@@ -3866,7 +3879,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_d(self):
-        """[Ctb] Power supply d in mV."""
+        """[Ctb][Xilinx Ctb] Power supply d in mV."""
         return self.getPower(dacIndex.V_POWER_D)
 
     @v_d.setter
@@ -3877,7 +3890,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_io(self):
-        """[Ctb] Power supply io in mV. Minimum 1200 mV. 
+        """[Ctb][Xilinx Ctb] Power supply io in mV. Minimum 1200 mV. 
         
         Note
         ----
@@ -3893,7 +3906,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_limit(self):
-        """[Ctb] Soft limit for power supplies (ctb only) and DACS in mV."""
+        """[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and DACS in mV."""
         return self.getPower(dacIndex.V_LIMIT)
 
     @v_limit.setter

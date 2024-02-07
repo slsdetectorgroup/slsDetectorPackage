@@ -2247,6 +2247,46 @@ std::string Caller::config(int action) {
     return os.str();
 }
 
+std::string Caller::configtransceiver(int action) {
+
+    std::ostringstream os;
+    // print help
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << "Command: configtransceiver" << std::endl;
+        os << R"V0G0N(
+	[Xilinx Ctb] Waits for transceiver to be aligned. Chip had to be configured (powered on) before this. )V0G0N"
+           << std::endl;
+        return os.str();
+    }
+
+    // check if action and arguments are valid
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (1 && args.size() != 0) {
+            throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 0) {
+        }
+
+    }
+
+    else {
+
+        throw RuntimeError(
+            "INTERNAL ERROR: Invalid action: supported actions are ['PUT']");
+    }
+
+    // generate code for each action
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (args.size() == 0) {
+            det->configureTransceiver(std::vector<int>{det_id});
+            os << "successful" << '\n';
+        }
+    }
+
+    return os.str();
+}
+
 std::string Caller::dac(int action) {
 
     std::ostringstream os;
@@ -3161,7 +3201,7 @@ std::string Caller::delay(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: delay" << std::endl;
         os << R"V0G0N([duration] [(optional unit) ns|us|ms|s]
-	[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Moench] Delay after trigger )V0G0N"
+	[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Moench][Xilinx Ctb] Delay after trigger )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -3250,7 +3290,7 @@ std::string Caller::delayl(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: delayl" << std::endl;
         os << R"V0G0N(
-	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Delay Left in Acquisition. 
+	[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Delay Left in Acquisition. 
 	[Gotthard2] only in continuous mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -3685,7 +3725,7 @@ std::string Caller::exptime(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: exptime" << std::endl;
         os << R"V0G0N([duration] [(optional unit) ns|us|ms|s]
-	[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb] Exposure time
+	[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb][Xilinx Ctb] Exposure time
 	[Mythen3] Exposure time of all gate signals in auto and trigger mode (internal gating). To specify gate index, use exptime1, exptime2, exptime3. )V0G0N"
            << std::endl;
         return os.str();
@@ -4666,7 +4706,7 @@ std::string Caller::firmwaretest(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: firmwaretest" << std::endl;
         os << R"V0G0N(
-	[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Firmware test, ie. reads a read fixed pattern from a register. )V0G0N"
+	[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Firmware test, ie. reads a read fixed pattern from a register. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -5132,7 +5172,7 @@ std::string Caller::framecounter(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: framecounter" << std::endl;
         os << R"V0G0N(
-	[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Number of frames from start run control.
+	[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of frames from start run control.
 	[Gotthard2] only in continuous mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -5283,7 +5323,7 @@ std::string Caller::frametime(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: frametime" << std::endl;
         os << R"V0G0N([(optional unit) ns|us|ms|s]
-	[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Timestamp at a frame start.
+	[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Timestamp at a frame start.
 	[Gotthard2] not in burst and auto mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -7224,7 +7264,7 @@ std::string Caller::nextframenumber(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: nextframenumber" << std::endl;
         os << R"V0G0N([n_value]
-	[Eiger][Jungfrau][Moench][Ctb] Next frame number. Stopping acquisition might result in different frame numbers for different modules. )V0G0N"
+	[Eiger][Jungfrau][Moench][Ctb][Xilinx Ctb] Next frame number. Stopping acquisition might result in different frame numbers for different modules. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -9141,7 +9181,7 @@ std::string Caller::periodl(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: periodl" << std::endl;
         os << R"V0G0N(
-	[Gotthard][Jungfrau][Moench][Ctb][Mythen3][Gotthard2] Period left for current frame. 
+	[Gotthard][Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx Ctb] Period left for current frame. 
 	[Gotthard2] only in continuous mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -9317,9 +9357,10 @@ std::string Caller::powerchip(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: powerchip" << std::endl;
         os << R"V0G0N([0, 1]
-	[Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. 
+	[Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip. 
 	[Jungfrau][Moench] Default is 0. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1)
-	[Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail. )V0G0N"
+	[Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail.
+	[Xilinx Ctb] Default is 0. Also configures the chip if powered on. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -10230,7 +10271,7 @@ std::string Caller::rebootcontroller(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: rebootcontroller" << std::endl;
         os << R"V0G0N(
-	[Jungfrau][Moench][Ctb][Gotthard][Mythen3][Gotthard2] Reboot controller of detector. )V0G0N"
+	[Jungfrau][Moench][Ctb][Gotthard][Mythen3][Gotthard2][Xilinx Ctb] Reboot controller of detector. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -10399,7 +10440,7 @@ std::string Caller::resetfpga(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: resetfpga" << std::endl;
         os << R"V0G0N(
-	[Jungfrau][Moench][Ctb] Reset FPGA. )V0G0N"
+	[Jungfrau][Moench][Ctb][Xilinx Ctb] Reset FPGA. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -10505,7 +10546,7 @@ std::string Caller::romode(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: romode" << std::endl;
         os << R"V0G0N([analog|digital|analog_digital|transceiver|digital_transceiver]
-	[Ctb] Readout mode. Default is analog. )V0G0N"
+	[Ctb][xilinx Ctb] Readout mode. [Ctb] Default is analog. [Xilinx Ctb] Default is Transceiver (only one implemented so far) )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -10696,7 +10737,7 @@ std::string Caller::runtime(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: runtime" << std::endl;
         os << R"V0G0N([(optional unit) ns|us|ms|s]
-	[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Time from detector start up.
+	[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Time from detector start up.
 	[Gotthard2] not in burst and auto mode. )V0G0N"
            << std::endl;
         return os.str();
@@ -13298,7 +13339,7 @@ std::string Caller::slowadcvalues(int action) {
     if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() == 0) {
 
-            std::string suffix = " mV";
+            std::string suffix = " uV";
             auto t = det->getSlowADCList();
 
             auto names = det->getSlowADCNames();
@@ -14215,7 +14256,7 @@ std::string Caller::temp_fpga(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: temp_fpga" << std::endl;
         os << R"V0G0N([n_value]
-	[Eiger][Jungfrau][Moench][Gotthard][Mythen3][Gotthard2] FPGA Temperature )V0G0N"
+	[Eiger][Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Xilinx CTB] FPGA Temperature )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -14960,7 +15001,7 @@ std::string Caller::transceiverenable(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: transceiverenable" << std::endl;
         os << R"V0G0N([bitmask]
-	[Ctb] Transceiver Enable Mask. Enable for each 4 Transceiver channel. )V0G0N"
+	[Ctb][Xilinx Ctb] Transceiver Enable Mask. Enable for each 4 Transceiver channel. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -15294,7 +15335,7 @@ std::string Caller::tsamples(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: tsamples" << std::endl;
         os << R"V0G0N([n_value]
-	[Ctb] Number of transceiver samples expected. )V0G0N"
+	[Ctb][Xilinx Ctb] Number of transceiver samples expected. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -16568,7 +16609,7 @@ std::string Caller::v_a(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: v_a" << std::endl;
         os << R"V0G0N([n_value]
-	[Ctb] Power supply a in mV. )V0G0N"
+	[Ctb][Xilinx Ctb] Power supply a in mV. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -16631,7 +16672,7 @@ std::string Caller::v_b(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: v_b" << std::endl;
         os << R"V0G0N([n_value]
-	[Ctb] Power supply b in mV. )V0G0N"
+	[Ctb][Xilinx Ctb] Power supply b in mV. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -16694,7 +16735,7 @@ std::string Caller::v_c(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: v_c" << std::endl;
         os << R"V0G0N([n_value]
-	[Ctb] Power supply c in mV. )V0G0N"
+	[Ctb][Xilinx Ctb] Power supply c in mV. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -16821,7 +16862,7 @@ std::string Caller::v_d(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: v_d" << std::endl;
         os << R"V0G0N([n_value]
-	[Ctb] Power supply d in mV. )V0G0N"
+	[Ctb][Xilinx Ctb] Power supply d in mV. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -16884,7 +16925,7 @@ std::string Caller::v_io(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: v_io" << std::endl;
         os << R"V0G0N([n_value]
-	[Ctb] Power supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up). )V0G0N"
+	[Ctb][Xilinx Ctb] Power supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up). )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -16947,7 +16988,7 @@ std::string Caller::v_limit(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: v_limit" << std::endl;
         os << R"V0G0N([n_value]
-	[Ctb] Soft limit for power supplies (ctb only) and DACS in mV. )V0G0N"
+	[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and DACS in mV. )V0G0N"
            << std::endl;
         return os.str();
     }

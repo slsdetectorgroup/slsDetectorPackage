@@ -24,6 +24,7 @@
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern int updateFlag;
+extern int checkModuleFlag;
 extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern const enum detectorType myDetectorType;
 
@@ -507,6 +508,13 @@ int waitTransceiverAligned(char *mess) {
 #ifdef VIRTUAL
     setTransceiverAlignment(1);
 #else
+
+    // no module: transceiver will never get aligned
+    if (!checkModuleFlag) {
+        LOG(logWARNING, ("No module: Transceiver will never get aligned. Ignoring alignment check.\n"));
+        return OK;
+    }
+
     int transceiverWordAligned = isTransceiverAligned();
     int times = 0;
     while (transceiverWordAligned == 0) {
@@ -1470,12 +1478,31 @@ int startReadOut() {
     return startStateMachine();
 #endif
     // check if data in fifo
+    int ret = FAIL;
     if (transceiverEnable) {
-        if ((bus_r(X_FIFO_EMPTY_STATUS_REG) & X_FIFO_EMPTY_STATUS_MSK) ==
+        if ((bus_r(X_FIFO_EMPTY_STATUS_REG) & X_FIFO_EMPTY_STATUS_MSK) !=
             X_FIFO_EMPTY_STATUS_MSK) {
-            LOG(logERROR, ("No data in fifo\n"));
-            return FAIL;
+            LOG(logINFO, ("Data in transceiver fifo\n"));
+            ret = OK;
         }
+    }
+    if (analogEnable) {
+        if (bus_r(A_FIFO_EMPTY_STATUS_REG) != BIT32_MSK) {
+            LOG(logINFO, ("Data in analog fifo\n"));
+            ret = OK;
+        }
+    }
+    if (digitalEnable) {
+        if ((bus_r(D_FIFO_EMPTY_STATUS_REG) & D_FIFO_EMPTY_STATUS_MSK) !=
+            D_FIFO_EMPTY_STATUS_MSK) {
+            LOG(logINFO, ("Data in digital fifo\n"));
+            ret = OK;
+        }
+    }
+    // if no module, dont check fifo empty
+    if (checkModuleFlag && ret == FAIL) {
+        LOG(logERROR, ("No data in fifo\n"));
+        return FAIL;
     }
 
     LOG(logINFOBLUE, ("Streaming data from fifo\n"));

@@ -174,12 +174,9 @@ int main(int argc, char *argv[]) {
     int nped = 1000;
     
     int cf = 0;
-<<<<<<< HEAD
-    int numberOfPackets=50;
-=======
+
     int numberOfPackets=nrows/8;
 
->>>>>>> 5e9fd43d4924339ed9678bab5f262882d957df70
 #ifdef RECT
     cout << "Should be rectangular but now it will crash! No data structure defined!" << endl;
 #endif
@@ -303,19 +300,7 @@ int main(int argc, char *argv[]) {
     double *ped=new double[nx * ny];//, *ped1;
     int pos,pos1;
     //return  0;
-<<<<<<< HEAD
-    if (pedfile) {
-      if (string(pedfile).find(".raw") != std::string::npos) {
-	pos1=string(pedfile).rfind("/");
-	strcpy(froot,pedfile+pos1);
-	pos=string(froot).find(".raw");
-	froot[pos]='\0';
-      }
 
-      cout << "PEDESTAL " << endl;
-      if (string(pedfile).find(".tif") == std::string::npos) {
-            sprintf(fname, "%s", pedfile);
-=======
     if (pedfile.find(".raw") != std::string::npos) {
       pos1=pedfile.rfind("/");
       strcpy(froot,pedfile.substr(pos1).c_str());
@@ -326,7 +311,7 @@ int main(int argc, char *argv[]) {
     cout << "PEDESTAL " << endl;
     if (pedfile.find(".tif") == std::string::npos) {
       sprintf(fname, "%s", pedfile.c_str());
->>>>>>> 5e9fd43d4924339ed9678bab5f262882d957df70
+
             cout << fname << endl;
             std::time(&end_time);
             //cout << "aaa" << std::ctime(&end_time) << endl;
@@ -338,22 +323,15 @@ int main(int argc, char *argv[]) {
             if (filebin.is_open()) {
 	      ff = -1;
                 while (decoder->readNextFrame(filebin, ff, np, buff)) {
-<<<<<<< HEAD
-		  if (np <= numberOfPackets) {
-                        mt->pushData(buff);
-=======
+
 		  if (np == numberOfPackets) {
 		    mt->pushData(buff);
->>>>>>> 5e9fd43d4924339ed9678bab5f262882d957df70
                         mt->nextThread();
                         mt->popFree(buff);
                         ifr++;
 			if (ifr % 100 == 0)
-<<<<<<< HEAD
-                            cout << ifr << " " << ff << " " << np << endl;
-=======
+
 			  cout << ifr << " " << ff << " " << np << endl;
->>>>>>> 5e9fd43d4924339ed9678bab5f262882d957df70
 			    //	break;
 		  } else {
 		    cout << ifr << " " << ff << " " << np << endl;
@@ -363,15 +341,10 @@ int main(int argc, char *argv[]) {
                 }
                 filebin.close();
                 while (mt->isBusy()) {
-<<<<<<< HEAD
-                    ;
 
-                }
-=======
 		  ;
->>>>>>> 5e9fd43d4924339ed9678bab5f262882d957df70
 
-                }
+		}
 		
 		sprintf(imgfname, "%s/%s_ped.tiff", outdir.c_str(),froot);
 		mt->writePedestal(imgfname);
@@ -469,11 +442,8 @@ int main(int argc, char *argv[]) {
             ff = -1;
             ifr = 0;
             while (decoder->readNextFrame(filebin, ff, np, buff)) {
-<<<<<<< HEAD
-	      if (np <= numberOfPackets) {
-=======
+
 	      if (np == numberOfPackets) {
->>>>>>> 5e9fd43d4924339ed9678bab5f262882d957df70
                     //         //push
                     mt->pushData(buff);
                     // 	//         //pop
@@ -500,11 +470,8 @@ int main(int argc, char *argv[]) {
                     }
 	      } else {
 		cout << "bp " << ifr << " " << ff << " " << np << endl;
-<<<<<<< HEAD
-		break;
-=======
+
 		//break;
->>>>>>> 5e9fd43d4924339ed9678bab5f262882d957df70
 	      }
                 ff = -1;
             }

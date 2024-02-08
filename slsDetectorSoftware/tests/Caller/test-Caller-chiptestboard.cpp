@@ -368,7 +368,8 @@ TEST_CASE("CALLER::powervalues", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         REQUIRE_NOTHROW(caller.call("powervalues", {}, -1, GET));
         REQUIRE_THROWS(caller.call("powervalues", {}, -1, PUT));
     } else {
@@ -380,7 +381,8 @@ TEST_CASE("CALLER::slowadcvalues", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         REQUIRE_NOTHROW(caller.call("slowadcvalues", {}, -1, GET));
         REQUIRE_THROWS(caller.call("slowadcvalues", {}, -1, PUT));
     } else {
@@ -496,12 +498,7 @@ TEST_CASE("CALLER::dac", "[.cmdcall][.dacs]") {
         det_type == defs::XILINX_CHIPTESTBOARD) {
         for (int i = 0; i < 18; ++i) {
             SECTION("dac " + std::to_string(i)) {
-                if (det_type == defs::CHIPTESTBOARD) {
-                    test_dac_caller(static_cast<defs::dacIndex>(i), "dac", 0);
-                } else {
-                    REQUIRE_THROWS(
-                        caller.call("dac", {std::to_string(i)}, -1, GET));
-                }
+                test_dac_caller(static_cast<defs::dacIndex>(i), "dac", 0);
             }
         }
 
@@ -613,12 +610,10 @@ TEST_CASE("CALLER::samples", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_asamples = det.getNumberOfAnalogSamples();
-        Result<int> prev_dsamples = 0;
-        if (det_type == defs::CHIPTESTBOARD) {
-            prev_dsamples = det.getNumberOfDigitalSamples();
-        }
+        auto prev_dsamples = det.getNumberOfDigitalSamples();
         {
             std::ostringstream oss;
             caller.call("samples", {"25"}, -1, PUT, oss);
@@ -639,16 +634,15 @@ TEST_CASE("CALLER::samples", "[.cmdcall]") {
             caller.call("asamples", {}, -1, GET, oss);
             REQUIRE(oss.str() == "asamples 450\n");
         }
-        if (det_type == defs::CHIPTESTBOARD) {
+        if (det_type == defs::CHIPTESTBOARD ||
+            det_type == defs::XILINX_CHIPTESTBOARD) {
             std::ostringstream oss;
             caller.call("dsamples", {}, -1, GET, oss);
             REQUIRE(oss.str() == "dsamples 450\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setNumberOfAnalogSamples(prev_asamples[i], {i});
-            if (det_type == defs::CHIPTESTBOARD) {
-                det.setNumberOfDigitalSamples(prev_dsamples[i], {i});
-            }
+            det.setNumberOfDigitalSamples(prev_dsamples[i], {i});
         }
     } else {
         REQUIRE_THROWS(caller.call("samples", {}, -1, GET));
@@ -660,7 +654,8 @@ TEST_CASE("CALLER::asamples", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getNumberOfAnalogSamples();
         {
             std::ostringstream oss;
@@ -764,7 +759,8 @@ TEST_CASE("CALLER::v_limit", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getPower(defs::V_LIMIT);
         {
             std::ostringstream oss;
@@ -832,7 +828,8 @@ TEST_CASE("CALLER::adcenable10g", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getTenGigaADCEnableMask();
         {
             std::ostringstream oss;
@@ -862,7 +859,8 @@ TEST_CASE("CALLER::transceiverenable", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getTransceiverEnableMask();
         {
             std::ostringstream oss;
@@ -894,7 +892,8 @@ TEST_CASE("CALLER::dsamples", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getNumberOfDigitalSamples();
         {
             std::ostringstream oss;
@@ -924,7 +923,8 @@ TEST_CASE("CALLER::tsamples", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getNumberOfTransceiverSamples();
         {
             std::ostringstream oss;
@@ -953,7 +953,8 @@ TEST_CASE("CALLER::romode", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_romode = det.getReadoutMode();
         auto prev_asamples = det.getNumberOfAnalogSamples();
         auto prev_dsamples = det.getNumberOfDigitalSamples();
@@ -1037,7 +1038,8 @@ TEST_CASE("CALLER::v_a", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getPower(defs::V_POWER_A);
         {
             std::ostringstream oss1, oss2;
@@ -1058,7 +1060,8 @@ TEST_CASE("CALLER::v_b", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getPower(defs::V_POWER_B);
         {
             std::ostringstream oss1, oss2;
@@ -1079,7 +1082,8 @@ TEST_CASE("CALLER::v_c", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getPower(defs::V_POWER_C);
         {
             std::ostringstream oss1, oss2;
@@ -1100,7 +1104,8 @@ TEST_CASE("CALLER::v_d", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getPower(defs::V_POWER_D);
         {
             std::ostringstream oss1, oss2;
@@ -1121,7 +1126,8 @@ TEST_CASE("CALLER::v_io", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         // better not to play with setting it
         REQUIRE_NOTHROW(caller.call("v_io", {}, -1, GET));
     } else {
@@ -1251,11 +1257,12 @@ TEST_CASE("CALLER::im_io", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("CALLER::adc", "[.cmdcall]") {
+TEST_CASE("CALLER::slowadc", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
         for (int i = 0; i <= 7; ++i) {
             REQUIRE_NOTHROW(
                 caller.call("slowadc", {std::to_string(i)}, -1, GET));

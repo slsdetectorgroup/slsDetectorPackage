@@ -1615,6 +1615,28 @@ config:
   help: "\n\tFrees shared memory before loading configuration file. Set up once."
   infer_action: true
   template: true
+configtransceiver:
+  actions:
+    PUT:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: configureTransceiver
+        input: []
+        input_types: []
+        output:
+        - '"successful"'
+        require_det_id: true
+        store_result_in_t: false
+  command_name: configtransceiver
+  function_alias: configtransceiver
+  help: "\n\t[Xilinx Ctb] Waits for transceiver to be aligned. Chip had to be configured\
+    \ (powered on) before this."
+  infer_action: true
+  template: true
 counters:
   actions:
     GET:
@@ -2495,8 +2517,8 @@ delay:
         store_result_in_t: false
   command_name: delay
   function_alias: delay
-  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Moench]\
-    \ Delay after trigger"
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Moench][Xilinx\
+    \ Ctb] Delay after trigger"
   infer_action: true
   template: true
 delayl:
@@ -2530,8 +2552,8 @@ delayl:
         store_result_in_t: true
   command_name: delayl
   function_alias: delayl
-  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Delay Left in Acquisition.\
-    \ \n\t[Gotthard2] only in continuous mode."
+  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Delay\
+    \ Left in Acquisition. \n\t[Gotthard2] only in continuous mode."
   infer_action: true
   template: true
 detectorserverversion:
@@ -2891,9 +2913,10 @@ exptime:
         store_result_in_t: false
   command_name: exptime
   function_alias: exptime
-  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb]\
-    \ Exposure time\n\t[Mythen3] Exposure time of all gate signals in auto and trigger\
-    \ mode (internal gating). To specify gate index, use exptime1, exptime2, exptime3."
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb][Xilinx\
+    \ Ctb] Exposure time\n\t[Mythen3] Exposure time of all gate signals in auto and\
+    \ trigger mode (internal gating). To specify gate index, use exptime1, exptime2,\
+    \ exptime3."
   infer_action: true
   template: true
 exptime1:
@@ -3610,8 +3633,8 @@ firmwaretest:
         store_result_in_t: false
   command_name: firmwaretest
   function_alias: firmwaretest
-  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Firmware test,\
-    \ ie. reads a read fixed pattern from a register."
+  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Firmware\
+    \ test, ie. reads a read fixed pattern from a register."
   infer_action: true
   template: true
 firmwareversion:
@@ -3906,8 +3929,8 @@ framecounter:
         store_result_in_t: true
   command_name: framecounter
   function_alias: framecounter
-  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Number of frames from start\
-    \ run control.\n\t[Gotthard2] only in continuous mode."
+  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of frames\
+    \ from start run control.\n\t[Gotthard2] only in continuous mode."
   infer_action: true
   template: true
 frames:
@@ -4005,8 +4028,8 @@ frametime:
         store_result_in_t: true
   command_name: frametime
   function_alias: frametime
-  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb]\
-    \ Timestamp at a frame start.\n\t[Gotthard2] not in burst and auto mode."
+  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx\
+    \ Ctb] Timestamp at a frame start.\n\t[Gotthard2] not in burst and auto mode."
   infer_action: true
   template: true
 free:
@@ -5474,8 +5497,8 @@ nextframenumber:
         store_result_in_t: false
   command_name: nextframenumber
   function_alias: nextframenumber
-  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Ctb] Next frame number. Stopping acquisition\
-    \ might result in different frame numbers for different modules."
+  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Ctb][Xilinx Ctb] Next frame number.\
+    \ Stopping acquisition might result in different frame numbers for different modules."
   infer_action: true
   template: true
 nmod:
@@ -7179,8 +7202,8 @@ periodl:
         store_result_in_t: true
   command_name: periodl
   function_alias: periodl
-  help: "\n\t[Gotthard][Jungfrau][Moench][Ctb][Mythen3][Gotthard2] Period left for\
-    \ current frame. \n\t[Gotthard2] only in continuous mode."
+  help: "\n\t[Gotthard][Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx Ctb] Period\
+    \ left for current frame. \n\t[Gotthard2] only in continuous mode."
   infer_action: true
   template: true
 polarity:
@@ -7299,11 +7322,12 @@ powerchip:
         store_result_in_t: false
   command_name: powerchip
   function_alias: powerchip
-  help: "[0, 1]\n\t[Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. \n\t[Jungfrau][Moench]\
-    \ Default is 0. Get will return power status. Can be off if temperature event\
-    \ occured (temperature over temp_threshold with temp_control enabled. Will configure\
-    \ chip (only chip v1.1)\n\t[Mythen3][Gotthard2] Default is 1. If module not connected\
-    \ or wrong module, powerchip will fail."
+  help: "[0, 1]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip.\
+    \ \n\t[Jungfrau][Moench] Default is 0. Get will return power status. Can be off\
+    \ if temperature event occured (temperature over temp_threshold with temp_control\
+    \ enabled. Will configure chip (only chip v1.1)\n\t[Mythen3][Gotthard2] Default\
+    \ is 1. If module not connected or wrong module, powerchip will fail.\n\t[Xilinx\
+    \ Ctb] Default is 0. Also configures the chip if powered on."
   infer_action: true
   template: true
 powerindex:
@@ -7915,8 +7939,8 @@ rebootcontroller:
         store_result_in_t: false
   command_name: rebootcontroller
   function_alias: rebootcontroller
-  help: "\n\t[Jungfrau][Moench][Ctb][Gotthard][Mythen3][Gotthard2] Reboot controller\
-    \ of detector."
+  help: "\n\t[Jungfrau][Moench][Ctb][Gotthard][Mythen3][Gotthard2][Xilinx Ctb] Reboot\
+    \ controller of detector."
   infer_action: true
   template: true
 reg:
@@ -8030,7 +8054,7 @@ resetfpga:
         store_result_in_t: false
   command_name: resetfpga
   function_alias: resetfpga
-  help: "\n\t[Jungfrau][Moench][Ctb] Reset FPGA."
+  help: "\n\t[Jungfrau][Moench][Ctb][Xilinx Ctb] Reset FPGA."
   infer_action: true
   template: true
 roi:
@@ -8117,8 +8141,9 @@ romode:
         store_result_in_t: false
   command_name: romode
   function_alias: romode
-  help: "[analog|digital|analog_digital|transceiver|digital_transceiver]\n\t[Ctb]\
-    \ Readout mode. Default is analog."
+  help: "[analog|digital|analog_digital|transceiver|digital_transceiver]\n\t[Ctb][xilinx\
+    \ Ctb] Readout mode. [Ctb] Default is analog. [Xilinx Ctb] Default is Transceiver\
+    \ (only one implemented so far)"
   infer_action: true
   template: true
 row:
@@ -8231,8 +8256,8 @@ runtime:
         store_result_in_t: true
   command_name: runtime
   function_alias: runtime
-  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb]\
-    \ Time from detector start up.\n\t[Gotthard2] not in burst and auto mode."
+  help: "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx\
+    \ Ctb] Time from detector start up.\n\t[Gotthard2] not in burst and auto mode."
   infer_action: true
   template: true
 rx_arping:
@@ -10096,7 +10121,7 @@ slowadcvalues:
           GETFCNLIST: getSlowADCList
           GETFCNNAME: getSlowADCNames
           printable_name: '*name_it++'
-          suffix: mV
+          suffix: uV
         function: ''
         input: []
         input_types: []
@@ -10759,8 +10784,8 @@ temp_fpga:
         store_result_in_t: true
   command_name: temp_fpga
   function_alias: temp_fpga
-  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Gotthard][Mythen3][Gotthard2] FPGA\
-    \ Temperature"
+  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Xilinx\
+    \ CTB] FPGA Temperature"
   infer_action: true
   template: true
 temp_fpgaext:
@@ -11371,8 +11396,8 @@ transceiverenable:
         store_result_in_t: false
   command_name: transceiverenable
   function_alias: transceiverenable
-  help: "[bitmask]\n\t[Ctb] Transceiver Enable Mask. Enable for each 4 Transceiver\
-    \ channel."
+  help: "[bitmask]\n\t[Ctb][Xilinx Ctb] Transceiver Enable Mask. Enable for each 4\
+    \ Transceiver channel."
   infer_action: true
   template: true
 trigger:
@@ -11617,7 +11642,7 @@ tsamples:
         store_result_in_t: false
   command_name: tsamples
   function_alias: tsamples
-  help: "[n_value]\n\t[Ctb] Number of transceiver samples expected."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Number of transceiver samples expected."
   infer_action: true
   template: true
 txdelay:
@@ -12578,7 +12603,7 @@ v_a:
         store_result_in_t: false
   command_name: v_a
   function_alias: v_a
-  help: "[n_value]\n\t[Ctb] Power supply a in mV."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply a in mV."
   infer_action: true
   template: true
 v_b:
@@ -12624,7 +12649,7 @@ v_b:
         store_result_in_t: false
   command_name: v_b
   function_alias: v_b
-  help: "[n_value]\n\t[Ctb] Power supply b in mV."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply b in mV."
   infer_action: true
   template: true
 v_c:
@@ -12670,7 +12695,7 @@ v_c:
         store_result_in_t: false
   command_name: v_c
   function_alias: v_c
-  help: "[n_value]\n\t[Ctb] Power supply c in mV."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply c in mV."
   infer_action: true
   template: true
 v_chip:
@@ -12763,7 +12788,7 @@ v_d:
         store_result_in_t: false
   command_name: v_d
   function_alias: v_d
-  help: "[n_value]\n\t[Ctb] Power supply d in mV."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply d in mV."
   infer_action: true
   template: true
 v_io:
@@ -12809,8 +12834,9 @@ v_io:
         store_result_in_t: false
   command_name: v_io
   function_alias: v_io
-  help: "[n_value]\n\t[Ctb] Power supply io in mV. Minimum 1200 mV. Must be the first\
-    \ power regulator to be set after fpga reset (on-board detector server start up)."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Power supply io in mV. Minimum 1200 mV. Must\
+    \ be the first power regulator to be set after fpga reset (on-board detector server\
+    \ start up)."
   infer_action: true
   template: true
 v_limit:
@@ -12856,7 +12882,8 @@ v_limit:
         store_result_in_t: false
   command_name: v_limit
   function_alias: v_limit
-  help: "[n_value]\n\t[Ctb] Soft limit for power supplies (ctb only) and DACS in mV."
+  help: "[n_value]\n\t[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and\
+    \ DACS in mV."
   infer_action: true
   template: true
 vchip_comp_adc:

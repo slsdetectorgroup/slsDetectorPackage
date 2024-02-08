@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
             "\t-v, --version            : Software version\n"
             "\t-p, --port <port>        : TCP communication port with client. "
             "\n"
-            "\t-g, --nomodule           : [Mythen3][Gotthard2] \n"
+            "\t-g, --nomodule           : [Mythen3][Gotthard2][Xilinx Ctb] \n"
             "\t                           Generic or No Module mode. Skips "
             "detector type checks. \n"
             "\t-f, --phaseshift <value> : [Gotthard] only. Sets phase shift. \n"

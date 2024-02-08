@@ -1046,16 +1046,6 @@ void setVLimit(int l) {
 }
 
 int getPower(enum DACINDEX ind) {
-    // check power enable first
-    uint32_t addr = CTRL_REG;
-    uint32_t offset = POWER_VCC_A_OFST + (int)(D_PWR_A - ind);
-    if (ind == D_PWR_IO)
-        offset = POWER_VIO_OFST;
-    uint32_t mask = (1 << offset);
-    if ((bus_r(addr) & mask) != 0) {
-        LOG(logINFO, ("Power for dac %d is off\n", ind));
-        return 0;
-    }
 
     // check dac value
     // not set yet
@@ -1080,38 +1070,19 @@ int getPower(enum DACINDEX ind) {
 
 void setPower(enum DACINDEX ind, int val) {
 
-    uint32_t addr = CTRL_REG;
-    uint32_t offset = POWER_VCC_A_OFST + (int)(D_PWR_A - ind);
-    if (ind == D_PWR_IO)
-        offset = POWER_VIO_OFST;
-    uint32_t mask = (1 << offset);
-
     if (val >= 0 || val == LTC2620_D_GetPowerDownValue()) {
         if (val > 0) {
             LOG(logINFO, ("Setting Power to %d mV\n", val));
+        } else {
+            // power down dac
+            LOG(logINFO, ("\tPowering down P%d\n", (int)(ind - D_PWR_A)));
+            setDAC(ind, LTC2620_D_GetPowerDownValue(), 0);
         }
-
-        // switch off power enable
-        LOG(logINFO, ("\tSwitching off enable for P%d (ctrl reg)\n",
-                      (int)(ind - D_PWR_A)));
-        bus_w(addr, bus_r(addr) | mask);
-
-        // power down dac
-        LOG(logINFO, ("\tPowering down P%d\n", (int)(ind - D_PWR_A)));
-        setDAC(ind, LTC2620_D_GetPowerDownValue(), 0);
-
         // set dac in mV
         if (val > 0) {
             LOG(logINFO, ("\tSetting Power P%d (DAC %d) to %d mV\n",
                           (int)(ind - D_PWR_A), (int)ind, val));
             setDAC(ind, val, 1);
-        }
-
-        // switch on power enable
-        if (getDAC(ind, 1) == val || val == LTC2620_D_GetPowerDownValue()) {
-            LOG(logINFO, ("\tSwitching on enable for P%d (ctrl reg)\n",
-                          (int)(ind - D_PWR_A)));
-            bus_w(addr, bus_r(addr) & ~mask);
         }
     }
 }

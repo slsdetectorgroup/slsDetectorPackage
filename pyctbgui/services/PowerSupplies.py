@@ -33,14 +33,14 @@ class PowerSuppliesTab(QtWidgets.QWidget):
             dac = getattr(dacIndex, f"V_POWER_{i}")
             spinBox = getattr(self.view, f"spinBoxV{i}")
             checkBox = getattr(self.view, f"checkBoxV{i}")
-            retval = self.det.getVoltage(dac)[0]
+            retval = self.det.getPower(dac)[0]
             spinBox.setValue(retval)
             if retval == 0:
                 checkBox.setChecked(False)
                 spinBox.setDisabled(True)
 
     def updateVoltageNames(self):
-        retval = self.det.getVoltageNames()
+        retval = self.det.getPowerNames()
         getattr(self.view, "checkBoxVA").setText(retval[0])
         getattr(self.view, "checkBoxVB").setText(retval[1])
         getattr(self.view, "checkBoxVC").setText(retval[2])
@@ -56,7 +56,7 @@ class PowerSuppliesTab(QtWidgets.QWidget):
         spinBox.editingFinished.disconnect()
         checkBox.stateChanged.disconnect()
 
-        retval = self.det.getMeasuredVoltage(voltageIndex)[0]
+        retval = self.det.getMeasuredPower(voltageIndex)[0]
         # spinBox.setValue(retval)
         if retval > 1:
             checkBox.setChecked(True)
@@ -83,7 +83,7 @@ class PowerSuppliesTab(QtWidgets.QWidget):
         if checkBox.isChecked():
             value = spinBox.value()
         try:
-            self.det.setVoltage(voltageIndex, value)
+            self.det.setPower(voltageIndex, value)
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "Voltage Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass
@@ -100,7 +100,7 @@ class PowerSuppliesTab(QtWidgets.QWidget):
         label.setText(f'{str(retval)} mA')
 
     def getVChip(self):
-        self.view.spinBoxVChip.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
+        self.view.spinBoxVChip.setValue(self.det.getPower(dacIndex.V_POWER_CHIP)[0])
 
     def powerOff(self):
         for i in Defines.powerSupplies:

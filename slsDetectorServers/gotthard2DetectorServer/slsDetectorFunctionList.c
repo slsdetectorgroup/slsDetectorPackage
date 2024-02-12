@@ -471,8 +471,8 @@ void setupDetector() {
     // hv
     DAC6571_SetDefines(HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
     // dacs
-    LTC2620_D_SetDefines(DAC_MIN_MV, DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC, 1,
-                         0, "");
+    LTC2620_D_SetDefines(DAC_MIN_MV, DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC, 0,
+                         1, 0, "");
     // on chip dacs
     ASIC_Driver_SetDefines(ONCHIP_DAC_DRIVER_FILE_NAME);
     setTimingSource(DEFAULT_TIMING_SOURCE);

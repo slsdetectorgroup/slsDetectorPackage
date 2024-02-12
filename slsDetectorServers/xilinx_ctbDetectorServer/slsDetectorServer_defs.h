@@ -60,8 +60,11 @@
 #define MAX_ANALOG_SAMPLES  (0x3FFF)
 #define MAX_DIGITAL_SAMPLES (0x3FFF)
 
-#define DAC_MIN_MV (0)
-#define DAC_MAX_MV (2500)
+#define DAC_MIN_MV      (0)
+#define DAC_MAX_MV      (2048)
+#define POWER_RGLTR_MIN (636)
+#define POWER_RGLTR_MAX (2638)
+#define VIO_MIN_MV      (1200) // for fpga to function
 
 #define TICK_CLK (20) // MHz (trig_timeFromStart, frametime, timeFromStart)
 #define RUN_CLK                                                                \
@@ -116,6 +119,8 @@ enum DACINDEX {
     D_PWR_B,
     D_PWR_C
 };
+
+#define PWR_NAMES "D", "_unknown", "IO", "A", "B", "C"
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

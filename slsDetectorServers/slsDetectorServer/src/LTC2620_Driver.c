@@ -9,6 +9,7 @@
 
 /* LTC2620 DAC DEFINES */
 #define LTC2620_D_PWR_DOWN_VAL (-100)
+#define LTC2620_D_MIN_DAC_VAL  (0)
 #define LTC2620_D_MAX_DAC_VAL  (4095) // 12 bits
 #define LTC2620_D_MAX_STEPS    (LTC2620_D_MAX_DAC_VAL + 1)
 
@@ -18,13 +19,14 @@ int LTC2620_D_HardMaxVoltage = 0;
 char LTC2620_D_DriverFileName[MAX_STR_LENGTH];
 char LTC2620_D_PowerDownDriverFileName[MAX_STR_LENGTH];
 int LTC2620_D_NumDacs = 0;
+int LTC2620_D_NumDacsOnly = 0;
 int LTC2620_D_NumDevices = 0;
 int LTC2620_D_NumChannelsPerDevice = 0;
 int LTC2620_D_DacDriverStartingDeviceIndex = 0;
 
 void LTC2620_D_SetDefines(int hardMinV, int hardMaxV, char *driverfname,
-                          int numdacs, int numdevices, int startingDeviceIndex,
-                          char *powerdownDriverfname) {
+                          int numdacs, int numpowers, int numdevices,
+                          int startingDeviceIndex, char *powerdownDriverfname) {
     LOG(logINFOBLUE,
         ("Configuring DACs (LTC2620) to %s\n\t (numdacs:%d, hard min:%d, hard "
          "max: %dmV, idev:%d)\n",
@@ -36,6 +38,8 @@ void LTC2620_D_SetDefines(int hardMinV, int hardMaxV, char *driverfname,
     memset(LTC2620_D_PowerDownDriverFileName, 0, MAX_STR_LENGTH);
     strcpy(LTC2620_D_PowerDownDriverFileName, powerdownDriverfname);
     LTC2620_D_NumDacs = numdacs;
+    LTC2620_D_NumDacsOnly = numdacs;
+    LTC2620_D_NumDacsOnly = numdacs - numpowers;
     LTC2620_D_NumDevices = numdevices;
     LTC2620_D_NumChannelsPerDevice = LTC2620_D_NumDacs / LTC2620_D_NumDevices;
     LTC2620_D_DacDriverStartingDeviceIndex = startingDeviceIndex;
@@ -44,6 +48,10 @@ void LTC2620_D_SetDefines(int hardMinV, int hardMaxV, char *driverfname,
 int LTC2620_D_GetMaxNumSteps() { return LTC2620_D_MAX_STEPS; }
 
 int LTC2620_D_GetPowerDownValue() { return LTC2620_D_PWR_DOWN_VAL; }
+
+int LTC2620_D_GetMinInput() { return LTC2620_D_MIN_DAC_VAL; }
+
+int LTC2620_D_GetMaxInput() { return LTC2620_D_MAX_DAC_VAL; }
 
 int LTC2620_D_VoltageToDac(int voltage, int *dacval) {
     return ConvertToDifferentRange(LTC2620_D_HardMinVoltage,
@@ -94,7 +102,10 @@ int LTC2620_D_SetDACValue(int dacnum, int val, int mV, char *dacname,
         int dacmV = val;
         if (mV) {
             ret = LTC2620_D_VoltageToDac(val, dacval);
-        } else if (val >= 0) {
+        }
+
+        // mV only for print out (dont convert to mV for power regulators)
+        else if (val >= 0 && dacnum < LTC2620_D_NumDacsOnly) {
             // do not convert power down dac val
             ret = LTC2620_D_DacToVoltage(val, &dacmV);
         }
@@ -109,8 +120,16 @@ int LTC2620_D_SetDACValue(int dacnum, int val, int mV, char *dacname,
         // print and set
 #ifdef XILINX_CHIPTESTBOARDD
         if (*dacval >= 0) {
-            LOG(logINFO, ("Setting DAC %2d [%-6s] : %d dac (%d mV)\n", dacnum,
-                          dacname, *dacval, dacmV));
+            // also print mV
+            if (dacnum < LTC2620_D_NumDacsOnly) {
+                LOG(logINFO, ("Setting DAC %2d [%-6s] : %d dac (%d mV)\n",
+                              dacnum, dacname, *dacval, dacmV));
+            }
+            // do not print mV for power regulators
+            else {
+                LOG(logINFO, ("Setting Power DAC%2d [%-6s] : %d dac \n", dacnum,
+                              dacname, *dacval));
+            }
         }
 #else
         if ((*dacval >= 0) || (*dacval == LTC2620_D_PWR_DOWN_VAL)) {

@@ -400,8 +400,8 @@ void setupDetector() {
         return;
     }
 
-    LTC2620_D_SetDefines(DAC_MAX_MV, DAC_MIN_MV, DAC_DRIVER_FILE_NAME, NDAC,
-                         DAC_DRIVER_NUM_DEVICES, dacDeviceIndex,
+    LTC2620_D_SetDefines(DAC_MIN_MV, DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC,
+                         NPWR, DAC_DRIVER_NUM_DEVICES, dacDeviceIndex,
                          DAC_POWERDOWN_DRIVER_FILE_NAME);
     LOG(logINFOBLUE, ("Powering down all dacs\n"));
     for (int idac = 0; idac < NDAC; ++idac) {
@@ -981,21 +981,8 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dacName, val,
                     (mV ? "mV" : "dac units")));
     int dacval = val;
-
-#ifdef VIRTUAL
-    LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dacName, val,
-                  (mV ? "mV" : "dac units")));
-    if (!mV) {
-        dacValues[ind] = val;
-    }
-    // convert to dac units
-    else if (LTC2620_D_VoltageToDac(val, &dacval) == OK) {
-        dacValues[ind] = dacval;
-    }
-#else
     if (LTC2620_D_SetDACValue((int)ind, val, mV, dacName, &dacval) == OK)
         dacValues[ind] = dacval;
-#endif
 }
 
 int getDAC(enum DACINDEX ind, int mV) {
@@ -1045,45 +1032,91 @@ void setVLimit(int l) {
         vLimit = l;
 }
 
+int isPowerValid(enum DACINDEX ind, int val) {
+    char *powerNames[] = {PWR_NAMES};
+    int pwrIndex = (int)(ind - D_PWR_D);
+
+    int min = POWER_RGLTR_MIN;
+    if (!strcmp(powerNames[pwrIndex], "IO")) {
+        min = VIO_MIN_MV;
+    }
+
+    // not power_rgltr_max because it is allowed only upto vchip max - 200
+    if (val != 0 && (val != LTC2620_D_GetPowerDownValue()) &&
+        (val < min || val > POWER_RGLTR_MAX)) {
+        LOG(logERROR,
+            ("Invalid value of %d mV for Power V%s. Is not between %d and "
+             "%d mV\n",
+             val, powerNames[pwrIndex], min, POWER_RGLTR_MAX));
+        return 0;
+    }
+    return 1;
+}
+
 int getPower(enum DACINDEX ind) {
+    char *powerNames[] = {PWR_NAMES};
+    int pwrIndex = (int)(ind - D_PWR_D);
 
     // check dac value
     // not set yet
     if (dacValues[ind] == -1) {
         LOG(logERROR,
-            ("Power enabled, but unknown dac value for power index %d!", ind));
+            ("Unknown dac value for Power V%s!\n", powerNames[pwrIndex]));
         return -1;
     }
 
     // dac powered off
     if (dacValues[ind] == LTC2620_D_GetPowerDownValue()) {
-        LOG(logWARNING,
-            ("Power %d enabled, dac value %d, voltage at minimum or 0\n", ind,
-             LTC2620_D_GetPowerDownValue()));
+        LOG(logWARNING, ("Power V%s powered down\n", powerNames[pwrIndex]));
         return LTC2620_D_GetPowerDownValue();
     }
 
     // get dac in mV
-    // (unless its a different voltage range compared to other dacs)
-    return getDAC(ind, 1);
+    int retval = -1;
+    ConvertToDifferentRange(LTC2620_D_GetMaxInput(), LTC2620_D_GetMinInput(),
+                            POWER_RGLTR_MIN, POWER_RGLTR_MAX, dacValues[ind],
+                            &retval);
+
+    return retval;
 }
 
 void setPower(enum DACINDEX ind, int val) {
+    char *powerNames[] = {PWR_NAMES};
+    int pwrIndex = (int)(ind - D_PWR_D);
 
-    if (val >= 0 || val == LTC2620_D_GetPowerDownValue()) {
-        if (val > 0) {
-            LOG(logINFO, ("Setting Power to %d mV\n", val));
-        } else {
-            // power down dac
-            LOG(logINFO, ("\tPowering down P%d\n", (int)(ind - D_PWR_A)));
-            setDAC(ind, LTC2620_D_GetPowerDownValue(), 0);
+    // power down dac
+    if (val == LTC2620_D_GetPowerDownValue()) {
+        LOG(logINFO, ("\tPowering down V%d\n", powerNames[pwrIndex]));
+        setDAC(ind, LTC2620_D_GetPowerDownValue(), 0);
+    }
+
+    // set dac
+    else if (val >= 0) {
+        LOG(logINFO,
+            ("Setting Power V%s to %d mV\n", powerNames[pwrIndex], val));
+
+        // validate value (already checked at tcp (funcs.c))
+        if (!isPowerValid(ind, val)) {
+            return;
         }
-        // set dac in mV
-        if (val > 0) {
-            LOG(logINFO, ("\tSetting Power P%d (DAC %d) to %d mV\n",
-                          (int)(ind - D_PWR_A), (int)ind, val));
-            setDAC(ind, val, 1);
+
+        // convert voltage to dac
+        int dacval = -1;
+        if (ConvertToDifferentRange(
+                POWER_RGLTR_MIN, POWER_RGLTR_MAX, LTC2620_D_GetMaxInput(),
+                LTC2620_D_GetMinInput(), val, &dacval) == FAIL) {
+            LOG(logERROR,
+                ("\tCannot convert Power V%s to dac value. Invalid value of %d "
+                 "mV. Is not between "
+                 "%d and %d mV\n",
+                 powerNames[pwrIndex], val, POWER_RGLTR_MIN, POWER_RGLTR_MAX));
+            return;
         }
+
+        // set and power on/ update dac
+        LOG(logINFO, ("Setting Power V%s: %d mV (%d dac)\n",
+                      powerNames[pwrIndex], val, dacval));
+        setDAC(ind, dacval, 0);
     }
 }
 

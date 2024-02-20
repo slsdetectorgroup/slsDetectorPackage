@@ -25,14 +25,19 @@
 #define DYNAMIC_RANGE       (16)
 #define NUM_BYTES_PER_PIXEL (DYNAMIC_RANGE / 8)
 
-#define DAC_DRIVER_NUM_DEVICES (3)
+//#define DAC_DRIVER_NUM_DEVICES (3)
+//#define DAC_DRIVER_FILE_NAME                                                   \
+//    ("/sys/bus/iio/devices/iio:device%d/out_voltage%d_raw")
+//#define DAC_POWERDOWN_DRIVER_FILE_NAME                                         \
+//    ("/sys/bus/iio/devices/iio:device%d/out_voltage%d_powerdown")
+#define DAC_DRIVER_NUM_DEVICES (1)
 #define DAC_DRIVER_FILE_NAME                                                   \
-    ("/sys/bus/iio/devices/iio:device%d/out_voltage%d_raw")
+    ("/root/apps/xilinx-ctb/current_board_links/ao%d")
 #define DAC_POWERDOWN_DRIVER_FILE_NAME                                         \
-    ("/sys/bus/iio/devices/iio:device%d/out_voltage%d_powerdown")
+    ("/root/apps/xilinx-ctb/current_board_links/ao%d_pd")
 
 #define SLOWADC_DRIVER_FILE_NAME                                               \
-    ("/sys/bus/iio/devices/iio:device%d/in_voltage%d_raw")
+    ("/root/apps/xilinx-ctb/mythenIII_0.2_1.1/links/ai%d")
 //#define SLOWDAC_CONVERTION_FACTOR_TO_UV (62.500953)
 
 #define TEMP_DRIVER_FILE_NAME                                                  \
@@ -62,8 +67,8 @@
 
 #define DAC_MIN_MV      (0)
 #define DAC_MAX_MV      (2048)
-#define POWER_RGLTR_MIN (636)
-#define POWER_RGLTR_MAX (2638)
+#define POWER_RGLTR_MIN (1041)
+#define POWER_RGLTR_MAX (2661)
 #define VIO_MIN_MV      (1200) // for fpga to function
 
 #define TICK_CLK (20) // MHz (trig_timeFromStart, frametime, timeFromStart)

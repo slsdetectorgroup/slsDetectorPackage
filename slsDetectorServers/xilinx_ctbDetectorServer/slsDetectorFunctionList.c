@@ -556,7 +556,7 @@ int powerChip(int on, char *mess) {
                     POWER_VCC_C_MSK | POWER_VCC_D_MSK;
     if (on) {
         LOG(logINFOBLUE, ("Powering chip: on\n"));
-        bus_w(addr, bus_r(addr) & ~mask);
+        bus_w(addr, bus_r(addr) | mask);
 
         if (configureChip(mess) == FAIL)
             return FAIL;
@@ -566,7 +566,7 @@ int powerChip(int on, char *mess) {
         chipConfigured = 1;
     } else {
         LOG(logINFOBLUE, ("Powering chip: off\n"));
-        bus_w(addr, bus_r(addr) | mask);
+        bus_w(addr, bus_r(addr) & ~mask);
 
         chipConfigured = 0;
 
@@ -588,7 +588,7 @@ int getPowerChip() {
     uint32_t addr = CTRL_REG;
     uint32_t mask = POWER_VIO_MSK | POWER_VCC_A_MSK | POWER_VCC_B_MSK |
                     POWER_VCC_C_MSK | POWER_VCC_D_MSK;
-    return (((bus_r(addr) & mask) == mask) ? 0 : 1);
+    return (((bus_r(addr) & mask) == mask) ? 1 : 0);
 }
 
 int configureChip(char *mess) {

@@ -144,10 +144,11 @@ int LTC2620_D_SetDACValue(int dacnum, int val, int mV, char *dacname,
     char fname[MAX_STR_LENGTH];
     memset(fname, 0, MAX_STR_LENGTH);
 #ifdef XILINX_CHIPTESTBOARDD
-    int idev = LTC2620_D_DacDriverStartingDeviceIndex +
-               (dacnum / LTC2620_D_NumChannelsPerDevice);
-    int idac = dacnum % LTC2620_D_NumChannelsPerDevice;
-    sprintf(fname, fnameFormat, idev, idac);
+//    int idev = LTC2620_D_DacDriverStartingDeviceIndex +
+//               (dacnum / LTC2620_D_NumChannelsPerDevice);
+//    int idac = dacnum % LTC2620_D_NumChannelsPerDevice;
+//    sprintf(fname, fnameFormat, idev, idac);
+    sprintf(fname, fnameFormat, dacnum);
 #else
     sprintf(fname, "%s%d", fnameFormat, dacnum);
 #endif

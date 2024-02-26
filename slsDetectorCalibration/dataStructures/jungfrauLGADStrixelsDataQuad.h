@@ -92,7 +92,7 @@ class jungfrauLGADStrixelsDataQuad : public slsDetectorData<uint16_t> {
     enum location {
       BOTTOM = 0,
       TOP = 1
-    }
+    };
 
     int multiplicator = 3;
     std::vector<int> mods{ 0, 1, 2 };

@@ -182,7 +182,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Define decoders...
-#if !defined JFSTRX !defined JFSTRXQ && !defined JFSTRXOLD && !defined JFSTRXCHIP1 &&           \
+#if !defined JFSTRX && !defined JFSTRXQ && !defined JFSTRXOLD && !defined JFSTRXCHIP1 &&           \
     !defined JFSTRXCHIP6 && !defined CHIP
 #ifndef MODULE
     jungfrauHighZSingleChipData *decoder = new jungfrauHighZSingleChipData();

@@ -1375,7 +1375,7 @@ void DetectorImpl::stopDetector(Positions pos) {
 
 void DetectorImpl::printProgress(double progress) {
     // spaces for python printout
-    std::cout << "    " << std::fixed << std::setprecision(2) << std::setw(6)
+    std::cout << "    " << std::fixed << std::setprecision(2) << std::setw(10)
               << progress << " \%";
     std::cout << '\r' << std::flush;
 }

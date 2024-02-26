@@ -9,7 +9,10 @@ add_executable(xilinx_ctbDetectorServer_virtual
     ../slsDetectorServer/src/common.c
     ../slsDetectorServer/src/sharedMemory.c
     ../slsDetectorServer/src/loadPattern.c
+    ../slsDetectorServer/src/programViaArm.c
+    ../slsDetectorServer/src/communication_funcs_UDP.c    
     ../../slsSupportLib/src/md5.c
+    ../slsDetectorServer/src/LTC2620_Driver.c
 )
 
 include_directories(
@@ -23,11 +26,11 @@ target_include_directories(xilinx_ctbDetectorServer_virtual
 )
 
 target_compile_definitions(xilinx_ctbDetectorServer_virtual
-    PUBLIC XILINX_CHIPTESTBOARDD ARMPROCESSOR VIRTUAL STOP_SERVER
+    PUBLIC XILINX_CHIPTESTBOARDD ARMPROCESSOR VIRTUAL STOP_SERVER 
 )
 
 target_link_libraries(xilinx_ctbDetectorServer_virtual
-    PUBLIC pthread rt slsProjectCSettings
+    PUBLIC pthread rt m slsProjectCSettings
 )
 
 set_target_properties(xilinx_ctbDetectorServer_virtual PROPERTIES

@@ -667,6 +667,7 @@ std::vector<defs::dacIndex> Detector::getTemperatureList() const {
             defs::TEMPERATURE_FPGA2, defs::TEMPERATURE_FPGA3};
     case defs::MYTHEN3:
     case defs::GOTTHARD2:
+    case defs::XILINX_CHIPTESTBOARD:
         return std::vector<defs::dacIndex>{defs::TEMPERATURE_FPGA};
     default:
         return std::vector<defs::dacIndex>{};
@@ -697,6 +698,7 @@ Result<int> Detector::getTemperature(defs::dacIndex index,
     case defs::MOENCH:
     case defs::MYTHEN3:
     case defs::GOTTHARD2:
+    case defs::XILINX_CHIPTESTBOARD:
         for (auto &it : res) {
             it /= 1000;
         }
@@ -2484,6 +2486,12 @@ std::string Detector::getSlowADCName(const defs::dacIndex i) const {
     if (dettype != defs::CHIPTESTBOARD && dettype != defs::XILINX_CHIPTESTBOARD)
         throw RuntimeError("Named SlowADCs only for CTB");
     return pimpl->getCtbSlowADCName(i);
+}
+
+// Xilinx Ctb Specific
+
+void Detector::configureTransceiver(Positions pos) {
+    pimpl->Parallel(&Module::configureTransceiver, pos);
 }
 
 // Pattern

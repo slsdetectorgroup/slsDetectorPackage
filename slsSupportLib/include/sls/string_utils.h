@@ -20,6 +20,7 @@ Still this is better than strcpy and a buffer overflow...
 */
 template <size_t array_size>
 void strcpy_safe(char (&destination)[array_size], const char *source) {
+    assert(source != nullptr);
     assert(array_size > strlen(source));
     strncpy(destination, source, array_size - 1);
     destination[array_size - 1] = '\0';

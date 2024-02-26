@@ -2383,6 +2383,7 @@ void Module::setNumberOfAnalogSamples(int value) {
     // update #nchan, as it depends on #samples, adcmask
     updateNumberOfChannels();
     if (shm()->useReceiverFlag) {
+        LOG(logINFORED) << "receiver up!";
         sendToReceiver(F_RECEIVER_SET_NUM_ANALOG_SAMPLES, value, nullptr);
     }
 }
@@ -2529,6 +2530,13 @@ bool Module::getLEDEnable() const {
 
 void Module::setLEDEnable(bool enable) {
     sendToDetector<int>(F_LED, static_cast<int>(enable));
+}
+
+// Xilinx Ctb Specific
+void Module::configureTransceiver() {
+    sendToDetector(F_CONFIG_TRANSCEIVER);
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): Transceiver configured successfully!";
 }
 
 // Pattern
@@ -3334,7 +3342,13 @@ void Module::initializeModuleStructure(detectorType type) {
     shm()->numberOfModule.y = 0;
     shm()->controlPort = DEFAULT_TCP_CNTRL_PORTNO;
     shm()->stopPort = DEFAULT_TCP_STOP_PORTNO;
-    strcpy_safe(shm()->settingsDir, getenv("HOME"));
+    char *home_directory = getenv("HOME");
+    if (home_directory != nullptr)
+        strcpy_safe(shm()->settingsDir, home_directory);
+    else {
+        strcpy_safe(shm()->settingsDir, "");
+        LOG(logWARNING) << "HOME directory not set";
+    }
     strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_TCP_RX_PORTNO + moduleIndex;
     shm()->useReceiverFlag = false;

@@ -34,6 +34,7 @@
 #else
 #define TEMPERATURE_FILE_NAME ("/sys/class/hwmon/hwmon0/temp1_input")
 #endif
+#define DAC_MIN_MV                  (0)
 #define DAC_MAX_MV                  (2048)
 #define TYPE_MYTHEN3_MODULE_VAL     (93)
 #define TYPE_TOLERANCE              (5)

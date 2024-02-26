@@ -1778,6 +1778,10 @@ void init_det(py::module &m) {
                        (std::string(Detector::*)(const defs::dacIndex) const) &
                            Detector::getSlowADCName,
                        py::arg());
+    CppDetectorApi.def("configureTransceiver",
+                       (void (Detector::*)(sls::Positions)) &
+                           Detector::configureTransceiver,
+                       py::arg() = Positions{});
     CppDetectorApi.def(
         "getPatterFileName",
         (Result<std::string>(Detector::*)(sls::Positions) const) &

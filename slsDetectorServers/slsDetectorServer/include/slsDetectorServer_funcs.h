@@ -329,3 +329,4 @@ int getColumn();
 int setColumn(int);
 int get_pedestal_mode(int);
 int set_pedestal_mode(int);
+int config_transceiver(int);

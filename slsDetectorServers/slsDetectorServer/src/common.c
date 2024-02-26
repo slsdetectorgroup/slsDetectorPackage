@@ -752,13 +752,17 @@ int readADCFromFile(char *fname, int *value) {
 
     *value = -1;
     if (sscanf(line, "%d", value) != 1) {
+#ifdef XILINX_CHIPTESTBOARDD
+        LOG(logERROR, ("Could not scan adc from %s\n", line));
+#else
         LOG(logERROR, ("Could not scan temperature from %s\n", line));
+#endif
         return FAIL;
     }
 
 #ifdef EIGERD
     *value /= 10;
-#else
+#elif !defined(XILINX_CHIPTESTBOARDD)
     LOG(logINFO, ("Temperature: %.2f °C\n", (double)(*value) / 1000.00));
 #endif
 

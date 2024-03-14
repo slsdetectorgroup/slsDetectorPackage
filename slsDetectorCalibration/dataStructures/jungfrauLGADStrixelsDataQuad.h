@@ -44,7 +44,7 @@ namespace strixelQuad {
   
   constexpr int nc_strixel = ( nc_quad - shift_x - 2*gr ) / 3; //164
   constexpr int nr_strixel = ( nr_chip - 1 - gr ) * 3; //one half (-1 because double sided pixel) //738
-  constexpr int nr_center = 6; //double sided pixels to be skipped
+  constexpr int nr_center = 12; //double sided pixels to be skipped
 
   // boundaries in ASIC coordinates (pixels at both bounds are included)
   constexpr int xstart = 256 + gr;             // 265
@@ -52,7 +52,7 @@ namespace strixelQuad {
   constexpr int bottom_ystart = gr;            //   9
   constexpr int bottom_yend = nr_chip - 2;     // 254
   constexpr int top_ystart = nr_chip + 1;      // 257
-  constexpr int top_yend = nr_chip*2 + gr - 1; // 502
+  constexpr int top_yend = nr_chip*2 - gr - 1; // 502
 
   // x shift because of 2-pixel strixels on one side
   constexpr int shift = 2;
@@ -139,7 +139,7 @@ class jungfrauLGADStrixelsDataQuad : public slsDetectorData<uint16_t> {
 
                 ix = int((ipx - x0) / multiplicator);
                 for (int m = 0; m < multiplicator; ++m) {
-                    if ((ipx - x0) % multiplicator == mods[m])
+                    if ((ipx - x0) % multiplicator == m)
                         iy = (ipy - y0) * multiplicator + mods[m] + shifty;
                 }
 

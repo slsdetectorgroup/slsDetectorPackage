@@ -10,4 +10,4 @@
 #define APIMYTHEN3   "8.0.0 0x231109"
 #define APIEIGER     "8.0.0 0x231109"
 #define APILIB       "8.0.1 0x240112"
-#define APIMOENCH "8.0.2 0x240206"
+#define APIMOENCH "8.0.2 0x240703"

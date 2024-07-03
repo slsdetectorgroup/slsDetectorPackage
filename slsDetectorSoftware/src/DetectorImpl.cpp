@@ -1981,7 +1981,7 @@ void DetectorImpl::setBadChannels(const std::vector<int> list, Positions pos) {
 
     // update to multi values if multi modules
     if (isAllPositions(pos)) {
-        std::vector<std::vector<int>> badchannels;
+        std::vector<std::vector<int>> badchannels(modules.size());
         int nchan = modules[0]->getNumberOfChannels().x;
         if (shm()->detType == MYTHEN3) {
             // assuming single counter
@@ -2000,16 +2000,9 @@ void DetectorImpl::setBadChannels(const std::vector<int> list, Positions pos) {
                                    std::to_string(badchannel) +
                                    " out of bounds.");
             }
-            if (badchannels.size() != imod + 1) {
-                badchannels.push_back(std::vector<int>{});
-            }
             badchannels[imod].push_back(ch);
         }
         for (size_t imod = 0; imod != modules.size(); ++imod) {
-            // add empty vector if no bad channels in this module
-            if (badchannels.size() != imod + 1) {
-                badchannels.push_back(std::vector<int>{});
-            }
             Parallel(&Module::setBadChannels, {static_cast<int>(imod)},
                      badchannels[imod]);
         }

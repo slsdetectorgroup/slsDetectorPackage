@@ -70,7 +70,7 @@
 
 #define ADC_PHASE_DEG_QUARTER_SPEED (0)
 #define ADC_PHASE_DEG_HALF_SPEED    (0)
-#define ADC_PHASE_DEG_FULL_SPEED    (300)
+#define ADC_PHASE_DEG_FULL_SPEED    (150)
 
 #define ADC_OFST_QUARTER_SPEED (0x12)
 #define ADC_OFST_HALF_SPEED    (0x12)
@@ -133,7 +133,7 @@ enum DACINDEX {
         680,  /* MO_VB_SDA */                                                  \
         1428, /* MO_VCASC_SFP */                                               \
         1200, /* MO_VOUT_CM */                                                 \
-        800,  /* MO_VIPRE_CDS */                                               \
+        1280, /* MO_VIPRE_CDS */                                               \
         900   /* MO_IBIAS_SFP */                                               \
     };
 

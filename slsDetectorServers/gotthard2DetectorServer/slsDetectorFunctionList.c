@@ -74,6 +74,7 @@ int64_t burstPeriodReg = 0;
 int filterResistor = 0;
 int cdsGain = 0;
 int detPos[2] = {};
+int chipConfigured = 0;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -428,6 +429,7 @@ void setupDetector() {
     systemFrequency = INT_SYSTEM_C0_FREQUENCY;
     detPos[0] = 0;
     detPos[1] = 0;
+    chipConfigured = 0;
 
     thisSettings = UNINITIALIZED;
     highvoltage = 0;
@@ -2219,13 +2221,94 @@ int powerChip(int on) {
         if (on) {
             LOG(logINFO, ("Powering chip: on\n"));
             bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PWR_CHIP_MSK);
+            configureChip();
         } else {
             LOG(logINFO, ("Powering chip: off\n"));
             bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_PWR_CHIP_MSK);
+            chipConfigured = 0;
         }
     }
     return ((bus_r(CONTROL_REG) & CONTROL_PWR_CHIP_MSK) >>
             CONTROL_PWR_CHIP_OFST);
+}
+
+int isChipConfigured() { return chipConfigured; }
+
+void configureChip() {
+    LOG(logINFOBLUE, ("\tConfiguring chip\n"));
+    // client side error: only that configuration did not work
+
+    // OR READ CONFIG FILE?
+    // powering off is it necessary to unconfigure chip, it is useless anyway
+    // righT?)
+
+    // on chip dacs (use curren onchipDacValues or defaultOnChipdacValues?)
+    for (int idac = 0; idac != ONCHIP_NDAC; ++idac) {
+        for (int ichip = 0; ichip != NCHIP; ++ichip) {
+            if (onChipdacValues[idac][ichip] == -1) {
+                LOG(logERROR,
+                    ("On chip DAC value not set for chip %d\n", ichip));
+                return;
+            }
+            if (setOnChipDAC(idac, ichip, onChipdacValues[idac][ichip]) ==
+                FAIL) {
+                LOG(logERROR,
+                    ("Could not set on chip DAC for chip %d\n", ichip));
+                return;
+            }
+        }
+    }
+
+    // adc configuration (default is 0.. cannot check if it had been set, but
+    // previous is checked so ignore?)
+    for (int ichip = 0; ichip != NCHIP; ++ichip) {
+        for (int iadc = 0; iadc != NADC; ++iadc) {
+            if (setADCConfiguration(ichip, iadc,
+                                    adcConfiguration[ichip][iadc]) == FAIL) {
+                LOG(logERROR,
+                    ("Could not set ADC configuration for chip %d\n", ichip));
+                return;
+            }
+        }
+    }
+
+    // veto reference
+    if (configureASICVetoReference() == FAIL) {
+        LOG(logERROR, ("Could not configure veto reference\n"));
+        return;
+    }
+
+    // asic global settings (burst mode, cds gain, filter resistor)
+    if (configureASICGlobalSettings() == FAIL) {
+        LOG(logERROR, ("Could not configure asic global settings\n"));
+        return;
+    }
+
+    // lopez
+    // on chip dacs
+    // adc configuration
+    // veto reference
+    // everthing loaded to ASIOC when we power on detector
+    // everything that calls ASIC_Driver_Set()  after doing powerchip() in
+    // setupDetector()
+
+    // idea
+    // setASICDefaults();// ??
+    // readConfigFile();
+    //     -->setOnChipDAC
+    //     -->configureASICVetoReference
+    //     -->setADCConfiguration
+
+    // setBurstMode/setCDSGain/setFilterResistor
+    //     -->configureASICGlobalSettings()
+
+    // //setInjectChannel // but not set in setupDetector(). should be?
+
+    // issues
+    // things changing in background..
+
+    LOG(logINFOBLUE, ("\tChip configured\n"));
+    chipConfigured = 1;
 }
 
 void setDBITPipeline(int val) {

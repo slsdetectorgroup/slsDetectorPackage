@@ -651,6 +651,8 @@ int getClockDivider(enum CLKINDEX ind);
 #elif GOTTHARD2D
 int checkDetectorType(char *mess);
 int powerChip(int on);
+int isChipConfigured();
+void configureChip();
 void setDBITPipeline(int val);
 int getDBITPipeline();
 int setPhase(enum CLKINDEX ind, int val, int degrees);

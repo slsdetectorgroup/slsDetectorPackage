@@ -1317,8 +1317,8 @@ void DetectorImpl::startAcquisition(const bool blocking, Positions pos) {
             // ensure all status normal (slaves not blocking)
             // to catch those slaves that are still 'waiting'
             auto status = Parallel(&Module::getRunStatus, pos);
-            // if any slave still waiting, wait 50 ms and check one time
-            if (status.any(WAITING)) {
+            // if any slave still waiting, wait up to 1s
+            for (int i = 0; i != 20 && status.any(WAITING); ++i) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(50));
                 status = Parallel(&Module::getRunStatus, pos);
             }

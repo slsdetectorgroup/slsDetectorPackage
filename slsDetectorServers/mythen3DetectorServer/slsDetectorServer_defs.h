@@ -57,12 +57,14 @@
 #define DEFAULT_TRIMBIT_VALUE            (0)
 #define DEFAULT_COUNTER_DISABLED_VTH_VAL (2800)
 
-#define DEFAULT_READOUT_C0          (20) // (50000000) // rdo_clk, 50 MHz
+#define DEFAULT_READOUT_C0          (10) //(100000000) // rdo_clk, 100 MHz
 #define DEFAULT_READOUT_C1          (10) //(100000000) // rdo_smp_clk, 100 MHz
 #define DEFAULT_SYSTEM_C0           (10) //(100000000) // run_clk, 100 MHz
 #define DEFAULT_SYSTEM_C1           (6)  //(166666666) // str_clk, 166 MHz const
 #define DEFAULT_SYSTEM_C2           (5)  //(200000000) // smp_clk, 200 MHz const
 #define DEFAULT_TRIMMING_RUN_CLKDIV (40) // (25000000) // 25 MHz
+
+#define DEFAULT_READOUT_C0_STARTUP (20) //(50000000) // rdo_clk, 50 MHz
 
 #define DEFAULT_ASIC_LATCHING_NUM_PULSES (10)
 #define DEFAULT_MSTR_OTPT_P1_NUM_PULSES  (20)

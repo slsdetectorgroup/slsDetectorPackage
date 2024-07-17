@@ -479,6 +479,11 @@ void setupDetector() {
         READOUT_PLL_VCO_FREQ_HZ, SYSTEM_PLL_VCO_FREQ_HZ);
     ALTERA_PLL_C10_ResetPLL(READOUT_PLL);
     ALTERA_PLL_C10_ResetPLL(SYSTEM_PLL);
+    // change startup clock divider in software
+    // because firmware only sets max clock divider
+    setClockDividerWithTimeUpdateOption(READOUT_C0, DEFAULT_READOUT_C0_STARTUP,
+                                        0);
+
     // hv
     DAC6571_SetDefines(HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
     // dac

@@ -742,9 +742,8 @@ void DetectorImpl::readFrameFromReceiver() {
             }
         }
 
-        LOG(logDEBUG) << "Call Back Info:"
-                      << "\n\t nDetPixelsX: " << nDetPixelsX
-                      << "\n\t nDetPixelsY: " << nDetPixelsY
+        LOG(logDEBUG) << "Call Back Info:" << "\n\t nDetPixelsX: "
+                      << nDetPixelsX << "\n\t nDetPixelsY: " << nDetPixelsY
                       << "\n\t databytes: " << multisize
                       << "\n\t dynamicRange: " << dynamicRange;
 
@@ -762,8 +761,8 @@ void DetectorImpl::readFrameFromReceiver() {
                 callbackImage = multigappixels;
                 imagesize = n;
             }
-            LOG(logDEBUG) << "Image Info:"
-                          << "\n\tnDetActualPixelsX: " << nDetActualPixelsX
+            LOG(logDEBUG) << "Image Info:" << "\n\tnDetActualPixelsX: "
+                          << nDetActualPixelsX
                           << "\n\tnDetActualPixelsY: " << nDetActualPixelsY
                           << "\n\timagesize: " << imagesize
                           << "\n\tdynamicRange: " << dynamicRange;
@@ -798,8 +797,7 @@ void DetectorImpl::readFrameFromReceiver() {
 int DetectorImpl::insertGapPixels(char *image, char *&gpImage, bool quadEnable,
                                   int dr, int &nPixelsx, int &nPixelsy) {
 
-    LOG(logDEBUG) << "Insert Gap pixels:"
-                  << "\n\t nPixelsx: " << nPixelsx
+    LOG(logDEBUG) << "Insert Gap pixels:" << "\n\t nPixelsx: " << nPixelsx
                   << "\n\t nPixelsy: " << nPixelsy
                   << "\n\t quadEnable: " << quadEnable << "\n\t dr: " << dr;
 
@@ -884,12 +882,10 @@ int DetectorImpl::insertGapPixels(char *image, char *&gpImage, bool quadEnable,
                   << "nMod1Pixelsy: " << nMod1Pixelsy << "\n\t"
                   << "nMod1GapPixelsx: " << nMod1GapPixelsx << "\n\t"
                   << "nMod1GapPixelsy: " << nMod1GapPixelsy << "\n\t"
-                  << "nChipy: " << nChipy << "\n\t"
-                  << "nChipx: " << nChipx << "\n\t"
-                  << "nModx: " << nModx << "\n\t"
-                  << "nMody: " << nMody << "\n\t"
-                  << "nTotx: " << nTotx << "\n\t"
-                  << "nToty: " << nToty << "\n\t"
+                  << "nChipy: " << nChipy << "\n\t" << "nChipx: " << nChipx
+                  << "\n\t" << "nModx: " << nModx << "\n\t"
+                  << "nMody: " << nMody << "\n\t" << "nTotx: " << nTotx
+                  << "\n\t" << "nToty: " << nToty << "\n\t"
                   << "bytesPerPixel: " << bytesPerPixel << "\n\t"
                   << "imagesize: " << imagesize << "\n\t"
                   << "nChipBytesx: " << nChipBytesx << "\n\t"
@@ -1321,6 +1317,11 @@ void DetectorImpl::startAcquisition(const bool blocking, Positions pos) {
             // ensure all status normal (slaves not blocking)
             // to catch those slaves that are still 'waiting'
             auto status = Parallel(&Module::getRunStatus, pos);
+            // if any slave still waiting, wait up to 1s
+            for (int i = 0; i != 20 && status.any(WAITING); ++i) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                status = Parallel(&Module::getRunStatus, pos);
+            }
             if (!status.contains_only(IDLE, STOPPED, RUN_FINISHED)) {
                 throw RuntimeError("Acquisition not successful. "
                                    "Unexpected detector status");
@@ -1977,7 +1978,7 @@ void DetectorImpl::setBadChannels(const std::vector<int> list, Positions pos) {
 
     // update to multi values if multi modules
     if (isAllPositions(pos)) {
-        std::vector<std::vector<int>> badchannels;
+        std::vector<std::vector<int>> badchannels(modules.size());
         int nchan = modules[0]->getNumberOfChannels().x;
         if (shm()->detType == MYTHEN3) {
             // assuming single counter
@@ -1996,16 +1997,9 @@ void DetectorImpl::setBadChannels(const std::vector<int> list, Positions pos) {
                                    std::to_string(badchannel) +
                                    " out of bounds.");
             }
-            if (badchannels.size() != imod + 1) {
-                badchannels.push_back(std::vector<int>{});
-            }
             badchannels[imod].push_back(ch);
         }
         for (size_t imod = 0; imod != modules.size(); ++imod) {
-            // add empty vector if no bad channels in this module
-            if (badchannels.size() != imod + 1) {
-                badchannels.push_back(std::vector<int>{});
-            }
             Parallel(&Module::setBadChannels, {static_cast<int>(imod)},
                      badchannels[imod]);
         }

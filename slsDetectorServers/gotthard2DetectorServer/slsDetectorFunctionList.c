@@ -53,7 +53,7 @@ enum detectorSettings thisSettings = UNINITIALIZED;
 int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkDivider[NUM_CLOCKS] = {};
 double systemFrequency = 0;
-int highvoltage = 0;
+int highvoltage = -1;
 int dacValues[NDAC] = {};
 int onChipdacValues[ONCHIP_NDAC][NCHIP] = {};
 int defaultDacValues[NDAC] = {};
@@ -432,7 +432,7 @@ void setupDetector() {
     chipConfigured = 0;
 
     thisSettings = UNINITIALIZED;
-    highvoltage = 0;
+    highvoltage = -1;
     injectedChannelsOffset = 0;
     injectedChannelsIncrement = 0;
     burstMode = BURST_INTERNAL;
@@ -495,7 +495,9 @@ void setupDetector() {
     }
 
     // power on chip
-    powerChip(1);
+    initError = powerChip(1, initErrorMessage);
+    if (initError == FAIL)
+        return;
 
     setASICDefaults();
 
@@ -1546,8 +1548,14 @@ int setHighVoltage(int val) {
     // setting hv
     if (val >= 0) {
         LOG(logINFO, ("Setting High voltage: %d V\n", val));
-        if (DAC6571_Set(val) == OK)
+        if (DAC6571_Set(val) == OK) {
+            if (highvoltage > 0 && val == 0) {
+                LOG(logINFO, ("High voltage turned off requires 10s...\n"));
+                sleep(10);
+                LOG(logINFO, ("High voltage turned off\n"));
+            }
             highvoltage = val;
+        }
     }
     return highvoltage;
 }
@@ -2223,6 +2231,12 @@ int powerChip(int on, char *mess) {
         if (configureChip(mess) == FAIL)
             return FAIL;
     } else {
+        // throw if high voltage on
+        if (highvoltage > 0) {
+            sprintf(mess, "High voltage is on. Turn off high voltage first\n");
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
         LOG(logINFO, ("Powering chip: off\n"));
         bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_PWR_CHIP_MSK);
         chipConfigured = 0;

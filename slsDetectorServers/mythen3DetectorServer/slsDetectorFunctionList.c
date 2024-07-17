@@ -2336,6 +2336,7 @@ int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val,
         return FAIL;
     }
     if (val < 2 || val > getMaxClockDivider()) {
+        LOG(logERROR, ("Invalid clock divider %d\n", val));
         return FAIL;
     }
     char *clock_names[] = {CLK_NAMES};

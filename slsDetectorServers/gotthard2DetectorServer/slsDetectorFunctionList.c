@@ -53,7 +53,6 @@ enum detectorSettings thisSettings = UNINITIALIZED;
 int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkDivider[NUM_CLOCKS] = {};
 double systemFrequency = 0;
-int highvoltage = -1;
 int dacValues[NDAC] = {};
 int onChipdacValues[ONCHIP_NDAC][NCHIP] = {};
 int defaultDacValues[NDAC] = {};
@@ -432,7 +431,6 @@ void setupDetector() {
     chipConfigured = 0;
 
     thisSettings = UNINITIALIZED;
-    highvoltage = -1;
     injectedChannelsOffset = 0;
     injectedChannelsIncrement = 0;
     burstMode = BURST_INTERNAL;
@@ -480,7 +478,12 @@ void setupDetector() {
     setTimingSource(DEFAULT_TIMING_SOURCE);
 
     // Default values
-    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+    initError = setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+    if (initError == FAIL) {
+        sprintf(initErrorMessage, "Could not set high voltage to %d\n",
+                DEFAULT_HIGH_VOLTAGE);
+        return;
+    }
 
     // check module type attached if not in debug mode
     if (initError == FAIL)
@@ -1533,10 +1536,12 @@ int getMaxDacSteps() { return LTC2620_D_GetMaxNumSteps(); }
 
 int getADC(enum ADCINDEX ind, int *value) {
     LOG(logDEBUG1, ("Reading FPGA temperature...\n"));
-    if (readADCFromFile(TEMPERATURE_FILE_NAME, value) == FAIL) {
+    if (readParameterFromFile(TEMPERATURE_FILE_NAME, "temperature", value) ==
+        FAIL) {
         LOG(logERROR, ("Could not get temperature\n"));
         return FAIL;
     }
+    LOG(logINFO, ("Temperature: %.2f °C\n", (double)(*value) / 1000.00));
     return OK;
 }
 
@@ -1545,20 +1550,36 @@ int setHighVoltage(int val) {
         val = HV_SOFT_MAX_VOLTAGE;
     }
 
-    // setting hv
-    if (val >= 0) {
-        LOG(logINFO, ("Setting High voltage: %d V\n", val));
-        if (DAC6571_Set(val) == OK) {
-            if (highvoltage > 0 && val == 0) {
-                LOG(logINFO, ("High voltage turned off requires 10s...\n"));
-                sleep(10);
-                LOG(logINFO, ("High voltage turned off\n"));
-            }
-            highvoltage = val;
+    LOG(logINFO, ("Setting High voltage: %d V\n", val));
+
+    // get current high voltage
+    int prevHighVoltage = 0;
+    // at startup (initCheck not done: to not wait 10s assuming hv = 0
+    // otherwise, always check current hv to wait 10s if powering off
+    if (initCheckDone) {
+        if (getHighVoltage(&prevHighVoltage) == FAIL) {
+            LOG(logERROR,
+                ("Could not get current high voltage to determine 10s wait\n"));
+            return FAIL;
         }
     }
-    return highvoltage;
+
+    int ret = DAC6571_Set(val);
+
+    // only when powering off (from non zero value), wait 10s
+    if (ret == OK) {
+        if (prevHighVoltage > 0 && val == 0) {
+            int waitTime = WAIT_HIGH_VOLTAGE_SETTLE_TIME_S;
+            LOG(logINFO,
+                ("\tSwitching off high voltage requires %d s...\n", waitTime));
+            sleep(waitTime);
+            LOG(logINFO, ("\tAssuming high voltage switched off\n"));
+        }
+    }
+    return ret;
 }
+
+int getHighVoltage(int *retval) { return DAC6571_Get(retval); }
 
 /* parameters - timing */
 
@@ -2232,7 +2253,14 @@ int powerChip(int on, char *mess) {
             return FAIL;
     } else {
         // throw if high voltage on
-        if (highvoltage > 0) {
+        int highVoltage = 0;
+        if (getHighVoltage(&highVoltage) == FAIL) {
+            sprintf(mess, "Could not get high voltage status to do a safety "
+                          "check first\n");
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        if (highVoltage > 0) {
             sprintf(mess, "High voltage is on. Turn off high voltage first\n");
             LOG(logERROR, (mess));
             return FAIL;
@@ -2285,10 +2313,14 @@ int configureChip(char *mess) {
     }
 
     // veto reference
-    if (configureASICVetoReference() == FAIL) {
-        sprintf(mess, "Could not configure veto reference\n");
-        LOG(logERROR, (mess));
-        return FAIL;
+    for (int ichip = 0; ichip != NCHIP; ++ichip) {
+        if (configureASICVetoReference(ichip, vetoGainIndices[ichip],
+                                       vetoReference[ichip]) == FAIL) {
+            sprintf(mess, "Could not configure veto reference for chip %d\n",
+                    ichip);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
     }
 
     // asic global settings (burst mode, cds gain, filter resistor)

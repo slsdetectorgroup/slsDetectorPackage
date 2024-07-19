@@ -442,6 +442,9 @@ int getSlowADC(int ichan, int *retval);
 int getTemperature(int *retval);
 #else
 int setHighVoltage(int val);
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+int getHighVoltage(int *retval);
+#endif
 #endif
 
 // parameters - timing, extsig

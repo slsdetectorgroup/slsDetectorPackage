@@ -727,8 +727,8 @@ int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
     return OK;
 }
 
-int readADCFromFile(char *fname, int *value) {
-    LOG(logDEBUG1, ("fname:%s\n", fname));
+int readParameterFromFile(char *fname, char *parameterName, int *value) {
+    LOG(logDEBUG1, ("fname:%s parameter:%s\n", fname, parameterName));
     // open file
     FILE *fd = fopen(fname, "r");
     if (fd == NULL) {
@@ -752,6 +752,7 @@ int readADCFromFile(char *fname, int *value) {
 
     *value = -1;
     if (sscanf(line, "%d", value) != 1) {
+        LOG(logERROR, ("Could not scan %s from %s\n", parameterName, line));
 #ifdef XILINX_CHIPTESTBOARDD
         LOG(logERROR, ("Could not scan adc from %s\n", line));
 #else

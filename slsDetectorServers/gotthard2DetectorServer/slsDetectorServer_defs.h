@@ -51,6 +51,8 @@
 #define TYPE_NO_MODULE_STARTING_VAL           (800)
 #define INITIAL_STARTUP_WAIT                  (1 * 1000 * 1000)
 
+#define WAIT_HIGH_VOLTAGE_SETTLE_TIME_S (10) // 10s
+
 /** Default Parameters */
 #define DEFAULT_BURST_MODE          (BURST_INTERNAL)
 #define DEFAULT_FILTER_RESISTOR     (0)

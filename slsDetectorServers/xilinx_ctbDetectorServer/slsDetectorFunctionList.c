@@ -1173,7 +1173,7 @@ int getTemperature(int *retval) {
         LOG(logERROR, ("Could not get temperature\n"));
         return FAIL;
     }
-    LOG(logINFO, ("Temperature: %.2f °C\n", (double)(*value) / 1000.00));
+    LOG(logINFO, ("Temperature: %.2f °C\n", (double)(*retval) / 1000.00));
 #endif
     return OK;
 }

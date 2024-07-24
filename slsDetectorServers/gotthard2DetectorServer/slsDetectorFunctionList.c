@@ -1555,11 +1555,12 @@ int setHighVoltage(int val) {
     // get current high voltage
     int prevHighVoltage = 0;
     // at startup (initCheck not done: to not wait 10s assuming hv = 0
-    // otherwise, always check current hv to wait 10s if powering off
+    // otherwise as below, always check current hv to wait 10s if powering off
     if (initCheckDone) {
         if (getHighVoltage(&prevHighVoltage) == FAIL) {
-            LOG(logERROR,
-                ("Could not get current high voltage to determine 10s wait\n"));
+            LOG(logERROR, ("Could not get current high voltage to determine if "
+                           "%d s wait is required\n",
+                           waitTime));
             return FAIL;
         }
     }

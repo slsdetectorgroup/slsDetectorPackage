@@ -1547,10 +1547,12 @@ int getADC(enum ADCINDEX ind, int *value) {
 
 int setHighVoltage(int val) {
     if (val > HV_SOFT_MAX_VOLTAGE) {
-        val = HV_SOFT_MAX_VOLTAGE;
+        LOG(logERROR, ("Invalid high voltage: %d V\n", val));
+        return FAIL;
     }
 
     LOG(logINFO, ("Setting High voltage: %d V\n", val));
+    int waitTime = WAIT_HIGH_VOLTAGE_SETTLE_TIME_S;
 
     // get current high voltage
     int prevHighVoltage = 0;
@@ -1570,7 +1572,6 @@ int setHighVoltage(int val) {
     // only when powering off (from non zero value), wait 10s
     if (ret == OK) {
         if (prevHighVoltage > 0 && val == 0) {
-            int waitTime = WAIT_HIGH_VOLTAGE_SETTLE_TIME_S;
             LOG(logINFO,
                 ("\tSwitching off high voltage requires %d s...\n", waitTime));
             sleep(waitTime);

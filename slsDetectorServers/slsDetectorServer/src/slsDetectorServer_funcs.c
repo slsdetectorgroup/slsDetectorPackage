@@ -1216,7 +1216,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
     case HIGH_VOLTAGE:
 
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
-        if (val != -1 && val < 0) {
+        if ((val != -1 && val < 0) || (val > HV_SOFT_MAX_VOLTAGE)) {
             ret = FAIL;
             sprintf(mess, "Invalid Voltage. Valid range (0 - %d)\n",
                     HV_SOFT_MAX_VOLTAGE);

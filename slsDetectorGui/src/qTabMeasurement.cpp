@@ -839,8 +839,8 @@ void qTabMeasurement::UpdateProgress() {
 int qTabMeasurement::VerifyOutputDirectoryError() {
     try {
         auto retval = det->getFilePath();
-        for (auto &it : retval) {
-            det->setFilePath(it);
+        for (size_t i = 0; i < retval.size(); i++) {
+            det->setFilePath(retval[i], {i});
         }
         return slsDetectorDefs::OK;
     }

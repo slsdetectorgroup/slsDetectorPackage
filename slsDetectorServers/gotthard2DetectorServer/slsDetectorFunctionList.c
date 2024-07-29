@@ -54,6 +54,7 @@ int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkDivider[NUM_CLOCKS] = {};
 double systemFrequency = 0;
 int dacValues[NDAC] = {};
+int startupPowerChipConfigDone = 0;
 int onChipdacValues[ONCHIP_NDAC][NCHIP] = {};
 int defaultDacValues[NDAC] = {};
 int hardCodedDefaultDacValues[NDAC] = {};
@@ -442,6 +443,7 @@ void setupDetector() {
     burstPeriodReg = 0;
     filterResistor = 0;
     cdsGain = 0;
+    startupPowerChipConfigDone = 0;
     memset(clkPhase, 0, sizeof(clkPhase));
     memset(dacValues, 0, sizeof(dacValues));
     for (int i = 0; i < NDAC; ++i) {
@@ -982,6 +984,9 @@ int readConfigFile() {
         // inform FPGA that onchip dacs will be configured soon
         LOG(logINFO, ("Setting configuration done bit\n"));
         bus_w(ASIC_CONFIG_REG, bus_r(ASIC_CONFIG_REG) | ASIC_CONFIG_DONE_MSK);
+
+        // to inform powerchip config parameters are set
+        startupPowerChipConfigDone = 1;
     }
     return initError;
 }
@@ -2251,7 +2256,8 @@ int powerChip(int on, char *mess) {
     if (on) {
         LOG(logINFO, ("Powering chip: on\n"));
         bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PWR_CHIP_MSK);
-        if (configureChip(mess) == FAIL)
+        // only if power chip config done, configure chip with current set up
+        if (startupPowerChipConfigDone == 1 && configureChip(mess) == FAIL)
             return FAIL;
     } else {
         // throw if high voltage on
@@ -2286,9 +2292,12 @@ int configureChip(char *mess) {
 
     // on chip dacs
     for (int idac = 0; idac != ONCHIP_NDAC; ++idac) {
+        if (idac == (int)G2_VCHIP_UNUSED)
+            continue;
         for (int ichip = 0; ichip != NCHIP; ++ichip) {
             if (onChipdacValues[idac][ichip] == -1) {
-                sprintf(mess, "On chip DAC value not set for chip %d\n", ichip);
+                sprintf(mess, "On chip DAC [%d] value not set for chip %d\n",
+                        idac, ichip);
                 LOG(logERROR, (mess));
                 return FAIL;
             }

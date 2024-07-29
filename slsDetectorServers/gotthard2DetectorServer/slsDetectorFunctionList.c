@@ -2292,6 +2292,7 @@ int configureChip(char *mess) {
 
     // on chip dacs
     for (int idac = 0; idac != ONCHIP_NDAC; ++idac) {
+        // ignore unused dacs
         if (idac == (int)G2_VCHIP_UNUSED)
             continue;
         for (int ichip = 0; ichip != NCHIP; ++ichip) {

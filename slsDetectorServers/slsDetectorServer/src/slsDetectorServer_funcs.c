@@ -1231,6 +1231,10 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
             }
             if (ret == OK) {
                 ret = getHighVoltage(&retval);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not get high voltage.\n");
+                    LOG(logERROR, (mess));
+                }
                 LOG(logDEBUG1, ("High Voltage: %d\n", retval));
                 validate(&ret, mess, val, retval, "set high voltage", DEC);
             }

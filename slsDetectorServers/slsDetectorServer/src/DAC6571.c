@@ -67,9 +67,6 @@ int DAC6571_Set(int val) {
 
 int DAC6571_Get(int *retval) {
     LOG(logDEBUG1, ("Getting high voltage\n"));
-    if (*retval < 0)
-        return FAIL;
-
     int dacvalue = 0;
 
 #ifdef VIRTUAL

@@ -11,4 +11,4 @@
 #define APIMOENCH    "developer 0x240725"
 #define APIXILINXCTB "developer 0x240725"
 #define APIEIGER     "developer 0x240725"
-#define APIGOTTHARD2 "developer 0x240729"
+#define APIGOTTHARD2 "developer 0x240731"

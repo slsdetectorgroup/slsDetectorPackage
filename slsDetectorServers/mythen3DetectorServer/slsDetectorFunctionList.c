@@ -396,11 +396,7 @@ void initStopServer() {
             return;
         }
 #ifdef VIRTUAL
-        sharedMemory_setStop(0);
-        if (checkCommandLineConfiguration() == FAIL) {
-            initCheckDone = 1;
-            return;
-        }
+        setupDetector();
 #endif
     }
     initCheckDone = 1;
@@ -466,8 +462,12 @@ void setupDetector() {
         clkPhase[i] = 0;
     }
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    setupUDPCommParameters();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        setupUDPCommParameters();
+    } else {
+        sharedMemory_setStop(0);
+    }
 #endif
 
     // pll defines

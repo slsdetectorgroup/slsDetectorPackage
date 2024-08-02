@@ -442,6 +442,9 @@ int getSlowADC(int ichan, int *retval);
 int getTemperature(int *retval);
 #else
 int setHighVoltage(int val);
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+int getHighVoltage(int *retval);
+#endif
 #endif
 
 // parameters - timing, extsig
@@ -650,7 +653,10 @@ int getClockDivider(enum CLKINDEX ind);
 
 #elif GOTTHARD2D
 int checkDetectorType(char *mess);
-int powerChip(int on);
+int powerChip(int on, char *mess);
+int getPowerChip();
+int isChipConfigured();
+int configureChip(char *mess);
 void setDBITPipeline(int val);
 int getDBITPipeline();
 int setPhase(enum CLKINDEX ind, int val, int degrees);

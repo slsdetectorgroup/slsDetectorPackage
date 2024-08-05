@@ -9,12 +9,15 @@
 
 #define NUM_HARDWARE_VERSIONS    (2)
 #define HARDWARE_VERSION_NUMBERS {0x0, 0x2};
-#define HARDWARE_VERSION_NAMES                                                 \
-    { "1.0", "1.2" }
+#define HARDWARE_VERSION_NAMES   {"1.0", "1.2"}
 
 #define LINKED_SERVER_NAME "gotthard2DetectorServer"
 
+#ifdef VIRTUAL
+#define CTRL_SRVR_INIT_TIME_US (3 * 1000 * 1000)
+#else
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
+#endif
 
 /* Hardware Definitions */
 #define NCHAN                       (128)

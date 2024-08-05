@@ -8,16 +8,18 @@
 #define REQRD_FRMWRE_VRSN_BOARD2 0x230920 // 1.0 pcb (version = 010)
 #define REQRD_FRMWRE_VRSN        0x230921 // 2.0 pcb (version = 011)
 
-#define NUM_HARDWARE_VERSIONS (2)
-#define HARDWARE_VERSION_NUMBERS                                               \
-    { 0x2, 0x3 }
-#define HARDWARE_VERSION_NAMES                                                 \
-    { "1.0", "2.0" }
+#define NUM_HARDWARE_VERSIONS    (2)
+#define HARDWARE_VERSION_NUMBERS {0x2, 0x3}
+#define HARDWARE_VERSION_NAMES   {"1.0", "2.0"}
 
 #define ID_FILE            "detid_jungfrau.txt"
 #define LINKED_SERVER_NAME "jungfrauDetectorServer"
 
+#ifdef VIRTUAL
+#define CTRL_SRVR_INIT_TIME_US (4 * 1000 * 1000)
+#else
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
+#endif
 
 /* Hardware Definitions */
 #define NCHAN               (256 * 256)
@@ -206,13 +208,11 @@ enum DACINDEX {
 enum MASTERINDEX { MASTER_HARDWARE, OW_MASTER, OW_SLAVE };
 #define MASTER_NAMES "hardware", "master", "slave"
 
-#define NUMSETTINGS     (2)
-#define NSPECIALDACS    (3)
-#define SPECIALDACINDEX {J_VREF_PRECH, J_VREF_DS, J_VREF_COMP};
-#define SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS                                      \
-    { 1450, 480, 420 }
-#define SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS                                   \
-    { 1550, 450, 620 }
+#define NUMSETTINGS                          (2)
+#define NSPECIALDACS                         (3)
+#define SPECIALDACINDEX                      {J_VREF_PRECH, J_VREF_DS, J_VREF_COMP};
+#define SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS    {1450, 480, 420}
+#define SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS {1550, 450, 620}
 
 enum NETWORKINDEX { TXN_FRAME, FLOWCTRL_10G };
 enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };

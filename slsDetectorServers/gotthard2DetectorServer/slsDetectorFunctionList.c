@@ -403,13 +403,7 @@ void initStopServer() {
             return;
         }
 #ifdef VIRTUAL
-        sharedMemory_setStop(0);
-        setMaster(OW_MASTER);
-        if (readConfigFile() == FAIL ||
-            checkCommandLineConfiguration() == FAIL) {
-            initCheckDone = 1;
-            return;
-        }
+        setupDetector();
 #endif
     }
     initCheckDone = 1;
@@ -460,8 +454,12 @@ void setupDetector() {
     memset(vetoGainIndices, 0, sizeof(vetoGainIndices));
     memset(adcConfiguration, 0, sizeof(adcConfiguration));
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    setupUDPCommParameters();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        setupUDPCommParameters();
+    } else {
+        sharedMemory_setStop(0);
+    }
 #endif
     // pll defines
     ALTERA_PLL_C10_SetDefines(REG_OFFSET, BASE_READOUT_PLL, BASE_SYSTEM_PLL,

@@ -420,10 +420,7 @@ void initStopServer() {
             return;
         }
 #ifdef VIRTUAL
-        sharedMemory_setStop(0);
-        // temp threshold and reset event (read by stop server)
-        setThresholdTemperature(DEFAULT_TMP_THRSHLD);
-        setTemperatureEvent(0);
+        setupDetector();
 #endif
     }
     initCheckDone = 1;
@@ -438,8 +435,12 @@ void setupDetector() {
         clkPhase[i] = 0;
     }
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    setupUDPCommParameters();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        setupUDPCommParameters();
+    } else {
+        sharedMemory_setStop(0);
+    }
 #endif
 
     // altera pll

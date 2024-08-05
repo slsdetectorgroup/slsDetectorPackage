@@ -388,14 +388,15 @@ void initStopServer() {
             return;
         }
 #ifdef VIRTUAL
-        sharedMemory_setStop(0);
-#endif
+        setupDetector();
+#else
         // to get master from file
         if (readConfigFile() == FAIL ||
             checkCommandLineConfiguration() == FAIL) {
             initCheckDone = 1;
             return;
         }
+#endif
     }
     initCheckDone = 1;
 }
@@ -406,8 +407,12 @@ void setupDetector() {
     LOG(logINFO, ("This Server is for 1 Gotthard module (1280 channels)\n"));
 
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    setupUDPCommParameters();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        setupUDPCommParameters();
+    } else {
+        sharedMemory_setStop(0);
+    }
 #endif
 
     // Initialization

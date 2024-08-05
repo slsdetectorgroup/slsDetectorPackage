@@ -4,15 +4,17 @@
 #include "sls/sls_detector_defs.h"
 #include <stdlib.h>
 
-#define NUM_HARDWARE_VERSIONS (2)
-#define HARDWARE_VERSION_NUMBERS                                               \
-    { 0x1, 0x2 }
-#define HARDWARE_VERSION_NAMES                                                 \
-    { "1.0", "2.0" }
+#define NUM_HARDWARE_VERSIONS    (2)
+#define HARDWARE_VERSION_NUMBERS {0x1, 0x2}
+#define HARDWARE_VERSION_NAMES   {"1.0", "2.0"}
 
 #define LINKED_SERVER_NAME "gotthardDetectorServer"
 
+#ifdef VIRTUAL
+#define CTRL_SRVR_INIT_TIME_US (2 * 1000 * 1000)
+#else
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
+#endif
 
 /* Enums */
 enum ADCINDEX { TEMP_FPGA, TEMP_ADC };

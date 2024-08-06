@@ -69,4 +69,4 @@ int deleteFile(char *mess, char *fname, char *errorPrefix);
 
 int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix);
 
-int readADCFromFile(char *fname, int *value);
+int readParameterFromFile(char *fname, char *parameterName, int *value);

@@ -53,8 +53,8 @@ enum detectorSettings thisSettings = UNINITIALIZED;
 int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkDivider[NUM_CLOCKS] = {};
 double systemFrequency = 0;
-int highvoltage = 0;
 int dacValues[NDAC] = {};
+int startupPowerChipConfigDone = 0;
 int onChipdacValues[ONCHIP_NDAC][NCHIP] = {};
 int defaultDacValues[NDAC] = {};
 int hardCodedDefaultDacValues[NDAC] = {};
@@ -74,6 +74,7 @@ int64_t burstPeriodReg = 0;
 int filterResistor = 0;
 int cdsGain = 0;
 int detPos[2] = {};
+int chipConfigured = 0;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -428,9 +429,9 @@ void setupDetector() {
     systemFrequency = INT_SYSTEM_C0_FREQUENCY;
     detPos[0] = 0;
     detPos[1] = 0;
+    chipConfigured = 0;
 
     thisSettings = UNINITIALIZED;
-    highvoltage = 0;
     injectedChannelsOffset = 0;
     injectedChannelsIncrement = 0;
     burstMode = BURST_INTERNAL;
@@ -442,6 +443,7 @@ void setupDetector() {
     burstPeriodReg = 0;
     filterResistor = 0;
     cdsGain = 0;
+    startupPowerChipConfigDone = 0;
     memset(clkPhase, 0, sizeof(clkPhase));
     memset(dacValues, 0, sizeof(dacValues));
     for (int i = 0; i < NDAC; ++i) {
@@ -478,7 +480,12 @@ void setupDetector() {
     setTimingSource(DEFAULT_TIMING_SOURCE);
 
     // Default values
-    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+    initError = setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+    if (initError == FAIL) {
+        sprintf(initErrorMessage, "Could not set high voltage to %d\n",
+                DEFAULT_HIGH_VOLTAGE);
+        return;
+    }
 
     // check module type attached if not in debug mode
     if (initError == FAIL)
@@ -493,7 +500,9 @@ void setupDetector() {
     }
 
     // power on chip
-    powerChip(1);
+    initError = powerChip(1, initErrorMessage);
+    if (initError == FAIL)
+        return;
 
     setASICDefaults();
 
@@ -975,6 +984,9 @@ int readConfigFile() {
         // inform FPGA that onchip dacs will be configured soon
         LOG(logINFO, ("Setting configuration done bit\n"));
         bus_w(ASIC_CONFIG_REG, bus_r(ASIC_CONFIG_REG) | ASIC_CONFIG_DONE_MSK);
+
+        // to inform powerchip config parameters are set
+        startupPowerChipConfigDone = 1;
     }
     return initError;
 }
@@ -1529,26 +1541,52 @@ int getMaxDacSteps() { return LTC2620_D_GetMaxNumSteps(); }
 
 int getADC(enum ADCINDEX ind, int *value) {
     LOG(logDEBUG1, ("Reading FPGA temperature...\n"));
-    if (readADCFromFile(TEMPERATURE_FILE_NAME, value) == FAIL) {
+    if (readParameterFromFile(TEMPERATURE_FILE_NAME, "temperature", value) ==
+        FAIL) {
         LOG(logERROR, ("Could not get temperature\n"));
         return FAIL;
     }
+    LOG(logINFO, ("Temperature: %.2f °C\n", (double)(*value) / 1000.00));
     return OK;
 }
 
 int setHighVoltage(int val) {
     if (val > HV_SOFT_MAX_VOLTAGE) {
-        val = HV_SOFT_MAX_VOLTAGE;
+        LOG(logERROR, ("Invalid high voltage: %d V\n", val));
+        return FAIL;
     }
 
-    // setting hv
-    if (val >= 0) {
-        LOG(logINFO, ("Setting High voltage: %d V\n", val));
-        if (DAC6571_Set(val) == OK)
-            highvoltage = val;
+    LOG(logINFO, ("Setting High voltage: %d V\n", val));
+    int waitTime = WAIT_HIGH_VOLTAGE_SETTLE_TIME_S;
+
+    // get current high voltage
+    int prevHighVoltage = 0;
+    // at startup (initCheck not done: to not wait 10s assuming hv = 0
+    // otherwise as below, always check current hv to wait 10s if powering off
+    if (initCheckDone) {
+        if (getHighVoltage(&prevHighVoltage) == FAIL) {
+            LOG(logERROR, ("Could not get current high voltage to determine if "
+                           "%d s wait is required\n",
+                           waitTime));
+            return FAIL;
+        }
     }
-    return highvoltage;
+
+    int ret = DAC6571_Set(val);
+
+    // only when powering off (from non zero value), wait 10s
+    if (ret == OK) {
+        if (prevHighVoltage > 0 && val == 0) {
+            LOG(logINFO,
+                ("\tSwitching off high voltage requires %d s...\n", waitTime));
+            sleep(waitTime);
+            LOG(logINFO, ("\tAssuming high voltage switched off\n"));
+        }
+    }
+    return ret;
 }
+
+int getHighVoltage(int *retval) { return DAC6571_Get(retval); }
 
 /* parameters - timing */
 
@@ -2214,18 +2252,99 @@ int checkDetectorType(char *mess) {
     return OK;
 }
 
-int powerChip(int on) {
-    if (on != -1) {
-        if (on) {
-            LOG(logINFO, ("Powering chip: on\n"));
-            bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PWR_CHIP_MSK);
-        } else {
-            LOG(logINFO, ("Powering chip: off\n"));
-            bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_PWR_CHIP_MSK);
+int powerChip(int on, char *mess) {
+    if (on) {
+        LOG(logINFO, ("Powering chip: on\n"));
+        bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PWR_CHIP_MSK);
+        // only if power chip config done, configure chip with current set up
+        if (startupPowerChipConfigDone == 1 && configureChip(mess) == FAIL)
+            return FAIL;
+    } else {
+        // throw if high voltage on
+        int highVoltage = 0;
+        if (getHighVoltage(&highVoltage) == FAIL) {
+            sprintf(mess, "Could not get high voltage status to do a safety "
+                          "check first\n");
+            LOG(logERROR, (mess));
+            return FAIL;
         }
+        if (highVoltage > 0) {
+            sprintf(mess, "High voltage is on. Turn off high voltage first\n");
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        LOG(logINFO, ("Powering chip: off\n"));
+        bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_PWR_CHIP_MSK);
+        chipConfigured = 0;
     }
+    return OK;
+}
+
+int getPowerChip() {
     return ((bus_r(CONTROL_REG) & CONTROL_PWR_CHIP_MSK) >>
             CONTROL_PWR_CHIP_OFST);
+}
+
+int isChipConfigured() { return chipConfigured; }
+
+int configureChip(char *mess) {
+    LOG(logINFOBLUE, ("\tConfiguring chip\n"));
+
+    // on chip dacs
+    for (int idac = 0; idac != ONCHIP_NDAC; ++idac) {
+        // ignore unused dacs
+        if (idac == (int)G2_VCHIP_UNUSED)
+            continue;
+        for (int ichip = 0; ichip != NCHIP; ++ichip) {
+            if (onChipdacValues[idac][ichip] == -1) {
+                sprintf(mess, "On chip DAC [%d] value not set for chip %d\n",
+                        idac, ichip);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+            if (setOnChipDAC(idac, ichip, onChipdacValues[idac][ichip]) ==
+                FAIL) {
+                sprintf(mess, "Could not set on chip DAC for chip %d\n", ichip);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+        }
+    }
+
+    // adc configuration
+    for (int ichip = 0; ichip != NCHIP; ++ichip) {
+        for (int iadc = 0; iadc != NADC; ++iadc) {
+            if (setADCConfiguration(ichip, iadc,
+                                    adcConfiguration[ichip][iadc]) == FAIL) {
+                sprintf(mess, "Could not set ADC configuration for chip %d\n",
+                        ichip);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+        }
+    }
+
+    // veto reference
+    for (int ichip = 0; ichip != NCHIP; ++ichip) {
+        if (configureASICVetoReference(ichip, vetoGainIndices[ichip],
+                                       vetoReference[ichip]) == FAIL) {
+            sprintf(mess, "Could not configure veto reference for chip %d\n",
+                    ichip);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+    }
+
+    // asic global settings (burst mode, cds gain, filter resistor)
+    if (configureASICGlobalSettings() == FAIL) {
+        sprintf(mess, "Could not configure asic global settings\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    LOG(logINFOBLUE, ("\tChip configured\n"));
+    chipConfigured = 1;
+    return OK;
 }
 
 void setDBITPipeline(int val) {

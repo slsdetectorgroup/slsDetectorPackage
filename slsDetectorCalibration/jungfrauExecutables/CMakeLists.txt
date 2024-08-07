@@ -9,6 +9,16 @@ set(JUNGFRAU_EXECUTABLES)
 find_package(fmt REQUIRED)
 find_package(nlohmann_json 3.11.2 REQUIRED)
 
+# HDF5 file writing 
+if (SLS_USE_HDF5)
+    find_package(HDF5 1.10 COMPONENTS CXX REQUIRED)
+	    list (APPEND SOURCES 
+	        HDF5File.cpp 
+	    )
+endif (SLS_USE_HDF5)
+
+
+
 # jungfrauRawDataProcess
 add_executable(jungfrauRawDataProcess jungfrauRawDataProcess.cpp)
 target_compile_definitions(jungfrauRawDataProcess PRIVATE MODULE)
@@ -29,6 +39,17 @@ add_executable(jungfrauRawDataProcessStrxQuad jungfrauRawDataProcess_filetxt.cpp
 target_compile_definitions(jungfrauRawDataProcessStrxQuad PRIVATE JFSTRXQ)
 list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcessStrxQuad)
 
+# jungfrauRawDataProcessStrxQuadH5
+# HDF5
+if (SLS_USE_HDF5)
+    if (HDF5_FOUND)
+       add_executable(jungfrauRawDataProcessStrxQuadH5 jungfrauRawDataProcess_filetxtH5.cpp)
+       target_compile_definitions(jungfrauRawDataProcessStrxQuadH5 PRIVATE JFSTRXQH5)
+       target_link_libraries(jungfrauRawDataProcessStrxQuadH5 PUBLIC ${HDF5_LIBRARIES})
+       target_include_directories(jungfrauRawDataProcessStrxQuadH5 PUBLIC ${HDF5_INCLUDE_DIRS}) #${CMAKE_INSTALL_PREFIX}/include)
+       list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcessStrxQuadH5)
+    endif ()
+endif (SLS_USE_HDF5)
 
 # jungfrauRawDataProcessStrxChip1
 add_executable(jungfrauRawDataProcessStrxChip1 jungfrauRawDataProcess.cpp)

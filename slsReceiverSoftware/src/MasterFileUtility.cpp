@@ -215,12 +215,42 @@ std::string CreateVirtualHDF5File(
 
         // property list
         H5::DSetCreatPropList plist;
-        int fill_value = -1;
-        plist.setFillValue(dataType, &fill_value);
+        uint8_t u8 = -1;
+        uint16_t u16 = -1;
+        uint32_t u32 = -1;
+        uint64_t u64 = -1;
+        void* fill_value;
+
+        if (dataType == H5::PredType::STD_U8LE) {
+            fill_value = &u8;
+        } else if (dataType == H5::PredType::STD_U16LE) {
+            fill_value = &u16;
+        } else if (dataType == H5::PredType::STD_U32LE) {
+            fill_value = &u32;
+        } else if (dataType == H5::PredType::STD_U64LE) {
+            fill_value = &u64;
+        } else {
+            throw RuntimeError("Unsupported data type for virtual HDF5 file");
+        }
+        plist.setFillValue(dataType, fill_value);
+
+        //uint64_t fill_value = -1;
+        //plist.setFillValue(dataType, &fill_value);
         std::vector<H5::DSetCreatPropList> plistPara(paraSize);
         // ignoring last fill (string)
         for (unsigned int i = 0; i != plistPara.size() - 1; ++i) {
-            plistPara[i].setFillValue(parameterDataTypes[i], &fill_value);
+            if (parameterDataTypes[i] == H5::PredType::STD_U8LE) {
+                fill_value = &u8;
+            } else if (parameterDataTypes[i] == H5::PredType::STD_U16LE) {
+                fill_value = &u16;
+            } else if (parameterDataTypes[i] == H5::PredType::STD_U32LE) {
+                fill_value = &u32;
+            } else if (parameterDataTypes[i] == H5::PredType::STD_U64LE) {
+                fill_value = &u64;
+            } else {
+                throw RuntimeError("Unsupported data type for virtual HDF5 file");
+            }
+            plistPara[i].setFillValue(parameterDataTypes[i], fill_value);
         }
 
         // hyperslab (files)

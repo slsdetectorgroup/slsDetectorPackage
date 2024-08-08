@@ -232,7 +232,7 @@ std::string CmdProxy::Acquire(int action) {
             throw RuntimeError("Individual detectors not allowed for readout.");
         }
 
-        if (action == defs::READOUT_ACTION_ZMQ) {
+        if (action == defs::READOUT_ZMQ_ACTION) {
             det->registerDataCallback(&(EmptyDataCallBack), this);
         }
         det->acquire();

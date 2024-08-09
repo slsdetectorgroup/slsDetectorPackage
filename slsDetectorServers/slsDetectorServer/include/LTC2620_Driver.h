@@ -5,8 +5,8 @@
 #include <inttypes.h>
 
 void LTC2620_D_SetDefines(int hardMinV, int hardMaxV, char *driverfname,
-                          int numdacs, int numpowers, int numdevices,
-                          int startingDeviceIndex, char *powerdownDriverfname);
+                          int numdacs, int numpowers,
+                          char *powerdownDriverfname);
 int LTC2620_D_GetMaxNumSteps();
 int LTC2620_D_GetPowerDownValue();
 int LTC2620_D_GetMinInput();

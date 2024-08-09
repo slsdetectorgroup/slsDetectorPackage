@@ -20,17 +20,14 @@ char LTC2620_D_DriverFileName[MAX_STR_LENGTH];
 char LTC2620_D_PowerDownDriverFileName[MAX_STR_LENGTH];
 int LTC2620_D_NumDacs = 0;
 int LTC2620_D_NumDacsOnly = 0;
-int LTC2620_D_NumDevices = 0;
-int LTC2620_D_NumChannelsPerDevice = 0;
-int LTC2620_D_DacDriverStartingDeviceIndex = 0;
 
 void LTC2620_D_SetDefines(int hardMinV, int hardMaxV, char *driverfname,
-                          int numdacs, int numpowers, int numdevices,
-                          int startingDeviceIndex, char *powerdownDriverfname) {
+                          int numdacs, int numpowers,
+                          char *powerdownDriverfname) {
     LOG(logINFOBLUE,
         ("Configuring DACs (LTC2620) to %s\n\t (numdacs:%d, hard min:%d, hard "
-         "max: %dmV, idev:%d)\n",
-         driverfname, numdacs, hardMinV, hardMaxV, startingDeviceIndex));
+         "max: %dmV)\n",
+         driverfname, numdacs, hardMinV, hardMaxV));
     LTC2620_D_HardMinVoltage = hardMinV;
     LTC2620_D_HardMaxVoltage = hardMaxV;
     memset(LTC2620_D_DriverFileName, 0, MAX_STR_LENGTH);
@@ -38,11 +35,7 @@ void LTC2620_D_SetDefines(int hardMinV, int hardMaxV, char *driverfname,
     memset(LTC2620_D_PowerDownDriverFileName, 0, MAX_STR_LENGTH);
     strcpy(LTC2620_D_PowerDownDriverFileName, powerdownDriverfname);
     LTC2620_D_NumDacs = numdacs;
-    LTC2620_D_NumDacsOnly = numdacs;
     LTC2620_D_NumDacsOnly = numdacs - numpowers;
-    LTC2620_D_NumDevices = numdevices;
-    LTC2620_D_NumChannelsPerDevice = LTC2620_D_NumDacs / LTC2620_D_NumDevices;
-    LTC2620_D_DacDriverStartingDeviceIndex = startingDeviceIndex;
 }
 
 int LTC2620_D_GetMaxNumSteps() { return LTC2620_D_MAX_STEPS; }
@@ -144,10 +137,6 @@ int LTC2620_D_SetDACValue(int dacnum, int val, int mV, char *dacname,
     char fname[MAX_STR_LENGTH];
     memset(fname, 0, MAX_STR_LENGTH);
 #ifdef XILINX_CHIPTESTBOARDD
-//    int idev = LTC2620_D_DacDriverStartingDeviceIndex +
-//               (dacnum / LTC2620_D_NumChannelsPerDevice);
-//    int idac = dacnum % LTC2620_D_NumChannelsPerDevice;
-//    sprintf(fname, fnameFormat, idev, idac);
     sprintf(fname, fnameFormat, dacnum);
 #else
     sprintf(fname, "%s%d", fnameFormat, dacnum);

@@ -1150,10 +1150,10 @@ int getSlowADC(int ichan, int *retval) {
     sprintf(fname, SLOWADC_DRIVER_FILE_NAME, ichan);
     LOG(logDEBUG1, ("fname %s\n", fname));
 
-    if (readADCFromFile(fname, retval) == FAIL) {
+    if (readParameterFromFile(fname, "slow adc", retval) == FAIL) {
+        LOG(logERROR, ("Could not get slow adc\n"));
         return FAIL;
     }
-
     // TODO assuming already converted to uV
     // convert to uV
     // double value = SLOWDAC_CONVERTION_FACTOR_TO_UV * (double)(*retval);
@@ -1168,11 +1168,11 @@ int getSlowADC(int ichan, int *retval) {
 int getTemperature(int *retval) {
     *retval = 0;
 #ifndef VIRTUAL
-    if (readADCFromFile(TEMP_DRIVER_FILE_NAME, retval) == FAIL) {
+    if (readParameterFromFile(TEMP_DRIVER_FILE_NAME, "temperature", retval) ==
+        FAIL) {
+        LOG(logERROR, ("Could not get temperature\n"));
         return FAIL;
     }
-
-    // value already in millidegree celsius
     LOG(logINFO, ("Temperature: %.2f °C\n", (double)(*retval) / 1000.00));
 #endif
     return OK;

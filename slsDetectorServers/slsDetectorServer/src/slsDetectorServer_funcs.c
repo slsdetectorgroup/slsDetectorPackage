@@ -1214,12 +1214,39 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
         // high voltage
 #ifndef XILINX_CHIPTESTBOARDD
     case HIGH_VOLTAGE:
+
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+        if ((val != -1 && val < 0) || (val > HV_SOFT_MAX_VOLTAGE)) {
+            ret = FAIL;
+            sprintf(mess, "Invalid Voltage. Valid range (0 - %d)\n",
+                    HV_SOFT_MAX_VOLTAGE);
+            LOG(logERROR, (mess));
+        } else {
+            if (val >= 0) {
+                ret = setHighVoltage(val);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not set high voltage.\n");
+                    LOG(logERROR, (mess));
+                }
+            }
+            if (ret == OK) {
+                ret = getHighVoltage(&retval);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not get high voltage.\n");
+                    LOG(logERROR, (mess));
+                }
+                LOG(logDEBUG1, ("High Voltage: %d\n", retval));
+                validate(&ret, mess, val, retval, "set high voltage", DEC);
+            }
+        }
+#else
         retval = setHighVoltage(val);
         LOG(logDEBUG1, ("High Voltage: %d\n", retval));
-#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) ||       \
-    defined(GOTTHARD2D) || defined(MYTHEN3D)
+#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD)
         validate(&ret, mess, val, retval, "set high voltage", DEC);
 #endif
+#endif
+
 #ifdef GOTTHARDD
         if (retval == -1) {
             ret = FAIL;
@@ -1977,20 +2004,24 @@ int acquire(int blocking, int file_des) {
     }
     // only set
     if (Server_VerifyLock() == OK) {
-#if defined(XILINX_CHIPTESTBOARDD)
+#if defined(XILINX_CHIPTESTBOARDD) || defined(GOTTHARD2D)
         if (!isChipConfigured()) {
             ret = FAIL;
             strcpy(mess, "Could not start acquisition. Chip is not configured. "
                          "Power it on to configure it.\n");
             LOG(logERROR, (mess));
-        } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
-                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                   (isTransceiverAligned() == 0)) {
+        }
+#if defined(XILINX_CHIPTESTBOARDD)
+        else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
+                  getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                 (isTransceiverAligned() == 0)) {
             ret = FAIL;
             strcpy(mess, "Could not start acquisition. Transceiver not "
                          "aligned. Use configtransceiver command.\n");
             LOG(logERROR, (mess));
-        } else
+        }
+#endif
+        else
 #endif
 #if defined(JUNGFRAUD)
             // chipv1.1 has to be configured before acquisition
@@ -4111,7 +4142,7 @@ int power_chip(int file_des) {
             }
         }
 #endif
-#ifdef XILINX_CHIPTESTBOARDD
+#if defined(XILINX_CHIPTESTBOARDD) || defined(GOTTHARD2D)
         if (ret == OK) {
             if (arg != -1) {
                 if (arg != 0 && arg != 1) {

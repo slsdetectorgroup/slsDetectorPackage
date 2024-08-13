@@ -30,6 +30,10 @@ int main(int argc, char *argv[]) {
     int action = slsDetectorDefs::READOUT_ACTION;
 #endif
 
+#ifdef READOUTZMQ
+    int action = slsDetectorDefs::READOUT_ZMQ_ACTION;
+#endif
+
 #ifdef HELP
     int action = slsDetectorDefs::HELP_ACTION;
 #endif
@@ -46,7 +50,7 @@ int main(int argc, char *argv[]) {
     parser.Parse(argc, argv);
 
     // If we called sls_detector_acquire, add the acquire command
-    if (action == slsDetectorDefs::READOUT_ACTION)
+    if (action == slsDetectorDefs::READOUT_ACTION || action == slsDetectorDefs::READOUT_ZMQ_ACTION)
         parser.setCommand("acquire");
 
     if (parser.isHelp())

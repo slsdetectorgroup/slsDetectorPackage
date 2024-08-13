@@ -35,8 +35,8 @@ int resetFPGA(char *mess) {
     return OK;
 }
 
-int loadDeviceTree(char *mess, int *adcDeviceIndex, int *dacDeviceIndex) {
-    if (verifyDeviceTree(mess, adcDeviceIndex, dacDeviceIndex) == OK)
+int loadDeviceTree(char *mess) {
+    if (verifyDeviceTree(mess) == OK)
         return OK;
 
     if (checksBeforeCreatingDeviceTree(mess) == FAIL)
@@ -45,7 +45,7 @@ int loadDeviceTree(char *mess, int *adcDeviceIndex, int *dacDeviceIndex) {
     if (createDeviceTree(mess) == FAIL)
         return FAIL;
 
-    if (verifyDeviceTree(mess, adcDeviceIndex, dacDeviceIndex) == FAIL) {
+    if (verifyDeviceTree(mess) == FAIL) {
         LOG(logERROR, ("Device tree loading failed at verification\n"));
         return FAIL;
     }
@@ -129,10 +129,8 @@ int createDeviceTree(char *mess) {
     return OK;
 }
 
-int verifyDeviceTree(char *mess, int *adcDeviceIndex, int *dacDeviceIndex) {
+int verifyDeviceTree(char *mess) {
     LOG(logINFOBLUE, ("Verifying Device Tree...\n"));
-    *adcDeviceIndex = 1;
-    *dacDeviceIndex = 2;
 #ifndef VIRTUAL
 
     // check if iio:device0-4 exists in device tree destination
@@ -170,8 +168,6 @@ int verifyDeviceTree(char *mess, int *adcDeviceIndex, int *dacDeviceIndex) {
                 strstr(retvals, deviceNames[hardcodedDeviceIndex + 1]) !=
                     NULL) {
                 ++hardcodedDeviceIndex;
-                *adcDeviceIndex = 4;
-                *dacDeviceIndex = 1;
             } else {
                 snprintf(
                     mess, MAX_STR_LENGTH,
@@ -188,9 +184,6 @@ int verifyDeviceTree(char *mess, int *adcDeviceIndex, int *dacDeviceIndex) {
             hardcodedDeviceIndex = 1;
     }
 #endif
-    LOG(logINFOBLUE, ("Device tree verified successfully [temp: 0, adc:%d, "
-                      "dac:%d, %d, %d]\n",
-                      *adcDeviceIndex, *dacDeviceIndex, *dacDeviceIndex + 1,
-                      *dacDeviceIndex + 2));
+    LOG(logINFOBLUE, ("Device tree verified successfully\n"));
     return OK;
 }

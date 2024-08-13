@@ -216,7 +216,7 @@ typedef struct {
     /**
         type of action performed (for text client)
     */
-    enum { GET_ACTION, PUT_ACTION, READOUT_ACTION, HELP_ACTION };
+    enum { GET_ACTION, PUT_ACTION, READOUT_ACTION, HELP_ACTION, READOUT_ZMQ_ACTION };
 
     /**
         dimension indexes

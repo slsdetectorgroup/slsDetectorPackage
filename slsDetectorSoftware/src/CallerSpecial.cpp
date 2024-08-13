@@ -212,6 +212,12 @@ std::string Caller::hostname(int action) {
     }
     return os.str();
 }
+
+void Caller::EmptyDataCallBack(detectorData *data, uint64_t frameIndex,
+                                uint32_t subFrameIndex, void *this_pointer) {
+    LOG(logDEBUG) << "EmptyDataCallBack to start up zmq sockets";
+}
+
 std::string Caller::acquire(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
@@ -231,6 +237,9 @@ std::string Caller::acquire(int action) {
         }
         if (det_id >= 0) {
             throw RuntimeError("Individual detectors not allowed for readout.");
+        }
+        if (action == defs::READOUT_ZMQ_ACTION) {
+            det->registerDataCallback(&(EmptyDataCallBack), this);
         }
         det->acquire();
 

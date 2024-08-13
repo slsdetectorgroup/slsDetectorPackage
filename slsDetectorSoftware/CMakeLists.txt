@@ -82,10 +82,11 @@ if(SLS_USE_TEXTCLIENT)
     set(det_bin_names "sls_detector_put" 
             "sls_detector_get" 
             "sls_detector_acquire" 
+            "sls_detector_acquire_zmq"
             "sls_detector_help"
             "sls_detector"
             )
-    set(det_cmd_name "PUT" "GET" "READOUT" "HELP" "INFER")
+    set(det_cmd_name "PUT" "GET" "READOUT" "READOUTZMQ" "HELP" "INFER")
     list(LENGTH det_bin_names len1)
     math(EXPR len2 "${len1} - 1")
 

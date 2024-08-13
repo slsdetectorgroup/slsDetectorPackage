@@ -23,6 +23,10 @@ SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(m
 OBJS 		= 	$(SRCS:.c=.o) 
  
 all: clean $(PROGS)
+
+local: CC := gcc
+local: clean $(PROGS)
+
 version: clean versioning $(PROGS)
 
 boot: $(OBJS) 

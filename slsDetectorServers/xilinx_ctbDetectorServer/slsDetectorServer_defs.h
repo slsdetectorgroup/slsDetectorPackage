@@ -121,27 +121,32 @@ enum DACINDEX {
 #define PWR_NAMES "D", "_unknown", "IO", "A", "B", "C"
 
 /* Struct Definitions */
+// For arm has to be multiple of 16
+// We dont byteswap in the upd_gen so the order has to be different
 typedef struct udp_header_struct {
-    uint32_t udp_destmac_msb;
     uint16_t udp_srcmac_msb;
     uint16_t udp_destmac_lsb;
-    uint32_t udp_srcmac_lsb;
+    uint32_t udp_destmac_msb;
     uint8_t ip_tos;
     uint8_t ip_ihl : 4, ip_ver : 4;
     uint16_t udp_ethertype;
-    uint16_t ip_identification;
-    uint16_t ip_totallength;
+    uint32_t udp_srcmac_lsb;
     uint8_t ip_protocol;
     uint8_t ip_ttl;
     uint16_t ip_fragmentoffset : 13, ip_flags : 3;
-    uint16_t ip_srcip_msb;
-    uint16_t ip_checksum;
+    uint16_t ip_identification;
+    uint16_t ip_totallength;
     uint16_t ip_destip_msb;
     uint16_t ip_srcip_lsb;
-    uint16_t udp_srcport;
-    uint16_t ip_destip_lsb;
+    uint16_t ip_srcip_msb;
+    uint16_t ip_checksum;
     uint16_t udp_checksum;
     uint16_t udp_destport;
+    uint16_t udp_srcport;
+    uint16_t ip_destip_lsb;
+    // padding
+    uint32_t padding0;
+    uint32_t padding1;   
 } udp_header;
 
 #define IP_HEADER_SIZE             (20)

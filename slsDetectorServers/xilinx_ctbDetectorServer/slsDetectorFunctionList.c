@@ -39,8 +39,6 @@ char initErrorMessage[MAX_STR_LENGTH];
 
 int detPos[2] = {0, 0};
 
-int adcDeviceIndex = 0;
-int dacDeviceIndex = 0;
 int chipConfigured = 0;
 int analogEnable = 0;
 int digitalEnable = 0;
@@ -75,8 +73,7 @@ void basictests() {
         return;
     }
 
-    initError =
-        loadDeviceTree(initErrorMessage, &adcDeviceIndex, &dacDeviceIndex);
+    initError = loadDeviceTree(initErrorMessage);
     if (initError == FAIL) {
         return;
     }
@@ -390,19 +387,18 @@ void setupDetector() {
     initializePatternWord();
 #endif
     // initialization only at start up (restart fpga)
-//    initError = waitTranseiverReset(initErrorMessage);
-//    if (initError == FAIL) {
-//        return;
-//    }
-//    // power off chip
+    //    initError = waitTranseiverReset(initErrorMessage);
+    //    if (initError == FAIL) {
+    //        return;
+    //    }
+    //    // power off chip
     initError = powerChip(0, initErrorMessage);
-//    if (initError == FAIL) {
-//        return;
-//    }
+    //    if (initError == FAIL) {
+    //        return;
+    //    }
 
     LTC2620_D_SetDefines(DAC_MIN_MV, DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC,
-                         NPWR, DAC_DRIVER_NUM_DEVICES, dacDeviceIndex,
-                         DAC_POWERDOWN_DRIVER_FILE_NAME);
+                         NPWR, DAC_POWERDOWN_DRIVER_FILE_NAME);
     LOG(logINFOBLUE, ("Powering down all dacs\n"));
     for (int idac = 0; idac < NDAC; ++idac) {
         setDAC(idac, LTC2620_D_GetPowerDownValue(), 0);
@@ -1151,13 +1147,13 @@ int getSlowADC(int ichan, int *retval) {
 #ifndef VIRTUAL
     char fname[MAX_STR_LENGTH];
     memset(fname, 0, MAX_STR_LENGTH);
-    sprintf(fname, SLOWADC_DRIVER_FILE_NAME, adcDeviceIndex, ichan);
+    sprintf(fname, SLOWADC_DRIVER_FILE_NAME, ichan);
     LOG(logDEBUG1, ("fname %s\n", fname));
 
-    if (readADCFromFile(fname, retval) == FAIL) {
+    if (readParameterFromFile(fname, "slow adc", retval) == FAIL) {
+        LOG(logERROR, ("Could not get slow adc\n"));
         return FAIL;
     }
-
     // TODO assuming already converted to uV
     // convert to uV
     // double value = SLOWDAC_CONVERTION_FACTOR_TO_UV * (double)(*retval);
@@ -1172,11 +1168,11 @@ int getSlowADC(int ichan, int *retval) {
 int getTemperature(int *retval) {
     *retval = 0;
 #ifndef VIRTUAL
-    if (readADCFromFile(TEMP_DRIVER_FILE_NAME, retval) == FAIL) {
+    if (readParameterFromFile(TEMP_DRIVER_FILE_NAME, "temperature", retval) ==
+        FAIL) {
+        LOG(logERROR, ("Could not get temperature\n"));
         return FAIL;
     }
-
-    // value already in millidegree celsius
     LOG(logINFO, ("Temperature: %.2f °C\n", (double)(*retval) / 1000.00));
 #endif
     return OK;

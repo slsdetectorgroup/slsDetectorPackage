@@ -1506,6 +1506,23 @@ TEST_CASE("CALLER::powerchip", "[.cmdcall]") {
             caller.call("powerchip", {"0"}, -1, PUT, oss);
             REQUIRE(oss.str() == "powerchip 0\n");
         }
+        // powering off chip throws if hv on (only test virtualserver - safety
+        if (det_type == defs::GOTTHARD2 &&
+            det.isVirtualDetectorServer().tsquash(
+                "Inconsistent virtual detector "
+                "server to test powerchip command")) {
+            det.setPowerChip(1);
+            int hv = det.getHighVoltage().tsquash(
+                "Inconsistent high voltage to test "
+                "powerchip command");
+
+            det.setHighVoltage(100);
+            REQUIRE_THROWS(caller.call("powerchip", {"0"}, -1, PUT));
+
+            // previous settings
+            det.setHighVoltage(hv);
+            det.setPowerChip(0);
+        }
         {
             std::ostringstream oss;
             caller.call("powerchip", {}, -1, GET, oss);

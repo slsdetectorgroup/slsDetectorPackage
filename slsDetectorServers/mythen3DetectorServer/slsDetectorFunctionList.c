@@ -63,7 +63,6 @@ int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkDivider[NUM_CLOCKS] = {};
 
 enum TLogLevel trimmingPrint = logINFO;
-int highvoltage = 0;
 int detPos[2] = {};
 int64_t exptimeReg[NCOUNTERS] = {0, 0, 0};
 int64_t gateDelayReg[NCOUNTERS] = {0, 0, 0};
@@ -462,7 +461,6 @@ void setupDetector() {
     clkDivider[SYSTEM_C1] = DEFAULT_SYSTEM_C1;
     clkDivider[SYSTEM_C2] = DEFAULT_SYSTEM_C2;
 
-    highvoltage = 0;
     trimmingPrint = logINFO;
     for (int i = 0; i < NUM_CLOCKS; ++i) {
         clkPhase[i] = 0;
@@ -480,6 +478,11 @@ void setupDetector() {
         READOUT_PLL_VCO_FREQ_HZ, SYSTEM_PLL_VCO_FREQ_HZ);
     ALTERA_PLL_C10_ResetPLL(READOUT_PLL);
     ALTERA_PLL_C10_ResetPLL(SYSTEM_PLL);
+    // change startup clock divider in software
+    // because firmware only sets max clock divider
+    setClockDividerWithTimeUpdateOption(READOUT_C0, DEFAULT_READOUT_C0_STARTUP,
+                                        0);
+
     // hv
     DAC6571_SetDefines(HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
     // dac
@@ -491,7 +494,13 @@ void setupDetector() {
     cleanFifos();
 
     // defaults
-    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+    initError = setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+    if (initError == FAIL) {
+        sprintf(initErrorMessage, "Could not set high voltage to %d\n",
+                DEFAULT_HIGH_VOLTAGE);
+        return;
+    }
+
     setASICDefaults();
     setADIFDefaults();
 
@@ -1670,10 +1679,12 @@ int getMaxDacSteps() { return LTC2620_D_GetMaxNumSteps(); }
 
 int getADC(enum ADCINDEX ind, int *value) {
     LOG(logDEBUG1, ("Reading FPGA temperature...\n"));
-    if (readADCFromFile(TEMPERATURE_FILE_NAME, value) == FAIL) {
+    if (readParameterFromFile(TEMPERATURE_FILE_NAME, "temperature", value) ==
+        FAIL) {
         LOG(logERROR, ("Could not get temperature\n"));
         return FAIL;
     }
+    LOG(logINFO, ("Temperature: %.2f °C\n", (double)(*value) / 1000.00));
     return OK;
 }
 
@@ -1683,14 +1694,11 @@ int setHighVoltage(int val) {
         val = HV_SOFT_MAX_VOLTAGE;
     }
 
-    // setting hv
-    if (val >= 0) {
-        LOG(logINFO, ("Setting High voltage: %d V\n", val));
-        if (DAC6571_Set(val) == OK)
-            highvoltage = val;
-    }
-    return highvoltage;
+    LOG(logINFO, ("Setting High voltage: %d V\n", val));
+    return DAC6571_Set(val);
 }
+
+int getHighVoltage(int *retval) { return DAC6571_Get(retval); }
 
 /* parameters - timing */
 
@@ -2333,6 +2341,7 @@ int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val,
         return FAIL;
     }
     if (val < 2 || val > getMaxClockDivider()) {
+        LOG(logERROR, ("Invalid clock divider %d\n", val));
         return FAIL;
     }
     char *clock_names[] = {CLK_NAMES};

@@ -1322,13 +1322,13 @@ void DetectorImpl::startAcquisition(const bool blocking, Positions pos) {
             Parallel(&Module::startAndReadAll, masters);
             // ensure all status normal (slaves not blocking)
             // to catch those slaves that are still 'waiting' 
-            auto status = Parallel(&Module::getRunStatus, pos);
+            auto statusList = Parallel(&Module::getRunStatus, pos);
             // if any slave still waiting, wait up to 1s (gotthard)
-            for (int i = 0; i != 20 && status.any(WAITING); ++i) {
+            for (int i = 0; i != 20 && statusList.any(WAITING); ++i) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(50));
-                status = Parallel(&Module::getRunStatus, pos);
+                statusList = Parallel(&Module::getRunStatus, pos);
             }
-            if (!status.contains_only(IDLE, STOPPED, RUN_FINISHED)) {
+            if (!statusList.contains_only(IDLE, STOPPED, RUN_FINISHED)) {
                 throw RuntimeError("Acquisition not successful. "
                                    "Unexpected detector status");
             }

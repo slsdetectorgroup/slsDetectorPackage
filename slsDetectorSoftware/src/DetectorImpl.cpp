@@ -1219,10 +1219,14 @@ int DetectorImpl::acquire() {
 
         if (acquisition_finished != nullptr) {
             // status
-            runStatus status = IDLE;
             auto statusList = Parallel(&Module::getRunStatus, {});
-            status = statusList.squash(ERROR);
-            // difference, but none error
+            // if any slave still waiting, wait up to 1s (gotthard)
+            for (int i = 0; i != 20 && statusList.any(WAITING); ++i) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                statusList = Parallel(&Module::getRunStatus, {});
+            }
+            runStatus status = statusList.squash(ERROR);
+            // inconsistent status (squash error), but none of them in error
             if (status == ERROR && (!statusList.any(ERROR))) {
                 // handle jf sync issue (master idle, slaves stopped)
                 if (statusList.contains_only(IDLE, STOPPED)) {
@@ -1317,9 +1321,9 @@ void DetectorImpl::startAcquisition(const bool blocking, Positions pos) {
         if (blocking) {
             Parallel(&Module::startAndReadAll, masters);
             // ensure all status normal (slaves not blocking)
-            // to catch those slaves that are still 'waiting'
+            // to catch those slaves that are still 'waiting' 
             auto status = Parallel(&Module::getRunStatus, pos);
-            // if any slave still waiting, wait up to 1s
+            // if any slave still waiting, wait up to 1s (gotthard)
             for (int i = 0; i != 20 && status.any(WAITING); ++i) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(50));
                 status = Parallel(&Module::getRunStatus, pos);

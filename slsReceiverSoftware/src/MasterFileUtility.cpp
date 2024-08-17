@@ -215,7 +215,7 @@ std::string CreateVirtualHDF5File(
 
         // property list
         H5::DSetCreatPropList plist;
-        long fill_value = -1;
+        uint64_t fill_value = -1;
         plist.setFillValue(dataType, &fill_value);
         std::vector<H5::DSetCreatPropList> plistPara(paraSize);
         // ignoring last fill (string)

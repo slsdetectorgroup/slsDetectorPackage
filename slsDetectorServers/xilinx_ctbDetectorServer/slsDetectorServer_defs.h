@@ -146,7 +146,7 @@ typedef struct udp_header_struct {
     uint16_t ip_destip_lsb;
     // padding
     uint32_t padding0;
-    uint32_t padding1;   
+    uint32_t padding1;
 } udp_header;
 
 #define IP_HEADER_SIZE             (20)

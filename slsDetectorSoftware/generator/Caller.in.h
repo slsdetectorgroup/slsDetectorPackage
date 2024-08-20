@@ -71,8 +71,9 @@ class Caller {
     using StringMap = std::map<std::string, std::string>;
     Detector *ptr; // pointer to the detector that executes the command
 
-    static void EmptyDataCallBack(detectorData *data, uint64_t frameIndex, uint32_t subFrameIndex, void *this_pointer);
-    
+    static void EmptyDataCallBack(detectorData *data, uint64_t frameIndex,
+                                  uint32_t subFrameIndex, void *this_pointer);
+
     FunctionMap functions{
         {"list", &Caller::list},
 

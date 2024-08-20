@@ -42,7 +42,8 @@ int main(int argc, char *argv[]) {
     sls::CmdParser parser;
     parser.Parse(argc, argv);
 
-    if (action == slsDetectorDefs::READOUT_ACTION || action == slsDetectorDefs::READOUT_ZMQ_ACTION)
+    if (action == slsDetectorDefs::READOUT_ACTION ||
+        action == slsDetectorDefs::READOUT_ZMQ_ACTION)
         parser.setCommand("acquire");
 
     if (parser.isHelp())

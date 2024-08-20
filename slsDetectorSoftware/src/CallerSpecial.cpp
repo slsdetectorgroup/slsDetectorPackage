@@ -214,7 +214,7 @@ std::string Caller::hostname(int action) {
 }
 
 void Caller::EmptyDataCallBack(detectorData *data, uint64_t frameIndex,
-                                uint32_t subFrameIndex, void *this_pointer) {
+                               uint32_t subFrameIndex, void *this_pointer) {
     LOG(logDEBUG) << "EmptyDataCallBack to start up zmq sockets";
 }
 

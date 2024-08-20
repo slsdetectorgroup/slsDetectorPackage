@@ -11,8 +11,8 @@
 #include <sys/mman.h> // mmap
 
 /* global variables */
-#define CSP0     (0xB0080000)
-#define CSP1     (0xB0050000) // udp
+#define CSP0          (0xB0080000)
+#define CSP1          (0xB0050000) // udp
 #define MEM_SIZE_CSP0 (0x10000)
 #define MEM_SIZE_CSP1 (0x2000) // smaller size for udp
 
@@ -63,7 +63,8 @@ int mapCSP0(void) {
             *cspbases[i] = malloc(memsize[i]);
             if (*cspbases[i] == NULL) {
                 LOG(logERROR,
-                    ("Could not allocate virtual memory of size %d for %s.\n", memsize[i], names[i]));
+                    ("Could not allocate virtual memory of size %d for %s.\n",
+                     memsize[i], names[i]));
                 return FAIL;
             }
             LOG(logINFO, ("memory allocated for %s\n", names[i]));
@@ -83,8 +84,9 @@ int mapCSP0(void) {
                 return FAIL;
             }
 #endif
-            LOG(logINFO, ("%s mapped of size %d from %p to %p,(CSP:0x%x) \n", names[i], memsize[i],
-                          *cspbases[i], *cspbases[i] + memsize[i], csps[i]));
+            LOG(logINFO,
+                ("%s mapped of size %d from %p to %p,(CSP:0x%x) \n", names[i],
+                 memsize[i], *cspbases[i], *cspbases[i] + memsize[i], csps[i]));
             // LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
         } else
             LOG(logINFO, ("Memory %s already mapped before\n", names[i]));

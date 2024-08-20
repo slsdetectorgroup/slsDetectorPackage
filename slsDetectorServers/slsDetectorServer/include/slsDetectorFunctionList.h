@@ -184,7 +184,7 @@ uint32_t readRegister16And32(uint32_t offset);
 #if defined(XILINX_CHIPTESTBOARDD)
 void cleanFifos();
 void resetFlow();
-int waitTranseiverReset(char *mess);
+int waitTransceiverReset(char *mess);
 #ifdef VIRTUAL
 void setTransceiverAlignment(int align);
 #endif

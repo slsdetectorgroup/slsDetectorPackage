@@ -387,7 +387,7 @@ void setupDetector() {
     initializePatternWord();
 #endif
     // initialization only at start up (restart fpga)
-    //    initError = waitTranseiverReset(initErrorMessage);
+    //    initError = waitTransceiverReset(initErrorMessage);
     //    if (initError == FAIL) {
     //        return;
     //    }
@@ -454,7 +454,7 @@ void resetFlow() {
     bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) & ~RST_F_MSK);
 }
 
-int waitTranseiverReset(char *mess) {
+int waitTransceiverReset(char *mess) {
 #ifndef VIRTUAL
     int resetTransceiverDone = (bus_r(TRANSCEIVERSTATUS) & RESETRXDONE_MSK);
     int times = 0;

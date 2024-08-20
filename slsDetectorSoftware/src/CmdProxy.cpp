@@ -206,10 +206,9 @@ std::string CmdProxy::VirtualServer(int action) {
 }
 
 void CmdProxy::EmptyDataCallBack(detectorData *data, uint64_t frameIndex,
-                                uint32_t subFrameIndex, void *this_pointer) {
+                                 uint32_t subFrameIndex, void *this_pointer) {
     LOG(logDEBUG) << "EmptyDataCallBack to start up zmq sockets";
 }
-
 
 std::string CmdProxy::Acquire(int action) {
     std::ostringstream os;

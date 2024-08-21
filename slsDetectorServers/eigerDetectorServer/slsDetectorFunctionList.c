@@ -682,12 +682,12 @@ void setupFebBeb() {
         return;
     }
     sharedMemory_unlockLocalLink();
-    LOG(logDEBUG1, ("%s server: FEB Initialization done\n", isControlServer
-                                                            ? "Control"
-                                                            : "Stop"));
+    LOG(logDEBUG1, ("%s server: FEB Initialization done\n",
+                    isControlServer ? "Control" : "Stop"));
     Beb_SetTopVariable(top);
     Beb_Beb();
-    LOG(logDEBUG1, ("%s server: BEB Initialization done\n", isControlServer ? "Control" : "Stop"));
+    LOG(logDEBUG1, ("%s server: BEB Initialization done\n",
+                    isControlServer ? "Control" : "Stop"));
 
     if (isControlServer) {
         // Getting the feb versions after initialization
@@ -699,20 +699,22 @@ void setupFebBeb() {
         int64_t febrfwversion = getFrontEndFirmwareVersion(FRONT_RIGHT);
         LOG(logINFOBLUE,
             ("\n********************************************************\n"
-            "Feb Versions\n"
-            "Hardware Version         : %s\n"
-            "Firmware (Febl) Version  : %lld\n"
-            "Firmware (Febr) Version  : %lld\n"
-            "********************************************************\n",
-            hversion, (long long int)feblfwversion, (long long int)febrfwversion));
+             "Feb Versions\n"
+             "Hardware Version         : %s\n"
+             "Firmware (Febl) Version  : %lld\n"
+             "Firmware (Febr) Version  : %lld\n"
+             "********************************************************\n",
+             hversion, (long long int)feblfwversion,
+             (long long int)febrfwversion));
 
         // ensure febl, febr and beb fw versions are the same
         if (fwversion != feblfwversion || fwversion != febrfwversion) {
-            sprintf(initErrorMessage,
-                    "Inconsistent firmware versions in feb and beb. [Beb: %lld, "
-                    "Febl: %lld Febr: %lld]\n",
-                    (long long int)fwversion, (long long int)feblfwversion,
-                    (long long int)febrfwversion);
+            sprintf(
+                initErrorMessage,
+                "Inconsistent firmware versions in feb and beb. [Beb: %lld, "
+                "Febl: %lld Febr: %lld]\n",
+                (long long int)fwversion, (long long int)feblfwversion,
+                (long long int)febrfwversion);
             LOG(logERROR, (initErrorMessage));
             initError = FAIL;
             return;

@@ -441,6 +441,11 @@ void initStopServer() {
         }
 #ifdef VIRTUAL
         setupDetector();
+#else
+        if (readConfigFile() == FAIL) {
+            initCheckDone = 1;
+            return;
+        }
 #endif
     }
     initCheckDone = 1;

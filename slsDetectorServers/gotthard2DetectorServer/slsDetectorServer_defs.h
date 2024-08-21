@@ -9,7 +9,8 @@
 
 #define NUM_HARDWARE_VERSIONS    (2)
 #define HARDWARE_VERSION_NUMBERS {0x0, 0x2};
-#define HARDWARE_VERSION_NAMES   {"1.0", "1.2"}
+#define HARDWARE_VERSION_NAMES                                                 \
+    { "1.0", "1.2" }
 
 #define LINKED_SERVER_NAME "gotthard2DetectorServer"
 

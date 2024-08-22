@@ -393,6 +393,7 @@ void initStopServer() {
         // command line)
         usleep(WAIT_STOP_SERVER_START);
         LOG(logINFOBLUE, ("Configuring Stop server\n"));
+        // ismaster from variable in stop server
         if (updateModuleConfiguration() == FAIL) {
             initCheckDone = 1;
             return;

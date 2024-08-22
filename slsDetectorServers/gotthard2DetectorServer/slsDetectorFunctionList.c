@@ -460,6 +460,8 @@ void setupDetector() {
     } else {
         sharedMemory_setStop(0);
     }
+    // ismaster from reg in stop server, so set it in virtual mode
+    setMaster(OW_MASTER);
 #endif
     // pll defines
     ALTERA_PLL_C10_SetDefines(REG_OFFSET, BASE_READOUT_PLL, BASE_SYSTEM_PLL,
@@ -2157,7 +2159,6 @@ int *getDetectorPosition() { return detPos; }
 
 int checkDetectorType(char *mess) {
 #ifdef VIRTUAL
-    setMaster(OW_MASTER);
     return OK;
 #endif
     LOG(logINFO, ("Checking module type\n"));

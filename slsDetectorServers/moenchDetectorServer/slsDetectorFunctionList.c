@@ -441,6 +441,8 @@ void setupDetector() {
     } else {
         sharedMemory_setStop(0);
     }
+    // ismaster from reg in stop server, so set it in virtual mode
+    setMaster(OW_MASTER);
 #endif
 
     // altera pll

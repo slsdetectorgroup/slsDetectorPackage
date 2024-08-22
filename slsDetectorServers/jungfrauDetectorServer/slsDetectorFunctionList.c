@@ -442,6 +442,7 @@ void initStopServer() {
 #ifdef VIRTUAL
         setupDetector();
 #else
+        // chip version is a variable
         if (readConfigFile() == FAIL) {
             initCheckDone = 1;
             return;
@@ -467,6 +468,8 @@ void setupDetector() {
     } else {
         sharedMemory_setStop(0);
     }
+    // ismaster from reg in stop server, so set it in virtual mode
+    setMaster(OW_MASTER);
 #endif
 
     // altera pll

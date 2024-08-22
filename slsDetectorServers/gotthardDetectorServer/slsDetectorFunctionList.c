@@ -390,7 +390,7 @@ void initStopServer() {
 #ifdef VIRTUAL
         setupDetector();
 #else
-        // to get master from file
+        // ismaster from variable in stop server
         if (readConfigFile() == FAIL ||
             checkCommandLineConfiguration() == FAIL) {
             initCheckDone = 1;

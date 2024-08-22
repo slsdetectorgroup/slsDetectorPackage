@@ -489,6 +489,7 @@ void setupDetector() {
     AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK,
                       ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK,
                       ADC_SPI_SRL_DT_OTPT_OFST);
+    AD9257_Set_Jungfrau_Hardware_Version_1_0(isHardwareVersion_1_0());
     AD9257_Disable();
     AD9257_Configure();
 

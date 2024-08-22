@@ -10,4 +10,4 @@
 #define APILIB       "8.0.1 0x240112"
 #define APIMOENCH    "8.0.2 0x240703"
 #define APIMYTHEN3   "8.0.2 0x240715"
-#define APIJUNGFRAU "8.0.2 0x240822"
+#define APIJUNGFRAU  "8.0.2 0x240822"

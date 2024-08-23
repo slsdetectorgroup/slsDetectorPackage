@@ -11,11 +11,11 @@
 #include <sys/mman.h> // mmap
 
 /* global variables */
-#define CSP0     (0xB0080000)
-#define CSP1     (0xB0050000) // udp
-#define MEM_SIZE (0x10000)
-//#define MEM_SIZE_CSP0 (4096)
-//#define MEM_SIZE_CSP1 (2 * 4096)
+#define CSP0          (0xB0080000)
+#define CSP1          (0xB0050000) // udp
+#define MEM_SIZE_CSP0 (0x10000)
+#define MEM_SIZE_CSP1 (0x2000) // smaller size for udp
+
 u_int32_t *csp0base = 0;
 u_int32_t *csp1base = 0;
 
@@ -52,6 +52,7 @@ u_int32_t writeRegister(u_int32_t offset, u_int32_t data) {
 int mapCSP0(void) {
     u_int32_t csps[2] = {CSP0, CSP1};
     u_int32_t **cspbases[2] = {&csp0base, &csp1base};
+    u_int32_t memsize[2] = {MEM_SIZE_CSP0, MEM_SIZE_CSP1};
     char names[2][10] = {"csp0base", "csp1base"};
 
     for (int i = 0; i < 2; ++i) {
@@ -59,10 +60,11 @@ int mapCSP0(void) {
         if (*cspbases[i] == 0) {
             LOG(logINFO, ("Mapping memory for %s\n", names[i]));
 #ifdef VIRTUAL
-            *cspbases[i] = malloc(MEM_SIZE);
+            *cspbases[i] = malloc(memsize[i]);
             if (*cspbases[i] == NULL) {
                 LOG(logERROR,
-                    ("Could not allocate virtual memory for %s.\n", names[i]));
+                    ("Could not allocate virtual memory of size %d for %s.\n",
+                     memsize[i], names[i]));
                 return FAIL;
             }
             LOG(logINFO, ("memory allocated for %s\n", names[i]));
@@ -75,15 +77,16 @@ int mapCSP0(void) {
             LOG(logDEBUG1,
                 ("/dev/mem opened for %s, (CSP:0x%x)\n", names[i], csps[i]));
             *cspbases[i] =
-                (u_int32_t *)mmap(0, MEM_SIZE, PROT_READ | PROT_WRITE,
+                (u_int32_t *)mmap(0, memsize[i], PROT_READ | PROT_WRITE,
                                   MAP_FILE | MAP_SHARED, fd, csps[i]);
             if (*cspbases[i] == MAP_FAILED) {
                 LOG(logERROR, ("Can't map memmory area for %s\n", names[i]));
                 return FAIL;
             }
 #endif
-            LOG(logINFO, ("%s mapped from %p to %p,(CSP:0x%x) \n", names[i],
-                          *cspbases[i], *cspbases[i] + MEM_SIZE, csps[i]));
+            LOG(logINFO,
+                ("%s mapped of size %d from %p to %p,(CSP:0x%x) \n", names[i],
+                 memsize[i], *cspbases[i], *cspbases[i] + memsize[i], csps[i]));
             // LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
         } else
             LOG(logINFO, ("Memory %s already mapped before\n", names[i]));

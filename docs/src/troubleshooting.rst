@@ -22,6 +22,8 @@ Common
        * Check transeiver and fibers are compatible (all MMF 850nm or all SMF 1030nm)
        * Check fiber
        * Check fiber polarity (if short range, unplug the link anywhere, and look at the light/dark pattern: dark has to mate with light)
+    * For Jungfrau, check if the blue sfp light is blinking rapidly (even when it is not sending data). If so, most likely the link is down and something is wrong with the board. If it connected to a switch, then you do not see it with the ethtool command if link is down. One option is to connect it directly to a pc to see if link is down.
+    * With nc, try "nc -u -p 50001 -l" in receiving pc, and from another pc try "echo hallo | nc -u 10.1.2.172 50001" to send something to the recieving pc interface to see if the link is up and see if the other nc console receives the hallo.
 
 #. Detector is not acquiring (Not Eiger)
     * Take an acquisition with many images and using the following steps instead of acquire:
@@ -47,11 +49,20 @@ Common
     * Ensure that the interfaces (on NIC and the switch) used in receiver pc have MTU 9000 (jumbo frames) enabled.
 
 
-#. Check if 'rx_frames' counter in 'ifconfig' do not increment for interface.
+#. Check if 'rx packets' counter in 'ifconfig' do not increment for interface.
     * If no, check switch configuration if present. Port counters of switch can also help to identify problem.
     * If yes, but receiver software does not see it:
 
         * Check no firewall (eg. firewalld) is present or add rules
+
+                .. code-block:: bash
+                    
+                    # Stop and disable firewall
+                    service firewalld stop
+                    systemctl disable firewalld
+                    # Check status
+                    service firewalld status
+
         * Check that selinux is disabled ( or add rules)
         
 #. Source UDP IP in config file (Not Eiger)

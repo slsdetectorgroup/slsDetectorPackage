@@ -626,8 +626,8 @@ int Feb_Control_SetTrimbits(unsigned int *trimbits, int top) {
                                 << ((7 - i) * 4); // upper
                         }
                     } // end column loop i
-                } // end supercolumn loop sc
-            } // end row loop
+                }     // end supercolumn loop sc
+            }         // end row loop
 
             if (Feb_Control_activated) {
                 if (!Feb_Interface_WriteMemoryInLoops(Feb_Control_leftAddress,
@@ -644,7 +644,7 @@ int Feb_Control_SetTrimbits(unsigned int *trimbits, int top) {
             }
 
         } // end row_set loop (groups of 16 rows)
-    } // end l_r loop
+    }     // end l_r loop
 
     memcpy(Feb_Control_last_downloaded_trimbits, trimbits,
            Feb_Control_trimbit_size * sizeof(unsigned int));

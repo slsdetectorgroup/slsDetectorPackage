@@ -45,9 +45,9 @@ if (SLS_USE_HDF5)
     if (HDF5_FOUND)
        add_executable(jungfrauRawDataProcessStrxQuadH5 jungfrauRawDataProcess_filetxtH5.cpp)
        target_compile_definitions(jungfrauRawDataProcessStrxQuadH5 PRIVATE JFSTRXQH5)
-       target_link_libraries(jungfrauRawDataProcessStrxQuadH5 PUBLIC ${HDF5_LIBRARIES})
-       target_include_directories(jungfrauRawDataProcessStrxQuadH5 PUBLIC ${HDF5_INCLUDE_DIRS}) #${CMAKE_INSTALL_PREFIX}/include)
        list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcessStrxQuadH5)
+       target_include_directories(jungfrauRawDataProcessStrxQuadH5 PRIVATE ${HDF5_INCLUDE_DIRS}  ${CMAKE_INSTALL_PREFIX}/include)
+       target_link_libraries(jungfrauRawDataProcessStrxQuadH5 PRIVATE ${HDF5_LIBRARIES})
     endif ()
 endif (SLS_USE_HDF5)
 
@@ -90,6 +90,16 @@ list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcessStrxOldAldo)
 # others to be added if needed (might already be there in Makefile.cluster_finder TO BE CHECKED)
 
 
+if (SLS_USE_HDF5)
+   if (HDF5_FOUND)
+        target_include_directories(jungfrauRawDataProcessStrxQuadH5 PRIVATE 
+								    ${HDF5_INCLUDE_DIRS}
+								    ${CMAKE_INSTALL_PREFIX}/include
+								    )
+	target_link_libraries(jungfrauRawDataProcessStrxQuadH5 PRIVATE ${HDF5_LIBRARIES})
+
+   endif ()
+endif (SLS_USE_HDF5)
 
 
 foreach(exe ${JUNGFRAU_EXECUTABLES})
@@ -99,11 +109,16 @@ foreach(exe ${JUNGFRAU_EXECUTABLES})
         ../interpolations
         ../dataStructures 
         ../interpolations/etaVEL
-        ../../slsSupportLib/include/
+        ../../slsSupportLib/include/sls/
         ../../slsReceiverSoftware/include/
         ../tiffio/include
         ${fmt_INCLUDE_DIRS}
     )
+#    if (SLS_USE_HDF5)
+#       if (HDF5_FOUND)
+#       	  target_include_directories(${exe} PRIVATE ${HDF5_INCLUDE_DIRS}  ${CMAKE_INSTALL_PREFIX}/include)
+#       endif ()
+#    endif (SLS_USE_HDF5)
 
     target_link_libraries(${exe} 
         PUBLIC
@@ -119,7 +134,11 @@ foreach(exe ${JUNGFRAU_EXECUTABLES})
         slsProjectWarnings
         slsProjectOptions
     )
-
+#    if (SLS_USE_HDF5)
+#       if (HDF5_FOUND)
+#	target_link_libraries(${exe} PRIVATE ${HDF5_LIBRARIES})
+#       endif ()
+#    endif (SLS_USE_HDF5)
 
     set_target_properties(${exe}  PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
@@ -130,5 +149,9 @@ foreach(exe ${JUNGFRAU_EXECUTABLES})
 
     
 endforeach(exe ${JUNGFRAU_EXECUTABLES})
+
+
+
+
 
 install(TARGETS ${JUNGFRAU_EXECUTABLES} DESTINATION bin)

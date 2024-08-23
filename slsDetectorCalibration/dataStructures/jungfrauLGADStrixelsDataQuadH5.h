@@ -252,8 +252,8 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
 
     using header = sls::defs::sls_receiver_header;
 
-    jungfrauLGADStrixelsDataQuad(uint16_t xmin = 0, uint16_t xmax = 0,
-				 uint16_t ymin = 0, uint16_t ymax = 0)
+    jungfrauLGADStrixelsDataQuadH5(uint16_t xmin = 0, uint16_t xmax = 0,
+				   uint16_t ymin = 0, uint16_t ymax = 0)
         : slsDetectorData<uint16_t>(
               nc_strixel,
               nr_strixel * 2 + nr_center,
@@ -324,13 +324,14 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
     \returns frame number
 
     */
-
+    /*
     int getFrameNumber(char *buff) {
 #ifdef ALDO                                      // VH
         return ((jf_header *)buff)->bunchNumber; // VH
 #endif                                           // VH
         return ((header *)buff)->detHeader.frameNumber;
     };
+    */
 
     /**
 
@@ -338,9 +339,8 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
        \param buff pointer to the dataset
        \returns packet number number
 
-
-
     */
+    /*
     int getPacketNumber(char *buff) {
 #ifdef ALDO // VH
         // uint32_t fakePacketNumber = 1000;
@@ -350,20 +350,21 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
 #endif // VH
         return ((header *)buff)->detHeader.packetNumber;
     };
+    */
 
-    char *readNextFrame(std::ifstream &filebin) {
-        int ff = -1, np = -1;
-        return readNextFrame(filebin, ff, np);
+    char* readNextFrame(const HDF5File& hfile) {
+        int fn = 0, iframe = 0;
+        return readNextFrame(hfile, fn, iframe);
     };
 
-    char *readNextFrame(std::ifstream &filebin, int &ff) {
-        int np = -1;
-        return readNextFrame(filebin, ff, np);
+    char* readNextFrame(const HDF5File& hfile, int& fn) {
+        int iframe = 0;
+        return readNextFrame(hfile, fn, iframe);
     };
 
-    char *readNextFrame(std::ifstream &filebin, int &ff, int &np) {
+    char *readNextFrame(const HDF5File& hfile, int& fn, int& iframe) {
         char *data = new char[dataSize];
-        char *d = readNextFrame(filebin, ff, np, data);
+        char *d = readNextFrame(hfile, fn, iframe, data);
         if (d == NULL) {
             delete[] data;
             data = NULL;
@@ -371,29 +372,18 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
         return data;
     };
 
-    char* readNextFrame(HDF5File& hfile, int& ff, int& np, char* data) {
-      //char *retval = 0;
-      //int nd;
-      //int fnum = -1;
-        np = 0;
-        //int pn;
+    //framenumber: Framenumber as written in the file (defined by the time of detector power on)
+    //iframe: Counter how often ReadImage has been called, ReadImage return value
+    char* readNextFrame(const HDF5File& hfile, int& framenumber, int& iframe, char* data) {
 
-        //std::cout << dataSize << std::endl;
-        //if (ff >= 0) {
-          //  fnum = ff; }
-
-        if (filebin.is_open()) {
-            if (filebin.read(data, dataSize)) {
-                std::cout << "*";
-                ff = getFrameNumber(data);
-                np = getPacketNumber(data);
-                return data;
-            }
-	    std::cout << "#";
-        } else {
-	  std::cout << "File not open" << std::endl;
-	}
-        return NULL;
+      if (iframe>=0) {
+	std::cout << "*";
+	iframe = hfile.ReadImage( data, framenumber )
+	  return data;
+      }
+      std::cout << "#";
+    
+      return NULL;
     };
 
     /*    Loops over a memory slot until a complete frame is found (i.e. all */

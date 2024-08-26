@@ -248,6 +248,11 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
       remap( xmin, xmax, ymin, ymax );
     }
 
+    //The following functions are pure virtual in the base class. But I don't want them to be accessible here!
+    char* readNextFrame( std::ifstream &filebin );
+    int getFrameNumber(char *buff); //Provided via public method readNextFrame
+    int getPacketNumber(char *buff); //Not provided
+
   public:
 
     using header = sls::defs::sls_receiver_header;
@@ -315,76 +320,63 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
 
         uint16_t val = getChannel(data, ix, iy) & 0x3fff;
         return val;
-    };
+    };   
+    
 
-    /**
-
-    Returns the frame number for the given dataset. Purely virtual func.
-    \param buff pointer to the dataset
-    \returns frame number
-
-    */
-    /*
-    int getFrameNumber(char *buff) {
-#ifdef ALDO                                      // VH
-        return ((jf_header *)buff)->bunchNumber; // VH
-#endif                                           // VH
-        return ((header *)buff)->detHeader.frameNumber;
-    };
-    */
-
-    /**
-
-       Returns the packet number for the given dataset. purely virtual func
-       \param buff pointer to the dataset
-       \returns packet number number
-
-    */
-    /*
-    int getPacketNumber(char *buff) {
-#ifdef ALDO // VH
-        // uint32_t fakePacketNumber = 1000;
-        // return fakePacketNumber; //VH //TODO: Keep in mind in case of bugs!
-        // //This is definitely bad!
-        return 1000;
-#endif // VH
-        return ((header *)buff)->detHeader.packetNumber;
-    };
-    */
-
-    char* readNextFrame(const HDF5File& hfile) {
+    char* readNextFrame( HDF5File& hfile ) {
         int fn = 0, iframe = 0;
         return readNextFrame(hfile, fn, iframe);
     };
 
-    char* readNextFrame(const HDF5File& hfile, int& fn) {
+    char* readNextFrame( HDF5File& hfile, int& fn ) {
         int iframe = 0;
         return readNextFrame(hfile, fn, iframe);
     };
 
-    char *readNextFrame(const HDF5File& hfile, int& fn, int& iframe) {
-        char *data = new char[dataSize];
-        char *d = readNextFrame(hfile, fn, iframe, data);
-        if (d == NULL) {
-            delete[] data;
-            data = NULL;
-        }
-        return data;
-    };
+    char* readNextFrame( HDF5File& hfile, int& fn, int& iframe ) {
 
-    //framenumber: Framenumber as written in the file (defined by the time of detector power on)
-    //iframe: Counter how often ReadImage has been called, ReadImage return value
-    char* readNextFrame(const HDF5File& hfile, int& framenumber, int& iframe, char* data) {
-
-      if (iframe>=0) {
-	std::cout << "*";
-	iframe = hfile.ReadImage( data, framenumber )
-	  return data;
+      // Ensure dataSize is a valid size for allocation
+      if (dataSize <= 0) {
+        // Handle error case appropriately, e.g., log an error message
+        return nullptr;
       }
-      std::cout << "#";
-    
-      return NULL;
+
+      char* data = new char[dataSize];
+      char* readResult = readNextFrame(hfile, fn, iframe, data);
+      
+      // Check if reading failed
+      if (readResult == nullptr) {
+        delete[] data;  // Free allocated memory
+        data = nullptr;  // Set to nullptr to avoid dangling pointer
+      }
+      
+      return data; //returning data is equivalent to returning reinterpret_cast<char*>(data_ptr) as they both point to the same memory
+      
     };
+
+
+    /*
+     * This is the most recent function. This is used in the cluster finder!
+     * The overloads are legacy!
+     * Note that caller has to allocate and deallocate memory for data!
+     */
+    char* readNextFrame( HDF5File& hfile, int& framenumber, int& iframe, char* data ) {
+
+      if (iframe >= 0) {
+        std::cout << "*";
+
+	//Storing the reinterpret_cast in the variable data_ptr ensures that I can pass it to a function that expects at uint16_t*
+	uint16_t* data_ptr = reinterpret_cast<uint16_t*>(data); //now data_ptr points where data points (thus modifies the same memory)
+
+        iframe = hfile.ReadImage( data_ptr, framenumber );
+        return data; // return reinterpret_cast<char*>(data_ptr); // Equivalent
+      }
+
+      std::cout << "#";
+      return nullptr;
+    };
+
+ 
 
     /*    Loops over a memory slot until a complete frame is found (i.e. all */
     /*    packets 0 to nPackets, same frame number). purely virtual func \param

@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
     double *gainmap = NULL;
     // float *gm;
 
-    int ff, np;
+    //int ff, np;
     // cout << " data size is " << dsize;
 
     const std::string txtfilename(argv[1]);
@@ -375,7 +375,9 @@ int main(int argc, char *argv[]) {
 
     //  cout << "mt " << endl;
 
-    int ifr = 0;
+    int ifr = 0; //frame counter of while loop
+    int framenumber = -1; //framenumber as read from file (detector)
+    int iframe = 0; //frame counter internal to HDF5File::ReadImage (provided for sanity check/debugging)
 
     if (pedfilename.length()>1) {
 
@@ -391,13 +393,16 @@ int main(int argc, char *argv[]) {
 
 	  mt->setFrameMode(ePedestal);
 
-	  std::ifstream pedefile(fname, ios::in | ios::binary);
+	  //std::ifstream pedefile(fname, ios::in | ios::binary);
+	  HDF5File pedefile;
 	  //      //open file
-	  if (pedefile.is_open()) {
+	  if ( pedefile.OpenResources(fname.c_str(),1) ) {
 	    std::cout << "bbbb " << std::ctime(&end_time) << std::endl;
 	    
-	    ff = -1;
-	    while (decoder->readNextFrame(pedefile, ff, np, buff)) {
+	    framenumber = -1;
+
+	    while ( decoder->readNextFrame(pedefile, framenumber, iframe, buff) ) {
+
 	      // if (np == 40) {
 	      if ((ifr + 1) % 100 == 0) {
 		std::cout
@@ -407,17 +412,18 @@ int main(int argc, char *argv[]) {
 	      mt->pushData(buff);
 	      mt->nextThread();
 	      mt->popFree(buff);
-	      ifr++;
+	      ++ifr;
 	      if (ifr % 100 == 0) {
-		std::cout << " ****" << ifr << " " << ff << " " << np
+		std::cout << " ****" << ifr << " " << framenumber << " " << iframe
 			  << std::endl;
 	      } // else
 	      //std::cout << ifr << " " << ff << " " << np << std::endl;
 	      if (ifr >= 1000)
 		break;
-	      ff = -1;
+	      framenumber = -1;
 	    }
-	    pedefile.close();
+	    //pedefile.close();
+	    pedefile.CloseResources();
 	    while (mt->isBusy()) {
 	      ;
 	    }
@@ -471,10 +477,11 @@ int main(int argc, char *argv[]) {
       std::time(&end_time);
       std::cout << std::ctime(&end_time) << std::endl;
 
-      std::ifstream filebin(filenames[ifile], ios::in | ios::binary);
+      //std::ifstream filebin(filenames[ifile], ios::in | ios::binary);
+      HDF5File fileh5;
       //      //open file
       ioutfile = 0;
-      if (filebin.is_open()) {
+      if ( fileh5.OpenResources(filenames[ifile].c_str(), 1) ) {
 	if (thr <= 0 && cf != 0) { // cluster finder
 	  if (of == NULL) {
 	    of = fopen(cfname.c_str(), "w");
@@ -490,9 +497,12 @@ int main(int argc, char *argv[]) {
 	  }
 	}
 	//     //while read frame
-	ff = -1;
+	framenumber = -1;
+	iframe = 0;
 	ifr = 0;
-	while (decoder->readNextFrame(filebin, ff, np, buff)) {
+
+	while ( decoder->readNextFrame(fileh5, framenumber, iframe, buff) ) {
+
 	  //  if (np == 40) {
 	  //         //push
 	  
@@ -507,7 +517,7 @@ int main(int argc, char *argv[]) {
 	  
 	  ifr++;
 	  if (ifr % 100 == 0)
-	    std::cout << " " << ifr << " " << ff << std::endl;
+	    std::cout << " " << ifr << " " << framenumber << std::endl;
 	  if (nframes > 0) {
 	    if (ifr % nframes == 0) {
 	      imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ioutfile );
@@ -518,10 +528,11 @@ int main(int argc, char *argv[]) {
 	  }
 	  // } else
 	  //std::cout << ifr << " " << ff << " " << np << std::endl;
-	  ff = -1;
+	  framenumber = -1;
 	}
 	std::cout << "aa --" << std::endl;
-	filebin.close();
+	//filebin.close();
+	fileh5.CloseResources();
 	std::cout << "bb --" << std::endl;
 	while (mt->isBusy()) {
 	  ;

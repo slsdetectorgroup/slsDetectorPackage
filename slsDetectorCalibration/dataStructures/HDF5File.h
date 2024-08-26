@@ -71,7 +71,7 @@ public:
 	 * Read an image into current_image
 	 * @returns frame number read,
 	 */
-	int ReadImage (uint16_t** image, int& iFrame);
+	int ReadImage (uint16_t* image, int& iFrame);
 
 	/**
 	 * Print current image in memory

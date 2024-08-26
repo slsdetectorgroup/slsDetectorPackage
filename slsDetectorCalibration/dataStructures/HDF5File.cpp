@@ -231,8 +231,17 @@ void HDF5File::CloseResources () {
 	//if (memspace >= 0)      H5Sclose(memspace); // VH: I am getting memory leaks after recompilation
 }
 
-
-int HDF5File::ReadImage (uint16_t** image, int& iFrame) {
+/*
+ * Function takes uint16_t* argument to make explicit that the caller has to handle memory allocation and deallocation.
+ * This is legacy caused by the structure with which the slsDetectorCalibration cluster finder is written.
+ * Best practice for modern C++ would be to rewrite using smart pointers.
+ */
+int HDF5File::ReadImage (uint16_t* image, int& iFrame) {
+  /*
+   * Originially, this function took uint16_t** but this may lead to memory management issues since image gets redirected
+   * to point to current_image, which is owned by HDF5File.
+   * (Usually, this would be good practice and classic C-style.)
+   */
 
 	// no images in this frame
 	if (frame_index_list[frame_offset[Z]] == 0) {
@@ -252,7 +261,7 @@ int HDF5File::ReadImage (uint16_t** image, int& iFrame) {
 	hid_t memspace = H5Screate_simple (RANK, frame_size, NULL);
 
 	// create hyperslab
-	// If I understand correctly, this puts dataspace such that we read the correct frame
+	// This aligns dataspace such that we read the correct frame
 	if (H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, frame_offset, NULL, frame_size, NULL) < 0 ) {
 		cprintf (RED,"Could not create hyperslab for frame count %llu\n", frame_offset[Z]);
 		CloseResources ();
@@ -260,12 +269,12 @@ int HDF5File::ReadImage (uint16_t** image, int& iFrame) {
 	}
 
 	// read dataset into current_image
-	if (H5Dread(dataset, H5T_STD_U16LE, memspace, dataspace, H5P_DEFAULT, current_image) < 0 ) {
+	if (H5Dread(dataset, H5T_STD_U16LE, memspace, dataspace, H5P_DEFAULT, image /*was 'current_image'*/) < 0 ) {
 		cprintf (RED,"Could not read dataset for frame count %llu\n", frame_offset[Z]);
 		CloseResources ();
 		return -99;
 	}
-	*image = current_image;
+	//*image = current_image; //if uint16_t** is passed, HDF5File owns the resource image points to, which is potentially dangerous
 
 	// return frame number and then increment frame count number
 	unsigned int retval = frame_index_list[frame_offset[Z]];

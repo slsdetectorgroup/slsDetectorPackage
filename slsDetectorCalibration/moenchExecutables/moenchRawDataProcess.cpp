@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
 #endif
     
 #ifndef MOENCH04
-    moench03v2Data *decoder = new moench03v2Data(100);
+    moench03v2Data *decoder = new moench03v2Data(nrows/2);
     cout << "MOENCH03!" << endl;
 #endif
 
@@ -383,7 +383,7 @@ int main(int argc, char *argv[]) {
        runmax--;
        flist.close();
        cout << "Found " << runmax << " files " << endl;
-       flist.open (fformat, std::ifstream::in);
+       flist.open (args["flist"].c_str(), std::ifstream::in);
     } 
 
     for (int irun = runmin; irun <= runmax; irun++) {

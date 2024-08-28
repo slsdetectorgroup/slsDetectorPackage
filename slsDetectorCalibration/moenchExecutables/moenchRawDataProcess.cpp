@@ -174,7 +174,13 @@ int main(int argc, char *argv[]) {
     int nped = 1000;
     
     int cf = 0;
+<<<<<<< HEAD
     int numberOfPackets=nrows/8;
+=======
+
+    int numberOfPackets=nrows/8;
+
+>>>>>>> cc233686f (merged raw data processing)
 #ifdef RECT
     cout << "Should be rectangular but now it will crash! No data structure defined!" << endl;
 #endif
@@ -298,7 +304,11 @@ int main(int argc, char *argv[]) {
     double *ped=new double[nx * ny];//, *ped1;
     int pos,pos1;
     //return  0;
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> cc233686f (merged raw data processing)
     if (pedfile.find(".raw") != std::string::npos) {
       pos1=pedfile.rfind("/");
       strcpy(froot,pedfile.substr(pos1).c_str());
@@ -309,6 +319,10 @@ int main(int argc, char *argv[]) {
     cout << "PEDESTAL " << endl;
     if (pedfile.find(".tif") == std::string::npos) {
       sprintf(fname, "%s", pedfile.c_str());
+<<<<<<< HEAD
+=======
+
+>>>>>>> cc233686f (merged raw data processing)
             cout << fname << endl;
             std::time(&end_time);
             //cout << "aaa" << std::ctime(&end_time) << endl;
@@ -320,12 +334,20 @@ int main(int argc, char *argv[]) {
             if (filebin.is_open()) {
 	      ff = -1;
                 while (decoder->readNextFrame(filebin, ff, np, buff)) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> cc233686f (merged raw data processing)
 		  if (np == numberOfPackets) {
 		    mt->pushData(buff);
                         mt->nextThread();
                         mt->popFree(buff);
                         ifr++;
 			if (ifr % 100 == 0)
+<<<<<<< HEAD
+=======
+
+>>>>>>> cc233686f (merged raw data processing)
 			  cout << ifr << " " << ff << " " << np << endl;
 			    //	break;
 		  } else {
@@ -336,9 +358,16 @@ int main(int argc, char *argv[]) {
                 }
                 filebin.close();
                 while (mt->isBusy()) {
+<<<<<<< HEAD
 		  ;
 		}
 	  }
+=======
+
+		  ;
+
+		}
+>>>>>>> cc233686f (merged raw data processing)
 		
 		sprintf(imgfname, "%s/%s_ped.tiff", outdir.c_str(),froot);
 		mt->writePedestal(imgfname);
@@ -436,6 +465,10 @@ int main(int argc, char *argv[]) {
             ff = -1;
             ifr = 0;
             while (decoder->readNextFrame(filebin, ff, np, buff)) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> cc233686f (merged raw data processing)
 	      if (np == numberOfPackets) {
                     //         //push
                     mt->pushData(buff);
@@ -463,6 +496,11 @@ int main(int argc, char *argv[]) {
                     }
 	      } else {
 		cout << "bp " << ifr << " " << ff << " " << np << endl;
+<<<<<<< HEAD
+=======
+
+		//break;
+>>>>>>> cc233686f (merged raw data processing)
 	      }
                 ff = -1;
             }

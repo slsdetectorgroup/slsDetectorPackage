@@ -182,8 +182,8 @@ int main(int argc, char *argv[]) {
 #endif
     
 #ifndef MOENCH04
-    moench03v2Data *decoder = new moench03v2Data(100);
-    cout << "MOENCH03!" << endl;
+    moench03v2Data *decoder = new moench03v2Data(200);
+    cout << "MOENCH03 V2!" << endl;
 #endif
 
 #ifdef MOENCH04
@@ -334,7 +334,7 @@ int main(int argc, char *argv[]) {
 			  cout << ifr << " " << ff << " " << np << endl;
 			    //	break;
 		  } else {
-		    cout << ifr << " " << ff << " " << np << endl;
+		    cout << "bp "<< ifr << " " << ff << " " << np << endl;
 		    break;
 		  }
                     ff = -1;
@@ -389,7 +389,7 @@ int main(int argc, char *argv[]) {
        runmax--;
        flist.close();
        cout << "Found " << runmax << " files " << endl;
-       flist.open (fformat, std::ifstream::in);
+       flist.open (args["flist"].c_str(), std::ifstream::in);
     } 
 
     for (int irun = runmin; irun <= runmax; irun++) {
@@ -470,10 +470,20 @@ int main(int argc, char *argv[]) {
                     }
 	      } else {
 		cout << "bp " << ifr << " " << ff << " " << np << endl;
-
-		//break;
+		
+		break;
 	      }
                 ff = -1;
+
+
+		if (ifr % 100 == 0){
+		  sprintf(imgfname, "%s/%s_f%05d_ped.tiff", outdir.c_str(),froot, ifile++); 
+		  while (mt->isBusy()) {
+		    ;
+		  }
+		  mt->writePedestal(imgfname);
+		}
+
             }
             cout << "--" << endl;
             filebin.close();

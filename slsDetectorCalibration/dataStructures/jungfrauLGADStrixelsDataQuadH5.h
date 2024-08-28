@@ -249,9 +249,12 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
     }
 
     //The following functions are pure virtual in the base class. But I don't want them to be accessible here!
-    char* readNextFrame( std::ifstream &filebin );
-    int getFrameNumber(char *buff); //Provided via public method readNextFrame
-    int getPacketNumber(char *buff); //Not provided
+    //Implement the functions as private (to satisfy the linker)
+    int getFrameNumber(char* buff){return 0;} //Provided via public method readNextFrame
+    int getPacketNumber(char* buff){return 0;} //Not provided
+
+    //Mark overwritten functions as override final
+    char* readNextFrame( std::ifstream &filebin ) override final {return nullptr;}
 
   public:
 
@@ -316,7 +319,7 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
        required as double
 
     */
-    virtual double getValue(char *data, int ix, int iy = 0) {
+    virtual double getValue(char* data, int ix, int iy = 0) {
 
         uint16_t val = getChannel(data, ix, iy) & 0x3fff;
         return val;
@@ -394,7 +397,7 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
     /*    found */
 
     /* *\/ */
-    virtual char *findNextFrame(char *data, int &ndata, int dsize) {
+    virtual char* findNextFrame(char* data, int& ndata, int dsize) {
         if (dsize < dataSize)
             ndata = dsize;
         else

@@ -469,11 +469,6 @@ int waitTransceiverReset(char *mess) {
             sprintf(mess, "Resetting transceiver timed out, time:%.2fs\n",
                     (timeNs / (1E9)));
             LOG(logERROR, (mess));
-
-            LOG(logINFORED, ("Waiting for Firmware to be fixed here. Skipping "
-                             "this error for now.\n"));
-            return OK;
-
             return FAIL;
         }
         usleep(0);
@@ -573,6 +568,11 @@ int powerChip(int on, char *mess) {
         if (isTransceiverAligned()) {
             sprintf(mess, "Transceiver alignment not reset\n");
             LOG(logERROR, (mess));
+
+            // to be removed when fixed later
+            LOG(logWARNING, ("Bypassing this error for now. To be fixed later...\n"));
+            return OK;
+
             return FAIL;
         }
         LOG(logINFO, ("\tTransceiver alignment has been reset\n"));

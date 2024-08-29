@@ -206,12 +206,12 @@ int createSymbolicLinksForDevices(int adcDeviceIndex, int dacDeviceIndex,
     // delete andcreate iio device links folder (deleting because cannot
     // overwrite symbolic links with -sf)
     if (deleteAbsoluteDirectory(mess, IIO_DEVICE_FOLDER,
-                                "create symbolic links for device trees") ==
+                                "create sym links for device trees") ==
         FAIL) {
         return FAIL;
     }
     if (createAbsoluteDirectory(mess, IIO_DEVICE_FOLDER,
-                                "create symbolic links for device trees") ==
+                                "create sym links for device trees") ==
         FAIL) {
         return FAIL;
     }
@@ -226,11 +226,11 @@ int createSymbolicLinksForDevices(int adcDeviceIndex, int dacDeviceIndex,
         memset(retvals, 0, MAX_STR_LENGTH);
         if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
-                     "Could not create symbolic link for adc (%s)\n", retvals);
+                     "Could not create sym link [adc] (%s)\n", retvals);
             LOG(logERROR, (mess));
             return FAIL;
         }
-        LOG(logINFO, ("\tSymbolic link for adc created (%s)\n", cmd));
+        LOG(logINFO, ("\tSym link [adc] created (%s)\n", cmd));
     }
 
     // create symbolic links for dacs
@@ -243,12 +243,12 @@ int createSymbolicLinksForDevices(int adcDeviceIndex, int dacDeviceIndex,
         memset(retvals, 0, MAX_STR_LENGTH);
         if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
-                     "Could not create symbolic link for dac%d (%s)\n", idac,
+                     "Could not create sym link [dac%d] (%s)\n", idac,
                      retvals);
             LOG(logERROR, (mess));
             return FAIL;
         }
-        LOG(logINFO, ("\tSymbolic link for dac%d created (%s)\n", idac, cmd));
+        LOG(logINFO, ("\tSym link [dac%d] created (%s)\n", idac, cmd));
     }
     return OK;
 }

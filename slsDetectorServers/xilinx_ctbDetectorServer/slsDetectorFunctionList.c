@@ -598,8 +598,8 @@ int configureChip(char *mess) {
 
     // start configuration
     uint32_t addr = MATTERHORNSPICTRL;
-    bus_w(addr, bus_r(addr) | CONFIGSTART_MSK);
-    bus_w(addr, bus_r(addr) & ~CONFIGSTART_MSK);
+    bus_w(addr, bus_r(addr) | CONFIGSTART_P_MSK);
+    bus_w(addr, bus_r(addr) & ~CONFIGSTART_P_MSK);
 
     // wait until configuration is done
 #ifndef VIRTUAL
@@ -621,7 +621,7 @@ int configureChip(char *mess) {
 
 void startPeriphery() {
     LOG(logINFOBLUE, ("\tStarting periphery\n"));
-    bus_w(MATTERHORNSPICTRL, bus_r(MATTERHORNSPICTRL) | START_P_MSK);
+    bus_w(MATTERHORNSPICTRL, bus_r(MATTERHORNSPICTRL) | PERIPHERYRST_P_MSK);
     // TODO ?
 }
 

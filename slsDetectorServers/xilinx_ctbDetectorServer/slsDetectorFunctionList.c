@@ -387,15 +387,15 @@ void setupDetector() {
     initializePatternWord();
 #endif
     // initialization only at start up (restart fpga)
-    //    initError = waitTransceiverReset(initErrorMessage);
-    //    if (initError == FAIL) {
-    //        return;
-    //    }
-    //    // power off chip
+    initError = waitTransceiverReset(initErrorMessage);
+    if (initError == FAIL) {
+        return;
+    }
+    // power off chip
     initError = powerChip(0, initErrorMessage);
-    //    if (initError == FAIL) {
-    //        return;
-    //    }
+    if (initError == FAIL) {
+        return;
+    }
 
     LTC2620_D_SetDefines(DAC_MIN_MV, DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC,
                          NPWR, DAC_POWERDOWN_DRIVER_FILE_NAME);

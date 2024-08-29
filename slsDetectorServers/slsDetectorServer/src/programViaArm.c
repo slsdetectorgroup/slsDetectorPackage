@@ -9,12 +9,12 @@
 #include <string.h> //memset
 #include <unistd.h> // access
 
-#define CMD_ARM_LOAD_BIT_FILE  "~/fpgautil/fpgautil -b " FIRMWARE_FILE " -f Full"
-#define CMD_ARM_LOAD_DEVICE_TREE  "cat " DEVICE_TREE_OVERLAY_FILE " > " DEVICE_TREE_API_FOLDER "/dtbo"
-#define CMD_ARM_SYM_LINK_FORMAT "ln -sf " DEVICE_TREE_DST "%d " IIO_DEVICE_FOLDER "/%s"
-#define TIME_LOAD_DEVICE_TREE_MS         (500)
-  
-
+#define CMD_ARM_LOAD_BIT_FILE "~/fpgautil/fpgautil -b " FIRMWARE_FILE " -f Full"
+#define CMD_ARM_LOAD_DEVICE_TREE                                               \
+    "cat " DEVICE_TREE_OVERLAY_FILE " > " DEVICE_TREE_API_FOLDER "/dtbo"
+#define CMD_ARM_SYM_LINK_FORMAT                                                \
+    "ln -sf " DEVICE_TREE_DST "%d " IIO_DEVICE_FOLDER "/%s"
+#define TIME_LOAD_DEVICE_TREE_MS (500)
 
 extern int executeCommand(char *command, char *result, enum TLogLevel level);
 
@@ -62,8 +62,8 @@ int checksBeforeCreatingDeviceTree(char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tDevice tree overlay file exists (%s)\n",
-                  DEVICE_TREE_OVERLAY_FILE));
+    LOG(logINFO,
+        ("\tDevice tree overlay file exists (%s)\n", DEVICE_TREE_OVERLAY_FILE));
 
     // check if device tree folder exists. If it does, remove it
     if (access(DEVICE_TREE_API_FOLDER, F_OK) == 0) {
@@ -173,8 +173,8 @@ int verifyDeviceTree(char *mess) {
                 strstr(retvals, deviceNames[hardcodedDeviceIndex + 1]) !=
                     NULL) {
                 ++hardcodedDeviceIndex;
-                adcDeviceIndex = 4;		
-                dacDeviceIndex = 1;               
+                adcDeviceIndex = 4;
+                dacDeviceIndex = 1;
             } else {
                 snprintf(
                     mess, MAX_STR_LENGTH,
@@ -191,22 +191,28 @@ int verifyDeviceTree(char *mess) {
             hardcodedDeviceIndex = 1;
     }
     LOG(logINFOBLUE, ("Device tree verified successfully [temp: 0, adc:%d, "
-                    "dac:%d, %d, %d]\n",
-                    adcDeviceIndex, dacDeviceIndex, dacDeviceIndex + 1,
-                    dacDeviceIndex + 2));
-    
+                      "dac:%d, %d, %d]\n",
+                      adcDeviceIndex, dacDeviceIndex, dacDeviceIndex + 1,
+                      dacDeviceIndex + 2));
+
     return createSymbolicLinksForDevices(adcDeviceIndex, dacDeviceIndex, mess);
 #endif
 }
 
 #ifndef VIRTUAL
-int createSymbolicLinksForDevices(int adcDeviceIndex, int dacDeviceIndex, char* mess) {
+int createSymbolicLinksForDevices(int adcDeviceIndex, int dacDeviceIndex,
+                                  char *mess) {
 
-    // delete andcreate iio device links folder (deleting because cannot overwrite symbolic links with -sf)
-    if (deleteAbsoluteDirectory(mess, IIO_DEVICE_FOLDER, "create symbolic links for device trees") == FAIL) {
+    // delete andcreate iio device links folder (deleting because cannot
+    // overwrite symbolic links with -sf)
+    if (deleteAbsoluteDirectory(mess, IIO_DEVICE_FOLDER,
+                                "create symbolic links for device trees") ==
+        FAIL) {
         return FAIL;
     }
-    if (createAbsoluteDirectory(mess, IIO_DEVICE_FOLDER, "create symbolic links for device trees") == FAIL) {
+    if (createAbsoluteDirectory(mess, IIO_DEVICE_FOLDER,
+                                "create symbolic links for device trees") ==
+        FAIL) {
         return FAIL;
     }
 
@@ -231,12 +237,14 @@ int createSymbolicLinksForDevices(int adcDeviceIndex, int dacDeviceIndex, char* 
     for (int idac = 0; idac != 3; ++idac) {
         char cmd[MAX_STR_LENGTH] = {0};
         memset(cmd, 0, MAX_STR_LENGTH);
-        sprintf(cmd, CMD_ARM_SYM_LINK_FORMAT, dacDeviceIndex + idac, deviceNames[idac + 2]);
+        sprintf(cmd, CMD_ARM_SYM_LINK_FORMAT, dacDeviceIndex + idac,
+                deviceNames[idac + 2]);
         char retvals[MAX_STR_LENGTH] = {0};
         memset(retvals, 0, MAX_STR_LENGTH);
         if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
-                     "Could not create symbolic link for dac%d (%s)\n", idac, retvals);
+                     "Could not create symbolic link for dac%d (%s)\n", idac,
+                     retvals);
             LOG(logERROR, (mess));
             return FAIL;
         }

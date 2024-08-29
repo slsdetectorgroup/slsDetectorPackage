@@ -25,22 +25,20 @@
 #define DYNAMIC_RANGE       (16)
 #define NUM_BYTES_PER_PIXEL (DYNAMIC_RANGE / 8)
 
-
-#define MAIN_APP_FOLDER "/root/apps/xilinx-ctb"
-#define FIRMWARE_FILE MAIN_APP_FOLDER "/XilinxCTB.bit"
-#define DEVICE_TREE_OVERLAY_FILE MAIN_APP_FOLDER "/pl.dtbo"
+#define MAIN_APP_FOLDER            "/root/apps/xilinx-ctb"
+#define FIRMWARE_FILE              MAIN_APP_FOLDER "/XilinxCTB.bit"
+#define DEVICE_TREE_OVERLAY_FILE   MAIN_APP_FOLDER "/pl.dtbo"
 #define CURRENT_BOARD_LINKS_FOLDER MAIN_APP_FOLDER "/current_board_links"
-#define IIO_DEVICE_FOLDER MAIN_APP_FOLDER "/iio_device_links"
+#define IIO_DEVICE_FOLDER          MAIN_APP_FOLDER "/iio_device_links"
 
-#define DEVICE_TREE_DST "/sys/bus/iio/devices/iio:device"
-#define DEVICE_NAME_LIST "xilinx-ams", "ad7689", "dac@0", "dac@1", "dac@2"
+#define DEVICE_TREE_DST        "/sys/bus/iio/devices/iio:device"
+#define DEVICE_NAME_LIST       "xilinx-ams", "ad7689", "dac@0", "dac@1", "dac@2"
 #define DEVICE_TREE_API_FOLDER "/sys/kernel/config/device-tree/overlays/spidr"
 
-#define DAC_DRIVER_FILE_NAME CURRENT_BOARD_LINKS_FOLDER "/ao%d"
+#define DAC_DRIVER_FILE_NAME           CURRENT_BOARD_LINKS_FOLDER "/ao%d"
 #define DAC_POWERDOWN_DRIVER_FILE_NAME CURRENT_BOARD_LINKS_FOLDER "/ao%d_pd"
-#define SLOWADC_DRIVER_FILE_NAME CURRENT_BOARD_LINKS_FOLDER "/ai%d"
-#define TEMP_DRIVER_FILE_NAME DEVICE_TREE_DST "0/in_temp7_input"
-
+#define SLOWADC_DRIVER_FILE_NAME       CURRENT_BOARD_LINKS_FOLDER "/ai%d"
+#define TEMP_DRIVER_FILE_NAME          DEVICE_TREE_DST "0/in_temp7_input"
 
 /** Default Parameters */
 #define DEFAULT_NUM_FRAMES            (1)

@@ -11,5 +11,6 @@ int checksBeforeCreatingDeviceTree(char *mess);
 int createDeviceTree(char *mess);
 int verifyDeviceTree(char *mess);
 #ifndef VIRTUAL
-int createSymbolicLinksForDevices(int adcDeviceIndex, int dacDeviceIndex, char* mess);
+int createSymbolicLinksForDevices(int adcDeviceIndex, int dacDeviceIndex,
+                                  char *mess);
 #endif

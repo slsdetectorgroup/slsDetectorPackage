@@ -34,7 +34,7 @@ void HDF5File::InitializeParameters () {
 }
 
 
-int HDF5File::OpenResources (const char* const fname, bool validate) {
+int HDF5File::OpenResources (char const*const fname, bool validate) {
 	// Initialize
 	//InitializeParameters();
 
@@ -156,7 +156,7 @@ int HDF5File::OpenResources (const char* const fname, bool validate) {
 	H5Pclose (cparms);
 
 	// allocate chunk memory
-	current_image = new uint16_t[chunk_dims[Z]*DEFAULT_CHUNK_Y_DIMS*DEFAULT_CHUNK_X_DIMS];
+	//current_image = new uint16_t[chunk_dims[Z]*DEFAULT_CHUNK_Y_DIMS*DEFAULT_CHUNK_X_DIMS];
 	//current_image = new uint16_t[DEFAULT_X_DIMS*DEFAULT_Y_DIMS];
 
 	// Define memory space

@@ -241,8 +241,8 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
       setMappingShifts(rot, half);
 
       std::cout << "remapping roi: "
-		<< ", x0: " << x0 << ", x1: " << x1 << ", y0: " << y0
-		<< ", y1: " << y1 << std::endl;
+		            << ", x0: " << x0 << ", x1: " << x1 << ", y0: " << y0
+		            << ", y1: " << y1 << std::endl;
       std::cout << "Adjusted roi: [" << xmin << ", " << xmax << ", " << ymin << ", " << ymax << "]" << std::endl;
 
       remap( xmin, xmax, ymin, ymax );
@@ -255,13 +255,14 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
 
     //Mark overwritten functions as override final
     char* readNextFrame( std::ifstream &filebin ) override final {return nullptr;}
+    
 
   public:
 
     using header = sls::defs::sls_receiver_header;
 
     jungfrauLGADStrixelsDataQuadH5(uint16_t xmin = 0, uint16_t xmax = 0,
-				   uint16_t ymin = 0, uint16_t ymax = 0)
+				                           uint16_t ymin = 0, uint16_t ymax = 0)
         : slsDetectorData<uint16_t>(
               nc_strixel,
               nr_strixel * 2 + nr_center,
@@ -272,14 +273,14 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
         // Fill all strixels with dummy values
         for (int ix = 0; ix != nc_strixel; ++ix) {
             for (int iy = 0; iy != nr_strixel * 2 + nr_center; ++iy) {
-	      dataMap[iy][ix] = sizeof(header); //mayb another value is safer
+	            dataMap[iy][ix] = sizeof(header); //mayb another value is safer
             }
         }
 
-	globalROI.xmin = xmin;
-	globalROI.xmax = xmax;
-	globalROI.ymin = ymin;
-	globalROI.ymax = ymax;
+	      globalROI.xmin = xmin;
+	      globalROI.xmax = xmax;
+	      globalROI.ymin = ymin;
+	      globalROI.ymax = ymax;
 
         //std::cout << "sizeofheader = " << sizeof(header) << std::endl;
         std::cout << "Jungfrau strixels quad with full module data "
@@ -287,23 +288,23 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
 
         if (xmin < xmax && ymin < ymax) {
 
-	  // get ROI raw image number of columns
-	  globalROI.nc = xmax - xmin + 1;
-	  std::cout << "nc_roi = " << globalROI.nc << std::endl;
+	        // get ROI raw image number of columns
+	        globalROI.nc = xmax - xmin + 1;
+	        std::cout << "nc_roi = " << globalROI.nc << std::endl;
 	  
-	  dataSize =
-	    (xmax - xmin + 1) * (ymax - ymin + 1) * 2;
-	  std::cout << "datasize " << dataSize << std::endl;
+	        dataSize =
+	          (xmax - xmin + 1) * (ymax - ymin + 1) * 2;
+	        std::cout << "datasize " << dataSize << std::endl;
 
-	  auto rois = mapSubROIs(xmin, xmax, ymin, ymax);
-	  //function to fill vector of rois from globalROI
+	        auto rois = mapSubROIs(xmin, xmax, ymin, ymax);
+	        //function to fill vector of rois from globalROI
 
-	  for ( auto roi : rois )
-	    remapROI(roi, rota);
+	        for ( auto roi : rois )
+	          remapROI(roi, rota);
 
         } else {
 
-	  remapQuad( rota );
+	        remapQuad( rota );
 
         }
 
@@ -368,8 +369,8 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
       if (iframe >= 0) {
         std::cout << "*";
 
-	//Storing the reinterpret_cast in the variable data_ptr ensures that I can pass it to a function that expects at uint16_t*
-	uint16_t* data_ptr = reinterpret_cast<uint16_t*>(data); //now data_ptr points where data points (thus modifies the same memory)
+	      //Storing the reinterpret_cast in the variable data_ptr ensures that I can pass it to a function that expects at uint16_t*
+	      uint16_t* data_ptr = reinterpret_cast<uint16_t*>(data); //now data_ptr points where data points (thus modifies the same memory)
 
         iframe = hfile.ReadImage( data_ptr, framenumber );
         return data; // return reinterpret_cast<char*>(data_ptr); // Equivalent

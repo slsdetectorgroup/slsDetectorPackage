@@ -10,35 +10,8 @@
 
 #define RAWDATA
 
-#if !defined JFSTRX && !defined JFSTRXQ && !defined JFSTRXQH5 && !defined JFSTRXOLD && !defined JFSTRXCHIP1 &&           \
-    !defined JFSTRXCHIP6 && !defined CHIP
-#ifndef MODULE
-#include "jungfrauHighZSingleChipData.h"
-#endif
-#ifdef MODULE
-#include "jungfrauModuleData.h"
-#endif
-#endif
 
-#ifdef CHIP
-#include "jungfrauSingleChipData.h"
-#endif
-
-#ifdef JFSTRX
-#include "jungfrauLGADStrixelsData_new.h"
-#endif
-#ifdef JFSTRXQ
-#include "jungfrauLGADStrixelsDataQuad.h"
-#endif
-#ifdef JFSTRXQH5
 #include "jungfrauLGADStrixelsDataQuadH5.h"
-#endif
-#if defined JFSTRXCHIP1 || defined JFSTRXCHIP6
-#include "jungfrauLGADStrixelsDataSingleChip.h"
-#endif
-#ifdef JFSTRXOLD
-#include "jungfrauStrixelsHalfModuleOldDesign.h"
-#endif
 
 #include "multiThreadedCountingDetector.h"
 #include "singlePhotonDetector.h"
@@ -51,11 +24,13 @@
 #include <ctime>
 #include <fmt/core.h>
 
+/*
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
+*/
 
 
-std::string getRootString( const std::string& filepath ) {
+std::string getRootString( std::string const& filepath ) {
   size_t pos1;
   if (filepath.find("/") == std::string::npos )
     pos1 = 0;
@@ -71,7 +46,8 @@ std::string getRootString( const std::string& filepath ) {
 //   fprefix:   fileprefix (without extension)
 //   fsuffix:   filesuffix (for output files, e.g. "ped")
 //   fext:    file extension (e.g. "raw")
-std::string createFileName( const std::string& dir, const std::string& fprefix="run", const std::string& fsuffix="", const std::string& fext="raw", int outfilecounter=-1 ) {
+std::string createFileName( std::string const& dir, std::string const& fprefix="run",
+			    std::string const& fsuffix="", std::string const& fext="raw", int const outfilecounter=-1 ) {
   if (outfilecounter >= 0)
     return fmt::format("{:s}/{:s}_{:s}_f{:05d}.{:s}", dir, fprefix, fsuffix, outfilecounter, fext);
   else if (fsuffix.length()!=0)
@@ -84,11 +60,11 @@ std::string createFileName( const std::string& dir, const std::string& fprefix="
 //NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS!
 int main(int argc, char *argv[]) {
 
-    if (argc < 11) {
+    if (argc < 4) {
         std::cout
             << "Usage is " << argv[0]
-            << " filestxt outdir [json master] [pedfile (raw or tiff)] [xmin xmax ymin ymax] "
-               "[threshold] [nframes] [optional: bool read rxroi from data file header]"
+            << " filestxt outdir [pedfile (h5)] optional: [bool validate h5 rank] "
+               "[xmin xmax ymin ymax] [threshold] [nframes] "
 	       "NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS! "
             << std::endl;
         std::cout
@@ -102,35 +78,30 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    int fifosize = 1000;
-    int nthreads = 10;
-    int csize = 3; // 3
-    int nsigma = 5;
-    int nped = 10000;
+    int const fifosize = 1000;
+    int const nthreads = 10;
+    int const csize = 3; // 3
+    int const nsigma = 5;
+    int const nped = 10000;
 
     int cf = 0;
 
-    double *gainmap = NULL;
-    // float *gm;
+    std::string const txtfilename(argv[1]);
+    std::string const outdir(argv[2]);
+    std::string const pedfilename(argv[3]);
 
-    //int ff, np;
-    // cout << " data size is " << dsize;
-
-    const std::string txtfilename(argv[1]);
-    const std::string outdir(argv[2]);
-    const std::string jsonmastername(argv[3]);
-    const std::string pedfilename(argv[4]);
+    bool validate_rank=true;
+    if (argc > 4)
+      validate_rank = atoi(argv[4]);
 
     double thr = 0;
     double thr1 = 1;
-    thr = atof(argv[9]);
+    if (argc > 8)
+      thr = atof(argv[8]);
 
     int nframes = 0;
-    nframes = atoi(argv[10]);
-
-    bool readrxroifromdatafile = false;
-    if (argc > 11)
-      readrxroifromdatafile = atoi(argv[11]);
+    if (argc > 9)
+      nframes = atoi(argv[9]);
 
     //Get vector of filenames from input txt-file
     std::vector<std::string> filenames{};
@@ -160,154 +131,25 @@ int main(int argc, char *argv[]) {
 
     std::cout << "###############" << std::endl;
 
-    // Receiver ROI
-    uint16_t rxroi_xmin = 0;
-    uint16_t rxroi_xmax = 0;
-    uint16_t rxroi_ymin = 0;
-    uint16_t rxroi_ymax = 0;
-
-    { //protective scope so ifstream gets destroyed properly
-
-      std::ifstream masterfile(jsonmastername); //, ios::in | ios::binary);
-      if (masterfile.is_open()) {
-	json j;
-	masterfile >> j;
-	rxroi_xmin = j["Receiver Roi"]["xmin"];
-	rxroi_xmax = j["Receiver Roi"]["xmax"];
-	rxroi_ymin = j["Receiver Roi"]["ymin"];
-	rxroi_ymax = j["Receiver Roi"]["ymax"];
-	masterfile.close();
-	std::cout << "Read rxROI [" << rxroi_xmin << ", " << rxroi_xmax << ", "
-		      << rxroi_ymin << ", " << rxroi_ymax << "]" << std::endl;
-      } else 
-	std::cout << "Could not open master file " << jsonmastername << std::endl;
-      
-    }
-
-    // Define decoders...
-#if !defined JFSTRX && !defined JFSTRXQ && !defined JFSTRXQH5 && !defined JFSTRXOLD && !defined JFSTRXCHIP1 &&           \
-    !defined JFSTRXCHIP6 && !defined CHIP
-#ifndef MODULE
-    jungfrauHighZSingleChipData *decoder = new jungfrauHighZSingleChipData();
-    int nx = 256, ny = 256;
-#endif
-#ifdef MODULE
-    jungfrauModuleData *decoder = new jungfrauModuleData();
-    int nx = 1024, ny = 512;
-#endif
-#endif
-
-#ifdef CHIP
-    std::cout << "Jungfrau pixel module single chip readout" << std::endl;
-    jungfrauSingleChipData *decoder = new jungfrauSingleChipData();
-    int nx = 256, ny = 256;
-#endif
-
-#ifdef JFSTRX
-    std::cout << "Jungfrau strixel full module readout" << std::endl;
-
-#ifndef ALDO
-    if (readrxroifromdatafile)
-      { //THIS SCOPE IS IMPORTANT! (To ensure proper destruction of ifstream)
-	using header = sls::defs::sls_receiver_header;
-	// check if there is a roi in the header
-	typedef struct {
-	  uint16_t xmin;
-	  uint16_t xmax;
-	  uint16_t ymin;
-	  uint16_t ymax;
-	} receiverRoi_compact;
-	receiverRoi_compact croi;
-	//std::string filepath(argv[9]); //This is a problem if the input files have different ROIs!
-	std::cout << "Reading header of file " << filenames[0] << " to check for ROI "
-		  << std::endl;
-	std::ifstream firstfile( filenames[0], ios::in | ios::binary);
-	if (firstfile.is_open()) {
-	  header hbuffer;
-	  std::cout << "sizeof(header) = " << sizeof(header) << std::endl;
-	  if (firstfile.read((char *)&hbuffer, sizeof(header))) {
-	    memcpy(&croi, &hbuffer.detHeader.detSpec1, 8);
-	    std::cout << "Read ROI [" << croi.xmin << ", " << croi.xmax << ", "
-		      << croi.ymin << ", " << croi.ymax << "]" << std::endl;
-	    rxroi_xmin = croi.xmin;
-	    rxroi_xmax = croi.xmax;
-	    rxroi_ymin = croi.ymin;
-	    rxroi_ymax = croi.ymax;
-	  } else
-	    std::cout << "reading error" << std::endl;
-	  firstfile.close();
-	} else
-	  std::cout << "Could not open " << filenames[0] << " for reading " << std::endl;
-      } //end of protective scope
-#endif
-
-    jungfrauLGADStrixelsData *decoder =
-        new jungfrauLGADStrixelsData(rxroi_xmin, rxroi_xmax, rxroi_ymin, rxroi_ymax);
-    int nx = 1024 / 3, ny = 512 * 5;
-#endif
-#ifdef JFSTRXQ
-    std::cout << "Jungfrau strixel quad" << std::endl;
-    jungfrauLGADStrixelsDataQuad *decoder =
-        new jungfrauLGADStrixelsDataQuad(rxroi_xmin, rxroi_xmax, rxroi_ymin, rxroi_ymax);
-    int nx = 1024 / 3, ny = 512 * 3;
-#endif
-#ifdef JFSTRXQH5
+    // Define decoder
     std::cout << "Jungfrau strixel quad h5" << std::endl;
-    jungfrauLGADStrixelsDataQuadH5 *decoder =
-        new jungfrauLGADStrixelsDataQuadH5(rxroi_xmin, rxroi_xmax, rxroi_ymin, rxroi_ymax);
+    //jungfrauLGADStrixelsDataQuadH5* decoder = new jungfrauLGADStrixelsDataQuadH5();
+    auto decoder = std::make_unique<jungfrauLGADStrixelsDataQuadH5>();
     int nx = 1024 / 3, ny = 512 * 3;
-#endif
-#ifdef JFSTRXCHIP1
-    std::cout << "Jungfrau strixel LGAD single chip 1" << std::endl;
-    jungfrauLGADStrixelsDataSingleChip *decoder =
-        new jungfrauLGADStrixelsDataSingleChip(1);
-    int nx = 256 / 3, ny = 256 * 5;
-#endif
-#ifdef JFSTRXCHIP6
-    std::cout << "Jungfrau strixel LGAD single chip 6" << std::endl;
-    jungfrauLGADStrixelsDataSingleChip *decoder =
-        new jungfrauLGADStrixelsDataSingleChip(6);
-    int nx = 256 / 3, ny = 256 * 5;
-#endif
-#ifdef JFSTRXOLD
-    std::cout << "Jungfrau strixels old design" << std::endl;
-    jungfrauStrixelsHalfModuleOldDesign *decoder =
-        new jungfrauStrixelsHalfModuleOldDesign();
-    int nx = 1024 * 3, ny = 512 / 3;
-#endif
-
-    decoder->getDetectorSize(nx, ny);
-    std::cout << "Detector size is " << nx << " " << ny << std::endl;
 
     //Cluster finder ROI
     int xmin = 0, xmax = nx-1, ymin = 0, ymax = ny-1;
-    xmin = atoi(argv[5]);
-    xmax = atoi(argv[6]);
-    ymin = atoi(argv[7]);
-    ymax = atoi(argv[8]);
+    if (argc > 8) {
+      xmin = atoi(argv[5]);
+      xmax = atoi(argv[6]);
+      ymin = atoi(argv[7]);
+      ymax = atoi(argv[8]);
+    }
     std::cout << "Cluster finder ROI: [" << xmin << ", " << xmax << ", " << ymin << ", " << ymax << "]"
               << std::endl;
 
-    /* old
-    if ( xmin == xmax ) {
-      xmin = 0;
-      xmax = nx;
-    }
-    if ( ymin == ymax ) {
-      ymin = 0;
-      ymax = ny;
-    }
-    std::cout << xmin << " " << xmax << " " << ymin << " " << ymax << " "
-              << std::endl;
-    */
-
-    /*
-    char *gainfname = NULL;
-    if (argc > 14) {
-        gainfname = argv[14];
-        std::cout << "Gain map file name is: " << gainfname << std::endl;
-    }
-    */
+    decoder->getDetectorSize(nx, ny);
+    std::cout << "Detector size is " << nx << " " << ny << std::endl;
 
     std::time_t end_time;
 
@@ -320,18 +162,10 @@ int main(int argc, char *argv[]) {
 
     uint32_t nnx, nny;
 
-    singlePhotonDetector *filter = new singlePhotonDetector(
-        decoder, 3, nsigma, 1, NULL, nped, 200, -1, -1, gainmap, NULL);
+    //singlePhotonDetector* filter =
+    //  new singlePhotonDetector(decoder.get(), 3, nsigma, 1, NULL, nped, 200, -1, -1, NULL, NULL);
+    auto filter = std::make_unique<singlePhotonDetector>(decoder.get(), 3, nsigma, 1, nullptr, nped, 200, -1, -1, nullptr, nullptr);
 
-    /*
-    if (gainfname) {
-
-        if (filter->readGainMap(gainfname))
-            std::cout << "using gain map " << gainfname << std::endl;
-        else
-            std::cout << "Could not open gain map " << gainfname << std::endl;
-    } else
-    */
     thr = 0.15 * thr;
     filter->newDataSet();
     // int dsize = decoder->getDataSize();
@@ -348,10 +182,11 @@ int main(int argc, char *argv[]) {
     std::time(&end_time);
     std::cout << std::ctime(&end_time) << std::endl;
 
-    char *buff;
+    char* buff;
 
-    multiThreadedCountingDetector *mt =
-        new multiThreadedCountingDetector(filter, nthreads, fifosize);
+    //multiThreadedCountingDetector* mt =
+    //    new multiThreadedCountingDetector(filter, nthreads, fifosize);
+    auto mt = std::make_unique<multiThreadedCountingDetector>(filter.get(), nthreads, fifosize);
     mt->setClusterSize(csize, csize);
 
 #ifndef ANALOG
@@ -373,8 +208,6 @@ int main(int argc, char *argv[]) {
     mt->StartThreads();
     mt->popFree(buff);
 
-    //  cout << "mt " << endl;
-
     int ifr = 0; //frame counter of while loop
     int framenumber = -1; //framenumber as read from file (detector)
     int iframe = 0; //frame counter internal to HDF5File::ReadImage (provided for sanity check/debugging)
@@ -385,137 +218,145 @@ int main(int argc, char *argv[]) {
 
       std::cout << "PEDESTAL " << std::endl;
 
-        if (pedfilename.find(".tif") == std::string::npos) {
-	  const std::string fname(pedfilename);
-	  std::cout << fname << std::endl;
-	  std::time(&end_time);
-	  std::cout << "aaa " << std::ctime(&end_time) << std::endl;
+      if (pedfilename.find(".tif") == std::string::npos) { //not a tiff file
+	std::string const fname(pedfilename);
+	std::cout << fname << std::endl;
+	std::time(&end_time);
+	std::cout << "aaa " << std::ctime(&end_time) << std::endl;
 
-	  mt->setFrameMode(ePedestal);
+	mt->setFrameMode(ePedestal);
 
-	  //std::ifstream pedefile(fname, ios::in | ios::binary);
-	  HDF5File pedefile;
-	  //      //open file
-	  if ( pedefile.OpenResources(fname.c_str(),1) ) {
-	    std::cout << "bbbb " << std::ctime(&end_time) << std::endl;
+	//HDF5File pedefile;
+	auto pedefile = std::make_unique<HDF5File>();
+	//      //open file
+	if ( pedefile->OpenResources(fname.c_str(),validate_rank) ) {
+	  std::cout << "bbbb " << std::ctime(&end_time) << std::endl;
 	    
+	  framenumber = -1;
+
+	  while ( decoder->readNextFrame(*pedefile, framenumber, iframe, buff) ) {
+
+	    if ((ifr + 1) % 100 == 0) {
+	      std::cout
+		<< " ****"
+		<< decoder->getValue(buff, 20, 20); // << std::endl;
+	    }
+	    mt->pushData(buff);
+	    mt->nextThread();
+	    mt->popFree(buff);
+	    ++ifr;
+	    if (ifr % 100 == 0) {
+	      std::cout << " ****" << ifr << " " << framenumber << " " << iframe
+			<< std::endl;
+	    } // else
+	      
+	    if (ifr >= 1000)
+	      break;
 	    framenumber = -1;
-
-	    while ( decoder->readNextFrame(pedefile, framenumber, iframe, buff) ) {
-
-	      // if (np == 40) {
-	      if ((ifr + 1) % 100 == 0) {
-		std::cout
-		  << " ****"
-		  << decoder->getValue(buff, 20, 20); // << std::endl;
-	      }
-	      mt->pushData(buff);
-	      mt->nextThread();
-	      mt->popFree(buff);
-	      ++ifr;
-	      if (ifr % 100 == 0) {
-		std::cout << " ****" << ifr << " " << framenumber << " " << iframe
-			  << std::endl;
-	      } // else
-	      //std::cout << ifr << " " << ff << " " << np << std::endl;
-	      if (ifr >= 1000)
-		break;
-	      framenumber = -1;
-	    }
-	    //pedefile.close();
-	    pedefile.CloseResources();
-	    while (mt->isBusy()) {
-	      ;
-	    }
-
-	    std::cout << "froot " << froot << std::endl;
-	    auto imgfname = createFileName( outdir, froot, "ped", "tiff");
-	    mt->writePedestal(imgfname.c_str());
-	    imgfname = createFileName( outdir, froot, "rms", "tiff");
-	    mt->writePedestalRMS(imgfname.c_str());
-
-	  } else
-	    std::cout << "Could not open pedestal file " << fname
-		      << " for reading " << std::endl;
-        } else {
-	  std::vector<double> ped(nx * ny);
-	  float *pp = ReadFromTiff(pedfilename.c_str(), nny, nnx);
-	  if (pp && (int)nnx == nx && (int)nny == ny) {
-	    for (int i = 0; i < nx * ny; i++) {
-	      ped[i] = pp[i];
-	    }
-	    delete[] pp;
-	    mt->setPedestal(ped.data());
-	    std::cout << "Pedestal set from tiff file " << pedfilename
-		      << std::endl;
-	  } else {
-	    std::cout << "Could not open pedestal tiff file " << pedfilename
-		      << " for reading " << std::endl;
 	  }
-        }
-        std::time(&end_time);
-        std::cout << std::ctime(&end_time) << std::endl;
-    }
+	    
+	  pedefile->CloseResources();
+	  while (mt->isBusy()) {
+	    ;
+	  }
 
+	  std::cout << "froot " << froot << std::endl;
+	  auto imgfname = createFileName( outdir, froot, "ped", "tiff");
+	  mt->writePedestal(imgfname.c_str());
+	  imgfname = createFileName( outdir, froot, "rms", "tiff");
+	  mt->writePedestalRMS(imgfname.c_str());
+
+	} else
+	  std::cout << "Could not open pedestal file " << fname
+		    << " for reading " << std::endl;
+
+      } else { //is a tiff file
+
+	std::vector<double> ped(nx * ny);
+	float* pp = ReadFromTiff(pedfilename.c_str(), nny, nnx);
+	if (pp && (int)nnx == nx && (int)nny == ny) {
+	  for (int i = 0; i < nx * ny; i++) {
+	    ped[i] = pp[i];
+	  }
+	  delete[] pp;
+	  mt->setPedestal(ped.data());
+	  std::cout << "Pedestal set from tiff file " << pedfilename
+		    << std::endl;
+	} else {
+	  std::cout << "Could not open pedestal tiff file " << pedfilename
+		    << " for reading " << std::endl;
+	}
+      }
+      std::time(&end_time);
+      std::cout << std::ctime(&end_time) << std::endl;
+    }
+    
     ifr = 0;
     int ioutfile = 0;
 
     mt->setFrameMode(eFrame);
 
-    FILE *of = NULL;
-    std::ifstream filebin{};
+    FILE* of = nullptr;
     
     //NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS!
     for (unsigned int ifile = 0; ifile != filenames.size(); ++ifile) {
       std::cout << "DATA ";
       std::string fsuffix{};
-      const std::string fprefix( getRootString(filenames[ifile]) );
+      std::string const fprefix( getRootString(filenames[ifile]) );
       std::string imgfname( createFileName( outdir, fprefix, fsuffix, "tiff" ) );
-      const std::string cfname( createFileName( outdir, fprefix, fsuffix, "clust" ) );
+      std::string const cfname( createFileName( outdir, fprefix, fsuffix, "clust" ) );
       std::cout << filenames[ifile] << " ";
       std::cout << imgfname << std::endl;
       std::time(&end_time);
       std::cout << std::ctime(&end_time) << std::endl;
 
-      //std::ifstream filebin(filenames[ifile], ios::in | ios::binary);
-      HDF5File fileh5;
+      //HDF5File fileh5;
+      auto fileh5 = std::make_unique<HDF5File>();
       //      //open file
       ioutfile = 0;
-      if ( fileh5.OpenResources(filenames[ifile].c_str(), 1) ) {
+      if ( fileh5->OpenResources(filenames[ifile].c_str(), validate_rank) ) {
 	if (thr <= 0 && cf != 0) { // cluster finder
-	  if (of == NULL) {
+	  if (of == nullptr) {
 	    of = fopen(cfname.c_str(), "w");
 	    if (of) {
-	      mt->setFilePointer(of);
-	      std::cout << "file pointer set " << std::endl;
+	      if (mt) {
+		      mt->setFilePointer(of);
+		      std::cout << "file pointer set " << std::endl;
+	      } else {
+		      std::cerr << "Error: mt is null." << std::endl;
+		      return 1;
+	      }
+	      //mt->setFilePointer(of);
+	      //std::cout << "file pointer set " << std::endl;
+	      std::cout << "Here! " << framenumber << " ";
 	    } else {
 	      std::cout << "Could not open " << cfname
 			<< " for writing " << std::endl;
-	      mt->setFilePointer(NULL);
+	      mt->setFilePointer(nullptr);
 	      return 1;
 	    }
 	  }
 	}
+	
 	//     //while read frame
 	framenumber = -1;
 	iframe = 0;
 	ifr = 0;
-
-	while ( decoder->readNextFrame(fileh5, framenumber, iframe, buff) ) {
-
-	  //  if (np == 40) {
+	//std::cout << "Here! " << framenumber << " ";
+	while ( decoder->readNextFrame(*fileh5, framenumber, iframe, buff) ) {
+	  //std::cout << "Here! " << framenumber << " ";
 	  //         //push
-	  
 	  if ((ifr + 1) % 100 == 0) {
 	    std::cout << " ****"
 		      << decoder->getValue(buff, 20, 20); // << std::endl;
 	  }
 	  mt->pushData(buff);
+
 	  // 	//         //pop
 	  mt->nextThread();
 	  mt->popFree(buff);
 	  
-	  ifr++;
+	  ++ifr;
 	  if (ifr % 100 == 0)
 	    std::cout << " " << ifr << " " << framenumber << std::endl;
 	  if (nframes > 0) {
@@ -526,17 +367,17 @@ int main(int argc, char *argv[]) {
 	      ++ioutfile;
 	    }
 	  }
-	  // } else
-	  //std::cout << ifr << " " << ff << " " << np << std::endl;
+
 	  framenumber = -1;
 	}
 	std::cout << "aa --" << std::endl;
-	//filebin.close();
-	fileh5.CloseResources();
+	fileh5->CloseResources();
+
 	std::cout << "bb --" << std::endl;
 	while (mt->isBusy()) {
 	  ;
 	}
+
 	std::cout << "cc --" << std::endl;
 	if (nframes >= 0) {
 	  if (nframes > 0)
@@ -547,8 +388,8 @@ int main(int argc, char *argv[]) {
 	  mt->clearImage();
 	  if (of) {
 	    fclose(of);
-	    of = NULL;
-	    mt->setFilePointer(NULL);
+	    of = nullptr;
+	    mt->setFilePointer(nullptr);
 	  }
 	}
 	std::time(&end_time);
@@ -557,13 +398,16 @@ int main(int argc, char *argv[]) {
 	std::cout << "Could not open " << filenames[ifile] << " for reading "
 		  << std::endl;
     }
-    if (nframes < 0) {
-      //std::string fname(argv[10]);
+    if (nframes < 0) {     
       std::string fprefix( getRootString(filenames[0]) ); //This might by a non-ideal name choice for that file
       std::string imgfname( createFileName( outdir, fprefix, "sum", "tiff" ) );
       std::cout << "Writing tiff to " << imgfname << " " << thr1 << std::endl;
       mt->writeImage(imgfname.c_str(), thr1);
     }
+
+    //delete filter;
+    //delete mt;
+    delete buff;
 
     return 0;
 }

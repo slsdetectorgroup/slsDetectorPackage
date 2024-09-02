@@ -7,7 +7,30 @@
 set(JUNGFRAU_EXECUTABLES)
 
 find_package(fmt REQUIRED)
-find_package(nlohmann_json 3.11.2 REQUIRED)
+
+#nlohmann_json
+#If the library was INSTALLED (i.e. sudo dnf install nlohmann-json3-dev), do stuff described in the repo under CMake -> External
+#find_package(nlohmann_json 3.2.0 REQUIRED)
+#find_package(nlohmann_json 3.11.2 REQUIRED)
+#find_package(nlohmann_json 3.11.3 REQUIRED)
+#
+#If the library was not installed but just cloned from https://github.com/nlohmann/json.git (possible, because it is a header-only library),
+# do stuff described in the repo under CMake -> Embedded
+#set(JSON_BuildTests OFF CACHE INTERNAL "")
+# If you only include this third party in PRIVATE source files, you do not
+# need to install it when your main project gets installed.
+# set(JSON_Install OFF CACHE INTERNAL "")
+#add_subdirectory(nlohmann_json) #Put the actual path to json
+#
+#Alternative: Fetch and install it from remote
+include(FetchContent)
+FetchContent_Declare(
+  json
+  GIT_REPOSITORY https://github.com/nlohmann/json.git
+  GIT_TAG v3.11.3  # Replace with the version you need
+)
+#FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz) #Alternative (from the repo documentation)
+FetchContent_MakeAvailable(json)
 
 # HDF5 file writing 
 if (SLS_USE_HDF5)
@@ -126,7 +149,7 @@ foreach(exe ${JUNGFRAU_EXECUTABLES})
         pthread 
         tiffio
         fmt::fmt
-	nlohmann_json::nlohmann_json
+	    nlohmann_json::nlohmann_json
           #-L/usr/lib64/
         #-lm  -lstdc++  -lrt
 

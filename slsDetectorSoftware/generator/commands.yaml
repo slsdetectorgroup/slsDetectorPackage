@@ -556,7 +556,7 @@ settingspath:
       arg_types: [ special::path ]
 
 fpath:
-  help: "[path]\n\tDirectory where output data files are written in receiver. Default is '/'. \n\tIf path does not exist, it will try to create it."
+  help: "[path]\n\tDirectory where output data files are written in receiver. Default is '/'. \n\tIf path does not exist and fwrite enabled, it will try to create it at start of acquisition."
   inherit_actions: STRING_COMMAND
   actions:
     GET:
@@ -985,7 +985,7 @@ findex:
       input_types: [ uint64_t ]
 
 fwrite:
-  help: "[0, 1]\n\tEnable or disable receiver file write. Default is 1."
+  help: "[0, 1]\n\tEnable or disable receiver file write. Default is 0."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:

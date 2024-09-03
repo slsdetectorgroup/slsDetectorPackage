@@ -5115,7 +5115,7 @@ std::string Caller::fpath(int action) {
         os << "Command: fpath" << std::endl;
         os << R"V0G0N([path]
 	Directory where output data files are written in receiver. Default is '/'. 
-	If path does not exist, it will try to create it. )V0G0N"
+	If path does not exist and fwrite enabled, it will try to create it at start of acquisition. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -5372,7 +5372,7 @@ std::string Caller::fwrite(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: fwrite" << std::endl;
         os << R"V0G0N([0, 1]
-	Enable or disable receiver file write. Default is 1. )V0G0N"
+	Enable or disable receiver file write. Default is 0. )V0G0N"
            << std::endl;
         return os.str();
     }

@@ -210,8 +210,7 @@ void Implementation::SetupDataProcessor(int i) {
 void Implementation::SetupDataStreamer(int i) {
     dataStreamer[i]->SetFifo(fifo[i].get());
     dataStreamer[i]->SetGeneralData(generalData);
-    dataStreamer[i]->CreateZmqSockets(streamingPort, streamingSrcIP,
-                                      streamingHwm);
+    dataStreamer[i]->CreateZmqSockets(streamingPort, streamingHwm);
     dataStreamer[i]->SetAdditionalJsonHeader(additionalJsonHeader);
     dataStreamer[i]->SetFileIndex(fileIndex);
     dataStreamer[i]->SetQuadEnable(quadEnable);

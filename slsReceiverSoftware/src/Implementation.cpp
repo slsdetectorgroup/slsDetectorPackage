@@ -1261,13 +1261,6 @@ void Implementation::setStreamingPort(const uint16_t i) {
     LOG(logINFO) << "Streaming Port: " << streamingPort;
 }
 
-IpAddr Implementation::getStreamingSourceIP() const { return streamingSrcIP; }
-
-void Implementation::setStreamingSourceIP(const IpAddr ip) {
-    streamingSrcIP = ip;
-    LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
-}
-
 int Implementation::getStreamingHwm() const { return streamingHwm; }
 
 void Implementation::setStreamingHwm(const int i) {

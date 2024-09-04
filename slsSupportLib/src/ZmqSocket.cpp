@@ -56,13 +56,14 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
 
     // enable IPv6 addresses
     int ipv6 = 1;
-    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_IPV6, &ipv6, sizeof(ipv6))) {
+    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_IPV6, &ipv6,
+                       sizeof(ipv6))) {
         PrintError();
         throw ZmqSocketError("Could not set ZMQ_IPV6");
     }
 }
 
-ZmqSocket::ZmqSocket(const uint16_t portnumber, const char *ethip)
+ZmqSocket::ZmqSocket(const uint16_t portnumberr)
     : portno(portnumber), sockfd(true) {
     // create context
     sockfd.contextDescriptor = zmq_ctx_new();
@@ -79,13 +80,14 @@ ZmqSocket::ZmqSocket(const uint16_t portnumber, const char *ethip)
 
     // construct address, can be refactored with libfmt
     std::ostringstream oss;
-    oss << "tcp://" << (ethip == nullptr ? "*" : ethip) << ":" << portno;
+    oss << "tcp://*:" << portno;
     sockfd.serverAddress = oss.str();
     LOG(logDEBUG) << "zmq address: " << sockfd.serverAddress;
 
     // enable IPv6 addresses
     int ipv6 = 1;
-    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_IPV6, &ipv6, sizeof(ipv6))) {
+    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_IPV6, &ipv6,
+                       sizeof(ipv6))) {
         PrintError();
         throw ZmqSocketError("Could not set ZMQ_IPV6");
     }
@@ -494,7 +496,7 @@ void ZmqSocket::PrintError() {
 
 // Nested class to do RAII handling of socket descriptors
 ZmqSocket::mySocketDescriptors::mySocketDescriptors(bool server)
-    : server(server), contextDescriptor(nullptr), socketDescriptor(nullptr){};
+    : server(server), contextDescriptor(nullptr), socketDescriptor(nullptr) {};
 ZmqSocket::mySocketDescriptors::~mySocketDescriptors() {
     Disconnect();
     Close();

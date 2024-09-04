@@ -24,7 +24,7 @@
 #include <rapidjson/document.h> //json header in zmq stream
 #pragma GCC diagnostic pop
 
-//#include <zmq.h>
+// #include <zmq.h>
 
 class zmq_msg_t;
 namespace sls {
@@ -98,21 +98,11 @@ class ZmqSocket {
     // use this to optimize if optimizing required eg. int value = -1; if
     // (zmq_setsockopt(socketDescriptor, ZMQ_LINGER, &value,sizeof(value))) {
     //	Close();
-    /**
-     * Constructor for a client
-     * Creates socket, context and connects to server
-     * @param hostname_or_ip hostname or ip of server
-     * @param portnumber port number
-     */
+    /** Constructor for a subscriber socket */
     ZmqSocket(const char *const hostname_or_ip, const uint16_t portnumber);
 
-    /**
-     * Constructor for a server
-     * Creates socket, context and connects to server
-     * @param portnumber port number
-     * @param ethip is the ip of the ethernet interface to stream zmq from
-     */
-    ZmqSocket(const uint16_t portnumber, const char *ethip);
+    /** Constructor for a publisher socket */
+    ZmqSocket(const uint16_t portnumber);
 
     /** Returns high water mark for outbound messages */
     int GetSendHighWaterMark();

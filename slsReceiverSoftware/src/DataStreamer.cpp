@@ -87,7 +87,7 @@ void DataStreamer::RecordFirstIndex(uint64_t fnum, size_t firstImageIndex) {
 void DataStreamer::CreateZmqSockets(uint16_t port, int hwm) {
     uint16_t portnum = port + index;
     try {
-        zmqSocket = new ZmqSocket(portnum, nullptr);
+        zmqSocket = new ZmqSocket(portnum);
 
         // set if custom
         if (hwm >= 0) {

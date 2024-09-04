@@ -113,9 +113,6 @@ void qTabAdvanced::Initialization() {
             SLOT(ForceSetRxrUDPMAC()));
     connect(spinRxrZMQPort, SIGNAL(valueChanged(int)), this,
             SLOT(SetRxrZMQPort(int)));
-    connect(dispRxrZMQIP, SIGNAL(editingFinished()), this, SLOT(SetRxrZMQIP()));
-    connect(dispRxrZMQIP, SIGNAL(returnPressed()), this,
-            SLOT(ForceSetRxrZMQIP()));
 
     // roi
     if (tab_roi->isEnabled()) {
@@ -388,20 +385,6 @@ void qTabAdvanced::GetRxrZMQPort() {
             SLOT(SetRxrZMQPort(int)));
 }
 
-void qTabAdvanced::GetRxrZMQIP() {
-    LOG(logDEBUG) << "Getting Receiver ZMQ IP";
-    disconnect(dispRxrZMQIP, SIGNAL(editingFinished()), this,
-               SLOT(SetRxrZMQIP()));
-
-    try {
-        auto retval = det->getRxZmqIP({comboDetector->currentIndex()})[0].str();
-        dispRxrZMQIP->setText(QString(retval.c_str()));
-    }
-    CATCH_DISPLAY("Could not get receiver zmq ip.", "qTabAdvanced::GetRxrZMQIP")
-
-    connect(dispRxrZMQIP, SIGNAL(editingFinished()), this, SLOT(SetRxrZMQIP()));
-}
-
 void qTabAdvanced::SetDetector() {
     LOG(logDEBUG) << "Set Detector: "
                   << comboDetector->currentText().toLatin1().data();
@@ -418,7 +401,6 @@ void qTabAdvanced::SetDetector() {
     GetRxrUDPIP();
     GetRxrUDPMAC();
     GetRxrZMQPort();
-    GetRxrZMQIP();
 
     LOG(logDEBUG) << det->printRxConfiguration();
 }
@@ -587,23 +569,6 @@ void qTabAdvanced::SetRxrZMQPort(int port) {
                  "qTabAdvanced::SetRxrZMQPort", this,
                  &qTabAdvanced::GetRxrZMQPort)
 }
-
-void qTabAdvanced::SetRxrZMQIP(bool force) {
-    // return forces modification (inconsistency from command line)
-    if (dispRxrZMQIP->isModified() || force) {
-        dispRxrZMQIP->setModified(false);
-        std::string s = dispRxrZMQIP->text().toLatin1().constData();
-        LOG(logINFO) << "Setting Receiver ZMQ IP:" << s;
-        try {
-            det->setRxZmqIP(IpAddr{s}, {comboDetector->currentIndex()});
-        }
-        CATCH_HANDLE("Could not set Receiver ZMQ IP.",
-                     "qTabAdvanced::SetRxrZMQIP", this,
-                     &qTabAdvanced::GetRxrZMQIP)
-    }
-}
-
-void qTabAdvanced::ForceSetRxrZMQIP() { SetRxrZMQIP(true); }
 
 void qTabAdvanced::GetROI() {
     LOG(logDEBUG) << "Getting ROI";

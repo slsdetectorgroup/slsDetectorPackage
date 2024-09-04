@@ -652,7 +652,7 @@ std::string Caller::rx_zmqip(int action) {
     std::string helpMessage =
         "\n\t[deprecated] The receiver zmq socket (publisher) will "
         "listen to all interfaces ('tcp://*:[port]'to all interfaces "
-        "(from v9.0.0). This command does nothing and will be deprecated "
+        "(from v9.0.0). This command does nothing and will be removed "
         "(from v10.0.0). This change makes no difference to the user.\n";
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {

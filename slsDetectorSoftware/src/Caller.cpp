@@ -7921,7 +7921,7 @@ std::string Caller::patloop0(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patloop0" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patloop. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patloop. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -7976,7 +7976,7 @@ std::string Caller::patloop1(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patloop1" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patloop. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patloop. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8031,7 +8031,7 @@ std::string Caller::patloop2(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patloop2" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patloop. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patloop. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8205,7 +8205,7 @@ std::string Caller::patnloop0(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patnloop0" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patnloop. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patnloop. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8258,7 +8258,7 @@ std::string Caller::patnloop1(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patnloop1" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patnloop. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patnloop. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8311,7 +8311,7 @@ std::string Caller::patnloop2(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patnloop2" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patnloop. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patnloop. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8562,7 +8562,7 @@ std::string Caller::patwait0(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patwait0" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patwait. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patwait. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8614,7 +8614,7 @@ std::string Caller::patwait1(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patwait1" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patwait. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patwait. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8666,7 +8666,7 @@ std::string Caller::patwait2(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patwait2" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patwait. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patwait. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8773,8 +8773,7 @@ std::string Caller::patwaittime0(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patwaittime0" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patwaittime. )V0G0N"
-           << std::endl;
+        os << R"V0G0N(Deprecated command. Use patwaittime. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8826,8 +8825,7 @@ std::string Caller::patwaittime1(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patwaittime1" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patwaittime. )V0G0N"
-           << std::endl;
+        os << R"V0G0N(Deprecated command. Use patwaittime. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8879,8 +8877,7 @@ std::string Caller::patwaittime2(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patwaittime2" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patwaittime. )V0G0N"
-           << std::endl;
+        os << R"V0G0N(Deprecated command. Use patwaittime. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -12107,63 +12104,6 @@ std::string Caller::rx_zmqhwm(int action) {
             }
             auto arg0 = StringTo<int>(args[0]);
             det->setRxZmqHwm(arg0);
-            os << args.front() << '\n';
-        }
-    }
-
-    return os.str();
-}
-
-std::string Caller::rx_zmqip(int action) {
-
-    std::ostringstream os;
-    // print help
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << "Command: rx_zmqip" << std::endl;
-        os << R"V0G0N([x.x.x.x]
-	Zmq Ip Address from which data is to be streamed out of the receiver. Also restarts receiver zmq streaming if enabled. Default is from rx_hostname. Modified only when using an intermediate process between receiver. )V0G0N"
-           << std::endl;
-        return os.str();
-    }
-
-    // check if action and arguments are valid
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (1 && args.size() != 0) {
-            throw RuntimeError("Wrong number of arguments for action GET");
-        }
-
-        if (args.size() == 0) {
-        }
-
-    }
-
-    else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (1 && args.size() != 1) {
-            throw RuntimeError("Wrong number of arguments for action PUT");
-        }
-
-        if (args.size() == 1) {
-        }
-
-    }
-
-    else {
-
-        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
-                           "are ['GET', 'PUT']");
-    }
-
-    // generate code for each action
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (args.size() == 0) {
-            auto t = det->getRxZmqIP(std::vector<int>{det_id});
-            os << OutString(t) << '\n';
-        }
-    }
-
-    if (action == slsDetectorDefs::PUT_ACTION) {
-        if (args.size() == 1) {
-            det->setRxZmqIP(IpAddr(args[0]), std::vector<int>{det_id});
             os << args.front() << '\n';
         }
     }

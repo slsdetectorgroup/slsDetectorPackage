@@ -22,7 +22,7 @@ void Caller::call(const std::string &command,
     std::string temp;
     while (temp != cmd) {
         temp = cmd;
-        ReplaceIfDepreciated(cmd);
+        ReplaceIfDeprecated(cmd);
     }
 
     det_id = detector_id;
@@ -37,9 +37,9 @@ void Caller::call(const std::string &command,
     }
 }
 
-bool Caller::ReplaceIfDepreciated(std::string &command) {
-    auto d_it = depreciated_functions.find(command);
-    if (d_it != depreciated_functions.end()) {
+bool Caller::ReplaceIfDeprecated(std::string &command) {
+    auto d_it = deprecated_functions.find(command);
+    if (d_it != deprecated_functions.end()) {
 
         // insert old command into arguments (for dacs)
         if (d_it->second == "dac") {
@@ -643,6 +643,25 @@ std::string Caller::rx_hostname(int action) {
                 os << ToString(args) << '\n';
             }
         }
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+std::string Caller::rx_zmqip(int action) {
+    std::string helpMessage =
+        "\n\t[deprecated] The receiver zmq socket (publisher) will "
+        "listen to all interfaces ('tcp://*:[port]'to all interfaces "
+        "(from v9.0.0). This command does nothing and will be deprecated "
+        "(from v10.0.0). This change makes no difference to the user.\n";
+    std::ostringstream os;
+    if (action == defs::HELP_ACTION) {
+        os << helpMessage << '\n';
+    } else if (action == defs::GET_ACTION) {
+        os << "*" << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        LOG(logWARNING) << helpMessage << '\n';
+        os << args.front() << "*\n";
     } else {
         throw RuntimeError("Unknown action");
     }

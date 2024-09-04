@@ -5993,7 +5993,7 @@ patloop0:
         store_result_in_t: false
   command_name: patloop0
   function_alias: patloop0
-  help: Depreciated command. Use patloop.
+  help: Deprecated command. Use patloop.
   infer_action: true
 patloop1:
   actions:
@@ -6062,7 +6062,7 @@ patloop1:
         store_result_in_t: false
   command_name: patloop1
   function_alias: patloop1
-  help: Depreciated command. Use patloop.
+  help: Deprecated command. Use patloop.
   infer_action: true
 patloop2:
   actions:
@@ -6131,7 +6131,7 @@ patloop2:
         store_result_in_t: false
   command_name: patloop2
   function_alias: patloop2
-  help: Depreciated command. Use patloop.
+  help: Deprecated command. Use patloop.
   infer_action: true
 patmask:
   actions:
@@ -6292,7 +6292,7 @@ patnloop0:
         store_result_in_t: false
   command_name: patnloop0
   function_alias: patnloop0
-  help: Depreciated command. Use patnloop.
+  help: Deprecated command. Use patnloop.
   infer_action: true
 patnloop1:
   actions:
@@ -6350,7 +6350,7 @@ patnloop1:
         store_result_in_t: false
   command_name: patnloop1
   function_alias: patnloop1
-  help: Depreciated command. Use patnloop.
+  help: Deprecated command. Use patnloop.
   infer_action: true
 patnloop2:
   actions:
@@ -6408,7 +6408,7 @@ patnloop2:
         store_result_in_t: false
   command_name: patnloop2
   function_alias: patnloop2
-  help: Depreciated command. Use patnloop.
+  help: Deprecated command. Use patnloop.
   infer_action: true
 patsetbit:
   actions:
@@ -6615,7 +6615,7 @@ patwait0:
         store_result_in_t: false
   command_name: patwait0
   function_alias: patwait0
-  help: Depreciated command. Use patwait.
+  help: Deprecated command. Use patwait.
   infer_action: true
 patwait1:
   actions:
@@ -6673,7 +6673,7 @@ patwait1:
         store_result_in_t: false
   command_name: patwait1
   function_alias: patwait1
-  help: Depreciated command. Use patwait.
+  help: Deprecated command. Use patwait.
   infer_action: true
 patwait2:
   actions:
@@ -6731,7 +6731,7 @@ patwait2:
         store_result_in_t: false
   command_name: patwait2
   function_alias: patwait2
-  help: Depreciated command. Use patwait.
+  help: Deprecated command. Use patwait.
   infer_action: true
 patwaittime:
   actions:
@@ -6852,7 +6852,7 @@ patwaittime0:
         store_result_in_t: false
   command_name: patwaittime0
   function_alias: patwaittime0
-  help: Depreciated command. Use patwaittime.
+  help: Deprecated command. Use patwaittime.
   infer_action: true
 patwaittime1:
   actions:
@@ -6910,7 +6910,7 @@ patwaittime1:
         store_result_in_t: false
   command_name: patwaittime1
   function_alias: patwaittime1
-  help: Depreciated command. Use patwaittime.
+  help: Deprecated command. Use patwaittime.
   infer_action: true
 patwaittime2:
   actions:
@@ -6968,7 +6968,7 @@ patwaittime2:
         store_result_in_t: false
   command_name: patwaittime2
   function_alias: patwaittime2
-  help: Depreciated command. Use patwaittime.
+  help: Deprecated command. Use patwaittime.
   infer_action: true
 patword:
   actions:
@@ -9249,38 +9249,30 @@ rx_zmqip:
         cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: getRxZmqIP
+        function: ''
         input: []
         input_types: []
-        output:
-        - OutString(t)
-        require_det_id: true
+        output: []
+        require_det_id: false
         store_result_in_t: true
     PUT:
       args:
-      - arg_types:
-        - IpAddr
-        argc: 1
-        cast_input:
-        - false
+      - arg_types: []
+        argc: -1
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: setRxZmqIP
-        input:
-        - IpAddr(args[0])
-        input_types:
-        - IpAddr
-        output:
-        - args.front()
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
   command_name: rx_zmqip
   function_alias: rx_zmqip
-  help: "[x.x.x.x]\n\tZmq Ip Address from which data is to be streamed out of the\
-    \ receiver. Also restarts receiver zmq streaming if enabled. Default is from rx_hostname.\
-    \ Modified only when using an intermediate process between receiver."
+  help: ''
   infer_action: true
-  template: true
+  is_description: true
 rx_zmqport:
   actions:
     GET:

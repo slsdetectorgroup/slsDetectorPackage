@@ -63,7 +63,7 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
     }
 }
 
-ZmqSocket::ZmqSocket(const uint16_t portnumberr)
+ZmqSocket::ZmqSocket(const uint16_t portnumber)
     : portno(portnumber), sockfd(true) {
     // create context
     sockfd.contextDescriptor = zmq_ctx_new();
@@ -496,7 +496,7 @@ void ZmqSocket::PrintError() {
 
 // Nested class to do RAII handling of socket descriptors
 ZmqSocket::mySocketDescriptors::mySocketDescriptors(bool server)
-    : server(server), contextDescriptor(nullptr), socketDescriptor(nullptr) {};
+    : server(server), contextDescriptor(nullptr), socketDescriptor(nullptr){};
 ZmqSocket::mySocketDescriptors::~mySocketDescriptors() {
     Disconnect();
     Close();

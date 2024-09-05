@@ -17,14 +17,14 @@ TEST_CASE("Get port number for sub") {
 
 TEST_CASE("Get port number for pub") {
     constexpr int port = 50001;
-    ZmqSocket pub(port, "*");
+    ZmqSocket pub(port);
     REQUIRE(pub.GetPortNumber() == port);
 }
 
 TEST_CASE("Server address") {
     constexpr int port = 50001;
-    ZmqSocket pub(port, "*");
-    REQUIRE(pub.GetZmqServerAddress() == std::string("tcp://*:50001"));
+    ZmqSocket pub(port);
+    REQUIRE(pub.GetZmqServerAddress() == std::string("tcp://0.0.0.0:50001"));
 }
 
 TEST_CASE("Send header on localhost") {
@@ -32,7 +32,7 @@ TEST_CASE("Send header on localhost") {
     ZmqSocket sub("localhost", port);
     sub.Connect();
 
-    ZmqSocket pub(port, "*");
+    ZmqSocket pub(port);
 
     // Header to send
     zmqHeader header;

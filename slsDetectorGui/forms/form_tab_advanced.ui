@@ -1123,6 +1123,9 @@
        </item>
        <item row="6" column="4">
         <widget class="QLineEdit" name="dispRxrZMQIP">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -1151,7 +1154,10 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Publishing ZMQ IP of reciever (packets streamed from receiver for gui)&lt;/p&gt;&lt;p&gt;#rx_zmqip#&lt;/p&gt;&lt;p&gt;Has to be same as zmqip for gui&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>0</string>
+          <string>0.0.0.0</string>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
          </property>
         </widget>
        </item>

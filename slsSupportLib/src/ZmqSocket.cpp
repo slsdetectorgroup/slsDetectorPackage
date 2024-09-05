@@ -90,29 +90,34 @@ ZmqSocket::ZmqSocket(const uint16_t portnumber)
                        sizeof(ipv6))) {
         PrintError();
         throw ZmqSocketError("Could not set ZMQ_IPV6");
-        
+    }
+
     // Socket Options for keepalive
     // enable TCP keepalive
     int keepalive = 1;
-    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_TCP_KEEPALIVE, &keepalive, sizeof(keepalive))) {
+    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_TCP_KEEPALIVE, &keepalive,
+                       sizeof(keepalive))) {
         PrintError();
         throw ZmqSocketError("Could set socket opt ZMQ_TCP_KEEPALIVE");
     }
     // set the number of keepalives before death
     keepalive = 10;
-    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_TCP_KEEPALIVE_CNT, &keepalive, sizeof(keepalive))) {
+    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_TCP_KEEPALIVE_CNT,
+                       &keepalive, sizeof(keepalive))) {
         PrintError();
         throw ZmqSocketError("Could set socket opt ZMQ_TCP_KEEPALIVE_CNT");
     }
     // set the time before the first keepalive
     keepalive = 60;
-    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_TCP_KEEPALIVE_IDLE, &keepalive, sizeof(keepalive))) {
+    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_TCP_KEEPALIVE_IDLE,
+                       &keepalive, sizeof(keepalive))) {
         PrintError();
         throw ZmqSocketError("Could set socket opt ZMQ_TCP_KEEPALIVE_IDLE");
     }
     // set the interval between keepalives
     keepalive = 1;
-    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_TCP_KEEPALIVE_INTVL, &keepalive, sizeof(keepalive))) {
+    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_TCP_KEEPALIVE_INTVL,
+                       &keepalive, sizeof(keepalive))) {
         PrintError();
         throw ZmqSocketError("Could set socket opt ZMQ_TCP_KEEPALIVE_INTVL");
     }
@@ -124,7 +129,7 @@ ZmqSocket::ZmqSocket(const uint16_t portnumber)
     }
     // sleep to allow a slow-joiner
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
-};
+}
 
 int ZmqSocket::GetSendHighWaterMark() {
     int value = 0;
@@ -229,7 +234,7 @@ void ZmqSocket::SetReceiveBuffer(int limit) {
     }
 }
 
-void ZmqSocket::Rebind() { 
+void ZmqSocket::Rebind() {
     // the purpose is to apply HWL changes, which are
     // frozen at bind, which is in the constructor.
 
@@ -525,7 +530,7 @@ void ZmqSocket::PrintError() {
 
 // Nested class to do RAII handling of socket descriptors
 ZmqSocket::mySocketDescriptors::mySocketDescriptors(bool server)
-    : server(server), contextDescriptor(nullptr), socketDescriptor(nullptr) {};
+    : server(server), contextDescriptor(nullptr), socketDescriptor(nullptr){};
 ZmqSocket::mySocketDescriptors::~mySocketDescriptors() {
     Disconnect();
     Close();

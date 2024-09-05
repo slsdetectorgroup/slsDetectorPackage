@@ -338,7 +338,6 @@ int main(int argc, char *argv[]) {
                 while (mt->isBusy()) {
 		          ;
 		          }
-	         // }
 		
 		sprintf(imgfname, "%s/%s_ped.tiff", outdir.c_str(),froot);
 		mt->writePedestal(imgfname);

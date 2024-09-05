@@ -109,23 +109,25 @@ int main(int argc, char *argv[]) {
     { //Safety scope for ifstream
       ifstream inputs( txtfilename, std::ios::in );
       if (inputs.is_open()) {
-	std::cout << "Reading imput filenames from txt-file ..." << std::endl;
-	std::string line{};
-	while (!inputs.eof()) {
-	  std::getline(inputs, line);
-	  filenames.emplace_back(line);
-	  std::cout << line << " line.max_size() " << line.max_size() << " filenames.capacity() " << filenames.capacity() << '\n';
-	}
-	inputs.close();
-	std::cout << "---- Reached end of txt-file. ----" << std::endl;
+	    std::cout << "Reading imput filenames from txt-file ..." << std::endl;
+	    std::string line{};
+	    while (!inputs.eof()) {
+	      std::getline(inputs, line);
+        if(line.find(".h5") != std::string::npos) {
+	        filenames.emplace_back(line);
+	        std::cout << line << std::endl; //" line.max_size() " << line.max_size() << " filenames.capacity() " << filenames.capacity() << '\n';
+        }
+	    }
+	    inputs.close();
+	    std::cout << "---- Reached end of txt-file. ----" << std::endl;
       } else
-	std::cout << "Could not open " << txtfilename << std::endl;
+	      std::cout << "Could not open " << txtfilename << std::endl;
       if (filenames.size()>0) {
-	std::cout << filenames.size() << " filenames found in " << txtfilename << std::endl;
-	std::cout << "The files will be processed in the same order as found in the txt-file." << std::endl;
+	      std::cout << filenames.size() << " filenames found in " << txtfilename << std::endl;
+	      std::cout << "The files will be processed in the same order as found in the txt-file." << std::endl;
       } else {
-	std::cout << "No files found in txt-file!" << std::endl;
-	return 1;
+	      std::cout << "No files found in txt-file!" << std::endl;
+	      return 1;
       }
     }
 
@@ -133,8 +135,8 @@ int main(int argc, char *argv[]) {
 
     // Define decoder
     std::cout << "Jungfrau strixel quad h5" << std::endl;
-    //jungfrauLGADStrixelsDataQuadH5* decoder = new jungfrauLGADStrixelsDataQuadH5();
-    auto decoder = std::make_unique<jungfrauLGADStrixelsDataQuadH5>();
+    jungfrauLGADStrixelsDataQuadH5* decoder = new jungfrauLGADStrixelsDataQuadH5();
+    //auto decoder = std::make_unique<jungfrauLGADStrixelsDataQuadH5>();
     int nx = 1024 / 3, ny = 512 * 3;
 
     //Cluster finder ROI
@@ -162,9 +164,9 @@ int main(int argc, char *argv[]) {
 
     uint32_t nnx, nny;
 
-    //singlePhotonDetector* filter =
-    //  new singlePhotonDetector(decoder.get(), 3, nsigma, 1, NULL, nped, 200, -1, -1, NULL, NULL);
-    auto filter = std::make_unique<singlePhotonDetector>(decoder.get(), 3, nsigma, 1, nullptr, nped, 200, -1, -1, nullptr, nullptr);
+    singlePhotonDetector* filter =
+      new singlePhotonDetector(decoder, 3, nsigma, 1, NULL, nped, 200, -1, -1, NULL, NULL);
+    //auto filter = std::make_unique<singlePhotonDetector>(decoder.get(), 3, nsigma, 1, nullptr, nped, 200, -1, -1, nullptr, nullptr);
 
     thr = 0.15 * thr;
     filter->newDataSet();
@@ -184,9 +186,9 @@ int main(int argc, char *argv[]) {
 
     char* buff;
 
-    //multiThreadedCountingDetector* mt =
-    //    new multiThreadedCountingDetector(filter, nthreads, fifosize);
-    auto mt = std::make_unique<multiThreadedCountingDetector>(filter.get(), nthreads, fifosize);
+    multiThreadedCountingDetector* mt =
+        new multiThreadedCountingDetector(filter, nthreads, fifosize);
+    //auto mt = std::make_unique<multiThreadedCountingDetector>(filter.get(), nthreads, fifosize);
     mt->setClusterSize(csize, csize);
 
 #ifndef ANALOG
@@ -219,73 +221,73 @@ int main(int argc, char *argv[]) {
       std::cout << "PEDESTAL " << std::endl;
 
       if (pedfilename.find(".tif") == std::string::npos) { //not a tiff file
-	std::string const fname(pedfilename);
-	std::cout << fname << std::endl;
-	std::time(&end_time);
-	std::cout << "aaa " << std::ctime(&end_time) << std::endl;
+	      std::string const fname(pedfilename);
+	      std::cout << fname << std::endl;
+	      std::time(&end_time);
+	      std::cout << "aaa " << std::ctime(&end_time) << std::endl;
 
-	mt->setFrameMode(ePedestal);
+	      mt->setFrameMode(ePedestal);
 
-	//HDF5File pedefile;
-	auto pedefile = std::make_unique<HDF5File>();
-	//      //open file
-	if ( pedefile->OpenResources(fname.c_str(),validate_rank) ) {
-	  std::cout << "bbbb " << std::ctime(&end_time) << std::endl;
+	      //HDF5File pedefile;
+	      auto pedefile = std::make_unique<HDF5File>();
+	      //      //open file
+	      if ( pedefile->OpenResources(fname.c_str(),validate_rank) ) {
+	        std::cout << "bbbb " << std::ctime(&end_time) << std::endl;
 	    
-	  framenumber = -1;
+	        framenumber = -1;
 
-	  while ( decoder->readNextFrame(*pedefile, framenumber, iframe, buff) ) {
+	        while ( decoder->readNextFrame(*pedefile, framenumber, iframe, buff) ) {
 
-	    if ((ifr + 1) % 100 == 0) {
-	      std::cout
-		<< " ****"
-		<< decoder->getValue(buff, 20, 20); // << std::endl;
-	    }
-	    mt->pushData(buff);
-	    mt->nextThread();
-	    mt->popFree(buff);
-	    ++ifr;
-	    if (ifr % 100 == 0) {
-	      std::cout << " ****" << ifr << " " << framenumber << " " << iframe
-			<< std::endl;
-	    } // else
+	          if ((ifr + 1) % 100 == 0) {
+	            std::cout
+		            << " ****"
+		            << decoder->getValue(buff, 20, 20); // << std::endl;
+	          }
+	          mt->pushData(buff);
+	          mt->nextThread();
+	          mt->popFree(buff);
+	          ++ifr;
+	          if (ifr % 100 == 0) {
+	            std::cout << " ****" << ifr << " " << framenumber << " " << iframe
+			                  << std::endl;
+	          } // else
 	      
-	    if (ifr >= 1000)
-	      break;
-	    framenumber = -1;
-	  }
+	          if (ifr >= 1000)
+	            break;
+	          framenumber = -1;
+	        }
 	    
-	  pedefile->CloseResources();
-	  while (mt->isBusy()) {
-	    ;
-	  }
+	        pedefile->CloseResources();
+	        while (mt->isBusy()) {
+	          ;
+	        }
 
-	  std::cout << "froot " << froot << std::endl;
-	  auto imgfname = createFileName( outdir, froot, "ped", "tiff");
-	  mt->writePedestal(imgfname.c_str());
-	  imgfname = createFileName( outdir, froot, "rms", "tiff");
-	  mt->writePedestalRMS(imgfname.c_str());
+	        std::cout << "froot " << froot << std::endl;
+	        auto imgfname = createFileName( outdir, froot, "ped", "tiff");
+	        mt->writePedestal(imgfname.c_str());
+	        imgfname = createFileName( outdir, froot, "rms", "tiff");
+	        mt->writePedestalRMS(imgfname.c_str());
 
-	} else
-	  std::cout << "Could not open pedestal file " << fname
-		    << " for reading " << std::endl;
+	      } else
+	        std::cout << "Could not open pedestal file " << fname
+		                << " for reading " << std::endl;
 
       } else { //is a tiff file
 
-	std::vector<double> ped(nx * ny);
-	float* pp = ReadFromTiff(pedfilename.c_str(), nny, nnx);
-	if (pp && (int)nnx == nx && (int)nny == ny) {
-	  for (int i = 0; i < nx * ny; i++) {
-	    ped[i] = pp[i];
-	  }
-	  delete[] pp;
-	  mt->setPedestal(ped.data());
-	  std::cout << "Pedestal set from tiff file " << pedfilename
-		    << std::endl;
-	} else {
-	  std::cout << "Could not open pedestal tiff file " << pedfilename
-		    << " for reading " << std::endl;
-	}
+	      std::vector<double> ped(nx * ny);
+	      float* pp = ReadFromTiff(pedfilename.c_str(), nny, nnx);
+	      if (pp && (int)nnx == nx && (int)nny == ny) {
+	        for (int i = 0; i < nx * ny; i++) {
+	          ped[i] = pp[i];
+	        }
+	        delete[] pp;
+	        mt->setPedestal(ped.data());
+	        std::cout << "Pedestal set from tiff file " << pedfilename
+		                << std::endl;
+	      } else {
+	        std::cout << "Could not open pedestal tiff file " << pedfilename
+		                << " for reading " << std::endl;
+	      }
       }
       std::time(&end_time);
       std::cout << std::ctime(&end_time) << std::endl;
@@ -315,88 +317,88 @@ int main(int argc, char *argv[]) {
       //      //open file
       ioutfile = 0;
       if ( fileh5->OpenResources(filenames[ifile].c_str(), validate_rank) ) {
-	if (thr <= 0 && cf != 0) { // cluster finder
-	  if (of == nullptr) {
-	    of = fopen(cfname.c_str(), "w");
-	    if (of) {
-	      if (mt) {
-		      mt->setFilePointer(of);
-		      std::cout << "file pointer set " << std::endl;
-	      } else {
-		      std::cerr << "Error: mt is null." << std::endl;
-		      return 1;
+	      if (thr <= 0 && cf != 0) { // cluster finder
+	        if (of == nullptr) {
+	          of = fopen(cfname.c_str(), "w");
+	          if (of) {
+	            if (mt) {
+		            mt->setFilePointer(of);
+		            std::cout << "file pointer set " << std::endl;
+	            } else {
+		            std::cerr << "Error: mt is null." << std::endl;
+		            return 1;
+	            }
+	            //mt->setFilePointer(of);
+	            //std::cout << "file pointer set " << std::endl;
+	            std::cout << "Here! " << framenumber << " ";
+	          } else {
+	            std::cout << "Could not open " << cfname
+			                  << " for writing " << std::endl;
+	            mt->setFilePointer(nullptr);
+	            return 1;
+	          }
+	        }
 	      }
-	      //mt->setFilePointer(of);
-	      //std::cout << "file pointer set " << std::endl;
-	      std::cout << "Here! " << framenumber << " ";
-	    } else {
-	      std::cout << "Could not open " << cfname
-			<< " for writing " << std::endl;
-	      mt->setFilePointer(nullptr);
-	      return 1;
-	    }
-	  }
-	}
 	
 	//     //while read frame
-	framenumber = -1;
-	iframe = 0;
-	ifr = 0;
-	//std::cout << "Here! " << framenumber << " ";
-	while ( decoder->readNextFrame(*fileh5, framenumber, iframe, buff) ) {
-	  //std::cout << "Here! " << framenumber << " ";
-	  //         //push
-	  if ((ifr + 1) % 100 == 0) {
-	    std::cout << " ****"
-		      << decoder->getValue(buff, 20, 20); // << std::endl;
-	  }
-	  mt->pushData(buff);
+	      framenumber = -1;
+	      iframe = 0;
+	      ifr = 0;
+	      //std::cout << "Here! " << framenumber << " ";
+	      while ( decoder->readNextFrame(*fileh5, framenumber, iframe, buff) ) {
+	        //std::cout << "Here! " << framenumber << " ";
+	        //         //push
+	        if ((ifr + 1) % 1000 == 0) {
+	          std::cout << " ****"
+		                  << decoder->getValue(buff, 20, 20); // << std::endl;
+	        }
+	        mt->pushData(buff);
 
-	  // 	//         //pop
-	  mt->nextThread();
-	  mt->popFree(buff);
+	        // 	//         //pop
+	        mt->nextThread();
+	        mt->popFree(buff);
 	  
-	  ++ifr;
-	  if (ifr % 100 == 0)
-	    std::cout << " " << ifr << " " << framenumber << std::endl;
-	  if (nframes > 0) {
-	    if (ifr % nframes == 0) {
-	      imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ioutfile );
-	      mt->writeImage(imgfname.c_str(), thr1);
-	      mt->clearImage();
-	      ++ioutfile;
-	    }
-	  }
+	        ++ifr;
+	        if (ifr % 1000 == 0)
+	          std::cout << " " << ifr << " " << framenumber << std::endl;
+	        if (nframes > 0) {
+	          if (ifr % nframes == 0) {
+	            imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ioutfile );
+	            mt->writeImage(imgfname.c_str(), thr1);
+	            mt->clearImage();
+	            ++ioutfile;
+	          }
+	        }
 
-	  framenumber = -1;
-	}
-	std::cout << "aa --" << std::endl;
-	fileh5->CloseResources();
+	        framenumber = -1;
+	      }
+	      std::cout << "aa --" << std::endl;
+	      fileh5->CloseResources();
 
-	std::cout << "bb --" << std::endl;
-	while (mt->isBusy()) {
-	  ;
-	}
+	      std::cout << "bb --" << std::endl;
+	      while (mt->isBusy()) {
+	        ;
+	      }
 
-	std::cout << "cc --" << std::endl;
-	if (nframes >= 0) {
-	  if (nframes > 0)
-	    imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ioutfile );
-	  std::cout << "Writing tiff to " << imgfname << " " << thr1
-		    << std::endl;
-	  mt->writeImage(imgfname.c_str(), thr1);
-	  mt->clearImage();
-	  if (of) {
-	    fclose(of);
-	    of = nullptr;
-	    mt->setFilePointer(nullptr);
-	  }
-	}
-	std::time(&end_time);
-	std::cout << std::ctime(&end_time) << std::endl;
+	      std::cout << "cc --" << std::endl;
+	      if (nframes >= 0) {
+	        if (nframes > 0)
+	          imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ioutfile );
+	        std::cout << "Writing tiff to " << imgfname << " " << thr1
+		                << std::endl;
+	        mt->writeImage(imgfname.c_str(), thr1);
+	        mt->clearImage();
+	        if (of) {
+	          fclose(of);
+	          of = nullptr;
+	          mt->setFilePointer(nullptr);
+	        }
+	      }
+	      std::time(&end_time);
+	      std::cout << std::ctime(&end_time) << std::endl;
       } else
-	std::cout << "Could not open " << filenames[ifile] << " for reading "
-		  << std::endl;
+	      std::cout << "Could not open " << filenames[ifile] << " for reading "
+		              << std::endl;
     }
     if (nframes < 0) {     
       std::string fprefix( getRootString(filenames[0]) ); //This might by a non-ideal name choice for that file
@@ -405,8 +407,11 @@ int main(int argc, char *argv[]) {
       mt->writeImage(imgfname.c_str(), thr1);
     }
 
+    //delete decoder
     //delete filter;
-    //delete mt;
+    delete mt;
+    delete filter;
+    delete decoder;
     delete buff;
 
     return 0;

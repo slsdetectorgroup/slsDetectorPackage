@@ -105,7 +105,7 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
       std::reverse( v.begin(), v.end() );
       std::cout << "mods reversed ";
       for ( auto i : v )
-	std::cout << i << " ";
+	      std::cout << i << " ";
       std::cout << '\n';
     }
 
@@ -115,21 +115,21 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
       x1 = xend;
 
       if (rot==NORMAL) {
-	x0 += shift;
+	      x0 += shift;
       } else {
-	x1-=shift;
+	      x1-=shift;
         reverseVector(mods);
       }
 
       if (half==BOTTOM) {
-	y0 = bottom_ystart;
-	y1 = bottom_yend;
-	shifty = 0;
+	      y0 = bottom_ystart;
+	      y1 = bottom_yend;
+	      shifty = 0;
       } else {
-	y0 = top_ystart;
-	y1 = top_yend;
-	reverseVector(mods);
-	shifty = nr_strixel + nr_center; //double-sided pixels in the center have to be jumped
+	      y0 = top_ystart;
+	      y1 = top_yend;
+	      reverseVector(mods);
+	      shifty = nr_strixel + nr_center; //double-sided pixels in the center have to be jumped
       }
 
     }
@@ -138,23 +138,23 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
 
       int ix, iy = 0;
       // remapping loop
-        for (int ipy = y0; ipy <= y1; ipy++) {
-            for (int ipx = x0; ipx <= x1; ipx++) {
+        for (int ipy = y0; ipy <= y1; ++ipy) {
+            for (int ipx = x0; ipx <= x1; ++ipx) {
 
-                ix = int((ipx - x0) / multiplicator);
-                for (int m = 0; m < multiplicator; ++m) {
-                    if ((ipx - x0) % multiplicator == m)
-                        iy = (ipy - y0) * multiplicator + mods[m] + shifty;
-                }
+              ix = int((ipx - x0) / multiplicator);
+              for (int m = 0; m < multiplicator; ++m) {
+                if ((ipx - x0) % multiplicator == m)
+                  iy = (ipy - y0) * multiplicator + mods[m] + shifty;
+              }
 
-                //	  if (iy< 40)	  cout << iy << "  " << ix <<endl;
-		if (xmin < xmax && ymin < ymax) {
-		  if ( ipx>=xmin && ipx<=xmax && ipy>=ymin && ipy <=ymax )
-		    dataMap[iy][ix] =
-		      (globalROI.nc * (ipy - globalROI.ymin) + (ipx - globalROI.xmin)) * 2;
-		} else {
-		  dataMap[iy][ix] = (nc_rawimg * ipy + ipx) * 2;
-		}
+              //	  if (iy< 40)	  cout << iy << "  " << ix <<endl;
+		          if (xmin < xmax && ymin < ymax) {
+		            if ( ipx>=xmin && ipx<=xmax && ipy>=ymin && ipy <=ymax )
+		              dataMap[iy][ix] =
+		                (globalROI.nc * (ipy - globalROI.ymin) + (ipx - globalROI.xmin)) * 2;
+		          } else {
+		            dataMap[iy][ix] = (nc_rawimg * ipy + ipx) * 2;
+	            }
             }
         }
 
@@ -162,10 +162,10 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
 
     void remapQuad(const int rot) {
 
-        setMappingShifts( rot, BOTTOM );
-	remap();
-	setMappingShifts( rot, TOP );
-	remap();
+      setMappingShifts( rot, BOTTOM );
+	    remap();
+	    setMappingShifts( rot, TOP );
+	    remap();
 
     }
 
@@ -264,16 +264,21 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
     jungfrauLGADStrixelsDataQuadH5(uint16_t xmin = 0, uint16_t xmax = 0,
 				                           uint16_t ymin = 0, uint16_t ymax = 0)
         : slsDetectorData<uint16_t>(
-              nc_strixel,
-              nr_strixel * 2 + nr_center,
-              nc_strixel * ( nr_strixel * 2 + nr_center ) * 2 ) {
+            //nc_strixel,
+            //nr_strixel * 2 + nr_center,
+            //nc_strixel * ( nr_strixel * 2 + nr_center ) * 2 
+            512/2,
+            1024*2,
+            512 * 1024 * 2 ) {
         std::cout << "Jungfrau strixels quad with full module data "
                   << std::endl;
 
         // Fill all strixels with dummy values
-        for (int ix = 0; ix != nc_strixel; ++ix) {
-            for (int iy = 0; iy != nr_strixel * 2 + nr_center; ++iy) {
-	            dataMap[iy][ix] = sizeof(header); //mayb another value is safer
+        //for (int ix = 0; ix != nc_strixel; ++ix) {
+        //    for (int iy = 0; iy != nr_strixel * 2 + nr_center; ++iy) {
+        for (int ix = 0; ix != 512/2; ++ix) {
+            for (int iy = 0; iy != 1024*2; ++iy) {
+	            dataMap[iy][ix] = sizeof(header); //maybe another value is safer
             }
         }
 

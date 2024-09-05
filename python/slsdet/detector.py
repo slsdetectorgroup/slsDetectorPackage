@@ -1043,7 +1043,7 @@ class Detector(CppDetectorApi):
         
         Note
         ----
-        If path does not exist, it will try to create it.
+        If path does not exist and fwrite enabled, it will try to create it at start of acquisition.
         
         Example
         --------
@@ -1059,7 +1059,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def fwrite(self):
-        """Enable or disable receiver file write. Default is enabled. """
+        """Enable or disable receiver file write. Default is disabled. """
         return self.getFileWrite()
 
     @fwrite.setter

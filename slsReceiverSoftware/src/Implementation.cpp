@@ -529,10 +529,7 @@ void Implementation::setFileFormat(const fileFormat f) {
 std::string Implementation::getFilePath() const { return filePath; }
 
 void Implementation::setFilePath(const std::string &c) {
-    if (!c.empty()) {
-        mkdir_p(c); // throws if it can't create
-        filePath = c;
-    }
+    filePath = c;
     LOG(logINFO) << "File path: " << filePath;
 }
 
@@ -900,6 +897,9 @@ void Implementation::CreateUDPSockets() {
 
 void Implementation::SetupWriter() {
     try {
+        // check if folder exists and throw if it cant create
+        mkdir_p(filePath);
+        // create first files
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
             std::ostringstream os;
             os << filePath << "/" << fileName << "_d"

@@ -80,7 +80,7 @@ ZmqSocket::ZmqSocket(const uint16_t portnumber)
 
     // construct address, can be refactored with libfmt
     std::ostringstream oss;
-    oss << "tcp://*:" << portno;
+    oss << "tcp://0.0.0.0:" << portno;
     sockfd.serverAddress = oss.str();
     LOG(logDEBUG) << "zmq address: " << sockfd.serverAddress;
 
@@ -204,8 +204,9 @@ void ZmqSocket::SetReceiveBuffer(int limit) {
     }
 }
 
-void ZmqSocket::Rebind() { // the purpose is to apply HWL changes, which are
-                           // frozen at bind, which is in the constructor.
+void ZmqSocket::Rebind() { 
+    // the purpose is to apply HWL changes, which are
+    // frozen at bind, which is in the constructor.
 
     //    unbbind
     if (zmq_unbind(sockfd.socketDescriptor, sockfd.serverAddress.c_str())) {
@@ -488,15 +489,18 @@ void ZmqSocket::PrintError() {
         LOG(logERROR)
             << "No I/O thread is available to accomplish the task (zmq)";
         break;
+    case ENOENT:
+        LOG(logERROR) << "The requested endpoint does not exist (zmq)";
+        break;
     default:
-        LOG(logERROR) << "Unknown socket error (zmq)";
+        LOG(logERROR) << "Unknown socket error (zmq). Error code: " << errno;
         break;
     }
 }
 
 // Nested class to do RAII handling of socket descriptors
 ZmqSocket::mySocketDescriptors::mySocketDescriptors(bool server)
-    : server(server), contextDescriptor(nullptr), socketDescriptor(nullptr){};
+    : server(server), contextDescriptor(nullptr), socketDescriptor(nullptr) {};
 ZmqSocket::mySocketDescriptors::~mySocketDescriptors() {
     Disconnect();
     Close();

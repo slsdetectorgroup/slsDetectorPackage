@@ -296,12 +296,11 @@ int main(int argc, char *argv[]) {
     if (send) {
         // receive socket
         try {
-	        zmqsocket2 = new sls::ZmqSocket(portnum2, socketip2.c_str());
+	        zmqsocket2 = new sls::ZmqSocket(portnum2);
         } catch (...) {
             cprintf(RED,
-                    "Error: Could not create Zmq sending socket on port %d and "
-                    "ip %s\n",
-                    portnum2, socketip2.c_str());
+                    "Error: Could not create Zmq sending socket on port %d\n",
+                    portnum2);
             //	delete zmqsocket2;
             //	zmqsocket2=NULL;
             //	delete zmqsocket;

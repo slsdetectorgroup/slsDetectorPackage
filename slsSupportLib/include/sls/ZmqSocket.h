@@ -38,6 +38,8 @@ namespace sls {
 #define DEFAULT_LOW_ZMQ_HWM_BUFFERSIZE (1024 * 1024) // 1MB
 #define DEFAULT_ZMQ_BUFFERSIZE         (-1)          // os default
 
+#define ZMQ_PUBLISHER_IP "0.0.0.0"
+
 /** zmq header structure */
 struct zmqHeader {
     /** true if incoming data, false if end of acquisition */

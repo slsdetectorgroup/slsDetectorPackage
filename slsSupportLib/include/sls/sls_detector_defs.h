@@ -67,8 +67,6 @@
 
 #define LOCALHOST_IP "127.0.0.1"
 
-#define ZMQ_PUBLISHER_IP "0.0.0.0"
-
 /** default maximum string length */
 #define MAX_STR_LENGTH   1000
 #define SHORT_STR_LENGTH 20
@@ -183,9 +181,9 @@ class slsDetectorDefs {
         int ymin{-1};
         int ymax{-1};
         ROI() = default;
-        ROI(int xmin, int xmax) : xmin(xmin), xmax(xmax){};
+        ROI(int xmin, int xmax) : xmin(xmin), xmax(xmax) {};
         ROI(int xmin, int xmax, int ymin, int ymax)
-            : xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax){};
+            : xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax) {};
         constexpr std::array<int, 4> getIntArray() const {
             return std::array<int, 4>({xmin, xmax, ymin, ymax});
         }
@@ -236,7 +234,7 @@ typedef struct {
         int x{0};
         int y{0};
         xy() = default;
-        xy(int x, int y) : x(x), y(y){};
+        xy(int x, int y) : x(x), y(y) {};
     } __attribute__((packed));
 #endif
 

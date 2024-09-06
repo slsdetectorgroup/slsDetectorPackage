@@ -1,4 +1,5 @@
 #include "Caller.h"
+#include "sls/ZmqSocket.h"
 #include "sls/bit_utils.h"
 #include "sls/file_utils.h"
 #include "sls/logger.h"

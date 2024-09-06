@@ -658,10 +658,10 @@ std::string Caller::rx_zmqip(int action) {
     if (action == defs::HELP_ACTION) {
         os << helpMessage << '\n';
     } else if (action == defs::GET_ACTION) {
-        os << "*" << '\n';
+        os << ZMQ_PUBLISHER_IP << '\n';
     } else if (action == defs::PUT_ACTION) {
         LOG(logWARNING) << helpMessage << '\n';
-        os << args.front() << "*\n";
+        os << ZMQ_PUBLISHER_IP << '\n';
     } else {
         throw RuntimeError("Unknown action");
     }

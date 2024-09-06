@@ -65,6 +65,7 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
 
 ZmqSocket::ZmqSocket(const uint16_t portnumber)
     : portno(portnumber), sockfd(true) {
+
     // create context
     sockfd.contextDescriptor = zmq_ctx_new();
     if (sockfd.contextDescriptor == nullptr)
@@ -80,7 +81,7 @@ ZmqSocket::ZmqSocket(const uint16_t portnumber)
 
     // construct address, can be refactored with libfmt
     std::ostringstream oss;
-    oss << "tcp://0.0.0.0:" << portno;
+    oss << "tcp://" << ZMQ_PUBLISHER_IP << ":" << portno;
     sockfd.serverAddress = oss.str();
     LOG(logDEBUG) << "zmq address: " << sockfd.serverAddress;
 
@@ -530,7 +531,7 @@ void ZmqSocket::PrintError() {
 
 // Nested class to do RAII handling of socket descriptors
 ZmqSocket::mySocketDescriptors::mySocketDescriptors(bool server)
-    : server(server), contextDescriptor(nullptr), socketDescriptor(nullptr){};
+    : server(server), contextDescriptor(nullptr), socketDescriptor(nullptr) {};
 ZmqSocket::mySocketDescriptors::~mySocketDescriptors() {
     Disconnect();
     Close();

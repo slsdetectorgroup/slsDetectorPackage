@@ -1483,19 +1483,6 @@ void Detector::setRxZmqPort(uint16_t port, int module_id) {
     }
 }
 
-Result<IpAddr> Detector::getRxZmqIP(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverStreamingIP, pos);
-}
-
-void Detector::setRxZmqIP(const IpAddr ip, Positions pos) {
-    bool previouslyReceiverStreaming = getRxZmqDataStream(pos).squash(false);
-    pimpl->Parallel(&Module::setReceiverStreamingIP, pos, ip);
-    if (previouslyReceiverStreaming) {
-        setRxZmqDataStream(false, pos);
-        setRxZmqDataStream(true, pos);
-    }
-}
-
 Result<uint16_t> Detector::getClientZmqPort(Positions pos) const {
     return pimpl->Parallel(&Module::getClientStreamingPort, pos);
 }

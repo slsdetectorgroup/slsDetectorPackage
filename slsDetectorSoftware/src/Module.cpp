@@ -1429,8 +1429,8 @@ void Module::setReceiverHostname(const std::string &hostname,
 
     shm()->numUDPInterfaces = retval.udpInterfaces;
 
-    // to use rx_hostname if empty and also update client zmqip
-    updateReceiverStreamingIP();
+    // to use rx_hostname if empty
+    updateClientStreamingIP();
 }
 
 uint16_t Module::getReceiverPort() const { return shm()->rxTCPPort; }
@@ -1654,21 +1654,6 @@ uint16_t Module::getReceiverStreamingPort() const {
 
 void Module::setReceiverStreamingPort(uint16_t port) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
-}
-
-IpAddr Module::getReceiverStreamingIP() const {
-    return sendToReceiver<IpAddr>(F_GET_RECEIVER_STREAMING_SRC_IP);
-}
-
-void Module::setReceiverStreamingIP(const IpAddr ip) {
-    if (ip == 0) {
-        throw RuntimeError("Invalid receiver zmq ip address");
-    }
-    // if client zmqip is empty, update it
-    if (shm()->zmqip == 0) {
-        shm()->zmqip = ip;
-    }
-    sendToReceiver(F_SET_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
 }
 
 uint16_t Module::getClientStreamingPort() const { return shm()->zmqport; }
@@ -3613,18 +3598,19 @@ void Module::receiveModule(sls_detector_module *myMod, ClientSocket &client) {
     LOG(level) << myMod->nchan << " chans received";
 }
 
-void Module::updateReceiverStreamingIP() {
-    auto ip = getReceiverStreamingIP();
+void Module::updateClientStreamingIP() {
+    auto ip = getClientStreamingIP();
     if (ip == 0) {
         // Hostname could be ip try to decode otherwise look up the hostname
         ip = IpAddr{shm()->rxHostname};
         if (ip == 0) {
             ip = HostnameToIp(shm()->rxHostname);
         }
-        LOG(logINFO) << "Setting default receiver " << moduleIndex
-                     << " streaming zmq ip to " << ip;
+        LOG(logINFO) << "Setting default module " << moduleIndex
+                     << " zmq ip to " << ip;
+
+        setClientStreamingIP(ip);
     }
-    setReceiverStreamingIP(ip);
 }
 
 void Module::updateRateCorrection() {

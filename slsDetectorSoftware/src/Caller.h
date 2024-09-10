@@ -392,7 +392,7 @@ class Caller {
     int rx_id{-1};
 
   private:
-    bool ReplaceIfDepreciated(std::string &command);
+    bool ReplaceIfDeprecated(std::string &command);
     using FunctionMap = std::map<std::string, std::string (Caller::*)(int)>;
     using StringMap = std::map<std::string, std::string>;
     Detector *ptr; // pointer to the detector that executes the command
@@ -734,7 +734,7 @@ class Caller {
 
     };
 
-    StringMap depreciated_functions{
+    StringMap deprecated_functions{
 
         {"detectorversion", "firmwareversion"},
         {"softwareversion", "detectorserverversion"},

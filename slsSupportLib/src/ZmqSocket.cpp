@@ -76,6 +76,32 @@ ZmqSocket::ZmqSocket(const uint16_t portnumber, const char *ethip)
     sockfd.serverAddress = oss.str();
     LOG(logDEBUG) << "zmq address: " << sockfd.serverAddress;
 
+    // Socket Options for keepalive
+    // enable TCP keepalive
+    int keepalive = 1;
+    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_TCP_KEEPALIVE, &keepalive, sizeof(keepalive))) {
+        PrintError();
+        throw ZmqSocketError("Could set socket opt ZMQ_TCP_KEEPALIVE");
+    }
+    // set the number of keepalives before death
+    keepalive = 10;
+    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_TCP_KEEPALIVE_CNT, &keepalive, sizeof(keepalive))) {
+        PrintError();
+        throw ZmqSocketError("Could set socket opt ZMQ_TCP_KEEPALIVE_CNT");
+    }
+    // set the time before the first keepalive
+    keepalive = 60;
+    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_TCP_KEEPALIVE_IDLE, &keepalive, sizeof(keepalive))) {
+        PrintError();
+        throw ZmqSocketError("Could set socket opt ZMQ_TCP_KEEPALIVE_IDLE");
+    }
+    // set the interval between keepalives
+    keepalive = 1;
+    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_TCP_KEEPALIVE_INTVL, &keepalive, sizeof(keepalive))) {
+        PrintError();
+        throw ZmqSocketError("Could set socket opt ZMQ_TCP_KEEPALIVE_INTVL");
+    }
+
     // bind address
     if (zmq_bind(sockfd.socketDescriptor, sockfd.serverAddress.c_str())) {
         PrintError();

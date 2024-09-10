@@ -109,6 +109,7 @@ class ZmqSocket {
     /**
      * Constructor for a server
      * Creates socket, context and connects to server
+     * socket option: keep alive added 
      * @param portnumber port number
      * @param ethip is the ip of the ethernet interface to stream zmq from
      */

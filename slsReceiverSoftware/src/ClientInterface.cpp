@@ -168,8 +168,6 @@ int ClientInterface::functionTable(){
 	flist[F_GET_RECEIVER_FILE_FORMAT]		= 	&ClientInterface::get_file_format;
 	flist[F_SET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::set_streaming_port;
 	flist[F_GET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::get_streaming_port;
-	flist[F_SET_RECEIVER_STREAMING_SRC_IP]	= 	&ClientInterface::set_streaming_source_ip;
-	flist[F_GET_RECEIVER_STREAMING_SRC_IP]	= 	&ClientInterface::get_streaming_source_ip;
 	flist[F_SET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::set_silent_mode;
 	flist[F_GET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::get_silent_mode;
 	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&ClientInterface::restream_stop;
@@ -1081,21 +1079,6 @@ int ClientInterface::set_streaming_port(Interface &socket) {
 int ClientInterface::get_streaming_port(Interface &socket) {
     uint16_t retval = impl()->getStreamingPort();
     LOG(logDEBUG1) << "streaming port:" << retval;
-    return socket.sendResult(retval);
-}
-
-int ClientInterface::set_streaming_source_ip(Interface &socket) {
-    auto ip = socket.Receive<IpAddr>();
-    if (ip == 0)
-        throw RuntimeError("Invalid zmq ip " + ip.str());
-    verifyIdle(socket);
-    impl()->setStreamingSourceIP(ip);
-    return socket.Send(OK);
-}
-
-int ClientInterface::get_streaming_source_ip(Interface &socket) {
-    IpAddr retval = impl()->getStreamingSourceIP();
-    LOG(logDEBUG1) << "streaming IP:" << retval;
     return socket.sendResult(retval);
 }
 

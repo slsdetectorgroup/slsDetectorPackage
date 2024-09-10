@@ -210,8 +210,7 @@ void Implementation::SetupDataProcessor(int i) {
 void Implementation::SetupDataStreamer(int i) {
     dataStreamer[i]->SetFifo(fifo[i].get());
     dataStreamer[i]->SetGeneralData(generalData);
-    dataStreamer[i]->CreateZmqSockets(streamingPort, streamingSrcIP,
-                                      streamingHwm);
+    dataStreamer[i]->CreateZmqSockets(streamingPort, streamingHwm);
     dataStreamer[i]->SetAdditionalJsonHeader(additionalJsonHeader);
     dataStreamer[i]->SetFileIndex(fileIndex);
     dataStreamer[i]->SetQuadEnable(quadEnable);
@@ -1260,13 +1259,6 @@ uint16_t Implementation::getStreamingPort() const { return streamingPort; }
 void Implementation::setStreamingPort(const uint16_t i) {
     streamingPort = i;
     LOG(logINFO) << "Streaming Port: " << streamingPort;
-}
-
-IpAddr Implementation::getStreamingSourceIP() const { return streamingSrcIP; }
-
-void Implementation::setStreamingSourceIP(const IpAddr ip) {
-    streamingSrcIP = ip;
-    LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
 }
 
 int Implementation::getStreamingHwm() const { return streamingHwm; }

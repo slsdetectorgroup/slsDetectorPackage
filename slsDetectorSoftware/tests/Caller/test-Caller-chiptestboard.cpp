@@ -1043,10 +1043,10 @@ TEST_CASE("CALLER::v_a", "[.cmdcall]") {
         auto prev_val = det.getPower(defs::V_POWER_A);
         {
             std::ostringstream oss1, oss2;
-            caller.call("v_a", {"700"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "v_a 700\n");
+            caller.call("v_a", {"1200"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "v_a 1200\n");
             caller.call("v_a", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "v_a 700\n");
+            REQUIRE(oss2.str() == "v_a 1200\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPower(defs::V_POWER_A, prev_val[i], {i});
@@ -1065,10 +1065,10 @@ TEST_CASE("CALLER::v_b", "[.cmdcall]") {
         auto prev_val = det.getPower(defs::V_POWER_B);
         {
             std::ostringstream oss1, oss2;
-            caller.call("v_b", {"700"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "v_b 700\n");
+            caller.call("v_b", {"1200"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "v_b 1200\n");
             caller.call("v_b", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "v_b 700\n");
+            REQUIRE(oss2.str() == "v_b 1200\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPower(defs::V_POWER_B, prev_val[i], {i});
@@ -1087,10 +1087,10 @@ TEST_CASE("CALLER::v_c", "[.cmdcall]") {
         auto prev_val = det.getPower(defs::V_POWER_C);
         {
             std::ostringstream oss1, oss2;
-            caller.call("v_c", {"700"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "v_c 700\n");
+            caller.call("v_c", {"1200"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "v_c 1200\n");
             caller.call("v_c", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "v_c 700\n");
+            REQUIRE(oss2.str() == "v_c 1200\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPower(defs::V_POWER_C, prev_val[i], {i});
@@ -1109,10 +1109,10 @@ TEST_CASE("CALLER::v_d", "[.cmdcall]") {
         auto prev_val = det.getPower(defs::V_POWER_D);
         {
             std::ostringstream oss1, oss2;
-            caller.call("v_d", {"700"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "v_d 700\n");
+            caller.call("v_d", {"1200"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "v_d 1200\n");
             caller.call("v_d", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "v_d 700\n");
+            REQUIRE(oss2.str() == "v_d 1200\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPower(defs::V_POWER_D, prev_val[i], {i});

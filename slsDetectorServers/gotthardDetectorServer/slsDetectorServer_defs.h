@@ -12,7 +12,11 @@
 
 #define LINKED_SERVER_NAME "gotthardDetectorServer"
 
+#ifdef VIRTUAL
+#define CTRL_SRVR_INIT_TIME_US (2 * 1000 * 1000)
+#else
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
+#endif
 
 /* Enums */
 enum ADCINDEX { TEMP_FPGA, TEMP_ADC };

@@ -148,7 +148,6 @@ set(SLS_INTERNAL_QWT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libs/qwt-6.1.5)
 set(ClangFormat_EXCLUDE_PATTERNS    "build/" 
                                     "libs/" 
                                     "slsDetectorCalibration/" 
-                                    "ctbGui/" 
                                     "manual/"
                                     "python/"
                                     "sample/"
@@ -318,7 +317,7 @@ if (SLS_USE_PYTHON)
 endif(SLS_USE_PYTHON)
 
 if (SLS_USE_CTBGUI)
-    add_subdirectory(ctbGui)
+    add_subdirectory(pyctbgui)
 endif(SLS_USE_CTBGUI)
 
 configure_file( .clang-tidy  

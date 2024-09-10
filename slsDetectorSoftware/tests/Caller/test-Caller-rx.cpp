@@ -861,26 +861,6 @@ TEST_CASE("Caller::rx_zmqport", "[.cmdcall][.rx]") {
     }
 }
 
-TEST_CASE("Caller::rx_zmqip", "[.cmdcall][.rx]") {
-    Detector det;
-    Caller caller(&det);
-    auto prev_val = det.getRxZmqIP();
-    {
-        std::ostringstream oss;
-        caller.call("rx_zmqip", {"127.0.0.1"}, 0, PUT, oss);
-        REQUIRE(oss.str() == "rx_zmqip 127.0.0.1\n");
-        std::cout << "ZMQIP: " << det.getRxZmqIP() << '\n';
-    }
-    {
-        std::ostringstream oss;
-        caller.call("rx_zmqip", {}, 0, GET, oss);
-        REQUIRE(oss.str() == "rx_zmqip 127.0.0.1\n");
-    }
-    for (int i = 0; i != det.size(); ++i) {
-        det.setRxZmqIP(prev_val[i], {i});
-    }
-}
-
 TEST_CASE("Caller::rx_zmqhwm", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);

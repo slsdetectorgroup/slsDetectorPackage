@@ -1041,18 +1041,6 @@ rx_zmqstartfnum:
     PUT:
       function: setRxZmqStartingFrame
 
-rx_zmqip:
-  help: "[x.x.x.x]\n\tZmq Ip Address from which data is to be streamed out of the receiver. Also restarts receiver zmq streaming if enabled. Default is from rx_hostname. Modified only when using an intermediate process between receiver."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getRxZmqIP
-    PUT:
-      function: setRxZmqIP
-      input_types: [ IpAddr ]
-      input: [ 'IpAddr(args[0])' ]
-      cast_input: [ false ]
-
 zmqip:
   help: "[x.x.x.x]\n\tIp Address to listen to zmq data streamed out from receiver or intermediate process. Default connects to receiver zmq Ip Address (from rx_hostname). Modified only when using an intermediate process between receiver and client(gui). Also restarts client zmq streaming if enabled."
   inherit_actions: INTEGER_COMMAND_VEC_ID
@@ -2578,6 +2566,14 @@ rx_hostname:
         PUT:
           argc: -1
 
+rx_zmqip:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: -1
+
 rx_roi:
     is_description: true
     actions:
@@ -3936,7 +3932,7 @@ patloop:
       output: [level,"' '" , "'['" , "ToStringHex(start, 4)" , '", "' , "ToStringHex(stop, 4)", "']'" ]
 
 patloop0:
-    help: "Depreciated command. Use patloop."
+    help: "Deprecated command. Use patloop."
     inherit_actions: patloop
     actions:
       GET:
@@ -3983,7 +3979,7 @@ patnloop:
       output: [ level,"' '" , nloops ]
 
 patnloop0:
-    help: "Depreciated command. Use patnloop."
+    help: "Deprecated command. Use patnloop."
     inherit_actions: patnloop
     actions:
       GET:
@@ -4029,7 +4025,7 @@ patwait:
       output: [level,"' '" ,  "ToStringHex(addr, 4)" ]
 
 patwait0:
-    help: "Depreciated command. Use patwait."
+    help: "Deprecated command. Use patwait."
     inherit_actions: patwait
     actions:
       GET:
@@ -4075,7 +4071,7 @@ patwaittime:
       output: [level,"' '" ,  "waittime" ]
 
 patwaittime0:
-    help: "Depreciated command. Use patwaittime."
+    help: "Deprecated command. Use patwaittime."
     inherit_actions: patwaittime
     actions:
       GET:

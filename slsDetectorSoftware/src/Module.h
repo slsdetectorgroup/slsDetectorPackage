@@ -351,8 +351,6 @@ class Module : public virtual slsDetectorDefs {
     void setReceiverStreamingStartingFrame(int fnum);
     uint16_t getReceiverStreamingPort() const;
     void setReceiverStreamingPort(uint16_t port);
-    IpAddr getReceiverStreamingIP() const;
-    void setReceiverStreamingIP(const IpAddr ip);
     uint16_t getClientStreamingPort() const;
     void setClientStreamingPort(uint16_t port);
     IpAddr getClientStreamingIP() const;
@@ -766,7 +764,7 @@ class Module : public virtual slsDetectorDefs {
     sls_detector_module getModule();
     void sendModule(sls_detector_module *myMod, ClientSocket &client);
     void receiveModule(sls_detector_module *myMod, ClientSocket &client);
-    void updateReceiverStreamingIP();
+    void updateClientStreamingIP();
 
     void updateRateCorrection();
     /** Template function to do linear interpolation between two points (Eiger

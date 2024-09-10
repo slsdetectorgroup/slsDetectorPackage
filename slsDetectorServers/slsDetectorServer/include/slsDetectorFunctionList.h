@@ -136,6 +136,9 @@ void checkVirtual9MFlag();
 #endif
 
 // set up detector
+#if defined(EIGERD) && !defined(VIRTUAL)
+void setupFebBeb();
+#endif
 #if defined(EIGERD) || defined(MYTHEN3D)
 void allocateDetectorStructureMemory();
 #endif

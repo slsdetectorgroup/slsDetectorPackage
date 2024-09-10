@@ -1212,31 +1212,6 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def rx_zmqip(self):
-        """
-        Zmq Ip Address from which data is to be streamed out of the receiver. 
-        
-        Note
-        -----
-        Also restarts receiver zmq streaming if enabled. \n
-        Default is from rx_hostname. \n
-        Modified only when using an intermediate process after receiver.
-
-        Example
-        -------
-        >>> d.rx_zmqip
-        192.168.0.101
-        >>> d.rx_zmqip = '192.168.0.101'
-        """
-        return self.getRxZmqIP()
-
-    @rx_zmqip.setter
-    def rx_zmqip(self, ip):
-        ip = ut.make_ip(ip) #Convert from int or string to IpAddr
-        ut.set_using_dict(self.setRxZmqIP, ip)
-
-    @property
-    @element
     def zmqip(self):
         """
         Ip Address to listen to zmq data streamed out from receiver or intermediate process.

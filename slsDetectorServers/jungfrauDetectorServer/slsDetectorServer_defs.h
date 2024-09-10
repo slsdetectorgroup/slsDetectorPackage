@@ -17,7 +17,11 @@
 #define ID_FILE            "detid_jungfrau.txt"
 #define LINKED_SERVER_NAME "jungfrauDetectorServer"
 
+#ifdef VIRTUAL
+#define CTRL_SRVR_INIT_TIME_US (4 * 1000 * 1000)
+#else
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
+#endif
 
 /* Hardware Definitions */
 #define NCHAN               (256 * 256)

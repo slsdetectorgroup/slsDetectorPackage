@@ -192,12 +192,12 @@ TEST_CASE("Caller::patloop", "[.cmdcall]") {
             std::string sLoop = ToString(iLoop);
             if (iLoop < 3) {
                 std::string deprecatedCmd = "patloop" + sLoop;
-                { // depreciated
+                { // deprecated
                     std::ostringstream oss;
                     caller.call(deprecatedCmd, {"0x20", "0x5c"}, -1, PUT, oss);
                     REQUIRE(oss.str() == deprecatedCmd + " [0x0020, 0x005c]\n");
                 }
-                { // depreciated
+                { // deprecated
                     std::ostringstream oss;
                     caller.call(deprecatedCmd, {}, -1, GET, oss);
                     REQUIRE(oss.str() == deprecatedCmd + " [0x0020, 0x005c]\n");
@@ -241,12 +241,12 @@ TEST_CASE("Caller::patnloop", "[.cmdcall]") {
             std::string sLoop = ToString(iLoop);
             if (iLoop < 3) {
                 std::string deprecatedCmd = "patnloop" + sLoop;
-                { // depreciated
+                { // deprecated
                     std::ostringstream oss;
                     caller.call(deprecatedCmd, {"5"}, -1, PUT, oss);
                     REQUIRE(oss.str() == deprecatedCmd + " 5\n");
                 }
-                { // depreciated
+                { // deprecated
                     std::ostringstream oss;
                     caller.call(deprecatedCmd, {}, -1, GET, oss);
                     REQUIRE(oss.str() == deprecatedCmd + " 5\n");
@@ -287,12 +287,12 @@ TEST_CASE("Caller::patwait", "[.cmdcall]") {
             std::string sLoop = ToString(iLoop);
             if (iLoop < 3) {
                 std::string deprecatedCmd = "patwait" + sLoop;
-                { // depreciated
+                { // deprecated
                     std::ostringstream oss;
                     caller.call(deprecatedCmd, {"0x5c"}, -1, PUT, oss);
                     REQUIRE(oss.str() == deprecatedCmd + " 0x005c\n");
                 }
-                { // depreciated
+                { // deprecated
                     std::ostringstream oss;
                     caller.call(deprecatedCmd, {}, -1, GET, oss);
                     REQUIRE(oss.str() == deprecatedCmd + " 0x005c\n");
@@ -333,12 +333,12 @@ TEST_CASE("Caller::patwaittime", "[.cmdcall]") {
             std::string sLoop = ToString(iLoop);
             if (iLoop < 3) {
                 std::string deprecatedCmd = "patwaittime" + sLoop;
-                { // depreciated
+                { // deprecated
                     std::ostringstream oss;
                     caller.call(deprecatedCmd, {"8589936640"}, -1, PUT, oss);
                     REQUIRE(oss.str() == deprecatedCmd + " 8589936640\n");
                 }
-                { // depreciated
+                { // deprecated
                     std::ostringstream oss;
                     caller.call(deprecatedCmd, {}, -1, GET, oss);
                     REQUIRE(oss.str() == deprecatedCmd + " 8589936640\n");

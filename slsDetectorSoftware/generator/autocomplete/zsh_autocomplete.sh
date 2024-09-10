@@ -2035,11 +2035,6 @@ return 0
 }
 __rx_zmqip() {
 FCN_RETURN=""
-if [[ ${IS_GET} -eq 0 ]]; then
-if [[ "${cword}" == "2" ]]; then
-FCN_RETURN=""
-fi
-fi
 return 0
 }
 __rx_zmqport() {

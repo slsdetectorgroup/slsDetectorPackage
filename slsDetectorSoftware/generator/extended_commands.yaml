@@ -3908,7 +3908,8 @@ fpath:
   command_name: fpath
   function_alias: fpath
   help: "[path]\n\tDirectory where output data files are written in receiver. Default\
-    \ is '/'. \n\tIf path does not exist, it will try to create it."
+    \ is '/'. \n\tIf path does not exist and fwrite enabled, it will try to create\
+    \ it at start of acquisition."
   infer_action: true
   template: true
 framecounter:
@@ -4101,7 +4102,7 @@ fwrite:
         store_result_in_t: false
   command_name: fwrite
   function_alias: fwrite
-  help: "[0, 1]\n\tEnable or disable receiver file write. Default is 1."
+  help: "[0, 1]\n\tEnable or disable receiver file write. Default is 0."
   infer_action: true
   template: true
 gaincaps:

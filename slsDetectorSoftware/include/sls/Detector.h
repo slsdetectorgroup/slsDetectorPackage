@@ -1004,7 +1004,8 @@ class Detector {
 
     Result<std::string> getFilePath(Positions pos = {}) const;
 
-    /** Default is "/"If path does not exist, it will try to create it */
+    /** Default is "/". If path does not exist and fwrite enabled, it will try
+     * to create it at start of acquisition. */
     void setFilePath(const std::string &fpath, Positions pos = {});
 
     Result<std::string> getFileNamePrefix(Positions pos = {}) const;
@@ -1025,7 +1026,7 @@ class Detector {
 
     Result<bool> getFileWrite(Positions pos = {}) const;
 
-    /** default enabled */
+    /** default disabled */
     void setFileWrite(bool value, Positions pos = {});
 
     bool getMasterFileWrite() const;

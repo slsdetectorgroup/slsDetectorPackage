@@ -2993,18 +2993,8 @@ int InferAction::rx_zmqhwm() {
 
 int InferAction::rx_zmqip() {
 
-    if (args.size() == 0) {
-        return slsDetectorDefs::GET_ACTION;
-    }
-
-    if (args.size() == 1) {
-        return slsDetectorDefs::PUT_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
+    throw RuntimeError("sls_detector is disabled for command: rx_zmqip. Use "
+                       "sls_detector_get or sls_detector_put");
 }
 
 int InferAction::rx_zmqport() {

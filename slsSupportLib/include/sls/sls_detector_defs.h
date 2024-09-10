@@ -160,6 +160,28 @@ class slsDetectorDefs {
         sls_detector_header detHeader; /**< is the detector header */
         sls_bitset packetsMask;        /**< is the packets caught bit mask */
     };
+
+    struct startCallbackHeader {
+        int version;
+        int dynamicRange;
+        xy detctorShape;
+        uint32_t size;
+        std::string fileName;
+        uint64_t fileIndex;
+        bool quad;
+    };
+
+    struct dataCallbackHeader {
+        xy shape;
+        uint32_t size;
+        uint64_t acqIndex;
+        uint64_t frameIndex;
+        double progress;
+        bool completeImage;
+        bool flipRows;
+        std::map<std::sting, std::string>> addJsonHeader;
+    };
+
 #endif
     enum frameDiscardPolicy {
         NO_DISCARD,

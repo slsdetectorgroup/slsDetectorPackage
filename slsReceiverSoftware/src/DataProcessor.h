@@ -82,12 +82,12 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                                  std::mutex *hdf5LibMutex);
 
     /** params: sls_receiver_header, pointer to data, image size */
-    void registerCallBackRawDataReady(void (*func)(sls_receiver_header &,
+    void registerCallBackRawDataReady(void (*func)(sls_receiver_header &,dataCallbackHeader, 
                                                    char *, size_t, void *),
                                       void *arg);
 
     /** params: sls_receiver_header, pointer to data, reference to image size */
-    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header &,
+    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header &, dataCallbackHeader, 
                                                          char *, size_t &,
                                                          void *),
                                             void *arg);
@@ -189,7 +189,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * dataPointer is the pointer to the data
      * dataSize in bytes is the size of the data in bytes.
      */
-    void (*rawDataReadyCallBack)(sls_receiver_header &, char *, size_t,
+    void (*rawDataReadyCallBack)(sls_receiver_header &, dataCallbackHeader, char *, size_t,
                                  void *) = nullptr;
 
     /**
@@ -200,7 +200,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * revDatasize is the reference of data size in bytes. Can be modified to
      * the new size to be written/streamed. (only smaller value).
      */
-    void (*rawDataModifyReadyCallBack)(sls_receiver_header &, char *, size_t &,
+    void (*rawDataModifyReadyCallBack)(sls_receiver_header &, dataCallbackHeader, char *, size_t &,
                                        void *) = nullptr;
 
     void *pRawDataReady{nullptr};

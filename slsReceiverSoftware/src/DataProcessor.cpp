@@ -427,13 +427,13 @@ bool DataProcessor::CheckCount() {
 }
 
 void DataProcessor::registerCallBackRawDataReady(
-    void (*func)(sls_receiver_header &, char *, size_t, void *), void *arg) {
+    void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t, void *), void *arg) {
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
 }
 
 void DataProcessor::registerCallBackRawDataModifyReady(
-    void (*func)(sls_receiver_header &, char *, size_t &, void *), void *arg) {
+    void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t &, void *), void *arg) {
     rawDataModifyReadyCallBack = func;
     pRawDataReady = arg;
 }

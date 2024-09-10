@@ -198,7 +198,6 @@ int isChipConfigured();
 int powerChip(int on, char *mess);
 int getPowerChip();
 int configureChip(char *mess);
-void startPeriphery();
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) ||       \
     defined(MYTHEN3D) || defined(GOTTHARD2D)

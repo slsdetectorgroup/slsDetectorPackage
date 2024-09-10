@@ -2,20 +2,19 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "programViaArm.h"
 #include "clogger.h"
+#include "common.h"
 #include "sls/sls_detector_defs.h"
+#include "slsDetectorServer_defs.h"
 
 #include <string.h> //memset
 #include <unistd.h> // access
 
-#define CMD_ARM_LOAD_BIT_FILE                                                  \
-    "~/fpgautil/fpgautil -b /root/apps/xilinx-ctb/XilinxCTB.bit -f Full"
-#define CMD_ARM_DEVICE_TREE_API_FOLDER                                         \
-    "/sys/kernel/config/device-tree/overlays/spidr"
-#define CMD_ARM_DEVICE_TREE_OVERLAY_FILE "/root/apps/xilinx-ctb/pl.dtbo"
-#define CMD_ARM_LOAD_DEVICE_TREE_FORMAT  "cat %s > %s/dtbo"
-#define CMD_ARM_DEVICE_TREE_DST          "/sys/bus/iio/devices/iio:device"
-#define CMD_ARM_DEVICE_NAME              "xilinx-ams", "ad7689", "dac@0", "dac@1", "dac@2"
-#define TIME_LOAD_DEVICE_TREE_MS         (500)
+#define CMD_ARM_LOAD_BIT_FILE "~/fpgautil/fpgautil -b " FIRMWARE_FILE " -f Full"
+#define CMD_ARM_LOAD_DEVICE_TREE                                               \
+    "cat " DEVICE_TREE_OVERLAY_FILE " > " DEVICE_TREE_API_FOLDER "/dtbo"
+#define CMD_ARM_SYM_LINK_FORMAT                                                \
+    "ln -sf " DEVICE_TREE_DST "%d " IIO_DEVICE_FOLDER "/%s"
+#define TIME_LOAD_DEVICE_TREE_MS (500)
 
 extern int executeCommand(char *command, char *result, enum TLogLevel level);
 
@@ -56,54 +55,54 @@ int loadDeviceTree(char *mess) {
 
 int checksBeforeCreatingDeviceTree(char *mess) {
     // check if device tree overlay file exists
-    if (access(CMD_ARM_DEVICE_TREE_OVERLAY_FILE, F_OK) != 0) {
+    if (access(DEVICE_TREE_OVERLAY_FILE, F_OK) != 0) {
         snprintf(mess, MAX_STR_LENGTH,
                  "Device tree overlay file (%s) does not exist\n",
-                 CMD_ARM_DEVICE_TREE_OVERLAY_FILE);
+                 DEVICE_TREE_OVERLAY_FILE);
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tDevice tree overlay file exists (%s)\n",
-                  CMD_ARM_DEVICE_TREE_OVERLAY_FILE));
+    LOG(logINFO,
+        ("\tDevice tree overlay file exists (%s)\n", DEVICE_TREE_OVERLAY_FILE));
 
     // check if device tree folder exists. If it does, remove it
-    if (access(CMD_ARM_DEVICE_TREE_API_FOLDER, F_OK) == 0) {
+    if (access(DEVICE_TREE_API_FOLDER, F_OK) == 0) {
         // remove it
         char cmd[MAX_STR_LENGTH] = {0};
         memset(cmd, 0, MAX_STR_LENGTH);
-        sprintf(cmd, "rmdir %s", CMD_ARM_DEVICE_TREE_API_FOLDER);
+        sprintf(cmd, "rmdir %s", DEVICE_TREE_API_FOLDER);
         char retvals[MAX_STR_LENGTH] = {0};
         memset(retvals, 0, MAX_STR_LENGTH);
         if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
                      "Could not unload device tree overlay api with %s (%s)\n",
                      cmd, retvals);
-            LOG(logWARNING, (mess));
+            LOG(logERROR, (mess));
             return FAIL;
         }
         LOG(logINFO, ("\tUnloaded existing device tree overlay api (%s)\n",
-                      CMD_ARM_DEVICE_TREE_API_FOLDER));
+                      DEVICE_TREE_API_FOLDER));
     } else {
         LOG(logINFO, ("\tNo existing device tree overlay api found(%s)\n",
-                      CMD_ARM_DEVICE_TREE_API_FOLDER));
+                      DEVICE_TREE_API_FOLDER));
     }
 
     // create device tree overlay folder
     {
         char cmd[MAX_STR_LENGTH] = {0};
         memset(cmd, 0, MAX_STR_LENGTH);
-        sprintf(cmd, "mkdir %s", CMD_ARM_DEVICE_TREE_API_FOLDER);
+        sprintf(cmd, "mkdir %s", DEVICE_TREE_API_FOLDER);
         char retvals[MAX_STR_LENGTH] = {0};
         memset(retvals, 0, MAX_STR_LENGTH);
         if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
                      "Could not create device tree overlay api with %s (%s)\n",
                      cmd, retvals);
-            LOG(logWARNING, (mess));
+            LOG(logERROR, (mess));
             return FAIL;
         }
         LOG(logINFO, ("\tDevice tree overlay api created (%s)\n",
-                      CMD_ARM_DEVICE_TREE_API_FOLDER));
+                      DEVICE_TREE_API_FOLDER));
     }
 
     return OK;
@@ -112,15 +111,14 @@ int checksBeforeCreatingDeviceTree(char *mess) {
 int createDeviceTree(char *mess) {
     char cmd[MAX_STR_LENGTH] = {0};
     memset(cmd, 0, MAX_STR_LENGTH);
-    sprintf(cmd, CMD_ARM_LOAD_DEVICE_TREE_FORMAT,
-            CMD_ARM_DEVICE_TREE_OVERLAY_FILE, CMD_ARM_DEVICE_TREE_API_FOLDER);
+    strcpy(cmd, CMD_ARM_LOAD_DEVICE_TREE);
     char retvals[MAX_STR_LENGTH] = {0};
     memset(retvals, 0, MAX_STR_LENGTH);
     if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
                  "Could not load device tree overlay with %s (%s)\n", cmd,
                  retvals);
-        LOG(logWARNING, (mess));
+        LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("\tDevice tree overlay created (cmd: %s)\n", cmd));
@@ -131,20 +129,27 @@ int createDeviceTree(char *mess) {
 
 int verifyDeviceTree(char *mess) {
     LOG(logINFOBLUE, ("Verifying Device Tree...\n"));
-#ifndef VIRTUAL
+
+#ifdef VIRTUAL
+    LOG(logINFOBLUE, ("Device tree verified successfully\n"));
+    return OK;
+#else
 
     // check if iio:device0-4 exists in device tree destination
     int hardcodedDeviceIndex = 0;
+    int adcDeviceIndex = 1;
+    int dacDeviceIndex = 2;
+
     for (int i = 0; i != 5; ++i) {
         char deviceName[MAX_STR_LENGTH] = {0};
         memset(deviceName, 0, MAX_STR_LENGTH);
-        sprintf(deviceName, "%s%d/name", CMD_ARM_DEVICE_TREE_DST, i);
+        sprintf(deviceName, "%s%d/name", DEVICE_TREE_DST, i);
         // check if device exist
         if (access(deviceName, F_OK) != 0) {
             snprintf(mess, MAX_STR_LENGTH,
                      "Could not verify device tree. Device %s does not exist\n",
                      deviceName);
-            LOG(logWARNING, (mess));
+            LOG(logERROR, (mess));
             return FAIL;
         }
         // find name
@@ -157,24 +162,26 @@ int verifyDeviceTree(char *mess) {
             snprintf(mess, MAX_STR_LENGTH,
                      "Could not retrieve device name from device %s (%s)\n",
                      deviceName, retvals);
-            LOG(logWARNING, (mess));
+            LOG(logERROR, (mess));
             return FAIL;
         }
         // verify name
-        char *deviceNames[] = {CMD_ARM_DEVICE_NAME};
+        char *deviceNames[] = {DEVICE_NAME_LIST};
         if (strstr(retvals, deviceNames[hardcodedDeviceIndex]) == NULL) {
             // dacs got loaded first
             if (i == 1 &&
                 strstr(retvals, deviceNames[hardcodedDeviceIndex + 1]) !=
                     NULL) {
                 ++hardcodedDeviceIndex;
+                adcDeviceIndex = 4;
+                dacDeviceIndex = 1;
             } else {
                 snprintf(
                     mess, MAX_STR_LENGTH,
                     "Could not verify device tree. Device %s expected %s but "
                     "got %s\n",
                     deviceName, deviceNames[i], retvals);
-                LOG(logWARNING, (mess));
+                LOG(logERROR, (mess));
                 return FAIL;
             }
         }
@@ -183,7 +190,66 @@ int verifyDeviceTree(char *mess) {
         if (hardcodedDeviceIndex == 5)
             hardcodedDeviceIndex = 1;
     }
+    LOG(logINFOBLUE, ("Device tree verified successfully [temp: 0, adc:%d, "
+                      "dac:%d, %d, %d]\n",
+                      adcDeviceIndex, dacDeviceIndex, dacDeviceIndex + 1,
+                      dacDeviceIndex + 2));
+
+    return createSymbolicLinksForDevices(adcDeviceIndex, dacDeviceIndex, mess);
 #endif
-    LOG(logINFOBLUE, ("Device tree verified successfully\n"));
+}
+
+#ifndef VIRTUAL
+int createSymbolicLinksForDevices(int adcDeviceIndex, int dacDeviceIndex,
+                                  char *mess) {
+
+    // delete andcreate iio device links folder (deleting because cannot
+    // overwrite symbolic links with -sf)
+    if (deleteAbsoluteDirectory(mess, IIO_DEVICE_FOLDER,
+                                "create sym links for device trees") ==
+        FAIL) {
+        return FAIL;
+    }
+    if (createAbsoluteDirectory(mess, IIO_DEVICE_FOLDER,
+                                "create sym links for device trees") ==
+        FAIL) {
+        return FAIL;
+    }
+
+    char *deviceNames[] = {DEVICE_NAME_LIST};
+    // create symbolic links for adc
+    {
+        char cmd[MAX_STR_LENGTH] = {0};
+        memset(cmd, 0, MAX_STR_LENGTH);
+        sprintf(cmd, CMD_ARM_SYM_LINK_FORMAT, adcDeviceIndex, deviceNames[1]);
+        char retvals[MAX_STR_LENGTH] = {0};
+        memset(retvals, 0, MAX_STR_LENGTH);
+        if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+            snprintf(mess, MAX_STR_LENGTH,
+                     "Could not create sym link [adc] (%s)\n", retvals);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        LOG(logINFO, ("\tSym link [adc] created (%s)\n", cmd));
+    }
+
+    // create symbolic links for dacs
+    for (int idac = 0; idac != 3; ++idac) {
+        char cmd[MAX_STR_LENGTH] = {0};
+        memset(cmd, 0, MAX_STR_LENGTH);
+        sprintf(cmd, CMD_ARM_SYM_LINK_FORMAT, dacDeviceIndex + idac,
+                deviceNames[idac + 2]);
+        char retvals[MAX_STR_LENGTH] = {0};
+        memset(retvals, 0, MAX_STR_LENGTH);
+        if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+            snprintf(mess, MAX_STR_LENGTH,
+                     "Could not create sym link [dac%d] (%s)\n", idac,
+                     retvals);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        LOG(logINFO, ("\tSym link [dac%d] created (%s)\n", idac, cmd));
+    }
     return OK;
 }
+#endif

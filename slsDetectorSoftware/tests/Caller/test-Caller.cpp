@@ -3083,7 +3083,7 @@ TEST_CASE("CALLER::zmqip", "[.cmdcall]") {
     REQUIRE(oss2.str() == "zmqip " + zmqip[0].str() + '\n');
 
     for (int i = 0; i != det.size(); ++i) {
-        det.setRxZmqIP(zmqip[i], {i});
+        det.setClientZmqIp(zmqip[i], {i});
     }
 }
 

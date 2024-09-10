@@ -852,7 +852,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Listening ZMQ IP of client interface (packets streamed from receiver for gui)&lt;/p&gt;&lt;p&gt;#zmqip#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Has to be same as rx_zmqip for gui&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Listening ZMQ IP of client interface (packets streamed from receiver for gui)&lt;/p&gt;&lt;p&gt;#zmqip#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Client ZMQ IP:</string>
@@ -886,7 +886,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Listening ZMQ IP of client interface (packets streamed from receiver for gui)&lt;/p&gt;&lt;p&gt;#zmqip#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Has to be same as rx_zmqip for gui&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Listening ZMQ IP of client interface (packets streamed from receiver for gui)&lt;/p&gt;&lt;p&gt;#zmqip#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>0</string>
@@ -945,28 +945,6 @@
          </property>
          <property name="value">
           <number>0</number>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="3">
-        <widget class="QLabel" name="label_16">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <family>Cantarell</family>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Publishing ZMQ IP of reciever (packets streamed from receiver for gui)&lt;/p&gt;&lt;p&gt;#rx_zmqip#&lt;/p&gt;&lt;p&gt;Has to be same as zmqip for gui&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>Receiver ZMQ IP:</string>
          </property>
         </widget>
        </item>
@@ -1118,46 +1096,6 @@
          </property>
          <property name="value">
           <number>0</number>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="4">
-        <widget class="QLineEdit" name="dispRxrZMQIP">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>180</width>
-           <height>20</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>25</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Cantarell</family>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Publishing ZMQ IP of reciever (packets streamed from receiver for gui)&lt;/p&gt;&lt;p&gt;#rx_zmqip#&lt;/p&gt;&lt;p&gt;Has to be same as zmqip for gui&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>0.0.0.0</string>
-         </property>
-         <property name="readOnly">
-          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -2318,7 +2256,6 @@ Exposure Time of a sub frame. Only for Eiger in 32 bit mode
   <tabstop>dispRxrUDPIP</tabstop>
   <tabstop>dispRxrUDPMAC</tabstop>
   <tabstop>spinRxrZMQPort</tabstop>
-  <tabstop>dispRxrZMQIP</tabstop>
   <tabstop>spinNumStoragecells</tabstop>
   <tabstop>spinSubExpTime</tabstop>
   <tabstop>comboSubExpTimeUnit</tabstop>

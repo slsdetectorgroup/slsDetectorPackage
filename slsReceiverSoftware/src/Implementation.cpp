@@ -208,7 +208,7 @@ void Implementation::SetupDataProcessor(int i) {
     dataProcessor[i]->SetCtbDbitOffset(ctbDbitOffset);
     dataProcessor[i]->SetQuadEnable(quadEnable);
     dataProcessor[i]->SetFlipRows(flipRows);
-    dataStreamer[i]->SetNumberofTotalFrames(numberOfTotalFrames);
+    dataProcessor[i]->SetNumberofTotalFrames(numberOfTotalFrames);
     dataProcessor[i]->SetAdditionalJsonHeader(additionalJsonHeader);
 }
 
@@ -809,7 +809,7 @@ void Implementation::stopReceiver() {
                 std::vector<uint32_t> udpPort;
                 std::vector<uint64_t> completeFramesCaught;
                 std::vector<uint64_t> lastFrameIndexCaught;
-                for (size_t i; i != listener.size(); ++i) {
+                for (size_t i = 0; i != listener.size(); ++i) {
                     udpPort.push_back(udpPortNum[i]);
                     completeFramesCaught.push_back(
                         listener[i]->GetNumCompleteFramesCaught());
@@ -924,7 +924,7 @@ void Implementation::SetupWriter() {
             std::string fileNamePrefix = os.str();
             dataProcessor[i]->CreateFirstFiles(
                 fileNamePrefix, fileIndex, overwriteEnable, silentMode,
-                numberOfTotalFrames, detectorDataStream[i]);
+                detectorDataStream[i]);
         }
     } catch (const RuntimeError &e) {
         shutDownUDPSockets();
@@ -1020,7 +1020,7 @@ void Implementation::StartMasterWriter() {
                 (numPorts.x * numPorts.y) > 1) {
                 virtualFileName = dataProcessor[0]->CreateVirtualFile(
                     filePath, fileName, fileIndex, overwriteEnable, silentMode,
-                    modulePos, numberOfTotalFrames, numPorts.x, numPorts.y,
+                    modulePos, numPorts.x, numPorts.y,
                     &hdf5LibMutex);
             }
             // link file in master
@@ -1165,6 +1165,7 @@ uint16_t Implementation::getUDPPortNumber() const { return udpPortNum[0]; }
 void Implementation::setUDPPortNumber(const uint16_t i) {
     udpPortNum[0] = i;
     listener[0]->SetUdpPortNumber(i);
+    dataProcessor[0]->SetUdpPortNumber(i);
     LOG(logINFO) << "UDP Port Number[0]: " << udpPortNum[0];
 }
 
@@ -1174,6 +1175,7 @@ void Implementation::setUDPPortNumber2(const uint16_t i) {
     udpPortNum[1] = i;
     if (listener.size() > 1) {
         listener[1]->SetUdpPortNumber(i);
+        dataProcessor[1]->SetUdpPortNumber(i);
     }
     LOG(logINFO) << "UDP Port Number[1]: " << udpPortNum[1];
 }
@@ -1295,6 +1297,9 @@ void Implementation::setAdditionalJsonHeader(
     const std::map<std::string, std::string> &c) {
 
     additionalJsonHeader = c;
+    for (const auto &it : dataProcessor) {
+        it->SetAdditionalJsonHeader(c);
+    }
     for (const auto &it : dataStreamer) {
         it->SetAdditionalJsonHeader(c);
     }
@@ -1337,6 +1342,9 @@ void Implementation::setAdditionalJsonParameter(const std::string &key,
         LOG(logINFO) << "Adding additional json parameter (" << key << ") to "
                      << value;
     }
+    for (const auto &it : dataProcessor) {
+        it->SetAdditionalJsonHeader(additionalJsonHeader);
+    }
     for (const auto &it : dataStreamer) {
         it->SetAdditionalJsonHeader(additionalJsonHeader);
     }
@@ -1376,6 +1384,8 @@ void Implementation::updateTotalNumberOfFrames() {
     }
     numberOfTotalFrames =
         numFrames * repeats * (int64_t)(numberOfAdditionalStorageCells + 1);
+    for (const auto &it : dataProcessor)
+        it->SetNumberofTotalFrames(numberOfTotalFrames);
     for (const auto &it : dataStreamer)
         it->SetNumberofTotalFrames(numberOfTotalFrames);
     if (numberOfTotalFrames == 0) {
@@ -1634,6 +1644,8 @@ bool Implementation::getFlipRows() const { return flipRows; }
 
 void Implementation::setFlipRows(bool enable) {
     flipRows = enable;
+    for (const auto &it : dataProcessor)
+        it->SetFlipRows(flipRows);
     for (const auto &it : dataStreamer)
         it->SetFlipRows(flipRows);
     LOG(logINFO) << "Flip Rows: " << flipRows;
@@ -1645,6 +1657,10 @@ void Implementation::setQuad(const bool b) {
     if (quadEnable != b) {
         quadEnable = b;
         setDetectorSize(numModules);
+        for (const auto &it : dataProcessor) {
+            it->SetQuadEnable(quadEnable);
+            it->SetFlipRows(flipRows);
+        } 
         for (const auto &it : dataStreamer) {
             it->SetQuadEnable(quadEnable);
             it->SetFlipRows(flipRows);

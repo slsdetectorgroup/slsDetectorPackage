@@ -99,7 +99,7 @@ void printDataCallBackHeader(slsDetectorDefs::sls_receiver_header &header,
         "\n\tShape: [%u, %u]"
         "\n\tAcq Index : %lu"
         "\n\tFrame Index :%lu"
-        "\n\tProgress : %f"
+        "\n\tProgress : %.2f%%"
         "\n\tCompelte Image :%s"
         "\n\tFlip Rows :%s"
         "\n\tAdditional Json Header : %s"

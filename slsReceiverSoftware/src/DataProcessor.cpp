@@ -152,7 +152,6 @@ void DataProcessor::CreateFirstFiles(const std::string &fileNamePrefix,
                                      const uint64_t fileIndex,
                                      const bool overWriteEnable,
                                      const bool silentMode,
-                                     const uint64_t numImages,
                                      const bool detectorDataStream) {
     if (dataFile == nullptr) {
         throw RuntimeError("file object not contstructed");
@@ -180,7 +179,7 @@ void DataProcessor::CreateFirstFiles(const std::string &fileNamePrefix,
     case HDF5:
         dataFile->CreateFirstHDF5DataFile(
             fileNamePrefix, fileIndex, overWriteEnable, silentMode,
-            udpPortNumber, generalData->framesPerFile, numImages, nx, ny,
+            udpPortNumber, generalData->framesPerFile, nTotalFrames, nx, ny,
             generalData->dynamicRange);
         break;
 #endif
@@ -206,7 +205,7 @@ uint32_t DataProcessor::GetFilesInAcquisition() const {
 std::string DataProcessor::CreateVirtualFile(
     const std::string &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
-    const int modulePos, const uint64_t numImages, const int numModX,
+    const int modulePos, const int numModX,
     const int numModY, std::mutex *hdf5LibMutex) {
 
     if (receiverRoiEnabled) {

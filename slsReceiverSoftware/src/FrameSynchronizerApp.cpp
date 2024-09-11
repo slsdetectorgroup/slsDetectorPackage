@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
-/* Creates the slsFrameSynchronizer for running multiple receivers in different threads form a single binary that will spit out zmq streams without reconstructing image */
+/* Creates the slsFrameSynchronizer for running multiple receivers in different
+ * threads form a single binary that will spit out zmq streams without
+ * reconstructing image */
 #include "sls/Receiver.h"
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
@@ -12,8 +14,8 @@
 #include <iostream>
 #include <semaphore.h>
 #include <sys/wait.h> //wait
-#include <unistd.h>
 #include <thread>
+#include <unistd.h>
 
 // gettid added in glibc 2.30
 #if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
@@ -26,15 +28,17 @@
 #define PRINT_IN_COLOR(c, f, ...)                                              \
     printf("\033[%dm" f RESET, 30 + c + 1, ##__VA_ARGS__)
 
-//std::vector<sem_t> semaphores;
+std::vector<std::thread> threads;
+std::vector<sem_t> semaphores;
 
 /**
  * Control+C Interrupt Handler
  * to let all the processes know to exit properly
  */
-void sigInterruptHandler(int p) { 
-   // for (size_t i = 0; i != semaphores.size(); ++i)
-    //    sem_post(&semaphores[i]); 
+void sigInterruptHandler(int p) {
+    for (size_t i = 0; i != semaphores.size(); ++i) {
+        sem_post(&semaphores[i]);
+    }
 }
 
 /**
@@ -230,54 +234,59 @@ int main(int argc, char *argv[]) {
     }
 
     /** - loop over number of receivers */
-    std::vector<std::thread> threads;
-
     for (int i = 0; i != numReceivers; ++i) {
 
+        sem_t semaphore;
+        sem_init(&semaphore, 1, 0);
+        semaphores.push_back(semaphore);
 
-        threads.emplace_back([i, startTCPPort, withCallback, numReceivers]() {
-            //sem_init(&semaphores[i], 1, 0);
+        threads.emplace_back([&semaphore, i, startTCPPort, withCallback,
+                              numReceivers]() {
             sls::Receiver receiver(startTCPPort + i);
 
             /**	- register callbacks. remember to set file write enable to 0
-        (using the client) if we should not write files and you will write data
-        using the callbacks */
+            (using the client) if we should not write files and you will write
+            data using the callbacks */
             if (withCallback) {
 
                 /** - Call back for start acquisition */
-                cprintf(BLUE, "Registering 	StartAcq()\n");
+                cprintf(BLUE, "%d: Registering Start Acquisition Callback\n",
+                        i);
                 receiver.registerCallBackStartAcquisition(StartAcq, nullptr);
 
                 /** - Call back for acquisition finished */
-                cprintf(BLUE, "Registering 	AcquisitionFinished()\n");
+                cprintf(BLUE, "%d: Registering Acquisition Finished Callback\n",
+                        i);
                 receiver.registerCallBackAcquisitionFinished(
                     AcquisitionFinished, nullptr);
 
                 /* 	- Call back for raw data */
-                cprintf(BLUE, "Registering     GetData() \n");
+                cprintf(BLUE, "%d: Registering Data Callback \n", i);
                 if (withCallback == 1)
                     receiver.registerCallBackRawDataReady(GetData, nullptr);
                 else if (withCallback == 2)
                     receiver.registerCallBackRawDataModifyReady(GetData,
-                                                                    nullptr);
+                                                                nullptr);
             }
-
-
+            usleep(3 * 1000 * 1000);
             /** - Print Ready and Instructions how to exit */
             if (i == (numReceivers - 1)) {
-                std::cout << "Ready ... \n";
-                cprintf(RESET, "\n[ Press \'Ctrl+c\' to exit ]\n");
+                std::cout << "Ready ... " << std::endl;
+                cprintf(RESET, "[ Press \'Ctrl+c\' to exit ]\n");
             }
-
-            cprintf(RED, "Receiver %d\n", i);
+            cprintf(RED, "Receiver %d Started\n", i);
             /**	- as long as no Ctrl+C */
-            //sem_wait(&semaphores[i]);
-            //sem_destroy(&semaphores[i]);
-            cprintf(RED, "Receiver %d done\n", i);
-
+            sem_wait(&semaphore);
+            cprintf(RED, "Receiver %d done waiting\n", i);
+            sem_destroy(&semaphore);
+            cprintf(RED, "Receiver %d Exiting\n", i);
         });
     }
-   
+    cprintf(RED, "Waiting for all threads to finish\n");
+
+    for (auto &thread : threads) {
+        thread.join();
+    }
 
     std::cout << "Goodbye!\n";
     return 0;

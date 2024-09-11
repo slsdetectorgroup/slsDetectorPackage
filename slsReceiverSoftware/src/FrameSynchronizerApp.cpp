@@ -29,7 +29,7 @@
     printf("\033[%dm" f RESET, 30 + c + 1, ##__VA_ARGS__)
 
 std::vector<std::thread> threads;
-std::vector<sem_t> semaphores;
+std::vector<sem_t *> semaphores;
 
 /**
  * Control+C Interrupt Handler
@@ -37,7 +37,7 @@ std::vector<sem_t> semaphores;
  */
 void sigInterruptHandler(int p) {
     for (size_t i = 0; i != semaphores.size(); ++i) {
-        sem_post(&semaphores[i]);
+        sem_post(semaphores[i]);
     }
 }
 
@@ -236,11 +236,11 @@ int main(int argc, char *argv[]) {
     /** - loop over number of receivers */
     for (int i = 0; i != numReceivers; ++i) {
 
-        sem_t semaphore;
-        sem_init(&semaphore, 1, 0);
+        sem_t *semaphore = new sem_t;
+        sem_init(semaphore, 1, 0);
         semaphores.push_back(semaphore);
 
-        threads.emplace_back([&semaphore, i, startTCPPort, withCallback,
+        threads.emplace_back([semaphore, i, startTCPPort, withCallback,
                               numReceivers]() {
             sls::Receiver receiver(startTCPPort + i);
 
@@ -268,21 +268,17 @@ int main(int argc, char *argv[]) {
                     receiver.registerCallBackRawDataModifyReady(GetData,
                                                                 nullptr);
             }
-            usleep(3 * 1000 * 1000);
+
             /** - Print Ready and Instructions how to exit */
             if (i == (numReceivers - 1)) {
                 std::cout << "Ready ... " << std::endl;
                 cprintf(RESET, "[ Press \'Ctrl+c\' to exit ]\n");
             }
-            cprintf(RED, "Receiver %d Started\n", i);
             /**	- as long as no Ctrl+C */
-            sem_wait(&semaphore);
-            cprintf(RED, "Receiver %d done waiting\n", i);
-            sem_destroy(&semaphore);
-            cprintf(RED, "Receiver %d Exiting\n", i);
+            sem_wait(semaphore);
+            sem_destroy(semaphore);
         });
     }
-    cprintf(RED, "Waiting for all threads to finish\n");
 
     for (auto &thread : threads) {
         thread.join();

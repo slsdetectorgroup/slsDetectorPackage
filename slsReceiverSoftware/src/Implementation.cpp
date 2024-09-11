@@ -922,9 +922,9 @@ void Implementation::SetupWriter() {
             os << filePath << "/" << fileName << "_d"
                << (modulePos * generalData->numUDPInterfaces + i);
             std::string fileNamePrefix = os.str();
-            dataProcessor[i]->CreateFirstFiles(
-                fileNamePrefix, fileIndex, overwriteEnable, silentMode,
-                detectorDataStream[i]);
+            dataProcessor[i]->CreateFirstFiles(fileNamePrefix, fileIndex,
+                                               overwriteEnable, silentMode,
+                                               detectorDataStream[i]);
         }
     } catch (const RuntimeError &e) {
         shutDownUDPSockets();
@@ -1020,8 +1020,7 @@ void Implementation::StartMasterWriter() {
                 (numPorts.x * numPorts.y) > 1) {
                 virtualFileName = dataProcessor[0]->CreateVirtualFile(
                     filePath, fileName, fileIndex, overwriteEnable, silentMode,
-                    modulePos, numPorts.x, numPorts.y,
-                    &hdf5LibMutex);
+                    modulePos, numPorts.x, numPorts.y, &hdf5LibMutex);
             }
             // link file in master
             if (masterFileWriteEnable) {
@@ -1660,7 +1659,7 @@ void Implementation::setQuad(const bool b) {
         for (const auto &it : dataProcessor) {
             it->SetQuadEnable(quadEnable);
             it->SetFlipRows(flipRows);
-        } 
+        }
         for (const auto &it : dataStreamer) {
             it->SetQuadEnable(quadEnable);
             it->SetFlipRows(flipRows);

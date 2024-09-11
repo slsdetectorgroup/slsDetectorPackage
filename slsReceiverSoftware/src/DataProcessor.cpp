@@ -205,8 +205,8 @@ uint32_t DataProcessor::GetFilesInAcquisition() const {
 std::string DataProcessor::CreateVirtualFile(
     const std::string &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
-    const int modulePos, const int numModX,
-    const int numModY, std::mutex *hdf5LibMutex) {
+    const int modulePos, const int numModX, const int numModY,
+    std::mutex *hdf5LibMutex) {
 
     if (receiverRoiEnabled) {
         throw std::runtime_error(

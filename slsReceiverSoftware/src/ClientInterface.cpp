@@ -54,28 +54,29 @@ std::string ClientInterface::getReceiverVersion() { return APIRECEIVER; }
 
 /***callback functions***/
 void ClientInterface::registerCallBackStartAcquisition(
-    int (*func)(const startCallbackHeader,
-                void *),
-    void *arg) {
+    int (*func)(const startCallbackHeader, void *), void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
 }
 
-void ClientInterface::registerCallBackAcquisitionFinished(void (*func)(uint64_t, uint64_t,
-                                                                       void *),
-                                                          void *arg) {
+void ClientInterface::registerCallBackAcquisitionFinished(
+    void (*func)(const endCallbackHeader, void *), void *arg) {
     acquisitionFinishedCallBack = func;
     pAcquisitionFinished = arg;
 }
 
 void ClientInterface::registerCallBackRawDataReady(
-    void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t, void *), void *arg) {
+    void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t,
+                 void *),
+    void *arg) {
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
 }
 
 void ClientInterface::registerCallBackRawDataModifyReady(
-    void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t &, void *), void *arg) {
+    void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t &,
+                 void *),
+    void *arg) {
     rawDataModifyReadyCallBack = func;
     pRawDataReady = arg;
 }

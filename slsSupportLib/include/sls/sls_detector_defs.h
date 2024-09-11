@@ -25,7 +25,9 @@
 #include <chrono>
 #include <cstdint>
 #include <cstring>
+#include <map>
 #include <string>
+#include <vector>
 #else
 // C includes
 #include <stdint.h>
@@ -114,6 +116,20 @@ class slsDetectorDefs {
     };
 
     /**
+        dimension indexes
+    */
+    enum dimension { X, Y };
+
+#ifdef __cplusplus
+    struct xy {
+        int x{0};
+        int y{0};
+        xy() = default;
+        xy(int x, int y) : x(x), y(y){};
+    } __attribute__((packed));
+#endif
+
+    /**
         @short  structure for a Detector Packet or Image Header
         Details at https://slsdetectorgroup.github.io/devdoc/udpheader.html
         @li frameNumber is the frame number
@@ -162,24 +178,31 @@ class slsDetectorDefs {
     };
 
     struct startCallbackHeader {
-        int version;
-        int dynamicRange;
-        xy detctorShape;
-        uint32_t size;
+        std::vector<uint32_t> udpPort;
+        uint32_t dynamicRange;
+        xy detectorShape;
+        size_t imageSize;
+        std::string filePath;
         std::string fileName;
         uint64_t fileIndex;
         bool quad;
     };
 
+    struct endCallbackHeader {
+        std::vector<uint32_t> udpPort;
+        std::vector<uint64_t> completeFrames;
+        std::vector<uint64_t> lastFrameIndex;
+    };
+
     struct dataCallbackHeader {
+        uint32_t udpPort;
         xy shape;
-        uint32_t size;
         uint64_t acqIndex;
         uint64_t frameIndex;
         double progress;
         bool completeImage;
         bool flipRows;
-        std::map<std::sting, std::string>> addJsonHeader;
+        std::map<std::string, std::string> addJsonHeader;
     };
 
 #endif
@@ -203,9 +226,9 @@ class slsDetectorDefs {
         int ymin{-1};
         int ymax{-1};
         ROI() = default;
-        ROI(int xmin, int xmax) : xmin(xmin), xmax(xmax) {};
+        ROI(int xmin, int xmax) : xmin(xmin), xmax(xmax){};
         ROI(int xmin, int xmax, int ymin, int ymax)
-            : xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax) {};
+            : xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax){};
         constexpr std::array<int, 4> getIntArray() const {
             return std::array<int, 4>({xmin, xmax, ymin, ymax});
         }
@@ -245,20 +268,6 @@ typedef struct {
         HELP_ACTION,
         READOUT_ZMQ_ACTION
     };
-
-    /**
-        dimension indexes
-    */
-    enum dimension { X, Y };
-
-#ifdef __cplusplus
-    struct xy {
-        int x{0};
-        int y{0};
-        xy() = default;
-        xy(int x, int y) : x(x), y(y) {};
-    } __attribute__((packed));
-#endif
 
     /**
       use of the external signals

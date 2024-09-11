@@ -8470,7 +8470,8 @@ int start_readout(int file_des) {
 #else
     if (Server_VerifyLock() == OK) {
         enum runStatus s = getRunStatus();
-        if ((s == RUNNING || s == WAITING) && (myDetectorType != XILINX_CHIPTESTBOARD)) {
+        if ((s == RUNNING || s == WAITING) &&
+            (myDetectorType != XILINX_CHIPTESTBOARD)) {
             ret = FAIL;
             strcpy(mess, "Could not start readout because the detector is "
                          "already running!\n");

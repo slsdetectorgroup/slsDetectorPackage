@@ -50,19 +50,92 @@ std::string getHelpMessage() {
  * enabled) if registerCallBackRawDataReady or
  * registerCallBackRawDataModifyReady registered, users get data
  */
-int StartAcq(const std::string &filePath, const std::string &fileName,
-             uint64_t fileIndex, size_t imageSize, void *objectPointer) {
-    LOG(sls::logINFOBLUE) << "#### StartAcq:  filePath:" << filePath
-                          << "  fileName:" << fileName
-                          << " fileIndex:" << fileIndex
-                          << "  imageSize:" << imageSize << " ####";
+int StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
+             void *objectPointer) {
+    LOG(sls::logINFOBLUE) << "#### Start Acquisition:"
+                          << "\n\t["
+                          << "\n\tUDP Port : "
+                          << sls::ToString(callbackHeader.udpPort)
+                          << "\n\tDynamic Range : "
+                          << callbackHeader.dynamicRange
+                          << "\n\tDetector Shape : "
+                          << sls::ToString(callbackHeader.detectorShape)
+                          << "\n\tImage Size : " << callbackHeader.imageSize
+                          << "\n\tFile Path : " << callbackHeader.filePath
+                          << "\n\tFile Name : " << callbackHeader.fileName
+                          << "\n\tFile Index : " << callbackHeader.fileIndex
+                          << "\n\tQuad Enable : " << callbackHeader.quad
+                          << "\n\t]";
     return 0;
 }
 
 /** Acquisition Finished Call back */
-void AcquisitionFinished(uint64_t framesCaught, void *objectPointer) {
-    LOG(sls::logINFOBLUE) << "#### AcquisitionFinished: framesCaught:"
-                          << framesCaught << " ####";
+void AcquisitionFinished(
+    const slsDetectorDefs::endCallbackHeader callbackHeader,
+    void *objectPointer) {
+    LOG(sls::logINFOBLUE) << "#### AcquisitionFinished:"
+                          << "\n\t["
+                          << "\n\tUDP Port : "
+                          << sls::ToString(callbackHeader.udpPort)
+                          << "\n\tComplete Frames : "
+                          << sls::ToString(callbackHeader.completeFrames)
+                          << "\n\tLast Frame Index : "
+                          << sls::ToString(callbackHeader.lastFrameIndex)
+                          << "\n\t]";
+}
+
+void printDataCallBackHeader(slsDetectorDefs::sls_receiver_header &header,
+                             slsDetectorDefs::dataCallbackHeader callbackHeader,
+                             char *dataPointer, size_t imageSize,
+                             void *objectPointer) {
+    slsDetectorDefs::sls_detector_header detectorHeader = header.detHeader;
+
+    PRINT_IN_COLOR(
+        (callbackHeader.udpPort % 10),
+        "#### GetData: "
+        "\n\tCallback Header: "
+        "\n\t["
+        "\n\tUDP Port: %u"
+        "\n\tShape: [%u, %u]"
+        "\n\tAcq Index : %lu"
+        "\n\tFrame Index :%lu"
+        "\n\tProgress : %f"
+        "\n\tCompelte Image :%s"
+        "\n\tFlip Rows :%s"
+        "\n\tAdditional Json Header : %s"
+        "\n\t]"
+        "\n\ttReceiver Header: "
+        "\n\t["
+        "\n\tFrame Number : %lu"
+        "\n\tExposure Length :%u"
+        "\n\tPackets Caught :%u"
+        "\n\tDetector Specific 1: %lu"
+        "\n\tTimestamp : %lu"
+        "\n\tModule Id :%u"
+        "\n\tRow : %u"
+        "\n\tColumn :%u"
+        "\n\tDetector Specific 2 : %u"
+        "\n\tDetector Specific 3 : %u"
+        "\n\tDetector Specific 4 : %u"
+        "\n\tDetector Type : %s"
+        "\n\tVersion: %u"
+        "\n\t]"
+        "\n\tFirst Byte Data: 0x%x"
+        "\n\tImage Size: %zu\n\n",
+        callbackHeader.udpPort, callbackHeader.shape.x, callbackHeader.shape.y,
+        callbackHeader.acqIndex, callbackHeader.frameIndex,
+        callbackHeader.progress,
+        sls::ToString(callbackHeader.completeImage).c_str(),
+        sls::ToString(callbackHeader.flipRows).c_str(),
+        sls::ToString(callbackHeader.addJsonHeader).c_str(),
+        detectorHeader.frameNumber, detectorHeader.expLength,
+        detectorHeader.packetNumber, detectorHeader.detSpec1,
+        detectorHeader.timestamp, detectorHeader.modId, detectorHeader.row,
+        detectorHeader.column, detectorHeader.detSpec2, detectorHeader.detSpec3,
+        detectorHeader.detSpec4, sls::ToString(detectorHeader.detType).c_str(),
+        detectorHeader.version,
+        // header->packetsMask.to_string().c_str(),
+        ((uint8_t)(*((uint8_t *)(dataPointer)))), imageSize);
 }
 
 /**
@@ -70,28 +143,11 @@ void AcquisitionFinished(uint64_t framesCaught, void *objectPointer) {
  * Prints in different colors(for each receiver process) the different headers
  * for each image call back.
  */
-void GetData(slsDetectorDefs::sls_receiver_header &header, char *dataPointer,
-             size_t imageSize, void *objectPointer) {
-    slsDetectorDefs::sls_detector_header detectorHeader = header.detHeader;
-
-    PRINT_IN_COLOR(
-        detectorHeader.modId ? detectorHeader.modId : detectorHeader.row,
-        "#### %d %d GetData: ####\n"
-        "frameNumber: %lu\t\texpLength: %u\t\tpacketNumber: %u\t\tdetSpec1: %lu"
-        "\t\ttimestamp: %lu\t\tmodId: %u\t\t"
-        "row: %u\t\tcolumn: %u\t\tdetSpec2: %u\t\tdetSpec3: %u"
-        "\t\tdetSpec4: %u\t\tdetType: %u\t\tversion: %u"
-        //"\t\tpacketsMask:%s"
-        "\t\tfirstbytedata: 0x%x\t\tdatsize: %zu\n\n",
-        detectorHeader.column, detectorHeader.row,
-        (long unsigned int)detectorHeader.frameNumber, detectorHeader.expLength,
-        detectorHeader.packetNumber, (long unsigned int)detectorHeader.detSpec1,
-        (long unsigned int)detectorHeader.timestamp, detectorHeader.modId,
-        detectorHeader.row, detectorHeader.column, detectorHeader.detSpec2,
-        detectorHeader.detSpec3, detectorHeader.detSpec4,
-        detectorHeader.detType, detectorHeader.version,
-        // header->packetsMask.to_string().c_str(),
-        ((uint8_t)(*((uint8_t *)(dataPointer)))), imageSize);
+void GetData(slsDetectorDefs::sls_receiver_header &header,
+             slsDetectorDefs::dataCallbackHeader callbackHeader,
+             char *dataPointer, size_t imageSize, void *objectPointer) {
+    printDataCallBackHeader(header, callbackHeader, dataPointer, imageSize,
+                            objectPointer);
 }
 
 /**
@@ -101,28 +157,12 @@ void GetData(slsDetectorDefs::sls_receiver_header &header, char *dataPointer,
  * @param modifiedImageSize new data size in bytes after the callback.
  * This will be the size written/streamed. (only smaller value is allowed).
  */
-void GetData(slsDetectorDefs::sls_receiver_header &header, char *dataPointer,
-             size_t &modifiedImageSize, void *objectPointer) {
-    slsDetectorDefs::sls_detector_header detectorHeader = header.detHeader;
-
-    PRINT_IN_COLOR(
-        detectorHeader.modId ? detectorHeader.modId : detectorHeader.row,
-        "#### %d %d GetData: ####\n"
-        "frameNumber: %lu\t\texpLength: %u\t\tpacketNumber: %u\t\tdetSpec1: %lu"
-        "\t\ttimestamp: %lu\t\tmodId: %u\t\t"
-        "row: %u\t\tcolumn: %u\t\tdetSpec2: %u\t\tdetSpec3: %u"
-        "\t\tdetSpec4: %u\t\tdetType: %u\t\tversion: %u"
-        //"\t\tpacketsMask:%s"
-        "\t\tfirstbytedata: 0x%x\t\tdatsize: %zu\n\n",
-        detectorHeader.column, detectorHeader.row,
-        (long unsigned int)detectorHeader.frameNumber, detectorHeader.expLength,
-        detectorHeader.packetNumber, (long unsigned int)detectorHeader.detSpec1,
-        (long unsigned int)detectorHeader.timestamp, detectorHeader.modId,
-        detectorHeader.row, detectorHeader.column, detectorHeader.detSpec2,
-        detectorHeader.detSpec3, detectorHeader.detSpec4,
-        detectorHeader.detType, detectorHeader.version,
-        // header->packetsMask.to_string().c_str(),
-        *reinterpret_cast<uint8_t *>(dataPointer), modifiedImageSize);
+void GetData(slsDetectorDefs::sls_receiver_header &header,
+             slsDetectorDefs::dataCallbackHeader callbackHeader,
+             char *dataPointer, size_t &modifiedImageSize,
+             void *objectPointer) {
+    printDataCallBackHeader(header, callbackHeader, dataPointer,
+                            modifiedImageSize, objectPointer);
 
     // if data is modified, eg ROI and size is reduced
     modifiedImageSize = 26000;

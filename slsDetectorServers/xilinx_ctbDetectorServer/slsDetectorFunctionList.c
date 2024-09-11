@@ -567,7 +567,8 @@ int powerChip(int on, char *mess) {
             LOG(logERROR, (mess));
 
             // to be removed when fixed later
-            LOG(logWARNING, ("Bypassing this error for now. To be fixed later...\n"));
+            LOG(logWARNING,
+                ("Bypassing this error for now. To be fixed later...\n"));
             return OK;
 
             return FAIL;
@@ -1334,7 +1335,7 @@ int startStateMachine() {
 #endif
 
     LOG(logINFOBLUE, ("Starting State Machine\n"));
-    //cleanFifos(); removing this for now as its done before readout pattern
+    // cleanFifos(); removing this for now as its done before readout pattern
 
     // start state machine
     bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);

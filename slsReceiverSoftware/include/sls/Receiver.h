@@ -45,17 +45,17 @@ class Receiver : private virtual slsDetectorDefs {
      * Call back arguments are:
      * - startCallbackHeader metadata
      */
-    void registerCallBackStartAcquisition(int (*func)(const startCallbackHeader, void *),
+    void registerCallBackStartAcquisition(int (*func)(const startCallbackHeader,
+                                                      void *),
                                           void *arg);
 
     /**
      * Call back for acquisition finished
      * callback argument is:
-     * - total frames caught, 
-     * - last frame index caught
+     * - startCallbackHeader metadata
      */
-    void registerCallBackAcquisitionFinished(void (*func)(uint64_t, uint64_t, void *),
-                                             void *arg);
+    void registerCallBackAcquisitionFinished(
+        void (*func)(const endCallbackHeader, void *), void *arg);
 
     /**
      * Call back for raw data
@@ -65,7 +65,9 @@ class Receiver : private virtual slsDetectorDefs {
      * - pointer to data
      * - image size in bytes
      */
-    void registerCallBackRawDataReady(void (*func)(sls_receiver_header &, const dataCallbackHeader, char *, size_t, void *),
+    void registerCallBackRawDataReady(void (*func)(sls_receiver_header &,
+                                                   const dataCallbackHeader,
+                                                   char *, size_t, void *),
                                       void *arg);
 
     /**
@@ -78,8 +80,10 @@ class Receiver : private virtual slsDetectorDefs {
      * Can be modified to the new size to be written/streamed. (only smaller
      * value allowed).
      */
-    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header &, const dataCallbackHeader, char *, size_t &, void *),
-                                            void *arg);
+    void registerCallBackRawDataModifyReady(
+        void (*func)(sls_receiver_header &, const dataCallbackHeader, char *,
+                     size_t &, void *),
+        void *arg);
 
   private:
     std::unique_ptr<ClientInterface> tcpipInterface;

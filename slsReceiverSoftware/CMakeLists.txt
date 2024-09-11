@@ -138,14 +138,6 @@ if (SLS_USE_RECEIVER_BINARIES)
         slsProjectWarnings
     )
 
-    install(TARGETS slsReceiver slsMultiReceiver
-        EXPORT "${TARGETS_EXPORT_NAME}"
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sls
-    )
-
     add_executable(slsFrameSynchronizer
         src/FrameSynchronizerApp.cpp
     )
@@ -166,7 +158,7 @@ if (SLS_USE_RECEIVER_BINARIES)
         slsProjectWarnings
     )
 
-    install(TARGETS slsReceiver slsFrameSynchronizer
+    install(TARGETS slsReceiver slsMultiReceiver slsFrameSynchronizer
         EXPORT "${TARGETS_EXPORT_NAME}"
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

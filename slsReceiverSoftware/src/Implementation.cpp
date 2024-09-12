@@ -1128,11 +1128,6 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 it->registerCallBackRawDataReady(rawDataReadyCallBack,
                                                  pRawDataReady);
         }
-        if (rawDataModifyReadyCallBack) {
-            for (const auto &it : dataProcessor)
-                it->registerCallBackRawDataModifyReady(
-                    rawDataModifyReadyCallBack, pRawDataReady);
-        }
 
         // test socket buffer size with current set up
         setUDPSocketBufferSize(0);
@@ -1813,24 +1808,13 @@ void Implementation::registerCallBackAcquisitionFinished(
 }
 
 void Implementation::registerCallBackRawDataReady(
-    void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t,
+    void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t &,
                  void *),
     void *arg) {
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
     for (const auto &it : dataProcessor)
         it->registerCallBackRawDataReady(rawDataReadyCallBack, pRawDataReady);
-}
-
-void Implementation::registerCallBackRawDataModifyReady(
-    void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t &,
-                 void *),
-    void *arg) {
-    rawDataModifyReadyCallBack = func;
-    pRawDataReady = arg;
-    for (const auto &it : dataProcessor)
-        it->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,
-                                               pRawDataReady);
 }
 
 } // namespace sls

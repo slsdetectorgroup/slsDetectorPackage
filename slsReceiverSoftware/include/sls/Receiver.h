@@ -63,27 +63,13 @@ class Receiver : private virtual slsDetectorDefs {
      * - sls_receiver_header frame metadata,
      * - dataCallbackHeader metadata
      * - pointer to data
-     * - image size in bytes
+     * - image size in bytes. Can be modified to the new size to be
+     * written/streamed. (only smaller value allowed).
      */
     void registerCallBackRawDataReady(void (*func)(sls_receiver_header &,
                                                    const dataCallbackHeader,
-                                                   char *, size_t, void *),
+                                                   char *, size_t &, void *),
                                       void *arg);
-
-    /**
-     * Call back for raw data (modified)
-     * args to raw data ready callback are:
-     * - sls_receiver_header frame metadata,
-     * - dataCallbackHeader metadata
-     * - pointer to data
-     * - revDatasize is the reference of data size in bytes.
-     * Can be modified to the new size to be written/streamed. (only smaller
-     * value allowed).
-     */
-    void registerCallBackRawDataModifyReady(
-        void (*func)(sls_receiver_header &, const dataCallbackHeader, char *,
-                     size_t &, void *),
-        void *arg);
 
   private:
     std::unique_ptr<ClientInterface> tcpipInterface;

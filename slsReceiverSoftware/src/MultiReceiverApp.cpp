@@ -84,10 +84,15 @@ void AcquisitionFinished(
                           << "\n\t]";
 }
 
-void printDataCallBackHeader(slsDetectorDefs::sls_receiver_header &header,
-                             slsDetectorDefs::dataCallbackHeader callbackHeader,
-                             char *dataPointer, size_t imageSize,
-                             void *objectPointer) {
+/**
+ * Get Receiver Data Call back
+ * Prints in different colors(for each receiver process) the different headers
+ * for each image call back.
+ */
+void GetData(slsDetectorDefs::sls_receiver_header &header,
+             slsDetectorDefs::dataCallbackHeader callbackHeader,
+             char *dataPointer, size_t &imageSize, void *objectPointer) {
+
     slsDetectorDefs::sls_detector_header detectorHeader = header.detHeader;
 
     PRINT_IN_COLOR(
@@ -136,36 +141,9 @@ void printDataCallBackHeader(slsDetectorDefs::sls_receiver_header &header,
         detectorHeader.version,
         // header->packetsMask.to_string().c_str(),
         ((uint8_t)(*((uint8_t *)(dataPointer)))), imageSize);
-}
-
-/**
- * Get Receiver Data Call back
- * Prints in different colors(for each receiver process) the different headers
- * for each image call back.
- */
-void GetData(slsDetectorDefs::sls_receiver_header &header,
-             slsDetectorDefs::dataCallbackHeader callbackHeader,
-             char *dataPointer, size_t imageSize, void *objectPointer) {
-    printDataCallBackHeader(header, callbackHeader, dataPointer, imageSize,
-                            objectPointer);
-}
-
-/**
- * Get Receiver Data Call back (modified)
- * Prints in different colors(for each receiver process) the different headers
- * for each image call back.
- * @param modifiedImageSize new data size in bytes after the callback.
- * This will be the size written/streamed. (only smaller value is allowed).
- */
-void GetData(slsDetectorDefs::sls_receiver_header &header,
-             slsDetectorDefs::dataCallbackHeader callbackHeader,
-             char *dataPointer, size_t &modifiedImageSize,
-             void *objectPointer) {
-    printDataCallBackHeader(header, callbackHeader, dataPointer,
-                            modifiedImageSize, objectPointer);
 
     // if data is modified, eg ROI and size is reduced
-    modifiedImageSize = 26000;
+    imageSize = 26000;
 }
 
 /**
@@ -254,26 +232,22 @@ int main(int argc, char *argv[]) {
                 throw;
             }
             /**	- register callbacks. remember to set file write enable to 0
-      (using the client) if we should not write files and you will write data
-      using the callbacks */
+             * (using the client) if we should not write files and you will
+             * write data using the callbacks */
             if (withCallback) {
 
                 /** - Call back for start acquisition */
-                cprintf(BLUE, "Registering 	StartAcq()\n");
+                cprintf(BLUE, "Registering StartAcq()\n");
                 receiver->registerCallBackStartAcquisition(StartAcq, nullptr);
 
                 /** - Call back for acquisition finished */
-                cprintf(BLUE, "Registering 	AcquisitionFinished()\n");
+                cprintf(BLUE, "Registering AcquisitionFinished()\n");
                 receiver->registerCallBackAcquisitionFinished(
                     AcquisitionFinished, nullptr);
 
                 /* 	- Call back for raw data */
-                cprintf(BLUE, "Registering     GetData() \n");
-                if (withCallback == 1)
-                    receiver->registerCallBackRawDataReady(GetData, nullptr);
-                else if (withCallback == 2)
-                    receiver->registerCallBackRawDataModifyReady(GetData,
-                                                                 nullptr);
+                cprintf(BLUE, "Registering GetData() \n");
+                receiver->registerCallBackRawDataReady(GetData, nullptr);
             }
 
             /**	- as long as no Ctrl+C */

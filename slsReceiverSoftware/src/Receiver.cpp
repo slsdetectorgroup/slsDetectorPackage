@@ -145,16 +145,9 @@ void Receiver::registerCallBackAcquisitionFinished(
 
 void Receiver::registerCallBackRawDataReady(
     void (*func)(sls_receiver_header &, const dataCallbackHeader, char *,
-                 size_t, void *),
-    void *arg) {
-    tcpipInterface->registerCallBackRawDataReady(func, arg);
-}
-
-void Receiver::registerCallBackRawDataModifyReady(
-    void (*func)(sls_receiver_header &, const dataCallbackHeader, char *,
                  size_t &, void *),
     void *arg) {
-    tcpipInterface->registerCallBackRawDataModifyReady(func, arg);
+    tcpipInterface->registerCallBackRawDataReady(func, arg);
 }
 
 } // namespace sls

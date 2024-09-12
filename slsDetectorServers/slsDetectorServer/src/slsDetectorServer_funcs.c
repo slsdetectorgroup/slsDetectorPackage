@@ -1649,14 +1649,16 @@ int get_adc(int file_des) {
 int write_register(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint32_t args[2] = {-1, -1};
+    uint32_t args[3] = {-1, -1, -1};
     uint32_t retval = -1;
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     uint32_t addr = args[0];
     uint32_t val = args[1];
-    LOG(logDEBUG1, ("Writing to register 0x%x, data 0x%x\n", addr, val));
+    uint32_t validate = args[2];
+    LOG(logDEBUG1, ("Writing to register 0x%x, data 0x%x, validate:%d\n", addr,
+                    val, validate));
 
     // only set
     if (Server_VerifyLock() == OK) {
@@ -1682,7 +1684,7 @@ int write_register(int file_des) {
         retval = writeRegister(addr, val);
 #endif
         // validate
-        if (ret == OK && retval != val) {
+        if (validate && ret == OK && retval != val) {
             ret = FAIL;
             sprintf(
                 mess,
@@ -2026,101 +2028,105 @@ int acquire(int blocking, int file_des) {
 #if defined(JUNGFRAUD)
             // chipv1.1 has to be configured before acquisition
             if (getChipVersion() == 11 && !isChipConfigured()) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition. Chip is not configured. "
-                         "Power it on to configure it.\n");
-            LOG(logERROR, (mess));
-        } else
+                ret = FAIL;
+                strcpy(mess,
+                       "Could not start acquisition. Chip is not configured. "
+                       "Power it on to configure it.\n");
+                LOG(logERROR, (mess));
+            } else
 #endif
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
-            if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                 getReadoutMode() == ANALOG_ONLY) &&
-                (getNumAnalogSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not start acquisition. Invalid number of analog "
-                    "samples: %d.\n",
-                    getNumAnalogSamples());
-            LOG(logERROR, (mess));
-        } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                    getReadoutMode() == DIGITAL_ONLY ||
-                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                   (getNumDigitalSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(mess,
+                if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
+                     getReadoutMode() == ANALOG_ONLY) &&
+                    (getNumAnalogSamples() <= 0)) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not start acquisition. Invalid number of analog "
+                        "samples: %d.\n",
+                        getNumAnalogSamples());
+                LOG(logERROR, (mess));
+            } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
+                        getReadoutMode() == DIGITAL_ONLY ||
+                        getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                       (getNumDigitalSamples() <= 0)) {
+                ret = FAIL;
+                sprintf(
+                    mess,
                     "Could not start acquisition. Invalid number of digital "
                     "samples: %d.\n",
                     getNumDigitalSamples());
-            LOG(logERROR, (mess));
-        } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
-                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                   (getNumTransceiverSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not start acquisition. Invalid number of "
-                    "transceiver "
-                    "samples: %d.\n",
-                    getNumTransceiverSamples());
-            LOG(logERROR, (mess));
-        } else
+                LOG(logERROR, (mess));
+            } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
+                        getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                       (getNumTransceiverSamples() <= 0)) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not start acquisition. Invalid number of "
+                        "transceiver "
+                        "samples: %d.\n",
+                        getNumTransceiverSamples());
+                LOG(logERROR, (mess));
+            } else
 #endif
 #ifdef EIGERD
-            // check for hardware mac and hardware ip
-            if (udpDetails[0].srcmac != getDetectorMAC()) {
-            ret = FAIL;
-            uint64_t sourcemac = getDetectorMAC();
-            char src_mac[MAC_ADDRESS_SIZE];
-            getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
-            sprintf(mess,
-                    "Invalid udp source mac address for this detector. "
-                    "Must be "
-                    "same as hardware detector mac address %s\n",
-                    src_mac);
-            LOG(logERROR, (mess));
-        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                   (udpDetails[0].srcip != getDetectorIP())) {
-            ret = FAIL;
-            uint32_t sourceip = getDetectorIP();
-            char src_ip[INET_ADDRSTRLEN];
-            getIpAddressinString(src_ip, sourceip);
-            sprintf(mess,
-                    "Invalid udp source ip address for this detector. Must "
-                    "be "
-                    "same as hardware detector ip address %s in 1G readout "
-                    "mode \n",
-                    src_ip);
-            LOG(logERROR, (mess));
-        } else
+                // check for hardware mac and hardware ip
+                if (udpDetails[0].srcmac != getDetectorMAC()) {
+                    ret = FAIL;
+                    uint64_t sourcemac = getDetectorMAC();
+                    char src_mac[MAC_ADDRESS_SIZE];
+                    getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
+                    sprintf(mess,
+                            "Invalid udp source mac address for this detector. "
+                            "Must be "
+                            "same as hardware detector mac address %s\n",
+                            src_mac);
+                    LOG(logERROR, (mess));
+                } else if (!enableTenGigabitEthernet(GET_FLAG) &&
+                           (udpDetails[0].srcip != getDetectorIP())) {
+                    ret = FAIL;
+                    uint32_t sourceip = getDetectorIP();
+                    char src_ip[INET_ADDRSTRLEN];
+                    getIpAddressinString(src_ip, sourceip);
+                    sprintf(
+                        mess,
+                        "Invalid udp source ip address for this detector. Must "
+                        "be "
+                        "same as hardware detector ip address %s in 1G readout "
+                        "mode \n",
+                        src_ip);
+                    LOG(logERROR, (mess));
+                } else
 #endif
-            if (configured == FAIL) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because ");
-            strcat(mess, configureMessage);
-            LOG(logERROR, (mess));
-        } else if (sharedMemory_getScanStatus() == RUNNING) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because a scan is "
-                         "already running!\n");
-            LOG(logERROR, (mess));
-        } else {
-            memset(scanErrMessage, 0, MAX_STR_LENGTH);
-            sharedMemory_setScanStop(0);
-            sharedMemory_setScanStatus(IDLE); // if it was error
-            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
-                               &blocking)) {
-                ret = FAIL;
-                strcpy(mess, "Could not start acquisition thread!\n");
-                LOG(logERROR, (mess));
-            } else {
-                // wait for blocking always (scan or not)
-                // non blocking-no scan also wait (for error message)
-                // non blcoking-scan dont wait (there is
-                // scanErrorMessage)
-                if (blocking || !scan) {
-                    pthread_join(pthread_tid, NULL);
+                    if (configured == FAIL) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not start acquisition because ");
+                    strcat(mess, configureMessage);
+                    LOG(logERROR, (mess));
+                } else if (sharedMemory_getScanStatus() == RUNNING) {
+                    ret = FAIL;
+                    strcpy(mess,
+                           "Could not start acquisition because a scan is "
+                           "already running!\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    memset(scanErrMessage, 0, MAX_STR_LENGTH);
+                    sharedMemory_setScanStop(0);
+                    sharedMemory_setScanStatus(IDLE); // if it was error
+                    if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                                       &blocking)) {
+                        ret = FAIL;
+                        strcpy(mess, "Could not start acquisition thread!\n");
+                        LOG(logERROR, (mess));
+                    } else {
+                        // wait for blocking always (scan or not)
+                        // non blocking-no scan also wait (for error message)
+                        // non blcoking-scan dont wait (there is
+                        // scanErrorMessage)
+                        if (blocking || !scan) {
+                            pthread_join(pthread_tid, NULL);
+                        }
+                    }
                 }
-            }
-        }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -8470,7 +8476,8 @@ int start_readout(int file_des) {
 #else
     if (Server_VerifyLock() == OK) {
         enum runStatus s = getRunStatus();
-        if ((s == RUNNING || s == WAITING) && (myDetectorType != XILINX_CHIPTESTBOARD)) {
+        if ((s == RUNNING || s == WAITING) &&
+            (myDetectorType != XILINX_CHIPTESTBOARD)) {
             ret = FAIL;
             strcpy(mess, "Could not start readout because the detector is "
                          "already running!\n");
@@ -10593,13 +10600,15 @@ int get_frontend_firmware_version(int file_des) {
 int set_bit(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint32_t args[2] = {-1, -1};
+    uint32_t args[3] = {-1, -1, -1};
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     uint32_t addr = args[0];
     int nBit = (int)args[1];
-    LOG(logDEBUG1, ("Setting bit %d of reg 0x%x\n", nBit, addr));
+    uint32_t validate = args[2];
+    LOG(logDEBUG1,
+        ("Setting bit %d of reg 0x%x, validate:%d\n", nBit, addr, validate));
 
     // only set
     if (Server_VerifyLock() == OK) {
@@ -10623,7 +10632,7 @@ int set_bit(int file_des) {
             uint32_t val = readRegister(addr) | bitmask;
             uint32_t retval = writeRegister(addr, val);
 #endif
-            if (!(retval & bitmask)) {
+            if (validate && (!(retval & bitmask))) {
                 ret = FAIL;
 #endif
                 sprintf(mess, "Could not set bit %d.\n", nBit);
@@ -10637,13 +10646,15 @@ int set_bit(int file_des) {
 int clear_bit(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint32_t args[2] = {-1, -1};
+    uint32_t args[3] = {-1, -1, -1};
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     uint32_t addr = args[0];
     int nBit = (int)args[1];
-    LOG(logDEBUG1, ("Clearing bit %d of reg 0x%x\n", nBit, addr));
+    uint32_t validate = args[2];
+    LOG(logDEBUG1,
+        ("Clearing bit %d of reg 0x%x, validate:%d\n", nBit, addr, validate));
 
     // only set
     if (Server_VerifyLock() == OK) {
@@ -10667,7 +10678,7 @@ int clear_bit(int file_des) {
             uint32_t val = readRegister(addr) & ~bitmask;
             uint32_t retval = writeRegister(addr, val);
 #endif
-            if (retval & bitmask) {
+            if (validate && (retval & bitmask)) {
                 ret = FAIL;
 #endif
                 sprintf(mess, "Could not clear bit %d.\n", nBit);

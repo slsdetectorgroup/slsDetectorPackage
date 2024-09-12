@@ -1482,28 +1482,22 @@ std::string Caller::clearbit(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: clearbit" << std::endl;
         os << R"V0G0N([reg address in hex] [bit index]
-	Clears bit in address. )V0G0N"
+	Clears bit in address.
+	Use --validate to force validation. )V0G0N"
            << std::endl;
         return os.str();
     }
 
     // check if action and arguments are valid
     if (action == slsDetectorDefs::PUT_ACTION) {
-        if (1 && args.size() != 2) {
+        if (1 && args.size() != 2 && args.size() != 3) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
         if (args.size() == 2) {
-            try {
-                StringTo<uint32_t>(args[0]);
-            } catch (...) {
-                throw RuntimeError("Could not convert argument 0 to uint32_t");
-            }
-            try {
-                StringTo<int>(args[1]);
-            } catch (...) {
-                throw RuntimeError("Could not convert argument 1 to int");
-            }
+        }
+
+        if (args.size() == 3) {
         }
 
     }
@@ -1520,10 +1514,20 @@ std::string Caller::clearbit(int action) {
             if (StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31) {
                 throw RuntimeError("Bit number out of range: " + args[1]);
             }
-            auto arg0 = StringTo<uint32_t>(args[0]);
-            auto arg1 = StringTo<int>(args[1]);
-            det->clearBit(arg0, arg1, std::vector<int>{det_id});
-            os << ToString(args) << '\n';
+            det->clearBit(args[0], args[1], "0", std::vector<int>{det_id});
+            os << "{" << args[0] << ": " << args[1] << "}" << '\n';
+        }
+
+        if (args.size() == 3) {
+            if (StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31) {
+                throw RuntimeError("Bit number out of range: " + args[1]);
+            }
+            if (args[2] != "--validate") {
+                throw RuntimeError(
+                    "Could not scan third argument. Did you mean --validate?");
+            }
+            det->clearBit(args[0], args[1], "1", std::vector<int>{det_id});
+            os << "{" << args[0] << ": " << args[1] << "}" << '\n';
         }
     }
 
@@ -10307,9 +10311,10 @@ std::string Caller::reg(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: reg" << std::endl;
-        os << R"V0G0N([address] [32 bit value]
+        os << R"V0G0N([address] [32 bit value][(optional)--validate]
 	[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!
 	Goes to stop server. Hence, can be called while calling blocking acquire().
+		 Use --validate to force validation when writing to it.
 	[Eiger] +0x100 for only left, +0x200 for only right. )V0G0N"
            << std::endl;
         return os.str();
@@ -10332,21 +10337,14 @@ std::string Caller::reg(int action) {
     }
 
     else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (1 && args.size() != 2) {
+        if (1 && args.size() != 2 && args.size() != 3) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
         if (args.size() == 2) {
-            try {
-                StringTo<uint32_t>(args[0]);
-            } catch (...) {
-                throw RuntimeError("Could not convert argument 0 to uint32_t");
-            }
-            try {
-                StringTo<uint32_t>(args[1]);
-            } catch (...) {
-                throw RuntimeError("Could not convert argument 1 to uint32_t");
-            }
+        }
+
+        if (args.size() == 3) {
         }
 
     }
@@ -10368,10 +10366,17 @@ std::string Caller::reg(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            auto arg0 = StringTo<uint32_t>(args[0]);
-            auto arg1 = StringTo<uint32_t>(args[1]);
-            det->writeRegister(arg0, arg1, std::vector<int>{det_id});
-            os << ToString(args) << '\n';
+            det->writeRegister(args[0], args[1], "0", std::vector<int>{det_id});
+            os << "{" << args[0] << ": " << args[1] << "}" << '\n';
+        }
+
+        if (args.size() == 3) {
+            if (args[2] != "--validate") {
+                throw RuntimeError(
+                    "Could not scan third argument. Did you mean --validate?");
+            }
+            det->writeRegister(args[0], args[1], "1", std::vector<int>{det_id});
+            os << "{" << args[0] << ": " << args[1] << "}" << '\n';
         }
     }
 
@@ -12601,28 +12606,22 @@ std::string Caller::setbit(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: setbit" << std::endl;
         os << R"V0G0N([reg address in hex] [bit index]
-	Sets bit in address. )V0G0N"
+	Sets bit in address.
+	Use --validate to force validation. )V0G0N"
            << std::endl;
         return os.str();
     }
 
     // check if action and arguments are valid
     if (action == slsDetectorDefs::PUT_ACTION) {
-        if (1 && args.size() != 2) {
+        if (1 && args.size() != 2 && args.size() != 3) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
         if (args.size() == 2) {
-            try {
-                StringTo<uint32_t>(args[0]);
-            } catch (...) {
-                throw RuntimeError("Could not convert argument 0 to uint32_t");
-            }
-            try {
-                StringTo<int>(args[1]);
-            } catch (...) {
-                throw RuntimeError("Could not convert argument 1 to int");
-            }
+        }
+
+        if (args.size() == 3) {
         }
 
     }
@@ -12639,10 +12638,20 @@ std::string Caller::setbit(int action) {
             if (StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31) {
                 throw RuntimeError("Bit number out of range: " + args[1]);
             }
-            auto arg0 = StringTo<uint32_t>(args[0]);
-            auto arg1 = StringTo<int>(args[1]);
-            det->setBit(arg0, arg1, std::vector<int>{det_id});
-            os << ToString(args) << '\n';
+            det->setBit(args[0], args[1], "0", std::vector<int>{det_id});
+            os << "{" << args[0] << ": " << args[1] << "}" << '\n';
+        }
+
+        if (args.size() == 3) {
+            if (StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31) {
+                throw RuntimeError("Bit number out of range: " + args[1]);
+            }
+            if (args[2] != "--validate") {
+                throw RuntimeError(
+                    "Could not scan third argument. Did you mean --validate?");
+            }
+            det->setBit(args[0], args[1], "1", std::vector<int>{det_id});
+            os << "{" << args[0] << ": " << args[1] << "}" << '\n';
         }
     }
 

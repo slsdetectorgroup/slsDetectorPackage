@@ -1102,8 +1102,9 @@ clearbit:
         - int
         argc: 2
         cast_input:
-        - true
-        - true
+        - false
+        - false
+        - false
         check_det_id: false
         convert_det_id: true
         exceptions:
@@ -1113,16 +1114,56 @@ clearbit:
         input:
         - args[0]
         - args[1]
+        - '"0"'
         input_types:
         - uint32_t
         - int
+        - bool
         output:
-        - ToString(args)
+        - '"{"'
+        - args[0]
+        - '": "'
+        - args[1]
+        - '"}"'
+        require_det_id: true
+        store_result_in_t: false
+      - arg_types:
+        - uint32_t
+        - int
+        - special::validate
+        argc: 3
+        cast_input:
+        - false
+        - false
+        - false
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31
+          message: '"Bit number out of range: " + args[1]'
+        - condition: args[2] != "--validate"
+          message: '"Could not scan third argument. Did you mean --validate?"'
+        function: clearBit
+        input:
+        - args[0]
+        - args[1]
+        - '"1"'
+        input_types:
+        - uint32_t
+        - int
+        - bool
+        output:
+        - '"{"'
+        - args[0]
+        - '": "'
+        - args[1]
+        - '"}"'
         require_det_id: true
         store_result_in_t: false
   command_name: clearbit
   function_alias: clearbit
-  help: "[reg address in hex] [bit index]\n\tClears bit in address."
+  help: "[reg address in hex] [bit index]\n\tClears bit in address.\n\tUse --validate\
+    \ to force validation."
   infer_action: true
   template: true
 clearbusy:
@@ -7971,27 +8012,66 @@ reg:
         - uint32_t
         argc: 2
         cast_input:
-        - true
-        - true
+        - false
+        - false
+        - false
         check_det_id: false
         convert_det_id: true
         function: writeRegister
         input:
         - args[0]
         - args[1]
+        - '"0"'
         input_types:
         - uint32_t
         - uint32_t
+        - bool
         output:
-        - ToString(args)
+        - '"{"'
+        - args[0]
+        - '": "'
+        - args[1]
+        - '"}"'
+        require_det_id: true
+        store_result_in_t: false
+      - arg_types:
+        - uint32_t
+        - uint32_t
+        - special::validate
+        argc: 3
+        cast_input:
+        - false
+        - false
+        - false
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: args[2] != "--validate"
+          message: '"Could not scan third argument. Did you mean --validate?"'
+        function: writeRegister
+        input:
+        - args[0]
+        - args[1]
+        - '"1"'
+        input_types:
+        - uint32_t
+        - uint32_t
+        - bool
+        output:
+        - '"{"'
+        - args[0]
+        - '": "'
+        - args[1]
+        - '"}"'
         require_det_id: true
         store_result_in_t: false
   command_name: reg
   function_alias: reg
-  help: "[address] [32 bit value]\n\t[Mythen3][Gotthard2] Reads/writes to a 32 bit\
-    \ register in hex. Advanced Function!\n\tGoes to stop server. Hence, can be called\
-    \ while calling blocking acquire().\n\t[Eiger] +0x100 for only left, +0x200 for\
-    \ only right."
+  help: "[address] [32 bit value][(optional)--validate]\n\t[Mythen3][Gotthard2] Reads/writes\
+    \ to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence,\
+    \ can be called while calling blocking acquire().\n\t\t Use --validate to force\
+    \ validation when writing to it.\n\t[Eiger] +0x100 for only left, +0x200 for only\
+    \ right."
   infer_action: true
 resetdacs:
   actions:
@@ -9644,8 +9724,9 @@ setbit:
         - int
         argc: 2
         cast_input:
-        - true
-        - true
+        - false
+        - false
+        - false
         check_det_id: false
         convert_det_id: true
         exceptions:
@@ -9655,16 +9736,56 @@ setbit:
         input:
         - args[0]
         - args[1]
+        - '"0"'
         input_types:
         - uint32_t
         - int
+        - bool
         output:
-        - ToString(args)
+        - '"{"'
+        - args[0]
+        - '": "'
+        - args[1]
+        - '"}"'
+        require_det_id: true
+        store_result_in_t: false
+      - arg_types:
+        - uint32_t
+        - int
+        - special::validate
+        argc: 3
+        cast_input:
+        - false
+        - false
+        - false
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31
+          message: '"Bit number out of range: " + args[1]'
+        - condition: args[2] != "--validate"
+          message: '"Could not scan third argument. Did you mean --validate?"'
+        function: setBit
+        input:
+        - args[0]
+        - args[1]
+        - '"1"'
+        input_types:
+        - uint32_t
+        - int
+        - bool
+        output:
+        - '"{"'
+        - args[0]
+        - '": "'
+        - args[1]
+        - '"}"'
         require_det_id: true
         store_result_in_t: false
   command_name: setbit
   function_alias: setbit
-  help: "[reg address in hex] [bit index]\n\tSets bit in address."
+  help: "[reg address in hex] [bit index]\n\tSets bit in address.\n\tUse --validate\
+    \ to force validation."
   infer_action: true
   template: true
 settings:

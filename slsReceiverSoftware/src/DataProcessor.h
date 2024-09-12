@@ -88,15 +88,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     /** params: sls_receiver_header, pointer to data, image size */
     void registerCallBackRawDataReady(void (*func)(sls_receiver_header &,
                                                    dataCallbackHeader, char *,
-                                                   size_t, void *),
+                                                   size_t &, void *),
                                       void *arg);
-
-    /** params: sls_receiver_header, pointer to data, reference to image size */
-    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header &,
-                                                         dataCallbackHeader,
-                                                         char *, size_t &,
-                                                         void *),
-                                            void *arg);
 
   private:
     void RecordFirstIndex(uint64_t fnum);
@@ -210,19 +203,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * dataSize in bytes is the size of the data in bytes.
      */
     void (*rawDataReadyCallBack)(sls_receiver_header &, dataCallbackHeader,
-                                 char *, size_t, void *) = nullptr;
-
-    /**
-     * Call back for raw data (modified)
-     * args to raw data ready callback are
-     * sls_receiver_header frame metadata
-     * dataPointer is the pointer to the data
-     * revDatasize is the reference of data size in bytes. Can be modified to
-     * the new size to be written/streamed. (only smaller value).
-     */
-    void (*rawDataModifyReadyCallBack)(sls_receiver_header &,
-                                       dataCallbackHeader, char *, size_t &,
-                                       void *) = nullptr;
+                                 char *, size_t &, void *) = nullptr;
 
     void *pRawDataReady{nullptr};
 };

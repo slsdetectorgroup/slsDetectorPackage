@@ -66,18 +66,10 @@ void ClientInterface::registerCallBackAcquisitionFinished(
 }
 
 void ClientInterface::registerCallBackRawDataReady(
-    void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t,
-                 void *),
-    void *arg) {
-    rawDataReadyCallBack = func;
-    pRawDataReady = arg;
-}
-
-void ClientInterface::registerCallBackRawDataModifyReady(
     void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t &,
                  void *),
     void *arg) {
-    rawDataModifyReadyCallBack = func;
+    rawDataReadyCallBack = func;
     pRawDataReady = arg;
 }
 
@@ -478,9 +470,6 @@ void ClientInterface::setDetectorType(detectorType arg) {
     if (rawDataReadyCallBack != nullptr)
         impl()->registerCallBackRawDataReady(rawDataReadyCallBack,
                                              pRawDataReady);
-    if (rawDataModifyReadyCallBack != nullptr)
-        impl()->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,
-                                                   pRawDataReady);
 
     impl()->setThreadIds(parentThreadId, tcpThreadId);
 }

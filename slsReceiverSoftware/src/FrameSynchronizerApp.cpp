@@ -264,13 +264,13 @@ int StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
     oss << "{\"htype\":\"header\""
         << ", \"udpPorts\":" << sls::ToString(callbackHeader.udpPort)
         << ", \"bitmode\":" << callbackHeader.dynamicRange
-        << ", \"filePath\":" << callbackHeader.filePath
-        << ", \"fileName\":" << callbackHeader.fileName
-        << ", \"fileIndex\":" << callbackHeader.fileIndex
+        << ", \"filePath\":\"" << callbackHeader.filePath
+        << "\", \"fileName\":\"" << callbackHeader.fileName
+        << "\", \"fileIndex\":" << callbackHeader.fileIndex
         << ", \"detshape\":" << sls::ToString(callbackHeader.detectorShape)
         << ", \"size\":" << callbackHeader.imageSize
         << ", \"quad\":" << (callbackHeader.quad ? 1 : 0) 
-        << "\"}\n";
+        << "}\n";
 
     
     std::string message = oss.str();
@@ -322,7 +322,7 @@ void AcquisitionFinished(
         << ", \"udpPorts\":" << sls::ToString(callbackHeader.udpPort)
         << ", \"comleteFrames\":" << sls::ToString(callbackHeader.completeFrames)
         << ", \"lastFrameIndex\":" << sls::ToString(callbackHeader.lastFrameIndex)
-        << "\"}\n";
+        << "}\n";
     
     std::string message = oss.str();
     int length = message.length();

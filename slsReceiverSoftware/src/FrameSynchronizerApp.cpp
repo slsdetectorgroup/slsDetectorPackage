@@ -259,12 +259,19 @@ int StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
                           << "\n\tQuad Enable : " << callbackHeader.quad
                           << "\n\t]";
     Status* stat = static_cast<Status*>(objectPointer);
-
+    
     std::ostringstream oss;
     oss << "{\"htype\":\"header\""
         << ", \"udpPorts\":" << sls::ToString(callbackHeader.udpPort)
+        << ", \"bitmode\":" << callbackHeader.dynamicRange
         << ", \"filePath\":" << callbackHeader.filePath
+        << ", \"fileName\":" << callbackHeader.fileName
+        << ", \"fileIndex\":" << callbackHeader.fileIndex
+        << ", \"detshape\":" << sls::ToString(callbackHeader.detectorShape)
+        << ", \"size\":" << callbackHeader.imageSize
+        << ", \"quad\":" << (callbackHeader.quad ? 1 : 0) 
         << "\"}\n";
+
     
     std::string message = oss.str();
     int length = message.length();
@@ -313,6 +320,8 @@ void AcquisitionFinished(
     std::ostringstream oss;
     oss << "{\"htype\":\"series_end\""
         << ", \"udpPorts\":" << sls::ToString(callbackHeader.udpPort)
+        << ", \"comleteFrames\":" << sls::ToString(callbackHeader.completeFrames)
+        << ", \"lastFrameIndex\":" << sls::ToString(callbackHeader.lastFrameIndex)
         << "\"}\n";
     
     std::string message = oss.str();
@@ -393,8 +402,38 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
     std::ostringstream oss;
     oss << "{\"htype\":\"module\""
         << ", \"port\":" << callbackHeader.udpPort
-        << "\"}\n";
-    
+        << ", \"shape\":" << sls::ToString(callbackHeader.shape)
+        << ", \"acqIndex\":" << callbackHeader.acqIndex
+        << ", \"frameIndex\":" << callbackHeader.frameIndex
+        << ", \"flipRows\":" << (callbackHeader.flipRows ? 1 : 0)
+        << ", \"progress\":" << callbackHeader.progress
+        << ", \"completeImage\":" << (callbackHeader.completeImage ? 1 : 0)
+        << ", \"frameNumber\":" << detectorHeader.frameNumber
+        << ", \"expLength\":" << detectorHeader.expLength
+        << ", \"packetNumber\":" << detectorHeader.packetNumber
+        << ", \"detSpec1\":" << detectorHeader.detSpec1
+        << ", \"timestamp\":" << detectorHeader.timestamp
+        << ", \"modId\":" << detectorHeader.modId << ", \"row\":" << detectorHeader.row
+        << ", \"column\":" << detectorHeader.column
+        << ", \"detSpec2\":" << detectorHeader.detSpec2
+        << ", \"detSpec3\":" << detectorHeader.detSpec3
+        << ", \"detSpec4\":" << detectorHeader.detSpec4
+        << ", \"detType\":" << static_cast<int>(detectorHeader.detType)
+        << ", \"version\":" << static_cast<int>(detectorHeader.version);
+
+    if (!callbackHeader.addJsonHeader.empty()) {
+        oss << ", \"addJsonHeader\": {";
+        for (auto it = callbackHeader.addJsonHeader.begin();
+             it != callbackHeader.addJsonHeader.end(); ++it) {
+            if (it != callbackHeader.addJsonHeader.begin()) {
+                oss << ", ";
+            }
+            oss << "\"" << it->first.c_str() << "\":\"" << it->second.c_str()
+                << "\"";
+        }
+        oss << " } ";
+    }
+    oss << "}\n";
     std::string message = oss.str();
     int length = message.length();
 
@@ -497,7 +536,7 @@ int main(int argc, char *argv[]) {
         cprintf(RED, "Could not set handler function for SIGPIPE\n");
     }
 
-    Status stat{true, false, numReceivers};
+    Status stat{true, false, (unsigned long)numReceivers};
 
     sem_init(&stat.available, 0, 0);
 

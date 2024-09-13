@@ -65,6 +65,8 @@ int StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
                           << "\n\tFile Name : " << callbackHeader.fileName
                           << "\n\tFile Index : " << callbackHeader.fileIndex
                           << "\n\tQuad Enable : " << callbackHeader.quad
+                          << "\n\tAdditional Json Header : "
+                          << sls::ToString(callbackHeader.addJsonHeader)
                           << "\n\t]";
     return 0;
 }

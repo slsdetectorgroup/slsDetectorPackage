@@ -186,6 +186,7 @@ class slsDetectorDefs {
         std::string fileName;
         uint64_t fileIndex;
         bool quad;
+        std::map<std::string, std::string> addJsonHeader;
     };
 
     struct endCallbackHeader {

@@ -1,0 +1,301 @@
+SLS Detector Package Bug Fix Release 8.0.2 released on 18.09.2024
+=================================================================
+
+This document describes the differences between v8.0.2 and v8.0.1
+
+
+
+    CONTENTS
+    --------
+    1           Resolved Issues
+    2           On-board Detector Server Compatibility
+    3           Firmware Requirements
+    4           Kernel Requirements
+    5           Download, Documentation & Support
+
+
+
+
+1 Resolved Issues
+=================
+
+
+    Compilation
+    -----------
+
+
+    *   Rapidjson compilation with gcc 14
+        Fixed a compile issue with gcc 14. Same fix in later commits to rapidjson.
+
+
+    Client
+    ------
+
+
+    *   getenv("HOME") returning nullptr
+        When this happens, especially for systemd, it segfaults. Protection 
+        provided by using empty string in this case.
+
+
+    *   [Mythen3] Bad channel list for multi module
+        Exception thrown when loading multi module bad channel file skipping 
+        modules in between. Fixed.
+
+
+    *   [Gotthard2] Stopping a blocking acquisition
+        A check added in v8.0.0 to catch slaves that might be in waiting forever
+        also catches Gotthard2 25um slaves that might only be in waiting 
+        temporarily. This is fixed with a 50ms sleep before checking again 
+        (upto 1s). 
+
+
+    *   [Moench] Acquire finished processing call back
+        New executable 'sls_detector_acquire_zmq' added to listen to all zmq 
+        packets from post processor or external process to signal end of post 
+        processing. Post processor refactoring of zmq socket creation added.
+
+
+    Gui / Callback
+    --------------
+
+
+    *   [Gotthard2] Stopping a blocking acquisition
+        From the previous issue, call back for acquisition finished status gives 
+        error for inconsistent states. Again, a check every 50ms upto 1s is 
+        added to let go the temporarily waiting slave.
+
+
+    *   Different file paths
+        Fixes file path resetting when different modules have different fpath set.
+
+
+    Receiver
+    --------
+
+
+    *   HDF5 fill value
+        Fix the fill value to accomodate all datatypes.
+
+   
+    Firmware
+    --------
+
+
+    *   [Moench] Overflow with exptime of 0
+        Fixed overflow when subtracting 1 clock cycle from exptime.
+
+
+    On-board Detector Server
+    ------------------------
+
+
+    *   [Moench] Few changes in Server:
+        - Max shifts of adc clock changed from 240 to 200. 
+
+        - Fixed overflow when subtracting 2 clock cycles from exptime of 0ms.
+
+        - Default readout speed to half speed from quarter.
+
+        - Change default ADC phase to 150 for full readout speed.
+
+        - Change default vipre_cds dac from 800 to 1280.
+
+
+    *   [Mythen3] Change Clk divider from 10 (100MHz) to 20 (50MHz) at startup.
+
+
+    *   [Jungfrau] Fix for HW v1.0 boards for unreliable ADC 2
+        Issues sometimes seen on some HW v 1.0 boards are fixed with phase 
+        relationship of 120 degrees. HW v2.0 boards are not affected.
+        
+
+    Documentation
+    -------------
+
+
+    *   Updated troubleshooting documentaion to check links and disable firewall
+
+
+    *   Excluded non UTF-8 encoded libzmq documents due to machine dependent 
+        compilation issues.
+
+
+
+2  On-board Detector Server Compatibility
+==========================================
+
+
+    Eiger       8.0.0
+    Jungfrau    8.0.2
+    Mythen3     8.0.2
+    Gotthard2   8.0.0
+    Gotthard    8.0.0
+    Moench      8.0.2
+    Ctb         8.0.0
+    
+
+    On-board Detector Server Upgrade
+    --------------------------------
+
+    From v6.1.0 (without tftp):
+        Using command 'updatedetectorserver'
+
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
+
+
+
+
+3 Firmware Requirements
+========================
+
+
+    Eiger       02.10.2023 (v32)                    (updated in 7.0.3)
+    
+    Jungfrau    20.09.2023 (v1.5, HW v1.0)          (updated in 8.0.0)
+                21.09.2023 (v2.5, HW v2.0)          (updated in 8.0.0)
+
+    Mythen3     24.01.2023 (v1.4)                   (updated in 7.0.0)
+
+    Gotthard2   23.11.2022 (v0.3)                   (updated in 7.0.0)
+
+    Gotthard    08.02.2018 (50um and 25um Master)
+                09.02.2018 (25 um Slave) 
+
+    Moench      26.10.2023 (v0.3.2)                 (updated in 8.0.2, 
+                                                    under development)
+
+    Ctb         28.08.2023 (v1.2)                   (updated in 8.0.0)
+
+
+    Detector Upgrade
+    ----------------
+
+    The following can be upgraded remotely:
+
+    Eiger      via bit files
+    Jungfrau   via command <.pof>
+    Mythen3    via command <.rbf>
+    Gotthard2  via command <.rbf>
+    Moench     via command <.pof>
+    Ctb        via command <.pof>
+
+    Gotthard cannot be upgraded remotely  
+
+    Except Eiger, 
+        upgrade 
+            using command 'programfpga' or
+
+        udpate both server and firmware simultaneously
+            using command 'update'
+
+
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/firmware.html
+
+
+
+
+4 Kernel Requirements
+======================
+
+    Blackfin 
+    --------
+    Latest version: Fri Oct 29 00:00:00 2021
+    
+    Older ones will work, but might have issues with programming firmware via
+    the package.
+
+    Nios
+    -----
+    Compatible version: Mon May 10 18:00:21 CEST 2021
+
+    Kernel Upgrade
+    ---------------
+    Eiger   via bit files
+    Others  via command
+
+    Commands: udpatekernel, kernelversion
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/commandline.html
+        https://slsdetectorgroup.github.io/devdoc/detector.html
+        https://slsdetectorgroup.github.io/devdoc/pydetector.html
+
+
+
+
+5 Download, Documentation & Support
+====================================
+
+    Download
+    --------
+    
+    The Source Code:
+         https://github.com/slsdetectorgroup/slsDetectorPackage
+            
+    Documentation
+    -------------
+    
+    Installation:
+        https://slsdetectorgroup.github.io/devdoc/installation.html
+
+    Quick Start Guide:
+        https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
+        
+    Firmware Upgrade:
+        https://slsdetectorgroup.github.io/devdoc/firmware.html
+
+    Detector Server upgrade:
+        https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
+
+    Detector Simulators:
+        https://slsdetectorgroup.github.io/devdoc/virtualserver.html
+
+    Consuming slsDetectorPackage:
+        https://slsdetectorgroup.github.io/devdoc/consuming.html
+        
+    API Examples:
+        https://github.com/slsdetectorgroup/api-examples
+
+    Command Line Documentation:
+        https://slsdetectorgroup.github.io/devdoc/commandline.html
+
+    C++ API Documentation:
+        https://slsdetectorgroup.github.io/devdoc/detector.html
+       
+    C++ API Example:
+        https://slsdetectorgroup.github.io/devdoc/examples.html#
+        
+    Python API Documentation:
+        https://slsdetectorgroup.github.io/devdoc/pygettingstarted.html
+
+    Python API Example:
+        https://slsdetectorgroup.github.io/devdoc/pyexamples.html
+
+    Receivers (including custom receiver):
+        https://slsdetectorgroup.github.io/devdoc/receivers.html
+        https://slsdetectorgroup.github.io/devdoc/slsreceiver.html
+
+    Detector UDP Header:
+        https://slsdetectorgroup.github.io/devdoc/udpheader.html
+        https://slsdetectorgroup.github.io/devdoc/udpdetspec.html
+
+    slsReceiver Zmq Format:
+        https://slsdetectorgroup.github.io/devdoc/slsreceiver.html#zmq-json-header-format
+
+    TroubleShooting:
+        https://slsdetectorgroup.github.io/devdoc/troubleshooting.html
+        https://slsdetectorgroup.github.io/devdoc/troubleshooting.html#receiver-pc-tuning-options
+        
+    Further Documentation:
+        https://www.psi.ch/en/detectors/documentation
+        
+    Info on Releases:
+        https://www.psi.ch/en/detectors/software
+
+
+    Support
+    -------
+
+        dhanya.thattil@psi.ch
+        erik.frojdh@psi.ch

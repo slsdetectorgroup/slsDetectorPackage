@@ -106,10 +106,9 @@ static PyObject *decode(PyObject *Py_UNUSED(self), PyObject *args,
         return NULL;
     }
 
-
-    if (n_threads == 1){
+    if (n_threads == 1) {
         pm_decode(src, dst, pm, n_frames, n_rows * n_cols);
-    }else{
+    } else {
         // Multithreaded processing
         pthread_t *threads = malloc(sizeof(pthread_t *) * n_threads);
         thread_args *arguments = malloc(sizeof(thread_args) * n_threads);
@@ -120,7 +119,8 @@ static PyObject *decode(PyObject *Py_UNUSED(self), PyObject *args,
             arguments[i].src = src + (i * frames_per_thread * pm_size);
             arguments[i].dst = dst + (i * frames_per_thread * pm_size);
             arguments[i].pm = pm;
-            arguments[i].n_frames = frames_per_thread; // TODO! not matching frames.
+            arguments[i].n_frames =
+                frames_per_thread; // TODO! not matching frames.
             arguments[i].n_pixels = n_rows * n_cols;
             assigned_frames += frames_per_thread;
         }
@@ -128,7 +128,7 @@ static PyObject *decode(PyObject *Py_UNUSED(self), PyObject *args,
 
         for (size_t i = 0; i < n_threads; i++) {
             pthread_create(&threads[i], NULL, (void *)thread_pmdecode,
-                        &arguments[i]);
+                           &arguments[i]);
         }
         for (size_t i = 0; i < n_threads; i++) {
             pthread_join(threads[i], NULL);
@@ -136,8 +136,6 @@ static PyObject *decode(PyObject *Py_UNUSED(self), PyObject *args,
         free(threads);
         free(arguments);
     }
-    
-
 
     Py_DECREF(raw_data);
     Py_DECREF(pixel_map);

@@ -2818,14 +2818,14 @@ uint32_t Module::writeRegister(uint32_t addr, uint32_t val, bool validate) {
 }
 
 void Module::setBit(uint32_t addr, int n, bool validate) {
-    uint32_t args[2] = {addr, static_cast<uint32_t>(n),
-                        static_cast<uint32_t>(validate)};
+    uint32_t args[] = {addr, static_cast<uint32_t>(n),
+                       static_cast<uint32_t>(validate)};
     sendToDetectorStop(F_SET_BIT, args, nullptr);
 }
 
 void Module::clearBit(uint32_t addr, int n, bool validate) {
-    uint32_t args[2] = {addr, static_cast<uint32_t>(n),
-                        static_cast<uint32_t>(validate)};
+    uint32_t args[] = {addr, static_cast<uint32_t>(n),
+                       static_cast<uint32_t>(validate)};
     sendToDetectorStop(F_CLEAR_BIT, args, nullptr);
 }
 

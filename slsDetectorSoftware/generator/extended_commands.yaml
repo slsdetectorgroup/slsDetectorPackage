@@ -1102,9 +1102,9 @@ clearbit:
         - int
         argc: 2
         cast_input:
-        - false
-        - false
-        - false
+        - true
+        - true
+        - true
         check_det_id: false
         convert_det_id: true
         exceptions:
@@ -1120,11 +1120,11 @@ clearbit:
         - int
         - bool
         output:
-        - '"{"'
+        - '"["'
         - args[0]
-        - '": "'
+        - '", "'
         - args[1]
-        - '"}"'
+        - '"]"'
         require_det_id: true
         store_result_in_t: false
       - arg_types:
@@ -1133,9 +1133,9 @@ clearbit:
         - special::validate
         argc: 3
         cast_input:
-        - false
-        - false
-        - false
+        - true
+        - true
+        - true
         check_det_id: false
         convert_det_id: true
         exceptions:
@@ -1153,11 +1153,11 @@ clearbit:
         - int
         - bool
         output:
-        - '"{"'
+        - '"["'
         - args[0]
-        - '": "'
+        - '", "'
         - args[1]
-        - '"}"'
+        - '"]"'
         require_det_id: true
         store_result_in_t: false
   command_name: clearbit
@@ -8012,9 +8012,9 @@ reg:
         - uint32_t
         argc: 2
         cast_input:
-        - false
-        - false
-        - false
+        - true
+        - true
+        - true
         check_det_id: false
         convert_det_id: true
         function: writeRegister
@@ -8027,11 +8027,11 @@ reg:
         - uint32_t
         - bool
         output:
-        - '"{"'
+        - '"["'
         - args[0]
-        - '": "'
+        - '", "'
         - args[1]
-        - '"}"'
+        - '"]"'
         require_det_id: true
         store_result_in_t: false
       - arg_types:
@@ -8040,9 +8040,9 @@ reg:
         - special::validate
         argc: 3
         cast_input:
-        - false
-        - false
-        - false
+        - true
+        - true
+        - true
         check_det_id: false
         convert_det_id: true
         exceptions:
@@ -8058,11 +8058,11 @@ reg:
         - uint32_t
         - bool
         output:
-        - '"{"'
+        - '"["'
         - args[0]
-        - '": "'
+        - '", "'
         - args[1]
-        - '"}"'
+        - '"]"'
         require_det_id: true
         store_result_in_t: false
   command_name: reg
@@ -9724,9 +9724,9 @@ setbit:
         - int
         argc: 2
         cast_input:
-        - false
-        - false
-        - false
+        - true
+        - true
+        - true
         check_det_id: false
         convert_det_id: true
         exceptions:
@@ -9742,11 +9742,11 @@ setbit:
         - int
         - bool
         output:
-        - '"{"'
+        - '"["'
         - args[0]
-        - '": "'
+        - '", "'
         - args[1]
-        - '"}"'
+        - '"]"'
         require_det_id: true
         store_result_in_t: false
       - arg_types:
@@ -9755,9 +9755,9 @@ setbit:
         - special::validate
         argc: 3
         cast_input:
-        - false
-        - false
-        - false
+        - true
+        - true
+        - true
         check_det_id: false
         convert_det_id: true
         exceptions:
@@ -9775,11 +9775,11 @@ setbit:
         - int
         - bool
         output:
-        - '"{"'
+        - '"["'
         - args[0]
-        - '": "'
+        - '", "'
         - args[1]
-        - '"}"'
+        - '"]"'
         require_det_id: true
         store_result_in_t: false
   command_name: setbit

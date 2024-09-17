@@ -4186,13 +4186,13 @@ reg:
     PUT:
       require_det_id: true
       function: writeRegister
-      output: [ '"{"', 'args[0]', '": "', 'args[1]', '"}"' ]
+      output: [ '"["', 'args[0]', '", "', 'args[1]', '"]"' ]
       args:
         - argc: 2
           input: [ 'args[0]', 'args[1]', '"0"' ]
           input_types: [ uint32_t, uint32_t, bool ]
           arg_types: [ uint32_t, uint32_t ]
-          cast_input: [ true, true ]
+          cast_input: [ true, true, true ]
         - argc: 3
           arg_types: [ uint32_t, uint32_t, special::validate ]
           exceptions:
@@ -4200,7 +4200,7 @@ reg:
               message: '"Could not scan third argument. Did you mean --validate?"'
           input: [ 'args[0]', 'args[1]', '"1"' ]
           input_types: [ uint32_t, uint32_t, bool ]
-          cast_input: [ true, true ]
+          cast_input: [ true, true, true ]
 
 adcreg:
   help: "[address] [value]\n\t[Jungfrau][Moench][Ctb][Gotthard] Writes to an adc register in hex. Advanced user Function!"
@@ -4235,7 +4235,7 @@ Setbit:
     PUT:
       require_det_id: true
       function: setBit
-      output: [ '"{"', 'args[0]', '": "', 'args[1]', '"}"' ]    
+      output: [ '"["', 'args[0]', '", "', 'args[1]', '"]"' ]    
       args:
         - argc: 2
           exceptions:
@@ -4244,7 +4244,7 @@ Setbit:
           input: [ 'args[0]', 'args[1]', '"0"' ]  
           input_types: [ uint32_t, int, bool ]
           arg_types: [ uint32_t, int ]
-          cast_input: [ true, true ]
+          cast_input: [ true, true, true ]
         - argc: 3
           arg_types: [ uint32_t, int, special::validate ]
           exceptions:
@@ -4254,7 +4254,7 @@ Setbit:
               message: '"Could not scan third argument. Did you mean --validate?"'
           input: [ 'args[0]', 'args[1]', '"1"' ]
           input_types: [ uint32_t, int, bool ]
-          cast_input: [ true, true ]
+          cast_input: [ true, true, true ]
 
 
 setbit:

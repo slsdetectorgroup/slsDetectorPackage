@@ -1495,9 +1495,39 @@ std::string Caller::clearbit(int action) {
         }
 
         if (args.size() == 2) {
+            try {
+                StringTo<uint32_t>(args[0]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 0 to uint32_t");
+            }
+            try {
+                StringTo<int>(args[1]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 1 to int");
+            }
+            try {
+                StringTo<bool>("0");
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 2 to bool");
+            }
         }
 
         if (args.size() == 3) {
+            try {
+                StringTo<uint32_t>(args[0]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 0 to uint32_t");
+            }
+            try {
+                StringTo<int>(args[1]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 1 to int");
+            }
+            try {
+                StringTo<bool>("1");
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 2 to bool");
+            }
         }
 
     }
@@ -1514,8 +1544,11 @@ std::string Caller::clearbit(int action) {
             if (StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31) {
                 throw RuntimeError("Bit number out of range: " + args[1]);
             }
-            det->clearBit(args[0], args[1], "0", std::vector<int>{det_id});
-            os << "{" << args[0] << ": " << args[1] << "}" << '\n';
+            auto arg0 = StringTo<uint32_t>(args[0]);
+            auto arg1 = StringTo<int>(args[1]);
+            auto arg2 = StringTo<bool>("0");
+            det->clearBit(arg0, arg1, arg2, std::vector<int>{det_id});
+            os << "[" << args[0] << ", " << args[1] << "]" << '\n';
         }
 
         if (args.size() == 3) {
@@ -1526,8 +1559,11 @@ std::string Caller::clearbit(int action) {
                 throw RuntimeError(
                     "Could not scan third argument. Did you mean --validate?");
             }
-            det->clearBit(args[0], args[1], "1", std::vector<int>{det_id});
-            os << "{" << args[0] << ": " << args[1] << "}" << '\n';
+            auto arg0 = StringTo<uint32_t>(args[0]);
+            auto arg1 = StringTo<int>(args[1]);
+            auto arg2 = StringTo<bool>("1");
+            det->clearBit(arg0, arg1, arg2, std::vector<int>{det_id});
+            os << "[" << args[0] << ", " << args[1] << "]" << '\n';
         }
     }
 
@@ -10342,9 +10378,39 @@ std::string Caller::reg(int action) {
         }
 
         if (args.size() == 2) {
+            try {
+                StringTo<uint32_t>(args[0]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 0 to uint32_t");
+            }
+            try {
+                StringTo<uint32_t>(args[1]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 1 to uint32_t");
+            }
+            try {
+                StringTo<bool>("0");
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 2 to bool");
+            }
         }
 
         if (args.size() == 3) {
+            try {
+                StringTo<uint32_t>(args[0]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 0 to uint32_t");
+            }
+            try {
+                StringTo<uint32_t>(args[1]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 1 to uint32_t");
+            }
+            try {
+                StringTo<bool>("1");
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 2 to bool");
+            }
         }
 
     }
@@ -10366,8 +10432,11 @@ std::string Caller::reg(int action) {
 
     if (action == slsDetectorDefs::PUT_ACTION) {
         if (args.size() == 2) {
-            det->writeRegister(args[0], args[1], "0", std::vector<int>{det_id});
-            os << "{" << args[0] << ": " << args[1] << "}" << '\n';
+            auto arg0 = StringTo<uint32_t>(args[0]);
+            auto arg1 = StringTo<uint32_t>(args[1]);
+            auto arg2 = StringTo<bool>("0");
+            det->writeRegister(arg0, arg1, arg2, std::vector<int>{det_id});
+            os << "[" << args[0] << ", " << args[1] << "]" << '\n';
         }
 
         if (args.size() == 3) {
@@ -10375,8 +10444,11 @@ std::string Caller::reg(int action) {
                 throw RuntimeError(
                     "Could not scan third argument. Did you mean --validate?");
             }
-            det->writeRegister(args[0], args[1], "1", std::vector<int>{det_id});
-            os << "{" << args[0] << ": " << args[1] << "}" << '\n';
+            auto arg0 = StringTo<uint32_t>(args[0]);
+            auto arg1 = StringTo<uint32_t>(args[1]);
+            auto arg2 = StringTo<bool>("1");
+            det->writeRegister(arg0, arg1, arg2, std::vector<int>{det_id});
+            os << "[" << args[0] << ", " << args[1] << "]" << '\n';
         }
     }
 
@@ -12619,9 +12691,39 @@ std::string Caller::setbit(int action) {
         }
 
         if (args.size() == 2) {
+            try {
+                StringTo<uint32_t>(args[0]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 0 to uint32_t");
+            }
+            try {
+                StringTo<int>(args[1]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 1 to int");
+            }
+            try {
+                StringTo<bool>("0");
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 2 to bool");
+            }
         }
 
         if (args.size() == 3) {
+            try {
+                StringTo<uint32_t>(args[0]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 0 to uint32_t");
+            }
+            try {
+                StringTo<int>(args[1]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 1 to int");
+            }
+            try {
+                StringTo<bool>("1");
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 2 to bool");
+            }
         }
 
     }
@@ -12638,8 +12740,11 @@ std::string Caller::setbit(int action) {
             if (StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31) {
                 throw RuntimeError("Bit number out of range: " + args[1]);
             }
-            det->setBit(args[0], args[1], "0", std::vector<int>{det_id});
-            os << "{" << args[0] << ": " << args[1] << "}" << '\n';
+            auto arg0 = StringTo<uint32_t>(args[0]);
+            auto arg1 = StringTo<int>(args[1]);
+            auto arg2 = StringTo<bool>("0");
+            det->setBit(arg0, arg1, arg2, std::vector<int>{det_id});
+            os << "[" << args[0] << ", " << args[1] << "]" << '\n';
         }
 
         if (args.size() == 3) {
@@ -12650,8 +12755,11 @@ std::string Caller::setbit(int action) {
                 throw RuntimeError(
                     "Could not scan third argument. Did you mean --validate?");
             }
-            det->setBit(args[0], args[1], "1", std::vector<int>{det_id});
-            os << "{" << args[0] << ": " << args[1] << "}" << '\n';
+            auto arg0 = StringTo<uint32_t>(args[0]);
+            auto arg1 = StringTo<int>(args[1]);
+            auto arg2 = StringTo<bool>("1");
+            det->setBit(arg0, arg1, arg2, std::vector<int>{det_id});
+            os << "[" << args[0] << ", " << args[1] << "]" << '\n';
         }
     }
 

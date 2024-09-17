@@ -79,9 +79,10 @@ if(SLS_USE_TEXTCLIENT)
     # Loop over list to generate command line binaries
     set(bin_names "sls_detector_put" 
             "sls_detector_get" 
-            "sls_detector_acquire" 
+            "sls_detector_acquire"
+            "sls_detector_acquire_zmq" 
             "sls_detector_help")
-    set(cmd_name "PUT" "GET" "READOUT" "HELP")
+    set(cmd_name "PUT" "GET" "READOUT" "READOUTZMQ" "HELP")
     list(LENGTH bin_names len1)
     math(EXPR len2 "${len1} - 1")
 

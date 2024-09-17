@@ -3332,7 +3332,13 @@ void Module::initializeModuleStructure(detectorType type) {
     shm()->numberOfModule.y = 0;
     shm()->controlPort = DEFAULT_TCP_CNTRL_PORTNO;
     shm()->stopPort = DEFAULT_TCP_STOP_PORTNO;
-    strcpy_safe(shm()->settingsDir, getenv("HOME"));
+    char *home_directory = getenv("HOME");
+    if (home_directory != nullptr)
+        strcpy_safe(shm()->settingsDir, home_directory);
+    else {
+        strcpy_safe(shm()->settingsDir, "");
+        LOG(logWARNING) << "HOME directory not set";
+    }
     strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_TCP_RX_PORTNO + moduleIndex;
     shm()->useReceiverFlag = false;

@@ -1350,6 +1350,8 @@ class CmdProxy {
     std::string GapPixels(int action);
     std::string BadChannels(int action);
     /* acquisition parameters */
+    static void EmptyDataCallBack(detectorData *data, uint64_t frameIndex,
+                                  uint32_t subFrameIndex, void *this_pointer);
     std::string Acquire(int action);
     std::string Exptime(int action);
     std::string ReadoutSpeed(int action);

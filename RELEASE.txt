@@ -1,7 +1,7 @@
-SLS Detector Package Major Release 8.0.1 released on 16.01.2024
-===============================================================
+SLS Detector Package Bug Fix Release 8.0.2 released on 18.09.2024
+=================================================================
 
-This document describes the differences between v8.0.1 and v8.0.0
+This document describes the differences between v8.0.2 and v8.0.1
 
 
 
@@ -24,19 +24,100 @@ This document describes the differences between v8.0.1 and v8.0.0
     -----------
 
 
-    *   Fixed compilation error when building without zmq-devel installed
-        and removed dependency on zeromq in conda build. 
+    *   Rapidjson compilation with gcc 14
+        Fixed a compile issue with gcc 14. Same fix in later commits to rapidjson.
 
 
-    *   Fixed libzmq compilation error to build the package as a submodule.
+    Client
+    ------
 
 
-    Calibration
-    -----------
+    *   getenv("HOME") returning nullptr
+        When this happens, especially for systemd, it segfaults. Protection 
+        provided by using empty string in this case.
 
 
-    *   [Moench] Fixed Moench calibration
+    *   [Mythen3] Bad channel list for multi module
+        Exception thrown when loading multi module bad channel file skipping 
+        modules in between. Fixed.
 
+
+    *   [Gotthard2] Stopping a blocking acquisition
+        A check added in v8.0.0 to catch slaves that might be in waiting forever
+        also catches Gotthard2 25um slaves that might only be in waiting 
+        temporarily. This is fixed with a 50ms sleep before checking again 
+        (upto 1s). 
+
+
+    *   [Moench] Acquire finished processing call back
+        New executable 'sls_detector_acquire_zmq' added to listen to all zmq 
+        packets from post processor or external process to signal end of post 
+        processing. Post processor refactoring of zmq socket creation added.
+
+
+    Gui / Callback
+    --------------
+
+
+    *   [Gotthard2] Stopping a blocking acquisition
+        From the previous issue, call back for acquisition finished status gives 
+        error for inconsistent states. Again, a check every 50ms upto 1s is 
+        added to let go the temporarily waiting slave.
+
+
+    *   Different file paths
+        Fixes file path resetting when different modules have different fpath set.
+
+
+    Receiver
+    --------
+
+
+    *   HDF5 fill value
+        Fix the fill value to accomodate all datatypes.
+
+   
+    Firmware
+    --------
+
+
+    *   [Moench] Overflow with exptime of 0
+        Fixed overflow when subtracting 1 clock cycle from exptime.
+
+
+    On-board Detector Server
+    ------------------------
+
+
+    *   [Moench] Few changes in Server:
+        - Max shifts of adc clock changed from 240 to 200. 
+
+        - Fixed overflow when subtracting 2 clock cycles from exptime of 0ms.
+
+        - Default readout speed to half speed from quarter.
+
+        - Change default ADC phase to 150 for full readout speed.
+
+        - Change default vipre_cds dac from 800 to 1280.
+
+
+    *   [Mythen3] Change Clk divider from 10 (100MHz) to 20 (50MHz) at startup.
+
+
+    *   [Jungfrau] Fix for HW v1.0 boards for unreliable ADC 2
+        Issues sometimes seen on some HW v 1.0 boards are fixed with phase 
+        relationship of 120 degrees. HW v2.0 boards are not affected.
+        
+
+    Documentation
+    -------------
+
+
+    *   Updated troubleshooting documentaion to check links and disable firewall
+
+
+    *   Excluded non UTF-8 encoded libzmq documents due to machine dependent 
+        compilation issues.
 
 
 
@@ -45,11 +126,11 @@ This document describes the differences between v8.0.1 and v8.0.0
 
 
     Eiger       8.0.0
-    Jungfrau    8.0.0
-    Mythen3     8.0.0
+    Jungfrau    8.0.2
+    Mythen3     8.0.2
     Gotthard2   8.0.0
     Gotthard    8.0.0
-    Moench      8.0.0
+    Moench      8.0.2
     Ctb         8.0.0
     
 
@@ -58,8 +139,6 @@ This document describes the differences between v8.0.1 and v8.0.0
 
     From v6.1.0 (without tftp):
         Using command 'updatedetectorserver'
-    From 5.0.0 (with tftp):
-        Using command 'copydetectorserver'
 
     Instructions available at
         https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
@@ -83,7 +162,8 @@ This document describes the differences between v8.0.1 and v8.0.0
     Gotthard    08.02.2018 (50um and 25um Master)
                 09.02.2018 (25 um Slave) 
 
-    Moench      10.07.2023 (v0.3.2)                 (updated in 8.0.0, under development)
+    Moench      26.10.2023 (v0.3.2)                 (updated in 8.0.2, 
+                                                    under development)
 
     Ctb         28.08.2023 (v1.2)                   (updated in 8.0.0)
 
@@ -104,10 +184,10 @@ This document describes the differences between v8.0.1 and v8.0.0
 
     Except Eiger, 
         upgrade 
-            Using command 'programfpga' or
+            using command 'programfpga' or
 
         udpate both server and firmware simultaneously
-            Using command 'update'
+            using command 'update'
 
 
     Instructions available at

@@ -1221,10 +1221,14 @@ int DetectorImpl::acquire() {
 
         if (acquisition_finished != nullptr) {
             // status
-            runStatus status = IDLE;
             auto statusList = Parallel(&Module::getRunStatus, {});
-            status = statusList.squash(ERROR);
-            // difference, but none error
+            // if any slave still waiting, wait up to 1s (gotthard)
+            for (int i = 0; i != 20 && statusList.any(WAITING); ++i) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                statusList = Parallel(&Module::getRunStatus, {});
+            }
+            runStatus status = statusList.squash(ERROR);
+            // inconsistent status (squash error), but none of them in error
             if (status == ERROR && (!statusList.any(ERROR))) {
                 // handle jf sync issue (master idle, slaves stopped)
                 if (statusList.contains_only(IDLE, STOPPED)) {
@@ -1320,8 +1324,13 @@ void DetectorImpl::startAcquisition(const bool blocking, Positions pos) {
             Parallel(&Module::startAndReadAll, masters);
             // ensure all status normal (slaves not blocking)
             // to catch those slaves that are still 'waiting'
-            auto status = Parallel(&Module::getRunStatus, pos);
-            if (!status.contains_only(IDLE, STOPPED, RUN_FINISHED)) {
+            auto statusList = Parallel(&Module::getRunStatus, pos);
+            // if any slave still waiting, wait up to 1s (gotthard)
+            for (int i = 0; i != 20 && statusList.any(WAITING); ++i) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                statusList = Parallel(&Module::getRunStatus, pos);
+            }
+            if (!statusList.contains_only(IDLE, STOPPED, RUN_FINISHED)) {
                 throw RuntimeError("Acquisition not successful. "
                                    "Unexpected detector status");
             }
@@ -1977,7 +1986,7 @@ void DetectorImpl::setBadChannels(const std::vector<int> list, Positions pos) {
 
     // update to multi values if multi modules
     if (isAllPositions(pos)) {
-        std::vector<std::vector<int>> badchannels;
+        std::vector<std::vector<int>> badchannels(modules.size());
         int nchan = modules[0]->getNumberOfChannels().x;
         if (shm()->detType == MYTHEN3) {
             // assuming single counter
@@ -1996,16 +2005,9 @@ void DetectorImpl::setBadChannels(const std::vector<int> list, Positions pos) {
                                    std::to_string(badchannel) +
                                    " out of bounds.");
             }
-            if (badchannels.size() != imod + 1) {
-                badchannels.push_back(std::vector<int>{});
-            }
             badchannels[imod].push_back(ch);
         }
         for (size_t imod = 0; imod != modules.size(); ++imod) {
-            // add empty vector if no bad channels in this module
-            if (badchannels.size() != imod + 1) {
-                badchannels.push_back(std::vector<int>{});
-            }
             Parallel(&Module::setBadChannels, {static_cast<int>(imod)},
                      badchannels[imod]);
         }

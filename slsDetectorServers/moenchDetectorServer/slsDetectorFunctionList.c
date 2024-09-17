@@ -481,7 +481,6 @@ void setupDetector() {
         return;
     }
 
-    setReadoutSpeed(DEFAULT_SPEED);
     cleanFifos();
     resetCore();
 
@@ -495,6 +494,7 @@ void setupDetector() {
     initReadoutConfiguration();
 
     // Initialization of acquistion parameters
+    setReadoutSpeed(DEFAULT_SPEED);
     setSettings(DEFAULT_SETTINGS);
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
@@ -699,14 +699,12 @@ int setExpTime(int64_t val) {
     }
     LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
     val *= (1E-3 * CLK_RUN);
-    val -= ACQ_TIME_MIN_CLOCK;
     if (val < 0) {
         val = 0;
     }
     set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG);
 
     // validate for tolerance
-    val += ACQ_TIME_MIN_CLOCK;
     int64_t retval = getExpTime();
     val /= (1E-3 * CLK_RUN);
     if (val != retval) {
@@ -716,8 +714,7 @@ int setExpTime(int64_t val) {
 }
 
 int64_t getExpTime() {
-    return (get64BitReg(SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) +
-            ACQ_TIME_MIN_CLOCK) /
+    return get64BitReg(SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) /
            (1E-3 * CLK_RUN);
 }
 

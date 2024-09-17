@@ -183,8 +183,8 @@ int main(int argc, char *argv[]) {
     gainfname = args["gainfile"];
     etafname = args["etafilefile"];
     
-    if (atoi(args["nuninterfaces"].c_str())>1){
-      cprintf(RED, "Sorry, at the  moment only a single interface is supported instead of %d\n",atoi(args["nuninterfaces"].c_str()));
+    if (atoi(args["numinterfaces"].c_str())>1){
+      cprintf(RED, "Sorry, at the  moment only a single interface is supported instead of %d\n",atoi(args["numinterfaces"].c_str()));
       return EXIT_FAILURE;
     }
 
@@ -272,54 +272,35 @@ int main(int argc, char *argv[]) {
 
     sls::ZmqSocket *zmqsocket = NULL;
 
-#ifdef NEWZMQ
     // receive socket
     try {
-#endif
-
       zmqsocket = new sls::ZmqSocket(socketip.c_str(), portnum);
-
-#ifdef NEWZMQ
     } catch (...) {
         cprintf(RED,
-                "Error: Could not create Zmq socket on port %d with ip %s\n",
+                "Error: Could not create Zmq receiving socket on port %d with ip %s\n",
                 portnum, socketip.c_str());
         delete zmqsocket;
         return EXIT_FAILURE;
     }
-#endif
-
-#ifndef NEWZMQ
-    if (zmqsocket->IsError()) {
-        cprintf(RED,
-                "Error: Could not create Zmq socket on port %d with ip %s\n",
-                portnum, socketip.c_str());
-        delete zmqsocket;
-        return EXIT_FAILURE;
-    }
-#endif
     if (zmqsocket->Connect()) {
-        cprintf(RED, "Error: Could not connect to socket  %s\n",
+        cprintf(RED, "Error: Could not connect to zmq receiving socket  %s\n",
                 (zmqsocket->GetZmqServerAddress()).c_str());
         delete zmqsocket;
         return EXIT_FAILURE;
     } else
-        printf("Zmq Client at %s\n", zmqsocket->GetZmqServerAddress().c_str());
+    
+    printf("Zmq receiving at %s\n", zmqsocket->GetZmqServerAddress().c_str());
 
     // send socket
     sls::ZmqSocket *zmqsocket2 = 0;
     // cout << "zmq2 " << endl;
     if (send) {
-#ifdef NEWZMQ
         // receive socket
         try {
-#endif
-	  zmqsocket2 = new sls::ZmqSocket(portnum2, socketip2.c_str());
-
-#ifdef NEWZMQ
+    	  zmqsocket2 = new sls::ZmqSocket(portnum2, socketip2.c_str());
         } catch (...) {
             cprintf(RED,
-                    "Error: Could not create Zmq socket server on port %d and "
+                    "Error: Could not create Zmq sending socket on port %d and "
                     "ip %s\n",
                     portnum2, socketip2.c_str());
             //	delete zmqsocket2;
@@ -328,28 +309,7 @@ int main(int argc, char *argv[]) {
             //	return EXIT_FAILURE;
             send = false;
         }
-#endif
-
-#ifndef NEWZMQ
-        if (zmqsocket2->IsError()) {
-            cprintf(RED,
-                    "AAA Error: Could not create Zmq socket server on port %d "
-                    "and ip %s\n",
-                    portnum2, socketip2.c_str());
-            //	delete zmqsocket2;
-            // delete zmqsocket;
-            //	return EXIT_FAILURE;
-            send = false;
-        }
-#endif
-        if (zmqsocket2->Connect()) {
-            cprintf(RED, "BBB Error: Could not connect to socket  %s\n",
-                    zmqsocket2->GetZmqServerAddress().c_str());
-            //	delete zmqsocket2;
-            send = false;
-            //	return EXIT_FAILURE;
-        } else
-            printf("Zmq Client at %s\n",
+            printf("Zmq sending socket at %s\n",
                    zmqsocket2->GetZmqServerAddress().c_str());
     }
 

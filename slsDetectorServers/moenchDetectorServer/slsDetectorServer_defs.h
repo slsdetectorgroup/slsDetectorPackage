@@ -5,7 +5,7 @@
 #include "sls/sls_detector_defs.h"
 
 #define REQRD_FRMWRE_VRSN_BOARD2 0x444445 // 1.0 pcb (version = 010)
-#define REQRD_FRMWRE_VRSN        0x230710 // 2.0 pcb (version = 011)
+#define REQRD_FRMWRE_VRSN        0x231026 // 2.0 pcb (version = 011)
 
 #define NUM_HARDWARE_VERSIONS (2)
 #define HARDWARE_VERSION_NUMBERS                                               \
@@ -58,11 +58,10 @@
 /* Defines in the Firmware */
 #define MAX_TIMESLOT_VAL          (0x1F)
 #define MAX_THRESHOLD_TEMP_VAL    (127999) // millidegrees
-#define ACQ_TIME_MIN_CLOCK        (2)
 #define ASIC_FILTER_MAX_RES_VALUE (1)
 #define MAX_SELECT_CHIP10_VAL     (63)
 
-#define MAX_PHASE_SHIFTS (240)
+#define MAX_PHASE_SHIFTS (200)
 #define BIT16_MASK       (0xFFFF)
 
 #define ADC_DECMT_QUARTER_SPEED (0x3)
@@ -71,7 +70,7 @@
 
 #define ADC_PHASE_DEG_QUARTER_SPEED (0)
 #define ADC_PHASE_DEG_HALF_SPEED    (0)
-#define ADC_PHASE_DEG_FULL_SPEED    (300)
+#define ADC_PHASE_DEG_FULL_SPEED    (150)
 
 #define ADC_OFST_QUARTER_SPEED (0x12)
 #define ADC_OFST_HALF_SPEED    (0x12)
@@ -134,7 +133,7 @@ enum DACINDEX {
         680,  /* MO_VB_SDA */                                                  \
         1428, /* MO_VCASC_SFP */                                               \
         1200, /* MO_VOUT_CM */                                                 \
-        800,  /* MO_VIPRE_CDS */                                               \
+        1280, /* MO_VIPRE_CDS */                                               \
         900   /* MO_IBIAS_SFP */                                               \
     };
 

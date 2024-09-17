@@ -205,6 +205,11 @@ std::string CmdProxy::VirtualServer(int action) {
     return os.str();
 }
 
+void CmdProxy::EmptyDataCallBack(detectorData *data, uint64_t frameIndex,
+                                 uint32_t subFrameIndex, void *this_pointer) {
+    LOG(logDEBUG) << "EmptyDataCallBack to start up zmq sockets";
+}
+
 std::string CmdProxy::Acquire(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
@@ -226,6 +231,9 @@ std::string CmdProxy::Acquire(int action) {
             throw RuntimeError("Individual detectors not allowed for readout.");
         }
 
+        if (action == defs::READOUT_ZMQ_ACTION) {
+            det->registerDataCallback(&(EmptyDataCallBack), this);
+        }
         det->acquire();
 
         if (det->getUseReceiverFlag().squash(false)) {

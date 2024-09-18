@@ -1650,7 +1650,6 @@ int write_register(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     uint32_t args[3] = {-1, -1, -1};
-    uint32_t retval = -1;
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
@@ -1662,27 +1661,21 @@ int write_register(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
-#ifdef GOTTHARDD
-        retval = writeRegister16And32(addr, val);
-#elif EIGERD
-        if (writeRegister(addr, val) == FAIL) {
+#if EIGERD
+        if (writeRegister(addr, val, validate) == FAIL) {
             ret = FAIL;
             sprintf(mess, "Could not write to register 0x%x.\n", addr);
             LOG(logERROR, (mess));
-        } else {
-            if (readRegister(addr, &retval) == FAIL) {
-                ret = FAIL;
-                sprintf(
-                    mess,
-                    "Could not read register 0x%x or inconsistent values. Try "
-                    "to read +0x100 for only left and +0x200 for only right.\n",
-                    addr);
-                LOG(logERROR, (mess));
-            }
-        }
+        } 
 #else
-        retval = writeRegister(addr, val);
+#ifdef GOTTHARDD
+        writeRegister16And32(addr, val);
+        uint32_t retval = readRegister16And32(addr);
+#else
+        writeRegister(addr, val);
+        uint32_t retval = readRegister(addr);
 #endif
+        LOG(logDEBUG1, ("Write register retval (0x%x): 0x%x\n", addr, retval));
         // validate
         if (validate && ret == OK && retval != val) {
             ret = FAIL;
@@ -1692,9 +1685,9 @@ int write_register(int file_des) {
                 addr, val, retval);
             LOG(logERROR, (mess));
         }
-        LOG(logDEBUG1, ("Write register (0x%x): 0x%x\n", retval));
+#endif
     }
-    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int read_register(int file_des) {
@@ -1709,9 +1702,7 @@ int read_register(int file_des) {
     LOG(logDEBUG1, ("Reading from register 0x%x\n", addr));
 
     // get
-#ifdef GOTTHARDD
-    retval = readRegister16And32(addr);
-#elif EIGERD
+#if EIGERD
     if (readRegister(addr, &retval) == FAIL) {
         ret = FAIL;
         sprintf(mess,
@@ -1720,6 +1711,8 @@ int read_register(int file_des) {
                 addr);
         LOG(logERROR, (mess));
     }
+#elif GOTTHARDD
+    retval = readRegister16And32(addr);
 #else
     retval = readRegister(addr);
 #endif
@@ -10617,20 +10610,23 @@ int set_bit(int file_des) {
             LOG(logERROR, (mess));
         } else {
 #ifdef EIGERD
-            ret = setBit(addr, nBit);
-            if (ret == FAIL) {
+            ret = setBit(addr, nBit, validate);
 #else
             uint32_t bitmask = (1 << nBit);
 #ifdef GOTTHARDD
             uint32_t val = readRegister16And32(addr) | bitmask;
-            uint32_t retval = writeRegister16And32(addr, val);
+            writeRegister16And32(addr, val);
+            uint32_t retval = readRegister16And32(addr) | bitmask;
 #else
             uint32_t val = readRegister(addr) | bitmask;
-            uint32_t retval = writeRegister(addr, val);
+            writeRegister(addr, val);
+            uint32_t retval = readRegister(addr) | bitmask;
 #endif
             if (validate && (!(retval & bitmask))) {
                 ret = FAIL;
+            }
 #endif
+            if (ret == FAIL) {
                 sprintf(mess, "Could not set bit %d.\n", nBit);
                 LOG(logERROR, (mess));
             }
@@ -10663,20 +10659,23 @@ int clear_bit(int file_des) {
             LOG(logERROR, (mess));
         } else {
 #ifdef EIGERD
-            ret = clearBit(addr, nBit);
-            if (ret == FAIL) {
+            ret = clearBit(addr, nBit, validate);
 #else
             uint32_t bitmask = (1 << nBit);
 #ifdef GOTTHARDD
             uint32_t val = readRegister16And32(addr) & ~bitmask;
-            uint32_t retval = writeRegister16And32(addr, val);
+           writeRegister16And32(addr, val);
+           uint32_t retval = readRegister16And32(addr) & ~bitmask;
 #else
             uint32_t val = readRegister(addr) & ~bitmask;
-            uint32_t retval = writeRegister(addr, val);
+            writeRegister(addr, val);
+            uint32_t retval = readRegister(addr) & ~bitmask;
 #endif
             if (validate && (retval & bitmask)) {
                 ret = FAIL;
+            }
 #endif
+            if (ret == FAIL) {
                 sprintf(mess, "Could not clear bit %d.\n", nBit);
                 LOG(logERROR, (mess));
             }

@@ -2812,9 +2812,9 @@ uint32_t Module::readRegister(uint32_t addr) const {
     return sendToDetectorStop<uint32_t>(F_READ_REGISTER, addr);
 }
 
-uint32_t Module::writeRegister(uint32_t addr, uint32_t val, bool validate) {
+void Module::writeRegister(uint32_t addr, uint32_t val, bool validate) {
     uint32_t args[]{addr, val, static_cast<uint32_t>(validate)};
-    return sendToDetectorStop<uint32_t>(F_WRITE_REGISTER, args);
+    return sendToDetectorStop(F_WRITE_REGISTER, args, nullptr);
 }
 
 void Module::setBit(uint32_t addr, int n, bool validate) {

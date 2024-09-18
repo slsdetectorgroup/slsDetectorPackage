@@ -589,7 +589,7 @@ class Module : public virtual slsDetectorDefs {
     bool getUpdateMode() const;
     void setUpdateMode(const bool updatemode);
     uint32_t readRegister(uint32_t addr) const;
-    uint32_t writeRegister(uint32_t addr, uint32_t val, bool validate);
+    void writeRegister(uint32_t addr, uint32_t val, bool validate);
     void setBit(uint32_t addr, int n, bool validate);
     void clearBit(uint32_t addr, int n, bool validate);
     int getBit(uint32_t addr, int n);

@@ -1251,7 +1251,7 @@ int Feb_Control_Disable16bitConversion(int disable) {
         regval &= ~bitmask;
     }
 
-    if (!Feb_Control_WriteRegister_BitMask(DAQ_REG_HRDWRE, regval, bitmask, true)) {
+    if (!Feb_Control_WriteRegister_BitMask(DAQ_REG_HRDWRE, regval, bitmask, 1)) {
         LOG(logERROR, ("Could not %s 16 bit expansion (bit mode)\n",
                        (disable ? "disable" : "enable")));
         return 0;
@@ -1637,7 +1637,7 @@ int Feb_Control_SetChipSignalsToTrimQuad(int enable) {
             regval &= ~(DAQ_REG_HRDWRE_PROGRAM_MSK | DAQ_REG_HRDWRE_M8_MSK);
         }
 
-        if (!Feb_Control_WriteRegister(righOffset, regval)) {
+        if (!Feb_Control_WriteRegister(righOffset, regval, 1)) {
             LOG(logERROR, ("Could not set chip signals to trim quad\n"));
             return 0;
         }

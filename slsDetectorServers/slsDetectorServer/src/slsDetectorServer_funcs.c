@@ -1666,7 +1666,7 @@ int write_register(int file_des) {
             ret = FAIL;
             sprintf(mess, "Could not write to register 0x%x.\n", addr);
             LOG(logERROR, (mess));
-        } 
+        }
 #else
 #ifdef GOTTHARDD
         writeRegister16And32(addr, val);
@@ -10664,8 +10664,8 @@ int clear_bit(int file_des) {
             uint32_t bitmask = (1 << nBit);
 #ifdef GOTTHARDD
             uint32_t val = readRegister16And32(addr) & ~bitmask;
-           writeRegister16And32(addr, val);
-           uint32_t retval = readRegister16And32(addr) & ~bitmask;
+            writeRegister16And32(addr, val);
+            uint32_t retval = readRegister16And32(addr) & ~bitmask;
 #else
             uint32_t val = readRegister(addr) & ~bitmask;
             writeRegister(addr, val);

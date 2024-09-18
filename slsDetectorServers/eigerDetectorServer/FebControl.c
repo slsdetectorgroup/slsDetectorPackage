@@ -1251,7 +1251,8 @@ int Feb_Control_Disable16bitConversion(int disable) {
         regval &= ~bitmask;
     }
 
-    if (!Feb_Control_WriteRegister_BitMask(DAQ_REG_HRDWRE, regval, bitmask, 1)) {
+    if (!Feb_Control_WriteRegister_BitMask(DAQ_REG_HRDWRE, regval, bitmask,
+                                           1)) {
         LOG(logERROR, ("Could not %s 16 bit expansion (bit mode)\n",
                        (disable ? "disable" : "enable")));
         return 0;
@@ -1735,8 +1736,9 @@ int Feb_Control_WriteRegister_BitMask(uint32_t offset, uint32_t data,
                 if (writeVal != readVal) {
                     LOG(logERROR,
                         ("Could not write %s addr 0x%x register. Wrote "
-                        "0x%x, read 0x%x (mask:0x%x)\n",
-                        side[iloop], actualOffset, writeVal, readVal, bitmask));
+                         "0x%x, read 0x%x (mask:0x%x)\n",
+                         side[iloop], actualOffset, writeVal, readVal,
+                         bitmask));
                     return 0;
                 }
             }

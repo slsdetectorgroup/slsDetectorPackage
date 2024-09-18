@@ -174,7 +174,7 @@ void resetToHardwareSettings();
 #ifdef EIGERD
 int writeRegister(uint32_t offset, uint32_t data, int validate);
 int readRegister(uint32_t offset, uint32_t *retval);
-int setBit(const uint32_t addr, const int nBit, int validate); 
+int setBit(const uint32_t addr, const int nBit, int validate);
 int clearBit(const uint32_t addr, const int nBit, int validate);
 int getBit(const uint32_t addr, const int nBit, int *retval);
 #elif GOTTHARDD

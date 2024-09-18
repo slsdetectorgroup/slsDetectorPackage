@@ -61,6 +61,7 @@
 #define DEFAULT_BURST_MODE          (BURST_INTERNAL)
 #define DEFAULT_FILTER_RESISTOR     (0)
 #define DEFAILT_CDS_GAIN            (0)
+#define DEFAULT_FRAME_NUMBER        (1)
 #define DEFAULT_NUM_FRAMES          (1)
 #define DEFAULT_NUM_CYCLES          (1)
 #define DEFAULT_NUM_BURSTS          (1)

@@ -45,7 +45,6 @@ char initErrorMessage[MAX_STR_LENGTH];
 
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
-int64_t virtual_currentFrameNumber = 2;
 int virtual_moduleid = 0;
 #endif
 
@@ -75,6 +74,7 @@ int filterResistor = 0;
 int cdsGain = 0;
 int detPos[2] = {};
 int chipConfigured = 0;
+uint64_t nextFrameNumber = 0;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -424,6 +424,7 @@ void setupDetector() {
     detPos[0] = 0;
     detPos[1] = 0;
     chipConfigured = 0;
+    nextFrameNumber = 0;
 
     thisSettings = UNINITIALIZED;
     injectedChannelsOffset = 0;
@@ -528,6 +529,7 @@ void setupDetector() {
     setSettings(DEFAULT_SETTINGS);
 
     // Initialization of acquistion parameters
+    setNextFrameNumber(DEFAULT_FRAME_NUMBER);
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
     setNumBursts(DEFAULT_NUM_BURSTS);
@@ -1068,6 +1070,21 @@ int getDynamicRange(int *retval) {
 }
 
 /* parameters - timer */
+
+int setNextFrameNumber(uint64_t value) {
+    LOG(logINFO,
+        ("Setting next frame number: %lu\n", value));
+    setU64BitReg(value, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+    nextFrameNumber = value;
+    return OK;
+}
+
+int getNextFrameNumber(uint64_t *value) {
+    // TODO: handle triggers/bursts
+    *value = nextFrameNumber - (getNumFramesLeft() + 1);
+    return OK;
+}
+
 void setNumFrames(int64_t val) {
     if (val > 0) {
         numFramesReg = val;
@@ -3360,6 +3377,12 @@ int startStateMachine() {
     // start state machine
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_ACQSTN_MSK);
 
+    // increment the current frame number by (#frames x #triggers)
+    // updated when stopped
+    // updating here also take care of non blocking acquisitions
+    //TODO handle bursts
+    nextFrameNumber += getNumFrames() * getNumTriggers();
+
     LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
     return OK;
 }
@@ -3427,107 +3450,113 @@ void *start_timer(void *arg) {
         *((uint16_t *)(vetoData + i)) = i;
     }
 
-    int iRxEntry = firstDest;
-    // loop over number of repeats
-    for (int repeatNr = 0; repeatNr != numRepeats; ++repeatNr) {
+    {
+        uint64_t frameNr = 0;
+        getNextFrameNumber(&frameNr);
 
-        struct timespec rbegin, rend;
-        clock_gettime(CLOCK_REALTIME, &rbegin);
+        int iRxEntry = firstDest;
+        // loop over number of repeats
+        for (int repeatNr = 0; repeatNr != numRepeats; ++repeatNr) {
 
-        // loop over number of frames
-        for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
+            struct timespec rbegin, rend;
+            clock_gettime(CLOCK_REALTIME, &rbegin);
 
-            // check if manual stop
-            if (sharedMemory_getStop() == 1) {
-                break;
-            }
+            // loop over number of frames
+            for (int iframes = 0; iframes != numFrames; ++iframes) {
 
-            // change gain and data for every frame
-            {
-                const int nchannels = NCHIP * NCHAN;
-                int gainVal = 0;
-                for (int i = 0; i < nchannels; ++i) {
-                    if ((i % nchannels) < 400) {
-                        gainVal = 1 + frameNr;
-                    } else if ((i % nchannels) < 800) {
-                        gainVal = 2 + frameNr;
-                    } else {
-                        gainVal = 3 + frameNr;
+                // check if manual stop
+                if (sharedMemory_getStop() == 1) {
+                    setNextFrameNumber(frameNr + (repeatNr * numFrames) + iframes + 1);
+                    break;
+                }
+
+                // change gain and data for every frame
+                {
+                    const int nchannels = NCHIP * NCHAN;
+                    int gainVal = 0;
+                    for (int i = 0; i < nchannels; ++i) {
+                        if ((i % nchannels) < 400) {
+                            gainVal = 1 + iframes;
+                        } else if ((i % nchannels) < 800) {
+                            gainVal = 2 + iframes;
+                        } else {
+                            gainVal = 3 + iframes;
+                        }
+                        int dataVal =
+                            *((uint16_t *)(imageData + i * sizeof(uint16_t)));
+                        dataVal += iframes;
+                        int channelVal =
+                            (dataVal & ~GAIN_VAL_MSK) | (gainVal << GAIN_VAL_OFST);
+                        *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+                            (uint16_t)channelVal;
                     }
-                    int dataVal =
-                        *((uint16_t *)(imageData + i * sizeof(uint16_t)));
-                    dataVal += frameNr;
-                    int channelVal =
-                        (dataVal & ~GAIN_VAL_MSK) | (gainVal << GAIN_VAL_OFST);
-                    *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
-                        (uint16_t)channelVal;
                 }
-            }
-            // sleep for exposure time
-            struct timespec begin, end;
-            clock_gettime(CLOCK_REALTIME, &begin);
-            usleep(expUs);
+                // sleep for exposure time
+                struct timespec begin, end;
+                clock_gettime(CLOCK_REALTIME, &begin);
+                usleep(expUs);
 
-            // first interface
-            char packetData[packetsize];
-            memset(packetData, 0, packetsize);
-            // set header
-            sls_detector_header *header = (sls_detector_header *)(packetData);
-            header->detType = (uint16_t)myDetectorType;
-            header->version = SLS_DETECTOR_HEADER_VERSION;
-            header->frameNumber = virtual_currentFrameNumber;
-            header->packetNumber = 0;
-            header->modId = virtual_moduleid;
-            header->row = detPos[Y];
-            header->column = detPos[X];
-            // fill data
-            memcpy(packetData + sizeof(sls_detector_header), imageData,
-                   datasize);
-            // send 1 packet = 1 frame
-            sendUDPPacket(iRxEntry, 0, packetData, packetsize);
-
-            // second interface (veto)
-            char packetData2[vetopacketsize];
-            memset(packetData2, 0, vetopacketsize);
-            if (i10gbe) {
+                // first interface
+                char packetData[packetsize];
+                memset(packetData, 0, packetsize);
                 // set header
-                veto_header *header = (veto_header *)(packetData2);
-                header->frameNumber = virtual_currentFrameNumber;
-                header->bunchId = 0;
+                sls_detector_header *header = (sls_detector_header *)(packetData);
+                header->detType = (uint16_t)myDetectorType;
+                header->version = SLS_DETECTOR_HEADER_VERSION;
+                header->frameNumber = frameNr + (repeatNr * numFrames) + iframes;
+                header->packetNumber = 0;
+                header->modId = virtual_moduleid;
+                header->row = detPos[Y];
+                header->column = detPos[X];
                 // fill data
-                memcpy(packetData2 + sizeof(veto_header), vetoData,
-                       vetodatasize);
+                memcpy(packetData + sizeof(sls_detector_header), imageData,
+                    datasize);
                 // send 1 packet = 1 frame
-                sendUDPPacket(iRxEntry, 1, packetData2, vetopacketsize);
-            }
-            LOG(logINFO,
-                ("Sent frame %s: %d (bursts/ triggers: %d) [%lld] to E%d\n",
-                 (i10gbe ? "(+veto)" : ""), frameNr, repeatNr,
-                 (long long unsigned int)virtual_currentFrameNumber, iRxEntry));
-            clock_gettime(CLOCK_REALTIME, &end);
-            int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
-                              (end.tv_nsec - begin.tv_nsec));
+                sendUDPPacket(iRxEntry, 0, packetData, packetsize);
 
-            // sleep for (period - exptime)
-            if (frameNr < numFrames) { // if there is a next frame
-                if (periodNs > timeNs) {
-                    usleep((periodNs - timeNs) / 1000);
+                // second interface (veto)
+                char packetData2[vetopacketsize];
+                memset(packetData2, 0, vetopacketsize);
+                if (i10gbe) {
+                    // set header
+                    veto_header *header = (veto_header *)(packetData2);
+                    header->frameNumber = frameNr + (repeatNr * numFrames) + iframes;
+                    header->bunchId = 0;
+                    // fill data
+                    memcpy(packetData2 + sizeof(veto_header), vetoData,
+                        vetodatasize);
+                    // send 1 packet = 1 frame
+                    sendUDPPacket(iRxEntry, 1, packetData2, vetopacketsize);
+                }
+                LOG(logINFO,
+                    ("Sent frame %s: %d (bursts/ triggers: %d) [%lld] to E%d\n",
+                    (i10gbe ? "(+veto)" : ""), frameNr, repeatNr, (frameNr + (repeatNr * numFrames) + iframe), iRxEntry));
+                clock_gettime(CLOCK_REALTIME, &end);
+                int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
+                                (end.tv_nsec - begin.tv_nsec));
+
+                // sleep for (period - exptime)
+                if (iframes < numFrames) { // if there is a next frame
+                    if (periodNs > timeNs) {
+                        usleep((periodNs - timeNs) / 1000);
+                    }
+                }
+                ++iRxEntry;
+                if (iRxEntry == numUdpDestinations) {
+                    iRxEntry = 0;
                 }
             }
-            ++virtual_currentFrameNumber;
-            ++iRxEntry;
-            if (iRxEntry == numUdpDestinations) {
-                iRxEntry = 0;
-            }
-        }
-        clock_gettime(CLOCK_REALTIME, &rend);
-        int64_t timeNs = ((rend.tv_sec - rbegin.tv_sec) * 1E9 +
-                          (rend.tv_nsec - rbegin.tv_nsec));
+            setNextFrameNumber(frameNr + (repeatNr * numFrames) + iframes + 1);
 
-        // sleep for (repeatPeriodNs - time remaining)
-        if (repeatNr < numRepeats) { // if there is a next repeat
-            if (repeatPeriodNs > timeNs) {
-                usleep((repeatPeriodNs - timeNs) / 1000);
+            clock_gettime(CLOCK_REALTIME, &rend);
+            int64_t timeNs = ((rend.tv_sec - rbegin.tv_sec) * 1E9 +
+                            (rend.tv_nsec - rbegin.tv_nsec));
+
+            // sleep for (repeatPeriodNs - time remaining)
+            if (repeatNr < numRepeats) { // if there is a next repeat
+                if (repeatPeriodNs > timeNs) {
+                    usleep((repeatPeriodNs - timeNs) / 1000);
+                }
             }
         }
     }

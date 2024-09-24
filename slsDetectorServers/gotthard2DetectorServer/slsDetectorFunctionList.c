@@ -1080,8 +1080,41 @@ int setNextFrameNumber(uint64_t value) {
 }
 
 int getNextFrameNumber(uint64_t *value) {
-    // TODO: handle triggers/bursts
-    *value = nextFrameNumber - (getNumFramesLeft() + 1);
+#ifdef VIRTUAL
+    return nextFrameNumber;
+#endif
+    // Not implemented in firmware, calculate for now
+    int64_t framesLeft = getNumFramesLeft() + 1;
+    int64_t repeatsLeft = getNumTriggersLeft() + 1;
+    int64_t burstsLeft = getNumBurstsLeft() + 1;
+
+    if (getTiming() == AUTO_TIMING) {
+        // burst mode, repeats = #bursts
+        if (burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) {
+            repeatsLeft = burstsLeft;
+        }
+        // continuous, repeats = 1 (no trigger as well)
+        else {
+            repeatsLeft = 0;
+        }
+    }
+    // trigger
+    else {
+        // continuous, numFrames is limited
+        if (burstMode == CONTINUOUS_INTERNAL ||
+            burstMode == CONTINUOUS_EXTERNAL) {
+            framesLeft = 0;
+        }
+    }
+    *value = nextFrameNumber;
+    // if not last frame
+    if (framesLeft != 0 && repeatsLeft != 0) {
+        if (!framesLeft)
+            framesLeft += 1;
+        if (!repeatsLeft)
+            repeatsLeft += 1;
+        *value -=  (framesLeft * repeatsLeft);
+    }
     return OK;
 }
 
@@ -1346,7 +1379,7 @@ int64_t getNumFramesLeft() {
     if ((burstMode == CONTINUOUS_INTERNAL ||
          burstMode == CONTINUOUS_EXTERNAL) &&
         getTiming() == AUTO_TIMING) {
-        return get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
+        return (get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG) + 1);
     }
     return -1;
 }
@@ -1354,7 +1387,7 @@ int64_t getNumFramesLeft() {
 int64_t getNumTriggersLeft() {
     // trigger
     if (getTiming() == TRIGGER_EXPOSURE) {
-        return get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
+        return (get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG) + 1);
     }
     return -1;
 }
@@ -1373,7 +1406,7 @@ int64_t getNumBurstsLeft() {
     // burst and auto
     if ((burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) &&
         getTiming() == AUTO_TIMING) {
-        return get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
+        return (get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG) + 1);
     }
     return -1;
 }
@@ -3378,10 +3411,31 @@ int startStateMachine() {
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_ACQSTN_MSK);
 
     // increment the current frame number by (#frames x #triggers)
-    // updated when stopped
-    // updating here also take care of non blocking acquisitions
-    //TODO handle bursts
-    nextFrameNumber += getNumFrames() * getNumTriggers();
+    // done because there is no get frame number (decremented at stop with what is left)
+    {
+        int64_t frames = getNumFrames();
+        int64_t repeats = getNumTriggers();
+        int64_t bursts = getNumBursts();
+        if (getTiming() == AUTO_TIMING) {
+            // burst mode, repeats = #bursts
+            if (burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) {
+                repeats = bursts;
+            }
+            // continuous, repeats = 1 (no trigger as well)
+            else {
+                repeats = 1;
+            }
+        }
+        // trigger
+        else {
+            // continuous, numFrames is limited
+            if (burstMode == CONTINUOUS_INTERNAL ||
+                burstMode == CONTINUOUS_EXTERNAL) {
+                frames = 1;
+            }
+        }
+        nextFrameNumber += frames * repeats;
+    }
 
     LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
     return OK;
@@ -3530,7 +3584,7 @@ void *start_timer(void *arg) {
                 }
                 LOG(logINFO,
                     ("Sent frame %s: %d (bursts/ triggers: %d) [%lld] to E%d\n",
-                    (i10gbe ? "(+veto)" : ""), frameNr, repeatNr, (frameNr + (repeatNr * numFrames) + iframe), iRxEntry));
+                    (i10gbe ? "(+veto)" : ""), frameNr, repeatNr, (frameNr + (repeatNr * numFrames) + iframes), iRxEntry));
                 clock_gettime(CLOCK_REALTIME, &end);
                 int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
                                 (end.tv_nsec - begin.tv_nsec));
@@ -3546,7 +3600,6 @@ void *start_timer(void *arg) {
                     iRxEntry = 0;
                 }
             }
-            setNextFrameNumber(frameNr + (repeatNr * numFrames) + iframes + 1);
 
             clock_gettime(CLOCK_REALTIME, &rend);
             int64_t timeNs = ((rend.tv_sec - rbegin.tv_sec) * 1E9 +
@@ -3559,6 +3612,8 @@ void *start_timer(void *arg) {
                 }
             }
         }
+        // already being set in the start acquisition (also for real detectors)
+        setNextFrameNumber(frameNr + (numRepeats * numFrames) + 1);  
     }
 
     closeUDPSocket(0);

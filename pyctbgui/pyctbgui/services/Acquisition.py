@@ -687,8 +687,8 @@ class AcquisitionTab(QtWidgets.QWidget):
 
     def setup_zmq(self):
         self.det.rx_zmqstream = 1
-        self.zmqIp = self.det.rx_zmqip
-        self.zmqport = self.det.rx_zmqport
+        self.zmqIp = self.det.zmqip
+        self.zmqport = self.det.zmqport
         self.zmq_stream = self.det.rx_zmqstream
 
         self.context = zmq.Context()

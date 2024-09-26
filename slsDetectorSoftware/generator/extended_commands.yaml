@@ -9921,6 +9921,40 @@ signalname:
     \ to the given name."
   infer_action: true
   template: true
+sleep:
+  actions:
+    PUT:
+      args:
+      - arg_types:
+        - int
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - int
+        - special::time_unit
+        argc: 2
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: sleep
+  function_alias: sleep
+  help: ''
+  infer_action: true
+  is_description: true
 slowadc:
   actions:
     GET:

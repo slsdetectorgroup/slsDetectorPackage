@@ -2875,6 +2875,18 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setPedestalMode, value)
 
     @property
+    @element
+    def collectionmode(self):
+        """[Jungfrau] Sets collection mode to HOLE or ELECTRON. Default is HOLE.
+        Enum: collectionMode
+        """
+        return self.getCollectionMode()
+
+    @collectionmode.setter
+    def collectionmode(self, value):
+        ut.set_using_dict(self.setCollectionMode, value)
+
+    @property
     def maxclkphaseshift(self):
         """
         [Gotthard2][Mythen3] Absolute maximum Phase shift of clocks.

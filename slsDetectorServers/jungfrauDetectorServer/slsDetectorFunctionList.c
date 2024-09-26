@@ -2622,7 +2622,8 @@ int getElectronCollectionMode() {
 }
 
 void setElectronCollectionMode(int enable) {
-    LOG(logINFO, ("Collection Mode: %s\n", enable == 0 ? "Hole" : "Electron"));
+    LOG(logINFO,
+        ("Setting Collection Mode to %s\n", enable == 0 ? "Hole" : "Electron"));
     if (enable) {
         bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_ELCTRN_CLLCTN_MDE_MSK);
     } else {

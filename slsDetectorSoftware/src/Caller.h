@@ -89,6 +89,7 @@ class Caller {
     std::string clkdiv(int action);
     std::string clkfreq(int action);
     std::string clkphase(int action);
+    std::string collectionmode(int action);
     std::string column(int action);
     std::string compdisabletime(int action);
     std::string confadc(int action);
@@ -435,6 +436,7 @@ class Caller {
         {"clkdiv", &Caller::clkdiv},
         {"clkfreq", &Caller::clkfreq},
         {"clkphase", &Caller::clkphase},
+        {"collectionmode", &Caller::collectionmode},
         {"column", &Caller::column},
         {"compdisabletime", &Caller::compdisabletime},
         {"confadc", &Caller::confadc},

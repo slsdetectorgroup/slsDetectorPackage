@@ -670,7 +670,7 @@ TEST_CASE("Caller::pedestalmode", "[.cmdcall]") {
 TEST_CASE("Caller::collectionmode", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    if (det.getDetectorType().squash() == defs::MYTHEN3) {
+    if (det.getDetectorType().squash() == defs::JUNGFRAU) {
         auto prev_val = det.getCollectionMode();
         {
             std::ostringstream oss;

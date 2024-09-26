@@ -2617,16 +2617,16 @@ void setPedestalMode(int enable, uint8_t frames, uint16_t loops) {
 }
 
 int getElectronCollectionMode() {
-    return ((bus_r(CONFIG_REG) & CONFIG_ELECTRON_COLLCTN_MSK) >>
-            CONFIG_ELECTRON_COLLCTN_OFST);
+    return ((bus_r(DAQ_REG) & DAQ_ELCTRN_CLLCTN_MDE_MSK) >>
+            DAQ_ELCTRN_CLLCTN_MDE_OFST);
 }
 
 void setElectronCollectionMode(int enable) {
     LOG(logINFO, ("Collection Mode: %s\n", enable == 0 ? "Hole" : "Electron"));
     if (enable) {
-        bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_ELECTRON_COLLCTN_MSK);
+        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_ELCTRN_CLLCTN_MDE_MSK);
     } else {
-        bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_ELECTRON_COLLCTN_MSK);
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_ELCTRN_CLLCTN_MDE_MSK);
     }
     configureChip();
 }

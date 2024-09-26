@@ -488,6 +488,8 @@ enum streamingInterface {
 
     enum polarity { POSITIVE, NEGATIVE };
 
+    enum collectionMode { HOLE, ELECTRON };
+
 #ifdef __cplusplus
 
     /** scan structure */

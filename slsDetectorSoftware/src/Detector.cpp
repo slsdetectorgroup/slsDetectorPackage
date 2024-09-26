@@ -1771,6 +1771,14 @@ void Detector::setPedestalMode(const defs::pedestalParameters par,
     pimpl->Parallel(&Module::setPedestalMode, pos, par);
 }
 
+Result<defs::collectionMode> Detector::getCollectionMode(Positions pos) const {
+    return pimpl->Parallel(&Module::getCollectionMode, pos);
+}
+
+void Detector::setCollectionMode(defs::collectionMode value, Positions pos) {
+    pimpl->Parallel(&Module::setCollectionMode, pos, value);
+}
+
 // Gotthard Specific
 
 Result<defs::ROI> Detector::getROI(Positions pos) const {

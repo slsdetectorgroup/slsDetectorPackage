@@ -492,6 +492,8 @@ void function_table() {
     flist[F_GET_PEDESTAL_MODE] = &get_pedestal_mode;
     flist[F_SET_PEDESTAL_MODE] = &set_pedestal_mode;
     flist[F_CONFIG_TRANSCEIVER] = &config_transceiver;
+    flist[F_GET_COLLECTION_MODE] = &get_collection_mode;
+    flist[F_SET_COLLECTION_MODE] = &set_collection_mode;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -11076,6 +11078,63 @@ int config_transceiver(int file_des) {
         ret = configureTransceiver(mess);
         if (ret == FAIL) {
             LOG(logERROR, (mess));
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_collection_mode(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum collectionMode retval = HOLE;
+
+    LOG(logDEBUG1, ("Getting collection mode\n"));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // get only
+    retval = getElectronCollectionMode() ? ELECTRON : HOLE;
+    LOG(logDEBUG1, ("collection mode retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_collection_mode(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum collectionMode arg = HOLE;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting collection mode: %u\n", (int)arg));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        switch (arg) {
+        case HOLE:
+            ret = setElectronCollectionMode(0);
+            break;
+        case ELECTRON:
+            ret = setElectronCollectionMode(1);
+            break;
+        default:
+            modeNotImplemented("Collection mode index", (int)arg);
+            break;
+        }
+        if (ret == FAIL) {
+            sprintf(mess, "Could not set collection mode\n");
+            LOG(logERROR, (mess));
+        } else {
+            enum collectionMode retval =
+                getElectronCollectionMode() ? ELECTRON : HOLE;
+            validate(&ret, mess, (int)arg, (int)retval, "set collection mode",
+                     DEC);
+            LOG(logDEBUG1, ("collection mode retval: %u\n", retval));
         }
     }
 #endif

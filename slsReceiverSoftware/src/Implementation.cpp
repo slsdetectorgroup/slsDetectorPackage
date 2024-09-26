@@ -694,10 +694,15 @@ void Implementation::startReceiver() {
                 udpPort.push_back(udpPortNum[i]);
             }
             startCallbackHeader callbackHeader = {
-                udpPort,   generalData->dynamicRange,
-                numPorts,  static_cast<size_t>(generalData->imageSize),
-                filePath,  fileName,
-                fileIndex, quadEnable};
+                udpPort,
+                generalData->dynamicRange,
+                numPorts,
+                static_cast<size_t>(generalData->imageSize),
+                filePath,
+                fileName,
+                fileIndex,
+                quadEnable,
+                additionalJsonHeader};
             startAcquisitionCallBack(callbackHeader, pStartAcquisition);
         } catch (const std::exception &e) {
             std::ostringstream oss;

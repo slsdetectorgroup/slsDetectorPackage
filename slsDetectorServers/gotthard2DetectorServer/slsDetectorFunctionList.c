@@ -75,6 +75,7 @@ int cdsGain = 0;
 int detPos[2] = {};
 int chipConfigured = 0;
 uint64_t nextFrameNumber = 0;
+uint64_t acqStartFrameNumber = 0;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -425,6 +426,7 @@ void setupDetector() {
     detPos[1] = 0;
     chipConfigured = 0;
     nextFrameNumber = 0;
+    acqStartFrameNumber = 0;
 
     thisSettings = UNINITIALIZED;
     injectedChannelsOffset = 0;
@@ -1074,8 +1076,10 @@ int getDynamicRange(int *retval) {
 int setNextFrameNumber(uint64_t value) {
     LOG(logINFO,
         ("Setting next frame number: %lu\n", value));
-    setU64BitReg(value, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+    // decrement by 1 for firmware
+    setU64BitReg(value - 1, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
     nextFrameNumber = value;
+    acqStartFrameNumber = value;
     return OK;
 }
 
@@ -1083,38 +1087,55 @@ int getNextFrameNumber(uint64_t *value) {
 #ifdef VIRTUAL
     return nextFrameNumber;
 #endif
-    // Not implemented in firmware, calculate for now
-    int64_t framesLeft = getNumFramesLeft() + 1;
-    int64_t repeatsLeft = getNumTriggersLeft() + 1;
-    int64_t burstsLeft = getNumBurstsLeft() + 1;
+    // no acquisition has occured
+    if ((nextFrameNumber - acqStartFrameNumber) == 0) {
+        LOG(logINFORED, ("No acquisition has occured nf:%lld, acqStart:%lld\n", nextFrameNumber, acqStartFrameNumber));
+        *value = nextFrameNumber;
+        return OK;
+    }
 
-    if (getTiming() == AUTO_TIMING) {
-        // burst mode, repeats = #bursts
-        if (burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) {
+    // Not implemented in firmware, calculate for now
+    int64_t framesLeft = getNumFramesLeft();
+    int64_t repeatsLeft = getNumTriggersLeft();
+    int64_t burstsLeft = getNumBurstsLeft();
+    int64_t numFrames = getNumFrames();
+    LOG(logINFORED, ("fl:%lld rl:%lld bl:%lld nf:%ld\n", framesLeft, repeatsLeft,
+                     burstsLeft, numFrames));
+
+    // burst mode
+    if (burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) {
+        // cannot get framesleft. So fix at 0
+        framesLeft = 0;
+
+        // repeats = #bursts (auto burst)
+        if (getTiming() == AUTO_TIMING) {
             repeatsLeft = burstsLeft;
         }
-        // continuous, repeats = 1 (no trigger as well)
-        else {
-            repeatsLeft = 0;
-        }
-    }
-    // trigger
+    } 
+    
+    // continuous mdoe
     else {
-        // continuous, numFrames is limited
-        if (burstMode == CONTINUOUS_INTERNAL ||
-            burstMode == CONTINUOUS_EXTERNAL) {
+        // repeats = 1 (no trigger for continuous auto)
+        if (getTiming() == AUTO_TIMING) {
+            repeatsLeft = 0;
+        } 
+        // frames = 1 (no frames for continuous trigger)
+        else {
             framesLeft = 0;
+            numFrames = 1;
         }
     }
+
+    LOG(logINFORED, ("update fl:%lld rl:%lld bl:%lld nf:%ld\n", framesLeft, repeatsLeft,
+                     burstsLeft, numFrames));
     *value = nextFrameNumber;
     // if not last frame
-    if (framesLeft != 0 && repeatsLeft != 0) {
-        if (!framesLeft)
-            framesLeft += 1;
-        if (!repeatsLeft)
-            repeatsLeft += 1;
-        *value -=  (framesLeft * repeatsLeft);
+    if (framesLeft != 0 || repeatsLeft != 0) {
+        if (framesLeft && !repeatsLeft)
+            framesLeft += 2;// why??
+        *value -=  ((numFrames * repeatsLeft) + framesLeft);
     }
+    LOG(logINFORED, ("get next frame number retval: %lu\n", *value));
     return OK;
 }
 
@@ -1379,6 +1400,7 @@ int64_t getNumFramesLeft() {
     if ((burstMode == CONTINUOUS_INTERNAL ||
          burstMode == CONTINUOUS_EXTERNAL) &&
         getTiming() == AUTO_TIMING) {
+            LOG(logINFORED, ("getFramesLeft: %lld\n", get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG)));
         return (get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG) + 1);
     }
     return -1;
@@ -3409,6 +3431,9 @@ int startStateMachine() {
 
     // start state machine
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_ACQSTN_MSK);
+    
+    LOG(logINFORED, ("Next frame number: %ld\n", nextFrameNumber));
+    acqStartFrameNumber = nextFrameNumber;
 
     // increment the current frame number by (#frames x #triggers)
     // done because there is no get frame number (decremented at stop with what is left)
@@ -3435,6 +3460,7 @@ int startStateMachine() {
             }
         }
         nextFrameNumber += frames * repeats;
+        LOG(logINFORED, ("If not stopped, nextframenumber: %ld\n", nextFrameNumber));
     }
 
     LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));

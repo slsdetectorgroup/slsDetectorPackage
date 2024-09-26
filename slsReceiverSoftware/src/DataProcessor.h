@@ -37,6 +37,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void SetFifo(Fifo *f);
     void SetGeneralData(GeneralData *generalData);
 
+    void SetUdpPortNumber(const uint16_t portNumber);
     void SetActivate(bool enable);
     void SetReceiverROI(ROI roi);
     void SetDataStreamEnable(bool enable);
@@ -46,6 +47,11 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void SetFramePadding(bool enable);
     void SetCtbDbitList(std::vector<int> value);
     void SetCtbDbitOffset(int value);
+    void SetQuadEnable(bool value);
+    void SetFlipRows(bool fd);
+    void SetNumberofTotalFrames(uint64_t value);
+    void
+    SetAdditionalJsonHeader(const std::map<std::string, std::string> &json);
 
     void ResetParametersforNewAcquisition();
     void CloseFiles();
@@ -56,9 +62,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     void CreateFirstFiles(const std::string &fileNamePrefix,
                           const uint64_t fileIndex, const bool overWriteEnable,
-                          const bool silentMode, const uint16_t udpPortNumber,
-                          const uint64_t numImages,
-                          const bool detectorDataStream);
+                          const bool silentMode, const bool detectorDataStream);
 #ifdef HDF5C
     uint32_t GetFilesInAcquisition() const;
     std::string CreateVirtualFile(const std::string &filePath,
@@ -66,8 +70,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                                   const uint64_t fileIndex,
                                   const bool overWriteEnable,
                                   const bool silentMode, const int modulePos,
-                                  const uint64_t numImages, const int numModX,
-                                  const int numModY, std::mutex *hdf5LibMutex);
+                                  const int numModX, const int numModY,
+                                  std::mutex *hdf5LibMutex);
     void LinkFileInMaster(const std::string &masterFileName,
                           const std::string &virtualFileName,
                           const bool silentMode, std::mutex *hdf5LibMutex);
@@ -83,14 +87,9 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     /** params: sls_receiver_header, pointer to data, image size */
     void registerCallBackRawDataReady(void (*func)(sls_receiver_header &,
-                                                   char *, size_t, void *),
+                                                   dataCallbackHeader, char *,
+                                                   size_t &, void *),
                                       void *arg);
-
-    /** params: sls_receiver_header, pointer to data, reference to image size */
-    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header &,
-                                                         char *, size_t &,
-                                                         void *),
-                                            void *arg);
 
   private:
     void RecordFirstIndex(uint64_t fnum);
@@ -150,6 +149,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     GeneralData *generalData{nullptr};
     Fifo *fifo;
+
+    uint16_t udpPortNumber{0};
     bool dataStreamEnable;
     bool activated{false};
     ROI receiverRoi{};
@@ -167,6 +168,18 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     int ctbDbitOffset;
     std::atomic<bool> startedFlag{false};
     std::atomic<uint64_t> firstIndex{0};
+    bool quadEnable{false};
+    bool flipRows{false};
+    uint64_t nTotalFrames{0};
+
+    std::map<std::string, std::string> additionalJsonHeader;
+    /** Used by streamer thread to update local copy (reduce number of locks
+     * during streaming) */
+    std::atomic<bool> isAdditionalJsonUpdated{false};
+    /** mutex to update json and to read and update local copy */
+    mutable std::mutex additionalJsonMutex;
+    /** local copy of additional json header  (it can be update on the fly) */
+    std::map<std::string, std::string> localAdditionalJsonHeader;
 
     // for statistics
     uint64_t numFramesCaught{0};
@@ -189,19 +202,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * dataPointer is the pointer to the data
      * dataSize in bytes is the size of the data in bytes.
      */
-    void (*rawDataReadyCallBack)(sls_receiver_header &, char *, size_t,
-                                 void *) = nullptr;
-
-    /**
-     * Call back for raw data (modified)
-     * args to raw data ready callback are
-     * sls_receiver_header frame metadata
-     * dataPointer is the pointer to the data
-     * revDatasize is the reference of data size in bytes. Can be modified to
-     * the new size to be written/streamed. (only smaller value).
-     */
-    void (*rawDataModifyReadyCallBack)(sls_receiver_header &, char *, size_t &,
-                                       void *) = nullptr;
+    void (*rawDataReadyCallBack)(sls_receiver_header &, dataCallbackHeader,
+                                 char *, size_t &, void *) = nullptr;
 
     void *pRawDataReady{nullptr};
 };

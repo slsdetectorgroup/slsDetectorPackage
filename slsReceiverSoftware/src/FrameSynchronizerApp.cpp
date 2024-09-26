@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
-/* Creates the slsMultiReceiver for running multiple receivers form a single
- * binary */
+/* Creates the slsFrameSynchronizer for running multiple receivers in different
+ * threads form a single binary that will spit out zmq streams without
+ * reconstructing image */
 #include "sls/Receiver.h"
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
@@ -13,6 +14,7 @@
 #include <iostream>
 #include <semaphore.h>
 #include <sys/wait.h> //wait
+#include <thread>
 #include <unistd.h>
 
 // gettid added in glibc 2.30
@@ -26,13 +28,18 @@
 #define PRINT_IN_COLOR(c, f, ...)                                              \
     printf("\033[%dm" f RESET, 30 + c + 1, ##__VA_ARGS__)
 
-sem_t semaphore;
+std::vector<std::thread> threads;
+std::vector<sem_t *> semaphores;
 
 /**
  * Control+C Interrupt Handler
  * to let all the processes know to exit properly
  */
-void sigInterruptHandler(int p) { sem_post(&semaphore); }
+void sigInterruptHandler(int p) {
+    for (size_t i = 0; i != semaphores.size(); ++i) {
+        sem_post(semaphores[i]);
+    }
+}
 
 /**
  * prints usage of this example program
@@ -40,13 +47,13 @@ void sigInterruptHandler(int p) { sem_post(&semaphore); }
 std::string getHelpMessage() {
     return std::string(
         "\n\nUsage:\n"
-        "./slsMultiReceiver(detReceiver) [start_tcp_port (non-zero and 16 "
+        "./slsFrameSynchronizer(detReceiver) [start_tcp_port (non-zero and 16 "
         "bit)] [num_receivers] [optional: 1 for call back (print frame header "
         "for debugging), 0 for none (default)]\n\n");
 }
 
 /**
- * Start Acquisition Call back (slsMultiReceiver writes data if file write
+ * Start Acquisition Call back (slsFrameSynchronizer writes data if file write
  * enabled) if registerCallBackRawDataReady or
  * registerCallBackRawDataModifyReady registered, users get data
  */
@@ -65,8 +72,6 @@ int StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
                           << "\n\tFile Name : " << callbackHeader.fileName
                           << "\n\tFile Index : " << callbackHeader.fileIndex
                           << "\n\tQuad Enable : " << callbackHeader.quad
-                          << "\n\tAdditional Json Header : "
-                          << sls::ToString(callbackHeader.addJsonHeader)
                           << "\n\t]";
     return 0;
 }
@@ -161,7 +166,6 @@ int main(int argc, char *argv[]) {
     int numReceivers = 1;
     uint16_t startTCPPort = 1954;
     int withCallback = 0;
-    sem_init(&semaphore, 1, 0);
 
     /**	- get number of receivers and start tcp port from command line
      * arguments */
@@ -181,7 +185,6 @@ int main(int argc, char *argv[]) {
         throw std::runtime_error(getHelpMessage());
     }
 
-    cprintf(BLUE, "Parent Process Created [ Tid: %ld ]\n", (long)gettid());
     cprintf(RESET, "Number of Receivers: %d\n", numReceivers);
     cprintf(RESET, "Start TCP Port: %hu\n", startTCPPort);
     cprintf(RESET, "Callback Enable: %d\n", withCallback);
@@ -209,92 +212,29 @@ int main(int argc, char *argv[]) {
     }
 
     /** - loop over number of receivers */
-    for (int i = 0; i < numReceivers; ++i) {
+    for (int i = 0; i != numReceivers; ++i) {
 
-        /**	- fork process to create child process */
-        pid_t pid = fork();
-
-        /**	- if fork failed, raise SIGINT and properly destroy all child
-         * processes */
-        if (pid < 0) {
-            cprintf(RED, "fork() failed. Killing all the receiver objects\n");
-            raise(SIGINT);
-        }
-
-        /**	- if child process */
-        else if (pid == 0) {
-            cprintf(BLUE, "Child process %d [ Tid: %ld ]\n", i, (long)gettid());
-
-            std::unique_ptr<sls::Receiver> receiver = nullptr;
-            try {
-                receiver = sls::make_unique<sls::Receiver>(startTCPPort + i);
-            } catch (...) {
-                LOG(sls::logINFOBLUE)
-                    << "Exiting Child Process [ Tid: " << gettid() << " ]";
-                throw;
-            }
-            /**	- register callbacks. remember to set file write enable to 0
-             * (using the client) if we should not write files and you will
-             * write data using the callbacks */
+        sem_t *semaphore = new sem_t;
+        sem_init(semaphore, 1, 0);
+        semaphores.push_back(semaphore);
+        threads.emplace_back([semaphore, i, startTCPPort, withCallback,
+                              numReceivers]() {
+            sls::Receiver receiver(startTCPPort + i);
             if (withCallback) {
-
-                /** - Call back for start acquisition */
-                cprintf(BLUE, "Registering StartAcq()\n");
-                receiver->registerCallBackStartAcquisition(StartAcq, nullptr);
-
-                /** - Call back for acquisition finished */
-                cprintf(BLUE, "Registering AcquisitionFinished()\n");
-                receiver->registerCallBackAcquisitionFinished(
+                receiver.registerCallBackStartAcquisition(StartAcq, nullptr);
+                receiver.registerCallBackAcquisitionFinished(
                     AcquisitionFinished, nullptr);
-
-                /* 	- Call back for raw data */
-                cprintf(BLUE, "Registering GetData() \n");
-                receiver->registerCallBackRawDataReady(GetData, nullptr);
+                receiver.registerCallBackRawDataReady(GetData, nullptr);
             }
 
             /**	- as long as no Ctrl+C */
-            sem_wait(&semaphore);
-            sem_destroy(&semaphore);
-            cprintf(BLUE, "Exiting Child Process [ Tid: %ld ]\n",
-                    (long)gettid());
-            exit(EXIT_SUCCESS);
-            break;
-        }
+            sem_wait(semaphore);
+            sem_destroy(semaphore);
+        });
     }
 
-    /** - Parent process ignores SIGINT (exits only when all child process
-     * exits) */
-    sa.sa_flags = 0;          // no flags
-    sa.sa_handler = SIG_IGN;  // handler function
-    sigemptyset(&sa.sa_mask); // dont block additional signals during invocation
-                              // of handler
-    if (sigaction(SIGINT, &sa, nullptr) == -1) {
-        cprintf(RED, "Could not set handler function for SIGINT\n");
-    }
-
-    /** - Print Ready and Instructions how to exit */
-    std::cout << "Ready ... \n";
-    cprintf(RESET, "\n[ Press \'Ctrl+c\' to exit ]\n");
-
-    /** - Parent process waits for all child processes to exit */
-    for (;;) {
-        pid_t childPid = waitpid(-1, nullptr, 0);
-
-        // no child closed
-        if (childPid == -1) {
-            if (errno == ECHILD) {
-                cprintf(GREEN, "All Child Processes have been closed\n");
-                break;
-            } else {
-                cprintf(RED, "Unexpected error from waitpid(): (%s)\n",
-                        strerror(errno));
-                break;
-            }
-        }
-
-        // child closed
-        cprintf(BLUE, "Exiting Child Process [ Tid: %ld ]\n",
-                (long int)childPid);
+    for (auto &thread : threads) {
+        thread.join();
     }
 
     std::cout << "Goodbye!\n";

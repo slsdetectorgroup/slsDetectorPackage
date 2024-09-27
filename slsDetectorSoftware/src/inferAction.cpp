@@ -3693,6 +3693,22 @@ int InferAction::timing() {
     }
 }
 
+int InferAction::timing_info_decoder() {
+
+    if (args.size() == 0) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
 int InferAction::timinglist() {
 
     if (args.size() == 0) {

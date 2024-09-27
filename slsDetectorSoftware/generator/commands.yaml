@@ -1209,6 +1209,16 @@ polarity:
       function: setPolarity
       input_types: [ defs::polarity ]
 
+timing_info_decoder:
+  help: "[swissfel|shine]\n\t[Jungfrau] Advanced Command and only for Swissfel and Shine. Sets the bunch id or timing info decoder. Default is swissfel."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTimingInfoDecoder
+    PUT:
+      function: setTimingInfoDecoder
+      input_types: [ defs::timingInfoDecoder ]
+
 interpolation:
   help: "[0, 1]\n\t[Mythen3] Enables or disables interpolation. Default is disabled.  Interpolation mode enables all counters and disables vth3. Disabling sets back counter mask and vth3."
   inherit_actions: INTEGER_COMMAND_VEC_ID

@@ -59,6 +59,7 @@
 #define DEFAULT_PEDESTAL_MODE         (0)
 #define DEFAULT_PEDESTAL_FRAMES       (1)
 #define DEFAULT_PEDESTAL_LOOPS        (1)
+#define DEFAULT_TIMING_INFO_DECODER   (SWISSFEL)
 
 #define HIGHVOLTAGE_MIN      (60)
 #define HIGHVOLTAGE_MAX      (200)

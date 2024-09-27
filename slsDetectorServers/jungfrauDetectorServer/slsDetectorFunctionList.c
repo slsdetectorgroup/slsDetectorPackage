@@ -572,6 +572,7 @@ void setupDetector() {
 #endif
     setPedestalMode(DEFAULT_PEDESTAL_MODE, DEFAULT_PEDESTAL_FRAMES,
                     DEFAULT_PEDESTAL_LOOPS);
+    setTimingInfoDecoder(DEFAULT_TIMING_INFO_DECODER);
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -2613,6 +2614,46 @@ void setPedestalMode(int enable, uint8_t frames, uint16_t loops) {
                         SET_CYCLES_MSB_REG);
         }
     }
+}
+
+// TODO: get info from firmware about reg and bits
+int setTimingInfoDecoder(enum timingInfoDecoder val) {
+    int decodeValue = 0;
+    uint32_t addr = CONFIG_REG;
+
+    switch (val) {
+    case SWISSFEL:
+        LOG(logINFO, ("Setting Timing Info Decoder to SWISSFEL\n"));
+        decodeValue = 0;
+        break;
+    case SHINE:
+        LOG(logINFO, ("Setting Timing Info Decoder to SHINE\n"));
+        decodeValue = 1;
+        break;
+    default:
+        LOG(logERROR, ("Unknown Timing Info Decoder %d\n", val));
+        return FAIL;
+    }
+
+    bus_w(addr, bus_r(addr) & ~CONFIG_READOUT_SPEED_MSK);
+    bus_w(addr,
+          bus_r(addr) | ((decodeValue << (CONFIG_READOUT_SPEED_OFST - 2)) &
+                         CONFIG_READOUT_SPEED_MSK));
+
+    return OK;
+}
+
+int getTimingInfoDecoder(enum timingInfoDecoder *retval) {
+    int decodeValue = ((bus_r(CONFIG_REG) & CONFIG_READOUT_SPEED_MSK) >>
+                       (CONFIG_READOUT_SPEED_OFST - 2));
+    if (decodeValue == 0) {
+        *retval = SWISSFEL;
+    } else if (decodeValue == 1) {
+        *retval = SHINE;
+    } else {
+        return FAIL;
+    }
+    return OK;
 }
 
 int getTenGigaFlowControl() {

@@ -2875,6 +2875,18 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setPedestalMode, value)
 
     @property
+    @element
+    def timing_info_decoder(self):
+        """[Jungfrau] [Jungfrau] Advanced Command and only for SWISSFEL and SHINE. Sets the bunch id or timing info decoder. Default is SWISSFEL.
+        Enum: timingInfoDecoder
+        """
+        return self.getTimingInfoDecoder()
+
+    @timing_info_decoder.setter
+    def timing_info_decoder(self, value):
+        ut.set_using_dict(self.setTimingInfoDecoder, value)
+
+    @property
     def maxclkphaseshift(self):
         """
         [Gotthard2][Mythen3] Absolute maximum Phase shift of clocks.

@@ -11253,6 +11253,46 @@ timing:
     \ [auto|trigger|gating|burst_trigger]"
   infer_action: true
   template: true
+timing_info_decoder:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getTimingInfoDecoder
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - defs::timingInfoDecoder
+        argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: setTimingInfoDecoder
+        input:
+        - args[0]
+        input_types:
+        - defs::timingInfoDecoder
+        output:
+        - args.front()
+        require_det_id: true
+        store_result_in_t: false
+  command_name: timing_info_decoder
+  function_alias: timing_info_decoder
+  help: "[swissfel|shine]\n\t[Jungfrau] Advanced Command and only for Swissfel and\
+    \ Shine. Sets the bunch id or timing info decoder. Default is swissfel."
+  infer_action: true
+  template: true
 timinglist:
   actions:
     GET:

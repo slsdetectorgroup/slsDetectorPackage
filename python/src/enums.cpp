@@ -327,4 +327,9 @@ void init_enums(py::module &m) {
         .value("POSITIVE", slsDetectorDefs::polarity::POSITIVE)
         .value("NEGATIVE", slsDetectorDefs::polarity::NEGATIVE)
         .export_values();
+
+    py::enum_<slsDetectorDefs::timingInfoDecoder>(Defs, "timingInfoDecoder")
+        .value("SWISSFEL", slsDetectorDefs::timingInfoDecoder::SWISSFEL)
+        .value("SHINE", slsDetectorDefs::timingInfoDecoder::SHINE)
+        .export_values();
 }

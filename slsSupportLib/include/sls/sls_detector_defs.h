@@ -488,6 +488,8 @@ enum streamingInterface {
 
     enum polarity { POSITIVE, NEGATIVE };
 
+    enum timingInfoDecoder { SWISSFEL, SHINE };
+
 #ifdef __cplusplus
 
     /** scan structure */

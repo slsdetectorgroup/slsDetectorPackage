@@ -14767,6 +14767,70 @@ std::string Caller::timing(int action) {
     return os.str();
 }
 
+std::string Caller::timing_info_decoder(int action) {
+
+    std::ostringstream os;
+    // print help
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << "Command: timing_info_decoder" << std::endl;
+        os << R"V0G0N([swissfel|shine]
+	[Jungfrau] Advanced Command and only for Swissfel and Shine. Sets the bunch id or timing info decoder. Default is swissfel. )V0G0N"
+           << std::endl;
+        return os.str();
+    }
+
+    // check if action and arguments are valid
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (1 && args.size() != 0) {
+            throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 0) {
+        }
+
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
+        if (1 && args.size() != 1) {
+            throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 1) {
+            try {
+                StringTo<defs::timingInfoDecoder>(args[0]);
+            } catch (...) {
+                throw RuntimeError(
+                    "Could not convert argument 0 to defs::timingInfoDecoder");
+            }
+        }
+
+    }
+
+    else {
+
+        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
+                           "are ['GET', 'PUT']");
+    }
+
+    // generate code for each action
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (args.size() == 0) {
+            auto t = det->getTimingInfoDecoder(std::vector<int>{det_id});
+            os << OutString(t) << '\n';
+        }
+    }
+
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (args.size() == 1) {
+            auto arg0 = StringTo<defs::timingInfoDecoder>(args[0]);
+            det->setTimingInfoDecoder(arg0, std::vector<int>{det_id});
+            os << args.front() << '\n';
+        }
+    }
+
+    return os.str();
+}
+
 std::string Caller::timinglist(int action) {
 
     std::ostringstream os;

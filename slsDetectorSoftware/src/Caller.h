@@ -318,6 +318,7 @@ class Caller {
     std::string tengiga(int action);
     std::string threshold(int action);
     std::string timing(int action);
+    std::string timing_info_decoder(int action);
     std::string timinglist(int action);
     std::string timingsource(int action);
     std::string top(int action);
@@ -665,6 +666,7 @@ class Caller {
         {"threshold", &Caller::threshold},
         {"thresholdnotb", &Caller::threshold},
         {"timing", &Caller::timing},
+        {"timing_info_decoder", &Caller::timing_info_decoder},
         {"timinglist", &Caller::timinglist},
         {"timingsource", &Caller::timingsource},
         {"top", &Caller::top},

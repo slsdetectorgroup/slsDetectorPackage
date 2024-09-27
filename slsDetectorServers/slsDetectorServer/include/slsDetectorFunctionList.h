@@ -608,6 +608,8 @@ uint64_t getSelectCurrentSource();
 int getPedestalMode();
 void getPedestalParameters(uint8_t *frames, uint16_t *loops);
 void setPedestalMode(int enable, uint8_t frames, uint16_t loops);
+int setTimingInfoDecoder(enum timingInfoDecoder val);
+int getTimingInfoDecoder(enum timingInfoDecoder *retval);
 #endif
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter

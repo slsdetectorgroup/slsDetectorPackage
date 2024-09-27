@@ -1369,6 +1369,14 @@ class Detector {
     void setPedestalMode(const defs::pedestalParameters par,
                          Positions pos = {});
 
+    /** [Jungfrau] */
+    Result<defs::timingInfoDecoder>
+    getTimingInfoDecoder(Positions pos = {}) const;
+
+    /** [Jungfrau] Advanced Command! */
+    void setTimingInfoDecoder(defs::timingInfoDecoder value,
+                              Positions pos = {});
+
     ///@}
 
     /** @name Gotthard Specific */

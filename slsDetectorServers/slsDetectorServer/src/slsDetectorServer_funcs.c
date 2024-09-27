@@ -492,6 +492,8 @@ void function_table() {
     flist[F_GET_PEDESTAL_MODE] = &get_pedestal_mode;
     flist[F_SET_PEDESTAL_MODE] = &set_pedestal_mode;
     flist[F_CONFIG_TRANSCEIVER] = &config_transceiver;
+    flist[F_GET_TIMING_INFO_DECODER] = &get_timing_info_decoder;
+    flist[F_SET_TIMING_INFO_DECODER] = &set_timing_info_decoder;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -11076,6 +11078,73 @@ int config_transceiver(int file_des) {
         ret = configureTransceiver(mess);
         if (ret == FAIL) {
             LOG(logERROR, (mess));
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_timing_info_decoder(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum timingInfoDecoder retval = SWISSFEL;
+
+    LOG(logDEBUG1, ("Getting timing info decoder\n"));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // get only
+    ret = getTimingInfoDecoder(&retval);
+    LOG(logDEBUG1, ("retval timing info decoder: %d\n", retval));
+    if (ret == FAIL) {
+        strcpy(mess, "Could not get timing info decoder\n");
+        LOG(logERROR, (mess));
+    }
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_timing_info_decoder(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum timingInfoDecoder arg = SWISSFEL;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting timing info decoder: %u\n", (int)arg));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        switch (arg) {
+        case SWISSFEL:
+        case SHINE:
+            break;
+        default:
+            modeNotImplemented("Timing info decoder index", (int)arg);
+            break;
+        }
+        if (ret == OK) {
+            ret = setTimingInfoDecoder(arg);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set timing info decoder\n");
+                LOG(logERROR, (mess));
+            } else {
+                enum timingInfoDecoder retval = SWISSFEL;
+                ret = getTimingInfoDecoder(&retval);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not get timing info decoder\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    LOG(logDEBUG1,
+                        ("timing info decoder retval: %u\n", retval));
+                    validate(&ret, mess, (int)arg, (int)retval,
+                             "set timing info decoder", DEC);
+                }
+            }
         }
     }
 #endif

@@ -1940,6 +1940,14 @@ void Module::setPedestalMode(const defs::pedestalParameters par) {
     }
 }
 
+defs::timingInfoDecoder Module::getTimingInfoDecoder() const {
+    return sendToDetector<defs::timingInfoDecoder>(F_GET_TIMING_INFO_DECODER);
+}
+
+void Module::setTimingInfoDecoder(const defs::timingInfoDecoder value) {
+    sendToDetector(F_SET_TIMING_INFO_DECODER, static_cast<int>(value), nullptr);
+}
+
 // Gotthard Specific
 
 slsDetectorDefs::ROI Module::getROI() const {

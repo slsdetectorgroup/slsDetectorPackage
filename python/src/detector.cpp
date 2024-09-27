@@ -1271,6 +1271,16 @@ void init_det(py::module &m) {
         (void (Detector::*)(const defs::pedestalParameters, sls::Positions)) &
             Detector::setPedestalMode,
         py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getTimingInfoDecoder",
+        (Result<defs::timingInfoDecoder>(Detector::*)(sls::Positions) const) &
+            Detector::getTimingInfoDecoder,
+        py::arg() = Positions{});
+    CppDetectorApi.def(
+        "setTimingInfoDecoder",
+        (void (Detector::*)(defs::timingInfoDecoder, sls::Positions)) &
+            Detector::setTimingInfoDecoder,
+        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getROI",
                        (Result<defs::ROI>(Detector::*)(sls::Positions) const) &
                            Detector::getROI,

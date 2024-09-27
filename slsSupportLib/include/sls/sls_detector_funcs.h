@@ -293,6 +293,8 @@ enum detFuncs {
     F_GET_PEDESTAL_MODE,
     F_SET_PEDESTAL_MODE,
     F_CONFIG_TRANSCEIVER,
+    F_GET_TIMING_INFO_DECODER,
+    F_SET_TIMING_INFO_DECODER,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 512, /**< detector function should not exceed this
@@ -693,6 +695,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_PEDESTAL_MODE:               return "F_GET_PEDESTAL_MODE";   
     case F_SET_PEDESTAL_MODE:               return "F_SET_PEDESTAL_MODE";   
     case F_CONFIG_TRANSCEIVER:              return "F_CONFIG_TRANSCEIVER";
+    case F_GET_TIMING_INFO_DECODER:         return "F_GET_TIMING_INFO_DECODER";
+    case F_SET_TIMING_INFO_DECODER:         return "F_SET_TIMING_INFO_DECODER";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

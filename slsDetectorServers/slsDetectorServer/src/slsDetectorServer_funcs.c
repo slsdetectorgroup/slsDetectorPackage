@@ -6012,11 +6012,9 @@ int get_clock_frequency(int file_des) {
     case ADC_CLOCK:
         c = ADC_CLK;
         break;
-#ifdef CHIPTESTBOARDD
     case DBIT_CLOCK:
         c = DBIT_CLK;
         break;
-#endif
     case RUN_CLOCK:
         c = RUN_CLK;
         break;
@@ -6081,7 +6079,11 @@ int set_clock_phase(int file_des) {
 #endif
         default:
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
-            if (ind < NUM_CLOCKS) {
+#ifdef MYTHEN3D
+            if (args[0] < NUM_CLOCKS_TO_SET) {
+#else
+            if (args[0] < NUM_CLOCKS) {
+#endif
                 c = (enum CLKINDEX)ind;
                 break;
             }
@@ -9690,7 +9692,7 @@ int get_readout_speed(int file_des) {
     LOG(logDEBUG1, ("Getting readout speed\n"));
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(EIGERD) &&            \
-    !defined(GOTTHARD2D)
+    !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // get only
@@ -9714,7 +9716,7 @@ int set_readout_speed(int file_des) {
     LOG(logDEBUG1, ("Setting readout speed : %u\n", arg));
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(EIGERD) &&            \
-    !defined(GOTTHARD2D)
+    !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
@@ -9730,7 +9732,8 @@ int set_readout_speed(int file_des) {
 #endif
         if (ret == OK) {
             switch (arg) {
-#if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD) ||               \
+    defined(MYTHEN3D)
             case FULL_SPEED:
             case HALF_SPEED:
             case QUARTER_SPEED:

@@ -1101,14 +1101,16 @@ TEST_CASE("CALLER::readoutspeed", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
-        det_type == defs::MOENCH || det_type == defs::GOTTHARD2) {
+        det_type == defs::MOENCH || det_type == defs::GOTTHARD2 ||
+        det_type == defs::MYTHEN3) {
         auto prev_val = det.getReadoutSpeed();
 
         // full speed for jungfrau/moench only works for new boards (chipv1.1 is
         // with new board [hw1.0 and chipv1.0 not tested here])
         if (((det_type == defs::JUNGFRAU) &&
              det.getChipVersion().squash() * 10 == 11) ||
-            (det_type == defs::EIGER) || (det_type == defs::MOENCH)) {
+            det_type == defs::EIGER || det_type == defs::MOENCH ||
+            det_type == defs::MYTHEN3) {
             std::ostringstream oss1, oss2, oss3, oss4;
             caller.call("readoutspeed", {"0"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "readoutspeed full_speed\n");
@@ -1121,7 +1123,7 @@ TEST_CASE("CALLER::readoutspeed", "[.cmdcall]") {
         }
 
         if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
-            det_type == defs::MOENCH) {
+            det_type == defs::MOENCH || det_type == defs::MYTHEN3) {
             {
                 std::ostringstream oss1, oss2, oss3, oss4;
                 caller.call("readoutspeed", {"1"}, -1, PUT, oss1);
@@ -1189,7 +1191,8 @@ TEST_CASE("CALLER::readoutspeedlist", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU ||
-        det_type == defs::MOENCH || det_type == defs::EIGER) {
+        det_type == defs::MOENCH || det_type == defs::EIGER ||
+        det_type == defs::MYTHEN3) {
         REQUIRE_NOTHROW(caller.call("readoutspeedlist", {}, -1, GET));
         REQUIRE_THROWS(caller.call("readoutspeedlist", {}, -1, PUT));
     } else {
@@ -1301,6 +1304,12 @@ TEST_CASE("CALLER::clkfreq", "[.cmdcall]") {
         REQUIRE_THROWS(caller.call("clkfreq", {}, -1, GET));
         REQUIRE_THROWS(caller.call("clkfreq", {"7"}, -1, GET));
         REQUIRE_NOTHROW(caller.call("clkfreq", {"0"}, -1, GET));
+        // other clocks removed for m3 (setting not supported)
+        if (det_type == defs::MYTHEN3) {
+            REQUIRE_NOTHROW(caller.call("clkfreq", {"1"}, -1, GET));
+            REQUIRE_NOTHROW(caller.call("clkfreq", {"2"}, -1, GET));
+            REQUIRE_THROWS(caller.call("clkfreq", {"3"}, -1, GET));
+        }
     } else {
         REQUIRE_THROWS(caller.call("clkfreq", {"0"}, -1, GET));
     }
@@ -1339,6 +1348,18 @@ TEST_CASE("CALLER::clkphase", "[.cmdcall]") {
         for (int i = 0; i != det.size(); ++i) {
             det.setClockPhase(0, prev_val[i], {i});
         }
+        // other clocks removed for m3 (setting not supported)
+        if (det_type == defs::MYTHEN3) {
+            REQUIRE_THROWS(
+                caller.call("clkphase", {"1", s_deg_val, "deg"}, -1, PUT));
+            REQUIRE_NOTHROW(caller.call("clkphase", {"1"}, -1, GET));
+            REQUIRE_THROWS(
+                caller.call("clkphase", {"2", s_deg_val, "deg"}, -1, PUT));
+            REQUIRE_NOTHROW(caller.call("clkphase", {"2"}, -1, GET));
+            REQUIRE_THROWS(
+                caller.call("clkphase", {"3", s_deg_val, "deg"}, -1, PUT));
+            REQUIRE_THROWS(caller.call("clkphase", {"3"}, -1, GET));
+        }
     } else {
         REQUIRE_THROWS(caller.call("clkphase", {"0"}, -1, GET));
     }
@@ -1365,6 +1386,15 @@ TEST_CASE("CALLER::clkdiv", "[.cmdcall]") {
         for (int i = 0; i != det.size(); ++i) {
             det.setClockDivider(0, prev_val[i], {i});
         }
+        // other clocks removed for m3 (setting not supported)
+        if (det_type == defs::MYTHEN3) {
+            REQUIRE_THROWS(caller.call("clkdiv", {"1", "2"}, -1, PUT));
+            REQUIRE_NOTHROW(caller.call("clkdiv", {"1"}, -1, GET));
+            REQUIRE_THROWS(caller.call("clkdiv", {"2", "2"}, -1, PUT));
+            REQUIRE_NOTHROW(caller.call("clkdiv", {"2"}, -1, GET));
+            REQUIRE_THROWS(caller.call("clkdiv", {"3", "2"}, -1, PUT));
+            REQUIRE_THROWS(caller.call("clkdiv", {"3"}, -1, GET));
+        }
     } else {
         REQUIRE_THROWS(caller.call("clkdiv", {"0"}, -1, GET));
     }
@@ -1379,6 +1409,12 @@ TEST_CASE("CALLER::maxclkphaseshift", "[.cmdcall]") {
         REQUIRE_THROWS(caller.call("maxclkphaseshift", {}, -1, GET));
         REQUIRE_THROWS(caller.call("maxclkphaseshift", {"7"}, -1, GET));
         REQUIRE_NOTHROW(caller.call("maxclkphaseshift", {"0"}, -1, GET));
+        // other clocks removed for m3 (setting not supported)
+        if (det_type == defs::MYTHEN3) {
+            REQUIRE_NOTHROW(caller.call("maxclkphaseshift", {"1"}, -1, GET));
+            REQUIRE_NOTHROW(caller.call("maxclkphaseshift", {"2"}, -1, GET));
+            REQUIRE_THROWS(caller.call("maxclkphaseshift", {"3"}, -1, GET));
+        }
     } else {
         REQUIRE_THROWS(caller.call("maxclkphaseshift", {"0"}, -1, GET));
     }

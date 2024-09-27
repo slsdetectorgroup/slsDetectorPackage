@@ -57,15 +57,16 @@
 #define DEFAULT_SETTINGS                 (STANDARD)
 #define DEFAULT_TRIMBIT_VALUE            (0)
 #define DEFAULT_COUNTER_DISABLED_VTH_VAL (2800)
+#define DEFAULT_READOUT_SPEED            (HALF_SPEED)
 
-#define DEFAULT_READOUT_C0          (10) //(100000000) // rdo_clk, 100 MHz
-#define DEFAULT_READOUT_C1          (10) //(100000000) // rdo_smp_clk, 100 MHz
 #define DEFAULT_SYSTEM_C0           (10) //(100000000) // run_clk, 100 MHz
 #define DEFAULT_SYSTEM_C1           (6)  //(166666666) // str_clk, 166 MHz const
 #define DEFAULT_SYSTEM_C2           (5)  //(200000000) // smp_clk, 200 MHz const
 #define DEFAULT_TRIMMING_RUN_CLKDIV (40) // (25000000) // 25 MHz
 
-#define DEFAULT_READOUT_C0_STARTUP (20) //(50000000) // rdo_clk, 50 MHz
+#define FULL_SPEED_CLKDIV    (10) //(100000000) 100 MHz
+#define HALF_SPEED_CLKDIV    (20) //( 50000000) 50 MHz
+#define QUARTER_SPEED_CLKDIV (40) //( 25000000) 25 MHz
 
 #define DEFAULT_ASIC_LATCHING_NUM_PULSES (10)
 #define DEFAULT_MSTR_OTPT_P1_NUM_PULSES  (20)
@@ -73,12 +74,11 @@
 #define DEFAULT_ADIF_ADD_OFST_VAL        (0)
 
 /* Firmware Definitions */
-#define MAX_TIMESLOT_VAL        (0xFFFFFF)
-#define IP_HEADER_SIZE          (20)
-#define FIXED_PLL_FREQUENCY     (020000000)  // 20MHz
-#define READOUT_PLL_VCO_FREQ_HZ (1000000000) // 1GHz
-#define SYSTEM_PLL_VCO_FREQ_HZ  (1000000000) // 1GHz
-#define MAX_NUM_DESERIALIZERS   (40)
+#define MAX_TIMESLOT_VAL       (0xFFFFFF)
+#define IP_HEADER_SIZE         (20)
+#define FIXED_PLL_FREQUENCY    (020000000)  // 20MHz
+#define SYSTEM_PLL_VCO_FREQ_HZ (1000000000) // 1GHz
+#define MAX_NUM_DESERIALIZERS  (40)
 
 /** Other Definitions */
 #define BIT16_MASK         (0xFFFF)
@@ -140,19 +140,12 @@ enum ADCINDEX { TEMP_FPGA };
 #define SPECIAL_DEFAULT_HIGHGAIN_DAC_VALS                                      \
     { 1300, 1100 }
 
-enum CLKINDEX {
-    READOUT_C0,
-    READOUT_C1,
-    SYSTEM_C0,
-    SYSTEM_C1,
-    SYSTEM_C2,
-    NUM_CLOCKS
-};
-#define NUM_CLOCKS_TO_SET (3)
+enum CLKINDEX { SYSTEM_C0, SYSTEM_C1, SYSTEM_C2, NUM_CLOCKS };
+#define NUM_CLOCKS_TO_SET (1)
 
-#define CLK_NAMES                                                              \
-    "READOUT_C0", "READOUT_C1", "SYSTEM_C0", "SYSTEM_C1", "SYSTEM_C2"
-enum PLLINDEX { READOUT_PLL, SYSTEM_PLL };
+#define CLK_NAMES "SYSTEM_C0", "SYSTEM_C1", "SYSTEM_C2"
+
+#define SYSTEM_PLL (1)
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

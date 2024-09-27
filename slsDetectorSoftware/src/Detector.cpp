@@ -533,6 +533,7 @@ std::vector<defs::speedLevel> Detector::getReadoutSpeedList() const {
     case defs::EIGER:
     case defs::JUNGFRAU:
     case defs::MOENCH:
+    case defs::MYTHEN3:
         return std::vector<defs::speedLevel>{defs::FULL_SPEED, defs::HALF_SPEED,
                                              defs::QUARTER_SPEED};
     case defs::GOTTHARD2:

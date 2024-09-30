@@ -4173,7 +4173,7 @@ update:
       output: [ '"successful"' ]
 
 reg:
-  help: "[address] [32 bit value]\n\t[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence, can be called while calling blocking acquire().\n\t[Eiger] +0x100 for only left, +0x200 for only right."
+  help: "[address] [32 bit value][(optional)--validate]\n\t[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence, can be called while calling blocking acquire().\n\t\t Use --validate to force validation when writing to it.\n\t[Eiger] +0x100 for only left, +0x200 for only right."
   actions:
     GET:
       argc: 1
@@ -4184,13 +4184,23 @@ reg:
       cast_input: [ true ]
       output: [ OutStringHex(t) ]
     PUT:
-      argc: 2
       require_det_id: true
       function: writeRegister
-      input: [ 'args[0]', 'args[1]' ]
-      input_types: [ uint32_t, uint32_t ]
-      cast_input: [ true, true ]
-      output: [ ToString(args) ]
+      output: [ '"["', 'args[0]', '", "', 'args[1]', '"]"' ]
+      args:
+        - argc: 2
+          input: [ 'args[0]', 'args[1]', '"0"' ]
+          input_types: [ uint32_t, uint32_t, bool ]
+          arg_types: [ uint32_t, uint32_t ]
+          cast_input: [ true, true, true ]
+        - argc: 3
+          arg_types: [ uint32_t, uint32_t, special::validate ]
+          exceptions:
+            - condition: 'args[2] != "--validate"'
+              message: '"Could not scan third argument. Did you mean --validate?"'
+          input: [ 'args[0]', 'args[1]', '"1"' ]
+          input_types: [ uint32_t, uint32_t, bool ]
+          cast_input: [ true, true, true ]
 
 adcreg:
   help: "[address] [value]\n\t[Jungfrau][Moench][Ctb][Gotthard] Writes to an adc register in hex. Advanced user Function!"
@@ -4223,27 +4233,40 @@ Setbit:
   template: true
   actions:
     PUT:
-      argc: 2
-      exceptions:
-        - condition: 'StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31'
-          message: '"Bit number out of range: " + args[1]'
       require_det_id: true
       function: setBit
-      input: [ 'args[0]', 'args[1]' ]
-      input_types: [ uint32_t, int ]
-      cast_input: [ true, true ]
-      output: [ ToString(args) ]
+      output: [ '"["', 'args[0]', '", "', 'args[1]', '"]"' ]    
+      args:
+        - argc: 2
+          exceptions:
+            - condition: 'StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31'
+              message: '"Bit number out of range: " + args[1]'
+          input: [ 'args[0]', 'args[1]', '"0"' ]  
+          input_types: [ uint32_t, int, bool ]
+          arg_types: [ uint32_t, int ]
+          cast_input: [ true, true, true ]
+        - argc: 3
+          arg_types: [ uint32_t, int, special::validate ]
+          exceptions:
+            - condition: 'StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31'
+              message: '"Bit number out of range: " + args[1]'
+            - condition: 'args[2] != "--validate"'
+              message: '"Could not scan third argument. Did you mean --validate?"'
+          input: [ 'args[0]', 'args[1]', '"1"' ]
+          input_types: [ uint32_t, int, bool ]
+          cast_input: [ true, true, true ]
+
 
 setbit:
   inherit_actions: Setbit
-  help: "[reg address in hex] [bit index]\n\tSets bit in address."
+  help: "[reg address in hex] [bit index]\n\tSets bit in address.\n\tUse --validate to force validation."
   actions:
     PUT:
       function: setBit
 
 clearbit:
   inherit_actions: Setbit
-  help: "[reg address in hex] [bit index]\n\tClears bit in address."
+  help: "[reg address in hex] [bit index]\n\tClears bit in address.\n\tUse --validate to force validation."
   actions:
     PUT:
       function: clearBit

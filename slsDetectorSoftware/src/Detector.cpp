@@ -2673,16 +2673,18 @@ Result<uint32_t> Detector::readRegister(uint32_t addr, Positions pos) const {
     return pimpl->Parallel(&Module::readRegister, pos, addr);
 }
 
-void Detector::writeRegister(uint32_t addr, uint32_t val, Positions pos) {
-    pimpl->Parallel(&Module::writeRegister, pos, addr, val);
+void Detector::writeRegister(uint32_t addr, uint32_t val, bool validate,
+                             Positions pos) {
+    pimpl->Parallel(&Module::writeRegister, pos, addr, val, validate);
 }
 
-void Detector::setBit(uint32_t addr, int bitnr, Positions pos) {
-    pimpl->Parallel(&Module::setBit, pos, addr, bitnr);
+void Detector::setBit(uint32_t addr, int bitnr, bool validate, Positions pos) {
+    pimpl->Parallel(&Module::setBit, pos, addr, bitnr, validate);
 }
 
-void Detector::clearBit(uint32_t addr, int bitnr, Positions pos) {
-    pimpl->Parallel(&Module::clearBit, pos, addr, bitnr);
+void Detector::clearBit(uint32_t addr, int bitnr, bool validate,
+                        Positions pos) {
+    pimpl->Parallel(&Module::clearBit, pos, addr, bitnr, validate);
 }
 
 Result<int> Detector::getBit(uint32_t addr, int bitnr, Positions pos) {

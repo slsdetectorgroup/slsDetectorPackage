@@ -260,39 +260,74 @@ std::string Caller::versions(int action) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        bool eiger = (det->getDetectorType().squash() == defs::EIGER);
-        auto t = det->getFirmwareVersion(std::vector<int>{det_id});
-        os << "\nType            : " << OutString(det->getDetectorType())
-           << "\nRelease         : " << det->getPackageVersion() << std::hex
-           << "\nClient          : " << det->getClientVersion();
 
+        std::string vType = "Unknown";
+        std::string vFirmware = "Unknown";
+        std::string vServer = "Unknown";
+        std::string vKernel = "Unknown";
+        std::string vHardware = "Unknown";
+        bool eiger = false;
+        std::string vBebFirmware = "Unknown";
+        std::string vFeblFirmware = "Unknown";
+        std::string vFebrFirmware = "Unknown";
+        bool receiver = false;
+        std::string vReceiver = "Unknown";
+
+        std::string vRelease = det->getPackageVersion();
+        std::string vClient = det->getClientVersion();
+
+        if (det->size() != 0) {
+            // shared memory has detectors
+            vType = OutString(det->getDetectorType());
+            eiger = (det->getDetectorType().squash() == defs::EIGER);
+            receiver = det->getUseReceiverFlag().squash(false);
+            if (receiver) {
+                // cannot connect to receiver
+                try {
+                    vReceiver = OutString(
+                        det->getReceiverVersion(std::vector<int>{det_id}));
+                } catch (const std::exception &e) {
+                }
+            }
+            // cannot connect to Detector
+            try {
+                auto firmwareVersion =
+                    det->getFirmwareVersion(std::vector<int>{det_id});
+                vFirmware = OutStringHex(firmwareVersion);
+                vServer = OutString(
+                    det->getDetectorServerVersion(std::vector<int>{det_id}));
+                vKernel = OutString(
+                    det->getKernelVersion({std::vector<int>{det_id}}));
+                vHardware = OutString(
+                    det->getHardwareVersion(std::vector<int>{det_id}));
+                if (eiger) {
+                    vBebFirmware = OutString(firmwareVersion);
+                    vFeblFirmware = OutString(det->getFrontEndFirmwareVersion(
+                        defs::FRONT_LEFT, std::vector<int>{det_id}));
+                    vFebrFirmware = OutString(det->getFrontEndFirmwareVersion(
+                        defs::FRONT_RIGHT, std::vector<int>{det_id}));
+                }
+            } catch (const std::exception &e) {
+            }
+        }
+
+        os << "\nType            : " << vType
+           << "\nRelease         : " << vRelease
+           << "\nClient          : " << vClient;
         if (eiger) {
-            os << "\nFirmware (Beb)  : "
-               << OutString(det->getFirmwareVersion(std::vector<int>{det_id}));
-            os << "\nFirmware (Febl) : "
-               << OutString(det->getFrontEndFirmwareVersion(
-                      defs::FRONT_LEFT, std::vector<int>{det_id}));
-            os << "\nFirmware (Febr) : "
-               << OutString(det->getFrontEndFirmwareVersion(
-                      defs::FRONT_RIGHT, std::vector<int>{det_id}));
+            os << "\nFirmware (Beb)  : " << vBebFirmware
+               << "\nFirmware (Febl) : " << vFeblFirmware
+               << "\nFirmware (Febr) : " << vFebrFirmware;
         } else {
-            os << "\nFirmware        : "
-               << OutStringHex(
-                      det->getFirmwareVersion(std::vector<int>{det_id}));
+            os << "\nFirmware        : " << vFirmware;
         }
-
-        os << "\nServer          : "
-           << OutString(det->getDetectorServerVersion(std::vector<int>{det_id}))
-           << "\nKernel          : "
-           << OutString(det->getKernelVersion({std::vector<int>{det_id}}))
-           << "\nHardware        : "
-           << OutString(det->getHardwareVersion(std::vector<int>{det_id}));
-
-        if (det->getUseReceiverFlag().squash(true)) {
-            os << "\nReceiver        : "
-               << OutString(det->getReceiverVersion(std::vector<int>{det_id}));
-        }
+        os << "\nServer          : " << vServer
+           << "\nKernel          : " << vKernel
+           << "\nHardware        : " << vHardware;
+        if (receiver)
+            os << "\nReceiver        : " << vReceiver;
         os << std::dec << '\n';
+
     } else if (action == defs::PUT_ACTION) {
         throw RuntimeError("cannot put");
     } else {

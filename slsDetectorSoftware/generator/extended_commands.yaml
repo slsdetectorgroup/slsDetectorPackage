@@ -4256,9 +4256,8 @@ gainmode:
         store_result_in_t: false
   command_name: gainmode
   function_alias: gainmode
-  help: "[dynamicgain|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t[Jungfrau]\
-    \ Gain mode.\n\tCAUTION: Do not use fixg0 without caution, you can damage the\
-    \ detector!!!"
+  help: "[dynamic|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t[Jungfrau] Gain\
+    \ mode.\n\tCAUTION: Do not use fixg0 without caution, you can damage the detector!!!"
   infer_action: true
   template: true
 gappixels:

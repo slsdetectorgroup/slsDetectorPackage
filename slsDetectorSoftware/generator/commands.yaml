@@ -2690,6 +2690,17 @@ gaincaps:
           argc: -1
           arg_types: [ defs::defs::M3_GainCaps ]
 
+sleep:
+    is_description: true
+    actions:
+        PUT:
+          args:
+            - argc: 1
+              arg_types: [ int ]
+            - argc: 2
+              arg_types: [ int, special::time_unit ]
+
+
 ################# special commands ##########################
 
 virtual:

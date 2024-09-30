@@ -3239,6 +3239,22 @@ int InferAction::signalname() {
     }
 }
 
+int InferAction::sleep() {
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    if (args.size() == 2) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
 int InferAction::slowadc() {
 
     if (args.size() == 1) {

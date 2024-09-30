@@ -3586,4 +3586,14 @@ TEST_CASE("CALLER::user", "[.cmdcall]") {
     REQUIRE_NOTHROW(caller.call("user", {}, -1, GET));
 }
 
+TEST_CASE("CALLER::sleep", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    REQUIRE_NOTHROW(caller.call("sleep", {"1"}, -1, PUT));
+    REQUIRE_NOTHROW(caller.call("sleep", {"100", "ms"}, -1, PUT));
+    REQUIRE_NOTHROW(caller.call("sleep", {"1000", "ns"}, -1, PUT));
+    // This is a put only command
+    REQUIRE_THROWS(caller.call("sleep", {}, -1, GET));
+}
+
 } // namespace sls

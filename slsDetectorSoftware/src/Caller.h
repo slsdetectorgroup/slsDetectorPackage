@@ -286,6 +286,7 @@ class Caller {
     std::string signalindex(int action);
     std::string signallist(int action);
     std::string signalname(int action);
+    std::string sleep(int action);
     std::string slowadc(int action);
     std::string slowadcindex(int action);
     std::string slowadclist(int action);
@@ -633,6 +634,7 @@ class Caller {
         {"signalindex", &Caller::signalindex},
         {"signallist", &Caller::signallist},
         {"signalname", &Caller::signalname},
+        {"sleep", &Caller::sleep},
         {"slowadc", &Caller::slowadc},
         {"slowadcindex", &Caller::slowadcindex},
         {"slowadclist", &Caller::slowadclist},

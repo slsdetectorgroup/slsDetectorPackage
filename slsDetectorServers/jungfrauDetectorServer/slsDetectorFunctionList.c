@@ -2616,39 +2616,34 @@ void setPedestalMode(int enable, uint8_t frames, uint16_t loops) {
     }
 }
 
-// TODO: get info from firmware about reg and bits
 int setTimingInfoDecoder(enum timingInfoDecoder val) {
-    int decodeValue = 0;
-    uint32_t addr = CONFIG_REG;
-
     switch (val) {
     case SWISSFEL:
         LOG(logINFO, ("Setting Timing Info Decoder to SWISSFEL\n"));
-        decodeValue = 0;
         break;
     case SHINE:
         LOG(logINFO, ("Setting Timing Info Decoder to SHINE\n"));
-        decodeValue = 1;
         break;
     default:
         LOG(logERROR, ("Unknown Timing Info Decoder %d\n", val));
         return FAIL;
     }
 
-    bus_w(addr, bus_r(addr) & ~CONFIG_READOUT_SPEED_MSK);
-    bus_w(addr,
-          bus_r(addr) | ((decodeValue << (CONFIG_READOUT_SPEED_OFST - 2)) &
-                         CONFIG_READOUT_SPEED_MSK));
+    int decodeValue = (int)val;
+    uint32_t addr = EXT_SIGNAL_REG;
+    bus_w(addr, bus_r(addr) & ~EXT_TIMING_INFO_DECODER_MSK);
+    bus_w(addr, bus_r(addr) | ((decodeValue << EXT_TIMING_INFO_DECODER_OFST) &
+                               EXT_TIMING_INFO_DECODER_MSK));
 
     return OK;
 }
 
 int getTimingInfoDecoder(enum timingInfoDecoder *retval) {
-    int decodeValue = ((bus_r(CONFIG_REG) & CONFIG_READOUT_SPEED_MSK) >>
-                       (CONFIG_READOUT_SPEED_OFST - 2));
-    if (decodeValue == 0) {
+    int decodeValue = ((bus_r(EXT_SIGNAL_REG) & EXT_TIMING_INFO_DECODER_MSK) >>
+                       EXT_TIMING_INFO_DECODER_OFST);
+    if (decodeValue == (int)SWISSFEL) {
         *retval = SWISSFEL;
-    } else if (decodeValue == 1) {
+    } else if (decodeValue == (int)SHINE) {
         *retval = SHINE;
     } else {
         return FAIL;

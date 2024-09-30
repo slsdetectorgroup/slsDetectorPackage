@@ -10,7 +10,14 @@ import sys
 from setuptools import setup, find_packages
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 
-__version__ = os.environ.get('GIT_DESCRIBE_TAG', 'developer')
+
+import subprocess
+def get_git_tag():
+    try:
+        return subprocess.check_output(['git', 'describe', '--tags', '--abbrev=0']).strip().decode('utf-8')
+    except subprocess.CalledProcessError:
+        return 'developer'
+__version__ = get_git_tag()
 
 
 def get_conda_path():

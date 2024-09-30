@@ -85,21 +85,7 @@ u_int32_t readRegister(u_int32_t offset) {
 }
 
 void writeRegister(u_int32_t offset, u_int32_t data) {
-    // if electron mode bit touched
-#ifdef JUNGFRAUD
-    int electronCollectionModeChange = 0;
-    if ((offset << MEM_MAP_SHIFT) == DAQ_REG) {
-        if ((readRegister(offset) ^ data) & DAQ_ELCTRN_CLLCTN_MDE_MSK) {
-            electronCollectionModeChange = 1;
-        }
-    }
-#endif
     bus_w(offset << MEM_MAP_SHIFT, data);
-#ifdef JUNGFRAUD
-    if (electronCollectionModeChange) {
-        configureChip();
-    }
-#endif
 }
 
 u_int32_t readRegister16(u_int32_t offset) {

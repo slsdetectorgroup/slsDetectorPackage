@@ -667,6 +667,34 @@ TEST_CASE("Caller::pedestalmode", "[.cmdcall]") {
     }
 }
 
+TEST_CASE("Caller::collectionmode", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    if (det.getDetectorType().squash() == defs::JUNGFRAU) {
+        auto prev_val = det.getCollectionMode();
+        {
+            std::ostringstream oss;
+            caller.call("collectionmode", {"electron"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "collectionmode electron\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("collectionmode", {"hole"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "collectionmode hole\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("collectionmode", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "collectionmode hole\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setCollectionMode(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(caller.call("collectionmode", {}, -1, GET));
+    }
+}
+
 TEST_CASE("Caller::sync", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);

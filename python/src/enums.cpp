@@ -327,4 +327,9 @@ void init_enums(py::module &m) {
         .value("POSITIVE", slsDetectorDefs::polarity::POSITIVE)
         .value("NEGATIVE", slsDetectorDefs::polarity::NEGATIVE)
         .export_values();
+
+    py::enum_<slsDetectorDefs::collectionMode>(Defs, "collectionMode")
+        .value("HOLE", slsDetectorDefs::collectionMode::HOLE)
+        .value("ELECTRON", slsDetectorDefs::collectionMode::ELECTRON)
+        .export_values();
 }

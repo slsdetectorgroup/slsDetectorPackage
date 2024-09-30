@@ -1142,7 +1142,7 @@ storagecell_start:
       function: setStorageCellStart
 
 gainmode:
-  help: "[dynamicgain|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t[Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, you can damage the detector!!!"
+  help: "[dynamic|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t[Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, you can damage the detector!!!"
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:

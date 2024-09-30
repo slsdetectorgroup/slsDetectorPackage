@@ -5434,7 +5434,7 @@ std::string Caller::gainmode(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: gainmode" << std::endl;
-        os << R"V0G0N([dynamicgain|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]
+        os << R"V0G0N([dynamic|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]
 	[Jungfrau] Gain mode.
 	CAUTION: Do not use fixg0 without caution, you can damage the detector!!! )V0G0N"
            << std::endl;

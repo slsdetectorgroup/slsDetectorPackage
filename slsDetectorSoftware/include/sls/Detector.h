@@ -2034,13 +2034,16 @@ class Detector {
      * Goes to stop server. Hence, can be called while calling blocking
      * acquire(). \n [Eiger] Address is +0x100 for only left, +0x200 for only
      * right. */
-    void writeRegister(uint32_t addr, uint32_t val, Positions pos = {});
+    void writeRegister(uint32_t addr, uint32_t val, bool validate = false,
+                       Positions pos = {});
 
     /** Advanced user Function!  */
-    void setBit(uint32_t addr, int bitnr, Positions pos = {});
+    void setBit(uint32_t addr, int bitnr, bool validate = false,
+                Positions pos = {});
 
     /** Advanced user Function!  */
-    void clearBit(uint32_t addr, int bitnr, Positions pos = {});
+    void clearBit(uint32_t addr, int bitnr, bool validate = false,
+                  Positions pos = {});
 
     /** Advanced user Function!  */
     Result<int> getBit(uint32_t addr, int bitnr, Positions pos = {});

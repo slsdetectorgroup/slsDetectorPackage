@@ -41,50 +41,35 @@ class Receiver : private virtual slsDetectorDefs {
     /**
      * Start Acquisition Call back (slsMultiReceiver writes data if file write
      * enabled) if registerCallBackRawDataReady or
-     * registerCallBackRawDataModifyReady registered, users get data callback
-     * arguments are:
-     * - file path
-     * - file name prefix
-     * - file index
-     * - image size in bytes
+     * registerCallBackRawDataModifyReady registered
+     * Call back arguments are:
+     * - startCallbackHeader metadata
      */
-    void registerCallBackStartAcquisition(int (*func)(const std::string &,
-                                                      const std::string &,
-                                                      uint64_t, size_t, void *),
+    void registerCallBackStartAcquisition(int (*func)(const startCallbackHeader,
+                                                      void *),
                                           void *arg);
 
     /**
      * Call back for acquisition finished
      * callback argument is:
-     * - total frames caught
+     * - startCallbackHeader metadata
      */
-    void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void *),
-                                             void *arg);
+    void registerCallBackAcquisitionFinished(
+        void (*func)(const endCallbackHeader, void *), void *arg);
 
     /**
      * Call back for raw data
      * args to raw data ready callback are:
      * - sls_receiver_header frame metadata,
+     * - dataCallbackHeader metadata
      * - pointer to data
-     * - image size in bytes
+     * - image size in bytes. Can be modified to the new size to be
+     * written/streamed. (only smaller value allowed).
      */
     void registerCallBackRawDataReady(void (*func)(sls_receiver_header &,
-                                                   char *, size_t, void *),
+                                                   const dataCallbackHeader,
+                                                   char *, size_t &, void *),
                                       void *arg);
-
-    /**
-     * Call back for raw data (modified)
-     * args to raw data ready callback are:
-     * - sls_receiver_header frame metadata,
-     * - pointer to data
-     * - revDatasize is the reference of data size in bytes.
-     * Can be modified to the new size to be written/streamed. (only smaller
-     * value allowed).
-     */
-    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header &,
-                                                         char *, size_t &,
-                                                         void *),
-                                            void *arg);
 
   private:
     std::unique_ptr<ClientInterface> tcpipInterface;

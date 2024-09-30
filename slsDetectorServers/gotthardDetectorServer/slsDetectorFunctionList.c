@@ -527,12 +527,12 @@ int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
     return OK;
 }
 
-uint32_t writeRegister16And32(uint32_t offset, uint32_t data) {
+void writeRegister16And32(uint32_t offset, uint32_t data) {
     if (((offset << MEM_MAP_SHIFT) == CONTROL_REG) ||
         ((offset << MEM_MAP_SHIFT) == FIFO_DATA_REG)) {
-        return writeRegister16(offset, data);
+        writeRegister16(offset, data);
     } else
-        return writeRegister(offset, data);
+        writeRegister(offset, data);
 }
 
 uint32_t readRegister16And32(uint32_t offset) {

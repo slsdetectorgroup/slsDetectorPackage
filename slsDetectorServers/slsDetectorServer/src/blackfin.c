@@ -84,7 +84,7 @@ u_int32_t readRegister(u_int32_t offset) {
     return bus_r(offset << MEM_MAP_SHIFT);
 }
 
-u_int32_t writeRegister(u_int32_t offset, u_int32_t data) {
+void writeRegister(u_int32_t offset, u_int32_t data) {
     // if electron mode bit touched
 #ifdef JUNGFRAUD
     int electronCollectionModeChange = 0;
@@ -100,16 +100,14 @@ u_int32_t writeRegister(u_int32_t offset, u_int32_t data) {
         configureChip();
     }
 #endif
-    return readRegister(offset);
 }
 
 u_int32_t readRegister16(u_int32_t offset) {
     return (u_int32_t)bus_r16(offset << MEM_MAP_SHIFT);
 }
 
-u_int32_t writeRegister16(u_int32_t offset, u_int32_t data) {
+void writeRegister16(u_int32_t offset, u_int32_t data) {
     bus_w16(offset << MEM_MAP_SHIFT, (u_int16_t)data);
-    return readRegister16(offset);
 }
 
 int mapCSP0(void) {

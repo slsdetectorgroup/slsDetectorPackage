@@ -404,6 +404,10 @@ int InferAction::clearbit() {
         return slsDetectorDefs::PUT_ACTION;
     }
 
+    if (args.size() == 3) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
     else {
 
         throw RuntimeError("Could not infer action: Wrong number of arguments");
@@ -2490,6 +2494,10 @@ int InferAction::reg() {
         return slsDetectorDefs::PUT_ACTION;
     }
 
+    if (args.size() == 3) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
     else {
 
         throw RuntimeError("Could not infer action: Wrong number of arguments");
@@ -3140,6 +3148,10 @@ int InferAction::serialnumber() {
 int InferAction::setbit() {
 
     if (args.size() == 2) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    if (args.size() == 3) {
         return slsDetectorDefs::PUT_ACTION;
     }
 

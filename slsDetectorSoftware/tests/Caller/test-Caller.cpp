@@ -3247,13 +3247,20 @@ TEST_CASE("CALLER::reg", "[.cmdcall]") {
         auto prev_val = det.readRegister(addr);
         {
             std::ostringstream oss1, oss2;
+            caller.call("reg", {saddr, "0x6", "--validate"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "reg [" + saddr + ", 0x6]\n");
+            caller.call("reg", {saddr}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "reg 0x6\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
             caller.call("reg", {saddr, "0x5"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "reg [" + saddr + ", 0x5]\n");
             caller.call("reg", {saddr}, -1, GET, oss2);
             REQUIRE(oss2.str() == "reg 0x5\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.writeRegister(addr, prev_val[i], {i});
+            det.writeRegister(addr, prev_val[i], false, {i});
         }
     }
     // cannot check for eiger virtual server
@@ -3289,15 +3296,17 @@ TEST_CASE("CALLER::setbit", "[.cmdcall]") {
         std::string saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
         {
-            std::ostringstream oss1, oss2;
+            std::ostringstream oss1, oss2, oss3;
             caller.call("reg", {saddr, "0x0"}, -1, PUT);
             caller.call("setbit", {saddr, "1"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "setbit [" + saddr + ", 1]\n");
-            caller.call("reg", {saddr}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "reg 0x2\n");
+            caller.call("setbit", {saddr, "2", "--validate"}, -1, PUT, oss2);
+            REQUIRE(oss2.str() == "setbit [" + saddr + ", 2]\n");
+            caller.call("reg", {saddr}, -1, GET, oss3);
+            REQUIRE(oss3.str() == "reg 0x6\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.writeRegister(addr, prev_val[i], {i});
+            det.writeRegister(addr, prev_val[i], false, {i});
         }
     }
 }
@@ -3311,15 +3320,17 @@ TEST_CASE("CALLER::clearbit", "[.cmdcall]") {
         std::string saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
         {
-            std::ostringstream oss1, oss2;
-            caller.call("reg", {saddr, "0x3"}, -1, PUT);
+            std::ostringstream oss1, oss2, oss3;
+            caller.call("reg", {saddr, "0x7"}, -1, PUT);
             caller.call("clearbit", {saddr, "1"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "clearbit [" + saddr + ", 1]\n");
-            caller.call("reg", {saddr}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "reg 0x1\n");
+            caller.call("clearbit", {saddr, "2", "--validate"}, -1, PUT, oss2);
+            REQUIRE(oss2.str() == "clearbit [" + saddr + ", 2]\n");
+            caller.call("reg", {saddr}, -1, GET, oss3);
+            REQUIRE(oss3.str() == "reg 0x1\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.writeRegister(addr, prev_val[i], {i});
+            det.writeRegister(addr, prev_val[i], false, {i});
         }
     }
 }
@@ -3339,7 +3350,7 @@ TEST_CASE("CALLER::getbit", "[.cmdcall]") {
             REQUIRE(oss1.str() == "getbit 1\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.writeRegister(addr, prev_val[i], {i});
+            det.writeRegister(addr, prev_val[i], false, {i});
         }
     }
     // cannot check for eiger virtual server

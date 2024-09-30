@@ -5,6 +5,7 @@
 #include "sls/logger.h"
 #include "sls/string_utils.h"
 #include <iostream>
+#include <thread>
 namespace sls {
 // some helper functions to print
 
@@ -1179,4 +1180,37 @@ std::string Caller::gaincaps(int action) {
     }
     return os.str();
 }
+std::string Caller::sleep(int action) {
+    std::ostringstream os;
+    if (action == defs::HELP_ACTION) {
+        os << "[duration] [(optional unit) ns|us|ms|s]\n\tSleep for duration. "
+              "Mainly for config files for firmware developers."
+              "Default unit is s."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        throw RuntimeError("Cannot get.");
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1 && args.size() != 2) {
+            WrongNumberOfParameters(1);
+        }
+        time::ns converted_time{0};
+        try {
+            if (args.size() == 1) {
+                std::string tmp_time(args[0]);
+                std::string unit = RemoveUnit(tmp_time);
+                converted_time = StringTo<time::ns>(tmp_time, unit);
+            } else {
+                converted_time = StringTo<time::ns>(args[0], args[1]);
+            }
+        } catch (...) {
+            throw RuntimeError("Could not convert argument to time::ns");
+        }
+        std::this_thread::sleep_for(converted_time);
+        os << "for " << ToString(converted_time) << " completed" << '\n';
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 } // namespace sls

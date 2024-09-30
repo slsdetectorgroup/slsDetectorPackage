@@ -363,11 +363,11 @@ class Detector {
     /** list of possible timing modes for this detector */
     std::vector<defs::timingMode> getTimingModeList() const;
 
-    /** [Eiger][Jungfrau][Moench][Gotthard2] */
+    /** [Eiger][Jungfrau][Moench][Gotthard2][Mythen3] */
     Result<defs::speedLevel> getReadoutSpeed(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau][Moench][Gotthard2]
-     * [Jungfrau] Options: FULL_SPEED, HALF_SPEED (Default),
+     * [Jungfrau][Mythen3] Options: FULL_SPEED, HALF_SPEED (Default),
      * QUARTER_SPEED \n [Moench] Options: FULL_SPEED (Default) \n [Eiger]
      * Options: FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED \n [Gotthard2]
      * Options: G2_108MHZ (Default), G2_144MHZ \n [Jungfrau][Moench] FULL_SPEED
@@ -429,7 +429,8 @@ class Detector {
     /** [Mythen3][Gotthard2] */
     Result<int> getClockPhase(int clkIndex, Positions pos = {});
 
-    /** [Mythen3][Gotthard2] absolute phase shift */
+    /** [Mythen3][Gotthard2] absolute phase shift  \n
+     * [Gotthard2] clkIndex: 0-5, [Mythen3] clkIndex 0 only */
     void setClockPhase(int clkIndex, int value, Positions pos = {});
 
     /** [Mythen3][Gotthard2] */
@@ -438,13 +439,15 @@ class Detector {
     /** [Mythen3][Gotthard2] */
     Result<int> getClockPhaseinDegrees(int clkIndex, Positions pos = {});
 
-    /** [Mythen3][Gotthard2] */
+    /** [Mythen3][Gotthard2]  \n
+     * [Gotthard2] clkIndex: 0-5, [Mythen3] clkIndex 0 only */
     void setClockPhaseinDegrees(int clkIndex, int value, Positions pos = {});
 
     /** [Mythen3][Gotthard2] */
     Result<int> getClockDivider(int clkIndex, Positions pos = {});
 
-    /** [Mythen3][Gotthard2] Must be greater than 1. */
+    /** [Mythen3][Gotthard2] Must be greater than 1. \n
+     * [Gotthard2] clkIndex: 0-5, [Mythen3] clkIndex 0 only */
     void setClockDivider(int clkIndex, int value, Positions pos = {});
 
     Result<int> getHighVoltage(Positions pos = {}) const;

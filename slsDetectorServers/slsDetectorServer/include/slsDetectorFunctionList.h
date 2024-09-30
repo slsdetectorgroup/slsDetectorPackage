@@ -655,7 +655,8 @@ int setClockDivider(enum CLKINDEX ind, int val);
 int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val,
                                         int timeUpdate);
 int getClockDivider(enum CLKINDEX ind);
-
+int setReadoutSpeed(int val);
+int getReadoutSpeed(int *retval);
 #elif GOTTHARD2D
 int checkDetectorType(char *mess);
 int powerChip(int on, char *mess);

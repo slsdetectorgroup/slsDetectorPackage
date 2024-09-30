@@ -2111,7 +2111,7 @@ class Detector(CppDetectorApi):
         
         Note
         -----
-        [Jungfrau][Moench] FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED
+        [Jungfrau][Moench][Mythen3] FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED
         [Eiger] FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED
         [Moench] FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED
         [Gottthard2] G2_108MHZ (Default), G2_144MHZ
@@ -2925,7 +2925,9 @@ class Detector(CppDetectorApi):
     @property
     def maxclkphaseshift(self):
         """
-        [Gotthard2][Mythen3] Absolute maximum Phase shift of clocks.
+        [Gotthard2][Mythen3] Absolute maximum Phase shift of clocks.\n
+        [Gotthard2] Clock index range: 0-5\n
+        [Mythen3] Clock index range: 0
                
         :setter: Not Implemented
         
@@ -3986,7 +3988,9 @@ class Detector(CppDetectorApi):
     @property
     def clkphase(self):
         """
-        [Gotthard2][Mythen3] Phase shift of all clocks.
+        [Gotthard2][Mythen3] Phase shift of all clocks.\n
+        [Gotthard2] Clock index range: 0-5\n
+        [Mythen3] Clock index range: 0
         
         Example
         -------
@@ -4004,7 +4008,9 @@ class Detector(CppDetectorApi):
     @property
     def clkdiv(self):
         """
-        [Gotthard2][Mythen3] Clock Divider of all clocks. Must be greater than 1.
+        [Gotthard2][Mythen3] Clock Divider of all clocks. Must be greater than 1.\n
+        [Gotthard2] Clock index range: 0-5\n
+        [Mythen3] Clock index range: 0
         
         Example
         -------
@@ -4060,7 +4066,10 @@ class Detector(CppDetectorApi):
     @property
     def clkfreq(self):
         """
-        [Gotthard2][Mythen3] Frequency of clock in Hz. 
+        [Gotthard2][Mythen3] Frequency of clock in Hz.\n
+        [Gotthard2] Clock index range: 0-5\n
+        [Mythen3] Clock index range: 0
+        
         
         :setter: Not implemented. Use clkdiv to set frequency
 

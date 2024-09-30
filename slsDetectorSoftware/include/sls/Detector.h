@@ -366,7 +366,7 @@ class Detector {
     /** [Eiger][Jungfrau][Moench][Gotthard2][Mythen3] */
     Result<defs::speedLevel> getReadoutSpeed(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau][Moench][Gotthard2][Mythen3]
+    /** [Eiger][Jungfrau][Moench][Gotthard2]
      * [Jungfrau][Mythen3] Options: FULL_SPEED, HALF_SPEED (Default),
      * QUARTER_SPEED \n [Moench] Options: FULL_SPEED (Default) \n [Eiger]
      * Options: FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED \n [Gotthard2]

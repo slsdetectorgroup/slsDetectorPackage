@@ -240,6 +240,7 @@ class InferAction {
     int signalindex();
     int signallist();
     int signalname();
+    int sleep();
     int slowadc();
     int slowadcindex();
     int slowadclist();
@@ -575,6 +576,7 @@ class InferAction {
         {"signalindex", &InferAction::signalindex},
         {"signallist", &InferAction::signallist},
         {"signalname", &InferAction::signalname},
+        {"sleep", &InferAction::sleep},
         {"slowadc", &InferAction::slowadc},
         {"slowadcindex", &InferAction::slowadcindex},
         {"slowadclist", &InferAction::slowadclist},

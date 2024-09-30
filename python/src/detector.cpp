@@ -1950,17 +1950,19 @@ void init_det(py::module &m) {
         py::arg(), py::arg() = Positions{});
     CppDetectorApi.def(
         "writeRegister",
-        (void (Detector::*)(uint32_t, uint32_t, sls::Positions)) &
+        (void (Detector::*)(uint32_t, uint32_t, bool, sls::Positions)) &
             Detector::writeRegister,
-        py::arg(), py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("setBit",
-                       (void (Detector::*)(uint32_t, int, sls::Positions)) &
-                           Detector::setBit,
-                       py::arg(), py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("clearBit",
-                       (void (Detector::*)(uint32_t, int, sls::Positions)) &
-                           Detector::clearBit,
-                       py::arg(), py::arg(), py::arg() = Positions{});
+        py::arg(), py::arg(), py::arg() = false, py::arg() = Positions{});
+    CppDetectorApi.def(
+        "setBit",
+        (void (Detector::*)(uint32_t, int, bool, sls::Positions)) &
+            Detector::setBit,
+        py::arg(), py::arg(), py::arg() = false, py::arg() = Positions{});
+    CppDetectorApi.def(
+        "clearBit",
+        (void (Detector::*)(uint32_t, int, bool, sls::Positions)) &
+            Detector::clearBit,
+        py::arg(), py::arg(), py::arg() = false, py::arg() = Positions{});
     CppDetectorApi.def(
         "getBit",
         (Result<int>(Detector::*)(uint32_t, int, sls::Positions)) &

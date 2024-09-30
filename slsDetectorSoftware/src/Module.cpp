@@ -1940,6 +1940,14 @@ void Module::setPedestalMode(const defs::pedestalParameters par) {
     }
 }
 
+defs::collectionMode Module::getCollectionMode() const {
+    return sendToDetector<defs::collectionMode>(F_GET_COLLECTION_MODE);
+}
+
+void Module::setCollectionMode(const defs::collectionMode value) {
+    sendToDetector(F_SET_COLLECTION_MODE, static_cast<int>(value), nullptr);
+}
+
 // Gotthard Specific
 
 slsDetectorDefs::ROI Module::getROI() const {

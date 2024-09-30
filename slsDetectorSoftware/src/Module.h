@@ -419,6 +419,8 @@ class Module : public virtual slsDetectorDefs {
     void setNumberOfFilterCells(int value);
     defs::pedestalParameters getPedestalMode() const;
     void setPedestalMode(defs::pedestalParameters par);
+    defs::collectionMode getCollectionMode() const;
+    void setCollectionMode(const defs::collectionMode enable);
 
     /**************************************************
      *                                                *

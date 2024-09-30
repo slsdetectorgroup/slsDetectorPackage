@@ -572,6 +572,7 @@ void setupDetector() {
 #endif
     setPedestalMode(DEFAULT_PEDESTAL_MODE, DEFAULT_PEDESTAL_FRAMES,
                     DEFAULT_PEDESTAL_LOOPS);
+    setElectronCollectionMode(DEFAULT_ELECTRON_COLLECTION_MODE);
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -2613,6 +2614,22 @@ void setPedestalMode(int enable, uint8_t frames, uint16_t loops) {
                         SET_CYCLES_MSB_REG);
         }
     }
+}
+
+int getElectronCollectionMode() {
+    return ((bus_r(DAQ_REG) & DAQ_ELCTRN_CLLCTN_MDE_MSK) >>
+            DAQ_ELCTRN_CLLCTN_MDE_OFST);
+}
+
+void setElectronCollectionMode(int enable) {
+    LOG(logINFO,
+        ("Setting Collection Mode to %s\n", enable == 0 ? "Hole" : "Electron"));
+    if (enable) {
+        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_ELCTRN_CLLCTN_MDE_MSK);
+    } else {
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_ELCTRN_CLLCTN_MDE_MSK);
+    }
+    configureChip();
 }
 
 int getTenGigaFlowControl() {

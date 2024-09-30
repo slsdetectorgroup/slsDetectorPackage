@@ -1448,6 +1448,46 @@ clkphase:
     \ clock n_clock. If deg, then phase shift in degrees, else absolute phase shift\
     \ values."
   infer_action: true
+collectionmode:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getCollectionMode
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - defs::collectionMode
+        argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: setCollectionMode
+        input:
+        - args[0]
+        input_types:
+        - defs::collectionMode
+        output:
+        - args.front()
+        require_det_id: true
+        store_result_in_t: false
+  command_name: collectionmode
+  function_alias: collectionmode
+  help: "[hole|electron]\n\t[Jungfrau] Sets collection mode to hole or electron. Default\
+    \ is hole."
+  infer_action: true
+  template: true
 column:
   actions:
     GET:

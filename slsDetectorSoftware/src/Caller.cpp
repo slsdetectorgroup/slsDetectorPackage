@@ -1999,6 +1999,70 @@ std::string Caller::clkphase(int action) {
     return os.str();
 }
 
+std::string Caller::collectionmode(int action) {
+
+    std::ostringstream os;
+    // print help
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << "Command: collectionmode" << std::endl;
+        os << R"V0G0N([hole|electron]
+	[Jungfrau] Sets collection mode to hole or electron. Default is hole. )V0G0N"
+           << std::endl;
+        return os.str();
+    }
+
+    // check if action and arguments are valid
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (1 && args.size() != 0) {
+            throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 0) {
+        }
+
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
+        if (1 && args.size() != 1) {
+            throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 1) {
+            try {
+                StringTo<defs::collectionMode>(args[0]);
+            } catch (...) {
+                throw RuntimeError(
+                    "Could not convert argument 0 to defs::collectionMode");
+            }
+        }
+
+    }
+
+    else {
+
+        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
+                           "are ['GET', 'PUT']");
+    }
+
+    // generate code for each action
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (args.size() == 0) {
+            auto t = det->getCollectionMode(std::vector<int>{det_id});
+            os << OutString(t) << '\n';
+        }
+    }
+
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (args.size() == 1) {
+            auto arg0 = StringTo<defs::collectionMode>(args[0]);
+            det->setCollectionMode(arg0, std::vector<int>{det_id});
+            os << args.front() << '\n';
+        }
+    }
+
+    return os.str();
+}
+
 std::string Caller::column(int action) {
 
     std::ostringstream os;

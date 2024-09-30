@@ -1369,6 +1369,12 @@ class Detector {
     void setPedestalMode(const defs::pedestalParameters par,
                          Positions pos = {});
 
+    /** [Jungfrau] */
+    Result<defs::collectionMode> getCollectionMode(Positions pos = {}) const;
+
+    /** [Jungfrau] */
+    void setCollectionMode(defs::collectionMode value, Positions pos = {});
+
     ///@}
 
     /** @name Gotthard Specific */

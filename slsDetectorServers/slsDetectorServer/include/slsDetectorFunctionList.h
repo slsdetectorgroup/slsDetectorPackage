@@ -607,6 +607,8 @@ uint64_t getSelectCurrentSource();
 int getPedestalMode();
 void getPedestalParameters(uint8_t *frames, uint16_t *loops);
 void setPedestalMode(int enable, uint8_t frames, uint16_t loops);
+int setTimingInfoDecoder(enum timingInfoDecoder val);
+int getTimingInfoDecoder(enum timingInfoDecoder *retval);
 int getElectronCollectionMode();
 void setElectronCollectionMode(int enable);
 #endif

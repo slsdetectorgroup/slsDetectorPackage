@@ -667,6 +667,34 @@ TEST_CASE("Caller::pedestalmode", "[.cmdcall]") {
     }
 }
 
+TEST_CASE("Caller::timing_info_decoder", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    if (det.getDetectorType().squash() == defs::JUNGFRAU) {
+        auto prev_val = det.getTimingInfoDecoder();
+        {
+            std::ostringstream oss;
+            caller.call("timing_info_decoder", {"shine"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "timing_info_decoder shine\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("timing_info_decoder", {"swissfel"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "timing_info_decoder swissfel\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("timing_info_decoder", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "timing_info_decoder swissfel\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTimingInfoDecoder(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(caller.call("timing_info_decoder", {}, -1, GET));
+    }
+}
+
 TEST_CASE("Caller::collectionmode", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);

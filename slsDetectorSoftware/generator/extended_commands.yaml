@@ -1292,8 +1292,9 @@ clkdiv:
         store_result_in_t: false
   command_name: clkdiv
   function_alias: clkdiv
-  help: "[n_clock (0-5)] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock\
-    \ n_clock. Must be greater than 1."
+  help: "[n_clock] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock n_clock.\
+    \ Must be greater than 1.n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock\
+    \ index range: 0"
   infer_action: true
 clkfreq:
   actions:
@@ -1324,8 +1325,9 @@ clkfreq:
         store_result_in_t: true
   command_name: clkfreq
   function_alias: clkfreq
-  help: "[n_clock (0-5)] [freq_in_Hz]\n\t[Gotthard2][Mythen3] Frequency of clock n_clock\
-    \ in Hz. Use clkdiv to set frequency."
+  help: "[n_clock] [freq_in_Hz]\n\t[Gotthard2][Mythen3] Frequency of clock n_clock\
+    \ in Hz. Use clkdiv to set frequency.\n\t[Gotthard2] Clock index range: 0-5\n\t\
+    [Mythen3] Clock index range: 0"
   infer_action: true
 clkphase:
   actions:
@@ -1444,9 +1446,9 @@ clkphase:
         store_result_in_t: false
   command_name: clkphase
   function_alias: clkphase
-  help: "[n_clock (0-5)] [phase] [deg (optional)]\n\t[Gotthard2][Mythen3] Phase of\
-    \ clock n_clock. If deg, then phase shift in degrees, else absolute phase shift\
-    \ values."
+  help: "[n_clock] [phase] [deg (optional)]\n\t[Gotthard2][Mythen3] Phase of clock\
+    \ n_clock. If deg, then phase shift in degrees, else absolute phase shift values.n\t\
+    [Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
   infer_action: true
 collectionmode:
   actions:
@@ -5424,8 +5426,8 @@ maxclkphaseshift:
         store_result_in_t: true
   command_name: maxclkphaseshift
   function_alias: maxclkphaseshift
-  help: "[n_clock (0-5)]\n\t[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock\
-    \ n_clock."
+  help: "[n_clock]\n\t[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock.n\t\
+    [Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
   infer_action: true
 maxdbitphaseshift:
   actions:
@@ -7974,12 +7976,12 @@ readoutspeed:
         store_result_in_t: false
   command_name: readoutspeed
   function_alias: readoutspeed
-  help: "\n\t[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t[Eiger][Jungfrau][Moench]\
-    \ Readout speed of chip.\n\t[Eiger][Moench] Default speed is full_speed.\n\t[Jungfrau]\
-    \ Default speed is half_speed. full_speed option only available from v2.0 boards\
-    \ and is recommended to set number of interfaces to 2. Also overwrites adcphase\
-    \ to recommended default.\n\t [144|108]\n\t\t[Gotthard2] Readout speed of chip\
-    \ in MHz. Default is 108."
+  help: "\n\t[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t[Eiger][Jungfrau][Moench][Mythen3]\
+    \ Readout speed of chip.\n\t[Eiger][Moench] Default speed is full_speed.\n\t[Jungfrau][Mythen3]\
+    \ Default speed is half_speed. \n\t[Jungfrau] full_speed option only available\
+    \ from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites\
+    \ adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] Readout speed\
+    \ of chip in MHz. Default is 108."
   infer_action: true
 readoutspeedlist:
   actions:
@@ -11445,6 +11447,46 @@ timing:
   help: "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx\
     \ Ctb] [auto|trigger]\n\t[Mythen3] [auto|trigger|gating|trigger_gating]\n\t[Eiger]\
     \ [auto|trigger|gating|burst_trigger]"
+  infer_action: true
+  template: true
+timing_info_decoder:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getTimingInfoDecoder
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - defs::timingInfoDecoder
+        argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: setTimingInfoDecoder
+        input:
+        - args[0]
+        input_types:
+        - defs::timingInfoDecoder
+        output:
+        - args.front()
+        require_det_id: true
+        store_result_in_t: false
+  command_name: timing_info_decoder
+  function_alias: timing_info_decoder
+  help: "[swissfel|shine]\n\t[Jungfrau] Advanced Command and only for Swissfel and\
+    \ Shine. Sets the bunch id or timing info decoder. Default is swissfel."
   infer_action: true
   template: true
 timinglist:

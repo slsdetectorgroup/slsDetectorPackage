@@ -1772,6 +1772,16 @@ void Detector::setPedestalMode(const defs::pedestalParameters par,
     pimpl->Parallel(&Module::setPedestalMode, pos, par);
 }
 
+Result<defs::timingInfoDecoder>
+Detector::getTimingInfoDecoder(Positions pos) const {
+    return pimpl->Parallel(&Module::getTimingInfoDecoder, pos);
+}
+
+void Detector::setTimingInfoDecoder(defs::timingInfoDecoder value,
+                                    Positions pos) {
+    pimpl->Parallel(&Module::setTimingInfoDecoder, pos, value);
+}
+
 Result<defs::collectionMode> Detector::getCollectionMode(Positions pos) const {
     return pimpl->Parallel(&Module::getCollectionMode, pos);
 }

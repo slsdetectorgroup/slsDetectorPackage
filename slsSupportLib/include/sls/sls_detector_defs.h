@@ -519,7 +519,7 @@ enum streamingInterface {
     };
 
     enum polarity { POSITIVE, NEGATIVE };
-
+    enum timingInfoDecoder { SWISSFEL, SHINE };
     enum collectionMode { HOLE, ELECTRON };
 
 #ifdef __cplusplus

@@ -330,5 +330,7 @@ int setColumn(int);
 int get_pedestal_mode(int);
 int set_pedestal_mode(int);
 int config_transceiver(int);
+int get_timing_info_decoder(int);
+int set_timing_info_decoder(int);
 int get_collection_mode(int);
 int set_collection_mode(int);

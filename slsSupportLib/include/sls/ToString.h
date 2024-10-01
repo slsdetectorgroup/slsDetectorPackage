@@ -44,6 +44,7 @@ std::string ToString(const defs::streamingInterface s);
 std::string ToString(const defs::vetoAlgorithm s);
 std::string ToString(const defs::gainMode s);
 std::string ToString(const defs::polarity s);
+std::string ToString(const defs::timingInfoDecoder s);
 std::string ToString(const defs::collectionMode s);
 
 std::string ToString(const slsDetectorDefs::xy &coord);
@@ -319,6 +320,7 @@ template <> defs::streamingInterface StringTo(const std::string &s);
 template <> defs::vetoAlgorithm StringTo(const std::string &s);
 template <> defs::gainMode StringTo(const std::string &s);
 template <> defs::polarity StringTo(const std::string &s);
+template <> defs::timingInfoDecoder StringTo(const std::string &s);
 template <> defs::collectionMode StringTo(const std::string &s);
 
 template <> uint8_t StringTo(const std::string &s);

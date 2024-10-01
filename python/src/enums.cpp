@@ -39,6 +39,11 @@ void init_enums(py::module &m) {
         .value("STOPPED", slsDetectorDefs::runStatus::STOPPED)
         .export_values();
 
+    py::enum_<slsDetectorDefs::dimension>(Defs, "dimension")
+        .value("X", slsDetectorDefs::dimension::X)
+        .value("Y", slsDetectorDefs::dimension::Y)
+        .export_values();
+
     py::enum_<slsDetectorDefs::frameDiscardPolicy>(Defs, "frameDiscardPolicy")
         .value("NO_DISCARD", slsDetectorDefs::frameDiscardPolicy::NO_DISCARD)
         .value("DISCARD_EMPTY_FRAMES",
@@ -54,11 +59,6 @@ void init_enums(py::module &m) {
         .value("HDF5", slsDetectorDefs::fileFormat::HDF5)
         .value("NUM_FILE_FORMATS",
                slsDetectorDefs::fileFormat::NUM_FILE_FORMATS)
-        .export_values();
-
-    py::enum_<slsDetectorDefs::dimension>(Defs, "dimension")
-        .value("X", slsDetectorDefs::dimension::X)
-        .value("Y", slsDetectorDefs::dimension::Y)
         .export_values();
 
     py::enum_<slsDetectorDefs::externalSignalFlag>(Defs, "externalSignalFlag")
@@ -326,6 +326,11 @@ void init_enums(py::module &m) {
     py::enum_<slsDetectorDefs::polarity>(Defs, "polarity")
         .value("POSITIVE", slsDetectorDefs::polarity::POSITIVE)
         .value("NEGATIVE", slsDetectorDefs::polarity::NEGATIVE)
+        .export_values();
+
+    py::enum_<slsDetectorDefs::timingInfoDecoder>(Defs, "timingInfoDecoder")
+        .value("SWISSFEL", slsDetectorDefs::timingInfoDecoder::SWISSFEL)
+        .value("SHINE", slsDetectorDefs::timingInfoDecoder::SHINE)
         .export_values();
 
     py::enum_<slsDetectorDefs::collectionMode>(Defs, "collectionMode")

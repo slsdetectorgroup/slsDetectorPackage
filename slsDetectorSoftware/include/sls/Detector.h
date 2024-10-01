@@ -1373,6 +1373,14 @@ class Detector {
                          Positions pos = {});
 
     /** [Jungfrau] */
+    Result<defs::timingInfoDecoder>
+    getTimingInfoDecoder(Positions pos = {}) const;
+
+    /** [Jungfrau] Advanced Command! */
+    void setTimingInfoDecoder(defs::timingInfoDecoder value,
+                              Positions pos = {});
+
+    /** [Jungfrau] */
     Result<defs::collectionMode> getCollectionMode(Positions pos = {}) const;
 
     /** [Jungfrau] */

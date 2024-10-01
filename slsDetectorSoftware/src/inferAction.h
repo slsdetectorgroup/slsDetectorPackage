@@ -275,6 +275,7 @@ class InferAction {
     int tengiga();
     int threshold();
     int timing();
+    int timing_info_decoder();
     int timinglist();
     int timingsource();
     int top();
@@ -612,6 +613,7 @@ class InferAction {
         {"threshold", &InferAction::threshold},
         {"thresholdnotb", &InferAction::threshold},
         {"timing", &InferAction::timing},
+        {"timing_info_decoder", &InferAction::timing_info_decoder},
         {"timinglist", &InferAction::timinglist},
         {"timingsource", &InferAction::timingsource},
         {"top", &InferAction::top},

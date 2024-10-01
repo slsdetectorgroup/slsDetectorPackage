@@ -2912,6 +2912,18 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def timing_info_decoder(self):
+        """[Jungfrau] [Jungfrau] Advanced Command and only for SWISSFEL and SHINE. Sets the bunch id or timing info decoder. Default is SWISSFEL.
+        Enum: timingInfoDecoder
+        """
+        return self.getTimingInfoDecoder()
+
+    @timing_info_decoder.setter
+    def timing_info_decoder(self, value):
+        ut.set_using_dict(self.setTimingInfoDecoder, value)
+        
+    @property
+    @element
     def collectionmode(self):
         """[Jungfrau] Sets collection mode to HOLE or ELECTRON. Default is HOLE.
         Enum: collectionMode

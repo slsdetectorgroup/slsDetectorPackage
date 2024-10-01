@@ -1698,8 +1698,9 @@ std::string Caller::clkdiv(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: clkdiv" << std::endl;
-        os << R"V0G0N([n_clock (0-5)] [n_divider]
-	[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1. )V0G0N"
+        os << R"V0G0N([n_clock] [n_divider]
+	[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1.n	[Gotthard2] Clock index range: 0-5
+	[Mythen3] Clock index range: 0 )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -1791,8 +1792,10 @@ std::string Caller::clkfreq(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: clkfreq" << std::endl;
-        os << R"V0G0N([n_clock (0-5)] [freq_in_Hz]
-	[Gotthard2][Mythen3] Frequency of clock n_clock in Hz. Use clkdiv to set frequency. )V0G0N"
+        os << R"V0G0N([n_clock] [freq_in_Hz]
+	[Gotthard2][Mythen3] Frequency of clock n_clock in Hz. Use clkdiv to set frequency.
+	[Gotthard2] Clock index range: 0-5
+	[Mythen3] Clock index range: 0 )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -1847,8 +1850,9 @@ std::string Caller::clkphase(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: clkphase" << std::endl;
-        os << R"V0G0N([n_clock (0-5)] [phase] [deg (optional)]
-	[Gotthard2][Mythen3] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values. )V0G0N"
+        os << R"V0G0N([n_clock] [phase] [deg (optional)]
+	[Gotthard2][Mythen3] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values.n	[Gotthard2] Clock index range: 0-5
+	[Mythen3] Clock index range: 0 )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -7135,8 +7139,9 @@ std::string Caller::maxclkphaseshift(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: maxclkphaseshift" << std::endl;
-        os << R"V0G0N([n_clock (0-5)]
-	[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock. )V0G0N"
+        os << R"V0G0N([n_clock]
+	[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock.n	[Gotthard2] Clock index range: 0-5
+	[Mythen3] Clock index range: 0 )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -10246,9 +10251,10 @@ std::string Caller::readoutspeed(int action) {
         os << "Command: readoutspeed" << std::endl;
         os << R"V0G0N(
 	[0 or full_speed|1 or half_speed|2 or quarter_speed]
-	[Eiger][Jungfrau][Moench] Readout speed of chip.
+	[Eiger][Jungfrau][Moench][Mythen3] Readout speed of chip.
 	[Eiger][Moench] Default speed is full_speed.
-	[Jungfrau] Default speed is half_speed. full_speed option only available from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites adcphase to recommended default.
+	[Jungfrau][Mythen3] Default speed is half_speed. 
+	[Jungfrau] full_speed option only available from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites adcphase to recommended default.
 	 [144|108]
 		[Gotthard2] Readout speed of chip in MHz. Default is 108. )V0G0N"
            << std::endl;
@@ -14941,6 +14947,70 @@ std::string Caller::timing(int action) {
         if (args.size() == 1) {
             auto arg0 = StringTo<defs::timingMode>(args[0]);
             det->setTimingMode(arg0, std::vector<int>{det_id});
+            os << args.front() << '\n';
+        }
+    }
+
+    return os.str();
+}
+
+std::string Caller::timing_info_decoder(int action) {
+
+    std::ostringstream os;
+    // print help
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << "Command: timing_info_decoder" << std::endl;
+        os << R"V0G0N([swissfel|shine]
+	[Jungfrau] Advanced Command and only for Swissfel and Shine. Sets the bunch id or timing info decoder. Default is swissfel. )V0G0N"
+           << std::endl;
+        return os.str();
+    }
+
+    // check if action and arguments are valid
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (1 && args.size() != 0) {
+            throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 0) {
+        }
+
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
+        if (1 && args.size() != 1) {
+            throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 1) {
+            try {
+                StringTo<defs::timingInfoDecoder>(args[0]);
+            } catch (...) {
+                throw RuntimeError(
+                    "Could not convert argument 0 to defs::timingInfoDecoder");
+            }
+        }
+
+    }
+
+    else {
+
+        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
+                           "are ['GET', 'PUT']");
+    }
+
+    // generate code for each action
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (args.size() == 0) {
+            auto t = det->getTimingInfoDecoder(std::vector<int>{det_id});
+            os << OutString(t) << '\n';
+        }
+    }
+
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (args.size() == 1) {
+            auto arg0 = StringTo<defs::timingInfoDecoder>(args[0]);
+            det->setTimingInfoDecoder(arg0, std::vector<int>{det_id});
             os << args.front() << '\n';
         }
     }

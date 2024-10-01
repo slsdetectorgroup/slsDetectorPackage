@@ -11205,8 +11205,7 @@ int set_collection_mode(int file_des) {
         }
         enum collectionMode retval =
             getElectronCollectionMode() ? ELECTRON : HOLE;
-        validate(&ret, mess, (int)arg, (int)retval, "set collection mode",
-                    DEC);
+        validate(&ret, mess, (int)arg, (int)retval, "set collection mode", DEC);
         LOG(logDEBUG1, ("collection mode retval: %u\n", retval));
     }
 #endif

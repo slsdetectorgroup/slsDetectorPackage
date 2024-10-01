@@ -10,5 +10,5 @@
 #define APIMOENCH    "developer 0x240918"
 #define APIXILINXCTB "developer 0x240918"
 #define APIEIGER     "developer 0x240918"
-#define APIMYTHEN3 "developer 0x241001"
-#define APIJUNGFRAU "developer 0x241001"
+#define APIMYTHEN3   "developer 0x241001"
+#define APIJUNGFRAU  "developer 0x241001"

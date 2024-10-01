@@ -533,6 +533,7 @@ std::vector<defs::speedLevel> Detector::getReadoutSpeedList() const {
     case defs::EIGER:
     case defs::JUNGFRAU:
     case defs::MOENCH:
+    case defs::MYTHEN3:
         return std::vector<defs::speedLevel>{defs::FULL_SPEED, defs::HALF_SPEED,
                                              defs::QUARTER_SPEED};
     case defs::GOTTHARD2:
@@ -1779,6 +1780,14 @@ Detector::getTimingInfoDecoder(Positions pos) const {
 void Detector::setTimingInfoDecoder(defs::timingInfoDecoder value,
                                     Positions pos) {
     pimpl->Parallel(&Module::setTimingInfoDecoder, pos, value);
+}
+
+Result<defs::collectionMode> Detector::getCollectionMode(Positions pos) const {
+    return pimpl->Parallel(&Module::getCollectionMode, pos);
+}
+
+void Detector::setCollectionMode(defs::collectionMode value, Positions pos) {
+    pimpl->Parallel(&Module::setCollectionMode, pos, value);
 }
 
 // Gotthard Specific

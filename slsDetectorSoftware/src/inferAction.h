@@ -44,6 +44,7 @@ class InferAction {
     int clkdiv();
     int clkfreq();
     int clkphase();
+    int collectionmode();
     int column();
     int compdisabletime();
     int confadc();
@@ -380,6 +381,7 @@ class InferAction {
         {"clkdiv", &InferAction::clkdiv},
         {"clkfreq", &InferAction::clkfreq},
         {"clkphase", &InferAction::clkphase},
+        {"collectionmode", &InferAction::collectionmode},
         {"column", &InferAction::column},
         {"compdisabletime", &InferAction::compdisabletime},
         {"confadc", &InferAction::confadc},

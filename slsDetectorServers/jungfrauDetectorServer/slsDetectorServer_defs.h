@@ -37,29 +37,30 @@
 #define CONFIG_FILE         ("config_jungfrau.txt")
 
 /** Default Parameters */
-#define DEFAULT_NUM_FRAMES            (100 * 1000 * 1000)
-#define DEFAULT_STARTING_FRAME_NUMBER (1)
-#define DEFAULT_NUM_CYCLES            (1)
-#define DEFAULT_EXPTIME               (10 * 1000)       // ns
-#define DEFAULT_PERIOD                (2 * 1000 * 1000) // ns
-#define DEFAULT_DELAY                 (0)
-#define DEFAULT_HIGH_VOLTAGE          (0)
-#define DEFAULT_TIMING_MODE           (AUTO_TIMING)
-#define DEFAULT_SETTINGS              (GAIN0)
-#define DEFAULT_GAINMODE              (DYNAMIC)
-#define DEFAULT_TX_UDP_PORT           (0x7e9a)
-#define DEFAULT_TMP_THRSHLD           (65 * 1000) // milli degree Celsius
-#define DEFAULT_NUM_STRG_CLLS         (0)
-#define DEFAULT_STRG_CLL_STRT         (0xf)
-#define DEFAULT_STRG_CLL_STRT_CHIP11  (0x3)
-#define DEFAULT_STRG_CLL_DLY          (0)
-#define DEFAULT_FLIP_ROWS             (0)
-#define DEFAULT_FILTER_RESISTOR       (1) // higher resistor
-#define DEFAULT_FILTER_CELL           (0)
-#define DEFAULT_PEDESTAL_MODE         (0)
-#define DEFAULT_PEDESTAL_FRAMES       (1)
-#define DEFAULT_PEDESTAL_LOOPS        (1)
-#define DEFAULT_TIMING_INFO_DECODER   (SWISSFEL)
+#define DEFAULT_NUM_FRAMES               (100 * 1000 * 1000)
+#define DEFAULT_STARTING_FRAME_NUMBER    (1)
+#define DEFAULT_NUM_CYCLES               (1)
+#define DEFAULT_EXPTIME                  (10 * 1000)       // ns
+#define DEFAULT_PERIOD                   (2 * 1000 * 1000) // ns
+#define DEFAULT_DELAY                    (0)
+#define DEFAULT_HIGH_VOLTAGE             (0)
+#define DEFAULT_TIMING_MODE              (AUTO_TIMING)
+#define DEFAULT_SETTINGS                 (GAIN0)
+#define DEFAULT_GAINMODE                 (DYNAMIC)
+#define DEFAULT_TX_UDP_PORT              (0x7e9a)
+#define DEFAULT_TMP_THRSHLD              (65 * 1000) // milli degree Celsius
+#define DEFAULT_NUM_STRG_CLLS            (0)
+#define DEFAULT_STRG_CLL_STRT            (0xf)
+#define DEFAULT_STRG_CLL_STRT_CHIP11     (0x3)
+#define DEFAULT_STRG_CLL_DLY             (0)
+#define DEFAULT_FLIP_ROWS                (0)
+#define DEFAULT_FILTER_RESISTOR          (1) // higher resistor
+#define DEFAULT_FILTER_CELL              (0)
+#define DEFAULT_PEDESTAL_MODE            (0)
+#define DEFAULT_PEDESTAL_FRAMES          (1)
+#define DEFAULT_PEDESTAL_LOOPS           (1)
+#define DEFAULT_TIMING_INFO_DECODER      (SWISSFEL)
+#define DEFAULT_ELECTRON_COLLECTION_MODE (0)
 
 #define HIGHVOLTAGE_MIN      (60)
 #define HIGHVOLTAGE_MAX      (200)

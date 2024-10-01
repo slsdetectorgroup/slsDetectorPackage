@@ -1218,6 +1218,16 @@ timing_info_decoder:
     PUT:
       function: setTimingInfoDecoder
       input_types: [ defs::timingInfoDecoder ]
+      
+collectionmode:
+  help: "[hole|electron]\n\t[Jungfrau] Sets collection mode to hole or electron. Default is hole."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getCollectionMode
+    PUT:
+      function: setCollectionMode
+      input_types: [ defs::collectionMode ]
 
 interpolation:
   help: "[0, 1]\n\t[Mythen3] Enables or disables interpolation. Default is disabled.  Interpolation mode enables all counters and disables vth3. Disabling sets back counter mask and vth3."
@@ -2904,7 +2914,7 @@ exptime3:
           value: 2
 
 readoutspeed:
-  help: "\n\t[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t[Eiger][Jungfrau][Moench] Readout speed of chip.\n\t[Eiger][Moench] Default speed is full_speed.\n\t[Jungfrau] Default speed is half_speed. full_speed option only available from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] Readout speed of chip in MHz. Default is 108."
+  help: "\n\t[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t[Eiger][Jungfrau][Moench][Mythen3] Readout speed of chip.\n\t[Eiger][Moench] Default speed is full_speed.\n\t[Jungfrau][Mythen3] Default speed is half_speed. \n\t[Jungfrau] full_speed option only available from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] Readout speed of chip in MHz. Default is 108."
   actions:
     GET:
       extra_variables:
@@ -3044,7 +3054,7 @@ dbitphase:
           output: [ 'args[0]',"' '", 'args[1]' ]
 
 clkfreq:
-  help: "[n_clock (0-5)] [freq_in_Hz]\n\t[Gotthard2][Mythen3] Frequency of clock n_clock in Hz. Use clkdiv to set frequency."
+  help: "[n_clock] [freq_in_Hz]\n\t[Gotthard2][Mythen3] Frequency of clock n_clock in Hz. Use clkdiv to set frequency.\n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
   actions:
     GET:
       extra_variables:
@@ -3063,7 +3073,7 @@ clkfreq:
       output: [ OutString(t) ]
 
 clkphase:
-  help: "[n_clock (0-5)] [phase] [deg (optional)]\n\t[Gotthard2][Mythen3] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values."
+  help: "[n_clock] [phase] [deg (optional)]\n\t[Gotthard2][Mythen3] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values.n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
   actions:
     GET:
       extra_variables:
@@ -3118,7 +3128,7 @@ clkphase:
           output: [ 'args[1]', '" "', 'args[2]' ]
 
 maxclkphaseshift:
-  help: "[n_clock (0-5)]\n\t[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock."
+  help: "[n_clock]\n\t[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock.n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
   actions:
     GET:
       extra_variables:
@@ -3137,7 +3147,7 @@ maxclkphaseshift:
       function: getMaxClockPhaseShift
 
 clkdiv:
-  help: "[n_clock (0-5)] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1."
+  help: "[n_clock] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1.n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
   actions:
     GET:
       extra_variables:

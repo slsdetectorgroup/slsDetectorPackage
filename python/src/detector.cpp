@@ -1281,6 +1281,16 @@ void init_det(py::module &m) {
         (void (Detector::*)(defs::timingInfoDecoder, sls::Positions)) &
             Detector::setTimingInfoDecoder,
         py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getCollectionMode",
+        (Result<defs::collectionMode>(Detector::*)(sls::Positions) const) &
+            Detector::getCollectionMode,
+        py::arg() = Positions{});
+    CppDetectorApi.def(
+        "setCollectionMode",
+        (void (Detector::*)(defs::collectionMode, sls::Positions)) &
+            Detector::setCollectionMode,
+        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getROI",
                        (Result<defs::ROI>(Detector::*)(sls::Positions) const) &
                            Detector::getROI,

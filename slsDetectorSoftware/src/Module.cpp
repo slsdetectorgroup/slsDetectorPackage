@@ -1948,6 +1948,14 @@ void Module::setTimingInfoDecoder(const defs::timingInfoDecoder value) {
     sendToDetector(F_SET_TIMING_INFO_DECODER, static_cast<int>(value), nullptr);
 }
 
+defs::collectionMode Module::getCollectionMode() const {
+    return sendToDetector<defs::collectionMode>(F_GET_COLLECTION_MODE);
+}
+
+void Module::setCollectionMode(const defs::collectionMode value) {
+    sendToDetector(F_SET_COLLECTION_MODE, static_cast<int>(value), nullptr);
+}
+
 // Gotthard Specific
 
 slsDetectorDefs::ROI Module::getROI() const {

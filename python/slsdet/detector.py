@@ -1989,23 +1989,59 @@ class Detector(CppDetectorApi):
 
     @property
     def versions(self):
-        version_list = {'type': self.type,
-                'package': self.packageversion, 
-                'client': self.clientversion}
-                
-        if self.type == detectorType.EIGER:
-            version_list ['firmware (Beb)'] = self.firmwareversion
-            version_list ['firmware(Febl)'] = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_LEFT)
-            version_list ['firmware (Febr)'] = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_RIGHT)
+        type = "Unknown"
+        firmware = "Unknown"
+        detectorserver = "Unknown"
+        kernel = "Unknown"
+        hardware = "Unknown"    
+        receiverversion = "Unknown"
+        eiger = False
+        firmware_febl = "Unknown"
+        firmware_febr = "Unknown"
+        firmware_beb = "Unknown"
+        receiver_in_shm = False
+
+        release = self.packageversion
+        client = self.clientversion
+
+        if self.nmod != 0:
+            # shared memory has detectors
+            type = self.type
+            eiger = (self.type == detectorType.EIGER)
+            receiver_in_shm = self.use_receiver
+            if receiver_in_shm:
+                # cannot connect to receiver
+                try:
+                    receiverversion = self.rx_version
+                except Exception as e:
+                    pass
+            # cannot connect to Detector
+            try:
+                firmware = self.firmwareversion
+                detectorserver = self.detectorserverversion
+                kernel = self.kernelversion
+                hardware = self.hardwareversion
+                if eiger:
+                    firmware_beb = self.firmwareversion
+                    firmware_febl = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_LEFT)
+                    firmware_febr = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_RIGHT)
+            except Exception as e:
+                pass
+
+        version_list = {'type': {type},
+                'package': {release}, 
+                'client': {client}}
+        if eiger:
+            version_list ['firmware (Beb)'] = {firmware_beb}
+            version_list ['firmware(Febl)'] = {firmware_febl}
+            version_list ['firmware (Febr)'] = {firmware_febr}
         else:
-            version_list ['firmware'] = self.firmwareversion
-
-        version_list ['detectorserver'] = self.detectorserverversion
-        version_list ['kernel'] = self.kernelversion
-        version_list ['hardware'] = self.hardwareversion
-
-        if self.use_receiver:
-            version_list ['receiver'] = self.rx_version
+            version_list ['firmware'] = {firmware}
+        version_list ['detectorserver'] = {detectorserver}
+        version_list ['kernel'] = kernel
+        version_list ['hardware'] = hardware
+        if receiver_in_shm:
+            version_list ['receiver'] = {receiverversion}
 
         return version_list
 
@@ -2075,7 +2111,7 @@ class Detector(CppDetectorApi):
         
         Note
         -----
-        [Jungfrau][Moench] FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED
+        [Jungfrau][Moench][Mythen3] FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED
         [Eiger] FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED
         [Moench] FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED
         [Gottthard2] G2_108MHZ (Default), G2_144MHZ
@@ -2885,11 +2921,25 @@ class Detector(CppDetectorApi):
     @timing_info_decoder.setter
     def timing_info_decoder(self, value):
         ut.set_using_dict(self.setTimingInfoDecoder, value)
+        
+    @property
+    @element
+    def collectionmode(self):
+        """[Jungfrau] Sets collection mode to HOLE or ELECTRON. Default is HOLE.
+        Enum: collectionMode
+        """
+        return self.getCollectionMode()
+
+    @collectionmode.setter
+    def collectionmode(self, value):
+        ut.set_using_dict(self.setCollectionMode, value)
 
     @property
     def maxclkphaseshift(self):
         """
-        [Gotthard2][Mythen3] Absolute maximum Phase shift of clocks.
+        [Gotthard2][Mythen3] Absolute maximum Phase shift of clocks.\n
+        [Gotthard2] Clock index range: 0-5\n
+        [Mythen3] Clock index range: 0
                
         :setter: Not Implemented
         
@@ -3950,7 +4000,9 @@ class Detector(CppDetectorApi):
     @property
     def clkphase(self):
         """
-        [Gotthard2][Mythen3] Phase shift of all clocks.
+        [Gotthard2][Mythen3] Phase shift of all clocks.\n
+        [Gotthard2] Clock index range: 0-5\n
+        [Mythen3] Clock index range: 0
         
         Example
         -------
@@ -3968,7 +4020,9 @@ class Detector(CppDetectorApi):
     @property
     def clkdiv(self):
         """
-        [Gotthard2][Mythen3] Clock Divider of all clocks. Must be greater than 1.
+        [Gotthard2][Mythen3] Clock Divider of all clocks. Must be greater than 1.\n
+        [Gotthard2] Clock index range: 0-5\n
+        [Mythen3] Clock index range: 0
         
         Example
         -------
@@ -4024,7 +4078,10 @@ class Detector(CppDetectorApi):
     @property
     def clkfreq(self):
         """
-        [Gotthard2][Mythen3] Frequency of clock in Hz. 
+        [Gotthard2][Mythen3] Frequency of clock in Hz.\n
+        [Gotthard2] Clock index range: 0-5\n
+        [Mythen3] Clock index range: 0
+        
         
         :setter: Not implemented. Use clkdiv to set frequency
 

@@ -609,6 +609,8 @@ void getPedestalParameters(uint8_t *frames, uint16_t *loops);
 void setPedestalMode(int enable, uint8_t frames, uint16_t loops);
 int setTimingInfoDecoder(enum timingInfoDecoder val);
 int getTimingInfoDecoder(enum timingInfoDecoder *retval);
+int getElectronCollectionMode();
+void setElectronCollectionMode(int enable);
 #endif
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
@@ -655,7 +657,8 @@ int setClockDivider(enum CLKINDEX ind, int val);
 int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val,
                                         int timeUpdate);
 int getClockDivider(enum CLKINDEX ind);
-
+int setReadoutSpeed(int val);
+int getReadoutSpeed(int *retval);
 #elif GOTTHARD2D
 int checkDetectorType(char *mess);
 int powerChip(int on, char *mess);

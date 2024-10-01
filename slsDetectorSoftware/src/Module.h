@@ -419,6 +419,10 @@ class Module : public virtual slsDetectorDefs {
     void setNumberOfFilterCells(int value);
     defs::pedestalParameters getPedestalMode() const;
     void setPedestalMode(defs::pedestalParameters par);
+    defs::timingInfoDecoder getTimingInfoDecoder() const;
+    void setTimingInfoDecoder(const defs::timingInfoDecoder enable);
+    defs::collectionMode getCollectionMode() const;
+    void setCollectionMode(const defs::collectionMode enable);
 
     /**************************************************
      *                                                *
@@ -589,9 +593,9 @@ class Module : public virtual slsDetectorDefs {
     bool getUpdateMode() const;
     void setUpdateMode(const bool updatemode);
     uint32_t readRegister(uint32_t addr) const;
-    uint32_t writeRegister(uint32_t addr, uint32_t val);
-    void setBit(uint32_t addr, int n);
-    void clearBit(uint32_t addr, int n);
+    void writeRegister(uint32_t addr, uint32_t val, bool validate);
+    void setBit(uint32_t addr, int n, bool validate);
+    void clearBit(uint32_t addr, int n, bool validate);
     int getBit(uint32_t addr, int n);
     void executeFirmwareTest();
     void executeBusTest();

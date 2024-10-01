@@ -19,7 +19,7 @@ using test::PUT;
 
 /* Pattern */
 
-TEST_CASE("Caller::patfname", "[.cmdcall]") {
+TEST_CASE("patfname", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -32,7 +32,7 @@ TEST_CASE("Caller::patfname", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::pattern", "[.cmdcall]") {
+TEST_CASE("pattern", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -45,7 +45,7 @@ TEST_CASE("Caller::pattern", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::savepattern", "[.cmdcall]") {
+TEST_CASE("savepattern", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -63,7 +63,7 @@ TEST_CASE("Caller::savepattern", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::defaultpattern", "[.cmdcall]") {
+TEST_CASE("defaultpattern", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -76,7 +76,7 @@ TEST_CASE("Caller::defaultpattern", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::patioctrl", "[.cmdcall]") {
+TEST_CASE("patioctrl", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -107,7 +107,7 @@ TEST_CASE("Caller::patioctrl", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::patword", "[.cmdcall]") {
+TEST_CASE("patword", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -149,7 +149,7 @@ TEST_CASE("Caller::patword", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::patlimits", "[.cmdcall]") {
+TEST_CASE("patlimits", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -176,7 +176,7 @@ TEST_CASE("Caller::patlimits", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::patloop", "[.cmdcall]") {
+TEST_CASE("patloop", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -225,7 +225,7 @@ TEST_CASE("Caller::patloop", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::patnloop", "[.cmdcall]") {
+TEST_CASE("patnloop", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -271,7 +271,7 @@ TEST_CASE("Caller::patnloop", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::patwait", "[.cmdcall]") {
+TEST_CASE("patwait", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -317,7 +317,7 @@ TEST_CASE("Caller::patwait", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::patwaittime", "[.cmdcall]") {
+TEST_CASE("patwaittime", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -363,7 +363,7 @@ TEST_CASE("Caller::patwaittime", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::patmask", "[.cmdcall]") {
+TEST_CASE("patmask", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -389,7 +389,7 @@ TEST_CASE("Caller::patmask", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::patsetbit", "[.cmdcall]") {
+TEST_CASE("patsetbit", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -415,7 +415,7 @@ TEST_CASE("Caller::patsetbit", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::patternstart", "[.cmdcall]") {
+TEST_CASE("patternstart", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     REQUIRE_THROWS(caller.call("patternstart", {}, -1, GET));

@@ -1940,6 +1940,22 @@ void Module::setPedestalMode(const defs::pedestalParameters par) {
     }
 }
 
+defs::timingInfoDecoder Module::getTimingInfoDecoder() const {
+    return sendToDetector<defs::timingInfoDecoder>(F_GET_TIMING_INFO_DECODER);
+}
+
+void Module::setTimingInfoDecoder(const defs::timingInfoDecoder value) {
+    sendToDetector(F_SET_TIMING_INFO_DECODER, static_cast<int>(value), nullptr);
+}
+
+defs::collectionMode Module::getCollectionMode() const {
+    return sendToDetector<defs::collectionMode>(F_GET_COLLECTION_MODE);
+}
+
+void Module::setCollectionMode(const defs::collectionMode value) {
+    sendToDetector(F_SET_COLLECTION_MODE, static_cast<int>(value), nullptr);
+}
+
 // Gotthard Specific
 
 slsDetectorDefs::ROI Module::getROI() const {
@@ -2812,18 +2828,20 @@ uint32_t Module::readRegister(uint32_t addr) const {
     return sendToDetectorStop<uint32_t>(F_READ_REGISTER, addr);
 }
 
-uint32_t Module::writeRegister(uint32_t addr, uint32_t val) {
-    uint32_t args[]{addr, val};
-    return sendToDetectorStop<uint32_t>(F_WRITE_REGISTER, args);
+void Module::writeRegister(uint32_t addr, uint32_t val, bool validate) {
+    uint32_t args[]{addr, val, static_cast<uint32_t>(validate)};
+    return sendToDetectorStop(F_WRITE_REGISTER, args, nullptr);
 }
 
-void Module::setBit(uint32_t addr, int n) {
-    uint32_t args[2] = {addr, static_cast<uint32_t>(n)};
+void Module::setBit(uint32_t addr, int n, bool validate) {
+    uint32_t args[] = {addr, static_cast<uint32_t>(n),
+                       static_cast<uint32_t>(validate)};
     sendToDetectorStop(F_SET_BIT, args, nullptr);
 }
 
-void Module::clearBit(uint32_t addr, int n) {
-    uint32_t args[2] = {addr, static_cast<uint32_t>(n)};
+void Module::clearBit(uint32_t addr, int n, bool validate) {
+    uint32_t args[] = {addr, static_cast<uint32_t>(n),
+                       static_cast<uint32_t>(validate)};
     sendToDetectorStop(F_CLEAR_BIT, args, nullptr);
 }
 

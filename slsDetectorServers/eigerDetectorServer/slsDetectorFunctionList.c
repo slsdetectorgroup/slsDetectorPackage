@@ -883,12 +883,12 @@ int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
 }
 
 /* advanced read/write reg */
-int writeRegister(uint32_t offset, uint32_t data) {
+int writeRegister(uint32_t offset, uint32_t data, int validate) {
 #ifdef VIRTUAL
     return OK;
 #else
     sharedMemory_lockLocalLink();
-    if (!Feb_Control_WriteRegister(offset, data)) {
+    if (!Feb_Control_WriteRegister(offset, data, validate)) {
         sharedMemory_unlockLocalLink();
         return FAIL;
     }
@@ -911,7 +911,7 @@ int readRegister(uint32_t offset, uint32_t *retval) {
 #endif
 }
 
-int setBit(const uint32_t addr, const int nBit) {
+int setBit(const uint32_t addr, const int nBit, int validate) {
 #ifndef VIRTUAL
     uint32_t regval = 0;
     if (readRegister(addr, &regval) == FAIL) {
@@ -921,7 +921,7 @@ int setBit(const uint32_t addr, const int nBit) {
     uint32_t val = regval | bitmask;
 
     sharedMemory_lockLocalLink();
-    if (!Feb_Control_WriteRegister_BitMask(addr, val, bitmask)) {
+    if (!Feb_Control_WriteRegister_BitMask(addr, val, bitmask, validate)) {
         sharedMemory_unlockLocalLink();
         return FAIL;
     }
@@ -930,7 +930,7 @@ int setBit(const uint32_t addr, const int nBit) {
     return OK;
 }
 
-int clearBit(const uint32_t addr, const int nBit) {
+int clearBit(const uint32_t addr, const int nBit, int validate) {
 #ifndef VIRTUAL
     uint32_t regval = 0;
     if (readRegister(addr, &regval) == FAIL) {
@@ -940,7 +940,7 @@ int clearBit(const uint32_t addr, const int nBit) {
     uint32_t val = regval & ~bitmask;
 
     sharedMemory_lockLocalLink();
-    if (!Feb_Control_WriteRegister_BitMask(addr, val, bitmask)) {
+    if (!Feb_Control_WriteRegister_BitMask(addr, val, bitmask, validate)) {
         sharedMemory_unlockLocalLink();
         return FAIL;
     }

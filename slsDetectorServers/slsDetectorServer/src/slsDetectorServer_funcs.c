@@ -492,6 +492,10 @@ void function_table() {
     flist[F_GET_PEDESTAL_MODE] = &get_pedestal_mode;
     flist[F_SET_PEDESTAL_MODE] = &set_pedestal_mode;
     flist[F_CONFIG_TRANSCEIVER] = &config_transceiver;
+    flist[F_GET_TIMING_INFO_DECODER] = &get_timing_info_decoder;
+    flist[F_SET_TIMING_INFO_DECODER] = &set_timing_info_decoder;
+    flist[F_GET_COLLECTION_MODE] = &get_collection_mode;
+    flist[F_SET_COLLECTION_MODE] = &set_collection_mode;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -1649,40 +1653,35 @@ int get_adc(int file_des) {
 int write_register(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint32_t args[2] = {-1, -1};
-    uint32_t retval = -1;
+    uint32_t args[3] = {-1, -1, -1};
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     uint32_t addr = args[0];
     uint32_t val = args[1];
-    LOG(logDEBUG1, ("Writing to register 0x%x, data 0x%x\n", addr, val));
+    uint32_t validate = args[2];
+    LOG(logDEBUG1, ("Writing to register 0x%x, data 0x%x, validate:%d\n", addr,
+                    val, validate));
 
     // only set
     if (Server_VerifyLock() == OK) {
-#ifdef GOTTHARDD
-        retval = writeRegister16And32(addr, val);
-#elif EIGERD
-        if (writeRegister(addr, val) == FAIL) {
+#if EIGERD
+        if (writeRegister(addr, val, validate) == FAIL) {
             ret = FAIL;
             sprintf(mess, "Could not write to register 0x%x.\n", addr);
             LOG(logERROR, (mess));
-        } else {
-            if (readRegister(addr, &retval) == FAIL) {
-                ret = FAIL;
-                sprintf(
-                    mess,
-                    "Could not read register 0x%x or inconsistent values. Try "
-                    "to read +0x100 for only left and +0x200 for only right.\n",
-                    addr);
-                LOG(logERROR, (mess));
-            }
         }
 #else
-        retval = writeRegister(addr, val);
+#ifdef GOTTHARDD
+        writeRegister16And32(addr, val);
+        uint32_t retval = readRegister16And32(addr);
+#else
+        writeRegister(addr, val);
+        uint32_t retval = readRegister(addr);
 #endif
+        LOG(logDEBUG1, ("Write register retval (0x%x): 0x%x\n", addr, retval));
         // validate
-        if (ret == OK && retval != val) {
+        if (validate && ret == OK && retval != val) {
             ret = FAIL;
             sprintf(
                 mess,
@@ -1690,9 +1689,9 @@ int write_register(int file_des) {
                 addr, val, retval);
             LOG(logERROR, (mess));
         }
-        LOG(logDEBUG1, ("Write register (0x%x): 0x%x\n", retval));
+#endif
     }
-    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int read_register(int file_des) {
@@ -1707,9 +1706,7 @@ int read_register(int file_des) {
     LOG(logDEBUG1, ("Reading from register 0x%x\n", addr));
 
     // get
-#ifdef GOTTHARDD
-    retval = readRegister16And32(addr);
-#elif EIGERD
+#if EIGERD
     if (readRegister(addr, &retval) == FAIL) {
         ret = FAIL;
         sprintf(mess,
@@ -1718,6 +1715,8 @@ int read_register(int file_des) {
                 addr);
         LOG(logERROR, (mess));
     }
+#elif GOTTHARDD
+    retval = readRegister16And32(addr);
 #else
     retval = readRegister(addr);
 #endif
@@ -6018,11 +6017,9 @@ int get_clock_frequency(int file_des) {
     case ADC_CLOCK:
         c = ADC_CLK;
         break;
-#ifdef CHIPTESTBOARDD
     case DBIT_CLOCK:
         c = DBIT_CLK;
         break;
-#endif
     case RUN_CLOCK:
         c = RUN_CLK;
         break;
@@ -6087,7 +6084,11 @@ int set_clock_phase(int file_des) {
 #endif
         default:
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
-            if (ind < NUM_CLOCKS) {
+#ifdef MYTHEN3D
+            if (args[0] < NUM_CLOCKS_TO_SET) {
+#else
+            if (args[0] < NUM_CLOCKS) {
+#endif
                 c = (enum CLKINDEX)ind;
                 break;
             }
@@ -9696,7 +9697,7 @@ int get_readout_speed(int file_des) {
     LOG(logDEBUG1, ("Getting readout speed\n"));
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(EIGERD) &&            \
-    !defined(GOTTHARD2D)
+    !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // get only
@@ -9720,7 +9721,7 @@ int set_readout_speed(int file_des) {
     LOG(logDEBUG1, ("Setting readout speed : %u\n", arg));
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(EIGERD) &&            \
-    !defined(GOTTHARD2D)
+    !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
@@ -9736,7 +9737,8 @@ int set_readout_speed(int file_des) {
 #endif
         if (ret == OK) {
             switch (arg) {
-#if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD) ||               \
+    defined(MYTHEN3D)
             case FULL_SPEED:
             case HALF_SPEED:
             case QUARTER_SPEED:
@@ -10600,13 +10602,15 @@ int get_frontend_firmware_version(int file_des) {
 int set_bit(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint32_t args[2] = {-1, -1};
+    uint32_t args[3] = {-1, -1, -1};
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     uint32_t addr = args[0];
     int nBit = (int)args[1];
-    LOG(logDEBUG1, ("Setting bit %d of reg 0x%x\n", nBit, addr));
+    uint32_t validate = args[2];
+    LOG(logDEBUG1,
+        ("Setting bit %d of reg 0x%x, validate:%d\n", nBit, addr, validate));
 
     // only set
     if (Server_VerifyLock() == OK) {
@@ -10619,20 +10623,23 @@ int set_bit(int file_des) {
             LOG(logERROR, (mess));
         } else {
 #ifdef EIGERD
-            ret = setBit(addr, nBit);
-            if (ret == FAIL) {
+            ret = setBit(addr, nBit, validate);
 #else
             uint32_t bitmask = (1 << nBit);
 #ifdef GOTTHARDD
             uint32_t val = readRegister16And32(addr) | bitmask;
-            uint32_t retval = writeRegister16And32(addr, val);
+            writeRegister16And32(addr, val);
+            uint32_t retval = readRegister16And32(addr) | bitmask;
 #else
             uint32_t val = readRegister(addr) | bitmask;
-            uint32_t retval = writeRegister(addr, val);
+            writeRegister(addr, val);
+            uint32_t retval = readRegister(addr) | bitmask;
 #endif
-            if (!(retval & bitmask)) {
+            if (validate && (!(retval & bitmask))) {
                 ret = FAIL;
+            }
 #endif
+            if (ret == FAIL) {
                 sprintf(mess, "Could not set bit %d.\n", nBit);
                 LOG(logERROR, (mess));
             }
@@ -10644,13 +10651,15 @@ int set_bit(int file_des) {
 int clear_bit(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint32_t args[2] = {-1, -1};
+    uint32_t args[3] = {-1, -1, -1};
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     uint32_t addr = args[0];
     int nBit = (int)args[1];
-    LOG(logDEBUG1, ("Clearing bit %d of reg 0x%x\n", nBit, addr));
+    uint32_t validate = args[2];
+    LOG(logDEBUG1,
+        ("Clearing bit %d of reg 0x%x, validate:%d\n", nBit, addr, validate));
 
     // only set
     if (Server_VerifyLock() == OK) {
@@ -10663,20 +10672,23 @@ int clear_bit(int file_des) {
             LOG(logERROR, (mess));
         } else {
 #ifdef EIGERD
-            ret = clearBit(addr, nBit);
-            if (ret == FAIL) {
+            ret = clearBit(addr, nBit, validate);
 #else
             uint32_t bitmask = (1 << nBit);
 #ifdef GOTTHARDD
             uint32_t val = readRegister16And32(addr) & ~bitmask;
-            uint32_t retval = writeRegister16And32(addr, val);
+            writeRegister16And32(addr, val);
+            uint32_t retval = readRegister16And32(addr) & ~bitmask;
 #else
             uint32_t val = readRegister(addr) & ~bitmask;
-            uint32_t retval = writeRegister(addr, val);
+            writeRegister(addr, val);
+            uint32_t retval = readRegister(addr) & ~bitmask;
 #endif
-            if (retval & bitmask) {
+            if (validate && (retval & bitmask)) {
                 ret = FAIL;
+            }
 #endif
+            if (ret == FAIL) {
                 sprintf(mess, "Could not clear bit %d.\n", nBit);
                 LOG(logERROR, (mess));
             }
@@ -11083,6 +11095,125 @@ int config_transceiver(int file_des) {
         if (ret == FAIL) {
             LOG(logERROR, (mess));
         }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_timing_info_decoder(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum timingInfoDecoder retval = SWISSFEL;
+
+    LOG(logDEBUG1, ("Getting timing info decoder\n"));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // get only
+    ret = getTimingInfoDecoder(&retval);
+    LOG(logDEBUG1, ("retval timing info decoder: %d\n", retval));
+    if (ret == FAIL) {
+        strcpy(mess, "Could not get timing info decoder\n");
+        LOG(logERROR, (mess));
+    }
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_timing_info_decoder(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum timingInfoDecoder arg = SWISSFEL;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting timing info decoder: %u\n", (int)arg));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        switch (arg) {
+        case SWISSFEL:
+        case SHINE:
+            break;
+        default:
+            modeNotImplemented("Timing info decoder index", (int)arg);
+            break;
+        }
+        if (ret == OK) {
+            ret = setTimingInfoDecoder(arg);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set timing info decoder\n");
+                LOG(logERROR, (mess));
+            } else {
+                enum timingInfoDecoder retval = SWISSFEL;
+                ret = getTimingInfoDecoder(&retval);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not get timing info decoder\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    LOG(logDEBUG1,
+                        ("timing info decoder retval: %u\n", retval));
+                    validate(&ret, mess, (int)arg, (int)retval,
+                             "set timing info decoder", DEC);
+                }
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_collection_mode(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum collectionMode retval = HOLE;
+
+    LOG(logDEBUG1, ("Getting collection mode\n"));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // get only
+    retval = getElectronCollectionMode() ? ELECTRON : HOLE;
+    LOG(logDEBUG1, ("collection mode retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_collection_mode(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum collectionMode arg = HOLE;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting collection mode: %u\n", (int)arg));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        switch (arg) {
+        case HOLE:
+            setElectronCollectionMode(0);
+            break;
+        case ELECTRON:
+            setElectronCollectionMode(1);
+            break;
+        default:
+            modeNotImplemented("Collection mode index", (int)arg);
+            break;
+        }
+        enum collectionMode retval =
+            getElectronCollectionMode() ? ELECTRON : HOLE;
+        validate(&ret, mess, (int)arg, (int)retval, "set collection mode",
+                    DEC);
+        LOG(logDEBUG1, ("collection mode retval: %u\n", retval));
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);

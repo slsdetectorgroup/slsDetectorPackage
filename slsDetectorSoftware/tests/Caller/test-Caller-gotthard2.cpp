@@ -106,8 +106,7 @@ TEST_CASE("timegotthard2", "[.cmdcall]") {
 }
 /* dacs */
 
-TEST_CASE("Setting and reading back GOTTHARD2 dacs",
-          "[.cmdcall][.dacs]") {
+TEST_CASE("Setting and reading back GOTTHARD2 dacs", "[.cmdcall][.dacs]") {
     // vref_h_adc,   vb_comp_fe, vb_comp_adc,  vcom_cds,
     // vref_restore, vb_opa_1st, vref_comp_fe, vcom_adc1,
     // vref_prech,   vref_l_adc, vref_cds,     vb_cs,

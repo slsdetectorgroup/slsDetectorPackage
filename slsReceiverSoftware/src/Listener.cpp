@@ -149,13 +149,15 @@ void Listener::CreateUDPSocket(int &actualSize) {
             packetSize = generalData->vetoPacketSize;
         }
 
-        std::string ip = (eth.length() ? InterfaceNameToIp(eth).str().c_str() : "");
+        std::string ip =
+            (eth.length() ? InterfaceNameToIp(eth).str().c_str() : "");
 
         udpSocket = nullptr;
         udpSocket = make_unique<UdpRxSocket>(
             udpPortNumber, packetSize, (ip.length() ? ip.c_str() : nullptr),
             generalData->udpSocketBufferSize);
-        LOG(logINFO) << index << ": UDP port opened at port " << udpPortNumber << " (" << (ip.length() ? ip : "any") << ')';
+        LOG(logINFO) << index << ": UDP port opened at port " << udpPortNumber
+                     << " (" << (ip.length() ? ip : "any") << ')';
 
         udpSocketAlive = true;
 

@@ -1074,8 +1074,7 @@ int getDynamicRange(int *retval) {
 /* parameters - timer */
 
 int setNextFrameNumber(uint64_t value) {
-    LOG(logINFO,
-        ("Setting next frame number: %lu\n", value));
+    LOG(logINFO, ("Setting next frame number: %lu\n", value));
     // decrement by 1 for firmware
     setU64BitReg(value - 1, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
     nextFrameNumber = value;
@@ -1089,7 +1088,8 @@ int getNextFrameNumber(uint64_t *value) {
 #endif
     // no acquisition has occured
     if ((nextFrameNumber - acqStartFrameNumber) == 0) {
-        LOG(logINFORED, ("No acquisition has occured nf:%lld, acqStart:%lld\n", nextFrameNumber, acqStartFrameNumber));
+        LOG(logINFORED, ("No acquisition has occured nf:%lld, acqStart:%lld\n",
+                         nextFrameNumber, acqStartFrameNumber));
         *value = nextFrameNumber;
         return OK;
     }
@@ -1099,8 +1099,8 @@ int getNextFrameNumber(uint64_t *value) {
     int64_t repeatsLeft = getNumTriggersLeft();
     int64_t burstsLeft = getNumBurstsLeft();
     int64_t numFrames = getNumFrames();
-    LOG(logINFORED, ("fl:%lld rl:%lld bl:%lld nf:%ld\n", framesLeft, repeatsLeft,
-                     burstsLeft, numFrames));
+    LOG(logINFORED, ("fl:%lld rl:%lld bl:%lld nf:%ld\n", framesLeft,
+                     repeatsLeft, burstsLeft, numFrames));
 
     // burst mode
     if (burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) {
@@ -1111,14 +1111,14 @@ int getNextFrameNumber(uint64_t *value) {
         if (getTiming() == AUTO_TIMING) {
             repeatsLeft = burstsLeft;
         }
-    } 
-    
+    }
+
     // continuous mdoe
     else {
         // repeats = 1 (no trigger for continuous auto)
         if (getTiming() == AUTO_TIMING) {
             repeatsLeft = 0;
-        } 
+        }
         // frames = 1 (no frames for continuous trigger)
         else {
             framesLeft = 0;
@@ -1126,14 +1126,14 @@ int getNextFrameNumber(uint64_t *value) {
         }
     }
 
-    LOG(logINFORED, ("update fl:%lld rl:%lld bl:%lld nf:%ld\n", framesLeft, repeatsLeft,
-                     burstsLeft, numFrames));
+    LOG(logINFORED, ("update fl:%lld rl:%lld bl:%lld nf:%ld\n", framesLeft,
+                     repeatsLeft, burstsLeft, numFrames));
     *value = nextFrameNumber;
     // if not last frame
     if (framesLeft != 0 || repeatsLeft != 0) {
         if (framesLeft && !repeatsLeft)
-            framesLeft += 2;// why??
-        *value -=  ((numFrames * repeatsLeft) + framesLeft);
+            framesLeft += 2; // why??
+        *value -= ((numFrames * repeatsLeft) + framesLeft);
     }
     LOG(logINFORED, ("get next frame number retval: %lu\n", *value));
     return OK;
@@ -1400,7 +1400,8 @@ int64_t getNumFramesLeft() {
     if ((burstMode == CONTINUOUS_INTERNAL ||
          burstMode == CONTINUOUS_EXTERNAL) &&
         getTiming() == AUTO_TIMING) {
-            LOG(logINFORED, ("getFramesLeft: %lld\n", get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG)));
+        LOG(logINFORED, ("getFramesLeft: %lld\n",
+                         get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG)));
         return (get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG) + 1);
     }
     return -1;
@@ -3431,12 +3432,13 @@ int startStateMachine() {
 
     // start state machine
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_ACQSTN_MSK);
-    
+
     LOG(logINFORED, ("Next frame number: %ld\n", nextFrameNumber));
     acqStartFrameNumber = nextFrameNumber;
 
     // increment the current frame number by (#frames x #triggers)
-    // done because there is no get frame number (decremented at stop with what is left)
+    // done because there is no get frame number (decremented at stop with what
+    // is left)
     {
         int64_t frames = getNumFrames();
         int64_t repeats = getNumTriggers();
@@ -3460,7 +3462,8 @@ int startStateMachine() {
             }
         }
         nextFrameNumber += frames * repeats;
-        LOG(logINFORED, ("If not stopped, nextframenumber: %ld\n", nextFrameNumber));
+        LOG(logINFORED,
+            ("If not stopped, nextframenumber: %ld\n", nextFrameNumber));
     }
 
     LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
@@ -3546,7 +3549,8 @@ void *start_timer(void *arg) {
 
                 // check if manual stop
                 if (sharedMemory_getStop() == 1) {
-                    setNextFrameNumber(frameNr + (repeatNr * numFrames) + iframes + 1);
+                    setNextFrameNumber(frameNr + (repeatNr * numFrames) +
+                                       iframes + 1);
                     break;
                 }
 
@@ -3565,8 +3569,8 @@ void *start_timer(void *arg) {
                         int dataVal =
                             *((uint16_t *)(imageData + i * sizeof(uint16_t)));
                         dataVal += iframes;
-                        int channelVal =
-                            (dataVal & ~GAIN_VAL_MSK) | (gainVal << GAIN_VAL_OFST);
+                        int channelVal = (dataVal & ~GAIN_VAL_MSK) |
+                                         (gainVal << GAIN_VAL_OFST);
                         *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
                             (uint16_t)channelVal;
                     }
@@ -3580,17 +3584,19 @@ void *start_timer(void *arg) {
                 char packetData[packetsize];
                 memset(packetData, 0, packetsize);
                 // set header
-                sls_detector_header *header = (sls_detector_header *)(packetData);
+                sls_detector_header *header =
+                    (sls_detector_header *)(packetData);
                 header->detType = (uint16_t)myDetectorType;
                 header->version = SLS_DETECTOR_HEADER_VERSION;
-                header->frameNumber = frameNr + (repeatNr * numFrames) + iframes;
+                header->frameNumber =
+                    frameNr + (repeatNr * numFrames) + iframes;
                 header->packetNumber = 0;
                 header->modId = virtual_moduleid;
                 header->row = detPos[Y];
                 header->column = detPos[X];
                 // fill data
                 memcpy(packetData + sizeof(sls_detector_header), imageData,
-                    datasize);
+                       datasize);
                 // send 1 packet = 1 frame
                 sendUDPPacket(iRxEntry, 0, packetData, packetsize);
 
@@ -3600,20 +3606,22 @@ void *start_timer(void *arg) {
                 if (i10gbe) {
                     // set header
                     veto_header *header = (veto_header *)(packetData2);
-                    header->frameNumber = frameNr + (repeatNr * numFrames) + iframes;
+                    header->frameNumber =
+                        frameNr + (repeatNr * numFrames) + iframes;
                     header->bunchId = 0;
                     // fill data
                     memcpy(packetData2 + sizeof(veto_header), vetoData,
-                        vetodatasize);
+                           vetodatasize);
                     // send 1 packet = 1 frame
                     sendUDPPacket(iRxEntry, 1, packetData2, vetopacketsize);
                 }
                 LOG(logINFO,
                     ("Sent frame %s: %d (bursts/ triggers: %d) [%lld] to E%d\n",
-                    (i10gbe ? "(+veto)" : ""), frameNr, repeatNr, (frameNr + (repeatNr * numFrames) + iframes), iRxEntry));
+                     (i10gbe ? "(+veto)" : ""), frameNr, repeatNr,
+                     (frameNr + (repeatNr * numFrames) + iframes), iRxEntry));
                 clock_gettime(CLOCK_REALTIME, &end);
                 int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
-                                (end.tv_nsec - begin.tv_nsec));
+                                  (end.tv_nsec - begin.tv_nsec));
 
                 // sleep for (period - exptime)
                 if (iframes < numFrames) { // if there is a next frame
@@ -3629,7 +3637,7 @@ void *start_timer(void *arg) {
 
             clock_gettime(CLOCK_REALTIME, &rend);
             int64_t timeNs = ((rend.tv_sec - rbegin.tv_sec) * 1E9 +
-                            (rend.tv_nsec - rbegin.tv_nsec));
+                              (rend.tv_nsec - rbegin.tv_nsec));
 
             // sleep for (repeatPeriodNs - time remaining)
             if (repeatNr < numRepeats) { // if there is a next repeat
@@ -3639,7 +3647,7 @@ void *start_timer(void *arg) {
             }
         }
         // already being set in the start acquisition (also for real detectors)
-        setNextFrameNumber(frameNr + (numRepeats * numFrames) + 1);  
+        setNextFrameNumber(frameNr + (numRepeats * numFrames) + 1);
     }
 
     closeUDPSocket(0);

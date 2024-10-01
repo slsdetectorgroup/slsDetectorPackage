@@ -664,8 +664,10 @@ class Detector {
     /** [Eiger][Jungfrau][Moench][CTB][Xilinx CTB][Gotthard2] */
     Result<uint64_t> getNextFrameNumber(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau][Moench][CTB][Xilinx CTB][Gotthard2] Stopping acquisition might
-     * result in different frame numbers for different modules. So, after stopping, next frame number (max + 1) is set for all the modules afterwards.*/
+    /** [Eiger][Jungfrau][Moench][CTB][Xilinx CTB][Gotthard2] Stopping
+     * acquisition might result in different frame numbers for different
+     * modules. So, after stopping, next frame number (max + 1) is set for all
+     * the modules afterwards.*/
     void setNextFrameNumber(uint64_t value, Positions pos = {});
 
     /** [Eiger][Mythen3][Jungfrau][Moench] Sends an internal software trigger to

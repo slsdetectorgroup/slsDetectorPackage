@@ -805,7 +805,7 @@ void Implementation::stopReceiver() {
             }
 
             TLogLevel lev = ((mp[i]) > 0) ? logINFORED : logINFOGREEN;
-            LOG(lev) << "Summary of Port " << udpPortNum[i] << summary;
+            LOG(lev) << "Summary of Port " << udpPortNum[i] << " (" << eth[i] << ')' << summary;
         }
 
         // callback

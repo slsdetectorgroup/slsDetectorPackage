@@ -11192,29 +11192,22 @@ int set_collection_mode(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (getChipVersion() == 11) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Cannot set addl. number of storage cells for chip v1.1\n");
-            LOG(logERROR, (mess));
-        } else {
-            switch (arg) {
-            case HOLE:
-                setElectronCollectionMode(0);
-                break;
-            case ELECTRON:
-                setElectronCollectionMode(1);
-                break;
-            default:
-                modeNotImplemented("Collection mode index", (int)arg);
-                break;
-            }
-            enum collectionMode retval =
-                getElectronCollectionMode() ? ELECTRON : HOLE;
-            validate(&ret, mess, (int)arg, (int)retval, "set collection mode",
-                     DEC);
-            LOG(logDEBUG1, ("collection mode retval: %u\n", retval));
+        switch (arg) {
+        case HOLE:
+            setElectronCollectionMode(0);
+            break;
+        case ELECTRON:
+            setElectronCollectionMode(1);
+            break;
+        default:
+            modeNotImplemented("Collection mode index", (int)arg);
+            break;
         }
+        enum collectionMode retval =
+            getElectronCollectionMode() ? ELECTRON : HOLE;
+        validate(&ret, mess, (int)arg, (int)retval, "set collection mode",
+                    DEC);
+        LOG(logDEBUG1, ("collection mode retval: %u\n", retval));
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);

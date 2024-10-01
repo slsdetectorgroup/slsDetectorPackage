@@ -214,7 +214,7 @@
 #define EXT_SYNC_OFST                       (4)
 #define EXT_SYNC_MSK                        (0x00000001 << EXT_SYNC_OFST)
 #define EXT_TIMING_INFO_DECODER_OFST        (12) 
-#define EXT_TIMING_INFO_DECODER_MSK         (0x00000001 << EXT_TIMING_INFO_DECODER_OFST)
+#define EXT_TIMING_INFO_DECODER_MSK         (0x0000000F << EXT_TIMING_INFO_DECODER_OFST)
 
 
 /* Control Register */

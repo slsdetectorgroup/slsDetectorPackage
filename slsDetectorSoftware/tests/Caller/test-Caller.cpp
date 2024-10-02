@@ -2403,7 +2403,7 @@ TEST_CASE("nextframenumber", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
         det_type == defs::MOENCH || det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::XILINX_CHIPTESTBOARD) {
+        det_type == defs::XILINX_CHIPTESTBOARD || det_type == defs::GOTTHARD2) {
         auto prev_sfnum = det.getNextFrameNumber();
         REQUIRE_THROWS(caller.call("nextframenumber", {"0"}, -1, PUT));
         {

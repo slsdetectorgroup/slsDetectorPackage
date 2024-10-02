@@ -4710,7 +4710,8 @@ int set_next_frame_number(int file_des) {
     LOG(logDEBUG1, ("Setting next frame number to %llu\n", arg));
 
 #if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&            \
-    !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -4789,7 +4790,8 @@ int get_next_frame_number(int file_des) {
     LOG(logDEBUG1, ("Getting next frame number \n"));
 
 #if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&            \
-    !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get
@@ -6751,8 +6753,8 @@ int set_burst_mode(int file_des) {
     if (Server_VerifyLock() == OK) {
         switch (arg) {
         case BURST_INTERNAL:
-        case BURST_EXTERNAL:
-        case CONTINUOUS_INTERNAL:
+        // case BURST_EXTERNAL:
+        // case CONTINUOUS_INTERNAL:
         case CONTINUOUS_EXTERNAL:
             break;
         default:

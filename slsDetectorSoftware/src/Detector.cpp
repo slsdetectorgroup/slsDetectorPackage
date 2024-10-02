@@ -911,7 +911,8 @@ void Detector::stopDetector(Positions pos) {
     case defs::JUNGFRAU:
     case defs::MOENCH:
     case defs::CHIPTESTBOARD:
-    case defs::XILINX_CHIPTESTBOARD: {
+    case defs::XILINX_CHIPTESTBOARD:
+    case defs::GOTTHARD2: {
         auto res = getNextFrameNumber(pos);
         if (!res.equal()) {
             uint64_t maxVal = 0;

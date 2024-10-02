@@ -1089,7 +1089,7 @@ int getNextFrameNumber(uint64_t *value) {
     // no acquisition has occured
     if ((nextFrameNumber - acqStartFrameNumber) == 0) {
         LOG(logDEBUG, ("No acquisition has occured nf:%lld, acqStart:%lld\n",
-                         nextFrameNumber, acqStartFrameNumber));
+                       nextFrameNumber, acqStartFrameNumber));
         *value = nextFrameNumber;
         return OK;
     }
@@ -1099,8 +1099,8 @@ int getNextFrameNumber(uint64_t *value) {
     int64_t repeatsLeft = getNumTriggersLeft();
     int64_t burstsLeft = getNumBurstsLeft();
     int64_t numFrames = getNumFrames();
-    LOG(logDEBUG, ("fl:%lld rl:%lld bl:%lld nf:%ld\n", framesLeft,
-                     repeatsLeft, burstsLeft, numFrames));
+    LOG(logDEBUG, ("fl:%lld rl:%lld bl:%lld nf:%ld\n", framesLeft, repeatsLeft,
+                   burstsLeft, numFrames));
 
     // burst mode
     if (burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) {
@@ -1127,7 +1127,7 @@ int getNextFrameNumber(uint64_t *value) {
     }
 
     LOG(logDEBUG, ("update fl:%lld rl:%lld bl:%lld nf:%ld\n", framesLeft,
-                     repeatsLeft, burstsLeft, numFrames));
+                   repeatsLeft, burstsLeft, numFrames));
     *value = nextFrameNumber;
     // if not last frame
     if (framesLeft != 0 || repeatsLeft != 0) {
@@ -1401,7 +1401,7 @@ int64_t getNumFramesLeft() {
          burstMode == CONTINUOUS_EXTERNAL) &&
         getTiming() == AUTO_TIMING) {
         LOG(logDEBUG, ("getFramesLeft: %lld\n",
-                         get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG)));
+                       get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG)));
         return (get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG) + 1);
     }
     return -1;

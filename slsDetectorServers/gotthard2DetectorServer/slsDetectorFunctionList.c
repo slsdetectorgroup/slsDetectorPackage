@@ -1088,7 +1088,7 @@ int getNextFrameNumber(uint64_t *value) {
 #endif
     // no acquisition has occured
     if ((nextFrameNumber - acqStartFrameNumber) == 0) {
-        LOG(logINFORED, ("No acquisition has occured nf:%lld, acqStart:%lld\n",
+        LOG(logDEBUG, ("No acquisition has occured nf:%lld, acqStart:%lld\n",
                          nextFrameNumber, acqStartFrameNumber));
         *value = nextFrameNumber;
         return OK;
@@ -1099,7 +1099,7 @@ int getNextFrameNumber(uint64_t *value) {
     int64_t repeatsLeft = getNumTriggersLeft();
     int64_t burstsLeft = getNumBurstsLeft();
     int64_t numFrames = getNumFrames();
-    LOG(logINFORED, ("fl:%lld rl:%lld bl:%lld nf:%ld\n", framesLeft,
+    LOG(logDEBUG, ("fl:%lld rl:%lld bl:%lld nf:%ld\n", framesLeft,
                      repeatsLeft, burstsLeft, numFrames));
 
     // burst mode
@@ -1126,7 +1126,7 @@ int getNextFrameNumber(uint64_t *value) {
         }
     }
 
-    LOG(logINFORED, ("update fl:%lld rl:%lld bl:%lld nf:%ld\n", framesLeft,
+    LOG(logDEBUG, ("update fl:%lld rl:%lld bl:%lld nf:%ld\n", framesLeft,
                      repeatsLeft, burstsLeft, numFrames));
     *value = nextFrameNumber;
     // if not last frame
@@ -1135,7 +1135,7 @@ int getNextFrameNumber(uint64_t *value) {
             framesLeft += 2; // why??
         *value -= ((numFrames * repeatsLeft) + framesLeft);
     }
-    LOG(logINFORED, ("get next frame number retval: %lu\n", *value));
+    LOG(logDEBUG, ("get next frame number retval: %lu\n", *value));
     return OK;
 }
 
@@ -1400,7 +1400,7 @@ int64_t getNumFramesLeft() {
     if ((burstMode == CONTINUOUS_INTERNAL ||
          burstMode == CONTINUOUS_EXTERNAL) &&
         getTiming() == AUTO_TIMING) {
-        LOG(logINFORED, ("getFramesLeft: %lld\n",
+        LOG(logDEBUG, ("getFramesLeft: %lld\n",
                          get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG)));
         return (get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG) + 1);
     }
@@ -3433,7 +3433,7 @@ int startStateMachine() {
     // start state machine
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_ACQSTN_MSK);
 
-    LOG(logINFORED, ("Next frame number: %ld\n", nextFrameNumber));
+    LOG(logDEBUG, ("Next frame number: %ld\n", nextFrameNumber));
     acqStartFrameNumber = nextFrameNumber;
 
     // increment the current frame number by (#frames x #triggers)
@@ -3462,7 +3462,7 @@ int startStateMachine() {
             }
         }
         nextFrameNumber += frames * repeats;
-        LOG(logINFORED,
+        LOG(logDEBUG,
             ("If not stopped, nextframenumber: %ld\n", nextFrameNumber));
     }
 
@@ -3525,7 +3525,7 @@ void *start_timer(void *arg) {
 
         *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
             (uint16_t)channelVal;
-        // LOG(logINFORED, ("[%d]:0x%08x\n", i, channelVal));
+        LOG(logDEBUG, ("[%d]:0x%08x\n", i, channelVal));
     }
     char vetoData[vetodatasize];
     memset(vetoData, 0, sizeof(vetodatasize));

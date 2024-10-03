@@ -7373,7 +7373,7 @@ std::string Caller::nextframenumber(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: nextframenumber" << std::endl;
         os << R"V0G0N([n_value]
-	[Eiger][Jungfrau][Moench][Ctb][Xilinx Ctb] Next frame number. Stopping acquisition might result in different frame numbers for different modules. )V0G0N"
+	[Eiger][Jungfrau][Moench][Ctb][Xilinx Ctb][Gotthard2] Next frame number. Stopping acquisition might result in different frame numbers for different modules. So, after stopping, next frame number (max + 1) is set for all the modules afterwards. )V0G0N"
            << std::endl;
         return os.str();
     }

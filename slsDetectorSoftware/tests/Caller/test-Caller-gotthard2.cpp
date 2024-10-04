@@ -86,7 +86,7 @@ TEST_CASE("timegotthard2", "[.cmdcall]") {
             det.setPeriod(prev_val[i], {i});
         }
         // period in continuous mode
-        det.setBurstMode(defs::CONTINUOUS_INTERNAL, {});
+        det.setBurstMode(defs::CONTINUOUS_EXTERNAL, {});
         prev_val = det.getPeriod();
         {
             std::ostringstream oss;
@@ -338,7 +338,7 @@ TEST_CASE("bursts", "[.cmdcall]") {
         }
         // continuous mode: reg set to #frames,
         // but bursts should return same value
-        det.setBurstMode(defs::CONTINUOUS_INTERNAL);
+        det.setBurstMode(defs::CONTINUOUS_EXTERNAL);
         det.setNumberOfFrames(2);
         {
             std::ostringstream oss;
@@ -494,13 +494,13 @@ TEST_CASE("burstmode", "[.cmdcall]") {
         }
         {
             std::ostringstream oss;
-            caller.call("burstmode", {"cw_internal"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "burstmode cw_internal\n");
+            caller.call("burstmode", {"cw_external"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "burstmode cw_external\n");
         }
         {
             std::ostringstream oss;
             caller.call("burstmode", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "burstmode cw_internal\n");
+            REQUIRE(oss.str() == "burstmode cw_external\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setBurstMode(burst[i], {i});

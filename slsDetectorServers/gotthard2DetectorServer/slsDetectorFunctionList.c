@@ -3467,7 +3467,7 @@ void *start_timer(void *arg) {
                 // check if manual stop
                 if (sharedMemory_getStop() == 1) {
                     setNextFrameNumber(frameNr + (repeatNr * numFrames) +
-                                       iframes + 1);
+                                       iframes);
                     break;
                 }
 
@@ -3564,7 +3564,7 @@ void *start_timer(void *arg) {
             }
         }
         // already being set in the start acquisition (also for real detectors)
-        setNextFrameNumber(frameNr + (numRepeats * numFrames) + 1);
+        setNextFrameNumber(frameNr + (numRepeats * numFrames));
     }
 
     closeUDPSocket(0);

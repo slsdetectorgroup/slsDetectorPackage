@@ -11,4 +11,4 @@
 #define APIEIGER     "developer 0x240918"
 #define APIMYTHEN3   "developer 0x241001"
 #define APIJUNGFRAU  "developer 0x241001"
-#define APIGOTTHARD2 "developer 0x241002"
+#define APIGOTTHARD2 "developer 0x241004"

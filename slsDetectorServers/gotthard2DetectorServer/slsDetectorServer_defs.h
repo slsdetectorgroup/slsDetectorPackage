@@ -3,7 +3,7 @@
 #pragma once
 #include "sls/sls_detector_defs.h"
 
-#define REQRD_FRMWRE_VRSN (0x221123)
+#define REQRD_FRMWRE_VRSN (0x241003)
 #define KERNEL_DATE_VRSN  "Mon May 10 18:00:21 CEST 2021"
 #define ID_FILE           "detid_gotthard2.txt"
 
@@ -14,7 +14,11 @@
 
 #define LINKED_SERVER_NAME "gotthard2DetectorServer"
 
+#ifdef VIRTUAL
+#define CTRL_SRVR_INIT_TIME_US (3 * 1000 * 1000)
+#else
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
+#endif
 
 /* Hardware Definitions */
 #define NCHAN                       (128)
@@ -57,6 +61,7 @@
 #define DEFAULT_BURST_MODE          (BURST_INTERNAL)
 #define DEFAULT_FILTER_RESISTOR     (0)
 #define DEFAILT_CDS_GAIN            (0)
+#define DEFAULT_FRAME_NUMBER        (1)
 #define DEFAULT_NUM_FRAMES          (1)
 #define DEFAULT_NUM_CYCLES          (1)
 #define DEFAULT_NUM_BURSTS          (1)

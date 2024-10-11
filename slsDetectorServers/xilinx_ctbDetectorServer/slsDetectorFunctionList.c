@@ -387,15 +387,15 @@ void setupDetector() {
     initializePatternWord();
 #endif
     // initialization only at start up (restart fpga)
-    //    initError = waitTransceiverReset(initErrorMessage);
-    //    if (initError == FAIL) {
-    //        return;
-    //    }
-    //    // power off chip
+    initError = waitTransceiverReset(initErrorMessage);
+    if (initError == FAIL) {
+        return;
+    }
+    // power off chip
     initError = powerChip(0, initErrorMessage);
-    //    if (initError == FAIL) {
-    //        return;
-    //    }
+    if (initError == FAIL) {
+        return;
+    }
 
     LTC2620_D_SetDefines(DAC_MIN_MV, DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC,
                          NPWR, DAC_POWERDOWN_DRIVER_FILE_NAME);
@@ -469,11 +469,6 @@ int waitTransceiverReset(char *mess) {
             sprintf(mess, "Resetting transceiver timed out, time:%.2fs\n",
                     (timeNs / (1E9)));
             LOG(logERROR, (mess));
-
-            LOG(logINFORED, ("Waiting for Firmware to be fixed here. Skipping "
-                             "this error for now.\n"));
-            return OK;
-
             return FAIL;
         }
         usleep(0);
@@ -557,9 +552,6 @@ int powerChip(int on, char *mess) {
         if (configureChip(mess) == FAIL)
             return FAIL;
 
-        startPeriphery();
-
-        chipConfigured = 1;
     } else {
         LOG(logINFOBLUE, ("Powering chip: off\n"));
         bus_w(addr, bus_r(addr) & ~mask);
@@ -573,6 +565,12 @@ int powerChip(int on, char *mess) {
         if (isTransceiverAligned()) {
             sprintf(mess, "Transceiver alignment not reset\n");
             LOG(logERROR, (mess));
+
+            // to be removed when fixed later
+            LOG(logWARNING,
+                ("Bypassing this error for now. To be fixed later...\n"));
+            return OK;
+
             return FAIL;
         }
         LOG(logINFO, ("\tTransceiver alignment has been reset\n"));
@@ -598,8 +596,8 @@ int configureChip(char *mess) {
 
     // start configuration
     uint32_t addr = MATTERHORNSPICTRL;
-    bus_w(addr, bus_r(addr) | CONFIGSTART_MSK);
-    bus_w(addr, bus_r(addr) & ~CONFIGSTART_MSK);
+    bus_w(addr, bus_r(addr) | CONFIGSTART_P_MSK);
+    bus_w(addr, bus_r(addr) & ~CONFIGSTART_P_MSK);
 
     // wait until configuration is done
 #ifndef VIRTUAL
@@ -615,14 +613,9 @@ int configureChip(char *mess) {
         configDone = (bus_r(MATTERHORNSPICTRL) & BUSY_MSK);
     }
 #endif
+    chipConfigured = 1;
     LOG(logINFOBLUE, ("\tChip configured\n"));
     return OK;
-}
-
-void startPeriphery() {
-    LOG(logINFOBLUE, ("\tStarting periphery\n"));
-    bus_w(MATTERHORNSPICTRL, bus_r(MATTERHORNSPICTRL) | START_P_MSK);
-    // TODO ?
 }
 
 /* set parameters -  dr */
@@ -1223,14 +1216,21 @@ void calcChecksum(udp_header *udp) {
 
     // ignore ethertype (from udp header)
     addr++;
+    // ignore udp_srcmac_lsb (from udp header)
+    addr++;
+    addr++;
 
-    // from identification to srcip_lsb
+    // from ip_protocol to ip_checksum
     while (count > 2) {
         sum += *addr++;
         count -= 2;
     }
 
-    // ignore src udp port (from udp header)
+    // ignore udp_checksum (from udp header)
+    addr++;
+    // ignore udp_destport (from udp header)
+    addr++;
+    // ignore udp_srcport (from udp header)
     addr++;
 
     if (count > 0)
@@ -1240,6 +1240,7 @@ void calcChecksum(udp_header *udp) {
     long int checksum = sum & 0xffff;
     checksum += UDP_IP_HEADER_LENGTH_BYTES;
     udp->ip_checksum = checksum;
+    LOG(logINFO, ("\tIP checksum: 0x%x\n", checksum));
 }
 
 int configureMAC() {
@@ -1334,7 +1335,7 @@ int startStateMachine() {
 #endif
 
     LOG(logINFOBLUE, ("Starting State Machine\n"));
-    cleanFifos();
+    // cleanFifos(); removing this for now as its done before readout pattern
 
     // start state machine
     bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
@@ -1356,6 +1357,7 @@ int startStateMachine() {
         usleep(0);
         commaDet = (bus_r(TRANSCEIVERSTATUS) & RXCOMMADET_MSK);
     }
+    LOG(logINFORED, ("Kwords or end of acquisition detected\n"));
 
     return OK;
 }
@@ -1516,6 +1518,7 @@ int startReadOut() {
         usleep(0);
         streamingBusy = (bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK);
     }
+    LOG(logINFORED, ("Streaming done\n"));
 
     return OK;
 }

@@ -25,7 +25,9 @@
 #include <chrono>
 #include <cstdint>
 #include <cstring>
+#include <map>
 #include <string>
+#include <vector>
 #else
 // C includes
 #include <stdint.h>
@@ -114,6 +116,20 @@ class slsDetectorDefs {
     };
 
     /**
+        dimension indexes
+    */
+    enum dimension { X, Y };
+
+#ifdef __cplusplus
+    struct xy {
+        int x{0};
+        int y{0};
+        xy() = default;
+        xy(int x, int y) : x(x), y(y){};
+    } __attribute__((packed));
+#endif
+
+    /**
         @short  structure for a Detector Packet or Image Header
         Details at https://slsdetectorgroup.github.io/devdoc/udpheader.html
         @li frameNumber is the frame number
@@ -160,6 +176,36 @@ class slsDetectorDefs {
         sls_detector_header detHeader; /**< is the detector header */
         sls_bitset packetsMask;        /**< is the packets caught bit mask */
     };
+
+    struct startCallbackHeader {
+        std::vector<uint32_t> udpPort;
+        uint32_t dynamicRange;
+        xy detectorShape;
+        size_t imageSize;
+        std::string filePath;
+        std::string fileName;
+        uint64_t fileIndex;
+        bool quad;
+        std::map<std::string, std::string> addJsonHeader;
+    };
+
+    struct endCallbackHeader {
+        std::vector<uint32_t> udpPort;
+        std::vector<uint64_t> completeFrames;
+        std::vector<uint64_t> lastFrameIndex;
+    };
+
+    struct dataCallbackHeader {
+        uint32_t udpPort;
+        xy shape;
+        uint64_t acqIndex;
+        uint64_t frameIndex;
+        double progress;
+        bool completeImage;
+        bool flipRows;
+        std::map<std::string, std::string> addJsonHeader;
+    };
+
 #endif
     enum frameDiscardPolicy {
         NO_DISCARD,
@@ -223,20 +269,6 @@ typedef struct {
         HELP_ACTION,
         READOUT_ZMQ_ACTION
     };
-
-    /**
-        dimension indexes
-    */
-    enum dimension { X, Y };
-
-#ifdef __cplusplus
-    struct xy {
-        int x{0};
-        int y{0};
-        xy() = default;
-        xy(int x, int y) : x(x), y(y){};
-    } __attribute__((packed));
-#endif
 
     /**
       use of the external signals
@@ -487,6 +519,8 @@ enum streamingInterface {
     };
 
     enum polarity { POSITIVE, NEGATIVE };
+    enum timingInfoDecoder { SWISSFEL, SHINE };
+    enum collectionMode { HOLE, ELECTRON };
 
 #ifdef __cplusplus
 

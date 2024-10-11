@@ -533,6 +533,7 @@ std::vector<defs::speedLevel> Detector::getReadoutSpeedList() const {
     case defs::EIGER:
     case defs::JUNGFRAU:
     case defs::MOENCH:
+    case defs::MYTHEN3:
         return std::vector<defs::speedLevel>{defs::FULL_SPEED, defs::HALF_SPEED,
                                              defs::QUARTER_SPEED};
     case defs::GOTTHARD2:
@@ -910,7 +911,8 @@ void Detector::stopDetector(Positions pos) {
     case defs::JUNGFRAU:
     case defs::MOENCH:
     case defs::CHIPTESTBOARD:
-    case defs::XILINX_CHIPTESTBOARD: {
+    case defs::XILINX_CHIPTESTBOARD:
+    case defs::GOTTHARD2: {
         auto res = getNextFrameNumber(pos);
         if (!res.equal()) {
             uint64_t maxVal = 0;
@@ -1483,19 +1485,6 @@ void Detector::setRxZmqPort(uint16_t port, int module_id) {
     }
 }
 
-Result<IpAddr> Detector::getRxZmqIP(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverStreamingIP, pos);
-}
-
-void Detector::setRxZmqIP(const IpAddr ip, Positions pos) {
-    bool previouslyReceiverStreaming = getRxZmqDataStream(pos).squash(false);
-    pimpl->Parallel(&Module::setReceiverStreamingIP, pos, ip);
-    if (previouslyReceiverStreaming) {
-        setRxZmqDataStream(false, pos);
-        setRxZmqDataStream(true, pos);
-    }
-}
-
 Result<uint16_t> Detector::getClientZmqPort(Positions pos) const {
     return pimpl->Parallel(&Module::getClientStreamingPort, pos);
 }
@@ -1782,6 +1771,24 @@ Detector::getPedestalMode(Positions pos) const {
 void Detector::setPedestalMode(const defs::pedestalParameters par,
                                Positions pos) {
     pimpl->Parallel(&Module::setPedestalMode, pos, par);
+}
+
+Result<defs::timingInfoDecoder>
+Detector::getTimingInfoDecoder(Positions pos) const {
+    return pimpl->Parallel(&Module::getTimingInfoDecoder, pos);
+}
+
+void Detector::setTimingInfoDecoder(defs::timingInfoDecoder value,
+                                    Positions pos) {
+    pimpl->Parallel(&Module::setTimingInfoDecoder, pos, value);
+}
+
+Result<defs::collectionMode> Detector::getCollectionMode(Positions pos) const {
+    return pimpl->Parallel(&Module::getCollectionMode, pos);
+}
+
+void Detector::setCollectionMode(defs::collectionMode value, Positions pos) {
+    pimpl->Parallel(&Module::setCollectionMode, pos, value);
 }
 
 // Gotthard Specific
@@ -2686,16 +2693,18 @@ Result<uint32_t> Detector::readRegister(uint32_t addr, Positions pos) const {
     return pimpl->Parallel(&Module::readRegister, pos, addr);
 }
 
-void Detector::writeRegister(uint32_t addr, uint32_t val, Positions pos) {
-    pimpl->Parallel(&Module::writeRegister, pos, addr, val);
+void Detector::writeRegister(uint32_t addr, uint32_t val, bool validate,
+                             Positions pos) {
+    pimpl->Parallel(&Module::writeRegister, pos, addr, val, validate);
 }
 
-void Detector::setBit(uint32_t addr, int bitnr, Positions pos) {
-    pimpl->Parallel(&Module::setBit, pos, addr, bitnr);
+void Detector::setBit(uint32_t addr, int bitnr, bool validate, Positions pos) {
+    pimpl->Parallel(&Module::setBit, pos, addr, bitnr, validate);
 }
 
-void Detector::clearBit(uint32_t addr, int bitnr, Positions pos) {
-    pimpl->Parallel(&Module::clearBit, pos, addr, bitnr);
+void Detector::clearBit(uint32_t addr, int bitnr, bool validate,
+                        Positions pos) {
+    pimpl->Parallel(&Module::clearBit, pos, addr, bitnr, validate);
 }
 
 Result<int> Detector::getBit(uint32_t addr, int bitnr, Positions pos) {

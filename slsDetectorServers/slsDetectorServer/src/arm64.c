@@ -50,6 +50,7 @@ u_int32_t writeRegister(u_int32_t offset, u_int32_t data) {
 }
 
 int mapCSP0(void) {
+    LOG(logINFO, ("Mapping memory\n"));
     u_int32_t csps[2] = {CSP0, CSP1};
     u_int32_t **cspbases[2] = {&csp0base, &csp1base};
     u_int32_t memsize[2] = {MEM_SIZE_CSP0, MEM_SIZE_CSP1};
@@ -58,7 +59,7 @@ int mapCSP0(void) {
     for (int i = 0; i < 2; ++i) {
         // if not mapped
         if (*cspbases[i] == 0) {
-            LOG(logINFO, ("Mapping memory for %s\n", names[i]));
+            LOG(logINFO, ("\tMapping memory for %s\n", names[i]));
 #ifdef VIRTUAL
             *cspbases[i] = malloc(memsize[i]);
             if (*cspbases[i] == NULL) {
@@ -67,7 +68,7 @@ int mapCSP0(void) {
                      memsize[i], names[i]));
                 return FAIL;
             }
-            LOG(logINFO, ("memory allocated for %s\n", names[i]));
+            LOG(logINFO, ("\tmemory allocated for %s\n", names[i]));
 #else
             int fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
             if (fd == -1) {
@@ -75,7 +76,7 @@ int mapCSP0(void) {
                 return FAIL;
             }
             LOG(logDEBUG1,
-                ("/dev/mem opened for %s, (CSP:0x%x)\n", names[i], csps[i]));
+                ("\t/dev/mem opened for %s, (CSP:0x%x)\n", names[i], csps[i]));
             *cspbases[i] =
                 (u_int32_t *)mmap(0, memsize[i], PROT_READ | PROT_WRITE,
                                   MAP_FILE | MAP_SHARED, fd, csps[i]);
@@ -85,11 +86,11 @@ int mapCSP0(void) {
             }
 #endif
             LOG(logINFO,
-                ("%s mapped of size %d from %p to %p,(CSP:0x%x) \n", names[i],
+                ("\t%s mapped of size %d from %p to %p,(CSP:0x%x) \n", names[i],
                  memsize[i], *cspbases[i], *cspbases[i] + memsize[i], csps[i]));
             // LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
         } else
-            LOG(logINFO, ("Memory %s already mapped before\n", names[i]));
+            LOG(logINFO, ("\tMemory %s already mapped before\n", names[i]));
     }
     return OK;
 }

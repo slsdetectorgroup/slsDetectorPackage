@@ -54,29 +54,22 @@ std::string ClientInterface::getReceiverVersion() { return APIRECEIVER; }
 
 /***callback functions***/
 void ClientInterface::registerCallBackStartAcquisition(
-    int (*func)(const std::string &, const std::string &, uint64_t, size_t,
-                void *),
-    void *arg) {
+    int (*func)(const startCallbackHeader, void *), void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
 }
 
-void ClientInterface::registerCallBackAcquisitionFinished(void (*func)(uint64_t,
-                                                                       void *),
-                                                          void *arg) {
+void ClientInterface::registerCallBackAcquisitionFinished(
+    void (*func)(const endCallbackHeader, void *), void *arg) {
     acquisitionFinishedCallBack = func;
     pAcquisitionFinished = arg;
 }
 
 void ClientInterface::registerCallBackRawDataReady(
-    void (*func)(sls_receiver_header &, char *, size_t, void *), void *arg) {
+    void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t &,
+                 void *),
+    void *arg) {
     rawDataReadyCallBack = func;
-    pRawDataReady = arg;
-}
-
-void ClientInterface::registerCallBackRawDataModifyReady(
-    void (*func)(sls_receiver_header &, char *, size_t &, void *), void *arg) {
-    rawDataModifyReadyCallBack = func;
     pRawDataReady = arg;
 }
 
@@ -168,8 +161,6 @@ int ClientInterface::functionTable(){
 	flist[F_GET_RECEIVER_FILE_FORMAT]		= 	&ClientInterface::get_file_format;
 	flist[F_SET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::set_streaming_port;
 	flist[F_GET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::get_streaming_port;
-	flist[F_SET_RECEIVER_STREAMING_SRC_IP]	= 	&ClientInterface::set_streaming_source_ip;
-	flist[F_GET_RECEIVER_STREAMING_SRC_IP]	= 	&ClientInterface::get_streaming_source_ip;
 	flist[F_SET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::set_silent_mode;
 	flist[F_GET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::get_silent_mode;
 	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&ClientInterface::restream_stop;
@@ -479,9 +470,6 @@ void ClientInterface::setDetectorType(detectorType arg) {
     if (rawDataReadyCallBack != nullptr)
         impl()->registerCallBackRawDataReady(rawDataReadyCallBack,
                                              pRawDataReady);
-    if (rawDataModifyReadyCallBack != nullptr)
-        impl()->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,
-                                                   pRawDataReady);
 
     impl()->setThreadIds(parentThreadId, tcpThreadId);
 }
@@ -1081,21 +1069,6 @@ int ClientInterface::set_streaming_port(Interface &socket) {
 int ClientInterface::get_streaming_port(Interface &socket) {
     uint16_t retval = impl()->getStreamingPort();
     LOG(logDEBUG1) << "streaming port:" << retval;
-    return socket.sendResult(retval);
-}
-
-int ClientInterface::set_streaming_source_ip(Interface &socket) {
-    auto ip = socket.Receive<IpAddr>();
-    if (ip == 0)
-        throw RuntimeError("Invalid zmq ip " + ip.str());
-    verifyIdle(socket);
-    impl()->setStreamingSourceIP(ip);
-    return socket.Send(OK);
-}
-
-int ClientInterface::get_streaming_source_ip(Interface &socket) {
-    IpAddr retval = impl()->getStreamingSourceIP();
-    LOG(logDEBUG1) << "streaming IP:" << retval;
     return socket.sendResult(retval);
 }
 

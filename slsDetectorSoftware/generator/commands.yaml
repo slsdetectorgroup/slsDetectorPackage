@@ -556,7 +556,7 @@ settingspath:
       arg_types: [ special::path ]
 
 fpath:
-  help: "[path]\n\tDirectory where output data files are written in receiver. Default is '/'. \n\tIf path does not exist, it will try to create it."
+  help: "[path]\n\tDirectory where output data files are written in receiver. Default is '/'. \n\tIf path does not exist and fwrite enabled, it will try to create it at start of acquisition."
   inherit_actions: STRING_COMMAND
   actions:
     GET:
@@ -764,7 +764,7 @@ readnrows:
       function: setReadNRows
 
 nextframenumber:
-  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Ctb][Xilinx Ctb] Next frame number. Stopping acquisition might result in different frame numbers for different modules."
+  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Ctb][Xilinx Ctb][Gotthard2] Next frame number. Stopping acquisition might result in different frame numbers for different modules. So, after stopping, next frame number (max + 1) is set for all the modules afterwards."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -985,7 +985,7 @@ findex:
       input_types: [ uint64_t ]
 
 fwrite:
-  help: "[0, 1]\n\tEnable or disable receiver file write. Default is 1."
+  help: "[0, 1]\n\tEnable or disable receiver file write. Default is 0."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1040,18 +1040,6 @@ rx_zmqstartfnum:
       function: getRxZmqStartingFrame
     PUT:
       function: setRxZmqStartingFrame
-
-rx_zmqip:
-  help: "[x.x.x.x]\n\tZmq Ip Address from which data is to be streamed out of the receiver. Also restarts receiver zmq streaming if enabled. Default is from rx_hostname. Modified only when using an intermediate process between receiver."
-  inherit_actions: INTEGER_COMMAND_VEC_ID
-  actions:
-    GET:
-      function: getRxZmqIP
-    PUT:
-      function: setRxZmqIP
-      input_types: [ IpAddr ]
-      input: [ 'IpAddr(args[0])' ]
-      cast_input: [ false ]
 
 zmqip:
   help: "[x.x.x.x]\n\tIp Address to listen to zmq data streamed out from receiver or intermediate process. Default connects to receiver zmq Ip Address (from rx_hostname). Modified only when using an intermediate process between receiver and client(gui). Also restarts client zmq streaming if enabled."
@@ -1154,7 +1142,7 @@ storagecell_start:
       function: setStorageCellStart
 
 gainmode:
-  help: "[dynamicgain|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t[Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, you can damage the detector!!!"
+  help: "[dynamic|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t[Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, you can damage the detector!!!"
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1220,6 +1208,26 @@ polarity:
     PUT:
       function: setPolarity
       input_types: [ defs::polarity ]
+
+timing_info_decoder:
+  help: "[swissfel|shine]\n\t[Jungfrau] Advanced Command and only for Swissfel and Shine. Sets the bunch id or timing info decoder. Default is swissfel."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getTimingInfoDecoder
+    PUT:
+      function: setTimingInfoDecoder
+      input_types: [ defs::timingInfoDecoder ]
+      
+collectionmode:
+  help: "[hole|electron]\n\t[Jungfrau] Sets collection mode to hole or electron. Default is hole."
+  inherit_actions: INTEGER_COMMAND_VEC_ID
+  actions:
+    GET:
+      function: getCollectionMode
+    PUT:
+      function: setCollectionMode
+      input_types: [ defs::collectionMode ]
 
 interpolation:
   help: "[0, 1]\n\t[Mythen3] Enables or disables interpolation. Default is disabled.  Interpolation mode enables all counters and disables vth3. Disabling sets back counter mask and vth3."
@@ -2578,6 +2586,14 @@ rx_hostname:
         PUT:
           argc: -1
 
+rx_zmqip:
+    is_description: true
+    actions:
+        GET:
+          argc: 0
+        PUT:
+          argc: -1
+
 rx_roi:
     is_description: true
     actions:
@@ -2693,6 +2709,17 @@ gaincaps:
         PUT:
           argc: -1
           arg_types: [ defs::defs::M3_GainCaps ]
+
+sleep:
+    is_description: true
+    actions:
+        PUT:
+          args:
+            - argc: 1
+              arg_types: [ int ]
+            - argc: 2
+              arg_types: [ int, special::time_unit ]
+
 
 ################# special commands ##########################
 
@@ -2887,7 +2914,7 @@ exptime3:
           value: 2
 
 readoutspeed:
-  help: "\n\t[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t[Eiger][Jungfrau][Moench] Readout speed of chip.\n\t[Eiger][Moench] Default speed is full_speed.\n\t[Jungfrau] Default speed is half_speed. full_speed option only available from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] Readout speed of chip in MHz. Default is 108."
+  help: "\n\t[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t[Eiger][Jungfrau][Moench][Mythen3] Readout speed of chip.\n\t[Eiger][Moench] Default speed is full_speed.\n\t[Jungfrau][Mythen3] Default speed is half_speed. \n\t[Jungfrau] full_speed option only available from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] Readout speed of chip in MHz. Default is 108."
   actions:
     GET:
       extra_variables:
@@ -3027,7 +3054,7 @@ dbitphase:
           output: [ 'args[0]',"' '", 'args[1]' ]
 
 clkfreq:
-  help: "[n_clock (0-5)] [freq_in_Hz]\n\t[Gotthard2][Mythen3] Frequency of clock n_clock in Hz. Use clkdiv to set frequency."
+  help: "[n_clock] [freq_in_Hz]\n\t[Gotthard2][Mythen3] Frequency of clock n_clock in Hz. Use clkdiv to set frequency.\n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
   actions:
     GET:
       extra_variables:
@@ -3046,7 +3073,7 @@ clkfreq:
       output: [ OutString(t) ]
 
 clkphase:
-  help: "[n_clock (0-5)] [phase] [deg (optional)]\n\t[Gotthard2][Mythen3] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values."
+  help: "[n_clock] [phase] [deg (optional)]\n\t[Gotthard2][Mythen3] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values.n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
   actions:
     GET:
       extra_variables:
@@ -3101,7 +3128,7 @@ clkphase:
           output: [ 'args[1]', '" "', 'args[2]' ]
 
 maxclkphaseshift:
-  help: "[n_clock (0-5)]\n\t[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock."
+  help: "[n_clock]\n\t[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock.n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
   actions:
     GET:
       extra_variables:
@@ -3120,7 +3147,7 @@ maxclkphaseshift:
       function: getMaxClockPhaseShift
 
 clkdiv:
-  help: "[n_clock (0-5)] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1."
+  help: "[n_clock] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1.n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
   actions:
     GET:
       extra_variables:
@@ -3936,7 +3963,7 @@ patloop:
       output: [level,"' '" , "'['" , "ToStringHex(start, 4)" , '", "' , "ToStringHex(stop, 4)", "']'" ]
 
 patloop0:
-    help: "Depreciated command. Use patloop."
+    help: "Deprecated command. Use patloop."
     inherit_actions: patloop
     actions:
       GET:
@@ -3983,7 +4010,7 @@ patnloop:
       output: [ level,"' '" , nloops ]
 
 patnloop0:
-    help: "Depreciated command. Use patnloop."
+    help: "Deprecated command. Use patnloop."
     inherit_actions: patnloop
     actions:
       GET:
@@ -4029,7 +4056,7 @@ patwait:
       output: [level,"' '" ,  "ToStringHex(addr, 4)" ]
 
 patwait0:
-    help: "Depreciated command. Use patwait."
+    help: "Deprecated command. Use patwait."
     inherit_actions: patwait
     actions:
       GET:
@@ -4075,7 +4102,7 @@ patwaittime:
       output: [level,"' '" ,  "waittime" ]
 
 patwaittime0:
-    help: "Depreciated command. Use patwaittime."
+    help: "Deprecated command. Use patwaittime."
     inherit_actions: patwaittime
     actions:
       GET:
@@ -4177,7 +4204,7 @@ update:
       output: [ '"successful"' ]
 
 reg:
-  help: "[address] [32 bit value]\n\t[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence, can be called while calling blocking acquire().\n\t[Eiger] +0x100 for only left, +0x200 for only right."
+  help: "[address] [32 bit value][(optional)--validate]\n\t[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence, can be called while calling blocking acquire().\n\t\t Use --validate to force validation when writing to it.\n\t[Eiger] +0x100 for only left, +0x200 for only right."
   actions:
     GET:
       argc: 1
@@ -4188,13 +4215,23 @@ reg:
       cast_input: [ true ]
       output: [ OutStringHex(t) ]
     PUT:
-      argc: 2
       require_det_id: true
       function: writeRegister
-      input: [ 'args[0]', 'args[1]' ]
-      input_types: [ uint32_t, uint32_t ]
-      cast_input: [ true, true ]
-      output: [ ToString(args) ]
+      output: [ '"["', 'args[0]', '", "', 'args[1]', '"]"' ]
+      args:
+        - argc: 2
+          input: [ 'args[0]', 'args[1]', '"0"' ]
+          input_types: [ uint32_t, uint32_t, bool ]
+          arg_types: [ uint32_t, uint32_t ]
+          cast_input: [ true, true, true ]
+        - argc: 3
+          arg_types: [ uint32_t, uint32_t, special::validate ]
+          exceptions:
+            - condition: 'args[2] != "--validate"'
+              message: '"Could not scan third argument. Did you mean --validate?"'
+          input: [ 'args[0]', 'args[1]', '"1"' ]
+          input_types: [ uint32_t, uint32_t, bool ]
+          cast_input: [ true, true, true ]
 
 adcreg:
   help: "[address] [value]\n\t[Jungfrau][Moench][Ctb][Gotthard] Writes to an adc register in hex. Advanced user Function!"
@@ -4227,27 +4264,40 @@ Setbit:
   template: true
   actions:
     PUT:
-      argc: 2
-      exceptions:
-        - condition: 'StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31'
-          message: '"Bit number out of range: " + args[1]'
       require_det_id: true
       function: setBit
-      input: [ 'args[0]', 'args[1]' ]
-      input_types: [ uint32_t, int ]
-      cast_input: [ true, true ]
-      output: [ ToString(args) ]
+      output: [ '"["', 'args[0]', '", "', 'args[1]', '"]"' ]    
+      args:
+        - argc: 2
+          exceptions:
+            - condition: 'StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31'
+              message: '"Bit number out of range: " + args[1]'
+          input: [ 'args[0]', 'args[1]', '"0"' ]  
+          input_types: [ uint32_t, int, bool ]
+          arg_types: [ uint32_t, int ]
+          cast_input: [ true, true, true ]
+        - argc: 3
+          arg_types: [ uint32_t, int, special::validate ]
+          exceptions:
+            - condition: 'StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31'
+              message: '"Bit number out of range: " + args[1]'
+            - condition: 'args[2] != "--validate"'
+              message: '"Could not scan third argument. Did you mean --validate?"'
+          input: [ 'args[0]', 'args[1]', '"1"' ]
+          input_types: [ uint32_t, int, bool ]
+          cast_input: [ true, true, true ]
+
 
 setbit:
   inherit_actions: Setbit
-  help: "[reg address in hex] [bit index]\n\tSets bit in address."
+  help: "[reg address in hex] [bit index]\n\tSets bit in address.\n\tUse --validate to force validation."
   actions:
     PUT:
       function: setBit
 
 clearbit:
   inherit_actions: Setbit
-  help: "[reg address in hex] [bit index]\n\tClears bit in address."
+  help: "[reg address in hex] [bit index]\n\tClears bit in address.\n\tUse --validate to force validation."
   actions:
     PUT:
       function: clearBit

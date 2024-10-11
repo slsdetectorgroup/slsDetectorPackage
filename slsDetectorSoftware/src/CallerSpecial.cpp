@@ -1,9 +1,11 @@
 #include "Caller.h"
+#include "sls/ZmqSocket.h"
 #include "sls/bit_utils.h"
 #include "sls/file_utils.h"
 #include "sls/logger.h"
 #include "sls/string_utils.h"
 #include <iostream>
+#include <thread>
 namespace sls {
 // some helper functions to print
 
@@ -22,7 +24,7 @@ void Caller::call(const std::string &command,
     std::string temp;
     while (temp != cmd) {
         temp = cmd;
-        ReplaceIfDepreciated(cmd);
+        ReplaceIfDeprecated(cmd);
     }
 
     det_id = detector_id;
@@ -37,9 +39,9 @@ void Caller::call(const std::string &command,
     }
 }
 
-bool Caller::ReplaceIfDepreciated(std::string &command) {
-    auto d_it = depreciated_functions.find(command);
-    if (d_it != depreciated_functions.end()) {
+bool Caller::ReplaceIfDeprecated(std::string &command) {
+    auto d_it = deprecated_functions.find(command);
+    if (d_it != deprecated_functions.end()) {
 
         // insert old command into arguments (for dacs)
         if (d_it->second == "dac") {
@@ -258,39 +260,74 @@ std::string Caller::versions(int action) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        bool eiger = (det->getDetectorType().squash() == defs::EIGER);
-        auto t = det->getFirmwareVersion(std::vector<int>{det_id});
-        os << "\nType            : " << OutString(det->getDetectorType())
-           << "\nRelease         : " << det->getPackageVersion() << std::hex
-           << "\nClient          : " << det->getClientVersion();
 
+        std::string vType = "Unknown";
+        std::string vFirmware = "Unknown";
+        std::string vServer = "Unknown";
+        std::string vKernel = "Unknown";
+        std::string vHardware = "Unknown";
+        bool eiger = false;
+        std::string vBebFirmware = "Unknown";
+        std::string vFeblFirmware = "Unknown";
+        std::string vFebrFirmware = "Unknown";
+        bool receiver = false;
+        std::string vReceiver = "Unknown";
+
+        std::string vRelease = det->getPackageVersion();
+        std::string vClient = det->getClientVersion();
+
+        if (det->size() != 0) {
+            // shared memory has detectors
+            vType = OutString(det->getDetectorType());
+            eiger = (det->getDetectorType().squash() == defs::EIGER);
+            receiver = det->getUseReceiverFlag().squash(false);
+            if (receiver) {
+                // cannot connect to receiver
+                try {
+                    vReceiver = OutString(
+                        det->getReceiverVersion(std::vector<int>{det_id}));
+                } catch (const std::exception &e) {
+                }
+            }
+            // cannot connect to Detector
+            try {
+                auto firmwareVersion =
+                    det->getFirmwareVersion(std::vector<int>{det_id});
+                vFirmware = OutStringHex(firmwareVersion);
+                vServer = OutString(
+                    det->getDetectorServerVersion(std::vector<int>{det_id}));
+                vKernel = OutString(
+                    det->getKernelVersion({std::vector<int>{det_id}}));
+                vHardware = OutString(
+                    det->getHardwareVersion(std::vector<int>{det_id}));
+                if (eiger) {
+                    vBebFirmware = OutString(firmwareVersion);
+                    vFeblFirmware = OutString(det->getFrontEndFirmwareVersion(
+                        defs::FRONT_LEFT, std::vector<int>{det_id}));
+                    vFebrFirmware = OutString(det->getFrontEndFirmwareVersion(
+                        defs::FRONT_RIGHT, std::vector<int>{det_id}));
+                }
+            } catch (const std::exception &e) {
+            }
+        }
+
+        os << "\nType            : " << vType
+           << "\nRelease         : " << vRelease
+           << "\nClient          : " << vClient;
         if (eiger) {
-            os << "\nFirmware (Beb)  : "
-               << OutString(det->getFirmwareVersion(std::vector<int>{det_id}));
-            os << "\nFirmware (Febl) : "
-               << OutString(det->getFrontEndFirmwareVersion(
-                      defs::FRONT_LEFT, std::vector<int>{det_id}));
-            os << "\nFirmware (Febr) : "
-               << OutString(det->getFrontEndFirmwareVersion(
-                      defs::FRONT_RIGHT, std::vector<int>{det_id}));
+            os << "\nFirmware (Beb)  : " << vBebFirmware
+               << "\nFirmware (Febl) : " << vFeblFirmware
+               << "\nFirmware (Febr) : " << vFebrFirmware;
         } else {
-            os << "\nFirmware        : "
-               << OutStringHex(
-                      det->getFirmwareVersion(std::vector<int>{det_id}));
+            os << "\nFirmware        : " << vFirmware;
         }
-
-        os << "\nServer          : "
-           << OutString(det->getDetectorServerVersion(std::vector<int>{det_id}))
-           << "\nKernel          : "
-           << OutString(det->getKernelVersion({std::vector<int>{det_id}}))
-           << "\nHardware        : "
-           << OutString(det->getHardwareVersion(std::vector<int>{det_id}));
-
-        if (det->getUseReceiverFlag().squash(true)) {
-            os << "\nReceiver        : "
-               << OutString(det->getReceiverVersion(std::vector<int>{det_id}));
-        }
+        os << "\nServer          : " << vServer
+           << "\nKernel          : " << vKernel
+           << "\nHardware        : " << vHardware;
+        if (receiver)
+            os << "\nReceiver        : " << vReceiver;
         os << std::dec << '\n';
+
     } else if (action == defs::PUT_ACTION) {
         throw RuntimeError("cannot put");
     } else {
@@ -643,6 +680,25 @@ std::string Caller::rx_hostname(int action) {
                 os << ToString(args) << '\n';
             }
         }
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+std::string Caller::rx_zmqip(int action) {
+    std::string helpMessage =
+        "\n\t[deprecated] The receiver zmq socket (publisher) will "
+        "listen to all interfaces ('tcp://0.0.0.0:[port]'to all interfaces "
+        "(from v9.0.0). This command does nothing and will be removed "
+        "(from v10.0.0). This change makes no difference to the user.\n";
+    std::ostringstream os;
+    if (action == defs::HELP_ACTION) {
+        os << helpMessage << '\n';
+    } else if (action == defs::GET_ACTION) {
+        os << ZMQ_PUBLISHER_IP << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        LOG(logWARNING) << helpMessage << '\n';
+        os << ZMQ_PUBLISHER_IP << '\n';
     } else {
         throw RuntimeError("Unknown action");
     }
@@ -1159,4 +1215,37 @@ std::string Caller::gaincaps(int action) {
     }
     return os.str();
 }
+std::string Caller::sleep(int action) {
+    std::ostringstream os;
+    if (action == defs::HELP_ACTION) {
+        os << "[duration] [(optional unit) ns|us|ms|s]\n\tSleep for duration. "
+              "Mainly for config files for firmware developers."
+              "Default unit is s."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        throw RuntimeError("Cannot get.");
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1 && args.size() != 2) {
+            WrongNumberOfParameters(1);
+        }
+        time::ns converted_time{0};
+        try {
+            if (args.size() == 1) {
+                std::string tmp_time(args[0]);
+                std::string unit = RemoveUnit(tmp_time);
+                converted_time = StringTo<time::ns>(tmp_time, unit);
+            } else {
+                converted_time = StringTo<time::ns>(args[0], args[1]);
+            }
+        } catch (...) {
+            throw RuntimeError("Could not convert argument to time::ns");
+        }
+        std::this_thread::sleep_for(converted_time);
+        os << "for " << ToString(converted_time) << " completed" << '\n';
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 } // namespace sls

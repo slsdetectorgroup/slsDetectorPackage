@@ -17,14 +17,14 @@ TEST_CASE("Get port number for sub") {
 
 TEST_CASE("Get port number for pub") {
     constexpr int port = 50001;
-    ZmqSocket pub(port, "*");
+    ZmqSocket pub(port);
     REQUIRE(pub.GetPortNumber() == port);
 }
 
 TEST_CASE("Server address") {
     constexpr int port = 50001;
-    ZmqSocket pub(port, "*");
-    REQUIRE(pub.GetZmqServerAddress() == std::string("tcp://*:50001"));
+    ZmqSocket pub(port);
+    REQUIRE(pub.GetZmqServerAddress() == std::string("tcp://0.0.0.0:50001"));
 }
 
 TEST_CASE("Send header on localhost") {
@@ -32,7 +32,7 @@ TEST_CASE("Send header on localhost") {
     ZmqSocket sub("localhost", port);
     sub.Connect();
 
-    ZmqSocket pub(port, "*");
+    ZmqSocket pub(port);
 
     // Header to send
     zmqHeader header;
@@ -67,7 +67,7 @@ TEST_CASE("Send serveral headers of different length") {
     ZmqSocket sub("localhost", port);
     sub.Connect();
 
-    ZmqSocket pub(port, "*");
+    ZmqSocket pub(port);
 
     zmqHeader header;
     header.data = false; // if true we wait for the data
@@ -95,7 +95,7 @@ TEST_CASE("Send header and data") {
     ZmqSocket sub("localhost", port);
     sub.Connect();
 
-    ZmqSocket pub(port, "*");
+    ZmqSocket pub(port);
 
     std::vector<int> data{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     const int nbytes = data.size() * sizeof(decltype(data)::value_type);

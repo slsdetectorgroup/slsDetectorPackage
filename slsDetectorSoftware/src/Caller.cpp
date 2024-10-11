@@ -1482,14 +1482,15 @@ std::string Caller::clearbit(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: clearbit" << std::endl;
         os << R"V0G0N([reg address in hex] [bit index]
-	Clears bit in address. )V0G0N"
+	Clears bit in address.
+	Use --validate to force validation. )V0G0N"
            << std::endl;
         return os.str();
     }
 
     // check if action and arguments are valid
     if (action == slsDetectorDefs::PUT_ACTION) {
-        if (1 && args.size() != 2) {
+        if (1 && args.size() != 2 && args.size() != 3) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
@@ -1503,6 +1504,29 @@ std::string Caller::clearbit(int action) {
                 StringTo<int>(args[1]);
             } catch (...) {
                 throw RuntimeError("Could not convert argument 1 to int");
+            }
+            try {
+                StringTo<bool>("0");
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 2 to bool");
+            }
+        }
+
+        if (args.size() == 3) {
+            try {
+                StringTo<uint32_t>(args[0]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 0 to uint32_t");
+            }
+            try {
+                StringTo<int>(args[1]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 1 to int");
+            }
+            try {
+                StringTo<bool>("1");
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 2 to bool");
             }
         }
 
@@ -1522,8 +1546,24 @@ std::string Caller::clearbit(int action) {
             }
             auto arg0 = StringTo<uint32_t>(args[0]);
             auto arg1 = StringTo<int>(args[1]);
-            det->clearBit(arg0, arg1, std::vector<int>{det_id});
-            os << ToString(args) << '\n';
+            auto arg2 = StringTo<bool>("0");
+            det->clearBit(arg0, arg1, arg2, std::vector<int>{det_id});
+            os << "[" << args[0] << ", " << args[1] << "]" << '\n';
+        }
+
+        if (args.size() == 3) {
+            if (StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31) {
+                throw RuntimeError("Bit number out of range: " + args[1]);
+            }
+            if (args[2] != "--validate") {
+                throw RuntimeError(
+                    "Could not scan third argument. Did you mean --validate?");
+            }
+            auto arg0 = StringTo<uint32_t>(args[0]);
+            auto arg1 = StringTo<int>(args[1]);
+            auto arg2 = StringTo<bool>("1");
+            det->clearBit(arg0, arg1, arg2, std::vector<int>{det_id});
+            os << "[" << args[0] << ", " << args[1] << "]" << '\n';
         }
     }
 
@@ -1658,8 +1698,9 @@ std::string Caller::clkdiv(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: clkdiv" << std::endl;
-        os << R"V0G0N([n_clock (0-5)] [n_divider]
-	[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1. )V0G0N"
+        os << R"V0G0N([n_clock] [n_divider]
+	[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1.n	[Gotthard2] Clock index range: 0-5
+	[Mythen3] Clock index range: 0 )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -1751,8 +1792,10 @@ std::string Caller::clkfreq(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: clkfreq" << std::endl;
-        os << R"V0G0N([n_clock (0-5)] [freq_in_Hz]
-	[Gotthard2][Mythen3] Frequency of clock n_clock in Hz. Use clkdiv to set frequency. )V0G0N"
+        os << R"V0G0N([n_clock] [freq_in_Hz]
+	[Gotthard2][Mythen3] Frequency of clock n_clock in Hz. Use clkdiv to set frequency.
+	[Gotthard2] Clock index range: 0-5
+	[Mythen3] Clock index range: 0 )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -1807,8 +1850,9 @@ std::string Caller::clkphase(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: clkphase" << std::endl;
-        os << R"V0G0N([n_clock (0-5)] [phase] [deg (optional)]
-	[Gotthard2][Mythen3] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values. )V0G0N"
+        os << R"V0G0N([n_clock] [phase] [deg (optional)]
+	[Gotthard2][Mythen3] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values.n	[Gotthard2] Clock index range: 0-5
+	[Mythen3] Clock index range: 0 )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -1953,6 +1997,70 @@ std::string Caller::clkphase(int action) {
             auto arg1 = StringTo<int>(args[1]);
             det->setClockPhaseinDegrees(arg0, arg1, std::vector<int>{det_id});
             os << args[1] << " " << args[2] << '\n';
+        }
+    }
+
+    return os.str();
+}
+
+std::string Caller::collectionmode(int action) {
+
+    std::ostringstream os;
+    // print help
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << "Command: collectionmode" << std::endl;
+        os << R"V0G0N([hole|electron]
+	[Jungfrau] Sets collection mode to hole or electron. Default is hole. )V0G0N"
+           << std::endl;
+        return os.str();
+    }
+
+    // check if action and arguments are valid
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (1 && args.size() != 0) {
+            throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 0) {
+        }
+
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
+        if (1 && args.size() != 1) {
+            throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 1) {
+            try {
+                StringTo<defs::collectionMode>(args[0]);
+            } catch (...) {
+                throw RuntimeError(
+                    "Could not convert argument 0 to defs::collectionMode");
+            }
+        }
+
+    }
+
+    else {
+
+        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
+                           "are ['GET', 'PUT']");
+    }
+
+    // generate code for each action
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (args.size() == 0) {
+            auto t = det->getCollectionMode(std::vector<int>{det_id});
+            os << OutString(t) << '\n';
+        }
+    }
+
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (args.size() == 1) {
+            auto arg0 = StringTo<defs::collectionMode>(args[0]);
+            det->setCollectionMode(arg0, std::vector<int>{det_id});
+            os << args.front() << '\n';
         }
     }
 
@@ -5115,7 +5223,7 @@ std::string Caller::fpath(int action) {
         os << "Command: fpath" << std::endl;
         os << R"V0G0N([path]
 	Directory where output data files are written in receiver. Default is '/'. 
-	If path does not exist, it will try to create it. )V0G0N"
+	If path does not exist and fwrite enabled, it will try to create it at start of acquisition. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -5372,7 +5480,7 @@ std::string Caller::fwrite(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: fwrite" << std::endl;
         os << R"V0G0N([0, 1]
-	Enable or disable receiver file write. Default is 1. )V0G0N"
+	Enable or disable receiver file write. Default is 0. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -5434,7 +5542,7 @@ std::string Caller::gainmode(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: gainmode" << std::endl;
-        os << R"V0G0N([dynamicgain|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]
+        os << R"V0G0N([dynamic|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]
 	[Jungfrau] Gain mode.
 	CAUTION: Do not use fixg0 without caution, you can damage the detector!!! )V0G0N"
            << std::endl;
@@ -7031,8 +7139,9 @@ std::string Caller::maxclkphaseshift(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: maxclkphaseshift" << std::endl;
-        os << R"V0G0N([n_clock (0-5)]
-	[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock. )V0G0N"
+        os << R"V0G0N([n_clock]
+	[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock.n	[Gotthard2] Clock index range: 0-5
+	[Mythen3] Clock index range: 0 )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -7264,7 +7373,7 @@ std::string Caller::nextframenumber(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: nextframenumber" << std::endl;
         os << R"V0G0N([n_value]
-	[Eiger][Jungfrau][Moench][Ctb][Xilinx Ctb] Next frame number. Stopping acquisition might result in different frame numbers for different modules. )V0G0N"
+	[Eiger][Jungfrau][Moench][Ctb][Xilinx Ctb][Gotthard2] Next frame number. Stopping acquisition might result in different frame numbers for different modules. So, after stopping, next frame number (max + 1) is set for all the modules afterwards. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -7921,7 +8030,7 @@ std::string Caller::patloop0(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patloop0" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patloop. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patloop. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -7976,7 +8085,7 @@ std::string Caller::patloop1(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patloop1" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patloop. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patloop. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8031,7 +8140,7 @@ std::string Caller::patloop2(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patloop2" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patloop. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patloop. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8205,7 +8314,7 @@ std::string Caller::patnloop0(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patnloop0" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patnloop. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patnloop. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8258,7 +8367,7 @@ std::string Caller::patnloop1(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patnloop1" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patnloop. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patnloop. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8311,7 +8420,7 @@ std::string Caller::patnloop2(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patnloop2" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patnloop. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patnloop. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8562,7 +8671,7 @@ std::string Caller::patwait0(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patwait0" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patwait. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patwait. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8614,7 +8723,7 @@ std::string Caller::patwait1(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patwait1" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patwait. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patwait. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8666,7 +8775,7 @@ std::string Caller::patwait2(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patwait2" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patwait. )V0G0N" << std::endl;
+        os << R"V0G0N(Deprecated command. Use patwait. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8773,8 +8882,7 @@ std::string Caller::patwaittime0(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patwaittime0" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patwaittime. )V0G0N"
-           << std::endl;
+        os << R"V0G0N(Deprecated command. Use patwaittime. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8826,8 +8934,7 @@ std::string Caller::patwaittime1(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patwaittime1" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patwaittime. )V0G0N"
-           << std::endl;
+        os << R"V0G0N(Deprecated command. Use patwaittime. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -8879,8 +8986,7 @@ std::string Caller::patwaittime2(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: patwaittime2" << std::endl;
-        os << R"V0G0N(Depreciated command. Use patwaittime. )V0G0N"
-           << std::endl;
+        os << R"V0G0N(Deprecated command. Use patwaittime. )V0G0N" << std::endl;
         return os.str();
     }
 
@@ -10145,9 +10251,10 @@ std::string Caller::readoutspeed(int action) {
         os << "Command: readoutspeed" << std::endl;
         os << R"V0G0N(
 	[0 or full_speed|1 or half_speed|2 or quarter_speed]
-	[Eiger][Jungfrau][Moench] Readout speed of chip.
+	[Eiger][Jungfrau][Moench][Mythen3] Readout speed of chip.
 	[Eiger][Moench] Default speed is full_speed.
-	[Jungfrau] Default speed is half_speed. full_speed option only available from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites adcphase to recommended default.
+	[Jungfrau][Mythen3] Default speed is half_speed. 
+	[Jungfrau] full_speed option only available from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites adcphase to recommended default.
 	 [144|108]
 		[Gotthard2] Readout speed of chip in MHz. Default is 108. )V0G0N"
            << std::endl;
@@ -10310,9 +10417,10 @@ std::string Caller::reg(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: reg" << std::endl;
-        os << R"V0G0N([address] [32 bit value]
+        os << R"V0G0N([address] [32 bit value][(optional)--validate]
 	[Mythen3][Gotthard2] Reads/writes to a 32 bit register in hex. Advanced Function!
 	Goes to stop server. Hence, can be called while calling blocking acquire().
+		 Use --validate to force validation when writing to it.
 	[Eiger] +0x100 for only left, +0x200 for only right. )V0G0N"
            << std::endl;
         return os.str();
@@ -10335,7 +10443,7 @@ std::string Caller::reg(int action) {
     }
 
     else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (1 && args.size() != 2) {
+        if (1 && args.size() != 2 && args.size() != 3) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
@@ -10349,6 +10457,29 @@ std::string Caller::reg(int action) {
                 StringTo<uint32_t>(args[1]);
             } catch (...) {
                 throw RuntimeError("Could not convert argument 1 to uint32_t");
+            }
+            try {
+                StringTo<bool>("0");
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 2 to bool");
+            }
+        }
+
+        if (args.size() == 3) {
+            try {
+                StringTo<uint32_t>(args[0]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 0 to uint32_t");
+            }
+            try {
+                StringTo<uint32_t>(args[1]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 1 to uint32_t");
+            }
+            try {
+                StringTo<bool>("1");
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 2 to bool");
             }
         }
 
@@ -10373,8 +10504,21 @@ std::string Caller::reg(int action) {
         if (args.size() == 2) {
             auto arg0 = StringTo<uint32_t>(args[0]);
             auto arg1 = StringTo<uint32_t>(args[1]);
-            det->writeRegister(arg0, arg1, std::vector<int>{det_id});
-            os << ToString(args) << '\n';
+            auto arg2 = StringTo<bool>("0");
+            det->writeRegister(arg0, arg1, arg2, std::vector<int>{det_id});
+            os << "[" << args[0] << ", " << args[1] << "]" << '\n';
+        }
+
+        if (args.size() == 3) {
+            if (args[2] != "--validate") {
+                throw RuntimeError(
+                    "Could not scan third argument. Did you mean --validate?");
+            }
+            auto arg0 = StringTo<uint32_t>(args[0]);
+            auto arg1 = StringTo<uint32_t>(args[1]);
+            auto arg2 = StringTo<bool>("1");
+            det->writeRegister(arg0, arg1, arg2, std::vector<int>{det_id});
+            os << "[" << args[0] << ", " << args[1] << "]" << '\n';
         }
     }
 
@@ -12114,63 +12258,6 @@ std::string Caller::rx_zmqhwm(int action) {
     return os.str();
 }
 
-std::string Caller::rx_zmqip(int action) {
-
-    std::ostringstream os;
-    // print help
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << "Command: rx_zmqip" << std::endl;
-        os << R"V0G0N([x.x.x.x]
-	Zmq Ip Address from which data is to be streamed out of the receiver. Also restarts receiver zmq streaming if enabled. Default is from rx_hostname. Modified only when using an intermediate process between receiver. )V0G0N"
-           << std::endl;
-        return os.str();
-    }
-
-    // check if action and arguments are valid
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (1 && args.size() != 0) {
-            throw RuntimeError("Wrong number of arguments for action GET");
-        }
-
-        if (args.size() == 0) {
-        }
-
-    }
-
-    else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (1 && args.size() != 1) {
-            throw RuntimeError("Wrong number of arguments for action PUT");
-        }
-
-        if (args.size() == 1) {
-        }
-
-    }
-
-    else {
-
-        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
-                           "are ['GET', 'PUT']");
-    }
-
-    // generate code for each action
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (args.size() == 0) {
-            auto t = det->getRxZmqIP(std::vector<int>{det_id});
-            os << OutString(t) << '\n';
-        }
-    }
-
-    if (action == slsDetectorDefs::PUT_ACTION) {
-        if (args.size() == 1) {
-            det->setRxZmqIP(IpAddr(args[0]), std::vector<int>{det_id});
-            os << args.front() << '\n';
-        }
-    }
-
-    return os.str();
-}
-
 std::string Caller::rx_zmqport(int action) {
 
     std::ostringstream os;
@@ -12661,14 +12748,15 @@ std::string Caller::setbit(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << "Command: setbit" << std::endl;
         os << R"V0G0N([reg address in hex] [bit index]
-	Sets bit in address. )V0G0N"
+	Sets bit in address.
+	Use --validate to force validation. )V0G0N"
            << std::endl;
         return os.str();
     }
 
     // check if action and arguments are valid
     if (action == slsDetectorDefs::PUT_ACTION) {
-        if (1 && args.size() != 2) {
+        if (1 && args.size() != 2 && args.size() != 3) {
             throw RuntimeError("Wrong number of arguments for action PUT");
         }
 
@@ -12682,6 +12770,29 @@ std::string Caller::setbit(int action) {
                 StringTo<int>(args[1]);
             } catch (...) {
                 throw RuntimeError("Could not convert argument 1 to int");
+            }
+            try {
+                StringTo<bool>("0");
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 2 to bool");
+            }
+        }
+
+        if (args.size() == 3) {
+            try {
+                StringTo<uint32_t>(args[0]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 0 to uint32_t");
+            }
+            try {
+                StringTo<int>(args[1]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 1 to int");
+            }
+            try {
+                StringTo<bool>("1");
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 2 to bool");
             }
         }
 
@@ -12701,8 +12812,24 @@ std::string Caller::setbit(int action) {
             }
             auto arg0 = StringTo<uint32_t>(args[0]);
             auto arg1 = StringTo<int>(args[1]);
-            det->setBit(arg0, arg1, std::vector<int>{det_id});
-            os << ToString(args) << '\n';
+            auto arg2 = StringTo<bool>("0");
+            det->setBit(arg0, arg1, arg2, std::vector<int>{det_id});
+            os << "[" << args[0] << ", " << args[1] << "]" << '\n';
+        }
+
+        if (args.size() == 3) {
+            if (StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31) {
+                throw RuntimeError("Bit number out of range: " + args[1]);
+            }
+            if (args[2] != "--validate") {
+                throw RuntimeError(
+                    "Could not scan third argument. Did you mean --validate?");
+            }
+            auto arg0 = StringTo<uint32_t>(args[0]);
+            auto arg1 = StringTo<int>(args[1]);
+            auto arg2 = StringTo<bool>("1");
+            det->setBit(arg0, arg1, arg2, std::vector<int>{det_id});
+            os << "[" << args[0] << ", " << args[1] << "]" << '\n';
         }
     }
 
@@ -14820,6 +14947,70 @@ std::string Caller::timing(int action) {
         if (args.size() == 1) {
             auto arg0 = StringTo<defs::timingMode>(args[0]);
             det->setTimingMode(arg0, std::vector<int>{det_id});
+            os << args.front() << '\n';
+        }
+    }
+
+    return os.str();
+}
+
+std::string Caller::timing_info_decoder(int action) {
+
+    std::ostringstream os;
+    // print help
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << "Command: timing_info_decoder" << std::endl;
+        os << R"V0G0N([swissfel|shine]
+	[Jungfrau] Advanced Command and only for Swissfel and Shine. Sets the bunch id or timing info decoder. Default is swissfel. )V0G0N"
+           << std::endl;
+        return os.str();
+    }
+
+    // check if action and arguments are valid
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (1 && args.size() != 0) {
+            throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 0) {
+        }
+
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
+        if (1 && args.size() != 1) {
+            throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 1) {
+            try {
+                StringTo<defs::timingInfoDecoder>(args[0]);
+            } catch (...) {
+                throw RuntimeError(
+                    "Could not convert argument 0 to defs::timingInfoDecoder");
+            }
+        }
+
+    }
+
+    else {
+
+        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
+                           "are ['GET', 'PUT']");
+    }
+
+    // generate code for each action
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (args.size() == 0) {
+            auto t = det->getTimingInfoDecoder(std::vector<int>{det_id});
+            os << OutString(t) << '\n';
+        }
+    }
+
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (args.size() == 1) {
+            auto arg0 = StringTo<defs::timingInfoDecoder>(args[0]);
+            det->setTimingInfoDecoder(arg0, std::vector<int>{det_id});
             os << args.front() << '\n';
         }
     }

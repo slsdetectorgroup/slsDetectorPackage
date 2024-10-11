@@ -439,15 +439,14 @@ void initStopServer() {
             initCheckDone = 1;
             return;
         }
+#ifdef VIRTUAL
+        setupDetector();
+#else
+        // chip version is a variable
         if (readConfigFile() == FAIL) {
             initCheckDone = 1;
             return;
         }
-#ifdef VIRTUAL
-        sharedMemory_setStop(0);
-        // temp threshold and reset event (read by stop server)
-        setThresholdTemperature(DEFAULT_TMP_THRSHLD);
-        setTemperatureEvent(0);
 #endif
     }
     initCheckDone = 1;
@@ -463,8 +462,14 @@ void setupDetector() {
     }
     chipConfigured = 0;
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    setupUDPCommParameters();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        setupUDPCommParameters();
+    } else {
+        sharedMemory_setStop(0);
+    }
+    // ismaster from reg in stop server, so set it in virtual mode
+    setMaster(OW_MASTER);
 #endif
 
     // altera pll
@@ -567,6 +572,8 @@ void setupDetector() {
 #endif
     setPedestalMode(DEFAULT_PEDESTAL_MODE, DEFAULT_PEDESTAL_FRAMES,
                     DEFAULT_PEDESTAL_LOOPS);
+    setTimingInfoDecoder(DEFAULT_TIMING_INFO_DECODER);
+    setElectronCollectionMode(DEFAULT_ELECTRON_COLLECTION_MODE);
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -2608,6 +2615,57 @@ void setPedestalMode(int enable, uint8_t frames, uint16_t loops) {
                         SET_CYCLES_MSB_REG);
         }
     }
+}
+
+int setTimingInfoDecoder(enum timingInfoDecoder val) {
+    switch (val) {
+    case SWISSFEL:
+        LOG(logINFO, ("Setting Timing Info Decoder to SWISSFEL\n"));
+        break;
+    case SHINE:
+        LOG(logINFO, ("Setting Timing Info Decoder to SHINE\n"));
+        break;
+    default:
+        LOG(logERROR, ("Unknown Timing Info Decoder %d\n", val));
+        return FAIL;
+    }
+
+    int decodeValue = (int)val;
+    uint32_t addr = EXT_SIGNAL_REG;
+    bus_w(addr, bus_r(addr) & ~EXT_TIMING_INFO_DECODER_MSK);
+    bus_w(addr, bus_r(addr) | ((decodeValue << EXT_TIMING_INFO_DECODER_OFST) &
+                               EXT_TIMING_INFO_DECODER_MSK));
+
+    return OK;
+}
+
+int getTimingInfoDecoder(enum timingInfoDecoder *retval) {
+    int decodeValue = ((bus_r(EXT_SIGNAL_REG) & EXT_TIMING_INFO_DECODER_MSK) >>
+                       EXT_TIMING_INFO_DECODER_OFST);
+    if (decodeValue == (int)SWISSFEL) {
+        *retval = SWISSFEL;
+    } else if (decodeValue == (int)SHINE) {
+        *retval = SHINE;
+    } else {
+        return FAIL;
+    }
+    return OK;
+}
+
+int getElectronCollectionMode() {
+    return ((bus_r(DAQ_REG) & DAQ_ELCTRN_CLLCTN_MDE_MSK) >>
+            DAQ_ELCTRN_CLLCTN_MDE_OFST);
+}
+
+void setElectronCollectionMode(int enable) {
+    LOG(logINFO,
+        ("Setting Collection Mode to %s\n", enable == 0 ? "Hole" : "Electron"));
+    if (enable) {
+        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_ELCTRN_CLLCTN_MDE_MSK);
+    } else {
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_ELCTRN_CLLCTN_MDE_MSK);
+    }
+    configureChip();
 }
 
 int getTenGigaFlowControl() {

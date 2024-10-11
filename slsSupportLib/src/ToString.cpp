@@ -679,6 +679,28 @@ std::string ToString(const defs::polarity s) {
     }
 }
 
+std::string ToString(const defs::timingInfoDecoder s) {
+    switch (s) {
+    case defs::SWISSFEL:
+        return std::string("swissfel");
+    case defs::SHINE:
+        return std::string("shine");
+    default:
+        return std::string("Unknown");
+    }
+}
+
+std::string ToString(const defs::collectionMode s) {
+    switch (s) {
+    case defs::HOLE:
+        return std::string("hole");
+    case defs::ELECTRON:
+        return std::string("electron");
+    default:
+        return std::string("Unknown");
+    }
+}
+
 const std::string &ToString(const std::string &s) { return s; }
 
 template <> defs::detectorType StringTo(const std::string &s) {
@@ -1102,6 +1124,22 @@ template <> defs::polarity StringTo(const std::string &s) {
     if (s == "neg")
         return defs::NEGATIVE;
     throw RuntimeError("Unknown polarity mode " + s);
+}
+
+template <> defs::timingInfoDecoder StringTo(const std::string &s) {
+    if (s == "swissfel")
+        return defs::SWISSFEL;
+    if (s == "shine")
+        return defs::SHINE;
+    throw RuntimeError("Unknown Timing Info Decoder " + s);
+}
+
+template <> defs::collectionMode StringTo(const std::string &s) {
+    if (s == "hole")
+        return defs::HOLE;
+    if (s == "electron")
+        return defs::ELECTRON;
+    throw RuntimeError("Unknown collection mode " + s);
 }
 
 template <> uint8_t StringTo(const std::string &s) {

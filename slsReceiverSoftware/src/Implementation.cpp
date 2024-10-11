@@ -196,6 +196,7 @@ void Implementation::SetupListener(int i) {
 void Implementation::SetupDataProcessor(int i) {
     dataProcessor[i]->SetFifo(fifo[i].get());
     dataProcessor[i]->SetGeneralData(generalData);
+    dataProcessor[i]->SetUdpPortNumber(udpPortNum[i]);
     dataProcessor[i]->SetActivate(activated);
     dataProcessor[i]->SetReceiverROI(portRois[i]);
     dataProcessor[i]->SetDataStreamEnable(dataStreamEnable);
@@ -205,19 +206,21 @@ void Implementation::SetupDataProcessor(int i) {
     dataProcessor[i]->SetFramePadding(framePadding);
     dataProcessor[i]->SetCtbDbitList(ctbDbitList);
     dataProcessor[i]->SetCtbDbitOffset(ctbDbitOffset);
+    dataProcessor[i]->SetQuadEnable(quadEnable);
+    dataProcessor[i]->SetFlipRows(flipRows);
+    dataProcessor[i]->SetNumberofTotalFrames(numberOfTotalFrames);
+    dataProcessor[i]->SetAdditionalJsonHeader(additionalJsonHeader);
 }
 
 void Implementation::SetupDataStreamer(int i) {
     dataStreamer[i]->SetFifo(fifo[i].get());
     dataStreamer[i]->SetGeneralData(generalData);
-    dataStreamer[i]->CreateZmqSockets(streamingPort, streamingSrcIP,
-                                      streamingHwm);
+    dataStreamer[i]->CreateZmqSockets(streamingPort, streamingHwm);
     dataStreamer[i]->SetAdditionalJsonHeader(additionalJsonHeader);
     dataStreamer[i]->SetFileIndex(fileIndex);
     dataStreamer[i]->SetQuadEnable(quadEnable);
     dataStreamer[i]->SetFlipRows(flipRows);
     dataStreamer[i]->SetNumberofPorts(numPorts);
-    dataStreamer[i]->SetQuadEnable(quadEnable);
     dataStreamer[i]->SetNumberofTotalFrames(numberOfTotalFrames);
     dataStreamer[i]->SetReceiverROI(
         portRois[i].completeRoi() ? GetMaxROIPerPort() : portRois[i]);
@@ -530,10 +533,7 @@ void Implementation::setFileFormat(const fileFormat f) {
 std::string Implementation::getFilePath() const { return filePath; }
 
 void Implementation::setFilePath(const std::string &c) {
-    if (!c.empty()) {
-        mkdir_p(c); // throws if it can't create
-        filePath = c;
-    }
+    filePath = c;
     LOG(logINFO) << "File path: " << filePath;
 }
 
@@ -689,17 +689,25 @@ void Implementation::startReceiver() {
     // callbacks
     if (startAcquisitionCallBack) {
         try {
-            std::size_t imageSize =
-                static_cast<uint32_t>(generalData->imageSize);
-            startAcquisitionCallBack(filePath, fileName, fileIndex, imageSize,
-                                     pStartAcquisition);
+            std::vector<uint32_t> udpPort;
+            for (size_t i = 0; i != listener.size(); ++i) {
+                udpPort.push_back(udpPortNum[i]);
+            }
+            startCallbackHeader callbackHeader = {
+                udpPort,
+                generalData->dynamicRange,
+                numPorts,
+                static_cast<size_t>(generalData->imageSize),
+                filePath,
+                fileName,
+                fileIndex,
+                quadEnable,
+                additionalJsonHeader};
+            startAcquisitionCallBack(callbackHeader, pStartAcquisition);
         } catch (const std::exception &e) {
             std::ostringstream oss;
             oss << "Start Acquisition Callback Error: " << e.what();
             throw RuntimeError(oss.str());
-        }
-        if (rawDataReadyCallBack != nullptr) {
-            LOG(logINFO) << "Data Write has been defined externally";
         }
     }
 
@@ -797,15 +805,26 @@ void Implementation::stopReceiver() {
             }
 
             TLogLevel lev = ((mp[i]) > 0) ? logINFORED : logINFOGREEN;
-            LOG(lev) << "Summary of Port " << udpPortNum[i] << summary;
+            LOG(lev) << "Summary of Port " << udpPortNum[i] << " (" << eth[i]
+                     << ')' << summary;
         }
 
         // callback
         if (acquisitionFinishedCallBack) {
             try {
-                acquisitionFinishedCallBack(
-                    (tot / generalData->numUDPInterfaces),
-                    pAcquisitionFinished);
+                std::vector<uint32_t> udpPort;
+                std::vector<uint64_t> completeFramesCaught;
+                std::vector<uint64_t> lastFrameIndexCaught;
+                for (size_t i = 0; i != listener.size(); ++i) {
+                    udpPort.push_back(udpPortNum[i]);
+                    completeFramesCaught.push_back(
+                        listener[i]->GetNumCompleteFramesCaught());
+                    lastFrameIndexCaught.push_back(
+                        listener[i]->GetLastFrameIndexCaught());
+                }
+                endCallbackHeader callHeader = {udpPort, completeFramesCaught,
+                                                lastFrameIndexCaught};
+                acquisitionFinishedCallBack(callHeader, pAcquisitionFinished);
             } catch (const std::exception &e) {
                 // change status
                 status = IDLE;
@@ -901,14 +920,17 @@ void Implementation::CreateUDPSockets() {
 
 void Implementation::SetupWriter() {
     try {
+        // check if folder exists and throw if it cant create
+        mkdir_p(filePath);
+        // create first files
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
             std::ostringstream os;
             os << filePath << "/" << fileName << "_d"
                << (modulePos * generalData->numUDPInterfaces + i);
             std::string fileNamePrefix = os.str();
-            dataProcessor[i]->CreateFirstFiles(
-                fileNamePrefix, fileIndex, overwriteEnable, silentMode,
-                udpPortNum[i], numberOfTotalFrames, detectorDataStream[i]);
+            dataProcessor[i]->CreateFirstFiles(fileNamePrefix, fileIndex,
+                                               overwriteEnable, silentMode,
+                                               detectorDataStream[i]);
         }
     } catch (const RuntimeError &e) {
         shutDownUDPSockets();
@@ -1004,8 +1026,7 @@ void Implementation::StartMasterWriter() {
                 (numPorts.x * numPorts.y) > 1) {
                 virtualFileName = dataProcessor[0]->CreateVirtualFile(
                     filePath, fileName, fileIndex, overwriteEnable, silentMode,
-                    modulePos, numberOfTotalFrames, numPorts.x, numPorts.y,
-                    &hdf5LibMutex);
+                    modulePos, numPorts.x, numPorts.y, &hdf5LibMutex);
             }
             // link file in master
             if (masterFileWriteEnable) {
@@ -1113,11 +1134,6 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 it->registerCallBackRawDataReady(rawDataReadyCallBack,
                                                  pRawDataReady);
         }
-        if (rawDataModifyReadyCallBack) {
-            for (const auto &it : dataProcessor)
-                it->registerCallBackRawDataModifyReady(
-                    rawDataModifyReadyCallBack, pRawDataReady);
-        }
 
         // test socket buffer size with current set up
         setUDPSocketBufferSize(0);
@@ -1149,6 +1165,7 @@ uint16_t Implementation::getUDPPortNumber() const { return udpPortNum[0]; }
 void Implementation::setUDPPortNumber(const uint16_t i) {
     udpPortNum[0] = i;
     listener[0]->SetUdpPortNumber(i);
+    dataProcessor[0]->SetUdpPortNumber(i);
     LOG(logINFO) << "UDP Port Number[0]: " << udpPortNum[0];
 }
 
@@ -1158,6 +1175,7 @@ void Implementation::setUDPPortNumber2(const uint16_t i) {
     udpPortNum[1] = i;
     if (listener.size() > 1) {
         listener[1]->SetUdpPortNumber(i);
+        dataProcessor[1]->SetUdpPortNumber(i);
     }
     LOG(logINFO) << "UDP Port Number[1]: " << udpPortNum[1];
 }
@@ -1262,13 +1280,6 @@ void Implementation::setStreamingPort(const uint16_t i) {
     LOG(logINFO) << "Streaming Port: " << streamingPort;
 }
 
-IpAddr Implementation::getStreamingSourceIP() const { return streamingSrcIP; }
-
-void Implementation::setStreamingSourceIP(const IpAddr ip) {
-    streamingSrcIP = ip;
-    LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
-}
-
 int Implementation::getStreamingHwm() const { return streamingHwm; }
 
 void Implementation::setStreamingHwm(const int i) {
@@ -1286,6 +1297,9 @@ void Implementation::setAdditionalJsonHeader(
     const std::map<std::string, std::string> &c) {
 
     additionalJsonHeader = c;
+    for (const auto &it : dataProcessor) {
+        it->SetAdditionalJsonHeader(c);
+    }
     for (const auto &it : dataStreamer) {
         it->SetAdditionalJsonHeader(c);
     }
@@ -1328,6 +1342,9 @@ void Implementation::setAdditionalJsonParameter(const std::string &key,
         LOG(logINFO) << "Adding additional json parameter (" << key << ") to "
                      << value;
     }
+    for (const auto &it : dataProcessor) {
+        it->SetAdditionalJsonHeader(additionalJsonHeader);
+    }
     for (const auto &it : dataStreamer) {
         it->SetAdditionalJsonHeader(additionalJsonHeader);
     }
@@ -1367,6 +1384,8 @@ void Implementation::updateTotalNumberOfFrames() {
     }
     numberOfTotalFrames =
         numFrames * repeats * (int64_t)(numberOfAdditionalStorageCells + 1);
+    for (const auto &it : dataProcessor)
+        it->SetNumberofTotalFrames(numberOfTotalFrames);
     for (const auto &it : dataStreamer)
         it->SetNumberofTotalFrames(numberOfTotalFrames);
     if (numberOfTotalFrames == 0) {
@@ -1625,6 +1644,8 @@ bool Implementation::getFlipRows() const { return flipRows; }
 
 void Implementation::setFlipRows(bool enable) {
     flipRows = enable;
+    for (const auto &it : dataProcessor)
+        it->SetFlipRows(flipRows);
     for (const auto &it : dataStreamer)
         it->SetFlipRows(flipRows);
     LOG(logINFO) << "Flip Rows: " << flipRows;
@@ -1636,6 +1657,10 @@ void Implementation::setQuad(const bool b) {
     if (quadEnable != b) {
         quadEnable = b;
         setDetectorSize(numModules);
+        for (const auto &it : dataProcessor) {
+            it->SetQuadEnable(quadEnable);
+            it->SetFlipRows(flipRows);
+        }
         for (const auto &it : dataStreamer) {
             it->SetQuadEnable(quadEnable);
             it->SetFlipRows(flipRows);
@@ -1777,35 +1802,25 @@ void Implementation::setTransceiverEnableMask(uint32_t mask) {
  *                                                *
  * ************************************************/
 void Implementation::registerCallBackStartAcquisition(
-    int (*func)(const std::string &, const std::string &, uint64_t, size_t,
-                void *),
-    void *arg) {
+    int (*func)(const startCallbackHeader, void *), void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
 }
 
-void Implementation::registerCallBackAcquisitionFinished(void (*func)(uint64_t,
-                                                                      void *),
-                                                         void *arg) {
+void Implementation::registerCallBackAcquisitionFinished(
+    void (*func)(const endCallbackHeader, void *), void *arg) {
     acquisitionFinishedCallBack = func;
     pAcquisitionFinished = arg;
 }
 
 void Implementation::registerCallBackRawDataReady(
-    void (*func)(sls_receiver_header &, char *, size_t, void *), void *arg) {
+    void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t &,
+                 void *),
+    void *arg) {
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
     for (const auto &it : dataProcessor)
         it->registerCallBackRawDataReady(rawDataReadyCallBack, pRawDataReady);
-}
-
-void Implementation::registerCallBackRawDataModifyReady(
-    void (*func)(sls_receiver_header &, char *, size_t &, void *), void *arg) {
-    rawDataModifyReadyCallBack = func;
-    pRawDataReady = arg;
-    for (const auto &it : dataProcessor)
-        it->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,
-                                               pRawDataReady);
 }
 
 } // namespace sls

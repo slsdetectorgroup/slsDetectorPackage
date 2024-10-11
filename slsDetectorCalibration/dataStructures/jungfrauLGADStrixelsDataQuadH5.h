@@ -250,7 +250,7 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
 
     //The following functions are pure virtual in the base class. But I don't want them to be accessible here!
     //Implement the functions as private (to satisfy the linker)
-    int getFrameNumber(char* buff){return 0;} //Provided via public method readNextFrame
+    //int getFrameNumber(char* buff){return 0;} //This is actually needed because the cluster finder writes the framenumber
     int getPacketNumber(char* buff){return 0;} //Not provided
 
     //Mark overwritten functions as override final
@@ -384,6 +384,8 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
       std::cout << "#";
       return nullptr;
     };
+
+    int getFrameNumber(char* buff){return iframe;} //Provided via public method readNextFrame
 
  
 

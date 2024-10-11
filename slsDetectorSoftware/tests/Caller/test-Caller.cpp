@@ -2433,8 +2433,8 @@ TEST_CASE("nextframenumber", "[.cmdcall]") {
                 det.getPeriod().tsquash("inconsistent period in test");
             auto prev_burstmode =
                 det.getBurstMode().tsquash("inconsistent burst mode in test");
-            auto prev_bursts = det.getNumberOfBursts().tsquash(
-                "inconsistent #bursts in test");
+            auto prev_bursts =
+                det.getNumberOfBursts().tsquash("inconsistent #bursts in test");
             auto prev_burstperiod = det.getBurstPeriod().tsquash(
                 "inconsistent burst period in test");
 
@@ -2448,8 +2448,8 @@ TEST_CASE("nextframenumber", "[.cmdcall]") {
 
             det.startDetector();
             std::this_thread::sleep_for(std::chrono::seconds(2));
-            auto currentfnum =
-                det.getNextFrameNumber().tsquash("inconsistent frame nr in test");
+            auto currentfnum = det.getNextFrameNumber().tsquash(
+                "inconsistent frame nr in test");
             REQUIRE(currentfnum == 2);
 
             det.setTimingMode(prev_timing);
@@ -2474,8 +2474,8 @@ TEST_CASE("nextframenumber", "[.cmdcall]") {
             det.setPeriod(std::chrono::milliseconds(1));
             det.startDetector();
             std::this_thread::sleep_for(std::chrono::seconds(2));
-            auto currentfnum =
-                det.getNextFrameNumber().tsquash("inconsistent frame nr in test");
+            auto currentfnum = det.getNextFrameNumber().tsquash(
+                "inconsistent frame nr in test");
             REQUIRE(currentfnum == 2);
             if (det_type == defs::EIGER) {
                 auto prev_tengiga =

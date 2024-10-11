@@ -1073,7 +1073,7 @@ int setNextFrameNumber(uint64_t value) {
     LOG(logINFO, ("Setting next frame number: %lu\n", value));
 #ifdef VIRTUAL
     setU64BitReg(value, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
-#else   
+#else
     // decrement by 1 for firmware
     setU64BitReg(value - 1, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
 #endif

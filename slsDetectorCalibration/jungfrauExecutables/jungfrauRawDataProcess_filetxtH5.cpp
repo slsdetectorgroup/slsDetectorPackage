@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    int const fifosize = 1000;
+    int const fifosize = 100; //1000;
     int const nthreads = 10;
     int const csize = 3; // 3
     int const nsigma = 5;
@@ -330,7 +330,7 @@ int main(int argc, char *argv[]) {
 	            }
 	            //mt->setFilePointer(of);
 	            //std::cout << "file pointer set " << std::endl;
-	            std::cout << "Here! " << framenumber << " ";
+	            //std::cout << "Here! " << framenumber << " ";
 	          } else {
 	            std::cout << "Could not open " << cfname
 			                  << " for writing " << std::endl;
@@ -356,7 +356,9 @@ int main(int argc, char *argv[]) {
 
 	        // 	//         //pop
 	        mt->nextThread();
-	        mt->popFree(buff);
+	        mt->popFree(buff); /* In the last execution of the loop,
+                              * this leaves buff outside of the Fifo!
+                              * Free explicitely at the end! */
 	  
 	        ++ifr;
 	        if (ifr % 1000 == 0)
@@ -372,15 +374,16 @@ int main(int argc, char *argv[]) {
 
 	        framenumber = -1;
 	      }
-	      std::cout << "aa --" << std::endl;
+
+	      //std::cout << "aa --" << std::endl;
 	      fileh5->CloseResources();
 
-	      std::cout << "bb --" << std::endl;
+	      //std::cout << "bb --" << std::endl;
 	      while (mt->isBusy()) {
 	        ;
 	      }
 
-	      std::cout << "cc --" << std::endl;
+	      //std::cout << "cc --" << std::endl;
 	      if (nframes >= 0) {
 	        if (nframes > 0)
 	          imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ioutfile );
@@ -401,18 +404,21 @@ int main(int argc, char *argv[]) {
 		              << std::endl;
     }
     if (nframes < 0) {     
-      std::string fprefix( getRootString(filenames[0]) ); //This might by a non-ideal name choice for that file
+      std::string fprefix( getRootString(filenames[0]) ); //Possibly, non-ideal name choice for file
       std::string imgfname( createFileName( outdir, fprefix, "sum", "tiff" ) );
       std::cout << "Writing tiff to " << imgfname << " " << thr1 << std::endl;
       mt->writeImage(imgfname.c_str(), thr1);
     }
 
-    //delete decoder
-    //delete filter;
-    delete mt;
-    delete filter;
+
+    //std::cout << "Calling delete..." << std::endl;
+    /* Info: Previously, 'delete mt' caused crash
+     (double calls of StopThread() in both destructors of
+     multiThreadedAnalogDetector and threadedAnalogDetector)
+     Now fixed! */
+    delete mt; // triggers cleanup of all threads and singlePhotonDetector instances (delete filter is obsolete)
     delete decoder;
-    delete buff;
+    free(buff); // Free explicitly as it gets popped out of the Fifo at termination of while(readNextFrame)
 
     return 0;
 }

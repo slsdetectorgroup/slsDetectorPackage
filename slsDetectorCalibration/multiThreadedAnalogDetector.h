@@ -47,12 +47,20 @@ class threadedAnalogDetector {
 
             if (mm) {
                 // memset(mm,0, det->getDataSize());
+                /*
+                if (i == 0) { // debug
+                    first_mm = mm;
+                }
+                */
+                
                 fifoFree->push(mm);
+                //std::cout << "Allocated memory at: " << static_cast<void*>(mm) << " (fifoslot " << i << ")" << std::endl;
             } else
                 break;
         }
+
         if (i < fs)
-            cout << "Could allocate only " << i << " frames";
+            std::cout << "Could allocate only " << i << " frames";
 
         busy = 0;
         stop = 1;
@@ -102,24 +110,45 @@ class threadedAnalogDetector {
     };
 
     virtual ~threadedAnalogDetector() {
+
         StopThread();
+
         delete fifoFree;
         delete fifoData;
+        delete det; // Call destructor for singlePhotonDetector
     }
 
     /** Returns true if the thread was successfully started, false if there was
      * an error starting the thread */
     virtual bool StartThread() {
         stop = 0;
-        cout << "Detector number " << det->getId() << endl;
-        cout << "common mode is " << det->getCommonModeSubtraction() << endl;
-        cout << "ghos summation is " << det->getGhostSummation() << endl;
+        std::cout << "Detector number " << det->getId() << std::endl;
+        std::cout << "common mode is " << det->getCommonModeSubtraction() << std::endl;
+        std::cout << "ghos summation is " << det->getGhostSummation() << std::endl;
+
         return (pthread_create(&_thread, NULL, processData, this) == 0);
     }
 
     virtual void StopThread() {
         stop = 1;
-        (void)pthread_join(_thread, NULL);
+        //std::cout << "Attempting to stop thread..." << std::endl;
+
+        // Free all remaining allocated memory in fifoFree
+        char *mm = nullptr;
+        while (fifoFree->pop(mm, true)) {  // Use no_block to avoid waiting
+            //std::cout << "fifo Free: Freeing memory at: " << static_cast<void*>(mm) << std::endl;
+            free(mm);  // Free the allocated memory
+        }
+
+        if (_thread) {
+            //(void)pthread_join(_thread, NULL);
+            //std::cout << "Calling pthread_join for thread: " << det->getId() << std::endl;
+            pthread_join(_thread, NULL);
+            _thread = 0;
+            std::cout << "Thread " << det->getId() << " stopped and joined." << std::endl;
+        } else {
+            std::cout << "No thread to join." << std::endl;
+        }
     }
 
     virtual bool pushData(char *&ptr) { return fifoData->push(ptr); }
@@ -266,6 +295,8 @@ class threadedAnalogDetector {
     char *data;
     int *ff;
 
+    //char* first_mm = nullptr; // For debug; to track first allocated block
+
     static void *processData(void *ptr) {
         threadedAnalogDetector *This = ((threadedAnalogDetector *)ptr);
         return This->processData();
@@ -278,18 +309,32 @@ class threadedAnalogDetector {
                 usleep(100);
                 if (fifoData->isEmpty()) {
                     busy = 0;
-                } else
+                } else {
                     busy = 1;
-            } else
+                }
+            } else {
                 busy = 1;
+            }
 
             if (busy == 1) {
+                // Check stop flag before making a blocking call
+                //if (stop) {
+                //    break;
+                //}
+
+                // Blocking call
                 fifoData->pop(data); // blocking!
+
+                // Process data if not stopping
+                //if (!stop) {
                 det->processData(data);
                 fifoFree->push(data);
+                    
+                //}
                 // busy=0;
             }
         }
+
         return NULL;
     }
 };
@@ -314,19 +359,25 @@ class multiThreadedAnalogDetector {
             dets[i] = new threadedAnalogDetector(dd[i], fs);
         }
 
-        image = NULL;
+        image = nullptr;
         ff = NULL;
         ped = NULL;
-        cout << "Ithread is " << ithread << endl;
+        std::cout << "Ithread is " << ithread << std::endl;
     }
 
     virtual ~multiThreadedAnalogDetector() {
-        StopThreads();
-        for (int i = 0; i < nThreads; i++)
-            delete dets[i];
-        /* for (int i=1; i<nThreads; i++)  */
-        /*   delete dd[i]; */
-        // delete [] image;
+        //std::cout << "Destructing multiThreadedAnalogDetector..." << std::endl;
+        //StopThreads(); // Superfluous, leads to double delete
+        
+        /* Reverse loop for destruction.
+         * Deletes clones first, then root object, which owns the mutex
+         * (ensure shared mutex is deleted last).
+         * Optional solution: reference counting (safer but more complex) */
+        for (int i = nThreads - 1; i >= 0; --i) {
+            //std::cout << "Deleting dets[" << i << "]" << std::endl;
+            delete dets[i]; //StopThread() called by each ~threadedAnalogDetector()
+        }
+        
     }
 
     virtual int setFrameMode(int fm) {
@@ -359,31 +410,31 @@ class multiThreadedAnalogDetector {
             dets[i]->newDataSet();
     };
 
-    virtual int *getImage(int &nnx, int &nny, int &ns, int &nsy) {
-        int *img;
+    virtual long long int *getImage(int &nnx, int &nny, int &ns, int &nsy) {
+        //int *img;
         // int nnx, nny, ns;
         // int nnx, nny, ns;
         int nn = dets[0]->getImageSize(nnx, nny, ns, nsy);
         if (image) {
             delete[] image;
-            image = NULL;
+            image = nullptr;
         }
-        image = new int[nn];
+        image = new long long int[nn];
         // int nn=dets[0]->getImageSize(nnx, nny, ns);
         // for (i=0; i<nn; i++) image[i]=0;
 
         for (int ii = 0; ii < nThreads; ii++) {
             // cout << ii << " " << nn << " " << nnx << " " << nny << " " << ns
             // << endl;
-            img = dets[ii]->getImage();
+            int* tmp_img = dets[ii]->getImage();
             for (int i = 0; i < nn; i++) {
                 if (ii == 0)
                     //	  if (img[i]>0)
-                    image[i] = img[i];
+                    image[i] = static_cast<long long int>(tmp_img[i]);
                 // else
                 //  image[i]=0;
                 else // if (img[i]>0)
-                    image[i] += img[i];
+                    image[i] += static_cast<long long int>(tmp_img[i]);
                 // if (img[i])	  cout << "det " << ii << " pix " << i << " val
                 // " <<  img[i] << " " << image[i] << endl;
             }
@@ -428,7 +479,13 @@ class multiThreadedAnalogDetector {
             WriteToTiff(gm, imgname, nnx, nny);
             delete[] gm;
         } else
-            cout << "Could not allocate float image " << endl;
+            std::cout << "Could not allocate float image " << std::endl;
+
+        if(image) {
+            delete[] image; // Memory cleanup (VH)
+            image = nullptr;
+        }
+        
         return NULL;
     }
 
@@ -439,6 +496,7 @@ class multiThreadedAnalogDetector {
     }
 
     virtual void StopThreads() {
+        std::cout << "Stopping all threads ..." << std::endl;
         for (int i = 0; i < nThreads; i++)
             dets[i]->StopThread();
     }
@@ -564,7 +622,10 @@ class multiThreadedAnalogDetector {
             WriteToTiff(gm, imgname, nx, ny);
             delete[] gm;
         } else
-            cout << "Could not allocate float image " << endl;
+            std::cout << "Could not allocate float image " << std::endl;
+
+        if(ped)
+            delete[] ped; //Memory cleanup
 
         return NULL;
     };
@@ -584,7 +645,7 @@ class multiThreadedAnalogDetector {
             delete[] gm;
             delete[] rms;
         } else
-            cout << "Could not allocate float image " << endl;
+            std::cout << "Could not allocate float image " << std::endl;
 
         return NULL;
     };
@@ -636,10 +697,10 @@ class multiThreadedAnalogDetector {
     threadedAnalogDetector *dets[MAXTHREADS];
     analogDetector<uint16_t> *dd[MAXTHREADS];
     int ithread;
-    int *image;
+    long long int *image;
     int *ff;
     double *ped;
-    pthread_mutex_t fmutex;
+    //pthread_mutex_t fmutex; //unused
 };
 
 #endif

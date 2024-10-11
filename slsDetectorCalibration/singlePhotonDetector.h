@@ -60,10 +60,10 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
         : analogDetector<uint16_t>(d, sign, cm, nped, nnx, nny, gm, gs),
           nDark(nd), eventMask(NULL), nSigma(nsigma), eMin(-1), eMax(-1),
           clusterSize(csize), clusterSizeY(csize), c2(1), c3(1), clusters(NULL),
-          quad(UNDEFINED_QUADRANT), tot(0), quadTot(0) {
+          quad(UNDEFINED_QUADRANT), tot(0), quadTot(0), ownsMutex(true) {    // The original object owns the mutex {
 
         fm = new pthread_mutex_t;
-	pthread_mutex_init(fm, NULL);
+	    pthread_mutex_init(fm, NULL);
 
         eventMask = new eventType *[ny];
         //  val=new double*[ny];
@@ -86,14 +86,21 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
         nphFrame = 0;
     };
     /**
-       destructor. Deletes the cluster structure, the pdestalSubtraction and the
-       image array
+       Destructor. Deletes the cluster structure, event mask, and destroys the mutex.
     */
     virtual ~singlePhotonDetector() {
         delete[] clusters;
         for (int i = 0; i < ny; i++)
             delete[] eventMask[i];
         delete[] eventMask;
+        if (ownsMutex) {
+            if (fm) {
+                pthread_mutex_destroy(fm); // Destroy the mutex
+                delete fm; // Free the memory allocated for the mutex
+                fm = nullptr;  // Set the pointer to nullptr to avoid dangling pointer
+            }
+        }
+        
     };
 
     /**
@@ -103,7 +110,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
     */
 
     singlePhotonDetector(singlePhotonDetector *orig)
-        : analogDetector<uint16_t>(orig) {
+        : analogDetector<uint16_t>(orig), fm(orig->fm), ownsMutex(false) {
 
         nDark = orig->nDark;
         myFile = orig->myFile;
@@ -130,7 +137,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
         // cluster=clusters;
 
         setClusterSize(clusterSize);
-        fm = orig->fm;
+        //fm = orig->fm;
 
         quad = UNDEFINED_QUADRANT;
         tot = 0;
@@ -381,7 +388,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
 
         // int ir, ic;
         eventType ee;
-        double max = 0, tl = 0, tr = 0, bl = 0, br = 0, *v;
+        double max = 0, tl = 0, tr = 0, bl = 0, br = 0, v = 0;//, *v;
         int cm = 0;
         int good = 1;
         int ir, ic;
@@ -403,7 +410,8 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
             cm = 1;
         }
 
-        double *val = new double[ny * nx];
+        //double *val = new double[ny * nx];
+        std::vector<double> val( ny * nx );
 
         for (int iy = ymin; iy < ymax; ++iy) {
             for (int ix = xmin; ix < xmax; ++ix) {
@@ -435,26 +443,34 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
                             (ix + ic) >= 0 && (ix + ic) < nx) {
 
 
-			  if ((iy + ir) > iy && (ix + ic) > ix ) {
+			                if ((iy + ir) > iy && (ix + ic) > ix ) {
                             
-			    val[(iy + ir) * nx + ix + ic] =
-			      subtractPedestal(data, ix + ic, iy + ir, cm);
+			                    val[(iy + ir) * nx + ix + ic] =
+			                        subtractPedestal(data, ix + ic, iy + ir, cm);
 			    
 			    
-			  }
-			  v = &(val[(iy + ir) * nx + ix + ic]);
-			  tot += *v;
-			  if (ir <= 0 && ic <= 0)
-			    bl += *v;
-			  if (ir <= 0 && ic >= 0)
-			    br += *v;
-			  if (ir >= 0 && ic <= 0)
-			    tl += *v;
-			  if (ir >= 0 && ic >= 0)
-			  tr += *v;
-			  if (*v > max) //{
-			    max = *v;
-			  //}
+			                }
+			                //v = &(val[(iy + ir) * nx + ix + ic]);
+                            v = val[(iy + ir) * nx + ix + ic];
+			                //tot += *v;
+                            tot += v;
+			                if (ir <= 0 && ic <= 0)
+			                    bl += v;
+                                //bl += *v;
+			                if (ir <= 0 && ic >= 0)
+			                    br += v;
+                                //br += *v;
+			                if (ir >= 0 && ic <= 0)
+			                    tl += v;
+                                //tl += *v;
+			                if (ir >= 0 && ic >= 0)
+			                    tr += v;
+                                //tr += *v;
+			                //if (*v > max) //{
+                                //max = *v;
+                            if (v > max)
+			                    max = v;
+			                //}
                         }
                     }
                 }
@@ -523,19 +539,19 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
                              ic < (clusterSize / 2) + 1; ic++) {
                             if ((iy + ir) >= 0 && (iy + ir) < ny &&
                                 (ix + ic) >= 0 && (ix + ic) < nx) {
-			      (clusters + nph)
+			                    (clusters + nph)
                                     ->set_data(val[(iy + ir) * nx + ix + ic],
                                                ic, ir);
-			      if (val[(iy + ir) * nx + ix + ic]>max) 
-				good=0;
-			    }
+			                    if (val[(iy + ir) * nx + ix + ic]>max) 
+				                    good=0;
+			                }
                         }
                     }
-		    if (good==0) {
-		      (clusters + nph)->print();
-		      cout << max << " " <<  val[iy * nx + ix] << endl;
-		    }
-		    //else (clusters + nph)->print();
+		            if (good==0) {
+		                (clusters + nph)->print();
+		                cout << max << " " <<  val[iy * nx + ix] << endl;
+		            }
+		            //else (clusters + nph)->print();
                     good = 1;
                     if (eMin > 0 && tot < eMin)
                         good = 0;
@@ -561,7 +577,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
         // cout <<id << " **********************************"<< iframe << " " <<
         // det->getFrameNumber(data) << " " << nphFrame << endl;
         writeClusters(det->getFrameNumber(data));
-        delete[] val;
+        //delete[] val;
         return image;
     };
 
@@ -733,7 +749,8 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
     int nphFrame;
 
     //    double **val;
-    pthread_mutex_t *fm;
+    pthread_mutex_t* fm;      // Pointer to the shared mutex
+    bool ownsMutex;           // Flag to indicate ownership
 };
 
 #endif

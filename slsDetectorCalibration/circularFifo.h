@@ -50,6 +50,8 @@ template <typename Element> class CircularFifo {
     mutable sem_t data_mutex;
     mutable sem_t free_mutex;
     unsigned int increment(unsigned int idx_) const;
+    int id_;
+    int thread_id_;
 };
 
 template <typename Element> int CircularFifo<Element>::getDataValue() const {
@@ -74,14 +76,18 @@ template <typename Element> int CircularFifo<Element>::getFreeValue() const {
 template <typename Element>
 bool CircularFifo<Element>::push(Element *&item_, bool no_block) {
     // check for fifo full
-    if (no_block && isFull())
-        return false;
+    if (no_block && isFull()) {
+        //std::cout << "Full Fifo at push. Returning." << std::endl;
+        return false; // No space, return immediately
+    }
 
-    sem_wait(&free_mutex);
-    array[tail] = item_;
-    tail = increment(tail);
-    sem_post(&data_mutex);
-    return true;
+    //std::cout << "Thread " << thread_id_ <<" Push Fifo " << id_ << " item " << static_cast<void*>(item_) << std::endl;
+
+    sem_wait(&free_mutex); // Wait for space
+    array[tail] = item_; // Add item to the buffer
+    tail = increment(tail); // Move the tail pointer
+    sem_post(&data_mutex); // Signal that there is new data
+    return true; // Success
 }
 
 /** Consumer only: Removes and returns item from the queue
@@ -94,14 +100,18 @@ bool CircularFifo<Element>::push(Element *&item_, bool no_block) {
 template <typename Element>
 bool CircularFifo<Element>::pop(Element *&item_, bool no_block) {
     // check for fifo empty
-    if (no_block && isEmpty())
-        return false;
+    if (no_block && isEmpty()) {
+        //std::cout << "Empty Fifo at pop. Returning." << std::endl;
+        return false; // No data in fifo, return immediately
+    }
 
-    sem_wait(&data_mutex);
-    item_ = array[head];
-    head = increment(head);
-    sem_post(&free_mutex);
-    return true;
+    //std::cout << "Thread " << thread_id_ << " Pop Fifo " << id_ << " item " << static_cast<void*>(item_) << std::endl;
+
+    sem_wait(&data_mutex); // Wait for data
+    item_ = array[head]; // Retreive item from the current head of the buffer
+    head = increment(head); // Move the head pointer (to point to the next item)
+    sem_post(&free_mutex); // Signal that there is new free space available 
+    return true; //Success
 }
 
 /** Useful for testinng and Consumer check of status

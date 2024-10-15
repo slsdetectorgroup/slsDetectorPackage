@@ -67,57 +67,89 @@ This document describes the differences between v9.0.0 and v8.0.2
         required.
 
 
-    *   Validation for advanced writing register / setting or clearing a bit
-        By default, 
-            - writing to register required bits written equate the bits read back 
-            - setting/clearing a bit required other bits to stay the same. 
-
-        From now on, validation is removed as it is not required. 
-        One can force validation by using --validate in the command line or by
+    *   Write register, Set or Clear bit
+        Validation for this advanced feature has been removed by default. 
+        One can force validation by using --validate in the command line or by 
         setting the validate option in the API.
        
+
+    ZMQ
+    ---
+
+
+    *   Publisher socket constructor does not take an IP anymore.
+        The details are above under 'Removed receiver/publisher ZMQ IP'.
+
 
     Detector Server
     ---------------
 
 
     *   [Mythen3] Only run clock can be set
+        Clock 0 is now the run clock and the only one that can be set. 
+        The others are be read only.
+        This affects the following commands:
+        Command line or python API: clkdiv, clkfreq, clkphase, maxclkphaseshift
+        C++ API: get/setClockDivider, getClockFrequency, get/setClockPhase, 
+        getMaxClockPhaseShift
+
 
 
 2.2 Resolved or Changed Features
 ================================
 
+
     Client
     ======
 
 
-    *   Commands Code Generation
+    *   Command line Code Generation
+        The command line parsing code is now generated from a yaml file. This is
+        transparent to the user.
 
 
     Detector Server
     ---------------
 
 
-    *   Reconfigure the chip after power on
+    *   [Gotthard2] Chip reconfiguration
+
+            -   Powering off/on the chip will now switch off chip configuration 
+                property/ configure the chip every time.
+
+            -   Switching off high voltage from a non zero value will now wait 
+                10s to return for safety reasons.
+
+            -   Powering off the chip requires high voltage to have been 
+                switched off prior.
+
+            -   Acquisition requires chip to have been configured prior.
+
+
+    *   [Gotthard2] Burst mode options restricted
+        Burst mode external and continuous mode internal are not allowed to be set
+        anymore as they are anyway not implemented.
 
 
     Simulator
     ---------
 
 
-    *   Stop variable set up properly
+    *   Refactored stop server to have better start up
 
    
-   
-    Zmq
+    ZMQ
     ---
 
 
-    *   ZMQ Keep alive
+    *   Publiser socket constructor
 
-    *   enable IPv6 interfaces
+        -   enables keep alive socket options to send heartbeat messages to prevent
+            discarded TCP flows if there is no packet for a longer period.
 
-    *   prints error for ENOENT (endpoint does not exist)
+        -   enables IPv6 interfaces
+
+    *   Prints specific error for ENOENT (endpoint does not exist)
 
 
 
@@ -129,25 +161,60 @@ This document describes the differences between v9.0.0 and v8.0.2
     ------
 
 
+    *   Auto completion
+        'source bash_autocomplete.sh' from the main package folder will
+        enable auto completion of commands and arguments for the command line
+        on that terminal.
+
+
     *   sls_detector
+        New executable that can be used instead of 'sls_detector_get' and 
+        'sls_detector_put' for most commands. It will infer from the number of 
+        arguments, which executable (sls_detector_put or sls_detector_get) to use. 
+        For the rare commands that cannot be inferred from the number of arguments,
+        it will complain accordingly.  
 
 
-    *   Command line automatic Generation
-    
+    *   [Jungfrau] Timing Info Decoder (Advanced configuration)
+        Command line or python API: timing_info_decoder
+        C++ API: get/setTimingInfoDecoder. Options: SWISSFEL (Default), SHINE
 
-    *   [Jungfrau] Bunch ID Decoder
 
-
-    *   [Jungfrau] Collection Mode
-    
-    
+    *   [Jungfrau] Collection Mode (Advanced configuration)
+        Command line or python API: collectionmode 
+        C++ API: get/setCollectionMode. Options: ELECTRON, HOLE (Default)
+        Also configures the chip afterwards. 
+        ///////TODO: Only for chip v1.1?
+        
+        
     *   [Gotthard2] Next frame number
+        'Stop' in G2 25um is not synchronous and hence might trigger an extra set
+        of frames in the slave module, resulting in the next acquiistion starting
+        with inconsistent frame numbers between master and slave. Solved by 
+        setting next frame number to the larger value (max + 1) after a stop command. 
+        Requires a firmware update.
+
+        Command line or python API: nextframenumber
+        C++ API: get/setNextFrameNumber
+        Can set/get the starting frame number for the next acquistion.
 
 
     *   [Mythen3] Readout speed
+        Command line, python API: readoutspeed. Options: full_speed (10MHz), 
+        half_speed (20MHz, default), quarter_speed (40MHz)
+        C++ API: get/setReadoutSpeed
+        Also affect: 
+        Command line, python API: readoutspeedlist
+        C++ API: getReadoutSpeedList
 
 
-    * sleep
+    *   Sleep
+        Command line, python/ C++ API:  sleep
+        Client sleeps for required time. Advanced command mainly for firmware
+        developers to use in config files.
+
+
+    *   Xilinx Chip Test Board added
 
 
 

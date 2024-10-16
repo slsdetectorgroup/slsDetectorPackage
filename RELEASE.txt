@@ -260,7 +260,7 @@ This document describes the differences between v9.0.0 and v8.0.2
 
     Gotthard2   03.10.2024 (v1.0)                   (updated in 9.0.0)
 
-    Moench      26.10.2023 (v1.0)                   (updated in 9.0.0)
+    Moench      26.10.2023 (v2.0)                   (updated in 9.0.0)
 
     Gotthard    08.02.2018 (50um and 25um Master)
                 09.02.2018 (25 um Slave) 

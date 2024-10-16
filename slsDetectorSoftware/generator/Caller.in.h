@@ -66,10 +66,13 @@ class Caller {
     int rx_id{-1};
 
   private:
-    bool ReplaceIfDepreciated(std::string &command);
+    bool ReplaceIfDeprecated(std::string &command);
     using FunctionMap = std::map<std::string, std::string (Caller::*)(int)>;
     using StringMap = std::map<std::string, std::string>;
     Detector *ptr; // pointer to the detector that executes the command
+
+    static void EmptyDataCallBack(detectorData *data, uint64_t frameIndex,
+                                  uint32_t subFrameIndex, void *this_pointer);
 
     FunctionMap functions{
         {"list", &Caller::list},
@@ -78,7 +81,7 @@ class Caller {
 
     };
 
-    StringMap depreciated_functions{
+    StringMap deprecated_functions{
 
         // THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (3)
 

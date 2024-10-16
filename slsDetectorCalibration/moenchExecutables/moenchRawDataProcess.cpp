@@ -176,13 +176,12 @@ int main(int argc, char *argv[]) {
     int cf = 0;
 
     int numberOfPackets=nrows/8;
-
 #ifdef RECT
     cout << "Should be rectangular but now it will crash! No data structure defined!" << endl;
 #endif
     
 #ifndef MOENCH04
-    moench03v2Data *decoder = new moench03v2Data(200);
+    moench03v2Data *decoder = new moench03v2Data(nrows/2);
     cout << "MOENCH03 V2!" << endl;
 #endif
 
@@ -471,7 +470,6 @@ int main(int argc, char *argv[]) {
 	      } else {
 		cout << "bp " << ifr << " " << ff << " " << np << endl;
 		
-		break;
 	      }
                 ff = -1;
 

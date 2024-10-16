@@ -1429,8 +1429,8 @@ void Module::setReceiverHostname(const std::string &hostname,
 
     shm()->numUDPInterfaces = retval.udpInterfaces;
 
-    // to use rx_hostname if empty and also update client zmqip
-    updateReceiverStreamingIP();
+    // to use rx_hostname if empty
+    updateClientStreamingIP();
 }
 
 uint16_t Module::getReceiverPort() const { return shm()->rxTCPPort; }
@@ -1654,21 +1654,6 @@ uint16_t Module::getReceiverStreamingPort() const {
 
 void Module::setReceiverStreamingPort(uint16_t port) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
-}
-
-IpAddr Module::getReceiverStreamingIP() const {
-    return sendToReceiver<IpAddr>(F_GET_RECEIVER_STREAMING_SRC_IP);
-}
-
-void Module::setReceiverStreamingIP(const IpAddr ip) {
-    if (ip == 0) {
-        throw RuntimeError("Invalid receiver zmq ip address");
-    }
-    // if client zmqip is empty, update it
-    if (shm()->zmqip == 0) {
-        shm()->zmqip = ip;
-    }
-    sendToReceiver(F_SET_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
 }
 
 uint16_t Module::getClientStreamingPort() const { return shm()->zmqport; }
@@ -1953,6 +1938,22 @@ void Module::setPedestalMode(const defs::pedestalParameters par) {
         value = getNumberOfTriggers();
         sendToReceiver(F_SET_RECEIVER_NUM_TRIGGERS, value, nullptr);
     }
+}
+
+defs::timingInfoDecoder Module::getTimingInfoDecoder() const {
+    return sendToDetector<defs::timingInfoDecoder>(F_GET_TIMING_INFO_DECODER);
+}
+
+void Module::setTimingInfoDecoder(const defs::timingInfoDecoder value) {
+    sendToDetector(F_SET_TIMING_INFO_DECODER, static_cast<int>(value), nullptr);
+}
+
+defs::collectionMode Module::getCollectionMode() const {
+    return sendToDetector<defs::collectionMode>(F_GET_COLLECTION_MODE);
+}
+
+void Module::setCollectionMode(const defs::collectionMode value) {
+    sendToDetector(F_SET_COLLECTION_MODE, static_cast<int>(value), nullptr);
 }
 
 // Gotthard Specific
@@ -2827,18 +2828,20 @@ uint32_t Module::readRegister(uint32_t addr) const {
     return sendToDetectorStop<uint32_t>(F_READ_REGISTER, addr);
 }
 
-uint32_t Module::writeRegister(uint32_t addr, uint32_t val) {
-    uint32_t args[]{addr, val};
-    return sendToDetectorStop<uint32_t>(F_WRITE_REGISTER, args);
+void Module::writeRegister(uint32_t addr, uint32_t val, bool validate) {
+    uint32_t args[]{addr, val, static_cast<uint32_t>(validate)};
+    return sendToDetectorStop(F_WRITE_REGISTER, args, nullptr);
 }
 
-void Module::setBit(uint32_t addr, int n) {
-    uint32_t args[2] = {addr, static_cast<uint32_t>(n)};
+void Module::setBit(uint32_t addr, int n, bool validate) {
+    uint32_t args[] = {addr, static_cast<uint32_t>(n),
+                       static_cast<uint32_t>(validate)};
     sendToDetectorStop(F_SET_BIT, args, nullptr);
 }
 
-void Module::clearBit(uint32_t addr, int n) {
-    uint32_t args[2] = {addr, static_cast<uint32_t>(n)};
+void Module::clearBit(uint32_t addr, int n, bool validate) {
+    uint32_t args[] = {addr, static_cast<uint32_t>(n),
+                       static_cast<uint32_t>(validate)};
     sendToDetectorStop(F_CLEAR_BIT, args, nullptr);
 }
 
@@ -3613,18 +3616,19 @@ void Module::receiveModule(sls_detector_module *myMod, ClientSocket &client) {
     LOG(level) << myMod->nchan << " chans received";
 }
 
-void Module::updateReceiverStreamingIP() {
-    auto ip = getReceiverStreamingIP();
+void Module::updateClientStreamingIP() {
+    auto ip = getClientStreamingIP();
     if (ip == 0) {
         // Hostname could be ip try to decode otherwise look up the hostname
         ip = IpAddr{shm()->rxHostname};
         if (ip == 0) {
             ip = HostnameToIp(shm()->rxHostname);
         }
-        LOG(logINFO) << "Setting default receiver " << moduleIndex
-                     << " streaming zmq ip to " << ip;
+        LOG(logINFO) << "Setting default module " << moduleIndex
+                     << " zmq ip to " << ip;
+
+        setClientStreamingIP(ip);
     }
-    setReceiverStreamingIP(ip);
 }
 
 void Module::updateRateCorrection() {

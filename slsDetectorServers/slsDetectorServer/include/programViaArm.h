@@ -5,8 +5,12 @@
 #include <sys/types.h>
 
 int resetFPGA(char *mess);
-int loadDeviceTree(char *mess, int *adcDeviceIndex, int *dacDeviceIndex);
+int loadDeviceTree(char *mess);
 
 int checksBeforeCreatingDeviceTree(char *mess);
 int createDeviceTree(char *mess);
-int verifyDeviceTree(char *mess, int *adcDeviceIndex, int *dacDeviceIndex);
+int verifyDeviceTree(char *mess);
+#ifndef VIRTUAL
+int createSymbolicLinksForDevices(int adcDeviceIndex, int dacDeviceIndex,
+                                  char *mess);
+#endif

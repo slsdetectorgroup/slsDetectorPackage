@@ -404,6 +404,10 @@ int InferAction::clearbit() {
         return slsDetectorDefs::PUT_ACTION;
     }
 
+    if (args.size() == 3) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
     else {
 
         throw RuntimeError("Could not infer action: Wrong number of arguments");
@@ -487,6 +491,22 @@ int InferAction::clkphase() {
     }
 
     if (args.size() == 3) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
+int InferAction::collectionmode() {
+
+    if (args.size() == 0) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
+    if (args.size() == 1) {
         return slsDetectorDefs::PUT_ACTION;
     }
 
@@ -2490,6 +2510,10 @@ int InferAction::reg() {
         return slsDetectorDefs::PUT_ACTION;
     }
 
+    if (args.size() == 3) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
     else {
 
         throw RuntimeError("Could not infer action: Wrong number of arguments");
@@ -2993,18 +3017,8 @@ int InferAction::rx_zmqhwm() {
 
 int InferAction::rx_zmqip() {
 
-    if (args.size() == 0) {
-        return slsDetectorDefs::GET_ACTION;
-    }
-
-    if (args.size() == 1) {
-        return slsDetectorDefs::PUT_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
+    throw RuntimeError("sls_detector is disabled for command: rx_zmqip. Use "
+                       "sls_detector_get or sls_detector_put");
 }
 
 int InferAction::rx_zmqport() {
@@ -3153,6 +3167,10 @@ int InferAction::setbit() {
         return slsDetectorDefs::PUT_ACTION;
     }
 
+    if (args.size() == 3) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
     else {
 
         throw RuntimeError("Could not infer action: Wrong number of arguments");
@@ -3225,6 +3243,22 @@ int InferAction::signalname() {
 
     if (args.size() == 1) {
         return slsDetectorDefs::GET_ACTION;
+    }
+
+    if (args.size() == 2) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
+int InferAction::sleep() {
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::PUT_ACTION;
     }
 
     if (args.size() == 2) {
@@ -3688,6 +3722,22 @@ int InferAction::threshold() {
 }
 
 int InferAction::timing() {
+
+    if (args.size() == 0) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
+int InferAction::timing_info_decoder() {
 
     if (args.size() == 0) {
         return slsDetectorDefs::GET_ACTION;

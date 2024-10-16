@@ -19,7 +19,7 @@ using test::PUT;
 
 /* dacs */
 
-TEST_CASE("CALLER::configtransceiver", "[.cmdcall]") {
+TEST_CASE("configtransceiver", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();

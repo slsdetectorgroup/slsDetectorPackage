@@ -8,7 +8,7 @@ class Register:
         return self._detector.readRegister(key)
 
     def __setitem__(self, key, value):
-        self._detector.writeRegister(key, value)
+        self._detector.writeRegister(key, value, False)
 
 class Adc_register:
     def __init__(self, detector):

@@ -172,6 +172,14 @@ uint32_t AD9257_DigMask = 0x0;
 int AD9257_DigOffset = 0x0;
 int AD9257_VrefVoltage = 0;
 
+#ifdef JUNGFRAUD
+int AD9257_is_Jungfrau_Hardware_Version_1_0 = 0;
+
+void AD9257_Set_Jungfrau_Hardware_Version_1_0(int val) {
+    AD9257_is_Jungfrau_Hardware_Version_1_0 = val;
+}
+#endif
+
 void AD9257_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk,
                        uint32_t dmsk, int dofst) {
     AD9257_Reg = reg;
@@ -286,8 +294,18 @@ void AD9257_Configure() {
                AD9257_OUT_BINARY_OFST_VAL | AD9257_OUT_LVDS_IEEE_VAL);
 
     // output clock phase
+#ifdef JUNGFRAUD
+    if (AD9257_is_Jungfrau_Hardware_Version_1_0) {
+        LOG(logINFO, ("\tOutput clock phase: 120\n"));
+        AD9257_Set(AD9257_OUT_PHASE_REG, AD9257_OUT_CLK_120_VAL);
+    } else {
+        LOG(logINFO, ("\tOutput clock phase: 180\n"));
+        AD9257_Set(AD9257_OUT_PHASE_REG, AD9257_OUT_CLK_180_VAL);
+    }
+#else
     LOG(logINFO, ("\tOutput clock phase: 180\n"));
     AD9257_Set(AD9257_OUT_PHASE_REG, AD9257_OUT_CLK_180_VAL);
+#endif
 
     // all devices on chip to receive next command
     LOG(logINFO, ("\tAll devices on chip to receive next command\n"));

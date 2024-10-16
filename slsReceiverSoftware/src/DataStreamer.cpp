@@ -84,11 +84,10 @@ void DataStreamer::RecordFirstIndex(uint64_t fnum, size_t firstImageIndex) {
                    << ", First Streamer Index:" << fnum;
 }
 
-void DataStreamer::CreateZmqSockets(uint16_t port, const IpAddr ip, int hwm) {
+void DataStreamer::CreateZmqSockets(uint16_t port, int hwm) {
     uint16_t portnum = port + index;
-    std::string sip = ip.str();
     try {
-        zmqSocket = new ZmqSocket(portnum, (ip != 0 ? sip.c_str() : nullptr));
+        zmqSocket = new ZmqSocket(portnum);
 
         // set if custom
         if (hwm >= 0) {

@@ -34,25 +34,19 @@ class ClientInterface : private virtual slsDetectorDefs {
 
     //***callback functions***
     /** params: file path, file name, file index, image size */
-    void registerCallBackStartAcquisition(int (*func)(const std::string &,
-                                                      const std::string &,
-                                                      uint64_t, size_t, void *),
+    void registerCallBackStartAcquisition(int (*func)(const startCallbackHeader,
+                                                      void *),
                                           void *arg);
 
     /** params: total frames caught */
-    void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void *),
-                                             void *arg);
+    void registerCallBackAcquisitionFinished(
+        void (*func)(const endCallbackHeader, void *), void *arg);
 
     /** params: sls_receiver_header, pointer to data, image size */
     void registerCallBackRawDataReady(void (*func)(sls_receiver_header &,
-                                                   char *, size_t, void *),
+                                                   const dataCallbackHeader,
+                                                   char *, size_t &, void *),
                                       void *arg);
-
-    /** params: sls_receiver_header, pointer to data, reference to image size */
-    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header &,
-                                                         char *, size_t &,
-                                                         void *),
-                                            void *arg);
 
   private:
     void startTCPServer();
@@ -117,8 +111,6 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_file_format(ServerInterface &socket);
     int set_streaming_port(ServerInterface &socket);
     int get_streaming_port(ServerInterface &socket);
-    int set_streaming_source_ip(ServerInterface &socket);
-    int get_streaming_source_ip(ServerInterface &socket);
     int set_silent_mode(ServerInterface &socket);
     int get_silent_mode(ServerInterface &socket);
     int restream_stop(ServerInterface &socket);
@@ -188,15 +180,14 @@ class ClientInterface : private virtual slsDetectorDefs {
 
     //***callback parameters***
 
-    int (*startAcquisitionCallBack)(const std::string &, const std::string &,
-                                    uint64_t, size_t, void *) = nullptr;
+    int (*startAcquisitionCallBack)(const startCallbackHeader,
+                                    void *) = nullptr;
     void *pStartAcquisition{nullptr};
-    void (*acquisitionFinishedCallBack)(uint64_t, void *) = nullptr;
+    void (*acquisitionFinishedCallBack)(const endCallbackHeader,
+                                        void *) = nullptr;
     void *pAcquisitionFinished{nullptr};
-    void (*rawDataReadyCallBack)(sls_receiver_header &, char *, size_t,
-                                 void *) = nullptr;
-    void (*rawDataModifyReadyCallBack)(sls_receiver_header &, char *, size_t &,
-                                       void *) = nullptr;
+    void (*rawDataReadyCallBack)(sls_receiver_header &, dataCallbackHeader,
+                                 char *, size_t &, void *) = nullptr;
     void *pRawDataReady{nullptr};
 
     pid_t parentThreadId{0};

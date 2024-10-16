@@ -449,6 +449,7 @@ void initControlServer() {
 void initStopServer() {
     if (!updateFlag && initError == OK) {
         usleep(CTRL_SRVR_INIT_TIME_US);
+        LOG(logINFOBLUE, ("Configuring Stop server\n"));
         if (mapCSP0() == FAIL) {
             initError = FAIL;
             strcpy(initErrorMessage,
@@ -458,7 +459,7 @@ void initStopServer() {
             return;
         }
 #ifdef VIRTUAL
-        sharedMemory_setStop(0);
+        setupDetector();
 #endif
     }
     initCheckDone = 1;
@@ -512,10 +513,16 @@ void setupDetector() {
     ndSamples = 1;
     ntSamples = 1;
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    initializePatternWord();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        initializePatternWord();
+    } else {
+        sharedMemory_setStop(0);
+    }
 #endif
-    setupUDPCommParameters();
+    if (isControlServer) {
+        setupUDPCommParameters();
+    }
 
     // altera pll
     ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG,

@@ -4,6 +4,10 @@
 
 #include <inttypes.h>
 
+#ifdef JUNGFRAUD
+void AD9257_Set_Jungfrau_Hardware_Version_1_0(int val);
+#endif
+
 /**
  * Set Defines
  * @param reg spi register

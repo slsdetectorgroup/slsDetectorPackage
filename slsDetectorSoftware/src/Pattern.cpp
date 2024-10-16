@@ -149,7 +149,7 @@ void Pattern::load(const std::string &fname) {
                     level = StringTo<int>(args[iArg++]);
                 } else {
                     LOG(logWARNING)
-                        << "Depreciated command. Please use patloop next time.";
+                        << "Deprecated command. Please use patloop next time.";
                     if (nargs != 2) {
                         throw RuntimeError("Invalid arguments for " +
                                            ToString(args));
@@ -174,7 +174,7 @@ void Pattern::load(const std::string &fname) {
                     }
                     level = StringTo<int>(args[iArg++]);
                 } else {
-                    LOG(logWARNING) << "Depreciated command. Please use "
+                    LOG(logWARNING) << "Deprecated command. Please use "
                                        "patnloop next time.";
                     if (nargs != 1) {
                         throw RuntimeError("Invalid arguments for " +
@@ -198,7 +198,7 @@ void Pattern::load(const std::string &fname) {
                     level = StringTo<int>(args[iArg++]);
                 } else {
                     LOG(logWARNING)
-                        << "Depreciated command. Please use patwait next time.";
+                        << "Deprecated command. Please use patwait next time.";
                     if (nargs != 1) {
                         throw RuntimeError("Invalid arguments for " +
                                            ToString(args));
@@ -220,7 +220,7 @@ void Pattern::load(const std::string &fname) {
                     }
                     level = StringTo<int>(args[iArg++]);
                 } else {
-                    LOG(logWARNING) << "Depreciated command. Please use "
+                    LOG(logWARNING) << "Deprecated command. Please use "
                                        "patwaittime next time.";
                     if (nargs != 1) {
                         throw RuntimeError("Invalid arguments for " +

@@ -78,7 +78,7 @@ u_int32_t readRegister(u_int32_t offset);
  * @param offset address offset
  * @param data 32 bit data
  */
-u_int32_t writeRegister(u_int32_t offset, u_int32_t data);
+void writeRegister(u_int32_t offset, u_int32_t data);
 
 /**
  * Map FPGA

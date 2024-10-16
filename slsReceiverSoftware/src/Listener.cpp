@@ -81,10 +81,6 @@ void Listener::SetEthernetInterface(const std::string e) {
     if (eth.find('.') != std::string::npos) {
         eth = "";
     }
-    if (!eth.length()) {
-        LOG(logWARNING) << "ethernet interface for udp port " << udpPortNumber
-                        << " is empty. Listening to all";
-    }
 }
 
 void Listener::SetActivate(bool enable) {
@@ -153,12 +149,15 @@ void Listener::CreateUDPSocket(int &actualSize) {
             packetSize = generalData->vetoPacketSize;
         }
 
+        std::string ip =
+            (eth.length() ? InterfaceNameToIp(eth).str().c_str() : "");
+
         udpSocket = nullptr;
         udpSocket = make_unique<UdpRxSocket>(
-            udpPortNumber, packetSize,
-            (eth.length() ? InterfaceNameToIp(eth).str().c_str() : nullptr),
+            udpPortNumber, packetSize, (ip.length() ? ip.c_str() : nullptr),
             generalData->udpSocketBufferSize);
-        LOG(logINFO) << index << ": UDP port opened at port " << udpPortNumber;
+        LOG(logINFO) << index << ": UDP port opened at port " << udpPortNumber
+                     << " (" << (ip.length() ? ip : "any") << ')';
 
         udpSocketAlive = true;
 

@@ -25,18 +25,20 @@
 #define DYNAMIC_RANGE       (16)
 #define NUM_BYTES_PER_PIXEL (DYNAMIC_RANGE / 8)
 
-#define DAC_DRIVER_NUM_DEVICES (3)
-#define DAC_DRIVER_FILE_NAME                                                   \
-    ("/sys/bus/iio/devices/iio:device%d/out_voltage%d_raw")
-#define DAC_POWERDOWN_DRIVER_FILE_NAME                                         \
-    ("/sys/bus/iio/devices/iio:device%d/out_voltage%d_powerdown")
+#define MAIN_APP_FOLDER            "/root/apps/xilinx-ctb"
+#define FIRMWARE_FILE              MAIN_APP_FOLDER "/XilinxCTB.bit"
+#define DEVICE_TREE_OVERLAY_FILE   MAIN_APP_FOLDER "/pl.dtbo"
+#define CURRENT_BOARD_LINKS_FOLDER MAIN_APP_FOLDER "/current_board_links"
+#define IIO_DEVICE_FOLDER          MAIN_APP_FOLDER "/iio_device_links"
 
-#define SLOWADC_DRIVER_FILE_NAME                                               \
-    ("/sys/bus/iio/devices/iio:device%d/in_voltage%d_raw")
-//#define SLOWDAC_CONVERTION_FACTOR_TO_UV (62.500953)
+#define DEVICE_TREE_DST        "/sys/bus/iio/devices/iio:device"
+#define DEVICE_NAME_LIST       "xilinx-ams", "ad7689", "dac@0", "dac@1", "dac@2"
+#define DEVICE_TREE_API_FOLDER "/sys/kernel/config/device-tree/overlays/spidr"
 
-#define TEMP_DRIVER_FILE_NAME                                                  \
-    ("/sys/bus/iio/devices/iio:device0/in_temp7_input")
+#define DAC_DRIVER_FILE_NAME           CURRENT_BOARD_LINKS_FOLDER "/ao%d"
+#define DAC_POWERDOWN_DRIVER_FILE_NAME CURRENT_BOARD_LINKS_FOLDER "/ao%d_pd"
+#define SLOWADC_DRIVER_FILE_NAME       CURRENT_BOARD_LINKS_FOLDER "/ai%d"
+#define TEMP_DRIVER_FILE_NAME          DEVICE_TREE_DST "0/in_temp7_input"
 
 /** Default Parameters */
 #define DEFAULT_NUM_FRAMES            (1)
@@ -60,8 +62,11 @@
 #define MAX_ANALOG_SAMPLES  (0x3FFF)
 #define MAX_DIGITAL_SAMPLES (0x3FFF)
 
-#define DAC_MIN_MV (0)
-#define DAC_MAX_MV (2500)
+#define DAC_MIN_MV      (0)
+#define DAC_MAX_MV      (2048)
+#define POWER_RGLTR_MIN (1041)
+#define POWER_RGLTR_MAX (2661)
+#define VIO_MIN_MV      (1200) // for fpga to function
 
 #define TICK_CLK (20) // MHz (trig_timeFromStart, frametime, timeFromStart)
 #define RUN_CLK                                                                \
@@ -117,28 +122,35 @@ enum DACINDEX {
     D_PWR_C
 };
 
+#define PWR_NAMES "D", "_unknown", "IO", "A", "B", "C"
+
 /* Struct Definitions */
+// For arm has to be multiple of 16
+// We dont byteswap in the upd_gen so the order has to be different
 typedef struct udp_header_struct {
-    uint32_t udp_destmac_msb;
     uint16_t udp_srcmac_msb;
     uint16_t udp_destmac_lsb;
-    uint32_t udp_srcmac_lsb;
+    uint32_t udp_destmac_msb;
     uint8_t ip_tos;
     uint8_t ip_ihl : 4, ip_ver : 4;
     uint16_t udp_ethertype;
-    uint16_t ip_identification;
-    uint16_t ip_totallength;
+    uint32_t udp_srcmac_lsb;
     uint8_t ip_protocol;
     uint8_t ip_ttl;
     uint16_t ip_fragmentoffset : 13, ip_flags : 3;
-    uint16_t ip_srcip_msb;
-    uint16_t ip_checksum;
+    uint16_t ip_identification;
+    uint16_t ip_totallength;
     uint16_t ip_destip_msb;
     uint16_t ip_srcip_lsb;
-    uint16_t udp_srcport;
-    uint16_t ip_destip_lsb;
+    uint16_t ip_srcip_msb;
+    uint16_t ip_checksum;
     uint16_t udp_checksum;
     uint16_t udp_destport;
+    uint16_t udp_srcport;
+    uint16_t ip_destip_lsb;
+    // padding
+    uint32_t padding0;
+    uint32_t padding1;
 } udp_header;
 
 #define IP_HEADER_SIZE             (20)

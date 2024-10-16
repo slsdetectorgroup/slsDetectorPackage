@@ -1,0 +1,129 @@
+BIT0 gHG
+BIT1 DGS6 1
+BIT2 pulse
+BIT3 DGS7 1
+BIT4 clearSSR
+BIT5 DGS8 1
+BIT6 inSSR
+BIT7 DGS9 1
+BIT8 clkSSR
+BIT9 clk_fb
+BIT10 prechargeConnect
+BIT11 clk
+BIT12 clear
+BIT13 shr_out_15
+BIT14 bypassCDS
+BIT15 Sto2
+BIT16 ENprechPre
+BIT17 Sto0_bot
+BIT18 pulseOFF
+BIT19 Sto1
+BIT20 BYPASS
+BIT21 connCDS
+BIT22 Dsg3
+BIT23 OutSSRbot
+BIT24 resCDS
+BIT25 res
+BIT26 shr_out_31
+BIT27 Dsg1
+BIT28 READ
+BIT29 Sto0_top
+BIT30 resDGS
+BIT31 shr_in
+BIT48 DGS23 1
+BIT49 DGS31 1
+BIT50 DGS22 1
+BIT51 DGS30 1
+BIT52 DGS21 1
+BIT53 DGS29 1
+BIT54 DGS20 1
+BIT55 DGS28 1
+BIT56 DGS19 1
+BIT57 DGS27 1
+BIT58 DGS18 1
+BIT59 DGS26 1
+BIT60 DGS17 1
+BIT61 DGS25 1
+BIT62 DGS16 1
+BIT63 DGS24 1
+
+#BIT62 dbit_ena
+#BIT63 adc_ena
+
+SENSE3 T_boa.(C)
+SENSE1 Va+
+SENSE6 Vdd_ps
+SENSE4 Vsh
+SENSE2 Vcc_int
+SENSE0 Vcc_iochip
+SENSE7 Vcc1.8A
+SENSE5 Vcc1.8D
+
+DAC0 VprechPre
+DAC1 prechargeV
+DAC2 vb_sda
+DAC3 vbp_colbuf
+DAC4 vcasc_SFP
+DAC5 ibias_SFP
+DAC6 vIpreCDS
+DAC7 vin_com_bot
+DAC8 vIpre
+DAC9 s2dVinTest
+DAC10 VPH
+DAC11 vIpreDGS
+DAC12 vrefDGS
+DAC13 empty13
+DAC14 vin_com_top
+DAC15 VPL
+DAC16 vout_com
+DAC17 empty17
+
+ADC0 SCOL9 1
+ADC1 SCOL8 1
+ADC2 SCOL11 1
+ADC3 SCOL10 1
+ADC4 SCOL13 1
+ADC5 SCOL12 1
+ADC6 SCOL15 1
+ADC7 SCOL14 1
+
+ADC8 SCOL1 1
+ADC9 SCOL0 1
+ADC10 SCOL3 1  
+ADC11 SCOL2 1
+ADC12 SCOL5 1
+ADC13 SCOL4 1
+ADC14 SCOL7 1
+ADC15 SCOL6 1
+
+ADC16 SCOL23 1
+ADC17 SCOL22 1
+ADC18 SCOL21 1
+ADC19 SCOL20 1
+ADC20 SCOL19 1
+ADC21 SCOL18 1
+ADC22 SCOL17 1
+ADC23 SCOL16 1
+
+ADC24 SCOL31 1
+ADC25 SCOL30 1
+ADC26 SCOL29 1
+ADC27 SCOL28 1
+ADC28 SCOL27 1
+ADC29 SCOL26 1 
+ADC30 SCOL25 1
+ADC31 SCOL24 1
+
+VA VddA
+VB VddPre
+VIO VddD
+
+#location of the pattern compiler
+#PATCOMPILER /afs/psi.ch/project/sls_det_software/slsDetectorsPackage/slsDetectorSoftware/patternGenerator/generate.sh
+PATCOMPILER /afs/psi.ch/project/sls_det_software/sabina/slsDetectorPackage/ctbGui/patternGenerator/generate.sh
+#location of the pattern to run
+#PATFILE /afs/psi.ch/user/d/dinapoli/jctb/moench02_rob/patterns_newctb/moench02_pulsing_marco.p
+#PATFILE /afs/psi.ch/project/sls_det_software/sabina/moench04/patterns/moench04_readout_g4.p
+#PATFILE /afs/psi.ch/user/m/maliakal_d/setupfiles/ctb_julian.pat
+#PATFILE /tmp/bla.p
+#PATFILE /afs/psi.ch/project/mythen/Moench04/moench04_pulsing_readout_g4.p

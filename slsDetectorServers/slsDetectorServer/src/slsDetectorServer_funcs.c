@@ -492,6 +492,10 @@ void function_table() {
     flist[F_GET_PEDESTAL_MODE] = &get_pedestal_mode;
     flist[F_SET_PEDESTAL_MODE] = &set_pedestal_mode;
     flist[F_CONFIG_TRANSCEIVER] = &config_transceiver;
+    flist[F_GET_TIMING_INFO_DECODER] = &get_timing_info_decoder;
+    flist[F_SET_TIMING_INFO_DECODER] = &set_timing_info_decoder;
+    flist[F_GET_COLLECTION_MODE] = &get_collection_mode;
+    flist[F_SET_COLLECTION_MODE] = &set_collection_mode;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -1214,12 +1218,39 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
         // high voltage
 #ifndef XILINX_CHIPTESTBOARDD
     case HIGH_VOLTAGE:
+
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+        if ((val != -1 && val < 0) || (val > HV_SOFT_MAX_VOLTAGE)) {
+            ret = FAIL;
+            sprintf(mess, "Invalid Voltage. Valid range (0 - %d)\n",
+                    HV_SOFT_MAX_VOLTAGE);
+            LOG(logERROR, (mess));
+        } else {
+            if (val >= 0) {
+                ret = setHighVoltage(val);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not set high voltage.\n");
+                    LOG(logERROR, (mess));
+                }
+            }
+            if (ret == OK) {
+                ret = getHighVoltage(&retval);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not get high voltage.\n");
+                    LOG(logERROR, (mess));
+                }
+                LOG(logDEBUG1, ("High Voltage: %d\n", retval));
+                validate(&ret, mess, val, retval, "set high voltage", DEC);
+            }
+        }
+#else
         retval = setHighVoltage(val);
         LOG(logDEBUG1, ("High Voltage: %d\n", retval));
-#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) ||       \
-    defined(GOTTHARD2D) || defined(MYTHEN3D)
+#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD)
         validate(&ret, mess, val, retval, "set high voltage", DEC);
 #endif
+#endif
+
 #ifdef GOTTHARDD
         if (retval == -1) {
             ret = FAIL;
@@ -1270,7 +1301,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                         ind, getVLimit());
                 LOG(logERROR, (mess));
             }
-#ifdef CHIPTESTBOARDD
+
             else if (!isPowerValid(serverDacIndex, val)) {
                 ret = FAIL;
                 sprintf(
@@ -1279,10 +1310,14 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                     "should be between %d and %d mV\n",
                     ind,
                     (serverDacIndex == D_PWR_IO ? VIO_MIN_MV : POWER_RGLTR_MIN),
+#ifdef CHIPTESTBOARDD
                     (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT));
+#else
+                    POWER_RGLTR_MAX);
+#endif
                 LOG(logERROR, (mess));
             }
-#endif
+
             else {
                 setPower(serverDacIndex, val);
             }
@@ -1618,40 +1653,35 @@ int get_adc(int file_des) {
 int write_register(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint32_t args[2] = {-1, -1};
-    uint32_t retval = -1;
+    uint32_t args[3] = {-1, -1, -1};
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     uint32_t addr = args[0];
     uint32_t val = args[1];
-    LOG(logDEBUG1, ("Writing to register 0x%x, data 0x%x\n", addr, val));
+    uint32_t validate = args[2];
+    LOG(logDEBUG1, ("Writing to register 0x%x, data 0x%x, validate:%d\n", addr,
+                    val, validate));
 
     // only set
     if (Server_VerifyLock() == OK) {
-#ifdef GOTTHARDD
-        retval = writeRegister16And32(addr, val);
-#elif EIGERD
-        if (writeRegister(addr, val) == FAIL) {
+#if EIGERD
+        if (writeRegister(addr, val, validate) == FAIL) {
             ret = FAIL;
             sprintf(mess, "Could not write to register 0x%x.\n", addr);
             LOG(logERROR, (mess));
-        } else {
-            if (readRegister(addr, &retval) == FAIL) {
-                ret = FAIL;
-                sprintf(
-                    mess,
-                    "Could not read register 0x%x or inconsistent values. Try "
-                    "to read +0x100 for only left and +0x200 for only right.\n",
-                    addr);
-                LOG(logERROR, (mess));
-            }
         }
 #else
-        retval = writeRegister(addr, val);
+#ifdef GOTTHARDD
+        writeRegister16And32(addr, val);
+        uint32_t retval = readRegister16And32(addr);
+#else
+        writeRegister(addr, val);
+        uint32_t retval = readRegister(addr);
 #endif
+        LOG(logDEBUG1, ("Write register retval (0x%x): 0x%x\n", addr, retval));
         // validate
-        if (ret == OK && retval != val) {
+        if (validate && ret == OK && retval != val) {
             ret = FAIL;
             sprintf(
                 mess,
@@ -1659,9 +1689,9 @@ int write_register(int file_des) {
                 addr, val, retval);
             LOG(logERROR, (mess));
         }
-        LOG(logDEBUG1, ("Write register (0x%x): 0x%x\n", retval));
+#endif
     }
-    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int read_register(int file_des) {
@@ -1676,9 +1706,7 @@ int read_register(int file_des) {
     LOG(logDEBUG1, ("Reading from register 0x%x\n", addr));
 
     // get
-#ifdef GOTTHARDD
-    retval = readRegister16And32(addr);
-#elif EIGERD
+#if EIGERD
     if (readRegister(addr, &retval) == FAIL) {
         ret = FAIL;
         sprintf(mess,
@@ -1687,6 +1715,8 @@ int read_register(int file_des) {
                 addr);
         LOG(logERROR, (mess));
     }
+#elif GOTTHARDD
+    retval = readRegister16And32(addr);
 #else
     retval = readRegister(addr);
 #endif
@@ -1973,123 +2003,123 @@ int acquire(int blocking, int file_des) {
     }
     // only set
     if (Server_VerifyLock() == OK) {
-#if defined(XILINX_CHIPTESTBOARDD)
+#if defined(XILINX_CHIPTESTBOARDD) || defined(GOTTHARD2D)
         if (!isChipConfigured()) {
             ret = FAIL;
             strcpy(mess, "Could not start acquisition. Chip is not configured. "
                          "Power it on to configure it.\n");
             LOG(logERROR, (mess));
-        } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
-                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                   (isTransceiverAligned() == 0)) {
+        }
+#if defined(XILINX_CHIPTESTBOARDD)
+        else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
+                  getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                 (isTransceiverAligned() == 0)) {
             ret = FAIL;
             strcpy(mess, "Could not start acquisition. Transceiver not "
                          "aligned. Use configtransceiver command.\n");
             LOG(logERROR, (mess));
-        } else
+        }
+#endif
+        else
 #endif
 #if defined(JUNGFRAUD)
             // chipv1.1 has to be configured before acquisition
             if (getChipVersion() == 11 && !isChipConfigured()) {
-                ret = FAIL;
-                strcpy(mess,
-                       "Could not start acquisition. Chip is not configured. "
-                       "Power it on to configure it.\n");
-                LOG(logERROR, (mess));
-            } else
+            ret = FAIL;
+            strcpy(mess, "Could not start acquisition. Chip is not configured. "
+                         "Power it on to configure it.\n");
+            LOG(logERROR, (mess));
+        } else
 #endif
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
-                if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                     getReadoutMode() == ANALOG_ONLY) &&
-                    (getNumAnalogSamples() <= 0)) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not start acquisition. Invalid number of analog "
-                        "samples: %d.\n",
-                        getNumAnalogSamples());
-                LOG(logERROR, (mess));
-            } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                        getReadoutMode() == DIGITAL_ONLY ||
-                        getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                       (getNumDigitalSamples() <= 0)) {
-                ret = FAIL;
-                sprintf(
-                    mess,
+            if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
+                 getReadoutMode() == ANALOG_ONLY) &&
+                (getNumAnalogSamples() <= 0)) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not start acquisition. Invalid number of analog "
+                    "samples: %d.\n",
+                    getNumAnalogSamples());
+            LOG(logERROR, (mess));
+        } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
+                    getReadoutMode() == DIGITAL_ONLY ||
+                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                   (getNumDigitalSamples() <= 0)) {
+            ret = FAIL;
+            sprintf(mess,
                     "Could not start acquisition. Invalid number of digital "
                     "samples: %d.\n",
                     getNumDigitalSamples());
-                LOG(logERROR, (mess));
-            } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
-                        getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                       (getNumTransceiverSamples() <= 0)) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not start acquisition. Invalid number of "
-                        "transceiver "
-                        "samples: %d.\n",
-                        getNumTransceiverSamples());
-                LOG(logERROR, (mess));
-            } else
+            LOG(logERROR, (mess));
+        } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
+                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                   (getNumTransceiverSamples() <= 0)) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not start acquisition. Invalid number of "
+                    "transceiver "
+                    "samples: %d.\n",
+                    getNumTransceiverSamples());
+            LOG(logERROR, (mess));
+        } else
 #endif
 #ifdef EIGERD
-                // check for hardware mac and hardware ip
-                if (udpDetails[0].srcmac != getDetectorMAC()) {
-                    ret = FAIL;
-                    uint64_t sourcemac = getDetectorMAC();
-                    char src_mac[MAC_ADDRESS_SIZE];
-                    getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
-                    sprintf(mess,
-                            "Invalid udp source mac address for this detector. "
-                            "Must be "
-                            "same as hardware detector mac address %s\n",
-                            src_mac);
-                    LOG(logERROR, (mess));
-                } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                           (udpDetails[0].srcip != getDetectorIP())) {
-                    ret = FAIL;
-                    uint32_t sourceip = getDetectorIP();
-                    char src_ip[INET_ADDRSTRLEN];
-                    getIpAddressinString(src_ip, sourceip);
-                    sprintf(
-                        mess,
-                        "Invalid udp source ip address for this detector. Must "
-                        "be "
-                        "same as hardware detector ip address %s in 1G readout "
-                        "mode \n",
-                        src_ip);
-                    LOG(logERROR, (mess));
-                } else
+            // check for hardware mac and hardware ip
+            if (udpDetails[0].srcmac != getDetectorMAC()) {
+            ret = FAIL;
+            uint64_t sourcemac = getDetectorMAC();
+            char src_mac[MAC_ADDRESS_SIZE];
+            getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
+            sprintf(mess,
+                    "Invalid udp source mac address for this detector. "
+                    "Must be "
+                    "same as hardware detector mac address %s\n",
+                    src_mac);
+            LOG(logERROR, (mess));
+        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
+                   (udpDetails[0].srcip != getDetectorIP())) {
+            ret = FAIL;
+            uint32_t sourceip = getDetectorIP();
+            char src_ip[INET_ADDRSTRLEN];
+            getIpAddressinString(src_ip, sourceip);
+            sprintf(mess,
+                    "Invalid udp source ip address for this detector. Must "
+                    "be "
+                    "same as hardware detector ip address %s in 1G readout "
+                    "mode \n",
+                    src_ip);
+            LOG(logERROR, (mess));
+        } else
 #endif
-                    if (configured == FAIL) {
-                    ret = FAIL;
-                    strcpy(mess, "Could not start acquisition because ");
-                    strcat(mess, configureMessage);
-                    LOG(logERROR, (mess));
-                } else if (sharedMemory_getScanStatus() == RUNNING) {
-                    ret = FAIL;
-                    strcpy(mess,
-                           "Could not start acquisition because a scan is "
-                           "already running!\n");
-                    LOG(logERROR, (mess));
-                } else {
-                    memset(scanErrMessage, 0, MAX_STR_LENGTH);
-                    sharedMemory_setScanStop(0);
-                    sharedMemory_setScanStatus(IDLE); // if it was error
-                    if (pthread_create(&pthread_tid, NULL, &start_state_machine,
-                                       &blocking)) {
-                        ret = FAIL;
-                        strcpy(mess, "Could not start acquisition thread!\n");
-                        LOG(logERROR, (mess));
-                    } else {
-                        // wait for blocking always (scan or not)
-                        // non blocking-no scan also wait (for error message)
-                        // non blcoking-scan dont wait (there is
-                        // scanErrorMessage)
-                        if (blocking || !scan) {
-                            pthread_join(pthread_tid, NULL);
-                        }
-                    }
+            if (configured == FAIL) {
+            ret = FAIL;
+            strcpy(mess, "Could not start acquisition because ");
+            strcat(mess, configureMessage);
+            LOG(logERROR, (mess));
+        } else if (sharedMemory_getScanStatus() == RUNNING) {
+            ret = FAIL;
+            strcpy(mess, "Could not start acquisition because a scan is "
+                         "already running!\n");
+            LOG(logERROR, (mess));
+        } else {
+            memset(scanErrMessage, 0, MAX_STR_LENGTH);
+            sharedMemory_setScanStop(0);
+            sharedMemory_setScanStatus(IDLE); // if it was error
+            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                               &blocking)) {
+                ret = FAIL;
+                strcpy(mess, "Could not start acquisition thread!\n");
+                LOG(logERROR, (mess));
+            } else {
+                // wait for blocking always (scan or not)
+                // non blocking-no scan also wait (for error message)
+                // non blcoking-scan dont wait (there is
+                // scanErrorMessage)
+                if (blocking || !scan) {
+                    pthread_join(pthread_tid, NULL);
                 }
+            }
+        }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -4111,7 +4141,7 @@ int power_chip(int file_des) {
             }
         }
 #endif
-#ifdef XILINX_CHIPTESTBOARDD
+#if defined(XILINX_CHIPTESTBOARDD) || defined(GOTTHARD2D)
         if (ret == OK) {
             if (arg != -1) {
                 if (arg != 0 && arg != 1) {
@@ -4680,7 +4710,8 @@ int set_next_frame_number(int file_des) {
     LOG(logDEBUG1, ("Setting next frame number to %llu\n", arg));
 
 #if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&            \
-    !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -4759,7 +4790,8 @@ int get_next_frame_number(int file_des) {
     LOG(logDEBUG1, ("Getting next frame number \n"));
 
 #if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&            \
-    !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get
@@ -5981,11 +6013,9 @@ int get_clock_frequency(int file_des) {
     case ADC_CLOCK:
         c = ADC_CLK;
         break;
-#ifdef CHIPTESTBOARDD
     case DBIT_CLOCK:
         c = DBIT_CLK;
         break;
-#endif
     case RUN_CLOCK:
         c = RUN_CLK;
         break;
@@ -6050,7 +6080,11 @@ int set_clock_phase(int file_des) {
 #endif
         default:
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
-            if (ind < NUM_CLOCKS) {
+#ifdef MYTHEN3D
+            if (args[0] < NUM_CLOCKS_TO_SET) {
+#else
+            if (args[0] < NUM_CLOCKS) {
+#endif
                 c = (enum CLKINDEX)ind;
                 break;
             }
@@ -6719,8 +6753,8 @@ int set_burst_mode(int file_des) {
     if (Server_VerifyLock() == OK) {
         switch (arg) {
         case BURST_INTERNAL:
-        case BURST_EXTERNAL:
-        case CONTINUOUS_INTERNAL:
+        // case BURST_EXTERNAL:
+        // case CONTINUOUS_INTERNAL:
         case CONTINUOUS_EXTERNAL:
             break;
         default:
@@ -8439,7 +8473,8 @@ int start_readout(int file_des) {
 #else
     if (Server_VerifyLock() == OK) {
         enum runStatus s = getRunStatus();
-        if (s == RUNNING || s == WAITING) {
+        if ((s == RUNNING || s == WAITING) &&
+            (myDetectorType != XILINX_CHIPTESTBOARD)) {
             ret = FAIL;
             strcpy(mess, "Could not start readout because the detector is "
                          "already running!\n");
@@ -9658,7 +9693,7 @@ int get_readout_speed(int file_des) {
     LOG(logDEBUG1, ("Getting readout speed\n"));
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(EIGERD) &&            \
-    !defined(GOTTHARD2D)
+    !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // get only
@@ -9682,7 +9717,7 @@ int set_readout_speed(int file_des) {
     LOG(logDEBUG1, ("Setting readout speed : %u\n", arg));
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(EIGERD) &&            \
-    !defined(GOTTHARD2D)
+    !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
@@ -9698,7 +9733,8 @@ int set_readout_speed(int file_des) {
 #endif
         if (ret == OK) {
             switch (arg) {
-#if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD) ||               \
+    defined(MYTHEN3D)
             case FULL_SPEED:
             case HALF_SPEED:
             case QUARTER_SPEED:
@@ -10562,13 +10598,15 @@ int get_frontend_firmware_version(int file_des) {
 int set_bit(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint32_t args[2] = {-1, -1};
+    uint32_t args[3] = {-1, -1, -1};
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     uint32_t addr = args[0];
     int nBit = (int)args[1];
-    LOG(logDEBUG1, ("Setting bit %d of reg 0x%x\n", nBit, addr));
+    uint32_t validate = args[2];
+    LOG(logDEBUG1,
+        ("Setting bit %d of reg 0x%x, validate:%d\n", nBit, addr, validate));
 
     // only set
     if (Server_VerifyLock() == OK) {
@@ -10581,20 +10619,23 @@ int set_bit(int file_des) {
             LOG(logERROR, (mess));
         } else {
 #ifdef EIGERD
-            ret = setBit(addr, nBit);
-            if (ret == FAIL) {
+            ret = setBit(addr, nBit, validate);
 #else
             uint32_t bitmask = (1 << nBit);
 #ifdef GOTTHARDD
             uint32_t val = readRegister16And32(addr) | bitmask;
-            uint32_t retval = writeRegister16And32(addr, val);
+            writeRegister16And32(addr, val);
+            uint32_t retval = readRegister16And32(addr) | bitmask;
 #else
             uint32_t val = readRegister(addr) | bitmask;
-            uint32_t retval = writeRegister(addr, val);
+            writeRegister(addr, val);
+            uint32_t retval = readRegister(addr) | bitmask;
 #endif
-            if (!(retval & bitmask)) {
+            if (validate && (!(retval & bitmask))) {
                 ret = FAIL;
+            }
 #endif
+            if (ret == FAIL) {
                 sprintf(mess, "Could not set bit %d.\n", nBit);
                 LOG(logERROR, (mess));
             }
@@ -10606,13 +10647,15 @@ int set_bit(int file_des) {
 int clear_bit(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint32_t args[2] = {-1, -1};
+    uint32_t args[3] = {-1, -1, -1};
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     uint32_t addr = args[0];
     int nBit = (int)args[1];
-    LOG(logDEBUG1, ("Clearing bit %d of reg 0x%x\n", nBit, addr));
+    uint32_t validate = args[2];
+    LOG(logDEBUG1,
+        ("Clearing bit %d of reg 0x%x, validate:%d\n", nBit, addr, validate));
 
     // only set
     if (Server_VerifyLock() == OK) {
@@ -10625,20 +10668,23 @@ int clear_bit(int file_des) {
             LOG(logERROR, (mess));
         } else {
 #ifdef EIGERD
-            ret = clearBit(addr, nBit);
-            if (ret == FAIL) {
+            ret = clearBit(addr, nBit, validate);
 #else
             uint32_t bitmask = (1 << nBit);
 #ifdef GOTTHARDD
             uint32_t val = readRegister16And32(addr) & ~bitmask;
-            uint32_t retval = writeRegister16And32(addr, val);
+            writeRegister16And32(addr, val);
+            uint32_t retval = readRegister16And32(addr) & ~bitmask;
 #else
             uint32_t val = readRegister(addr) & ~bitmask;
-            uint32_t retval = writeRegister(addr, val);
+            writeRegister(addr, val);
+            uint32_t retval = readRegister(addr) & ~bitmask;
 #endif
-            if (retval & bitmask) {
+            if (validate && (retval & bitmask)) {
                 ret = FAIL;
+            }
 #endif
+            if (ret == FAIL) {
                 sprintf(mess, "Could not clear bit %d.\n", nBit);
                 LOG(logERROR, (mess));
             }
@@ -11045,6 +11091,124 @@ int config_transceiver(int file_des) {
         if (ret == FAIL) {
             LOG(logERROR, (mess));
         }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_timing_info_decoder(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum timingInfoDecoder retval = SWISSFEL;
+
+    LOG(logDEBUG1, ("Getting timing info decoder\n"));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // get only
+    ret = getTimingInfoDecoder(&retval);
+    LOG(logDEBUG1, ("retval timing info decoder: %d\n", retval));
+    if (ret == FAIL) {
+        strcpy(mess, "Could not get timing info decoder\n");
+        LOG(logERROR, (mess));
+    }
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_timing_info_decoder(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum timingInfoDecoder arg = SWISSFEL;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting timing info decoder: %u\n", (int)arg));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        switch (arg) {
+        case SWISSFEL:
+        case SHINE:
+            break;
+        default:
+            modeNotImplemented("Timing info decoder index", (int)arg);
+            break;
+        }
+        if (ret == OK) {
+            ret = setTimingInfoDecoder(arg);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set timing info decoder\n");
+                LOG(logERROR, (mess));
+            } else {
+                enum timingInfoDecoder retval = SWISSFEL;
+                ret = getTimingInfoDecoder(&retval);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not get timing info decoder\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    LOG(logDEBUG1,
+                        ("timing info decoder retval: %u\n", retval));
+                    validate(&ret, mess, (int)arg, (int)retval,
+                             "set timing info decoder", DEC);
+                }
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_collection_mode(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum collectionMode retval = HOLE;
+
+    LOG(logDEBUG1, ("Getting collection mode\n"));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // get only
+    retval = getElectronCollectionMode() ? ELECTRON : HOLE;
+    LOG(logDEBUG1, ("collection mode retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_collection_mode(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum collectionMode arg = HOLE;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting collection mode: %u\n", (int)arg));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        switch (arg) {
+        case HOLE:
+            setElectronCollectionMode(0);
+            break;
+        case ELECTRON:
+            setElectronCollectionMode(1);
+            break;
+        default:
+            modeNotImplemented("Collection mode index", (int)arg);
+            break;
+        }
+        enum collectionMode retval =
+            getElectronCollectionMode() ? ELECTRON : HOLE;
+        validate(&ret, mess, (int)arg, (int)retval, "set collection mode", DEC);
+        LOG(logDEBUG1, ("collection mode retval: %u\n", retval));
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);

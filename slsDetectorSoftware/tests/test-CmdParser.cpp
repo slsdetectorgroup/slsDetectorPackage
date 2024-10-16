@@ -7,7 +7,7 @@
 
 // tests to add
 // help for all docs
-// command for all depreciated commands
+// command for all deprecated commands
 
 namespace sls {
 

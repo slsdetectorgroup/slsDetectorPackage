@@ -32,14 +32,14 @@ Commands
 .. include:: ../commands.rst
 
 
-Depreciated commands
+Deprecated commands
 ------------------------
 
 .. note ::
 	All the dac commands are preceded with the **dac** command. Use command **daclist** to get correct list of dac command arguments for current detector.
 
-.. csv-table:: Depreciated commands
-   :file: ../depreciated.csv
+.. csv-table:: Deprecated commands
+   :file: ../deprecated.csv
    :widths: 35, 35
    :header-rows: 1
 

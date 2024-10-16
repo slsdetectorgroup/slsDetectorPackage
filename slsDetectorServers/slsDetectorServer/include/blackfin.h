@@ -81,7 +81,7 @@ u_int32_t readRegister(u_int32_t offset);
  * @param offset address offset
  * @param data 32 bit data
  */
-u_int32_t writeRegister(u_int32_t offset, u_int32_t data);
+void writeRegister(u_int32_t offset, u_int32_t data);
 
 /**
  * Read from a 16 bit register (literal register value provided by client)
@@ -95,7 +95,7 @@ u_int32_t readRegister16(u_int32_t offset);
  * @param offset address offset
  * @param data 16 bit data
  */
-u_int32_t writeRegister16(u_int32_t offset, u_int32_t data);
+void writeRegister16(u_int32_t offset, u_int32_t data);
 
 /**
  * Get base address for memory copy

@@ -1,0 +1,779 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1444</width>
+    <height>943</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Chip Test Board</string>
+  </property>
+  <property name="dockNestingEnabled">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="minimumSize">
+    <size>
+     <width>870</width>
+     <height>890</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>870</width>
+     <height>890</height>
+    </size>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>9</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QScrollArea" name="scrollArea">
+      <property name="minimumSize">
+       <size>
+        <width>50</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Plain</enum>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="scrollAreaWidgetContents">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>870</width>
+         <height>879</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QFrame" name="frameControl">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Plain</enum>
+          </property>
+          <property name="lineWidth">
+           <number>0</number>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_10">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>9</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QTabWidget" name="tabWidget">
+             <property name="minimumSize">
+              <size>
+               <width>870</width>
+               <height>870</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>870</width>
+               <height>870</height>
+              </size>
+             </property>
+             <property name="currentIndex">
+              <number>0</number>
+             </property>
+             <widget class="QWidget" name="tabDac">
+              <attribute name="title">
+               <string>DACs</string>
+              </attribute>
+              <widget class="DacTab" name="widgetDacs" native="true">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>851</width>
+                 <height>841</height>
+                </rect>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>711</width>
+                 <height>791</height>
+                </size>
+               </property>
+              </widget>
+             </widget>
+             <widget class="QWidget" name="tabPower">
+              <attribute name="title">
+               <string>Power Supplies</string>
+              </attribute>
+              <widget class="PowerSuppliesTab" name="widgetPowerSupplies" native="true">
+               <property name="geometry">
+                <rect>
+                 <x>-1</x>
+                 <y>-1</y>
+                 <width>841</width>
+                 <height>821</height>
+                </rect>
+               </property>
+              </widget>
+             </widget>
+             <widget class="QWidget" name="tabSlowAdc">
+              <attribute name="title">
+               <string>Slow ADCs</string>
+              </attribute>
+              <widget class="SlowAdcTab" name="widgetSlowAdcs" native="true">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>871</width>
+                 <height>821</height>
+                </rect>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>871</width>
+                 <height>571</height>
+                </size>
+               </property>
+              </widget>
+             </widget>
+             <widget class="QWidget" name="tabSignal">
+              <attribute name="title">
+               <string>Signals</string>
+              </attribute>
+              <widget class="SignalsTab" name="widgetSignals" native="true">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>831</width>
+                 <height>821</height>
+                </rect>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>831</width>
+                 <height>821</height>
+                </size>
+               </property>
+              </widget>
+             </widget>
+             <widget class="QWidget" name="tabTransceivers">
+              <attribute name="title">
+               <string>Transceivers</string>
+              </attribute>
+              <widget class="TransceiverTab" name="widgetTransceiver" native="true">
+               <property name="geometry">
+                <rect>
+                 <x>9</x>
+                 <y>19</y>
+                 <width>841</width>
+                 <height>341</height>
+                </rect>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>841</width>
+                 <height>181</height>
+                </size>
+               </property>
+              </widget>
+             </widget>
+             <widget class="QWidget" name="tabAdc">
+              <attribute name="title">
+               <string>ADCs</string>
+              </attribute>
+              <widget class="AdcTab" name="widgetAdc" native="true">
+               <property name="geometry">
+                <rect>
+                 <x>-1</x>
+                 <y>-1</y>
+                 <width>841</width>
+                 <height>821</height>
+                </rect>
+               </property>
+              </widget>
+             </widget>
+             <widget class="QWidget" name="tabPattern">
+              <attribute name="title">
+               <string>Pattern</string>
+              </attribute>
+              <widget class="PatternTab" name="widgetPattern" native="true">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>851</width>
+                 <height>831</height>
+                </rect>
+               </property>
+              </widget>
+             </widget>
+             <widget class="QWidget" name="tabAcquisition">
+              <attribute name="title">
+               <string>Acquisition</string>
+              </attribute>
+              <widget class="AcquisitionTab" name="widgetAcquisition" native="true">
+               <property name="geometry">
+                <rect>
+                 <x>-10</x>
+                 <y>0</y>
+                 <width>860</width>
+                 <height>800</height>
+                </rect>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>860</width>
+                 <height>800</height>
+                </size>
+               </property>
+              </widget>
+             </widget>
+             <widget class="QWidget" name="tabPlot">
+              <attribute name="title">
+               <string>Plot</string>
+              </attribute>
+              <widget class="PlotTab" name="widgetPlot" native="true">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>860</width>
+                 <height>800</height>
+                </rect>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>860</width>
+                 <height>800</height>
+                </size>
+               </property>
+              </widget>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1444</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionLoadParameters"/>
+    <addaction name="actionSaveParameters"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionInfo"/>
+    <addaction name="actionKeyboardShortcuts"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="dockWidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>568</width>
+     <height>214</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>524287</width>
+     <height>524287</height>
+    </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::RightDockWidgetArea</set>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContent">
+    <layout class="QGridLayout" name="gridLayout_7">
+     <item row="0" column="0" colspan="2">
+      <widget class="QFrame" name="frameAcquisition">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_25">
+        <item row="1" column="2">
+         <widget class="QLabel" name="labelCurrentMeasurement">
+          <property name="minimumSize">
+           <size>
+            <width>70</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>70</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1" colspan="5">
+         <widget class="QProgressBar" name="progressBar">
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="value">
+           <number>24</number>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QPushButton" name="pushButtonStart">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>36</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="palette">
+           <palette>
+            <active>
+             <colorrole role="Button">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Base">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Window">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+            </active>
+            <inactive>
+             <colorrole role="Button">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Base">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Window">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+            </inactive>
+            <disabled>
+             <colorrole role="Button">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Base">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Window">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>85</red>
+                <green>170</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+            </disabled>
+           </palette>
+          </property>
+          <property name="toolTip">
+           <string>Shift + Enter is the keyboard shortcut to start/stop acquisition from any tab</string>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton {background-color: rgb(85, 170, 127);} 
+QPushButton:checked{background-color: red;}</string>
+          </property>
+          <property name="text">
+           <string>Start</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="labelDetectorStatus">
+          <property name="minimumSize">
+           <size>
+            <width>110</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>IDLE</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4">
+         <widget class="QLabel" name="label_137">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>70</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Acquired:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="5">
+         <widget class="QLabel" name="labelAcquiredFrames">
+          <property name="minimumSize">
+           <size>
+            <width>70</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>70</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLabel" name="label_134">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Measurement:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <spacer name="horizontalSpacer_24">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="1" column="0" colspan="2">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QFrame" name="framePatternViewer">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayoutPatternViewer"/>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="framePlot">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayoutPlot">
+          <item>
+           <widget class="QLabel" name="labelFrameNumber">
+            <property name="text">
+             <string>#</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="actionLoadParameters">
+   <property name="text">
+    <string>Load Parameters</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionInfo">
+   <property name="text">
+    <string>Info</string>
+   </property>
+  </action>
+  <action name="actionKeyboardShortcuts">
+   <property name="text">
+    <string>Keyboard Shortcuts</string>
+   </property>
+  </action>
+  <action name="actionSaveParameters">
+   <property name="text">
+    <string>Save Parameters</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PowerSuppliesTab</class>
+   <extends>QWidget</extends>
+   <header>pyctbgui.services.PowerSupplies</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DacTab</class>
+   <extends>QWidget</extends>
+   <header>pyctbgui.services.DACs</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SlowAdcTab</class>
+   <extends>QWidget</extends>
+   <header>pyctbgui.services.SlowADCs</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SignalsTab</class>
+   <extends>QWidget</extends>
+   <header>pyctbgui.services.Signals</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TransceiverTab</class>
+   <extends>QWidget</extends>
+   <header>pyctbgui.services.Transceiver</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AdcTab</class>
+   <extends>QWidget</extends>
+   <header>pyctbgui.services.ADC</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PatternTab</class>
+   <extends>QWidget</extends>
+   <header>pyctbgui.services.Pattern</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AcquisitionTab</class>
+   <extends>QWidget</extends>
+   <header>pyctbgui.services.Acquisition</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PlotTab</class>
+   <extends>QWidget</extends>
+   <header>pyctbgui.services.Plot</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>actionExit</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>753</x>
+     <y>496</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

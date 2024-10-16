@@ -388,14 +388,15 @@ void initStopServer() {
             return;
         }
 #ifdef VIRTUAL
-        sharedMemory_setStop(0);
-#endif
-        // to get master from file
+        setupDetector();
+#else
+        // ismaster from variable in stop server
         if (readConfigFile() == FAIL ||
             checkCommandLineConfiguration() == FAIL) {
             initCheckDone = 1;
             return;
         }
+#endif
     }
     initCheckDone = 1;
 }
@@ -406,8 +407,12 @@ void setupDetector() {
     LOG(logINFO, ("This Server is for 1 Gotthard module (1280 channels)\n"));
 
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    setupUDPCommParameters();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        setupUDPCommParameters();
+    } else {
+        sharedMemory_setStop(0);
+    }
 #endif
 
     // Initialization
@@ -522,12 +527,12 @@ int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
     return OK;
 }
 
-uint32_t writeRegister16And32(uint32_t offset, uint32_t data) {
+void writeRegister16And32(uint32_t offset, uint32_t data) {
     if (((offset << MEM_MAP_SHIFT) == CONTROL_REG) ||
         ((offset << MEM_MAP_SHIFT) == FIFO_DATA_REG)) {
-        return writeRegister16(offset, data);
+        writeRegister16(offset, data);
     } else
-        return writeRegister(offset, data);
+        writeRegister(offset, data);
 }
 
 uint32_t readRegister16And32(uint32_t offset) {

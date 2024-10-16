@@ -7,9 +7,6 @@
 
 /* Base addresses 0x1804 0000 ---------------------------------------------*/
 
-/* Reconfiguration core for readout pll */
-#define BASE_READOUT_PLL                (0x0000) // 0x1804_0000 - 0x1804_07FF
-
 /* Reconfiguration core for system pll */
 #define BASE_SYSTEM_PLL                 (0x0800) // 0x1804_0800 - 0x1804_0FFF
 

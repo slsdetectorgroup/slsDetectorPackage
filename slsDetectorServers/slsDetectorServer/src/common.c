@@ -8,6 +8,7 @@
 
 #include <libgen.h> // dirname
 #include <string.h>
+#include <sys/stat.h>    // stat
 #include <sys/utsname.h> // uname
 #include <unistd.h>      // readlink
 
@@ -677,31 +678,7 @@ int deleteFile(char *mess, char *fname, char *errorPrefix) {
         return FAIL;
     }
 
-    if (access(fullname, F_OK) == 0) {
-        char cmd[MAX_STR_LENGTH] = {0};
-        char retvals[MAX_STR_LENGTH] = {0};
-
-        if (snprintf(cmd, MAX_STR_LENGTH, "rm %s", fullname) >=
-            MAX_STR_LENGTH) {
-            sprintf(mess, "Could not %s. Command to delete is too long\n",
-                    errorPrefix);
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-
-        if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-            snprintf(mess, MAX_STR_LENGTH,
-                     "Could not %s. (deleting file %s). %s\n", errorPrefix,
-                     fullname, retvals);
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-        LOG(logINFO, ("\tDeleted file: %s (%s)\n", fullname, errorPrefix));
-    } else {
-        LOG(logINFO,
-            ("\tFile does not exist anyway: %s (%s)\n", fullname, errorPrefix));
-    }
-    return OK;
+    return deleteItem(mess, 1, fullname, errorPrefix);
 }
 
 int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
@@ -727,8 +704,8 @@ int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
     return OK;
 }
 
-int readADCFromFile(char *fname, int *value) {
-    LOG(logDEBUG1, ("fname:%s\n", fname));
+int readParameterFromFile(char *fname, char *parameterName, int *value) {
+    LOG(logDEBUG1, ("fname:%s parameter:%s\n", fname, parameterName));
     // open file
     FILE *fd = fopen(fname, "r");
     if (fd == NULL) {
@@ -752,20 +729,66 @@ int readADCFromFile(char *fname, int *value) {
 
     *value = -1;
     if (sscanf(line, "%d", value) != 1) {
-#ifdef XILINX_CHIPTESTBOARDD
-        LOG(logERROR, ("Could not scan adc from %s\n", line));
-#else
-        LOG(logERROR, ("Could not scan temperature from %s\n", line));
-#endif
+        LOG(logERROR, ("Could not scan %s from %s\n", parameterName, line));
         return FAIL;
     }
 
-#ifdef EIGERD
-    *value /= 10;
-#elif !defined(XILINX_CHIPTESTBOARDD)
-    LOG(logINFO, ("Temperature: %.2f °C\n", (double)(*value) / 1000.00));
-#endif
-
     fclose(fd);
+    return OK;
+}
+
+int createAbsoluteDirectory(char *mess, const char *absPath,
+                            char *errorPrefix) {
+    // check if folder exists
+    if (access(absPath, F_OK) == 0) {
+        LOG(logINFO, ("Folder %s already exists\n", absPath));
+        return OK;
+    }
+
+    // folder does not exist, create it
+    if (mkdir(absPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0) {
+        sprintf(mess, "Could not %s. Could not create folder %s\n", errorPrefix,
+                absPath);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tCreated folder: %s (%s)\n", absPath, errorPrefix));
+
+    return OK;
+}
+
+int deleteAbsoluteDirectory(char *mess, const char *absPath,
+                            char *errorPrefix) {
+    return deleteItem(mess, 0, absPath, errorPrefix);
+}
+
+int deleteItem(char *mess, int isFile, const char *absPath, char *errorPrefix) {
+    // item does not exist
+    if (access(absPath, F_OK) != 0) {
+        LOG(logINFO, ("\t%s does not exist anyway: %s (%s)\n",
+                      (isFile ? "File" : "Folder"), absPath, errorPrefix));
+        return OK;
+    }
+
+    // delete item
+    char cmd[MAX_STR_LENGTH] = {0};
+    char retvals[MAX_STR_LENGTH] = {0};
+    if (snprintf(cmd, MAX_STR_LENGTH, "rm %s %s", (isFile ? "-f" : "-rf"),
+                 absPath) >= MAX_STR_LENGTH) {
+        sprintf(mess, "Could not %s. Command to delete is too long\n",
+                errorPrefix);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH, "Could not %s. (deleting %s %s). %s\n",
+                 errorPrefix, (isFile ? "file" : "folder"), absPath, retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tDeleted %s: %s (%s)\n", (isFile ? "file" : "folder"),
+                  absPath, errorPrefix));
+
     return OK;
 }

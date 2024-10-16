@@ -379,63 +379,7 @@ void initControlServer() {
             return;
         }
 #ifndef VIRTUAL
-        sharedMemory_lockLocalLink();
-        Feb_Interface_FebInterface();
-        if (!Feb_Control_FebControl(normal)) {
-            initError = FAIL;
-            sprintf(initErrorMessage,
-                    "Could not intitalize eiger detector sever: feb control\n");
-            LOG(logERROR, (initErrorMessage));
-            initCheckDone = 1;
-            sharedMemory_unlockLocalLink();
-            return;
-        }
-        if (Feb_Control_SetMasterEffects(master, isControlServer) == FAIL) {
-            initError = FAIL;
-            sprintf(initErrorMessage, "Could not intitalize HV for eiger "
-                                      "detector server: feb control serial "
-                                      "communication\n");
-            LOG(logERROR, (initErrorMessage));
-            initCheckDone = 1;
-            sharedMemory_unlockLocalLink();
-            return;
-        }
-        sharedMemory_unlockLocalLink();
-        LOG(logDEBUG1, ("Control server: FEB Initialization done\n"));
-        Beb_SetTopVariable(top);
-        Beb_Beb();
-        LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
-
-        // Getting the feb versions after initialization
-        char hversion[MAX_STR_LENGTH] = {0};
-        memset(hversion, 0, MAX_STR_LENGTH);
-        getHardwareVersion(hversion);
-        int64_t fwversion = getFirmwareVersion();
-        int64_t feblfwversion = getFrontEndFirmwareVersion(FRONT_LEFT);
-        int64_t febrfwversion = getFrontEndFirmwareVersion(FRONT_RIGHT);
-        LOG(logINFOBLUE,
-            ("\n********************************************************\n"
-             "Feb Versions\n"
-             "Hardware Version         : %s\n"
-             "Firmware (Febl) Version  : %lld\n"
-             "Firmware (Febr) Version  : %lld\n"
-             "********************************************************\n",
-             hversion, (long long int)feblfwversion,
-             (long long int)febrfwversion));
-
-        // ensure febl, febr and beb fw versions are the same
-        if (fwversion != feblfwversion || fwversion != febrfwversion) {
-            sprintf(
-                initErrorMessage,
-                "Inconsistent firmware versions in feb and beb. [Beb: %lld, "
-                "Febl: %lld Febr: %lld]\n",
-                (long long int)fwversion, (long long int)feblfwversion,
-                (long long int)febrfwversion);
-            LOG(logERROR, (initErrorMessage));
-            initError = FAIL;
-            return;
-        }
-
+        setupFebBeb();
 #endif
         // also reads config file and deactivates
         setupDetector();
@@ -449,56 +393,22 @@ void initStopServer() {
         // command line)
         usleep(WAIT_STOP_SERVER_START);
         LOG(logINFOBLUE, ("Configuring Stop server\n"));
+        // ismaster from variable in stop server
         if (updateModuleConfiguration() == FAIL) {
             initCheckDone = 1;
             return;
         }
 #ifdef VIRTUAL
-        sharedMemory_setStop(0);
-        // force top or master if in config file
-        if (readConfigFile() == FAIL) {
-            initCheckDone = 1;
-            return;
-        }
-        // force top or master if in command line
-        if (checkCommandLineConfiguration() == FAIL) {
-            initCheckDone = 1;
-            return;
-        }
+        setupDetector();
 #else
-        // control server read config file and already set up master/top
-        sharedMemory_lockLocalLink();
-        Feb_Interface_FebInterface();
-        if (!Feb_Control_FebControl(normal)) {
-            initError = FAIL;
-            sprintf(initErrorMessage, "Could not intitalize feb control\n");
-            LOG(logERROR, (initErrorMessage));
-            initCheckDone = 1;
-            sharedMemory_unlockLocalLink();
-            return;
-        }
-        if (Feb_Control_SetMasterEffects(master, isControlServer) == FAIL) {
-            initError = FAIL;
-            sprintf(initErrorMessage, "Could not intitalize HV for eiger "
-                                      "detector server: feb control serial "
-                                      "communication\n");
-            LOG(logERROR, (initErrorMessage));
-            initCheckDone = 1;
-            sharedMemory_unlockLocalLink();
-            return;
-        }
-        sharedMemory_unlockLocalLink();
-        LOG(logDEBUG1, ("Stop server: FEB Initialization done\n"));
-        Beb_SetTopVariable(top);
-        Beb_Beb();
-        LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
-#endif
+        setupFebBeb();
         // client first connect (from shm) will activate
         if (setActivate(0) == FAIL) {
             initError = FAIL;
             strcpy(initErrorMessage, "Could not deactivate\n");
             LOG(logERROR, (initErrorMessage));
         }
+#endif
     }
     initCheckDone = 1;
 }
@@ -749,6 +659,71 @@ int checkCommandLineConfiguration() {
 
 /* set up detector */
 
+#ifndef VIRTUAL
+void setupFebBeb() {
+    sharedMemory_lockLocalLink();
+    Feb_Interface_FebInterface();
+    if (!Feb_Control_FebControl(normal)) {
+        initError = FAIL;
+        sprintf(initErrorMessage,
+                "Could not intitalize eiger detector sever: feb control\n");
+        LOG(logERROR, (initErrorMessage));
+        initCheckDone = 1;
+        sharedMemory_unlockLocalLink();
+        return;
+    }
+    if (Feb_Control_SetMasterEffects(master, isControlServer) == FAIL) {
+        initError = FAIL;
+        sprintf(initErrorMessage, "Could not intitalize HV for eiger "
+                                  "detector server: feb control serial "
+                                  "communication\n");
+        LOG(logERROR, (initErrorMessage));
+        initCheckDone = 1;
+        sharedMemory_unlockLocalLink();
+        return;
+    }
+    sharedMemory_unlockLocalLink();
+    LOG(logDEBUG1, ("%s server: FEB Initialization done\n",
+                    isControlServer ? "Control" : "Stop"));
+    Beb_SetTopVariable(top);
+    Beb_Beb();
+    LOG(logDEBUG1, ("%s server: BEB Initialization done\n",
+                    isControlServer ? "Control" : "Stop"));
+
+    if (isControlServer) {
+        // Getting the feb versions after initialization
+        char hversion[MAX_STR_LENGTH] = {0};
+        memset(hversion, 0, MAX_STR_LENGTH);
+        getHardwareVersion(hversion);
+        int64_t fwversion = getFirmwareVersion();
+        int64_t feblfwversion = getFrontEndFirmwareVersion(FRONT_LEFT);
+        int64_t febrfwversion = getFrontEndFirmwareVersion(FRONT_RIGHT);
+        LOG(logINFOBLUE,
+            ("\n********************************************************\n"
+             "Feb Versions\n"
+             "Hardware Version         : %s\n"
+             "Firmware (Febl) Version  : %lld\n"
+             "Firmware (Febr) Version  : %lld\n"
+             "********************************************************\n",
+             hversion, (long long int)feblfwversion,
+             (long long int)febrfwversion));
+
+        // ensure febl, febr and beb fw versions are the same
+        if (fwversion != feblfwversion || fwversion != febrfwversion) {
+            sprintf(
+                initErrorMessage,
+                "Inconsistent firmware versions in feb and beb. [Beb: %lld, "
+                "Febl: %lld Febr: %lld]\n",
+                (long long int)fwversion, (long long int)feblfwversion,
+                (long long int)febrfwversion);
+            LOG(logERROR, (initErrorMessage));
+            initError = FAIL;
+            return;
+        }
+    }
+}
+#endif
+
 void allocateDetectorStructureMemory() {
     LOG(logINFO, ("This Server is for 1 Eiger half module (250k)\n\n"));
 
@@ -799,8 +774,12 @@ void setupDetector() {
     LOG(logINFOBLUE, ("Setting Default Parameters\n"));
     resetToDefaultDacs(0);
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    setupUDPCommParameters();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        setupUDPCommParameters();
+    } else {
+        sharedMemory_setStop(0);
+    }
 #endif
 
     // setting default measurement parameters
@@ -904,12 +883,12 @@ int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
 }
 
 /* advanced read/write reg */
-int writeRegister(uint32_t offset, uint32_t data) {
+int writeRegister(uint32_t offset, uint32_t data, int validate) {
 #ifdef VIRTUAL
     return OK;
 #else
     sharedMemory_lockLocalLink();
-    if (!Feb_Control_WriteRegister(offset, data)) {
+    if (!Feb_Control_WriteRegister(offset, data, validate)) {
         sharedMemory_unlockLocalLink();
         return FAIL;
     }
@@ -932,7 +911,7 @@ int readRegister(uint32_t offset, uint32_t *retval) {
 #endif
 }
 
-int setBit(const uint32_t addr, const int nBit) {
+int setBit(const uint32_t addr, const int nBit, int validate) {
 #ifndef VIRTUAL
     uint32_t regval = 0;
     if (readRegister(addr, &regval) == FAIL) {
@@ -942,7 +921,7 @@ int setBit(const uint32_t addr, const int nBit) {
     uint32_t val = regval | bitmask;
 
     sharedMemory_lockLocalLink();
-    if (!Feb_Control_WriteRegister_BitMask(addr, val, bitmask)) {
+    if (!Feb_Control_WriteRegister_BitMask(addr, val, bitmask, validate)) {
         sharedMemory_unlockLocalLink();
         return FAIL;
     }
@@ -951,7 +930,7 @@ int setBit(const uint32_t addr, const int nBit) {
     return OK;
 }
 
-int clearBit(const uint32_t addr, const int nBit) {
+int clearBit(const uint32_t addr, const int nBit, int validate) {
 #ifndef VIRTUAL
     uint32_t regval = 0;
     if (readRegister(addr, &regval) == FAIL) {
@@ -961,7 +940,7 @@ int clearBit(const uint32_t addr, const int nBit) {
     uint32_t val = regval & ~bitmask;
 
     sharedMemory_lockLocalLink();
-    if (!Feb_Control_WriteRegister_BitMask(addr, val, bitmask)) {
+    if (!Feb_Control_WriteRegister_BitMask(addr, val, bitmask, validate)) {
         sharedMemory_unlockLocalLink();
         return FAIL;
     }

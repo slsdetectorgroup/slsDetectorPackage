@@ -38,8 +38,6 @@ class qTabAdvanced : public QWidget, private Ui::TabAdvancedObject {
     void SetRxrUDPMAC(bool force = false);
     void ForceSetRxrUDPMAC();
     void SetRxrZMQPort(int port);
-    void SetRxrZMQIP(bool force = false);
-    void ForceSetRxrZMQIP();
     void GetROI();
     void ClearROI();
     void SetROI();
@@ -68,7 +66,6 @@ class qTabAdvanced : public QWidget, private Ui::TabAdvancedObject {
     void GetRxrUDPIP();
     void GetRxrUDPMAC();
     void GetRxrZMQPort();
-    void GetRxrZMQIP();
     void GetAllTrimbits();
     void GetNumStoragecells();
     void GetSubExposureTime();

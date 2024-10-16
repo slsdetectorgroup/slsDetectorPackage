@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools", "numpy"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 119
+select = ["E","F","UP","PT","RET","SLF","TID","PTH","NPY"]
+# other usefule rules "N" "PL"
+# rules to ignore
+# PTH123 causes issues with gh actions
+ignore = ["UP032","PTH123"]
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+target-version = "py311"
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+"pyctbgui/utils/decoder.py" = ["F403"]
+
+
+[tool.yapf]
+based_on_style = "pep8"
+COLUMN_LIMIT = 119
+
+[tool.coverage.run]
+branch = false
+
+[tool.coverage.report]
+include = [
+    "pyctbgui/*"
+]

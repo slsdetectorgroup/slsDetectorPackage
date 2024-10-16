@@ -363,11 +363,11 @@ class Detector {
     /** list of possible timing modes for this detector */
     std::vector<defs::timingMode> getTimingModeList() const;
 
-    /** [Eiger][Jungfrau][Moench][Gotthard2] */
+    /** [Eiger][Jungfrau][Moench][Gotthard2][Mythen3] */
     Result<defs::speedLevel> getReadoutSpeed(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau][Moench][Gotthard2]
-     * [Jungfrau] Options: FULL_SPEED, HALF_SPEED (Default),
+     * [Jungfrau][Mythen3] Options: FULL_SPEED, HALF_SPEED (Default),
      * QUARTER_SPEED \n [Moench] Options: FULL_SPEED (Default) \n [Eiger]
      * Options: FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED \n [Gotthard2]
      * Options: G2_108MHZ (Default), G2_144MHZ \n [Jungfrau][Moench] FULL_SPEED
@@ -429,7 +429,8 @@ class Detector {
     /** [Mythen3][Gotthard2] */
     Result<int> getClockPhase(int clkIndex, Positions pos = {});
 
-    /** [Mythen3][Gotthard2] absolute phase shift */
+    /** [Mythen3][Gotthard2] absolute phase shift  \n
+     * [Gotthard2] clkIndex: 0-5, [Mythen3] clkIndex 0 only */
     void setClockPhase(int clkIndex, int value, Positions pos = {});
 
     /** [Mythen3][Gotthard2] */
@@ -438,13 +439,15 @@ class Detector {
     /** [Mythen3][Gotthard2] */
     Result<int> getClockPhaseinDegrees(int clkIndex, Positions pos = {});
 
-    /** [Mythen3][Gotthard2] */
+    /** [Mythen3][Gotthard2]  \n
+     * [Gotthard2] clkIndex: 0-5, [Mythen3] clkIndex 0 only */
     void setClockPhaseinDegrees(int clkIndex, int value, Positions pos = {});
 
     /** [Mythen3][Gotthard2] */
     Result<int> getClockDivider(int clkIndex, Positions pos = {});
 
-    /** [Mythen3][Gotthard2] Must be greater than 1. */
+    /** [Mythen3][Gotthard2] Must be greater than 1. \n
+     * [Gotthard2] clkIndex: 0-5, [Mythen3] clkIndex 0 only */
     void setClockDivider(int clkIndex, int value, Positions pos = {});
 
     Result<int> getHighVoltage(Positions pos = {}) const;
@@ -658,11 +661,13 @@ class Detector {
     Result<std::vector<int64_t>>
     getRxCurrentFrameIndex(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau][Moench][CTB][Xilinx CTB] */
+    /** [Eiger][Jungfrau][Moench][CTB][Xilinx CTB][Gotthard2] */
     Result<uint64_t> getNextFrameNumber(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau][Moench][CTB][Xilinx CTB] Stopping acquisition might
-     * result in different frame numbers for different modules.*/
+    /** [Eiger][Jungfrau][Moench][CTB][Xilinx CTB][Gotthard2] Stopping
+     * acquisition might result in different frame numbers for different
+     * modules. So, after stopping, next frame number (max + 1) is set for all
+     * the modules afterwards.*/
     void setNextFrameNumber(uint64_t value, Positions pos = {});
 
     /** [Eiger][Mythen3][Jungfrau][Moench] Sends an internal software trigger to
@@ -1004,7 +1009,8 @@ class Detector {
 
     Result<std::string> getFilePath(Positions pos = {}) const;
 
-    /** Default is "/"If path does not exist, it will try to create it */
+    /** Default is "/". If path does not exist and fwrite enabled, it will try
+     * to create it at start of acquisition. */
     void setFilePath(const std::string &fpath, Positions pos = {});
 
     Result<std::string> getFileNamePrefix(Positions pos = {}) const;
@@ -1025,7 +1031,7 @@ class Detector {
 
     Result<bool> getFileWrite(Positions pos = {}) const;
 
-    /** default enabled */
+    /** default disabled */
     void setFileWrite(bool value, Positions pos = {});
 
     bool getMasterFileWrite() const;
@@ -1102,14 +1108,6 @@ class Detector {
      * already enabled
      */
     void setRxZmqPort(uint16_t port, int module_id = -1);
-
-    Result<IpAddr> getRxZmqIP(Positions pos = {}) const;
-
-    /** Zmq Ip Address from which data is to be streamed out of the receiver. \n
-     * Also restarts receiver zmq streaming if enabled. \n Default is from
-     * rx_hostname. \n Modified only when using an intermediate process between
-     * receiver. */
-    void setRxZmqIP(const IpAddr ip, Positions pos = {});
 
     Result<uint16_t> getClientZmqPort(Positions pos = {}) const;
 
@@ -1375,6 +1373,20 @@ class Detector {
      */
     void setPedestalMode(const defs::pedestalParameters par,
                          Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<defs::timingInfoDecoder>
+    getTimingInfoDecoder(Positions pos = {}) const;
+
+    /** [Jungfrau] Advanced Command! */
+    void setTimingInfoDecoder(defs::timingInfoDecoder value,
+                              Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<defs::collectionMode> getCollectionMode(Positions pos = {}) const;
+
+    /** [Jungfrau] */
+    void setCollectionMode(defs::collectionMode value, Positions pos = {});
 
     ///@}
 
@@ -2041,13 +2053,16 @@ class Detector {
      * Goes to stop server. Hence, can be called while calling blocking
      * acquire(). \n [Eiger] Address is +0x100 for only left, +0x200 for only
      * right. */
-    void writeRegister(uint32_t addr, uint32_t val, Positions pos = {});
+    void writeRegister(uint32_t addr, uint32_t val, bool validate = false,
+                       Positions pos = {});
 
     /** Advanced user Function!  */
-    void setBit(uint32_t addr, int bitnr, Positions pos = {});
+    void setBit(uint32_t addr, int bitnr, bool validate = false,
+                Positions pos = {});
 
     /** Advanced user Function!  */
-    void clearBit(uint32_t addr, int bitnr, Positions pos = {});
+    void clearBit(uint32_t addr, int bitnr, bool validate = false,
+                  Positions pos = {});
 
     /** Advanced user Function!  */
     Result<int> getBit(uint32_t addr, int bitnr, Positions pos = {});

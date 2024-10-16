@@ -142,8 +142,6 @@ class Implementation : private virtual slsDetectorDefs {
     void setStreamingStartingFrameNumber(const uint32_t fnum);
     uint16_t getStreamingPort() const;
     void setStreamingPort(const uint16_t i);
-    IpAddr getStreamingSourceIP() const;
-    void setStreamingSourceIP(const IpAddr ip);
     int getStreamingHwm() const;
     void setStreamingHwm(const int i);
     std::map<std::string, std::string> getAdditionalJsonHeader() const;
@@ -267,22 +265,17 @@ class Implementation : private virtual slsDetectorDefs {
      *                                                *
      * ************************************************/
     /** params: file path, file name, file index, image size */
-    void registerCallBackStartAcquisition(int (*func)(const std::string &,
-                                                      const std::string &,
-                                                      uint64_t, size_t, void *),
+    void registerCallBackStartAcquisition(int (*func)(const startCallbackHeader,
+                                                      void *),
                                           void *arg);
     /** params: total frames caught */
-    void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void *),
-                                             void *arg);
+    void registerCallBackAcquisitionFinished(
+        void (*func)(const endCallbackHeader, void *), void *arg);
     /** params: sls_receiver_header, pointer to data, image size */
     void registerCallBackRawDataReady(void (*func)(sls_receiver_header &,
-                                                   char *, size_t, void *),
+                                                   dataCallbackHeader, char *,
+                                                   size_t &, void *),
                                       void *arg);
-    /** params: sls_receiver_header, pointer to data, reference to image size */
-    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header &,
-                                                         char *, size_t &,
-                                                         void *),
-                                            void *arg);
 
   private:
     void SetLocalNetworkParameters();
@@ -346,7 +339,6 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t streamingTimerInMs{DEFAULT_STREAMING_TIMER_IN_MS};
     uint32_t streamingStartFnum{0};
     uint16_t streamingPort{0};
-    IpAddr streamingSrcIP = IpAddr{};
     int streamingHwm{-1};
     std::map<std::string, std::string> additionalJsonHeader;
 
@@ -382,15 +374,13 @@ class Implementation : private virtual slsDetectorDefs {
     int ctbDbitOffset{0};
 
     // callbacks
-    int (*startAcquisitionCallBack)(const std::string &, const std::string &,
-                                    uint64_t, size_t, void *){nullptr};
+    int (*startAcquisitionCallBack)(const startCallbackHeader, void *){nullptr};
     void *pStartAcquisition{nullptr};
-    void (*acquisitionFinishedCallBack)(uint64_t, void *){nullptr};
+    void (*acquisitionFinishedCallBack)(const endCallbackHeader,
+                                        void *){nullptr};
     void *pAcquisitionFinished{nullptr};
-    void (*rawDataReadyCallBack)(sls_receiver_header &, char *, size_t,
-                                 void *){nullptr};
-    void (*rawDataModifyReadyCallBack)(sls_receiver_header &, char *, size_t &,
-                                       void *){nullptr};
+    void (*rawDataReadyCallBack)(sls_receiver_header &, dataCallbackHeader,
+                                 char *, size_t &, void *){nullptr};
     void *pRawDataReady{nullptr};
 
     // class objects

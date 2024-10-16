@@ -1104,6 +1104,7 @@ clearbit:
         cast_input:
         - true
         - true
+        - true
         check_det_id: false
         convert_det_id: true
         exceptions:
@@ -1113,16 +1114,56 @@ clearbit:
         input:
         - args[0]
         - args[1]
+        - '"0"'
         input_types:
         - uint32_t
         - int
+        - bool
         output:
-        - ToString(args)
+        - '"["'
+        - args[0]
+        - '", "'
+        - args[1]
+        - '"]"'
+        require_det_id: true
+        store_result_in_t: false
+      - arg_types:
+        - uint32_t
+        - int
+        - special::validate
+        argc: 3
+        cast_input:
+        - true
+        - true
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31
+          message: '"Bit number out of range: " + args[1]'
+        - condition: args[2] != "--validate"
+          message: '"Could not scan third argument. Did you mean --validate?"'
+        function: clearBit
+        input:
+        - args[0]
+        - args[1]
+        - '"1"'
+        input_types:
+        - uint32_t
+        - int
+        - bool
+        output:
+        - '"["'
+        - args[0]
+        - '", "'
+        - args[1]
+        - '"]"'
         require_det_id: true
         store_result_in_t: false
   command_name: clearbit
   function_alias: clearbit
-  help: "[reg address in hex] [bit index]\n\tClears bit in address."
+  help: "[reg address in hex] [bit index]\n\tClears bit in address.\n\tUse --validate\
+    \ to force validation."
   infer_action: true
   template: true
 clearbusy:
@@ -1251,8 +1292,9 @@ clkdiv:
         store_result_in_t: false
   command_name: clkdiv
   function_alias: clkdiv
-  help: "[n_clock (0-5)] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock\
-    \ n_clock. Must be greater than 1."
+  help: "[n_clock] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock n_clock.\
+    \ Must be greater than 1.n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock\
+    \ index range: 0"
   infer_action: true
 clkfreq:
   actions:
@@ -1283,8 +1325,9 @@ clkfreq:
         store_result_in_t: true
   command_name: clkfreq
   function_alias: clkfreq
-  help: "[n_clock (0-5)] [freq_in_Hz]\n\t[Gotthard2][Mythen3] Frequency of clock n_clock\
-    \ in Hz. Use clkdiv to set frequency."
+  help: "[n_clock] [freq_in_Hz]\n\t[Gotthard2][Mythen3] Frequency of clock n_clock\
+    \ in Hz. Use clkdiv to set frequency.\n\t[Gotthard2] Clock index range: 0-5\n\t\
+    [Mythen3] Clock index range: 0"
   infer_action: true
 clkphase:
   actions:
@@ -1403,10 +1446,50 @@ clkphase:
         store_result_in_t: false
   command_name: clkphase
   function_alias: clkphase
-  help: "[n_clock (0-5)] [phase] [deg (optional)]\n\t[Gotthard2][Mythen3] Phase of\
-    \ clock n_clock. If deg, then phase shift in degrees, else absolute phase shift\
-    \ values."
+  help: "[n_clock] [phase] [deg (optional)]\n\t[Gotthard2][Mythen3] Phase of clock\
+    \ n_clock. If deg, then phase shift in degrees, else absolute phase shift values.n\t\
+    [Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
   infer_action: true
+collectionmode:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getCollectionMode
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - defs::collectionMode
+        argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: setCollectionMode
+        input:
+        - args[0]
+        input_types:
+        - defs::collectionMode
+        output:
+        - args.front()
+        require_det_id: true
+        store_result_in_t: false
+  command_name: collectionmode
+  function_alias: collectionmode
+  help: "[hole|electron]\n\t[Jungfrau] Sets collection mode to hole or electron. Default\
+    \ is hole."
+  infer_action: true
+  template: true
 column:
   actions:
     GET:
@@ -3908,7 +3991,8 @@ fpath:
   command_name: fpath
   function_alias: fpath
   help: "[path]\n\tDirectory where output data files are written in receiver. Default\
-    \ is '/'. \n\tIf path does not exist, it will try to create it."
+    \ is '/'. \n\tIf path does not exist and fwrite enabled, it will try to create\
+    \ it at start of acquisition."
   infer_action: true
   template: true
 framecounter:
@@ -4101,7 +4185,7 @@ fwrite:
         store_result_in_t: false
   command_name: fwrite
   function_alias: fwrite
-  help: "[0, 1]\n\tEnable or disable receiver file write. Default is 1."
+  help: "[0, 1]\n\tEnable or disable receiver file write. Default is 0."
   infer_action: true
   template: true
 gaincaps:
@@ -4174,9 +4258,8 @@ gainmode:
         store_result_in_t: false
   command_name: gainmode
   function_alias: gainmode
-  help: "[dynamicgain|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t[Jungfrau]\
-    \ Gain mode.\n\tCAUTION: Do not use fixg0 without caution, you can damage the\
-    \ detector!!!"
+  help: "[dynamic|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t[Jungfrau] Gain\
+    \ mode.\n\tCAUTION: Do not use fixg0 without caution, you can damage the detector!!!"
   infer_action: true
   template: true
 gappixels:
@@ -5343,8 +5426,8 @@ maxclkphaseshift:
         store_result_in_t: true
   command_name: maxclkphaseshift
   function_alias: maxclkphaseshift
-  help: "[n_clock (0-5)]\n\t[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock\
-    \ n_clock."
+  help: "[n_clock]\n\t[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock.n\t\
+    [Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
   infer_action: true
 maxdbitphaseshift:
   actions:
@@ -5497,8 +5580,10 @@ nextframenumber:
         store_result_in_t: false
   command_name: nextframenumber
   function_alias: nextframenumber
-  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Ctb][Xilinx Ctb] Next frame number.\
-    \ Stopping acquisition might result in different frame numbers for different modules."
+  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Ctb][Xilinx Ctb][Gotthard2] Next frame\
+    \ number. Stopping acquisition might result in different frame numbers for different\
+    \ modules. So, after stopping, next frame number (max + 1) is set for all the\
+    \ modules afterwards."
   infer_action: true
   template: true
 nmod:
@@ -5993,7 +6078,7 @@ patloop0:
         store_result_in_t: false
   command_name: patloop0
   function_alias: patloop0
-  help: Depreciated command. Use patloop.
+  help: Deprecated command. Use patloop.
   infer_action: true
 patloop1:
   actions:
@@ -6062,7 +6147,7 @@ patloop1:
         store_result_in_t: false
   command_name: patloop1
   function_alias: patloop1
-  help: Depreciated command. Use patloop.
+  help: Deprecated command. Use patloop.
   infer_action: true
 patloop2:
   actions:
@@ -6131,7 +6216,7 @@ patloop2:
         store_result_in_t: false
   command_name: patloop2
   function_alias: patloop2
-  help: Depreciated command. Use patloop.
+  help: Deprecated command. Use patloop.
   infer_action: true
 patmask:
   actions:
@@ -6292,7 +6377,7 @@ patnloop0:
         store_result_in_t: false
   command_name: patnloop0
   function_alias: patnloop0
-  help: Depreciated command. Use patnloop.
+  help: Deprecated command. Use patnloop.
   infer_action: true
 patnloop1:
   actions:
@@ -6350,7 +6435,7 @@ patnloop1:
         store_result_in_t: false
   command_name: patnloop1
   function_alias: patnloop1
-  help: Depreciated command. Use patnloop.
+  help: Deprecated command. Use patnloop.
   infer_action: true
 patnloop2:
   actions:
@@ -6408,7 +6493,7 @@ patnloop2:
         store_result_in_t: false
   command_name: patnloop2
   function_alias: patnloop2
-  help: Depreciated command. Use patnloop.
+  help: Deprecated command. Use patnloop.
   infer_action: true
 patsetbit:
   actions:
@@ -6615,7 +6700,7 @@ patwait0:
         store_result_in_t: false
   command_name: patwait0
   function_alias: patwait0
-  help: Depreciated command. Use patwait.
+  help: Deprecated command. Use patwait.
   infer_action: true
 patwait1:
   actions:
@@ -6673,7 +6758,7 @@ patwait1:
         store_result_in_t: false
   command_name: patwait1
   function_alias: patwait1
-  help: Depreciated command. Use patwait.
+  help: Deprecated command. Use patwait.
   infer_action: true
 patwait2:
   actions:
@@ -6731,7 +6816,7 @@ patwait2:
         store_result_in_t: false
   command_name: patwait2
   function_alias: patwait2
-  help: Depreciated command. Use patwait.
+  help: Deprecated command. Use patwait.
   infer_action: true
 patwaittime:
   actions:
@@ -6852,7 +6937,7 @@ patwaittime0:
         store_result_in_t: false
   command_name: patwaittime0
   function_alias: patwaittime0
-  help: Depreciated command. Use patwaittime.
+  help: Deprecated command. Use patwaittime.
   infer_action: true
 patwaittime1:
   actions:
@@ -6910,7 +6995,7 @@ patwaittime1:
         store_result_in_t: false
   command_name: patwaittime1
   function_alias: patwaittime1
-  help: Depreciated command. Use patwaittime.
+  help: Deprecated command. Use patwaittime.
   infer_action: true
 patwaittime2:
   actions:
@@ -6968,7 +7053,7 @@ patwaittime2:
         store_result_in_t: false
   command_name: patwaittime2
   function_alias: patwaittime2
-  help: Depreciated command. Use patwaittime.
+  help: Deprecated command. Use patwaittime.
   infer_action: true
 patword:
   actions:
@@ -7893,12 +7978,12 @@ readoutspeed:
         store_result_in_t: false
   command_name: readoutspeed
   function_alias: readoutspeed
-  help: "\n\t[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t[Eiger][Jungfrau][Moench]\
-    \ Readout speed of chip.\n\t[Eiger][Moench] Default speed is full_speed.\n\t[Jungfrau]\
-    \ Default speed is half_speed. full_speed option only available from v2.0 boards\
-    \ and is recommended to set number of interfaces to 2. Also overwrites adcphase\
-    \ to recommended default.\n\t [144|108]\n\t\t[Gotthard2] Readout speed of chip\
-    \ in MHz. Default is 108."
+  help: "\n\t[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t[Eiger][Jungfrau][Moench][Mythen3]\
+    \ Readout speed of chip.\n\t[Eiger][Moench] Default speed is full_speed.\n\t[Jungfrau][Mythen3]\
+    \ Default speed is half_speed. \n\t[Jungfrau] full_speed option only available\
+    \ from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites\
+    \ adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] Readout speed\
+    \ of chip in MHz. Default is 108."
   infer_action: true
 readoutspeedlist:
   actions:
@@ -7972,25 +8057,64 @@ reg:
         cast_input:
         - true
         - true
+        - true
         check_det_id: false
         convert_det_id: true
         function: writeRegister
         input:
         - args[0]
         - args[1]
+        - '"0"'
         input_types:
         - uint32_t
         - uint32_t
+        - bool
         output:
-        - ToString(args)
+        - '"["'
+        - args[0]
+        - '", "'
+        - args[1]
+        - '"]"'
+        require_det_id: true
+        store_result_in_t: false
+      - arg_types:
+        - uint32_t
+        - uint32_t
+        - special::validate
+        argc: 3
+        cast_input:
+        - true
+        - true
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: args[2] != "--validate"
+          message: '"Could not scan third argument. Did you mean --validate?"'
+        function: writeRegister
+        input:
+        - args[0]
+        - args[1]
+        - '"1"'
+        input_types:
+        - uint32_t
+        - uint32_t
+        - bool
+        output:
+        - '"["'
+        - args[0]
+        - '", "'
+        - args[1]
+        - '"]"'
         require_det_id: true
         store_result_in_t: false
   command_name: reg
   function_alias: reg
-  help: "[address] [32 bit value]\n\t[Mythen3][Gotthard2] Reads/writes to a 32 bit\
-    \ register in hex. Advanced Function!\n\tGoes to stop server. Hence, can be called\
-    \ while calling blocking acquire().\n\t[Eiger] +0x100 for only left, +0x200 for\
-    \ only right."
+  help: "[address] [32 bit value][(optional)--validate]\n\t[Mythen3][Gotthard2] Reads/writes\
+    \ to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence,\
+    \ can be called while calling blocking acquire().\n\t\t Use --validate to force\
+    \ validation when writing to it.\n\t[Eiger] +0x100 for only left, +0x200 for only\
+    \ right."
   infer_action: true
 resetdacs:
   actions:
@@ -9249,38 +9373,30 @@ rx_zmqip:
         cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: getRxZmqIP
+        function: ''
         input: []
         input_types: []
-        output:
-        - OutString(t)
-        require_det_id: true
+        output: []
+        require_det_id: false
         store_result_in_t: true
     PUT:
       args:
-      - arg_types:
-        - IpAddr
-        argc: 1
-        cast_input:
-        - false
+      - arg_types: []
+        argc: -1
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: setRxZmqIP
-        input:
-        - IpAddr(args[0])
-        input_types:
-        - IpAddr
-        output:
-        - args.front()
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
   command_name: rx_zmqip
   function_alias: rx_zmqip
-  help: "[x.x.x.x]\n\tZmq Ip Address from which data is to be streamed out of the\
-    \ receiver. Also restarts receiver zmq streaming if enabled. Default is from rx_hostname.\
-    \ Modified only when using an intermediate process between receiver."
+  help: ''
   infer_action: true
-  template: true
+  is_description: true
 rx_zmqport:
   actions:
     GET:
@@ -9653,6 +9769,7 @@ setbit:
         cast_input:
         - true
         - true
+        - true
         check_det_id: false
         convert_det_id: true
         exceptions:
@@ -9662,16 +9779,56 @@ setbit:
         input:
         - args[0]
         - args[1]
+        - '"0"'
         input_types:
         - uint32_t
         - int
+        - bool
         output:
-        - ToString(args)
+        - '"["'
+        - args[0]
+        - '", "'
+        - args[1]
+        - '"]"'
+        require_det_id: true
+        store_result_in_t: false
+      - arg_types:
+        - uint32_t
+        - int
+        - special::validate
+        argc: 3
+        cast_input:
+        - true
+        - true
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31
+          message: '"Bit number out of range: " + args[1]'
+        - condition: args[2] != "--validate"
+          message: '"Could not scan third argument. Did you mean --validate?"'
+        function: setBit
+        input:
+        - args[0]
+        - args[1]
+        - '"1"'
+        input_types:
+        - uint32_t
+        - int
+        - bool
+        output:
+        - '"["'
+        - args[0]
+        - '", "'
+        - args[1]
+        - '"]"'
         require_det_id: true
         store_result_in_t: false
   command_name: setbit
   function_alias: setbit
-  help: "[reg address in hex] [bit index]\n\tSets bit in address."
+  help: "[reg address in hex] [bit index]\n\tSets bit in address.\n\tUse --validate\
+    \ to force validation."
   infer_action: true
   template: true
 settings:
@@ -9928,6 +10085,40 @@ signalname:
     \ to the given name."
   infer_action: true
   template: true
+sleep:
+  actions:
+    PUT:
+      args:
+      - arg_types:
+        - int
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - int
+        - special::time_unit
+        argc: 2
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: sleep
+  function_alias: sleep
+  help: ''
+  infer_action: true
+  is_description: true
 slowadc:
   actions:
     GET:
@@ -11258,6 +11449,46 @@ timing:
   help: "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx\
     \ Ctb] [auto|trigger]\n\t[Mythen3] [auto|trigger|gating|trigger_gating]\n\t[Eiger]\
     \ [auto|trigger|gating|burst_trigger]"
+  infer_action: true
+  template: true
+timing_info_decoder:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getTimingInfoDecoder
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - defs::timingInfoDecoder
+        argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: setTimingInfoDecoder
+        input:
+        - args[0]
+        input_types:
+        - defs::timingInfoDecoder
+        output:
+        - args.front()
+        require_det_id: true
+        store_result_in_t: false
+  command_name: timing_info_decoder
+  function_alias: timing_info_decoder
+  help: "[swissfel|shine]\n\t[Jungfrau] Advanced Command and only for Swissfel and\
+    \ Shine. Sets the bunch id or timing info decoder. Default is swissfel."
   infer_action: true
   template: true
 timinglist:

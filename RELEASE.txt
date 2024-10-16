@@ -228,8 +228,7 @@ This document describes the differences between v9.0.0 and v8.0.2
     Gotthard2   9.0.0
     Gotthard    9.0.0
     Moench      9.0.0
-    Ctb         9.0.0
-    
+  
 
     On-board Detector Server Upgrade
     --------------------------------
@@ -254,21 +253,18 @@ This document describes the differences between v9.0.0 and v8.0.2
 
     Eiger       02.10.2023 (v32)                    (updated in 7.0.3)
     
-    Jungfrau    01.10.2024 (v1.5, HW v1.0)          (updated in 9.0.0)
-                01.10.2024 (v2.5, HW v2.0)          (updated in 9.0.0)
+    Jungfrau    01.10.2024 (v1.6, HW v1.0)          (updated in 9.0.0)
+                01.10.2024 (v2.6, HW v2.0)          (updated in 9.0.0)
 
-    Mythen3     24.01.2023 (v1.4)                   (updated in 7.0.0)
+    Mythen3     24.01.2023 (v1.4)                   (updated in 7.0.0) //TODO:  check why the date is not changed
 
-    Gotthard2   03.10.2024 (v0.4)?                   (updated in 9.0.0)
+    Gotthard2   03.10.2024 (v1.0)                   (updated in 9.0.0)
 
     Gotthard    08.02.2018 (50um and 25um Master)
                 09.02.2018 (25 um Slave) 
 
-    Moench      10.07.2023 (v0.3.2)                 (updated in 8.0.0, under development)
+    Moench      26.10.2023 (v1.0)                   (updated in 9.0.0)
 
-    Ctb         28.08.2023 (v1.2)                   (updated in 8.0.0)
-
-    xilinx      10.01.2023 (v0.1)                   (updated in 9.0.0, under development)
 
     Detector Upgrade
     ----------------
@@ -280,7 +276,6 @@ This document describes the differences between v9.0.0 and v8.0.2
     Mythen3    via command <.rbf>
     Gotthard2  via command <.rbf>
     Moench     via command <.pof>
-    Ctb        via command <.pof>
 
     Gotthard cannot be upgraded remotely  
 

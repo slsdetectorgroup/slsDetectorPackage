@@ -10,5 +10,5 @@
 #define APIMYTHEN3   "developer 0x241001"
 #define APIJUNGFRAU  "developer 0x241001"
 #define APIGOTTHARD2 "developer 0x241007"
-#define APILIB "developer 0x241014"
-#define APIRECEIVER "developer 0x241014"
+#define APILIB       "developer 0x241014"
+#define APIRECEIVER  "developer 0x241014"

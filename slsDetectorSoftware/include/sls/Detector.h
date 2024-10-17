@@ -45,11 +45,6 @@ class Detector {
      */
     Detector(int shm_id = 0);
     ~Detector();
-
-    /** Free the shared memory of this detector and all modules
-    belonging to it */
-    void freeSharedMemory();
-
     /** Frees shared memory before loading configuration file. Set up once
     normally */
     void loadConfig(const std::string &fname);

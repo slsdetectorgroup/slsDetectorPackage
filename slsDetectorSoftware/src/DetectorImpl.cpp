@@ -390,7 +390,8 @@ slsDetectorDefs::xy DetectorImpl::getNumberOfChannels() const {
 }
 
 void DetectorImpl::setNumberOfChannels(const slsDetectorDefs::xy c) {
-    if (size() > 1) {
+    // detsize is set before hostname
+    if (size() >= 1) {
         throw RuntimeError(
             "Set the number of channels before setting hostname.");
     }

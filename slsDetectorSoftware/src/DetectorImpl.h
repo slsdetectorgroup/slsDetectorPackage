@@ -79,11 +79,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     explicit DetectorImpl(int detector_index = 0, bool verify = true,
                           bool update = true);
 
-    /**
-     * Destructor
-     */
     virtual ~DetectorImpl();
-
     template <class CT> struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
     Result<RT> Parallel(RT (Module::*somefunc)(CT...),
@@ -198,14 +194,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
     /** return detector index in shared memory */
     int getDetectorIndex() const;
 
-    /** Free specific shared memory from the command line without creating
-     * object */
-    static void freeSharedMemory(int detectorIndex, int detPos = -1);
-
-    /** Free all modules from current multi Id shared memory and delete members
-     */
-    void freeSharedMemory();
-
     /** Get user details of shared memory */
     std::string getUserDetails();
 
@@ -215,13 +203,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * default enabled */
     void setInitialChecks(const bool value);
 
-    /**
-     * Connect to Virtual Detector Servers at local host
-     * @param numdet number of modules
-     * @param port starting port number
-     */
-    void setVirtualDetectorServers(const int numdet, const uint16_t port);
-
+    bool hasModulesInSharedMemory();
+    
     /** Sets the hostname of all sls modules in shared memory and updates
      * local cache */
     void setHostname(const std::vector<std::string> &name);

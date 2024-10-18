@@ -4,6 +4,7 @@
 
 #include "CtbConfig.h"
 #include "SharedMemory.h"
+#include "sls/ZmqSocket.h"
 #include "sls/Result.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
@@ -19,7 +20,6 @@
 
 namespace sls {
 
-class ZmqSocket;
 class detectorData;
 class Module;
 
@@ -79,7 +79,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
     explicit DetectorImpl(int detector_index = 0, bool verify = true,
                           bool update = true);
 
-    virtual ~DetectorImpl();
     template <class CT> struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
     Result<RT> Parallel(RT (Module::*somefunc)(CT...),

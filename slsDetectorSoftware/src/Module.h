@@ -74,7 +74,7 @@ class Module : public virtual slsDetectorDefs {
     /** opening existing shared memory
     verify is if shared memory version matches existing one */
     explicit Module(int det_id = 0, int module_index = 0, bool verify = true);
-    virtual ~Module();
+
     bool isFixedPatternSharedMemoryCompatible() const;
     std::string getHostname() const;
 

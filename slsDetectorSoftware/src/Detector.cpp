@@ -61,10 +61,10 @@ Detector::Detector(int shm_id) : pimpl(make_unique<DetectorImpl>(shm_id)) {}
 Detector::~Detector() = default;
 
 // Move constructor
-Detector::Detector(Detector&& other) noexcept = default;
+Detector::Detector(Detector &&other) noexcept = default;
 
 // Move assignment operator
-Detector& Detector::operator=(Detector&& other) noexcept = default;
+Detector &Detector::operator=(Detector &&other) noexcept = default;
 
 // Configuration
 

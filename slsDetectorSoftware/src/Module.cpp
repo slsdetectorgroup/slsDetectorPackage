@@ -53,7 +53,6 @@ Module::Module(int det_id, int module_index, bool verify)
     initSharedMemory(type, det_id, verify);
 }
 
-
 bool Module::isFixedPatternSharedMemoryCompatible() const {
     return (shm()->shmversion >= MODULE_SHMAPIVERSION);
 }

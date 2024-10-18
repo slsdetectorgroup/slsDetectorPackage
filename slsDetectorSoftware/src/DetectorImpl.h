@@ -204,7 +204,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setInitialChecks(const bool value);
 
     bool hasModulesInSharedMemory();
-    
+
     /** Sets the hostname of all sls modules in shared memory and updates
      * local cache */
     void setHostname(const std::vector<std::string> &name);

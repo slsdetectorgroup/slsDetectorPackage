@@ -20,7 +20,7 @@ class IpAddr;
 // Free function to avoid dependence on class
 // and avoid the option to free another objects
 // shm by mistake
-void freeSharedMemory(int detectorIndex, int moduleIndex = -1);
+void freeSharedMemory(const int detectorIndex = 0, const int moduleIndex = -1);
 
 /**
  * \class Detector

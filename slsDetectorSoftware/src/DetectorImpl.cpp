@@ -234,7 +234,8 @@ void DetectorImpl::addModule(const std::string &name) {
 
     // gotthard cannot have more than 2 modules (50um=1, 25um=2
     if ((type == GOTTHARD || type == GOTTHARD2) && modules.size() > 2) {
-        throw RuntimeError("Gotthard cannot have more than 2 modules. Please free the shared memory and start again.");
+        throw RuntimeError("Gotthard cannot have more than 2 modules. Please "
+                           "free the shared memory and start again.");
     }
 
     auto pos = modules.size();

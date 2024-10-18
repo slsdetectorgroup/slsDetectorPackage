@@ -23,7 +23,7 @@
 
 namespace sls {
 
-void freeSharedMemory(int detectorIndex, int moduleIndex) {
+void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
 
     // single module
     if (moduleIndex >= 0) {
@@ -34,10 +34,10 @@ void freeSharedMemory(int detectorIndex, int moduleIndex) {
         return;
     }
 
-    // detector - multi module - get number of detectors from shm
-    SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
     int numDetectors = 0;
 
+    // detector - multi module - get number of detectors from shm
+    SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
     if (detectorShm.exists()) {
         detectorShm.openSharedMemory(false);
         numDetectors = detectorShm()->totalNumberOfModules;

@@ -10,5 +10,5 @@
 #define APIMOENCH    "9.0.0 0x241014"
 #define APIXILINXCTB "9.0.0 0x241014"
 #define APIEIGER     "9.0.0 0x241014"
-#define APILIB       "9.0.0 0x241014"
 #define APIRECEIVER  "9.0.0 0x241014"
+#define APILIB       "9.0.0 0x241018"

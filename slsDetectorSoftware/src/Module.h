@@ -75,12 +75,6 @@ class Module : public virtual slsDetectorDefs {
     verify is if shared memory version matches existing one */
     explicit Module(int det_id = 0, int module_index = 0, bool verify = true);
 
-    virtual ~Module();
-
-    /** Frees shared memory and deletes shared memory structure
-    Safe to call only if detector shm also deleted or its numberOfModules is
-    updated */
-    void freeSharedMemory();
     bool isFixedPatternSharedMemoryCompatible() const;
     std::string getHostname() const;
 

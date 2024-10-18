@@ -53,14 +53,6 @@ Module::Module(int det_id, int module_index, bool verify)
     initSharedMemory(type, det_id, verify);
 }
 
-Module::~Module() = default;
-
-void Module::freeSharedMemory() {
-    if (shm.exists()) {
-        shm.removeSharedMemory();
-    }
-}
-
 bool Module::isFixedPatternSharedMemoryCompatible() const {
     return (shm()->shmversion >= MODULE_SHMAPIVERSION);
 }

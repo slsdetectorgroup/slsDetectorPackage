@@ -45,6 +45,15 @@ class Detector {
      */
     Detector(int shm_id = 0);
     ~Detector();
+
+    // Disable copy since SharedMemory object is unique in DetectorImpl
+    Detector(const Detector& other) = delete;
+    Detector& operator=(const Detector& other) = delete;
+
+    // Move constructor and assignment operator
+    Detector(Detector&& other) noexcept;
+    Detector& operator=(Detector&& other) noexcept;
+
     /** Frees shared memory before loading configuration file. Set up once
     normally */
     void loadConfig(const std::string &fname);

@@ -37,8 +37,6 @@ DetectorImpl::DetectorImpl(int detector_index, bool verify, bool update)
     setupDetector(verify, update);
 }
 
-DetectorImpl::~DetectorImpl() = default;
-
 void DetectorImpl::setupDetector(bool verify, bool update) {
     initSharedMemory(verify);
     initializeMembers(verify);

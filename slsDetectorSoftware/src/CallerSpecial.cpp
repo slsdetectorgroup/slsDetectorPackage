@@ -16,6 +16,10 @@ std::vector<std::string> Caller::getAllCommands() {
     return ret;
 }
 
+std::map<std::string, std::string> Caller::GetDeprecatedCommands() {
+    return deprecated_functions;
+}
+
 void Caller::call(const std::string &command,
                   const std::vector<std::string> &arguments, int detector_id,
                   int action, std::ostream &os, int receiver_id) {

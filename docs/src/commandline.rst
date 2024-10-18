@@ -24,6 +24,13 @@ Help
     # get help for a particular command
     sls_detector_get -h fpath
     sls_detector_help fpath
+
+    # autocompletion
+    # bash_autocomplete.sh or zsh_autocomplete.sh must be sourced from the 
+    # main package folder to enable auto completion of commands and arguments 
+    # for the command line on that shell.
+    source bash_autocomplete.sh
+
   
 
 Commands

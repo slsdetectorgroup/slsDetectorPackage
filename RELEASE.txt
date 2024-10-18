@@ -162,9 +162,9 @@ This document describes the differences between v9.0.0 and v8.0.2
 
 
     *   Auto completion
-        'source bash_autocomplete.sh' from the main package folder will
-        enable auto completion of commands and arguments for the command line
-        on that terminal.
+        bash_autocomplete.sh or zsh_autocomplete.sh must be sourced from the 
+        main package folder to enable auto completion of commands and arguments 
+        for the command line on that shell.
 
 
     *   sls_detector

@@ -47,12 +47,12 @@ class Detector {
     ~Detector();
 
     // Disable copy since SharedMemory object is unique in DetectorImpl
-    Detector(const Detector& other) = delete;
-    Detector& operator=(const Detector& other) = delete;
+    Detector(const Detector &other) = delete;
+    Detector &operator=(const Detector &other) = delete;
 
     // Move constructor and assignment operator
-    Detector(Detector&& other) noexcept;
-    Detector& operator=(Detector&& other) noexcept;
+    Detector(Detector &&other) noexcept;
+    Detector &operator=(Detector &&other) noexcept;
 
     /** Frees shared memory before loading configuration file. Set up once
     normally */

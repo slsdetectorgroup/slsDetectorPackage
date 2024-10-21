@@ -55,6 +55,7 @@ class Caller {
     }
 
     std::vector<std::string> getAllCommands();
+    std::map<std::string, std::string> GetDeprecatedCommands();
     std::string list(int action);
 
     // THIS COMMENT TO BE REPLACED BY THE ACTUAL CODE (1)

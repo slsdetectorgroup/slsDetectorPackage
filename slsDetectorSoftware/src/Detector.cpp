@@ -23,7 +23,7 @@
 
 namespace sls {
 
-void freeSharedMemory(int detectorIndex, int moduleIndex) {
+void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
 
     // single module
     if (moduleIndex >= 0) {
@@ -34,10 +34,10 @@ void freeSharedMemory(int detectorIndex, int moduleIndex) {
         return;
     }
 
-    // detector - multi module - get number of detectors from shm
-    SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
     int numDetectors = 0;
 
+    // detector - multi module - get number of detectors from shm
+    SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
     if (detectorShm.exists()) {
         detectorShm.openSharedMemory(false);
         numDetectors = detectorShm()->totalNumberOfModules;
@@ -58,15 +58,19 @@ void freeSharedMemory(int detectorIndex, int moduleIndex) {
 using defs = slsDetectorDefs;
 
 Detector::Detector(int shm_id) : pimpl(make_unique<DetectorImpl>(shm_id)) {}
-
 Detector::~Detector() = default;
 
+// Move constructor
+Detector::Detector(Detector &&other) noexcept = default;
+
+// Move assignment operator
+Detector &Detector::operator=(Detector &&other) noexcept = default;
+
 // Configuration
-void Detector::freeSharedMemory() { pimpl->freeSharedMemory(); }
 
 void Detector::loadConfig(const std::string &fname) {
     int shm_id = getShmId();
-    freeSharedMemory();
+    freeSharedMemory(shm_id);
     pimpl = make_unique<DetectorImpl>(shm_id);
     LOG(logINFO) << "Loading configuration file: " << fname;
     loadParameters(fname);
@@ -105,13 +109,30 @@ Result<std::string> Detector::getHostname(Positions pos) const {
 }
 
 void Detector::setHostname(const std::vector<std::string> &hostname) {
+    if (pimpl->hasModulesInSharedMemory()) {
+        LOG(logWARNING) << "There are already module(s) in shared memory."
+                           "Freeing Shared memory now.";
+        auto numChannels = getDetectorSize();
+        auto initialChecks = getInitialChecks();
+        freeSharedMemory(getShmId());
+        pimpl = make_unique<DetectorImpl>(getShmId());
+        setDetectorSize(numChannels);
+        setInitialChecks(initialChecks);
+    }
     pimpl->setHostname(hostname);
 }
 
 void Detector::setVirtualDetectorServers(int numServers,
                                          uint16_t startingPort) {
     validatePortRange(startingPort, numServers * 2);
-    pimpl->setVirtualDetectorServers(numServers, startingPort);
+
+    std::vector<std::string> hostnames;
+    for (int i = 0; i < numServers; ++i) {
+        // * 2 is for control and stop port
+        hostnames.push_back(std::string("localhost:") +
+                            std::to_string(startingPort + i * 2));
+    }
+    setHostname(hostnames);
 }
 
 int Detector::getShmId() const { return pimpl->getDetectorIndex(); }

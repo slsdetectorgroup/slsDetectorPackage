@@ -434,7 +434,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     /** data streaming (down stream) enabled in client (zmq sckets created) */
     bool client_downstream{false};
     std::vector<std::unique_ptr<ZmqSocket>> zmqSocket;
-    volatile int numZmqRunning{0};
+    std::atomic<int> numZmqRunning{0};
 
     /** mutex to synchronize main and data processing threads */
     mutable std::mutex mp;

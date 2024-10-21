@@ -49,8 +49,8 @@ class Fifo : private virtual slsDetectorDefs {
     CircularFifo<char> *fifoFree;
     CircularFifo<char> *fifoStream;
     int fifoDepth;
-    volatile int status_fifoBound;
-    volatile int status_fifoFree;
+    std::atomic<int> status_fifoBound;
+    std::atomic<int> status_fifoFree;
 };
 
 } // namespace sls

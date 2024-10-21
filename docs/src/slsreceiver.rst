@@ -213,7 +213,7 @@ ZMQ: Json Header Format
    |              | [From detector udp header]                   |
    +--------------+----------------------------------------------+
    | detType      | Detector type enum                           |
-   | detSpec3     | See :ref:`Detector enum<Detector Enum>`      |
+   | detSpec3     | See :ref:`Detector enum<detector enum>`      |
    |              | [From detector udp header]                   |
    +--------------+----------------------------------------------+
    | version      | Detector header version. At 2                |

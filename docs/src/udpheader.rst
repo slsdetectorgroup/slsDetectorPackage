@@ -63,6 +63,8 @@ Description
 * **version**: current version of the detector header (0x2).
 
 
+.. _detector enum:
+
 Detector Enum
 --------------
 

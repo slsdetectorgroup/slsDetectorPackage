@@ -25,6 +25,9 @@ Help
     sls_detector_get -h fpath
     sls_detector_help fpath
 
+    # list of deprecated commands
+    list deprecated
+
     # autocompletion
     # bash_autocomplete.sh or zsh_autocomplete.sh must be sourced from the 
     # main package folder to enable auto completion of commands and arguments 

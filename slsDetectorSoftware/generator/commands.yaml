@@ -793,7 +793,7 @@ selinterface:
       input_types: [ bool ]
 
 udp_firstdst:
-  help: "\n[0 - 31 (or number of udp destinations)]\n\t[Jungfrau][Moench][Gotthard2]\n[0-63]\n\t[Mythen3]\n\n\t One can set which is the first destination that the detector will stream images out from in a round robin fashion. The entry must not have been empty. Default: 0"
+  help: "\n\t[0 - N]\n\twhere N is the max number of udp destinations - 1.\n\t[Jungfrau][Moench][Gotthard2] Max number of udp destinations is 32.\n\t[Mythen3] Max number of udp destination is 64.\n\t One can set which is the first destination that the detector will stream images out from in a round robin fashion. The entry must not have been empty. Default: 0"
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1074,7 +1074,7 @@ interruptsubframe:
       input_types: [ bool ]
 
 activate:
-  help: "[0, 1] \n\t[Eiger] 1 is default. 0 deactivates readout and does not send data."
+  help: "[0, 1]\n\t[Eiger] 1 is default. 0 deactivates readout and does not send data."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:
@@ -1779,7 +1779,7 @@ udp_validate:
 
 clearroi:
   inherit_actions: EXECUTE_SET_COMMAND
-  help: "[Gotthard] Resets Region of interest in detector. All channels enabled. Default is all channels enabled."
+  help: "\n\t[Gotthard] Resets Region of interest in detector. All channels enabled. Default is all channels enabled."
   actions:
     PUT:
       function: clearROI
@@ -2034,7 +2034,7 @@ framecounter:
 ################# GET_COMMAND_HEX ############################
 serialnumber:
   inherit_actions: GET_COMMAND
-  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb]\nSerial number of detector."
+  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb]\n\tSerial number of detector."
   actions:
     GET:
       function: getSerialNumber
@@ -3429,7 +3429,7 @@ udp_dstlist:
       output: [ ToString(args) ]
 
 txdelay:
-  help: "[n_delay]\n\t[Eiger][Jungfrau][Moench][Mythen3] Set transmission delay for all modules in the detector using the step size provided.Sets up \n\t\t[Eiger] txdelay_left to (2 * mod_index * n_delay), \n\t\t[Eiger] txdelay_right to ((2 * mod_index + 1) * n_delay) and \n\t\t[Eiger] txdelay_frame to (2 *num_modules * n_delay)  \n\t\t[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules * n_delay)  \nfor every module."
+  help: "[n_delay]\n\t[Eiger][Jungfrau][Moench][Mythen3] Set transmission delay for all modules in the detector using the step size provided.Sets up \n\t[Eiger] txdelay_left to (2 * mod_index * n_delay), \n\t[Eiger] txdelay_right to ((2 * mod_index + 1) * n_delay) and \n\t[Eiger] txdelay_frame to (2 *num_modules * n_delay)\n\t[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules * n_delay) for every module."
   actions:
     GET:
       argc: 0
@@ -3963,7 +3963,7 @@ patloop:
       output: [level,"' '" , "'['" , "ToStringHex(start, 4)" , '", "' , "ToStringHex(stop, 4)", "']'" ]
 
 patloop0:
-    help: "Deprecated command. Use patloop."
+    help: "\n\tDeprecated command. Use patloop."
     inherit_actions: patloop
     actions:
       GET:
@@ -4010,7 +4010,7 @@ patnloop:
       output: [ level,"' '" , nloops ]
 
 patnloop0:
-    help: "Deprecated command. Use patnloop."
+    help: "\n\tDeprecated command. Use patnloop."
     inherit_actions: patnloop
     actions:
       GET:
@@ -4056,7 +4056,7 @@ patwait:
       output: [level,"' '" ,  "ToStringHex(addr, 4)" ]
 
 patwait0:
-    help: "Deprecated command. Use patwait."
+    help: "\n\tDeprecated command. Use patwait."
     inherit_actions: patwait
     actions:
       GET:
@@ -4102,7 +4102,7 @@ patwaittime:
       output: [level,"' '" ,  "waittime" ]
 
 patwaittime0:
-    help: "Deprecated command. Use patwaittime."
+    help: "\n\tDeprecated command. Use patwaittime."
     inherit_actions: patwaittime
     actions:
       GET:

@@ -67,12 +67,35 @@ bool Caller::ReplaceIfDeprecated(std::string &command) {
 }
 
 std::string Caller::list(int action) {
-    std::string ret = "free\n";
-    for (auto &f : functions) {
-        ret += f.first + "\n";
+    if (action == defs::HELP_ACTION) {
+        return "[deprecated(optional)]\n\tlists all available commands, list "
+               "deprecated - list deprecated commands\n";
     }
-
-    return ret;
+    if (args.empty()) {
+        std::string ret = "free\n";
+        for (auto &f : functions) {
+            ret += f.first + "\n";
+        }
+        return ret;
+    } else if (args.size() == 1) {
+        if (args[0] == "deprecated") {
+            std::ostringstream os;
+            os << "The following " << deprecated_functions.size()
+               << " commands are deprecated\n";
+            const size_t field_width = 20;
+            for (const auto &it : deprecated_functions) {
+                os << std::right << std::setw(field_width) << it.first << " -> "
+                   << it.second << '\n';
+            }
+            return os.str();
+        } else {
+            throw RuntimeError(
+                "Could not decode argument. Possible options: deprecated");
+        }
+    } else {
+        WrongNumberOfParameters(0);
+        return "";
+    }
 }
 
 /* Network Configuration (Detector<->Receiver) */

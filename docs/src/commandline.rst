@@ -8,7 +8,7 @@ Commands can be used either with sls_detector_get or sls_detector_put
 
 .. code-block::
 
-    sls_detector_get vrf
+    sls_detector_get exptime
 
 Help
 --------

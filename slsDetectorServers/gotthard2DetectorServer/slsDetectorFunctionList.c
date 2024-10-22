@@ -2316,67 +2316,62 @@ int configureChip(char *mess) {
         LOG(logINFOBLUE,
             ("Startup: Chip to be configured when reading config file\n"));
         return OK;
-    } else {
-        LOG(logINFOBLUE, ("\tConfiguring chip\n"));
+    }
+    LOG(logINFOBLUE, ("\tConfiguring chip\n"));
 
-        // on chip dacs
-        for (int idac = 0; idac != ONCHIP_NDAC; ++idac) {
-            // ignore unused dacs
-            if (idac == (int)G2_VCHIP_UNUSED)
-                continue;
-            for (int ichip = 0; ichip != NCHIP; ++ichip) {
-                if (onChipdacValues[idac][ichip] == -1) {
-                    sprintf(mess,
-                            "On chip DAC [%d] value not set for chip %d\n",
-                            idac, ichip);
-                    LOG(logERROR, (mess));
-                    return FAIL;
-                }
-                if (setOnChipDAC(idac, ichip, onChipdacValues[idac][ichip]) ==
-                    FAIL) {
-                    sprintf(mess, "Could not set on chip DAC for chip %d\n",
-                            ichip);
-                    LOG(logERROR, (mess));
-                    return FAIL;
-                }
+    // on chip dacs
+    for (int idac = 0; idac != ONCHIP_NDAC; ++idac) {
+        // ignore unused dacs
+        if (idac == (int)G2_VCHIP_UNUSED)
+            continue;
+        for (int ichip = 0; ichip != NCHIP; ++ichip) {
+            if (onChipdacValues[idac][ichip] == -1) {
+                sprintf(mess, "On chip DAC [%d] value not set for chip %d\n",
+                        idac, ichip);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+            if (setOnChipDAC(idac, ichip, onChipdacValues[idac][ichip]) ==
+                FAIL) {
+                sprintf(mess, "Could not set on chip DAC for chip %d\n", ichip);
+                LOG(logERROR, (mess));
+                return FAIL;
             }
         }
+    }
 
-        // adc configuration
-        for (int ichip = 0; ichip != NCHIP; ++ichip) {
-            for (int iadc = 0; iadc != NADC; ++iadc) {
-                if (setADCConfiguration(
-                        ichip, iadc, adcConfiguration[ichip][iadc]) == FAIL) {
-                    sprintf(mess,
-                            "Could not set ADC configuration for chip %d\n",
-                            ichip);
-                    LOG(logERROR, (mess));
-                    return FAIL;
-                }
-            }
-        }
-
-        // veto reference
-        for (int ichip = 0; ichip != NCHIP; ++ichip) {
-            if (configureASICVetoReference(ichip, vetoGainIndices[ichip],
-                                           vetoReference[ichip]) == FAIL) {
-                sprintf(mess,
-                        "Could not configure veto reference for chip %d\n",
+    // adc configuration
+    for (int ichip = 0; ichip != NCHIP; ++ichip) {
+        for (int iadc = 0; iadc != NADC; ++iadc) {
+            if (setADCConfiguration(ichip, iadc,
+                                    adcConfiguration[ichip][iadc]) == FAIL) {
+                sprintf(mess, "Could not set ADC configuration for chip %d\n",
                         ichip);
                 LOG(logERROR, (mess));
                 return FAIL;
             }
         }
+    }
 
-        // asic global settings (burst mode, cds gain, filter resistor)
-        if (configureASICGlobalSettings() == FAIL) {
-            sprintf(mess, "Could not configure asic global settings\n");
+    // veto reference
+    for (int ichip = 0; ichip != NCHIP; ++ichip) {
+        if (configureASICVetoReference(ichip, vetoGainIndices[ichip],
+                                       vetoReference[ichip]) == FAIL) {
+            sprintf(mess, "Could not configure veto reference for chip %d\n",
+                    ichip);
             LOG(logERROR, (mess));
             return FAIL;
         }
-
-        LOG(logINFOBLUE, ("\tChip configured\n"));
     }
+
+    // asic global settings (burst mode, cds gain, filter resistor)
+    if (configureASICGlobalSettings() == FAIL) {
+        sprintf(mess, "Could not configure asic global settings\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    LOG(logINFOBLUE, ("\tChip configured\n"));
     chipConfigured = 1;
     return OK;
 }

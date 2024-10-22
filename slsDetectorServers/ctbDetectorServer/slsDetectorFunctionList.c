@@ -2498,145 +2498,159 @@ int readSample(int ns) {
     // read adcs
     if (analogEnable && ns < naSamples) {
 
-        uint32_t fifoAddr = FIFO_DATA_REG;
+        // not empty
+        if ((bus_r(FIFO_EMPTY_REG) & FIFO_EMPTY_ALL_EMPTY_MSK) != FIFO_EMPTY_ALL_EMPTY_MSK) {
 
-        if (!(ns % 1000)) {
-            LOG(logDEBUG1, ("Reading sample ns:%d of %d AEmtpy:0x%x AFull:0x%x "
-                            "Status:0x%x\n",
-                            ns, naSamples, bus_r(FIFO_EMPTY_REG),
-                            bus_r(FIFO_FULL_REG), bus_r(STATUS_REG)));
-        }
-
-        // loop through all channels
-        for (int ich = 0; ich < NCHAN_ANALOG; ++ich) {
-
-            // if channel is in enable mask
-            if ((1 << ich) & (adcEnableMask_1g)) {
-
-                // unselect channel
-                bus_w(addr, bus_r(addr) & ~(DUMMY_FIFO_CHNNL_SLCT_MSK));
-
-                // select channel
-                bus_w(addr, bus_r(addr) | ((ich << DUMMY_FIFO_CHNNL_SLCT_OFST) &
-                                           DUMMY_FIFO_CHNNL_SLCT_MSK));
-
-                // wait for 1 us to latch different clocks of read and read
-                // strobe
-                for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
-                    ;
-
-                // read fifo and write it to current position of data pointer
-                *((uint16_t *)analogDataPtr) = bus_r16(fifoAddr);
-
-                // keep reading till the value is the same
-                /* while (*((uint16_t*)analogDataPtr) != bus_r16(fifoAddr)) {
-                     LOG(logDEBUG1, ("%d ", ich));
-                     *((uint16_t*)analogDataPtr) = bus_r16(fifoAddr);
-                 }*/
-
-                // increment pointer to data out destination
-                analogDataPtr += 2;
-                sampleRead = 1;
+            // print
+            if (!(ns % 1000)) {
+                LOG(logDEBUG1, ("Reading sample ns:%d of %d AEmtpy:0x%x AFull:0x%x "
+                                "Status:0x%x\n",
+                                ns, naSamples, bus_r(FIFO_EMPTY_REG),
+                                bus_r(FIFO_FULL_REG), bus_r(STATUS_REG)));
             }
+
+            // loop through all channels
+            uint32_t fifoAddr = FIFO_DATA_REG;
+            for (int ich = 0; ich < NCHAN_ANALOG; ++ich) {
+
+                // if channel is in enable mask
+                if ((1 << ich) & (adcEnableMask_1g)) {
+
+                    // unselect channel
+                    bus_w(addr, bus_r(addr) & ~(DUMMY_FIFO_CHNNL_SLCT_MSK));
+
+                    // select channel
+                    bus_w(addr, bus_r(addr) | ((ich << DUMMY_FIFO_CHNNL_SLCT_OFST) &
+                                            DUMMY_FIFO_CHNNL_SLCT_MSK));
+
+                    // wait for 1 us to latch different clocks of read and read
+                    // strobe
+                    for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
+                        ;
+
+                    // read fifo and write it to current position of data pointer
+                    *((uint16_t *)analogDataPtr) = bus_r16(fifoAddr);
+
+                    // keep reading till the value is the same
+                    /* while (*((uint16_t*)analogDataPtr) != bus_r16(fifoAddr)) {
+                        LOG(logDEBUG1, ("%d ", ich));
+                        *((uint16_t*)analogDataPtr) = bus_r16(fifoAddr);
+                    }*/
+
+                    // increment pointer to data out destination
+                    analogDataPtr += 2;
+                    sampleRead = 1;
+                }
+            }
+
+            // read strobe to all analog fifos
+            bus_w(addr, bus_r(addr) | DUMMY_ANLG_FIFO_RD_STRBE_MSK);
+            bus_w(addr, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK));
+
+            // wait for 1 us to latch different clocks of read and read strobe
+            for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
+                ;
         }
-
-        // read strobe to all analog fifos
-        bus_w(addr, bus_r(addr) | DUMMY_ANLG_FIFO_RD_STRBE_MSK);
-        bus_w(addr, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK));
-
-        // wait for 1 us to latch different clocks of read and read strobe
-        for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
-            ;
     }
 
     // read digital output
     if (digitalEnable && ns < ndSamples) {
 
-        if (!(ns % 1000)) {
-            LOG(logDEBUG1,
-                ("Reading sample ns:%d of %d DEmtpy:%d DFull:%d Status:0x%x\n",
-                 ns, ndSamples,
-                 ((bus_r(FIFO_DIN_STATUS_REG) &
-                   FIFO_DIN_STATUS_FIFO_EMPTY_MSK) >>
-                  FIFO_DIN_STATUS_FIFO_EMPTY_OFST),
-                 ((bus_r(FIFO_DIN_STATUS_REG) &
-                   FIFO_DIN_STATUS_FIFO_FULL_MSK) >>
-                  FIFO_DIN_STATUS_FIFO_FULL_OFST),
-                 bus_r(STATUS_REG)));
+        // check if not empty
+        if (!((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_EMPTY_MSK))) {
+
+            // print
+            if (!(ns % 1000)) {
+                LOG(logDEBUG1,
+                    ("Reading sample ns:%d of %d DEmtpy:%d DFull:%d Status:0x%x\n",
+                    ns, ndSamples,
+                    ((bus_r(FIFO_DIN_STATUS_REG) &
+                    FIFO_DIN_STATUS_FIFO_EMPTY_MSK) >>
+                    FIFO_DIN_STATUS_FIFO_EMPTY_OFST),
+                    ((bus_r(FIFO_DIN_STATUS_REG) &
+                    FIFO_DIN_STATUS_FIFO_FULL_MSK) >>
+                    FIFO_DIN_STATUS_FIFO_FULL_OFST),
+                    bus_r(STATUS_REG)));
+            }
+
+            // read fifo and write it to current position of data pointer
+            *((uint64_t *)digitalDataPtr) =
+                get64BitReg(FIFO_DIN_LSB_REG, FIFO_DIN_MSB_REG);
+            digitalDataPtr += 8;
+            sampleRead = 1;
+
+            // read strobe to digital fifo
+            bus_w(addr, bus_r(addr) | DUMMY_DGTL_FIFO_RD_STRBE_MSK);
+            bus_w(addr, bus_r(addr) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
+
+            // wait for 1 us to latch different clocks of read and read strobe
+            for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
+                ;
         }
-
-        // read fifo and write it to current position of data pointer
-        *((uint64_t *)digitalDataPtr) =
-            get64BitReg(FIFO_DIN_LSB_REG, FIFO_DIN_MSB_REG);
-        digitalDataPtr += 8;
-        sampleRead = 1;
-
-        // read strobe to digital fifo
-        bus_w(addr, bus_r(addr) | DUMMY_DGTL_FIFO_RD_STRBE_MSK);
-        bus_w(addr, bus_r(addr) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
-
-        // wait for 1 us to latch different clocks of read and read strobe
-        for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
-            ;
     }
 
     // read transceivers
     if (transceiverEnable && ns < ntSamples) {
-        uint32_t tStatusAddr = FIFO_TIN_STATUS_REG;
 
-        if (!(ns % 1000)) {
-            LOG(logDEBUG1,
-                ("Reading sample ns:%d of %d TReg:0x%x Status:0x%x\n", ns,
-                 ntSamples, bus_r(tStatusAddr), bus_r(STATUS_REG)));
-        }
+        // not empty
+        if (checkDataInFifo()) {
 
-        // loop through all channels
-        for (int ich = 0; ich < NCHAN_TRANSCEIVER; ++ich) {
-
-            // if channel is in enable mask
-            if ((1 << ich) & (transceiverMask)) {
-
-                // int offset = FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST + ich;
-                // uint32_t mask = (1 << offset);
-                // int empty = ((bus_r(tStatusAddr) & mask) >> offset);
-
-                // if fifo not empty
-                // if (!empty) {
+            // print
+            uint32_t tStatusAddr = FIFO_TIN_STATUS_REG;
+            if (!(ns % 1000)) {
                 LOG(logDEBUG1,
-                    ("ns:%d Transceiver Fifo %d NOT Empty\n", ns, ich));
-
-                // unselect channel
-                bus_w(addr, bus_r(addr) & ~(DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK));
-
-                // select channel
-                bus_w(addr, bus_r(addr) |
-                                ((ich << DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_OFST) &
-                                 DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK));
-
-                // wait for 1 us to latch different clocks of read and read
-                // strobe
-                for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
-                    ;
-
-                // read fifo and write it to current position of data
-                // pointer
-                *((uint64_t *)transceiverDataPtr) =
-                    get64BitReg(FIFO_TIN_LSB_REG, FIFO_TIN_MSB_REG);
-                transceiverDataPtr += 8;
-                sampleRead = 1;
-                //}
+                    ("Reading sample ns:%d of %d TReg:0x%x Status:0x%x\n", ns,
+                    ntSamples, bus_r(tStatusAddr), bus_r(STATUS_REG)));
             }
+
+            // loop through all channels
+            for (int ich = 0; ich < NCHAN_TRANSCEIVER; ++ich) {
+
+                // if channel is in enable mask
+                if ((1 << ich) & (transceiverMask)) {
+
+                    // int offset = FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST + ich;
+                    // uint32_t mask = (1 << offset);
+                    // int empty = ((bus_r(tStatusAddr) & mask) >> offset);
+
+                    // if fifo not empty
+                    // if (!empty) {
+                    LOG(logDEBUG1,
+                        ("ns:%d Transceiver Fifo %d NOT Empty\n", ns, ich));
+
+                    // unselect channel
+                    bus_w(addr, bus_r(addr) & ~(DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK));
+
+                    // select channel
+                    bus_w(addr, bus_r(addr) |
+                                    ((ich << DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_OFST) &
+                                    DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK));
+
+                    // wait for 1 us to latch different clocks of read and read
+                    // strobe
+                    for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
+                        ;
+
+                    // read fifo and write it to current position of data
+                    // pointer
+                    *((uint64_t *)transceiverDataPtr) =
+                        get64BitReg(FIFO_TIN_LSB_REG, FIFO_TIN_MSB_REG);
+                    transceiverDataPtr += 8;
+                    sampleRead = 1;
+                    //}
+                }
+            }
+
+            // read strobe
+            bus_w(addr, bus_r(addr) | DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK);
+            usleep(5 * 1000);
+            bus_w(addr, bus_r(addr) & (~DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK));
+
+            // wait for 1 us to latch different clocks of read and read
+            // strobe
+            for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
+                ;
         }
-
-        // read strobe
-        bus_w(addr, bus_r(addr) | DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK);
-        usleep(5 * 1000);
-        bus_w(addr, bus_r(addr) & (~DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK));
-
-        // wait for 1 us to latch different clocks of read and read
-        // strobe
-        for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
-            ;
     }
 
     LOG(logDEBUG1, ("sample read:%d\n", sampleRead));
@@ -2716,11 +2730,11 @@ int readFrameFromFifo() {
     int ns = 0;
     // point the data pointer to the starting position of data
     analogDataPtr = analogData;
-    memset(analogData, 0, analogDataBytes);
+    memset(analogData, 0xFF, analogDataBytes);
     digitalDataPtr = digitalData;
-    memset(digitalData, 0, digitalDataBytes);
+    memset(digitalData, 0xFF, digitalDataBytes);
     transceiverDataPtr = transceiverData;
-    memset(transceiverData, 0, transceiverDataBytes);
+    memset(transceiverData, 0xFF, transceiverDataBytes);
 
     // no data for this frame
     /*if (!checkDataInFifo()) {
@@ -2740,9 +2754,8 @@ int readFrameFromFifo() {
     if (transceiverEnable && ntSamples > maxSamples)
         maxSamples = ntSamples;
     while (ns < maxSamples) {
-        // chceck if no data in fifo, return ns?//FIXME: ask Anna
         if (!readSample(ns)) {
-            LOG(logWARNING, ("No more samples to read\n"));
+            LOG(logWARNING, ("No more samples to read. Read %d samples only for frame %lld\n", ns, udpFrameNumber));
             return OK;
         }
         ns++;

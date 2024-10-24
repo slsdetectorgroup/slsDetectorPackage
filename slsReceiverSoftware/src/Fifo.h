@@ -11,9 +11,9 @@
  *@short constructs the fifo structure
  */
 
+#include "sls/CircularFifo.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
-#include "sls/CircularFifo.h"
 
 #include <atomic>
 

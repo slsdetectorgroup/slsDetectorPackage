@@ -4,7 +4,6 @@
 #define RELEASE      "9.0.0"
 #define APICTB       "9.0.0 0x241014"
 #define APIGOTTHARD  "9.0.0 0x241014"
-#define APIJUNGFRAU  "9.0.0 0x241016"
 #define APIMYTHEN3   "9.0.0 0x241014"
 #define APIMOENCH    "9.0.0 0x241014"
 #define APIXILINXCTB "9.0.0 0x241014"
@@ -12,3 +11,4 @@
 #define APIRECEIVER  "9.0.0 0x241014"
 #define APILIB       "9.0.0 0x241018"
 #define APIGOTTHARD2 "9.0.0 0x241022"
+#define APIJUNGFRAU  "9.0.0 0x241024"

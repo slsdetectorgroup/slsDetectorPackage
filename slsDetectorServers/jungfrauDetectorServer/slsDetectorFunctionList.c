@@ -2555,6 +2555,7 @@ void getPedestalParameters(uint8_t *frames, uint16_t *loops) {
 }
 
 void setPedestalMode(int enable, uint8_t frames, uint16_t loops) {
+    // Note: loops is 8 bit in firmware as a bug.To be fixed in next version
     int prevPedestalEnable = getPedestalMode();
     uint32_t addr = PEDESTAL_MODE_REG;
 

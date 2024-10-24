@@ -183,8 +183,7 @@ This document describes the differences between v9.0.0 and v8.0.2
     *   [Jungfrau] Collection Mode (Advanced configuration)
         Command line or python API: collectionmode 
         C++ API: get/setCollectionMode. Options: ELECTRON, HOLE (Default)
-        Also configures the chip afterwards. 
-        ///////TODO: Only for chip v1.1?
+        If chip v1.1, also configures the chip afterwards. 
         
         
     *   [Gotthard2] Next frame number
@@ -253,8 +252,8 @@ This document describes the differences between v9.0.0 and v8.0.2
 
     Eiger       02.10.2023 (v32)                    (updated in 7.0.3)
     
-    Jungfrau    01.10.2024 (v1.6, HW v1.0)          (updated in 9.0.0)
-                01.10.2024 (v2.6, HW v2.0)          (updated in 9.0.0)
+    Jungfrau    20.09.2023 (v1.5, HW v1.0)          (updated in 8.0.0)
+                21.09.2023 (v2.5, HW v2.0)          (updated in 8.0.0)
 
     Mythen3     11.10.2024 (v1.5)                   (updated in 9.0.0)
 

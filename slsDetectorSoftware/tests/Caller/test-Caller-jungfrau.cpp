@@ -530,7 +530,8 @@ TEST_CASE("pedestalmode", "[.cmdcall]") {
 
         REQUIRE_THROWS(caller.call("pedestalmode", {"256", "10"}, -1, PUT));
         REQUIRE_THROWS(caller.call("pedestalmode", {"-1", "10"}, 0, PUT));
-        REQUIRE_THROWS(caller.call("pedestalmode", {"20", "65536"}, 0, PUT));
+        REQUIRE_THROWS(caller.call("pedestalmode", {"20", "1000"}, 0, PUT));
+        REQUIRE_THROWS(caller.call("pedestalmode", {"2000", "100"}, 0, PUT));
         REQUIRE_THROWS(caller.call("pedestalmode", {"20", "-1"}, 0, PUT));
 
         {

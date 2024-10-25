@@ -123,7 +123,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     QString zTitle2d{"Intensity"};
     QString plotTitle{""};
     QString indexTitle{""};
-    bool completeImage{false};
+    bool completeImage{true};
     bool xyRangeChanged{false};
     double xyRange[4]{0, 0, 0, 0};
     bool isXYRange[4]{false, false, false, false};

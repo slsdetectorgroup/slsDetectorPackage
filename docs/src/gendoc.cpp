@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "CmdProxy.h"
+#include "Caller.h"
 #include "sls/Detector.h"
 #include "sls/sls_detector_defs.h"
 
@@ -37,8 +37,8 @@ int main() {
 
     std::cout << "Generating command line documentation!\n";
 
-    sls::CmdProxy proxy(nullptr);
-    auto commands = proxy.GetProxyCommands();
+    sls::Caller caller(nullptr);
+    auto commands = caller.getAllCommands();
 
     std::ofstream fs("commands.rst");
     fs << ".. glossary::\n";
@@ -46,7 +46,7 @@ int main() {
     for (const auto &cmd : commands) {
         std::ostringstream os;
         std::cout << cmd << '\n';
-        proxy.Call(cmd, {}, -1, slsDetectorDefs::HELP_ACTION, os);
+        caller.call(cmd, {}, -1, slsDetectorDefs::HELP_ACTION, os);
 
         auto tmp = os.str().erase(0, cmd.size());
         auto usage = tmp.substr(0, tmp.find_first_of('\n'));
@@ -57,7 +57,7 @@ int main() {
 
     std::ofstream fs2("deprecated.csv");
     fs2 << "Old, New\n";
-    auto cmds = proxy.GetDeprecatedCommands();
+    auto cmds = caller.GetDeprecatedCommands();
     for (auto it : cmds) {
         fs2 << it.first << ", " << it.second << '\n';
     }

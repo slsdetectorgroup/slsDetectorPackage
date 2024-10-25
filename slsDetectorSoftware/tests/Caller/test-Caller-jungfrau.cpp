@@ -530,13 +530,14 @@ TEST_CASE("pedestalmode", "[.cmdcall]") {
 
         REQUIRE_THROWS(caller.call("pedestalmode", {"256", "10"}, -1, PUT));
         REQUIRE_THROWS(caller.call("pedestalmode", {"-1", "10"}, 0, PUT));
-        REQUIRE_THROWS(caller.call("pedestalmode", {"20", "65536"}, 0, PUT));
+        REQUIRE_THROWS(caller.call("pedestalmode", {"20", "1000"}, 0, PUT));
+        REQUIRE_THROWS(caller.call("pedestalmode", {"2000", "100"}, 0, PUT));
         REQUIRE_THROWS(caller.call("pedestalmode", {"20", "-1"}, 0, PUT));
 
         {
             std::ostringstream oss;
-            caller.call("pedestalmode", {"30", "1000"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "pedestalmode [30, 1000]\n");
+            caller.call("pedestalmode", {"30", "100"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pedestalmode [30, 100]\n");
         }
         // cannot change any of these in pedestal mode
         REQUIRE_THROWS_WITH(caller.call("frames", {"200"}, -1, PUT),
@@ -563,20 +564,20 @@ TEST_CASE("pedestalmode", "[.cmdcall]") {
 
         {
             std::ostringstream oss;
-            caller.call("pedestalmode", {"50", "500"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "pedestalmode [50, 500]\n");
+            caller.call("pedestalmode", {"50", "100"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pedestalmode [50, 100]\n");
         }
         {
             std::ostringstream oss;
             caller.call("pedestalmode", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "pedestalmode [enabled, 50, 500]\n");
+            REQUIRE(oss.str() == "pedestalmode [enabled, 50, 100]\n");
         }
         {
             auto pedemode = det.getPedestalMode().tsquash(
                 "Inconsistent pedestal mode to test");
             REQUIRE(pedemode.enable == true);
             REQUIRE(pedemode.frames == 50);
-            REQUIRE(pedemode.loops == 500);
+            REQUIRE(pedemode.loops == 100);
         }
         {
             std::ostringstream oss;
@@ -590,7 +591,7 @@ TEST_CASE("pedestalmode", "[.cmdcall]") {
         }
 
         uint8_t pedestalFrames = 50;
-        uint16_t pedestalLoops = 1000;
+        uint16_t pedestalLoops = 100;
         int64_t expNumFrames = pedestalFrames * pedestalLoops * 2;
         auto origFrames = det.getNumberOfFrames().squash(-1);
         auto origTriggers = det.getNumberOfTriggers().squash(-1);
@@ -671,11 +672,11 @@ TEST_CASE("timing_info_decoder", "[.cmdcall]") {
     Caller caller(&det);
     if (det.getDetectorType().squash() == defs::JUNGFRAU) {
         auto prev_val = det.getTimingInfoDecoder();
-        {
+        /*{
             std::ostringstream oss;
             caller.call("timing_info_decoder", {"shine"}, -1, PUT, oss);
             REQUIRE(oss.str() == "timing_info_decoder shine\n");
-        }
+        }*/
         {
             std::ostringstream oss;
             caller.call("timing_info_decoder", {"swissfel"}, -1, PUT, oss);

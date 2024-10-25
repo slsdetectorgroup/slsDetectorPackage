@@ -11,10 +11,11 @@
  *@short constructs the fifo structure
  */
 
+#include "sls/CircularFifo.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
-#include "sls/CircularFifo.h"
+#include <atomic>
 
 namespace sls {
 
@@ -49,8 +50,8 @@ class Fifo : private virtual slsDetectorDefs {
     CircularFifo<char> *fifoFree;
     CircularFifo<char> *fifoStream;
     int fifoDepth;
-    volatile int status_fifoBound;
-    volatile int status_fifoFree;
+    std::atomic<int> status_fifoBound;
+    std::atomic<int> status_fifoFree;
 };
 
 } // namespace sls

@@ -987,6 +987,8 @@ int readConfigFile() {
 
         // to inform powerchip config parameters are set
         startupPowerChipConfigDone = 1;
+        chipConfigured = 1;
+        LOG(logINFOBLUE, ("Chip configured\n"));
     }
     return initError;
 }
@@ -2278,8 +2280,7 @@ int powerChip(int on, char *mess) {
     if (on) {
         LOG(logINFO, ("Powering chip: on\n"));
         bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PWR_CHIP_MSK);
-        // only if power chip config done, configure chip with current set up
-        if (startupPowerChipConfigDone == 1 && configureChip(mess) == FAIL)
+        if (configureChip(mess) == FAIL)
             return FAIL;
     } else {
         // throw if high voltage on
@@ -2310,6 +2311,12 @@ int getPowerChip() {
 int isChipConfigured() { return chipConfigured; }
 
 int configureChip(char *mess) {
+
+    if (!startupPowerChipConfigDone) {
+        LOG(logINFOBLUE,
+            ("Startup: Chip to be configured when reading config file\n"));
+        return OK;
+    }
     LOG(logINFOBLUE, ("\tConfiguring chip\n"));
 
     // on chip dacs

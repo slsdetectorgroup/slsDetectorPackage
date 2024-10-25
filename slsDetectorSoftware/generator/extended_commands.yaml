@@ -67,8 +67,7 @@ activate:
         store_result_in_t: false
   command_name: activate
   function_alias: activate
-  help: "[0, 1] \n\t[Eiger] 1 is default. 0 deactivates readout and does not send\
-    \ data."
+  help: "[0, 1]\n\t[Eiger] 1 is default. 0 deactivates readout and does not send data."
   infer_action: true
   template: true
 adcclk:
@@ -1206,8 +1205,8 @@ clearroi:
         store_result_in_t: false
   command_name: clearroi
   function_alias: clearroi
-  help: '[Gotthard] Resets Region of interest in detector. All channels enabled. Default
-    is all channels enabled.'
+  help: "\n\t[Gotthard] Resets Region of interest in detector. All channels enabled.\
+    \ Default is all channels enabled."
   infer_action: true
   template: true
 clientversion:
@@ -6078,7 +6077,7 @@ patloop0:
         store_result_in_t: false
   command_name: patloop0
   function_alias: patloop0
-  help: Deprecated command. Use patloop.
+  help: "\n\tDeprecated command. Use patloop."
   infer_action: true
 patloop1:
   actions:
@@ -6147,7 +6146,7 @@ patloop1:
         store_result_in_t: false
   command_name: patloop1
   function_alias: patloop1
-  help: Deprecated command. Use patloop.
+  help: "\n\tDeprecated command. Use patloop."
   infer_action: true
 patloop2:
   actions:
@@ -6216,7 +6215,7 @@ patloop2:
         store_result_in_t: false
   command_name: patloop2
   function_alias: patloop2
-  help: Deprecated command. Use patloop.
+  help: "\n\tDeprecated command. Use patloop."
   infer_action: true
 patmask:
   actions:
@@ -6377,7 +6376,7 @@ patnloop0:
         store_result_in_t: false
   command_name: patnloop0
   function_alias: patnloop0
-  help: Deprecated command. Use patnloop.
+  help: "\n\tDeprecated command. Use patnloop."
   infer_action: true
 patnloop1:
   actions:
@@ -6435,7 +6434,7 @@ patnloop1:
         store_result_in_t: false
   command_name: patnloop1
   function_alias: patnloop1
-  help: Deprecated command. Use patnloop.
+  help: "\n\tDeprecated command. Use patnloop."
   infer_action: true
 patnloop2:
   actions:
@@ -6493,7 +6492,7 @@ patnloop2:
         store_result_in_t: false
   command_name: patnloop2
   function_alias: patnloop2
-  help: Deprecated command. Use patnloop.
+  help: "\n\tDeprecated command. Use patnloop."
   infer_action: true
 patsetbit:
   actions:
@@ -6700,7 +6699,7 @@ patwait0:
         store_result_in_t: false
   command_name: patwait0
   function_alias: patwait0
-  help: Deprecated command. Use patwait.
+  help: "\n\tDeprecated command. Use patwait."
   infer_action: true
 patwait1:
   actions:
@@ -6758,7 +6757,7 @@ patwait1:
         store_result_in_t: false
   command_name: patwait1
   function_alias: patwait1
-  help: Deprecated command. Use patwait.
+  help: "\n\tDeprecated command. Use patwait."
   infer_action: true
 patwait2:
   actions:
@@ -6816,7 +6815,7 @@ patwait2:
         store_result_in_t: false
   command_name: patwait2
   function_alias: patwait2
-  help: Deprecated command. Use patwait.
+  help: "\n\tDeprecated command. Use patwait."
   infer_action: true
 patwaittime:
   actions:
@@ -6937,7 +6936,7 @@ patwaittime0:
         store_result_in_t: false
   command_name: patwaittime0
   function_alias: patwaittime0
-  help: Deprecated command. Use patwaittime.
+  help: "\n\tDeprecated command. Use patwaittime."
   infer_action: true
 patwaittime1:
   actions:
@@ -6995,7 +6994,7 @@ patwaittime1:
         store_result_in_t: false
   command_name: patwaittime1
   function_alias: patwaittime1
-  help: Deprecated command. Use patwaittime.
+  help: "\n\tDeprecated command. Use patwaittime."
   infer_action: true
 patwaittime2:
   actions:
@@ -7053,7 +7052,7 @@ patwaittime2:
         store_result_in_t: false
   command_name: patwaittime2
   function_alias: patwaittime2
-  help: Deprecated command. Use patwaittime.
+  help: "\n\tDeprecated command. Use patwaittime."
   infer_action: true
 patword:
   actions:
@@ -9754,7 +9753,7 @@ serialnumber:
         store_result_in_t: true
   command_name: serialnumber
   function_alias: serialnumber
-  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb]\nSerial number\
+  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb]\n\tSerial number\
     \ of detector."
   infer_action: true
   template: true
@@ -11913,11 +11912,11 @@ txdelay:
   command_name: txdelay
   function_alias: txdelay
   help: "[n_delay]\n\t[Eiger][Jungfrau][Moench][Mythen3] Set transmission delay for\
-    \ all modules in the detector using the step size provided.Sets up \n\t\t[Eiger]\
-    \ txdelay_left to (2 * mod_index * n_delay), \n\t\t[Eiger] txdelay_right to ((2\
-    \ * mod_index + 1) * n_delay) and \n\t\t[Eiger] txdelay_frame to (2 *num_modules\
-    \ * n_delay)  \n\t\t[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules\
-    \ * n_delay)  \nfor every module."
+    \ all modules in the detector using the step size provided.Sets up \n\t[Eiger]\
+    \ txdelay_left to (2 * mod_index * n_delay), \n\t[Eiger] txdelay_right to ((2\
+    \ * mod_index + 1) * n_delay) and \n\t[Eiger] txdelay_frame to (2 *num_modules\
+    \ * n_delay)\n\t[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules * n_delay)\
+    \ for every module."
   infer_action: true
 txdelay_frame:
   actions:
@@ -12417,10 +12416,11 @@ udp_firstdst:
         store_result_in_t: false
   command_name: udp_firstdst
   function_alias: udp_firstdst
-  help: "\n[0 - 31 (or number of udp destinations)]\n\t[Jungfrau][Moench][Gotthard2]\n\
-    [0-63]\n\t[Mythen3]\n\n\t One can set which is the first destination that the\
-    \ detector will stream images out from in a round robin fashion. The entry must\
-    \ not have been empty. Default: 0"
+  help: "\n\t[0 - N]\n\twhere N is the max number of udp destinations - 1.\n\t[Jungfrau][Moench][Gotthard2]\
+    \ Max number of udp destinations is 32.\n\t[Mythen3] Max number of udp destination\
+    \ is 64.\n\t One can set which is the first destination that the detector will\
+    \ stream images out from in a round robin fashion. The entry must not have been\
+    \ empty. Default: 0"
   infer_action: true
   template: true
 udp_numdst:

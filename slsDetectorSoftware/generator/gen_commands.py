@@ -60,7 +60,6 @@ def generate(
                 if command["help"].startswith('code:'):
                     codegen.write_line(command["help"].strip('code:'))
                 else:
-                    codegen.write_line(f'os << "Command: {command_name}" << std::endl;')
                     codegen.write_line(f'os << R"V0G0N({command["help"]} )V0G0N" << std::endl;')
                     codegen.write_line('return os.str();')
 

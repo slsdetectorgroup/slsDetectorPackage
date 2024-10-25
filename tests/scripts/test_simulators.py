@@ -51,6 +51,20 @@ def killProcess(name):
     else:
         print('process not running : ' + name)
 
+
+def killAllStaleProcesses():
+    killProcess('eigerDetectorServer_virtual')
+    killProcess('jungfrauDetectorServer_virtual')
+    killProcess('mythen3DetectorServer_virtual')
+    killProcess('gotthard2DetectorServer_virtual')
+    killProcess('gotthardDetectorServer_virtual')
+    killProcess('ctbDetectorServer_virtual')
+    killProcess('moenchDetectorServer_virtual')
+    killProcess('xilinx_ctbDetectorServer_virtual')
+    killProcess('slsReceiver')
+    killProcess('slsMultiReceiver')
+    cleanSharedmemory()
+
 def cleanup(name):
     '''
     kill both servers, receivers and clean shared memory
@@ -201,6 +215,8 @@ with open(fname, 'w') as fp:
     sys.stderr = fp
     Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
     startGeneralTests(fp, file_results)
+
+    killAllStaleProcesses()
 
     for server in servers:
         try:

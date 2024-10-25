@@ -5,8 +5,8 @@
 #include "sls/sls_detector_defs.h"
 
 #define MIN_REQRD_VRSN_T_RD_API  0x171220
-#define REQRD_FRMWRE_VRSN_BOARD2 0x241001 // 1.0 pcb (version = 010)
-#define REQRD_FRMWRE_VRSN        0x241001 // 2.0 pcb (version = 011)
+#define REQRD_FRMWRE_VRSN_BOARD2 0x230920 // 1.0 pcb (version = 010)
+#define REQRD_FRMWRE_VRSN        0x230921 // 2.0 pcb (version = 011)
 
 #define NUM_HARDWARE_VERSIONS (2)
 #define HARDWARE_VERSION_NUMBERS                                               \
@@ -62,6 +62,7 @@
 #define DEFAULT_TIMING_INFO_DECODER      (SWISSFEL)
 #define DEFAULT_ELECTRON_COLLECTION_MODE (0)
 
+#define MAX_PEDESTAL_LOOPS   (0xFF) // until fixed in firmware
 #define HIGHVOLTAGE_MIN      (60)
 #define HIGHVOLTAGE_MAX      (200)
 #define DAC_MIN_MV           (0)

@@ -20,7 +20,7 @@ class IpAddr;
 // Free function to avoid dependence on class
 // and avoid the option to free another objects
 // shm by mistake
-void freeSharedMemory(int detectorIndex, int moduleIndex = -1);
+void freeSharedMemory(const int detectorIndex = 0, const int moduleIndex = -1);
 
 /**
  * \class Detector
@@ -46,9 +46,13 @@ class Detector {
     Detector(int shm_id = 0);
     ~Detector();
 
-    /** Free the shared memory of this detector and all modules
-    belonging to it */
-    void freeSharedMemory();
+    // Disable copy since SharedMemory object is unique in DetectorImpl
+    Detector(const Detector &other) = delete;
+    Detector &operator=(const Detector &other) = delete;
+
+    // Move constructor and assignment operator
+    Detector(Detector &&other) noexcept;
+    Detector &operator=(Detector &&other) noexcept;
 
     /** Frees shared memory before loading configuration file. Set up once
     normally */

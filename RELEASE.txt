@@ -81,6 +81,23 @@ This document describes the differences between v9.0.0 and v8.0.2
         The details are above under 'Removed receiver/publisher ZMQ IP'.
 
 
+    GUI/ Client Callback
+    --------------------
+
+
+    *   completeImage member in detectorData attribute now returns false only
+        if any the sub images (from different udp ports) have completeImage
+        set to false in the JSON header. This is set if therea are any missing 
+        packets for that udp port on slsReceiver/slsMultiReceiver. 
+        
+        The different subimages are anyway not synchronized. This errs when
+        there are different missing images across multiple UDP ports. 
+
+        The Gui does not show "complete image" in the status bar anymore. 
+        If any of the udp ports have missing packets for that current disaplayed 
+        image, then the "missing packets" will show in red in the status bar.
+
+
     Detector Server
     ---------------
 

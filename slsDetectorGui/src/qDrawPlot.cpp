@@ -107,7 +107,7 @@ void qDrawPlot::SetupPlots() {
     LOG(logINFO) << "nPixelsY:" << nPixelsY;
 
     widgetStatistics->hide();
-    lblCompleteImage->hide();
+    lblCompleteImage->show();
     lblInCompleteImage->hide();
     lblRxRoiEnabled->hide();
 

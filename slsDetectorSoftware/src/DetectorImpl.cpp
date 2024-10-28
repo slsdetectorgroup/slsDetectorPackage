@@ -557,7 +557,7 @@ void DetectorImpl::readFrameFromReceiver() {
             memset(multiframe.get(), 0xFF, multisize);
         }
 
-        completeImage = (numZmqRunning == (int)zmqSocket.size());
+        completeImage = true;
 
         // get each frame
         for (unsigned int isocket = 0; isocket < zmqSocket.size(); ++isocket) {
@@ -574,7 +574,6 @@ void DetectorImpl::readFrameFromReceiver() {
                         // parse error, version error or end of acquisition for
                         // socket
                         runningList[isocket] = false;
-                        completeImage = false;
                         --numZmqRunning;
                         continue;
                     }

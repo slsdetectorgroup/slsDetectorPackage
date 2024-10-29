@@ -9863,11 +9863,12 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
             strcpy(mess, "Server name is the same as the symbolic link. Please "
                          "use a different server name\n");
             LOG(logERROR, (mess));
+            Server_SendResult(file_des, INT32, NULL, 0);
         }
 
         // in same folder as current process (will also work for virtual then
         // with write permissions)
-        {
+        if (ret == OK) {
             const int fileNameSize = 128;
             char fname[fileNameSize];
             if (getAbsPath(fname, fileNameSize, serverName) == FAIL) {
@@ -11037,6 +11038,13 @@ int set_pedestal_mode(int file_des) {
                         "Could not set pedestal mode. Frames and loops cannot "
                         "be 0. [%hhu, %hu].\n",
                         frames, loops);
+                LOG(logERROR, (mess));
+            } else if (loops > MAX_PEDESTAL_LOOPS) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set pedestal mode. Loops [%hu] cannot be "
+                        "greater than %d.\n",
+                        loops, MAX_PEDESTAL_LOOPS);
                 LOG(logERROR, (mess));
             } else {
                 setPedestalMode(enable, frames, loops);

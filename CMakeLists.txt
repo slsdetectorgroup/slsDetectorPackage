@@ -2,7 +2,7 @@
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 cmake_minimum_required(VERSION 3.14)
 project(slsDetectorPackage)
-set(PROJECT_VERSION 7.0.0)
+set(PROJECT_VERSION 9.0.0)
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 

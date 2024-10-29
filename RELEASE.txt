@@ -1,7 +1,7 @@
-SLS Detector Package Major Release 7.x.x released on xx.xx.2023
+SLS Detector Package Major Release x.x.x released on xx.xx.202x
 ===============================================================
 
-This document describes the differences between v7.x.x and v7.0.2   
+This document describes the differences between vx.x.x and vx.0.2   
 
 
 
@@ -28,9 +28,6 @@ This document describes the differences between v7.x.x and v7.0.2
 =====================================
 
 
-- moench being made compatible with jungfrau 2.0 boards (jungfrau structure, away from ctb)
-- eiger febl and feb in versions
-- fix ctb slow adcs
 
 
 
@@ -38,22 +35,24 @@ This document describes the differences between v7.x.x and v7.0.2
 ==========================================
 
 
-    Eiger       7.0.0
-    Jungfrau    7.0.2
-    Mythen3     7.0.0
-    Gotthard2   7.0.0
-    Gotthard    7.0.0
-    Moench      7.0.0
-    Ctb         7.0.0
-    
+    Eiger       9.0.0
+    Jungfrau    9.0.0
+    Mythen3     9.0.0
+    Gotthard2   9.0.0
+    Gotthard    9.0.0
+    Moench      9.0.0
+  
 
     On-board Detector Server Upgrade
     --------------------------------
 
     From v6.1.0 (without tftp):
-        Using command 'updatedetectorserver'
-    From 5.0.0 (with tftp):
-        Using command 'copydetectorserver'
+        update only on-board detector server
+            Using command 'updatedetectorserver'
+
+
+        udpate both on-board detector server and firmware simultaneously
+            Using command 'update'
 
     Instructions available at
         https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
@@ -65,21 +64,19 @@ This document describes the differences between v7.x.x and v7.0.2
 ========================
 
 
-    Eiger       20.02.2023 (v31)
+    Eiger       02.10.2023 (v32)                    (updated in 7.0.3)
     
-    Jungfrau    04.11.2022 (v1.4, HW v1.0) 
-                03.11.2022 (v2.4, HW v2.0)
+    Jungfrau    20.09.2023 (v1.5, HW v1.0)          (updated in 8.0.0)
+                21.09.2023 (v2.5, HW v2.0)          (updated in 8.0.0)
 
-    Mythen3     24.01.2023 (v1.4)
+    Mythen3     11.10.2024 (v1.5)                   (updated in 9.0.0)
 
-    Gotthard2   23.11.2022 (v0.3)
+    Gotthard2   03.10.2024 (v1.0)                   (updated in 9.0.0)
+
+    Moench      26.10.2023 (v2.0)                   (updated in 9.0.0)
 
     Gotthard    08.02.2018 (50um and 25um Master)
                 09.02.2018 (25 um Slave) 
-
-    Moench      05.12.2022 (v0.3)
-
-    Ctb         03.04.2023 (v1.2?)
 
 
     Detector Upgrade
@@ -92,7 +89,6 @@ This document describes the differences between v7.x.x and v7.0.2
     Mythen3    via command <.rbf>
     Gotthard2  via command <.rbf>
     Moench     via command <.pof>
-    Ctb        via command <.pof>
 
     Gotthard cannot be upgraded remotely  
 
@@ -100,7 +96,7 @@ This document describes the differences between v7.x.x and v7.0.2
         upgrade 
             Using command 'programfpga' or
 
-        udpate both server and firmware simultaneously
+        udpate both on-board detector server and firmware simultaneously
             Using command 'update'
 
 
@@ -113,6 +109,7 @@ This document describes the differences between v7.x.x and v7.0.2
 4 Kernel Requirements
 ======================
 
+
     Blackfin 
     --------
     Latest version: Fri Oct 29 00:00:00 2021
@@ -120,9 +117,11 @@ This document describes the differences between v7.x.x and v7.0.2
     Older ones will work, but might have issues with programming firmware via
     the package.
 
+
     Nios
     -----
     Compatible version: Mon May 10 18:00:21 CEST 2021
+
 
     Kernel Upgrade
     ---------------

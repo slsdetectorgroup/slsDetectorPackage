@@ -336,7 +336,7 @@ int main(int argc, char *argv[]) {
 
     string fname;
     //	int length;
-    int *detimage = NULL;
+    long long int *detimage = NULL;
     int nnx, nny, nnsx, nnsy;
     // uint32_t imageSize = 0, nPixelsX = 0, nPixelsY = 0,
     // uint32_t  dynamicRange = 0;

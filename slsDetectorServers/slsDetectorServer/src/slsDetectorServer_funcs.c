@@ -2117,6 +2117,9 @@ int acquire(int blocking, int file_des) {
                 // scanErrorMessage)
                 if (blocking || !scan) {
                     pthread_join(pthread_tid, NULL);
+                } else {
+                    // to clean up
+                    pthread_detach(pthread_tid); 
                 }
             }
         }
@@ -2246,6 +2249,9 @@ void *start_state_machine(void *arg) {
 #else
             waitForAcquisitionEnd();
 #endif
+        } else {
+            // to clean up
+            pthread_detach(pthread_tid_ctb_1g); 
         }
     }
     // end of scan
@@ -7861,7 +7867,6 @@ int set_pattern(int file_des) {
     !defined(MYTHEN3D)
     functionNotImplemented();
 #else
-
     patternParameters *pat = malloc(sizeof(patternParameters));
     memset(pat, 0, sizeof(patternParameters));
     // ignoring endianness for eiger
@@ -8515,7 +8520,10 @@ int start_readout(int file_des) {
                         ret = FAIL;
                         strcpy(mess, "Could not start read frames thread!\n");
                         LOG(logERROR, (mess));
-                    }
+                    } else {
+                        // to clean up
+                        pthread_detach(pthread_tid_ctb_1g); 
+                    } 
                 }
             }
 #endif

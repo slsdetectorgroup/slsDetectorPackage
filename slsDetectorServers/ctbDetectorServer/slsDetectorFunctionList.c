@@ -2211,7 +2211,7 @@ int startStateMachine() {
         return FAIL;
     } else {
         // clean up
-        pthread_detach(pthread_virtual_tid); 
+        pthread_detach(pthread_virtual_tid);
     }
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
     return OK;
@@ -2457,7 +2457,7 @@ int validateUDPSocket() {
 
 void readandSendUDPFrames() {
     LOG(logDEBUG1, ("Reading from 1G UDP\n"));
-    
+
     // read every frame
     while (readFrameFromFifo() == OK) {
         int bytesToSend = 0, n = 0;

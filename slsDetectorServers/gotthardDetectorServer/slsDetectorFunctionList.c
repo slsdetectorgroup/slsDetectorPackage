@@ -1669,7 +1669,7 @@ int startStateMachine() {
         return FAIL;
     } else {
         // clean up
-        pthread_detach(pthread_virtual_tid); 
+        pthread_detach(pthread_virtual_tid);
     }
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
     return OK;

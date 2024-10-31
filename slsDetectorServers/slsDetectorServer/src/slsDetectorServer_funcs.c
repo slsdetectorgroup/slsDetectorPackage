@@ -2119,7 +2119,7 @@ int acquire(int blocking, int file_des) {
                     pthread_join(pthread_tid, NULL);
                 } else {
                     // to clean up
-                    pthread_detach(pthread_tid); 
+                    pthread_detach(pthread_tid);
                 }
             }
         }
@@ -2251,7 +2251,7 @@ void *start_state_machine(void *arg) {
 #endif
         } else {
             // to clean up
-            pthread_detach(pthread_tid_ctb_1g); 
+            pthread_detach(pthread_tid_ctb_1g);
         }
     }
     // end of scan
@@ -8522,8 +8522,8 @@ int start_readout(int file_des) {
                         LOG(logERROR, (mess));
                     } else {
                         // to clean up
-                        pthread_detach(pthread_tid_ctb_1g); 
-                    } 
+                        pthread_detach(pthread_tid_ctb_1g);
+                    }
                 }
             }
 #endif

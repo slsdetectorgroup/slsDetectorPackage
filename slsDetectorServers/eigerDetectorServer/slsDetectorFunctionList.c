@@ -2574,7 +2574,7 @@ int startStateMachine() {
         return FAIL;
     } else {
         // clean up
-        pthread_detach(virtual_tid); 
+        pthread_detach(virtual_tid);
     }
     LOG(logINFO, ("Virtual Acquisition started\n"));
     sharedMemory_unlockAcqFlag();

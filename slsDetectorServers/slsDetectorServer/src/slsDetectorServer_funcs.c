@@ -115,6 +115,18 @@ int printSocketReadError() {
     return FAIL;
 }
 
+int sendMemoryAllocationError(int file_des) {
+    ret = FAIL;
+    if (myDetectorType == EIGER) {
+        sprintf(mess, "Memory allocation error (%s). Please reboot.\n", getFunctionNameFromEnum((enum detFuncs)fnum));
+    } else {
+        sprintf(mess, "Memory allocation error (%s). Please reboot using sls_detector_put rebootcontroller.\n", getFunctionNameFromEnum((enum detFuncs)fnum));
+    }
+    LOG(logERROR, (mess));
+    Server_SendResult(file_des, INT32, NULL, 0);
+    return ret;
+}
+
 void init_detector() {
     memset(udpDetails, 0, sizeof(udpDetails));
 #ifdef VIRTUAL
@@ -2955,6 +2967,7 @@ int get_frames_left(int file_des) {
     retval = getNumFramesLeft();
     LOG(logDEBUG1, ("retval num frames left %lld\n", (long long int)retval));
 #endif
+
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -7863,6 +7876,9 @@ int set_pattern(int file_des) {
 #else
 
     patternParameters *pat = malloc(sizeof(patternParameters));
+    if (pat == NULL) {
+        return sendMemoryAllocationError(file_des);
+    }
     memset(pat, 0, sizeof(patternParameters));
     // ignoring endianness for eiger
     if (receiveData(file_des, pat, sizeof(patternParameters), INT32) < 0) {

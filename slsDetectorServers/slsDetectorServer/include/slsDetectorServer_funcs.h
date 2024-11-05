@@ -11,6 +11,7 @@
 // initialization functions
 int updateModeAllowedFunction(int file_des);
 int printSocketReadError();
+int sendMemoryAllocationError(int file_des);
 void init_detector();
 int decode_function(int);
 const char *getRetName();

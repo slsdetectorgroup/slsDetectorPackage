@@ -125,11 +125,15 @@ int sendError(int file_des) {
 void setMemoryAllocationErrorMessage() {
     struct sysinfo info;
     sysinfo(&info);
-    sprintf(mess, "Memory allocation error (%s). Available space: %d MB. Please reboot", getFunctionNameFromEnum((enum detFuncs)fnum), (int)(info.freeram / (1024 * 1024)));
+    sprintf(
+        mess,
+        "Memory allocation error (%s). Available space: %d MB. Please reboot",
+        getFunctionNameFromEnum((enum detFuncs)fnum),
+        (int)(info.freeram / (1024 * 1024)));
 #ifdef EIGERD
-        strcat(mess, ".\n");
+    strcat(mess, ".\n");
 #else
-        sprintf(mess, " using sls_detector_put rebootcontroller.\n");
+    sprintf(mess, " using sls_detector_put rebootcontroller.\n");
 #endif
 }
 
@@ -1767,7 +1771,7 @@ int get_module(int file_des) {
         free(myChan);
         setMemoryAllocationErrorMessage();
         return sendError(file_des);
-    } 
+    }
     module.dacs = myDac;
     module.ndac = ndac;
     module.chanregs = myChan;
@@ -1811,7 +1815,7 @@ int set_module(int file_des) {
         free(myChan);
         setMemoryAllocationErrorMessage();
         return sendError(file_des);
-    } 
+    }
     module.dacs = myDac;
     module.ndac = ndac;
     module.chanregs = myChan;
@@ -1831,7 +1835,7 @@ int set_module(int file_des) {
     // should at least have a dac
     if (ts <= (int)sizeof(sls_detector_module)) {
         strcpy(mess, "Cannot set module. Received incorrect number of "
-                        "dacs or channels\n");
+                     "dacs or channels\n");
         free(myChan);
         free(myDac);
         return sendError(file_des);
@@ -6546,13 +6550,14 @@ int set_veto_photon(int file_des) {
     int *values = malloc(sizeof(int) * numChannels);
     if (gainIndices == NULL || values == NULL) {
         free(gainIndices);
-        free(values);       
+        free(values);
         setMemoryAllocationErrorMessage();
         return sendError(file_des);
-    } 
+    }
 
     if ((receiveData(file_des, gainIndices, sizeof(int) * numChannels, INT32) <
-        0)|| (receiveData(file_des, values, sizeof(int) * numChannels, INT32)) < 0) {
+         0) ||
+        (receiveData(file_des, values, sizeof(int) * numChannels, INT32)) < 0) {
         free(gainIndices);
         free(values);
         return printSocketReadError();
@@ -6628,15 +6633,14 @@ int get_veto_photon(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Getting veto photon [chip Index:%d]\n", arg));
 
-
     int *retvals = malloc(sizeof(int) * NCHAN);
     int *gainRetvals = malloc(sizeof(int) * NCHAN);
     if (gainRetvals == NULL || retvals == NULL) {
         free(gainRetvals);
-        free(retvals);       
+        free(retvals);
         setMemoryAllocationErrorMessage();
         return sendError(file_des);
-    } 
+    }
     memset(retvals, 0, sizeof(int) * NCHAN);
     memset(gainRetvals, 0, sizeof(int) * NCHAN);
 
@@ -6650,10 +6654,9 @@ int get_veto_photon(int file_des) {
     } else {
         ret = getVetoPhoton(chipIndex, retvals, gainRetvals);
         if (ret == FAIL) {
-            strcpy(mess,
-                    "Could not get veto photon for chipIndex -1. Not the "
-                    "same for all chips. Select specific chip index "
-                    "instead.\n");
+            strcpy(mess, "Could not get veto photon for chipIndex -1. Not the "
+                         "same for all chips. Select specific chip index "
+                         "instead.\n");
             LOG(logERROR, (mess));
         } else {
             for (int i = 0; i < NCHAN; ++i) {
@@ -8353,7 +8356,6 @@ int set_bad_channels(int file_des) {
         }
     }
     LOG(logDEBUG1, ("Setting %d bad channels\n", nargs));
-
 
     // only set
     if (Server_VerifyLock() == OK) {

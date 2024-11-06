@@ -592,7 +592,7 @@ int Server_SendResult(int fileDes, intType itype, void *retval,
         // send error message
         if (strlen(mess)) {
             sendData(fileDes, mess, MAX_STR_LENGTH, OTHER);
-            usleep(0);// test
+            usleep(0); // test
         }
         // debugging feature. should not happen.
         else {

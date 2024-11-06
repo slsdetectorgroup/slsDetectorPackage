@@ -115,16 +115,22 @@ int printSocketReadError() {
     return FAIL;
 }
 
-int sendMemoryAllocationError(int file_des) {
+int sendError(int file_des) {
     ret = FAIL;
-    if (myDetectorType == EIGER) {
-        sprintf(mess, "Memory allocation error (%s). Please reboot.\n", getFunctionNameFromEnum((enum detFuncs)fnum));
-    } else {
-        sprintf(mess, "Memory allocation error (%s). Please reboot using sls_detector_put rebootcontroller.\n", getFunctionNameFromEnum((enum detFuncs)fnum));
-    }
     LOG(logERROR, (mess));
     Server_SendResult(file_des, INT32, NULL, 0);
     return ret;
+}
+
+void setMemoryAllocationErrorMessage() {
+    struct sysinfo info;
+    sysinfo(&info);
+    sprintf(mess, "Memory allocation error (%s). Available space: %d MB. Please reboot", getFunctionNameFromEnum((enum detFuncs)fnum), (int)(info.freeram / (1024 * 1024)));
+#ifdef EIGERD
+        strcat(mess, ".\n");
+#else
+        sprintf(mess, " using sls_detector_put rebootcontroller.\n");
+#endif
 }
 
 void init_detector() {
@@ -1740,67 +1746,45 @@ int get_module(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
-    sls_detector_module module;
-    int *myDac = NULL;
-    int *myChan = NULL;
-    module.dacs = NULL;
-    module.chanregs = NULL;
-
 #if !defined(MYTHEN3D) && !defined(EIGERD)
     functionNotImplemented();
+    return Server_SendResult(file_des, INT32, NULL, 0);
 #else
-
-    // allocate to receive module structure
-    // allocate dacs
-    myDac = malloc(getNumberOfDACs() * sizeof(int));
-    // error
-    if (getNumberOfDACs() > 0 && myDac == NULL) {
-        ret = FAIL;
-        sprintf(mess, "Could not allocate dacs\n");
-        LOG(logERROR, (mess));
-    } else
-        module.dacs = myDac;
-
-    // allocate chans
-    if (ret == OK) {
-        myChan = malloc(getTotalNumberOfChannels() * sizeof(int));
-        if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
-            ret = FAIL;
-            strcpy(mess, "Could not allocate chans\n");
-            LOG(logERROR, (mess));
-        } else
-            module.chanregs = myChan;
+    int ndac = getNumberOfDACs();
+    int nchan = getTotalNumberOfChannels();
+    if (ndac <= 0 || nchan <= 0) {
+        strcpy(mess, "Invalid number of dacs/channels to set module\n");
+        return sendError(file_des);
     }
 
-    // receive module structure
-    if (ret == OK) {
-        module.nchip = getNumberOfChips();
-        module.nchan = getTotalNumberOfChannels();
-        module.ndac = getNumberOfDACs();
-
-        // ensure nchan is not 0, else trimbits not copied
-        if (module.nchan == 0) {
-            strcpy(mess, "Could not get module as the number of channels to "
-                         "copy is 0\n");
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-        getModule(&module);
-    }
-#endif
-    Server_SendResult(file_des, INT32, NULL, 0);
-    if (ret != FAIL) {
-        if (sendModule(file_des, &module) < 0) {
-            ret = FAIL;
-            strcpy(mess, "Could not send module data\n");
-            LOG(logERROR, (mess));
-        }
-    }
-    if (myChan != NULL)
-        free(myChan);
-    if (myDac != NULL)
+    sls_detector_module module;
+    module.dacs = NULL;
+    module.chanregs = NULL;
+    int *myDac = malloc(ndac * sizeof(int));
+    int *myChan = malloc(nchan * sizeof(int));
+    if (myDac == NULL || myChan == NULL) {
         free(myDac);
+        free(myChan);
+        setMemoryAllocationErrorMessage();
+        return sendError(file_des);
+    } 
+    module.dacs = myDac;
+    module.ndac = ndac;
+    module.chanregs = myChan;
+    module.nchan = nchan;
+    module.nchip = getNumberOfChips();
+    getModule(&module);
+
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret == OK && sendModule(file_des, &module) < 0) {
+        strcpy(mess, "Could not send module data\n");
+        ret = FAIL;
+        LOG(logERROR, (mess));
+    }
+    free(myChan);
+    free(myDac);
     return ret;
+#endif
 }
 
 int set_module(int file_des) {
@@ -1810,63 +1794,53 @@ int set_module(int file_des) {
 #if !(defined(MYTHEN3D) || defined(EIGERD))
     functionNotImplemented();
 #else
+    int ndac = getNumberOfDACs();
+    int nchan = getTotalNumberOfChannels();
+    if (ndac <= 0 || nchan <= 0) {
+        strcpy(mess, "Invalid number of dacs/channels to set module\n");
+        return sendError(file_des);
+    }
 
     sls_detector_module module;
-    int *myDac = NULL;
-    int *myChan = NULL;
     module.dacs = NULL;
     module.chanregs = NULL;
+    int *myDac = malloc(ndac * sizeof(int));
+    int *myChan = malloc(nchan * sizeof(int));
+    if (myDac == NULL || myChan == NULL) {
+        free(myDac);
+        free(myChan);
+        setMemoryAllocationErrorMessage();
+        return sendError(file_des);
+    } 
+    module.dacs = myDac;
+    module.ndac = ndac;
+    module.chanregs = myChan;
+    module.nchan = nchan;
+    module.nchip = getNumberOfChips();
 
-    // allocate to receive arguments
-    // allocate dacs
-    myDac = malloc(getNumberOfDACs() * sizeof(int));
-    // error
-    if (getNumberOfDACs() > 0 && myDac == NULL) {
-        ret = FAIL;
-        strcpy(mess, "Could not allocate dacs\n");
-        LOG(logERROR, (mess));
-    } else
-        module.dacs = myDac;
-
-    // allocate chans
-    if (ret == OK) {
-        myChan = malloc(getTotalNumberOfChannels() * sizeof(int));
-        if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
-            ret = FAIL;
-            strcpy(mess, "Could not allocate chans\n");
-            LOG(logERROR, (mess));
-        } else
-            module.chanregs = myChan;
+    int ts = receiveModule(file_des, &module);
+    if (ts < 0) {
+        free(myChan);
+        free(myDac);
+        return printSocketReadError();
     }
-    // receive arguments
-    if (ret == OK) {
-        module.nchip = getNumberOfChips();
-        module.nchan = getTotalNumberOfChannels();
-        module.ndac = getNumberOfDACs();
-        int ts = receiveModule(file_des, &module);
-        if (ts < 0) {
-            free(myChan);
-            free(myDac);
-            return printSocketReadError();
-        }
-        LOG(logDEBUG1, ("module register is %d, nchan %d, nchip %d, "
-                        "ndac %d, iodelay %d, tau %d, eV %d\n",
-                        module.reg, module.nchan, module.nchip, module.ndac,
-                        module.iodelay, module.tau, module.eV[0]));
-        // should at least have a dac
-        if (ts <= (int)sizeof(sls_detector_module)) {
-            ret = FAIL;
-            strcpy(mess, "Cannot set module. Received incorrect number of "
-                         "dacs or channels\n");
-            LOG(logERROR, (mess));
-        }
+    LOG(logDEBUG1, ("module register is %d, nchan %d, nchip %d, "
+                    "ndac %d, iodelay %d, tau %d, eV %d\n",
+                    module.reg, module.nchan, module.nchip, module.ndac,
+                    module.iodelay, module.tau, module.eV[0]));
+    // should at least have a dac
+    if (ts <= (int)sizeof(sls_detector_module)) {
+        strcpy(mess, "Cannot set module. Received incorrect number of "
+                        "dacs or channels\n");
+        free(myChan);
+        free(myDac);
+        return sendError(file_des);
     }
 
     // only set
-    if (ret == OK && Server_VerifyLock() == OK) {
+    if (Server_VerifyLock() == OK) {
         // check index
-
-// setsettings
+        // setsettings
 #ifndef MYTHEN3D
         // m3 uses reg for chip (not settings)
         validate_settings((enum detectorSettings)(module.reg));
@@ -1879,10 +1853,8 @@ int set_module(int file_des) {
 #endif
         LOG(logDEBUG1, ("Settings: %d\n", retval));
     }
-    if (myChan != NULL)
-        free(myChan);
-    if (myDac != NULL)
-        free(myDac);
+    free(myChan);
+    free(myDac);
 #endif
 
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -6562,6 +6534,10 @@ int set_veto_photon(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+
     int args[2] = {-1, -1};
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
@@ -6569,14 +6545,16 @@ int set_veto_photon(int file_des) {
     const int numChannels = args[1];
 
     int *gainIndices = malloc(sizeof(int) * numChannels);
-    if (receiveData(file_des, gainIndices, sizeof(int) * numChannels, INT32) <
-        0) {
-        free(gainIndices);
-        return printSocketReadError();
-    }
-
     int *values = malloc(sizeof(int) * numChannels);
-    if (receiveData(file_des, values, sizeof(int) * numChannels, INT32) < 0) {
+    if (gainIndices == NULL || values == NULL) {
+        free(gainIndices);
+        free(values);       
+        setMemoryAllocationErrorMessage();
+        return sendError(file_des);
+    } 
+
+    if ((receiveData(file_des, gainIndices, sizeof(int) * numChannels, INT32) <
+        0)|| (receiveData(file_des, values, sizeof(int) * numChannels, INT32)) < 0) {
         free(gainIndices);
         free(values);
         return printSocketReadError();
@@ -6585,9 +6563,6 @@ int set_veto_photon(int file_des) {
     LOG(logINFO, ("Setting Veto Photon: [chipIndex:%d, nch:%d]\n", chipIndex,
                   numChannels));
 
-#ifndef GOTTHARD2D
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
         if (numChannels != NCHAN) {
@@ -6634,66 +6609,62 @@ int set_veto_photon(int file_des) {
             }
         }
     }
+
+    free(gainIndices);
+    free(values);
 #endif
-    if (gainIndices != NULL) {
-        free(gainIndices);
-    }
-    if (values != NULL) {
-        free(values);
-    }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_veto_photon(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int arg = -1;
-    int *retvals = NULL;
-    int *gainRetvals = NULL;
 
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+    return Server_SendResult(file_des, INT32, NULL, 0);
+#else
+
+    int arg = -1;
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
     LOG(logDEBUG1, ("Getting veto photon [chip Index:%d]\n", arg));
 
-#ifndef GOTTHARD2D
-    functionNotImplemented();
-#else
-    retvals = malloc(sizeof(int) * NCHAN);
-    gainRetvals = malloc(sizeof(int) * NCHAN);
+
+    int *retvals = malloc(sizeof(int) * NCHAN);
+    int *gainRetvals = malloc(sizeof(int) * NCHAN);
+    if (gainRetvals == NULL || retvals == NULL) {
+        free(gainRetvals);
+        free(retvals);       
+        setMemoryAllocationErrorMessage();
+        return sendError(file_des);
+    } 
     memset(retvals, 0, sizeof(int) * NCHAN);
     memset(gainRetvals, 0, sizeof(int) * NCHAN);
 
-    if (retvals == NULL || gainRetvals == NULL) {
+    // get only
+    int chipIndex = arg;
+    if (chipIndex < -1 || chipIndex >= NCHIP) {
         ret = FAIL;
-        strcpy(
-            mess,
-            "Could not get veto photon. Could not allocate memory in server\n");
+        sprintf(mess, "Could not get veto photon. Invalid chip index %d\n",
+                chipIndex);
         LOG(logERROR, (mess));
     } else {
-        // get only
-        int chipIndex = arg;
-        if (chipIndex < -1 || chipIndex >= NCHIP) {
-            ret = FAIL;
-            sprintf(mess, "Could not get veto photon. Invalid chip index %d\n",
-                    chipIndex);
+        ret = getVetoPhoton(chipIndex, retvals, gainRetvals);
+        if (ret == FAIL) {
+            strcpy(mess,
+                    "Could not get veto photon for chipIndex -1. Not the "
+                    "same for all chips. Select specific chip index "
+                    "instead.\n");
             LOG(logERROR, (mess));
         } else {
-            ret = getVetoPhoton(chipIndex, retvals, gainRetvals);
-            if (ret == FAIL) {
-                strcpy(mess,
-                       "Could not get veto photon for chipIndex -1. Not the "
-                       "same for all chips. Select specific chip index "
-                       "instead.\n");
-                LOG(logERROR, (mess));
-            } else {
-                for (int i = 0; i < NCHAN; ++i) {
-                    LOG(logDEBUG1,
-                        ("%d:[%d, %d]\n", i, retvals[i], gainRetvals[i]));
-                }
+            for (int i = 0; i < NCHAN; ++i) {
+                LOG(logDEBUG1,
+                    ("%d:[%d, %d]\n", i, retvals[i], gainRetvals[i]));
             }
         }
     }
-#endif
+
     Server_SendResult(file_des, INT32, NULL, 0);
     if (ret != FAIL) {
         int nch = NCHAN;
@@ -6701,13 +6672,10 @@ int get_veto_photon(int file_des) {
         sendData(file_des, gainRetvals, sizeof(int) * NCHAN, INT32);
         sendData(file_des, retvals, sizeof(int) * NCHAN, INT32);
     }
-    if (retvals != NULL) {
-        free(retvals);
-    }
-    if (gainRetvals != NULL) {
-        free(gainRetvals);
-    }
+    free(retvals);
+    free(gainRetvals);
     return ret;
+#endif
 }
 
 int set_veto_reference(int file_des) {
@@ -7878,18 +7846,18 @@ int set_pattern(int file_des) {
 #else
     patternParameters *pat = malloc(sizeof(patternParameters));
     if (pat == NULL) {
-        return sendMemoryAllocationError(file_des);
+        setMemoryAllocationErrorMessage();
+        return sendError(file_des);
     }
     memset(pat, 0, sizeof(patternParameters));
+
     // ignoring endianness for eiger
     if (receiveData(file_des, pat, sizeof(patternParameters), INT32) < 0) {
-        if (pat != NULL)
-            free(pat);
+        free(pat);
         return printSocketReadError();
     }
     if (receiveData(file_des, args, MAX_STR_LENGTH, OTHER) < 0) {
-        if (pat != NULL)
-            free(pat);
+        free(pat);
         return printSocketReadError();
     }
 
@@ -7897,8 +7865,7 @@ int set_pattern(int file_des) {
         LOG(logDEBUG1, ("Setting Pattern from structure\n"));
         ret = loadPattern(mess, logINFO, pat, args);
     }
-    if (pat != NULL)
-        free(pat);
+    free(pat);
 #endif
 
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -7934,6 +7901,10 @@ int get_pattern(int file_des) {
 #else
 
     patternParameters *pat = malloc(sizeof(patternParameters));
+    if (pat == NULL) {
+        setMemoryAllocationErrorMessage();
+        return sendError(file_des);
+    }
     memset(pat, 0, sizeof(patternParameters));
 
     if (Server_VerifyLock() == OK) {
@@ -7943,8 +7914,7 @@ int get_pattern(int file_des) {
     // ignoring endianness for eiger
     int ret =
         Server_SendResult(file_des, INT32, pat, sizeof(patternParameters));
-    if (pat != NULL)
-        free(pat);
+    free(pat);
     return ret;
 #endif
 }
@@ -8052,10 +8022,13 @@ int set_scan(int file_des) {
                 if (ret == OK) {
                     scan = 1;
                     numScanSteps = (abs(stop - start) / abs(step)) + 1;
-                    if (scanSteps != NULL) {
-                        free(scanSteps);
-                    }
+                    // freed only at startup of the next scan
+                    free(scanSteps);
                     scanSteps = malloc(numScanSteps * sizeof(int));
+                    if (scanSteps == NULL) {
+                        setMemoryAllocationErrorMessage();
+                        return sendError(file_des);
+                    }
                     for (int i = 0; i != numScanSteps; ++i) {
                         scanSteps[i] = start + i * step;
                         LOG(logDEBUG1, ("scansteps[%d]:%d\n", i, scanSteps[i]));
@@ -8361,23 +8334,28 @@ int get_bad_channels(int file_des) {
 int set_bad_channels(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int nargs = 0;
-    int *args = NULL;
-
-    if (receiveData(file_des, &nargs, sizeof(nargs), INT32) < 0)
-        return printSocketReadError();
-
-    if (nargs > 0) {
-        args = malloc(nargs * sizeof(int));
-        if (receiveData(file_des, args, nargs * sizeof(int), INT32) < 0)
-            return printSocketReadError();
-    }
-
-    LOG(logDEBUG1, ("Setting %d bad channels\n", nargs));
 
 #if !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
+    int nargs = 0;
+    if (receiveData(file_des, &nargs, sizeof(nargs), INT32) < 0)
+        return printSocketReadError();
+    int *args = NULL;
+    if (nargs > 0) {
+        args = malloc(nargs * sizeof(int));
+        if (args == NULL) {
+            setMemoryAllocationErrorMessage();
+            return sendError(file_des);
+        }
+        if (receiveData(file_des, args, nargs * sizeof(int), INT32) < 0) {
+            free(args);
+            return printSocketReadError();
+        }
+    }
+    LOG(logDEBUG1, ("Setting %d bad channels\n", nargs));
+
+
     // only set
     if (Server_VerifyLock() == OK) {
         // validate bad channel number
@@ -8419,15 +8397,11 @@ int set_bad_channels(int file_des) {
                             nargs, nretvals);
                     LOG(logERROR, (mess));
                 }
-                if (retvals != NULL) {
-                    free(retvals);
-                }
+                free(retvals);
             }
         }
     }
-    if (args != NULL) {
-        free(args);
-    }
+    free(args);
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -9956,14 +9930,9 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
         src = malloc(MAX_BLACKFIN_PROGRAM_SIZE);
         if (src == NULL) {
             fclose(fd);
-            struct sysinfo info;
-            sysinfo(&info);
-            sprintf(mess,
-                    "Could not %s. Memory allocation failure. Free "
-                    "space: %d MB\n",
-                    functionType, (int)(info.freeram / (1024 * 1024)));
-            LOG(logERROR, (mess));
+            setMemoryAllocationErrorMessage();
             ret = FAIL;
+            LOG(logERROR, (mess));
         }
     }
     Server_SendResult(file_des, INT32, NULL, 0);
@@ -10106,6 +10075,7 @@ void receive_program_default(int file_des, enum PROGRAM_INDEX index,
     }
     Server_SendResult(file_des, INT32, NULL, 0);
     if (ret == FAIL) {
+        free(src);
         return;
     }
 

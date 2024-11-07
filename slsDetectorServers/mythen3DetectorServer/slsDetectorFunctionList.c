@@ -442,6 +442,7 @@ int allocateDetectorStructureMemory() {
         *((detectorModules->chanregs) + ichan) = 0;
     }
     memset(badChannelMask, 0, NCHAN_PER_MODULE * sizeof(char));
+    return OK;
 }
 
 void setupDetector() {

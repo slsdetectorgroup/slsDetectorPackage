@@ -2117,7 +2117,7 @@ int acquire(int blocking, int file_des) {
                 // scanErrorMessage)
                 if (blocking || !scan) {
                     pthread_join(pthread_tid, NULL);
-                } else 
+                } else
                     pthread_detach(pthread_tid);
             }
         }
@@ -2219,7 +2219,7 @@ void *start_state_machine(void *arg) {
                     // wait to finish reading from fifo (1g real ctb)
                     if (*blocking || times > 1)
                         pthread_join(pthread_tid_ctb_1g, NULL);
-                    else 
+                    else
                         pthread_detach(pthread_tid_ctb_1g);
                 }
             }

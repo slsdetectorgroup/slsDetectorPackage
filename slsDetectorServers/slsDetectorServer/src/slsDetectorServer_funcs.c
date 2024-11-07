@@ -8305,33 +8305,28 @@ int set_adc_config(int file_des) {
 int get_bad_channels(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int nretvals = 0;
-    int *retvals = NULL;
-
     LOG(logDEBUG1, ("Getting bad channels\n"));
 
 #if !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
+    return Server_SendResult(file_des, INT32, NULL, 0);
 #else
     // get only
-    retvals = getBadChannels(&nretvals);
-    if (nretvals == -1) {
-        ret = FAIL;
-        strcpy(mess, "Could not get bad channels. Memory allcoation error\n");
-        LOG(logERROR, (mess));
+    int nretvals = 0;
+    int *retvals = getBadChannels(&nretvals);
+    if (retvals == NULL) {
+        setMemoryAllocationErrorMessage();
+        return sendError(file_des);
     }
-#endif
+
     Server_SendResult(file_des, INT32, NULL, 0);
-    if (ret != FAIL) {
-        sendData(file_des, &nretvals, sizeof(nretvals), INT32);
-        if (nretvals > 0) {
-            sendData(file_des, retvals, sizeof(int) * nretvals, INT32);
-        }
+    sendData(file_des, &nretvals, sizeof(nretvals), INT32);
+    if (nretvals > 0) {
+        sendData(file_des, retvals, sizeof(int) * nretvals, INT32);
     }
-    if (retvals != NULL) {
-        free(retvals);
-    }
+    free(retvals);
     return ret;
+#endif
 }
 
 int set_bad_channels(int file_des) {
@@ -8385,12 +8380,12 @@ int set_bad_channels(int file_des) {
             } else {
                 int nretvals = 0;
                 int *retvals = getBadChannels(&nretvals);
-                if (nretvals == -1) {
-                    ret = FAIL;
-                    strcpy(mess, "Could not get bad channels. Memory "
-                                 "allcoation error\n");
-                    LOG(logERROR, (mess));
-                } else if (nretvals != nargs) {
+                if (retvals == NULL) {
+                    free(args);
+                    setMemoryAllocationErrorMessage();
+                    return sendError(file_des);
+                } 
+                if (nretvals != nargs) {
                     ret = FAIL;
                     sprintf(mess,
                             "Could not set bad channels. Set %d channels, but "

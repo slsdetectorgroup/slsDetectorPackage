@@ -140,7 +140,7 @@ void checkVirtual9MFlag();
 void setupFebBeb();
 #endif
 #if defined(EIGERD) || defined(MYTHEN3D)
-void allocateDetectorStructureMemory();
+int allocateDetectorStructureMemory();
 #endif
 void setupDetector();
 #if defined(CHIPTESTBOARDD)

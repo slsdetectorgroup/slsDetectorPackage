@@ -133,7 +133,7 @@ void setMemoryAllocationErrorMessage() {
 #ifdef EIGERD
     strcat(mess, ".\n");
 #else
-    sprintf(mess, " using sls_detector_put rebootcontroller.\n");
+    strcat(mess, " using sls_detector_put rebootcontroller.\n");
 #endif
 }
 
@@ -8314,7 +8314,7 @@ int get_bad_channels(int file_des) {
     // get only
     int nretvals = 0;
     int *retvals = getBadChannels(&nretvals);
-    if (retvals == NULL) {
+    if (nretvals == -1) {
         setMemoryAllocationErrorMessage();
         return sendError(file_des);
     }
@@ -8380,7 +8380,7 @@ int set_bad_channels(int file_des) {
             } else {
                 int nretvals = 0;
                 int *retvals = getBadChannels(&nretvals);
-                if (retvals == NULL) {
+                if (nretvals == -1) {
                     free(args);
                     setMemoryAllocationErrorMessage();
                     return sendError(file_des);

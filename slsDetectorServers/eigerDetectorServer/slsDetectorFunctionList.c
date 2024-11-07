@@ -775,6 +775,7 @@ int allocateDetectorStructureMemory() {
     for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
         *((detectorModules->chanregs) + ichan) = -1;
     }
+    return OK;
 }
 
 void setupDetector() {

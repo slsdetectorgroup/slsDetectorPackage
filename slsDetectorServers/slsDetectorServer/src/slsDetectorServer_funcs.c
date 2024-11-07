@@ -8384,7 +8384,7 @@ int set_bad_channels(int file_des) {
                     free(args);
                     setMemoryAllocationErrorMessage();
                     return sendError(file_des);
-                } 
+                }
                 if (nretvals != nargs) {
                     ret = FAIL;
                     sprintf(mess,

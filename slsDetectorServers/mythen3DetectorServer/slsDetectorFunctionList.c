@@ -412,7 +412,8 @@ int allocateDetectorStructureMemory() {
     if (detectorModules == NULL || detectorChans == NULL ||
         detectorDacs == NULL || badChannelMask == NULL) {
         initError = FAIL;
-        strcpy(initErrorMessage, "Could not allocate memory for dacs, channels or bad channel mask in detector\n");
+        strcpy(initErrorMessage, "Could not allocate memory for dacs, channels "
+                                 "or bad channel mask in detector\n");
         LOG(logERROR, (initErrorMessage));
         return FAIL;
     }
@@ -420,7 +421,7 @@ int allocateDetectorStructureMemory() {
         ("modules from 0x%x to 0x%x\n", detectorModules, detectorModules));
     LOG(logDEBUG1, ("chans from 0x%x to 0x%x\n", detectorChans, detectorChans));
     LOG(logDEBUG1, ("dacs from 0x%x to 0x%x\n", detectorDacs, detectorDacs));
-    
+
     (detectorModules)->dacs = detectorDacs;
     (detectorModules)->chanregs = detectorChans;
     (detectorModules)->ndac = NDAC;

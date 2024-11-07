@@ -61,12 +61,14 @@ int Feb_Control_FebControl(int normal) {
     Feb_Control_last_downloaded_trimbits =
         malloc(Feb_Control_trimbit_size * sizeof(int));
     if (Feb_Control_last_downloaded_trimbits == NULL) {
-        LOG(logERROR, ("Could not allocate memory for last downloaded trimbits\n"));
+        LOG(logERROR,
+            ("Could not allocate memory for last downloaded trimbits\n"));
         return 0;
     }
 
     Feb_Control_normal = normal;
-    if (!Feb_Interface_SetAddress(Feb_Control_rightAddress, Feb_Control_leftAddress))
+    if (!Feb_Interface_SetAddress(Feb_Control_rightAddress,
+                                  Feb_Control_leftAddress))
         return 0;
     if (Feb_Control_activated) {
         return Feb_Interface_SetByteOrder();

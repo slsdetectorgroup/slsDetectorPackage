@@ -746,7 +746,8 @@ int allocateDetectorStructureMemory() {
     if (detectorModules == NULL || detectorChans == NULL ||
         detectorDacs == NULL) {
         initError = FAIL;
-        strcpy(initErrorMessage, "Could not allocate memory for dacs or channels in detector\n");
+        strcpy(initErrorMessage,
+               "Could not allocate memory for dacs or channels in detector\n");
         LOG(logERROR, (initErrorMessage));
         return FAIL;
     }

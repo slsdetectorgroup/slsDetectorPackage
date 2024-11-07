@@ -52,7 +52,7 @@ int Beb_Beb() {
 
     Beb_send_data_raw =
         malloc((Beb_send_buffer_size + 1) * sizeof(unsigned int));
-    if(Beb_send_data_raw == NULL) {
+    if (Beb_send_data_raw == NULL) {
         LOG(logERROR, ("Could not allocate memory for beb (send_data_raw)\n"));
         return 0;
     }
@@ -63,7 +63,7 @@ int Beb_Beb() {
 
     Beb_recv_data_raw =
         malloc((Beb_recv_buffer_size + 1) * sizeof(unsigned int));
-    if(Beb_recv_data_raw == NULL) {
+    if (Beb_recv_data_raw == NULL) {
         LOG(logERROR, ("Could not allocate memory for beb (recv_data_raw)\n"));
         return 0;
     }

@@ -11,13 +11,10 @@ from setuptools import setup, find_packages
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 
 
-import subprocess
-def get_git_tag():
-    try:
-        return subprocess.check_output(['git', 'describe', '--tags', '--abbrev=0']).strip().decode('utf-8')
-    except subprocess.CalledProcessError:
-        return 'developer'
-__version__ = get_git_tag()
+def read_version():
+    with open("VERSION", "r") as f:
+        return f.read().strip()
+__version__ = read_version()
 
 
 def get_conda_path():
@@ -60,7 +57,7 @@ ext_modules = [
 
 setup(
     name='slsdet',
-    version=__version__,
+    version=read_version(),
     author='Erik Frojdh',
     author_email='erik.frojdh@psi.ch',
     url='https://github.com/slsdetectorgroup/slsDetectorPackage',

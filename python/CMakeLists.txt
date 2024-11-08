@@ -49,7 +49,7 @@ set( PYTHON_FILES
     slsdet/temperature.py
     slsdet/lookup.py
     slsdet/utils.py
-
+    ../VERSION  
 )
 
 foreach(FILE ${PYTHON_FILES})

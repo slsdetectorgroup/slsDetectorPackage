@@ -30,11 +30,12 @@ DurationWrapper = _slsdet.DurationWrapper
 pedestalParameters = _slsdet.pedestalParameters
 
 
-import subprocess
-def get_git_tag():
-    try:
-        return subprocess.check_output(['git', 'describe', '--tags', '--abbrev=0']).strip().decode('utf-8')
-    except subprocess.CalledProcessError:
-        return 'developer'
-__version__ = get_git_tag()
+import os
+def read_version():
+    project_root = os.path.abspath(os.path.dirname(__file__)) 
+    version_file = os.path.join(project_root, 'VERSION')
+    with open(version_file, "r") as f:
+        return f.read().strip()
+
+__version__ = read_version()
 

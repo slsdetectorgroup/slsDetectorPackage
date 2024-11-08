@@ -2209,7 +2209,8 @@ int startStateMachine() {
         LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
         sharedMemory_setStatus(IDLE);
         return FAIL;
-    }
+    } else
+        pthread_detach(pthread_virtual_tid);
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
     return OK;
 #endif

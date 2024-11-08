@@ -91,7 +91,7 @@ static inline void FILELOG_PrintLog(enum TLogLevel level, char *m) {
 }
 
 static inline char *FILELOG_BuildLog(const char *fmt, ...) {
-    char *p;
+    char *p = NULL;
     va_list ap;
     p = malloc(ERROR_MSG_LENGTH);
     va_start(ap, fmt);

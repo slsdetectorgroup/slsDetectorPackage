@@ -2117,7 +2117,8 @@ int acquire(int blocking, int file_des) {
                 // scanErrorMessage)
                 if (blocking || !scan) {
                     pthread_join(pthread_tid, NULL);
-                }
+                } else
+                    pthread_detach(pthread_tid);
             }
         }
     }
@@ -2213,6 +2214,13 @@ void *start_state_machine(void *arg) {
                     ret = FAIL;
                     strcpy(mess, "Could not start read frames thread!\n");
                     LOG(logERROR, (mess));
+                } else {
+                    // blocking or scan
+                    // wait to finish reading from fifo (1g real ctb)
+                    if (*blocking || times > 1)
+                        pthread_join(pthread_tid_ctb_1g, NULL);
+                    else
+                        pthread_detach(pthread_tid_ctb_1g);
                 }
             }
             // add scan error message
@@ -2229,12 +2237,6 @@ void *start_state_machine(void *arg) {
 #endif
         // blocking or scan
         if (*blocking || times > 1) {
-            // wait to finish reading from fifo (1g real ctb)
-#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
-            if (!enableTenGigabitEthernet(-1)) {
-                pthread_join(pthread_tid_ctb_1g, NULL);
-            }
-#endif
 #ifdef EIGERD
             waitForAcquisitionEnd(&ret, mess);
             if (ret == FAIL && scan) {
@@ -7861,7 +7863,6 @@ int set_pattern(int file_des) {
     !defined(MYTHEN3D)
     functionNotImplemented();
 #else
-
     patternParameters *pat = malloc(sizeof(patternParameters));
     memset(pat, 0, sizeof(patternParameters));
     // ignoring endianness for eiger
@@ -8515,7 +8516,8 @@ int start_readout(int file_des) {
                         ret = FAIL;
                         strcpy(mess, "Could not start read frames thread!\n");
                         LOG(logERROR, (mess));
-                    }
+                    } else
+                        pthread_detach(pthread_tid_ctb_1g);
                 }
             }
 #endif

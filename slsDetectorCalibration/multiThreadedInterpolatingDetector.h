@@ -66,11 +66,10 @@ class multiThreadedInterpolatingDetector
         return (dets[0])->getInterpolation();
     };
 
-    virtual long long int *getImage(int &nnx, int &nny, int &nsx, int &nsy) {
+    virtual int *getImage(int &nnx, int &nny, int &nsx, int &nsy) {
         if (getInterpolation() == NULL)
             return multiThreadedAnalogDetector::getImage(nnx, nny, nsx, nsy);
         // if one interpolates, the whole image is stored in detector 0;
-        int *img;
         // int nnx, nny, ns;
         // int nnx, nny, ns;
         int nn = dets[0]->getImageSize(nnx, nny, nsx, nsy);
@@ -78,10 +77,10 @@ class multiThreadedInterpolatingDetector
             delete image;
             image = NULL;
         }
-        image = new long long int[nn];
-        img = dets[0]->getImage();
+        image = new int[nn];
+        int* tmp_img = dets[0]->getImage();
         for (int i = 0; i < nn; i++) {
-            image[i] = static_cast<long long int>(img[i]);
+            image[i] = tmp_img[i];
         }
         return image;
     };

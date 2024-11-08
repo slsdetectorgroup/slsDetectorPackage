@@ -410,7 +410,7 @@ class multiThreadedAnalogDetector {
             dets[i]->newDataSet();
     };
 
-    virtual long long int *getImage(int &nnx, int &nny, int &ns, int &nsy) {
+    virtual int *getImage(int &nnx, int &nny, int &ns, int &nsy) {
         //int *img;
         // int nnx, nny, ns;
         // int nnx, nny, ns;
@@ -419,7 +419,7 @@ class multiThreadedAnalogDetector {
             delete[] image;
             image = nullptr;
         }
-        image = new long long int[nn];
+        image = new int[nn];
         // int nn=dets[0]->getImageSize(nnx, nny, ns);
         // for (i=0; i<nn; i++) image[i]=0;
 
@@ -430,11 +430,11 @@ class multiThreadedAnalogDetector {
             for (int i = 0; i < nn; i++) {
                 if (ii == 0)
                     //	  if (img[i]>0)
-                    image[i] = static_cast<long long int>(tmp_img[i]);
+                    image[i] = tmp_img[i];
                 // else
                 //  image[i]=0;
                 else // if (img[i]>0)
-                    image[i] += static_cast<long long int>(tmp_img[i]);
+                    image[i] += tmp_img[i];
                 // if (img[i])	  cout << "det " << ii << " pix " << i << " val
                 // " <<  img[i] << " " << image[i] << endl;
             }
@@ -697,9 +697,9 @@ class multiThreadedAnalogDetector {
     threadedAnalogDetector *dets[MAXTHREADS];
     analogDetector<uint16_t> *dd[MAXTHREADS];
     int ithread;
-    long long int *image;
-    int *ff;
-    double *ped;
+    int* image;
+    int* ff;
+    double* ped;
     //pthread_mutex_t fmutex; //unused
 };
 

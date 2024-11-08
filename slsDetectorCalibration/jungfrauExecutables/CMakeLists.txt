@@ -6,7 +6,7 @@
 
 set(JUNGFRAU_EXECUTABLES)
 
-find_package(fmt REQUIRED)
+#find_package(fmt REQUIRED)
 
 #nlohmann_json
 #If the library was INSTALLED (i.e. sudo dnf install nlohmann-json3-dev), do stuff described in the repo under CMake -> External
@@ -31,6 +31,13 @@ FetchContent_Declare(
 )
 #FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz) #Alternative (from the repo documentation)
 FetchContent_MakeAvailable(json)
+
+FetchContent_Declare(
+  fmt
+  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+  GIT_TAG master
+)
+FetchContent_MakeAvailable(fmt)
 
 # HDF5 file writing 
 if (SLS_USE_HDF5)

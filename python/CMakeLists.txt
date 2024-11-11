@@ -49,7 +49,6 @@ set( PYTHON_FILES
     slsdet/temperature.py
     slsdet/lookup.py
     slsdet/utils.py
-    ../VERSION  
 )
 
 foreach(FILE ${PYTHON_FILES})
@@ -58,7 +57,6 @@ foreach(FILE ${PYTHON_FILES})
 
 endforeach(FILE ${PYTHON_FILES})
 
-
 configure_file( scripts/basic.py  
     ${CMAKE_BINARY_DIR}/basic.py 
 )
@@ -66,6 +64,9 @@ configure_file( scripts/test_virtual.py
     ${CMAKE_BINARY_DIR}/test_virtual.py 
 )
 
+configure_file( ../VERSION  
+    ${CMAKE_BINARY_DIR}/bin/slsdet/VERSION
+)
 
 if(SLS_INSTALL_PYTHONEXT)
     install(TARGETS _slsdet
@@ -74,4 +75,5 @@ if(SLS_INSTALL_PYTHONEXT)
     )
 
     install(FILES ${PYTHON_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/python/slsdet)
+    install(FILES ../VERSION DESTINATION ${CMAKE_INSTALL_PREFIX}/python/slsdet)
 endif()

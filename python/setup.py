@@ -12,8 +12,10 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 
 
 def read_version():
-    with open("VERSION", "r") as f:
+    version_file = os.path.join(os.path.dirname(__file__), "slsdet", "VERSION")
+    with open(version_file, "r") as f:
         return f.read().strip()
+
 __version__ = read_version()
 
 
@@ -57,7 +59,7 @@ ext_modules = [
 
 setup(
     name='slsdet',
-    version=read_version(),
+    version=__version__,
     author='Erik Frojdh',
     author_email='erik.frojdh@psi.ch',
     url='https://github.com/slsdetectorgroup/slsDetectorPackage',

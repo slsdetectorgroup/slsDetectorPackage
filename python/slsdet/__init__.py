@@ -22,6 +22,7 @@ defs = _slsdet.slsDetectorDefs
 from .enums import *
 from .defines import *
 
+
 IpAddr = _slsdet.IpAddr
 MacAddr = _slsdet.MacAddr
 scanParameters = _slsdet.scanParameters
@@ -29,11 +30,9 @@ currentSrcParameters = _slsdet.currentSrcParameters
 DurationWrapper = _slsdet.DurationWrapper
 pedestalParameters = _slsdet.pedestalParameters
 
-
 import os
 def read_version():
-    project_root = os.path.abspath(os.path.dirname(__file__)) 
-    version_file = os.path.join(project_root, 'VERSION')
+    version_file = os.path.join(os.path.dirname(__file__), "VERSION")
     with open(version_file, "r") as f:
         return f.read().strip()
 

@@ -23,6 +23,9 @@ This document describes the differences between v9.0.0 and v8.0.2
 2 Compilation Changes
 =====================
 
+    *   Python version
+        slsdet.__version__ now returns the package release version.
+
 
     *   Pyctbgui
         Ctb GUI in Python is now moved into the package. 
@@ -117,7 +120,7 @@ This document describes the differences between v9.0.0 and v8.0.2
 
 
     Client
-    ======
+    ------
 
 
     *   Command line Code Generation

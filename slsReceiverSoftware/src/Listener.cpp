@@ -465,9 +465,9 @@ void Listener::CopyPacket(char *dst, char *src, uint32_t dataSize,
     // 2nd packet: 4 bytes fnum, previous 1*2 bytes data  + 640*2 bytes data
     case GOTTHARD:
         if (!pnum)
-            memcpy(dst, &src[detHeaderSize + 4], dataSize - 2);
+            memcpy(dst, &src[detHeaderSize + 2], dataSize - 2);
         else
-            memcpy(dst + dataSize - 2, &src[detHeaderSize], dataSize + 2);
+            memcpy(dst + dataSize - 2, &src[detHeaderSize - 2], dataSize + 2);
         break;
     case CHIPTESTBOARD:
     case XILINX_CHIPTESTBOARD:

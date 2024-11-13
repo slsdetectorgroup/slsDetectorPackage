@@ -83,15 +83,17 @@ Welcome to slsDetectorPackage's documentation!
     slsreceiver
 
 .. toctree::
-    :caption: Receiver File Format
-    :maxdepth: 2
+    :caption: Receiver Files
+    :maxdepth: 3
 
     fileformat
-    rawmasterfileformat
-    rawdatafileformat
+    slsreceiverheaderformat
+    masterfileattributes
+    binaryfileformat
+    hdf5fileformat
 
 .. toctree::
-    :caption: ZMQ Format
+    :caption: Receiver ZMQ Stream
     :maxdepth: 2
 
     zmqjsonheaderformat

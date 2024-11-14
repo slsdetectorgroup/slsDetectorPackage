@@ -447,10 +447,9 @@ std::string Caller::trimen(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
         os << "[trim_ev1] [trim_Ev2 (optional)] [trim_ev3 (optional)] "
-              "...\n\t[Eiger][Mythen3] Number of trim energies and list of "
-              "trim "
-              "energies, where corresponding default trim files exist in "
-              "corresponding trim folders."
+              "...\n\t[Eiger][Mythen3] list of trim energies, where "
+              "corresponding default trim files exist in corresponding trim "
+              "folders."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {

@@ -279,12 +279,16 @@ void DetectorImpl::updateDetectorSize() {
         }
         if (maxChanX < modSize.x) {
             std::stringstream os;
-            os << "The max det size in x dim (" << maxChanX << ") is less than the module size in x dim (" << modSize.x <<"). Probably using shared memory of a different detector type. Please free and try again.";
+            os << "The max det size in x dim (" << maxChanX
+               << ") is less than the module size in x dim (" << modSize.x
+               << "). Probably using shared memory of a different detector "
+                  "type. Please free and try again.";
             throw RuntimeError(os.str());
         }
         nModx = maxChanX / modSize.x;
         if (nModx == 0) {
-            throw RuntimeError("number of modules in x dimension is 0. Unable to proceed.");
+            throw RuntimeError(
+                "number of modules in x dimension is 0. Unable to proceed.");
         }
         nMody = size() / nModx;
         if ((maxChanX % modSize.x) > 0) {
@@ -301,12 +305,16 @@ void DetectorImpl::updateDetectorSize() {
         }
         if (maxChanY < modSize.y) {
             std::stringstream os;
-            os << "The max det size in y dim (" << maxChanY << ") is less than the module size in y dim (" << modSize.y <<"). Probably using shared memory of a different detector type. Please free and try again.";
+            os << "The max det size in y dim (" << maxChanY
+               << ") is less than the module size in y dim (" << modSize.y
+               << "). Probably using shared memory of a different detector "
+                  "type. Please free and try again.";
             throw RuntimeError(os.str());
         }
         nMody = maxChanY / modSize.y;
         if (nMody == 0)
-            throw RuntimeError("number of modules in y dimension is 0. Unable to proceed.");
+            throw RuntimeError(
+                "number of modules in y dimension is 0. Unable to proceed.");
         nModx = size() / nMody;
         if ((maxChanY % modSize.y) > 0) {
             ++nModx;

@@ -14676,7 +14676,7 @@ std::string Caller::timing(int action) {
     std::ostringstream os;
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N([auto|trigger|gating|burst_trigger]
+        os << R"V0G0N([auto|trigger|gating|burst_trigger|trigger_gating]
 	Timing Mode of detector.
 	[Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx Ctb] [auto|trigger]
 	[Mythen3] [auto|trigger|gating|trigger_gating]

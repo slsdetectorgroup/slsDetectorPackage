@@ -322,7 +322,7 @@ Pybind and Zeromq
 |   * or use advanced option SLS_FETCH_ZMQ_FROM_GITHUB [`link <https://github.com/zeromq/libzmq.git>`__].
 |
 | v7.x.x and older:
-|   zeromq must be installed and one can hint its location using
+|   zeromq-devel must be installed and one can hint its location using
 |   * cmake option:'-DZeroMQ_HINT=/usr/lib64' or 
 |   * option '-q' in cmk.sh script: : ./cmk.sh -cbj5 -q /usr/lib64
 |   * 'zeromq' dependency added when installing using conda

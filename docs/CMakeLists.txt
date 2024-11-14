@@ -64,6 +64,7 @@ set(SPHINX_SOURCE_FILES
   src/binaryfileformat.rst
   src/hdf5fileformat.rst
   src/zmqjsonheaderformat.rst
+  src/ctbframeformat.rst
 )
 
 foreach(filename ${SPHINX_SOURCE_FILES})

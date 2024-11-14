@@ -1736,7 +1736,7 @@ readout:
 
 rx_clearroi:
   inherit_actions: EXECUTE_SET_COMMAND_NOID
-  help: "Resets Region of interest in receiver. Default is all channels/pixels enabled."
+  help: "\n\tResets Region of interest in receiver. Default is all channels/pixels enabled."
   actions:
     PUT:
       function: clearRxROI
@@ -3147,7 +3147,7 @@ maxclkphaseshift:
       function: getMaxClockPhaseShift
 
 clkdiv:
-  help: "[n_clock] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1.n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
+  help: "[n_clock] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1.\n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
   actions:
     GET:
       extra_variables:
@@ -3560,7 +3560,7 @@ temp_event:
       output: [ '"cleared"' ]
 
 pedestalmode:
-  help: " [frames<uint8_t>] [loops<uint16_t>]\n\t\t[Jungfrau] Enable pedestal mode. \n\t\tThe number of frames or triggers is overwritten by: \n\t\t(#pedestal_frames x #pedestal_loops x 2). \n\t\tIn auto timing mode or in trigger mode with #frames > 1, \n\t\t#frames is overwritten and #triggers = 1, \n\t\telse #triggers is overwritten and #frames = 1. \n\t\tOne cannot set #frames, #triggers or timing mode in pedestal mode (exception thrown).\n\npedestalmode [0]\n\t\t[Jungfrau] Disable pedestal mode.\n\t\tDisabling pedestal mode will set back the normal mode values of #frames and #triggers."
+  help: " [frames<uint8_t>] [loops<uint16_t>]\n\t\t[Jungfrau] Enable pedestal mode. \n\t\tThe number of frames or triggers is overwritten by: \n\t\t(#pedestal_frames x #pedestal_loops x 2). \n\t\tIn auto timing mode or in trigger mode with #frames > 1, \n\t\t#frames is overwritten and #triggers = 1, \n\t\telse #triggers is overwritten and #frames = 1. \n\t\tOne cannot set #frames, #triggers or timing mode in pedestal mode (exception thrown).\n\tpedestalmode [0]\n\t\t[Jungfrau] Disable pedestal mode.\n\t\tDisabling pedestal mode will set back the normal mode values of #frames and #triggers."
   actions: 
     GET:
       argc: 0

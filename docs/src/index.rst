@@ -88,6 +88,7 @@ Welcome to slsDetectorPackage's documentation!
 
     fileformat
     slsreceiverheaderformat
+    ctbframeformat
     masterfileattributes
     binaryfileformat
     hdf5fileformat

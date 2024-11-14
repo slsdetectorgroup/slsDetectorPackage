@@ -201,6 +201,7 @@ Build slsDetectorGui (Qt5)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. Using pre-built binary on conda
+
     .. code-block:: bash
 
         conda create -n myenv slsdetgui=7.0.0
@@ -208,13 +209,22 @@ Build slsDetectorGui (Qt5)
 
 
 2. Using system installation on RHEL7
+
     .. code-block:: bash
 
         yum install qt5-qtbase-devel.x86_64
         yum install qt5-qtsvg-devel.x86_64 
 
+3. Using system installation on RHEL8
 
-3. Using conda
+    .. code-block:: bash
+
+        yum install qt5-qtbase-devel.x86_64
+        yum install qt5-qtsvg-devel.x86_64 
+        yum install expat-devel.x86_64
+
+4. Using conda
+
     .. code-block:: bash
 
         #Add channels for dependencies and our library

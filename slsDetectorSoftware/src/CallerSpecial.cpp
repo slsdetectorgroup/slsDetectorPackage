@@ -250,8 +250,7 @@ void Caller::EmptyDataCallBack(detectorData *data, uint64_t frameIndex,
 std::string Caller::acquire(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << cmd
-           << "\n\tAcquire the number of frames set up.\n\tBlocking command, "
+        os << "\n\tAcquire the number of frames set up.\n\tBlocking command, "
               "where control server is blocked and cannot accept other "
               "commands until acquisition is done. \n\t- sets acquiring "
               "flag\n\t- starts the receiver listener (if enabled)\n\t- starts "
@@ -371,7 +370,8 @@ std::string Caller::threshold(int action) {
         if (cmd == "thresholdnotb") {
             os << "Trimbits are not loaded.";
         }
-        os << "\n\nthreshold [eV1] [eV2] [eV3] [(optional settings)]"
+        os << "\n\t" << cmd
+           << " [eV1] [eV2] [eV3] [(optional settings)]"
               "\n\t[Mythen3] Threshold in eV for each counter. It loads trim "
               "files from settingspath. An energy of -1 will pick up values "
               " from detector.";

@@ -20,7 +20,7 @@ Setup
 
 #. Load config file
 
-#. Set file format using command **fformat**
+#. Set file format using command `fformat <commandline.html#term-fformat-binary-hdf5>`_.
 
     .. code-block:: bash
 
@@ -30,7 +30,7 @@ Setup
 Master File
 -------------
 
-* File Name: [fpath]/[fname]_master_[findex].h5 :ref:`(Details here<file name format>)`
+* File Name: [fpath]/[fname]_master_[findex].h5 :ref:`Details here<file name format>`
 
 * It contains  :ref:`attributes<master file attributes>` relevant to the acquisition. This can vary with detector type.
 
@@ -74,13 +74,13 @@ More details regarding master file attributes can be found :ref:`here<master fil
 Data File
 -----------
 
-* File Name: [fpath]/[fname]_dx_fy_[findex].h5 :ref:`(Details here<file name format>)`
+* File Name: [fpath]/[fname]_dx_fy_[findex].h5 :ref:`Details here<file name format>`
 
 
 Virtual Data File
 ------------------
 
-* File Name: [fpath]/[fname]_virtual_[findex].h5 :ref:`(Details here<file name format>)`
+* File Name: [fpath]/[fname]_virtual_[findex].h5 :ref:`Details here<file name format>`
 
 * For multiple modules, a virtual file linking data from all the modules is created. The individual files are expected to be present.
 

@@ -1,7 +1,7 @@
 Binary File Format
-================
+====================
 
-This is the default file format that can be configured using command **fformat**.
+This is the default file format that can be configured using command `fformat <commandline.html#term-fformat-binary-hdf5>`_.
 
     .. code-block:: bash
 
@@ -11,23 +11,23 @@ This is the default file format that can be configured using command **fformat**
 Master File
 --------------
 
-* File Name: [fpath]/[fname]_master_[findex].json :ref:`(Details here<file name format>)`
+* File Name: [fpath]/[fname]_master_[findex].json :ref:`Details here<file name format>`
 
 * It is in json format and created for every acquisition.
 
-* It contains :ref:`attributes<master file attributes>` relevant to the acquisition. This can vary with detector type shown in :ref:`master file examples <json master file examples>` here.
+* It contains :ref:`attributes<master file attributes>` relevant to the acquisition. This can vary with detector type shown in :ref:`master json file examples <json master file examples>` here.
 
-* It contains the :ref:`**SLS Receiver Header** <sls receiver header format>` format used in data files.
+* It shows the :ref:`**SLS Receiver Header** <sls receiver header format>` format used in data files.
 
-* Enabled/disabled using command **fmaster**. 
+* Enabled/disabled using command `fmaster <commandline.html#term-fmaster-0-1>`_. 
 
 
 Data File
 ----------
 
-* File Name: [fpath]/[fname]_dx_fy_[findex].raw :ref:`(Details here<file name format>)`
+* File Name: [fpath]/[fname]_dx_fy_[findex].raw :ref:`Details here<file name format>`
 
-* It store multiple frames sequentially, with total number of frames determined by **rx_framesperfile** parameter.
+* It store multiple frames sequentially, with total number of frames determined by `rx_framesperfile <commandline.html#term-rx_framesperfile-n_frames>`_ parameter.
 
 * Each frame includes a :ref:`**sls_receiver_header** <sls receiver header format>` structure, followed by the actual frame data.
 

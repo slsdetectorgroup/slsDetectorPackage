@@ -161,6 +161,7 @@ Module::getTypeFromDetector(const std::string &hostname, uint16_t cport) {
     LOG(logDEBUG1) << "Getting Module type ";
     ClientSocket socket("Detector", hostname, cport);
     socket.Send(F_GET_DETECTOR_TYPE);
+    socket.setFnum(F_GET_DETECTOR_TYPE);
     if (socket.Receive<int>() == FAIL) {
         throw RuntimeError("Detector (" + hostname + ", " +
                            std::to_string(cport) +
@@ -555,6 +556,7 @@ void Module::setSynchronization(const bool value) {
 std::vector<int> Module::getBadChannels() const {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_GET_BAD_CHANNELS);
+    client.setFnum(F_GET_BAD_CHANNELS);
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Detector " + std::to_string(moduleIndex) +
                             " returned error: " + client.readErrorMessage());
@@ -576,6 +578,7 @@ void Module::setBadChannels(std::vector<int> list) {
     LOG(logDEBUG1) << "Sending bad channels to detector, nch:" << nch;
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SET_BAD_CHANNELS);
+    client.setFnum(F_SET_BAD_CHANNELS);
     client.Send(nch);
     if (nch > 0) {
         client.Send(list);
@@ -966,6 +969,7 @@ std::vector<int64_t> Module::getFramesCaughtByReceiver() const {
     if (shm()->useReceiverFlag) {
         auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
         client.Send(F_GET_RECEIVER_FRAMES_CAUGHT);
+        client.setFnum(F_GET_RECEIVER_FRAMES_CAUGHT);
         if (client.Receive<int>() == FAIL) {
             throw ReceiverError(
                 "Receiver " + std::to_string(moduleIndex) +
@@ -988,6 +992,7 @@ std::vector<int64_t> Module::getNumMissingPackets() const {
     if (shm()->useReceiverFlag) {
         auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
         client.Send(F_GET_NUM_MISSING_PACKETS);
+        client.setFnum(F_GET_NUM_MISSING_PACKETS);
         if (client.Receive<int>() == FAIL) {
             throw ReceiverError(
                 "Receiver " + std::to_string(moduleIndex) +
@@ -1010,6 +1015,7 @@ std::vector<int64_t> Module::getReceiverCurrentFrameIndex() const {
     if (shm()->useReceiverFlag) {
         auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
         client.Send(F_GET_RECEIVER_FRAME_INDEX);
+        client.setFnum(F_GET_RECEIVER_FRAME_INDEX);
         if (client.Receive<int>() == FAIL) {
             throw ReceiverError(
                 "Receiver " + std::to_string(moduleIndex) +
@@ -1726,6 +1732,7 @@ void Module::sendReceiverRateCorrections(const std::vector<int64_t> &t) {
                   << ']';
     auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     receiver.Send(F_SET_RECEIVER_RATE_CORRECT);
+    receiver.setFnum(F_SET_RECEIVER_RATE_CORRECT);
     receiver.Send(static_cast<int>(t.size()));
     receiver.Send(t);
     if (receiver.Receive<int>() == FAIL) {
@@ -2022,6 +2029,7 @@ void Module::sendVetoPhoton(const int chipIndex,
     const int args[]{chipIndex, nch};
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SET_VETO_PHOTON);
+    client.setFnum(F_SET_VETO_PHOTON);
     client.Send(args);
     client.Send(gainIndices);
     client.Send(values);
@@ -2036,6 +2044,7 @@ void Module::getVetoPhoton(const int chipIndex,
     LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]\n";
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_GET_VETO_PHOTON);
+    client.setFnum(F_GET_VETO_PHOTON);
     client.Send(chipIndex);
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Detector " + std::to_string(moduleIndex) +
@@ -2376,7 +2385,6 @@ void Module::setNumberOfAnalogSamples(int value) {
     // update #nchan, as it depends on #samples, adcmask
     updateNumberOfChannels();
     if (shm()->useReceiverFlag) {
-        LOG(logINFORED) << "receiver up!";
         sendToReceiver(F_RECEIVER_SET_NUM_ANALOG_SAMPLES, value, nullptr);
     }
 }
@@ -2542,6 +2550,7 @@ std::string Module::getPatterFileName() const {
 void Module::setPattern(const Pattern &pat, const std::string &fname) {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SET_PATTERN);
+    client.setFnum(F_SET_PATTERN);
     client.Send(pat.data(), pat.size());
     char args[MAX_STR_LENGTH]{};
     strcpy_safe(args, fname.c_str());
@@ -2652,6 +2661,7 @@ std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
     }
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     client.Send(F_GET_ADDITIONAL_JSON_HEADER);
+    client.setFnum(F_GET_ADDITIONAL_JSON_HEADER);
     if (client.Receive<int>() == FAIL) {
         throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
                             " returned error: " + client.readErrorMessage());
@@ -2697,6 +2707,7 @@ void Module::setAdditionalJsonHeader(
                   << ToString(jsonHeader);
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     client.Send(F_SET_ADDITIONAL_JSON_HEADER);
+    client.setFnum(F_SET_ADDITIONAL_JSON_HEADER);
     client.Send(size);
     if (size > 0)
         client.Send(&buff[0], buff.size());
@@ -2892,6 +2903,7 @@ std::string Module::executeCommand(const std::string &cmd) {
                  << "): Sending command " << cmd;
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_EXEC_COMMAND);
+    client.setFnum(F_EXEC_COMMAND);
     client.Send(arg);
     if (client.Receive<int>() == FAIL) {
         std::cout << '\n';
@@ -3504,6 +3516,7 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
     }
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SET_MODULE);
+    client.setFnum(F_SET_MODULE);
     sendModule(&module, client);
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Module " + std::to_string(moduleIndex) +
@@ -3516,6 +3529,7 @@ sls_detector_module Module::getModule() {
     sls_detector_module module(shm()->detType);
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_GET_MODULE);
+    client.setFnum(F_GET_MODULE);
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Module " + std::to_string(moduleIndex) +
                             " returned error: " + client.readErrorMessage());

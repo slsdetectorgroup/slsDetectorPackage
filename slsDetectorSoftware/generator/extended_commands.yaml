@@ -1292,7 +1292,7 @@ clkdiv:
   command_name: clkdiv
   function_alias: clkdiv
   help: "[n_clock] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock n_clock.\
-    \ Must be greater than 1.n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock\
+    \ Must be greater than 1.\n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock\
     \ index range: 0"
   infer_action: true
 clkfreq:
@@ -7171,7 +7171,7 @@ pedestalmode:
     \ x #pedestal_loops x 2). \n\t\tIn auto timing mode or in trigger mode with #frames\
     \ > 1, \n\t\t#frames is overwritten and #triggers = 1, \n\t\telse #triggers is\
     \ overwritten and #frames = 1. \n\t\tOne cannot set #frames, #triggers or timing\
-    \ mode in pedestal mode (exception thrown).\n\npedestalmode [0]\n\t\t[Jungfrau]\
+    \ mode in pedestal mode (exception thrown).\n\tpedestalmode [0]\n\t\t[Jungfrau]\
     \ Disable pedestal mode.\n\t\tDisabling pedestal mode will set back the normal\
     \ mode values of #frames and #triggers."
   infer_action: true
@@ -8441,7 +8441,8 @@ rx_clearroi:
         store_result_in_t: false
   command_name: rx_clearroi
   function_alias: rx_clearroi
-  help: Resets Region of interest in receiver. Default is all channels/pixels enabled.
+  help: "\n\tResets Region of interest in receiver. Default is all channels/pixels\
+    \ enabled."
   infer_action: true
   template: true
 rx_dbitlist:
@@ -11445,9 +11446,9 @@ timing:
         store_result_in_t: false
   command_name: timing
   function_alias: timing
-  help: "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx\
-    \ Ctb] [auto|trigger]\n\t[Mythen3] [auto|trigger|gating|trigger_gating]\n\t[Eiger]\
-    \ [auto|trigger|gating|burst_trigger]"
+  help: "[auto|trigger|gating|burst_trigger|trigger_gating]\n\tTiming Mode of detector.\n\
+    \t[Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx Ctb] [auto|trigger]\n\t\
+    [Mythen3] [auto|trigger|gating|trigger_gating]\n\t[Eiger] [auto|trigger|gating|burst_trigger]"
   infer_action: true
   template: true
 timing_info_decoder:

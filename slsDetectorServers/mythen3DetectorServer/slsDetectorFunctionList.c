@@ -404,18 +404,24 @@ void initStopServer() {
 
 /* set up detector */
 
-void allocateDetectorStructureMemory() {
-    // Allocation of memory
+int allocateDetectorStructureMemory() {
     detectorModules = malloc(sizeof(sls_detector_module));
     detectorChans = malloc(NCHAN_PER_MODULE * sizeof(int));
-    badChannelMask = malloc(NCHAN_PER_MODULE * sizeof(char));
-    memset(badChannelMask, 0, NCHAN_PER_MODULE * sizeof(char));
     detectorDacs = malloc(NDAC * sizeof(int));
-
+    badChannelMask = malloc(NCHAN_PER_MODULE * sizeof(char));
+    if (detectorModules == NULL || detectorChans == NULL ||
+        detectorDacs == NULL || badChannelMask == NULL) {
+        initError = FAIL;
+        strcpy(initErrorMessage, "Could not allocate memory for dacs, channels "
+                                 "or bad channel mask in detector\n");
+        LOG(logERROR, (initErrorMessage));
+        return FAIL;
+    }
     LOG(logDEBUG1,
         ("modules from 0x%x to 0x%x\n", detectorModules, detectorModules));
     LOG(logDEBUG1, ("chans from 0x%x to 0x%x\n", detectorChans, detectorChans));
     LOG(logDEBUG1, ("dacs from 0x%x to 0x%x\n", detectorDacs, detectorDacs));
+
     (detectorModules)->dacs = detectorDacs;
     (detectorModules)->chanregs = detectorChans;
     (detectorModules)->ndac = NDAC;
@@ -429,21 +435,22 @@ void allocateDetectorStructureMemory() {
     (detectorModules)->eV[2] = 0;
     thisSettings = UNINITIALIZED;
 
-    // initialize dacs
+    // initialize
     for (int idac = 0; idac < (detectorModules)->ndac; ++idac) {
         detectorDacs[idac] = 0;
     }
-
-    // trimbits start at 0
     for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
         *((detectorModules->chanregs) + ichan) = 0;
     }
+    memset(badChannelMask, 0, NCHAN_PER_MODULE * sizeof(char));
+    return OK;
 }
 
 void setupDetector() {
     LOG(logINFO, ("This Server is for 1 Mythen3 module \n"));
 
-    allocateDetectorStructureMemory();
+    if (allocateDetectorStructureMemory() == FAIL)
+        return;
 
     if (checkCommandLineConfiguration() == FAIL)
         return;
@@ -1412,6 +1419,10 @@ int setTrimbits(int *trimbits) {
 int setAllTrimbits(int val) {
     LOG(logINFO, ("Setting all trimbits to %d\n", val));
     int *trimbits = malloc(sizeof(int) * ((detectorModules)->nchan));
+    if (trimbits == NULL) {
+        LOG(logERROR, ("Could not allocate memory to set all trimbits\n"));
+        return FAIL;
+    }
     for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
         trimbits[ichan] = val;
     }
@@ -2469,11 +2480,12 @@ int *getBadChannels(int *numChannels) {
     }
     if (*numChannels > 0) {
         retvals = malloc(*numChannels * sizeof(int));
-        memset(retvals, 0, *numChannels * sizeof(int));
         if (retvals == NULL) {
+            LOG(logERROR, ("Could not allocate memory to get bad channels\n"));
             *numChannels = -1;
             return NULL;
         }
+        memset(retvals, 0, *numChannels * sizeof(int));
         // return only 1 channel for all counters
         int ich = 0;
         for (int i = 0; i != NCHAN_PER_MODULE; i = i + NCOUNTERS) {

@@ -124,6 +124,9 @@ This document describes the differences between v9.0.0 and v8.0.2
         The command line parsing code is now generated from a yaml file. This is
         transparent to the user.
 
+    
+    *   Clearer error message about freeing shared memory.
+
 
     Detector Server
     ---------------
@@ -146,6 +149,13 @@ This document describes the differences between v9.0.0 and v8.0.2
     *   [Gotthard2] Burst mode options restricted
         Burst mode external and continuous mode internal are not allowed to be set
         anymore as they are anyway not implemented.
+
+
+    Receiver
+    --------
+
+
+    *   [Gotthard I] fixed header stripping fixing segfault.
 
 
     Simulator

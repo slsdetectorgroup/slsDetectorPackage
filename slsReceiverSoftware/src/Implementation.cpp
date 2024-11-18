@@ -992,7 +992,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.dbitoffset = ctbDbitOffset;
             masterAttributes.dbitlist = 0;
             for (auto &i : ctbDbitList) {
-                masterAttributes.dbitlist |= (1 << i);
+                masterAttributes.dbitlist |= (static_cast<uint64_t>(1) << i);
             }
             masterAttributes.transceiverSamples =
                 generalData->nTransceiverSamples;

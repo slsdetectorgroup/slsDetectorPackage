@@ -6,7 +6,7 @@
 #include "slsDetectorServer_defs.h"
 #include <stdlib.h>
 
-void Beb_Beb();
+int Beb_Beb();
 void Beb_ClearHeaderData(int ten_gig);
 int Beb_SetUpUDPHeader(unsigned int header_number, int ten_gig,
                        uint64_t src_mac, uint32_t src_ip, uint16_t src_port,

@@ -590,13 +590,16 @@ int Server_SendResult(int fileDes, intType itype, void *retval,
     sendData(fileDes, &ret1, sizeof(ret1), INT32);
     if (ret == FAIL) {
         // send error message
-        if (strlen(mess))
+        if (strlen(mess)) {
             sendData(fileDes, mess, MAX_STR_LENGTH, OTHER);
+            usleep(0); // test
+        }
         // debugging feature. should not happen.
-        else
+        else {
             LOG(logERROR, ("No error message provided for this failure in %s "
                            "server. Will mess up TCP.\n",
                            (isControlServer ? "control" : "stop")));
+        }
     }
     // send return value
     sendData(fileDes, retval, retvalSize, itype);

@@ -13,6 +13,8 @@ set(PROJECT_VERSION_MINOR ${CMAKE_MATCH_2})
 set(PROJECT_VERSION_PATCH ${CMAKE_MATCH_3})
 set(PROJECT_VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
 
+# Pass it to the compiler
+add_compile_definitions(VERSION="${PROJECT_VERSION}")
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
@@ -357,3 +359,5 @@ if(SLS_MASTER_PROJECT)
     set(PROJECT_LIBRARIES slsSupportShared slsDetectorShared slsReceiverShared)
     include(cmake/package_config.cmake)
 endif()
+
+install(FILES ${CMAKE_SOURCE_DIR}/VERSION DESTINATION ${CMAKE_INSTALL_PREFIX})

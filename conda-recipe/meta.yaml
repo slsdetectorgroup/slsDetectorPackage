@@ -1,15 +1,18 @@
 
 package:
   name: sls_detector_software
-  version: {{ environ.get('GIT_DESCRIBE_TAG', '') }}
+  version: "9.0.0"
+  #version: "{{ VERSION_FROM_FILE }}"
 
 source:
-  - path: ..
+  path: ..
+  include:
+    - VERSION
 
 build:
   number: 0
   binary_relocation: True
-  rpaths:
+  rpaths: 
     - lib/
 
 requirements:

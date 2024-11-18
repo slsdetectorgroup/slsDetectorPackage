@@ -2385,7 +2385,6 @@ void Module::setNumberOfAnalogSamples(int value) {
     // update #nchan, as it depends on #samples, adcmask
     updateNumberOfChannels();
     if (shm()->useReceiverFlag) {
-        LOG(logINFORED) << "receiver up!";
         sendToReceiver(F_RECEIVER_SET_NUM_ANALOG_SAMPLES, value, nullptr);
     }
 }

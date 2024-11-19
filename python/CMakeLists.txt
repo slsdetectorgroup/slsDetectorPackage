@@ -65,7 +65,7 @@ configure_file( scripts/test_virtual.py
 )
 
 configure_file( ${CMAKE_SOURCE_DIR}/VERSION  
-    ${CMAKE_BINARY_DIR}/VERSION
+    ${CMAKE_BINARY_DIR}/bin/slsdet/VERSION
 )
 
 if(SLS_INSTALL_PYTHONEXT)
@@ -75,4 +75,5 @@ if(SLS_INSTALL_PYTHONEXT)
     )
 
     install(FILES ${PYTHON_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/python/slsdet)
+    install(FILES ../VERSION DESTINATION ${CMAKE_INSTALL_PREFIX}/python/slsdet)
 endif()

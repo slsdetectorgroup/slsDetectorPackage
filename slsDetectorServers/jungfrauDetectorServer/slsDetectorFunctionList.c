@@ -2730,9 +2730,9 @@ void *start_timer(void *arg) {
             }
 
             if ((i % 1024) < 300) {
-                gainVal = 1;
+                gainVal = 0;
             } else if ((i % 1024) < 600) {
-                gainVal = 2;
+                gainVal = 1;
             } else {
                 gainVal = 3;
             }

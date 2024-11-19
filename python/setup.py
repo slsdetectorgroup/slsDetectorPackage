@@ -9,14 +9,20 @@ import os
 import sys
 from setuptools import setup, find_packages
 from pybind11.setup_helpers import Pybind11Extension, build_ext
-
+from pkg_resources import resource_filename, DistributionNotFound
 
 def read_version():
-    #root_dir = os.path.dirname(os.path.abspath(__file__))  # Locate setup.py
-    #version_file = os.path.join(root_dir, '..', 'VERSION')  # Move up to the roo
-    #version_file = os.path.join(os.path.dirname(__file__), "..", "VERSION")
-    with open("VERSION", "r") as f:
-        return f.read().strip()
+    try:
+        version_file = resource_filename(__name__, 'VERSION')
+        with open(version_file, "r") as f:
+            return f.read().strip()
+    except (FileNotFoundError, DistributionNotFound):
+        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        version_file = os.path.join(root_dir, 'VERSION')
+        with open(version_file, "r") as f:
+            return f.read().strip()
+    else:
+        raise RuntimeError("VERSION file not found in package or in expected directory.")
 
 __version__ = read_version()
 

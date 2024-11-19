@@ -5,5 +5,3 @@ python:
 #    - 3.11 
 #    - 3.12
 
-VERSION_FROM_FILE:
-    - "{{ load_file('../VERSION') }}"

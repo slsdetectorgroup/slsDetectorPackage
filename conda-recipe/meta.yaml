@@ -10,9 +10,8 @@ source:
 build:
   number: 0
   binary_relocation: True
-  #script: python/setup.py install --single-version-externally-managed --record=record.txt
   include_files:
-    - VERSION
+    - python/slsdet/VERSION
   rpaths: 
     - lib/
 
@@ -99,6 +98,9 @@ outputs:
     test:
       imports:
         - slsdet
+
+    include_files:
+      - python/slsdet/VERSION
 
   - name: slsdetgui
     script: copy_gui.sh

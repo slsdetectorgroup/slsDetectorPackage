@@ -64,7 +64,8 @@ outputs:
         - {{compiler('cxx')}}
         - libstdcxx-ng
         - libgcc-ng
-
+        include_files:
+          - VERSION
 
       run: 
         - libstdcxx-ng

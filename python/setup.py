@@ -12,10 +12,10 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 
 
 def read_version():
-    root_dir = os.path.dirname(os.path.abspath(__file__))  # Locate setup.py
-    version_file = os.path.join(root_dir, '..', 'VERSION')  # Move up to the roo
+    #root_dir = os.path.dirname(os.path.abspath(__file__))  # Locate setup.py
+    #version_file = os.path.join(root_dir, '..', 'VERSION')  # Move up to the roo
     #version_file = os.path.join(os.path.dirname(__file__), "..", "VERSION")
-    with open(version_file, "r") as f:
+    with open("VERSION", "r") as f:
         return f.read().strip()
 
 __version__ = read_version()
@@ -68,6 +68,7 @@ setup(
     description='Detector API for SLS Detector Group detectors',
     long_description='',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
+    package_data={'slsdet': ['VERSION'],},
     include_package_data=True,
     ext_modules=ext_modules,
     cmdclass={"build_ext": build_ext},

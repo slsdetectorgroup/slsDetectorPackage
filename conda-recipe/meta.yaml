@@ -2,16 +2,17 @@
 package:
   name: sls_detector_software
   version: "9.0.0"
-  #version: "{{ VERSION_FROM_FILE }}"
+
 
 source:
-  path: ..
-  include:
-    - VERSION
+   - path: ..
 
 build:
   number: 0
   binary_relocation: True
+  #script: python/setup.py install --single-version-externally-managed --record=record.txt
+  include_files:
+    - VERSION
   rpaths: 
     - lib/
 

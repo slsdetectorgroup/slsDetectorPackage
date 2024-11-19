@@ -9,20 +9,16 @@ import os
 import sys
 from setuptools import setup, find_packages
 from pybind11.setup_helpers import Pybind11Extension, build_ext
-from pkg_resources import resource_filename, DistributionNotFound
+#from pkg_resources import resource_filename
 
 def read_version():
     try:
-        version_file = resource_filename(__name__, 'VERSION')
+        version_file = os.path.join(os.path.dirname(__file__), 'slsdet', 'VERSION')
+        #version_file = resource_filename('slsdet', 'VERSION')
         with open(version_file, "r") as f:
             return f.read().strip()
-    except (FileNotFoundError, DistributionNotFound):
-        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-        version_file = os.path.join(root_dir, 'VERSION')
-        with open(version_file, "r") as f:
-            return f.read().strip()
-    else:
-        raise RuntimeError("VERSION file not found in package or in expected directory.")
+    except:
+        raise RuntimeError("VERSION file not found in slsdet package from setup.py.")
 
 __version__ = read_version()
 
@@ -74,7 +70,9 @@ setup(
     description='Detector API for SLS Detector Group detectors',
     long_description='',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    package_data={'slsdet': ['VERSION'],},
+    package_data={
+        'slsdet': ['VERSION'], 
+    },  
     include_package_data=True,
     ext_modules=ext_modules,
     cmdclass={"build_ext": build_ext},

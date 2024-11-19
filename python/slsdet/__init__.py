@@ -13,7 +13,6 @@ from .gotthard import Gotthard
 from .moench import Moench
 from .pattern import Pattern, patternParameters
 from .gaincaps import Mythen3GainCapsWrapper
-from pkg_resources import resource_filename, DistributionNotFound
 
 import _slsdet
 xy = _slsdet.xy
@@ -34,17 +33,11 @@ pedestalParameters = _slsdet.pedestalParameters
 import os
 def read_version():
     try:
-        version_file = resource_filename(__name__, 'VERSION')
+        version_file = os.path.join(os.path.dirname(__file__), 'VERSION')
         with open(version_file, "r") as f:
             return f.read().strip()
-    except (FileNotFoundError, DistributionNotFound):
-        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-        version_file = os.path.join(root_dir, 'VERSION')
-        #version_file = os.path.join(os.path.dirname(__file__), "..", "VERSION")
-        with open(version_file, "r") as f:
-            return f.read().strip()
-    else:
-        raise RuntimeError("VERSION file not found in package or in expected directory.")
+    except:
+        raise RuntimeError("VERSION file not found in slsdet package from init.py")
     
 __version__ = read_version()
 

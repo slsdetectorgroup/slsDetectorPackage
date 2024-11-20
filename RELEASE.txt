@@ -111,6 +111,13 @@ This document describes the differences between v9.0.0 and v8.0.2
         getMaxClockPhaseShift
 
 
+    *   [Jungfrau] Temperature Control
+        Temperature control is enabled by default at on-board detector server 
+        startup. 
+        As before, the default temperature threshold is 65°C and crossing this
+        value will set a temperature event.
+
+
 
 2.2 Resolved or Changed Features
 ================================

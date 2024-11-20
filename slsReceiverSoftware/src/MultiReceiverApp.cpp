@@ -38,11 +38,12 @@ void sigInterruptHandler(int p) { sem_post(&semaphore); }
  * prints usage of this example program
  */
 std::string getHelpMessage() {
-    return std::string(
-        "\n\nUsage:\n"
-        "./slsMultiReceiver(detReceiver) [start_tcp_port (non-zero and 16 "
-        "bit)] [num_receivers] [optional: 1 for call back (print frame header "
-        "for debugging), 0 for none (default)]\n\n");
+    std::ostringstream os;
+    os << "\nUsage:\n"
+       << "./slsMultiReceiver [start tcp port] [num recevers] [call back option (optional)]\n"
+       << "\t - tcp port has to be non-zero and 16 bit\n"
+       << "\t - call back option is 0 (disabled) by default, 1 prints frame header for debugging\n";
+    return os.str();
 }
 
 /**
@@ -159,7 +160,7 @@ int main(int argc, char *argv[]) {
 
     /**	- set default values */
     int numReceivers = 1;
-    uint16_t startTCPPort = 1954;
+    uint16_t startTCPPort = DEFAULT_TCP_RX_PORTNO;
     int withCallback = 0;
     sem_init(&semaphore, 1, 0);
 
@@ -169,16 +170,25 @@ int main(int argc, char *argv[]) {
         if (argc == 3 || argc == 4) {
             startTCPPort = sls::StringTo<uint16_t>(argv[1]);
             if (startTCPPort == 0) {
-                throw;
+                throw std::runtime_error("Invalid start tcp port");
             }
             numReceivers = std::stoi(argv[2]);
+            if (numReceivers > 1024) {
+                cprintf(RED, "Did you mix up the order of the arguments?\n%s\n", getHelpMessage().c_str());
+                return EXIT_FAILURE;
+            }
+            if (numReceivers == 0) {
+                cprintf(RED, "Invalid number of receivers.\n%s\n", getHelpMessage().c_str());
+                return EXIT_FAILURE;
+            }
             if (argc == 4) {
                 withCallback = std::stoi(argv[3]);
             }
         } else
-            throw;
-    } catch (...) {
-        throw std::runtime_error(getHelpMessage());
+            throw std::runtime_error("Invalid number of arguments");
+    } catch (const std::exception& e) {
+        cprintf(RED, "Error: %s\n%s\n", e.what(), getHelpMessage().c_str());
+        return EXIT_FAILURE;
     }
 
     cprintf(BLUE, "Parent Process Created [ Tid: %ld ]\n", (long)gettid());

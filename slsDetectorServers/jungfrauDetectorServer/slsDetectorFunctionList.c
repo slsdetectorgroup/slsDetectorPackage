@@ -2254,7 +2254,6 @@ int setThresholdTemperature(int val) {
 
     double ftemp = (double)temp / 1000.00;
     LOG(logDEBUG1, ("Threshold Temperature read %f °C\n", ftemp));
-9b821f3db4ec3dbe5ffb3cddc311babf60c8fbe6
     return temp;
 }
 

@@ -167,6 +167,9 @@ This document describes the differences between v9.0.0 and v8.0.2
 
     *   Fixed possible memory leak when taking non blocking acquisitions.
 
+
+    *   [Jungfrau] Valid gain values in data sent out. Previously, 2 was also sent out.
+
    
     ZMQ
     ---

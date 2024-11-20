@@ -98,7 +98,7 @@ Upgrade
 
     * 6.1.2 server has a fix for seamless fpga programming
 
-    * We recommend first updating the on-board detector server to 6.1.2 (with client 6.1.x) using command 'updatedetectorserver' or 'copydetectorserver'.
+    * We recommend first updating the on-board detector server to 6.1.2 (with client 6.1.x) using command `updatedetectorserver <commandline.html#term-updatedetectorserver-server_name-with-full-path>`_.
 
     * Then use command 'programfpga' to only update firmware or use command 'update' to update firmware and server to the latest release.
 
@@ -257,7 +257,7 @@ Upgrade
 
     * 6.1.2 server has a fix for seamless fpga programming
 
-    * We recommend first updating the on-board detector server to 6.1.2 (with client 6.1.x) using command 'updatedetectorserver' or 'copydetectorserver'.
+    * We recommend first updating the on-board detector server to 6.1.2 (with client 6.1.x) using command `updatedetectorserver <commandline.html#term-updatedetectorserver-server_name-with-full-path>`_.
 
     * Then use command 'programfpga' to only update firmware or use command 'update' to update firmware and server to the latest release.
 

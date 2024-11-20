@@ -1673,7 +1673,8 @@ std::string Caller::clkdiv(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([n_clock] [n_divider]
-	[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1.n	[Gotthard2] Clock index range: 0-5
+	[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1.
+	[Gotthard2] Clock index range: 0-5
 	[Mythen3] Clock index range: 0 )V0G0N"
            << std::endl;
         return os.str();
@@ -9006,8 +9007,7 @@ std::string Caller::pedestalmode(int action) {
 		#frames is overwritten and #triggers = 1, 
 		else #triggers is overwritten and #frames = 1. 
 		One cannot set #frames, #triggers or timing mode in pedestal mode (exception thrown).
-
-pedestalmode [0]
+	pedestalmode [0]
 		[Jungfrau] Disable pedestal mode.
 		Disabling pedestal mode will set back the normal mode values of #frames and #triggers. )V0G0N"
            << std::endl;
@@ -10844,7 +10844,8 @@ std::string Caller::rx_clearroi(int action) {
     std::ostringstream os;
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N(Resets Region of interest in receiver. Default is all channels/pixels enabled. )V0G0N"
+        os << R"V0G0N(
+	Resets Region of interest in receiver. Default is all channels/pixels enabled. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -14676,7 +14677,7 @@ std::string Caller::timing(int action) {
     std::ostringstream os;
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N([auto|trigger|gating|burst_trigger]
+        os << R"V0G0N([auto|trigger|gating|burst_trigger|trigger_gating]
 	Timing Mode of detector.
 	[Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx Ctb] [auto|trigger]
 	[Mythen3] [auto|trigger|gating|trigger_gating]
@@ -17633,7 +17634,7 @@ std::string Caller::vetophoton(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([ichip] [#photons] [energy in keV] [reference file]
 	[Gotthard2] Set veto reference for 128 channels for chip ichip according to reference file and #photons and energy in keV.
-[ichip] [output file]
+	[ichip] [output file]
 	 Get gain indices and veto reference for 128 channels for chip ichip, saved to file. )V0G0N"
            << std::endl;
         return os.str();

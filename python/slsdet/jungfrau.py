@@ -24,7 +24,7 @@ class JungfrauDacs(DetectorDacs):
              ('vdd_prot',   dacIndex.VDD_PROT, 0, 4000,    3000),
              ('vin_com',    dacIndex.VIN_COM, 0, 4000,    1053),
              ('vref_prech', dacIndex.VREF_PRECH, 0, 4000,    1450),
-             ('vb_pixbuff', dacIndex.VB_PIXBUF, 0, 4000,     750),
+             ('vb_pixbuf', dacIndex.VB_PIXBUF, 0, 4000,     750),
              ('vb_ds',      dacIndex.VB_DS, 0, 4000,    1000),
              ('vref_ds',    dacIndex.VREF_DS, 0, 4000,     480),
              ('vref_comp',  dacIndex.VREF_COMP, 0, 4000,     420),

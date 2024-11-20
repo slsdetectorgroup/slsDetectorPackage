@@ -29,34 +29,8 @@ def write_version_to_file(version):
     print(f"Version {version} written to VERSION file.")
 
 
-def update_release_in_header(version):
-    # Path to the versionAPI.h file
-    header_file_path = "slsSupportLib/include/sls/versionAPI.h"
-    
-    try:
-        with open(header_file_path, "r") as file:
-            content = file.read()
-
-        # Replace the version number next to #define RELEASE with the new version
-        # This line is modified to always replace whatever value is after #define RELEASE
-        new_content = re.sub(r'#define RELEASE\s+".*?"', f'#define RELEASE      "{version}"', content)
-
-        # If the version has changed, write the updated content back to the file
-        if new_content != content:
-            with open(header_file_path, "w") as file:
-                file.write(new_content)
-            print(f"RELEASE version updated to {version} in {header_file_path}")
-        else:
-            print(f"RELEASE version is already set to {version} in {header_file_path}")
-    
-    
-    except FileNotFoundError:
-        print(f"Error: The file {header_file_path} was not found.")
-        sys.exit(1)
-
 # Main script
 if __name__ == "__main__":
 
     version = get_version()
     write_version_to_file(version)
-    update_release_in_header(version)

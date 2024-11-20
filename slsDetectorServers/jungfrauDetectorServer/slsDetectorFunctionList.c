@@ -555,6 +555,7 @@ void setupDetector() {
     setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 
     // temp threshold and reset event
+    setTemperatureControl(DEFAULT_TMP_CNTRL);
     setThresholdTemperature(DEFAULT_TMP_THRSHLD);
     setTemperatureEvent(0);
     if (getChipVersion() == 11) {

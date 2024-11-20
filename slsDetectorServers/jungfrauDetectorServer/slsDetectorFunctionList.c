@@ -2254,7 +2254,6 @@ int setThresholdTemperature(int val) {
 
     double ftemp = (double)temp / 1000.00;
     LOG(logDEBUG1, ("Threshold Temperature read %f °C\n", ftemp));
-
     return temp;
 }
 
@@ -2791,9 +2790,9 @@ void *start_timer(void *arg) {
             }
 
             if ((i % 1024) < 300) {
-                gainVal = 1;
+                gainVal = 0;
             } else if ((i % 1024) < 600) {
-                gainVal = 2;
+                gainVal = 1;
             } else {
                 gainVal = 3;
             }
@@ -2830,17 +2829,29 @@ void *start_timer(void *arg) {
             clock_gettime(CLOCK_REALTIME, &begin);
             usleep(expUs);
 
+#ifdef TEST_CHANGE_GAIN_EVERY_FRAME
             // change gain and data for every frame
             {
                 const int npixels = (NCHAN * NCHIP);
+
+                // random gain values, 2 becomes 3 as 2 is invalid
+                int randomGainValues[3] = {0};
+                srand(time(0));
+                for (int i = 0; i != 3; ++i) {
+                    int r = rand() % 3;
+                    if (r == 2) 
+                        r = 3;
+                    randomGainValues[i] = r;
+                }
+
                 for (int i = 0; i < npixels; ++i) {
                     int gainVal = 0;
                     if ((i % 1024) < 300) {
-                        gainVal = 1 + iframes;
+                        gainVal = randomGainValues[0];
                     } else if ((i % 1024) < 600) {
-                        gainVal = 2 + iframes;
+                        gainVal = randomGainValues[1];
                     } else {
-                        gainVal = 3 + iframes;
+                        gainVal = randomGainValues[2];
                     }
                     int dataVal =
                         *((uint16_t *)(imageData + i * sizeof(uint16_t)));
@@ -2851,7 +2862,7 @@ void *start_timer(void *arg) {
                         (uint16_t)pixelVal;
                 }
             }
-
+#endif
             int srcOffset = 0;
             int srcOffset2 = DATA_BYTES / 2;
             int row0 = (numInterfaces == 1 ? detPos[1] : detPos[3]);

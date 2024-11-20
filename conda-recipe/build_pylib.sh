@@ -4,7 +4,11 @@
 echo "|<-------- starting python build"
 
 cd python
+
+# copy VERSION into slsdet for installation
 cp ../VERSION slsdet/VERSION
+
+# to be used to get project version in meta.yaml
 export SLS_DET_VERSION=$(cat python/slsdet/VERSION)
 
 ${PYTHON} setup.py install 

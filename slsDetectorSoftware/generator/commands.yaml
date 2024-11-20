@@ -3627,7 +3627,7 @@ inj_ch:
       output: [ ToString(args) ]
 
 vetophoton:
-  help: "[ichip] [#photons] [energy in keV] [reference file]\n\t[Gotthard2] Set veto reference for 128 channels for chip ichip according to reference file and #photons and energy in keV.\n[ichip] [output file]\n\t Get gain indices and veto reference for 128 channels for chip ichip, saved to file."
+  help: "[ichip] [#photons] [energy in keV] [reference file]\n\t[Gotthard2] Set veto reference for 128 channels for chip ichip according to reference file and #photons and energy in keV.\n\t[ichip] [output file]\n\t Get gain indices and veto reference for 128 channels for chip ichip, saved to file."
   actions:
     GET:
       argc: 2

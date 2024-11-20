@@ -17634,7 +17634,7 @@ std::string Caller::vetophoton(int action) {
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([ichip] [#photons] [energy in keV] [reference file]
 	[Gotthard2] Set veto reference for 128 channels for chip ichip according to reference file and #photons and energy in keV.
-[ichip] [output file]
+	[ichip] [output file]
 	 Get gain indices and veto reference for 128 channels for chip ichip, saved to file. )V0G0N"
            << std::endl;
         return os.str();

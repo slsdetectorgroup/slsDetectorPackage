@@ -9,12 +9,10 @@ import os
 import sys
 from setuptools import setup, find_packages
 from pybind11.setup_helpers import Pybind11Extension, build_ext
-#from pkg_resources import resource_filename
 
 def read_version():
     try:
         version_file = os.path.join(os.path.dirname(__file__), 'slsdet', 'VERSION')
-        #version_file = resource_filename('slsdet', 'VERSION')
         with open(version_file, "r") as f:
             return f.read().strip()
     except:
@@ -73,7 +71,6 @@ setup(
     package_data={
         'slsdet': ['VERSION'], 
     },  
-    include_package_data=True,
     ext_modules=ext_modules,
     cmdclass={"build_ext": build_ext},
     zip_safe=False,

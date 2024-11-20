@@ -27,6 +27,8 @@ This document describes the differences between v9.0.0 and v8.0.2
     *   Python version
         slsdet.__version__ now returns the package release version.
 
+    *   Python build in Conda
+        Added python 3.13 also to conda build
 
 
 2 New, Changed or Resolved Features

@@ -13,8 +13,6 @@ source:
 build:
   number: 0
   binary_relocation: True
-  include_files:
-    - python/slsdet/VERSION
   rpaths: 
     - lib/
 
@@ -72,7 +70,6 @@ outputs:
         - libgcc-ng
 
   - name: slsdet
-
     script: build_pylib.sh
 
     requirements:
@@ -97,13 +94,10 @@ outputs:
         - numpy
         - {{ pin_subpackage('slsdetlib', exact=True) }}
 
-
     test:
       imports:
         - slsdet
 
-    include_files:
-      - python/slsdet/VERSION
 
   - name: slsdetgui
     script: copy_gui.sh

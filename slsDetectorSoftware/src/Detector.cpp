@@ -137,7 +137,7 @@ void Detector::setVirtualDetectorServers(int numServers,
 
 int Detector::getShmId() const { return pimpl->getDetectorIndex(); }
 
-std::string Detector::getPackageVersion() const { return RELEASE; }
+std::string Detector::getPackageVersion() const { return SLS_DET_VERSION; }
 
 std::string Detector::getClientVersion() const {
     Version v(APILIB);

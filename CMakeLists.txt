@@ -2,7 +2,15 @@
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 cmake_minimum_required(VERSION 3.14)
 project(slsDetectorPackage)
-set(PROJECT_VERSION 9.0.0)
+
+# Read VERSION file into project version
+set(VERSION_FILE "${CMAKE_SOURCE_DIR}/VERSION")
+file(READ "${VERSION_FILE}" VERSION_CONTENT)
+string(STRIP "${VERSION_CONTENT}" PROJECT_VERSION_STRING)
+set(PROJECT_VERSION ${PROJECT_VERSION_STRING})
+
+# Pass it to the compiler
+add_compile_definitions(SLS_DET_VERSION="${PROJECT_VERSION}")
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
@@ -347,3 +355,5 @@ if(SLS_MASTER_PROJECT)
     set(PROJECT_LIBRARIES slsSupportShared slsDetectorShared slsReceiverShared)
     include(cmake/package_config.cmake)
 endif()
+
+install(FILES ${CMAKE_SOURCE_DIR}/VERSION DESTINATION ${CMAKE_INSTALL_PREFIX})

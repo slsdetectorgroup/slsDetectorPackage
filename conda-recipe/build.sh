@@ -1,8 +1,12 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 
-mkdir build
-mkdir install
+if [ ! -d "build" ]; then
+    mkdir build
+fi
+if [ ! -d "install" ]; then
+    mkdir install
+fi
 cd build
 cmake .. \
       -DCMAKE_PREFIX_PATH=$CONDA_PREFIX \

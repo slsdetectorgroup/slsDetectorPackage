@@ -1,15 +1,19 @@
 
+{% set version = environ.get('SLS_DET_VERSION', '0.0.0') %}
+
+
 package:
   name: sls_detector_software
-  version: {{ environ.get('GIT_DESCRIBE_TAG', '') }}
+  version: "{{ version }}"
+
 
 source:
-  - path: ..
+  path: ..
 
 build:
   number: 0
   binary_relocation: True
-  rpaths:
+  rpaths: 
     - lib/
 
 requirements:
@@ -61,13 +65,11 @@ outputs:
         - libstdcxx-ng
         - libgcc-ng
 
-
       run: 
         - libstdcxx-ng
         - libgcc-ng
 
   - name: slsdet
-
     script: build_pylib.sh
 
     requirements:
@@ -92,10 +94,10 @@ outputs:
         - numpy
         - {{ pin_subpackage('slsdetlib', exact=True) }}
 
-
     test:
       imports:
         - slsdet
+
 
   - name: slsdetgui
     script: copy_gui.sh

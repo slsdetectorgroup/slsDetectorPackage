@@ -79,12 +79,13 @@ outputs:
         - {{compiler('cxx')}}
         - {{ pin_subpackage('slsdetlib', exact=True) }}
         - setuptools
-        - pybind11=2.11
+        - pybind11=2.13
 
       host:
         - python
         - {{ pin_subpackage('slsdetlib', exact=True) }}
-        - pybind11=2.11
+        - setuptools
+        - pybind11=2.13
 
 
       run:

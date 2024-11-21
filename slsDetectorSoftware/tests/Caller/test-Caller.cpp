@@ -3319,6 +3319,12 @@ TEST_CASE("reg", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type != defs::EIGER) {
         uint32_t addr = 0x64;
+        if (det_type == defs::MYTHEN3) {
+            addr = 0x80;
+        }
+        if (det_type == defs::GOTTHARD2) {
+            addr = 0x20;
+        }
         std::string saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
         {
@@ -3369,6 +3375,12 @@ TEST_CASE("setbit", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type != defs::EIGER) {
         uint32_t addr = 0x64;
+        if (det_type == defs::MYTHEN3) {
+            addr = 0x80;
+        }
+        if (det_type == defs::GOTTHARD2) {
+            addr = 0x20;
+        }
         std::string saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
         {
@@ -3393,6 +3405,12 @@ TEST_CASE("clearbit", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type != defs::EIGER) {
         uint32_t addr = 0x64;
+        if (det_type == defs::MYTHEN3) {
+            addr = 0x80;
+        }
+        if (det_type == defs::GOTTHARD2) {
+            addr = 0x20;
+        }
         std::string saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
         {
@@ -3417,6 +3435,12 @@ TEST_CASE("getbit", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type != defs::EIGER) {
         uint32_t addr = 0x64;
+        if (det_type == defs::MYTHEN3) {
+            addr = 0x80;
+        }
+        if (det_type == defs::GOTTHARD2) {
+            addr = 0x20;
+        }
         std::string saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
         {

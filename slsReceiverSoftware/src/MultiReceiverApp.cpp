@@ -166,29 +166,31 @@ int main(int argc, char *argv[]) {
 
     /**	- get number of receivers and start tcp port from command line
      * arguments */
-    try {
-        if (argc == 3 || argc == 4) {
-            startTCPPort = sls::StringTo<uint16_t>(argv[1]);
-            if (startTCPPort == 0) {
-                throw std::runtime_error("Invalid start tcp port");
-            }
-            numReceivers = std::stoi(argv[2]);
-            if (numReceivers > 1024) {
-                cprintf(RED, "Did you mix up the order of the arguments?\n%s\n", getHelpMessage().c_str());
-                return EXIT_FAILURE;
-            }
-            if (numReceivers == 0) {
-                cprintf(RED, "Invalid number of receivers.\n%s\n", getHelpMessage().c_str());
-                return EXIT_FAILURE;
-            }
-            if (argc == 4) {
-                withCallback = std::stoi(argv[3]);
-            }
-        } else
-            throw std::runtime_error("Invalid number of arguments");
-    } catch (const std::exception& e) {
-        cprintf(RED, "Error: %s\n%s\n", e.what(), getHelpMessage().c_str());
-        return EXIT_FAILURE;
+    if (argc > 1) {
+        try {
+            if (argc == 3 || argc == 4) {
+                startTCPPort = sls::StringTo<uint16_t>(argv[1]);
+                if (startTCPPort == 0) {
+                    throw std::runtime_error("Invalid start tcp port");
+                }
+                numReceivers = std::stoi(argv[2]);
+                if (numReceivers > 1024) {
+                    cprintf(RED, "Did you mix up the order of the arguments?\n%s\n", getHelpMessage().c_str());
+                    return EXIT_FAILURE;
+                }
+                if (numReceivers == 0) {
+                    cprintf(RED, "Invalid number of receivers.\n%s\n", getHelpMessage().c_str());
+                    return EXIT_FAILURE;
+                }
+                if (argc == 4) {
+                    withCallback = std::stoi(argv[3]);
+                }
+            } else
+                throw std::runtime_error("Invalid number of arguments");
+        } catch (const std::exception& e) {
+            cprintf(RED, "Error: %s\n%s\n", e.what(), getHelpMessage().c_str());
+            return EXIT_FAILURE;
+        }
     }
 
     cprintf(BLUE, "Parent Process Created [ Tid: %ld ]\n", (long)gettid());

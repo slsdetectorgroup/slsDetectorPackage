@@ -2840,7 +2840,7 @@ void *start_timer(void *arg) {
                 srand(time(0));
                 for (int i = 0; i != 3; ++i) {
                     int r = rand() % 3;
-                    if (r == 2) 
+                    if (r == 2)
                         r = 3;
                     randomGainValues[i] = r;
                 }

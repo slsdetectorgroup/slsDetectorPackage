@@ -18,6 +18,7 @@
 
 #include <fstream>
 #include <map>
+#include <memory>
 #include <stdio.h>
 #include <sys/stat.h>
 

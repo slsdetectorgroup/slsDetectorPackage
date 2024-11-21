@@ -165,6 +165,9 @@ This document describes the differences between v9.0.0 and v8.0.2
     *   [Gotthard I] fixed header stripping fixing segfault.
 
 
+    *   Error or help message for invalid arguments to slsMultiReceiver.
+
+
     Simulator
     ---------
 

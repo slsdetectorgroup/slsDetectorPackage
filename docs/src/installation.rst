@@ -103,7 +103,7 @@ Instead of the cmake command, one can use ccmake to get a list of options to con
     ccmake ..
  
     # choose the options
-    # first press [c] - configure (maybe multiple times till you see [g])
+    # first press [c] - configure (until you see [g])
     # then press [g] - generate
 
 

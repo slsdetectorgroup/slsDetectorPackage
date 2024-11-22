@@ -46,9 +46,9 @@ conda search slsdet
 conda search slsdetgui
 ```
 
-### 2. Build from source
+## 2. Build from source
 
-##### 2.1 Download Source Code from github
+## 2.1 Download Source Code from github
 ```
 git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 7.0.0
 ```
@@ -56,10 +56,10 @@ git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 7.
 > **Note:** For v6.x.x of slsDetectorPackage and older, refer [pybind11 notes on cloning](#Pybind-and-Zeromq).
 
 
-##### 2.2 Build from source
+## 2.2 Build from source
 
 
-###### Build using CMake
+## Build using CMake
 
 ```
 # outside slsDetecorPackage folder
@@ -99,7 +99,7 @@ ccmake ..
 
 > **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for cmake option to hint library location](#Pybind-and-Zeromq).
 
-###### Build using in-built cmk.sh script
+## Build using in-built cmk.sh script
 
 ```
 The binaries are generated in slsDetectorPackage/build/bin directory.
@@ -144,7 +144,7 @@ Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-h] [-i]
 
 > **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for cmk script option to hint library location](#Pybind-and-Zeromq).
 
-###### Build on old distributions
+## Build on old distributions
 
 If your linux distribution doesn't come with a C++11 compiler (gcc>4.8) then 
 it's possible to install a newer gcc using conda and build the slsDetectorPackage
@@ -164,7 +164,7 @@ make -j12
 > **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for dependencies for conda](#Pybind-and-Zeromq).
 
 
-###### Build slsDetectorGui (Qt5)
+## Build slsDetectorGui (Qt5)
 
 1. Using pre-built binary on conda
 ```
@@ -215,7 +215,7 @@ cd slsDetectorPackage
 
 > **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for dependencies for conda](#Pybind-and-Zeromq).
 
-###### Build documentation from package
+## Build documentation from package
 The documentation for the slsDetectorPackage is build using a combination 
 of Doxygen, Sphinx and Breathe. The easiest way to install the dependencies
 is to use conda 

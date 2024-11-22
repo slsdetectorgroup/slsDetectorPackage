@@ -48,7 +48,7 @@ conda search slsdetgui
 
 ## 2. Build from source
 
-## 2.1 Download Source Code from github
+### 2.1 Download Source Code from github
 ```
 git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 7.0.0
 ```
@@ -56,10 +56,10 @@ git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 7.
 > **Note:** For v6.x.x of slsDetectorPackage and older, refer [pybind11 notes on cloning](#Pybind-and-Zeromq).
 
 
-## 2.2 Build from source
+### 2.2 Build from source
 
 
-## Build using CMake
+### Build using CMake
 
 ```
 # outside slsDetecorPackage folder
@@ -99,7 +99,7 @@ ccmake ..
 
 > **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for cmake option to hint library location](#Pybind-and-Zeromq).
 
-## Build using in-built cmk.sh script
+### Build using in-built cmk.sh script
 
 ```
 The binaries are generated in slsDetectorPackage/build/bin directory.
@@ -144,7 +144,7 @@ Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-h] [-i]
 
 > **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for cmk script option to hint library location](#Pybind-and-Zeromq).
 
-## Build on old distributions
+### Build on old distributions
 
 If your linux distribution doesn't come with a C++11 compiler (gcc>4.8) then 
 it's possible to install a newer gcc using conda and build the slsDetectorPackage
@@ -164,7 +164,7 @@ make -j12
 > **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for dependencies for conda](#Pybind-and-Zeromq).
 
 
-## Build slsDetectorGui (Qt5)
+### Build slsDetectorGui (Qt5)
 
 1. Using pre-built binary on conda
 ```
@@ -215,7 +215,7 @@ cd slsDetectorPackage
 
 > **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for dependencies for conda](#Pybind-and-Zeromq).
 
-## Build documentation from package
+### Build documentation from package
 The documentation for the slsDetectorPackage is build using a combination 
 of Doxygen, Sphinx and Breathe. The easiest way to install the dependencies
 is to use conda 
@@ -238,18 +238,18 @@ make rst # rst only, saves time in case the API did not change
 
 ## Pybind and Zeromq
 
-**Pybind11 for Python**
-v8.0.0+:
+### Pybind11 for Python
+**v8.0.0+**:
 pybind11 is built
 * by default from tar file in repo (libs/pybind/v2.1x.0.tar.gz)
 * or use advanced option SLS_FETCH_PYBIND11_FROM_GITHUB [link].
    * v9.0.0+: pybind11 (v2.13.0)
    * v8.x.x : pybind11 (v2.11.0)
 
-v7.x.x:
+**v7.x.x**:
 pybind11 packaged into ‘libs/pybind’. No longer a submodule. No need for “recursive” or “submodule update”.
 
-Older versions:
+**Older versions**:
 pybind11 is a submodule. Must be cloned using “recursive” and updated when switching between versions using the following commands.
 
 ```
@@ -263,13 +263,13 @@ cd slsDetectorPackage
 git submodule update --init
 ```
 
-**Zeromq**
-v8.0.0+:
+### Zeromq
+**v8.0.0+**:
 zeromq (v4.3.4) is built
 * by default from tar file in repo (libs/libzmq/libzmq-4.3.4.tar.gz)
 * or use advanced option SLS_FETCH_ZMQ_FROM_GITHUB [link].
 
-v7.x.x and older:
+**v7.x.x and older**:
 zeromq-devel must be installed and one can hint its location using
 * cmake option:’-DZeroMQ_HINT=/usr/lib64’ or
 * option ‘-q’ in cmk.sh script: : ./cmk.sh -cbj5 -q /usr/lib64

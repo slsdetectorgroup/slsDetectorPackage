@@ -21,7 +21,7 @@ Python bindings
 -----------------------
 
  * Python > 3.6
- * pybind11 2.11.0 (packaged in libs)
+ * pybind11 2.13.0 (packaged in libs)
 
 .. note ::  
 

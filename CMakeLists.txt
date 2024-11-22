@@ -316,7 +316,7 @@ if (SLS_USE_PYTHON)
     # https://github.com/pybind/pybind11/releases
         FetchContent_Declare(
             pybind11
-            URL ${CMAKE_SOURCE_DIR}/libs/pybind11/v2.13.0.tar.gz
+            URL ${CMAKE_CURRENT_LIST_DIR}/libs/pybind11/v2.13.0.tar.gz
             URL_HASH MD5=10cb1efba3aca997389d08bceb0ea767
         )
     endif()

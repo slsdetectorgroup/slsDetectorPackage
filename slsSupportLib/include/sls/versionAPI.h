@@ -9,5 +9,5 @@
 #define APIXILINXCTB "9.0.0 0x241121"
 #define APIEIGER     "9.0.0 0x241121"
 #define APIMYTHEN3   "9.0.0 0x241121"
-#define APILIB "developer 0x241122"
-#define APIRECEIVER "developer 0x241122"
+#define APILIB       "developer 0x241122"
+#define APIRECEIVER  "developer 0x241122"

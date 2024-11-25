@@ -309,15 +309,15 @@ if (SLS_USE_PYTHON)
         FetchContent_Declare(
             pybind11
             GIT_REPOSITORY https://github.com/pybind/pybind11
-            GIT_TAG        v2.13.0
+            GIT_TAG        v2.13.6
         )
 
     else()
     # https://github.com/pybind/pybind11/releases
         FetchContent_Declare(
             pybind11
-            URL ${CMAKE_SOURCE_DIR}/libs/pybind11/v2.13.0.tar.gz
-            URL_HASH MD5=10cb1efba3aca997389d08bceb0ea767
+            URL ${CMAKE_SOURCE_DIR}/libs/pybind11/v2.13.6.tar.gz
+            URL_HASH MD5=a04dead9c83edae6d84e2e343da7feeb
         )
     endif()
     FetchContent_MakeAvailable(pybind11)

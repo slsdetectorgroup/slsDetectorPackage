@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.14)
 project(slsDetectorPackage)
 
 # Read VERSION file into project version
-set(VERSION_FILE "${CMAKE_CURRENT_LIST_DIR}/VERSION")
+set(VERSION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/VERSION")
 file(READ "${VERSION_FILE}" VERSION_CONTENT)
 string(STRIP "${VERSION_CONTENT}" PROJECT_VERSION_STRING)
 set(PROJECT_VERSION ${PROJECT_VERSION_STRING})
@@ -316,7 +316,7 @@ if (SLS_USE_PYTHON)
     # https://github.com/pybind/pybind11/releases
         FetchContent_Declare(
             pybind11
-            URL ${CMAKE_SOURCE_DIR}/libs/pybind11/v2.13.6.tar.gz
+            URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/pybind11/v2.13.6.tar.gz
             URL_HASH MD5=a04dead9c83edae6d84e2e343da7feeb
         )
     endif()
@@ -356,5 +356,3 @@ if(SLS_MASTER_PROJECT)
     set(PROJECT_LIBRARIES slsSupportShared slsDetectorShared slsReceiverShared)
     include(cmake/package_config.cmake)
 endif()
-
-install(FILES ${CMAKE_CURRENT_LIST_DIR}/VERSION DESTINATION ${CMAKE_INSTALL_PREFIX})

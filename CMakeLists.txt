@@ -356,5 +356,3 @@ if(SLS_MASTER_PROJECT)
     set(PROJECT_LIBRARIES slsSupportShared slsDetectorShared slsReceiverShared)
     include(cmake/package_config.cmake)
 endif()
-
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/VERSION DESTINATION ${CMAKE_INSTALL_PREFIX})

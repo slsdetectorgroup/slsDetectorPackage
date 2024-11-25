@@ -24,16 +24,20 @@ This document describes the differences between v9.0.0 and v8.0.2
 =====================
 
 
+    *   Python version
+        Minimum python version is changed from 3.6 to 3.8
+
+
     *   Pybind11 version
         In-built version and the one picked up from github 
-        updated from v2.11 to v2.13
+        updated from v2.11.0 to v2.13.6
 
 
-    *   Python version
+    *   Python lib versioning
         slsdet.__version__ now returns the package release version.
 
 
-    *   Python build in Conda
+    *   Python version in conda build
         Added python 3.13 also to conda build
 
 

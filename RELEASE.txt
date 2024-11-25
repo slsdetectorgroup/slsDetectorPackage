@@ -136,6 +136,15 @@ This document describes the differences between v9.0.0 and v8.0.2
 ================================
 
 
+    Compilation
+    -----------
+
+
+    *   cmake_source_dir
+        Fixed compilation error when using python and adding the slsDetectorPackage 
+        as a subfolder due to cmake source directory changing.
+
+
     Client
     ------
 

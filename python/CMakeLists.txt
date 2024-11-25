@@ -64,7 +64,7 @@ configure_file( scripts/test_virtual.py
     ${CMAKE_BINARY_DIR}/test_virtual.py 
 )
 
-configure_file( ${CMAKE_CURRENT_LIST_DIR}/../VERSION  
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/../VERSION  
     ${CMAKE_BINARY_DIR}/bin/slsdet/VERSION
 )
 

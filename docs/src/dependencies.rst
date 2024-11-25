@@ -20,7 +20,7 @@ the shared libraries these are needed:
 Python bindings
 -----------------------
 
- * Python > 3.6
+ * Python > 3.8
  * pybind11 2.13.6 (packaged in libs)
 
 .. note ::  

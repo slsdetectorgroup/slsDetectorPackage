@@ -292,7 +292,7 @@ Pybind and Zeromq
 |   pybind11 is built
 |   * by default from tar file in repo (libs/pybind/v2.1x.0.tar.gz) 
 |   * or use advanced option SLS_FETCH_PYBIND11_FROM_GITHUB [`link <https://github.com/pybind/pybind11>`__].
-|      * v9.0.0+: pybind11 (v2.13.0)
+|      * v9.0.0+: pybind11 (v2.13.6)
 |      * v8.x.x : pybind11 (v2.11.0)
 |
 | v7.x.x:

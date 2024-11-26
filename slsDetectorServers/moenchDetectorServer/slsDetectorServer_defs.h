@@ -16,7 +16,11 @@
 #define ID_FILE            ("detid_moench.txt")
 #define LINKED_SERVER_NAME "moenchDetectorServer"
 
+#ifdef VIRTUAL
+#define CTRL_SRVR_INIT_TIME_US (2 * 1000 * 1000)
+#else
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
+#endif
 
 /* Hardware Definitions */
 #define NCHAN               (400 * 400)

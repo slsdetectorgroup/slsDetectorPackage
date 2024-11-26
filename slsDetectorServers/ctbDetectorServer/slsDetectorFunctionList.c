@@ -51,12 +51,12 @@ int dataBytes = 0;
 int analogDataBytes = 0;
 int digitalDataBytes = 0;
 int transceiverDataBytes = 0;
-char *analogData = 0;
-char *digitalData = 0;
-char *transceiverData = 0;
-char volatile *analogDataPtr = 0;
-char volatile *digitalDataPtr = 0;
-char volatile *transceiverDataPtr = 0;
+char *analogData = NULL;
+char *digitalData = NULL;
+char *transceiverData = NULL;
+char volatile *analogDataPtr = NULL;
+char volatile *digitalDataPtr = NULL;
+char volatile *transceiverDataPtr = NULL;
 char udpPacketData[UDP_PACKET_DATA_BYTES + sizeof(sls_detector_header)];
 uint32_t adcEnableMask_1g = BIT32_MSK;
 // 10g readout
@@ -449,6 +449,7 @@ void initControlServer() {
 void initStopServer() {
     if (!updateFlag && initError == OK) {
         usleep(CTRL_SRVR_INIT_TIME_US);
+        LOG(logINFOBLUE, ("Configuring Stop server\n"));
         if (mapCSP0() == FAIL) {
             initError = FAIL;
             strcpy(initErrorMessage,
@@ -458,7 +459,7 @@ void initStopServer() {
             return;
         }
 #ifdef VIRTUAL
-        sharedMemory_setStop(0);
+        setupDetector();
 #endif
     }
     initCheckDone = 1;
@@ -474,21 +475,15 @@ void setupDetector() {
     analogDataBytes = 0;
     digitalDataBytes = 0;
     transceiverDataBytes = 0;
-    if (analogData) {
-        free(analogData);
-        analogData = 0;
-    }
-    if (digitalData) {
-        free(digitalData);
-        digitalData = 0;
-    }
-    if (transceiverData) {
-        free(transceiverData);
-        transceiverData = 0;
-    }
-    analogDataPtr = 0;
-    digitalDataPtr = 0;
-    transceiverData = 0;
+    free(analogData);
+    analogData = NULL;
+    free(digitalData);
+    digitalData = NULL;
+    free(transceiverData);
+    transceiverData = NULL;
+    analogDataPtr = NULL;
+    digitalDataPtr = NULL;
+    transceiverData = NULL;
     {
         for (int i = 0; i < NUM_CLOCKS; ++i) {
             clkPhase[i] = 0;
@@ -512,10 +507,16 @@ void setupDetector() {
     ndSamples = 1;
     ntSamples = 1;
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    initializePatternWord();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        initializePatternWord();
+    } else {
+        sharedMemory_setStop(0);
+    }
 #endif
-    setupUDPCommParameters();
+    if (isControlServer) {
+        setupUDPCommParameters();
+    }
 
     // altera pll
     ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG,
@@ -633,22 +634,15 @@ int updateDatabytesandAllocateRAM() {
         return FAIL;
     }
     // clear RAM
-    if (analogData) {
-        free(analogData);
-        analogData = 0;
-    }
-    if (digitalData) {
-        free(digitalData);
-        digitalData = 0;
-    }
-    if (transceiverData) {
-        free(transceiverData);
-        transceiverData = 0;
-    }
+    free(analogData);
+    analogData = NULL;
+    free(digitalData);
+    digitalData = NULL;
+    free(transceiverData);
+    transceiverData = NULL;
     // allocate RAM
     if (analogDataBytes) {
         analogData = malloc(analogDataBytes);
-        // cannot malloc
         if (analogData == NULL) {
             LOG(logERROR, ("Can not allocate analog data RAM for even 1 frame. "
                            "Probable cause: Memory Leak.\n"));
@@ -658,7 +652,6 @@ int updateDatabytesandAllocateRAM() {
     }
     if (digitalDataBytes) {
         digitalData = malloc(digitalDataBytes);
-        // cannot malloc
         if (digitalData == NULL) {
             LOG(logERROR,
                 ("Can not allocate digital data RAM for even 1 frame. "
@@ -670,7 +663,6 @@ int updateDatabytesandAllocateRAM() {
     }
     if (transceiverDataBytes) {
         transceiverData = malloc(transceiverDataBytes);
-        // cannot malloc
         if (transceiverData == NULL) {
             LOG(logERROR,
                 ("Can not allocate transceiver data RAM for even 1 frame. "
@@ -2202,7 +2194,8 @@ int startStateMachine() {
         LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
         sharedMemory_setStatus(IDLE);
         return FAIL;
-    }
+    } else
+        pthread_detach(pthread_virtual_tid);
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
     return OK;
 #endif

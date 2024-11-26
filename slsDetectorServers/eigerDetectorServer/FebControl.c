@@ -57,11 +57,19 @@ int Feb_Control_FebControl(int normal) {
     Feb_Control_externalEnableMode = 0;
     Feb_Control_subFrameMode = 0;
     Feb_Control_trimbit_size = 263680;
+
     Feb_Control_last_downloaded_trimbits =
         malloc(Feb_Control_trimbit_size * sizeof(int));
+    if (Feb_Control_last_downloaded_trimbits == NULL) {
+        LOG(logERROR,
+            ("Could not allocate memory for last downloaded trimbits\n"));
+        return 0;
+    }
 
     Feb_Control_normal = normal;
-    Feb_Interface_SetAddress(Feb_Control_rightAddress, Feb_Control_leftAddress);
+    if (!Feb_Interface_SetAddress(Feb_Control_rightAddress,
+                                  Feb_Control_leftAddress))
+        return 0;
     if (Feb_Control_activated) {
         return Feb_Interface_SetByteOrder();
     }
@@ -395,11 +403,13 @@ int Feb_Control_ReceiveHighVoltage(unsigned int *value) {
 
     // normal
     if (Feb_Control_normal) {
-
-        if (readADCFromFile(NORMAL_HIGHVOLTAGE_INPUTPORT, value) == FAIL) {
+        if (readParameterFromFile(NORMAL_HIGHVOLTAGE_INPUTPORT, "high voltage",
+                                  value) == FAIL) {
             LOG(logERROR, ("Could not get high voltage\n"));
             return 0;
         }
+        *value /= 10;
+        LOG(logINFO, ("High Voltage: %d\n", (*value)));
     }
 
     // 9m
@@ -1249,7 +1259,8 @@ int Feb_Control_Disable16bitConversion(int disable) {
         regval &= ~bitmask;
     }
 
-    if (!Feb_Control_WriteRegister_BitMask(DAQ_REG_HRDWRE, regval, bitmask)) {
+    if (!Feb_Control_WriteRegister_BitMask(DAQ_REG_HRDWRE, regval, bitmask,
+                                           1)) {
         LOG(logERROR, ("Could not %s 16 bit expansion (bit mode)\n",
                        (disable ? "disable" : "enable")));
         return 0;
@@ -1635,7 +1646,7 @@ int Feb_Control_SetChipSignalsToTrimQuad(int enable) {
             regval &= ~(DAQ_REG_HRDWRE_PROGRAM_MSK | DAQ_REG_HRDWRE_M8_MSK);
         }
 
-        if (!Feb_Control_WriteRegister(righOffset, regval)) {
+        if (!Feb_Control_WriteRegister(righOffset, regval, 1)) {
             LOG(logERROR, ("Could not set chip signals to trim quad\n"));
             return 0;
         }
@@ -1664,8 +1675,10 @@ int Feb_Control_GetReadNRows() {
     return regVal;
 }
 
-int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
-    return Feb_Control_WriteRegister_BitMask(offset, data, BIT32_MSK);
+int Feb_Control_WriteRegister(uint32_t offset, uint32_t data, int validate) {
+    if (!Feb_Control_WriteRegister_BitMask(offset, data, BIT32_MSK, validate))
+        return 0;
+    return 1;
 }
 
 int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
@@ -1673,7 +1686,7 @@ int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
 }
 
 int Feb_Control_WriteRegister_BitMask(uint32_t offset, uint32_t data,
-                                      uint32_t bitmask) {
+                                      uint32_t bitmask, int validate) {
     uint32_t actualOffset = offset;
     char side[2][10] = {"right", "left"};
     unsigned int addr[2] = {Feb_Control_rightAddress, Feb_Control_leftAddress};
@@ -1718,21 +1731,24 @@ int Feb_Control_WriteRegister_BitMask(uint32_t offset, uint32_t data,
                                writeVal, side[iloop], actualOffset));
                 return 0;
             }
-            writeVal &= bitmask;
 
-            uint32_t readVal = 0;
-            if (!Feb_Interface_ReadRegister(addr[iloop], actualOffset,
-                                            &readVal)) {
-                return 0;
-            }
-            readVal &= bitmask;
+            if (validate) {
 
-            if (writeVal != readVal) {
-                LOG(logERROR,
-                    ("Could not write %s addr 0x%x register. Wrote "
-                     "0x%x, read 0x%x (mask:0x%x)\n",
-                     side[iloop], actualOffset, writeVal, readVal, bitmask));
-                return 0;
+                uint32_t readVal = 0;
+                if (!Feb_Interface_ReadRegister(addr[iloop], actualOffset,
+                                                &readVal)) {
+                    return 0;
+                }
+                readVal &= bitmask;
+                writeVal &= bitmask;
+                if (writeVal != readVal) {
+                    LOG(logERROR,
+                        ("Could not write %s addr 0x%x register. Wrote "
+                         "0x%x, read 0x%x (mask:0x%x)\n",
+                         side[iloop], actualOffset, writeVal, readVal,
+                         bitmask));
+                    return 0;
+                }
             }
         }
     }

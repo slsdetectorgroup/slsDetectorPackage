@@ -58,6 +58,12 @@ set(SPHINX_SOURCE_FILES
   src/udpheader.rst
   src/udpconfig.rst
   src/udpdetspec.rst
+  src/fileformat.rst
+  src/slsreceiverheaderformat.rst
+  src/masterfileattributes.rst
+  src/binaryfileformat.rst
+  src/hdf5fileformat.rst
+  src/zmqjsonheaderformat.rst
 )
 
 foreach(filename ${SPHINX_SOURCE_FILES})

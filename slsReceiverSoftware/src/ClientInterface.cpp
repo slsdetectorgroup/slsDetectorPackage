@@ -54,29 +54,22 @@ std::string ClientInterface::getReceiverVersion() { return APIRECEIVER; }
 
 /***callback functions***/
 void ClientInterface::registerCallBackStartAcquisition(
-    int (*func)(const std::string &, const std::string &, uint64_t, size_t,
-                void *),
-    void *arg) {
+    int (*func)(const startCallbackHeader, void *), void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
 }
 
-void ClientInterface::registerCallBackAcquisitionFinished(void (*func)(uint64_t,
-                                                                       void *),
-                                                          void *arg) {
+void ClientInterface::registerCallBackAcquisitionFinished(
+    void (*func)(const endCallbackHeader, void *), void *arg) {
     acquisitionFinishedCallBack = func;
     pAcquisitionFinished = arg;
 }
 
 void ClientInterface::registerCallBackRawDataReady(
-    void (*func)(sls_receiver_header &, char *, size_t, void *), void *arg) {
+    void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t &,
+                 void *),
+    void *arg) {
     rawDataReadyCallBack = func;
-    pRawDataReady = arg;
-}
-
-void ClientInterface::registerCallBackRawDataModifyReady(
-    void (*func)(sls_receiver_header &, char *, size_t &, void *), void *arg) {
-    rawDataModifyReadyCallBack = func;
     pRawDataReady = arg;
 }
 
@@ -168,8 +161,6 @@ int ClientInterface::functionTable(){
 	flist[F_GET_RECEIVER_FILE_FORMAT]		= 	&ClientInterface::get_file_format;
 	flist[F_SET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::set_streaming_port;
 	flist[F_GET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::get_streaming_port;
-	flist[F_SET_RECEIVER_STREAMING_SRC_IP]	= 	&ClientInterface::set_streaming_source_ip;
-	flist[F_GET_RECEIVER_STREAMING_SRC_IP]	= 	&ClientInterface::get_streaming_source_ip;
 	flist[F_SET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::set_silent_mode;
 	flist[F_GET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::get_silent_mode;
 	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&ClientInterface::restream_stop;
@@ -372,7 +363,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
                 arg.additionalStorageCells);
         }
 
-        if (detType == CHIPTESTBOARD) {
+        if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD) {
             impl()->setNumberofAnalogSamples(arg.analogSamples);
             impl()->setNumberofDigitalSamples(arg.digitalSamples);
             impl()->setNumberofTransceiverSamples(arg.transceiverSamples);
@@ -409,11 +400,13 @@ int ClientInterface::setup_receiver(Interface &socket) {
             detType == MYTHEN3) {
             impl()->setTenGigaEnable(arg.tenGiga);
         }
-        if (detType == CHIPTESTBOARD) {
+        if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD) {
             impl()->setReadoutMode(arg.roMode);
-            impl()->setADCEnableMask(arg.adcMask);
             impl()->setTenGigaADCEnableMask(arg.adc10gMask);
             impl()->setTransceiverEnableMask(arg.transceiverMask);
+        }
+        if (detType == CHIPTESTBOARD) {
+            impl()->setADCEnableMask(arg.adcMask);
         }
         if (detType == GOTTHARD) {
             impl()->setDetectorROI(arg.roi);
@@ -448,6 +441,7 @@ void ClientInterface::setDetectorType(detectorType arg) {
     case GOTTHARD:
     case EIGER:
     case CHIPTESTBOARD:
+    case XILINX_CHIPTESTBOARD:
     case JUNGFRAU:
     case MOENCH:
     case MYTHEN3:
@@ -476,9 +470,6 @@ void ClientInterface::setDetectorType(detectorType arg) {
     if (rawDataReadyCallBack != nullptr)
         impl()->registerCallBackRawDataReady(rawDataReadyCallBack,
                                              pRawDataReady);
-    if (rawDataModifyReadyCallBack != nullptr)
-        impl()->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,
-                                                   pRawDataReady);
 
     impl()->setThreadIds(parentThreadId, tcpThreadId);
 }
@@ -568,7 +559,7 @@ int ClientInterface::set_burst_mode(Interface &socket) {
 int ClientInterface::set_num_analog_samples(Interface &socket) {
     auto value = socket.Receive<int>();
     LOG(logDEBUG1) << "Setting num analog samples to " << value;
-    if (detType != CHIPTESTBOARD) {
+    if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD) {
         functionNotImplemented();
     }
     try {
@@ -584,7 +575,7 @@ int ClientInterface::set_num_analog_samples(Interface &socket) {
 int ClientInterface::set_num_digital_samples(Interface &socket) {
     auto value = socket.Receive<int>();
     LOG(logDEBUG1) << "Setting num digital samples to " << value;
-    if (detType != CHIPTESTBOARD) {
+    if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD) {
         functionNotImplemented();
     }
     try {
@@ -1081,21 +1072,6 @@ int ClientInterface::get_streaming_port(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int ClientInterface::set_streaming_source_ip(Interface &socket) {
-    auto ip = socket.Receive<IpAddr>();
-    if (ip == 0)
-        throw RuntimeError("Invalid zmq ip " + ip.str());
-    verifyIdle(socket);
-    impl()->setStreamingSourceIP(ip);
-    return socket.Send(OK);
-}
-
-int ClientInterface::get_streaming_source_ip(Interface &socket) {
-    IpAddr retval = impl()->getStreamingSourceIP();
-    LOG(logDEBUG1) << "streaming IP:" << retval;
-    return socket.sendResult(retval);
-}
-
 int ClientInterface::set_silent_mode(Interface &socket) {
     auto value = socket.Receive<int>();
     if (value < 0) {
@@ -1249,7 +1225,7 @@ int ClientInterface::get_padding_enable(Interface &socket) {
 int ClientInterface::set_readout_mode(Interface &socket) {
     auto arg = socket.Receive<readoutMode>();
 
-    if (detType != CHIPTESTBOARD)
+    if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD)
         functionNotImplemented();
 
     if (arg >= 0) {
@@ -1294,7 +1270,7 @@ int ClientInterface::set_adc_mask(Interface &socket) {
 int ClientInterface::set_dbit_list(Interface &socket) {
     StaticVector<int, MAX_RX_DBIT> args;
     socket.Receive(args);
-    if (detType != CHIPTESTBOARD)
+    if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD)
         functionNotImplemented();
     LOG(logDEBUG1) << "Setting DBIT list";
     for (auto &it : args) {
@@ -1307,7 +1283,7 @@ int ClientInterface::set_dbit_list(Interface &socket) {
 }
 
 int ClientInterface::get_dbit_list(Interface &socket) {
-    if (detType != CHIPTESTBOARD)
+    if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD)
         functionNotImplemented();
     StaticVector<int, MAX_RX_DBIT> retval;
     retval = impl()->getDbitList();
@@ -1317,7 +1293,7 @@ int ClientInterface::get_dbit_list(Interface &socket) {
 
 int ClientInterface::set_dbit_offset(Interface &socket) {
     auto arg = socket.Receive<int>();
-    if (detType != CHIPTESTBOARD)
+    if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD)
         functionNotImplemented();
     if (arg < 0) {
         throw RuntimeError("Invalid dbit offset: " + std::to_string(arg));
@@ -1329,7 +1305,7 @@ int ClientInterface::set_dbit_offset(Interface &socket) {
 }
 
 int ClientInterface::get_dbit_offset(Interface &socket) {
-    if (detType != CHIPTESTBOARD)
+    if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD)
         functionNotImplemented();
     int retval = impl()->getDbitOffset();
     LOG(logDEBUG1) << "Dbit offset retval: " << retval;
@@ -1735,7 +1711,7 @@ int ClientInterface::get_receiver_roi(Interface &socket) {
 
 int ClientInterface::set_receiver_roi(Interface &socket) {
     auto arg = socket.Receive<ROI>();
-    if (detType == CHIPTESTBOARD)
+    if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
     LOG(logDEBUG1) << "Set Receiver ROI: " << ToString(arg);
     verifyIdle(socket);
@@ -1751,7 +1727,7 @@ int ClientInterface::set_receiver_roi(Interface &socket) {
 
 int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
     auto arg = socket.Receive<ROI>();
-    if (detType == CHIPTESTBOARD)
+    if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
     LOG(logDEBUG1) << "Set Receiver ROI Metadata: " << ToString(arg);
     verifyIdle(socket);
@@ -1768,7 +1744,7 @@ int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
 int ClientInterface::set_num_transceiver_samples(Interface &socket) {
     auto value = socket.Receive<int>();
     LOG(logDEBUG1) << "Setting num transceiver samples to " << value;
-    if (detType != CHIPTESTBOARD) {
+    if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD) {
         functionNotImplemented();
     }
     try {

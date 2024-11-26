@@ -394,6 +394,14 @@ Missing first frame or next frame after a delay
 Connect the data link from the Module directly to receiver pc or to a private network.
 
 
+Mythen3
+--------
+
+Detector status is waiting even in auto timing mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Check if the control board or the flat band cable is connected properly. If not, connect them properly and try again.
+
+
 Jungfrau
 ---------
 

@@ -53,14 +53,6 @@ Module::Module(int det_id, int module_index, bool verify)
     initSharedMemory(type, det_id, verify);
 }
 
-Module::~Module() = default;
-
-void Module::freeSharedMemory() {
-    if (shm.exists()) {
-        shm.removeSharedMemory();
-    }
-}
-
 bool Module::isFixedPatternSharedMemoryCompatible() const {
     return (shm()->shmversion >= MODULE_SHMAPIVERSION);
 }
@@ -169,6 +161,7 @@ Module::getTypeFromDetector(const std::string &hostname, uint16_t cport) {
     LOG(logDEBUG1) << "Getting Module type ";
     ClientSocket socket("Detector", hostname, cport);
     socket.Send(F_GET_DETECTOR_TYPE);
+    socket.setFnum(F_GET_DETECTOR_TYPE);
     if (socket.Receive<int>() == FAIL) {
         throw RuntimeError("Detector (" + hostname + ", " +
                            std::to_string(cport) +
@@ -184,7 +177,8 @@ slsDetectorDefs::detectorType Module::getDetectorType() const {
 }
 
 void Module::updateNumberOfChannels() {
-    if (shm()->detType == CHIPTESTBOARD) {
+    if (shm()->detType == CHIPTESTBOARD ||
+        shm()->detType == XILINX_CHIPTESTBOARD) {
         std::array<int, 2> retvals{};
         sendToDetector(F_GET_NUM_CHANNELS, nullptr, retvals);
         shm()->nChan.x = retvals[0];
@@ -562,6 +556,7 @@ void Module::setSynchronization(const bool value) {
 std::vector<int> Module::getBadChannels() const {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_GET_BAD_CHANNELS);
+    client.setFnum(F_GET_BAD_CHANNELS);
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Detector " + std::to_string(moduleIndex) +
                             " returned error: " + client.readErrorMessage());
@@ -583,6 +578,7 @@ void Module::setBadChannels(std::vector<int> list) {
     LOG(logDEBUG1) << "Sending bad channels to detector, nch:" << nch;
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SET_BAD_CHANNELS);
+    client.setFnum(F_SET_BAD_CHANNELS);
     client.Send(nch);
     if (nch > 0) {
         client.Send(list);
@@ -973,6 +969,7 @@ std::vector<int64_t> Module::getFramesCaughtByReceiver() const {
     if (shm()->useReceiverFlag) {
         auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
         client.Send(F_GET_RECEIVER_FRAMES_CAUGHT);
+        client.setFnum(F_GET_RECEIVER_FRAMES_CAUGHT);
         if (client.Receive<int>() == FAIL) {
             throw ReceiverError(
                 "Receiver " + std::to_string(moduleIndex) +
@@ -995,6 +992,7 @@ std::vector<int64_t> Module::getNumMissingPackets() const {
     if (shm()->useReceiverFlag) {
         auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
         client.Send(F_GET_NUM_MISSING_PACKETS);
+        client.setFnum(F_GET_NUM_MISSING_PACKETS);
         if (client.Receive<int>() == FAIL) {
             throw ReceiverError(
                 "Receiver " + std::to_string(moduleIndex) +
@@ -1017,6 +1015,7 @@ std::vector<int64_t> Module::getReceiverCurrentFrameIndex() const {
     if (shm()->useReceiverFlag) {
         auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
         client.Send(F_GET_RECEIVER_FRAME_INDEX);
+        client.setFnum(F_GET_RECEIVER_FRAME_INDEX);
         if (client.Receive<int>() == FAIL) {
             throw ReceiverError(
                 "Receiver " + std::to_string(moduleIndex) +
@@ -1428,8 +1427,8 @@ void Module::setReceiverHostname(const std::string &hostname,
 
     shm()->numUDPInterfaces = retval.udpInterfaces;
 
-    // to use rx_hostname if empty and also update client zmqip
-    updateReceiverStreamingIP();
+    // to use rx_hostname if empty
+    updateClientStreamingIP();
 }
 
 uint16_t Module::getReceiverPort() const { return shm()->rxTCPPort; }
@@ -1655,21 +1654,6 @@ void Module::setReceiverStreamingPort(uint16_t port) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
 }
 
-IpAddr Module::getReceiverStreamingIP() const {
-    return sendToReceiver<IpAddr>(F_GET_RECEIVER_STREAMING_SRC_IP);
-}
-
-void Module::setReceiverStreamingIP(const IpAddr ip) {
-    if (ip == 0) {
-        throw RuntimeError("Invalid receiver zmq ip address");
-    }
-    // if client zmqip is empty, update it
-    if (shm()->zmqip == 0) {
-        shm()->zmqip = ip;
-    }
-    sendToReceiver(F_SET_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
-}
-
 uint16_t Module::getClientStreamingPort() const { return shm()->zmqport; }
 
 void Module::setClientStreamingPort(uint16_t port) { shm()->zmqport = port; }
@@ -1748,6 +1732,7 @@ void Module::sendReceiverRateCorrections(const std::vector<int64_t> &t) {
                   << ']';
     auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     receiver.Send(F_SET_RECEIVER_RATE_CORRECT);
+    receiver.setFnum(F_SET_RECEIVER_RATE_CORRECT);
     receiver.Send(static_cast<int>(t.size()));
     receiver.Send(t);
     if (receiver.Receive<int>() == FAIL) {
@@ -1954,6 +1939,22 @@ void Module::setPedestalMode(const defs::pedestalParameters par) {
     }
 }
 
+defs::timingInfoDecoder Module::getTimingInfoDecoder() const {
+    return sendToDetector<defs::timingInfoDecoder>(F_GET_TIMING_INFO_DECODER);
+}
+
+void Module::setTimingInfoDecoder(const defs::timingInfoDecoder value) {
+    sendToDetector(F_SET_TIMING_INFO_DECODER, static_cast<int>(value), nullptr);
+}
+
+defs::collectionMode Module::getCollectionMode() const {
+    return sendToDetector<defs::collectionMode>(F_GET_COLLECTION_MODE);
+}
+
+void Module::setCollectionMode(const defs::collectionMode value) {
+    sendToDetector(F_SET_COLLECTION_MODE, static_cast<int>(value), nullptr);
+}
+
 // Gotthard Specific
 
 slsDetectorDefs::ROI Module::getROI() const {
@@ -2028,6 +2029,7 @@ void Module::sendVetoPhoton(const int chipIndex,
     const int args[]{chipIndex, nch};
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SET_VETO_PHOTON);
+    client.setFnum(F_SET_VETO_PHOTON);
     client.Send(args);
     client.Send(gainIndices);
     client.Send(values);
@@ -2042,6 +2044,7 @@ void Module::getVetoPhoton(const int chipIndex,
     LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]\n";
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_GET_VETO_PHOTON);
+    client.setFnum(F_GET_VETO_PHOTON);
     client.Send(chipIndex);
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Detector " + std::to_string(moduleIndex) +
@@ -2461,7 +2464,8 @@ void Module::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
     sendToDetector(F_SET_READOUT_MODE, arg, nullptr);
     sendToDetectorStop(F_SET_READOUT_MODE, arg, nullptr);
     // update #nchan, as it depends on #samples, adcmask,
-    if (shm()->detType == CHIPTESTBOARD) {
+    if (shm()->detType == CHIPTESTBOARD ||
+        shm()->detType == XILINX_CHIPTESTBOARD) {
         updateNumberOfChannels();
     }
     if (shm()->useReceiverFlag) {
@@ -2529,6 +2533,13 @@ void Module::setLEDEnable(bool enable) {
     sendToDetector<int>(F_LED, static_cast<int>(enable));
 }
 
+// Xilinx Ctb Specific
+void Module::configureTransceiver() {
+    sendToDetector(F_CONFIG_TRANSCEIVER);
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): Transceiver configured successfully!";
+}
+
 // Pattern
 std::string Module::getPatterFileName() const {
     char retval[MAX_STR_LENGTH]{};
@@ -2539,6 +2550,7 @@ std::string Module::getPatterFileName() const {
 void Module::setPattern(const Pattern &pat, const std::string &fname) {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SET_PATTERN);
+    client.setFnum(F_SET_PATTERN);
     client.Send(pat.data(), pat.size());
     char args[MAX_STR_LENGTH]{};
     strcpy_safe(args, fname.c_str());
@@ -2649,6 +2661,7 @@ std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
     }
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     client.Send(F_GET_ADDITIONAL_JSON_HEADER);
+    client.setFnum(F_GET_ADDITIONAL_JSON_HEADER);
     if (client.Receive<int>() == FAIL) {
         throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
                             " returned error: " + client.readErrorMessage());
@@ -2694,6 +2707,7 @@ void Module::setAdditionalJsonHeader(
                   << ToString(jsonHeader);
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     client.Send(F_SET_ADDITIONAL_JSON_HEADER);
+    client.setFnum(F_SET_ADDITIONAL_JSON_HEADER);
     client.Send(size);
     if (size > 0)
         client.Send(&buff[0], buff.size());
@@ -2817,18 +2831,20 @@ uint32_t Module::readRegister(uint32_t addr) const {
     return sendToDetectorStop<uint32_t>(F_READ_REGISTER, addr);
 }
 
-uint32_t Module::writeRegister(uint32_t addr, uint32_t val) {
-    uint32_t args[]{addr, val};
-    return sendToDetectorStop<uint32_t>(F_WRITE_REGISTER, args);
+void Module::writeRegister(uint32_t addr, uint32_t val, bool validate) {
+    uint32_t args[]{addr, val, static_cast<uint32_t>(validate)};
+    return sendToDetectorStop(F_WRITE_REGISTER, args, nullptr);
 }
 
-void Module::setBit(uint32_t addr, int n) {
-    uint32_t args[2] = {addr, static_cast<uint32_t>(n)};
+void Module::setBit(uint32_t addr, int n, bool validate) {
+    uint32_t args[] = {addr, static_cast<uint32_t>(n),
+                       static_cast<uint32_t>(validate)};
     sendToDetectorStop(F_SET_BIT, args, nullptr);
 }
 
-void Module::clearBit(uint32_t addr, int n) {
-    uint32_t args[2] = {addr, static_cast<uint32_t>(n)};
+void Module::clearBit(uint32_t addr, int n, bool validate) {
+    uint32_t args[] = {addr, static_cast<uint32_t>(n),
+                       static_cast<uint32_t>(validate)};
     sendToDetectorStop(F_CLEAR_BIT, args, nullptr);
 }
 
@@ -2887,6 +2903,7 @@ std::string Module::executeCommand(const std::string &cmd) {
                  << "): Sending command " << cmd;
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_EXEC_COMMAND);
+    client.setFnum(F_EXEC_COMMAND);
     client.Send(arg);
     if (client.Receive<int>() == FAIL) {
         std::cout << '\n';
@@ -3413,6 +3430,8 @@ const std::string Module::getDetectorAPI() const {
         return APIMYTHEN3;
     case GOTTHARD2:
         return APIGOTTHARD2;
+    case XILINX_CHIPTESTBOARD:
+        return APIXILINXCTB;
     default:
         throw NotImplementedError(
             "Detector type not implemented to get Detector API");
@@ -3497,6 +3516,7 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
     }
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SET_MODULE);
+    client.setFnum(F_SET_MODULE);
     sendModule(&module, client);
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Module " + std::to_string(moduleIndex) +
@@ -3509,6 +3529,7 @@ sls_detector_module Module::getModule() {
     sls_detector_module module(shm()->detType);
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_GET_MODULE);
+    client.setFnum(F_GET_MODULE);
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Module " + std::to_string(moduleIndex) +
                             " returned error: " + client.readErrorMessage());
@@ -3601,18 +3622,19 @@ void Module::receiveModule(sls_detector_module *myMod, ClientSocket &client) {
     LOG(level) << myMod->nchan << " chans received";
 }
 
-void Module::updateReceiverStreamingIP() {
-    auto ip = getReceiverStreamingIP();
+void Module::updateClientStreamingIP() {
+    auto ip = getClientStreamingIP();
     if (ip == 0) {
         // Hostname could be ip try to decode otherwise look up the hostname
         ip = IpAddr{shm()->rxHostname};
         if (ip == 0) {
             ip = HostnameToIp(shm()->rxHostname);
         }
-        LOG(logINFO) << "Setting default receiver " << moduleIndex
-                     << " streaming zmq ip to " << ip;
+        LOG(logINFO) << "Setting default module " << moduleIndex
+                     << " zmq ip to " << ip;
+
+        setClientStreamingIP(ip);
     }
-    setReceiverStreamingIP(ip);
 }
 
 void Module::updateRateCorrection() {

@@ -82,6 +82,7 @@ void basictests() {
                "Could not map to memory. Cannot proceed. Check Firmware.\n");
         LOG(logERROR, ("%s\n\n", initErrorMessage));
         initError = FAIL;
+        return;
     }
 #ifndef VIRTUAL
     // does check only if flag is 0 (by default), set by command line
@@ -419,10 +420,7 @@ void initStopServer() {
             return;
         }
 #ifdef VIRTUAL
-        sharedMemory_setStop(0);
-        // temp threshold and reset event (read by stop server)
-        setThresholdTemperature(DEFAULT_TMP_THRSHLD);
-        setTemperatureEvent(0);
+        setupDetector();
 #endif
     }
     initCheckDone = 1;
@@ -437,8 +435,14 @@ void setupDetector() {
         clkPhase[i] = 0;
     }
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    setupUDPCommParameters();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        setupUDPCommParameters();
+    } else {
+        sharedMemory_setStop(0);
+    }
+    // ismaster from reg in stop server, so set it in virtual mode
+    setMaster(OW_MASTER);
 #endif
 
     // altera pll
@@ -1854,7 +1858,8 @@ int startStateMachine() {
         LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
         sharedMemory_setStatus(IDLE);
         return FAIL;
-    }
+    } else
+        pthread_detach(pthread_virtual_tid);
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
     return OK;
 #endif

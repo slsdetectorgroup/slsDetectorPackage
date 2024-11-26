@@ -51,6 +51,20 @@ def killProcess(name):
     else:
         print('process not running : ' + name)
 
+
+def killAllStaleProcesses():
+    killProcess('eigerDetectorServer_virtual')
+    killProcess('jungfrauDetectorServer_virtual')
+    killProcess('mythen3DetectorServer_virtual')
+    killProcess('gotthard2DetectorServer_virtual')
+    killProcess('gotthardDetectorServer_virtual')
+    killProcess('ctbDetectorServer_virtual')
+    killProcess('moenchDetectorServer_virtual')
+    killProcess('xilinx_ctbDetectorServer_virtual')
+    killProcess('slsReceiver')
+    killProcess('slsMultiReceiver')
+    cleanSharedmemory()
+
 def cleanup(name):
     '''
     kill both servers, receivers and clean shared memory
@@ -118,15 +132,17 @@ def loadConfig(name, rx_hostname, settingsdir):
                 d.udp_srcip = d.udp_dstip
             else:
                 d.udp_srcip = 'auto'
-        if d.type == detectorType.JUNGFRAU or d.type == detectorType.MOENCH:
+        if d.type == detectorType.JUNGFRAU or d.type == detectorType.MOENCH or d.type == detectorType.XILINX_CHIPTESTBOARD:
             d.powerchip = 1
+        if d.type == detectorType.XILINX_CHIPTESTBOARD:
+            d.configureTransceiver()
     except:
         Log(Fore.RED, 'Could not load config for ' + name)
         raise
 
 def startCmdTests(name, fp, fname):
     Log(Fore.GREEN, 'Cmd Tests for ' + name)
-    cmd = 'tests --abort [.cmd] -s -o ' + fname
+    cmd = 'tests --abort [.cmdcall] -s -o ' + fname
     p = subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
     p.check_returncode()
 
@@ -174,6 +190,7 @@ if args.servers is None:
         'gotthard',
         'ctb',
         'moench',
+        'xilinx_ctb'
     ]
 else:
     servers = args.servers
@@ -199,6 +216,8 @@ with open(fname, 'w') as fp:
     Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
     startGeneralTests(fp, file_results)
 
+    killAllStaleProcesses()
+
     for server in servers:
         try:
             # print to terminal for progress
@@ -218,7 +237,7 @@ with open(fname, 'w') as fp:
             startCmdTests(server, fp, file_results)
             cleanup(server)
         except:
-            Log(log.RED, 'Exception caught. Cleaning up.')
+            Log(Fore.RED, 'Exception caught. Cleaning up.')
             cleanup(server)
             sys.stdout = original_stdout
             sys.stderr = original_stderr

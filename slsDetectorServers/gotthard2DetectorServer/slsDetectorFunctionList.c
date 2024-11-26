@@ -45,7 +45,6 @@ char initErrorMessage[MAX_STR_LENGTH];
 
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
-int64_t virtual_currentFrameNumber = 2;
 int virtual_moduleid = 0;
 #endif
 
@@ -53,8 +52,8 @@ enum detectorSettings thisSettings = UNINITIALIZED;
 int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkDivider[NUM_CLOCKS] = {};
 double systemFrequency = 0;
-int highvoltage = 0;
 int dacValues[NDAC] = {};
+int startupPowerChipConfigDone = 0;
 int onChipdacValues[ONCHIP_NDAC][NCHIP] = {};
 int defaultDacValues[NDAC] = {};
 int hardCodedDefaultDacValues[NDAC] = {};
@@ -74,6 +73,7 @@ int64_t burstPeriodReg = 0;
 int filterResistor = 0;
 int cdsGain = 0;
 int detPos[2] = {};
+int chipConfigured = 0;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -402,13 +402,7 @@ void initStopServer() {
             return;
         }
 #ifdef VIRTUAL
-        sharedMemory_setStop(0);
-        setMaster(OW_MASTER);
-        if (readConfigFile() == FAIL ||
-            checkCommandLineConfiguration() == FAIL) {
-            initCheckDone = 1;
-            return;
-        }
+        setupDetector();
 #endif
     }
     initCheckDone = 1;
@@ -428,9 +422,9 @@ void setupDetector() {
     systemFrequency = INT_SYSTEM_C0_FREQUENCY;
     detPos[0] = 0;
     detPos[1] = 0;
+    chipConfigured = 0;
 
     thisSettings = UNINITIALIZED;
-    highvoltage = 0;
     injectedChannelsOffset = 0;
     injectedChannelsIncrement = 0;
     burstMode = BURST_INTERNAL;
@@ -442,6 +436,7 @@ void setupDetector() {
     burstPeriodReg = 0;
     filterResistor = 0;
     cdsGain = 0;
+    startupPowerChipConfigDone = 0;
     memset(clkPhase, 0, sizeof(clkPhase));
     memset(dacValues, 0, sizeof(dacValues));
     for (int i = 0; i < NDAC; ++i) {
@@ -458,8 +453,14 @@ void setupDetector() {
     memset(vetoGainIndices, 0, sizeof(vetoGainIndices));
     memset(adcConfiguration, 0, sizeof(adcConfiguration));
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    setupUDPCommParameters();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        setupUDPCommParameters();
+    } else {
+        sharedMemory_setStop(0);
+    }
+    // ismaster from reg in stop server, so set it in virtual mode
+    setMaster(OW_MASTER);
 #endif
     // pll defines
     ALTERA_PLL_C10_SetDefines(REG_OFFSET, BASE_READOUT_PLL, BASE_SYSTEM_PLL,
@@ -471,13 +472,19 @@ void setupDetector() {
     // hv
     DAC6571_SetDefines(HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
     // dacs
-    LTC2620_D_SetDefines(DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC);
+    LTC2620_D_SetDefines(DAC_MIN_MV, DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC, 0,
+                         "");
     // on chip dacs
     ASIC_Driver_SetDefines(ONCHIP_DAC_DRIVER_FILE_NAME);
     setTimingSource(DEFAULT_TIMING_SOURCE);
 
     // Default values
-    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+    initError = setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+    if (initError == FAIL) {
+        sprintf(initErrorMessage, "Could not set high voltage to %d\n",
+                DEFAULT_HIGH_VOLTAGE);
+        return;
+    }
 
     // check module type attached if not in debug mode
     if (initError == FAIL)
@@ -492,7 +499,9 @@ void setupDetector() {
     }
 
     // power on chip
-    powerChip(1);
+    initError = powerChip(1, initErrorMessage);
+    if (initError == FAIL)
+        return;
 
     setASICDefaults();
 
@@ -518,6 +527,7 @@ void setupDetector() {
     setSettings(DEFAULT_SETTINGS);
 
     // Initialization of acquistion parameters
+    setNextFrameNumber(DEFAULT_FRAME_NUMBER);
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
     setNumBursts(DEFAULT_NUM_BURSTS);
@@ -974,6 +984,11 @@ int readConfigFile() {
         // inform FPGA that onchip dacs will be configured soon
         LOG(logINFO, ("Setting configuration done bit\n"));
         bus_w(ASIC_CONFIG_REG, bus_r(ASIC_CONFIG_REG) | ASIC_CONFIG_DONE_MSK);
+
+        // to inform powerchip config parameters are set
+        startupPowerChipConfigDone = 1;
+        chipConfigured = 1;
+        LOG(logINFOBLUE, ("Chip configured\n"));
     }
     return initError;
 }
@@ -1055,6 +1070,29 @@ int getDynamicRange(int *retval) {
 }
 
 /* parameters - timer */
+
+int setNextFrameNumber(uint64_t value) {
+    LOG(logINFO, ("Setting next frame number: %lu\n", value));
+#ifdef VIRTUAL
+    setU64BitReg(value, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+#else
+    // decrement by 1 for firmware
+    setU64BitReg(value - 1, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+#endif
+    return OK;
+}
+
+int getNextFrameNumber(uint64_t *value) {
+#ifdef VIRTUAL
+    *value = getU64BitReg(FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+#else
+    // increment is for firmware
+    *value =
+        (getU64BitReg(GET_FRAME_NUMBER_LSB_REG, GET_FRAME_NUMBER_MSB_REG) + 1);
+#endif
+    return OK;
+}
+
 void setNumFrames(int64_t val) {
     if (val > 0) {
         numFramesReg = val;
@@ -1316,7 +1354,7 @@ int64_t getNumFramesLeft() {
     if ((burstMode == CONTINUOUS_INTERNAL ||
          burstMode == CONTINUOUS_EXTERNAL) &&
         getTiming() == AUTO_TIMING) {
-        return get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
+        return (get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG) + 1);
     }
     return -1;
 }
@@ -1324,7 +1362,7 @@ int64_t getNumFramesLeft() {
 int64_t getNumTriggersLeft() {
     // trigger
     if (getTiming() == TRIGGER_EXPOSURE) {
-        return get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
+        return (get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG) + 1);
     }
     return -1;
 }
@@ -1343,7 +1381,7 @@ int64_t getNumBurstsLeft() {
     // burst and auto
     if ((burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) &&
         getTiming() == AUTO_TIMING) {
-        return get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
+        return (get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG) + 1);
     }
     return -1;
 }
@@ -1528,26 +1566,52 @@ int getMaxDacSteps() { return LTC2620_D_GetMaxNumSteps(); }
 
 int getADC(enum ADCINDEX ind, int *value) {
     LOG(logDEBUG1, ("Reading FPGA temperature...\n"));
-    if (readADCFromFile(TEMPERATURE_FILE_NAME, value) == FAIL) {
+    if (readParameterFromFile(TEMPERATURE_FILE_NAME, "temperature", value) ==
+        FAIL) {
         LOG(logERROR, ("Could not get temperature\n"));
         return FAIL;
     }
+    LOG(logINFO, ("Temperature: %.2f °C\n", (double)(*value) / 1000.00));
     return OK;
 }
 
 int setHighVoltage(int val) {
     if (val > HV_SOFT_MAX_VOLTAGE) {
-        val = HV_SOFT_MAX_VOLTAGE;
+        LOG(logERROR, ("Invalid high voltage: %d V\n", val));
+        return FAIL;
     }
 
-    // setting hv
-    if (val >= 0) {
-        LOG(logINFO, ("Setting High voltage: %d V\n", val));
-        if (DAC6571_Set(val) == OK)
-            highvoltage = val;
+    LOG(logINFO, ("Setting High voltage: %d V\n", val));
+    int waitTime = WAIT_HIGH_VOLTAGE_SETTLE_TIME_S;
+
+    // get current high voltage
+    int prevHighVoltage = 0;
+    // at startup (initCheck not done: to not wait 10s assuming hv = 0
+    // otherwise as below, always check current hv to wait 10s if powering off
+    if (initCheckDone) {
+        if (getHighVoltage(&prevHighVoltage) == FAIL) {
+            LOG(logERROR, ("Could not get current high voltage to determine if "
+                           "%d s wait is required\n",
+                           waitTime));
+            return FAIL;
+        }
     }
-    return highvoltage;
+
+    int ret = DAC6571_Set(val);
+
+    // only when powering off (from non zero value), wait 10s
+    if (ret == OK) {
+        if (prevHighVoltage > 0 && val == 0) {
+            LOG(logINFO,
+                ("\tSwitching off high voltage requires %d s...\n", waitTime));
+            sleep(waitTime);
+            LOG(logINFO, ("\tAssuming high voltage switched off\n"));
+        }
+    }
+    return ret;
 }
+
+int getHighVoltage(int *retval) { return DAC6571_Get(retval); }
 
 /* parameters - timing */
 
@@ -2120,7 +2184,6 @@ int *getDetectorPosition() { return detPos; }
 
 int checkDetectorType(char *mess) {
 #ifdef VIRTUAL
-    setMaster(OW_MASTER);
     return OK;
 #endif
     LOG(logINFO, ("Checking module type\n"));
@@ -2213,18 +2276,104 @@ int checkDetectorType(char *mess) {
     return OK;
 }
 
-int powerChip(int on) {
-    if (on != -1) {
-        if (on) {
-            LOG(logINFO, ("Powering chip: on\n"));
-            bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PWR_CHIP_MSK);
-        } else {
-            LOG(logINFO, ("Powering chip: off\n"));
-            bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_PWR_CHIP_MSK);
+int powerChip(int on, char *mess) {
+    if (on) {
+        LOG(logINFO, ("Powering chip: on\n"));
+        bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PWR_CHIP_MSK);
+        if (configureChip(mess) == FAIL)
+            return FAIL;
+    } else {
+        // throw if high voltage on
+        int highVoltage = 0;
+        if (getHighVoltage(&highVoltage) == FAIL) {
+            sprintf(mess, "Could not get high voltage status to do a safety "
+                          "check first\n");
+            LOG(logERROR, (mess));
+            return FAIL;
         }
+        if (highVoltage > 0) {
+            sprintf(mess, "High voltage is on. Turn off high voltage first\n");
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        LOG(logINFO, ("Powering chip: off\n"));
+        bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_PWR_CHIP_MSK);
+        chipConfigured = 0;
     }
+    return OK;
+}
+
+int getPowerChip() {
     return ((bus_r(CONTROL_REG) & CONTROL_PWR_CHIP_MSK) >>
             CONTROL_PWR_CHIP_OFST);
+}
+
+int isChipConfigured() { return chipConfigured; }
+
+int configureChip(char *mess) {
+
+    if (!startupPowerChipConfigDone) {
+        LOG(logINFOBLUE,
+            ("Startup: Chip to be configured when reading config file\n"));
+        return OK;
+    }
+    LOG(logINFOBLUE, ("\tConfiguring chip\n"));
+
+    // on chip dacs
+    for (int idac = 0; idac != ONCHIP_NDAC; ++idac) {
+        // ignore unused dacs
+        if (idac == (int)G2_VCHIP_UNUSED)
+            continue;
+        for (int ichip = 0; ichip != NCHIP; ++ichip) {
+            if (onChipdacValues[idac][ichip] == -1) {
+                sprintf(mess, "On chip DAC [%d] value not set for chip %d\n",
+                        idac, ichip);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+            if (setOnChipDAC(idac, ichip, onChipdacValues[idac][ichip]) ==
+                FAIL) {
+                sprintf(mess, "Could not set on chip DAC for chip %d\n", ichip);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+        }
+    }
+
+    // adc configuration
+    for (int ichip = 0; ichip != NCHIP; ++ichip) {
+        for (int iadc = 0; iadc != NADC; ++iadc) {
+            if (setADCConfiguration(ichip, iadc,
+                                    adcConfiguration[ichip][iadc]) == FAIL) {
+                sprintf(mess, "Could not set ADC configuration for chip %d\n",
+                        ichip);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+        }
+    }
+
+    // veto reference
+    for (int ichip = 0; ichip != NCHIP; ++ichip) {
+        if (configureASICVetoReference(ichip, vetoGainIndices[ichip],
+                                       vetoReference[ichip]) == FAIL) {
+            sprintf(mess, "Could not configure veto reference for chip %d\n",
+                    ichip);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+    }
+
+    // asic global settings (burst mode, cds gain, filter resistor)
+    if (configureASICGlobalSettings() == FAIL) {
+        sprintf(mess, "Could not configure asic global settings\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    LOG(logINFOBLUE, ("\tChip configured\n"));
+    chipConfigured = 1;
+    return OK;
 }
 
 void setDBITPipeline(int val) {
@@ -3177,11 +3326,12 @@ int *getBadChannels(int *numChannels) {
     if (*numChannels > 0) {
         // get list of bad channels
         retvals = malloc(*numChannels * sizeof(int));
-        memset(retvals, 0, *numChannels * sizeof(int));
         if (retvals == NULL) {
+            LOG(logERROR, ("Could not allocate memory to get bad channels\n"));
             *numChannels = -1;
             return NULL;
         }
+        memset(retvals, 0, *numChannels * sizeof(int));
         int chIndex = 0;
         int numAddr = MASK_STRIP_NUM_REGS;
         // loop through registers
@@ -3231,7 +3381,8 @@ int startStateMachine() {
         LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
         sharedMemory_setStatus(IDLE);
         return FAIL;
-    }
+    } else
+        pthread_detach(pthread_virtual_tid);
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
     return OK;
 #endif
@@ -3300,7 +3451,7 @@ void *start_timer(void *arg) {
 
         *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
             (uint16_t)channelVal;
-        // LOG(logINFORED, ("[%d]:0x%08x\n", i, channelVal));
+        LOG(logDEBUG, ("[%d]:0x%08x\n", i, channelVal));
     }
     char vetoData[vetodatasize];
     memset(vetoData, 0, sizeof(vetodatasize));
@@ -3308,109 +3459,121 @@ void *start_timer(void *arg) {
         *((uint16_t *)(vetoData + i)) = i;
     }
 
-    int iRxEntry = firstDest;
-    // loop over number of repeats
-    for (int repeatNr = 0; repeatNr != numRepeats; ++repeatNr) {
+    {
+        uint64_t frameNr = 0;
+        getNextFrameNumber(&frameNr);
 
-        struct timespec rbegin, rend;
-        clock_gettime(CLOCK_REALTIME, &rbegin);
+        int iRxEntry = firstDest;
+        // loop over number of repeats
+        for (int repeatNr = 0; repeatNr != numRepeats; ++repeatNr) {
 
-        // loop over number of frames
-        for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
+            struct timespec rbegin, rend;
+            clock_gettime(CLOCK_REALTIME, &rbegin);
 
-            // check if manual stop
-            if (sharedMemory_getStop() == 1) {
-                break;
-            }
+            // loop over number of frames
+            for (int iframes = 0; iframes != numFrames; ++iframes) {
 
-            // change gain and data for every frame
-            {
-                const int nchannels = NCHIP * NCHAN;
-                int gainVal = 0;
-                for (int i = 0; i < nchannels; ++i) {
-                    if ((i % nchannels) < 400) {
-                        gainVal = 1 + frameNr;
-                    } else if ((i % nchannels) < 800) {
-                        gainVal = 2 + frameNr;
-                    } else {
-                        gainVal = 3 + frameNr;
+                // check if manual stop
+                if (sharedMemory_getStop() == 1) {
+                    setNextFrameNumber(frameNr + (repeatNr * numFrames) +
+                                       iframes);
+                    break;
+                }
+
+                // change gain and data for every frame
+                {
+                    const int nchannels = NCHIP * NCHAN;
+                    int gainVal = 0;
+                    for (int i = 0; i < nchannels; ++i) {
+                        if ((i % nchannels) < 400) {
+                            gainVal = 1 + iframes;
+                        } else if ((i % nchannels) < 800) {
+                            gainVal = 2 + iframes;
+                        } else {
+                            gainVal = 3 + iframes;
+                        }
+                        int dataVal =
+                            *((uint16_t *)(imageData + i * sizeof(uint16_t)));
+                        dataVal += iframes;
+                        int channelVal = (dataVal & ~GAIN_VAL_MSK) |
+                                         (gainVal << GAIN_VAL_OFST);
+                        *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+                            (uint16_t)channelVal;
                     }
-                    int dataVal =
-                        *((uint16_t *)(imageData + i * sizeof(uint16_t)));
-                    dataVal += frameNr;
-                    int channelVal =
-                        (dataVal & ~GAIN_VAL_MSK) | (gainVal << GAIN_VAL_OFST);
-                    *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
-                        (uint16_t)channelVal;
                 }
-            }
-            // sleep for exposure time
-            struct timespec begin, end;
-            clock_gettime(CLOCK_REALTIME, &begin);
-            usleep(expUs);
+                // sleep for exposure time
+                struct timespec begin, end;
+                clock_gettime(CLOCK_REALTIME, &begin);
+                usleep(expUs);
 
-            // first interface
-            char packetData[packetsize];
-            memset(packetData, 0, packetsize);
-            // set header
-            sls_detector_header *header = (sls_detector_header *)(packetData);
-            header->detType = (uint16_t)myDetectorType;
-            header->version = SLS_DETECTOR_HEADER_VERSION;
-            header->frameNumber = virtual_currentFrameNumber;
-            header->packetNumber = 0;
-            header->modId = virtual_moduleid;
-            header->row = detPos[Y];
-            header->column = detPos[X];
-            // fill data
-            memcpy(packetData + sizeof(sls_detector_header), imageData,
-                   datasize);
-            // send 1 packet = 1 frame
-            sendUDPPacket(iRxEntry, 0, packetData, packetsize);
-
-            // second interface (veto)
-            char packetData2[vetopacketsize];
-            memset(packetData2, 0, vetopacketsize);
-            if (i10gbe) {
+                // first interface
+                char packetData[packetsize];
+                memset(packetData, 0, packetsize);
                 // set header
-                veto_header *header = (veto_header *)(packetData2);
-                header->frameNumber = virtual_currentFrameNumber;
-                header->bunchId = 0;
+                sls_detector_header *header =
+                    (sls_detector_header *)(packetData);
+                header->detType = (uint16_t)myDetectorType;
+                header->version = SLS_DETECTOR_HEADER_VERSION;
+                header->frameNumber =
+                    frameNr + (repeatNr * numFrames) + iframes;
+                header->packetNumber = 0;
+                header->modId = virtual_moduleid;
+                header->row = detPos[Y];
+                header->column = detPos[X];
                 // fill data
-                memcpy(packetData2 + sizeof(veto_header), vetoData,
-                       vetodatasize);
+                memcpy(packetData + sizeof(sls_detector_header), imageData,
+                       datasize);
                 // send 1 packet = 1 frame
-                sendUDPPacket(iRxEntry, 1, packetData2, vetopacketsize);
-            }
-            LOG(logINFO,
-                ("Sent frame %s: %d (bursts/ triggers: %d) [%lld] to E%d\n",
-                 (i10gbe ? "(+veto)" : ""), frameNr, repeatNr,
-                 (long long unsigned int)virtual_currentFrameNumber, iRxEntry));
-            clock_gettime(CLOCK_REALTIME, &end);
-            int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
-                              (end.tv_nsec - begin.tv_nsec));
+                sendUDPPacket(iRxEntry, 0, packetData, packetsize);
 
-            // sleep for (period - exptime)
-            if (frameNr < numFrames) { // if there is a next frame
-                if (periodNs > timeNs) {
-                    usleep((periodNs - timeNs) / 1000);
+                // second interface (veto)
+                char packetData2[vetopacketsize];
+                memset(packetData2, 0, vetopacketsize);
+                if (i10gbe) {
+                    // set header
+                    veto_header *header = (veto_header *)(packetData2);
+                    header->frameNumber =
+                        frameNr + (repeatNr * numFrames) + iframes;
+                    header->bunchId = 0;
+                    // fill data
+                    memcpy(packetData2 + sizeof(veto_header), vetoData,
+                           vetodatasize);
+                    // send 1 packet = 1 frame
+                    sendUDPPacket(iRxEntry, 1, packetData2, vetopacketsize);
+                }
+                LOG(logINFO,
+                    ("Sent frame %s: %d (bursts/ triggers: %d) [%lld] to E%d\n",
+                     (i10gbe ? "(+veto)" : ""), frameNr, repeatNr,
+                     (frameNr + (repeatNr * numFrames) + iframes), iRxEntry));
+                clock_gettime(CLOCK_REALTIME, &end);
+                int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
+                                  (end.tv_nsec - begin.tv_nsec));
+
+                // sleep for (period - exptime)
+                if (iframes < numFrames) { // if there is a next frame
+                    if (periodNs > timeNs) {
+                        usleep((periodNs - timeNs) / 1000);
+                    }
+                }
+                ++iRxEntry;
+                if (iRxEntry == numUdpDestinations) {
+                    iRxEntry = 0;
                 }
             }
-            ++virtual_currentFrameNumber;
-            ++iRxEntry;
-            if (iRxEntry == numUdpDestinations) {
-                iRxEntry = 0;
-            }
-        }
-        clock_gettime(CLOCK_REALTIME, &rend);
-        int64_t timeNs = ((rend.tv_sec - rbegin.tv_sec) * 1E9 +
-                          (rend.tv_nsec - rbegin.tv_nsec));
 
-        // sleep for (repeatPeriodNs - time remaining)
-        if (repeatNr < numRepeats) { // if there is a next repeat
-            if (repeatPeriodNs > timeNs) {
-                usleep((repeatPeriodNs - timeNs) / 1000);
+            clock_gettime(CLOCK_REALTIME, &rend);
+            int64_t timeNs = ((rend.tv_sec - rbegin.tv_sec) * 1E9 +
+                              (rend.tv_nsec - rbegin.tv_nsec));
+
+            // sleep for (repeatPeriodNs - time remaining)
+            if (repeatNr < numRepeats) { // if there is a next repeat
+                if (repeatPeriodNs > timeNs) {
+                    usleep((repeatPeriodNs - timeNs) / 1000);
+                }
             }
         }
+        // already being set in the start acquisition (also for real detectors)
+        setNextFrameNumber(frameNr + (numRepeats * numFrames));
     }
 
     closeUDPSocket(0);

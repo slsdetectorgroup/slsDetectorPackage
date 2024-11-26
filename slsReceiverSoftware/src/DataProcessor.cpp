@@ -41,6 +41,10 @@ void DataProcessor::SetFifo(Fifo *f) { fifo = f; }
 
 void DataProcessor::SetGeneralData(GeneralData *g) { generalData = g; }
 
+void DataProcessor::SetUdpPortNumber(const uint16_t portNumber) {
+    udpPortNumber = portNumber;
+}
+
 void DataProcessor::SetActivate(bool enable) { activated = enable; }
 
 void DataProcessor::SetReceiverROI(ROI roi) {
@@ -72,6 +76,27 @@ void DataProcessor::SetCtbDbitList(std::vector<int> value) {
 }
 
 void DataProcessor::SetCtbDbitOffset(int value) { ctbDbitOffset = value; }
+
+void DataProcessor::SetQuadEnable(bool value) { quadEnable = value; }
+
+void DataProcessor::SetFlipRows(bool fd) {
+    flipRows = fd;
+    // flip only right port of quad
+    if (quadEnable) {
+        flipRows = (index == 1 ? true : false);
+    }
+}
+
+void DataProcessor::SetNumberofTotalFrames(uint64_t value) {
+    nTotalFrames = value;
+}
+
+void DataProcessor::SetAdditionalJsonHeader(
+    const std::map<std::string, std::string> &json) {
+    std::lock_guard<std::mutex> lock(additionalJsonMutex);
+    additionalJsonHeader = json;
+    isAdditionalJsonUpdated = true;
+}
 
 void DataProcessor::ResetParametersforNewAcquisition() {
     StopRunning();
@@ -127,8 +152,6 @@ void DataProcessor::CreateFirstFiles(const std::string &fileNamePrefix,
                                      const uint64_t fileIndex,
                                      const bool overWriteEnable,
                                      const bool silentMode,
-                                     const uint16_t udpPortNumber,
-                                     const uint64_t numImages,
                                      const bool detectorDataStream) {
     if (dataFile == nullptr) {
         throw RuntimeError("file object not contstructed");
@@ -156,7 +179,7 @@ void DataProcessor::CreateFirstFiles(const std::string &fileNamePrefix,
     case HDF5:
         dataFile->CreateFirstHDF5DataFile(
             fileNamePrefix, fileIndex, overWriteEnable, silentMode,
-            udpPortNumber, generalData->framesPerFile, numImages, nx, ny,
+            udpPortNumber, generalData->framesPerFile, nTotalFrames, nx, ny,
             generalData->dynamicRange);
         break;
 #endif
@@ -182,8 +205,8 @@ uint32_t DataProcessor::GetFilesInAcquisition() const {
 std::string DataProcessor::CreateVirtualFile(
     const std::string &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
-    const int modulePos, const uint64_t numImages, const int numModX,
-    const int numModY, std::mutex *hdf5LibMutex) {
+    const int modulePos, const int numModX, const int numModY,
+    std::mutex *hdf5LibMutex) {
 
     if (receiverRoiEnabled) {
         throw std::runtime_error(
@@ -361,14 +384,31 @@ void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
     }
 
     try {
-        // normal call back
+        // callbacks
         if (rawDataReadyCallBack != nullptr) {
-            rawDataReadyCallBack(header, data, size, pRawDataReady);
-        }
 
-        // call back with modified size
-        else if (rawDataModifyReadyCallBack != nullptr) {
-            rawDataModifyReadyCallBack(header, data, size, pRawDataReady);
+            uint64_t frameIndex = fnum - firstIndex;
+            // update local copy only if it was updated (to prevent locking each
+            // time)
+            if (isAdditionalJsonUpdated) {
+                std::lock_guard<std::mutex> lock(additionalJsonMutex);
+                localAdditionalJsonHeader = additionalJsonHeader;
+                isAdditionalJsonUpdated = false;
+            }
+
+            dataCallbackHeader callbackHeader = {
+                udpPortNumber,
+                {static_cast<int>(generalData->nPixelsX),
+                 static_cast<int>(generalData->nPixelsY)},
+                fnum,
+                frameIndex,
+                (100 * ((double)(frameIndex + 1) / (double)(nTotalFrames))),
+                (nump == generalData->packetsPerFrame ? true : false),
+                flipRows,
+                localAdditionalJsonHeader};
+
+            rawDataReadyCallBack(header, callbackHeader, data, size,
+                                 pRawDataReady);
         }
     } catch (const std::exception &e) {
         throw RuntimeError("Get Data Callback Error: " + std::string(e.what()));
@@ -427,14 +467,10 @@ bool DataProcessor::CheckCount() {
 }
 
 void DataProcessor::registerCallBackRawDataReady(
-    void (*func)(sls_receiver_header &, char *, size_t, void *), void *arg) {
+    void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t &,
+                 void *),
+    void *arg) {
     rawDataReadyCallBack = func;
-    pRawDataReady = arg;
-}
-
-void DataProcessor::registerCallBackRawDataModifyReady(
-    void (*func)(sls_receiver_header &, char *, size_t &, void *), void *arg) {
-    rawDataModifyReadyCallBack = func;
     pRawDataReady = arg;
 }
 
@@ -480,6 +516,7 @@ void DataProcessor::PadMissingPackets(sls_receiver_header header, char *data) {
                 memset(data + (pnum * dsize), 0xFF, dsize + 2);
             break;
         case CHIPTESTBOARD:
+        case XILINX_CHIPTESTBOARD:
             if (pnum == (pperFrame - 1))
                 memset(data + (pnum * dsize), 0xFF, corrected_dsize);
             else

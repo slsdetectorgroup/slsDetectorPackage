@@ -4,18 +4,13 @@
 
 #include <inttypes.h>
 
-/**
- * Set Defines
- * @param hardMaxV maximum hardware limit
- * @param driverfname driver file name
- * @param numdacs number of dacs
- */
-void LTC2620_D_SetDefines(int hardMaxV, char *driverfname, int numdacs);
-
-/**
- * Get max number of steps
- */
+void LTC2620_D_SetDefines(int hardMinV, int hardMaxV, char *driverfname,
+                          int numdacs, int numpowers,
+                          char *powerdownDriverfname);
 int LTC2620_D_GetMaxNumSteps();
+int LTC2620_D_GetPowerDownValue();
+int LTC2620_D_GetMinInput();
+int LTC2620_D_GetMaxInput();
 
 /**
  * Convert voltage to dac units

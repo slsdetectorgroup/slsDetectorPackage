@@ -232,7 +232,7 @@ class Detector(CppDetectorApi):
     @element
     def hardwareversion(self):
         """
-        [Jungfrau][Moench][Gotthard2][Myhten3][Gotthard][Ctb] Hardware version of detector. \n
+        Hardware version of detector. \n
         [Eiger] Hardware version of front FPGA on detector.
         """
         return self.getHardwareVersion()
@@ -308,7 +308,7 @@ class Detector(CppDetectorApi):
         -----
         [Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets clkdivider to 2 (quarter speed), else to 0 (full speed)\n
         [Mythen3] Options: 8, 16, 32 \n
-        [Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2] 16
+        [Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2][Xilinx Ctb] 16
         """
         return self.getDynamicRange()
 
@@ -400,7 +400,7 @@ class Detector(CppDetectorApi):
     @element
     def framesl(self):
         """
-        [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of frames left in acquisition.\n
+        [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx CTB] Number of frames left in acquisition.\n
 
         Note
         ----
@@ -414,7 +414,7 @@ class Detector(CppDetectorApi):
     @element
     def framecounter(self):
         """
-        [Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of frames from start run control.
+        [Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx Ctb] Number of frames from start run control.
 
         Note
         -----
@@ -443,18 +443,29 @@ class Detector(CppDetectorApi):
     @element
     def powerchip(self):
         """
-        [Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. 
+        [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip. 
 
         Note
         ----
         [Jungfrau][Moench] Default is disabled. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1).\n
         [Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail.
+        [Xilinx Ctb] Default is 0. Also configures the chip if powered on.
         """
         return self.getPowerChip()
 
     @powerchip.setter
     def powerchip(self, value):
         ut.set_using_dict(self.setPowerChip, value)
+
+    def configtransceiver(self):
+        """
+        [Xilinx Ctb] Waits for transceiver to be aligned. 
+        
+        Note
+        ----
+        Chip had to be configured (powered on) before this.
+        """
+        self.configureTransceiver()
 
     @property
     @element
@@ -620,7 +631,7 @@ class Detector(CppDetectorApi):
     @element
     def periodl(self):
         """
-        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] Period left for current frame.
+        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Period left for current frame.
 
         Note
         -----
@@ -642,7 +653,7 @@ class Detector(CppDetectorApi):
     @element
     def delay(self):
         """
-        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] Delay after trigger, accepts either a value in seconds, DurationWrapper or datetime.timedelta
+        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Delay after trigger, accepts either a value in seconds, DurationWrapper or datetime.timedelta
 
         :getter: always returns in seconds. To get in DurationWrapper, use getDelayAfterTrigger
 
@@ -684,7 +695,7 @@ class Detector(CppDetectorApi):
     @element
     def delayl(self):
         """
-        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] Delay left after trigger during acquisition, accepts either a value in seconds, datetime.timedelta or DurationWrapper
+        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Delay left after trigger during acquisition, accepts either a value in seconds, datetime.timedelta or DurationWrapper
 
         Note
         -----
@@ -732,7 +743,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def nextframenumber(self):
-        """[Eiger][Jungfrau][Moench][CTB] Next frame number. Stopping acquisition might result in different frame numbers for different modules. """
+        """[Eiger][Jungfrau][Moench][CTB][Xilinx CTB][Gotthard2] Next frame number. Stopping acquisition might result in different frame numbers for different modules. So, after stopping, next frame number (max + 1) is set for all the modules afterwards."""
         return self.getNextFrameNumber()
 
     @nextframenumber.setter
@@ -1032,7 +1043,7 @@ class Detector(CppDetectorApi):
         
         Note
         ----
-        If path does not exist, it will try to create it.
+        If path does not exist and fwrite enabled, it will try to create it at start of acquisition.
         
         Example
         --------
@@ -1048,7 +1059,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def fwrite(self):
-        """Enable or disable receiver file write. Default is enabled. """
+        """Enable or disable receiver file write. Default is disabled. """
         return self.getFileWrite()
 
     @fwrite.setter
@@ -1198,31 +1209,6 @@ class Detector(CppDetectorApi):
                 self.setClientZmqPort(p, i)
         else:
             raise ValueError("Unknown argument type")
-
-    @property
-    @element
-    def rx_zmqip(self):
-        """
-        Zmq Ip Address from which data is to be streamed out of the receiver. 
-        
-        Note
-        -----
-        Also restarts receiver zmq streaming if enabled. \n
-        Default is from rx_hostname. \n
-        Modified only when using an intermediate process after receiver.
-
-        Example
-        -------
-        >>> d.rx_zmqip
-        192.168.0.101
-        >>> d.rx_zmqip = '192.168.0.101'
-        """
-        return self.getRxZmqIP()
-
-    @rx_zmqip.setter
-    def rx_zmqip(self, ip):
-        ip = ut.make_ip(ip) #Convert from int or string to IpAddr
-        ut.set_using_dict(self.setRxZmqIP, ip)
 
     @property
     @element
@@ -1951,7 +1937,7 @@ class Detector(CppDetectorApi):
     @element
     def triggersl(self):
         """
-        [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Number of triggers left in acquisition.\n
+        [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx CTB] Number of triggers left in acquisition.\n
         
         Note
         ----
@@ -1964,7 +1950,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def frametime(self):
-        """[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Timestamp at a frame start.
+        """[Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx Ctb] Timestamp at a frame start.
         
         Note
         ----
@@ -2003,23 +1989,59 @@ class Detector(CppDetectorApi):
 
     @property
     def versions(self):
-        version_list = {'type': self.type,
-                'package': self.packageversion, 
-                'client': self.clientversion}
-                
-        if self.type == detectorType.EIGER:
-            version_list ['firmware (Beb)'] = self.firmwareversion
-            version_list ['firmware(Febl)'] = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_LEFT)
-            version_list ['firmware (Febr)'] = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_RIGHT)
+        type = "Unknown"
+        firmware = "Unknown"
+        detectorserver = "Unknown"
+        kernel = "Unknown"
+        hardware = "Unknown"    
+        receiverversion = "Unknown"
+        eiger = False
+        firmware_febl = "Unknown"
+        firmware_febr = "Unknown"
+        firmware_beb = "Unknown"
+        receiver_in_shm = False
+
+        release = self.packageversion
+        client = self.clientversion
+
+        if self.nmod != 0:
+            # shared memory has detectors
+            type = self.type
+            eiger = (self.type == detectorType.EIGER)
+            receiver_in_shm = self.use_receiver
+            if receiver_in_shm:
+                # cannot connect to receiver
+                try:
+                    receiverversion = self.rx_version
+                except Exception as e:
+                    pass
+            # cannot connect to Detector
+            try:
+                firmware = self.firmwareversion
+                detectorserver = self.detectorserverversion
+                kernel = self.kernelversion
+                hardware = self.hardwareversion
+                if eiger:
+                    firmware_beb = self.firmwareversion
+                    firmware_febl = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_LEFT)
+                    firmware_febr = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_RIGHT)
+            except Exception as e:
+                pass
+
+        version_list = {'type': {type},
+                'package': {release}, 
+                'client': {client}}
+        if eiger:
+            version_list ['firmware (Beb)'] = {firmware_beb}
+            version_list ['firmware(Febl)'] = {firmware_febl}
+            version_list ['firmware (Febr)'] = {firmware_febr}
         else:
-            version_list ['firmware'] = self.firmwareversion
-
-        version_list ['detectorserver'] = self.detectorserverversion
-        version_list ['kernel'] = self.kernelversion
-        version_list ['hardware'] = self.hardwareversion
-
-        if self.use_receiver:
-            version_list ['receiver'] = self.rx_version
+            version_list ['firmware'] = {firmware}
+        version_list ['detectorserver'] = {detectorserver}
+        version_list ['kernel'] = kernel
+        version_list ['hardware'] = hardware
+        if receiver_in_shm:
+            version_list ['receiver'] = {receiverversion}
 
         return version_list
 
@@ -2089,7 +2111,7 @@ class Detector(CppDetectorApi):
         
         Note
         -----
-        [Jungfrau][Moench] FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED
+        [Jungfrau][Moench][Mythen3] FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED
         [Eiger] FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED
         [Moench] FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED
         [Gottthard2] G2_108MHZ (Default), G2_144MHZ
@@ -2180,7 +2202,7 @@ class Detector(CppDetectorApi):
         Note
         -----
         Default: AUTO_TIMING \n
-        [Jungfrau][Moench][Gotthard][Ctb][Gotthard2] AUTO_TIMING, TRIGGER_EXPOSURE \n
+        [Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx Ctb] AUTO_TIMING, TRIGGER_EXPOSURE \n
         [Mythen3] AUTO_TIMING, TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n
         [Eiger] AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
         """
@@ -2602,7 +2624,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def runtime(self):
-        """[Jungfrau][Moench][Mythen3][Gotthard2][CTB] Time from detector start up.
+        """[Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx Ctb] Time from detector start up.
         
         Note
         -----
@@ -2889,9 +2911,35 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setPedestalMode, value)
 
     @property
+    @element
+    def timing_info_decoder(self):
+        """[Jungfrau] [Jungfrau] Advanced Command and only for SWISSFEL and SHINE. Sets the bunch id or timing info decoder. Default is SWISSFEL.
+        Enum: timingInfoDecoder
+        """
+        return self.getTimingInfoDecoder()
+
+    @timing_info_decoder.setter
+    def timing_info_decoder(self, value):
+        ut.set_using_dict(self.setTimingInfoDecoder, value)
+        
+    @property
+    @element
+    def collectionmode(self):
+        """[Jungfrau] Sets collection mode to HOLE or ELECTRON. Default is HOLE.
+        Enum: collectionMode
+        """
+        return self.getCollectionMode()
+
+    @collectionmode.setter
+    def collectionmode(self, value):
+        ut.set_using_dict(self.setCollectionMode, value)
+
+    @property
     def maxclkphaseshift(self):
         """
-        [Gotthard2][Mythen3] Absolute maximum Phase shift of clocks.
+        [Gotthard2][Mythen3] Absolute maximum Phase shift of clocks.\n
+        [Gotthard2] Clock index range: 0-5\n
+        [Mythen3] Clock index range: 0
                
         :setter: Not Implemented
         
@@ -3237,7 +3285,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def transceiverenable(self):
-        """[Ctb] Transceiver Enable Mask. Enable for each 4 transceiver channel."""
+        """[CTB][Xilinx CTB] Transceiver Enable Mask. Enable for each 4 transceiver channel."""
         return self.getTransceiverEnableMask()
 
     @transceiverenable.setter
@@ -3276,8 +3324,10 @@ class Detector(CppDetectorApi):
         
         Note
         ------
-        Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL, TRANSCEIVER_ONLY, DIGITAL_AND_TRANSCEIVER
-        Default: ANALOG_ONLY
+        [CTB] Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL, TRANSCEIVER_ONLY, DIGITAL_AND_TRANSCEIVER
+        [CTB] Default: ANALOG_ONLY
+        [Xilinx CTB] Options: TRANSCEIVER_ONLY
+        [Xilinx CTB] Default: TRANSCEIVER_ONLY
 
         Example
         --------
@@ -3314,7 +3364,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def tsamples(self):
-        """[CTB] Number of transceiver samples expected. """
+        """[CTB][Xilinx CTB] Number of transceiver samples expected. """
         return self.getNumberOfTransceiverSamples()
 
     @tsamples.setter
@@ -3477,7 +3527,7 @@ class Detector(CppDetectorApi):
 
     @property
     def pattern(self):
-        """[Mythen3][Ctb] Loads ASCII pattern file directly to server (instead of executing line by line).
+        """[Mythen3][Ctb][Xilinx Ctb] Loads ASCII pattern file directly to server (instead of executing line by line).
                
         :getter: Not Implemented
         
@@ -3495,7 +3545,7 @@ class Detector(CppDetectorApi):
     @property
     def patfname(self):
         """
-        [Ctb][Mythen3] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default
+        [Ctb][Mythen3][Xilinx Ctb] Gets the pattern file name including path of the last pattern uploaded. Returns an empty if nothing was uploaded or via a server default
         file
         """
         return self.getPatterFileName()
@@ -3520,7 +3570,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patlimits(self):
-        """[Ctb][Mythen3] Limits (start and stop address) of complete pattern.
+        """[Ctb][Mythen3][Xilinx Ctb] Limits (start and stop address) of complete pattern.
         
         Example
         ---------
@@ -3540,7 +3590,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patsetbit(self):
-        """[Ctb][Mythen3] Sets the mask applied to every pattern to the selected bits. 
+        """[Ctb][Mythen3][Xilinx Ctb] Sets the mask applied to every pattern to the selected bits. 
         
         Example
         --------
@@ -3557,7 +3607,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patmask(self):
-        """[Ctb][Mythen3] Selects the bits that will have a pattern mask applied to the selected patmask for every pattern.
+        """[Ctb][Mythen3][Xilinx Ctb] Selects the bits that will have a pattern mask applied to the selected patmask for every pattern.
         
         Example
         --------
@@ -3575,7 +3625,7 @@ class Detector(CppDetectorApi):
     # @element
     def patwait(self):
         """
-        [Ctb][Mythen3] Wait address of loop level provided.
+        [Ctb][Mythen3][Xilinx Ctb] Wait address of loop level provided.
         
         Example
         -------
@@ -3592,7 +3642,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patwait0(self):
-        """[Ctb][Mythen3] Wait 0 address.
+        """[Ctb][Mythen3][Xilinx Ctb] Wait 0 address.
                 
         Example
         --------
@@ -3612,7 +3662,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patwait1(self):
-        """[Ctb][Mythen3] Wait 1 address.
+        """[Ctb][Mythen3][Xilinx Ctb] Wait 1 address.
                 
         Example
         --------
@@ -3632,7 +3682,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patwait2(self):
-        """[Ctb][Mythen3] Wait 2 address.
+        """[Ctb][Mythen3][Xilinx Ctb] Wait 2 address.
                 
         Example
         --------
@@ -3652,7 +3702,7 @@ class Detector(CppDetectorApi):
     @property
     def patwaittime(self):
         """
-        [Ctb][Mythen3] Wait time in clock cycles of loop level provided.
+        [Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles of loop level provided.
         
         Example
         -------
@@ -3669,7 +3719,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patwaittime0(self):
-        """[Ctb][Mythen3] Wait 0 time in clock cycles."""
+        """[Ctb][Mythen3][Xilinx Ctb] Wait 0 time in clock cycles."""
         return self.getPatternWaitTime(0)
 
     @patwaittime0.setter
@@ -3680,7 +3730,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patwaittime1(self):
-        """[Ctb][Mythen3] Wait 1 time in clock cycles."""
+        """[Ctb][Mythen3][Xilinx Ctb] Wait 1 time in clock cycles."""
         return self.getPatternWaitTime(1)
 
     @patwaittime1.setter
@@ -3691,7 +3741,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patwaittime2(self):
-        """[Ctb][Mythen3] Wait 2 time in clock cycles."""
+        """[Ctb][Mythen3][Xilinx Ctb] Wait 2 time in clock cycles."""
         return self.getPatternWaitTime(2)
 
     @patwaittime2.setter
@@ -3703,7 +3753,7 @@ class Detector(CppDetectorApi):
     @property
     def patloop(self):
         """
-        [Ctb][Mythen3] Limits (start and stop address) of the loop provided.
+        [Ctb][Mythen3][Xilinx Ctb] Limits (start and stop address) of the loop provided.
         
         Example
         -------
@@ -3720,7 +3770,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patloop0(self):
-        """[Ctb][Mythen3] Limits (start and stop address) of loop 0.
+        """[Ctb][Mythen3][Xilinx Ctb] Limits (start and stop address) of loop 0.
         
         Example
         ---------
@@ -3740,7 +3790,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patloop1(self):
-        """[Ctb][Mythen3] Limits (start and stop address) of loop 1.
+        """[Ctb][Mythen3][Xilinx Ctb] Limits (start and stop address) of loop 1.
         
         Example
         ---------
@@ -3761,7 +3811,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patloop2(self):
-        """[Ctb][Mythen3] Limits (start and stop address) of loop 2.
+        """[Ctb][Mythen3][Xilinx Ctb] Limits (start and stop address) of loop 2.
         
         Example
         ---------
@@ -3783,7 +3833,7 @@ class Detector(CppDetectorApi):
     @property
     def patnloop(self):
         """
-        [Ctb][Mythen3] Number of cycles of the loop provided.
+        [Ctb][Mythen3][Xilinx Ctb] Number of cycles of the loop provided.
         
         Example
         -------
@@ -3800,7 +3850,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patnloop0(self):
-        """[Ctb][Mythen3] Number of cycles of loop 0."""
+        """[Ctb][Mythen3][Xilinx Ctb] Number of cycles of loop 0."""
         return self.getPatternLoopCycles(0)
 
     @patnloop0.setter
@@ -3811,7 +3861,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patnloop1(self):
-        """[Ctb][Mythen3] Number of cycles of loop 1."""
+        """[Ctb][Mythen3][Xilinx Ctb] Number of cycles of loop 1."""
         return self.getPatternLoopCycles(1)
 
     @patnloop1.setter
@@ -3822,7 +3872,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patnloop2(self):
-        """[Ctb][Mythen3] Number of cycles of loop 2."""
+        """[Ctb][Mythen3][Xilinx Ctb] Number of cycles of loop 2."""
         return self.getPatternLoopCycles(2)
 
     @patnloop2.setter
@@ -3833,7 +3883,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_a(self):
-        """[Ctb] Power supply a in mV."""
+        """[Ctb][Xilinx Ctb] Power supply a in mV."""
         return self.getPower(dacIndex.V_POWER_A)
 
     @v_a.setter
@@ -3844,7 +3894,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_b(self):
-        """[Ctb] Power supply b in mV."""
+        """[Ctb][Xilinx Ctb] Power supply b in mV."""
         return self.getPower(dacIndex.V_POWER_B)
 
     @v_b.setter
@@ -3855,7 +3905,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_c(self):
-        """[Ctb] Power supply c in mV."""
+        """[Ctb][Xilinx Ctb] Power supply c in mV."""
         return self.getPower(dacIndex.V_POWER_C)
 
     @v_c.setter
@@ -3866,7 +3916,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_d(self):
-        """[Ctb] Power supply d in mV."""
+        """[Ctb][Xilinx Ctb] Power supply d in mV."""
         return self.getPower(dacIndex.V_POWER_D)
 
     @v_d.setter
@@ -3877,7 +3927,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_io(self):
-        """[Ctb] Power supply io in mV. Minimum 1200 mV. 
+        """[Ctb][Xilinx Ctb] Power supply io in mV. Minimum 1200 mV. 
         
         Note
         ----
@@ -3893,7 +3943,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_limit(self):
-        """[Ctb] Soft limit for power supplies (ctb only) and DACS in mV."""
+        """[Ctb][Xilinx Ctb] Soft limit for power supplies (ctb only) and DACS in mV."""
         return self.getPower(dacIndex.V_LIMIT)
 
     @v_limit.setter
@@ -3950,7 +4000,9 @@ class Detector(CppDetectorApi):
     @property
     def clkphase(self):
         """
-        [Gotthard2][Mythen3] Phase shift of all clocks.
+        [Gotthard2][Mythen3] Phase shift of all clocks.\n
+        [Gotthard2] Clock index range: 0-5\n
+        [Mythen3] Clock index range: 0
         
         Example
         -------
@@ -3968,7 +4020,9 @@ class Detector(CppDetectorApi):
     @property
     def clkdiv(self):
         """
-        [Gotthard2][Mythen3] Clock Divider of all clocks. Must be greater than 1.
+        [Gotthard2][Mythen3] Clock Divider of all clocks. Must be greater than 1.\n
+        [Gotthard2] Clock index range: 0-5\n
+        [Mythen3] Clock index range: 0
         
         Example
         -------
@@ -4024,7 +4078,10 @@ class Detector(CppDetectorApi):
     @property
     def clkfreq(self):
         """
-        [Gotthard2][Mythen3] Frequency of clock in Hz. 
+        [Gotthard2][Mythen3] Frequency of clock in Hz.\n
+        [Gotthard2] Clock index range: 0-5\n
+        [Mythen3] Clock index range: 0
+        
         
         :setter: Not implemented. Use clkdiv to set frequency
 

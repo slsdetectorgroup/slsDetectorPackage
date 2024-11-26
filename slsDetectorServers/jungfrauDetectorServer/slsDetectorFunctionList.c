@@ -88,6 +88,7 @@ void basictests() {
                "Could not map to memory. Cannot proceed. Check Firmware.\n");
         LOG(logERROR, (initErrorMessage));
         initError = FAIL;
+        return;
     }
 #ifndef VIRTUAL
     // does check only if flag is 0 (by default), set by command line
@@ -438,15 +439,14 @@ void initStopServer() {
             initCheckDone = 1;
             return;
         }
+#ifdef VIRTUAL
+        setupDetector();
+#else
+        // chip version is a variable
         if (readConfigFile() == FAIL) {
             initCheckDone = 1;
             return;
         }
-#ifdef VIRTUAL
-        sharedMemory_setStop(0);
-        // temp threshold and reset event (read by stop server)
-        setThresholdTemperature(DEFAULT_TMP_THRSHLD);
-        setTemperatureEvent(0);
 #endif
     }
     initCheckDone = 1;
@@ -462,8 +462,14 @@ void setupDetector() {
     }
     chipConfigured = 0;
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    setupUDPCommParameters();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        setupUDPCommParameters();
+    } else {
+        sharedMemory_setStop(0);
+    }
+    // ismaster from reg in stop server, so set it in virtual mode
+    setMaster(OW_MASTER);
 #endif
 
     // altera pll
@@ -549,6 +555,7 @@ void setupDetector() {
     setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 
     // temp threshold and reset event
+    setTemperatureControl(DEFAULT_TMP_CNTRL);
     setThresholdTemperature(DEFAULT_TMP_THRSHLD);
     setTemperatureEvent(0);
     if (getChipVersion() == 11) {
@@ -566,6 +573,8 @@ void setupDetector() {
 #endif
     setPedestalMode(DEFAULT_PEDESTAL_MODE, DEFAULT_PEDESTAL_FRAMES,
                     DEFAULT_PEDESTAL_LOOPS);
+    setTimingInfoDecoder(DEFAULT_TIMING_INFO_DECODER);
+    setElectronCollectionMode(DEFAULT_ELECTRON_COLLECTION_MODE);
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -2246,7 +2255,6 @@ int setThresholdTemperature(int val) {
 
     double ftemp = (double)temp / 1000.00;
     LOG(logDEBUG1, ("Threshold Temperature read %f °C\n", ftemp));
-
     return temp;
 }
 
@@ -2547,6 +2555,7 @@ void getPedestalParameters(uint8_t *frames, uint16_t *loops) {
 }
 
 void setPedestalMode(int enable, uint8_t frames, uint16_t loops) {
+    // Note: loops is 8 bit in firmware as a bug.To be fixed in next version
     int prevPedestalEnable = getPedestalMode();
     uint32_t addr = PEDESTAL_MODE_REG;
 
@@ -2607,6 +2616,57 @@ void setPedestalMode(int enable, uint8_t frames, uint16_t loops) {
                         SET_CYCLES_MSB_REG);
         }
     }
+}
+
+int setTimingInfoDecoder(enum timingInfoDecoder val) {
+    switch (val) {
+    case SWISSFEL:
+        LOG(logINFO, ("Setting Timing Info Decoder to SWISSFEL\n"));
+        break;
+    case SHINE:
+        LOG(logINFO, ("Setting Timing Info Decoder to SHINE\n"));
+        break;
+    default:
+        LOG(logERROR, ("Unknown Timing Info Decoder %d\n", val));
+        return FAIL;
+    }
+
+    int decodeValue = (int)val;
+    uint32_t addr = EXT_SIGNAL_REG;
+    bus_w(addr, bus_r(addr) & ~EXT_TIMING_INFO_DECODER_MSK);
+    bus_w(addr, bus_r(addr) | ((decodeValue << EXT_TIMING_INFO_DECODER_OFST) &
+                               EXT_TIMING_INFO_DECODER_MSK));
+
+    return OK;
+}
+
+int getTimingInfoDecoder(enum timingInfoDecoder *retval) {
+    int decodeValue = ((bus_r(EXT_SIGNAL_REG) & EXT_TIMING_INFO_DECODER_MSK) >>
+                       EXT_TIMING_INFO_DECODER_OFST);
+    if (decodeValue == (int)SWISSFEL) {
+        *retval = SWISSFEL;
+    } else if (decodeValue == (int)SHINE) {
+        *retval = SHINE;
+    } else {
+        return FAIL;
+    }
+    return OK;
+}
+
+int getElectronCollectionMode() {
+    return ((bus_r(DAQ_REG) & DAQ_ELCTRN_CLLCTN_MDE_MSK) >>
+            DAQ_ELCTRN_CLLCTN_MDE_OFST);
+}
+
+void setElectronCollectionMode(int enable) {
+    LOG(logINFO,
+        ("Setting Collection Mode to %s\n", enable == 0 ? "Hole" : "Electron"));
+    if (enable) {
+        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_ELCTRN_CLLCTN_MDE_MSK);
+    } else {
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_ELCTRN_CLLCTN_MDE_MSK);
+    }
+    configureChip();
 }
 
 int getTenGigaFlowControl() {
@@ -2674,7 +2734,8 @@ int startStateMachine() {
         LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
         sharedMemory_setStatus(IDLE);
         return FAIL;
-    }
+    } else
+        pthread_detach(pthread_virtual_tid);
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
     return OK;
 #endif
@@ -2730,9 +2791,9 @@ void *start_timer(void *arg) {
             }
 
             if ((i % 1024) < 300) {
-                gainVal = 1;
+                gainVal = 0;
             } else if ((i % 1024) < 600) {
-                gainVal = 2;
+                gainVal = 1;
             } else {
                 gainVal = 3;
             }
@@ -2769,17 +2830,29 @@ void *start_timer(void *arg) {
             clock_gettime(CLOCK_REALTIME, &begin);
             usleep(expUs);
 
+#ifdef TEST_CHANGE_GAIN_EVERY_FRAME
             // change gain and data for every frame
             {
                 const int npixels = (NCHAN * NCHIP);
+
+                // random gain values, 2 becomes 3 as 2 is invalid
+                int randomGainValues[3] = {0};
+                srand(time(0));
+                for (int i = 0; i != 3; ++i) {
+                    int r = rand() % 3;
+                    if (r == 2)
+                        r = 3;
+                    randomGainValues[i] = r;
+                }
+
                 for (int i = 0; i < npixels; ++i) {
                     int gainVal = 0;
                     if ((i % 1024) < 300) {
-                        gainVal = 1 + iframes;
+                        gainVal = randomGainValues[0];
                     } else if ((i % 1024) < 600) {
-                        gainVal = 2 + iframes;
+                        gainVal = randomGainValues[1];
                     } else {
-                        gainVal = 3 + iframes;
+                        gainVal = randomGainValues[2];
                     }
                     int dataVal =
                         *((uint16_t *)(imageData + i * sizeof(uint16_t)));
@@ -2790,7 +2863,7 @@ void *start_timer(void *arg) {
                         (uint16_t)pixelVal;
                 }
             }
-
+#endif
             int srcOffset = 0;
             int srcOffset2 = DATA_BYTES / 2;
             int row0 = (numInterfaces == 1 ? detPos[1] : detPos[3]);

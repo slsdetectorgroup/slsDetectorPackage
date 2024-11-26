@@ -63,7 +63,6 @@ int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkDivider[NUM_CLOCKS] = {};
 
 enum TLogLevel trimmingPrint = logINFO;
-int highvoltage = 0;
 int detPos[2] = {};
 int64_t exptimeReg[NCOUNTERS] = {0, 0, 0};
 int64_t gateDelayReg[NCOUNTERS] = {0, 0, 0};
@@ -92,6 +91,7 @@ void basictests() {
                "Could not map to memory. Cannot proceed. Check Firmware.\n");
         LOG(logERROR, (initErrorMessage));
         initError = FAIL;
+        return;
     }
 #ifndef VIRTUAL
     // does check only if flag is 0 (by default), set by command line
@@ -396,11 +396,7 @@ void initStopServer() {
             return;
         }
 #ifdef VIRTUAL
-        sharedMemory_setStop(0);
-        if (checkCommandLineConfiguration() == FAIL) {
-            initCheckDone = 1;
-            return;
-        }
+        setupDetector();
 #endif
     }
     initCheckDone = 1;
@@ -408,18 +404,24 @@ void initStopServer() {
 
 /* set up detector */
 
-void allocateDetectorStructureMemory() {
-    // Allocation of memory
+int allocateDetectorStructureMemory() {
     detectorModules = malloc(sizeof(sls_detector_module));
     detectorChans = malloc(NCHAN_PER_MODULE * sizeof(int));
-    badChannelMask = malloc(NCHAN_PER_MODULE * sizeof(char));
-    memset(badChannelMask, 0, NCHAN_PER_MODULE * sizeof(char));
     detectorDacs = malloc(NDAC * sizeof(int));
-
+    badChannelMask = malloc(NCHAN_PER_MODULE * sizeof(char));
+    if (detectorModules == NULL || detectorChans == NULL ||
+        detectorDacs == NULL || badChannelMask == NULL) {
+        initError = FAIL;
+        strcpy(initErrorMessage, "Could not allocate memory for dacs, channels "
+                                 "or bad channel mask in detector\n");
+        LOG(logERROR, (initErrorMessage));
+        return FAIL;
+    }
     LOG(logDEBUG1,
         ("modules from 0x%x to 0x%x\n", detectorModules, detectorModules));
     LOG(logDEBUG1, ("chans from 0x%x to 0x%x\n", detectorChans, detectorChans));
     LOG(logDEBUG1, ("dacs from 0x%x to 0x%x\n", detectorDacs, detectorDacs));
+
     (detectorModules)->dacs = detectorDacs;
     (detectorModules)->chanregs = detectorChans;
     (detectorModules)->ndac = NDAC;
@@ -433,21 +435,22 @@ void allocateDetectorStructureMemory() {
     (detectorModules)->eV[2] = 0;
     thisSettings = UNINITIALIZED;
 
-    // initialize dacs
+    // initialize
     for (int idac = 0; idac < (detectorModules)->ndac; ++idac) {
         detectorDacs[idac] = 0;
     }
-
-    // trimbits start at 0
     for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
         *((detectorModules->chanregs) + ichan) = 0;
     }
+    memset(badChannelMask, 0, NCHAN_PER_MODULE * sizeof(char));
+    return OK;
 }
 
 void setupDetector() {
     LOG(logINFO, ("This Server is for 1 Mythen3 module \n"));
 
-    allocateDetectorStructureMemory();
+    if (allocateDetectorStructureMemory() == FAIL)
+        return;
 
     if (checkCommandLineConfiguration() == FAIL)
         return;
@@ -455,46 +458,48 @@ void setupDetector() {
     if (updateModuleId() == FAIL)
         return;
 
-    clkDivider[READOUT_C0] = DEFAULT_READOUT_C0;
-    clkDivider[READOUT_C1] = DEFAULT_READOUT_C1;
     clkDivider[SYSTEM_C0] = DEFAULT_SYSTEM_C0;
     clkDivider[SYSTEM_C1] = DEFAULT_SYSTEM_C1;
     clkDivider[SYSTEM_C2] = DEFAULT_SYSTEM_C2;
 
-    highvoltage = 0;
     trimmingPrint = logINFO;
     for (int i = 0; i < NUM_CLOCKS; ++i) {
         clkPhase[i] = 0;
     }
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    setupUDPCommParameters();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        setupUDPCommParameters();
+    } else {
+        sharedMemory_setStop(0);
+    }
 #endif
 
     // pll defines
     ALTERA_PLL_C10_SetDefines(
-        REG_OFFSET, BASE_READOUT_PLL, BASE_SYSTEM_PLL, PLL_RESET_REG,
-        PLL_RESET_READOUT_MSK, PLL_RESET_SYSTEM_MSK, SYSTEM_STATUS_REG,
-        SYSTEM_STATUS_RDO_PLL_LCKD_MSK, SYSTEM_STATUS_R_PLL_LCKD_MSK,
-        READOUT_PLL_VCO_FREQ_HZ, SYSTEM_PLL_VCO_FREQ_HZ);
-    ALTERA_PLL_C10_ResetPLL(READOUT_PLL);
+        REG_OFFSET, 0, BASE_SYSTEM_PLL, PLL_RESET_REG, 0, PLL_RESET_SYSTEM_MSK,
+        SYSTEM_STATUS_REG, SYSTEM_STATUS_RDO_PLL_LCKD_MSK,
+        SYSTEM_STATUS_R_PLL_LCKD_MSK, 0, SYSTEM_PLL_VCO_FREQ_HZ);
     ALTERA_PLL_C10_ResetPLL(SYSTEM_PLL);
-    // change startup clock divider in software
-    // because firmware only sets max clock divider
-    setClockDividerWithTimeUpdateOption(READOUT_C0, DEFAULT_READOUT_C0_STARTUP,
-                                        0);
 
     // hv
     DAC6571_SetDefines(HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
     // dac
-    LTC2620_D_SetDefines(DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC);
+    LTC2620_D_SetDefines(DAC_MIN_MV, DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC, 0,
+                         "");
 
     resetCore();
     resetPeripheral();
     cleanFifos();
 
     // defaults
-    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+    initError = setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+    if (initError == FAIL) {
+        sprintf(initErrorMessage, "Could not set high voltage to %d\n",
+                DEFAULT_HIGH_VOLTAGE);
+        return;
+    }
+
     setASICDefaults();
     setADIFDefaults();
 
@@ -546,6 +551,7 @@ void setupDetector() {
     }
 
     setAllTrimbits(DEFAULT_TRIMBIT_VALUE);
+    setReadoutSpeed(DEFAULT_READOUT_SPEED);
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -1413,6 +1419,10 @@ int setTrimbits(int *trimbits) {
 int setAllTrimbits(int val) {
     LOG(logINFO, ("Setting all trimbits to %d\n", val));
     int *trimbits = malloc(sizeof(int) * ((detectorModules)->nchan));
+    if (trimbits == NULL) {
+        LOG(logERROR, ("Could not allocate memory to set all trimbits\n"));
+        return FAIL;
+    }
     for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
         trimbits[ichan] = val;
     }
@@ -1673,10 +1683,12 @@ int getMaxDacSteps() { return LTC2620_D_GetMaxNumSteps(); }
 
 int getADC(enum ADCINDEX ind, int *value) {
     LOG(logDEBUG1, ("Reading FPGA temperature...\n"));
-    if (readADCFromFile(TEMPERATURE_FILE_NAME, value) == FAIL) {
+    if (readParameterFromFile(TEMPERATURE_FILE_NAME, "temperature", value) ==
+        FAIL) {
         LOG(logERROR, ("Could not get temperature\n"));
         return FAIL;
     }
+    LOG(logINFO, ("Temperature: %.2f °C\n", (double)(*value) / 1000.00));
     return OK;
 }
 
@@ -1686,14 +1698,11 @@ int setHighVoltage(int val) {
         val = HV_SOFT_MAX_VOLTAGE;
     }
 
-    // setting hv
-    if (val >= 0) {
-        LOG(logINFO, ("Setting High voltage: %d V\n", val));
-        if (DAC6571_Set(val) == OK)
-            highvoltage = val;
-    }
-    return highvoltage;
+    LOG(logINFO, ("Setting High voltage: %d V\n", val));
+    return DAC6571_Set(val);
 }
+
+int getHighVoltage(int *retval) { return DAC6571_Get(retval); }
 
 /* parameters - timing */
 
@@ -2241,9 +2250,7 @@ int setPhase(enum CLKINDEX ind, int val, int degrees) {
         relativePhase *= -1;
         direction = 0;
     }
-    int pllIndex = (int)(ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL);
-    int clkIndex = (int)(ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind);
-    ALTERA_PLL_C10_SetPhaseShift(pllIndex, clkIndex, relativePhase, direction);
+    ALTERA_PLL_C10_SetPhaseShift(SYSTEM_PLL, ind, relativePhase, direction);
 
     clkPhase[ind] = valShift;
     return OK;
@@ -2313,8 +2320,7 @@ int getVCOFrequency(enum CLKINDEX ind) {
         LOG(logERROR, ("Unknown clock index %d to get vco frequency\n", ind));
         return -1;
     }
-    int pllIndex = (int)(ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL);
-    return ALTERA_PLL_C10_GetVCOFrequency(pllIndex);
+    return ALTERA_PLL_C10_GetVCOFrequency(SYSTEM_PLL);
 }
 
 int getMaxClockDivider() { return ALTERA_PLL_C10_GetMaxClockDivider(); }
@@ -2353,9 +2359,7 @@ int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val,
     }
 
     // Calculate and set output frequency
-    int pllIndex = (int)(ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL);
-    int clkIndex = (int)(ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind);
-    ALTERA_PLL_C10_SetOuputClockDivider(pllIndex, clkIndex, val);
+    ALTERA_PLL_C10_SetOuputClockDivider(SYSTEM_PLL, ind, val);
 
     // Update time settings that depend on system frequency
     // timeUpdate = 0 for setChipRegister/setTrimbits etc
@@ -2387,14 +2391,9 @@ int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val,
                   clkDivider[ind]));
 
     // phase is reset by pll (when setting output frequency)
-    if (ind < SYSTEM_C0) {
-        clkPhase[READOUT_C0] = 0;
-        clkPhase[READOUT_C1] = 0;
-    } else {
-        clkPhase[SYSTEM_C0] = 0;
-        clkPhase[SYSTEM_C1] = 0;
-        clkPhase[SYSTEM_C2] = 0;
-    }
+    clkPhase[SYSTEM_C0] = 0;
+    clkPhase[SYSTEM_C1] = 0;
+    clkPhase[SYSTEM_C2] = 0;
 
     // set the phase in degrees (reset by pll)
     for (int i = 0; i < NUM_CLOCKS; ++i) {
@@ -2415,6 +2414,42 @@ int getClockDivider(enum CLKINDEX ind) {
         return -1;
     }
     return clkDivider[ind];
+}
+
+int setReadoutSpeed(int val) {
+    enum speedLevel speed = FULL_SPEED;
+    switch (val) {
+    case FULL_SPEED:
+        LOG(logINFO, ("Setting Full Speed (100 MHz):\n"));
+        speed = FULL_SPEED_CLKDIV;
+        break;
+    case HALF_SPEED:
+        LOG(logINFO, ("Setting Half Speed (50 MHz):\n"));
+        speed = HALF_SPEED_CLKDIV;
+        break;
+    case QUARTER_SPEED:
+        LOG(logINFO, ("Setting Quarter Speed (25 MHz):\n"));
+        speed = QUARTER_SPEED_CLKDIV;
+        break;
+    default:
+        LOG(logERROR, ("Unknown readout speed %d\n", val));
+        return FAIL;
+    }
+    return setClockDivider(SYSTEM_C0, speed);
+}
+
+int getReadoutSpeed(int *retval) {
+    int clkdiv = getClockDivider(SYSTEM_C0);
+    if (clkdiv == FULL_SPEED_CLKDIV) {
+        *retval = FULL_SPEED;
+    } else if (clkdiv == HALF_SPEED_CLKDIV) {
+        *retval = HALF_SPEED;
+    } else if (clkdiv == QUARTER_SPEED_CLKDIV) {
+        *retval = QUARTER_SPEED;
+    } else {
+        return FAIL;
+    }
+    return OK;
 }
 
 int setBadChannels(int numChannels, int *channelList) {
@@ -2445,11 +2480,12 @@ int *getBadChannels(int *numChannels) {
     }
     if (*numChannels > 0) {
         retvals = malloc(*numChannels * sizeof(int));
-        memset(retvals, 0, *numChannels * sizeof(int));
         if (retvals == NULL) {
+            LOG(logERROR, ("Could not allocate memory to get bad channels\n"));
             *numChannels = -1;
             return NULL;
         }
+        memset(retvals, 0, *numChannels * sizeof(int));
         // return only 1 channel for all counters
         int ich = 0;
         for (int i = 0; i != NCHAN_PER_MODULE; i = i + NCOUNTERS) {
@@ -2508,7 +2544,8 @@ int startStateMachine() {
         LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
         sharedMemory_setStatus(IDLE);
         return FAIL;
-    }
+    } else
+        pthread_detach(pthread_virtual_tid);
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
     return OK;
 #endif

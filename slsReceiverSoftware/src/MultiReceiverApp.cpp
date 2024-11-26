@@ -38,11 +38,14 @@ void sigInterruptHandler(int p) { sem_post(&semaphore); }
  * prints usage of this example program
  */
 std::string getHelpMessage() {
-    return std::string(
-        "\n\nUsage:\n"
-        "./slsMultiReceiver(detReceiver) [start_tcp_port (non-zero and 16 "
-        "bit)] [num_receivers] [optional: 1 for call back (print frame header "
-        "for debugging), 0 for none (default)]\n\n");
+    std::ostringstream os;
+    os << "\nUsage:\n"
+       << "./slsMultiReceiver [start tcp port] [num recevers] [call back "
+          "option (optional)]\n"
+       << "\t - tcp port has to be non-zero and 16 bit\n"
+       << "\t - call back option is 0 (disabled) by default, 1 prints frame "
+          "header for debugging\n";
+    return os.str();
 }
 
 /**
@@ -50,19 +53,40 @@ std::string getHelpMessage() {
  * enabled) if registerCallBackRawDataReady or
  * registerCallBackRawDataModifyReady registered, users get data
  */
-int StartAcq(const std::string &filePath, const std::string &fileName,
-             uint64_t fileIndex, size_t imageSize, void *objectPointer) {
-    LOG(sls::logINFOBLUE) << "#### StartAcq:  filePath:" << filePath
-                          << "  fileName:" << fileName
-                          << " fileIndex:" << fileIndex
-                          << "  imageSize:" << imageSize << " ####";
+int StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
+             void *objectPointer) {
+    LOG(sls::logINFOBLUE) << "#### Start Acquisition:"
+                          << "\n\t["
+                          << "\n\tUDP Port : "
+                          << sls::ToString(callbackHeader.udpPort)
+                          << "\n\tDynamic Range : "
+                          << callbackHeader.dynamicRange
+                          << "\n\tDetector Shape : "
+                          << sls::ToString(callbackHeader.detectorShape)
+                          << "\n\tImage Size : " << callbackHeader.imageSize
+                          << "\n\tFile Path : " << callbackHeader.filePath
+                          << "\n\tFile Name : " << callbackHeader.fileName
+                          << "\n\tFile Index : " << callbackHeader.fileIndex
+                          << "\n\tQuad Enable : " << callbackHeader.quad
+                          << "\n\tAdditional Json Header : "
+                          << sls::ToString(callbackHeader.addJsonHeader)
+                          << "\n\t]";
     return 0;
 }
 
 /** Acquisition Finished Call back */
-void AcquisitionFinished(uint64_t framesCaught, void *objectPointer) {
-    LOG(sls::logINFOBLUE) << "#### AcquisitionFinished: framesCaught:"
-                          << framesCaught << " ####";
+void AcquisitionFinished(
+    const slsDetectorDefs::endCallbackHeader callbackHeader,
+    void *objectPointer) {
+    LOG(sls::logINFOBLUE) << "#### AcquisitionFinished:"
+                          << "\n\t["
+                          << "\n\tUDP Port : "
+                          << sls::ToString(callbackHeader.udpPort)
+                          << "\n\tComplete Frames : "
+                          << sls::ToString(callbackHeader.completeFrames)
+                          << "\n\tLast Frame Index : "
+                          << sls::ToString(callbackHeader.lastFrameIndex)
+                          << "\n\t]";
 }
 
 /**
@@ -70,62 +94,61 @@ void AcquisitionFinished(uint64_t framesCaught, void *objectPointer) {
  * Prints in different colors(for each receiver process) the different headers
  * for each image call back.
  */
-void GetData(slsDetectorDefs::sls_receiver_header &header, char *dataPointer,
-             size_t imageSize, void *objectPointer) {
+void GetData(slsDetectorDefs::sls_receiver_header &header,
+             slsDetectorDefs::dataCallbackHeader callbackHeader,
+             char *dataPointer, size_t &imageSize, void *objectPointer) {
+
     slsDetectorDefs::sls_detector_header detectorHeader = header.detHeader;
 
     PRINT_IN_COLOR(
-        detectorHeader.modId ? detectorHeader.modId : detectorHeader.row,
-        "#### %d %d GetData: ####\n"
-        "frameNumber: %lu\t\texpLength: %u\t\tpacketNumber: %u\t\tdetSpec1: %lu"
-        "\t\ttimestamp: %lu\t\tmodId: %u\t\t"
-        "row: %u\t\tcolumn: %u\t\tdetSpec2: %u\t\tdetSpec3: %u"
-        "\t\tdetSpec4: %u\t\tdetType: %u\t\tversion: %u"
-        //"\t\tpacketsMask:%s"
-        "\t\tfirstbytedata: 0x%x\t\tdatsize: %zu\n\n",
-        detectorHeader.column, detectorHeader.row,
-        (long unsigned int)detectorHeader.frameNumber, detectorHeader.expLength,
-        detectorHeader.packetNumber, (long unsigned int)detectorHeader.detSpec1,
-        (long unsigned int)detectorHeader.timestamp, detectorHeader.modId,
-        detectorHeader.row, detectorHeader.column, detectorHeader.detSpec2,
-        detectorHeader.detSpec3, detectorHeader.detSpec4,
-        detectorHeader.detType, detectorHeader.version,
+        (callbackHeader.udpPort % 10),
+        "#### GetData: "
+        "\n\tCallback Header: "
+        "\n\t["
+        "\n\tUDP Port: %u"
+        "\n\tShape: [%u, %u]"
+        "\n\tAcq Index : %lu"
+        "\n\tFrame Index :%lu"
+        "\n\tProgress : %.2f%%"
+        "\n\tCompelte Image :%s"
+        "\n\tFlip Rows :%s"
+        "\n\tAdditional Json Header : %s"
+        "\n\t]"
+        "\n\ttReceiver Header: "
+        "\n\t["
+        "\n\tFrame Number : %lu"
+        "\n\tExposure Length :%u"
+        "\n\tPackets Caught :%u"
+        "\n\tDetector Specific 1: %lu"
+        "\n\tTimestamp : %lu"
+        "\n\tModule Id :%u"
+        "\n\tRow : %u"
+        "\n\tColumn :%u"
+        "\n\tDetector Specific 2 : %u"
+        "\n\tDetector Specific 3 : %u"
+        "\n\tDetector Specific 4 : %u"
+        "\n\tDetector Type : %s"
+        "\n\tVersion: %u"
+        "\n\t]"
+        "\n\tFirst Byte Data: 0x%x"
+        "\n\tImage Size: %zu\n\n",
+        callbackHeader.udpPort, callbackHeader.shape.x, callbackHeader.shape.y,
+        callbackHeader.acqIndex, callbackHeader.frameIndex,
+        callbackHeader.progress,
+        sls::ToString(callbackHeader.completeImage).c_str(),
+        sls::ToString(callbackHeader.flipRows).c_str(),
+        sls::ToString(callbackHeader.addJsonHeader).c_str(),
+        detectorHeader.frameNumber, detectorHeader.expLength,
+        detectorHeader.packetNumber, detectorHeader.detSpec1,
+        detectorHeader.timestamp, detectorHeader.modId, detectorHeader.row,
+        detectorHeader.column, detectorHeader.detSpec2, detectorHeader.detSpec3,
+        detectorHeader.detSpec4, sls::ToString(detectorHeader.detType).c_str(),
+        detectorHeader.version,
         // header->packetsMask.to_string().c_str(),
         ((uint8_t)(*((uint8_t *)(dataPointer)))), imageSize);
-}
-
-/**
- * Get Receiver Data Call back (modified)
- * Prints in different colors(for each receiver process) the different headers
- * for each image call back.
- * @param modifiedImageSize new data size in bytes after the callback.
- * This will be the size written/streamed. (only smaller value is allowed).
- */
-void GetData(slsDetectorDefs::sls_receiver_header &header, char *dataPointer,
-             size_t &modifiedImageSize, void *objectPointer) {
-    slsDetectorDefs::sls_detector_header detectorHeader = header.detHeader;
-
-    PRINT_IN_COLOR(
-        detectorHeader.modId ? detectorHeader.modId : detectorHeader.row,
-        "#### %d %d GetData: ####\n"
-        "frameNumber: %lu\t\texpLength: %u\t\tpacketNumber: %u\t\tdetSpec1: %lu"
-        "\t\ttimestamp: %lu\t\tmodId: %u\t\t"
-        "row: %u\t\tcolumn: %u\t\tdetSpec2: %u\t\tdetSpec3: %u"
-        "\t\tdetSpec4: %u\t\tdetType: %u\t\tversion: %u"
-        //"\t\tpacketsMask:%s"
-        "\t\tfirstbytedata: 0x%x\t\tdatsize: %zu\n\n",
-        detectorHeader.column, detectorHeader.row,
-        (long unsigned int)detectorHeader.frameNumber, detectorHeader.expLength,
-        detectorHeader.packetNumber, (long unsigned int)detectorHeader.detSpec1,
-        (long unsigned int)detectorHeader.timestamp, detectorHeader.modId,
-        detectorHeader.row, detectorHeader.column, detectorHeader.detSpec2,
-        detectorHeader.detSpec3, detectorHeader.detSpec4,
-        detectorHeader.detType, detectorHeader.version,
-        // header->packetsMask.to_string().c_str(),
-        *reinterpret_cast<uint8_t *>(dataPointer), modifiedImageSize);
 
     // if data is modified, eg ROI and size is reduced
-    modifiedImageSize = 26000;
+    imageSize = 26000;
 }
 
 /**
@@ -139,26 +162,40 @@ int main(int argc, char *argv[]) {
 
     /**	- set default values */
     int numReceivers = 1;
-    uint16_t startTCPPort = 1954;
+    uint16_t startTCPPort = DEFAULT_TCP_RX_PORTNO;
     int withCallback = 0;
     sem_init(&semaphore, 1, 0);
 
     /**	- get number of receivers and start tcp port from command line
      * arguments */
-    try {
-        if (argc == 3 || argc == 4) {
-            startTCPPort = sls::StringTo<uint16_t>(argv[1]);
-            if (startTCPPort == 0) {
-                throw;
-            }
-            numReceivers = std::stoi(argv[2]);
-            if (argc == 4) {
-                withCallback = std::stoi(argv[3]);
-            }
-        } else
-            throw;
-    } catch (...) {
-        throw std::runtime_error(getHelpMessage());
+    if (argc > 1) {
+        try {
+            if (argc == 3 || argc == 4) {
+                startTCPPort = sls::StringTo<uint16_t>(argv[1]);
+                if (startTCPPort == 0) {
+                    throw std::runtime_error("Invalid start tcp port");
+                }
+                numReceivers = std::stoi(argv[2]);
+                if (numReceivers > 1024) {
+                    cprintf(RED,
+                            "Did you mix up the order of the arguments?\n%s\n",
+                            getHelpMessage().c_str());
+                    return EXIT_FAILURE;
+                }
+                if (numReceivers == 0) {
+                    cprintf(RED, "Invalid number of receivers.\n%s\n",
+                            getHelpMessage().c_str());
+                    return EXIT_FAILURE;
+                }
+                if (argc == 4) {
+                    withCallback = std::stoi(argv[3]);
+                }
+            } else
+                throw std::runtime_error("Invalid number of arguments");
+        } catch (const std::exception &e) {
+            cprintf(RED, "Error: %s\n%s\n", e.what(), getHelpMessage().c_str());
+            return EXIT_FAILURE;
+        }
     }
 
     cprintf(BLUE, "Parent Process Created [ Tid: %ld ]\n", (long)gettid());
@@ -214,26 +251,22 @@ int main(int argc, char *argv[]) {
                 throw;
             }
             /**	- register callbacks. remember to set file write enable to 0
-      (using the client) if we should not write files and you will write data
-      using the callbacks */
+             * (using the client) if we should not write files and you will
+             * write data using the callbacks */
             if (withCallback) {
 
                 /** - Call back for start acquisition */
-                cprintf(BLUE, "Registering 	StartAcq()\n");
+                cprintf(BLUE, "Registering StartAcq()\n");
                 receiver->registerCallBackStartAcquisition(StartAcq, nullptr);
 
                 /** - Call back for acquisition finished */
-                cprintf(BLUE, "Registering 	AcquisitionFinished()\n");
+                cprintf(BLUE, "Registering AcquisitionFinished()\n");
                 receiver->registerCallBackAcquisitionFinished(
                     AcquisitionFinished, nullptr);
 
                 /* 	- Call back for raw data */
-                cprintf(BLUE, "Registering     GetData() \n");
-                if (withCallback == 1)
-                    receiver->registerCallBackRawDataReady(GetData, nullptr);
-                else if (withCallback == 2)
-                    receiver->registerCallBackRawDataModifyReady(GetData,
-                                                                 nullptr);
+                cprintf(BLUE, "Registering GetData() \n");
+                receiver->registerCallBackRawDataReady(GetData, nullptr);
             }
 
             /**	- as long as no Ctrl+C */

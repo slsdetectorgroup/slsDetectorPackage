@@ -3,7 +3,7 @@
 #pragma once
 #include "sls/sls_detector_defs.h"
 
-#define REQRD_FRMWRE_VRSN (0x221123)
+#define REQRD_FRMWRE_VRSN (0x241003)
 #define KERNEL_DATE_VRSN  "Mon May 10 18:00:21 CEST 2021"
 #define ID_FILE           "detid_gotthard2.txt"
 
@@ -14,7 +14,11 @@
 
 #define LINKED_SERVER_NAME "gotthard2DetectorServer"
 
+#ifdef VIRTUAL
+#define CTRL_SRVR_INIT_TIME_US (3 * 1000 * 1000)
+#else
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
+#endif
 
 /* Hardware Definitions */
 #define NCHAN                       (128)
@@ -35,6 +39,7 @@
 #define TEMPERATURE_FILE_NAME ("/sys/class/hwmon/hwmon0/temp1_input")
 #endif
 #define CONFIG_FILE                           ("config_gotthard2.txt")
+#define DAC_MIN_MV                            (0)
 #define DAC_MAX_MV                            (2048)
 #define ONCHIP_DAC_MAX_VAL                    (0x3FF)
 #define ADU_MAX_VAL                           (0xFFF)
@@ -50,10 +55,13 @@
 #define TYPE_NO_MODULE_STARTING_VAL           (800)
 #define INITIAL_STARTUP_WAIT                  (1 * 1000 * 1000)
 
+#define WAIT_HIGH_VOLTAGE_SETTLE_TIME_S (10) // 10s
+
 /** Default Parameters */
 #define DEFAULT_BURST_MODE          (BURST_INTERNAL)
 #define DEFAULT_FILTER_RESISTOR     (0)
 #define DEFAILT_CDS_GAIN            (0)
+#define DEFAULT_FRAME_NUMBER        (1)
 #define DEFAULT_NUM_FRAMES          (1)
 #define DEFAULT_NUM_CYCLES          (1)
 #define DEFAULT_NUM_BURSTS          (1)

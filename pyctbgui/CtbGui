@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+from PyQt5 import QtWidgets
+import sys
+
+from pyctbgui.ui import MainWindow
+
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    main = MainWindow()
+    main.show()
+    app.exec_()

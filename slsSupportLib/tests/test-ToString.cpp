@@ -136,6 +136,7 @@ TEST_CASE("string to detectorType") {
     REQUIRE(StringTo<dt>("Moench") == dt::MOENCH);
     REQUIRE(StringTo<dt>("Mythen3") == dt::MYTHEN3);
     REQUIRE(StringTo<dt>("Gotthard2") == dt::GOTTHARD2);
+    REQUIRE(StringTo<dt>("Xilinx_ChipTestBoard") == dt::XILINX_CHIPTESTBOARD);
 }
 
 TEST_CASE("vec") {
@@ -354,6 +355,19 @@ TEST_CASE("string to speedLevel") {
             defs::speedLevel::QUARTER_SPEED);
     REQUIRE(StringTo<defs::speedLevel>("108") == defs::speedLevel::G2_108MHZ);
     REQUIRE(StringTo<defs::speedLevel>("144") == defs::speedLevel::G2_144MHZ);
+}
+
+// Timing Info Decoder
+TEST_CASE("timingInfoDecoder to string") {
+    REQUIRE(ToString(defs::timingInfoDecoder::SWISSFEL) == "swissfel");
+    REQUIRE(ToString(defs::timingInfoDecoder::SHINE) == "shine");
+}
+
+TEST_CASE("string to timingInfoDecoder") {
+    REQUIRE(StringTo<defs::timingInfoDecoder>("swissfel") ==
+            defs::timingInfoDecoder::SWISSFEL);
+    REQUIRE(StringTo<defs::timingInfoDecoder>("shine") ==
+            defs::timingInfoDecoder::SHINE);
 }
 
 } // namespace sls

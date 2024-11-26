@@ -152,6 +152,12 @@ class MasterAttributes {
 #ifdef HDF5C
     void WriteCtbHDF5Attributes(H5::H5File *fd, H5::Group *group);
 #endif
+
+    void GetXilinxCtbBinaryAttributes(
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
+#ifdef HDF5C
+    void WriteXilinxCtbHDF5Attributes(H5::H5File *fd, H5::Group *group);
+#endif
 };
 
 } // namespace sls

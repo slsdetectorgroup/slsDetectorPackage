@@ -8,7 +8,7 @@ Commands can be used either with sls_detector_get or sls_detector_put
 
 .. code-block::
 
-    sls_detector_get vrf
+    sls_detector_get exptime
 
 Help
 --------
@@ -24,6 +24,16 @@ Help
     # get help for a particular command
     sls_detector_get -h fpath
     sls_detector_help fpath
+
+    # list of deprecated commands
+    list deprecated
+
+    # autocompletion
+    # bash_autocomplete.sh or zsh_autocomplete.sh must be sourced from the 
+    # main package folder to enable auto completion of commands and arguments 
+    # for the command line on that shell.
+    source bash_autocomplete.sh
+
   
 
 Commands
@@ -32,14 +42,14 @@ Commands
 .. include:: ../commands.rst
 
 
-Depreciated commands
+Deprecated commands
 ------------------------
 
 .. note ::
 	All the dac commands are preceded with the **dac** command. Use command **daclist** to get correct list of dac command arguments for current detector.
 
-.. csv-table:: Depreciated commands
-   :file: ../depreciated.csv
+.. csv-table:: Deprecated commands
+   :file: ../deprecated.csv
    :widths: 35, 35
    :header-rows: 1
 

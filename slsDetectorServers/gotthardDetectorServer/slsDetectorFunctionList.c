@@ -90,6 +90,7 @@ void basictests() {
                "Could not map to memory. Cannot proceed. Check Firmware.\n");
         LOG(logERROR, (initErrorMessage));
         initError = FAIL;
+        return;
     }
 #ifndef VIRTUAL
     // does check only if flag is 0 (by default), set by command line
@@ -387,14 +388,15 @@ void initStopServer() {
             return;
         }
 #ifdef VIRTUAL
-        sharedMemory_setStop(0);
-#endif
-        // to get master from file
+        setupDetector();
+#else
+        // ismaster from variable in stop server
         if (readConfigFile() == FAIL ||
             checkCommandLineConfiguration() == FAIL) {
             initCheckDone = 1;
             return;
         }
+#endif
     }
     initCheckDone = 1;
 }
@@ -405,8 +407,12 @@ void setupDetector() {
     LOG(logINFO, ("This Server is for 1 Gotthard module (1280 channels)\n"));
 
 #ifdef VIRTUAL
-    sharedMemory_setStatus(IDLE);
-    setupUDPCommParameters();
+    if (isControlServer) {
+        sharedMemory_setStatus(IDLE);
+        setupUDPCommParameters();
+    } else {
+        sharedMemory_setStop(0);
+    }
 #endif
 
     // Initialization
@@ -521,12 +527,12 @@ int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
     return OK;
 }
 
-uint32_t writeRegister16And32(uint32_t offset, uint32_t data) {
+void writeRegister16And32(uint32_t offset, uint32_t data) {
     if (((offset << MEM_MAP_SHIFT) == CONTROL_REG) ||
         ((offset << MEM_MAP_SHIFT) == FIFO_DATA_REG)) {
-        return writeRegister16(offset, data);
+        writeRegister16(offset, data);
     } else
-        return writeRegister(offset, data);
+        writeRegister(offset, data);
 }
 
 uint32_t readRegister16And32(uint32_t offset) {
@@ -1661,7 +1667,8 @@ int startStateMachine() {
         LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
         sharedMemory_setStatus(IDLE);
         return FAIL;
-    }
+    } else
+        pthread_detach(pthread_virtual_tid);
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
     return OK;
 #endif

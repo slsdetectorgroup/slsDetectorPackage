@@ -37,8 +37,6 @@ DetectorImpl::DetectorImpl(int detector_index, bool verify, bool update)
     setupDetector(verify, update);
 }
 
-DetectorImpl::~DetectorImpl() = default;
-
 void DetectorImpl::setupDetector(bool verify, bool update) {
     initSharedMemory(verify);
     initializeMembers(verify);
@@ -58,51 +56,6 @@ bool DetectorImpl::isAllPositions(Positions pos) const {
 void DetectorImpl::setAcquiringFlag(bool flag) { shm()->acquiringFlag = flag; }
 
 int DetectorImpl::getDetectorIndex() const { return detectorIndex; }
-
-void DetectorImpl::freeSharedMemory(int detectorIndex, int detPos) {
-    // single
-    if (detPos >= 0) {
-        SharedMemory<sharedModule> moduleShm(detectorIndex, detPos);
-        if (moduleShm.exists()) {
-            moduleShm.removeSharedMemory();
-        }
-        return;
-    }
-
-    // multi - get number of modules from shm
-    SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
-    int numModules = 0;
-
-    if (detectorShm.exists()) {
-        detectorShm.openSharedMemory(false);
-        numModules = detectorShm()->totalNumberOfModules;
-        detectorShm.removeSharedMemory();
-    }
-
-    for (int i = 0; i < numModules; ++i) {
-        SharedMemory<sharedModule> moduleShm(detectorIndex, i);
-        moduleShm.removeSharedMemory();
-    }
-
-    SharedMemory<CtbConfig> ctbShm(detectorIndex, -1, CtbConfig::shm_tag());
-    if (ctbShm.exists())
-        ctbShm.removeSharedMemory();
-}
-
-void DetectorImpl::freeSharedMemory() {
-    zmqSocket.clear();
-    for (auto &module : modules) {
-        module->freeSharedMemory();
-    }
-    modules.clear();
-
-    // clear detector shm
-    shm.removeSharedMemory();
-    client_downstream = false;
-
-    if (ctb_shm.exists())
-        ctb_shm.removeSharedMemory();
-}
 
 std::string DetectorImpl::getUserDetails() {
     if (modules.empty()) {
@@ -242,24 +195,11 @@ std::string DetectorImpl::exec(const char *cmd) {
     return result;
 }
 
-void DetectorImpl::setVirtualDetectorServers(const int numdet,
-                                             const uint16_t port) {
-    std::vector<std::string> hostnames;
-    for (int i = 0; i < numdet; ++i) {
-        // * 2 is for control and stop port
-        hostnames.push_back(std::string("localhost:") +
-                            std::to_string(port + i * 2));
-    }
-    setHostname(hostnames);
+bool DetectorImpl::hasModulesInSharedMemory() {
+    return (shm.exists() && shm()->totalNumberOfModules > 0);
 }
 
 void DetectorImpl::setHostname(const std::vector<std::string> &name) {
-    // do not free always to allow the previous detsize/ initialchecks command
-    if (shm.exists() && shm()->totalNumberOfModules != 0) {
-        LOG(logWARNING) << "There are already module(s) in shared memory."
-                           "Freeing Shared memory now.";
-        freeSharedMemory();
-    }
     // could be called after freeing shm from API
     if (!shm.exists()) {
         setupDetector();
@@ -272,7 +212,8 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
     // Here we know the detector type and can add ctb shared memory
     // if needed, CTB dac names are only on detector level
 
-    if (shm()->detType == defs::CHIPTESTBOARD) {
+    if (shm()->detType == defs::CHIPTESTBOARD ||
+        shm()->detType == defs::XILINX_CHIPTESTBOARD) {
         if (ctb_shm.exists())
             ctb_shm.openSharedMemory(true);
         else
@@ -291,8 +232,8 @@ void DetectorImpl::addModule(const std::string &name) {
 
     // gotthard cannot have more than 2 modules (50um=1, 25um=2
     if ((type == GOTTHARD || type == GOTTHARD2) && modules.size() > 2) {
-        freeSharedMemory();
-        throw RuntimeError("Gotthard cannot have more than 2 modules");
+        throw RuntimeError("Gotthard cannot have more than 2 modules. Please "
+                           "free the shared memory and start again.");
     }
 
     auto pos = modules.size();
@@ -336,7 +277,19 @@ void DetectorImpl::updateDetectorSize() {
         if (detSizeX > 1 && detSizeX <= maxChanX) {
             maxChanX = detSizeX;
         }
+        if (maxChanX < modSize.x) {
+            std::stringstream os;
+            os << "The max det size in x dim (" << maxChanX
+               << ") is less than the module size in x dim (" << modSize.x
+               << "). Probably using shared memory of a different detector "
+                  "type. Please free and try again.";
+            throw RuntimeError(os.str());
+        }
         nModx = maxChanX / modSize.x;
+        if (nModx == 0) {
+            throw RuntimeError(
+                "number of modules in x dimension is 0. Unable to proceed.");
+        }
         nMody = size() / nModx;
         if ((maxChanX % modSize.x) > 0) {
             ++nMody;
@@ -350,7 +303,18 @@ void DetectorImpl::updateDetectorSize() {
         if (detSizeY > 1 && detSizeY <= maxChanY) {
             maxChanY = detSizeY;
         }
+        if (maxChanY < modSize.y) {
+            std::stringstream os;
+            os << "The max det size in y dim (" << maxChanY
+               << ") is less than the module size in y dim (" << modSize.y
+               << "). Probably using shared memory of a different detector "
+                  "type. Please free and try again.";
+            throw RuntimeError(os.str());
+        }
         nMody = maxChanY / modSize.y;
+        if (nMody == 0)
+            throw RuntimeError(
+                "number of modules in y dimension is 0. Unable to proceed.");
         nModx = size() / nMody;
         if ((maxChanY % modSize.y) > 0) {
             ++nModx;
@@ -389,7 +353,8 @@ slsDetectorDefs::xy DetectorImpl::getNumberOfChannels() const {
 }
 
 void DetectorImpl::setNumberOfChannels(const slsDetectorDefs::xy c) {
-    if (size() > 1) {
+    // detsize is set before hostname
+    if (size() >= 1) {
         throw RuntimeError(
             "Set the number of channels before setting hostname.");
     }
@@ -615,7 +580,7 @@ void DetectorImpl::readFrameFromReceiver() {
             memset(multiframe.get(), 0xFF, multisize);
         }
 
-        completeImage = (numZmqRunning == (int)zmqSocket.size());
+        completeImage = true;
 
         // get each frame
         for (unsigned int isocket = 0; isocket < zmqSocket.size(); ++isocket) {
@@ -632,7 +597,6 @@ void DetectorImpl::readFrameFromReceiver() {
                         // parse error, version error or end of acquisition for
                         // socket
                         runningList[isocket] = false;
-                        completeImage = false;
                         --numZmqRunning;
                         continue;
                     }
@@ -711,7 +675,8 @@ void DetectorImpl::readFrameFromReceiver() {
                     uint32_t yoffset = coordY * nPixelsY;
                     uint32_t singledetrowoffset = nPixelsX * bytesPerPixel;
                     uint32_t rowoffset = nX * singledetrowoffset;
-                    if (shm()->detType == CHIPTESTBOARD) {
+                    if (shm()->detType == CHIPTESTBOARD ||
+                        shm()->detType == defs::XILINX_CHIPTESTBOARD) {
                         singledetrowoffset = size;
                     }
                     LOG(logDEBUG1)
@@ -1382,7 +1347,7 @@ void DetectorImpl::stopDetector(Positions pos) {
 
 void DetectorImpl::printProgress(double progress) {
     // spaces for python printout
-    std::cout << "    " << std::fixed << std::setprecision(2) << std::setw(6)
+    std::cout << "    " << std::fixed << std::setprecision(2) << std::setw(10)
               << progress << " \%";
     std::cout << '\r' << std::flush;
 }
@@ -1744,7 +1709,8 @@ void DetectorImpl::verifyUniqueHost(
 }
 
 defs::ROI DetectorImpl::getRxROI() const {
-    if (shm()->detType == CHIPTESTBOARD) {
+    if (shm()->detType == CHIPTESTBOARD ||
+        shm()->detType == defs::XILINX_CHIPTESTBOARD) {
         throw RuntimeError("RxRoi not implemented for this Detector");
     }
     if (modules.size() == 0) {
@@ -1819,7 +1785,8 @@ defs::ROI DetectorImpl::getRxROI() const {
 }
 
 void DetectorImpl::setRxROI(const defs::ROI arg) {
-    if (shm()->detType == CHIPTESTBOARD) {
+    if (shm()->detType == CHIPTESTBOARD ||
+        shm()->detType == defs::XILINX_CHIPTESTBOARD) {
         throw RuntimeError("RxRoi not implemented for this Detector");
     }
     if (modules.size() == 0) {

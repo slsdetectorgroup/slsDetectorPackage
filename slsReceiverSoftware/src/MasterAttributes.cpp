@@ -31,6 +31,9 @@ void MasterAttributes::GetBinaryAttributes(
     case slsDetectorDefs::CHIPTESTBOARD:
         GetCtbBinaryAttributes(w);
         break;
+    case slsDetectorDefs::XILINX_CHIPTESTBOARD:
+        GetXilinxCtbBinaryAttributes(w);
+        break;
     default:
         throw RuntimeError("Unknown Detector type to get master attributes");
     }
@@ -62,6 +65,9 @@ void MasterAttributes::WriteHDF5Attributes(H5::H5File *fd, H5::Group *group) {
         break;
     case slsDetectorDefs::CHIPTESTBOARD:
         WriteCtbHDF5Attributes(fd, group);
+        break;
+    case slsDetectorDefs::XILINX_CHIPTESTBOARD:
+        WriteXilinxCtbHDF5Attributes(fd, group);
         break;
     default:
         throw RuntimeError("Unknown Detector type to get master attributes");
@@ -814,4 +820,49 @@ void MasterAttributes::WriteCtbHDF5Attributes(H5::H5File *fd,
 }
 #endif
 
+void MasterAttributes::GetXilinxCtbBinaryAttributes(
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
+    w->Key("Exptime");
+    w->String(ToString(exptime).c_str());
+    w->Key("Period");
+    w->String(ToString(period).c_str());
+    w->Key("ADC Mask");
+    w->String(ToStringHex(adcmask).c_str());
+    w->Key("Analog Flag");
+    w->Uint(analog);
+    w->Key("Analog Samples");
+    w->Uint(analogSamples);
+    w->Key("Digital Flag");
+    w->Uint(digital);
+    w->Key("Digital Samples");
+    w->Uint(digitalSamples);
+    w->Key("Dbit Offset");
+    w->Uint(dbitoffset);
+    w->Key("Dbit Bitset");
+    w->Uint64(dbitlist);
+    w->Key("Transceiver Mask");
+    w->String(ToStringHex(transceiverMask).c_str());
+    w->Key("Transceiver Flag");
+    w->Uint(transceiver);
+    w->Key("Transceiver Samples");
+    w->Uint(transceiverSamples);
+}
+
+#ifdef HDF5C
+void MasterAttributes::WriteXilinxCtbHDF5Attributes(H5::H5File *fd,
+                                                    H5::Group *group) {
+    MasterAttributes::WriteHDF5Exptime(fd, group);
+    MasterAttributes::WriteHDF5Period(fd, group);
+    MasterAttributes::WriteHDF5AdcMask(fd, group);
+    MasterAttributes::WriteHDF5AnalogFlag(fd, group);
+    MasterAttributes::WriteHDF5AnalogSamples(fd, group);
+    MasterAttributes::WriteHDF5DigitalFlag(fd, group);
+    MasterAttributes::WriteHDF5DigitalSamples(fd, group);
+    MasterAttributes::WriteHDF5DbitOffset(fd, group);
+    MasterAttributes::WriteHDF5DbitList(fd, group);
+    MasterAttributes::WriteHDF5TransceiverMask(fd, group);
+    MasterAttributes::WriteHDF5TransceiverFlag(fd, group);
+    MasterAttributes::WriteHDF5TransceiverSamples(fd, group);
+}
+#endif
 } // namespace sls

@@ -6,10 +6,12 @@
 #include "clogger.h"
 
 void initializePatternAddresses();
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 #ifdef VIRTUAL
 void initializePatternWord();
 #endif
+#endif
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 uint64_t validate_readPatternIOControl();
 int validate_writePatternIOControl(char *message, uint64_t arg);
 void writePatternIOControl(uint64_t word);

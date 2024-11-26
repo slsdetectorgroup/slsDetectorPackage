@@ -8,6 +8,7 @@
 
 #include <libgen.h> // dirname
 #include <string.h>
+#include <sys/stat.h>    // stat
 #include <sys/utsname.h> // uname
 #include <unistd.h>      // readlink
 
@@ -114,6 +115,11 @@ int getTimeFromString(char *buf, time_t *result) {
          t.tm_mday, t.tm_mon, t.tm_year + 1900, t.tm_hour, t.tm_min, t.tm_sec));
 
     *result = mktime(&t);
+    /*  Do not check as it fails with nios
+    if (*result == (time_t)-1) {
+        LOG(logERROR, ("Could not convert time structure to time_t\n"));
+        return FAIL;
+    }*/
     return OK;
 }
 
@@ -143,14 +149,25 @@ int validateKernelVersion(char *expectedVersion) {
 #ifdef VIRTUAL
     strcpy(currentVersion, expectedVersion);
 #else
+#ifndef ARMPROCESSOR
     // remove first word (#version number)
-    const char *ptr = strchr(version, ' ');
+    const char *ptr = strstr(version, " ");
     if (ptr == NULL) {
         LOG(logERROR, ("Could not parse kernel version\n"));
         return FAIL;
     }
-    strcpy(currentVersion, version + (ptr - version + 1));
+    strcpy(currentVersion, ptr + 1);
+#else
+    // remove first two words (#version number and SMP)
+    const char *ptr = strstr(version, "SMP ");
+    if (ptr == NULL) {
+        LOG(logERROR, ("Could not parse kernel version\n"));
+        return FAIL;
+    }
+    strcpy(currentVersion, ptr + 4);
 #endif
+#endif
+    currentVersion[sizeof(currentVersion) - 1] = '\0';
 
     // convert kernel date string into time
     time_t kernelDate;
@@ -159,6 +176,7 @@ int validateKernelVersion(char *expectedVersion) {
             ("Could not parse retrieved kernel date, %s\n", currentVersion));
         return FAIL;
     }
+    LOG(logDEBUG, ("Kernel Date: [%s]\n", ctime(&kernelDate)));
 
     // convert expected date into time
     time_t expDate;
@@ -167,11 +185,12 @@ int validateKernelVersion(char *expectedVersion) {
             ("Could not parse expected kernel date, %s\n", expectedVersion));
         return FAIL;
     }
+    LOG(logDEBUG, ("Expected Date: [%s]\n", ctime(&expDate)));
 
     // compare if kernel time is older than expected time
     if (kernelDate < expDate) {
-        LOG(logERROR, ("Kernel Version Incompatible (too old)! Expected: [%s], "
-                       "Got [%s]\n",
+        LOG(logERROR, ("Kernel Version Incompatible (too old)!\nExpected: '%s'"
+                       "\nGot     : '%s'\n",
                        expectedVersion, currentVersion));
         return FAIL;
     }
@@ -659,31 +678,7 @@ int deleteFile(char *mess, char *fname, char *errorPrefix) {
         return FAIL;
     }
 
-    if (access(fullname, F_OK) == 0) {
-        char cmd[MAX_STR_LENGTH] = {0};
-        char retvals[MAX_STR_LENGTH] = {0};
-
-        if (snprintf(cmd, MAX_STR_LENGTH, "rm %s", fullname) >=
-            MAX_STR_LENGTH) {
-            sprintf(mess, "Could not %s. Command to delete is too long\n",
-                    errorPrefix);
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-
-        if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-            snprintf(mess, MAX_STR_LENGTH,
-                     "Could not %s. (deleting file %s). %s\n", errorPrefix,
-                     fullname, retvals);
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-        LOG(logINFO, ("\tDeleted file: %s (%s)\n", fullname, errorPrefix));
-    } else {
-        LOG(logINFO,
-            ("\tFile does not exist anyway: %s (%s)\n", fullname, errorPrefix));
-    }
-    return OK;
+    return deleteItem(mess, 1, fullname, errorPrefix);
 }
 
 int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
@@ -709,8 +704,8 @@ int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
     return OK;
 }
 
-int readADCFromFile(char *fname, int *value) {
-    LOG(logDEBUG1, ("fname:%s\n", fname));
+int readParameterFromFile(char *fname, char *parameterName, int *value) {
+    LOG(logDEBUG1, ("fname:%s parameter:%s\n", fname, parameterName));
     // open file
     FILE *fd = fopen(fname, "r");
     if (fd == NULL) {
@@ -734,16 +729,66 @@ int readADCFromFile(char *fname, int *value) {
 
     *value = -1;
     if (sscanf(line, "%d", value) != 1) {
-        LOG(logERROR, ("Could not scan temperature from %s\n", line));
+        LOG(logERROR, ("Could not scan %s from %s\n", parameterName, line));
         return FAIL;
     }
 
-#ifdef EIGERD
-    *value /= 10;
-#else
-    LOG(logINFO, ("Temperature: %.2f °C\n", (double)(*value) / 1000.00));
-#endif
-
     fclose(fd);
+    return OK;
+}
+
+int createAbsoluteDirectory(char *mess, const char *absPath,
+                            char *errorPrefix) {
+    // check if folder exists
+    if (access(absPath, F_OK) == 0) {
+        LOG(logINFO, ("Folder %s already exists\n", absPath));
+        return OK;
+    }
+
+    // folder does not exist, create it
+    if (mkdir(absPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0) {
+        sprintf(mess, "Could not %s. Could not create folder %s\n", errorPrefix,
+                absPath);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tCreated folder: %s (%s)\n", absPath, errorPrefix));
+
+    return OK;
+}
+
+int deleteAbsoluteDirectory(char *mess, const char *absPath,
+                            char *errorPrefix) {
+    return deleteItem(mess, 0, absPath, errorPrefix);
+}
+
+int deleteItem(char *mess, int isFile, const char *absPath, char *errorPrefix) {
+    // item does not exist
+    if (access(absPath, F_OK) != 0) {
+        LOG(logINFO, ("\t%s does not exist anyway: %s (%s)\n",
+                      (isFile ? "File" : "Folder"), absPath, errorPrefix));
+        return OK;
+    }
+
+    // delete item
+    char cmd[MAX_STR_LENGTH] = {0};
+    char retvals[MAX_STR_LENGTH] = {0};
+    if (snprintf(cmd, MAX_STR_LENGTH, "rm %s %s", (isFile ? "-f" : "-rf"),
+                 absPath) >= MAX_STR_LENGTH) {
+        sprintf(mess, "Could not %s. Command to delete is too long\n",
+                errorPrefix);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH, "Could not %s. (deleting %s %s). %s\n",
+                 errorPrefix, (isFile ? "file" : "folder"), absPath, retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tDeleted %s: %s (%s)\n", (isFile ? "file" : "folder"),
+                  absPath, errorPrefix));
+
     return OK;
 }

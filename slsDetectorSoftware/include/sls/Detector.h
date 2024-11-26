@@ -20,7 +20,7 @@ class IpAddr;
 // Free function to avoid dependence on class
 // and avoid the option to free another objects
 // shm by mistake
-void freeSharedMemory(int detectorIndex, int moduleIndex = -1);
+void freeSharedMemory(const int detectorIndex = 0, const int moduleIndex = -1);
 
 /**
  * \class Detector
@@ -46,9 +46,13 @@ class Detector {
     Detector(int shm_id = 0);
     ~Detector();
 
-    /** Free the shared memory of this detector and all modules
-    belonging to it */
-    void freeSharedMemory();
+    // Disable copy since SharedMemory object is unique in DetectorImpl
+    Detector(const Detector &other) = delete;
+    Detector &operator=(const Detector &other) = delete;
+
+    // Move constructor and assignment operator
+    Detector(Detector &&other) noexcept;
+    Detector &operator=(Detector &&other) noexcept;
 
     /** Frees shared memory before loading configuration file. Set up once
     normally */
@@ -71,7 +75,6 @@ class Detector {
     /** Gets shared memory ID */
     int getShmId() const;
 
-    /** package git branch */
     std::string getPackageVersion() const;
 
     std::string getClientVersion() const;
@@ -99,7 +102,7 @@ class Detector {
     Result<std::string> getReceiverVersion(Positions pos = {}) const;
 
     /** Options: EIGER, JUNGFRAU, GOTTHARD, MOENCH, MYTHEN3, GOTTHARD2,
-     * CHIPTESTBOARD */
+     * CHIPTESTBOARD, XILINX_CHIPTESTBOARD */
     Result<defs::detectorType> getDetectorType(Positions pos = {}) const;
 
     /** Gets the total number of modules in shared memory */
@@ -304,11 +307,11 @@ class Detector {
 
     void setNumberOfTriggers(int64_t value);
 
-    /** [Gotthard][Jungfrau][Moench][Eiger][CTB][Gotthard2]  \n
+    /** [Gotthard][Jungfrau][Moench][Eiger][CTB][Xilinx CTB][Gotthard2]  \n
      * [Mythen3] use function with gate index **/
     Result<ns> getExptime(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][Eiger][CTB][Gotthard2]  \n
+    /** [Gotthard][Jungfrau][Moench][Eiger][CTB][Xilinx CTB][Gotthard2]  \n
      * [Mythen3] sets exptime for all gate signals. To specify gate index, use
      * function with gate index **/
     void setExptime(ns t, Positions pos = {});
@@ -317,25 +320,25 @@ class Detector {
 
     void setPeriod(ns t, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx CTB] */
     Result<ns> getDelayAfterTrigger(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx CTB] */
     void setDelayAfterTrigger(ns value, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3]
+    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Xilinx CTB]
      * [Gotthard2] only in continuous auto mode */
     Result<int64_t> getNumberOfFramesLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3]
+    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Xilinx CTB]
      * Only when external trigger used */
     Result<int64_t> getNumberOfTriggersLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2]
+    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx CTB]
      * [Gotthard2] only in continuous mode */
     Result<ns> getPeriodLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3]
+    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Xilinx CTB]
      * [Gotthard2] only in continuous mode */
     Result<ns> getDelayAfterTriggerLeft(Positions pos = {}) const;
 
@@ -344,7 +347,7 @@ class Detector {
     /**
      * [Eiger] Options: 4, 8, 12, 16, 32. If i is 32, also sets clkdivider to 2,
      * else sets clkdivider to 1 \n [Mythen3] Options: 8, 16, 32 \n
-     * [Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2] 16
+     * [Jungfrau][Moench][Gotthard][CTB][Mythen3][Gotthard2][Xilinx CTB] 16
      */
     void setDynamicRange(int value);
 
@@ -354,21 +357,21 @@ class Detector {
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 
     /**
-     * [Gotthard][Jungfrau][Moench][Gotthard][CTB][Gotthard2] Options:
-     * AUTO_TIMING, TRIGGER_EXPOSURE \n
-     * [Mythen3] Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n
-     * [Eiger] Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
+     * [Gotthard][Jungfrau][Moench][Gotthard][CTB][Gotthard2][Xilinx CTB]
+     * Options: AUTO_TIMING, TRIGGER_EXPOSURE \n [Mythen3] Options: AUTO_TIMING,
+     * TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n [Eiger] Options: AUTO_TIMING,
+     * TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
      */
     void setTimingMode(defs::timingMode value, Positions pos = {});
 
     /** list of possible timing modes for this detector */
     std::vector<defs::timingMode> getTimingModeList() const;
 
-    /** [Eiger][Jungfrau][Moench][Gotthard2] */
+    /** [Eiger][Jungfrau][Moench][Gotthard2][Mythen3] */
     Result<defs::speedLevel> getReadoutSpeed(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau][Moench][Gotthard2]
-     * [Jungfrau] Options: FULL_SPEED, HALF_SPEED (Default),
+     * [Jungfrau][Mythen3] Options: FULL_SPEED, HALF_SPEED (Default),
      * QUARTER_SPEED \n [Moench] Options: FULL_SPEED (Default) \n [Eiger]
      * Options: FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED \n [Gotthard2]
      * Options: G2_108MHZ (Default), G2_144MHZ \n [Jungfrau][Moench] FULL_SPEED
@@ -430,7 +433,8 @@ class Detector {
     /** [Mythen3][Gotthard2] */
     Result<int> getClockPhase(int clkIndex, Positions pos = {});
 
-    /** [Mythen3][Gotthard2] absolute phase shift */
+    /** [Mythen3][Gotthard2] absolute phase shift  \n
+     * [Gotthard2] clkIndex: 0-5, [Mythen3] clkIndex 0 only */
     void setClockPhase(int clkIndex, int value, Positions pos = {});
 
     /** [Mythen3][Gotthard2] */
@@ -439,13 +443,15 @@ class Detector {
     /** [Mythen3][Gotthard2] */
     Result<int> getClockPhaseinDegrees(int clkIndex, Positions pos = {});
 
-    /** [Mythen3][Gotthard2] */
+    /** [Mythen3][Gotthard2]  \n
+     * [Gotthard2] clkIndex: 0-5, [Mythen3] clkIndex 0 only */
     void setClockPhaseinDegrees(int clkIndex, int value, Positions pos = {});
 
     /** [Mythen3][Gotthard2] */
     Result<int> getClockDivider(int clkIndex, Positions pos = {});
 
-    /** [Mythen3][Gotthard2] Must be greater than 1. */
+    /** [Mythen3][Gotthard2] Must be greater than 1. \n
+     * [Gotthard2] clkIndex: 0-5, [Mythen3] clkIndex 0 only */
     void setClockDivider(int clkIndex, int value, Positions pos = {});
 
     Result<int> getHighVoltage(Positions pos = {}) const;
@@ -457,16 +463,17 @@ class Detector {
      */
     void setHighVoltage(int value, Positions pos = {});
 
-    /** [Jungfrau][Moench][Mythen3][Gotthard2] */
+    /** [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] */
     Result<bool> getPowerChip(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. \n
+    /** [Jungfrau][Moench][Mythen3][Gotthard2][Xilinx Ctb] Power the chip. \n
      *  Default is disabled. \n
      * [Jungfrau][Moench] Default is disabled. Get will return power status. Can
      * be off if temperature event occured (temperature over temp_threshold with
      * temp_control enabled. Will configure chip (only chip v1.1)\n
      * [Mythen3][Gotthard2] Default is 1. If module not connected or wrong
-     * module, powerchip will fail.
+     * module, powerchip will fail.\n
+     * [Xilinx CTB] Default is 0. Also configures chip if powered on.
      */
     void setPowerChip(bool on, Positions pos = {});
 
@@ -484,7 +491,7 @@ class Detector {
 
     /**
      * (Degrees)
-     * [Mythen3][Gotthard2] Options: TEMPERATURE_FPGA
+     * [Mythen3][Gotthard2][Xilinx Ctb] Options: TEMPERATURE_FPGA
      * [Gotthard] Options: TEMPERATURE_ADC, TEMPERATURE_FPGA \n
      * [Jungfrau][Moench] Options: TEMPERATURE_ADC, TEMPERATURE_FPGA \n
      * [Eiger] Options: TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT, TEMPERATURE_10GE,
@@ -658,11 +665,13 @@ class Detector {
     Result<std::vector<int64_t>>
     getRxCurrentFrameIndex(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau][Moench][CTB] */
+    /** [Eiger][Jungfrau][Moench][CTB][Xilinx CTB][Gotthard2] */
     Result<uint64_t> getNextFrameNumber(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau][Moench][CTB] Stopping acquisition might result in
-     * different frame numbers for different modules.*/
+    /** [Eiger][Jungfrau][Moench][CTB][Xilinx CTB][Gotthard2] Stopping
+     * acquisition might result in different frame numbers for different
+     * modules. So, after stopping, next frame number (max + 1) is set for all
+     * the modules afterwards.*/
     void setNextFrameNumber(uint64_t value, Positions pos = {});
 
     /** [Eiger][Mythen3][Jungfrau][Moench] Sends an internal software trigger to
@@ -1004,7 +1013,8 @@ class Detector {
 
     Result<std::string> getFilePath(Positions pos = {}) const;
 
-    /** Default is "/"If path does not exist, it will try to create it */
+    /** Default is "/". If path does not exist and fwrite enabled, it will try
+     * to create it at start of acquisition. */
     void setFilePath(const std::string &fpath, Positions pos = {});
 
     Result<std::string> getFileNamePrefix(Positions pos = {}) const;
@@ -1025,7 +1035,7 @@ class Detector {
 
     Result<bool> getFileWrite(Positions pos = {}) const;
 
-    /** default enabled */
+    /** default disabled */
     void setFileWrite(bool value, Positions pos = {});
 
     bool getMasterFileWrite() const;
@@ -1102,14 +1112,6 @@ class Detector {
      * already enabled
      */
     void setRxZmqPort(uint16_t port, int module_id = -1);
-
-    Result<IpAddr> getRxZmqIP(Positions pos = {}) const;
-
-    /** Zmq Ip Address from which data is to be streamed out of the receiver. \n
-     * Also restarts receiver zmq streaming if enabled. \n Default is from
-     * rx_hostname. \n Modified only when using an intermediate process between
-     * receiver. */
-    void setRxZmqIP(const IpAddr ip, Positions pos = {});
 
     Result<uint16_t> getClientZmqPort(Positions pos = {}) const;
 
@@ -1376,6 +1378,20 @@ class Detector {
     void setPedestalMode(const defs::pedestalParameters par,
                          Positions pos = {});
 
+    /** [Jungfrau] */
+    Result<defs::timingInfoDecoder>
+    getTimingInfoDecoder(Positions pos = {}) const;
+
+    /** [Jungfrau] Advanced Command! */
+    void setTimingInfoDecoder(defs::timingInfoDecoder value,
+                              Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<defs::collectionMode> getCollectionMode(Positions pos = {}) const;
+
+    /** [Jungfrau] */
+    void setCollectionMode(defs::collectionMode value, Positions pos = {});
+
     ///@}
 
     /** @name Gotthard Specific */
@@ -1608,7 +1624,7 @@ class Detector {
     ///@{
     /**************************************************
      *                                                *
-     *    CTB Specific                                *
+     *    CTB / Xilinx CTB Specific                   *
      *                                                *
      * ************************************************/
     /** [CTB] */
@@ -1638,12 +1654,12 @@ class Detector {
     /** gets list of slow adc enums */
     std::vector<defs::dacIndex> getSlowADCList() const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     Result<int> getPower(defs::dacIndex index, Positions pos = {}) const;
 
     /**
-     * [CTB] mV
-     * [Ctb] Options: V_LIMIT, V_POWER_A, V_POWER_B, V_POWER_C,
+     * [CTB][Xilinx CTB] mV
+     * [Ctb][Xilinx CTB] Options: V_LIMIT, V_POWER_A, V_POWER_B, V_POWER_C,
      * V_POWER_D, V_POWER_IO, V_POWER_CHIP
      */
     void setPower(defs::dacIndex index, int value, Positions pos = {});
@@ -1669,21 +1685,11 @@ class Detector {
         "complete 4 bits are enabled */
     void setTenGigaADCEnableMask(uint32_t mask, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     Result<uint32_t> getTransceiverEnableMask(Positions pos = {}) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setTransceiverEnableMask(uint32_t mask, Positions pos = {});
-
-    ///@}
-
-    /** @name CTB Specific */
-    ///@{
-    /**************************************************
-     *                                                *
-     *    CTB Specific                                *
-     *                                                *
-     * ************************************************/
 
     /** [CTB] */
     Result<int> getNumberOfDigitalSamples(Positions pos = {}) const;
@@ -1691,17 +1697,18 @@ class Detector {
     /** [CTB] */
     void setNumberOfDigitalSamples(int value, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     Result<int> getNumberOfTransceiverSamples(Positions pos = {}) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setNumberOfTransceiverSamples(int value, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     Result<defs::readoutMode> getReadoutMode(Positions pos = {}) const;
 
     /** [CTB] Options: ANALOG_ONLY (default), DIGITAL_ONLY, ANALOG_AND_DIGITAL,
      * TRANSCEIVER_ONLY, DIGITAL_AND_TRANSCEIVER
+     * [Xilinx CTB] Options: TRANSCEIVER_ONLY (default)
      */
     void setReadoutMode(defs::readoutMode value, Positions pos = {});
 
@@ -1723,7 +1730,7 @@ class Detector {
     Result<int> getMeasuredCurrent(defs::dacIndex index,
                                    Positions pos = {}) const;
 
-    /** [CTB] Options: SLOW_ADC0 - SLOW_ADC7  in uV */
+    /** [CTB][Xilinx CTB] Options: SLOW_ADC0 - SLOW_ADC7  in uV */
     Result<int> getSlowADC(defs::dacIndex index, Positions pos = {}) const;
 
     /** [CTB] */
@@ -1765,80 +1772,94 @@ class Detector {
     /** [CTB] Default is enabled. */
     void setLEDEnable(bool enable, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setDacNames(const std::vector<std::string> names);
 
+    /** [CTB][Xilinx CTB] */
     std::vector<std::string> getDacNames() const;
 
+    /** [CTB][Xilinx CTB] */
     defs::dacIndex getDacIndex(const std::string &name) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setDacName(const defs::dacIndex i, const std::string &name);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::string getDacName(const defs::dacIndex i) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setAdcNames(const std::vector<std::string> names);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::vector<std::string> getAdcNames() const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     int getAdcIndex(const std::string &name) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setAdcName(const int i, const std::string &name);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::string getAdcName(const int i) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setSignalNames(const std::vector<std::string> names);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::vector<std::string> getSignalNames() const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     int getSignalIndex(const std::string &name) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setSignalName(const int i, const std::string &name);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::string getSignalName(const int i) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setPowerNames(const std::vector<std::string> names);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::vector<std::string> getPowerNames() const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     defs::dacIndex getPowerIndex(const std::string &name) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setPowerName(const defs::dacIndex i, const std::string &name);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::string getPowerName(const defs::dacIndex i) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setSlowADCNames(const std::vector<std::string> names);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::vector<std::string> getSlowADCNames() const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     defs::dacIndex getSlowADCIndex(const std::string &name) const;
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     void setSlowADCName(const defs::dacIndex i, const std::string &name);
 
-    /** [CTB] */
+    /** [CTB][Xilinx CTB] */
     std::string getSlowADCName(const defs::dacIndex i) const;
 
     ///@}
+
+    /** @name Xilinx CTB Specific */
+    ///@{
+    /**************************************************
+     *                                                *
+     *    Xilinx CTB Specific                         *
+     *                                                *
+     * ************************************************/
+    ///@}
+
+    /** [Xilinx Ctb] */
+    void configureTransceiver(Positions pos = {});
 
     /** @name Pattern */
     ///@{
@@ -1847,20 +1868,20 @@ class Detector {
      *    Pattern                                     *
      *                                                *
      * ************************************************/
-    /** [CTB][Mythen3] Gets the pattern file name including path of the last
-     * pattern uploaded. \n Returns an empty if nothing was uploaded or via a
-     * server default file*/
+    /** [CTB][Mythen3][Xilinx CTB] Gets the pattern file name including path of
+     * the last pattern uploaded. \n Returns an empty if nothing was uploaded or
+     * via a server default file*/
     Result<std::string> getPatterFileName(Positions pos = {}) const;
 
-    /** [CTB][Mythen3]  Loads ASCII pattern file directly to server
+    /** [CTB][Mythen3][Xilinx CTB] Loads ASCII pattern file directly to server
      * (instead of executing line by line)*/
     void setPattern(const std::string &fname, Positions pos = {});
 
-    /** [CTB][Mythen3]  Loads pattern parameters structure directly to
-     * server */
+    /** [CTB][Mythen3][Xilinx CTB] Loads pattern parameters structure directly
+     * to server */
     void setPattern(const Pattern &pat, Positions pos = {});
 
-    /** [CTB][Mythen3] [Ctb][Mythen3] Saves pattern to file
+    /** [CTB][Mythen3][Xilinx CTB] Saves pattern to file
      * (ascii). \n [Ctb] Also executes pattern.*/
     void savePattern(const std::string &fname);
 
@@ -1873,57 +1894,57 @@ class Detector {
     /** [CTB] */
     void setPatternIOControl(uint64_t word, Positions pos = {});
 
-    /** [CTB][Mythen3] same as executing for ctb */
+    /** [CTB][Mythen3][Xilinx CTB] same as executing for ctb */
     Result<uint64_t> getPatternWord(int addr, Positions pos = {});
 
-    /** [CTB] Caution: If word is  -1  reads the addr (same as
+    /** [CTB][Xilinx CTB] Caution: If word is  -1  reads the addr (same as
      * executing the pattern)
      * [Mythen3] */
     void setPatternWord(int addr, uint64_t word, Positions pos = {});
 
-    /**[CTB][Mythen3] Options: level: -1 (complete pattern) and 0-2
+    /**[CTB][Mythen3][Xilinx CTB] Options: level: -1 (complete pattern) and 0-2
      * levels
      * @returns array of start address and stop address
      */
     Result<std::array<int, 2>>
     getPatternLoopAddresses(int level, Positions pos = {}) const;
 
-    /** [CTB][Mythen3] Options: level: -1 (complete pattern) and 0-2
+    /** [CTB][Mythen3][Xilinx CTB] Options: level: -1 (complete pattern) and 0-2
      * levels */
     void setPatternLoopAddresses(int level, int start, int stop,
                                  Positions pos = {});
 
-    /**[CTB][Mythen3] Options: level: -1 (complete pattern) and 0-2
+    /**[CTB][Mythen3][Xilinx CTB] Options: level: -1 (complete pattern) and 0-2
      * levels  */
     Result<int> getPatternLoopCycles(int level, Positions pos = {}) const;
 
-    /** [CTB][Mythen3] n: 0-2, level: -1 (complete pattern) and 0-2
+    /** [CTB][Mythen3][Xilinx CTB] n: 0-2, level: -1 (complete pattern) and 0-2
      * levels */
     void setPatternLoopCycles(int level, int n, Positions pos = {});
 
-    /**[CTB][Mythen3] */
+    /**[CTB][Mythen3][Xilinx CTB] */
     Result<int> getPatternWaitAddr(int level, Positions pos = {}) const;
 
-    /** [CTB][Mythen3] Options: level 0-2 */
+    /** [CTB][Mythen3][Xilinx CTB] Options: level 0-2 */
     void setPatternWaitAddr(int level, int addr, Positions pos = {});
 
-    /** [CTB][Mythen3]  */
+    /** [CTB][Mythen3][Xilinx CTB]  */
     Result<uint64_t> getPatternWaitTime(int level, Positions pos = {}) const;
 
-    /** [CTB][Mythen3] Options: level 0-2 */
+    /** [CTB][Mythen3][Xilinx CTB] Options: level 0-2 */
     void setPatternWaitTime(int level, uint64_t t, Positions pos = {});
 
-    /** [CTB][Mythen3] */
+    /** [CTB][Mythen3][Xilinx CTB] */
     Result<uint64_t> getPatternMask(Positions pos = {});
 
-    /** [CTB][Mythen3] Selects the bits that will have a pattern mask
-     * applied to the selected patmask for every pattern. */
+    /** [CTB][Mythen3][Xilinx CTB] Selects the bits that will have a pattern
+     * mask applied to the selected patmask for every pattern. */
     void setPatternMask(uint64_t mask, Positions pos = {});
 
-    /** [CTB][Mythen3]  */
+    /** [CTB][Mythen3][Xilinx CTB]  */
     Result<uint64_t> getPatternBitMask(Positions pos = {}) const;
 
-    /** [CTB][Mythen3] Sets the mask applied to every pattern to the
+    /** [CTB][Mythen3][Xilinx CTB] Sets the mask applied to every pattern to the
      * selected bits */
     void setPatternBitMask(uint64_t mask, Positions pos = {});
 
@@ -1987,7 +2008,7 @@ class Detector {
     void programFPGA(const std::string &fname, const bool forceDeleteNormalFile,
                      Positions pos = {});
 
-    /** [Jungfrau][Moench][CTB]  Advanced user Function!  */
+    /** [Jungfrau][Moench][CTB][Xilinx CTB]  Advanced user Function!  */
     void resetFPGA(Positions pos = {});
 
     /** [Jungfrau][Moench][Eiger][Ctb][Mythen3][Gotthard2] Copies detector
@@ -2005,8 +2026,8 @@ class Detector {
      */
     void updateKernel(const std::string &fname, Positions pos = {});
 
-    /** [Jungfrau][Moench][Gotthard][CTB][Mythen3][Gotthard2] Advanced user
-     * Function! */
+    /** [Jungfrau][Moench][Gotthard][CTB][Mythen3][Gotthard2][Xilinx CTB]
+     * Advanced user Function! */
     void rebootController(Positions pos = {});
 
     /**
@@ -2036,13 +2057,16 @@ class Detector {
      * Goes to stop server. Hence, can be called while calling blocking
      * acquire(). \n [Eiger] Address is +0x100 for only left, +0x200 for only
      * right. */
-    void writeRegister(uint32_t addr, uint32_t val, Positions pos = {});
+    void writeRegister(uint32_t addr, uint32_t val, bool validate = false,
+                       Positions pos = {});
 
     /** Advanced user Function!  */
-    void setBit(uint32_t addr, int bitnr, Positions pos = {});
+    void setBit(uint32_t addr, int bitnr, bool validate = false,
+                Positions pos = {});
 
     /** Advanced user Function!  */
-    void clearBit(uint32_t addr, int bitnr, Positions pos = {});
+    void clearBit(uint32_t addr, int bitnr, bool validate = false,
+                  Positions pos = {});
 
     /** Advanced user Function!  */
     Result<int> getBit(uint32_t addr, int bitnr, Positions pos = {});
@@ -2110,16 +2134,16 @@ class Detector {
     Result<std::string> executeCommand(const std::string &value,
                                        Positions pos = {});
 
-    /** [Jungfrau][Moench][Mythen3][CTB]
+    /** [Jungfrau][Moench][Mythen3][CTB][Xilinx CTB]
      * [Gotthard2] only in continuous mode */
     Result<int64_t> getNumberOfFramesFromStart(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench][Mythen3][CTB] Get time from detector start
-     * [Gotthard2] not in burst and auto mode */
+    /** [Jungfrau][Moench][Mythen3][CTB][Xilinx CTB] Get time from detector
+     * start [Gotthard2] not in burst and auto mode */
     Result<ns> getActualTime(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench][Mythen3][CTB] Get timestamp at a frame start
-     * [Gotthard2] not in burst and auto mode */
+    /** [Jungfrau][Moench][Mythen3][CTB][Xilinx CTB] Get timestamp at a frame
+     * start [Gotthard2] not in burst and auto mode */
     Result<ns> getMeasurementTime(Positions pos = {}) const;
 
     /** get user details from shared memory  (hostname, type, PID, User, Date)

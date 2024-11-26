@@ -1,0 +1,208 @@
+basic:
+  infer_action: false
+  help: "xx11"
+  actions:
+    GET:
+      function: 'func1'
+      output: [ OutString(t) ]
+      args:
+        - argc: 0
+        - argc : 1
+          output: [ testytest ]
+      detectors:
+        MYTHEN3:
+          function: 'do_mythen3'
+        CHIPTESTBOARD:
+          args:
+            - argc: 55
+              output: [ ctbOutput ]
+    PUT:
+      detectors:
+        EIGER:
+          function: 'do_eiger'
+          argc: 99
+          output: [ eigerOutput ]
+
+
+# classes of tests:
+# classes of template tests: has args or has detectors => 4 cases noted (0,0) ... (1,1)
+# classes of childs: has args or has detectors => 4 cases noted (0,0) ... (1,1)
+# => 16 cases
+# example: case_0111: template (0,1) and child (1,1)
+#################### exhaustive testing over chosen classes of tests
+
+template_01:
+  infer_action: true
+  help: "vv12"
+  template: true
+
+  actions:
+    GET:
+      detectors:
+        MYTHEN3:
+          function: 'do_mythen3'
+          argc: 99
+        CHIPTESTBOARD:
+          function: 'do_ctb'
+          argc: 98
+
+case_0100:
+  inherit_actions: template_01
+  help: "0100"
+
+case_0101:
+  inherit_actions: template_01
+  help: "0101"
+  actions:
+      GET:
+        function: 'get_function'
+        detectors:
+            MYTHEN3:
+              function: 'do_mythen23'
+              argc: 420
+
+case_0110:
+  inherit_actions: template_01
+  help: "0110"
+  actions:
+      GET:
+        argc: 111
+        function: 'get_function'
+
+case_0110v2:
+  inherit_actions: template_01
+  help: "0110v2"
+  actions:
+      GET:
+        args:
+            - argc: 111
+              function: 'get_function'
+
+
+case_0111:
+  inherit_actions: template_01
+  help: "0111"
+  actions:
+      GET:
+        args:
+            - argc: 111
+              function: 'get_function'
+        detectors:
+          MYTHEN3:
+            function: 'do_mythen23'
+            argc: 420
+
+##### cases 10** tests
+template_10:
+  template: true
+  actions:
+    GET:
+      args:
+        - argc: 0
+        - argc : 1
+          output: [ testytest ]
+
+case_1000:
+  inherit_actions: template_10
+  help: "1000"
+
+case_1001:
+  inherit_actions: template_10
+  help: "1001"
+  actions:
+    GET:
+      detectors:
+        MYTHEN3:
+          args:
+            - function: 'do_mythen23'
+              argc: 420
+            - function: 'do_mythen3'
+              argc: 99
+
+
+
+case_1010:
+  inherit_actions: template_10
+  help: "1010"
+  actions:
+    GET:
+      args:
+        - argc: 111
+          function: 'get_function'
+
+case_1011:
+  inherit_actions: template_10
+  help: "1011"
+  actions:
+      GET:
+        args:
+            - argc: 111
+              function: 'get_function'
+        detectors:
+          MYTHEN3:
+            function: 'do_mythen23'
+
+##### cases 11** tests
+template_11:
+    template: true
+    actions:
+        GET:
+          args:
+              - argc: 0
+              - argc : 1
+                output: [ testytest ]
+          detectors:
+              EIGER:
+                function: 'do_eiger'
+                args:
+                    - argc: 99
+                      output: [ eigerOutput ]
+              POTATO:
+                function: 'do_potato'
+
+
+case_1100:
+    inherit_actions: template_11
+    help: "1100"
+
+case_1101:
+    inherit_actions: template_11
+    help: "1101"
+    actions:
+        GET:
+          detectors:
+              MYTHEN3:
+                function: 'do_mythen3'
+              POTATO:
+                function: 'do_potato'
+                args:
+                    - argc: 101
+                      function: 'potato_function'
+                    - argc: 202
+
+case_1110:
+    inherit_actions: template_11
+    help: "1110"
+    actions:
+        GET:
+          argc: 77
+          function: 'get_function'
+
+
+
+case_1111:
+    inherit_actions: template_11
+    help: "1111"
+    actions:
+        GET:
+          argc: 77
+          function: 'get_function'
+          detectors:
+              MYTHEN3:
+                function: 'do_mythen3'
+              POTATO:
+                function: 'do_potato'
+                args:
+                    - argc: 101
+                      function: 'potato_function'
+                    - argc: 202

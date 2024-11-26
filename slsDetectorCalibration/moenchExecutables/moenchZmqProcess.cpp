@@ -283,13 +283,12 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
     if (zmqsocket->Connect()) {
-        cprintf(RED, "Error: Could not connect to zmq receiving socket  %s\n",
+        cprintf(RED, "Error: Could not connect to Zmq receiving socket  %s\n",
                 (zmqsocket->GetZmqServerAddress()).c_str());
         delete zmqsocket;
         return EXIT_FAILURE;
     } else
-    
-    printf("Zmq receiving at %s\n", zmqsocket->GetZmqServerAddress().c_str());
+        printf("Zmq receiving socket at %s\n", zmqsocket->GetZmqServerAddress().c_str());
 
     // send socket
     sls::ZmqSocket *zmqsocket2 = 0;
@@ -297,19 +296,18 @@ int main(int argc, char *argv[]) {
     if (send) {
         // receive socket
         try {
-    	  zmqsocket2 = new sls::ZmqSocket(portnum2, socketip2.c_str());
+	        zmqsocket2 = new sls::ZmqSocket(portnum2);
         } catch (...) {
             cprintf(RED,
-                    "Error: Could not create Zmq sending socket on port %d and "
-                    "ip %s\n",
-                    portnum2, socketip2.c_str());
+                    "Error: Could not create Zmq sending socket on port %d\n",
+                    portnum2);
             //	delete zmqsocket2;
             //	zmqsocket2=NULL;
             //	delete zmqsocket;
             //	return EXIT_FAILURE;
             send = false;
         }
-            printf("Zmq sending socket at %s\n",
+        printf("Zmq sending socket at %s\n",
                    zmqsocket2->GetZmqServerAddress().c_str());
     }
 

@@ -3,13 +3,32 @@
 Format
 =======
 
-The UDP data format for the packets consist of a common header for all detectors, followed by the data for that one packet.
+The UDP data format for the packets consist of a common header of 48 bytes for all detectors, followed by the data for that one packet.
 
 
 Current Version
 ---------------------------
 
 **v2.0 (slsDetectorPackage v7.0.0+)**
+
+.. code-block:: cpp 
+    
+    typedef struct {
+        uint64_t frameNumber;
+        uint32_t expLength;
+        uint32_t packetNumber;
+        uint64_t detSpec1;
+        uint64_t timestamp;
+        uint16_t modId;
+        uint16_t row;
+        uint16_t column;
+        uint16_t detSpec2;
+        uint32_t detSpec3;
+        uint16_t detSpec4;
+        uint8_t detType;
+        uint8_t version;
+    } sls_detector_header;
+
 
 .. table:: <---------------------------------------------------- 8 bytes per row --------------------------------------------->
     :align: center
@@ -62,6 +81,8 @@ Description
 
 * **version**: current version of the detector header (0x2).
 
+
+.. _detector enum:
 
 Detector Enum
 --------------

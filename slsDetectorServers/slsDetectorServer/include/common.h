@@ -69,4 +69,9 @@ int deleteFile(char *mess, char *fname, char *errorPrefix);
 
 int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix);
 
-int readADCFromFile(char *fname, int *value);
+int readParameterFromFile(char *fname, char *parameterName, int *value);
+
+int createAbsoluteDirectory(char *mess, const char *absPath, char *errorPrefix);
+int deleteAbsoluteDirectory(char *mess, const char *absPath, char *errorPrefix);
+
+int deleteItem(char *mess, int isFile, const char *absPath, char *errorPrefix);

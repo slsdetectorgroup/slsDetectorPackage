@@ -1,10 +1,6 @@
-
-{% set version = environ.get('SLS_DET_VERSION', '0.0.0') %}
-
-
 package:
   name: sls_detector_software
-  version: "{{ version }}"
+  version: {{ environ.get('GIT_DESCRIBE_TAG', '') }}
 
 
 source:

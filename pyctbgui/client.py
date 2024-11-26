@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 
 det = Detector()
 
-zmqIp = det.rx_zmqip
-zmqport = det.rx_zmqport
+zmqIp = det.zmqip
+zmqport = det.zmqport
 zmq_stream = det.rx_zmqstream
 
 

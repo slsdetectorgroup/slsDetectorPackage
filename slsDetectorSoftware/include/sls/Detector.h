@@ -1104,14 +1104,6 @@ class Detector {
      */
     void setRxZmqPort(uint16_t port, int module_id = -1);
 
-    Result<IpAddr> getRxZmqIP(Positions pos = {}) const;
-
-    /** Zmq Ip Address from which data is to be streamed out of the receiver. \n
-     * Also restarts receiver zmq streaming if enabled. \n Default is from
-     * rx_hostname. \n Modified only when using an intermediate process between
-     * receiver. */
-    void setRxZmqIP(const IpAddr ip, Positions pos = {});
-
     Result<uint16_t> getClientZmqPort(Positions pos = {}) const;
 
     /** Port number to listen to zmq data streamed out from receiver or

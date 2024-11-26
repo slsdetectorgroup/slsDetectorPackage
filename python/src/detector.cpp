@@ -1039,15 +1039,6 @@ void init_det(py::module &m) {
                        (void (Detector::*)(uint16_t, int)) &
                            Detector::setRxZmqPort,
                        py::arg(), py::arg() = -1);
-    CppDetectorApi.def(
-        "getRxZmqIP",
-        (Result<sls::IpAddr>(Detector::*)(sls::Positions) const) &
-            Detector::getRxZmqIP,
-        py::arg() = Positions{});
-    CppDetectorApi.def("setRxZmqIP",
-                       (void (Detector::*)(const sls::IpAddr, sls::Positions)) &
-                           Detector::setRxZmqIP,
-                       py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getClientZmqPort",
                        (Result<uint16_t>(Detector::*)(sls::Positions) const) &
                            Detector::getClientZmqPort,

@@ -2013,6 +2013,9 @@ int setFrequency(enum CLKINDEX ind, int val) {
     int dbitPhase = getPhase(DBIT_CLK, 1);
     LOG(logDEBUG1, ("\tRemembering DBIT phase: %d degrees\n", dbitPhase));
 
+    // Remembering exptime if run clk change
+    int64_t exptime = getExpTime();
+
     // Calculate and set output frequency
     clkFrequency[ind] =
         ALTERA_PLL_SetOuputFrequency(ind, PLL_VCO_FREQ_MHZ, val);
@@ -2036,6 +2039,13 @@ int setFrequency(enum CLKINDEX ind, int val) {
     if (ind != SYNC_CLK) {
         configureSyncFrequency(ind);
     }
+
+    // setting back exptime if run clk change
+    if (ind == RUN_CLK) {
+        // no check for failure as it is not critical
+        setExpTime(exptime);
+    }
+
     return OK;
 }
 

@@ -6539,7 +6539,7 @@ patternX:
     PUT:
       args:
       - arg_types:
-        - std::string
+        - special::path
         argc: 1
         cast_input:
         - false

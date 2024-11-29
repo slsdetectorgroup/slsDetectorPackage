@@ -4,7 +4,7 @@
 #include "clogger.h"
 #include "sharedMemory.h"
 #include "sls/versionAPI.h"
-
+ 
 #include "ALTERA_PLL.h" // pll
 #include "INA226.h"     // i2c
 #include "LTC2620.h"    // dacs

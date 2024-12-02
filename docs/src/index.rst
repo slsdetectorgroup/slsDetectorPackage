@@ -12,7 +12,7 @@ Welcome to slsDetectorPackage's documentation!
     For further documentation, visit the official page: https://www.psi.ch/en/detectors/documentation
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 3
     :caption: Installation:
 
     installation
@@ -88,7 +88,6 @@ Welcome to slsDetectorPackage's documentation!
 
     fileformat
     slsreceiverheaderformat
-    ctbframeformat
     masterfileattributes
     binaryfileformat
     hdf5fileformat

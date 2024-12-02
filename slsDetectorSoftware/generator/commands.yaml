@@ -3884,8 +3884,8 @@ patternX:
       require_det_id: true
       function: setPattern
       input: [ 'args[0]' ]
+      arg_types: [special::path]
       input_types: [ std::string ]
-      cast_input: [ false ]
       output: [ 'args.front()' ]
 
 patword:

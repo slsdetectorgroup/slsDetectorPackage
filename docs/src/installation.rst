@@ -1,9 +1,4 @@
-.. warning ::
-    
-    Before building from source make sure that you have the 
-    :doc:`dependencies <../dependencies>` installed. If installing using conda, conda will 
-    manage the dependencies. Avoid also installing packages with pip. 
-   
+
 
 .. _Installation:
 
@@ -11,8 +6,18 @@
 Installation
 ===============
 
+One can either install pre-built binaries using conda or build from source.
+
+.. warning ::
+    
+    Before building from source make sure that you have the 
+    :doc:`dependencies <../dependencies>` installed. If installing using conda, conda will 
+    manage the dependencies. Avoid also installing packages with pip. 
+   
+
+
 Install binaries using conda
--------------------------------
+----------------------------------
 
 Conda is not only useful to manage python environments but can also
 be used as a user space package manager. Dates in the tag (for eg. 2020.07.23.dev0) 
@@ -55,7 +60,7 @@ We have three different packages available:
 
 
 Build from source
--------------------
+----------------------
 
 1. Download Source Code from github
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -75,8 +80,10 @@ Build from source
 2. Build from Source
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+One can either build using cmake or use the in-built cmk.sh script.
+
 Build using CMake
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
@@ -103,7 +110,7 @@ Instead of the cmake command, one can use ccmake to get a list of options to con
     ccmake ..
  
     # choose the options
-    # first press [c] - configure (maybe multiple times till you see [g])
+    # first press [c] - configure (until you see [g])
     # then press [g] - generate
 
 
@@ -123,7 +130,7 @@ Example cmake options               Comment
 
 
 Build using in-built cmk.sh script
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 .. code-block:: bash
@@ -173,7 +180,7 @@ Build using in-built cmk.sh script
 
 
 Build on old distributions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If your linux distribution doesn't come with a C++11 compiler (gcc>4.8) then 
 it's possible to install a newer gcc using conda and build the slsDetectorPackage
@@ -198,7 +205,7 @@ using this compiler
 
 
 Build slsDetectorGui (Qt5)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. Using pre-built binary on conda
 
@@ -259,7 +266,7 @@ Build slsDetectorGui (Qt5)
 
 
 Build this documentation
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The documentation for the slsDetectorPackage is build using a combination 
 of Doxygen, Sphinx and Breathe. The easiest way to install the dependencies
@@ -282,16 +289,18 @@ is to use conda
 
 
 Pybind and Zeromq
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. _pybind for different slsDetectorPackage versions:
 
 
-| **Pybind for Python**
-| v8.0.0+:
-|   pybind11 (v2.11.0) is built 
-|   * by default from tar file in repo (libs/pybind/v2.11.0.tar.gz) 
+| **Pybind11 for Python**
+| v8.0.0+: 
+|   pybind11 is built
+|   * by default from tar file in repo (libs/pybind/v2.1x.0.tar.gz) 
 |   * or use advanced option SLS_FETCH_PYBIND11_FROM_GITHUB [`link <https://github.com/pybind/pybind11>`__].
+|      * v9.0.0+: pybind11 (v2.13.6)
+|      * v8.x.x : pybind11 (v2.11.0)
 |
 | v7.x.x:
 |   pybind11 packaged into 'libs/pybind'. No longer a submodule. No need for "recursive" or "submodule update".

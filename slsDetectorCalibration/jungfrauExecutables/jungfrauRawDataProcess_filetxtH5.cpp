@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
     //auto filter = std::make_unique<singlePhotonDetector>(decoder.get(), 3, nsigma, 1, nullptr, nped, 200, -1, -1, nullptr, nullptr);
 
     thr = 0.15 * thr;
-    //filter->newDataSet();
+    //filter->newDataSet(); //This only initializes the dataset for the first thread (the other threads are created via cloning)
     // int dsize = decoder->getDataSize();
 
     if (thr > 0) {
@@ -191,7 +191,7 @@ int main(int argc, char *argv[]) {
         new multiThreadedCountingDetector(filter, nthreads, fifosize);
     //auto mt = std::make_unique<multiThreadedCountingDetector>(filter.get(), nthreads, fifosize);
     mt->setClusterSize(csize, csize);
-    mt->newDataSet();
+    mt->newDataSet(); //Initialize new dataset for each thread
 
 #ifndef ANALOG
     mt->setDetectorMode(ePhotonCounting);

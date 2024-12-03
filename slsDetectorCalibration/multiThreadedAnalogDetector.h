@@ -427,17 +427,17 @@ class multiThreadedAnalogDetector {
             
             int* tmp_img = dets[ii]->getImage();
 
-            std::cout << "## Thread " << ii
+            /* std::cout << "## Thread " << ii
                       << " # image size " << nn
                       << " # nnx " << nnx
                       << " # nny " << nny
-                      << " # ns " << ns;
+                      << " # ns " << ns; */
 
             for (int i = 0; i < nn; i++) {
 
-                std::cout << " # pixel " << i
+                /* std::cout << " # pixel " << i
                           << " # value " << tmp_img[i]
-                          << " ## " << std::endl;
+                          << " ## " << std::endl; */
 
                 if (ii == 0)
                     //	  if (img[i]>0)

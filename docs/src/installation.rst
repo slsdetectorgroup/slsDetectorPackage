@@ -55,6 +55,8 @@ We have three different packages available:
     conda search slsdet
     # gui
     conda search slsdetgui
+    # moench
+    conda search moenchzmq
 
 
 

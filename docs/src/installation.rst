@@ -23,11 +23,15 @@ Conda is not only useful to manage python environments but can also
 be used as a user space package manager. Dates in the tag (for eg. 2020.07.23.dev0) 
 are from the developer branch. Please use released tags for stability.
 
-We have three different packages available:
-
-    * **slsdetlib** shared libraries and command line utilities 
-    * **slsdetgui** GUI
-    * **slsdet** Python bindings
+We have four different packages available:
+    ==============     =============================================
+    Package             Description
+    ==============     =============================================
+    slsdetlib           shared libraries and command line utilities 
+    slsdetgui           GUI
+    slsdet              Python bindings
+    moenchzmq           moench
+    ==============     =============================================
 
 .. code-block:: bash
 
@@ -43,7 +47,7 @@ We have three different packages available:
 
     #ready to use
     sls_detector_get exptime
-    etc ...
+    ...
 
 
 .. code-block:: bash

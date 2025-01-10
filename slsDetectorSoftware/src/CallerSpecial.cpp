@@ -1047,7 +1047,9 @@ std::string Caller::rx_dbitlist(int action) {
             for (unsigned int i = 0; i < 64; ++i) {
                 t[i] = i;
             }
-        } else if (args[0] != "none") {
+        }
+        // 'none' option already covered as t is empty by default
+        else if (args[0] != "none") {
             unsigned int ntrim = args.size();
             t.resize(ntrim);
             for (unsigned int i = 0; i < ntrim; ++i) {

@@ -1749,7 +1749,8 @@ class Detector {
     Result<std::vector<int>> getRxDbitList(Positions pos = {}) const;
 
     /** [CTB] list contains the set of digital signal bits (0-63) to save, must
-     * be non repetitive */
+     * be non repetitive. Note: data will be rearranged according to signal bits
+     */
     void setRxDbitList(const std::vector<int> &list, Positions pos = {});
 
     /** [CTB] */

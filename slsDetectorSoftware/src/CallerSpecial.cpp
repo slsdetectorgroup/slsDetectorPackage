@@ -1042,8 +1042,6 @@ std::string Caller::rx_dbitlist(int action) {
             WrongNumberOfParameters(1);
         }
         std::vector<int> t;
-        if (args[0] == "none") {
-        }
         if (args[0] == "all") {
             t.resize(64);
             for (unsigned int i = 0; i < 64; ++i) {

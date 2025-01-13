@@ -20,9 +20,6 @@ jobs:
           packages: libhdf5-dev qtbase5-dev qt5-qmake libqt5svg5-dev libpng-dev libtiff-dev
           version: 1.0
 
-      - name: Install additional dependencies
-        run: sudo apt-get update && sudo apt-get install -y libpng-dev libtiff-dev
-
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type

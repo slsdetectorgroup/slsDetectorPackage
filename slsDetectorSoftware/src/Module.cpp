@@ -2621,15 +2621,23 @@ void Module::setPatternWaitAddr(int level, int addr) {
     sendToDetector<int>(F_SET_PATTERN_WAIT_ADDR, args);
 }
 
-uint64_t Module::getPatternWaitTime(int level) const {
+uint64_t Module::getPatternWaitClocks(int level) const{
     uint64_t args[]{static_cast<uint64_t>(level),
                     static_cast<uint64_t>(GET_FLAG)};
-    return sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_TIME, args);
+    return sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_CLOCKS, args);
 }
 
-void Module::setPatternWaitTime(int level, uint64_t t) {
+void Module::setPatternWaitClocks(int level, uint64_t t){
     uint64_t args[]{static_cast<uint64_t>(level), t};
-    sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_TIME, args);
+    sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_CLOCKS, args);
+}
+
+uint64_t Module::getPatternWaitInterval(int level) const{
+    return sendToDetector<uint64_t>(F_GET_PATTERN_WAIT_TIME, level);
+}
+void Module::setPatternWaitInterval(int level, uint64_t t){
+    uint64_t args[]{static_cast<uint64_t>(level), t};
+    sendToDetector(F_SET_PATTERN_WAIT_TIME, args, nullptr);
 }
 
 uint64_t Module::getPatternMask() const {

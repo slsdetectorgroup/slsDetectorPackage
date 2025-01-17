@@ -1017,6 +1017,62 @@ std::string Caller::slowadc(int action) {
     }
     return os.str();
 }
+std::string Caller::patwaittime(int action) {
+    std::ostringstream os;
+
+    if (action == defs::HELP_ACTION) {
+        os << "[0-6] [n_clk] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles for the loop provided.\n\t[Mythen3] Level options: 0-3 only."
+        << '\n';
+    } 
+    
+    // parse level and start of argument (deprecated cmd support)
+    int level = -1, iArg = 0, nGetArgs = -1, nPutArgs = -1;
+    GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs, nPutArgs);
+
+    if (action == defs::GET_ACTION) {
+        if (args.size() > 1)
+            WrongNumberOfParameters(0);
+       
+        if (args.size() == 1) {
+            auto t = det->getPatternWaitInterval(level, std::vector<int>{det_id});
+            os << level << ' ' << OutString(t, args[0]) << '\n';
+        } else {
+            auto t = det->getPatternWaitClocks(level, std::vector<int>{det_id});
+            os << level << ' ' << OutString(t) << '\n';
+        }
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() > 2)
+            WrongNumberOfParameters(1);
+
+        // clocks (all digits)
+        if (args.size() == 0 && std::all_of(args[0].begin(), args[0].end(), ::isdigit)) {
+            uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
+            det->setPatternWaitClocks(level, waittime, std::vector<int>{det_id});
+            os << level << ' ' << waittime << '\n';
+        }
+
+        // time
+        else {
+            time::ns converted_time{0};
+            try {
+                if (args.size() == 0) {
+                    std::string tmp_time(args[0]);
+                    std::string unit = RemoveUnit(tmp_time);
+                    converted_time = StringTo<time::ns>(tmp_time, unit);
+                } else {
+                    converted_time = StringTo<time::ns>(args[0], args[1]); 
+                }
+            } catch (...) {
+                throw RuntimeError("Could not convert argument to time::ns");
+            }
+            det->setPatternWaitInterval(level, converted_time, std::vector<int>{det_id});
+            os << level << ' ' << args[0] << (args.size() == 1 ? args[1] : "") << '\n';
+        }
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 std::string Caller::rx_dbitlist(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {

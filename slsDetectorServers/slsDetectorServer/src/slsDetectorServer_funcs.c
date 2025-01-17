@@ -302,7 +302,7 @@ void function_table() {
     flist[F_SET_PATTERN_LOOP_ADDRESSES] = &set_pattern_loop_addresses;
     flist[F_SET_PATTERN_LOOP_CYCLES] = &set_pattern_loop_cycles;
     flist[F_SET_PATTERN_WAIT_ADDR] = &set_pattern_wait_addr;
-    flist[F_SET_PATTERN_WAIT_TIME] = &set_pattern_wait_time;
+    flist[F_SET_PATTERN_WAIT_CLOCKS] = &set_pattern_wait_clocks;
     flist[F_SET_PATTERN_MASK] = &set_pattern_mask;
     flist[F_GET_PATTERN_MASK] = &get_pattern_mask;
     flist[F_SET_PATTERN_BIT_MASK] = &set_pattern_bit_mask;
@@ -518,7 +518,8 @@ void function_table() {
     flist[F_SET_TIMING_INFO_DECODER] = &set_timing_info_decoder;
     flist[F_GET_COLLECTION_MODE] = &get_collection_mode;
     flist[F_SET_COLLECTION_MODE] = &set_collection_mode;
-
+    flist[F_GET_PATTERN_WAIT_INTERVAL] = &get_pattern_wait_interval;
+    flist[F_SET_PATTERN_WAIT_INTERVAL] = &set_pattern_wait_interval;
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
         LOG(logERROR, ("The last detector function enum has reached its "
@@ -3531,13 +3532,13 @@ int set_pattern_wait_addr(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int set_pattern_wait_time(int file_des) {
+int set_pattern_wait_clocks(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     uint64_t args[2] = {-1, -1};
     uint64_t retval = -1;
 
-    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+    if (receiveData(file_des, args, sizeof(args), INT64) < 0)
         return printSocketReadError();
 #if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
     !defined(MYTHEN3D)
@@ -3545,16 +3546,16 @@ int set_pattern_wait_time(int file_des) {
 #else
     int loopLevel = (int)args[0];
     uint64_t timeval = args[1];
-    LOG(logDEBUG1, ("Setting Pattern wait time (loopLevel:%d timeval:0x%llx)\n",
+    LOG(logDEBUG1, ("Setting Pattern wait clocks (loopLevel:%d timeval:0x%llx)\n",
                     loopLevel, (long long int)timeval));
     if (((int64_t)timeval == GET_FLAG) || (Server_VerifyLock() == OK)) {
         // set
         if ((int64_t)timeval != GET_FLAG) {
-            ret = validate_setPatternWaitTime(mess, loopLevel, timeval);
+            ret = validate_setPatternWaitClocks(mess, loopLevel, timeval);
         }
         // get
         if (ret == OK) {
-            ret = validate_getPatternWaitTime(mess, loopLevel, &retval);
+            ret = validate_getPatternWaitClocks(mess, loopLevel, &retval);
         }
     }
 #endif
@@ -11205,4 +11206,44 @@ int set_collection_mode(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_pattern_wait_interval(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int loopLevel = -1;
+    uint64_t retval = -1;
+
+    if (receiveData(file_des, &level, sizeof(level), INT32) < 0)
+        return printSocketReadError();
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    LOG(logDEBUG1, ("Getting Pattern wait interva (loopLevel:%d)\n", loopLevel));
+    ret = validate_getPatternWaitInterval(mess, loopLevel, &retval);
+#endif
+    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
+}
+
+int set_pattern_wait_interval(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint64_t args[2] = {-1, -1};
+
+    if (receiveData(file_des, args, sizeof(args), INT64) < 0)
+        return printSocketReadError();
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    int loopLevel = (int)args[0];
+    uint64_t timeval = args[1];
+    LOG(logDEBUG1, ("Setting Pattern wait interval (loopLevel:%d timeval:0x%llx ns)\n",
+                    loopLevel, (long long int)timeval));
+    if (Server_VerifyLock() == OK) {
+        ret = validate_setPatternWaitInterval(mess, loopLevel, timeval);
+    }
+#endif
+    return Server_SendResult(file_des, INT64, NULL, 0);
 }

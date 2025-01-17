@@ -2593,12 +2593,20 @@ void Detector::setPatternWaitAddr(int level, int addr, Positions pos) {
     pimpl->Parallel(&Module::setPatternWaitAddr, pos, level, addr);
 }
 
-Result<uint64_t> Detector::getPatternWaitTime(int level, Positions pos) const {
-    return pimpl->Parallel(&Module::getPatternWaitTime, pos, level);
+Result<uint64_t> Detector::getPatternWaitClocks(int level, Positions pos) const {
+    return pimpl->Parallel(&Module::getPatternWaitClocks, pos, level);
 }
 
-void Detector::setPatternWaitTime(int level, uint64_t t, Positions pos) {
-    pimpl->Parallel(&Module::setPatternWaitTime, pos, level, t);
+void Detector::setPatternWaitClocks(int level, uint64_t t, Positions pos) {
+    pimpl->Parallel(&Module::setPatternWaitClocks, pos, level, t);
+}
+
+Result<ns> Detector::getPatternWaitInterval(int level, Positions pos) const {
+    return pimpl->Parallel(&Module::getPatternWaitInterval, pos, level);
+}
+
+void Detector::setPatternWaitInterval(int level, ns t, Positions pos) {
+    pimpl->Parallel(&Module::setPatternWaitInterval, pos, level, t.count());
 }
 
 Result<uint64_t> Detector::getPatternMask(Positions pos) {

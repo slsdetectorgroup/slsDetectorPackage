@@ -1095,26 +1095,16 @@ int setNumTransceiverSamples(int val) {
 int getNumTransceiverSamples() { return ntSamples; }
 
 int setExpTime(int64_t val) {
-    if (val < 0) {
-        LOG(logERROR, ("Invalid exptime: %lld ns\n", (long long int)val));
-        return FAIL;
-    }
-    LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
-    val *= (1E-3 * clkFrequency[RUN_CLK]);
-    setPatternWaitTime(0, val);
 
-    // validate for tolerance
-    int64_t retval = getExpTime();
-    val /= (1E-3 * clkFrequency[RUN_CLK]);
-    if (val != retval) {
-        return FAIL;
-    }
-    return OK;
+    int64_t exptime = val;
+    exptime *= (1E-3 * clkFrequency[RUN_CLK]);
+    LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)exptime));
+
+    return validate_setPatternWaitClocksAndInterval(
+        "Could not scan exptime arguments.\n", 0, val, 1);
 }
 
-int64_t getExpTime() {
-    return getPatternWaitTime(0) / (1E-3 * clkFrequency[RUN_CLK]);
-}
+int64_t getExpTime() { return getPatternWaitInterval(0); }
 
 int setPeriod(int64_t val) {
     if (val < 0) {

@@ -161,9 +161,6 @@ class InferAction {
     int patwait1();
     int patwait2();
     int patwaittime();
-    int patwaittime0();
-    int patwaittime1();
-    int patwaittime2();
     int patword();
     int pedestalmode();
     int period();
@@ -498,9 +495,9 @@ class InferAction {
         {"patwait1", &InferAction::patwait1},
         {"patwait2", &InferAction::patwait2},
         {"patwaittime", &InferAction::patwaittime},
-        {"patwaittime0", &InferAction::patwaittime0},
-        {"patwaittime1", &InferAction::patwaittime1},
-        {"patwaittime2", &InferAction::patwaittime2},
+        {"patwaittime0", &InferAction::patwaittime},
+        {"patwaittime1", &InferAction::patwaittime},
+        {"patwaittime2", &InferAction::patwaittime},
         {"patword", &InferAction::patword},
         {"pedestalmode", &InferAction::pedestalmode},
         {"period", &InferAction::period},

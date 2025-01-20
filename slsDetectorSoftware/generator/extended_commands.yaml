@@ -5942,11 +5942,15 @@ patloop:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternLoopAddresses
         input:
         - level
@@ -5956,10 +5960,6 @@ patloop:
         - level
         - ''' '''
         - OutStringHex(t, 4)
-        pattern_command:
-          command_name: patloop
-          nGetArgs: 0
-          nPutArgs: 2
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -5968,7 +5968,7 @@ patloop:
         - int
         - int
         - int
-        argc: -1
+        argc: 3
         cast_input:
         - false
         - false
@@ -5976,12 +5976,15 @@ patloop:
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: start
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[1])
         - name: stop
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[2])
         function: setPatternLoopAddresses
         input:
         - level
@@ -5999,10 +6002,6 @@ patloop:
         - '", "'
         - ToStringHex(stop, 4)
         - ''']'''
-        pattern_command:
-          command_name: patloop
-          nGetArgs: 0
-          nPutArgs: 2
         require_det_id: true
         store_result_in_t: false
   command_name: patloop
@@ -6010,17 +6009,22 @@ patloop:
   help: "[0-6] [start addr] [stop addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Limits of the\
     \ loop level provided.\n\t[Mythen3] Level options: 0-3 only."
   infer_action: true
+  pattern_command: patloop
 patloop0:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternLoopAddresses
         input:
         - level
@@ -6028,10 +6032,6 @@ patloop0:
         - int
         output:
         - OutStringHex(t, 4)
-        pattern_command:
-          command_name: patloop
-          nGetArgs: 0
-          nPutArgs: 2
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6040,7 +6040,7 @@ patloop0:
         - int
         - int
         - int
-        argc: -1
+        argc: 3
         cast_input:
         - false
         - false
@@ -6048,12 +6048,15 @@ patloop0:
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: start
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[1])
         - name: stop
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[2])
         function: setPatternLoopAddresses
         input:
         - level
@@ -6069,27 +6072,28 @@ patloop0:
         - '", "'
         - ToStringHex(stop, 4)
         - ''']'''
-        pattern_command:
-          command_name: patloop
-          nGetArgs: 0
-          nPutArgs: 2
         require_det_id: true
         store_result_in_t: false
   command_name: patloop0
   function_alias: patloop0
   help: "\n\tDeprecated command. Use patloop."
   infer_action: true
+  pattern_command: patloop
 patloop1:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternLoopAddresses
         input:
         - level
@@ -6097,10 +6101,6 @@ patloop1:
         - int
         output:
         - OutStringHex(t, 4)
-        pattern_command:
-          command_name: patloop
-          nGetArgs: 0
-          nPutArgs: 2
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6109,7 +6109,7 @@ patloop1:
         - int
         - int
         - int
-        argc: -1
+        argc: 3
         cast_input:
         - false
         - false
@@ -6117,12 +6117,15 @@ patloop1:
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: start
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[1])
         - name: stop
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[2])
         function: setPatternLoopAddresses
         input:
         - level
@@ -6138,27 +6141,28 @@ patloop1:
         - '", "'
         - ToStringHex(stop, 4)
         - ''']'''
-        pattern_command:
-          command_name: patloop
-          nGetArgs: 0
-          nPutArgs: 2
         require_det_id: true
         store_result_in_t: false
   command_name: patloop1
   function_alias: patloop1
   help: "\n\tDeprecated command. Use patloop."
   infer_action: true
+  pattern_command: patloop
 patloop2:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternLoopAddresses
         input:
         - level
@@ -6166,10 +6170,6 @@ patloop2:
         - int
         output:
         - OutStringHex(t, 4)
-        pattern_command:
-          command_name: patloop
-          nGetArgs: 0
-          nPutArgs: 2
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6178,7 +6178,7 @@ patloop2:
         - int
         - int
         - int
-        argc: -1
+        argc: 3
         cast_input:
         - false
         - false
@@ -6186,12 +6186,15 @@ patloop2:
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: start
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[1])
         - name: stop
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[2])
         function: setPatternLoopAddresses
         input:
         - level
@@ -6207,16 +6210,13 @@ patloop2:
         - '", "'
         - ToStringHex(stop, 4)
         - ''']'''
-        pattern_command:
-          command_name: patloop
-          nGetArgs: 0
-          nPutArgs: 2
         require_det_id: true
         store_result_in_t: false
   command_name: patloop2
   function_alias: patloop2
   help: "\n\tDeprecated command. Use patloop."
   infer_action: true
+  pattern_command: patloop
 patmask:
   actions:
     GET:
@@ -6263,11 +6263,15 @@ patnloop:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternLoopCycles
         input:
         - level
@@ -6277,10 +6281,6 @@ patnloop:
         - level
         - ''' '''
         - OutString(t)
-        pattern_command:
-          command_name: patnloop
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6288,16 +6288,19 @@ patnloop:
       - arg_types:
         - int
         - int
-        argc: -1
+        argc: 2
         cast_input:
         - false
-        - true
+        - false
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: nloops
-          type: std::string
-          value: args[iArg++]
+          type: int
+          value: StringTo<int>(args[1])
         function: setPatternLoopCycles
         input:
         - level
@@ -6309,10 +6312,6 @@ patnloop:
         - level
         - ''' '''
         - nloops
-        pattern_command:
-          command_name: patnloop
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: false
   command_name: patnloop
@@ -6320,17 +6319,22 @@ patnloop:
   help: "[0-6] [n_cycles] \n\t[Ctb][Mythen3][Xilinx Ctb] Number of cycles of the loop\
     \ level provided.\n\t[Mythen3] Level options: 0-3 only."
   infer_action: true
+  pattern_command: patnloop
 patnloop0:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternLoopCycles
         input:
         - level
@@ -6338,10 +6342,6 @@ patnloop0:
         - int
         output:
         - OutString(t)
-        pattern_command:
-          command_name: patnloop
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6349,16 +6349,19 @@ patnloop0:
       - arg_types:
         - int
         - int
-        argc: -1
+        argc: 2
         cast_input:
         - false
-        - true
+        - false
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: nloops
-          type: std::string
-          value: args[iArg++]
+          type: int
+          value: StringTo<int>(args[1])
         function: setPatternLoopCycles
         input:
         - level
@@ -6368,27 +6371,28 @@ patnloop0:
         - int
         output:
         - nloops
-        pattern_command:
-          command_name: patnloop
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: false
   command_name: patnloop0
   function_alias: patnloop0
   help: "\n\tDeprecated command. Use patnloop."
   infer_action: true
+  pattern_command: patnloop
 patnloop1:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternLoopCycles
         input:
         - level
@@ -6396,10 +6400,6 @@ patnloop1:
         - int
         output:
         - OutString(t)
-        pattern_command:
-          command_name: patnloop
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6407,16 +6407,19 @@ patnloop1:
       - arg_types:
         - int
         - int
-        argc: -1
+        argc: 2
         cast_input:
         - false
-        - true
+        - false
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: nloops
-          type: std::string
-          value: args[iArg++]
+          type: int
+          value: StringTo<int>(args[1])
         function: setPatternLoopCycles
         input:
         - level
@@ -6426,27 +6429,28 @@ patnloop1:
         - int
         output:
         - nloops
-        pattern_command:
-          command_name: patnloop
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: false
   command_name: patnloop1
   function_alias: patnloop1
   help: "\n\tDeprecated command. Use patnloop."
   infer_action: true
+  pattern_command: patnloop
 patnloop2:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternLoopCycles
         input:
         - level
@@ -6454,10 +6458,6 @@ patnloop2:
         - int
         output:
         - OutString(t)
-        pattern_command:
-          command_name: patnloop
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6465,16 +6465,19 @@ patnloop2:
       - arg_types:
         - int
         - int
-        argc: -1
+        argc: 2
         cast_input:
         - false
-        - true
+        - false
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: nloops
-          type: std::string
-          value: args[iArg++]
+          type: int
+          value: StringTo<int>(args[1])
         function: setPatternLoopCycles
         input:
         - level
@@ -6484,16 +6487,13 @@ patnloop2:
         - int
         output:
         - nloops
-        pattern_command:
-          command_name: patnloop
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: false
   command_name: patnloop2
   function_alias: patnloop2
   help: "\n\tDeprecated command. Use patnloop."
   infer_action: true
+  pattern_command: patnloop
 patsetbit:
   actions:
     GET:
@@ -6586,11 +6586,15 @@ patwait:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternWaitAddr
         input:
         - level
@@ -6600,10 +6604,6 @@ patwait:
         - level
         - ''' '''
         - OutStringHex(t, 4)
-        pattern_command:
-          command_name: patwait
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6611,16 +6611,19 @@ patwait:
       - arg_types:
         - int
         - int
-        argc: -1
+        argc: 2
         cast_input:
         - false
         - false
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: addr
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[1])
         function: setPatternWaitAddr
         input:
         - level
@@ -6632,10 +6635,6 @@ patwait:
         - level
         - ''' '''
         - ToStringHex(addr, 4)
-        pattern_command:
-          command_name: patwait
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: false
   command_name: patwait
@@ -6643,17 +6642,22 @@ patwait:
   help: "[0-6] [addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait address for loop level provided.\
     \ \n\t[Mythen3] Level options: 0-3 only."
   infer_action: true
+  pattern_command: patwait
 patwait0:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternWaitAddr
         input:
         - level
@@ -6661,10 +6665,6 @@ patwait0:
         - int
         output:
         - OutStringHex(t, 4)
-        pattern_command:
-          command_name: patwait
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6672,16 +6672,19 @@ patwait0:
       - arg_types:
         - int
         - int
-        argc: -1
+        argc: 2
         cast_input:
         - false
         - false
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: addr
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[1])
         function: setPatternWaitAddr
         input:
         - level
@@ -6690,28 +6693,30 @@ patwait0:
         - int
         - int
         output:
-        - ToStringHex(addr, 4)
-        pattern_command:
-          command_name: patwait
-          nGetArgs: 0
-          nPutArgs: 1
+        - ToStringHex(addr
+        - 4)
         require_det_id: true
         store_result_in_t: false
   command_name: patwait0
   function_alias: patwait0
   help: "\n\tDeprecated command. Use patwait."
   infer_action: true
+  pattern_command: patwait
 patwait1:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternWaitAddr
         input:
         - level
@@ -6719,10 +6724,6 @@ patwait1:
         - int
         output:
         - OutStringHex(t, 4)
-        pattern_command:
-          command_name: patwait
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6730,16 +6731,19 @@ patwait1:
       - arg_types:
         - int
         - int
-        argc: -1
+        argc: 2
         cast_input:
         - false
         - false
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: addr
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[1])
         function: setPatternWaitAddr
         input:
         - level
@@ -6748,28 +6752,30 @@ patwait1:
         - int
         - int
         output:
-        - ToStringHex(addr, 4)
-        pattern_command:
-          command_name: patwait
-          nGetArgs: 0
-          nPutArgs: 1
+        - ToStringHex(addr
+        - 4)
         require_det_id: true
         store_result_in_t: false
   command_name: patwait1
   function_alias: patwait1
   help: "\n\tDeprecated command. Use patwait."
   infer_action: true
+  pattern_command: patwait
 patwait2:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternWaitAddr
         input:
         - level
@@ -6777,10 +6783,6 @@ patwait2:
         - int
         output:
         - OutStringHex(t, 4)
-        pattern_command:
-          command_name: patwait
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6788,16 +6790,19 @@ patwait2:
       - arg_types:
         - int
         - int
-        argc: -1
+        argc: 2
         cast_input:
         - false
         - false
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: addr
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[1])
         function: setPatternWaitAddr
         input:
         - level
@@ -6806,254 +6811,150 @@ patwait2:
         - int
         - int
         output:
-        - ToStringHex(addr, 4)
-        pattern_command:
-          command_name: patwait
-          nGetArgs: 0
-          nPutArgs: 1
+        - ToStringHex(addr
+        - 4)
         require_det_id: true
         store_result_in_t: false
   command_name: patwait2
   function_alias: patwait2
   help: "\n\tDeprecated command. Use patwait."
   infer_action: true
+  pattern_command: patwait
 patwaittime:
   actions:
     GET:
       args:
-      - arg_types:
-        - int
+      - arg_types: []
         argc: -1
-        cast_input:
-        - false
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: getPatternWaitTime
-        input:
-        - level
-        input_types:
-        - int
-        output:
-        - level
-        - ''' '''
-        - OutString(t)
-        pattern_command:
-          command_name: patwaittime
-          nGetArgs: 0
-          nPutArgs: 1
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: true
     PUT:
       args:
-      - arg_types:
-        - int
-        - int
+      - arg_types: []
         argc: -1
-        cast_input:
-        - false
-        - false
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        extra_variables:
-        - name: waittime
-          type: uint64_t
-          value: StringTo<uint64_t>(args[iArg++])
-        function: setPatternWaitTime
-        input:
-        - level
-        - waittime
-        input_types:
-        - int
-        - int
-        output:
-        - level
-        - ''' '''
-        - waittime
-        pattern_command:
-          command_name: patwaittime
-          nGetArgs: 0
-          nPutArgs: 1
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
   command_name: patwaittime
   function_alias: patwaittime
-  help: "[0-6] [n_clk] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles for\
-    \ the loop provided.\n\t[Mythen3] Level options: 0-3 only."
+  help: ''
   infer_action: true
+  is_description: true
 patwaittime0:
   actions:
     GET:
       args:
-      - arg_types:
-        - int
+      - arg_types: []
         argc: -1
-        cast_input:
-        - false
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: getPatternWaitTime
-        input:
-        - level
-        input_types:
-        - int
-        output:
-        - OutString(t)
-        pattern_command:
-          command_name: patwaittime
-          nGetArgs: 0
-          nPutArgs: 1
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: true
     PUT:
       args:
-      - arg_types:
-        - int
-        - int
+      - arg_types: []
         argc: -1
-        cast_input:
-        - false
-        - false
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        extra_variables:
-        - name: waittime
-          type: uint64_t
-          value: StringTo<uint64_t>(args[iArg++])
-        function: setPatternWaitTime
-        input:
-        - level
-        - waittime
-        input_types:
-        - int
-        - int
-        output:
-        - waittime
-        pattern_command:
-          command_name: patwaittime
-          nGetArgs: 0
-          nPutArgs: 1
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
   command_name: patwaittime0
-  function_alias: patwaittime0
-  help: "\n\tDeprecated command. Use patwaittime."
+  duplicate_function: true
+  function_alias: patwaittime
+  help: ''
   infer_action: true
+  is_description: true
 patwaittime1:
   actions:
     GET:
       args:
-      - arg_types:
-        - int
+      - arg_types: []
         argc: -1
-        cast_input:
-        - false
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: getPatternWaitTime
-        input:
-        - level
-        input_types:
-        - int
-        output:
-        - OutString(t)
-        pattern_command:
-          command_name: patwaittime
-          nGetArgs: 0
-          nPutArgs: 1
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: true
     PUT:
       args:
-      - arg_types:
-        - int
-        - int
+      - arg_types: []
         argc: -1
-        cast_input:
-        - false
-        - false
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        extra_variables:
-        - name: waittime
-          type: uint64_t
-          value: StringTo<uint64_t>(args[iArg++])
-        function: setPatternWaitTime
-        input:
-        - level
-        - waittime
-        input_types:
-        - int
-        - int
-        output:
-        - waittime
-        pattern_command:
-          command_name: patwaittime
-          nGetArgs: 0
-          nPutArgs: 1
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
   command_name: patwaittime1
-  function_alias: patwaittime1
-  help: "\n\tDeprecated command. Use patwaittime."
+  duplicate_function: true
+  function_alias: patwaittime
+  help: ''
   infer_action: true
+  is_description: true
 patwaittime2:
   actions:
     GET:
       args:
-      - arg_types:
-        - int
+      - arg_types: []
         argc: -1
-        cast_input:
-        - false
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: getPatternWaitTime
-        input:
-        - level
-        input_types:
-        - int
-        output:
-        - OutString(t)
-        pattern_command:
-          command_name: patwaittime
-          nGetArgs: 0
-          nPutArgs: 1
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: true
     PUT:
       args:
-      - arg_types:
-        - int
-        - int
+      - arg_types: []
         argc: -1
-        cast_input:
-        - false
-        - false
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        extra_variables:
-        - name: waittime
-          type: uint64_t
-          value: StringTo<uint64_t>(args[iArg++])
-        function: setPatternWaitTime
-        input:
-        - level
-        - waittime
-        input_types:
-        - int
-        - int
-        output:
-        - waittime
-        pattern_command:
-          command_name: patwaittime
-          nGetArgs: 0
-          nPutArgs: 1
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
   command_name: patwaittime2
-  function_alias: patwaittime2
-  help: "\n\tDeprecated command. Use patwaittime."
+  duplicate_function: true
+  function_alias: patwaittime
+  help: ''
   infer_action: true
+  is_description: true
 patword:
   actions:
     GET:

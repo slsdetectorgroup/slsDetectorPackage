@@ -19,10 +19,7 @@ class Caller {
     IpAddr getDstIpFromAuto();
     IpAddr getSrcIpFromAuto();
     UdpDestination getUdpEntry();
-    void GetLevelAndUpdateArgIndex(int action,
-                                   std::string levelSeparatedCommand,
-                                   int &level, int &iArg, size_t nGetArgs,
-                                   size_t nPutArgs);
+    int GetLevelAndInsertIntoArgs(std::string levelSeparatedCommand);
     void WrongNumberOfParameters(size_t expected);
 
     template <typename V> std::string OutStringHex(const V &value) {

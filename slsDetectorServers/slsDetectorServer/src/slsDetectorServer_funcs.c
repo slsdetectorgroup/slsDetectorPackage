@@ -2014,102 +2014,106 @@ int acquire(int blocking, int file_des) {
 #if defined(JUNGFRAUD)
             // chipv1.1 has to be configured before acquisition
             if (getChipVersion() == 11 && !isChipConfigured()) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition. Chip is not configured. "
-                         "Power it on to configure it.\n");
-            LOG(logERROR, (mess));
-        } else
+                ret = FAIL;
+                strcpy(mess,
+                       "Could not start acquisition. Chip is not configured. "
+                       "Power it on to configure it.\n");
+                LOG(logERROR, (mess));
+            } else
 #endif
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
-            if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                 getReadoutMode() == ANALOG_ONLY) &&
-                (getNumAnalogSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not start acquisition. Invalid number of analog "
-                    "samples: %d.\n",
-                    getNumAnalogSamples());
-            LOG(logERROR, (mess));
-        } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                    getReadoutMode() == DIGITAL_ONLY ||
-                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                   (getNumDigitalSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(mess,
+                if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
+                     getReadoutMode() == ANALOG_ONLY) &&
+                    (getNumAnalogSamples() <= 0)) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not start acquisition. Invalid number of analog "
+                        "samples: %d.\n",
+                        getNumAnalogSamples());
+                LOG(logERROR, (mess));
+            } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
+                        getReadoutMode() == DIGITAL_ONLY ||
+                        getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                       (getNumDigitalSamples() <= 0)) {
+                ret = FAIL;
+                sprintf(
+                    mess,
                     "Could not start acquisition. Invalid number of digital "
                     "samples: %d.\n",
                     getNumDigitalSamples());
-            LOG(logERROR, (mess));
-        } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
-                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                   (getNumTransceiverSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not start acquisition. Invalid number of "
-                    "transceiver "
-                    "samples: %d.\n",
-                    getNumTransceiverSamples());
-            LOG(logERROR, (mess));
-        } else
+                LOG(logERROR, (mess));
+            } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
+                        getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                       (getNumTransceiverSamples() <= 0)) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not start acquisition. Invalid number of "
+                        "transceiver "
+                        "samples: %d.\n",
+                        getNumTransceiverSamples());
+                LOG(logERROR, (mess));
+            } else
 #endif
 #ifdef EIGERD
-            // check for hardware mac and hardware ip
-            if (udpDetails[0].srcmac != getDetectorMAC()) {
-            ret = FAIL;
-            uint64_t sourcemac = getDetectorMAC();
-            char src_mac[MAC_ADDRESS_SIZE];
-            getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
-            sprintf(mess,
-                    "Invalid udp source mac address for this detector. "
-                    "Must be "
-                    "same as hardware detector mac address %s\n",
-                    src_mac);
-            LOG(logERROR, (mess));
-        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                   (udpDetails[0].srcip != getDetectorIP())) {
-            ret = FAIL;
-            uint32_t sourceip = getDetectorIP();
-            char src_ip[INET_ADDRSTRLEN];
-            getIpAddressinString(src_ip, sourceip);
-            sprintf(mess,
-                    "Invalid udp source ip address for this detector. Must "
-                    "be "
-                    "same as hardware detector ip address %s in 1G readout "
-                    "mode \n",
-                    src_ip);
-            LOG(logERROR, (mess));
-        } else
-#endif
-            if (configured == FAIL) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because ");
-            strcat(mess, configureMessage);
-            LOG(logERROR, (mess));
-        } else if (sharedMemory_getScanStatus() == RUNNING) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because a scan is "
-                         "already running!\n");
-            LOG(logERROR, (mess));
-        } else {
-            memset(scanErrMessage, 0, MAX_STR_LENGTH);
-            sharedMemory_setScanStop(0);
-            sharedMemory_setScanStatus(IDLE); // if it was error
-            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
-                               &blocking)) {
-                ret = FAIL;
-                strcpy(mess, "Could not start acquisition thread!\n");
-                LOG(logERROR, (mess));
-            } else {
-                // wait for blocking always (scan or not)
-                // non blocking-no scan also wait (for error message)
-                // non blcoking-scan dont wait (there is
-                // scanErrorMessage)
-                if (blocking || !scan) {
-                    pthread_join(pthread_tid, NULL);
+                // check for hardware mac and hardware ip
+                if (udpDetails[0].srcmac != getDetectorMAC()) {
+                    ret = FAIL;
+                    uint64_t sourcemac = getDetectorMAC();
+                    char src_mac[MAC_ADDRESS_SIZE];
+                    getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
+                    sprintf(mess,
+                            "Invalid udp source mac address for this detector. "
+                            "Must be "
+                            "same as hardware detector mac address %s\n",
+                            src_mac);
+                    LOG(logERROR, (mess));
+                } else if (!enableTenGigabitEthernet(GET_FLAG) &&
+                           (udpDetails[0].srcip != getDetectorIP())) {
+                    ret = FAIL;
+                    uint32_t sourceip = getDetectorIP();
+                    char src_ip[INET_ADDRSTRLEN];
+                    getIpAddressinString(src_ip, sourceip);
+                    sprintf(
+                        mess,
+                        "Invalid udp source ip address for this detector. Must "
+                        "be "
+                        "same as hardware detector ip address %s in 1G readout "
+                        "mode \n",
+                        src_ip);
+                    LOG(logERROR, (mess));
                 } else
-                    pthread_detach(pthread_tid);
-            }
-        }
+#endif
+                    if (configured == FAIL) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not start acquisition because ");
+                    strcat(mess, configureMessage);
+                    LOG(logERROR, (mess));
+                } else if (sharedMemory_getScanStatus() == RUNNING) {
+                    ret = FAIL;
+                    strcpy(mess,
+                           "Could not start acquisition because a scan is "
+                           "already running!\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    memset(scanErrMessage, 0, MAX_STR_LENGTH);
+                    sharedMemory_setScanStop(0);
+                    sharedMemory_setScanStatus(IDLE); // if it was error
+                    if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                                       &blocking)) {
+                        ret = FAIL;
+                        strcpy(mess, "Could not start acquisition thread!\n");
+                        LOG(logERROR, (mess));
+                    } else {
+                        // wait for blocking always (scan or not)
+                        // non blocking-no scan also wait (for error message)
+                        // non blcoking-scan dont wait (there is
+                        // scanErrorMessage)
+                        if (blocking || !scan) {
+                            pthread_join(pthread_tid, NULL);
+                        } else
+                            pthread_detach(pthread_tid);
+                    }
+                }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -3546,16 +3550,23 @@ int set_pattern_wait_clocks(int file_des) {
 #else
     int loopLevel = (int)args[0];
     uint64_t timeval = args[1];
-    LOG(logDEBUG1, ("Setting Pattern wait clocks (loopLevel:%d timeval:0x%llx)\n",
-                    loopLevel, (long long int)timeval));
+    LOG(logDEBUG1,
+        ("Setting Pattern wait clocks (loopLevel:%d clocks:0x%lld)\n",
+         loopLevel, (long long int)timeval));
     if (((int64_t)timeval == GET_FLAG) || (Server_VerifyLock() == OK)) {
         // set
         if ((int64_t)timeval != GET_FLAG) {
-            ret = validate_setPatternWaitClocks(mess, loopLevel, timeval);
+            ret = validate_setPatternWaitClocksAndInterval(mess, loopLevel,
+                                                           timeval, 1);
         }
         // get
         if (ret == OK) {
-            ret = validate_getPatternWaitClocks(mess, loopLevel, &retval);
+            ret = validate_getPatternWaitClocksAndInterval(mess, loopLevel,
+                                                           &retval, 1);
+            if ((int64_t)timeval != GET_FLAG) {
+                validate64(&ret, mess, (int64_t)timeval, retval,
+                           "set pattern wait clocks", DEC);
+            }
         }
     }
 #endif
@@ -11214,14 +11225,15 @@ int get_pattern_wait_interval(int file_des) {
     int loopLevel = -1;
     uint64_t retval = -1;
 
-    if (receiveData(file_des, &level, sizeof(level), INT32) < 0)
+    if (receiveData(file_des, &loopLevel, sizeof(loopLevel), INT32) < 0)
         return printSocketReadError();
 #if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
     !defined(MYTHEN3D)
     functionNotImplemented();
 #else
-    LOG(logDEBUG1, ("Getting Pattern wait interva (loopLevel:%d)\n", loopLevel));
-    ret = validate_getPatternWaitInterval(mess, loopLevel, &retval);
+    LOG(logDEBUG1,
+        ("Getting Pattern wait interva (loopLevel:%d)\n", loopLevel));
+    ret = validate_getPatternWaitClocksAndInterval(mess, loopLevel, &retval, 0);
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
@@ -11239,11 +11251,21 @@ int set_pattern_wait_interval(int file_des) {
 #else
     int loopLevel = (int)args[0];
     uint64_t timeval = args[1];
-    LOG(logDEBUG1, ("Setting Pattern wait interval (loopLevel:%d timeval:0x%llx ns)\n",
-                    loopLevel, (long long int)timeval));
+    LOG(logDEBUG1,
+        ("Setting Pattern wait interval (loopLevel:%d timeval:0x%llx ns)\n",
+         loopLevel, (long long int)timeval));
     if (Server_VerifyLock() == OK) {
-        ret = validate_setPatternWaitInterval(mess, loopLevel, timeval);
+        ret = validate_setPatternWaitClocksAndInterval(mess, loopLevel, timeval,
+                                                       0);
+        if (ret == OK) {
+            uint64_t retval = 0;
+            ret = validate_getPatternWaitClocksAndInterval(mess, loopLevel,
+                                                           &retval, 0);
+            validate64(&ret, mess, (int64_t)timeval, retval,
+                       "set pattern wait interval", DEC);
+        }
     }
+
 #endif
     return Server_SendResult(file_des, INT64, NULL, 0);
 }

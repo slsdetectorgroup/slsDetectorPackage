@@ -329,7 +329,7 @@ TEST_CASE("patwaittime", "[.cmdcall]") {
             if (det_type == defs::MYTHEN3 && iLoop >= 3) {
                 continue;
             }
-            auto prev_val = det.getPatternWaitTime(iLoop);
+            auto prev_val = det.getPatternWaitClocks(iLoop);
             std::string sLoop = ToString(iLoop);
             if (iLoop < 3) {
                 std::string deprecatedCmd = "patwaittime" + sLoop;
@@ -354,8 +354,19 @@ TEST_CASE("patwaittime", "[.cmdcall]") {
                 caller.call("patwaittime", {sLoop}, -1, GET, oss);
                 REQUIRE(oss.str() == "patwaittime " + sLoop + " 8589936640\n");
             }
+            // time units
+            {
+                std::ostringstream oss;
+                caller.call("patwaittime", {"50us"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "patwaittime 50us\n");
+            }
+            {
+                std::ostringstream oss;
+                caller.call("patwaittime", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "patwaittime 50us\n");
+            }
             for (int iDet = 0; iDet != det.size(); ++iDet) {
-                det.setPatternWaitTime(iLoop, prev_val[iDet], {iDet});
+                det.setPatternWaitClocks(iLoop, prev_val[iDet], {iDet});
             }
         }
     } else {

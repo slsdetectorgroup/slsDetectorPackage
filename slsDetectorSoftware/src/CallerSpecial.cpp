@@ -175,28 +175,16 @@ void Caller::WrongNumberOfParameters(size_t expected) {
                        std::to_string(args.size()) + "\n");
 }
 
-void Caller::GetLevelAndUpdateArgIndex(int action,
-                                       std::string levelSeparatedCommand,
-                                       int &level, int &iArg, size_t nGetArgs,
-                                       size_t nPutArgs) {
-    if (cmd == levelSeparatedCommand) {
-        ++nGetArgs;
-        ++nPutArgs;
-    } else {
+int Caller::GetLevelAndInsertIntoArgs(std::string levelSeparatedCommand) {
+    if (cmd != levelSeparatedCommand) {
         LOG(logWARNING) << "This command is deprecated and will be removed. "
                            "Please migrate to "
                         << levelSeparatedCommand;
+        int level = cmd[cmd.find_first_of("012")] - '0';
+        args.insert(args.begin(), std::to_string(level));
+        return true;
     }
-    if (action == defs::GET_ACTION && args.size() != nGetArgs) {
-        WrongNumberOfParameters(nGetArgs);
-    } else if (action == defs::PUT_ACTION && args.size() != nPutArgs) {
-        WrongNumberOfParameters(nPutArgs);
-    }
-    if (cmd == levelSeparatedCommand) {
-        level = StringTo<int>(args[iArg++]);
-    } else {
-        level = cmd[cmd.find_first_of("012")] - '0';
-    }
+    return false;
 }
 
 std::string Caller::free(int action) {
@@ -1021,52 +1009,64 @@ std::string Caller::patwaittime(int action) {
     std::ostringstream os;
 
     if (action == defs::HELP_ACTION) {
-        os << "[0-6] [n_clk] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles for the loop provided.\n\t[Mythen3] Level options: 0-3 only."
-        << '\n';
-    } 
-    
-    // parse level and start of argument (deprecated cmd support)
-    int level = -1, iArg = 0, nGetArgs = -1, nPutArgs = -1;
-    GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs, nPutArgs);
+        os << "[0-6] [n_clk] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait time in clock "
+              "cycles for the loop provided.\n\t[Mythen3] Level options: 0-3 "
+              "only."
+           << '\n';
+    }
+
+    // parse level into args list (non level separated cmds)
+    bool deprecated_cmd = GetLevelAndInsertIntoArgs("patwaittime");
 
     if (action == defs::GET_ACTION) {
-        if (args.size() > 1)
-            WrongNumberOfParameters(0);
-       
-        if (args.size() == 1) {
-            auto t = det->getPatternWaitInterval(level, std::vector<int>{det_id});
-            os << level << ' ' << OutString(t, args[0]) << '\n';
-        } else {
+        if (args.size() != 1 && args.size() != 2)
+            WrongNumberOfParameters(1);
+        int level = StringTo<int>(args[0]);
+        // with time unit
+        if (args.size() == 2) {
+            auto t =
+                det->getPatternWaitInterval(level, std::vector<int>{det_id});
+            os << (deprecated_cmd ? "" : args[0].c_str()) << ' '
+               << OutString(t, args[1]) << '\n';
+        }
+        // in clocks
+        else {
             auto t = det->getPatternWaitClocks(level, std::vector<int>{det_id});
-            os << level << ' ' << OutString(t) << '\n';
+            os << (deprecated_cmd ? "" : args[0].c_str()) << ' ' << OutString(t)
+               << '\n';
         }
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() > 2)
-            WrongNumberOfParameters(1);
-
+        if (args.size() != 2 && args.size() != 3)
+            WrongNumberOfParameters(2);
+        int level = StringTo<int>(args[0]);
         // clocks (all digits)
-        if (args.size() == 0 && std::all_of(args[0].begin(), args[0].end(), ::isdigit)) {
-            uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
-            det->setPatternWaitClocks(level, waittime, std::vector<int>{det_id});
-            os << level << ' ' << waittime << '\n';
+        if (args.size() == 2 &&
+            std::all_of(args[1].begin(), args[0].end(), ::isdigit)) {
+            uint64_t waittime = StringTo<uint64_t>(args[1]);
+            det->setPatternWaitClocks(level, waittime,
+                                      std::vector<int>{det_id});
+            os << (deprecated_cmd ? "" : args[0].c_str()) << ' ' << waittime
+               << '\n';
         }
 
         // time
         else {
             time::ns converted_time{0};
             try {
-                if (args.size() == 0) {
-                    std::string tmp_time(args[0]);
+                if (args.size() == 2) {
+                    std::string tmp_time(args[1]);
                     std::string unit = RemoveUnit(tmp_time);
                     converted_time = StringTo<time::ns>(tmp_time, unit);
                 } else {
-                    converted_time = StringTo<time::ns>(args[0], args[1]); 
+                    converted_time = StringTo<time::ns>(args[1], args[2]);
                 }
             } catch (...) {
                 throw RuntimeError("Could not convert argument to time::ns");
             }
-            det->setPatternWaitInterval(level, converted_time, std::vector<int>{det_id});
-            os << level << ' ' << args[0] << (args.size() == 1 ? args[1] : "") << '\n';
+            det->setPatternWaitInterval(level, converted_time,
+                                        std::vector<int>{det_id});
+            os << (deprecated_cmd ? "" : args[0].c_str()) << args[1]
+               << (args.size() == 3 ? args[2] : "") << '\n';
         }
     } else {
         throw RuntimeError("Unknown action");

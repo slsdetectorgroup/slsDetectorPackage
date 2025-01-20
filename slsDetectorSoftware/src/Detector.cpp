@@ -461,6 +461,12 @@ Result<ns> Detector::getExptime(Positions pos) const {
 }
 
 void Detector::setExptime(ns t, Positions pos) {
+    defs::detectorType detType = getDetectorType().squash();
+    if (detType == defs::CHIPTESTBOARD ||
+        detType == defs::XILINX_CHIPTESTBOARD) {
+        LOG(logWARNING)
+            << "Deprecated command. Use patwaittime with time units instead.";
+    }
     pimpl->Parallel(&Module::setExptime, pos, -1, t.count());
     updateRxRateCorrections();
 }
@@ -2593,7 +2599,8 @@ void Detector::setPatternWaitAddr(int level, int addr, Positions pos) {
     pimpl->Parallel(&Module::setPatternWaitAddr, pos, level, addr);
 }
 
-Result<uint64_t> Detector::getPatternWaitClocks(int level, Positions pos) const {
+Result<uint64_t> Detector::getPatternWaitClocks(int level,
+                                                Positions pos) const {
     return pimpl->Parallel(&Module::getPatternWaitClocks, pos, level);
 }
 

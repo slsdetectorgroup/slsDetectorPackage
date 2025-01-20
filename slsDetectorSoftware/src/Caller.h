@@ -19,10 +19,7 @@ class Caller {
     IpAddr getDstIpFromAuto();
     IpAddr getSrcIpFromAuto();
     UdpDestination getUdpEntry();
-    void GetLevelAndUpdateArgIndex(int action,
-                                   std::string levelSeparatedCommand,
-                                   int &level, int &iArg, size_t nGetArgs,
-                                   size_t nPutArgs);
+    int GetLevelAndInsertIntoArgs(std::string levelSeparatedCommand);
     void WrongNumberOfParameters(size_t expected);
 
     template <typename V> std::string OutStringHex(const V &value) {
@@ -207,9 +204,6 @@ class Caller {
     std::string patwait1(int action);
     std::string patwait2(int action);
     std::string patwaittime(int action);
-    std::string patwaittime0(int action);
-    std::string patwaittime1(int action);
-    std::string patwaittime2(int action);
     std::string patword(int action);
     std::string pedestalmode(int action);
     std::string period(int action);
@@ -556,9 +550,9 @@ class Caller {
         {"patwait1", &Caller::patwait1},
         {"patwait2", &Caller::patwait2},
         {"patwaittime", &Caller::patwaittime},
-        {"patwaittime0", &Caller::patwaittime0},
-        {"patwaittime1", &Caller::patwaittime1},
-        {"patwaittime2", &Caller::patwaittime2},
+        {"patwaittime0", &Caller::patwaittime},
+        {"patwaittime1", &Caller::patwaittime},
+        {"patwaittime2", &Caller::patwaittime},
         {"patword", &Caller::patword},
         {"pedestalmode", &Caller::pedestalmode},
         {"period", &Caller::period},

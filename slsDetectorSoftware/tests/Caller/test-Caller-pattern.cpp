@@ -357,13 +357,18 @@ TEST_CASE("patwaittime", "[.cmdcall]") {
             // time units
             {
                 std::ostringstream oss;
-                caller.call("patwaittime", {"50us"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "patwaittime 50us\n");
+                caller.call("patwaittime", {sLoop, "50us"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "patwaittime " + sLoop + " 50us\n");
             }
             {
                 std::ostringstream oss;
-                caller.call("patwaittime", {}, -1, GET, oss);
-                REQUIRE(oss.str() == "patwaittime 50us\n");
+                caller.call("patwaittime", {sLoop, "us"}, -1, GET, oss);
+                REQUIRE(oss.str() == "patwaittime " + sLoop + " 50us\n");
+                if (iLoop == 0) {
+                    std::ostringstream oss;
+                    caller.call("exptime", {"us"}, -1, GET, oss);
+                    REQUIRE(oss.str() == "exptime 50us\n");
+                }
             }
             for (int iDet = 0; iDet != det.size(); ++iDet) {
                 det.setPatternWaitClocks(iLoop, prev_val[iDet], {iDet});

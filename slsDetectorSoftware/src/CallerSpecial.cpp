@@ -1015,40 +1015,44 @@ std::string Caller::patwaittime(int action) {
            << '\n';
     }
 
-    // parse level into args list (non level separated cmds)
+    // parse level 
     bool deprecated_cmd = GetLevelAndInsertIntoArgs("patwaittime");
+    int level = 0;
+    try {
+        if (args.size() > 0)
+            level = StringTo<int>(args[0]);
+    } catch (const std::exception &e) {
+        LOG(logERROR) << "Could not scan level.";
+        throw;
+    }
+    if (!deprecated_cmd && args.size() >= 1)
+        os << args[0] << ' ';
 
     if (action == defs::GET_ACTION) {
         if (args.size() != 1 && args.size() != 2)
             WrongNumberOfParameters(1);
-        int level = StringTo<int>(args[0]);
         // with time unit
         if (args.size() == 2) {
             auto t =
                 det->getPatternWaitInterval(level, std::vector<int>{det_id});
-            os << (deprecated_cmd ? "" : args[0].c_str()) << ' '
-               << OutString(t, args[1]) << '\n';
+            os << OutString(t, args[1]) << '\n';
         }
         // in clocks
         else {
             auto t = det->getPatternWaitClocks(level, std::vector<int>{det_id});
-            os << (deprecated_cmd ? "" : args[0].c_str()) << ' ' << OutString(t)
-               << '\n';
+            os << OutString(t) << '\n';
         }
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2 && args.size() != 3)
             WrongNumberOfParameters(2);
-        int level = StringTo<int>(args[0]);
         // clocks (all digits)
         if (args.size() == 2 &&
-            std::all_of(args[1].begin(), args[0].end(), ::isdigit)) {
+            std::all_of(args[1].begin(), args[1].end(), ::isdigit)) {
             uint64_t waittime = StringTo<uint64_t>(args[1]);
             det->setPatternWaitClocks(level, waittime,
                                       std::vector<int>{det_id});
-            os << (deprecated_cmd ? "" : args[0].c_str()) << ' ' << waittime
-               << '\n';
+            os << waittime << '\n';
         }
-
         // time
         else {
             time::ns converted_time{0};
@@ -1065,8 +1069,10 @@ std::string Caller::patwaittime(int action) {
             }
             det->setPatternWaitInterval(level, converted_time,
                                         std::vector<int>{det_id});
-            os << (deprecated_cmd ? "" : args[0].c_str()) << args[1]
-               << (args.size() == 3 ? args[2] : "") << '\n';
+            os << args[1];
+            if (args.size() == 3)
+                os << ' ' << args[2];
+            os << '\n';
         }
     } else {
         throw RuntimeError("Unknown action");

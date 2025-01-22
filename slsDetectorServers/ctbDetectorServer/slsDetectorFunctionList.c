@@ -1095,13 +1095,14 @@ int setNumTransceiverSamples(int val) {
 int getNumTransceiverSamples() { return ntSamples; }
 
 int setExpTime(int64_t val) {
+    setPatternWaitInterval(0, val);
 
-    int64_t exptime = val;
-    exptime *= (1E-3 * clkFrequency[RUN_CLK]);
-    LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)exptime));
-
-    return validate_setPatternWaitClocksAndInterval(
-        "Could not scan exptime arguments.\n", 0, val, 1);
+    // validate for tolerance
+    int64_t retval = getExpTime();
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
 }
 
 int64_t getExpTime() { return getPatternWaitInterval(0); }

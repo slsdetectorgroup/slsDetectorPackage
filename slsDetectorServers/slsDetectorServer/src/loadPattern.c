@@ -376,6 +376,10 @@ uint64_t getPatternWaitInterval(int level) {
 #elif MYTHEN3D
     runclk = clkDivider[SYSTEM_C0];
 #endif
+    if (runclk == 0) {
+        LOG(logERROR, ("runclk is 0. Cannot divide by 0. Returning -1.\n"));
+        return -1;
+    }
     return numClocks / (1E-3 * runclk);
 }
 

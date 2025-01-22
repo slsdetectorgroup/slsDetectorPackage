@@ -1861,13 +1861,22 @@ void init_det(py::module &m) {
                            Detector::setPatternWaitAddr,
                        py::arg(), py::arg(), py::arg() = Positions{});
     CppDetectorApi.def(
-        "getPatternWaitTime",
+        "getPatternWaitClocks",
         (Result<uint64_t>(Detector::*)(int, sls::Positions) const) &
-            Detector::getPatternWaitTime,
+            Detector::getPatternWaitClocks,
         py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("setPatternWaitTime",
+    CppDetectorApi.def("setPatternWaitClocks",
                        (void (Detector::*)(int, uint64_t, sls::Positions)) &
-                           Detector::setPatternWaitTime,
+                           Detector::setPatternWaitClocks,
+                       py::arg(), py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getPatternWaitInterval",
+        (Result<sls::ns>(Detector::*)(int, sls::Positions) const) &
+            Detector::getPatternWaitInterval,
+        py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("setPatternWaitInterval",
+                       (void (Detector::*)(int, sls::ns, sls::Positions)) &
+                           Detector::setPatternWaitInterval,
                        py::arg(), py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getPatternMask",
                        (Result<uint64_t>(Detector::*)(sls::Positions)) &

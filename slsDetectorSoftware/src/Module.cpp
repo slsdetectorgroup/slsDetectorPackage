@@ -634,10 +634,22 @@ void Module::setNumberOfTriggers(int64_t value) {
 }
 
 int64_t Module::getExptime(int gateIndex) const {
+    if (shm()->detType == CHIPTESTBOARD ||
+        shm()->detType == XILINX_CHIPTESTBOARD) {
+        LOG(logWARNING)
+            << "Exposure time is deprecated and will be removed for this "
+               "detector. Please migrate to patwaittime.";
+    }
     return sendToDetector<int64_t>(F_GET_EXPTIME, gateIndex);
 }
 
 void Module::setExptime(int gateIndex, int64_t value) {
+    if (shm()->detType == CHIPTESTBOARD ||
+        shm()->detType == XILINX_CHIPTESTBOARD) {
+        LOG(logWARNING)
+            << "Exposure time is deprecated and will be removed for this "
+               "detector. Please migrate to patwaittime.";
+    }
     int64_t prevVal = value;
     if (shm()->detType == EIGER) {
         prevVal = getExptime(-1);

@@ -1013,9 +1013,10 @@ std::string Caller::patwaittime(int action) {
               "cycles for the loop provided.\n\t[Mythen3] Level options: 0-3 "
               "only."
            << '\n';
+        return os.str();
     }
 
-    // parse level 
+    // parse level
     bool deprecated_cmd = GetLevelAndInsertIntoArgs("patwaittime");
     int level = 0;
     try {

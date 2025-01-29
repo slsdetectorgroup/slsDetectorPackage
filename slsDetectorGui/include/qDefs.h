@@ -61,9 +61,7 @@ class qDefs : public QWidget {
         }
     }
 
-    template <class CT> struct NonDeduced {
-        using type = CT;
-    };
+    template <class CT> struct NonDeduced { using type = CT; };
     template <class S, typename RT, typename... CT>
     static void HandleExceptions(const std::string emsg, const std::string src,
                                  S *s, RT (S::*somefunc)(CT...),

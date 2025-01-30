@@ -14,6 +14,8 @@ from pyctbgui.utils.defines import Defines
 import pyctbgui.utils.pixelmap as pm
 from pyctbgui.utils.recordOrApplyPedestal import recordOrApplyPedestal
 
+from slsdet import detectorType
+
 if typing.TYPE_CHECKING:
     from pyctbgui.services import AcquisitionTab, PlotTab
 
@@ -42,6 +44,9 @@ class AdcTab(QtWidgets.QWidget):
         self.legend.clear()
         # subscribe to toggle legend
         self.plotTab.subscribeToggleLegend(self.updateLegend)
+        
+        if self.det.type == detectorType.XILINX_CHIPTESTBOARD:
+            self.view.frame_ADC.setDisabled(True)
 
     def initializeAllAnalogPlots(self):
         self.mainWindow.plotAnalogWaveform = pg.plot()
@@ -66,27 +71,29 @@ class AdcTab(QtWidgets.QWidget):
         self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotAnalogImage, 2)
 
     def connect_ui(self):
-        for i in range(Defines.adc.count):
-            getattr(self.view, f"checkBoxADC{i}Inv").stateChanged.connect(partial(self.setADCInv, i))
-            getattr(self.view, f"checkBoxADC{i}En").stateChanged.connect(partial(self.setADCEnable, i))
-            getattr(self.view, f"checkBoxADC{i}Plot").stateChanged.connect(partial(self.setADCEnablePlot, i))
-            getattr(self.view, f"pushButtonADC{i}").clicked.connect(partial(self.selectADCColor, i))
-        self.view.checkBoxADC0_15En.stateChanged.connect(partial(self.setADCEnableRange, 0, Defines.adc.half))
-        self.view.checkBoxADC16_31En.stateChanged.connect(
-            partial(self.setADCEnableRange, Defines.adc.half, Defines.adc.count))
-        self.view.checkBoxADC0_15Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 0, Defines.adc.half))
-        self.view.checkBoxADC16_31Plot.stateChanged.connect(
-            partial(self.setADCEnablePlotRange, Defines.adc.half, Defines.adc.count))
-        self.view.checkBoxADC0_15Inv.stateChanged.connect(partial(self.setADCInvRange, 0, Defines.adc.half))
-        self.view.checkBoxADC16_31Inv.stateChanged.connect(
-            partial(self.setADCInvRange, Defines.adc.half, Defines.adc.count))
-        self.view.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
-        self.view.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
+        if self.view.frame_ADC.isEnabled():
+            for i in range(Defines.adc.count):
+                getattr(self.view, f"checkBoxADC{i}Inv").stateChanged.connect(partial(self.setADCInv, i))
+                getattr(self.view, f"checkBoxADC{i}En").stateChanged.connect(partial(self.setADCEnable, i))
+                getattr(self.view, f"checkBoxADC{i}Plot").stateChanged.connect(partial(self.setADCEnablePlot, i))
+                getattr(self.view, f"pushButtonADC{i}").clicked.connect(partial(self.selectADCColor, i))
+            self.view.checkBoxADC0_15En.stateChanged.connect(partial(self.setADCEnableRange, 0, Defines.adc.half))
+            self.view.checkBoxADC16_31En.stateChanged.connect(
+                partial(self.setADCEnableRange, Defines.adc.half, Defines.adc.count))
+            self.view.checkBoxADC0_15Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 0, Defines.adc.half))
+            self.view.checkBoxADC16_31Plot.stateChanged.connect(
+                partial(self.setADCEnablePlotRange, Defines.adc.half, Defines.adc.count))
+            self.view.checkBoxADC0_15Inv.stateChanged.connect(partial(self.setADCInvRange, 0, Defines.adc.half))
+            self.view.checkBoxADC16_31Inv.stateChanged.connect(
+                partial(self.setADCInvRange, Defines.adc.half, Defines.adc.count))
+            self.view.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
+            self.view.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
 
     def refresh(self):
-        self.updateADCNames()
-        self.updateADCInv()
-        self.updateADCEnable()
+        if self.view.frame_ADC.isEnabled():
+            self.updateADCNames()
+            self.updateADCInv()
+            self.updateADCEnable()
 
         # ADCs Tab functions
 
@@ -395,7 +402,12 @@ class AdcTab(QtWidgets.QWidget):
         self.updateADCInv()
 
     def saveParameters(self) -> list[str]:
-        return [
-            f"adcenable {self.view.lineEditADCEnable.text()}",
-            f"adcinvert {self.view.lineEditADCInversion.text()}",
-        ]
+        if self.det.type == detectorType.CHIPTESTBOARD:
+            return [
+                f"adcenable {self.view.lineEditADCEnable.text()}",
+                f"adcinvert {self.view.lineEditADCInversion.text()}",
+            ]
+        else:
+            return [
+                f"adcenable {self.view.lineEditADCEnable.text()}"
+            ]     

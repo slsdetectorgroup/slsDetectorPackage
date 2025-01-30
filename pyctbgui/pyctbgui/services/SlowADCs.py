@@ -18,10 +18,7 @@ class SlowAdcTab(QtWidgets.QWidget):
 
     def setup_ui(self):
         if self.det.type == detectorType.XILINX_CHIPTESTBOARD:
-            self.view.frame_slowadcs.setDisabled(True)
-
-
-        
+            self.view.pushButtonTemp.setDisabled(True)      
 
     def connect_ui(self):
         for i in range(Defines.slowAdc.count):
@@ -29,10 +26,10 @@ class SlowAdcTab(QtWidgets.QWidget):
         self.view.pushButtonTemp.clicked.connect(self.updateTemperature)
 
     def refresh(self):
+        self.updateSlowAdcNames()
+        for i in range(Defines.slowAdc.count):
+            self.updateSlowAdc(i)
         if self.det.type == detectorType.CHIPTESTBOARD:
-            self.updateSlowAdcNames()
-            for i in range(Defines.slowAdc.count):
-                self.updateSlowAdc(i)
             self.updateTemperature()
 
     def updateSlowAdcNames(self):

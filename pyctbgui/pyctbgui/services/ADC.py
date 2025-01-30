@@ -32,6 +32,7 @@ class AdcTab(QtWidgets.QWidget):
         self.acquisitionTab: AcquisitionTab | None = None
         self.legend: LegendItem | None = None
         self.logger = logging.getLogger('AdcTab')
+        self.tengiga = True
 
     def setup_ui(self):
         self.plotTab = self.mainWindow.plotTab
@@ -46,7 +47,10 @@ class AdcTab(QtWidgets.QWidget):
         self.plotTab.subscribeToggleLegend(self.updateLegend)
         
         if self.det.type == detectorType.XILINX_CHIPTESTBOARD:
-            self.view.frame_ADC.setDisabled(True)
+            self.view.checkBoxADC0_15Inv.setDisabled(True)
+            self.view.checkBoxADC16_31Inv.setDisabled(True)
+            self.view.lineEditADCInversion.setDisabled(True)
+            self.view.labelADCInversion.setDisabled(True)
 
     def initializeAllAnalogPlots(self):
         self.mainWindow.plotAnalogWaveform = pg.plot()
@@ -73,7 +77,8 @@ class AdcTab(QtWidgets.QWidget):
     def connect_ui(self):
         if self.view.frame_ADC.isEnabled():
             for i in range(Defines.adc.count):
-                getattr(self.view, f"checkBoxADC{i}Inv").stateChanged.connect(partial(self.setADCInv, i))
+                if self.det.type == detectorType.CHIPTESTBOARD:
+                    getattr(self.view, f"checkBoxADC{i}Inv").stateChanged.connect(partial(self.setADCInv, i))
                 getattr(self.view, f"checkBoxADC{i}En").stateChanged.connect(partial(self.setADCEnable, i))
                 getattr(self.view, f"checkBoxADC{i}Plot").stateChanged.connect(partial(self.setADCEnablePlot, i))
                 getattr(self.view, f"pushButtonADC{i}").clicked.connect(partial(self.selectADCColor, i))
@@ -83,16 +88,18 @@ class AdcTab(QtWidgets.QWidget):
             self.view.checkBoxADC0_15Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 0, Defines.adc.half))
             self.view.checkBoxADC16_31Plot.stateChanged.connect(
                 partial(self.setADCEnablePlotRange, Defines.adc.half, Defines.adc.count))
-            self.view.checkBoxADC0_15Inv.stateChanged.connect(partial(self.setADCInvRange, 0, Defines.adc.half))
-            self.view.checkBoxADC16_31Inv.stateChanged.connect(
-                partial(self.setADCInvRange, Defines.adc.half, Defines.adc.count))
-            self.view.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
             self.view.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
+            if self.det.type == detectorType.CHIPTESTBOARD:
+                self.view.checkBoxADC0_15Inv.stateChanged.connect(partial(self.setADCInvRange, 0, Defines.adc.half))
+                self.view.checkBoxADC16_31Inv.stateChanged.connect(
+                partial(self.setADCInvRange, Defines.adc.half, Defines.adc.count))
+                self.view.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
 
     def refresh(self):
         if self.view.frame_ADC.isEnabled():
             self.updateADCNames()
-            self.updateADCInv()
+            if self.det.type == detectorType.CHIPTESTBOARD:
+                self.updateADCInv()
             self.updateADCEnable()
 
         # ADCs Tab functions
@@ -203,9 +210,11 @@ class AdcTab(QtWidgets.QWidget):
         return decoder.decode(analog_array, pm.moench04_analog())
 
     def getADCEnableReg(self):
-        retval = self.det.adcenable
-        if self.det.tengiga:
-            retval = self.det.adcenable10g
+        if self.det.type == detectorType.CHIPTESTBOARD:
+            self.tengiga = self.det.tengiga
+        retval = self.det.adcenable10g
+        if not self.tengiga:
+            retval = self.det.adcenable
         self.view.lineEditADCEnable.editingFinished.disconnect()
         self.view.lineEditADCEnable.setText("0x{:08x}".format(retval))
         self.view.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
@@ -214,8 +223,8 @@ class AdcTab(QtWidgets.QWidget):
     def setADCEnableReg(self):
         self.view.lineEditADCEnable.editingFinished.disconnect()
         try:
-            mask = int(self.mainWindow.lineEditADCEnable.text(), 16)
-            if self.det.tengiga:
+            mask = int(self.view.lineEditADCEnable.text(), 16)
+            if self.tengiga:
                 self.det.adcenable10g = mask
             else:
                 self.det.adcenable = mask
@@ -246,7 +255,7 @@ class AdcTab(QtWidgets.QWidget):
     def setADCEnable(self, i):
         checkBox = getattr(self.view, f"checkBoxADC{i}En")
         try:
-            if self.det.tengiga:
+            if self.tengiga:
                 enableMask = manipulate_bit(checkBox.isChecked(), self.det.adcenable10g, i)
                 self.det.adcenable10g = enableMask
             else:
@@ -272,7 +281,7 @@ class AdcTab(QtWidgets.QWidget):
         for i in range(start_nr, end_nr):
             mask = manipulate_bit(checkBox.isChecked(), mask, i)
         try:
-            if self.det.tengiga:
+            if self.tengiga:
                 self.det.adcenable10g = mask
             else:
                 self.det.adcenable = mask
@@ -351,7 +360,7 @@ class AdcTab(QtWidgets.QWidget):
     def setADCInvReg(self):
         self.view.lineEditADCInversion.editingFinished.disconnect()
         try:
-            self.det.adcinvert = int(self.mainWindow.lineEditADCInversion.text(), 16)
+            self.det.adcinvert = int(self.view.lineEditADCInversion.text(), 16)
         except Exception as e:
             QtWidgets.QMessageBox.warning(self.mainWindow, "ADC Inversion Fail", str(e), QtWidgets.QMessageBox.Ok)
             pass

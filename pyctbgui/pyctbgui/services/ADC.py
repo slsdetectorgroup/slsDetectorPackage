@@ -95,11 +95,10 @@ class AdcTab(QtWidgets.QWidget):
             self.view.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
 
     def refresh(self):
-        if self.view.frame_ADC.isEnabled():
-            self.updateADCNames()
-            if self.det.type == detectorType.CHIPTESTBOARD:
-                self.updateADCInv()
-            self.updateADCEnable()
+        self.updateADCNames()
+        if self.det.type == detectorType.CHIPTESTBOARD:
+            self.updateADCInv()
+        self.updateADCEnable()
 
         # ADCs Tab functions
 

@@ -75,25 +75,24 @@ class AdcTab(QtWidgets.QWidget):
         self.mainWindow.verticalLayoutPlot.addWidget(self.mainWindow.plotAnalogImage, 2)
 
     def connect_ui(self):
-        if self.view.frame_ADC.isEnabled():
-            for i in range(Defines.adc.count):
-                if self.det.type == detectorType.CHIPTESTBOARD:
-                    getattr(self.view, f"checkBoxADC{i}Inv").stateChanged.connect(partial(self.setADCInv, i))
-                getattr(self.view, f"checkBoxADC{i}En").stateChanged.connect(partial(self.setADCEnable, i))
-                getattr(self.view, f"checkBoxADC{i}Plot").stateChanged.connect(partial(self.setADCEnablePlot, i))
-                getattr(self.view, f"pushButtonADC{i}").clicked.connect(partial(self.selectADCColor, i))
-            self.view.checkBoxADC0_15En.stateChanged.connect(partial(self.setADCEnableRange, 0, Defines.adc.half))
-            self.view.checkBoxADC16_31En.stateChanged.connect(
-                partial(self.setADCEnableRange, Defines.adc.half, Defines.adc.count))
-            self.view.checkBoxADC0_15Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 0, Defines.adc.half))
-            self.view.checkBoxADC16_31Plot.stateChanged.connect(
-                partial(self.setADCEnablePlotRange, Defines.adc.half, Defines.adc.count))
-            self.view.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
+        for i in range(Defines.adc.count):
             if self.det.type == detectorType.CHIPTESTBOARD:
-                self.view.checkBoxADC0_15Inv.stateChanged.connect(partial(self.setADCInvRange, 0, Defines.adc.half))
-                self.view.checkBoxADC16_31Inv.stateChanged.connect(
-                partial(self.setADCInvRange, Defines.adc.half, Defines.adc.count))
-                self.view.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
+                getattr(self.view, f"checkBoxADC{i}Inv").stateChanged.connect(partial(self.setADCInv, i))
+            getattr(self.view, f"checkBoxADC{i}En").stateChanged.connect(partial(self.setADCEnable, i))
+            getattr(self.view, f"checkBoxADC{i}Plot").stateChanged.connect(partial(self.setADCEnablePlot, i))
+            getattr(self.view, f"pushButtonADC{i}").clicked.connect(partial(self.selectADCColor, i))
+        self.view.checkBoxADC0_15En.stateChanged.connect(partial(self.setADCEnableRange, 0, Defines.adc.half))
+        self.view.checkBoxADC16_31En.stateChanged.connect(
+            partial(self.setADCEnableRange, Defines.adc.half, Defines.adc.count))
+        self.view.checkBoxADC0_15Plot.stateChanged.connect(partial(self.setADCEnablePlotRange, 0, Defines.adc.half))
+        self.view.checkBoxADC16_31Plot.stateChanged.connect(
+            partial(self.setADCEnablePlotRange, Defines.adc.half, Defines.adc.count))
+        self.view.lineEditADCEnable.editingFinished.connect(self.setADCEnableReg)
+        if self.det.type == detectorType.CHIPTESTBOARD:
+            self.view.checkBoxADC0_15Inv.stateChanged.connect(partial(self.setADCInvRange, 0, Defines.adc.half))
+            self.view.checkBoxADC16_31Inv.stateChanged.connect(
+            partial(self.setADCInvRange, Defines.adc.half, Defines.adc.count))
+            self.view.lineEditADCInversion.editingFinished.connect(self.setADCInvReg)
 
     def refresh(self):
         if self.view.frame_ADC.isEnabled():

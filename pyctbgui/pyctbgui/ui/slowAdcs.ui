@@ -19,7 +19,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QFrame" name="frame_4">
+  <widget class="QFrame" name="frame_slowadcs">
    <property name="geometry">
     <rect>
      <x>0</x>

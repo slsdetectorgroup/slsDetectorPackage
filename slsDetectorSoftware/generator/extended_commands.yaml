@@ -6008,7 +6008,7 @@ patloop:
   function_alias: patloop
   help: "[0-6] [start addr] [stop addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Limits of the\
     \ loop level provided.\n\t[Mythen3] Level options: 0-3 only."
-  infer_action: true
+  infer_action: false
   pattern_command: patloop
 patloop0:
   actions:
@@ -6077,7 +6077,7 @@ patloop0:
   command_name: patloop0
   function_alias: patloop0
   help: "\n\tDeprecated command. Use patloop."
-  infer_action: true
+  infer_action: false
   pattern_command: patloop
 patloop1:
   actions:
@@ -6146,7 +6146,7 @@ patloop1:
   command_name: patloop1
   function_alias: patloop1
   help: "\n\tDeprecated command. Use patloop."
-  infer_action: true
+  infer_action: false
   pattern_command: patloop
 patloop2:
   actions:
@@ -6215,7 +6215,7 @@ patloop2:
   command_name: patloop2
   function_alias: patloop2
   help: "\n\tDeprecated command. Use patloop."
-  infer_action: true
+  infer_action: false
   pattern_command: patloop
 patmask:
   actions:
@@ -6318,7 +6318,7 @@ patnloop:
   function_alias: patnloop
   help: "[0-6] [n_cycles] \n\t[Ctb][Mythen3][Xilinx Ctb] Number of cycles of the loop\
     \ level provided.\n\t[Mythen3] Level options: 0-3 only."
-  infer_action: true
+  infer_action: false
   pattern_command: patnloop
 patnloop0:
   actions:
@@ -6376,7 +6376,7 @@ patnloop0:
   command_name: patnloop0
   function_alias: patnloop0
   help: "\n\tDeprecated command. Use patnloop."
-  infer_action: true
+  infer_action: false
   pattern_command: patnloop
 patnloop1:
   actions:
@@ -6434,7 +6434,7 @@ patnloop1:
   command_name: patnloop1
   function_alias: patnloop1
   help: "\n\tDeprecated command. Use patnloop."
-  infer_action: true
+  infer_action: false
   pattern_command: patnloop
 patnloop2:
   actions:
@@ -6492,7 +6492,7 @@ patnloop2:
   command_name: patnloop2
   function_alias: patnloop2
   help: "\n\tDeprecated command. Use patnloop."
-  infer_action: true
+  infer_action: false
   pattern_command: patnloop
 patsetbit:
   actions:
@@ -6641,7 +6641,7 @@ patwait:
   function_alias: patwait
   help: "[0-6] [addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait address for loop level provided.\
     \ \n\t[Mythen3] Level options: 0-3 only."
-  infer_action: true
+  infer_action: false
   pattern_command: patwait
 patwait0:
   actions:
@@ -6700,7 +6700,7 @@ patwait0:
   command_name: patwait0
   function_alias: patwait0
   help: "\n\tDeprecated command. Use patwait."
-  infer_action: true
+  infer_action: false
   pattern_command: patwait
 patwait1:
   actions:
@@ -6759,7 +6759,7 @@ patwait1:
   command_name: patwait1
   function_alias: patwait1
   help: "\n\tDeprecated command. Use patwait."
-  infer_action: true
+  infer_action: false
   pattern_command: patwait
 patwait2:
   actions:
@@ -6818,7 +6818,7 @@ patwait2:
   command_name: patwait2
   function_alias: patwait2
   help: "\n\tDeprecated command. Use patwait."
-  infer_action: true
+  infer_action: false
   pattern_command: patwait
 patwaittime:
   actions:

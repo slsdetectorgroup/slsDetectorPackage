@@ -3968,6 +3968,7 @@ patlimits:
 
 patloop:
   help: "[0-6] [start addr] [stop addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Limits of the loop level provided.\n\t[Mythen3] Level options: 0-3 only."
+  infer_action: false
   pattern_command: patloop
   actions:
     GET:
@@ -4016,6 +4017,7 @@ patloop2:
 
 patnloop:
   help: "[0-6] [n_cycles] \n\t[Ctb][Mythen3][Xilinx Ctb] Number of cycles of the loop level provided.\n\t[Mythen3] Level options: 0-3 only."
+  infer_action: false
   pattern_command: patnloop
   actions:
     GET:
@@ -4061,6 +4063,7 @@ patnloop2:
 
 patwait:
   help: "[0-6] [addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait address for loop level provided. \n\t[Mythen3] Level options: 0-3 only."
+  infer_action: false
   pattern_command: patwait
   actions:
     GET:

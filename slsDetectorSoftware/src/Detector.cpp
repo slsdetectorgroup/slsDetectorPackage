@@ -461,12 +461,6 @@ Result<ns> Detector::getExptime(Positions pos) const {
 }
 
 void Detector::setExptime(ns t, Positions pos) {
-    defs::detectorType detType = getDetectorType().squash();
-    if (detType == defs::CHIPTESTBOARD ||
-        detType == defs::XILINX_CHIPTESTBOARD) {
-        LOG(logWARNING)
-            << "Deprecated command. Use patwaittime with time units instead.";
-    }
     pimpl->Parallel(&Module::setExptime, pos, -1, t.count());
     updateRxRateCorrections();
 }

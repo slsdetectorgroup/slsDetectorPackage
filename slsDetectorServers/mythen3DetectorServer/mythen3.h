@@ -38,11 +38,11 @@
 #define CSR_invpol   4
 #define CSR_dpulse   5
 #define CSR_interp   6
-#define _CSR_C10pre  7 //#default, negative polarity
+#define _CSR_C10pre  7 // #default, negative polarity
 #define CSR_pumprobe 8
 #define CSR_apulse   9
 #define CSR_C15sh    10
-#define CSR_C30sh    11 //#default
+#define CSR_C30sh    11 // #default
 #define CSR_C50sh    12
 #define CSR_C225ACsh                                                           \
     13 // Connects 225fF SHAPER AC cap (1: 225 to shaper, 225 to GND. 0: 450 to

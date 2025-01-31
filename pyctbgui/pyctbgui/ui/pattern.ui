@@ -3271,6 +3271,77 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>spinBoxLoop0Repetition</tabstop>
+  <tabstop>lineEditLoop0Start</tabstop>
+  <tabstop>lineEditLoop0Stop</tabstop>
+  <tabstop>spinBoxLoop1Repetition</tabstop>
+  <tabstop>lineEditLoop1Start</tabstop>
+  <tabstop>lineEditLoop1Stop</tabstop>
+  <tabstop>spinBoxLoop2Repetition</tabstop>
+  <tabstop>lineEditLoop2Start</tabstop>
+  <tabstop>lineEditLoop2Stop</tabstop>
+  <tabstop>spinBoxLoop3Repetition</tabstop>
+  <tabstop>lineEditLoop3Start</tabstop>
+  <tabstop>lineEditLoop3Stop</tabstop>
+  <tabstop>spinBoxLoop4Repetition</tabstop>
+  <tabstop>lineEditLoop4Start</tabstop>
+  <tabstop>lineEditLoop4Stop</tabstop>
+  <tabstop>spinBoxLoop5Repetition</tabstop>
+  <tabstop>lineEditLoop5Start</tabstop>
+  <tabstop>lineEditLoop5Stop</tabstop>
+  <tabstop>lineEditStartAddress</tabstop>
+  <tabstop>lineEditStopAddress</tabstop>
+  <tabstop>toolButtonTogglePageWaitTime</tabstop>
+  <tabstop>lineEditLoop0Wait</tabstop>
+  <tabstop>doubleSpinBoxLoop0WaitClocks</tabstop>
+  <tabstop>lineEditLoop1Wait</tabstop>
+  <tabstop>doubleSpinBoxLoop1WaitClocks</tabstop>
+  <tabstop>lineEditLoop2Wait</tabstop>
+  <tabstop>doubleSpinBoxLoop2WaitClocks</tabstop>
+  <tabstop>lineEditLoop3Wait</tabstop>
+  <tabstop>doubleSpinBoxLoop3WaitClocks</tabstop>
+  <tabstop>lineEditLoop4Wait</tabstop>
+  <tabstop>doubleSpinBoxLoop4WaitClocks</tabstop>
+  <tabstop>lineEditLoop5Wait</tabstop>
+  <tabstop>doubleSpinBoxLoop5WaitClocks</tabstop>
+  <tabstop>spinBoxLoop0WaitInterval</tabstop>
+  <tabstop>comboBoxLoop0WaitInterval</tabstop>
+  <tabstop>spinBoxLoop1WaitInterval</tabstop>
+  <tabstop>comboBoxLoop1WaitInterval</tabstop>
+  <tabstop>spinBoxLoop2WaitInterval</tabstop>
+  <tabstop>comboBoxLoop2WaitInterval</tabstop>
+  <tabstop>spinBoxLoop3WaitInterval</tabstop>
+  <tabstop>comboBoxLoop3WaitInterval</tabstop>
+  <tabstop>spinBoxLoop4WaitInterval</tabstop>
+  <tabstop>comboBoxLoop4WaitInterval</tabstop>
+  <tabstop>spinBoxLoop5WaitInterval</tabstop>
+  <tabstop>comboBoxLoop5WaitInterval</tabstop>
+  <tabstop>lineEditCompiler</tabstop>
+  <tabstop>pushButtonCompiler</tabstop>
+  <tabstop>lineEditUncompiled</tabstop>
+  <tabstop>pushButtonUncompiled</tabstop>
+  <tabstop>lineEditPatternFile</tabstop>
+  <tabstop>pushButtonPatternFile</tabstop>
+  <tabstop>comboBoxPatWait</tabstop>
+  <tabstop>comboBoxPatWaitColor</tabstop>
+  <tabstop>comboBoxPatWaitLineStyle</tabstop>
+  <tabstop>doubleSpinBoxWaitAlpha</tabstop>
+  <tabstop>doubleSpinBoxWaitAlphaRect</tabstop>
+  <tabstop>comboBoxPatLoop</tabstop>
+  <tabstop>comboBoxPatLoopColor</tabstop>
+  <tabstop>comboBoxPatLoopLineStyle</tabstop>
+  <tabstop>doubleSpinBoxLoopAlpha</tabstop>
+  <tabstop>doubleSpinBoxLoopAlphaRect</tabstop>
+  <tabstop>comboBoxPatColorSelect</tabstop>
+  <tabstop>comboBoxPatColor</tabstop>
+  <tabstop>spinBoxPatClockSpacing</tabstop>
+  <tabstop>checkBoxPatShowClockNumber</tabstop>
+  <tabstop>doubleSpinBoxLineWidth</tabstop>
+  <tabstop>checkBoxCompile</tabstop>
+  <tabstop>pushButtonLoadPattern</tabstop>
+  <tabstop>pushButtonViewPattern</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

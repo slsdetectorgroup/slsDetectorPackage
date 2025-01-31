@@ -863,8 +863,14 @@ int getNumTransceiverSamples() {
 }
 
 int setExpTime(int64_t val) {
-    return validate_setPatternWaitClocksAndInterval(
-        "Could not scan exptime arguments.\n", 0, val, 1);
+    setPatternWaitInterval(0, val);
+
+    // validate for tolerance
+    int64_t retval = getExpTime();
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
 }
 
 int64_t getExpTime() { return getPatternWaitInterval(0); }

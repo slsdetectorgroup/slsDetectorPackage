@@ -7859,17 +7859,28 @@ std::string Caller::patloop(int action) {
         return os.str();
     }
 
+    GetLevelAndInsertIntoArgs("patloop");
     // check if action and arguments are valid
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (0) {
+        if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
         }
 
     }
 
     else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (0) {
+        if (1 && args.size() != 3) {
             throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 3) {
+            int level = StringTo<int>(args[0]);
+            int start = StringTo<int>(args[1]);
+            int stop = StringTo<int>(args[2]);
         }
 
     }
@@ -7882,23 +7893,24 @@ std::string Caller::patloop(int action) {
 
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
-        GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
-                                  nPutArgs);
-        auto t = det->getPatternLoopAddresses(level, std::vector<int>{det_id});
-        os << level << ' ' << OutStringHex(t, 4) << '\n';
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
+            auto t =
+                det->getPatternLoopAddresses(level, std::vector<int>{det_id});
+            os << level << ' ' << OutStringHex(t, 4) << '\n';
+        }
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
-        GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
-                                  nPutArgs);
-        int start = StringTo<int>(args[iArg++]);
-        int stop = StringTo<int>(args[iArg++]);
-        det->setPatternLoopAddresses(level, start, stop,
-                                     std::vector<int>{det_id});
-        os << level << ' ' << '[' << ToStringHex(start, 4) << ", "
-           << ToStringHex(stop, 4) << ']' << '\n';
+        if (args.size() == 3) {
+            int level = StringTo<int>(args[0]);
+            int start = StringTo<int>(args[1]);
+            int stop = StringTo<int>(args[2]);
+            det->setPatternLoopAddresses(level, start, stop,
+                                         std::vector<int>{det_id});
+            os << level << ' ' << '[' << ToStringHex(start, 4) << ", "
+               << ToStringHex(stop, 4) << ']' << '\n';
+        }
     }
 
     return os.str();
@@ -7915,17 +7927,28 @@ std::string Caller::patloop0(int action) {
         return os.str();
     }
 
+    GetLevelAndInsertIntoArgs("patloop");
     // check if action and arguments are valid
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (0) {
+        if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
         }
 
     }
 
     else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (0) {
+        if (1 && args.size() != 3) {
             throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 3) {
+            int level = StringTo<int>(args[0]);
+            int start = StringTo<int>(args[1]);
+            int stop = StringTo<int>(args[2]);
         }
 
     }
@@ -7938,23 +7961,24 @@ std::string Caller::patloop0(int action) {
 
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
-        GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
-                                  nPutArgs);
-        auto t = det->getPatternLoopAddresses(level, std::vector<int>{det_id});
-        os << OutStringHex(t, 4) << '\n';
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
+            auto t =
+                det->getPatternLoopAddresses(level, std::vector<int>{det_id});
+            os << OutStringHex(t, 4) << '\n';
+        }
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
-        GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
-                                  nPutArgs);
-        int start = StringTo<int>(args[iArg++]);
-        int stop = StringTo<int>(args[iArg++]);
-        det->setPatternLoopAddresses(level, start, stop,
-                                     std::vector<int>{det_id});
-        os << '[' << ToStringHex(start, 4) << ", " << ToStringHex(stop, 4)
-           << ']' << '\n';
+        if (args.size() == 3) {
+            int level = StringTo<int>(args[0]);
+            int start = StringTo<int>(args[1]);
+            int stop = StringTo<int>(args[2]);
+            det->setPatternLoopAddresses(level, start, stop,
+                                         std::vector<int>{det_id});
+            os << '[' << ToStringHex(start, 4) << ", " << ToStringHex(stop, 4)
+               << ']' << '\n';
+        }
     }
 
     return os.str();
@@ -7971,17 +7995,28 @@ std::string Caller::patloop1(int action) {
         return os.str();
     }
 
+    GetLevelAndInsertIntoArgs("patloop");
     // check if action and arguments are valid
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (0) {
+        if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
         }
 
     }
 
     else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (0) {
+        if (1 && args.size() != 3) {
             throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 3) {
+            int level = StringTo<int>(args[0]);
+            int start = StringTo<int>(args[1]);
+            int stop = StringTo<int>(args[2]);
         }
 
     }
@@ -7994,23 +8029,24 @@ std::string Caller::patloop1(int action) {
 
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
-        GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
-                                  nPutArgs);
-        auto t = det->getPatternLoopAddresses(level, std::vector<int>{det_id});
-        os << OutStringHex(t, 4) << '\n';
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
+            auto t =
+                det->getPatternLoopAddresses(level, std::vector<int>{det_id});
+            os << OutStringHex(t, 4) << '\n';
+        }
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
-        GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
-                                  nPutArgs);
-        int start = StringTo<int>(args[iArg++]);
-        int stop = StringTo<int>(args[iArg++]);
-        det->setPatternLoopAddresses(level, start, stop,
-                                     std::vector<int>{det_id});
-        os << '[' << ToStringHex(start, 4) << ", " << ToStringHex(stop, 4)
-           << ']' << '\n';
+        if (args.size() == 3) {
+            int level = StringTo<int>(args[0]);
+            int start = StringTo<int>(args[1]);
+            int stop = StringTo<int>(args[2]);
+            det->setPatternLoopAddresses(level, start, stop,
+                                         std::vector<int>{det_id});
+            os << '[' << ToStringHex(start, 4) << ", " << ToStringHex(stop, 4)
+               << ']' << '\n';
+        }
     }
 
     return os.str();
@@ -8027,17 +8063,28 @@ std::string Caller::patloop2(int action) {
         return os.str();
     }
 
+    GetLevelAndInsertIntoArgs("patloop");
     // check if action and arguments are valid
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (0) {
+        if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
         }
 
     }
 
     else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (0) {
+        if (1 && args.size() != 3) {
             throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 3) {
+            int level = StringTo<int>(args[0]);
+            int start = StringTo<int>(args[1]);
+            int stop = StringTo<int>(args[2]);
         }
 
     }
@@ -8050,23 +8097,24 @@ std::string Caller::patloop2(int action) {
 
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
-        GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
-                                  nPutArgs);
-        auto t = det->getPatternLoopAddresses(level, std::vector<int>{det_id});
-        os << OutStringHex(t, 4) << '\n';
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
+            auto t =
+                det->getPatternLoopAddresses(level, std::vector<int>{det_id});
+            os << OutStringHex(t, 4) << '\n';
+        }
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
-        GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
-                                  nPutArgs);
-        int start = StringTo<int>(args[iArg++]);
-        int stop = StringTo<int>(args[iArg++]);
-        det->setPatternLoopAddresses(level, start, stop,
-                                     std::vector<int>{det_id});
-        os << '[' << ToStringHex(start, 4) << ", " << ToStringHex(stop, 4)
-           << ']' << '\n';
+        if (args.size() == 3) {
+            int level = StringTo<int>(args[0]);
+            int start = StringTo<int>(args[1]);
+            int stop = StringTo<int>(args[2]);
+            det->setPatternLoopAddresses(level, start, stop,
+                                         std::vector<int>{det_id});
+            os << '[' << ToStringHex(start, 4) << ", " << ToStringHex(stop, 4)
+               << ']' << '\n';
+        }
     }
 
     return os.str();
@@ -8146,17 +8194,27 @@ std::string Caller::patnloop(int action) {
         return os.str();
     }
 
+    GetLevelAndInsertIntoArgs("patnloop");
     // check if action and arguments are valid
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (0) {
+        if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
         }
 
     }
 
     else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (0) {
+        if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 2) {
+            int level = StringTo<int>(args[0]);
+            int nloops = StringTo<int>(args[1]);
         }
 
     }
@@ -8169,21 +8227,20 @@ std::string Caller::patnloop(int action) {
 
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
-                                  nPutArgs);
-        auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
-        os << level << ' ' << OutString(t) << '\n';
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
+            auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
+            os << level << ' ' << OutString(t) << '\n';
+        }
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
-                                  nPutArgs);
-        std::string nloops = args[iArg++];
-        auto arg1 = StringTo<int>(nloops);
-        det->setPatternLoopCycles(level, arg1, std::vector<int>{det_id});
-        os << level << ' ' << nloops << '\n';
+        if (args.size() == 2) {
+            int level = StringTo<int>(args[0]);
+            int nloops = StringTo<int>(args[1]);
+            det->setPatternLoopCycles(level, nloops, std::vector<int>{det_id});
+            os << level << ' ' << nloops << '\n';
+        }
     }
 
     return os.str();
@@ -8200,17 +8257,27 @@ std::string Caller::patnloop0(int action) {
         return os.str();
     }
 
+    GetLevelAndInsertIntoArgs("patnloop");
     // check if action and arguments are valid
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (0) {
+        if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
         }
 
     }
 
     else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (0) {
+        if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 2) {
+            int level = StringTo<int>(args[0]);
+            int nloops = StringTo<int>(args[1]);
         }
 
     }
@@ -8223,21 +8290,20 @@ std::string Caller::patnloop0(int action) {
 
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
-                                  nPutArgs);
-        auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
-        os << OutString(t) << '\n';
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
+            auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
+            os << OutString(t) << '\n';
+        }
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
-                                  nPutArgs);
-        std::string nloops = args[iArg++];
-        auto arg1 = StringTo<int>(nloops);
-        det->setPatternLoopCycles(level, arg1, std::vector<int>{det_id});
-        os << nloops << '\n';
+        if (args.size() == 2) {
+            int level = StringTo<int>(args[0]);
+            int nloops = StringTo<int>(args[1]);
+            det->setPatternLoopCycles(level, nloops, std::vector<int>{det_id});
+            os << nloops << '\n';
+        }
     }
 
     return os.str();
@@ -8254,17 +8320,27 @@ std::string Caller::patnloop1(int action) {
         return os.str();
     }
 
+    GetLevelAndInsertIntoArgs("patnloop");
     // check if action and arguments are valid
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (0) {
+        if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
         }
 
     }
 
     else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (0) {
+        if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 2) {
+            int level = StringTo<int>(args[0]);
+            int nloops = StringTo<int>(args[1]);
         }
 
     }
@@ -8277,21 +8353,20 @@ std::string Caller::patnloop1(int action) {
 
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
-                                  nPutArgs);
-        auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
-        os << OutString(t) << '\n';
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
+            auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
+            os << OutString(t) << '\n';
+        }
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
-                                  nPutArgs);
-        std::string nloops = args[iArg++];
-        auto arg1 = StringTo<int>(nloops);
-        det->setPatternLoopCycles(level, arg1, std::vector<int>{det_id});
-        os << nloops << '\n';
+        if (args.size() == 2) {
+            int level = StringTo<int>(args[0]);
+            int nloops = StringTo<int>(args[1]);
+            det->setPatternLoopCycles(level, nloops, std::vector<int>{det_id});
+            os << nloops << '\n';
+        }
     }
 
     return os.str();
@@ -8308,17 +8383,27 @@ std::string Caller::patnloop2(int action) {
         return os.str();
     }
 
+    GetLevelAndInsertIntoArgs("patnloop");
     // check if action and arguments are valid
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (0) {
+        if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
         }
 
     }
 
     else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (0) {
+        if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 2) {
+            int level = StringTo<int>(args[0]);
+            int nloops = StringTo<int>(args[1]);
         }
 
     }
@@ -8331,21 +8416,20 @@ std::string Caller::patnloop2(int action) {
 
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
-                                  nPutArgs);
-        auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
-        os << OutString(t) << '\n';
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
+            auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
+            os << OutString(t) << '\n';
+        }
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
-                                  nPutArgs);
-        std::string nloops = args[iArg++];
-        auto arg1 = StringTo<int>(nloops);
-        det->setPatternLoopCycles(level, arg1, std::vector<int>{det_id});
-        os << nloops << '\n';
+        if (args.size() == 2) {
+            int level = StringTo<int>(args[0]);
+            int nloops = StringTo<int>(args[1]);
+            det->setPatternLoopCycles(level, nloops, std::vector<int>{det_id});
+            os << nloops << '\n';
+        }
     }
 
     return os.str();
@@ -8503,17 +8587,27 @@ std::string Caller::patwait(int action) {
         return os.str();
     }
 
+    GetLevelAndInsertIntoArgs("patwait");
     // check if action and arguments are valid
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (0) {
+        if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
         }
 
     }
 
     else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (0) {
+        if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 2) {
+            int level = StringTo<int>(args[0]);
+            int addr = StringTo<int>(args[1]);
         }
 
     }
@@ -8526,20 +8620,20 @@ std::string Caller::patwait(int action) {
 
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
-                                  nPutArgs);
-        auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
-        os << level << ' ' << OutStringHex(t, 4) << '\n';
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
+            auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
+            os << level << ' ' << OutStringHex(t, 4) << '\n';
+        }
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
-                                  nPutArgs);
-        int addr = StringTo<int>(args[iArg++]);
-        det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
-        os << level << ' ' << ToStringHex(addr, 4) << '\n';
+        if (args.size() == 2) {
+            int level = StringTo<int>(args[0]);
+            int addr = StringTo<int>(args[1]);
+            det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
+            os << level << ' ' << ToStringHex(addr, 4) << '\n';
+        }
     }
 
     return os.str();
@@ -8556,17 +8650,27 @@ std::string Caller::patwait0(int action) {
         return os.str();
     }
 
+    GetLevelAndInsertIntoArgs("patwait");
     // check if action and arguments are valid
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (0) {
+        if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
         }
 
     }
 
     else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (0) {
+        if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 2) {
+            int level = StringTo<int>(args[0]);
+            int addr = StringTo<int>(args[1]);
         }
 
     }
@@ -8579,20 +8683,20 @@ std::string Caller::patwait0(int action) {
 
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
-                                  nPutArgs);
-        auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
-        os << OutStringHex(t, 4) << '\n';
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
+            auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
+            os << OutStringHex(t, 4) << '\n';
+        }
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
-                                  nPutArgs);
-        int addr = StringTo<int>(args[iArg++]);
-        det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
-        os << ToStringHex(addr, 4) << '\n';
+        if (args.size() == 2) {
+            int level = StringTo<int>(args[0]);
+            int addr = StringTo<int>(args[1]);
+            det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
+            os << ToStringHex(addr, 4) << '\n';
+        }
     }
 
     return os.str();
@@ -8609,17 +8713,27 @@ std::string Caller::patwait1(int action) {
         return os.str();
     }
 
+    GetLevelAndInsertIntoArgs("patwait");
     // check if action and arguments are valid
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (0) {
+        if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
         }
 
     }
 
     else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (0) {
+        if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 2) {
+            int level = StringTo<int>(args[0]);
+            int addr = StringTo<int>(args[1]);
         }
 
     }
@@ -8632,20 +8746,20 @@ std::string Caller::patwait1(int action) {
 
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
-                                  nPutArgs);
-        auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
-        os << OutStringHex(t, 4) << '\n';
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
+            auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
+            os << OutStringHex(t, 4) << '\n';
+        }
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
-                                  nPutArgs);
-        int addr = StringTo<int>(args[iArg++]);
-        det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
-        os << ToStringHex(addr, 4) << '\n';
+        if (args.size() == 2) {
+            int level = StringTo<int>(args[0]);
+            int addr = StringTo<int>(args[1]);
+            det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
+            os << ToStringHex(addr, 4) << '\n';
+        }
     }
 
     return os.str();
@@ -8662,17 +8776,27 @@ std::string Caller::patwait2(int action) {
         return os.str();
     }
 
+    GetLevelAndInsertIntoArgs("patwait");
     // check if action and arguments are valid
     if (action == slsDetectorDefs::GET_ACTION) {
-        if (0) {
+        if (1 && args.size() != 1) {
             throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
         }
 
     }
 
     else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (0) {
+        if (1 && args.size() != 2) {
             throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 2) {
+            int level = StringTo<int>(args[0]);
+            int addr = StringTo<int>(args[1]);
         }
 
     }
@@ -8685,233 +8809,20 @@ std::string Caller::patwait2(int action) {
 
     // generate code for each action
     if (action == slsDetectorDefs::GET_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
-                                  nPutArgs);
-        auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
-        os << OutStringHex(t, 4) << '\n';
+        if (args.size() == 1) {
+            int level = StringTo<int>(args[0]);
+            auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
+            os << OutStringHex(t, 4) << '\n';
+        }
     }
 
     if (action == slsDetectorDefs::PUT_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
-                                  nPutArgs);
-        int addr = StringTo<int>(args[iArg++]);
-        det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
-        os << ToStringHex(addr, 4) << '\n';
-    }
-
-    return os.str();
-}
-
-std::string Caller::patwaittime(int action) {
-
-    std::ostringstream os;
-    // print help
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N([0-6] [n_clk] 
-	[Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles for the loop provided.
-	[Mythen3] Level options: 0-3 only. )V0G0N"
-           << std::endl;
-        return os.str();
-    }
-
-    // check if action and arguments are valid
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (0) {
-            throw RuntimeError("Wrong number of arguments for action GET");
+        if (args.size() == 2) {
+            int level = StringTo<int>(args[0]);
+            int addr = StringTo<int>(args[1]);
+            det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
+            os << ToStringHex(addr, 4) << '\n';
         }
-
-    }
-
-    else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (0) {
-            throw RuntimeError("Wrong number of arguments for action PUT");
-        }
-
-    }
-
-    else {
-
-        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
-                           "are ['GET', 'PUT']");
-    }
-
-    // generate code for each action
-    if (action == slsDetectorDefs::GET_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
-                                  nPutArgs);
-        auto t = det->getPatternWaitTime(level, std::vector<int>{det_id});
-        os << level << ' ' << OutString(t) << '\n';
-    }
-
-    if (action == slsDetectorDefs::PUT_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
-                                  nPutArgs);
-        uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
-        det->setPatternWaitTime(level, waittime, std::vector<int>{det_id});
-        os << level << ' ' << waittime << '\n';
-    }
-
-    return os.str();
-}
-
-std::string Caller::patwaittime0(int action) {
-
-    std::ostringstream os;
-    // print help
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N(
-	Deprecated command. Use patwaittime. )V0G0N"
-           << std::endl;
-        return os.str();
-    }
-
-    // check if action and arguments are valid
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (0) {
-            throw RuntimeError("Wrong number of arguments for action GET");
-        }
-
-    }
-
-    else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (0) {
-            throw RuntimeError("Wrong number of arguments for action PUT");
-        }
-
-    }
-
-    else {
-
-        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
-                           "are ['GET', 'PUT']");
-    }
-
-    // generate code for each action
-    if (action == slsDetectorDefs::GET_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
-                                  nPutArgs);
-        auto t = det->getPatternWaitTime(level, std::vector<int>{det_id});
-        os << OutString(t) << '\n';
-    }
-
-    if (action == slsDetectorDefs::PUT_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
-                                  nPutArgs);
-        uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
-        det->setPatternWaitTime(level, waittime, std::vector<int>{det_id});
-        os << waittime << '\n';
-    }
-
-    return os.str();
-}
-
-std::string Caller::patwaittime1(int action) {
-
-    std::ostringstream os;
-    // print help
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N(
-	Deprecated command. Use patwaittime. )V0G0N"
-           << std::endl;
-        return os.str();
-    }
-
-    // check if action and arguments are valid
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (0) {
-            throw RuntimeError("Wrong number of arguments for action GET");
-        }
-
-    }
-
-    else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (0) {
-            throw RuntimeError("Wrong number of arguments for action PUT");
-        }
-
-    }
-
-    else {
-
-        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
-                           "are ['GET', 'PUT']");
-    }
-
-    // generate code for each action
-    if (action == slsDetectorDefs::GET_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
-                                  nPutArgs);
-        auto t = det->getPatternWaitTime(level, std::vector<int>{det_id});
-        os << OutString(t) << '\n';
-    }
-
-    if (action == slsDetectorDefs::PUT_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
-                                  nPutArgs);
-        uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
-        det->setPatternWaitTime(level, waittime, std::vector<int>{det_id});
-        os << waittime << '\n';
-    }
-
-    return os.str();
-}
-
-std::string Caller::patwaittime2(int action) {
-
-    std::ostringstream os;
-    // print help
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N(
-	Deprecated command. Use patwaittime. )V0G0N"
-           << std::endl;
-        return os.str();
-    }
-
-    // check if action and arguments are valid
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (0) {
-            throw RuntimeError("Wrong number of arguments for action GET");
-        }
-
-    }
-
-    else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (0) {
-            throw RuntimeError("Wrong number of arguments for action PUT");
-        }
-
-    }
-
-    else {
-
-        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
-                           "are ['GET', 'PUT']");
-    }
-
-    // generate code for each action
-    if (action == slsDetectorDefs::GET_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
-                                  nPutArgs);
-        auto t = det->getPatternWaitTime(level, std::vector<int>{det_id});
-        os << OutString(t) << '\n';
-    }
-
-    if (action == slsDetectorDefs::PUT_ACTION) {
-        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
-                                  nPutArgs);
-        uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
-        det->setPatternWaitTime(level, waittime, std::vector<int>{det_id});
-        os << waittime << '\n';
     }
 
     return os.str();

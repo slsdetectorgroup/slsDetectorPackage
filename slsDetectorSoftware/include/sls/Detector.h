@@ -1930,10 +1930,15 @@ class Detector {
     void setPatternWaitAddr(int level, int addr, Positions pos = {});
 
     /** [CTB][Mythen3][Xilinx CTB]  */
-    Result<uint64_t> getPatternWaitTime(int level, Positions pos = {}) const;
+    Result<uint64_t> getPatternWaitClocks(int level, Positions pos = {}) const;
 
     /** [CTB][Mythen3][Xilinx CTB] Options: level 0-2 */
-    void setPatternWaitTime(int level, uint64_t t, Positions pos = {});
+    void setPatternWaitClocks(int level, uint64_t t, Positions pos = {});
+
+    Result<ns> getPatternWaitInterval(int level, Positions pos = {}) const;
+
+    /** [CTB][Mythen3][Xilinx CTB] Options: level 0-2 */
+    void setPatternWaitInterval(int level, ns t, Positions pos = {});
 
     /** [CTB][Mythen3][Xilinx CTB] */
     Result<uint64_t> getPatternMask(Positions pos = {});

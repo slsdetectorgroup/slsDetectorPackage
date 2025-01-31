@@ -175,28 +175,16 @@ void Caller::WrongNumberOfParameters(size_t expected) {
                        std::to_string(args.size()) + "\n");
 }
 
-void Caller::GetLevelAndUpdateArgIndex(int action,
-                                       std::string levelSeparatedCommand,
-                                       int &level, int &iArg, size_t nGetArgs,
-                                       size_t nPutArgs) {
-    if (cmd == levelSeparatedCommand) {
-        ++nGetArgs;
-        ++nPutArgs;
-    } else {
+int Caller::GetLevelAndInsertIntoArgs(std::string levelSeparatedCommand) {
+    if (cmd != levelSeparatedCommand) {
         LOG(logWARNING) << "This command is deprecated and will be removed. "
                            "Please migrate to "
                         << levelSeparatedCommand;
+        int level = cmd[cmd.find_first_of("012")] - '0';
+        args.insert(args.begin(), std::to_string(level));
+        return true;
     }
-    if (action == defs::GET_ACTION && args.size() != nGetArgs) {
-        WrongNumberOfParameters(nGetArgs);
-    } else if (action == defs::PUT_ACTION && args.size() != nPutArgs) {
-        WrongNumberOfParameters(nPutArgs);
-    }
-    if (cmd == levelSeparatedCommand) {
-        level = StringTo<int>(args[iArg++]);
-    } else {
-        level = cmd[cmd.find_first_of("012")] - '0';
-    }
+    return false;
 }
 
 std::string Caller::free(int action) {
@@ -1012,6 +1000,81 @@ std::string Caller::slowadc(int action) {
 
     } else if (action == defs::PUT_ACTION) {
         throw RuntimeError("cannot put");
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+std::string Caller::patwaittime(int action) {
+    std::ostringstream os;
+
+    if (action == defs::HELP_ACTION) {
+        os << "[0-6] [n_clk] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait time in clock "
+              "cycles for the loop provided.\n\t[Mythen3] Level options: 0-3 "
+              "only."
+           << '\n';
+        return os.str();
+    }
+
+    // parse level
+    bool deprecated_cmd = GetLevelAndInsertIntoArgs("patwaittime");
+    int level = 0;
+    try {
+        if (args.size() > 0)
+            level = StringTo<int>(args[0]);
+    } catch (const std::exception &e) {
+        LOG(logERROR) << "Could not scan level.";
+        throw;
+    }
+    if (!deprecated_cmd && args.size() >= 1)
+        os << args[0] << ' ';
+
+    if (action == defs::GET_ACTION) {
+        if (args.size() != 1 && args.size() != 2)
+            WrongNumberOfParameters(1);
+        // with time unit
+        if (args.size() == 2) {
+            auto t =
+                det->getPatternWaitInterval(level, std::vector<int>{det_id});
+            os << OutString(t, args[1]) << '\n';
+        }
+        // in clocks
+        else {
+            auto t = det->getPatternWaitClocks(level, std::vector<int>{det_id});
+            os << OutString(t) << '\n';
+        }
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 2 && args.size() != 3)
+            WrongNumberOfParameters(2);
+        // clocks (all digits)
+        if (args.size() == 2 &&
+            std::all_of(args[1].begin(), args[1].end(), ::isdigit)) {
+            uint64_t waittime = StringTo<uint64_t>(args[1]);
+            det->setPatternWaitClocks(level, waittime,
+                                      std::vector<int>{det_id});
+            os << waittime << '\n';
+        }
+        // time
+        else {
+            time::ns converted_time{0};
+            try {
+                if (args.size() == 2) {
+                    std::string tmp_time(args[1]);
+                    std::string unit = RemoveUnit(tmp_time);
+                    converted_time = StringTo<time::ns>(tmp_time, unit);
+                } else {
+                    converted_time = StringTo<time::ns>(args[1], args[2]);
+                }
+            } catch (...) {
+                throw RuntimeError("Could not convert argument to time::ns");
+            }
+            det->setPatternWaitInterval(level, converted_time,
+                                        std::vector<int>{det_id});
+            os << args[1];
+            if (args.size() == 3)
+                os << ' ' << args[2];
+            os << '\n';
+        }
     } else {
         throw RuntimeError("Unknown action");
     }

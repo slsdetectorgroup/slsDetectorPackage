@@ -550,8 +550,10 @@ class Module : public virtual slsDetectorDefs {
     void setPatternLoopCycles(int level, int n);
     int getPatternWaitAddr(int level) const;
     void setPatternWaitAddr(int level, int addr);
-    uint64_t getPatternWaitTime(int level) const;
-    void setPatternWaitTime(int level, uint64_t t);
+    uint64_t getPatternWaitClocks(int level) const;
+    void setPatternWaitClocks(int level, uint64_t t);
+    uint64_t getPatternWaitInterval(int level) const;
+    void setPatternWaitInterval(int level, uint64_t t);
     uint64_t getPatternMask() const;
     void setPatternMask(uint64_t mask);
     uint64_t getPatternBitMask() const;

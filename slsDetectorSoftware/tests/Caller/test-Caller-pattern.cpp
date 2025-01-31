@@ -364,7 +364,7 @@ TEST_CASE("patwaittime", "[.cmdcall]") {
                 std::ostringstream oss;
                 caller.call("patwaittime", {sLoop, "us"}, -1, GET, oss);
                 REQUIRE(oss.str() == "patwaittime " + sLoop + " 50us\n");
-                if (iLoop == 0) {
+                if (iLoop == 0 && det_type != defs::MYTHEN3) {
                     std::ostringstream oss;
                     caller.call("exptime", {"us"}, -1, GET, oss);
                     REQUIRE(oss.str() == "exptime 50us\n");

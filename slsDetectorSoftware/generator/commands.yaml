@@ -4099,7 +4099,7 @@ patwait0:
       GET:
         output: [ "OutStringHex(t, 4)" ]
       PUT:
-        output: [ ToStringHex(addr, 4) ]
+        output: [ "ToStringHex(addr, 4)" ]
 
 patwait1:
     inherit_actions: patwait0

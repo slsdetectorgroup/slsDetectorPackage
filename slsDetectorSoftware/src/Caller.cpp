@@ -8695,7 +8695,7 @@ std::string Caller::patwait0(int action) {
             int level = StringTo<int>(args[0]);
             int addr = StringTo<int>(args[1]);
             det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
-            os << ToStringHex(addr << 4) << '\n';
+            os << ToStringHex(addr, 4) << '\n';
         }
     }
 
@@ -8758,7 +8758,7 @@ std::string Caller::patwait1(int action) {
             int level = StringTo<int>(args[0]);
             int addr = StringTo<int>(args[1]);
             det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
-            os << ToStringHex(addr << 4) << '\n';
+            os << ToStringHex(addr, 4) << '\n';
         }
     }
 
@@ -8821,7 +8821,7 @@ std::string Caller::patwait2(int action) {
             int level = StringTo<int>(args[0]);
             int addr = StringTo<int>(args[1]);
             det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
-            os << ToStringHex(addr << 4) << '\n';
+            os << ToStringHex(addr, 4) << '\n';
         }
     }
 

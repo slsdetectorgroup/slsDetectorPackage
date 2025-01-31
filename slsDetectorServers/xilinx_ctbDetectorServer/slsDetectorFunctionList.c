@@ -1056,7 +1056,7 @@ int getPower(enum DACINDEX ind) {
 
     // dac powered off
     if (dacValues[ind] == LTC2620_D_GetPowerDownValue()) {
-        LOG(logWARNING, ("Power V%s powered down\n", powerNames[pwrIndex]));
+        LOG(logWARNING, ("Power V%s is powered down\n", powerNames[pwrIndex]));
         return LTC2620_D_GetPowerDownValue();
     }
 

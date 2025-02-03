@@ -10,8 +10,10 @@ HDF5File::HDF5File () {
 }
 
 HDF5File::~HDF5File () {
+	/*
 	if(current_image)
 		delete [] current_image;
+	*/
 }
 
 void HDF5File::SetImageDataPath (std::string const& name) { data_datasetname = name; }
@@ -24,12 +26,7 @@ void HDF5File::InitializeDimensions () {
     file_dims.resize(rank);
     H5Sget_simple_extent_dims(dataspace, file_dims.data(), nullptr);
 
-    std::cout << "Dataset dimensions: (";
-    for (size_t i = 0; i < file_dims.size(); ++i) {
-        std::cout << file_dims[i];
-        if (i < file_dims.size() - 1) std::cout << ", ";
-    }
-    std::cout << ")\n";
+    std::cout << "Dataset dimensions: " << vectorToString(file_dims) << "\n";
 
 }
 
@@ -78,12 +75,7 @@ bool HDF5File::ReadChunkDimensions () {
 	chunk_dims.resize(rank_chunk);
 	H5Pget_chunk (plist_id, rank_chunk, chunk_dims.data());
 
-	std::cout << "Chunk dimensions: (";
-    for (size_t i = 0; i < chunk_dims.size(); ++i) {
-        std::cout << chunk_dims[i];
-        if (i < chunk_dims.size() - 1) std::cout << ", ";
-    }
-    std::cout << ")\n";
+	std::cout << "Chunk dimensions: " << vectorToString(chunk_dims) << "\n";
 
 	H5Pclose (plist_id);
 
@@ -129,12 +121,7 @@ bool HDF5File::OpenFrameIndexDataset() {
 	std::vector<hsize_t> fi_dims(fi_rank);
 	H5Sget_simple_extent_dims (fi_dataspace, fi_dims.data(), nullptr);
 
-	std::cout << "Frame index dataset dimensions: (";
-    for (size_t i = 0; i < fi_dims.size(); ++i) {
-        std::cout << fi_dims[i];
-        if (i < fi_dims.size() - 1) std::cout << ", ";
-    }
-    std::cout << ")\n";
+	std::cout << "Frame index dataset dimensions: " << vectorToString(fi_dims) << "\n";
 
 	// validate size
 	if (fi_dims[0] != file_dims[0]) {

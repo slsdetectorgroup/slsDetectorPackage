@@ -369,6 +369,10 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
      * This is the most recent function. This is used in the cluster finder!
      * The overloads are legacy!
      * Note that caller has to allocate and deallocate memory for data!
+     * \param hfile object of type HDF5File (reader class)
+     * \param framenumber frame number as read from the HDF5 file
+     * \param h5offset vector defining offset parameters for HDF5 hyperslab selection (dimensions Z and S), incremented automatially
+     * \param data pointer to image buffer (converted to hold uint16_t by definition of HDF5File)
      */
     char* readNextFrame( HDF5File& hfile, int& framenumber, std::vector<hsize_t>& h5offset, char* data ) {
 

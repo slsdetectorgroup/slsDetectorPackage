@@ -146,7 +146,7 @@ private:
 	/** Current image
 	 ** dynamic array 
 	 ** uint16_t pointer format is chosen to support use with slsDetectorCalibration cluster finder */
-	uint16_t* current_image{nullptr};
+	//uint16_t* current_image{nullptr};
 	//uint16_t current_chunk[DEFAULT_CHUNK_Z_DIMS][DEFAULT_CHUNK_Y_DIMS][DEFAULT_CHUNK_X_DIMS];
 
 	/** Current frame offset

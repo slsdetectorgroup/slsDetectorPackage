@@ -376,7 +376,7 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
      */
     char* readNextFrame( HDF5File& hfile, int& framenumber, std::vector<hsize_t>& h5offset, char* data ) {
 
-      if (h5offset[0] >= 0) {
+      if (framenumber >= 0) {
         std::cout << "*";
 
 	      //Storing the reinterpret_cast in the variable data_ptr ensures that I can pass it to a function that expects at uint16_t*
@@ -392,6 +392,8 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
     };
 
     int getFrameNumber(char* buff){return iframe;} //Provided via public method readNextFrame
+    //It is debatable if one might not instead want to provide the "real" frame number as read from the file here
+    //For now, this is the frame offset counter (that always has to start at 0 for each new file)
 
  
 

@@ -5,16 +5,55 @@
 #include <algorithm>
 #include <fmt/ranges.h>
 
+/*
+ * No class member helper functions
+ */
+std::string vectorToString(std::vector<hsize_t> const& v) {
+    return fmt::format("({})", fmt::join(v, ", "));
+}
+
+/*
+ * increment frame offset (if s dimension exists, loop through all before incrementing z) 
+ * should also work if file_dims[1] is not s but x (in that case we ignore it)
+ */
+void conditionalIncrement(std::vector<hsize_t>& vec, hsize_t max_value) {
+
+    if (vec.size() < 3) {
+        throw std::invalid_argument("Vector must have at least 3 elements.");
+    }
+
+    // If vector has 4 elements, increment vec[1] first
+    if (vec.size() == 4) {
+        if (++vec[1] >= max_value) { //max_value is never reached!
+            vec[1] = 0;  // Reset and increment vec[0]
+            ++vec[0];
+        }
+    }
+    // If vector has 3 elements, increment vec[0] directly
+    else if (vec.size() == 3) {
+        ++vec[0];
+    }
+}
+
+/* 
+ * Class member functions
+ */
+
+// Default constructor
+/*
 HDF5File::HDF5File () {
   //InitializeParameters(); //old
 }
+*/
 
+/*
 HDF5File::~HDF5File () {
-	/*
+	
 	if(current_image)
 		delete [] current_image;
-	*/
+	
 }
+*/
 
 void HDF5File::SetImageDataPath (std::string const& name) { data_datasetname = name; }
 
@@ -42,7 +81,7 @@ bool HDF5File::ValidateDimensions () {
 
 	// validate rank
 	if(rank != RANK) {
-		cprintf(RED,"rank found %d. Expected %d\n", rank, RANK);
+		cprintf(RED,"rank found %llu. Expected %d\n", rank, RANK);
 		std::cerr << "Error: Rank could not be validated\n";
 		return false;
 	}
@@ -87,7 +126,7 @@ bool HDF5File::ValidateChunkDimensions () {
 
 	// validate rank
 	if(chunk_dims.size() != rank) {
-		cprintf(RED,"Chunk rank does not match dataset rank! Found %d. Expected %d\n", chunk_dims.size(), rank);
+		cprintf(RED,"Chunk rank does not match dataset rank! Found %lu. Expected %llu\n", chunk_dims.size(), rank);
 		std::cerr << "Error: Chunk rank does not match dataset rank\n";
 		return false;
 	}
@@ -139,7 +178,7 @@ bool HDF5File::OpenFrameIndexDataset() {
 	//read frame index values
 	//Is u32 correct? I would think not. But I get a segmentation fault if I use u64.
 	if (H5Dread (fi_dataset, H5T_STD_U32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, frame_index_list.data()) < 0) {
-		cprintf (RED,"Could not read frame index dataset %s\n", index_datasetname);
+		cprintf (RED,"Could not read frame index dataset %s\n", index_datasetname.c_str());
 		std::cerr << "Error: Could not read frame index dataset\n";
 		H5Dclose (fi_dataset);
 		return false;
@@ -241,7 +280,7 @@ int HDF5File::ReadImage (uint16_t* image, std::vector<hsize_t>& offset ) {
         return -99;
     }
   	if ( offset.size() != rank-2 ) {
-		cprintf ( RED,"Offset vector must have size %llu. Found %llu\n", rank-2, offset.size() );
+		cprintf ( RED,"Offset vector must have size %llu. Found %lu\n", rank-2, offset.size() );
         std::cerr << "Error: Wrong offset vector size\n";
 		CloseResources ();
         return -99;
@@ -312,7 +351,7 @@ int HDF5File::ReadImage (uint16_t* image, std::vector<hsize_t>& offset ) {
 	// Create hyperslab selection
 	// This aligns dataspace such that we read the correct frame
 	if (H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, frame_offset.data(), nullptr, frame_size.data(), nullptr) < 0 ) {
-		cprintf (RED,"Could not create hyperslab for frame offset %s\n", vectorToString(frame_offset));
+		cprintf (RED,"Could not create hyperslab for frame offset %s\n", vectorToString(frame_offset).c_str());
 		std::cerr << "Error: Hyperslab creation failed for frame offset " << vectorToString(frame_offset) << "\n";
 		CloseResources();
 		H5Sclose(memspace);
@@ -321,7 +360,7 @@ int HDF5File::ReadImage (uint16_t* image, std::vector<hsize_t>& offset ) {
 
 	// Read dataset into image buffer (previously read to current_image owned by HDF5File)
 	if (H5Dread(dataset, H5T_STD_U16LE, memspace, dataspace, H5P_DEFAULT, image) < 0 ) {
-		cprintf (RED,"Could not read dataset for frame offset %s\n", vectorToString(frame_offset));
+		cprintf (RED,"Could not read dataset for frame offset %s\n", vectorToString(frame_offset).c_str());
 		std::cerr << "Error: Reading of dataset failed for given start frame offset " << vectorToString(frame_offset) << "\n";
 		CloseResources ();
 		H5Sclose(memspace);
@@ -352,7 +391,7 @@ int HDF5File::ReadImage (uint16_t* image, std::vector<hsize_t>& offset ) {
 
 void HDF5File::PrintCurrentImage (uint16_t* image) {
 	printf("\n");
-	printf("Frame %llu, Image: %d\n", frame_offset[0]-1, frame_index_list[frame_offset[0]-1]);
+	printf("Frame %llu, Image: %llu\n", frame_offset[0]-1, frame_index_list[frame_offset[0]-1]);
 
 	hsize_t size = file_dims[rank-1] * file_dims[rank-2];
 	for (hsize_t i = 0; i < size; ++i){
@@ -363,33 +402,5 @@ void HDF5File::PrintCurrentImage (uint16_t* image) {
 	printf("\n\n\n\n");
 }
 
-/*
- * No class member helper functions
- */
-std::string vectorToString(std::vector<hsize_t> const& v) {
-    return fmt::format("({})", fmt::join(v, ", "));
-}
 
-/*
- * increment frame offset (if s dimension exists, loop through all before incrementing z) 
- * should also work if file_dims[1] is not s but x (in that case we ignore it)
- */
-void conditionalIncrement(std::vector<hsize_t>& vec, int max_value) {
-
-    if (vec.size() < 3) {
-        throw std::invalid_argument("Vector must have at least 3 elements.");
-    }
-
-    // If vector has 4 elements, increment vec[1] first
-    if (vec.size() == 4) {
-        if (++vec[1] >= max_value) { //max_value is never reached!
-            vec[1] = 0;  // Reset and increment vec[0]
-            ++vec[0];
-        }
-    }
-    // If vector has 3 elements, increment vec[0] directly
-    else if (vec.size() == 3) {
-        ++vec[0];
-    }
-}
 

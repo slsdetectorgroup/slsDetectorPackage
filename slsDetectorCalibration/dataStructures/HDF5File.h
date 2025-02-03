@@ -44,12 +44,12 @@ public:
 	/**
 	 * Constructor
 	 */
-	HDF5File ();
+	HDF5File () = default;
 
 	/**
 	 * Destructor
 	 */
-	~HDF5File ();
+	~HDF5File () = default;
 
 
 	std::vector<hsize_t> GetDatasetDimensions ();

@@ -2,40 +2,44 @@
 /************************************************
  * @file HDF5Fle.h
  * @short functions to open/close/read HDF5 File
+ * Adapted for generalization, accepts rank 3 and 4
+ * Supports control over storage cells
  ***********************************************/
 /**
  *@short functions to open/close/read HDF5 File
  */
 
 
+#include <iostream>
+#include <vector>
+#include <string>
+
 #include "hdf5.h"
 #include "hdf5_hl.h"
 
 
-#define MAX_STR_LENGTH	1000
+//#define MAX_STR_LENGTH	1000
 
-#define RANK	3                       // Dimension of the image
-#define DEFAULT_Z_DIMS	10000
-#define DEFAULT_Y_DIMS	1024
-#define DEFAULT_X_DIMS	512
-//#define DEFAULT_S_DIMS	1       // Storage cells
+#define RANK	4                       // Dimension of the image dataset, only for validation
+#define DEFAULT_Z_DIMS	10000			// only for validation
+#define DEFAULT_Y_DIMS	1024			// only for validation
+#define DEFAULT_X_DIMS	512				// only for validation
+//#define DEFAULT_S_DIMS	1       	// Storage cells
 
-#define DEFAULT_CHUNK_Z_DIMS	1
-#define DEFAULT_CHUNK_Y_DIMS	1024
-#define DEFAULT_CHUNK_X_DIMS	512
+#define DEFAULT_CHUNK_Z_DIMS	100		// only for validation
+#define DEFAULT_CHUNK_Y_DIMS	1024	// only for validation
+#define DEFAULT_CHUNK_X_DIMS	512		// only for validation
 //#define DEFAULT_CHUNK_S_DIMS	1
 
-/** Assuming each chunk is one image 1024 x 512*/
 
 #define DATA_DATASETNAME	"/data/JF18T01V01/data" //Furka JF
 #define INDEX_DATASETNAME	"/data/JF18T01V01/frame_index"
 
-enum{Z,X,Y}; //S is the storage cell
+//enum{Z,S,X,Y}; //S is the storage cell //enum is not used
 
 class HDF5File {
 
 public:
-
 
 	/**
 	 * Constructor
@@ -47,10 +51,16 @@ public:
 	 */
 	~HDF5File ();
 
-	/**
-	 * Initialize Parameters for each new file
-	 */
-	void InitializeParameters ();
+
+	std::vector<hsize_t> GetDatasetDimensions ();
+
+	std::vector<hsize_t> GetChunkDimensions ();
+
+	void SetImageDataPath (std::string const& name);
+
+	void SetFrameIndexPath (std::string const& name);
+
+
 
 	/**
 	 * Open HDF5 file and dataset,
@@ -68,52 +78,80 @@ public:
 	void CloseResources ();
 
 	/**
-	 * Read an image into current_image
+	 * Read an image into current_image,
+	 * increment Z-offset (frame) and (if rank==4) storage cell
 	 * @returns frame number read,
 	 */
-	int ReadImage (uint16_t* image, int& iFrame);
+	int ReadImage (uint16_t* image, std::vector<hsize_t>& offset);
 
 	/**
 	 * Print current image in memory
 	 */
-	void PrintCurrentImage ();
+	void PrintCurrentImage (uint16_t* image);
 
 private:
 
+	/**
+	 * Initialize dimensions of image dataset for each new file
+	 */
+	void InitializeDimensions ();
+
+	bool ReadChunkDimensions ();
+
+	bool ValidateDimensions ();
+
+	bool ValidateChunkDimensions ();
+
+	/**
+	 * Open dataset containing the frame numbers
+	 */
+	bool OpenFrameIndexDataset ();
+
+
 	/** file name */
 	std::string file_name{};
+	/** dataset name for image data */
+	std::string data_datasetname = DATA_DATASETNAME;
+	/** dataset name for frame index data */
+	std::string index_datasetname = INDEX_DATASETNAME;
 
 	/** file handle */
 	hid_t file{};
-
 	/** dataspace handle */
 	hid_t dataspace{};
-
 	/** memory space handle */
-	//hid_t memspace;
-
+	//hid_t memspace; //old
 	/** dataset handle */
 	hid_t dataset{};
 
-
 	/** file dimensions */
-	hsize_t file_dims[RANK]{}; //static array (dimensions are known) //I think the {} initialization should work...
+	std::vector<hsize_t> file_dims{};
+	//hsize_t file_dims[RANK]{}; //static array (dimensions are known)
 
-	/** chunk dimensions */
-	hsize_t chunk_dims[RANK]{};
+	/** chunk dimensions 
+	 ** not necessarily required
+	 ** useful for optimization or validation */
+	std::vector<hsize_t> chunk_dims{};
+	//hsize_t chunk_dims[RANK]{};
+
+	/** Rank of the image dataset */
+	hsize_t rank{};
 
 	/** number of frames */
 	unsigned int number_of_frames{};
 
 	/** frame index list */
-	unsigned int* frame_index_list{NULL}; //dynamic array
+	std::vector<hsize_t> frame_index_list{};
 
-
-	/** current image */
-	uint16_t* current_image{NULL}; //dynamic array
+	/** Current image
+	 ** dynamic array 
+	 ** uint16_t pointer format is chosen to support use with slsDetectorCalibration cluster finder */
+	uint16_t* current_image{nullptr};
 	//uint16_t current_chunk[DEFAULT_CHUNK_Z_DIMS][DEFAULT_CHUNK_Y_DIMS][DEFAULT_CHUNK_X_DIMS];
 
-	/** current frame offset */
-	hsize_t frame_offset[RANK]{}; //array (frame_offset[Z], 0, 0) I believe
+	/** Current frame offset
+	 ** (Z-offset, S-offset, 0, 0) or (Z-offset, 0, 0), increments automatically with ReadImage */
+	std::vector<hsize_t> frame_offset{};
+	//hsize_t frame_offset[RANK]{};
 
 };

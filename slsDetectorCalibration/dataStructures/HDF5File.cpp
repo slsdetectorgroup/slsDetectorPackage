@@ -2,215 +2,217 @@
 
 #include "ansi.h"
 
-#include <string.h>
+#include <algorithm>
+#include <fmt/ranges.h>
 
 HDF5File::HDF5File () {
-  //InitializeParameters();
+  //InitializeParameters(); //old
 }
 
 HDF5File::~HDF5File () {
-	if(frame_index_list)
-		delete [] frame_index_list;
 	if(current_image)
 		delete [] current_image;
 }
 
-void HDF5File::InitializeParameters () {
-  /*
-    memset(file_name, 0, MAX_STR_LENGTH); //awkward, initializes all file_name characters to 0
-    file = -1;
-    dataspace = -1;
-    //memspace = -1;
-    dataset = -1;
-    number_of_frames = 0;
-    frame_index_list = NULL;
-    current_image = NULL;
-  */
-  for (int i = 0; i < RANK; ++i) {
-    file_dims[i] = 0; //also awkward
-    chunk_dims[i] = 0;
-    frame_offset[i] = 0;
-  }
+void HDF5File::SetImageDataPath (std::string const& name) { data_datasetname = name; }
+
+void HDF5File::SetFrameIndexPath (std::string const& name) { index_datasetname = name; }
+
+void HDF5File::InitializeDimensions () {
+
+	rank = H5Sget_simple_extent_ndims(dataspace);
+    file_dims.resize(rank);
+    H5Sget_simple_extent_dims(dataspace, file_dims.data(), nullptr);
+
+    std::cout << "Dataset dimensions: (";
+    for (size_t i = 0; i < file_dims.size(); ++i) {
+        std::cout << file_dims[i];
+        if (i < file_dims.size() - 1) std::cout << ", ";
+    }
+    std::cout << ")\n";
+
 }
 
+std::vector<hsize_t> HDF5File::GetDatasetDimensions() {
+	return file_dims;
+}
+
+std::vector<hsize_t> HDF5File::GetChunkDimensions() {
+	return chunk_dims;
+}
+
+bool HDF5File::ValidateDimensions () {
+
+	// validate rank
+	if(rank != RANK) {
+		cprintf(RED,"rank found %d. Expected %d\n", rank, RANK);
+		std::cerr << "Error: Rank could not be validated\n";
+		return false;
+	}
+
+	// validate file dimensions of x and y (assuming those are the last two dimensions of the dataset)
+	if ( (file_dims[file_dims.size()-2] != DEFAULT_X_DIMS) || (file_dims[file_dims.size()-1] != DEFAULT_Y_DIMS) ) {
+		cprintf(RED,"file dimensions of x found %llu. Expected %d\n", file_dims[file_dims.size()-2], DEFAULT_X_DIMS);
+		cprintf(RED,"file dimensions of y found %llu. Expected %d\n", file_dims[file_dims.size()-1], DEFAULT_Y_DIMS);
+		std::cerr << "Error: Dataset dimensions could not be validated\n";
+		return false;
+	}
+
+	cprintf(GREEN, "File rank & dimensions validated.");
+	return true;	
+}
+
+bool HDF5File::ReadChunkDimensions () {
+
+	// Get layout
+	hid_t plist_id = H5Dget_create_plist(dataset);
+
+	if (H5Pget_layout (plist_id) != H5D_CHUNKED)  {
+		cprintf(RED,"NOTE: Dataset is not chunked!\n");
+		std::cerr << "Error: Dataset is not chunked\n";
+		return false;
+	}
+
+	// Get Chunk Dimensions
+	int rank_chunk = H5Pget_chunk (plist_id, 0, nullptr);
+	chunk_dims.resize(rank_chunk);
+	H5Pget_chunk (plist_id, rank_chunk, chunk_dims.data());
+
+	std::cout << "Chunk dimensions: (";
+    for (size_t i = 0; i < chunk_dims.size(); ++i) {
+        std::cout << chunk_dims[i];
+        if (i < chunk_dims.size() - 1) std::cout << ", ";
+    }
+    std::cout << ")\n";
+
+	H5Pclose (plist_id);
+
+	return true;
+
+}
+
+bool HDF5File::ValidateChunkDimensions () {
+
+	// validate rank
+	if(chunk_dims.size() != rank) {
+		cprintf(RED,"Chunk rank does not match dataset rank! Found %d. Expected %d\n", chunk_dims.size(), rank);
+		std::cerr << "Error: Chunk rank does not match dataset rank\n";
+		return false;
+	}
+
+	// validate chunk dimensions of x and y (assuming those are the last two dimensions of the dataset)
+	if ( (chunk_dims[chunk_dims.size()-2] != DEFAULT_CHUNK_X_DIMS) || (chunk_dims[chunk_dims.size()-1] != DEFAULT_CHUNK_Y_DIMS) ) {
+		cprintf(RED,"file dimensions of x found %llu. Expected %d\n", chunk_dims[chunk_dims.size()-2], DEFAULT_CHUNK_X_DIMS);
+		cprintf(RED,"file dimensions of y found %llu. Expected %d\n", chunk_dims[chunk_dims.size()-1], DEFAULT_CHUNK_Y_DIMS);
+		std::cerr << "Error: Chunk dimensions could not be validated\n";
+		return false;
+	}
+
+	cprintf(GREEN, "Chunk rank & dimensions validated.");
+	return true;
+
+}
+
+bool HDF5File::OpenFrameIndexDataset() {
+
+	// Get all the frame numbers
+	// Open frame index dataset
+	hid_t fi_dataset = H5Dopen2 (file, index_datasetname.c_str(), H5P_DEFAULT);
+	if (fi_dataset < 0){
+		cprintf (RED,"Could not open frame index dataset %s\n", index_datasetname.c_str());
+		std::cerr << "Error: Could not open frame index dataset\n";
+		return false;
+	}
+
+	hid_t fi_dataspace = H5Dget_space (fi_dataset);
+	int fi_rank = H5Sget_simple_extent_ndims(fi_dataspace);
+	std::vector<hsize_t> fi_dims(fi_rank);
+	H5Sget_simple_extent_dims (fi_dataspace, fi_dims.data(), nullptr);
+
+	std::cout << "Frame index dataset dimensions: (";
+    for (size_t i = 0; i < fi_dims.size(); ++i) {
+        std::cout << fi_dims[i];
+        if (i < fi_dims.size() - 1) std::cout << ", ";
+    }
+    std::cout << ")\n";
+
+	// validate size
+	if (fi_dims[0] != file_dims[0]) {
+		cprintf (RED,"Frame index dimensions of z found %llu. Expected %llu\n", fi_dims[0], file_dims[0]);
+		std::cerr << "Error: Z dimension of frame index dataset does not align with z dimension of image dataset\n";
+		H5Sclose (fi_dataspace);
+		H5Dclose (fi_dataset);
+		return false;
+	}
+	H5Sclose (fi_dataspace);
+
+	// allocate frame index memory
+	frame_index_list.resize(file_dims[0]);
+
+	//read frame index values
+	//Is u32 correct? I would think not. But I get a segmentation fault if I use u64.
+	if (H5Dread (fi_dataset, H5T_STD_U32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, frame_index_list.data()) < 0) {
+		cprintf (RED,"Could not read frame index dataset %s\n", index_datasetname);
+		std::cerr << "Error: Could not read frame index dataset\n";
+		H5Dclose (fi_dataset);
+		return false;
+	}
+	H5Dclose(fi_dataset);
+	return true;
+}
 
 int HDF5File::OpenResources (char const*const fname, bool validate) {
-	// Initialize
-	//InitializeParameters();
-
 
 	// Open File
 	file = H5Fopen (fname, H5F_ACC_RDONLY, H5P_DEFAULT);
 	if (file < 0) {
-	  cprintf(RED,"could not open hdf5 file\n");
+	  cprintf(RED,"Could not open hdf5 file\n");
+	  std::cerr << "Error: H5Fopen failed\n";
 	  return 0;
 	}
 	cprintf(BLUE, "Opened File: %s\n", fname);
 
-
 	// Open Dataset
-	dataset = H5Dopen2 (file, DATA_DATASETNAME, H5P_DEFAULT);
+	dataset = H5Dopen2 (file, data_datasetname.c_str(), H5P_DEFAULT);
 	if (dataset < 0){
-	  cprintf(RED,"could not open dataset\n");
+	  cprintf(RED,"Could not open dataset\n");
+	  std::cerr << "Error: H5Dopen2 failed\n";
 	  CloseResources ();
 	  return 0;
 	}
-	cprintf(BLUE, "Opened Dataset: %s\n", DATA_DATASETNAME);
-	
+	cprintf(BLUE, "Opened Dataset: %s\n", data_datasetname.c_str());
 
 	// Create Dataspace
 	dataspace = H5Dget_space (dataset);
 	if (dataspace < 0){
-	  cprintf(RED,"could not open dataspace\n");
+	  cprintf(RED,"Could not open dataspace\n");
+	  std::cerr << "Error: H5Dget_space failed\n";
 	  CloseResources ();
 	  return 0;
 	}
 
-
 	// Get Dimensions
-	int rank = H5Sget_simple_extent_dims (dataspace, file_dims, NULL);
-	cprintf (BLUE, "Number of Images: %llu\n", file_dims[Z]);
-
-	// validate file dimensions
-	if (validate) {
-
-		// validate rank
-		if(rank != RANK) {
-			cprintf(RED,"rank found %d. Expected %d\n", rank, RANK);
-			CloseResources ();
-			return 0;
-		}
-
-		// validate file dimensions of x and y
-		if (file_dims[X] != DEFAULT_X_DIMS) {
-			cprintf(RED,"file dimensions of x found %llu. Expected %d\n", file_dims[X], DEFAULT_X_DIMS);
-			CloseResources ();
-			return 0;
-		}
-		if (file_dims[Y] != DEFAULT_Y_DIMS) {
-			cprintf(RED,"file dimensions of y found %llu. Expected %d\n", file_dims[Y], DEFAULT_Y_DIMS);
-			CloseResources ();
-			return 0;
-		}
-		cprintf(GREEN, "File rank & dimensions validated. "
-				"Rank: %d, Dimensions: %llu x %llu x %llu\n",
-					rank, file_dims[Z], file_dims[Y], file_dims[X]);
-	}
-
-
-
-	// Get layout
-	hid_t cparms = H5Dget_create_plist(dataset);
-
-	// validate chunk layout
-	if (validate) {
-		if (H5D_CHUNKED != H5Pget_layout (cparms))  {
-			cprintf(RED,"not chunked data file\n");
-			H5Pclose(cparms);
-			CloseResources ();
-			return 0;
-		}
-		cprintf(GREEN, "Chunk layout validated\n");
-	}
-
-	// Get Chunk Dimensions
-	int rank_chunk = H5Pget_chunk (cparms, RANK, chunk_dims);
-
-	// validate dimensions
-	if (validate) {
-
-		// validate rank
-		if(rank_chunk != RANK) {
-			cprintf(RED,"chunk rank found %d. Expected %d\n", rank, RANK);
-			H5Pclose(cparms);
-			CloseResources ();
-			return 0;
-		}
-
-		// validate file dimensions of x, y and z
-		if (chunk_dims[X] != DEFAULT_CHUNK_X_DIMS) {
-			cprintf(RED,"chunk dimensions of x found %llu. Expected %d\n", chunk_dims[X], DEFAULT_CHUNK_X_DIMS);
-			H5Pclose(cparms);
-			CloseResources ();
-			return 0;
-		}
-		if (chunk_dims[Y] != DEFAULT_CHUNK_Y_DIMS) {
-			cprintf(RED,"chunk dimensions of y found %llu. Expected %d\n", chunk_dims[Y], DEFAULT_CHUNK_Y_DIMS);
-			H5Pclose(cparms);
-			CloseResources ();
-			return 0;
-		}
-		/*if (chunk_dims[Z] != DEFAULT_CHUNK_Z_DIMS) {
-			cprintf(RED,"chunk dimensions of z found %llu. Expected %d\n", chunk_dims[Z], DEFAULT_CHUNK_Z_DIMS);
-			H5Pclose(cparms);
-			CloseResources ();
-			return 0;
-		}*/
-
-		cprintf(GREEN, "Chunk rank & dimensions validated. "
-					"Rank: %d, Dimensions: %llu x %llu x %llu\n",
-					rank_chunk, chunk_dims[Z], chunk_dims[Y], chunk_dims[X]);
-
-	}
-
-	H5Pclose (cparms);
-
-	// allocate chunk memory
-	//current_image = new uint16_t[chunk_dims[Z]*DEFAULT_CHUNK_Y_DIMS*DEFAULT_CHUNK_X_DIMS];
-	//current_image = new uint16_t[DEFAULT_X_DIMS*DEFAULT_Y_DIMS];
-
-	// Define memory space
-	//memspace = H5Screate_simple (RANK, chunk_dims, NULL);
-
-
-	// Get all the frame numbers
-	// Open frame index dataset
-	hid_t fi_dataset = H5Dopen2 (file, INDEX_DATASETNAME, H5P_DEFAULT);
-	if (fi_dataset < 0){
-		cprintf (RED,"could not open frame index dataset %s\n", INDEX_DATASETNAME);
-		CloseResources ();
+	InitializeDimensions();
+	// Get chunk dimensions
+	if (!ReadChunkDimensions()) {
+		CloseResources();
 		return 0;
 	}
 
-	// validate size of frame index dataset
+	// validate file dimensions
 	if (validate) {
-		hsize_t fi_dims[2];
-		hid_t fi_dataspace = H5Dget_space (fi_dataset);
-		int fi_rank = H5Sget_simple_extent_dims (fi_dataspace, fi_dims, NULL);
-
-		// validate rank
-		if(fi_rank != 2) {
-			cprintf(RED,"Frame index dataset rank found %d. Expected %d\n", fi_rank, 2);
-			H5Sclose (fi_dataspace);
-			H5Dclose (fi_dataset);
-			CloseResources ();
-			return 0;
+		if ( !ValidateDimensions() || !ValidateChunkDimensions() ) {
+			CloseResources();
+			return 0;		
 		}
-
-		// validate size
-		if (fi_dims[Z] != file_dims[Z]) {
-			cprintf (RED,"Frame index dimensions of z found %llu. Expected %llu\n", fi_dims[Z], file_dims[Z]);
-			H5Sclose (fi_dataspace);
-			H5Dclose (fi_dataset);
-			CloseResources ();
-			return 0;
-		}
-		H5Sclose (fi_dataspace);
 	}
 
-
-	// allocate frame index memory
-	frame_index_list = new unsigned int[file_dims[Z]];
-
-	//read frame index values
-	//Is u32 correct? I would think not. But I get a segmentation fault if I use u64.
-	if (H5Dread (fi_dataset, H5T_STD_U32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, frame_index_list) < 0) {
-		cprintf (RED,"Could not read frame index dataset %s\n", INDEX_DATASETNAME);
-		H5Dclose (fi_dataset);
-		CloseResources ();
+	//Read frame indices
+	if (!OpenFrameIndexDataset()) {
+		CloseResources();
+		return 0;
 	}
-	H5Dclose(fi_dataset);
-
+	
 	return 1;
 }
 
@@ -228,73 +230,179 @@ void HDF5File::CloseResources () {
 		H5Fclose(file);
 		file = -1;
 	}
-	//if (memspace >= 0)      H5Sclose(memspace); // VH: I am getting memory leaks after recompilation
 }
 
 /*
  * Function takes uint16_t* argument to make explicit that the caller has to handle memory allocation and deallocation.
  * This is legacy caused by the structure with which the slsDetectorCalibration cluster finder is written.
- * Best practice for modern C++ would be to rewrite using smart pointers.
+ * (Best practice for modern C++ would be using smart pointers.)
+ *
+ * Originially, this function took uint16_t** which may lead to memory management issues since image gets redirected
+ * to point to current_image, which is owned by HDF5File.
+ * (Good practice in classic C-style. HDF5File needs to clean up the resource at destruction.)
+ * 
+ * \param image pointer to uint16_t, buffer which the image is read into. (Memory handled by caller!)
+ * \param offset contains iFrame at [0] and storage cell number at [1],
+ * depending on dimensionality of the dataset, the storage cell number may not be included.
+ * Note that frame number (as read from file) may (likely) differ from frame index (in the dataset)!
  */
-int HDF5File::ReadImage (uint16_t* image, int& iFrame) {
-  /*
-   * Originially, this function took uint16_t** but this may lead to memory management issues since image gets redirected
-   * to point to current_image, which is owned by HDF5File.
-   * (Usually, this would be good practice and classic C-style.)
-   */
+int HDF5File::ReadImage (uint16_t* image, std::vector<hsize_t>& offset ) {
 
-	// no images in this frame
-	if (frame_index_list[frame_offset[Z]] == 0) {
-		cprintf (RED,"No images in this frame offset %llu\n", frame_offset[Z]);
+	// Validate input arguments
+    if (!image) {
+        std::cerr << "Error: image buffer is null.\n";
+        return -99;
+    }
+  	if ( offset.size() != rank-2 ) {
+		cprintf ( RED,"Offset vector must have size %llu. Found %llu\n", rank-2, offset.size() );
+        std::cerr << "Error: Wrong offset vector size\n";
+		CloseResources ();
+        return -99;
+    }
+
+	// Initialize frame_offset
+	if (frame_offset.empty())
+		frame_offset.resize(rank,0);
+	
+	// Validate frame_offset index
+    if (frame_offset[0] >= frame_index_list.size()) {
+        std::cerr << "Error: frame_offset[0] out of bounds.\n";
+        return -99;
+    }
+
+	// Check if images exist at the current frame offset
+	if (frame_index_list[frame_offset[0]] == 0) {
+		cprintf (RED,"No images at this frame offset %llu\n", frame_offset[0]);
+		std::cerr << "Error: Framenumber 0 at this frame offset\n";
 		CloseResources ();
 		return -99;
 	}
 
-	if (frame_offset[Z] == file_dims[Z]-1) {
+	// Check if we reached the end of file
+	// Compares that the offsets of frame and storage cell (Z and S) have reached the end of file
+	// Excludes X and Y indices (of the image dataset) from the comparison
+	if( std::equal( frame_offset.cbegin(), frame_offset.cend()-2, file_dims.cbegin() ) ) {
+		printf("End of file reached\n");
+		return -1;
+	}
+	/* //old
+	if (frame_offset[0] == file_dims[0]-1) {
 		printf("end of file\n");
 		return -1;
 	}
+	*/
 
-	hsize_t frame_size[RANK] = {1, file_dims[X], file_dims[Y]};
+	// Optional: Ensure dataset and dataspace are valid
+    if (dataset < 0) {
+        std::cerr << "Error: Invalid dataset ID.\n";
+        return -99;
+    }
+    if (dataspace < 0) {
+        std::cerr << "Error: Invalid dataspace.\n";
+        return -99;
+    }
+
+	// Define the size of the hyperslab to read
+	std::vector<hsize_t> frame_size(rank, 1);
+	std::copy(file_dims.begin() + rank-2, file_dims.end(), frame_size.begin() + rank-2);
+	/*
+	for ( int d=0; d < rank; ++d ) {
+		if (d < rank-2)
+			frame_size[d] = 1;
+		if ( d >= rank-2 )
+			frame_size[d] = file_dims[d];
+	}
+	*/
 
 	// Define memory space
-	hid_t memspace = H5Screate_simple (RANK, frame_size, NULL);
+	hid_t memspace = H5Screate_simple (rank, frame_size.data(), nullptr);
+	if (memspace < 0) {
+    	std::cerr << "Error: Failed to create memory space for HDF5 read operation\n";
+    	CloseResources();
+    	return -99;
+	}
 
-	// create hyperslab
+	// Create hyperslab selection
 	// This aligns dataspace such that we read the correct frame
-	if (H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, frame_offset, NULL, frame_size, NULL) < 0 ) {
-		cprintf (RED,"Could not create hyperslab for frame count %llu\n", frame_offset[Z]);
-		CloseResources ();
+	if (H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, frame_offset.data(), nullptr, frame_size.data(), nullptr) < 0 ) {
+		cprintf (RED,"Could not create hyperslab for frame offset %s\n", vectorToString(frame_offset));
+		std::cerr << "Error: Hyperslab creation failed for frame offset " << vectorToString(frame_offset) << "\n";
+		CloseResources();
+		H5Sclose(memspace);
 		return -99;
 	}
 
-	// read dataset into current_image
-	if (H5Dread(dataset, H5T_STD_U16LE, memspace, dataspace, H5P_DEFAULT, image /*was 'current_image'*/) < 0 ) {
-		cprintf (RED,"Could not read dataset for frame count %llu\n", frame_offset[Z]);
+	// Read dataset into image buffer (previously read to current_image owned by HDF5File)
+	if (H5Dread(dataset, H5T_STD_U16LE, memspace, dataspace, H5P_DEFAULT, image) < 0 ) {
+		cprintf (RED,"Could not read dataset for frame offset %s\n", vectorToString(frame_offset));
+		std::cerr << "Error: Reading of dataset failed for given start frame offset " << vectorToString(frame_offset) << "\n";
 		CloseResources ();
+		H5Sclose(memspace);
 		return -99;
 	}
+
+	// Clean up memory space
+	H5Sclose(memspace);
+
 	//*image = current_image; //if uint16_t** is passed, HDF5File owns the resource image points to, which is potentially dangerous
 
-	// return frame number and then increment frame count number
-	unsigned int retval = frame_index_list[frame_offset[Z]];
-	iFrame = (int)frame_offset[Z];
-	++frame_offset[Z];
+	// Return frame number
+	unsigned int retval = frame_index_list[frame_offset[0]];
+	
+	// Pass updated frame offset value(s) via offset parameter vector
+	std::copy_n(frame_offset.begin(), offset.size(), offset.begin());
+	/*
+	std::transform( offset.begin(), offset.end(), offset.begin(), 
+    	[&, i = 0](size_t) mutable { return frame_offset[i++]; } );
+	*/
+
+	// Increment frame offset correctly
+	conditionalIncrement(frame_offset, file_dims[1]);
+	//++frame_offset[0]; //old
+
 	return retval;
 }
 
-
-
-void HDF5File::PrintCurrentImage () {
+void HDF5File::PrintCurrentImage (uint16_t* image) {
 	printf("\n");
-	printf("Frame %llu, Image: %d\n", frame_offset[Z]-1, frame_index_list[frame_offset[Z]-1]);
+	printf("Frame %llu, Image: %d\n", frame_offset[0]-1, frame_index_list[frame_offset[0]-1]);
 
-	unsigned long long int size = file_dims[Y] * file_dims[X];
-	for (unsigned int i = 0; i < size; ++i){
-		printf("%u ", current_image[i]);
-		if (!((i+1) % file_dims[X] ))
+	hsize_t size = file_dims[rank-1] * file_dims[rank-2];
+	for (hsize_t i = 0; i < size; ++i){
+		printf("%u ", image[i]);
+		if (!((i+1) % file_dims[rank-2] ))
 			printf("\n\n");
 	}
 	printf("\n\n\n\n");
+}
+
+/*
+ * No class member helper functions
+ */
+std::string vectorToString(std::vector<hsize_t> const& v) {
+    return fmt::format("({})", fmt::join(v, ", "));
+}
+
+/*
+ * increment frame offset (if s dimension exists, loop through all before incrementing z) 
+ * should also work if file_dims[1] is not s but x (in that case we ignore it)
+ */
+void conditionalIncrement(std::vector<hsize_t>& vec, int max_value) {
+
+    if (vec.size() < 3) {
+        throw std::invalid_argument("Vector must have at least 3 elements.");
+    }
+
+    // If vector has 4 elements, increment vec[1] first
+    if (vec.size() == 4) {
+        if (++vec[1] >= max_value) { //max_value is never reached!
+            vec[1] = 0;  // Reset and increment vec[0]
+            ++vec[0];
+        }
+    }
+    // If vector has 3 elements, increment vec[0] directly
+    else if (vec.size() == 3) {
+        ++vec[0];
+    }
 }
 

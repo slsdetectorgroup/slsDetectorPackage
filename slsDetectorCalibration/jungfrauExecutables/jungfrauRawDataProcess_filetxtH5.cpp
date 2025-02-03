@@ -30,6 +30,11 @@
 using json = nlohmann::json;
 */
 
+/*Dataset paths according to different beamlines*/
+std::string const data_datasetname_furka("/data/JF18T01V01/data");
+std::string const index_datasetname_furka("/data/JF18T01V01/frame_index");
+std::string const data_datasetname_xfelSCS("/INSTRUMENT/SCS_HRIXS_JUNGF/DET/JNGFR01:daqOutput/data/adc");
+std::string const index_datasetname_xfelSCS("/INSTRUMENT/SCS_HRIXS_JUNGF/DET/JNGFR01:daqOutput/data/frameNumber");
 
 std::string getRootString( std::string const& filepath ) {
   size_t pos1;
@@ -64,9 +69,11 @@ int main(int argc, char *argv[]) {
     if (argc < 4) {
         std::cout
             << "Usage is " << argv[0]
-            << " filestxt outdir [pedfile (h5)] optional: [bool validate h5 rank] "
-               "[xmin xmax ymin ymax] [threshold] [nframes] "
-	       "NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS! "
+            << " filestxt outdir [pedfile (h5)] "
+               " optional: [int dataset path; 0 means Furka, 1 means XFEL; overwrites default given in HDF5File.h] "
+               " [bool validate h5 rank] "
+               " [xmin xmax ymin ymax] [threshold] [nframes] "
+	             " NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS! "
             << std::endl;
         std::cout
             << "threshold <0 means analog; threshold=0 means cluster finder; "
@@ -91,18 +98,35 @@ int main(int argc, char *argv[]) {
     std::string const outdir(argv[2]);
     std::string const pedfilename(argv[3]);
 
+    std::string datasetpath{};
+    std::string frameindexpath{};
+    if (argc > 4) {
+      switch (atoi(argv[4])) {
+      case 0:
+        datasetpath = data_datasetname_furka;
+        frameindexpath = index_datasetname_furka;
+        break;
+      case 1:
+        datasetpath = data_datasetname_xfelSCS;
+        frameindexpath = index_datasetname_xfelSCS;
+        break;
+      default:
+        break;
+      }
+    }
+
     bool validate_rank=true;
-    if (argc > 4)
-      validate_rank = atoi(argv[4]);
+    if (argc > 5)
+      validate_rank = atoi(argv[5]);
 
     double thr = 0;
     double thr1 = 1;
-    if (argc > 8)
-      thr = atof(argv[8]);
+    if (argc > 9)
+      thr = atof(argv[9]);
 
     int nframes = 0;
-    if (argc > 9)
-      nframes = atoi(argv[9]);
+    if (argc > 10)
+      nframes = atoi(argv[10]);
 
     //Get vector of filenames from input txt-file
     std::vector<std::string> filenames{};
@@ -142,11 +166,11 @@ int main(int argc, char *argv[]) {
 
     //Cluster finder ROI
     int xmin = 0, xmax = nx-1, ymin = 0, ymax = ny-1;
-    if (argc > 8) {
-      xmin = atoi(argv[5]);
-      xmax = atoi(argv[6]);
-      ymin = atoi(argv[7]);
-      ymax = atoi(argv[8]);
+    if (argc > 9) {
+      xmin = atoi(argv[6]);
+      xmax = atoi(argv[7]);
+      ymin = atoi(argv[8]);
+      ymax = atoi(argv[9]);
     }
     std::cout << "Cluster finder ROI: [" << xmin << ", " << xmax << ", " << ymin << ", " << ymax << "]"
               << std::endl;
@@ -214,7 +238,7 @@ int main(int argc, char *argv[]) {
 
     int ifr = 0; //frame counter of while loop
     int framenumber = -1; //framenumber as read from file (detector)
-    int iframe = 0; //frame counter internal to HDF5File::ReadImage (provided for sanity check/debugging)
+    std::vector<hsize_t> h5offset(1,0); //frame counter internal to HDF5File::ReadImage (provided for sanity check/debugging)
 
     if (pedfilename.length()>1) {
 
@@ -232,13 +256,15 @@ int main(int argc, char *argv[]) {
 
 	      //HDF5File pedefile;
 	      auto pedefile = std::make_unique<HDF5File>();
+        pedefile->SetFrameIndexPath(frameindexpath);
+        pedefile->SetFrameIndexPath(datasetpath);
 	      //      //open file
 	      if ( pedefile->OpenResources(fname.c_str(),validate_rank) ) {
 	        std::cout << "bbbb " << std::ctime(&end_time) << std::endl;
 	    
 	        framenumber = -1;
 
-	        while ( decoder->readNextFrame(*pedefile, framenumber, iframe, buff) ) {
+	        while ( decoder->readNextFrame(*pedefile, framenumber, h5offset, buff) ) {
 
 	          if ((ifr + 1) % 100 == 0) {
 	            std::cout
@@ -250,7 +276,7 @@ int main(int argc, char *argv[]) {
 	          mt->popFree(buff);
 	          ++ifr;
 	          if (ifr % 100 == 0) {
-	            std::cout << " ****" << ifr << " " << framenumber << " " << iframe
+	            std::cout << " ****" << ifr << " " << framenumber << " " << h5offset[0]
 			                  << std::endl;
 	          } // else
 	      
@@ -316,6 +342,8 @@ int main(int argc, char *argv[]) {
 
       //HDF5File fileh5;
       auto fileh5 = std::make_unique<HDF5File>();
+      fileh5->SetFrameIndexPath(frameindexpath);
+      fileh5->SetImageDataPath(datasetpath);
       //      //open file
       ioutfile = 0;
       if ( fileh5->OpenResources(filenames[ifile].c_str(), validate_rank) ) {
@@ -344,10 +372,10 @@ int main(int argc, char *argv[]) {
 	
 	//     //while read frame
 	      framenumber = -1;
-	      iframe = 0;
+	      h5offset[0] = 0;
 	      ifr = 0;
 	      //std::cout << "Here! " << framenumber << " ";
-	      while ( decoder->readNextFrame(*fileh5, framenumber, iframe, buff) ) {
+	      while ( decoder->readNextFrame(*fileh5, framenumber, h5offset, buff) ) {
 	        //std::cout << "Here! " << framenumber << " ";
 	        //         //push
 	        if ((ifr + 1) % 1000 == 0) {
@@ -364,7 +392,8 @@ int main(int argc, char *argv[]) {
 	  
 	        ++ifr;
 	        if (ifr % 1000 == 0)
-	          std::cout << " " << ifr << " " << framenumber << std::endl;
+	          std::cout << " " << ifr << " " << framenumber << " " << h5offset[0]
+                      << std::endl;
 	        if (nframes > 0) {
 	          if (ifr % nframes == 0) {
 	            imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ioutfile );

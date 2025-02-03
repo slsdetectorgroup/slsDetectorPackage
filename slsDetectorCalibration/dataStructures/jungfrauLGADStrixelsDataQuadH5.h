@@ -333,16 +333,17 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
     
 
     char* readNextFrame( HDF5File& hfile ) {
-        int fn = 0, iframe = 0;
-        return readNextFrame(hfile, fn, iframe);
+        int fn = 0;
+        std::vector<hsize_t> h5offset(1);
+        return readNextFrame(hfile, fn, h5offset);
     };
 
     char* readNextFrame( HDF5File& hfile, int& fn ) {
-        int iframe = 0;
-        return readNextFrame(hfile, fn, iframe);
+        std::vector<hsize_t> h5offset(1);
+        return readNextFrame(hfile, fn, h5offset);
     };
 
-    char* readNextFrame( HDF5File& hfile, int& fn, int& iframe ) {
+    char* readNextFrame( HDF5File& hfile, int& fn, std::vector<hsize_t>& h5offset ) {
 
       // Ensure dataSize is a valid size for allocation
       if (dataSize <= 0) {
@@ -351,7 +352,7 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
       }
 
       char* data = new char[dataSize];
-      char* readResult = readNextFrame(hfile, fn, iframe, data);
+      char* readResult = readNextFrame(hfile, fn, h5offset, data);
       
       // Check if reading failed
       if (readResult == nullptr) {
@@ -369,15 +370,16 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
      * The overloads are legacy!
      * Note that caller has to allocate and deallocate memory for data!
      */
-    char* readNextFrame( HDF5File& hfile, int& framenumber, int& iframe, char* data ) {
+    char* readNextFrame( HDF5File& hfile, int& framenumber, std::vector<hsize_t>& h5offset, char* data ) {
 
-      if (iframe >= 0) {
+      if (h5offset[0] >= 0) {
         std::cout << "*";
 
 	      //Storing the reinterpret_cast in the variable data_ptr ensures that I can pass it to a function that expects at uint16_t*
 	      uint16_t* data_ptr = reinterpret_cast<uint16_t*>(data); //now data_ptr points where data points (thus modifies the same memory)
 
-        iframe = hfile.ReadImage( data_ptr, framenumber );
+        framenumber = hfile.ReadImage( data_ptr, h5offset );
+        iframe = h5offset[0]; //iframe is a class member!
         return data; // return reinterpret_cast<char*>(data_ptr); // Equivalent
       }
 

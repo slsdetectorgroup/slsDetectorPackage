@@ -44,12 +44,12 @@ public:
 	/**
 	 * Constructor
 	 */
-	HDF5File () = default;
+	//HDF5File () = default; //No need to declare if it is default
 
 	/**
 	 * Destructor
 	 */
-	~HDF5File () = default;
+	//~HDF5File () = default; //Since the destructor is default (and copy and move are default too)
 
 
 	std::vector<hsize_t> GetDatasetDimensions ();

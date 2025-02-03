@@ -32,7 +32,7 @@
     @li version is the version number of this structure format
 */
 
-#include <algorithm>
+//#include <algorithm>
 #include <numeric>
 #include <tuple>
 

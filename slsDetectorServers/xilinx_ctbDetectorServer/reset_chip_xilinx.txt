@@ -1,0 +1,17 @@
+# turn off clock
+setbit 0x600 16 
+setbit 0x608 0
+sleep 1
+
+# reset Matterhorn periphery
+setbit 0x608 1
+sleep 1
+
+# turn on clock
+clearbit 0x600 16
+setbit 0x608 0
+sleep 1
+
+# reset rx transceiver datapath
+setbit 0x658 4
+sleep 1

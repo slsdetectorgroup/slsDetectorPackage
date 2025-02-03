@@ -8,6 +8,6 @@
 #define APIJUNGFRAU  "developer 0x241120"
 #define APILIB       "developer 0x241122"
 #define APIRECEIVER  "developer 0x241122"
-#define APIXILINXCTB "developer 0x250131"
 #define APICTB       "developer 0x250131"
 #define APIMYTHEN3   "developer 0x250131"
+#define APIXILINXCTB "developer 0x250203"

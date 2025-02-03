@@ -863,24 +863,17 @@ int getNumTransceiverSamples() {
 }
 
 int setExpTime(int64_t val) {
-    if (val < 0) {
-        LOG(logERROR, ("Invalid exptime: %lld ns\n", (long long int)val));
-        return FAIL;
-    }
-    LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
-    val *= (1E-3 * RUN_CLK);
-    setPatternWaitTime(0, val);
+    setPatternWaitInterval(0, val);
 
     // validate for tolerance
     int64_t retval = getExpTime();
-    val /= (1E-3 * RUN_CLK);
     if (val != retval) {
         return FAIL;
     }
     return OK;
 }
 
-int64_t getExpTime() { return getPatternWaitTime(0) / (1E-3 * RUN_CLK); }
+int64_t getExpTime() { return getPatternWaitInterval(0); }
 
 int setPeriod(int64_t val) {
     if (val < 0) {
@@ -1056,7 +1049,7 @@ int getPower(enum DACINDEX ind) {
 
     // dac powered off
     if (dacValues[ind] == LTC2620_D_GetPowerDownValue()) {
-        LOG(logWARNING, ("Power V%s powered down\n", powerNames[pwrIndex]));
+        LOG(logWARNING, ("Power V%s is powered down\n", powerNames[pwrIndex]));
         return LTC2620_D_GetPowerDownValue();
     }
 

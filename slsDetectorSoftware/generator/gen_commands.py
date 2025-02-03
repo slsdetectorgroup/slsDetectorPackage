@@ -63,6 +63,11 @@ def generate(
                     codegen.write_line(f'os << R"V0G0N({command["help"]} )V0G0N" << std::endl;')
                     codegen.write_line('return os.str();')
 
+
+            # inserting arguments if needed               
+            if 'pattern_command' in command and command['pattern_command']:
+                codegen.write_line(f'GetLevelAndInsertIntoArgs("{command["pattern_command"]}");')
+
             # check if action and arguments are valid
 
             codegen.write_line('// check if action and arguments are valid')

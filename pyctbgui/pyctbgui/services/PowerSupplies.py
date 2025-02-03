@@ -4,7 +4,7 @@ from pathlib import Path
 from PyQt5 import QtWidgets, uic
 from pyctbgui.utils.defines import Defines
 
-from slsdet import dacIndex
+from slsdet import dacIndex, detectorType
 
 
 class PowerSuppliesTab(QtWidgets.QWidget):
@@ -18,7 +18,8 @@ class PowerSuppliesTab(QtWidgets.QWidget):
         self.updateVoltageNames()
         for i in Defines.powerSupplies:
             self.getVoltage(i)
-            self.getCurrent(i)
+            if self.det.type == detectorType.CHIPTESTBOARD:
+                self.getCurrent(i)
 
     def connect_ui(self):
         for i in Defines.powerSupplies:
@@ -38,6 +39,12 @@ class PowerSuppliesTab(QtWidgets.QWidget):
             if retval == 0:
                 checkBox.setChecked(False)
                 spinBox.setDisabled(True)
+            if self.det.type == detectorType.XILINX_CHIPTESTBOARD:
+                label = getattr(self.view, f"labelI{i}")
+                label.setDisabled(True)
+        if self.det.type == detectorType.XILINX_CHIPTESTBOARD:
+            self.view.spinBoxVChip.setDisabled(True)
+
 
     def updateVoltageNames(self):
         retval = self.det.getPowerNames()
@@ -56,7 +63,10 @@ class PowerSuppliesTab(QtWidgets.QWidget):
         spinBox.editingFinished.disconnect()
         checkBox.stateChanged.disconnect()
 
-        retval = self.det.getMeasuredPower(voltageIndex)[0]
+        if self.det.type == detectorType.XILINX_CHIPTESTBOARD:
+            retval = self.det.getPower(voltageIndex)[0]
+        else:
+            retval = self.det.getMeasuredPower(voltageIndex)[0]
         # spinBox.setValue(retval)
         if retval > 1:
             checkBox.setChecked(True)
@@ -68,8 +78,9 @@ class PowerSuppliesTab(QtWidgets.QWidget):
 
         spinBox.editingFinished.connect(partial(self.setVoltage, i))
         checkBox.stateChanged.connect(partial(self.setVoltage, i))
-
-        self.getVChip()
+        
+        if self.det.type == detectorType.CHIPTESTBOARD:
+            self.getVChip()
 
         # TODO: handle multiple events when pressing enter (twice)
 
@@ -91,7 +102,8 @@ class PowerSuppliesTab(QtWidgets.QWidget):
         # TODO: (properly) disconnecting and connecting to handle multiple events (out of focus and pressing enter).
         spinBox.editingFinished.connect(partial(self.setVoltage, i))
         self.getVoltage(i)
-        self.getCurrent(i)
+        if self.det.type == detectorType.CHIPTESTBOARD:
+            self.getCurrent(i)
 
     def getCurrent(self, i):
         label = getattr(self.view, f"labelI{i}")

@@ -3702,7 +3702,13 @@ class Detector(CppDetectorApi):
     @property
     def patwaittime(self):
         """
-        [Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles of loop level provided.
+        [Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles of loop level provided. 
+
+        Info
+        ----
+
+        :getter: Always return in clock cycles. To get in DurationWrapper, use getPatternWaitInterval
+        :setter: Accepts either a value in clock cycles or a time unit (timedelta, DurationWrapper)
         
         Example
         -------
@@ -3713,41 +3719,85 @@ class Detector(CppDetectorApi):
         0: 5
         1: 20
         2: 30
+        >>> # using timedelta (up to microseconds precision)
+        >>> from datetime import timedelta
+        >>> d.patwaittime[0] = timedelta(seconds=1, microseconds=3)
+        >>> 
+        >>> # using DurationWrapper to set in seconds
+        >>> from slsdet import DurationWrapper
+        >>> d.patwaittime[0] = DurationWrapper(1.2)
+        >>> 
+        >>> # using DurationWrapper to set in ns
+        >>> t = DurationWrapper()
+        >>> t.set_count(500)
+        >>> d.patwaittime = t
+        >>>
+        >>> # to get in clock cycles
+        >>> d.patwaittime
+        1000
+        >>> 
+        >>> d.getPatternWaitInterval(0)
+        sls::DurationWrapper(total_seconds: 1.23 count: 1230000000)
         """
         return PatWaitTimeProxy(self)
 
-    @property
-    @element
-    def patwaittime0(self):
-        """[Ctb][Mythen3][Xilinx Ctb] Wait 0 time in clock cycles."""
-        return self.getPatternWaitTime(0)
 
-    @patwaittime0.setter
-    def patwaittime0(self, nclk):
-        nclk = ut.merge_args(0, nclk)
-        ut.set_using_dict(self.setPatternWaitTime, *nclk)
+    def create_patwaittime_property(level):
+        docstring_template ="""
+        Deprecated command. Use patwaittime instead.
+        [Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles of loop level {level} provided. 
 
-    @property
-    @element
-    def patwaittime1(self):
-        """[Ctb][Mythen3][Xilinx Ctb] Wait 1 time in clock cycles."""
-        return self.getPatternWaitTime(1)
+        Info
+        ----
 
-    @patwaittime1.setter
-    def patwaittime1(self, nclk):
-        nclk = ut.merge_args(1, nclk)
-        ut.set_using_dict(self.setPatternWaitTime, *nclk)
+        :getter: Always return in clock cycles. To get in DurationWrapper, use getPatternWaitInterval
+        :setter: Accepts either a value in clock cycles or a time unit (timedelta, DurationWrapper)
+        
+        Example
+        -------
+        >>> d.patwaittime{level} = 5
+        >>> d.patwaittime{level}
+        5
+        >>> # using timedelta (up to microseconds precision)
+        >>> from datetime import timedelta
+        >>> d.patwaittime{level} = timedelta(seconds=1, microseconds=3)
+        >>> 
+        >>> # using DurationWrapper to set in seconds
+        >>> from slsdet import DurationWrapper
+        >>> d.patwaittime{level} = DurationWrapper(1.2)
+        >>> 
+        >>> # using DurationWrapper to set in ns
+        >>> t = DurationWrapper()
+        >>> t.set_count(500)
+        >>> d.patwaittime{level} = t
+        >>>
+        >>> # to get in clock cycles
+        >>> d.patwaittime{level}
+        1000
+        >>> 
+        >>> d.getPatternWaitInterval(level)
+        sls::DurationWrapper(total_seconds: 1.23 count: 1230000000)
+        """
+        @property
+        @element
+        def patwaittime(self):
+            return self.getPatternWaitClocks(level)
 
-    @property
-    @element
-    def patwaittime2(self):
-        """[Ctb][Mythen3][Xilinx Ctb] Wait 2 time in clock cycles."""
-        return self.getPatternWaitTime(2)
+        @patwaittime.setter
+        def patwaittime(self, value):
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                nclk = ut.merge_args(level, value)
+                ut.set_using_dict(self.setPatternWaitClocks, level, *nclk)
+            else:
+                ut.set_time_using_dict(self.setPatternWaitInterval, level, value)
+        
+        patwaittime.__doc__ = docstring_template.format(level=level)
 
-    @patwaittime2.setter
-    def patwaittime2(self, nclk):
-        nclk = ut.merge_args(2, nclk)
-        ut.set_using_dict(self.setPatternWaitTime, *nclk)
+        return patwaittime
+    
+    patwaittime0 = create_patwaittime_property(0)
+    patwaittime1 = create_patwaittime_property(1)
+    patwaittime2 = create_patwaittime_property(2)
 
 
     @property

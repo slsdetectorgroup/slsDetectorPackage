@@ -622,7 +622,7 @@ void getIpAddressinString(char *cip, uint32_t ip) {
     inet_ntop(AF_INET, &ip, cip, INET_ADDRSTRLEN);
 #else
     sprintf(cip, "%d.%d.%d.%d", (ip >> 24) & 0xff, (ip >> 16) & 0xff,
-            (ip >> 8) & 0xff, (ip)&0xff);
+            (ip >> 8) & 0xff, (ip) & 0xff);
 #endif
 }
 

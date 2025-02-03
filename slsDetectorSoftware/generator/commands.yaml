@@ -2656,6 +2656,44 @@ slowadc:
           argc: 1
           arg_types: [ int ]
 
+patwaittime:
+    is_description: true
+    actions:
+        GET:
+          argc: -1
+        PUT:
+          argc: -1
+
+patwaittime0:
+    is_description: true
+    duplicate_function: true
+    function_alias: patwaittime
+    actions:
+        GET:
+          argc: -1
+        PUT:
+          argc: -1
+
+patwaittime1:
+    is_description: true
+    duplicate_function: true
+    function_alias: patwaittime
+    actions:
+        GET:
+          argc: -1
+        PUT:
+          argc: -1
+
+patwaittime2:
+    is_description: true
+    duplicate_function: true
+    function_alias: patwaittime
+    actions:
+        GET:
+          argc: -1
+        PUT:
+          argc: -1
+
 rx_dbitlist:
     is_description: true
     actions:
@@ -3930,34 +3968,34 @@ patlimits:
 
 patloop:
   help: "[0-6] [start addr] [stop addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Limits of the loop level provided.\n\t[Mythen3] Level options: 0-3 only."
+  infer_action: false
+  pattern_command: patloop
   actions:
     GET:
-      argc: -1
-      pattern_command:
-        command_name: patloop
-        nGetArgs: 0
-        nPutArgs: 2
+      argc: 1
       require_det_id: true
       function: getPatternLoopAddresses
+      extra_variables:
+        - name: level
+          type: int
+          value: "StringTo<int>(args[0])"
       input: [ level ]
       input_types: [ int ]
-      cast_input: [ false ]
       output: [level,"' '" ,"OutStringHex(t, 4)" ]
     PUT:
-      argc: -1
-      extra_variables:
-        - name: start
-          type: int
-          value: "StringTo<int>(args[iArg++])"
-        - name: stop
-          type: int
-          value: "StringTo<int>(args[iArg++])"
-      pattern_command:
-        command_name: patloop
-        nGetArgs: 0
-        nPutArgs: 2
+      argc: 3
       require_det_id: true
       function: setPatternLoopAddresses
+      extra_variables:
+        - name: level
+          type: int
+          value: "StringTo<int>(args[0])"
+        - name: start
+          type: int
+          value: "StringTo<int>(args[1])"
+        - name: stop
+          type: int
+          value: "StringTo<int>(args[2])"
       input: [ level, start, stop ]
       input_types: [ int, int, int ]
       output: [level,"' '" , "'['" , "ToStringHex(start, 4)" , '", "' , "ToStringHex(stop, 4)", "']'" ]
@@ -3979,34 +4017,33 @@ patloop2:
 
 patnloop:
   help: "[0-6] [n_cycles] \n\t[Ctb][Mythen3][Xilinx Ctb] Number of cycles of the loop level provided.\n\t[Mythen3] Level options: 0-3 only."
+  infer_action: false
+  pattern_command: patnloop
   actions:
     GET:
-      argc: -1
-      pattern_command:
-        command_name: patnloop
-        nGetArgs: 0
-        nPutArgs: 1
+      argc: 1
       require_det_id: true
       function: getPatternLoopCycles
+      extra_variables:
+        - name: level
+          type: int
+          value: "StringTo<int>(args[0])"
       input: [ level ]
       input_types: [ int ]
-      cast_input: [ false ]
       output: [ level,"' '" , "OutString(t)" ]
     PUT:
-      argc: -1
-      extra_variables:
-        - name: nloops
-          type: std::string
-          value: "args[iArg++]"
-      pattern_command:
-        command_name: patnloop
-        nGetArgs: 0
-        nPutArgs: 1
+      argc: 2
       require_det_id: true
       function: setPatternLoopCycles
+      extra_variables:
+        - name: level
+          type: int
+          value: "StringTo<int>(args[0])"
+        - name: nloops
+          type: int
+          value: "StringTo<int>(args[1])"
       input: [ level, nloops ]
       input_types: [ int, int ]
-      cast_input: [ false, true ]
       output: [ level,"' '" , nloops ]
 
 patnloop0:
@@ -4014,9 +4051,9 @@ patnloop0:
     inherit_actions: patnloop
     actions:
       GET:
-        output: [ "OutString(t)" ]
+        output: [ OutString(t) ]
       PUT:
-        output: [ "nloops" ]
+        output: [ nloops ]
 
 patnloop1:
     inherit_actions: patnloop0
@@ -4026,31 +4063,31 @@ patnloop2:
 
 patwait:
   help: "[0-6] [addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait address for loop level provided. \n\t[Mythen3] Level options: 0-3 only."
+  infer_action: false
+  pattern_command: patwait
   actions:
     GET:
-      argc: -1
-      pattern_command:
-        command_name: patwait
-        nGetArgs: 0
-        nPutArgs: 1
+      argc: 1
       require_det_id: true
       function: getPatternWaitAddr
+      extra_variables:
+        - name: level
+          type: int
+          value: "StringTo<int>(args[0])"
       input: [ level ]
       input_types: [ int ]
-      cast_input: [ false ]
       output: [level,"' '" ,  "OutStringHex(t, 4)" ]
     PUT:
-      argc: -1
-      extra_variables:
-        - name: addr
-          type: int
-          value: "StringTo<int>(args[iArg++])"
-      pattern_command:
-        command_name: patwait
-        nGetArgs: 0
-        nPutArgs: 1
+      argc: 2
       require_det_id: true
       function: setPatternWaitAddr
+      extra_variables:
+        - name: level
+          type: int
+          value: "StringTo<int>(args[0])"
+        - name: addr
+          type: int
+          value: "StringTo<int>(args[1])"
       input: [ level, addr ]
       input_types: [ int, int ]
       output: [level,"' '" ,  "ToStringHex(addr, 4)" ]
@@ -4069,52 +4106,6 @@ patwait1:
 
 patwait2:
     inherit_actions: patwait0
-
-patwaittime:
-  help: "[0-6] [n_clk] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles for the loop provided.\n\t[Mythen3] Level options: 0-3 only."
-  actions:
-    GET:
-      argc: -1
-      pattern_command:
-        command_name: patwaittime
-        nGetArgs: 0
-        nPutArgs: 1
-      require_det_id: true
-      function: getPatternWaitTime
-      input: [ level ]
-      input_types: [ int ]
-      cast_input: [ false ]
-      output: [ level,"' '" , "OutString(t)" ]
-    PUT:
-      argc: -1
-      extra_variables:
-        - name: waittime
-          type: uint64_t
-          value: "StringTo<uint64_t>(args[iArg++])"
-      pattern_command:
-        command_name: patwaittime
-        nGetArgs: 0
-        nPutArgs: 1
-      require_det_id: true
-      function: setPatternWaitTime
-      input: [ level, waittime ]
-      input_types: [ int, int ]
-      output: [level,"' '" ,  "waittime" ]
-
-patwaittime0:
-    help: "\n\tDeprecated command. Use patwaittime."
-    inherit_actions: patwaittime
-    actions:
-      GET:
-        output: [ "OutString(t)" ]
-      PUT:
-        output: [ "waittime" ]
-
-patwaittime1:
-    inherit_actions: patwaittime0
-
-patwaittime2:
-    inherit_actions: patwaittime0
 
 rx_jsonpara:
   help: "[key1] [value1]\n\t[Receiver] Additional json header parameter streamed out from receiver. If not found in header, the pair is appended. An empty values deletes parameter. Max 20 characters for each key/value."

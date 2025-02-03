@@ -634,10 +634,22 @@ void Module::setNumberOfTriggers(int64_t value) {
 }
 
 int64_t Module::getExptime(int gateIndex) const {
+    if (shm()->detType == CHIPTESTBOARD ||
+        shm()->detType == XILINX_CHIPTESTBOARD) {
+        LOG(logWARNING)
+            << "Exposure time is deprecated and will be removed for this "
+               "detector. Please migrate to patwaittime.";
+    }
     return sendToDetector<int64_t>(F_GET_EXPTIME, gateIndex);
 }
 
 void Module::setExptime(int gateIndex, int64_t value) {
+    if (shm()->detType == CHIPTESTBOARD ||
+        shm()->detType == XILINX_CHIPTESTBOARD) {
+        LOG(logWARNING)
+            << "Exposure time is deprecated and will be removed for this "
+               "detector. Please migrate to patwaittime.";
+    }
     int64_t prevVal = value;
     if (shm()->detType == EIGER) {
         prevVal = getExptime(-1);
@@ -2621,15 +2633,23 @@ void Module::setPatternWaitAddr(int level, int addr) {
     sendToDetector<int>(F_SET_PATTERN_WAIT_ADDR, args);
 }
 
-uint64_t Module::getPatternWaitTime(int level) const {
+uint64_t Module::getPatternWaitClocks(int level) const {
     uint64_t args[]{static_cast<uint64_t>(level),
                     static_cast<uint64_t>(GET_FLAG)};
-    return sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_TIME, args);
+    return sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_CLOCKS, args);
 }
 
-void Module::setPatternWaitTime(int level, uint64_t t) {
+void Module::setPatternWaitClocks(int level, uint64_t t) {
     uint64_t args[]{static_cast<uint64_t>(level), t};
-    sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_TIME, args);
+    sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_CLOCKS, args);
+}
+
+uint64_t Module::getPatternWaitInterval(int level) const {
+    return sendToDetector<uint64_t>(F_GET_PATTERN_WAIT_INTERVAL, level);
+}
+void Module::setPatternWaitInterval(int level, uint64_t t) {
+    uint64_t args[]{static_cast<uint64_t>(level), t};
+    sendToDetector(F_SET_PATTERN_WAIT_INTERVAL, args, nullptr);
 }
 
 uint64_t Module::getPatternMask() const {

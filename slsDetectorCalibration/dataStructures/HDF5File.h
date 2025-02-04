@@ -20,13 +20,13 @@
 
 //#define MAX_STR_LENGTH	1000
 
-#define RANK	4                       // Dimension of the image dataset, only for validation
+#define RANK	3                       // Dimension of the image dataset, only for validation
 #define DEFAULT_Z_DIMS	10000			// only for validation
 #define DEFAULT_Y_DIMS	1024			// only for validation
 #define DEFAULT_X_DIMS	512				// only for validation
 //#define DEFAULT_S_DIMS	1       	// Storage cells
 
-#define DEFAULT_CHUNK_Z_DIMS	100		// only for validation
+#define DEFAULT_CHUNK_Z_DIMS	1		// only for validation
 #define DEFAULT_CHUNK_Y_DIMS	1024	// only for validation
 #define DEFAULT_CHUNK_X_DIMS	512		// only for validation
 //#define DEFAULT_CHUNK_S_DIMS	1

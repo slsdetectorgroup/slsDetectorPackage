@@ -237,7 +237,7 @@ int main(int argc, char *argv[]) {
     mt->popFree(buff);
 
     int ifr = 0; //frame counter of while loop
-    int framenumber = -1; //framenumber as read from file (detector)
+    int framenumber = 0; //framenumber as read from file (detector)
     std::vector<hsize_t> h5offset(1,0); //frame counter internal to HDF5File::ReadImage (provided for sanity check/debugging)
 
     if (pedfilename.length()>1) {
@@ -257,12 +257,12 @@ int main(int argc, char *argv[]) {
 	      //HDF5File pedefile;
 	      auto pedefile = std::make_unique<HDF5File>();
         pedefile->SetFrameIndexPath(frameindexpath);
-        pedefile->SetFrameIndexPath(datasetpath);
+        pedefile->SetImageDataPath(datasetpath);
 	      //      //open file
 	      if ( pedefile->OpenResources(fname.c_str(),validate_rank) ) {
 	        std::cout << "bbbb " << std::ctime(&end_time) << std::endl;
 	    
-	        framenumber = -1;
+	        framenumber = 0;
 
 	        while ( decoder->readNextFrame(*pedefile, framenumber, h5offset, buff) ) {
 
@@ -282,7 +282,7 @@ int main(int argc, char *argv[]) {
 	      
 	          if (ifr >= 1000)
 	            break;
-	          framenumber = -1;
+	          //framenumber = 0;
 	        }
 	    
 	        pedefile->CloseResources();
@@ -371,7 +371,7 @@ int main(int argc, char *argv[]) {
 	      }
 	
 	//     //while read frame
-	      framenumber = -1;
+	      framenumber = 0;
 	      h5offset[0] = 0;
 	      ifr = 0;
 	      //std::cout << "Here! " << framenumber << " ";
@@ -403,7 +403,7 @@ int main(int argc, char *argv[]) {
 	          }
 	        }
 
-	        framenumber = -1;
+	        //framenumber = 0;
 	      }
 
 	      //std::cout << "aa --" << std::endl;

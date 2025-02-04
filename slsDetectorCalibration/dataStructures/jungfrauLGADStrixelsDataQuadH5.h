@@ -377,7 +377,8 @@ class jungfrauLGADStrixelsDataQuadH5 : public slsDetectorData<uint16_t> {
     char* readNextFrame( HDF5File& hfile, int& framenumber, std::vector<hsize_t>& h5offset, char* data ) {
 
       if (framenumber >= 0) {
-        std::cout << "*";
+        if (h5offset[0] % 10 == 0)
+          std::cout << "*";
 
 	      //Storing the reinterpret_cast in the variable data_ptr ensures that I can pass it to a function that expects at uint16_t*
 	      uint16_t* data_ptr = reinterpret_cast<uint16_t*>(data); //now data_ptr points where data points (thus modifies the same memory)

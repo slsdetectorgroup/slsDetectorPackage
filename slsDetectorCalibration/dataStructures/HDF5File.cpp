@@ -35,6 +35,17 @@ void conditionalIncrement(std::vector<hsize_t>& vec, hsize_t max_value) {
     }
 }
 
+void printDatatypeSize(hid_t dataset) {
+
+	hid_t datatype = H5Dget_type(dataset);
+	H5T_class_t class_id = H5Tget_class(datatype);
+	size_t type_size = H5Tget_size(datatype);
+
+	std::cout << " dataset type class: " << class_id 
+          	  << ", size: " << type_size << " bytes\n";
+
+}
+
 /* 
  * Class member functions
  */
@@ -55,9 +66,15 @@ HDF5File::~HDF5File () {
 }
 */
 
-void HDF5File::SetImageDataPath (std::string const& name) { data_datasetname = name; }
+void HDF5File::SetImageDataPath (std::string const& name) { 
+	std::cout << "Image dataset path set to " << name << std::endl;
+	data_datasetname = name; 
+}
 
-void HDF5File::SetFrameIndexPath (std::string const& name) { index_datasetname = name; }
+void HDF5File::SetFrameIndexPath (std::string const& name) { 
+	std::cout << "Frame index dataset path set to " << name << std::endl;
+	index_datasetname = name; 
+}
 
 void HDF5File::InitializeDimensions () {
 
@@ -173,11 +190,15 @@ bool HDF5File::OpenFrameIndexDataset() {
 	H5Sclose (fi_dataspace);
 
 	// allocate frame index memory
-	frame_index_list.resize(file_dims[0]);
+	frame_index_list.resize(fi_dims[0]); //file_dims
+
+	// print datatype size of dataset
+	std::cout << "Frame index";
+	printDatatypeSize(fi_dataset);
 
 	//read frame index values
 	//Is u32 correct? I would think not. But I get a segmentation fault if I use u64.
-	if (H5Dread (fi_dataset, H5T_STD_U32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, frame_index_list.data()) < 0) {
+	if (H5Dread (fi_dataset, H5T_STD_U64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, frame_index_list.data()) < 0) {
 		cprintf (RED,"Could not read frame index dataset %s\n", index_datasetname.c_str());
 		std::cerr << "Error: Could not read frame index dataset\n";
 		H5Dclose (fi_dataset);
@@ -207,6 +228,10 @@ int HDF5File::OpenResources (char const*const fname, bool validate) {
 	  return 0;
 	}
 	cprintf(BLUE, "Opened Dataset: %s\n", data_datasetname.c_str());
+
+	// print datatype size of dataset
+	std::cout << "Image";
+	printDatatypeSize(dataset);
 
 	// Create Dataspace
 	dataspace = H5Dget_space (dataset);
@@ -289,20 +314,6 @@ int HDF5File::ReadImage (uint16_t* image, std::vector<hsize_t>& offset ) {
 	// Initialize frame_offset
 	if (frame_offset.empty())
 		frame_offset.resize(rank,0);
-	
-	// Validate frame_offset index
-    if (frame_offset[0] >= frame_index_list.size()) {
-        std::cerr << "Error: frame_offset[0] out of bounds.\n";
-        return -99;
-    }
-
-	// Check if images exist at the current frame offset
-	if (frame_index_list[frame_offset[0]] == 0) {
-		cprintf (RED,"No images at this frame offset %llu\n", frame_offset[0]);
-		std::cerr << "Error: Framenumber 0 at this frame offset\n";
-		CloseResources ();
-		return -99;
-	}
 
 	// Check if we reached the end of file
 	// Compares that the offsets of frame and storage cell (Z and S) have reached the end of file
@@ -317,6 +328,20 @@ int HDF5File::ReadImage (uint16_t* image, std::vector<hsize_t>& offset ) {
 		return -1;
 	}
 	*/
+
+	// Validate frame_offset index
+    if (frame_offset[0] >= frame_index_list.size()) {
+        std::cerr << "Error: frame_offset[0] = " << frame_offset[0] << " of bounds.\n";
+        return -99;
+    }
+
+	// Check if images exist at the current frame offset
+	if (frame_index_list[frame_offset[0]] == 0) {
+		cprintf (RED,"No images at this frame offset %llu\n", frame_offset[0]);
+		std::cerr << "Error: Framenumber 0 at this frame offset\n";
+		CloseResources ();
+		return -99;
+	}
 
 	// Optional: Ensure dataset and dataspace are valid
     if (dataset < 0) {

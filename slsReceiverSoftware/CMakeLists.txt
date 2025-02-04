@@ -156,6 +156,7 @@ if (SLS_USE_RECEIVER_BINARIES)
         rt
     PRIVATE
         slsProjectWarnings
+        "$<BUILD_INTERFACE:libzmq-static>"
     )
 
     install(TARGETS slsReceiver slsMultiReceiver slsFrameSynchronizer

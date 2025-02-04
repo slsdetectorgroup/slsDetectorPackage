@@ -67,8 +67,7 @@ activate:
         store_result_in_t: false
   command_name: activate
   function_alias: activate
-  help: "[0, 1] \n\t[Eiger] 1 is default. 0 deactivates readout and does not send\
-    \ data."
+  help: "[0, 1]\n\t[Eiger] 1 is default. 0 deactivates readout and does not send data."
   infer_action: true
   template: true
 adcclk:
@@ -1104,6 +1103,7 @@ clearbit:
         cast_input:
         - true
         - true
+        - true
         check_det_id: false
         convert_det_id: true
         exceptions:
@@ -1113,16 +1113,56 @@ clearbit:
         input:
         - args[0]
         - args[1]
+        - '"0"'
         input_types:
         - uint32_t
         - int
+        - bool
         output:
-        - ToString(args)
+        - '"["'
+        - args[0]
+        - '", "'
+        - args[1]
+        - '"]"'
+        require_det_id: true
+        store_result_in_t: false
+      - arg_types:
+        - uint32_t
+        - int
+        - special::validate
+        argc: 3
+        cast_input:
+        - true
+        - true
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31
+          message: '"Bit number out of range: " + args[1]'
+        - condition: args[2] != "--validate"
+          message: '"Could not scan third argument. Did you mean --validate?"'
+        function: clearBit
+        input:
+        - args[0]
+        - args[1]
+        - '"1"'
+        input_types:
+        - uint32_t
+        - int
+        - bool
+        output:
+        - '"["'
+        - args[0]
+        - '", "'
+        - args[1]
+        - '"]"'
         require_det_id: true
         store_result_in_t: false
   command_name: clearbit
   function_alias: clearbit
-  help: "[reg address in hex] [bit index]\n\tClears bit in address."
+  help: "[reg address in hex] [bit index]\n\tClears bit in address.\n\tUse --validate\
+    \ to force validation."
   infer_action: true
   template: true
 clearbusy:
@@ -1165,8 +1205,8 @@ clearroi:
         store_result_in_t: false
   command_name: clearroi
   function_alias: clearroi
-  help: '[Gotthard] Resets Region of interest in detector. All channels enabled. Default
-    is all channels enabled.'
+  help: "\n\t[Gotthard] Resets Region of interest in detector. All channels enabled.\
+    \ Default is all channels enabled."
   infer_action: true
   template: true
 clientversion:
@@ -1251,8 +1291,9 @@ clkdiv:
         store_result_in_t: false
   command_name: clkdiv
   function_alias: clkdiv
-  help: "[n_clock (0-5)] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock\
-    \ n_clock. Must be greater than 1."
+  help: "[n_clock] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock n_clock.\
+    \ Must be greater than 1.\n\t[Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock\
+    \ index range: 0"
   infer_action: true
 clkfreq:
   actions:
@@ -1283,8 +1324,9 @@ clkfreq:
         store_result_in_t: true
   command_name: clkfreq
   function_alias: clkfreq
-  help: "[n_clock (0-5)] [freq_in_Hz]\n\t[Gotthard2][Mythen3] Frequency of clock n_clock\
-    \ in Hz. Use clkdiv to set frequency."
+  help: "[n_clock] [freq_in_Hz]\n\t[Gotthard2][Mythen3] Frequency of clock n_clock\
+    \ in Hz. Use clkdiv to set frequency.\n\t[Gotthard2] Clock index range: 0-5\n\t\
+    [Mythen3] Clock index range: 0"
   infer_action: true
 clkphase:
   actions:
@@ -1403,10 +1445,50 @@ clkphase:
         store_result_in_t: false
   command_name: clkphase
   function_alias: clkphase
-  help: "[n_clock (0-5)] [phase] [deg (optional)]\n\t[Gotthard2][Mythen3] Phase of\
-    \ clock n_clock. If deg, then phase shift in degrees, else absolute phase shift\
-    \ values."
+  help: "[n_clock] [phase] [deg (optional)]\n\t[Gotthard2][Mythen3] Phase of clock\
+    \ n_clock. If deg, then phase shift in degrees, else absolute phase shift values.n\t\
+    [Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
   infer_action: true
+collectionmode:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getCollectionMode
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - defs::collectionMode
+        argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: setCollectionMode
+        input:
+        - args[0]
+        input_types:
+        - defs::collectionMode
+        output:
+        - args.front()
+        require_det_id: true
+        store_result_in_t: false
+  command_name: collectionmode
+  function_alias: collectionmode
+  help: "[hole|electron]\n\t[Jungfrau] Sets collection mode to hole or electron. Default\
+    \ is hole."
+  infer_action: true
+  template: true
 column:
   actions:
     GET:
@@ -4175,9 +4257,8 @@ gainmode:
         store_result_in_t: false
   command_name: gainmode
   function_alias: gainmode
-  help: "[dynamicgain|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t[Jungfrau]\
-    \ Gain mode.\n\tCAUTION: Do not use fixg0 without caution, you can damage the\
-    \ detector!!!"
+  help: "[dynamic|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t[Jungfrau] Gain\
+    \ mode.\n\tCAUTION: Do not use fixg0 without caution, you can damage the detector!!!"
   infer_action: true
   template: true
 gappixels:
@@ -5344,8 +5425,8 @@ maxclkphaseshift:
         store_result_in_t: true
   command_name: maxclkphaseshift
   function_alias: maxclkphaseshift
-  help: "[n_clock (0-5)]\n\t[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock\
-    \ n_clock."
+  help: "[n_clock]\n\t[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock.n\t\
+    [Gotthard2] Clock index range: 0-5\n\t[Mythen3] Clock index range: 0"
   infer_action: true
 maxdbitphaseshift:
   actions:
@@ -5498,8 +5579,10 @@ nextframenumber:
         store_result_in_t: false
   command_name: nextframenumber
   function_alias: nextframenumber
-  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Ctb][Xilinx Ctb] Next frame number.\
-    \ Stopping acquisition might result in different frame numbers for different modules."
+  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Ctb][Xilinx Ctb][Gotthard2] Next frame\
+    \ number. Stopping acquisition might result in different frame numbers for different\
+    \ modules. So, after stopping, next frame number (max + 1) is set for all the\
+    \ modules afterwards."
   infer_action: true
   template: true
 nmod:
@@ -5859,11 +5942,15 @@ patloop:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternLoopAddresses
         input:
         - level
@@ -5873,10 +5960,6 @@ patloop:
         - level
         - ''' '''
         - OutStringHex(t, 4)
-        pattern_command:
-          command_name: patloop
-          nGetArgs: 0
-          nPutArgs: 2
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -5885,7 +5968,7 @@ patloop:
         - int
         - int
         - int
-        argc: -1
+        argc: 3
         cast_input:
         - false
         - false
@@ -5893,12 +5976,15 @@ patloop:
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: start
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[1])
         - name: stop
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[2])
         function: setPatternLoopAddresses
         input:
         - level
@@ -5916,28 +6002,29 @@ patloop:
         - '", "'
         - ToStringHex(stop, 4)
         - ''']'''
-        pattern_command:
-          command_name: patloop
-          nGetArgs: 0
-          nPutArgs: 2
         require_det_id: true
         store_result_in_t: false
   command_name: patloop
   function_alias: patloop
   help: "[0-6] [start addr] [stop addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Limits of the\
     \ loop level provided.\n\t[Mythen3] Level options: 0-3 only."
-  infer_action: true
+  infer_action: false
+  pattern_command: patloop
 patloop0:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternLoopAddresses
         input:
         - level
@@ -5945,10 +6032,6 @@ patloop0:
         - int
         output:
         - OutStringHex(t, 4)
-        pattern_command:
-          command_name: patloop
-          nGetArgs: 0
-          nPutArgs: 2
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -5957,7 +6040,7 @@ patloop0:
         - int
         - int
         - int
-        argc: -1
+        argc: 3
         cast_input:
         - false
         - false
@@ -5965,12 +6048,15 @@ patloop0:
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: start
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[1])
         - name: stop
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[2])
         function: setPatternLoopAddresses
         input:
         - level
@@ -5986,27 +6072,28 @@ patloop0:
         - '", "'
         - ToStringHex(stop, 4)
         - ''']'''
-        pattern_command:
-          command_name: patloop
-          nGetArgs: 0
-          nPutArgs: 2
         require_det_id: true
         store_result_in_t: false
   command_name: patloop0
   function_alias: patloop0
-  help: Deprecated command. Use patloop.
-  infer_action: true
+  help: "\n\tDeprecated command. Use patloop."
+  infer_action: false
+  pattern_command: patloop
 patloop1:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternLoopAddresses
         input:
         - level
@@ -6014,10 +6101,6 @@ patloop1:
         - int
         output:
         - OutStringHex(t, 4)
-        pattern_command:
-          command_name: patloop
-          nGetArgs: 0
-          nPutArgs: 2
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6026,7 +6109,7 @@ patloop1:
         - int
         - int
         - int
-        argc: -1
+        argc: 3
         cast_input:
         - false
         - false
@@ -6034,12 +6117,15 @@ patloop1:
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: start
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[1])
         - name: stop
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[2])
         function: setPatternLoopAddresses
         input:
         - level
@@ -6055,27 +6141,28 @@ patloop1:
         - '", "'
         - ToStringHex(stop, 4)
         - ''']'''
-        pattern_command:
-          command_name: patloop
-          nGetArgs: 0
-          nPutArgs: 2
         require_det_id: true
         store_result_in_t: false
   command_name: patloop1
   function_alias: patloop1
-  help: Deprecated command. Use patloop.
-  infer_action: true
+  help: "\n\tDeprecated command. Use patloop."
+  infer_action: false
+  pattern_command: patloop
 patloop2:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternLoopAddresses
         input:
         - level
@@ -6083,10 +6170,6 @@ patloop2:
         - int
         output:
         - OutStringHex(t, 4)
-        pattern_command:
-          command_name: patloop
-          nGetArgs: 0
-          nPutArgs: 2
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6095,7 +6178,7 @@ patloop2:
         - int
         - int
         - int
-        argc: -1
+        argc: 3
         cast_input:
         - false
         - false
@@ -6103,12 +6186,15 @@ patloop2:
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: start
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[1])
         - name: stop
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[2])
         function: setPatternLoopAddresses
         input:
         - level
@@ -6124,16 +6210,13 @@ patloop2:
         - '", "'
         - ToStringHex(stop, 4)
         - ''']'''
-        pattern_command:
-          command_name: patloop
-          nGetArgs: 0
-          nPutArgs: 2
         require_det_id: true
         store_result_in_t: false
   command_name: patloop2
   function_alias: patloop2
-  help: Deprecated command. Use patloop.
-  infer_action: true
+  help: "\n\tDeprecated command. Use patloop."
+  infer_action: false
+  pattern_command: patloop
 patmask:
   actions:
     GET:
@@ -6180,11 +6263,15 @@ patnloop:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternLoopCycles
         input:
         - level
@@ -6194,10 +6281,6 @@ patnloop:
         - level
         - ''' '''
         - OutString(t)
-        pattern_command:
-          command_name: patnloop
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6205,16 +6288,19 @@ patnloop:
       - arg_types:
         - int
         - int
-        argc: -1
+        argc: 2
         cast_input:
         - false
-        - true
+        - false
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: nloops
-          type: std::string
-          value: args[iArg++]
+          type: int
+          value: StringTo<int>(args[1])
         function: setPatternLoopCycles
         input:
         - level
@@ -6226,28 +6312,29 @@ patnloop:
         - level
         - ''' '''
         - nloops
-        pattern_command:
-          command_name: patnloop
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: false
   command_name: patnloop
   function_alias: patnloop
   help: "[0-6] [n_cycles] \n\t[Ctb][Mythen3][Xilinx Ctb] Number of cycles of the loop\
     \ level provided.\n\t[Mythen3] Level options: 0-3 only."
-  infer_action: true
+  infer_action: false
+  pattern_command: patnloop
 patnloop0:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternLoopCycles
         input:
         - level
@@ -6255,10 +6342,6 @@ patnloop0:
         - int
         output:
         - OutString(t)
-        pattern_command:
-          command_name: patnloop
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6266,16 +6349,19 @@ patnloop0:
       - arg_types:
         - int
         - int
-        argc: -1
+        argc: 2
         cast_input:
         - false
-        - true
+        - false
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: nloops
-          type: std::string
-          value: args[iArg++]
+          type: int
+          value: StringTo<int>(args[1])
         function: setPatternLoopCycles
         input:
         - level
@@ -6285,27 +6371,28 @@ patnloop0:
         - int
         output:
         - nloops
-        pattern_command:
-          command_name: patnloop
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: false
   command_name: patnloop0
   function_alias: patnloop0
-  help: Deprecated command. Use patnloop.
-  infer_action: true
+  help: "\n\tDeprecated command. Use patnloop."
+  infer_action: false
+  pattern_command: patnloop
 patnloop1:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternLoopCycles
         input:
         - level
@@ -6313,10 +6400,6 @@ patnloop1:
         - int
         output:
         - OutString(t)
-        pattern_command:
-          command_name: patnloop
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6324,16 +6407,19 @@ patnloop1:
       - arg_types:
         - int
         - int
-        argc: -1
+        argc: 2
         cast_input:
         - false
-        - true
+        - false
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: nloops
-          type: std::string
-          value: args[iArg++]
+          type: int
+          value: StringTo<int>(args[1])
         function: setPatternLoopCycles
         input:
         - level
@@ -6343,27 +6429,28 @@ patnloop1:
         - int
         output:
         - nloops
-        pattern_command:
-          command_name: patnloop
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: false
   command_name: patnloop1
   function_alias: patnloop1
-  help: Deprecated command. Use patnloop.
-  infer_action: true
+  help: "\n\tDeprecated command. Use patnloop."
+  infer_action: false
+  pattern_command: patnloop
 patnloop2:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternLoopCycles
         input:
         - level
@@ -6371,10 +6458,6 @@ patnloop2:
         - int
         output:
         - OutString(t)
-        pattern_command:
-          command_name: patnloop
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6382,16 +6465,19 @@ patnloop2:
       - arg_types:
         - int
         - int
-        argc: -1
+        argc: 2
         cast_input:
         - false
-        - true
+        - false
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: nloops
-          type: std::string
-          value: args[iArg++]
+          type: int
+          value: StringTo<int>(args[1])
         function: setPatternLoopCycles
         input:
         - level
@@ -6401,16 +6487,13 @@ patnloop2:
         - int
         output:
         - nloops
-        pattern_command:
-          command_name: patnloop
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: false
   command_name: patnloop2
   function_alias: patnloop2
-  help: Deprecated command. Use patnloop.
-  infer_action: true
+  help: "\n\tDeprecated command. Use patnloop."
+  infer_action: false
+  pattern_command: patnloop
 patsetbit:
   actions:
     GET:
@@ -6456,7 +6539,7 @@ patternX:
     PUT:
       args:
       - arg_types:
-        - std::string
+        - special::path
         argc: 1
         cast_input:
         - false
@@ -6503,11 +6586,15 @@ patwait:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternWaitAddr
         input:
         - level
@@ -6517,10 +6604,6 @@ patwait:
         - level
         - ''' '''
         - OutStringHex(t, 4)
-        pattern_command:
-          command_name: patwait
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6528,16 +6611,19 @@ patwait:
       - arg_types:
         - int
         - int
-        argc: -1
+        argc: 2
         cast_input:
         - false
         - false
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: addr
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[1])
         function: setPatternWaitAddr
         input:
         - level
@@ -6549,28 +6635,29 @@ patwait:
         - level
         - ''' '''
         - ToStringHex(addr, 4)
-        pattern_command:
-          command_name: patwait
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: false
   command_name: patwait
   function_alias: patwait
   help: "[0-6] [addr] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait address for loop level provided.\
     \ \n\t[Mythen3] Level options: 0-3 only."
-  infer_action: true
+  infer_action: false
+  pattern_command: patwait
 patwait0:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternWaitAddr
         input:
         - level
@@ -6578,10 +6665,6 @@ patwait0:
         - int
         output:
         - OutStringHex(t, 4)
-        pattern_command:
-          command_name: patwait
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6589,16 +6672,19 @@ patwait0:
       - arg_types:
         - int
         - int
-        argc: -1
+        argc: 2
         cast_input:
         - false
         - false
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: addr
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[1])
         function: setPatternWaitAddr
         input:
         - level
@@ -6608,27 +6694,28 @@ patwait0:
         - int
         output:
         - ToStringHex(addr, 4)
-        pattern_command:
-          command_name: patwait
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: false
   command_name: patwait0
   function_alias: patwait0
-  help: Deprecated command. Use patwait.
-  infer_action: true
+  help: "\n\tDeprecated command. Use patwait."
+  infer_action: false
+  pattern_command: patwait
 patwait1:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternWaitAddr
         input:
         - level
@@ -6636,10 +6723,6 @@ patwait1:
         - int
         output:
         - OutStringHex(t, 4)
-        pattern_command:
-          command_name: patwait
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6647,16 +6730,19 @@ patwait1:
       - arg_types:
         - int
         - int
-        argc: -1
+        argc: 2
         cast_input:
         - false
         - false
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: addr
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[1])
         function: setPatternWaitAddr
         input:
         - level
@@ -6666,27 +6752,28 @@ patwait1:
         - int
         output:
         - ToStringHex(addr, 4)
-        pattern_command:
-          command_name: patwait
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: false
   command_name: patwait1
   function_alias: patwait1
-  help: Deprecated command. Use patwait.
-  infer_action: true
+  help: "\n\tDeprecated command. Use patwait."
+  infer_action: false
+  pattern_command: patwait
 patwait2:
   actions:
     GET:
       args:
       - arg_types:
         - int
-        argc: -1
+        argc: 1
         cast_input:
         - false
         check_det_id: false
         convert_det_id: true
+        extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         function: getPatternWaitAddr
         input:
         - level
@@ -6694,10 +6781,6 @@ patwait2:
         - int
         output:
         - OutStringHex(t, 4)
-        pattern_command:
-          command_name: patwait
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: true
     PUT:
@@ -6705,16 +6788,19 @@ patwait2:
       - arg_types:
         - int
         - int
-        argc: -1
+        argc: 2
         cast_input:
         - false
         - false
         check_det_id: false
         convert_det_id: true
         extra_variables:
+        - name: level
+          type: int
+          value: StringTo<int>(args[0])
         - name: addr
           type: int
-          value: StringTo<int>(args[iArg++])
+          value: StringTo<int>(args[1])
         function: setPatternWaitAddr
         input:
         - level
@@ -6724,253 +6810,148 @@ patwait2:
         - int
         output:
         - ToStringHex(addr, 4)
-        pattern_command:
-          command_name: patwait
-          nGetArgs: 0
-          nPutArgs: 1
         require_det_id: true
         store_result_in_t: false
   command_name: patwait2
   function_alias: patwait2
-  help: Deprecated command. Use patwait.
-  infer_action: true
+  help: "\n\tDeprecated command. Use patwait."
+  infer_action: false
+  pattern_command: patwait
 patwaittime:
   actions:
     GET:
       args:
-      - arg_types:
-        - int
+      - arg_types: []
         argc: -1
-        cast_input:
-        - false
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: getPatternWaitTime
-        input:
-        - level
-        input_types:
-        - int
-        output:
-        - level
-        - ''' '''
-        - OutString(t)
-        pattern_command:
-          command_name: patwaittime
-          nGetArgs: 0
-          nPutArgs: 1
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: true
     PUT:
       args:
-      - arg_types:
-        - int
-        - int
+      - arg_types: []
         argc: -1
-        cast_input:
-        - false
-        - false
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        extra_variables:
-        - name: waittime
-          type: uint64_t
-          value: StringTo<uint64_t>(args[iArg++])
-        function: setPatternWaitTime
-        input:
-        - level
-        - waittime
-        input_types:
-        - int
-        - int
-        output:
-        - level
-        - ''' '''
-        - waittime
-        pattern_command:
-          command_name: patwaittime
-          nGetArgs: 0
-          nPutArgs: 1
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
   command_name: patwaittime
   function_alias: patwaittime
-  help: "[0-6] [n_clk] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles for\
-    \ the loop provided.\n\t[Mythen3] Level options: 0-3 only."
+  help: ''
   infer_action: true
+  is_description: true
 patwaittime0:
   actions:
     GET:
       args:
-      - arg_types:
-        - int
+      - arg_types: []
         argc: -1
-        cast_input:
-        - false
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: getPatternWaitTime
-        input:
-        - level
-        input_types:
-        - int
-        output:
-        - OutString(t)
-        pattern_command:
-          command_name: patwaittime
-          nGetArgs: 0
-          nPutArgs: 1
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: true
     PUT:
       args:
-      - arg_types:
-        - int
-        - int
+      - arg_types: []
         argc: -1
-        cast_input:
-        - false
-        - false
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        extra_variables:
-        - name: waittime
-          type: uint64_t
-          value: StringTo<uint64_t>(args[iArg++])
-        function: setPatternWaitTime
-        input:
-        - level
-        - waittime
-        input_types:
-        - int
-        - int
-        output:
-        - waittime
-        pattern_command:
-          command_name: patwaittime
-          nGetArgs: 0
-          nPutArgs: 1
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
   command_name: patwaittime0
-  function_alias: patwaittime0
-  help: Deprecated command. Use patwaittime.
+  duplicate_function: true
+  function_alias: patwaittime
+  help: ''
   infer_action: true
+  is_description: true
 patwaittime1:
   actions:
     GET:
       args:
-      - arg_types:
-        - int
+      - arg_types: []
         argc: -1
-        cast_input:
-        - false
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: getPatternWaitTime
-        input:
-        - level
-        input_types:
-        - int
-        output:
-        - OutString(t)
-        pattern_command:
-          command_name: patwaittime
-          nGetArgs: 0
-          nPutArgs: 1
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: true
     PUT:
       args:
-      - arg_types:
-        - int
-        - int
+      - arg_types: []
         argc: -1
-        cast_input:
-        - false
-        - false
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        extra_variables:
-        - name: waittime
-          type: uint64_t
-          value: StringTo<uint64_t>(args[iArg++])
-        function: setPatternWaitTime
-        input:
-        - level
-        - waittime
-        input_types:
-        - int
-        - int
-        output:
-        - waittime
-        pattern_command:
-          command_name: patwaittime
-          nGetArgs: 0
-          nPutArgs: 1
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
   command_name: patwaittime1
-  function_alias: patwaittime1
-  help: Deprecated command. Use patwaittime.
+  duplicate_function: true
+  function_alias: patwaittime
+  help: ''
   infer_action: true
+  is_description: true
 patwaittime2:
   actions:
     GET:
       args:
-      - arg_types:
-        - int
+      - arg_types: []
         argc: -1
-        cast_input:
-        - false
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        function: getPatternWaitTime
-        input:
-        - level
-        input_types:
-        - int
-        output:
-        - OutString(t)
-        pattern_command:
-          command_name: patwaittime
-          nGetArgs: 0
-          nPutArgs: 1
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: true
     PUT:
       args:
-      - arg_types:
-        - int
-        - int
+      - arg_types: []
         argc: -1
-        cast_input:
-        - false
-        - false
+        cast_input: []
         check_det_id: false
         convert_det_id: true
-        extra_variables:
-        - name: waittime
-          type: uint64_t
-          value: StringTo<uint64_t>(args[iArg++])
-        function: setPatternWaitTime
-        input:
-        - level
-        - waittime
-        input_types:
-        - int
-        - int
-        output:
-        - waittime
-        pattern_command:
-          command_name: patwaittime
-          nGetArgs: 0
-          nPutArgs: 1
-        require_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
         store_result_in_t: false
   command_name: patwaittime2
-  function_alias: patwaittime2
-  help: Deprecated command. Use patwaittime.
+  duplicate_function: true
+  function_alias: patwaittime
+  help: ''
   infer_action: true
+  is_description: true
 patword:
   actions:
     GET:
@@ -7088,7 +7069,7 @@ pedestalmode:
     \ x #pedestal_loops x 2). \n\t\tIn auto timing mode or in trigger mode with #frames\
     \ > 1, \n\t\t#frames is overwritten and #triggers = 1, \n\t\telse #triggers is\
     \ overwritten and #frames = 1. \n\t\tOne cannot set #frames, #triggers or timing\
-    \ mode in pedestal mode (exception thrown).\n\npedestalmode [0]\n\t\t[Jungfrau]\
+    \ mode in pedestal mode (exception thrown).\n\tpedestalmode [0]\n\t\t[Jungfrau]\
     \ Disable pedestal mode.\n\t\tDisabling pedestal mode will set back the normal\
     \ mode values of #frames and #triggers."
   infer_action: true
@@ -7894,12 +7875,12 @@ readoutspeed:
         store_result_in_t: false
   command_name: readoutspeed
   function_alias: readoutspeed
-  help: "\n\t[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t[Eiger][Jungfrau][Moench]\
-    \ Readout speed of chip.\n\t[Eiger][Moench] Default speed is full_speed.\n\t[Jungfrau]\
-    \ Default speed is half_speed. full_speed option only available from v2.0 boards\
-    \ and is recommended to set number of interfaces to 2. Also overwrites adcphase\
-    \ to recommended default.\n\t [144|108]\n\t\t[Gotthard2] Readout speed of chip\
-    \ in MHz. Default is 108."
+  help: "\n\t[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t[Eiger][Jungfrau][Moench][Mythen3]\
+    \ Readout speed of chip.\n\t[Eiger][Moench] Default speed is full_speed.\n\t[Jungfrau][Mythen3]\
+    \ Default speed is half_speed. \n\t[Jungfrau] full_speed option only available\
+    \ from v2.0 boards and is recommended to set number of interfaces to 2. Also overwrites\
+    \ adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] Readout speed\
+    \ of chip in MHz. Default is 108."
   infer_action: true
 readoutspeedlist:
   actions:
@@ -7973,25 +7954,64 @@ reg:
         cast_input:
         - true
         - true
+        - true
         check_det_id: false
         convert_det_id: true
         function: writeRegister
         input:
         - args[0]
         - args[1]
+        - '"0"'
         input_types:
         - uint32_t
         - uint32_t
+        - bool
         output:
-        - ToString(args)
+        - '"["'
+        - args[0]
+        - '", "'
+        - args[1]
+        - '"]"'
+        require_det_id: true
+        store_result_in_t: false
+      - arg_types:
+        - uint32_t
+        - uint32_t
+        - special::validate
+        argc: 3
+        cast_input:
+        - true
+        - true
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: args[2] != "--validate"
+          message: '"Could not scan third argument. Did you mean --validate?"'
+        function: writeRegister
+        input:
+        - args[0]
+        - args[1]
+        - '"1"'
+        input_types:
+        - uint32_t
+        - uint32_t
+        - bool
+        output:
+        - '"["'
+        - args[0]
+        - '", "'
+        - args[1]
+        - '"]"'
         require_det_id: true
         store_result_in_t: false
   command_name: reg
   function_alias: reg
-  help: "[address] [32 bit value]\n\t[Mythen3][Gotthard2] Reads/writes to a 32 bit\
-    \ register in hex. Advanced Function!\n\tGoes to stop server. Hence, can be called\
-    \ while calling blocking acquire().\n\t[Eiger] +0x100 for only left, +0x200 for\
-    \ only right."
+  help: "[address] [32 bit value][(optional)--validate]\n\t[Mythen3][Gotthard2] Reads/writes\
+    \ to a 32 bit register in hex. Advanced Function!\n\tGoes to stop server. Hence,\
+    \ can be called while calling blocking acquire().\n\t\t Use --validate to force\
+    \ validation when writing to it.\n\t[Eiger] +0x100 for only left, +0x200 for only\
+    \ right."
   infer_action: true
 resetdacs:
   actions:
@@ -8319,7 +8339,8 @@ rx_clearroi:
         store_result_in_t: false
   command_name: rx_clearroi
   function_alias: rx_clearroi
-  help: Resets Region of interest in receiver. Default is all channels/pixels enabled.
+  help: "\n\tResets Region of interest in receiver. Default is all channels/pixels\
+    \ enabled."
   infer_action: true
   template: true
 rx_dbitlist:
@@ -9631,7 +9652,7 @@ serialnumber:
         store_result_in_t: true
   command_name: serialnumber
   function_alias: serialnumber
-  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb]\nSerial number\
+  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb]\n\tSerial number\
     \ of detector."
   infer_action: true
   template: true
@@ -9646,6 +9667,7 @@ setbit:
         cast_input:
         - true
         - true
+        - true
         check_det_id: false
         convert_det_id: true
         exceptions:
@@ -9655,16 +9677,56 @@ setbit:
         input:
         - args[0]
         - args[1]
+        - '"0"'
         input_types:
         - uint32_t
         - int
+        - bool
         output:
-        - ToString(args)
+        - '"["'
+        - args[0]
+        - '", "'
+        - args[1]
+        - '"]"'
+        require_det_id: true
+        store_result_in_t: false
+      - arg_types:
+        - uint32_t
+        - int
+        - special::validate
+        argc: 3
+        cast_input:
+        - true
+        - true
+        - true
+        check_det_id: false
+        convert_det_id: true
+        exceptions:
+        - condition: StringTo<int>(args[1]) < 0 || StringTo<int>(args[1]) > 31
+          message: '"Bit number out of range: " + args[1]'
+        - condition: args[2] != "--validate"
+          message: '"Could not scan third argument. Did you mean --validate?"'
+        function: setBit
+        input:
+        - args[0]
+        - args[1]
+        - '"1"'
+        input_types:
+        - uint32_t
+        - int
+        - bool
+        output:
+        - '"["'
+        - args[0]
+        - '", "'
+        - args[1]
+        - '"]"'
         require_det_id: true
         store_result_in_t: false
   command_name: setbit
   function_alias: setbit
-  help: "[reg address in hex] [bit index]\n\tSets bit in address."
+  help: "[reg address in hex] [bit index]\n\tSets bit in address.\n\tUse --validate\
+    \ to force validation."
   infer_action: true
   template: true
 settings:
@@ -9921,6 +9983,40 @@ signalname:
     \ to the given name."
   infer_action: true
   template: true
+sleep:
+  actions:
+    PUT:
+      args:
+      - arg_types:
+        - int
+        argc: 1
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+      - arg_types:
+        - int
+        - special::time_unit
+        argc: 2
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: ''
+        input: []
+        input_types: []
+        output: []
+        require_det_id: false
+        store_result_in_t: false
+  command_name: sleep
+  function_alias: sleep
+  help: ''
+  infer_action: true
+  is_description: true
 slowadc:
   actions:
     GET:
@@ -11248,9 +11344,49 @@ timing:
         store_result_in_t: false
   command_name: timing
   function_alias: timing
-  help: "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx\
-    \ Ctb] [auto|trigger]\n\t[Mythen3] [auto|trigger|gating|trigger_gating]\n\t[Eiger]\
-    \ [auto|trigger|gating|burst_trigger]"
+  help: "[auto|trigger|gating|burst_trigger|trigger_gating]\n\tTiming Mode of detector.\n\
+    \t[Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx Ctb] [auto|trigger]\n\t\
+    [Mythen3] [auto|trigger|gating|trigger_gating]\n\t[Eiger] [auto|trigger|gating|burst_trigger]"
+  infer_action: true
+  template: true
+timing_info_decoder:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getTimingInfoDecoder
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - defs::timingInfoDecoder
+        argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: setTimingInfoDecoder
+        input:
+        - args[0]
+        input_types:
+        - defs::timingInfoDecoder
+        output:
+        - args.front()
+        require_det_id: true
+        store_result_in_t: false
+  command_name: timing_info_decoder
+  function_alias: timing_info_decoder
+  help: "[swissfel|shine]\n\t[Jungfrau] Advanced Command and only for Swissfel and\
+    \ Shine. Sets the bunch id or timing info decoder. Default is swissfel."
   infer_action: true
   template: true
 timinglist:
@@ -11675,11 +11811,11 @@ txdelay:
   command_name: txdelay
   function_alias: txdelay
   help: "[n_delay]\n\t[Eiger][Jungfrau][Moench][Mythen3] Set transmission delay for\
-    \ all modules in the detector using the step size provided.Sets up \n\t\t[Eiger]\
-    \ txdelay_left to (2 * mod_index * n_delay), \n\t\t[Eiger] txdelay_right to ((2\
-    \ * mod_index + 1) * n_delay) and \n\t\t[Eiger] txdelay_frame to (2 *num_modules\
-    \ * n_delay)  \n\t\t[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules\
-    \ * n_delay)  \nfor every module."
+    \ all modules in the detector using the step size provided.Sets up \n\t[Eiger]\
+    \ txdelay_left to (2 * mod_index * n_delay), \n\t[Eiger] txdelay_right to ((2\
+    \ * mod_index + 1) * n_delay) and \n\t[Eiger] txdelay_frame to (2 *num_modules\
+    \ * n_delay)\n\t[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules * n_delay)\
+    \ for every module."
   infer_action: true
 txdelay_frame:
   actions:
@@ -12179,10 +12315,11 @@ udp_firstdst:
         store_result_in_t: false
   command_name: udp_firstdst
   function_alias: udp_firstdst
-  help: "\n[0 - 31 (or number of udp destinations)]\n\t[Jungfrau][Moench][Gotthard2]\n\
-    [0-63]\n\t[Mythen3]\n\n\t One can set which is the first destination that the\
-    \ detector will stream images out from in a round robin fashion. The entry must\
-    \ not have been empty. Default: 0"
+  help: "\n\t[0 - N]\n\twhere N is the max number of udp destinations - 1.\n\t[Jungfrau][Moench][Gotthard2]\
+    \ Max number of udp destinations is 32.\n\t[Mythen3] Max number of udp destination\
+    \ is 64.\n\t One can set which is the first destination that the detector will\
+    \ stream images out from in a round robin fashion. The entry must not have been\
+    \ empty. Default: 0"
   infer_action: true
   template: true
 udp_numdst:
@@ -13472,7 +13609,7 @@ vetophoton:
   function_alias: vetophoton
   help: "[ichip] [#photons] [energy in keV] [reference file]\n\t[Gotthard2] Set veto\
     \ reference for 128 channels for chip ichip according to reference file and #photons\
-    \ and energy in keV.\n[ichip] [output file]\n\t Get gain indices and veto reference\
+    \ and energy in keV.\n\t[ichip] [output file]\n\t Get gain indices and veto reference\
     \ for 128 channels for chip ichip, saved to file."
   infer_action: true
 vetoref:

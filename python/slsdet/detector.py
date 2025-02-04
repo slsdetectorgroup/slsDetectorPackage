@@ -743,7 +743,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def nextframenumber(self):
-        """[Eiger][Jungfrau][Moench][CTB][Xilinx CTB] Next frame number. Stopping acquisition might result in different frame numbers for different modules. """
+        """[Eiger][Jungfrau][Moench][CTB][Xilinx CTB][Gotthard2] Next frame number. Stopping acquisition might result in different frame numbers for different modules. So, after stopping, next frame number (max + 1) is set for all the modules afterwards."""
         return self.getNextFrameNumber()
 
     @nextframenumber.setter
@@ -1989,23 +1989,59 @@ class Detector(CppDetectorApi):
 
     @property
     def versions(self):
-        version_list = {'type': self.type,
-                'package': self.packageversion, 
-                'client': self.clientversion}
-                
-        if self.type == detectorType.EIGER:
-            version_list ['firmware (Beb)'] = self.firmwareversion
-            version_list ['firmware(Febl)'] = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_LEFT)
-            version_list ['firmware (Febr)'] = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_RIGHT)
+        type = "Unknown"
+        firmware = "Unknown"
+        detectorserver = "Unknown"
+        kernel = "Unknown"
+        hardware = "Unknown"    
+        receiverversion = "Unknown"
+        eiger = False
+        firmware_febl = "Unknown"
+        firmware_febr = "Unknown"
+        firmware_beb = "Unknown"
+        receiver_in_shm = False
+
+        release = self.packageversion
+        client = self.clientversion
+
+        if self.nmod != 0:
+            # shared memory has detectors
+            type = self.type
+            eiger = (self.type == detectorType.EIGER)
+            receiver_in_shm = self.use_receiver
+            if receiver_in_shm:
+                # cannot connect to receiver
+                try:
+                    receiverversion = self.rx_version
+                except Exception as e:
+                    pass
+            # cannot connect to Detector
+            try:
+                firmware = self.firmwareversion
+                detectorserver = self.detectorserverversion
+                kernel = self.kernelversion
+                hardware = self.hardwareversion
+                if eiger:
+                    firmware_beb = self.firmwareversion
+                    firmware_febl = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_LEFT)
+                    firmware_febr = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_RIGHT)
+            except Exception as e:
+                pass
+
+        version_list = {'type': {type},
+                'package': {release}, 
+                'client': {client}}
+        if eiger:
+            version_list ['firmware (Beb)'] = {firmware_beb}
+            version_list ['firmware(Febl)'] = {firmware_febl}
+            version_list ['firmware (Febr)'] = {firmware_febr}
         else:
-            version_list ['firmware'] = self.firmwareversion
-
-        version_list ['detectorserver'] = self.detectorserverversion
-        version_list ['kernel'] = self.kernelversion
-        version_list ['hardware'] = self.hardwareversion
-
-        if self.use_receiver:
-            version_list ['receiver'] = self.rx_version
+            version_list ['firmware'] = {firmware}
+        version_list ['detectorserver'] = {detectorserver}
+        version_list ['kernel'] = kernel
+        version_list ['hardware'] = hardware
+        if receiver_in_shm:
+            version_list ['receiver'] = {receiverversion}
 
         return version_list
 
@@ -2075,7 +2111,7 @@ class Detector(CppDetectorApi):
         
         Note
         -----
-        [Jungfrau][Moench] FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED
+        [Jungfrau][Moench][Mythen3] FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED
         [Eiger] FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED
         [Moench] FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED
         [Gottthard2] G2_108MHZ (Default), G2_144MHZ
@@ -2875,9 +2911,35 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setPedestalMode, value)
 
     @property
+    @element
+    def timing_info_decoder(self):
+        """[Jungfrau] [Jungfrau] Advanced Command and only for SWISSFEL and SHINE. Sets the bunch id or timing info decoder. Default is SWISSFEL.
+        Enum: timingInfoDecoder
+        """
+        return self.getTimingInfoDecoder()
+
+    @timing_info_decoder.setter
+    def timing_info_decoder(self, value):
+        ut.set_using_dict(self.setTimingInfoDecoder, value)
+        
+    @property
+    @element
+    def collectionmode(self):
+        """[Jungfrau] Sets collection mode to HOLE or ELECTRON. Default is HOLE.
+        Enum: collectionMode
+        """
+        return self.getCollectionMode()
+
+    @collectionmode.setter
+    def collectionmode(self, value):
+        ut.set_using_dict(self.setCollectionMode, value)
+
+    @property
     def maxclkphaseshift(self):
         """
-        [Gotthard2][Mythen3] Absolute maximum Phase shift of clocks.
+        [Gotthard2][Mythen3] Absolute maximum Phase shift of clocks.\n
+        [Gotthard2] Clock index range: 0-5\n
+        [Mythen3] Clock index range: 0
                
         :setter: Not Implemented
         
@@ -3640,7 +3702,13 @@ class Detector(CppDetectorApi):
     @property
     def patwaittime(self):
         """
-        [Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles of loop level provided.
+        [Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles of loop level provided. 
+
+        Info
+        ----
+
+        :getter: Always return in clock cycles. To get in DurationWrapper, use getPatternWaitInterval
+        :setter: Accepts either a value in clock cycles or a time unit (timedelta, DurationWrapper)
         
         Example
         -------
@@ -3651,41 +3719,85 @@ class Detector(CppDetectorApi):
         0: 5
         1: 20
         2: 30
+        >>> # using timedelta (up to microseconds precision)
+        >>> from datetime import timedelta
+        >>> d.patwaittime[0] = timedelta(seconds=1, microseconds=3)
+        >>> 
+        >>> # using DurationWrapper to set in seconds
+        >>> from slsdet import DurationWrapper
+        >>> d.patwaittime[0] = DurationWrapper(1.2)
+        >>> 
+        >>> # using DurationWrapper to set in ns
+        >>> t = DurationWrapper()
+        >>> t.set_count(500)
+        >>> d.patwaittime = t
+        >>>
+        >>> # to get in clock cycles
+        >>> d.patwaittime
+        1000
+        >>> 
+        >>> d.getPatternWaitInterval(0)
+        sls::DurationWrapper(total_seconds: 1.23 count: 1230000000)
         """
         return PatWaitTimeProxy(self)
 
-    @property
-    @element
-    def patwaittime0(self):
-        """[Ctb][Mythen3][Xilinx Ctb] Wait 0 time in clock cycles."""
-        return self.getPatternWaitTime(0)
 
-    @patwaittime0.setter
-    def patwaittime0(self, nclk):
-        nclk = ut.merge_args(0, nclk)
-        ut.set_using_dict(self.setPatternWaitTime, *nclk)
+    def create_patwaittime_property(level):
+        docstring_template ="""
+        Deprecated command. Use patwaittime instead.
+        [Ctb][Mythen3][Xilinx Ctb] Wait time in clock cycles of loop level {level} provided. 
 
-    @property
-    @element
-    def patwaittime1(self):
-        """[Ctb][Mythen3][Xilinx Ctb] Wait 1 time in clock cycles."""
-        return self.getPatternWaitTime(1)
+        Info
+        ----
 
-    @patwaittime1.setter
-    def patwaittime1(self, nclk):
-        nclk = ut.merge_args(1, nclk)
-        ut.set_using_dict(self.setPatternWaitTime, *nclk)
+        :getter: Always return in clock cycles. To get in DurationWrapper, use getPatternWaitInterval
+        :setter: Accepts either a value in clock cycles or a time unit (timedelta, DurationWrapper)
+        
+        Example
+        -------
+        >>> d.patwaittime{level} = 5
+        >>> d.patwaittime{level}
+        5
+        >>> # using timedelta (up to microseconds precision)
+        >>> from datetime import timedelta
+        >>> d.patwaittime{level} = timedelta(seconds=1, microseconds=3)
+        >>> 
+        >>> # using DurationWrapper to set in seconds
+        >>> from slsdet import DurationWrapper
+        >>> d.patwaittime{level} = DurationWrapper(1.2)
+        >>> 
+        >>> # using DurationWrapper to set in ns
+        >>> t = DurationWrapper()
+        >>> t.set_count(500)
+        >>> d.patwaittime{level} = t
+        >>>
+        >>> # to get in clock cycles
+        >>> d.patwaittime{level}
+        1000
+        >>> 
+        >>> d.getPatternWaitInterval(level)
+        sls::DurationWrapper(total_seconds: 1.23 count: 1230000000)
+        """
+        @property
+        @element
+        def patwaittime(self):
+            return self.getPatternWaitClocks(level)
 
-    @property
-    @element
-    def patwaittime2(self):
-        """[Ctb][Mythen3][Xilinx Ctb] Wait 2 time in clock cycles."""
-        return self.getPatternWaitTime(2)
+        @patwaittime.setter
+        def patwaittime(self, value):
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                nclk = ut.merge_args(level, value)
+                ut.set_using_dict(self.setPatternWaitClocks, level, *nclk)
+            else:
+                ut.set_time_using_dict(self.setPatternWaitInterval, level, value)
+        
+        patwaittime.__doc__ = docstring_template.format(level=level)
 
-    @patwaittime2.setter
-    def patwaittime2(self, nclk):
-        nclk = ut.merge_args(2, nclk)
-        ut.set_using_dict(self.setPatternWaitTime, *nclk)
+        return patwaittime
+    
+    patwaittime0 = create_patwaittime_property(0)
+    patwaittime1 = create_patwaittime_property(1)
+    patwaittime2 = create_patwaittime_property(2)
 
 
     @property
@@ -3938,7 +4050,9 @@ class Detector(CppDetectorApi):
     @property
     def clkphase(self):
         """
-        [Gotthard2][Mythen3] Phase shift of all clocks.
+        [Gotthard2][Mythen3] Phase shift of all clocks.\n
+        [Gotthard2] Clock index range: 0-5\n
+        [Mythen3] Clock index range: 0
         
         Example
         -------
@@ -3956,7 +4070,9 @@ class Detector(CppDetectorApi):
     @property
     def clkdiv(self):
         """
-        [Gotthard2][Mythen3] Clock Divider of all clocks. Must be greater than 1.
+        [Gotthard2][Mythen3] Clock Divider of all clocks. Must be greater than 1.\n
+        [Gotthard2] Clock index range: 0-5\n
+        [Mythen3] Clock index range: 0
         
         Example
         -------
@@ -4012,7 +4128,10 @@ class Detector(CppDetectorApi):
     @property
     def clkfreq(self):
         """
-        [Gotthard2][Mythen3] Frequency of clock in Hz. 
+        [Gotthard2][Mythen3] Frequency of clock in Hz.\n
+        [Gotthard2] Clock index range: 0-5\n
+        [Mythen3] Clock index range: 0
+        
         
         :setter: Not implemented. Use clkdiv to set frequency
 

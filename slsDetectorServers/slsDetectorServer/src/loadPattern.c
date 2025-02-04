@@ -11,6 +11,10 @@
 
 #ifdef MYTHEN3D
 extern enum TLogLevel trimmingPrint;
+extern uint32_t clkDivider[];
+#endif
+#ifdef CHIPTESTBOARDD
+extern uint32_t clkFrequency[];
 #endif
 
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
@@ -317,7 +321,8 @@ void setPatternWaitAddress(int level, int addr) {
     }
 }
 
-int validate_getPatternWaitTime(char *message, int level, uint64_t *waittime) {
+int validate_getPatternWaitClocksAndInterval(char *message, int level,
+                                             uint64_t *waittime, int clocks) {
     // validate input
     if (level < 0 || level >= MAX_LEVELS) {
         sprintf(message,
@@ -326,11 +331,15 @@ int validate_getPatternWaitTime(char *message, int level, uint64_t *waittime) {
         LOG(logERROR, (message));
         return FAIL;
     }
-    *waittime = getPatternWaitTime(level);
+    if (clocks) {
+        *waittime = getPatternWaitClocks(level);
+    } else {
+        *waittime = getPatternWaitInterval(level);
+    }
     return OK;
 }
 
-uint64_t getPatternWaitTime(int level) {
+uint64_t getPatternWaitClocks(int level) {
     switch (level) {
     case 0:
         return getU64BitReg(PATTERN_WAIT_TIMER_0_LSB_REG,
@@ -357,7 +366,25 @@ uint64_t getPatternWaitTime(int level) {
     }
 }
 
-int validate_setPatternWaitTime(char *message, int level, uint64_t waittime) {
+uint64_t getPatternWaitInterval(int level) {
+    uint64_t numClocks = getPatternWaitClocks(level);
+    int runclk = 0;
+#ifdef CHIPTESTBOARDD
+    runclk = clkFrequency[RUN_CLK];
+#elif XILINX_CHIPTESTBOARDD
+    runclk = RUN_CLK;
+#elif MYTHEN3D
+    runclk = clkDivider[SYSTEM_C0];
+#endif
+    if (runclk == 0) {
+        LOG(logERROR, ("runclk is 0. Cannot divide by 0. Returning -1.\n"));
+        return -1;
+    }
+    return numClocks / (1E-3 * runclk);
+}
+
+int validate_setPatternWaitClocksAndInterval(char *message, int level,
+                                             uint64_t waittime, int clocks) {
     // validate input
     if (level < 0 || level >= MAX_LEVELS) {
         sprintf(message,
@@ -367,12 +394,21 @@ int validate_setPatternWaitTime(char *message, int level, uint64_t waittime) {
         return FAIL;
     }
 
-    setPatternWaitTime(level, waittime);
+    uint64_t retval = 0;
+    if (clocks) {
+        setPatternWaitClocks(level, waittime);
+        // validate result
+        retval = getPatternWaitClocks(level);
+        LOG(logDEBUG1, ("Pattern wait time in clocks (level:%d) retval: %d\n",
+                        level, (long long int)retval));
+    } else {
+        setPatternWaitInterval(level, waittime);
+        // validate result
+        retval = getPatternWaitInterval(level);
+        LOG(logDEBUG1, ("Pattern wait time (level:%d) retval: %d\n", level,
+                        (long long int)retval));
+    }
 
-    // validate result
-    uint64_t retval = getPatternWaitTime(level);
-    LOG(logDEBUG1, ("Pattern wait time (level:%d) retval: %d\n", level,
-                    (long long int)retval));
     int ret = OK;
     char mode[128];
     memset(mode, 0, sizeof(mode));
@@ -381,13 +417,13 @@ int validate_setPatternWaitTime(char *message, int level, uint64_t waittime) {
     return ret;
 }
 
-void setPatternWaitTime(int level, uint64_t t) {
+void setPatternWaitClocks(int level, uint64_t t) {
 #ifdef MYTHEN3D
     LOG(trimmingPrint,
 #else
     LOG(logINFO,
 #endif
-        ("Setting Pattern Wait Time (level:%d) :%lld\n", level,
+        ("Setting Pattern Wait Time in clocks (level:%d) :%lld\n", level,
          (long long int)t));
     switch (level) {
     case 0:
@@ -419,6 +455,26 @@ void setPatternWaitTime(int level, uint64_t t) {
     default:
         return;
     }
+}
+
+void setPatternWaitInterval(int level, uint64_t t) {
+#ifdef MYTHEN3D
+    LOG(trimmingPrint,
+#else
+    LOG(logINFO,
+#endif
+        ("Setting Pattern Wait Time (level:%d) :%lld ns\n", level,
+         (long long int)t));
+    int runclk = 0;
+#ifdef CHIPTESTBOARDD
+    runclk = clkFrequency[RUN_CLK];
+#elif XILINX_CHIPTESTBOARDD
+    runclk = RUN_CLK;
+#elif MYTHEN3D
+        runclk = clkDivider[SYSTEM_C0];
+#endif
+    uint64_t numClocks = t * (1E-3 * runclk);
+    setPatternWaitClocks(level, numClocks);
 }
 
 int validate_getPatternLoopCycles(char *message, int level, int *numLoops) {
@@ -830,7 +886,8 @@ int loadPattern(char *message, enum TLogLevel printLevel,
             }
 
             // wait time
-            ret = validate_setPatternWaitTime(message, i, pat->waittime[i]);
+            ret = validate_setPatternWaitClocksAndInterval(message, i,
+                                                           pat->waittime[i], 1);
             if (ret == FAIL) {
                 break;
             }
@@ -894,7 +951,8 @@ int getPattern(char *message, patternParameters *pat) {
             pat->wait[i] = retval1;
 
             // wait time
-            ret = validate_getPatternWaitTime(message, i, &retval64);
+            ret = validate_getPatternWaitClocksAndInterval(message, i,
+                                                           &retval64, 1);
             if (ret == FAIL) {
                 break;
             }
@@ -1095,7 +1153,8 @@ int loadPatternFile(char *patFname, char *errMessage) {
                 break;
             }
 
-            if (validate_setPatternWaitTime(temp, level, waittime) == FAIL) {
+            if (validate_setPatternWaitClocksAndInterval(temp, level, waittime,
+                                                         1) == FAIL) {
                 break;
             }
         }

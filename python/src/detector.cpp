@@ -21,11 +21,13 @@ void init_det(py::module &m) {
     using sls::Positions;
     using sls::Result;
 
+    m.def("freeSharedMemory",
+          (void (*)(const int, const int)) & sls::freeSharedMemory,
+          py::arg() = 0, py::arg() = -1);
+
     py::class_<Detector> CppDetectorApi(m, "CppDetectorApi");
     CppDetectorApi.def(py::init<int>());
 
-    CppDetectorApi.def("freeSharedMemory",
-                       (void (Detector::*)()) & Detector::freeSharedMemory);
     CppDetectorApi.def("loadConfig",
                        (void (Detector::*)(const std::string &)) &
                            Detector::loadConfig,
@@ -1271,6 +1273,26 @@ void init_det(py::module &m) {
         (void (Detector::*)(const defs::pedestalParameters, sls::Positions)) &
             Detector::setPedestalMode,
         py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getTimingInfoDecoder",
+        (Result<defs::timingInfoDecoder>(Detector::*)(sls::Positions) const) &
+            Detector::getTimingInfoDecoder,
+        py::arg() = Positions{});
+    CppDetectorApi.def(
+        "setTimingInfoDecoder",
+        (void (Detector::*)(defs::timingInfoDecoder, sls::Positions)) &
+            Detector::setTimingInfoDecoder,
+        py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getCollectionMode",
+        (Result<defs::collectionMode>(Detector::*)(sls::Positions) const) &
+            Detector::getCollectionMode,
+        py::arg() = Positions{});
+    CppDetectorApi.def(
+        "setCollectionMode",
+        (void (Detector::*)(defs::collectionMode, sls::Positions)) &
+            Detector::setCollectionMode,
+        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getROI",
                        (Result<defs::ROI>(Detector::*)(sls::Positions) const) &
                            Detector::getROI,
@@ -1839,13 +1861,22 @@ void init_det(py::module &m) {
                            Detector::setPatternWaitAddr,
                        py::arg(), py::arg(), py::arg() = Positions{});
     CppDetectorApi.def(
-        "getPatternWaitTime",
+        "getPatternWaitClocks",
         (Result<uint64_t>(Detector::*)(int, sls::Positions) const) &
-            Detector::getPatternWaitTime,
+            Detector::getPatternWaitClocks,
         py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("setPatternWaitTime",
+    CppDetectorApi.def("setPatternWaitClocks",
                        (void (Detector::*)(int, uint64_t, sls::Positions)) &
-                           Detector::setPatternWaitTime,
+                           Detector::setPatternWaitClocks,
+                       py::arg(), py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getPatternWaitInterval",
+        (Result<sls::ns>(Detector::*)(int, sls::Positions) const) &
+            Detector::getPatternWaitInterval,
+        py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("setPatternWaitInterval",
+                       (void (Detector::*)(int, sls::ns, sls::Positions)) &
+                           Detector::setPatternWaitInterval,
                        py::arg(), py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getPatternMask",
                        (Result<uint64_t>(Detector::*)(sls::Positions)) &
@@ -1940,17 +1971,19 @@ void init_det(py::module &m) {
         py::arg(), py::arg() = Positions{});
     CppDetectorApi.def(
         "writeRegister",
-        (void (Detector::*)(uint32_t, uint32_t, sls::Positions)) &
+        (void (Detector::*)(uint32_t, uint32_t, bool, sls::Positions)) &
             Detector::writeRegister,
-        py::arg(), py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("setBit",
-                       (void (Detector::*)(uint32_t, int, sls::Positions)) &
-                           Detector::setBit,
-                       py::arg(), py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("clearBit",
-                       (void (Detector::*)(uint32_t, int, sls::Positions)) &
-                           Detector::clearBit,
-                       py::arg(), py::arg(), py::arg() = Positions{});
+        py::arg(), py::arg(), py::arg() = false, py::arg() = Positions{});
+    CppDetectorApi.def(
+        "setBit",
+        (void (Detector::*)(uint32_t, int, bool, sls::Positions)) &
+            Detector::setBit,
+        py::arg(), py::arg(), py::arg() = false, py::arg() = Positions{});
+    CppDetectorApi.def(
+        "clearBit",
+        (void (Detector::*)(uint32_t, int, bool, sls::Positions)) &
+            Detector::clearBit,
+        py::arg(), py::arg(), py::arg() = false, py::arg() = Positions{});
     CppDetectorApi.def(
         "getBit",
         (Result<int>(Detector::*)(uint32_t, int, sls::Positions)) &

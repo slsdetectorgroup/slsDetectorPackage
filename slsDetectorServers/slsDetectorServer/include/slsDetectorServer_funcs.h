@@ -11,6 +11,8 @@
 // initialization functions
 int updateModeAllowedFunction(int file_des);
 int printSocketReadError();
+int sendError(int file_des);
+void setMemoryAllocationErrorMessage();
 void init_detector();
 int decode_function(int);
 const char *getRetName();
@@ -102,7 +104,7 @@ int set_pattern_word(int);
 int set_pattern_loop_addresses(int);
 int set_pattern_loop_cycles(int);
 int set_pattern_wait_addr(int);
-int set_pattern_wait_time(int);
+int set_pattern_wait_clocks(int);
 int set_pattern_mask(int);
 int get_pattern_mask(int);
 int set_pattern_bit_mask(int);
@@ -330,3 +332,9 @@ int setColumn(int);
 int get_pedestal_mode(int);
 int set_pedestal_mode(int);
 int config_transceiver(int);
+int get_timing_info_decoder(int);
+int set_timing_info_decoder(int);
+int get_collection_mode(int);
+int set_collection_mode(int);
+int get_pattern_wait_interval(int);
+int set_pattern_wait_interval(int);

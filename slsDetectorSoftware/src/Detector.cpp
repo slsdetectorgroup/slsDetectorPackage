@@ -23,7 +23,7 @@
 
 namespace sls {
 
-void freeSharedMemory(int detectorIndex, int moduleIndex) {
+void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
 
     // single module
     if (moduleIndex >= 0) {
@@ -34,10 +34,10 @@ void freeSharedMemory(int detectorIndex, int moduleIndex) {
         return;
     }
 
-    // detector - multi module - get number of detectors from shm
-    SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
     int numDetectors = 0;
 
+    // detector - multi module - get number of detectors from shm
+    SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
     if (detectorShm.exists()) {
         detectorShm.openSharedMemory(false);
         numDetectors = detectorShm()->totalNumberOfModules;
@@ -58,15 +58,19 @@ void freeSharedMemory(int detectorIndex, int moduleIndex) {
 using defs = slsDetectorDefs;
 
 Detector::Detector(int shm_id) : pimpl(make_unique<DetectorImpl>(shm_id)) {}
-
 Detector::~Detector() = default;
 
+// Move constructor
+Detector::Detector(Detector &&other) noexcept = default;
+
+// Move assignment operator
+Detector &Detector::operator=(Detector &&other) noexcept = default;
+
 // Configuration
-void Detector::freeSharedMemory() { pimpl->freeSharedMemory(); }
 
 void Detector::loadConfig(const std::string &fname) {
     int shm_id = getShmId();
-    freeSharedMemory();
+    freeSharedMemory(shm_id);
     pimpl = make_unique<DetectorImpl>(shm_id);
     LOG(logINFO) << "Loading configuration file: " << fname;
     loadParameters(fname);
@@ -105,18 +109,35 @@ Result<std::string> Detector::getHostname(Positions pos) const {
 }
 
 void Detector::setHostname(const std::vector<std::string> &hostname) {
+    if (pimpl->hasModulesInSharedMemory()) {
+        LOG(logWARNING) << "There are already module(s) in shared memory."
+                           "Freeing Shared memory now.";
+        auto numChannels = getDetectorSize();
+        auto initialChecks = getInitialChecks();
+        freeSharedMemory(getShmId());
+        pimpl = make_unique<DetectorImpl>(getShmId());
+        setDetectorSize(numChannels);
+        setInitialChecks(initialChecks);
+    }
     pimpl->setHostname(hostname);
 }
 
 void Detector::setVirtualDetectorServers(int numServers,
                                          uint16_t startingPort) {
     validatePortRange(startingPort, numServers * 2);
-    pimpl->setVirtualDetectorServers(numServers, startingPort);
+
+    std::vector<std::string> hostnames;
+    for (int i = 0; i < numServers; ++i) {
+        // * 2 is for control and stop port
+        hostnames.push_back(std::string("localhost:") +
+                            std::to_string(startingPort + i * 2));
+    }
+    setHostname(hostnames);
 }
 
 int Detector::getShmId() const { return pimpl->getDetectorIndex(); }
 
-std::string Detector::getPackageVersion() const { return RELEASE; }
+std::string Detector::getPackageVersion() const { return SLS_DET_VERSION; }
 
 std::string Detector::getClientVersion() const {
     Version v(APILIB);
@@ -533,6 +554,7 @@ std::vector<defs::speedLevel> Detector::getReadoutSpeedList() const {
     case defs::EIGER:
     case defs::JUNGFRAU:
     case defs::MOENCH:
+    case defs::MYTHEN3:
         return std::vector<defs::speedLevel>{defs::FULL_SPEED, defs::HALF_SPEED,
                                              defs::QUARTER_SPEED};
     case defs::GOTTHARD2:
@@ -910,7 +932,8 @@ void Detector::stopDetector(Positions pos) {
     case defs::JUNGFRAU:
     case defs::MOENCH:
     case defs::CHIPTESTBOARD:
-    case defs::XILINX_CHIPTESTBOARD: {
+    case defs::XILINX_CHIPTESTBOARD:
+    case defs::GOTTHARD2: {
         auto res = getNextFrameNumber(pos);
         if (!res.equal()) {
             uint64_t maxVal = 0;
@@ -1771,6 +1794,24 @@ void Detector::setPedestalMode(const defs::pedestalParameters par,
     pimpl->Parallel(&Module::setPedestalMode, pos, par);
 }
 
+Result<defs::timingInfoDecoder>
+Detector::getTimingInfoDecoder(Positions pos) const {
+    return pimpl->Parallel(&Module::getTimingInfoDecoder, pos);
+}
+
+void Detector::setTimingInfoDecoder(defs::timingInfoDecoder value,
+                                    Positions pos) {
+    pimpl->Parallel(&Module::setTimingInfoDecoder, pos, value);
+}
+
+Result<defs::collectionMode> Detector::getCollectionMode(Positions pos) const {
+    return pimpl->Parallel(&Module::getCollectionMode, pos);
+}
+
+void Detector::setCollectionMode(defs::collectionMode value, Positions pos) {
+    pimpl->Parallel(&Module::setCollectionMode, pos, value);
+}
+
 // Gotthard Specific
 
 Result<defs::ROI> Detector::getROI(Positions pos) const {
@@ -2552,12 +2593,21 @@ void Detector::setPatternWaitAddr(int level, int addr, Positions pos) {
     pimpl->Parallel(&Module::setPatternWaitAddr, pos, level, addr);
 }
 
-Result<uint64_t> Detector::getPatternWaitTime(int level, Positions pos) const {
-    return pimpl->Parallel(&Module::getPatternWaitTime, pos, level);
+Result<uint64_t> Detector::getPatternWaitClocks(int level,
+                                                Positions pos) const {
+    return pimpl->Parallel(&Module::getPatternWaitClocks, pos, level);
 }
 
-void Detector::setPatternWaitTime(int level, uint64_t t, Positions pos) {
-    pimpl->Parallel(&Module::setPatternWaitTime, pos, level, t);
+void Detector::setPatternWaitClocks(int level, uint64_t t, Positions pos) {
+    pimpl->Parallel(&Module::setPatternWaitClocks, pos, level, t);
+}
+
+Result<ns> Detector::getPatternWaitInterval(int level, Positions pos) const {
+    return pimpl->Parallel(&Module::getPatternWaitInterval, pos, level);
+}
+
+void Detector::setPatternWaitInterval(int level, ns t, Positions pos) {
+    pimpl->Parallel(&Module::setPatternWaitInterval, pos, level, t.count());
 }
 
 Result<uint64_t> Detector::getPatternMask(Positions pos) {
@@ -2673,16 +2723,18 @@ Result<uint32_t> Detector::readRegister(uint32_t addr, Positions pos) const {
     return pimpl->Parallel(&Module::readRegister, pos, addr);
 }
 
-void Detector::writeRegister(uint32_t addr, uint32_t val, Positions pos) {
-    pimpl->Parallel(&Module::writeRegister, pos, addr, val);
+void Detector::writeRegister(uint32_t addr, uint32_t val, bool validate,
+                             Positions pos) {
+    pimpl->Parallel(&Module::writeRegister, pos, addr, val, validate);
 }
 
-void Detector::setBit(uint32_t addr, int bitnr, Positions pos) {
-    pimpl->Parallel(&Module::setBit, pos, addr, bitnr);
+void Detector::setBit(uint32_t addr, int bitnr, bool validate, Positions pos) {
+    pimpl->Parallel(&Module::setBit, pos, addr, bitnr, validate);
 }
 
-void Detector::clearBit(uint32_t addr, int bitnr, Positions pos) {
-    pimpl->Parallel(&Module::clearBit, pos, addr, bitnr);
+void Detector::clearBit(uint32_t addr, int bitnr, bool validate,
+                        Positions pos) {
+    pimpl->Parallel(&Module::clearBit, pos, addr, bitnr, validate);
 }
 
 Result<int> Detector::getBit(uint32_t addr, int bitnr, Positions pos) {

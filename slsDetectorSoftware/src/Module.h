@@ -75,12 +75,6 @@ class Module : public virtual slsDetectorDefs {
     verify is if shared memory version matches existing one */
     explicit Module(int det_id = 0, int module_index = 0, bool verify = true);
 
-    virtual ~Module();
-
-    /** Frees shared memory and deletes shared memory structure
-    Safe to call only if detector shm also deleted or its numberOfModules is
-    updated */
-    void freeSharedMemory();
     bool isFixedPatternSharedMemoryCompatible() const;
     std::string getHostname() const;
 
@@ -419,6 +413,10 @@ class Module : public virtual slsDetectorDefs {
     void setNumberOfFilterCells(int value);
     defs::pedestalParameters getPedestalMode() const;
     void setPedestalMode(defs::pedestalParameters par);
+    defs::timingInfoDecoder getTimingInfoDecoder() const;
+    void setTimingInfoDecoder(const defs::timingInfoDecoder enable);
+    defs::collectionMode getCollectionMode() const;
+    void setCollectionMode(const defs::collectionMode enable);
 
     /**************************************************
      *                                                *
@@ -552,8 +550,10 @@ class Module : public virtual slsDetectorDefs {
     void setPatternLoopCycles(int level, int n);
     int getPatternWaitAddr(int level) const;
     void setPatternWaitAddr(int level, int addr);
-    uint64_t getPatternWaitTime(int level) const;
-    void setPatternWaitTime(int level, uint64_t t);
+    uint64_t getPatternWaitClocks(int level) const;
+    void setPatternWaitClocks(int level, uint64_t t);
+    uint64_t getPatternWaitInterval(int level) const;
+    void setPatternWaitInterval(int level, uint64_t t);
     uint64_t getPatternMask() const;
     void setPatternMask(uint64_t mask);
     uint64_t getPatternBitMask() const;
@@ -589,9 +589,9 @@ class Module : public virtual slsDetectorDefs {
     bool getUpdateMode() const;
     void setUpdateMode(const bool updatemode);
     uint32_t readRegister(uint32_t addr) const;
-    uint32_t writeRegister(uint32_t addr, uint32_t val);
-    void setBit(uint32_t addr, int n);
-    void clearBit(uint32_t addr, int n);
+    void writeRegister(uint32_t addr, uint32_t val, bool validate);
+    void setBit(uint32_t addr, int n, bool validate);
+    void clearBit(uint32_t addr, int n, bool validate);
     int getBit(uint32_t addr, int n);
     void executeFirmwareTest();
     void executeBusTest();

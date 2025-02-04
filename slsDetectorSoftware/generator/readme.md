@@ -27,15 +27,15 @@ The dump.json is the AST of the file `slsDetectorPackage/slsSupportLib/src/ToStr
 
 ```sh
 # to generate the dump.json file
-cd slsSupportLib/src/ToString.cpp
-clang++ -Xclang -ast-dump=json -Xclang -ast-dump-filter -Xclang StringTo  -c ToString.cpp -I ../include/ -std=gnu++11
+cd slsSupportLib/src
+clang++ -Xclang -ast-dump=json -Xclang -ast-dump-filter -Xclang StringTo -c ToString.cpp -I ../include/ -std=gnu++11 > ../../slsDetectorSoftware/generator/autocomplete/dump.json 
 # clang version used: 14.0.0-1ubuntu1.1
 ```
 
 the `dump.json` file produced by clang is not a correct json file because we used the `-ast-dump-filter`. autocomplete.py can be used to fix the format of `dump.json` and produce a new file called `fixed.json` that is json format.
 ```
 # to convert dump.json into correct json format. 
-python autocomplete.py -f # produces the file fixed.json
+python autocomplete.py -f # produces/updates the file fixed.json
 ``` 
 
 ### Code components

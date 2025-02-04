@@ -115,6 +115,28 @@ int printSocketReadError() {
     return FAIL;
 }
 
+int sendError(int file_des) {
+    ret = FAIL;
+    LOG(logERROR, (mess));
+    Server_SendResult(file_des, INT32, NULL, 0);
+    return ret;
+}
+
+void setMemoryAllocationErrorMessage() {
+    struct sysinfo info;
+    sysinfo(&info);
+    sprintf(
+        mess,
+        "Memory allocation error (%s). Available space: %d MB. Please reboot",
+        getFunctionNameFromEnum((enum detFuncs)fnum),
+        (int)(info.freeram / (1024 * 1024)));
+#ifdef EIGERD
+    strcat(mess, ".\n");
+#else
+    strcat(mess, " using sls_detector_put rebootcontroller.\n");
+#endif
+}
+
 void init_detector() {
     memset(udpDetails, 0, sizeof(udpDetails));
 #ifdef VIRTUAL
@@ -280,7 +302,7 @@ void function_table() {
     flist[F_SET_PATTERN_LOOP_ADDRESSES] = &set_pattern_loop_addresses;
     flist[F_SET_PATTERN_LOOP_CYCLES] = &set_pattern_loop_cycles;
     flist[F_SET_PATTERN_WAIT_ADDR] = &set_pattern_wait_addr;
-    flist[F_SET_PATTERN_WAIT_TIME] = &set_pattern_wait_time;
+    flist[F_SET_PATTERN_WAIT_CLOCKS] = &set_pattern_wait_clocks;
     flist[F_SET_PATTERN_MASK] = &set_pattern_mask;
     flist[F_GET_PATTERN_MASK] = &get_pattern_mask;
     flist[F_SET_PATTERN_BIT_MASK] = &set_pattern_bit_mask;
@@ -492,7 +514,12 @@ void function_table() {
     flist[F_GET_PEDESTAL_MODE] = &get_pedestal_mode;
     flist[F_SET_PEDESTAL_MODE] = &set_pedestal_mode;
     flist[F_CONFIG_TRANSCEIVER] = &config_transceiver;
-
+    flist[F_GET_TIMING_INFO_DECODER] = &get_timing_info_decoder;
+    flist[F_SET_TIMING_INFO_DECODER] = &set_timing_info_decoder;
+    flist[F_GET_COLLECTION_MODE] = &get_collection_mode;
+    flist[F_SET_COLLECTION_MODE] = &set_collection_mode;
+    flist[F_GET_PATTERN_WAIT_INTERVAL] = &get_pattern_wait_interval;
+    flist[F_SET_PATTERN_WAIT_INTERVAL] = &set_pattern_wait_interval;
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
         LOG(logERROR, ("The last detector function enum has reached its "
@@ -1649,40 +1676,35 @@ int get_adc(int file_des) {
 int write_register(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint32_t args[2] = {-1, -1};
-    uint32_t retval = -1;
+    uint32_t args[3] = {-1, -1, -1};
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     uint32_t addr = args[0];
     uint32_t val = args[1];
-    LOG(logDEBUG1, ("Writing to register 0x%x, data 0x%x\n", addr, val));
+    uint32_t validate = args[2];
+    LOG(logDEBUG1, ("Writing to register 0x%x, data 0x%x, validate:%d\n", addr,
+                    val, validate));
 
     // only set
     if (Server_VerifyLock() == OK) {
-#ifdef GOTTHARDD
-        retval = writeRegister16And32(addr, val);
-#elif EIGERD
-        if (writeRegister(addr, val) == FAIL) {
+#if EIGERD
+        if (writeRegister(addr, val, validate) == FAIL) {
             ret = FAIL;
             sprintf(mess, "Could not write to register 0x%x.\n", addr);
             LOG(logERROR, (mess));
-        } else {
-            if (readRegister(addr, &retval) == FAIL) {
-                ret = FAIL;
-                sprintf(
-                    mess,
-                    "Could not read register 0x%x or inconsistent values. Try "
-                    "to read +0x100 for only left and +0x200 for only right.\n",
-                    addr);
-                LOG(logERROR, (mess));
-            }
         }
 #else
-        retval = writeRegister(addr, val);
+#ifdef GOTTHARDD
+        writeRegister16And32(addr, val);
+        uint32_t retval = readRegister16And32(addr);
+#else
+        writeRegister(addr, val);
+        uint32_t retval = readRegister(addr);
 #endif
+        LOG(logDEBUG1, ("Write register retval (0x%x): 0x%x\n", addr, retval));
         // validate
-        if (ret == OK && retval != val) {
+        if (validate && ret == OK && retval != val) {
             ret = FAIL;
             sprintf(
                 mess,
@@ -1690,9 +1712,9 @@ int write_register(int file_des) {
                 addr, val, retval);
             LOG(logERROR, (mess));
         }
-        LOG(logDEBUG1, ("Write register (0x%x): 0x%x\n", retval));
+#endif
     }
-    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int read_register(int file_des) {
@@ -1707,9 +1729,7 @@ int read_register(int file_des) {
     LOG(logDEBUG1, ("Reading from register 0x%x\n", addr));
 
     // get
-#ifdef GOTTHARDD
-    retval = readRegister16And32(addr);
-#elif EIGERD
+#if EIGERD
     if (readRegister(addr, &retval) == FAIL) {
         ret = FAIL;
         sprintf(mess,
@@ -1718,6 +1738,8 @@ int read_register(int file_des) {
                 addr);
         LOG(logERROR, (mess));
     }
+#elif GOTTHARDD
+    retval = readRegister16And32(addr);
 #else
     retval = readRegister(addr);
 #endif
@@ -1729,67 +1751,45 @@ int get_module(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
-    sls_detector_module module;
-    int *myDac = NULL;
-    int *myChan = NULL;
-    module.dacs = NULL;
-    module.chanregs = NULL;
-
 #if !defined(MYTHEN3D) && !defined(EIGERD)
     functionNotImplemented();
+    return Server_SendResult(file_des, INT32, NULL, 0);
 #else
-
-    // allocate to receive module structure
-    // allocate dacs
-    myDac = malloc(getNumberOfDACs() * sizeof(int));
-    // error
-    if (getNumberOfDACs() > 0 && myDac == NULL) {
-        ret = FAIL;
-        sprintf(mess, "Could not allocate dacs\n");
-        LOG(logERROR, (mess));
-    } else
-        module.dacs = myDac;
-
-    // allocate chans
-    if (ret == OK) {
-        myChan = malloc(getTotalNumberOfChannels() * sizeof(int));
-        if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
-            ret = FAIL;
-            strcpy(mess, "Could not allocate chans\n");
-            LOG(logERROR, (mess));
-        } else
-            module.chanregs = myChan;
+    int ndac = getNumberOfDACs();
+    int nchan = getTotalNumberOfChannels();
+    if (ndac <= 0 || nchan <= 0) {
+        strcpy(mess, "Invalid number of dacs/channels to set module\n");
+        return sendError(file_des);
     }
 
-    // receive module structure
-    if (ret == OK) {
-        module.nchip = getNumberOfChips();
-        module.nchan = getTotalNumberOfChannels();
-        module.ndac = getNumberOfDACs();
-
-        // ensure nchan is not 0, else trimbits not copied
-        if (module.nchan == 0) {
-            strcpy(mess, "Could not get module as the number of channels to "
-                         "copy is 0\n");
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-        getModule(&module);
-    }
-#endif
-    Server_SendResult(file_des, INT32, NULL, 0);
-    if (ret != FAIL) {
-        if (sendModule(file_des, &module) < 0) {
-            ret = FAIL;
-            strcpy(mess, "Could not send module data\n");
-            LOG(logERROR, (mess));
-        }
-    }
-    if (myChan != NULL)
-        free(myChan);
-    if (myDac != NULL)
+    sls_detector_module module;
+    module.dacs = NULL;
+    module.chanregs = NULL;
+    int *myDac = malloc(ndac * sizeof(int));
+    int *myChan = malloc(nchan * sizeof(int));
+    if (myDac == NULL || myChan == NULL) {
         free(myDac);
+        free(myChan);
+        setMemoryAllocationErrorMessage();
+        return sendError(file_des);
+    }
+    module.dacs = myDac;
+    module.ndac = ndac;
+    module.chanregs = myChan;
+    module.nchan = nchan;
+    module.nchip = getNumberOfChips();
+    getModule(&module);
+
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret == OK && sendModule(file_des, &module) < 0) {
+        strcpy(mess, "Could not send module data\n");
+        ret = FAIL;
+        LOG(logERROR, (mess));
+    }
+    free(myChan);
+    free(myDac);
     return ret;
+#endif
 }
 
 int set_module(int file_des) {
@@ -1799,63 +1799,53 @@ int set_module(int file_des) {
 #if !(defined(MYTHEN3D) || defined(EIGERD))
     functionNotImplemented();
 #else
+    int ndac = getNumberOfDACs();
+    int nchan = getTotalNumberOfChannels();
+    if (ndac <= 0 || nchan <= 0) {
+        strcpy(mess, "Invalid number of dacs/channels to set module\n");
+        return sendError(file_des);
+    }
 
     sls_detector_module module;
-    int *myDac = NULL;
-    int *myChan = NULL;
     module.dacs = NULL;
     module.chanregs = NULL;
-
-    // allocate to receive arguments
-    // allocate dacs
-    myDac = malloc(getNumberOfDACs() * sizeof(int));
-    // error
-    if (getNumberOfDACs() > 0 && myDac == NULL) {
-        ret = FAIL;
-        strcpy(mess, "Could not allocate dacs\n");
-        LOG(logERROR, (mess));
-    } else
-        module.dacs = myDac;
-
-    // allocate chans
-    if (ret == OK) {
-        myChan = malloc(getTotalNumberOfChannels() * sizeof(int));
-        if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
-            ret = FAIL;
-            strcpy(mess, "Could not allocate chans\n");
-            LOG(logERROR, (mess));
-        } else
-            module.chanregs = myChan;
+    int *myDac = malloc(ndac * sizeof(int));
+    int *myChan = malloc(nchan * sizeof(int));
+    if (myDac == NULL || myChan == NULL) {
+        free(myDac);
+        free(myChan);
+        setMemoryAllocationErrorMessage();
+        return sendError(file_des);
     }
-    // receive arguments
-    if (ret == OK) {
-        module.nchip = getNumberOfChips();
-        module.nchan = getTotalNumberOfChannels();
-        module.ndac = getNumberOfDACs();
-        int ts = receiveModule(file_des, &module);
-        if (ts < 0) {
-            free(myChan);
-            free(myDac);
-            return printSocketReadError();
-        }
-        LOG(logDEBUG1, ("module register is %d, nchan %d, nchip %d, "
-                        "ndac %d, iodelay %d, tau %d, eV %d\n",
-                        module.reg, module.nchan, module.nchip, module.ndac,
-                        module.iodelay, module.tau, module.eV[0]));
-        // should at least have a dac
-        if (ts <= (int)sizeof(sls_detector_module)) {
-            ret = FAIL;
-            strcpy(mess, "Cannot set module. Received incorrect number of "
-                         "dacs or channels\n");
-            LOG(logERROR, (mess));
-        }
+    module.dacs = myDac;
+    module.ndac = ndac;
+    module.chanregs = myChan;
+    module.nchan = nchan;
+    module.nchip = getNumberOfChips();
+
+    int ts = receiveModule(file_des, &module);
+    if (ts < 0) {
+        free(myChan);
+        free(myDac);
+        return printSocketReadError();
+    }
+    LOG(logDEBUG1, ("module register is %d, nchan %d, nchip %d, "
+                    "ndac %d, iodelay %d, tau %d, eV %d\n",
+                    module.reg, module.nchan, module.nchip, module.ndac,
+                    module.iodelay, module.tau, module.eV[0]));
+    // should at least have a dac
+    if (ts <= (int)sizeof(sls_detector_module)) {
+        strcpy(mess, "Cannot set module. Received incorrect number of "
+                     "dacs or channels\n");
+        free(myChan);
+        free(myDac);
+        return sendError(file_des);
     }
 
     // only set
-    if (ret == OK && Server_VerifyLock() == OK) {
+    if (Server_VerifyLock() == OK) {
         // check index
-
-// setsettings
+        // setsettings
 #ifndef MYTHEN3D
         // m3 uses reg for chip (not settings)
         validate_settings((enum detectorSettings)(module.reg));
@@ -1868,10 +1858,8 @@ int set_module(int file_des) {
 #endif
         LOG(logDEBUG1, ("Settings: %d\n", retval));
     }
-    if (myChan != NULL)
-        free(myChan);
-    if (myDac != NULL)
-        free(myDac);
+    free(myChan);
+    free(myDac);
 #endif
 
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -2026,101 +2014,106 @@ int acquire(int blocking, int file_des) {
 #if defined(JUNGFRAUD)
             // chipv1.1 has to be configured before acquisition
             if (getChipVersion() == 11 && !isChipConfigured()) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition. Chip is not configured. "
-                         "Power it on to configure it.\n");
-            LOG(logERROR, (mess));
-        } else
+                ret = FAIL;
+                strcpy(mess,
+                       "Could not start acquisition. Chip is not configured. "
+                       "Power it on to configure it.\n");
+                LOG(logERROR, (mess));
+            } else
 #endif
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
-            if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                 getReadoutMode() == ANALOG_ONLY) &&
-                (getNumAnalogSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not start acquisition. Invalid number of analog "
-                    "samples: %d.\n",
-                    getNumAnalogSamples());
-            LOG(logERROR, (mess));
-        } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                    getReadoutMode() == DIGITAL_ONLY ||
-                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                   (getNumDigitalSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(mess,
+                if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
+                     getReadoutMode() == ANALOG_ONLY) &&
+                    (getNumAnalogSamples() <= 0)) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not start acquisition. Invalid number of analog "
+                        "samples: %d.\n",
+                        getNumAnalogSamples());
+                LOG(logERROR, (mess));
+            } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
+                        getReadoutMode() == DIGITAL_ONLY ||
+                        getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                       (getNumDigitalSamples() <= 0)) {
+                ret = FAIL;
+                sprintf(
+                    mess,
                     "Could not start acquisition. Invalid number of digital "
                     "samples: %d.\n",
                     getNumDigitalSamples());
-            LOG(logERROR, (mess));
-        } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
-                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                   (getNumTransceiverSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not start acquisition. Invalid number of "
-                    "transceiver "
-                    "samples: %d.\n",
-                    getNumTransceiverSamples());
-            LOG(logERROR, (mess));
-        } else
+                LOG(logERROR, (mess));
+            } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
+                        getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                       (getNumTransceiverSamples() <= 0)) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not start acquisition. Invalid number of "
+                        "transceiver "
+                        "samples: %d.\n",
+                        getNumTransceiverSamples());
+                LOG(logERROR, (mess));
+            } else
 #endif
 #ifdef EIGERD
-            // check for hardware mac and hardware ip
-            if (udpDetails[0].srcmac != getDetectorMAC()) {
-            ret = FAIL;
-            uint64_t sourcemac = getDetectorMAC();
-            char src_mac[MAC_ADDRESS_SIZE];
-            getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
-            sprintf(mess,
-                    "Invalid udp source mac address for this detector. "
-                    "Must be "
-                    "same as hardware detector mac address %s\n",
-                    src_mac);
-            LOG(logERROR, (mess));
-        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                   (udpDetails[0].srcip != getDetectorIP())) {
-            ret = FAIL;
-            uint32_t sourceip = getDetectorIP();
-            char src_ip[INET_ADDRSTRLEN];
-            getIpAddressinString(src_ip, sourceip);
-            sprintf(mess,
-                    "Invalid udp source ip address for this detector. Must "
-                    "be "
-                    "same as hardware detector ip address %s in 1G readout "
-                    "mode \n",
-                    src_ip);
-            LOG(logERROR, (mess));
-        } else
+                // check for hardware mac and hardware ip
+                if (udpDetails[0].srcmac != getDetectorMAC()) {
+                    ret = FAIL;
+                    uint64_t sourcemac = getDetectorMAC();
+                    char src_mac[MAC_ADDRESS_SIZE];
+                    getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
+                    sprintf(mess,
+                            "Invalid udp source mac address for this detector. "
+                            "Must be "
+                            "same as hardware detector mac address %s\n",
+                            src_mac);
+                    LOG(logERROR, (mess));
+                } else if (!enableTenGigabitEthernet(GET_FLAG) &&
+                           (udpDetails[0].srcip != getDetectorIP())) {
+                    ret = FAIL;
+                    uint32_t sourceip = getDetectorIP();
+                    char src_ip[INET_ADDRSTRLEN];
+                    getIpAddressinString(src_ip, sourceip);
+                    sprintf(
+                        mess,
+                        "Invalid udp source ip address for this detector. Must "
+                        "be "
+                        "same as hardware detector ip address %s in 1G readout "
+                        "mode \n",
+                        src_ip);
+                    LOG(logERROR, (mess));
+                } else
 #endif
-            if (configured == FAIL) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because ");
-            strcat(mess, configureMessage);
-            LOG(logERROR, (mess));
-        } else if (sharedMemory_getScanStatus() == RUNNING) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because a scan is "
-                         "already running!\n");
-            LOG(logERROR, (mess));
-        } else {
-            memset(scanErrMessage, 0, MAX_STR_LENGTH);
-            sharedMemory_setScanStop(0);
-            sharedMemory_setScanStatus(IDLE); // if it was error
-            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
-                               &blocking)) {
-                ret = FAIL;
-                strcpy(mess, "Could not start acquisition thread!\n");
-                LOG(logERROR, (mess));
-            } else {
-                // wait for blocking always (scan or not)
-                // non blocking-no scan also wait (for error message)
-                // non blcoking-scan dont wait (there is
-                // scanErrorMessage)
-                if (blocking || !scan) {
-                    pthread_join(pthread_tid, NULL);
+                    if (configured == FAIL) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not start acquisition because ");
+                    strcat(mess, configureMessage);
+                    LOG(logERROR, (mess));
+                } else if (sharedMemory_getScanStatus() == RUNNING) {
+                    ret = FAIL;
+                    strcpy(mess,
+                           "Could not start acquisition because a scan is "
+                           "already running!\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    memset(scanErrMessage, 0, MAX_STR_LENGTH);
+                    sharedMemory_setScanStop(0);
+                    sharedMemory_setScanStatus(IDLE); // if it was error
+                    if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                                       &blocking)) {
+                        ret = FAIL;
+                        strcpy(mess, "Could not start acquisition thread!\n");
+                        LOG(logERROR, (mess));
+                    } else {
+                        // wait for blocking always (scan or not)
+                        // non blocking-no scan also wait (for error message)
+                        // non blcoking-scan dont wait (there is
+                        // scanErrorMessage)
+                        if (blocking || !scan) {
+                            pthread_join(pthread_tid, NULL);
+                        } else
+                            pthread_detach(pthread_tid);
+                    }
                 }
-            }
-        }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -2214,6 +2207,13 @@ void *start_state_machine(void *arg) {
                     ret = FAIL;
                     strcpy(mess, "Could not start read frames thread!\n");
                     LOG(logERROR, (mess));
+                } else {
+                    // blocking or scan
+                    // wait to finish reading from fifo (1g real ctb)
+                    if (*blocking || times > 1)
+                        pthread_join(pthread_tid_ctb_1g, NULL);
+                    else
+                        pthread_detach(pthread_tid_ctb_1g);
                 }
             }
             // add scan error message
@@ -2230,12 +2230,6 @@ void *start_state_machine(void *arg) {
 #endif
         // blocking or scan
         if (*blocking || times > 1) {
-            // wait to finish reading from fifo (1g real ctb)
-#if defined(CHIPTESTBOARDD) && !defined(VIRTUAL)
-            if (!enableTenGigabitEthernet(-1)) {
-                pthread_join(pthread_tid_ctb_1g, NULL);
-            }
-#endif
 #ifdef EIGERD
             waitForAcquisitionEnd(&ret, mess);
             if (ret == FAIL && scan) {
@@ -2956,6 +2950,7 @@ int get_frames_left(int file_des) {
     retval = getNumFramesLeft();
     LOG(logDEBUG1, ("retval num frames left %lld\n", (long long int)retval));
 #endif
+
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -3541,13 +3536,13 @@ int set_pattern_wait_addr(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int set_pattern_wait_time(int file_des) {
+int set_pattern_wait_clocks(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     uint64_t args[2] = {-1, -1};
     uint64_t retval = -1;
 
-    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+    if (receiveData(file_des, args, sizeof(args), INT64) < 0)
         return printSocketReadError();
 #if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
     !defined(MYTHEN3D)
@@ -3555,16 +3550,23 @@ int set_pattern_wait_time(int file_des) {
 #else
     int loopLevel = (int)args[0];
     uint64_t timeval = args[1];
-    LOG(logDEBUG1, ("Setting Pattern wait time (loopLevel:%d timeval:0x%llx)\n",
-                    loopLevel, (long long int)timeval));
+    LOG(logDEBUG1,
+        ("Setting Pattern wait clocks (loopLevel:%d clocks:0x%lld)\n",
+         loopLevel, (long long int)timeval));
     if (((int64_t)timeval == GET_FLAG) || (Server_VerifyLock() == OK)) {
         // set
         if ((int64_t)timeval != GET_FLAG) {
-            ret = validate_setPatternWaitTime(mess, loopLevel, timeval);
+            ret = validate_setPatternWaitClocksAndInterval(mess, loopLevel,
+                                                           timeval, 1);
         }
         // get
         if (ret == OK) {
-            ret = validate_getPatternWaitTime(mess, loopLevel, &retval);
+            ret = validate_getPatternWaitClocksAndInterval(mess, loopLevel,
+                                                           &retval, 1);
+            if ((int64_t)timeval != GET_FLAG) {
+                validate64(&ret, mess, (int64_t)timeval, retval,
+                           "set pattern wait clocks", DEC);
+            }
         }
     }
 #endif
@@ -4711,7 +4713,8 @@ int set_next_frame_number(int file_des) {
     LOG(logDEBUG1, ("Setting next frame number to %llu\n", arg));
 
 #if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&            \
-    !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -4790,7 +4793,8 @@ int get_next_frame_number(int file_des) {
     LOG(logDEBUG1, ("Getting next frame number \n"));
 
 #if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&            \
-    !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get
@@ -6012,11 +6016,9 @@ int get_clock_frequency(int file_des) {
     case ADC_CLOCK:
         c = ADC_CLK;
         break;
-#ifdef CHIPTESTBOARDD
     case DBIT_CLOCK:
         c = DBIT_CLK;
         break;
-#endif
     case RUN_CLOCK:
         c = RUN_CLK;
         break;
@@ -6081,7 +6083,11 @@ int set_clock_phase(int file_des) {
 #endif
         default:
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
-            if (ind < NUM_CLOCKS) {
+#ifdef MYTHEN3D
+            if (args[0] < NUM_CLOCKS_TO_SET) {
+#else
+            if (args[0] < NUM_CLOCKS) {
+#endif
                 c = (enum CLKINDEX)ind;
                 break;
             }
@@ -6544,6 +6550,10 @@ int set_veto_photon(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+
     int args[2] = {-1, -1};
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
@@ -6551,14 +6561,17 @@ int set_veto_photon(int file_des) {
     const int numChannels = args[1];
 
     int *gainIndices = malloc(sizeof(int) * numChannels);
-    if (receiveData(file_des, gainIndices, sizeof(int) * numChannels, INT32) <
-        0) {
+    int *values = malloc(sizeof(int) * numChannels);
+    if (gainIndices == NULL || values == NULL) {
         free(gainIndices);
-        return printSocketReadError();
+        free(values);
+        setMemoryAllocationErrorMessage();
+        return sendError(file_des);
     }
 
-    int *values = malloc(sizeof(int) * numChannels);
-    if (receiveData(file_des, values, sizeof(int) * numChannels, INT32) < 0) {
+    if ((receiveData(file_des, gainIndices, sizeof(int) * numChannels, INT32) <
+         0) ||
+        (receiveData(file_des, values, sizeof(int) * numChannels, INT32)) < 0) {
         free(gainIndices);
         free(values);
         return printSocketReadError();
@@ -6567,9 +6580,6 @@ int set_veto_photon(int file_des) {
     LOG(logINFO, ("Setting Veto Photon: [chipIndex:%d, nch:%d]\n", chipIndex,
                   numChannels));
 
-#ifndef GOTTHARD2D
-    functionNotImplemented();
-#else
     // only set
     if (Server_VerifyLock() == OK) {
         if (numChannels != NCHAN) {
@@ -6616,66 +6626,60 @@ int set_veto_photon(int file_des) {
             }
         }
     }
+
+    free(gainIndices);
+    free(values);
 #endif
-    if (gainIndices != NULL) {
-        free(gainIndices);
-    }
-    if (values != NULL) {
-        free(values);
-    }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_veto_photon(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int arg = -1;
-    int *retvals = NULL;
-    int *gainRetvals = NULL;
 
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+    return Server_SendResult(file_des, INT32, NULL, 0);
+#else
+
+    int arg = -1;
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
     LOG(logDEBUG1, ("Getting veto photon [chip Index:%d]\n", arg));
 
-#ifndef GOTTHARD2D
-    functionNotImplemented();
-#else
-    retvals = malloc(sizeof(int) * NCHAN);
-    gainRetvals = malloc(sizeof(int) * NCHAN);
+    int *retvals = malloc(sizeof(int) * NCHAN);
+    int *gainRetvals = malloc(sizeof(int) * NCHAN);
+    if (gainRetvals == NULL || retvals == NULL) {
+        free(gainRetvals);
+        free(retvals);
+        setMemoryAllocationErrorMessage();
+        return sendError(file_des);
+    }
     memset(retvals, 0, sizeof(int) * NCHAN);
     memset(gainRetvals, 0, sizeof(int) * NCHAN);
 
-    if (retvals == NULL || gainRetvals == NULL) {
+    // get only
+    int chipIndex = arg;
+    if (chipIndex < -1 || chipIndex >= NCHIP) {
         ret = FAIL;
-        strcpy(
-            mess,
-            "Could not get veto photon. Could not allocate memory in server\n");
+        sprintf(mess, "Could not get veto photon. Invalid chip index %d\n",
+                chipIndex);
         LOG(logERROR, (mess));
     } else {
-        // get only
-        int chipIndex = arg;
-        if (chipIndex < -1 || chipIndex >= NCHIP) {
-            ret = FAIL;
-            sprintf(mess, "Could not get veto photon. Invalid chip index %d\n",
-                    chipIndex);
+        ret = getVetoPhoton(chipIndex, retvals, gainRetvals);
+        if (ret == FAIL) {
+            strcpy(mess, "Could not get veto photon for chipIndex -1. Not the "
+                         "same for all chips. Select specific chip index "
+                         "instead.\n");
             LOG(logERROR, (mess));
         } else {
-            ret = getVetoPhoton(chipIndex, retvals, gainRetvals);
-            if (ret == FAIL) {
-                strcpy(mess,
-                       "Could not get veto photon for chipIndex -1. Not the "
-                       "same for all chips. Select specific chip index "
-                       "instead.\n");
-                LOG(logERROR, (mess));
-            } else {
-                for (int i = 0; i < NCHAN; ++i) {
-                    LOG(logDEBUG1,
-                        ("%d:[%d, %d]\n", i, retvals[i], gainRetvals[i]));
-                }
+            for (int i = 0; i < NCHAN; ++i) {
+                LOG(logDEBUG1,
+                    ("%d:[%d, %d]\n", i, retvals[i], gainRetvals[i]));
             }
         }
     }
-#endif
+
     Server_SendResult(file_des, INT32, NULL, 0);
     if (ret != FAIL) {
         int nch = NCHAN;
@@ -6683,13 +6687,10 @@ int get_veto_photon(int file_des) {
         sendData(file_des, gainRetvals, sizeof(int) * NCHAN, INT32);
         sendData(file_des, retvals, sizeof(int) * NCHAN, INT32);
     }
-    if (retvals != NULL) {
-        free(retvals);
-    }
-    if (gainRetvals != NULL) {
-        free(gainRetvals);
-    }
+    free(retvals);
+    free(gainRetvals);
     return ret;
+#endif
 }
 
 int set_veto_reference(int file_des) {
@@ -6750,8 +6751,8 @@ int set_burst_mode(int file_des) {
     if (Server_VerifyLock() == OK) {
         switch (arg) {
         case BURST_INTERNAL:
-        case BURST_EXTERNAL:
-        case CONTINUOUS_INTERNAL:
+        // case BURST_EXTERNAL:
+        // case CONTINUOUS_INTERNAL:
         case CONTINUOUS_EXTERNAL:
             break;
         default:
@@ -7858,18 +7859,20 @@ int set_pattern(int file_des) {
     !defined(MYTHEN3D)
     functionNotImplemented();
 #else
-
     patternParameters *pat = malloc(sizeof(patternParameters));
+    if (pat == NULL) {
+        setMemoryAllocationErrorMessage();
+        return sendError(file_des);
+    }
     memset(pat, 0, sizeof(patternParameters));
+
     // ignoring endianness for eiger
     if (receiveData(file_des, pat, sizeof(patternParameters), INT32) < 0) {
-        if (pat != NULL)
-            free(pat);
+        free(pat);
         return printSocketReadError();
     }
     if (receiveData(file_des, args, MAX_STR_LENGTH, OTHER) < 0) {
-        if (pat != NULL)
-            free(pat);
+        free(pat);
         return printSocketReadError();
     }
 
@@ -7877,8 +7880,7 @@ int set_pattern(int file_des) {
         LOG(logDEBUG1, ("Setting Pattern from structure\n"));
         ret = loadPattern(mess, logINFO, pat, args);
     }
-    if (pat != NULL)
-        free(pat);
+    free(pat);
 #endif
 
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -7914,6 +7916,10 @@ int get_pattern(int file_des) {
 #else
 
     patternParameters *pat = malloc(sizeof(patternParameters));
+    if (pat == NULL) {
+        setMemoryAllocationErrorMessage();
+        return sendError(file_des);
+    }
     memset(pat, 0, sizeof(patternParameters));
 
     if (Server_VerifyLock() == OK) {
@@ -7923,8 +7929,7 @@ int get_pattern(int file_des) {
     // ignoring endianness for eiger
     int ret =
         Server_SendResult(file_des, INT32, pat, sizeof(patternParameters));
-    if (pat != NULL)
-        free(pat);
+    free(pat);
     return ret;
 #endif
 }
@@ -8032,10 +8037,13 @@ int set_scan(int file_des) {
                 if (ret == OK) {
                     scan = 1;
                     numScanSteps = (abs(stop - start) / abs(step)) + 1;
-                    if (scanSteps != NULL) {
-                        free(scanSteps);
-                    }
+                    // freed only at startup of the next scan
+                    free(scanSteps);
                     scanSteps = malloc(numScanSteps * sizeof(int));
+                    if (scanSteps == NULL) {
+                        setMemoryAllocationErrorMessage();
+                        return sendError(file_des);
+                    }
                     for (int i = 0; i != numScanSteps; ++i) {
                         scanSteps[i] = start + i * step;
                         LOG(logDEBUG1, ("scansteps[%d]:%d\n", i, scanSteps[i]));
@@ -8309,55 +8317,54 @@ int set_adc_config(int file_des) {
 int get_bad_channels(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int nretvals = 0;
-    int *retvals = NULL;
-
     LOG(logDEBUG1, ("Getting bad channels\n"));
 
 #if !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
+    return Server_SendResult(file_des, INT32, NULL, 0);
 #else
     // get only
-    retvals = getBadChannels(&nretvals);
+    int nretvals = 0;
+    int *retvals = getBadChannels(&nretvals);
     if (nretvals == -1) {
-        ret = FAIL;
-        strcpy(mess, "Could not get bad channels. Memory allcoation error\n");
-        LOG(logERROR, (mess));
+        setMemoryAllocationErrorMessage();
+        return sendError(file_des);
     }
-#endif
+
     Server_SendResult(file_des, INT32, NULL, 0);
-    if (ret != FAIL) {
-        sendData(file_des, &nretvals, sizeof(nretvals), INT32);
-        if (nretvals > 0) {
-            sendData(file_des, retvals, sizeof(int) * nretvals, INT32);
-        }
+    sendData(file_des, &nretvals, sizeof(nretvals), INT32);
+    if (nretvals > 0) {
+        sendData(file_des, retvals, sizeof(int) * nretvals, INT32);
     }
-    if (retvals != NULL) {
-        free(retvals);
-    }
+    free(retvals);
     return ret;
+#endif
 }
 
 int set_bad_channels(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int nargs = 0;
-    int *args = NULL;
-
-    if (receiveData(file_des, &nargs, sizeof(nargs), INT32) < 0)
-        return printSocketReadError();
-
-    if (nargs > 0) {
-        args = malloc(nargs * sizeof(int));
-        if (receiveData(file_des, args, nargs * sizeof(int), INT32) < 0)
-            return printSocketReadError();
-    }
-
-    LOG(logDEBUG1, ("Setting %d bad channels\n", nargs));
 
 #if !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
+    int nargs = 0;
+    if (receiveData(file_des, &nargs, sizeof(nargs), INT32) < 0)
+        return printSocketReadError();
+    int *args = NULL;
+    if (nargs > 0) {
+        args = malloc(nargs * sizeof(int));
+        if (args == NULL) {
+            setMemoryAllocationErrorMessage();
+            return sendError(file_des);
+        }
+        if (receiveData(file_des, args, nargs * sizeof(int), INT32) < 0) {
+            free(args);
+            return printSocketReadError();
+        }
+    }
+    LOG(logDEBUG1, ("Setting %d bad channels\n", nargs));
+
     // only set
     if (Server_VerifyLock() == OK) {
         // validate bad channel number
@@ -8386,11 +8393,11 @@ int set_bad_channels(int file_des) {
                 int nretvals = 0;
                 int *retvals = getBadChannels(&nretvals);
                 if (nretvals == -1) {
-                    ret = FAIL;
-                    strcpy(mess, "Could not get bad channels. Memory "
-                                 "allcoation error\n");
-                    LOG(logERROR, (mess));
-                } else if (nretvals != nargs) {
+                    free(args);
+                    setMemoryAllocationErrorMessage();
+                    return sendError(file_des);
+                }
+                if (nretvals != nargs) {
                     ret = FAIL;
                     sprintf(mess,
                             "Could not set bad channels. Set %d channels, but "
@@ -8399,15 +8406,11 @@ int set_bad_channels(int file_des) {
                             nargs, nretvals);
                     LOG(logERROR, (mess));
                 }
-                if (retvals != NULL) {
-                    free(retvals);
-                }
+                free(retvals);
             }
         }
     }
-    if (args != NULL) {
-        free(args);
-    }
+    free(args);
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -8512,7 +8515,8 @@ int start_readout(int file_des) {
                         ret = FAIL;
                         strcpy(mess, "Could not start read frames thread!\n");
                         LOG(logERROR, (mess));
-                    }
+                    } else
+                        pthread_detach(pthread_tid_ctb_1g);
                 }
             }
 #endif
@@ -9690,7 +9694,7 @@ int get_readout_speed(int file_des) {
     LOG(logDEBUG1, ("Getting readout speed\n"));
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(EIGERD) &&            \
-    !defined(GOTTHARD2D)
+    !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // get only
@@ -9714,7 +9718,7 @@ int set_readout_speed(int file_des) {
     LOG(logDEBUG1, ("Setting readout speed : %u\n", arg));
 
 #if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(EIGERD) &&            \
-    !defined(GOTTHARD2D)
+    !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
@@ -9730,7 +9734,8 @@ int set_readout_speed(int file_des) {
 #endif
         if (ret == OK) {
             switch (arg) {
-#if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD) ||               \
+    defined(MYTHEN3D)
             case FULL_SPEED:
             case HALF_SPEED:
             case QUARTER_SPEED:
@@ -9859,11 +9864,12 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
             strcpy(mess, "Server name is the same as the symbolic link. Please "
                          "use a different server name\n");
             LOG(logERROR, (mess));
+            Server_SendResult(file_des, INT32, NULL, 0);
         }
 
         // in same folder as current process (will also work for virtual then
         // with write permissions)
-        {
+        if (ret == OK) {
             const int fileNameSize = 128;
             char fname[fileNameSize];
             if (getAbsPath(fname, fileNameSize, serverName) == FAIL) {
@@ -9933,14 +9939,9 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
         src = malloc(MAX_BLACKFIN_PROGRAM_SIZE);
         if (src == NULL) {
             fclose(fd);
-            struct sysinfo info;
-            sysinfo(&info);
-            sprintf(mess,
-                    "Could not %s. Memory allocation failure. Free "
-                    "space: %d MB\n",
-                    functionType, (int)(info.freeram / (1024 * 1024)));
-            LOG(logERROR, (mess));
+            setMemoryAllocationErrorMessage();
             ret = FAIL;
+            LOG(logERROR, (mess));
         }
     }
     Server_SendResult(file_des, INT32, NULL, 0);
@@ -10083,6 +10084,7 @@ void receive_program_default(int file_des, enum PROGRAM_INDEX index,
     }
     Server_SendResult(file_des, INT32, NULL, 0);
     if (ret == FAIL) {
+        free(src);
         return;
     }
 
@@ -10594,13 +10596,15 @@ int get_frontend_firmware_version(int file_des) {
 int set_bit(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint32_t args[2] = {-1, -1};
+    uint32_t args[3] = {-1, -1, -1};
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     uint32_t addr = args[0];
     int nBit = (int)args[1];
-    LOG(logDEBUG1, ("Setting bit %d of reg 0x%x\n", nBit, addr));
+    uint32_t validate = args[2];
+    LOG(logDEBUG1,
+        ("Setting bit %d of reg 0x%x, validate:%d\n", nBit, addr, validate));
 
     // only set
     if (Server_VerifyLock() == OK) {
@@ -10613,20 +10617,23 @@ int set_bit(int file_des) {
             LOG(logERROR, (mess));
         } else {
 #ifdef EIGERD
-            ret = setBit(addr, nBit);
-            if (ret == FAIL) {
+            ret = setBit(addr, nBit, validate);
 #else
             uint32_t bitmask = (1 << nBit);
 #ifdef GOTTHARDD
             uint32_t val = readRegister16And32(addr) | bitmask;
-            uint32_t retval = writeRegister16And32(addr, val);
+            writeRegister16And32(addr, val);
+            uint32_t retval = readRegister16And32(addr) | bitmask;
 #else
             uint32_t val = readRegister(addr) | bitmask;
-            uint32_t retval = writeRegister(addr, val);
+            writeRegister(addr, val);
+            uint32_t retval = readRegister(addr) | bitmask;
 #endif
-            if (!(retval & bitmask)) {
+            if (validate && (!(retval & bitmask))) {
                 ret = FAIL;
+            }
 #endif
+            if (ret == FAIL) {
                 sprintf(mess, "Could not set bit %d.\n", nBit);
                 LOG(logERROR, (mess));
             }
@@ -10638,13 +10645,15 @@ int set_bit(int file_des) {
 int clear_bit(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint32_t args[2] = {-1, -1};
+    uint32_t args[3] = {-1, -1, -1};
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     uint32_t addr = args[0];
     int nBit = (int)args[1];
-    LOG(logDEBUG1, ("Clearing bit %d of reg 0x%x\n", nBit, addr));
+    uint32_t validate = args[2];
+    LOG(logDEBUG1,
+        ("Clearing bit %d of reg 0x%x, validate:%d\n", nBit, addr, validate));
 
     // only set
     if (Server_VerifyLock() == OK) {
@@ -10657,20 +10666,23 @@ int clear_bit(int file_des) {
             LOG(logERROR, (mess));
         } else {
 #ifdef EIGERD
-            ret = clearBit(addr, nBit);
-            if (ret == FAIL) {
+            ret = clearBit(addr, nBit, validate);
 #else
             uint32_t bitmask = (1 << nBit);
 #ifdef GOTTHARDD
             uint32_t val = readRegister16And32(addr) & ~bitmask;
-            uint32_t retval = writeRegister16And32(addr, val);
+            writeRegister16And32(addr, val);
+            uint32_t retval = readRegister16And32(addr) & ~bitmask;
 #else
             uint32_t val = readRegister(addr) & ~bitmask;
-            uint32_t retval = writeRegister(addr, val);
+            writeRegister(addr, val);
+            uint32_t retval = readRegister(addr) & ~bitmask;
 #endif
-            if (retval & bitmask) {
+            if (validate && (retval & bitmask)) {
                 ret = FAIL;
+            }
 #endif
+            if (ret == FAIL) {
                 sprintf(mess, "Could not clear bit %d.\n", nBit);
                 LOG(logERROR, (mess));
             }
@@ -11024,6 +11036,13 @@ int set_pedestal_mode(int file_des) {
                         "be 0. [%hhu, %hu].\n",
                         frames, loops);
                 LOG(logERROR, (mess));
+            } else if (loops > MAX_PEDESTAL_LOOPS) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set pedestal mode. Loops [%hu] cannot be "
+                        "greater than %d.\n",
+                        loops, MAX_PEDESTAL_LOOPS);
+                LOG(logERROR, (mess));
             } else {
                 setPedestalMode(enable, frames, loops);
                 int retvalEnable = getPedestalMode();
@@ -11080,4 +11099,173 @@ int config_transceiver(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_timing_info_decoder(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum timingInfoDecoder retval = SWISSFEL;
+
+    LOG(logDEBUG1, ("Getting timing info decoder\n"));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // get only
+    ret = getTimingInfoDecoder(&retval);
+    LOG(logDEBUG1, ("retval timing info decoder: %d\n", retval));
+    if (ret == FAIL) {
+        strcpy(mess, "Could not get timing info decoder\n");
+        LOG(logERROR, (mess));
+    }
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_timing_info_decoder(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum timingInfoDecoder arg = SWISSFEL;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting timing info decoder: %u\n", (int)arg));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        switch (arg) {
+        case SWISSFEL:
+        case SHINE:
+            break;
+        default:
+            modeNotImplemented("Timing info decoder index", (int)arg);
+            break;
+        }
+        if (ret == OK) {
+            ret = setTimingInfoDecoder(arg);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set timing info decoder\n");
+                LOG(logERROR, (mess));
+            } else {
+                enum timingInfoDecoder retval = SWISSFEL;
+                ret = getTimingInfoDecoder(&retval);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not get timing info decoder\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    LOG(logDEBUG1,
+                        ("timing info decoder retval: %u\n", retval));
+                    validate(&ret, mess, (int)arg, (int)retval,
+                             "set timing info decoder", DEC);
+                }
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_collection_mode(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum collectionMode retval = HOLE;
+
+    LOG(logDEBUG1, ("Getting collection mode\n"));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // get only
+    retval = getElectronCollectionMode() ? ELECTRON : HOLE;
+    LOG(logDEBUG1, ("collection mode retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_collection_mode(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum collectionMode arg = HOLE;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting collection mode: %u\n", (int)arg));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        switch (arg) {
+        case HOLE:
+            setElectronCollectionMode(0);
+            break;
+        case ELECTRON:
+            setElectronCollectionMode(1);
+            break;
+        default:
+            modeNotImplemented("Collection mode index", (int)arg);
+            break;
+        }
+        enum collectionMode retval =
+            getElectronCollectionMode() ? ELECTRON : HOLE;
+        validate(&ret, mess, (int)arg, (int)retval, "set collection mode", DEC);
+        LOG(logDEBUG1, ("collection mode retval: %u\n", retval));
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_pattern_wait_interval(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int loopLevel = -1;
+    uint64_t retval = -1;
+
+    if (receiveData(file_des, &loopLevel, sizeof(loopLevel), INT32) < 0)
+        return printSocketReadError();
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    LOG(logDEBUG1,
+        ("Getting Pattern wait interva (loopLevel:%d)\n", loopLevel));
+    ret = validate_getPatternWaitClocksAndInterval(mess, loopLevel, &retval, 0);
+#endif
+    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
+}
+
+int set_pattern_wait_interval(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint64_t args[2] = {-1, -1};
+
+    if (receiveData(file_des, args, sizeof(args), INT64) < 0)
+        return printSocketReadError();
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD) &&             \
+    !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    int loopLevel = (int)args[0];
+    uint64_t timeval = args[1];
+    LOG(logDEBUG1,
+        ("Setting Pattern wait interval (loopLevel:%d timeval:0x%llx ns)\n",
+         loopLevel, (long long int)timeval));
+    if (Server_VerifyLock() == OK) {
+        ret = validate_setPatternWaitClocksAndInterval(mess, loopLevel, timeval,
+                                                       0);
+        if (ret == OK) {
+            uint64_t retval = 0;
+            ret = validate_getPatternWaitClocksAndInterval(mess, loopLevel,
+                                                           &retval, 0);
+            validate64(&ret, mess, (int64_t)timeval, retval,
+                       "set pattern wait interval", DEC);
+        }
+    }
+
+#endif
+    return Server_SendResult(file_des, INT64, NULL, 0);
 }

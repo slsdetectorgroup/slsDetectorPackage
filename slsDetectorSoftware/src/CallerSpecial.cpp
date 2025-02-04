@@ -5,6 +5,7 @@
 #include "sls/logger.h"
 #include "sls/string_utils.h"
 #include <iostream>
+#include <thread>
 namespace sls {
 // some helper functions to print
 
@@ -13,6 +14,10 @@ std::vector<std::string> Caller::getAllCommands() {
     for (auto it : functions)
         ret.push_back(it.first);
     return ret;
+}
+
+std::map<std::string, std::string> Caller::GetDeprecatedCommands() {
+    return deprecated_functions;
 }
 
 void Caller::call(const std::string &command,
@@ -62,12 +67,35 @@ bool Caller::ReplaceIfDeprecated(std::string &command) {
 }
 
 std::string Caller::list(int action) {
-    std::string ret = "free\n";
-    for (auto &f : functions) {
-        ret += f.first + "\n";
+    if (action == defs::HELP_ACTION) {
+        return "[deprecated(optional)]\n\tlists all available commands, list "
+               "deprecated - list deprecated commands\n";
     }
-
-    return ret;
+    if (args.empty()) {
+        std::string ret = "free\n";
+        for (auto &f : functions) {
+            ret += f.first + "\n";
+        }
+        return ret;
+    } else if (args.size() == 1) {
+        if (args[0] == "deprecated") {
+            std::ostringstream os;
+            os << "The following " << deprecated_functions.size()
+               << " commands are deprecated\n";
+            const size_t field_width = 20;
+            for (const auto &it : deprecated_functions) {
+                os << std::right << std::setw(field_width) << it.first << " -> "
+                   << it.second << '\n';
+            }
+            return os.str();
+        } else {
+            throw RuntimeError(
+                "Could not decode argument. Possible options: deprecated");
+        }
+    } else {
+        WrongNumberOfParameters(0);
+        return "";
+    }
 }
 
 /* Network Configuration (Detector<->Receiver) */
@@ -147,28 +175,16 @@ void Caller::WrongNumberOfParameters(size_t expected) {
                        std::to_string(args.size()) + "\n");
 }
 
-void Caller::GetLevelAndUpdateArgIndex(int action,
-                                       std::string levelSeparatedCommand,
-                                       int &level, int &iArg, size_t nGetArgs,
-                                       size_t nPutArgs) {
-    if (cmd == levelSeparatedCommand) {
-        ++nGetArgs;
-        ++nPutArgs;
-    } else {
+int Caller::GetLevelAndInsertIntoArgs(std::string levelSeparatedCommand) {
+    if (cmd != levelSeparatedCommand) {
         LOG(logWARNING) << "This command is deprecated and will be removed. "
                            "Please migrate to "
                         << levelSeparatedCommand;
+        int level = cmd[cmd.find_first_of("012")] - '0';
+        args.insert(args.begin(), std::to_string(level));
+        return true;
     }
-    if (action == defs::GET_ACTION && args.size() != nGetArgs) {
-        WrongNumberOfParameters(nGetArgs);
-    } else if (action == defs::PUT_ACTION && args.size() != nPutArgs) {
-        WrongNumberOfParameters(nPutArgs);
-    }
-    if (cmd == levelSeparatedCommand) {
-        level = StringTo<int>(args[iArg++]);
-    } else {
-        level = cmd[cmd.find_first_of("012")] - '0';
-    }
+    return false;
 }
 
 std::string Caller::free(int action) {
@@ -222,8 +238,7 @@ void Caller::EmptyDataCallBack(detectorData *data, uint64_t frameIndex,
 std::string Caller::acquire(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << cmd
-           << "\n\tAcquire the number of frames set up.\n\tBlocking command, "
+        os << "\n\tAcquire the number of frames set up.\n\tBlocking command, "
               "where control server is blocked and cannot accept other "
               "commands until acquisition is done. \n\t- sets acquiring "
               "flag\n\t- starts the receiver listener (if enabled)\n\t- starts "
@@ -259,39 +274,74 @@ std::string Caller::versions(int action) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        bool eiger = (det->getDetectorType().squash() == defs::EIGER);
-        auto t = det->getFirmwareVersion(std::vector<int>{det_id});
-        os << "\nType            : " << OutString(det->getDetectorType())
-           << "\nRelease         : " << det->getPackageVersion() << std::hex
-           << "\nClient          : " << det->getClientVersion();
 
+        std::string vType = "Unknown";
+        std::string vFirmware = "Unknown";
+        std::string vServer = "Unknown";
+        std::string vKernel = "Unknown";
+        std::string vHardware = "Unknown";
+        bool eiger = false;
+        std::string vBebFirmware = "Unknown";
+        std::string vFeblFirmware = "Unknown";
+        std::string vFebrFirmware = "Unknown";
+        bool receiver = false;
+        std::string vReceiver = "Unknown";
+
+        std::string vRelease = det->getPackageVersion();
+        std::string vClient = det->getClientVersion();
+
+        if (det->size() != 0) {
+            // shared memory has detectors
+            vType = OutString(det->getDetectorType());
+            eiger = (det->getDetectorType().squash() == defs::EIGER);
+            receiver = det->getUseReceiverFlag().squash(false);
+            if (receiver) {
+                // cannot connect to receiver
+                try {
+                    vReceiver = OutString(
+                        det->getReceiverVersion(std::vector<int>{det_id}));
+                } catch (const std::exception &e) {
+                }
+            }
+            // cannot connect to Detector
+            try {
+                auto firmwareVersion =
+                    det->getFirmwareVersion(std::vector<int>{det_id});
+                vFirmware = OutStringHex(firmwareVersion);
+                vServer = OutString(
+                    det->getDetectorServerVersion(std::vector<int>{det_id}));
+                vKernel = OutString(
+                    det->getKernelVersion({std::vector<int>{det_id}}));
+                vHardware = OutString(
+                    det->getHardwareVersion(std::vector<int>{det_id}));
+                if (eiger) {
+                    vBebFirmware = OutString(firmwareVersion);
+                    vFeblFirmware = OutString(det->getFrontEndFirmwareVersion(
+                        defs::FRONT_LEFT, std::vector<int>{det_id}));
+                    vFebrFirmware = OutString(det->getFrontEndFirmwareVersion(
+                        defs::FRONT_RIGHT, std::vector<int>{det_id}));
+                }
+            } catch (const std::exception &e) {
+            }
+        }
+
+        os << "\nType            : " << vType
+           << "\nRelease         : " << vRelease
+           << "\nClient          : " << vClient;
         if (eiger) {
-            os << "\nFirmware (Beb)  : "
-               << OutString(det->getFirmwareVersion(std::vector<int>{det_id}));
-            os << "\nFirmware (Febl) : "
-               << OutString(det->getFrontEndFirmwareVersion(
-                      defs::FRONT_LEFT, std::vector<int>{det_id}));
-            os << "\nFirmware (Febr) : "
-               << OutString(det->getFrontEndFirmwareVersion(
-                      defs::FRONT_RIGHT, std::vector<int>{det_id}));
+            os << "\nFirmware (Beb)  : " << vBebFirmware
+               << "\nFirmware (Febl) : " << vFeblFirmware
+               << "\nFirmware (Febr) : " << vFebrFirmware;
         } else {
-            os << "\nFirmware        : "
-               << OutStringHex(
-                      det->getFirmwareVersion(std::vector<int>{det_id}));
+            os << "\nFirmware        : " << vFirmware;
         }
-
-        os << "\nServer          : "
-           << OutString(det->getDetectorServerVersion(std::vector<int>{det_id}))
-           << "\nKernel          : "
-           << OutString(det->getKernelVersion({std::vector<int>{det_id}}))
-           << "\nHardware        : "
-           << OutString(det->getHardwareVersion(std::vector<int>{det_id}));
-
-        if (det->getUseReceiverFlag().squash(true)) {
-            os << "\nReceiver        : "
-               << OutString(det->getReceiverVersion(std::vector<int>{det_id}));
-        }
+        os << "\nServer          : " << vServer
+           << "\nKernel          : " << vKernel
+           << "\nHardware        : " << vHardware;
+        if (receiver)
+            os << "\nReceiver        : " << vReceiver;
         os << std::dec << '\n';
+
     } else if (action == defs::PUT_ACTION) {
         throw RuntimeError("cannot put");
     } else {
@@ -308,7 +358,8 @@ std::string Caller::threshold(int action) {
         if (cmd == "thresholdnotb") {
             os << "Trimbits are not loaded.";
         }
-        os << "\n\nthreshold [eV1] [eV2] [eV3] [(optional settings)]"
+        os << "\n\t" << cmd
+           << " [eV1] [eV2] [eV3] [(optional settings)]"
               "\n\t[Mythen3] Threshold in eV for each counter. It loads trim "
               "files from settingspath. An energy of -1 will pick up values "
               " from detector.";
@@ -384,10 +435,9 @@ std::string Caller::trimen(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
         os << "[trim_ev1] [trim_Ev2 (optional)] [trim_ev3 (optional)] "
-              "...\n\t[Eiger][Mythen3] Number of trim energies and list of "
-              "trim "
-              "energies, where corresponding default trim files exist in "
-              "corresponding trim folders."
+              "...\n\t[Eiger][Mythen3] list of trim energies, where "
+              "corresponding default trim files exist in corresponding trim "
+              "folders."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -955,13 +1005,94 @@ std::string Caller::slowadc(int action) {
     }
     return os.str();
 }
+std::string Caller::patwaittime(int action) {
+    std::ostringstream os;
+
+    if (action == defs::HELP_ACTION) {
+        os << "[0-6] [n_clk] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait time in clock "
+              "cycles for the loop provided.\n\t[Mythen3] Level options: 0-3 "
+              "only."
+           << '\n';
+        return os.str();
+    }
+
+    // parse level
+    bool deprecated_cmd = GetLevelAndInsertIntoArgs("patwaittime");
+    int level = 0;
+    try {
+        if (args.size() > 0)
+            level = StringTo<int>(args[0]);
+    } catch (const std::exception &e) {
+        LOG(logERROR) << "Could not scan level.";
+        throw;
+    }
+    if (!deprecated_cmd && args.size() >= 1)
+        os << args[0] << ' ';
+
+    if (action == defs::GET_ACTION) {
+        if (args.size() != 1 && args.size() != 2)
+            WrongNumberOfParameters(1);
+        // with time unit
+        if (args.size() == 2) {
+            auto t =
+                det->getPatternWaitInterval(level, std::vector<int>{det_id});
+            os << OutString(t, args[1]) << '\n';
+        }
+        // in clocks
+        else {
+            auto t = det->getPatternWaitClocks(level, std::vector<int>{det_id});
+            os << OutString(t) << '\n';
+        }
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 2 && args.size() != 3)
+            WrongNumberOfParameters(2);
+        // clocks (all digits)
+        if (args.size() == 2 &&
+            std::all_of(args[1].begin(), args[1].end(), ::isdigit)) {
+            uint64_t waittime = StringTo<uint64_t>(args[1]);
+            det->setPatternWaitClocks(level, waittime,
+                                      std::vector<int>{det_id});
+            os << waittime << '\n';
+        }
+        // time
+        else {
+            time::ns converted_time{0};
+            try {
+                if (args.size() == 2) {
+                    std::string tmp_time(args[1]);
+                    std::string unit = RemoveUnit(tmp_time);
+                    converted_time = StringTo<time::ns>(tmp_time, unit);
+                } else {
+                    converted_time = StringTo<time::ns>(args[1], args[2]);
+                }
+            } catch (...) {
+                throw RuntimeError("Could not convert argument to time::ns");
+            }
+            det->setPatternWaitInterval(level, converted_time,
+                                        std::vector<int>{det_id});
+            os << args[1];
+            if (args.size() == 3)
+                os << ' ' << args[2];
+            os << '\n';
+        }
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 std::string Caller::rx_dbitlist(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << "[all] or [i0] [i1] [i2]... \n\t[Ctb] List of digital signal "
-              "bits read out. If all is used instead of a list, all digital "
-              "bits (64) enabled. Each element in list can be 0 - 63 and must "
-              "be non repetitive."
+        os << "[all] or [none] or [i0] [i1] [i2]... \n\t[Ctb] List of digital "
+              "signal bits enabled and rearranged according to the signals "
+              "(all samples of each signal is put together). If 'all' is used "
+              "instead of a list, all digital bits (64) enabled. Each element "
+              "in list can be 0 - 63 and must be non repetitive. The option "
+              "'none' will still spit out all data as is from the detector, "
+              "but without rearranging it. Please note that when using the "
+              "receiver list, the data size will be bigger if the number of "
+              "samples is not divisible by 8 as every signal bit is padded to "
+              "the next byte when combining all the samples in the receiver."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -979,7 +1110,9 @@ std::string Caller::rx_dbitlist(int action) {
             for (unsigned int i = 0; i < 64; ++i) {
                 t[i] = i;
             }
-        } else {
+        }
+        // 'none' option already covered as t is empty by default
+        else if (args[0] != "none") {
             unsigned int ntrim = args.size();
             t.resize(ntrim);
             for (unsigned int i = 0; i < ntrim; ++i) {
@@ -1179,4 +1312,37 @@ std::string Caller::gaincaps(int action) {
     }
     return os.str();
 }
+std::string Caller::sleep(int action) {
+    std::ostringstream os;
+    if (action == defs::HELP_ACTION) {
+        os << "[duration] [(optional unit) ns|us|ms|s]\n\tSleep for duration. "
+              "Mainly for config files for firmware developers."
+              "Default unit is s."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        throw RuntimeError("Cannot get.");
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1 && args.size() != 2) {
+            WrongNumberOfParameters(1);
+        }
+        time::ns converted_time{0};
+        try {
+            if (args.size() == 1) {
+                std::string tmp_time(args[0]);
+                std::string unit = RemoveUnit(tmp_time);
+                converted_time = StringTo<time::ns>(tmp_time, unit);
+            } else {
+                converted_time = StringTo<time::ns>(args[0], args[1]);
+            }
+        } catch (...) {
+            throw RuntimeError("Could not convert argument to time::ns");
+        }
+        std::this_thread::sleep_for(converted_time);
+        os << "for " << ToString(converted_time) << " completed" << '\n';
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 } // namespace sls

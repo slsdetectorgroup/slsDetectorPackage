@@ -135,10 +135,19 @@
 #define DTA_OFFSET_REG                      (0x0A * REG_OFFSET + BASE_CONTROL)
 
 
+/** Module ID Register */
 #define MOD_ID_REG                          (0x0B * REG_OFFSET + BASE_CONTROL)
 
 #define MOD_ID_OFST                         (0)
 #define MOD_ID_MSK                          (0x0000FFFF << MOD_ID_OFST)
+
+/** Set Next Frame Number Register */
+#define FRAME_NUMBER_LSB_REG                (0x0C * REG_OFFSET + BASE_CONTROL)
+#define FRAME_NUMBER_MSB_REG                (0x0D * REG_OFFSET + BASE_CONTROL)
+
+/** Get Next Frame Number Register */
+#define GET_FRAME_NUMBER_LSB_REG            (0x0E * REG_OFFSET + BASE_CONTROL)
+#define GET_FRAME_NUMBER_MSB_REG            (0x0F * REG_OFFSET + BASE_CONTROL)
 
 /* ASIC registers --------------------------------------------------*/
 

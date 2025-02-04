@@ -10,7 +10,15 @@ import sys
 from setuptools import setup, find_packages
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 
-__version__ = os.environ.get('GIT_DESCRIBE_TAG', 'developer')
+def read_version():
+    try:
+        version_file = os.path.join(os.path.dirname(__file__), 'slsdet', 'VERSION')
+        with open(version_file, "r") as f:
+            return f.read().strip()
+    except:
+        raise RuntimeError("VERSION file not found in slsdet package from setup.py.")
+
+__version__ = read_version()
 
 
 def get_conda_path():
@@ -60,6 +68,9 @@ setup(
     description='Detector API for SLS Detector Group detectors',
     long_description='',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
+    package_data={
+        'slsdet': ['VERSION'], 
+    },  
     ext_modules=ext_modules,
     cmdclass={"build_ext": build_ext},
     zip_safe=False,

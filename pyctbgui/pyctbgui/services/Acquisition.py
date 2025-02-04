@@ -7,7 +7,7 @@ import zmq
 from PyQt5 import QtWidgets, uic
 import logging
 
-from slsdet import readoutMode, runStatus
+from slsdet import readoutMode, runStatus, detectorType
 from pyctbgui.utils.defines import Defines
 from pyctbgui.utils.numpyWriter.npy_writer import NumpyFileManager
 from pyctbgui.utils.numpyWriter.npz_writer import NpzFileWriter
@@ -49,20 +49,37 @@ class AcquisitionTab(QtWidgets.QWidget):
         self.adcTab = self.mainWindow.adcTab
         self.plotTab = self.mainWindow.plotTab
         self.toggleStartButton(False)
+        if self.det.type == detectorType.XILINX_CHIPTESTBOARD:
+            self.view.labelRunF.setDisabled(True)
+            self.view.labelADCF.setDisabled(True)
+            self.view.labelADCPhase.setDisabled(True)
+            self.view.labelADCPipeline.setDisabled(True)
+            self.view.labelDBITF.setDisabled(True)
+            self.view.labelDBITPhase.setDisabled(True)
+            self.view.labelDBITPipeline.setDisabled(True)
+            self.view.spinBoxRunF.setDisabled(True)
+            self.view.spinBoxADCF.setDisabled(True)
+            self.view.spinBoxADCPhase.setDisabled(True)
+            self.view.spinBoxADCPipeline.setDisabled(True)
+            self.view.spinBoxDBITF.setDisabled(True)
+            self.view.spinBoxDBITPhase.setDisabled(True)
+            self.view.spinBoxDBITPipeline.setDisabled(True)
 
     def connect_ui(self):
         # For Acquistions Tab
         self.view.comboBoxROMode.currentIndexChanged.connect(self.setReadOut)
-        self.view.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
         self.view.spinBoxTransceiver.editingFinished.connect(self.setTransceiver)
         self.view.spinBoxAnalog.editingFinished.connect(self.setAnalog)
         self.view.spinBoxDigital.editingFinished.connect(self.setDigital)
-        self.view.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
-        self.view.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
-        self.view.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
-        self.view.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
-        self.view.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
-        self.view.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
+        
+        if self.det.type == detectorType.CHIPTESTBOARD:
+            self.view.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
+            self.view.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
+            self.view.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
+            self.view.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
+            self.view.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
+            self.view.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
+            self.view.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
 
         self.view.checkBoxFileWriteRaw.stateChanged.connect(self.setFileWrite)
         self.view.checkBoxFileWriteNumpy.stateChanged.connect(self.setFileWriteNumpy)
@@ -77,16 +94,19 @@ class AcquisitionTab(QtWidgets.QWidget):
 
     def refresh(self):
         self.getReadout()
-        self.getRunFrequency()
         self.getTransceiver()
         self.getAnalog()
         self.getDigital()
-        self.getADCFrequency()
-        self.getADCPhase()
-        self.getADCPipeline()
-        self.getDBITFrequency()
-        self.getDBITPhase()
-        self.getDBITPipeline()
+
+        if self.det.type == detectorType.CHIPTESTBOARD:
+            self.getRunFrequency()
+            self.getADCFrequency()
+            self.getADCPhase()
+            self.getADCPipeline()
+            self.getDBITFrequency()
+            self.getDBITPhase()
+            self.getDBITPipeline()
+
         self.getFileWrite()
         self.getFileName()
         self.getFilePath()
@@ -697,23 +717,39 @@ class AcquisitionTab(QtWidgets.QWidget):
         self.socket.subscribe("")
 
     def saveParameters(self) -> list[str]:
-        return [
-            f'romode {self.view.comboBoxROMode.currentText().lower()}',
-            f'runclk {self.view.spinBoxRunF.value()}',
-            f'adcclk {self.view.spinBoxADCF.value()}',
-            f'adcphase {self.view.spinBoxADCPhase.value()}',
-            f'adcpipeline {self.view.spinBoxADCPipeline.value()}',
-            f'dbitclk {self.view.spinBoxDBITF.value()}',
-            f'dbitphase {self.view.spinBoxDBITPhase.value()}',
-            f'dbitpipeline {self.view.spinBoxDBITPipeline.value()}',
-            f'fwrite {int(self.view.checkBoxFileWriteRaw.isChecked())}',
-            f'fname {self.view.lineEditFileName.text()}',
-            f'fpath {self.view.lineEditFilePath.text()}',
-            f'findex {self.view.spinBoxAcquisitionIndex.value()}',
-            f'frames {self.view.spinBoxFrames.value()}',
-            f'triggers {self.view.spinBoxTriggers.value()}',
-            f'period {self.view.spinBoxPeriod.value()} {self.view.comboBoxPeriod.currentText().lower()}',
-            f'asamples {self.view.spinBoxAnalog.value()}',
-            f'dsamples {self.view.spinBoxDigital.value()}',
-            f'tsamples {self.view.spinBoxTransceiver.value()}',
-        ]
+        if self.det.type == detectorType.CHIPTESTBOARD:
+            return [
+                f'romode {self.view.comboBoxROMode.currentText().lower()}',
+                f'runclk {self.view.spinBoxRunF.value()}',
+                f'adcclk {self.view.spinBoxADCF.value()}',
+                f'adcphase {self.view.spinBoxADCPhase.value()}',
+                f'adcpipeline {self.view.spinBoxADCPipeline.value()}',
+                f'dbitclk {self.view.spinBoxDBITF.value()}',
+                f'dbitphase {self.view.spinBoxDBITPhase.value()}',
+                f'dbitpipeline {self.view.spinBoxDBITPipeline.value()}',
+                f'fwrite {int(self.view.checkBoxFileWriteRaw.isChecked())}',
+                f'fname {self.view.lineEditFileName.text()}',
+                f'fpath {self.view.lineEditFilePath.text()}',
+                f'findex {self.view.spinBoxAcquisitionIndex.value()}',
+                f'frames {self.view.spinBoxFrames.value()}',
+                f'triggers {self.view.spinBoxTriggers.value()}',
+                f'period {self.view.spinBoxPeriod.value()} {self.view.comboBoxPeriod.currentText().lower()}',
+                f'asamples {self.view.spinBoxAnalog.value()}',
+                f'dsamples {self.view.spinBoxDigital.value()}',
+                f'tsamples {self.view.spinBoxTransceiver.value()}',
+            ]
+        else:
+            return [
+                f'romode {self.view.comboBoxROMode.currentText().lower()}',
+                f'fwrite {int(self.view.checkBoxFileWriteRaw.isChecked())}',
+                f'fname {self.view.lineEditFileName.text()}',
+                f'fpath {self.view.lineEditFilePath.text()}',
+                f'findex {self.view.spinBoxAcquisitionIndex.value()}',
+                f'frames {self.view.spinBoxFrames.value()}',
+                f'triggers {self.view.spinBoxTriggers.value()}',
+                f'period {self.view.spinBoxPeriod.value()} {self.view.comboBoxPeriod.currentText().lower()}',
+                f'asamples {self.view.spinBoxAnalog.value()}',
+                f'dsamples {self.view.spinBoxDigital.value()}',
+                f'tsamples {self.view.spinBoxTransceiver.value()}',
+            ] 
+

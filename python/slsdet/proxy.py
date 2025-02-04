@@ -275,10 +275,13 @@ class PatWaitTimeProxy:
         self.det = det
 
     def __getitem__(self, key):
-        return element_if_equal(self.det.getPatternWaitTime(key))
+        return element_if_equal(self.det.getPatternWaitClocks(key))
 
     def __setitem__(self, key, value):
-        set_proxy_using_dict(self.det.setPatternWaitTime, key, value)
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            set_proxy_using_dict(self.det.setPatternWaitClocks, key, value)
+        else:
+            set_proxy_using_dict(self.det.setPatternWaitInterval, key, value)
 
     def __repr__(self):
         max_levels = MAX_PATTERN_LEVELS

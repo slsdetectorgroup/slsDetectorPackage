@@ -12,7 +12,7 @@ Welcome to slsDetectorPackage's documentation!
     For further documentation, visit the official page: https://www.psi.ch/en/detectors/documentation
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 3
     :caption: Installation:
 
     installation
@@ -81,6 +81,22 @@ Welcome to slsDetectorPackage's documentation!
 
     receivers
     slsreceiver
+
+.. toctree::
+    :caption: Receiver Files
+    :maxdepth: 3
+
+    fileformat
+    slsreceiverheaderformat
+    masterfileattributes
+    binaryfileformat
+    hdf5fileformat
+
+.. toctree::
+    :caption: Receiver ZMQ Stream
+    :maxdepth: 2
+
+    zmqjsonheaderformat
 
 .. toctree::
     :caption: Troubleshooting

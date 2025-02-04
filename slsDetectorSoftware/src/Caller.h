@@ -19,10 +19,7 @@ class Caller {
     IpAddr getDstIpFromAuto();
     IpAddr getSrcIpFromAuto();
     UdpDestination getUdpEntry();
-    void GetLevelAndUpdateArgIndex(int action,
-                                   std::string levelSeparatedCommand,
-                                   int &level, int &iArg, size_t nGetArgs,
-                                   size_t nPutArgs);
+    int GetLevelAndInsertIntoArgs(std::string levelSeparatedCommand);
     void WrongNumberOfParameters(size_t expected);
 
     template <typename V> std::string OutStringHex(const V &value) {
@@ -55,6 +52,7 @@ class Caller {
     }
 
     std::vector<std::string> getAllCommands();
+    std::map<std::string, std::string> GetDeprecatedCommands();
     std::string list(int action);
 
     std::string acquire(int action);
@@ -89,6 +87,7 @@ class Caller {
     std::string clkdiv(int action);
     std::string clkfreq(int action);
     std::string clkphase(int action);
+    std::string collectionmode(int action);
     std::string column(int action);
     std::string compdisabletime(int action);
     std::string confadc(int action);
@@ -205,9 +204,6 @@ class Caller {
     std::string patwait1(int action);
     std::string patwait2(int action);
     std::string patwaittime(int action);
-    std::string patwaittime0(int action);
-    std::string patwaittime1(int action);
-    std::string patwaittime2(int action);
     std::string patword(int action);
     std::string pedestalmode(int action);
     std::string period(int action);
@@ -285,6 +281,7 @@ class Caller {
     std::string signalindex(int action);
     std::string signallist(int action);
     std::string signalname(int action);
+    std::string sleep(int action);
     std::string slowadc(int action);
     std::string slowadcindex(int action);
     std::string slowadclist(int action);
@@ -318,6 +315,7 @@ class Caller {
     std::string tengiga(int action);
     std::string threshold(int action);
     std::string timing(int action);
+    std::string timing_info_decoder(int action);
     std::string timinglist(int action);
     std::string timingsource(int action);
     std::string top(int action);
@@ -435,6 +433,7 @@ class Caller {
         {"clkdiv", &Caller::clkdiv},
         {"clkfreq", &Caller::clkfreq},
         {"clkphase", &Caller::clkphase},
+        {"collectionmode", &Caller::collectionmode},
         {"column", &Caller::column},
         {"compdisabletime", &Caller::compdisabletime},
         {"confadc", &Caller::confadc},
@@ -551,9 +550,9 @@ class Caller {
         {"patwait1", &Caller::patwait1},
         {"patwait2", &Caller::patwait2},
         {"patwaittime", &Caller::patwaittime},
-        {"patwaittime0", &Caller::patwaittime0},
-        {"patwaittime1", &Caller::patwaittime1},
-        {"patwaittime2", &Caller::patwaittime2},
+        {"patwaittime0", &Caller::patwaittime},
+        {"patwaittime1", &Caller::patwaittime},
+        {"patwaittime2", &Caller::patwaittime},
         {"patword", &Caller::patword},
         {"pedestalmode", &Caller::pedestalmode},
         {"period", &Caller::period},
@@ -631,6 +630,7 @@ class Caller {
         {"signalindex", &Caller::signalindex},
         {"signallist", &Caller::signallist},
         {"signalname", &Caller::signalname},
+        {"sleep", &Caller::sleep},
         {"slowadc", &Caller::slowadc},
         {"slowadcindex", &Caller::slowadcindex},
         {"slowadclist", &Caller::slowadclist},
@@ -665,6 +665,7 @@ class Caller {
         {"threshold", &Caller::threshold},
         {"thresholdnotb", &Caller::threshold},
         {"timing", &Caller::timing},
+        {"timing_info_decoder", &Caller::timing_info_decoder},
         {"timinglist", &Caller::timinglist},
         {"timingsource", &Caller::timingsource},
         {"top", &Caller::top},

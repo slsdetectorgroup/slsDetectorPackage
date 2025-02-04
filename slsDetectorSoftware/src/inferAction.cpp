@@ -404,6 +404,10 @@ int InferAction::clearbit() {
         return slsDetectorDefs::PUT_ACTION;
     }
 
+    if (args.size() == 3) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
     else {
 
         throw RuntimeError("Could not infer action: Wrong number of arguments");
@@ -487,6 +491,22 @@ int InferAction::clkphase() {
     }
 
     if (args.size() == 3) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
+int InferAction::collectionmode() {
+
+    if (args.size() == 0) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
+    if (args.size() == 1) {
         return slsDetectorDefs::PUT_ACTION;
     }
 
@@ -1992,29 +2012,13 @@ int InferAction::patlimits() {
                        "sls_detector_get or sls_detector_put");
 }
 
-int InferAction::patloop() {
+int InferAction::patloop() { throw RuntimeError("infer_action is disabled"); }
 
-    throw RuntimeError("sls_detector is disabled for command: patloop. Use "
-                       "sls_detector_get or sls_detector_put");
-}
+int InferAction::patloop0() { throw RuntimeError("infer_action is disabled"); }
 
-int InferAction::patloop0() {
+int InferAction::patloop1() { throw RuntimeError("infer_action is disabled"); }
 
-    throw RuntimeError("sls_detector is disabled for command: patloop0. Use "
-                       "sls_detector_get or sls_detector_put");
-}
-
-int InferAction::patloop1() {
-
-    throw RuntimeError("sls_detector is disabled for command: patloop1. Use "
-                       "sls_detector_get or sls_detector_put");
-}
-
-int InferAction::patloop2() {
-
-    throw RuntimeError("sls_detector is disabled for command: patloop2. Use "
-                       "sls_detector_get or sls_detector_put");
-}
+int InferAction::patloop2() { throw RuntimeError("infer_action is disabled"); }
 
 int InferAction::patmask() {
 
@@ -2032,29 +2036,13 @@ int InferAction::patmask() {
     }
 }
 
-int InferAction::patnloop() {
+int InferAction::patnloop() { throw RuntimeError("infer_action is disabled"); }
 
-    throw RuntimeError("sls_detector is disabled for command: patnloop. Use "
-                       "sls_detector_get or sls_detector_put");
-}
+int InferAction::patnloop0() { throw RuntimeError("infer_action is disabled"); }
 
-int InferAction::patnloop0() {
+int InferAction::patnloop1() { throw RuntimeError("infer_action is disabled"); }
 
-    throw RuntimeError("sls_detector is disabled for command: patnloop0. Use "
-                       "sls_detector_get or sls_detector_put");
-}
-
-int InferAction::patnloop1() {
-
-    throw RuntimeError("sls_detector is disabled for command: patnloop1. Use "
-                       "sls_detector_get or sls_detector_put");
-}
-
-int InferAction::patnloop2() {
-
-    throw RuntimeError("sls_detector is disabled for command: patnloop2. Use "
-                       "sls_detector_get or sls_detector_put");
-}
+int InferAction::patnloop2() { throw RuntimeError("infer_action is disabled"); }
 
 int InferAction::patsetbit() {
 
@@ -2096,52 +2084,18 @@ int InferAction::patternstart() {
     }
 }
 
-int InferAction::patwait() {
+int InferAction::patwait() { throw RuntimeError("infer_action is disabled"); }
 
-    throw RuntimeError("sls_detector is disabled for command: patwait. Use "
-                       "sls_detector_get or sls_detector_put");
-}
+int InferAction::patwait0() { throw RuntimeError("infer_action is disabled"); }
 
-int InferAction::patwait0() {
+int InferAction::patwait1() { throw RuntimeError("infer_action is disabled"); }
 
-    throw RuntimeError("sls_detector is disabled for command: patwait0. Use "
-                       "sls_detector_get or sls_detector_put");
-}
-
-int InferAction::patwait1() {
-
-    throw RuntimeError("sls_detector is disabled for command: patwait1. Use "
-                       "sls_detector_get or sls_detector_put");
-}
-
-int InferAction::patwait2() {
-
-    throw RuntimeError("sls_detector is disabled for command: patwait2. Use "
-                       "sls_detector_get or sls_detector_put");
-}
+int InferAction::patwait2() { throw RuntimeError("infer_action is disabled"); }
 
 int InferAction::patwaittime() {
 
     throw RuntimeError("sls_detector is disabled for command: patwaittime. Use "
                        "sls_detector_get or sls_detector_put");
-}
-
-int InferAction::patwaittime0() {
-
-    throw RuntimeError("sls_detector is disabled for command: patwaittime0. "
-                       "Use sls_detector_get or sls_detector_put");
-}
-
-int InferAction::patwaittime1() {
-
-    throw RuntimeError("sls_detector is disabled for command: patwaittime1. "
-                       "Use sls_detector_get or sls_detector_put");
-}
-
-int InferAction::patwaittime2() {
-
-    throw RuntimeError("sls_detector is disabled for command: patwaittime2. "
-                       "Use sls_detector_get or sls_detector_put");
 }
 
 int InferAction::patword() {
@@ -2487,6 +2441,10 @@ int InferAction::reg() {
     }
 
     if (args.size() == 2) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    if (args.size() == 3) {
         return slsDetectorDefs::PUT_ACTION;
     }
 
@@ -3143,6 +3101,10 @@ int InferAction::setbit() {
         return slsDetectorDefs::PUT_ACTION;
     }
 
+    if (args.size() == 3) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
     else {
 
         throw RuntimeError("Could not infer action: Wrong number of arguments");
@@ -3215,6 +3177,22 @@ int InferAction::signalname() {
 
     if (args.size() == 1) {
         return slsDetectorDefs::GET_ACTION;
+    }
+
+    if (args.size() == 2) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
+int InferAction::sleep() {
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::PUT_ACTION;
     }
 
     if (args.size() == 2) {
@@ -3678,6 +3656,22 @@ int InferAction::threshold() {
 }
 
 int InferAction::timing() {
+
+    if (args.size() == 0) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
+int InferAction::timing_info_decoder() {
 
     if (args.size() == 0) {
         return slsDetectorDefs::GET_ACTION;

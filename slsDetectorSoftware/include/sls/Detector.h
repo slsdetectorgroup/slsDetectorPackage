@@ -20,7 +20,7 @@ class IpAddr;
 // Free function to avoid dependence on class
 // and avoid the option to free another objects
 // shm by mistake
-void freeSharedMemory(int detectorIndex, int moduleIndex = -1);
+void freeSharedMemory(const int detectorIndex = 0, const int moduleIndex = -1);
 
 /**
  * \class Detector
@@ -46,9 +46,13 @@ class Detector {
     Detector(int shm_id = 0);
     ~Detector();
 
-    /** Free the shared memory of this detector and all modules
-    belonging to it */
-    void freeSharedMemory();
+    // Disable copy since SharedMemory object is unique in DetectorImpl
+    Detector(const Detector &other) = delete;
+    Detector &operator=(const Detector &other) = delete;
+
+    // Move constructor and assignment operator
+    Detector(Detector &&other) noexcept;
+    Detector &operator=(Detector &&other) noexcept;
 
     /** Frees shared memory before loading configuration file. Set up once
     normally */
@@ -363,11 +367,11 @@ class Detector {
     /** list of possible timing modes for this detector */
     std::vector<defs::timingMode> getTimingModeList() const;
 
-    /** [Eiger][Jungfrau][Moench][Gotthard2] */
+    /** [Eiger][Jungfrau][Moench][Gotthard2][Mythen3] */
     Result<defs::speedLevel> getReadoutSpeed(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau][Moench][Gotthard2]
-     * [Jungfrau] Options: FULL_SPEED, HALF_SPEED (Default),
+     * [Jungfrau][Mythen3] Options: FULL_SPEED, HALF_SPEED (Default),
      * QUARTER_SPEED \n [Moench] Options: FULL_SPEED (Default) \n [Eiger]
      * Options: FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED \n [Gotthard2]
      * Options: G2_108MHZ (Default), G2_144MHZ \n [Jungfrau][Moench] FULL_SPEED
@@ -429,7 +433,8 @@ class Detector {
     /** [Mythen3][Gotthard2] */
     Result<int> getClockPhase(int clkIndex, Positions pos = {});
 
-    /** [Mythen3][Gotthard2] absolute phase shift */
+    /** [Mythen3][Gotthard2] absolute phase shift  \n
+     * [Gotthard2] clkIndex: 0-5, [Mythen3] clkIndex 0 only */
     void setClockPhase(int clkIndex, int value, Positions pos = {});
 
     /** [Mythen3][Gotthard2] */
@@ -438,13 +443,15 @@ class Detector {
     /** [Mythen3][Gotthard2] */
     Result<int> getClockPhaseinDegrees(int clkIndex, Positions pos = {});
 
-    /** [Mythen3][Gotthard2] */
+    /** [Mythen3][Gotthard2]  \n
+     * [Gotthard2] clkIndex: 0-5, [Mythen3] clkIndex 0 only */
     void setClockPhaseinDegrees(int clkIndex, int value, Positions pos = {});
 
     /** [Mythen3][Gotthard2] */
     Result<int> getClockDivider(int clkIndex, Positions pos = {});
 
-    /** [Mythen3][Gotthard2] Must be greater than 1. */
+    /** [Mythen3][Gotthard2] Must be greater than 1. \n
+     * [Gotthard2] clkIndex: 0-5, [Mythen3] clkIndex 0 only */
     void setClockDivider(int clkIndex, int value, Positions pos = {});
 
     Result<int> getHighVoltage(Positions pos = {}) const;
@@ -658,11 +665,13 @@ class Detector {
     Result<std::vector<int64_t>>
     getRxCurrentFrameIndex(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau][Moench][CTB][Xilinx CTB] */
+    /** [Eiger][Jungfrau][Moench][CTB][Xilinx CTB][Gotthard2] */
     Result<uint64_t> getNextFrameNumber(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau][Moench][CTB][Xilinx CTB] Stopping acquisition might
-     * result in different frame numbers for different modules.*/
+    /** [Eiger][Jungfrau][Moench][CTB][Xilinx CTB][Gotthard2] Stopping
+     * acquisition might result in different frame numbers for different
+     * modules. So, after stopping, next frame number (max + 1) is set for all
+     * the modules afterwards.*/
     void setNextFrameNumber(uint64_t value, Positions pos = {});
 
     /** [Eiger][Mythen3][Jungfrau][Moench] Sends an internal software trigger to
@@ -1369,6 +1378,20 @@ class Detector {
     void setPedestalMode(const defs::pedestalParameters par,
                          Positions pos = {});
 
+    /** [Jungfrau] */
+    Result<defs::timingInfoDecoder>
+    getTimingInfoDecoder(Positions pos = {}) const;
+
+    /** [Jungfrau] Advanced Command! */
+    void setTimingInfoDecoder(defs::timingInfoDecoder value,
+                              Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<defs::collectionMode> getCollectionMode(Positions pos = {}) const;
+
+    /** [Jungfrau] */
+    void setCollectionMode(defs::collectionMode value, Positions pos = {});
+
     ///@}
 
     /** @name Gotthard Specific */
@@ -1726,7 +1749,8 @@ class Detector {
     Result<std::vector<int>> getRxDbitList(Positions pos = {}) const;
 
     /** [CTB] list contains the set of digital signal bits (0-63) to save, must
-     * be non repetitive */
+     * be non repetitive. Note: data will be rearranged according to signal bits
+     */
     void setRxDbitList(const std::vector<int> &list, Positions pos = {});
 
     /** [CTB] */
@@ -1906,10 +1930,15 @@ class Detector {
     void setPatternWaitAddr(int level, int addr, Positions pos = {});
 
     /** [CTB][Mythen3][Xilinx CTB]  */
-    Result<uint64_t> getPatternWaitTime(int level, Positions pos = {}) const;
+    Result<uint64_t> getPatternWaitClocks(int level, Positions pos = {}) const;
 
     /** [CTB][Mythen3][Xilinx CTB] Options: level 0-2 */
-    void setPatternWaitTime(int level, uint64_t t, Positions pos = {});
+    void setPatternWaitClocks(int level, uint64_t t, Positions pos = {});
+
+    Result<ns> getPatternWaitInterval(int level, Positions pos = {}) const;
+
+    /** [CTB][Mythen3][Xilinx CTB] Options: level 0-2 */
+    void setPatternWaitInterval(int level, ns t, Positions pos = {});
 
     /** [CTB][Mythen3][Xilinx CTB] */
     Result<uint64_t> getPatternMask(Positions pos = {});
@@ -2034,13 +2063,16 @@ class Detector {
      * Goes to stop server. Hence, can be called while calling blocking
      * acquire(). \n [Eiger] Address is +0x100 for only left, +0x200 for only
      * right. */
-    void writeRegister(uint32_t addr, uint32_t val, Positions pos = {});
+    void writeRegister(uint32_t addr, uint32_t val, bool validate = false,
+                       Positions pos = {});
 
     /** Advanced user Function!  */
-    void setBit(uint32_t addr, int bitnr, Positions pos = {});
+    void setBit(uint32_t addr, int bitnr, bool validate = false,
+                Positions pos = {});
 
     /** Advanced user Function!  */
-    void clearBit(uint32_t addr, int bitnr, Positions pos = {});
+    void clearBit(uint32_t addr, int bitnr, bool validate = false,
+                  Positions pos = {});
 
     /** Advanced user Function!  */
     Result<int> getBit(uint32_t addr, int bitnr, Positions pos = {});

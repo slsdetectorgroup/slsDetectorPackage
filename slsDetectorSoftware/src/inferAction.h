@@ -44,6 +44,7 @@ class InferAction {
     int clkdiv();
     int clkfreq();
     int clkphase();
+    int collectionmode();
     int column();
     int compdisabletime();
     int confadc();
@@ -160,9 +161,6 @@ class InferAction {
     int patwait1();
     int patwait2();
     int patwaittime();
-    int patwaittime0();
-    int patwaittime1();
-    int patwaittime2();
     int patword();
     int pedestalmode();
     int period();
@@ -240,6 +238,7 @@ class InferAction {
     int signalindex();
     int signallist();
     int signalname();
+    int sleep();
     int slowadc();
     int slowadcindex();
     int slowadclist();
@@ -273,6 +272,7 @@ class InferAction {
     int tengiga();
     int threshold();
     int timing();
+    int timing_info_decoder();
     int timinglist();
     int timingsource();
     int top();
@@ -378,6 +378,7 @@ class InferAction {
         {"clkdiv", &InferAction::clkdiv},
         {"clkfreq", &InferAction::clkfreq},
         {"clkphase", &InferAction::clkphase},
+        {"collectionmode", &InferAction::collectionmode},
         {"column", &InferAction::column},
         {"compdisabletime", &InferAction::compdisabletime},
         {"confadc", &InferAction::confadc},
@@ -494,9 +495,9 @@ class InferAction {
         {"patwait1", &InferAction::patwait1},
         {"patwait2", &InferAction::patwait2},
         {"patwaittime", &InferAction::patwaittime},
-        {"patwaittime0", &InferAction::patwaittime0},
-        {"patwaittime1", &InferAction::patwaittime1},
-        {"patwaittime2", &InferAction::patwaittime2},
+        {"patwaittime0", &InferAction::patwaittime},
+        {"patwaittime1", &InferAction::patwaittime},
+        {"patwaittime2", &InferAction::patwaittime},
         {"patword", &InferAction::patword},
         {"pedestalmode", &InferAction::pedestalmode},
         {"period", &InferAction::period},
@@ -574,6 +575,7 @@ class InferAction {
         {"signalindex", &InferAction::signalindex},
         {"signallist", &InferAction::signallist},
         {"signalname", &InferAction::signalname},
+        {"sleep", &InferAction::sleep},
         {"slowadc", &InferAction::slowadc},
         {"slowadcindex", &InferAction::slowadcindex},
         {"slowadclist", &InferAction::slowadclist},
@@ -608,6 +610,7 @@ class InferAction {
         {"threshold", &InferAction::threshold},
         {"thresholdnotb", &InferAction::threshold},
         {"timing", &InferAction::timing},
+        {"timing_info_decoder", &InferAction::timing_info_decoder},
         {"timinglist", &InferAction::timinglist},
         {"timingsource", &InferAction::timingsource},
         {"top", &InferAction::top},

@@ -17,8 +17,7 @@ using test::PUT;
 
 /* dacs */
 
-TEST_CASE("Caller::Setting and reading back Jungfrau dacs",
-          "[.cmdcall][.dacs]") {
+TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmdcall][.dacs]") {
     // vb_comp, vdd_prot, vin_com, vref_prech, vb_pixbuf, vb_ds, vref_ds,
     // vref_comp
     Detector det;
@@ -105,7 +104,7 @@ TEST_CASE("Caller::Setting and reading back Jungfrau dacs",
 
 /* Network Configuration (Detector<->Receiver) */
 
-TEST_CASE("Caller::selinterface", "[.cmdcall]") {
+TEST_CASE("selinterface", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -136,7 +135,7 @@ TEST_CASE("Caller::selinterface", "[.cmdcall]") {
 
 /* Jungfrau/moench Specific */
 
-TEST_CASE("Caller::temp_threshold", "[.cmdcall]") {
+TEST_CASE("temp_threshold", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -166,7 +165,7 @@ TEST_CASE("Caller::temp_threshold", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::chipversion", "[.cmdcall]") {
+TEST_CASE("chipversion", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -178,7 +177,7 @@ TEST_CASE("Caller::chipversion", "[.cmdcall]") {
     REQUIRE_THROWS(caller.call("chipversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("Caller::temp_control", "[.cmdcall]") {
+TEST_CASE("temp_control", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -208,7 +207,7 @@ TEST_CASE("Caller::temp_control", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::temp_event", "[.cmdcall]") {
+TEST_CASE("temp_event", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -229,7 +228,7 @@ TEST_CASE("Caller::temp_event", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::autocompdisable", "[.cmdcall]") {
+TEST_CASE("autocompdisable", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -259,7 +258,7 @@ TEST_CASE("Caller::autocompdisable", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::compdisabletime", "[.cmdcall]") {
+TEST_CASE("compdisabletime", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -290,7 +289,7 @@ TEST_CASE("Caller::compdisabletime", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::extrastoragecells", "[.cmdcall]") {
+TEST_CASE("extrastoragecells", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -333,7 +332,7 @@ TEST_CASE("Caller::extrastoragecells", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::storagecell_start", "[.cmdcall]") {
+TEST_CASE("storagecell_start", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -378,7 +377,7 @@ TEST_CASE("Caller::storagecell_start", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::storagecell_delay", "[.cmdcall]") {
+TEST_CASE("storagecell_delay", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -419,7 +418,7 @@ TEST_CASE("Caller::storagecell_delay", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::gainmode", "[.cmdcall]") {
+TEST_CASE("gainmode", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -468,7 +467,7 @@ TEST_CASE("Caller::gainmode", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::filtercells", "[.cmdcall]") {
+TEST_CASE("filtercells", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -512,7 +511,7 @@ TEST_CASE("Caller::filtercells", "[.cmdcall]") {
         REQUIRE_THROWS(caller.call("filtercells", {"0"}, -1, PUT));
     }
 }
-TEST_CASE("Caller::pedestalmode", "[.cmdcall]") {
+TEST_CASE("pedestalmode", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
@@ -531,13 +530,14 @@ TEST_CASE("Caller::pedestalmode", "[.cmdcall]") {
 
         REQUIRE_THROWS(caller.call("pedestalmode", {"256", "10"}, -1, PUT));
         REQUIRE_THROWS(caller.call("pedestalmode", {"-1", "10"}, 0, PUT));
-        REQUIRE_THROWS(caller.call("pedestalmode", {"20", "65536"}, 0, PUT));
+        REQUIRE_THROWS(caller.call("pedestalmode", {"20", "1000"}, 0, PUT));
+        REQUIRE_THROWS(caller.call("pedestalmode", {"2000", "100"}, 0, PUT));
         REQUIRE_THROWS(caller.call("pedestalmode", {"20", "-1"}, 0, PUT));
 
         {
             std::ostringstream oss;
-            caller.call("pedestalmode", {"30", "1000"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "pedestalmode [30, 1000]\n");
+            caller.call("pedestalmode", {"30", "100"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pedestalmode [30, 100]\n");
         }
         // cannot change any of these in pedestal mode
         REQUIRE_THROWS_WITH(caller.call("frames", {"200"}, -1, PUT),
@@ -564,20 +564,20 @@ TEST_CASE("Caller::pedestalmode", "[.cmdcall]") {
 
         {
             std::ostringstream oss;
-            caller.call("pedestalmode", {"50", "500"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "pedestalmode [50, 500]\n");
+            caller.call("pedestalmode", {"50", "100"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pedestalmode [50, 100]\n");
         }
         {
             std::ostringstream oss;
             caller.call("pedestalmode", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "pedestalmode [enabled, 50, 500]\n");
+            REQUIRE(oss.str() == "pedestalmode [enabled, 50, 100]\n");
         }
         {
             auto pedemode = det.getPedestalMode().tsquash(
                 "Inconsistent pedestal mode to test");
             REQUIRE(pedemode.enable == true);
             REQUIRE(pedemode.frames == 50);
-            REQUIRE(pedemode.loops == 500);
+            REQUIRE(pedemode.loops == 100);
         }
         {
             std::ostringstream oss;
@@ -591,7 +591,7 @@ TEST_CASE("Caller::pedestalmode", "[.cmdcall]") {
         }
 
         uint8_t pedestalFrames = 50;
-        uint16_t pedestalLoops = 1000;
+        uint16_t pedestalLoops = 100;
         int64_t expNumFrames = pedestalFrames * pedestalLoops * 2;
         auto origFrames = det.getNumberOfFrames().squash(-1);
         auto origTriggers = det.getNumberOfTriggers().squash(-1);
@@ -667,7 +667,63 @@ TEST_CASE("Caller::pedestalmode", "[.cmdcall]") {
     }
 }
 
-TEST_CASE("Caller::sync", "[.cmdcall]") {
+TEST_CASE("timing_info_decoder", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    if (det.getDetectorType().squash() == defs::JUNGFRAU) {
+        auto prev_val = det.getTimingInfoDecoder();
+        /*{
+            std::ostringstream oss;
+            caller.call("timing_info_decoder", {"shine"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "timing_info_decoder shine\n");
+        }*/
+        {
+            std::ostringstream oss;
+            caller.call("timing_info_decoder", {"swissfel"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "timing_info_decoder swissfel\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("timing_info_decoder", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "timing_info_decoder swissfel\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTimingInfoDecoder(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(caller.call("timing_info_decoder", {}, -1, GET));
+    }
+}
+
+TEST_CASE("collectionmode", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    if (det.getDetectorType().squash() == defs::JUNGFRAU) {
+        auto prev_val = det.getCollectionMode();
+        {
+            std::ostringstream oss;
+            caller.call("collectionmode", {"electron"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "collectionmode electron\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("collectionmode", {"hole"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "collectionmode hole\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("collectionmode", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "collectionmode hole\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setCollectionMode(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(caller.call("collectionmode", {}, -1, GET));
+    }
+}
+
+TEST_CASE("sync", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();

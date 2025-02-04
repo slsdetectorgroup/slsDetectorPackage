@@ -662,7 +662,15 @@ int checkCommandLineConfiguration() {
 #ifndef VIRTUAL
 void setupFebBeb() {
     sharedMemory_lockLocalLink();
-    Feb_Interface_FebInterface();
+    if (!Feb_Interface_FebInterface()) {
+        initError = FAIL;
+        sprintf(initErrorMessage,
+                "Could not intitalize eiger detector sever: feb interface\n");
+        LOG(logERROR, (initErrorMessage));
+        initCheckDone = 1;
+        sharedMemory_unlockLocalLink();
+        return;
+    }
     if (!Feb_Control_FebControl(normal)) {
         initError = FAIL;
         sprintf(initErrorMessage,
@@ -686,7 +694,14 @@ void setupFebBeb() {
     LOG(logDEBUG1, ("%s server: FEB Initialization done\n",
                     isControlServer ? "Control" : "Stop"));
     Beb_SetTopVariable(top);
-    Beb_Beb();
+    if (!Beb_Beb()) {
+        initError = FAIL;
+        sprintf(initErrorMessage,
+                "Could not intitalize eiger detector sever: beb\n");
+        LOG(logERROR, (initErrorMessage));
+        initCheckDone = 1;
+        return;
+    }
     LOG(logDEBUG1, ("%s server: BEB Initialization done\n",
                     isControlServer ? "Control" : "Stop"));
 
@@ -724,17 +739,23 @@ void setupFebBeb() {
 }
 #endif
 
-void allocateDetectorStructureMemory() {
-    LOG(logINFO, ("This Server is for 1 Eiger half module (250k)\n\n"));
-
-    // Allocation of memory
+int allocateDetectorStructureMemory() {
     detectorModules = malloc(sizeof(sls_detector_module));
     detectorChans = malloc(NCHIP * NCHAN * sizeof(int));
     detectorDacs = malloc(NDAC * sizeof(int));
+    if (detectorModules == NULL || detectorChans == NULL ||
+        detectorDacs == NULL) {
+        initError = FAIL;
+        strcpy(initErrorMessage,
+               "Could not allocate memory for dacs or channels in detector\n");
+        LOG(logERROR, (initErrorMessage));
+        return FAIL;
+    }
     LOG(logDEBUG1,
         ("modules from 0x%x to 0x%x\n", detectorModules, detectorModules));
     LOG(logDEBUG1, ("chans from 0x%x to 0x%x\n", detectorChans, detectorChans));
     LOG(logDEBUG1, ("dacs from 0x%x to 0x%x\n", detectorDacs, detectorDacs));
+
     detectorModules->dacs = detectorDacs;
     detectorModules->chanregs = detectorChans;
     detectorModules->ndac = NDAC;
@@ -748,14 +769,21 @@ void allocateDetectorStructureMemory() {
     detectorModules->eV[2] = -1;
     thisSettings = UNINITIALIZED;
 
-    // if trimval requested, should return -1 to acknowledge unknown
+    // initialize (trimbits at -1 for unknown)
+    for (int idac = 0; idac < (detectorModules)->ndac; ++idac) {
+        detectorDacs[idac] = 0;
+    }
     for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
         *((detectorModules->chanregs) + ichan) = -1;
     }
+    return OK;
 }
 
 void setupDetector() {
-    allocateDetectorStructureMemory();
+    LOG(logINFO, ("This Server is for 1 Eiger half module (250k)\n\n"));
+
+    if (allocateDetectorStructureMemory() == FAIL)
+        return;
 
     // force top or master if in config file
     if (readConfigFile() == FAIL)
@@ -883,12 +911,12 @@ int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
 }
 
 /* advanced read/write reg */
-int writeRegister(uint32_t offset, uint32_t data) {
+int writeRegister(uint32_t offset, uint32_t data, int validate) {
 #ifdef VIRTUAL
     return OK;
 #else
     sharedMemory_lockLocalLink();
-    if (!Feb_Control_WriteRegister(offset, data)) {
+    if (!Feb_Control_WriteRegister(offset, data, validate)) {
         sharedMemory_unlockLocalLink();
         return FAIL;
     }
@@ -911,7 +939,7 @@ int readRegister(uint32_t offset, uint32_t *retval) {
 #endif
 }
 
-int setBit(const uint32_t addr, const int nBit) {
+int setBit(const uint32_t addr, const int nBit, int validate) {
 #ifndef VIRTUAL
     uint32_t regval = 0;
     if (readRegister(addr, &regval) == FAIL) {
@@ -921,7 +949,7 @@ int setBit(const uint32_t addr, const int nBit) {
     uint32_t val = regval | bitmask;
 
     sharedMemory_lockLocalLink();
-    if (!Feb_Control_WriteRegister_BitMask(addr, val, bitmask)) {
+    if (!Feb_Control_WriteRegister_BitMask(addr, val, bitmask, validate)) {
         sharedMemory_unlockLocalLink();
         return FAIL;
     }
@@ -930,7 +958,7 @@ int setBit(const uint32_t addr, const int nBit) {
     return OK;
 }
 
-int clearBit(const uint32_t addr, const int nBit) {
+int clearBit(const uint32_t addr, const int nBit, int validate) {
 #ifndef VIRTUAL
     uint32_t regval = 0;
     if (readRegister(addr, &regval) == FAIL) {
@@ -940,7 +968,7 @@ int clearBit(const uint32_t addr, const int nBit) {
     uint32_t val = regval & ~bitmask;
 
     sharedMemory_lockLocalLink();
-    if (!Feb_Control_WriteRegister_BitMask(addr, val, bitmask)) {
+    if (!Feb_Control_WriteRegister_BitMask(addr, val, bitmask, validate)) {
         sharedMemory_unlockLocalLink();
         return FAIL;
     }
@@ -2572,7 +2600,8 @@ int startStateMachine() {
         sharedMemory_setStatus(IDLE);
         sharedMemory_unlockAcqFlag();
         return FAIL;
-    }
+    } else
+        pthread_detach(virtual_tid);
     LOG(logINFO, ("Virtual Acquisition started\n"));
     sharedMemory_unlockAcqFlag();
     return OK;

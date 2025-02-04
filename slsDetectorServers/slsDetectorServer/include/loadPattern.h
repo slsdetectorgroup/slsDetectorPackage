@@ -27,10 +27,15 @@ int getPatternWaitAddress(int level);
 int validate_setPatternWaitAddresses(char *message, int level, int addr);
 void setPatternWaitAddress(int level, int addr);
 
-int validate_getPatternWaitTime(char *message, int level, uint64_t *waittime);
-uint64_t getPatternWaitTime(int level);
-int validate_setPatternWaitTime(char *message, int level, uint64_t waittime);
-void setPatternWaitTime(int level, uint64_t t);
+int validate_getPatternWaitClocksAndInterval(char *message, int level,
+                                             uint64_t *waittime, int clocks);
+uint64_t getPatternWaitClocks(int level);
+uint64_t getPatternWaitInterval(int level);
+
+int validate_setPatternWaitClocksAndInterval(char *message, int level,
+                                             uint64_t waittime, int clocks);
+void setPatternWaitClocks(int level, uint64_t t);
+void setPatternWaitInterval(int level, uint64_t t);
 
 int validate_getPatternLoopCycles(char *message, int level, int *numLoops);
 int getPatternLoopCycles(int level);

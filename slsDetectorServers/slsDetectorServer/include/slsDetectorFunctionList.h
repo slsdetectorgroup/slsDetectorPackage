@@ -140,7 +140,7 @@ void checkVirtual9MFlag();
 void setupFebBeb();
 #endif
 #if defined(EIGERD) || defined(MYTHEN3D)
-void allocateDetectorStructureMemory();
+int allocateDetectorStructureMemory();
 #endif
 void setupDetector();
 #if defined(CHIPTESTBOARDD)
@@ -172,14 +172,13 @@ void resetToHardwareSettings();
 
 // advanced read/write reg
 #ifdef EIGERD
-int writeRegister(uint32_t offset, uint32_t data);
+int writeRegister(uint32_t offset, uint32_t data, int validate);
 int readRegister(uint32_t offset, uint32_t *retval);
-int setBit(const uint32_t addr, int nBit);
-int clearBit(const uint32_t addr, int nBit);
+int setBit(const uint32_t addr, const int nBit, int validate);
+int clearBit(const uint32_t addr, const int nBit, int validate);
 int getBit(const uint32_t addr, const int nBit, int *retval);
 #elif GOTTHARDD
-uint32_t writeRegister16And32(uint32_t offset,
-                              uint32_t data); // FIXME its not there in ctb
+void writeRegister16And32(uint32_t offset, uint32_t data);
 uint32_t readRegister16And32(uint32_t offset);
 #endif
 
@@ -270,7 +269,8 @@ int selectStoragecellStart(int pos);
 int getMaxStoragecellStart();
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(EIGERD) ||               \
-    defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
+    defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD) ||               \
+    defined(GOTTHARD2D)
 int setNextFrameNumber(uint64_t value);
 int getNextFrameNumber(uint64_t *value);
 #endif
@@ -608,6 +608,10 @@ uint64_t getSelectCurrentSource();
 int getPedestalMode();
 void getPedestalParameters(uint8_t *frames, uint16_t *loops);
 void setPedestalMode(int enable, uint8_t frames, uint16_t loops);
+int setTimingInfoDecoder(enum timingInfoDecoder val);
+int getTimingInfoDecoder(enum timingInfoDecoder *retval);
+int getElectronCollectionMode();
+void setElectronCollectionMode(int enable);
 #endif
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
@@ -654,7 +658,8 @@ int setClockDivider(enum CLKINDEX ind, int val);
 int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val,
                                         int timeUpdate);
 int getClockDivider(enum CLKINDEX ind);
-
+int setReadoutSpeed(int val);
+int getReadoutSpeed(int *retval);
 #elif GOTTHARD2D
 int checkDetectorType(char *mess);
 int powerChip(int on, char *mess);

@@ -817,7 +817,7 @@ Only pressing enter on spinbox will set DAC (with this condition).</string>
      </widget>
     </item>
     <item row="18" column="0">
-     <widget class="QLabel" name="label_125">
+     <widget class="QLabel" name="labelADCVppDacName">
       <property name="text">
        <string>ADC_VPP</string>
       </property>

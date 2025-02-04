@@ -4,7 +4,7 @@ from pathlib import Path
 from PyQt5 import QtWidgets, uic
 from pyctbgui.utils.defines import Defines
 
-from slsdet import dacIndex
+from slsdet import dacIndex, detectorType
 
 
 class DacTab(QtWidgets.QWidget):
@@ -19,7 +19,14 @@ class DacTab(QtWidgets.QWidget):
             dac = getattr(dacIndex, f"DAC_{i}")
             getattr(self.view, f"spinBoxDAC{i}").setValue(self.det.getDAC(dac)[0])
 
-        if self.det.highvoltage == 0:
+        if self.det.type == detectorType.XILINX_CHIPTESTBOARD:
+            self.view.checkBoxHighVoltage.setDisabled(True)
+            self.view.spinBoxHighVoltage.setDisabled(True)
+            self.view.labelHighVoltage.setDisabled(True)
+            self.view.labelADCVppDacName.setDisabled(True)
+            self.view.labelADCVpp.setDisabled(True)
+            self.view.comboBoxADCVpp.setDisabled(True)
+        elif self.det.highvoltage == 0:
             self.view.spinBoxHighVoltage.setDisabled(True)
             self.view.checkBoxHighVoltage.setChecked(False)
 
@@ -30,9 +37,11 @@ class DacTab(QtWidgets.QWidget):
             getattr(self.view, f"checkBoxDAC{i}").stateChanged.connect(partial(self.setDACTristate, i))
             getattr(self.view, f"checkBoxDAC{i}mV").stateChanged.connect(partial(self.getDAC, i))
 
-        self.view.comboBoxADCVpp.currentIndexChanged.connect(self.setADCVpp)
-        self.view.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
-        self.view.checkBoxHighVoltage.stateChanged.connect(self.setHighVoltage)
+        if self.view.comboBoxADCVpp.isEnabled():
+            self.view.comboBoxADCVpp.currentIndexChanged.connect(self.setADCVpp)
+        if self.view.checkBoxHighVoltage.isEnabled():
+            self.view.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
+            self.view.checkBoxHighVoltage.stateChanged.connect(self.setHighVoltage)
 
     def refresh(self):
         self.updateDACNames()
@@ -40,8 +49,10 @@ class DacTab(QtWidgets.QWidget):
             self.getDACTristate(i)
             self.getDAC(i)
 
-        self.getADCVpp()
-        self.getHighVoltage()
+        if self.view.comboBoxADCVpp.isEnabled():
+            self.getADCVpp()
+        if self.view.checkBoxHighVoltage.isEnabled():
+            self.getHighVoltage()
 
     def updateDACNames(self):
         for i, name in enumerate(self.det.getDacNames()):
@@ -165,6 +176,8 @@ class DacTab(QtWidgets.QWidget):
                 unit = " mV" if inMV else ""
                 commands.append(f"dac {i} {value}{unit}")
 
-        commands.append(f"adcvpp {self.view.comboBoxADCVpp.currentText()} mV")
-        commands.append(f"highvoltage {self.view.spinBoxHighVoltage.value()}")
+        if self.view.comboBoxADCVpp.isEnabled():
+            commands.append(f"adcvpp {self.view.comboBoxADCVpp.currentText()} mV")
+        if self.view.checkBoxHighVoltage.isEnabled():
+            commands.append(f"highvoltage {self.view.spinBoxHighVoltage.value()}")
         return commands

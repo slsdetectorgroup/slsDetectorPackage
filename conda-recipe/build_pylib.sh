@@ -2,5 +2,10 @@
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 
 echo "|<-------- starting python build"
+
 cd python
-${PYTHON} setup.py install
+
+# copy VERSION into slsdet for installation
+cp ../VERSION slsdet/VERSION
+
+${PYTHON} setup.py install 

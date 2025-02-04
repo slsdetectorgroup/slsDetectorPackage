@@ -805,7 +805,8 @@ void Implementation::stopReceiver() {
             }
 
             TLogLevel lev = ((mp[i]) > 0) ? logINFORED : logINFOGREEN;
-            LOG(lev) << "Summary of Port " << udpPortNum[i] << summary;
+            LOG(lev) << "Summary of Port " << udpPortNum[i] << " (" << eth[i]
+                     << ')' << summary;
         }
 
         // callback
@@ -991,7 +992,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.dbitoffset = ctbDbitOffset;
             masterAttributes.dbitlist = 0;
             for (auto &i : ctbDbitList) {
-                masterAttributes.dbitlist |= (1 << i);
+                masterAttributes.dbitlist |= (static_cast<uint64_t>(1) << i);
             }
             masterAttributes.transceiverSamples =
                 generalData->nTransceiverSamples;

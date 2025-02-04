@@ -39,6 +39,24 @@
 std::vector<std::thread> threads;
 std::vector<sem_t *> semaphores;
 
+struct Status {
+    bool starting = true;
+    bool terminate = false;
+    unsigned long num_receivers;
+    sem_t available;
+    std::mutex mtx;
+    std::vector<zmq_msg_t *> headers;
+    std::map<unsigned int,
+             std::map<long unsigned int, std::vector<zmq_msg_t *>>>
+        frames;
+    std::vector<zmq_msg_t *> ends;
+
+    Status(bool start, bool term, unsigned long num_recv)
+        : starting(start), terminate(term), num_receivers(num_recv) {
+        sem_init(&available, 0, 0);
+    }
+};
+
 /**
  * Control+C Interrupt Handler
  * to let all the processes know to exit properly
@@ -64,19 +82,6 @@ std::string getHelpMessage() {
 }
 
 void zmq_free(void *data, void *hint) { free(data); }
-
-struct Status {
-    bool starting = true;
-    bool terminate = false;
-    unsigned long num_receivers;
-    sem_t available;
-    std::mutex mtx;
-    std::vector<zmq_msg_t *> headers;
-    std::map<unsigned int,
-             std::map<long unsigned int, std::vector<zmq_msg_t *>>>
-        frames;
-    std::vector<zmq_msg_t *> ends;
-};
 
 void print_frames(
     const std::map<unsigned int,
@@ -566,8 +571,6 @@ int main(int argc, char *argv[]) {
     }
 
     Status stat{true, false, (unsigned long)numReceivers};
-
-    sem_init(&stat.available, 0, 0);
 
     void *user_data = static_cast<void *>(&stat);
 

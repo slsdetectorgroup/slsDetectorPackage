@@ -13,16 +13,16 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <mutex>
 #include <ostream>
 #include <semaphore.h>
 #include <sys/socket.h>
 #include <sys/wait.h> //wait
 #include <thread>
-#include <mutex>
 #include <unistd.h>
 
-#include <vector>
 #include <set>
+#include <vector>
 #include <zmq.h>
 
 // gettid added in glibc 2.30
@@ -63,40 +63,43 @@ std::string getHelpMessage() {
     return os.str();
 }
 
-void zmq_free (void *data, void *hint)
-{
-    free (data);
-}
+void zmq_free(void *data, void *hint) { free(data); }
 
-
-struct Status{ 
-  bool starting = true;
-  bool terminate = false;
-  unsigned long num_receivers;
-  sem_t available;
-  std::mutex mtx;
-  std::vector<zmq_msg_t*> headers;
-  std::map<unsigned int, std::map<long unsigned int, std::vector<zmq_msg_t*> > > frames;
-  std::vector<zmq_msg_t*> ends;
+struct Status {
+    bool starting = true;
+    bool terminate = false;
+    unsigned long num_receivers;
+    sem_t available;
+    std::mutex mtx;
+    std::vector<zmq_msg_t *> headers;
+    std::map<unsigned int,
+             std::map<long unsigned int, std::vector<zmq_msg_t *>>>
+        frames;
+    std::vector<zmq_msg_t *> ends;
 };
 
-void print_frames(const std::map<unsigned int, std::map<long unsigned int, std::vector<zmq_msg_t*> > > &frames) {
-    for (const auto& outer_pair : frames) {
+void print_frames(
+    const std::map<unsigned int,
+                   std::map<long unsigned int, std::vector<zmq_msg_t *>>>
+        &frames) {
+    for (const auto &outer_pair : frames) {
         unsigned int udpPort = outer_pair.first;
-        const auto& trigger_map = outer_pair.second;
+        const auto &trigger_map = outer_pair.second;
 
         std::cout << "UDP port: " << udpPort << std::endl;
 
-        for (const auto& inner_pair : trigger_map) {
+        for (const auto &inner_pair : trigger_map) {
             long unsigned int acqIndex = inner_pair.first;
-            const auto& msg_vector = inner_pair.second;
+            const auto &msg_vector = inner_pair.second;
 
             std::cout << "  acq index: " << acqIndex << std::endl;
             std::cout << "    zmq_msg_t* Vector: ";
 
-            // Iterate over the vector of zmq_msg_t* and print each message pointer
-            for (const auto& msg : msg_vector) {
-                std::cout << " a frame " << msg ;  // Print a space between each pointer
+            // Iterate over the vector of zmq_msg_t* and print each message
+            // pointer
+            for (const auto &msg : msg_vector) {
+                std::cout << " a frame "
+                          << msg; // Print a space between each pointer
             }
 
             std::cout << std::endl;
@@ -104,10 +107,14 @@ void print_frames(const std::map<unsigned int, std::map<long unsigned int, std::
     }
 }
 
-std::set<long unsigned int> find_keys(const std::map<unsigned int, std::map<long unsigned int, std::vector<zmq_msg_t*> > >& maps) {
-    std::set<long unsigned int> all_keys;  // Set to collect all unique keys across all maps
+std::set<long unsigned int>
+find_keys(const std::map<unsigned int,
+                         std::map<long unsigned int, std::vector<zmq_msg_t *>>>
+              &maps) {
+    std::set<long unsigned int>
+        all_keys; // Set to collect all unique keys across all maps
     std::set<long unsigned int> valid_keys; // Set to store final valid keys
-    
+
     // If no maps are provided, return empty set
     if (maps.empty()) {
         return valid_keys;
@@ -115,9 +122,9 @@ std::set<long unsigned int> find_keys(const std::map<unsigned int, std::map<long
 
     // Collect all unique keys from all maps
     std::cout << "Collecting all unique keys from the maps:\n";
-    for (const auto& [port, trigger_map] : maps) {
+    for (const auto &[port, trigger_map] : maps) {
         std::cout << "Map " << port << ": ";
-        for (const auto& [idx, msgs] : trigger_map) {
+        for (const auto &[idx, msgs] : trigger_map) {
             all_keys.insert(idx);
             std::cout << idx << " ";
         }
@@ -125,27 +132,30 @@ std::set<long unsigned int> find_keys(const std::map<unsigned int, std::map<long
     }
 
     std::cout << "All unique keys collected: ";
-    for (const auto& key : all_keys) {
+    for (const auto &key : all_keys) {
         std::cout << key << " ";
     }
     std::cout << "\n\n";
 
     // Now check each key against all maps
-    for (const auto& key : all_keys) {
+    for (const auto &key : all_keys) {
         std::cout << "Checking key: " << key << std::endl;
         bool is_valid = true;
-        for (const auto& [port, map] : maps) {
+        for (const auto &[port, map] : maps) {
             auto it = map.find(key);
             if (it != map.end()) {
-                std::cout << "  Key " << key << " found in map " << port << std::endl;
+                std::cout << "  Key " << key << " found in map " << port
+                          << std::endl;
             } else {
                 // Key is missing, check if the map has a larger key
                 std::cout << "  Key " << key << " missing in map " << port;
                 auto upper_it = map.upper_bound(key);
                 if (upper_it != map.end()) {
-                    std::cout << ", but found larger key: " << upper_it->first << std::endl;
+                    std::cout << ", but found larger key: " << upper_it->first
+                              << std::endl;
                 } else {
-                    std::cout << ", no larger key found. Key " << key << " is invalid.\n";
+                    std::cout << ", no larger key found. Key " << key
+                              << " is invalid.\n";
                     is_valid = false;
                     break;
                 }
@@ -163,33 +173,34 @@ std::set<long unsigned int> find_keys(const std::map<unsigned int, std::map<long
     return valid_keys;
 }
 
-int zmq_send_multipart(void* socket, const std::vector<zmq_msg_t*>& messages) {
+int zmq_send_multipart(void *socket, const std::vector<zmq_msg_t *> &messages) {
     size_t num_messages = messages.size();
 
     // Iterate over each message in the vector
     for (size_t i = 0; i < num_messages; ++i) {
-        zmq_msg_t* msg = messages[i];
+        zmq_msg_t *msg = messages[i];
 
         // Determine flags: ZMQ_SNDMORE for all messages except the last
         int flags = (i == num_messages - 1) ? 0 : ZMQ_SNDMORE;
 
         // Send the message part
         if (zmq_msg_send(msg, socket, flags) == -1) {
-            std::cerr << "Error sending message: " << zmq_strerror(zmq_errno()) << std::endl;
-            return -1;  // Return -1 on error
+            std::cerr << "Error sending message: " << zmq_strerror(zmq_errno())
+                      << std::endl;
+            return -1; // Return -1 on error
         }
     }
 
-    return 0;  // Return 0 on success
+    return 0; // Return 0 on success
 }
 
 void Correlate(Status *stat) {
-    void *context = zmq_ctx_new ();
+    void *context = zmq_ctx_new();
 
-    void *socket = zmq_socket (context, ZMQ_PUSH);
-    int rc = zmq_bind (socket, "tcp://*:5555");
-    if (rc != 0){
-      std::cout << "failed to bind";
+    void *socket = zmq_socket(context, ZMQ_PUSH);
+    int rc = zmq_bind(socket, "tcp://*:5555");
+    if (rc != 0) {
+        std::cout << "failed to bind";
     }
 
     while (!stat->terminate) {
@@ -204,18 +215,20 @@ void Correlate(Status *stat) {
                     zmq_send_multipart(socket, stat->headers);
                     stat->headers.clear();
                 }
-            }
-            else {
+            } else {
                 std::cout << "sending data, common keys" << std::endl;
-                //print_frames(stat->frames);
+                // print_frames(stat->frames);
                 auto common_keys = find_keys(stat->frames);
-                for (const auto& key : common_keys) {
+                for (const auto &key : common_keys) {
                     std::vector<zmq_msg_t *> parts;
-                    for (const auto& [port, trigger_map] : stat->frames) {
+                    for (const auto &[port, trigger_map] : stat->frames) {
                         auto it = trigger_map.find(key);
                         if (it != trigger_map.end()) {
-                            parts.insert(parts.end(), stat->frames[port][key].begin(), stat->frames[port][key].end());
-                            std::cout << "  Key " << key << " found in map " << port << std::endl;
+                            parts.insert(parts.end(),
+                                         stat->frames[port][key].begin(),
+                                         stat->frames[port][key].end());
+                            std::cout << "  Key " << key << " found in map "
+                                      << port << std::endl;
                             stat->frames[port].erase(key);
                         }
                     }
@@ -228,7 +241,7 @@ void Correlate(Status *stat) {
                 std::cout << "all ends received, flushing" << std::endl;
                 // clean up all remaining frames
                 zmq_send_multipart(socket, stat->ends);
-                stat->ends.clear();                
+                stat->ends.clear();
             }
         }
     }
@@ -257,8 +270,8 @@ int StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
                           << "\n\tFile Index : " << callbackHeader.fileIndex
                           << "\n\tQuad Enable : " << callbackHeader.quad
                           << "\n\t]";
-    Status* stat = static_cast<Status*>(objectPointer);
-    
+    Status *stat = static_cast<Status *>(objectPointer);
+
     std::ostringstream oss;
     oss << "{\"htype\":\"header\""
         << ", \"udpPorts\":" << sls::ToString(callbackHeader.udpPort)
@@ -268,25 +281,23 @@ int StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
         << "\", \"fileIndex\":" << callbackHeader.fileIndex
         << ", \"detshape\":" << sls::ToString(callbackHeader.detectorShape)
         << ", \"size\":" << callbackHeader.imageSize
-        << ", \"quad\":" << (callbackHeader.quad ? 1 : 0) 
-        << "}\n";
+        << ", \"quad\":" << (callbackHeader.quad ? 1 : 0) << "}\n";
 
-    
     std::string message = oss.str();
     int length = message.length();
-    char* hdata = new char[length];
+    char *hdata = new char[length];
 
     memcpy(hdata, message.c_str(), length);
     zmq_msg_t *hmsg = new zmq_msg_t;
-    zmq_msg_init_data (hmsg, hdata, length, zmq_free, NULL);
+    zmq_msg_init_data(hmsg, hdata, length, zmq_free, NULL);
 
     {
         std::lock_guard<std::mutex> lock(stat->mtx);
         stat->headers.push_back(hmsg);
         stat->starting = true;
-        for(int port: callbackHeader.udpPort) {
+        for (int port : callbackHeader.udpPort) {
             std::cout << "clear cache for stream" << port << std::endl;
-            for (auto& pair : stat->frames[port]) {
+            for (auto &pair : stat->frames[port]) {
                 std::cout << "clear data" << pair.first << std::endl;
                 for (auto msg : pair.second) {
                     zmq_msg_close(msg);
@@ -314,22 +325,23 @@ void AcquisitionFinished(
                           << sls::ToString(callbackHeader.lastFrameIndex)
                           << "\n\t]";
 
-    Status* stat = static_cast<Status*>(objectPointer);
+    Status *stat = static_cast<Status *>(objectPointer);
 
     std::ostringstream oss;
     oss << "{\"htype\":\"series_end\""
         << ", \"udpPorts\":" << sls::ToString(callbackHeader.udpPort)
-        << ", \"comleteFrames\":" << sls::ToString(callbackHeader.completeFrames)
-        << ", \"lastFrameIndex\":" << sls::ToString(callbackHeader.lastFrameIndex)
-        << "}\n";
-    
+        << ", \"comleteFrames\":"
+        << sls::ToString(callbackHeader.completeFrames)
+        << ", \"lastFrameIndex\":"
+        << sls::ToString(callbackHeader.lastFrameIndex) << "}\n";
+
     std::string message = oss.str();
     int length = message.length();
-    char* hdata = new char[length];
+    char *hdata = new char[length];
 
     memcpy(hdata, message.c_str(), length);
     zmq_msg_t *hmsg = new zmq_msg_t;
-    zmq_msg_init_data (hmsg, hdata, length, zmq_free, NULL);
+    zmq_msg_init_data(hmsg, hdata, length, zmq_free, NULL);
 
     {
         std::lock_guard<std::mutex> lock(stat->mtx);
@@ -396,7 +408,7 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
         // header->packetsMask.to_string().c_str(),
         ((uint8_t)(*((uint8_t *)(dataPointer)))), imageSize);
 
-    Status* stat = static_cast<Status*>(objectPointer);
+    Status *stat = static_cast<Status *>(objectPointer);
 
     std::ostringstream oss;
     oss << "{\"htype\":\"module\""
@@ -412,7 +424,8 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
         << ", \"packetNumber\":" << detectorHeader.packetNumber
         << ", \"detSpec1\":" << detectorHeader.detSpec1
         << ", \"timestamp\":" << detectorHeader.timestamp
-        << ", \"modId\":" << detectorHeader.modId << ", \"row\":" << detectorHeader.row
+        << ", \"modId\":" << detectorHeader.modId
+        << ", \"row\":" << detectorHeader.row
         << ", \"column\":" << detectorHeader.column
         << ", \"detSpec2\":" << detectorHeader.detSpec2
         << ", \"detSpec3\":" << detectorHeader.detSpec3
@@ -436,45 +449,48 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
     std::string message = oss.str();
     int length = message.length();
 
-    char* hdata = new char[length];
+    char *hdata = new char[length];
 
     memcpy(hdata, message.c_str(), length);
-    std::cout << callbackHeader.udpPort << ":creating json part" << std::endl;    
+    std::cout << callbackHeader.udpPort << ":creating json part" << std::endl;
     zmq_msg_t *hmsg = new zmq_msg_t;
 
-    zmq_msg_init_data (hmsg, hdata, length, zmq_free, NULL);
+    zmq_msg_init_data(hmsg, hdata, length, zmq_free, NULL);
 
     std::cout << callbackHeader.udpPort << "created header frame" << std::endl;
-    //zmq_msg_init_buffer (&hmsg, message, length);
+    // zmq_msg_init_buffer (&hmsg, message, length);
 
-    char* data = new char[imageSize];
+    char *data = new char[imageSize];
 
     std::cout << callbackHeader.udpPort << "allocated new buffer" << std::endl;
 
-    //printf("data pointer %x, data %x\n", dataPointer, )
+    // printf("data pointer %x, data %x\n", dataPointer, )
     memcpy(data, dataPointer, imageSize);
 
     std::cout << callbackHeader.udpPort << "copied buffer" << std::endl;
     zmq_msg_t *msg = new zmq_msg_t;
-    zmq_msg_init_data (msg, data, imageSize, zmq_free, NULL);
+    zmq_msg_init_data(msg, data, imageSize, zmq_free, NULL);
 
-    std::cout << callbackHeader.udpPort << "copied data to data frame" << std::endl;
+    std::cout << callbackHeader.udpPort << "copied data to data frame"
+              << std::endl;
 
-    //std::tuple<zmq_msg_t *, zmq_msg_t *> msgTuple(&hmsg, &msg);
+    // std::tuple<zmq_msg_t *, zmq_msg_t *> msgTuple(&hmsg, &msg);
 
     {
-      std::cout << callbackHeader.udpPort << "getting lock" << std::endl;
-      std::lock_guard<std::mutex> lock(stat->mtx);
-      //stat->cache[0][(long unsigned int)42] = nullptr;
-      std::cout << callbackHeader.udpPort << "put data in cache" << std::endl;
-      stat->frames[callbackHeader.udpPort][header.detHeader.frameNumber].push_back(hmsg);
-      stat->frames[callbackHeader.udpPort][header.detHeader.frameNumber].push_back(msg);
+        std::cout << callbackHeader.udpPort << "getting lock" << std::endl;
+        std::lock_guard<std::mutex> lock(stat->mtx);
+        // stat->cache[0][(long unsigned int)42] = nullptr;
+        std::cout << callbackHeader.udpPort << "put data in cache" << std::endl;
+        stat->frames[callbackHeader.udpPort][header.detHeader.frameNumber]
+            .push_back(hmsg);
+        stat->frames[callbackHeader.udpPort][header.detHeader.frameNumber]
+            .push_back(msg);
     }
     std::cout << callbackHeader.udpPort << "call not correlate" << std::endl;
     sem_post(&stat->available);
 
     // if data is modified, eg ROI and size is reduced
-    //imageSize = 26000;
+    // imageSize = 26000;
 }
 
 /**
@@ -553,8 +569,8 @@ int main(int argc, char *argv[]) {
 
     sem_init(&stat.available, 0, 0);
 
-    void* user_data = static_cast<void *>(&stat);
-    
+    void *user_data = static_cast<void *>(&stat);
+
     std::thread combinerThread(Correlate, &stat);
 
     /** - loop over number of receivers */
@@ -568,8 +584,8 @@ int main(int argc, char *argv[]) {
             sls::Receiver receiver(startTCPPort + i);
 
             receiver.registerCallBackStartAcquisition(StartAcq, user_data);
-            receiver.registerCallBackAcquisitionFinished(
-                AcquisitionFinished, user_data);
+            receiver.registerCallBackAcquisitionFinished(AcquisitionFinished,
+                                                         user_data);
             receiver.registerCallBackRawDataReady(GetData, user_data);
             /**	- as long as no Ctrl+C */
             sem_wait(semaphore);

@@ -15,3 +15,6 @@ sleep 1
 # reset rx transceiver datapath
 setbit 0x658 4
 sleep 1
+
+# load default pattern
+patternX readout_pattern.pyat

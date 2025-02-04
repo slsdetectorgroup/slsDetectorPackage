@@ -853,7 +853,7 @@ int loadPattern(char *message, enum TLogLevel printLevel,
         }
     }
     // iocontrol
-#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD) // TODO
+#if !defined(MYTHEN3D)
     if (ret == OK) {
         ret = validate_writePatternIOControl(message, pat->ioctrl);
     }
@@ -914,7 +914,7 @@ int getPattern(char *message, patternParameters *pat) {
         pat->word[i] = retval64;
     }
     // iocontrol
-#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD) // TODO
+#if !defined(MYTHEN3D)
     if (ret == OK) {
         validate_readPatternIOControl();
     }
@@ -1051,7 +1051,7 @@ int loadPatternFile(char *patFname, char *errMessage) {
         }
 
         // patioctrl
-#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD) // TODO
+#if !defined(MYTHEN3D) // TODO
         if (!strncmp(line, "patioctrl", strlen("patioctrl"))) {
             uint64_t arg = 0;
 

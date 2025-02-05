@@ -56,6 +56,8 @@ public:
 
 	std::vector<hsize_t> GetChunkDimensions ();
 
+	hsize_t GetRank ();
+
 	void SetImageDataPath (std::string const& name);
 
 	void SetFrameIndexPath (std::string const& name);

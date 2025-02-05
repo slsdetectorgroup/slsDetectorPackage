@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-//#include <mutex>
+#include <mutex>
 
 using namespace std;
 
@@ -522,7 +522,13 @@ class multiThreadedAnalogDetector {
         return ret;
     }
 
-    virtual bool pushData(char *&ptr) { return dets[ithread]->pushData(ptr); }
+    virtual bool pushData(char *&ptr, int SC_value) {
+
+        // Get assigned threads for this storage cell
+        std::vector<int>& assigned_threads = sc_to_threads[SC_value];
+
+        return dets[assigned_thread]->pushData(ptr); 
+    }
 
     virtual bool popFree(char *&ptr) {
         //  cout << ithread << endl;
@@ -712,6 +718,8 @@ class multiThreadedAnalogDetector {
     int* ff;
     double* ped;
     //pthread_mutex_t fmutex; //unused
+    std::unordered_map< int, std::vector<int> > sc_to_threads; // Maps storage cell -> assigned threads
+    std::mutex map_mutex; // Ensure thread safe access to the map
 };
 
 #endif

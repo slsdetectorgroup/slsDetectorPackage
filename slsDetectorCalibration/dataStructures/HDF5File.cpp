@@ -94,6 +94,10 @@ std::vector<hsize_t> HDF5File::GetChunkDimensions() {
 	return chunk_dims;
 }
 
+hsize_t HDF5File::GetRank() {
+	return rank;
+}
+
 bool HDF5File::ValidateDimensions () {
 
 	// validate rank

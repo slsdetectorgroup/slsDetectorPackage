@@ -46,8 +46,10 @@ void printDatatypeSize(hid_t dataset) {
 
 }
 
-/* 
+
+/* **********************
  * Class member functions
+ * **********************
  */
 
 // Default constructor

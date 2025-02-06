@@ -82,7 +82,7 @@ public:
 	/**
 	 * Read an image into current_image,
 	 * increment Z-offset (frame) and (if rank==4) storage cell
-	 * @returns frame number read,
+	 * @returns frame number read from file,
 	 */
 	int ReadImage (uint16_t* image, std::vector<hsize_t>& offset);
 

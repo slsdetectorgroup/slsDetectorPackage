@@ -19,8 +19,8 @@ using namespace std;
 
 class multiThreadedCountingDetector : public multiThreadedAnalogDetector {
   public:
- multiThreadedCountingDetector(singlePhotonDetector *d, int n, int fs = 1000)
-        : multiThreadedAnalogDetector(d, n, fs){};
+ multiThreadedCountingDetector(singlePhotonDetector *d, int num_threads, int fs = 1000, int num_sc = 1)
+        : multiThreadedAnalogDetector(d, num_threads, fs, num_sc){};
     // virtual
     // ~multiThreadedCountingDetector{multiThreadedAnalogDetector::~multiThreadedAnalogDetector();};
     virtual double setNSigma(double n) {

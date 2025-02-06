@@ -46,13 +46,19 @@ std::string getRootString( std::string const& filepath ) {
  * \param fext    file extension (e.g. "raw")
  */
 std::string createFileName( std::string const& dir, std::string const& fprefix="run",
-			    std::string const& fsuffix="", std::string const& fext="raw", int const outfilecounter=-1 ) {
-  if (outfilecounter >= 0)
-    return fmt::format("{:s}/{:s}_{:s}_f{:05d}.{:s}", dir, fprefix, fsuffix, outfilecounter, fext);
-  else if (fsuffix.length()!=0)
-    return fmt::format("{:s}/{:s}_{:s}.{:s}", dir, fprefix, fsuffix, fext);
-  else
-    return fmt::format("{:s}/{:s}.{:s}", dir, fprefix, fext);
+			                std::string const& fsuffix="", std::string const& fext="raw", int const outfilecounter=-1 ) {
+    std::string return_string;
+    if (outfilecounter >= 0)
+        return_string = fmt::format("{:s}/{:s}_{:s}_f{:05d}", dir, fprefix, fsuffix, outfilecounter);
+    else if (fsuffix.length()!=0)
+        return_string = fmt::format("{:s}/{:s}_{:s}", dir, fprefix, fsuffix);
+    else
+        return_string = fmt::format("{:s}/{:s}", dir, fprefix);
+
+    if (fext.length()!=0)
+        return_string += "." + fext;
+
+    return return_string;
 }
 
 /* Adjusts number of threads to be a multiple of number of storage cells
@@ -208,6 +214,7 @@ int main(int argc, char *argv[]) {
     std::cout << std::ctime(&end_time) << std::endl;
 
     int nThreads = nthreads;
+    int nSC = 1;
 
     // Validate number of threads for number of storage cells (if applicable)
     // Determine the dimensions of the dataset from the first datafile
@@ -219,7 +226,8 @@ int main(int argc, char *argv[]) {
         // Validate number of threads
         if( firstfileh5->GetRank() == 4 ) {
             auto h5dims = firstfileh5->GetDatasetDimensions();
-            auto nThreads = adjustThreads(nthreads,h5dims[1]);
+            nSC = h5dims[1];
+            nThreads = adjustThreads(nthreads,nSC);
         }
 
         firstfileh5->CloseResources();
@@ -229,7 +237,7 @@ int main(int argc, char *argv[]) {
     }
 
     multiThreadedCountingDetector* mt =
-        new multiThreadedCountingDetector(filter, nThreads, fifosize);
+        new multiThreadedCountingDetector(filter, nThreads, fifosize, nSC);
     //auto mt = std::make_unique<multiThreadedCountingDetector>(filter.get(), nthreads, fifosize);
     mt->setClusterSize(csize, csize);
     mt->newDataSet(); //Initialize new dataset for each thread
@@ -242,7 +250,7 @@ int main(int argc, char *argv[]) {
 
     int ifr = 0; //frame counter of while loop
     int framenumber = 0; //framenumber as read from file (detector)
-    std::vector<hsize_t> h5offset; //frame counter internal to HDF5File::ReadImage (provided for sanity check/debugging)
+    std::vector<hsize_t> h5offset; //hyperslab offset internal to HDF5File::ReadImage
     hsize_t h5rank;
 
     if (pedfilename.length()>1) {
@@ -279,20 +287,31 @@ int main(int argc, char *argv[]) {
 	            }
 
                 int storageCell = 0;
-                if (h5rank == 4)
+                hsize_t n_storageCells = 1;
+                if (h5rank == 4) {
                     storageCell = h5offset[1];
+                    n_storageCells = pedefile->GetDatasetDimensions()[1];
+                }
 
-	            mt->pushData(buff, storageCell); //HERE!!!
-	          mt->nextThread();
-	          mt->popFree(buff);
-	          ++ifr;
-	          if (ifr % 100 == 0) {
-	            std::cout << " ****" << ifr << " " << framenumber << " " << h5offset[0]
-			                  << std::endl;
-	          } // else
+                // push buff into fifoData for a thread corresponding to the active storage cell
+	            mt->pushData(buff, storageCell);
+                // increment (round-robin) the internal thread counter for that storage cell
+	            mt->nextThread(storageCell);
+                // get a free memory address from fifoFree of the active storage cell for the next read operation
+	            mt->popFree(buff,storageCell);
+                /* NOTE: the buff that was popped free from the current thread, will be (likely) pushed into
+                 * the fifoData of a different thread in the next iteration of the loop! */
+
+	            ++ifr;
+	            if (ifr % 100 == 0) {
+	                std::cout << " ****" << ifr << " " << framenumber << " " << h5offset[0];
+                    if (n_storageCells>1)
+			            std::cout << " sc " << storageCell;
+                    std::cout << "\n";
+	            } // else
 	      
-	          if (ifr >= 1000)
-	            break;
+	            if (ifr >= 1000*n_storageCells)
+	                break;
 	          //framenumber = 0;
 	        }
 	    
@@ -302,9 +321,9 @@ int main(int argc, char *argv[]) {
 	        }
 
 	        std::cout << "froot " << froot << std::endl;
-	        auto imgfname = createFileName( outdir, froot, "ped", "tiff");
+	        auto imgfname = createFileName( outdir, froot, "ped", "" );
 	        mt->writePedestal(imgfname.c_str());
-	        imgfname = createFileName( outdir, froot, "rms", "tiff");
+	        imgfname = createFileName( outdir, froot, "rms", "");
 	        mt->writePedestalRMS(imgfname.c_str());
 
 	      } else

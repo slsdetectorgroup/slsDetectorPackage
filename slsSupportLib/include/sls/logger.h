@@ -16,6 +16,8 @@ enum TLogLevel {
     logINFOBLUE,
     logINFOGREEN,
     logINFORED,
+    logINFOCYAN,
+    logINFOMAGENTA,
     logINFO,
     logDEBUG,
     logDEBUG1,
@@ -60,16 +62,25 @@ class Logger {
     // Danger this buffer need as many elements as TLogLevel
     static const char *Color(TLogLevel level) noexcept {
         static const char *const colors[] = {
-            RED BOLD, YELLOW BOLD, BLUE,  GREEN, RED,   RESET,
-            RESET,    RESET,       RESET, RESET, RESET, RESET};
+            RED BOLD, YELLOW BOLD, BLUE,  GREEN, RED,   CYAN,  MAGENTA,
+            RESET,    RESET,       RESET, RESET, RESET, RESET, RESET};
+        // out of bounds
+        if (level < 0 || level >= sizeof(colors) / sizeof(colors[0])) {
+            return RESET;
+        }
         return colors[level];
     }
 
     // Danger this buffer need as many elements as TLogLevel
     static std::string ToString(TLogLevel level) {
         static const char *const buffer[] = {
-            "ERROR", "WARNING", "INFO",   "INFO",   "INFO",   "INFO",
-            "DEBUG", "DEBUG1",  "DEBUG2", "DEBUG3", "DEBUG4", "DEBUG5"};
+            "ERROR",  "WARNING", "INFO",   "INFO",  "INFO",
+            "INFO",   "INFO",    "INFO",   "DEBUG", "DEBUG1",
+            "DEBUG2", "DEBUG3",  "DEBUG4", "DEBUG5"};
+        // out of bounds
+        if (level < 0 || level >= sizeof(buffer) / sizeof(buffer[0])) {
+            return "UNKNOWN";
+        }
         return buffer[level];
     }
 

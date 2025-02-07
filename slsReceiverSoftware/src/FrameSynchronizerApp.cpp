@@ -2,7 +2,9 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 /* Creates the slsFrameSynchronizer for running multiple receivers in different
  * threads form a single binary that will spit out zmq streams without
- * reconstructing image */
+ * reconstructing image. Sample python script for pull socket for this combiner
+ * in python/scripts folder. TODO: Not handling empty frames from one socket
+ */
 #include "sls/Receiver.h"
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
@@ -28,8 +30,6 @@
 std::vector<std::thread> threads;
 std::vector<sem_t *> semaphores;
 sls::TLogLevel printHeadersLevel = sls::logDEBUG;
-sls::TLogLevel detailPrintLevel = sls::logDEBUG;    // sls::logINFOMAGENTA;
-sls::TLogLevel udpThreadPrintLevel = sls::logDEBUG; // sls::logINFOCYAN;
 
 /** Define Colors to print data call back in different colors for different
  * recievers */
@@ -84,27 +84,16 @@ void print_frames(
     const std::map<unsigned int,
                    std::map<long unsigned int, std::vector<zmq_msg_t *>>>
         &frames) {
-    LOG(detailPrintLevel) << "Printing frames";
+    LOG(sls::logDEBUG) << "Printing frames";
     for (const auto &outer_pair : frames) {
         unsigned int udpPort = outer_pair.first;
         const auto &trigger_map = outer_pair.second;
-
-        LOG(detailPrintLevel) << "UDP port: " << udpPort;
-
+        LOG(sls::logDEBUG) << "UDP port: " << udpPort;
         for (const auto &inner_pair : trigger_map) {
             long unsigned int acqIndex = inner_pair.first;
             const auto &msg_vector = inner_pair.second;
-
-            LOG(detailPrintLevel) << "  acq index: " << acqIndex;
-            LOG(detailPrintLevel) << "    zmq_msg_t* Vector: ";
-
-            // Iterate over the vector of zmq_msg_t* and print each message
-            // pointer
-            for (const auto &msg : msg_vector) {
-                // Print a space between each pointer
-                LOG(detailPrintLevel) << " a frame " << msg;
-            }
-            LOG(detailPrintLevel) << std::endl;
+            LOG(sls::logDEBUG) << "  acq index: " << acqIndex << '['
+                               << msg_vector.size() << ']';
         }
     }
 }
@@ -123,43 +112,33 @@ find_keys(const std::map<unsigned int,
     }
 
     // Collect all unique keys from all maps
-    LOG(detailPrintLevel) << "Collecting all unique keys from the maps:";
     for (const auto &[port, trigger_map] : maps) {
-        LOG(detailPrintLevel) << "Map " << port << ": ";
         for (const auto &[idx, msgs] : trigger_map) {
             all_keys.insert(idx);
-            LOG(detailPrintLevel) << idx << " ";
         }
-        LOG(detailPrintLevel) << std::endl;
     }
 
-    LOG(detailPrintLevel) << "All unique keys collected: ";
+    // Now check each key against all maps (udp ports)
     for (const auto &key : all_keys) {
-        LOG(detailPrintLevel) << key << " ";
-    }
-    LOG(detailPrintLevel) << "\n\n";
-
-    // Now check each key against all maps
-    for (const auto &key : all_keys) {
-        LOG(detailPrintLevel) << "Checking key: " << key;
+        LOG(sls::logDEBUG) << "Checking key: " << key;
         bool is_valid = true;
         for (const auto &[port, map] : maps) {
             auto it = map.find(key);
             if (it != map.end()) {
-                LOG(detailPrintLevel)
+                LOG(sls::logDEBUG)
                     << "  Key " << key << " found in map " << port;
             } else {
                 // Key is missing, check if the map has a larger key
-                LOG(detailPrintLevel)
+                LOG(sls::logDEBUG)
                     << "  Key " << key << " missing in map " << port;
                 auto upper_it = map.upper_bound(key);
                 if (upper_it != map.end()) {
-                    LOG(detailPrintLevel)
+                    LOG(sls::logDEBUG)
                         << ", but found larger key: " << upper_it->first
                         << std::endl;
                 } else {
-                    LOG(detailPrintLevel) << ", no larger key found. Key "
-                                          << key << " is invalid.\n";
+                    LOG(sls::logDEBUG) << ", no larger key found. Key " << key
+                                       << " is invalid.\n";
                     is_valid = false;
                     break;
                 }
@@ -167,10 +146,10 @@ find_keys(const std::map<unsigned int,
         }
 
         if (is_valid) {
-            LOG(detailPrintLevel) << "  Key " << key << " is valid.\n";
+            LOG(sls::logDEBUG) << "  Key " << key << " is valid.\n";
             valid_keys.insert(key);
         } else {
-            LOG(detailPrintLevel) << "  Key " << key << " is not valid.\n";
+            LOG(sls::logDEBUG) << "  Key " << key << " is not valid.\n";
         }
     }
 
@@ -208,13 +187,12 @@ void Correlate(Status *stat) {
     }
 
     while (!stat->terminate) {
-        LOG(detailPrintLevel) << "Correlate cache";
         sem_wait(&(stat->available));
         {
             std::lock_guard<std::mutex> lock(stat->mtx);
             if (stat->starting) {
                 if (stat->headers.size() == stat->num_receivers) {
-                    LOG(printHeadersLevel) << "Sending all start messages";
+                    LOG(sls::logDEBUG) << "Sending all start messages";
                     stat->starting = false;
                     zmq_send_multipart(socket, stat->headers);
                     stat->headers.clear();
@@ -230,19 +208,18 @@ void Correlate(Status *stat) {
                             parts.insert(parts.end(),
                                          stat->frames[port][key].begin(),
                                          stat->frames[port][key].end());
-                            LOG(detailPrintLevel)
+                            LOG(sls::logDEBUG)
                                 << "  Key " << key << " found in map " << port;
                             stat->frames[port].erase(key);
                         }
                     }
-                    LOG(detailPrintLevel) << key << " ";
+                    LOG(sls::logDEBUG) << key << " ";
                     LOG(printHeadersLevel) << "Sending data for index " << key;
                     zmq_send_multipart(socket, parts);
                 }
-                LOG(detailPrintLevel) << "\n\n";
             }
             if (stat->ends.size() == stat->num_receivers) {
-                LOG(printHeadersLevel) << "Sending all end messages";
+                LOG(sls::logDEBUG) << "Sending all end messages";
                 // clean up all remaining frames
                 zmq_send_multipart(socket, stat->ends);
                 stat->ends.clear();
@@ -260,7 +237,7 @@ void Correlate(Status *stat) {
  */
 int StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
              void *objectPointer) {
-    LOG(printHeadersLevel) << "#### Start Acquisition:"
+    LOG(printHeadersLevel) << "Start Acquisition:"
                            << "\n\t["
                            << "\n\tUDP Port : "
                            << sls::ToString(callbackHeader.udpPort)
@@ -285,6 +262,7 @@ int StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
         << ", \"size\":" << callbackHeader.imageSize
         << ", \"quad\":" << (callbackHeader.quad ? 1 : 0) << "}\n";
     std::string message = oss.str();
+    LOG(sls::logDEBUG) << "Start Acquisition message:" << std::endl << message;
     int length = message.length();
     char *hdata = new char[length];
     memcpy(hdata, message.c_str(), length);
@@ -297,12 +275,9 @@ int StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
         stat->headers.push_back(hmsg);
         stat->starting = true;
         for (int port : callbackHeader.udpPort) {
-            LOG(udpThreadPrintLevel) << sls::ToString(callbackHeader.udpPort)
-                                     << ": clear cache for stream " << port;
+            // clear cache for udp port
             for (auto &pair : stat->frames[port]) {
-                LOG(udpThreadPrintLevel)
-                    << sls::ToString(callbackHeader.udpPort) << ": clear data"
-                    << pair.first;
+                // clearing cache for acq index
                 for (auto msg : pair.second) {
                     zmq_msg_close(msg);
                     free(msg);
@@ -319,7 +294,7 @@ int StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
 void AcquisitionFinished(
     const slsDetectorDefs::endCallbackHeader callbackHeader,
     void *objectPointer) {
-    LOG(printHeadersLevel) << "#### AcquisitionFinished:"
+    LOG(printHeadersLevel) << "Acquisition Finished:"
                            << "\n\t["
                            << "\n\tUDP Port : "
                            << sls::ToString(callbackHeader.udpPort)
@@ -337,6 +312,8 @@ void AcquisitionFinished(
         << sls::ToString(callbackHeader.lastFrameIndex) << "}\n";
     std::string message = oss.str();
     int length = message.length();
+    LOG(sls::logDEBUG) << "Acquisition Finished message:" << std::endl
+                       << message;
     char *hdata = new char[length];
     memcpy(hdata, message.c_str(), length);
 
@@ -363,7 +340,7 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
 
     if (printHeadersLevel < sls::logDEBUG) {
         PRINT_IN_COLOR((callbackHeader.udpPort % 10),
-                       "#### GetData: "
+                       "Data: "
                        "\n\tCallback Header: "
                        "\n\t["
                        "\n\tUDP Port: %u"
@@ -447,47 +424,31 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
     }
     oss << "}\n";
     std::string message = oss.str();
+    LOG(sls::logDEBUG) << "Data message:" << std::endl << message;
     int length = message.length();
 
     char *hdata = new char[length];
     memcpy(hdata, message.c_str(), length);
-    LOG(udpThreadPrintLevel)
-        << callbackHeader.udpPort << ": creating json part";
     zmq_msg_t *hmsg = new zmq_msg_t;
     zmq_msg_init_data(hmsg, hdata, length, zmq_free, NULL);
-    LOG(udpThreadPrintLevel)
-        << callbackHeader.udpPort << ": created header frame";
-    // zmq_msg_init_buffer (&hmsg, message, length);
+    LOG(sls::logDEBUG) << callbackHeader.udpPort << ": created header frame";
 
     char *data = new char[imageSize];
-    LOG(udpThreadPrintLevel)
-        << callbackHeader.udpPort << ": allocated new buffer";
-    // printf("data pointer %x, data %x\n", dataPointer, )
-    memcpy(data, dataPointer, imageSize);
-    LOG(udpThreadPrintLevel) << callbackHeader.udpPort << ": copied buffer";
     zmq_msg_t *msg = new zmq_msg_t;
     zmq_msg_init_data(msg, data, imageSize, zmq_free, NULL);
-    LOG(udpThreadPrintLevel)
-        << callbackHeader.udpPort << ": copied data to data frame";
-    // std::tuple<zmq_msg_t *, zmq_msg_t *> msgTuple(&hmsg, &msg);
+    LOG(sls::logDEBUG) << callbackHeader.udpPort
+                       << ": copied data to data frame";
 
     Status *stat = static_cast<Status *>(objectPointer);
     {
-        LOG(udpThreadPrintLevel) << callbackHeader.udpPort << "getting lock";
         std::lock_guard<std::mutex> lock(stat->mtx);
-        // stat->cache[0][(long unsigned int)42] = nullptr;
-        LOG(udpThreadPrintLevel)
-            << callbackHeader.udpPort << "put data in cache";
+        LOG(sls::logDEBUG) << callbackHeader.udpPort << "put data in cache";
         stat->frames[callbackHeader.udpPort][header.detHeader.frameNumber]
             .push_back(hmsg);
         stat->frames[callbackHeader.udpPort][header.detHeader.frameNumber]
             .push_back(msg);
     }
-    LOG(udpThreadPrintLevel) << callbackHeader.udpPort << "call not correlate";
     sem_post(&stat->available);
-
-    // if data is modified, eg ROI and size is reduced
-    // imageSize = 26000;
 }
 
 /**
@@ -596,7 +557,6 @@ int main(int argc, char *argv[]) {
         thread.join();
     }
 
-    LOG(detailPrintLevel) << "Terminate Combiner";
     stat.terminate = true;
     sem_post(&stat.available);
     combinerThread.join();

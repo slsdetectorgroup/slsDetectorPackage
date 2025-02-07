@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <mutex>
+#include <algorithm>
+#include<unordered_map>
 
 using namespace std;
 
@@ -846,13 +848,13 @@ class multiThreadedAnalogDetector {
     int* ff;
     double* ped;
     //pthread_mutex_t fmutex; //unused
-    std::unordered_map< int, std::vector<int> > sc_to_threads; // Maps storage cell -> vector of assigned thread ids
+    std::unordered_map<int,std::vector<int>> sc_to_threads; // Maps storage cell -> vector of assigned thread ids
     std::mutex map_mutex; // Ensure thread-safe access to the map
     int nSC{1}; // Number of storage cells
     
-    std::unordered_map<int, int*> sc_images; // Store images per storage cell
-    std::unordered_map<int, double*> sc_pedestals; // Store pedestal arrays per storage cell
-    std::unordered_map<int, double*> sc_pedestals_rms; // Store pedestal RMS arrays per storage cell
+    std::unordered_map<int,int*> sc_images; // Store images per storage cell
+    std::unordered_map<int,double*> sc_pedestals; // Store pedestal arrays per storage cell
+    std::unordered_map<int,double*> sc_pedestals_rms; // Store pedestal RMS arrays per storage cell
     // at the moment, these maps could be avoided, but this implementation is more robust in allowing future changes
 };
 

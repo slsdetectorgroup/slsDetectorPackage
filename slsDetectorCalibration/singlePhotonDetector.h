@@ -205,6 +205,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
     virtual singlePhotonDetector* Copy() {
         return new singlePhotonDetector(*this);  // Calls the copy constructor
     }
+    
 
     /** sets/gets number of rms threshold to detect photons
         \param n number of sigma to be set (0 or negative gets)

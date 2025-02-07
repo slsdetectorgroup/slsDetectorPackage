@@ -198,7 +198,7 @@ void Correlate(Status *stat) {
                     stat->headers.clear();
                 }
             } else {
-                print_frames(stat->frames);
+                //print_frames(stat->frames);
                 auto common_keys = find_keys(stat->frames);
                 for (const auto &key : common_keys) {
                     std::vector<zmq_msg_t *> parts;

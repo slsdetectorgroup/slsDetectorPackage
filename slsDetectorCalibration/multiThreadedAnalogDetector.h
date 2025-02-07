@@ -422,22 +422,31 @@ class multiThreadedAnalogDetector {
             dets[i]->newDataSet();
     };
 
-    virtual int *getImage(int &nnx, int &nny, int &ns, int &nsy) {
+    // Storage cell sensitive
+    virtual int *getImage(int &nnx, int &nny, int &ns, int &nsy, int sc = 0) {
         //int *img;
         // int nnx, nny, ns;
         // int nnx, nny, ns;
         int nn = dets[0]->getImageSize(nnx, nny, ns, nsy);
-        if (image) {
-            delete[] image;
-            image = nullptr;
+
+        if (sc_images[sc]) {
+            delete[] sc_images[sc];
+            sc_images[sc] = nullptr;
         }
-        image = new int[nn];
+
+        // Allocate memory for image and zero-initialize
+        sc_images[sc] = new int[nn]();
         // int nn=dets[0]->getImageSize(nnx, nny, ns);
         // for (i=0; i<nn; i++) image[i]=0;
 
-        for (int ii = 0; ii < nThreads; ii++) {
+        // Get the threads assigned to this storage cell
+        auto const& assigned_threads = sc_to_threads[sc];
+
+        // Only iterate over threads assigned to this storage cell
+        for (int thread_id : assigned_threads) {
             
-            int* tmp_img = dets[ii]->getImage();
+            int* tmp_img = dets[thread_id]->getImage();
+            if (!tmp_img) continue; // Skip if null
 
             /* std::cout << "## Thread " << ii
                       << " # image size " << nn
@@ -445,24 +454,20 @@ class multiThreadedAnalogDetector {
                       << " # nny " << nny
                       << " # ns " << ns; */
 
+            // Sum images across threads
             for (int i = 0; i < nn; i++) {
 
                 /* std::cout << " # pixel " << i
                           << " # value " << tmp_img[i]
                           << " ## " << std::endl; */
 
-                if (ii == 0)
-                    //	  if (img[i]>0)
-                    image[i] = tmp_img[i];
-                // else
-                //  image[i]=0;
-                else // if (img[i]>0)
-                    image[i] += tmp_img[i];
+                
+                sc_images[sc][i] += tmp_img[i];
                 // if (img[i])	  cout << "det " << ii << " pix " << i << " val
                 // " <<  img[i] << " " << image[i] << endl;
             }
         }
-        return image;
+        return sc_images[sc];
     }
 
     virtual void clearImage() {
@@ -472,7 +477,7 @@ class multiThreadedAnalogDetector {
         }
     }
 
-    virtual void *writeImage(const char *imgname, double t = 1) {
+    virtual void *writeImage(char const* base_imgname, double t = 1) {
         /* #ifdef SAVE_ALL   */
         /*      for (int ii=0; ii<nThreads; ii++) { */
         /*        char tit[10000];cout << "m" <<endl; */
@@ -481,11 +486,30 @@ class multiThreadedAnalogDetector {
         /*      } */
         /* #endif */
         int nnx, nny, ns, nsy;
-        getImage(nnx, nny, ns, nsy);
-        // int nnx, nny, ns;
         int nn = dets[0]->getImageSize(nnx, nny, ns, nsy);
-        float *gm = new float[nn];
-        if (gm) {
+
+        // Allocate teporary float buffer and zero-initialize
+        std::vector<float> gm(nn);
+
+        // Lambda for pixel conversion
+        auto convert_pixel = [t](int pixel) -> float {
+            return (t > 0) ? static_cast<float>(std::max(0, pixel)) / t : pixel;
+        }; // t ... threshold
+
+        // Loop over each storage cell
+        for (auto const& [sc, _] : sc_to_threads) {
+            std::string imgname(base_imgname);
+            if (nSC > 1) imgname += "_SC" + std::to_string(sc);
+            imgname += ".tiff";
+
+            //Retrieve the image for this storage cell
+            int *image = getImage(nnx, nny, ns, nsy, sc);
+            if (!image) continue; // Skip if null
+
+            // Convert image data to float
+            std::transform(image, image + nn, gm.begin(), convert_pixel);
+
+            /* old loop implementing same logic as convert_pixel
             for (int ix = 0; ix < nn; ix++) {
                 if (t) {
                     if (image[ix] < 0)
@@ -498,15 +522,16 @@ class multiThreadedAnalogDetector {
                 // if (image[ix]>0 && ix/nnx<350) cout << ix/nnx << " " <<
                 // ix%nnx << " " << image[ix]<< " " << gm[ix] << endl;
             }
-            // cout << "image " << nnx << " " << nny << endl;
-            WriteToTiff(gm, imgname, nnx, nny);
-            delete[] gm;
-        } else
-            std::cout << "Could not allocate float image " << std::endl;
+            */
 
-        if(image) {
-            delete[] image; // Memory cleanup (VH)
-            image = nullptr;
+            WriteToTiff(gm.data(), imgname.c_str(), nnx, nny);
+
+            // Clean up memory for this storage cell
+            if (sc_images[sc]) {
+                delete[] sc_images[sc];
+                sc_images[sc] = nullptr;
+            }
+            
         }
         
         return NULL;
@@ -822,6 +847,7 @@ class multiThreadedAnalogDetector {
     std::mutex map_mutex; // Ensure thread-safe access to the map
     int nSC{1}; // Number of storage cells
     
+    std::unordered_map<int, int*> sc_images; // Store images per storage cell
     std::unordered_map<int, double*> sc_pedestals; // Store pedestal arrays per storage cell
     std::unordered_map<int, double*> sc_pedestals_rms; // Store pedestal RMS arrays per storage cell
     // at the moment, these maps could be avoided, but this implementation is more robust in allowing future changes

@@ -213,10 +213,9 @@ int main(int argc, char *argv[]) {
     std::time(&end_time);
     std::cout << std::ctime(&end_time) << std::endl;
 
+    // Validate number of threads for number of storage cells (if applicable)
     int nThreads = nthreads;
     int nSC = 1;
-
-    // Validate number of threads for number of storage cells (if applicable)
     // Determine the dimensions of the dataset from the first datafile
     auto firstfileh5 = std::make_unique<HDF5File>();
     firstfileh5->SetFrameIndexPath(frameindexpath);
@@ -233,7 +232,7 @@ int main(int argc, char *argv[]) {
         firstfileh5->CloseResources();
     } else {
         std::cerr << "Could not open data file " << filenames[0]
-		          << " for reading " << std::endl;
+		          << " for validating rank " << std::endl;
     }
 
     multiThreadedCountingDetector* mt =
@@ -298,7 +297,7 @@ int main(int argc, char *argv[]) {
                 // increment (round-robin) the internal thread counter for that storage cell
 	            mt->nextThread(storageCell);
                 // get a free memory address from fifoFree of the active storage cell for the next read operation
-	            mt->popFree(buff,storageCell);
+	            mt->popFree(buff, storageCell);
                 /* NOTE: the buff that was popped free from the current thread, will be (likely) pushed into
                  * the fifoData of a different thread in the next iteration of the loop! */
 
@@ -341,25 +340,24 @@ int main(int argc, char *argv[]) {
 
     FILE* of = nullptr;
     
-    //NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS!
     for (unsigned int ifile = 0; ifile != filenames.size(); ++ifile) {
-      std::cout << "DATA ";
-      std::string fsuffix{};
-      std::string const fprefix( getRootString(filenames[ifile]) );
-      std::string imgfname( createFileName( outdir, fprefix, fsuffix, "tiff" ) );
-      std::string const cfname( createFileName( outdir, fprefix, fsuffix, "clust" ) );
-      std::cout << filenames[ifile] << " ";
-      std::cout << imgfname << std::endl;
-      std::time(&end_time);
-      std::cout << std::ctime(&end_time) << std::endl;
+        std::cout << "DATA ";
+        std::string fsuffix{};
+        std::string const fprefix( getRootString(filenames[ifile]) );
+        std::string imgfname( createFileName( outdir, fprefix, fsuffix, "tiff" ) );
+        std::string const cfname( createFileName( outdir, fprefix, fsuffix, "clust" ) );
+        std::cout << filenames[ifile] << " ";
+        std::cout << imgfname << std::endl;
+        std::time(&end_time);
+        std::cout << std::ctime(&end_time) << std::endl;
 
-      //HDF5File fileh5;
-      auto fileh5 = std::make_unique<HDF5File>();
-      fileh5->SetFrameIndexPath(frameindexpath);
-      fileh5->SetImageDataPath(datasetpath);
-      //      //open file
-      ioutfile = 0;
-      if ( fileh5->OpenResources(filenames[ifile].c_str(), validate_rank) ) {
+        //HDF5File fileh5;
+        auto fileh5 = std::make_unique<HDF5File>();
+        fileh5->SetFrameIndexPath(frameindexpath);
+        fileh5->SetImageDataPath(datasetpath);
+        //      //open file
+      
+        if ( fileh5->OpenResources(filenames[ifile].c_str(), validate_rank) ) {
 	      
 	        if (of == nullptr) {
 	          of = fopen(cfname.c_str(), "w");
@@ -384,54 +382,56 @@ int main(int argc, char *argv[]) {
 	      
 	
 	//     //while read frame
-	      framenumber = 0;
-	      h5offset[0] = 0;
-	      ifr = 0;
-	      //std::cout << "Here! " << framenumber << " ";
-	      while ( decoder->readNextFrame(*fileh5, framenumber, h5offset, buff) ) {
+	        framenumber = 0;
+	        std::fill(h5offset.begin(), h5offset.end(), 0);
+	        ifr = 0;
 	        //std::cout << "Here! " << framenumber << " ";
-	        //         //push
-	        if ((ifr + 1) % 1000 == 0) {
-	          std::cout << " ****"
-		                  << decoder->getValue(buff, 20, 20); // << std::endl;
-	        }
-	        mt->pushData(buff);
+	        while ( decoder->readNextFrame(*fileh5, framenumber, h5offset, buff) ) {
+	        
+	            if ((ifr + 1) % 1000 == 0) {
+	                std::cout << " ****"
+		                      << decoder->getValue(buff, 20, 20); // << std::endl;
+	            }
 
-	        // 	//         //pop
-	        mt->nextThread();
-	        mt->popFree(buff); /* In the last execution of the loop,
-                              * this leaves buff outside of the Fifo!
-                              * Free explicitely at the end! */
+                int storageCell = 0;
+                hsize_t n_storageCells = 1;
+                if (h5rank == 4) {
+                    storageCell = h5offset[1];
+                    n_storageCells = fileh5->GetDatasetDimensions()[1];
+                }
+
+	            // push buff into fifoData for a thread corresponding to the active storage cell
+	            mt->pushData(buff, storageCell);
+                // increment (round-robin) the internal thread counter for that storage cell
+	            mt->nextThread(storageCell);
+                // get a free memory address from fifoFree of the active storage cell for the next read operation
+	            mt->popFree(buff, storageCell); /* In the last execution of the loop,
+                                                * this leaves buff outside of the Fifo!
+                                                * Free explicitely at the end! */
 	  
-	        ++ifr;
-	        if (ifr % 1000 == 0)
-	          std::cout << " " << ifr << " " << framenumber << " " << h5offset[0]
-                      << std::endl;
-	        if (nframes > 0) {
-	          if (ifr % nframes == 0) {
-	            imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ioutfile );
-	            mt->writeImage(imgfname.c_str());
-	            mt->clearImage();
-	            ++ioutfile;
-	          }
+	            ++ifr;
+	            if (ifr % 1000 == 0) {
+	                std::cout << " " << ifr << " " << framenumber << " " << h5offset[0];
+                    if (n_storageCells>1)
+			            std::cout << " sc " << storageCell;
+                    std::cout << "\n";
+                }
+
+	            //framenumber = 0;
 	        }
 
-	        //framenumber = 0;
-	      }
+	        //std::cout << "aa --" << std::endl;
+	        fileh5->CloseResources();
 
-	      //std::cout << "aa --" << std::endl;
-	      fileh5->CloseResources();
+	        //std::cout << "bb --" << std::endl;
+	        while (mt->isBusy()) {
+	            ;
+	        }
 
-	      //std::cout << "bb --" << std::endl;
-	      while (mt->isBusy()) {
-	        ;
-	      }
-
-	      //std::cout << "cc --" << std::endl;
-	      if (nframes >= 0) {
-	        if (nframes > 0)
-	          imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ioutfile );
-	        std::cout << "Writing tiff to " << imgfname << std::endl;
+	        //std::cout << "cc --" << std::endl;
+	      
+	        imgfname = createFileName( outdir, fprefix, fsuffix, "" );
+	        std::cout << "Writing tiff to " << imgfname << "_SCxx.tiff" << std::endl;
 	        mt->writeImage(imgfname.c_str());
 	        mt->clearImage();
 	        if (of) {
@@ -439,20 +439,15 @@ int main(int argc, char *argv[]) {
 	          of = nullptr;
 	          mt->setFilePointer(nullptr);
 	        }
-	      }
-	      std::time(&end_time);
-	      std::cout << std::ctime(&end_time) << std::endl;
-      } else
-	      std::cout << "Could not open " << filenames[ifile] << " for reading "
+	      
+	        std::time(&end_time);
+	        std::cout << std::ctime(&end_time) << std::endl;
+        } else {
+	        std::cout << "Could not open " << filenames[ifile] << " for reading "
 		              << std::endl;
+        }
     }
-    if (nframes < 0) {     
-      std::string fprefix( getRootString(filenames[0]) ); //Possibly, non-ideal name choice for file
-      std::string imgfname( createFileName( outdir, fprefix, "sum", "tiff" ) );
-      std::cout << "Writing tiff to " << imgfname << std::endl;
-      mt->writeImage(imgfname.c_str());
-    }
-
+    
 
     //std::cout << "Calling delete..." << std::endl;
     /* Info: Previously, 'delete mt' caused crash

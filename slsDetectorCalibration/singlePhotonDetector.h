@@ -51,7 +51,6 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
 
 
     */
-
     singlePhotonDetector(slsDetectorData<uint16_t> *d, int csize = 3,
                          double nsigma = 5, int sign = 1,
                          commonModeSubtraction *cm = NULL, int nped = 1000,
@@ -104,11 +103,9 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
     };
 
     /**
-       copy constructor
+       pointer-based copy constructor (cloner)
        \param orig detector to be copied
-
     */
-
     singlePhotonDetector(singlePhotonDetector *orig)
         : analogDetector<uint16_t>(orig), fm(orig->fm), ownsMutex(false) {
 
@@ -150,13 +147,65 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
     }
 
     /**
-       duplicates the detector structure
-       \returns new single photon detector with same parameters
-
+     * copy constructor (deep copy), creates a new mutex
+     * stricly, TODO: Implement Rule of Five!
+     * (copy op=, move ctor, and move op= would need to be defined)
     */
-    virtual singlePhotonDetector *Clone() {
+    singlePhotonDetector(singlePhotonDetector const& other)
+        : analogDetector<uint16_t>(other), ownsMutex(true) {
+
+        fm = new pthread_mutex_t; // create a new mutex
+	    pthread_mutex_init(fm, NULL);
+
+        nDark = other.nDark;
+        myFile = other.myFile;
+
+        eventMask = new eventType *[ny];
+        for (int i = 0; i < ny; i++) {
+            eventMask[i] = new eventType[nx];
+            std::copy(other.eventMask[i], other.eventMask[i] + nx, eventMask[i]);
+        }
+
+        eMin = other.eMin;
+        eMax = other.eMax;
+
+        nSigma = other.nSigma;
+        clusterSize = other.clusterSize;
+        clusterSizeY = other.clusterSizeY;
+
+        c2 = sqrt((clusterSizeY + 1) / 2 * (clusterSize + 1) / 2);
+        c3 = sqrt(clusterSizeY * clusterSize);
+
+        clusters = new single_photon_hit[nx * ny];
+        std::copy(other.clusters, other.clusters + (nx * ny), clusters);
+
+        setClusterSize(clusterSize);
+
+        quad = other.quad;
+        tot = other.tot;
+        quadTot = other.quadTot;
+        gmap = other.gmap;
+        nphTot = other.nphTot;
+        nphFrame = other.nphFrame;
+   }
+
+    /**
+       Clones the detector structure
+       \returns new single photon detector with same parameters
+       that shares the mutex of the original
+    */
+    virtual singlePhotonDetector* Clone() {
         return new singlePhotonDetector(this);
     }
+    /**
+       Copies the detector structure
+       \returns new single photon detector with same parameters
+       that owns a new mutex
+    */
+    virtual singlePhotonDetector* Copy() {
+        return new singlePhotonDetector(*this);  // Calls the copy constructor
+    }
+
     /** sets/gets number of rms threshold to detect photons
         \param n number of sigma to be set (0 or negative gets)
         \returns actual number of sigma parameter

@@ -170,11 +170,11 @@ int zmq_send_multipart(void *socket, const std::vector<zmq_msg_t *> &messages) {
         if (zmq_msg_send(msg, socket, flags) == -1) {
             LOG(sls::logERROR)
                 << "Error sending message: " << zmq_strerror(zmq_errno());
-            return -1; // Return -1 on error
+            return slsDetectorDefs::FAIL;
         }
     }
 
-    return 0; // Return 0 on success
+    return slsDetectorDefs::OK;
 }
 
 void Correlate(Status *stat) {
@@ -230,12 +230,7 @@ void Correlate(Status *stat) {
     zmq_ctx_destroy(context);
 }
 
-/**
- * Start Acquisition Call back (slsFrameSynchronizer writes data if file write
- * enabled) if registerCallBackRawDataReady or
- * registerCallBackRawDataModifyReady registered, users get data
- */
-int StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
+int StartAcquisitionCallback(const slsDetectorDefs::startCallbackHeader callbackHeader,
              void *objectPointer) {
     LOG(printHeadersLevel) << "Start Acquisition:"
                            << "\n\t["
@@ -287,11 +282,10 @@ int StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
         }
     }
     sem_post(&stat->available);
-    return 0;
+    return slsDetectorDefs::OK; // TODO: change return to void
 }
 
-/** Acquisition Finished Call back */
-void AcquisitionFinished(
+void AcquisitionFinishedCallback(
     const slsDetectorDefs::endCallbackHeader callbackHeader,
     void *objectPointer) {
     LOG(printHeadersLevel) << "Acquisition Finished:"
@@ -327,18 +321,14 @@ void AcquisitionFinished(
     sem_post(&stat->available);
 }
 
-/**
- * Get Receiver Data Call back
- * Prints in different colors(for each receiver process) the different headers
- * for each image call back.
- */
-void GetData(slsDetectorDefs::sls_receiver_header &header,
+void GetDataCallback(slsDetectorDefs::sls_receiver_header &header,
              slsDetectorDefs::dataCallbackHeader callbackHeader,
              char *dataPointer, size_t &imageSize, void *objectPointer) {
 
     slsDetectorDefs::sls_detector_header detectorHeader = header.detHeader;
 
     if (printHeadersLevel < sls::logDEBUG) {
+        // print in different color for each udp port
         PRINT_IN_COLOR((callbackHeader.udpPort % 10),
                        "Data: "
                        "\n\tCallback Header: "
@@ -528,7 +518,6 @@ int main(int argc, char *argv[]) {
     }
 
     Status stat{true, false, (unsigned long)numReceivers};
-
     void *user_data = static_cast<void *>(&stat);
 
     std::thread combinerThread(Correlate, &stat);
@@ -543,10 +532,10 @@ int main(int argc, char *argv[]) {
         threads.emplace_back([semaphore, port, user_data]() {
             sls::Receiver receiver(port);
 
-            receiver.registerCallBackStartAcquisition(StartAcq, user_data);
-            receiver.registerCallBackAcquisitionFinished(AcquisitionFinished,
+            receiver.registerCallBackStartAcquisition(StartAcquisitionCallback, user_data);
+            receiver.registerCallBackAcquisitionFinished(AcquisitionFinishedCallback,
                                                          user_data);
-            receiver.registerCallBackRawDataReady(GetData, user_data);
+            receiver.registerCallBackRawDataReady(GetDataCallback, user_data);
             /**	- as long as no Ctrl+C */
             sem_wait(semaphore);
             sem_destroy(semaphore);

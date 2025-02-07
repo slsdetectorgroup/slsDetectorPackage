@@ -344,6 +344,9 @@ class multiThreadedAnalogDetector {
     multiThreadedAnalogDetector(analogDetector<uint16_t> *d, int num_threads,
                                 int fs = 1000, int num_sc = 1)
         : stop(0), nThreads(num_threads), nSC(num_sc) {
+            
+        std::vector< analogDetector<uint16_t>* > dd(nThreads, nullptr); // instead of making it a class member
+
         dd[0] = d;
         if (nThreads == 1)
             dd[0]->setId(100);
@@ -374,7 +377,7 @@ class multiThreadedAnalogDetector {
         image = nullptr;
         ff = NULL;
         ped = NULL;
-        std::cout << "Ithread is " << ithread << std::endl;
+        //std::cout << "Ithread is " << ithread << std::endl;
     }
 
     virtual ~multiThreadedAnalogDetector() {
@@ -659,7 +662,7 @@ class multiThreadedAnalogDetector {
         
         if (sc_pedestals_rms.count(sc) && sc_pedestals_rms[sc]) {
             delete[] sc_pedestals_rms[sc];
-            sc_pedestals_rms = nullptr;
+            sc_pedestals_rms[sc] = nullptr;
         }
 
         // allocate memory and initialize all values to zero
@@ -836,7 +839,7 @@ class multiThreadedAnalogDetector {
     bool stop;
     const int nThreads;
     threadedAnalogDetector *dets[MAXTHREADS];
-    analogDetector<uint16_t> *dd[MAXTHREADS];
+    //analogDetector<uint16_t> *dd[MAXTHREADS]; // VH: as I understand it this is a helper object used only in the constructor
     //int ithread{0}; // Thread index
     std::vector<int> thread_counters_by_sc{}; // Round-robin counters for threads for each storage cell 
     int* image;

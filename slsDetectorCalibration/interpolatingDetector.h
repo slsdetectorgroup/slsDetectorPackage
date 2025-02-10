@@ -54,6 +54,10 @@ class interpolatingDetector : public singlePhotonDetector {
         pthread_mutex_init(fi, NULL);
     };
 
+    /**
+       pointer-based copy constructor (cloner)
+       \param orig detector to be copied
+    */
     interpolatingDetector(interpolatingDetector *orig)
         : singlePhotonDetector(orig) {
         // if (orig->interp)
@@ -66,8 +70,26 @@ class interpolatingDetector : public singlePhotonDetector {
         fi = orig->fi;
     }
 
+    /**
+     * copy constructor (deep copy)
+     * stricly, TODO: Implement Rule of Five!
+     * (copy op=, move ctor, and move op= would need to be defined)
+    */
+    interpolatingDetector(interpolatingDetector const& other)
+        : singlePhotonDetector(other) {
+
+        interp = other.interp;
+
+        id = other.id;
+        fi = other.fi;
+    }
+
     virtual interpolatingDetector *Clone() {
         return new interpolatingDetector(this);
+    }
+
+    virtual interpolatingDetector *Copy() {
+        return new interpolatingDetector(*this);
     }
 
     virtual int setId(int i) {

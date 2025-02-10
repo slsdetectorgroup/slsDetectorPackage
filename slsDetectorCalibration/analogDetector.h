@@ -223,6 +223,15 @@ template <class dataType> class analogDetector {
     virtual analogDetector *Clone() = 0;
 
     /**
+       Deep copy. Must be virtual!
+       This is a new addition because of multithreaded storage cell data (where each sc has its own mutex).
+       If the pure virtual function exists here, EVERY derived class has to overwrite it!
+       That means a Copy() function must also be implemented in any derived class.
+       \returns a deep copy of the original analog detector
+     */
+    virtual analogDetector *Copy() = 0;
+
+    /**
        Gives an id to the structure. For debugging purposes in case of
        multithreading. \param i is to be set \returns current id
      */

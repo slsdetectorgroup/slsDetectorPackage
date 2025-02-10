@@ -728,15 +728,20 @@ class multiThreadedAnalogDetector {
         return sc_pedestals_rms[sc];
     };
 
-    // Does not differentiate for storage cells!
-    virtual double *setPedestal(double *h = NULL) {
+    /**
+     * Sets pedestal for given storage cell
+     * \param h pedestal
+     * \param sc storage cell
+     * \returns NULL
+     */
+    virtual double *setPedestal(double *h = NULL, int sc = 0) {
         // int nb=0;
 
         int nx, ny;
         dets[0]->getDetectorSize(nx, ny);
         if (h == NULL)
             h = ped;
-        for (int i = 0; i < nThreads; i++) {
+        for (auto i : sc_to_threads[sc]) {
             dets[i]->setPedestal(h);
         }
 
@@ -820,8 +825,17 @@ class multiThreadedAnalogDetector {
         return NULL;
     };
 
+    /** 
+     * Reads pedestal and sets it for given storage cell
+     * \param imgname name of pedestal file
+     * \param nb obsolete
+     * \param emin obsolete
+     * \param emax obsolete
+     * \param sc storage cell
+     * \returns setPedestal(NULL, sc)
+     * */
     virtual void *readPedestal(const char *imgname, int nb = -1,
-                               double emin = 1, double emax = 0) {
+                               double emin = 1, double emax = 0, int sc = 0) {
 
         int nx, ny;
         dets[0]->getDetectorSize(nx, ny);
@@ -841,25 +855,48 @@ class multiThreadedAnalogDetector {
         }
         delete[] gm;
 
-        return setPedestal();
+        return setPedestal(NULL, sc);
     };
 
-    /** sets file pointer where to write the clusters to
+    /** Sets file pointer where to write the clusters to
         \param f file pointer
-        \returns current file pointer
+        \param sc storage cell index
+        \returns current file pointer, or nullptr if invalid
     */
-    virtual FILE *setFilePointer(FILE *f) {
-        for (int i = 0; i < nThreads; i++) {
-            dets[i]->setFilePointer(f);
-            // dets[i]->setMutex(&fmutex);
+    virtual FILE *setFilePointer(FILE *f, int sc = 0) {
+        // Check if the storage cell exists
+        if (sc_to_threads.find(sc) == sc_to_threads.end() || sc_to_threads[sc].empty()) {
+            std::cerr << "Error: Invalid storage cell index " << sc << std::endl;
+            return nullptr;
         }
-        return dets[0]->getFilePointer();
+
+        // Assign file pointer to all threads belonging to this storage cell
+        for (auto i : sc_to_threads[sc]) {
+            if(dets[i]) {
+                dets[i]->setFilePointer(f);
+                // dets[i]->setMutex(&fmutex);
+            } else {
+                std::cerr << "Warning: dets[" << i << "] is null, skipping file pointer set." << std::endl;
+            }
+        }
+        // Return file pointer of the first thread in this storage cell
+        return dets[sc_to_threads[sc][0]] ? dets[sc_to_threads[sc][0]]->getFilePointer() : nullptr;
     };
 
-    /** gets file pointer where to write the clusters to
-        \returns current file pointer
+    /** Gets file pointer where to write the clusters to
+        \param sc storage cell index
+        \returns current file pointer, or nullptr if invalid
     */
-    virtual FILE *getFilePointer() { return dets[0]->getFilePointer(); };
+    virtual FILE *getFilePointer(int sc = 0) {
+        // Ensure storage cell index is valid
+        if (sc_to_threads.find(sc) == sc_to_threads.end() || sc_to_threads[sc].empty()) {
+            std::cerr << "Error: Invalid storage cell index " << sc << std::endl;
+            return nullptr;
+        }
+
+        // Return file pointer of the first thread in this storage cell
+        return dets[sc_to_threads[sc][0]] ? dets[sc_to_threads[sc][0]]->getFilePointer() : nullptr;
+    };
 
   protected:
     bool stop;
@@ -867,7 +904,7 @@ class multiThreadedAnalogDetector {
     threadedAnalogDetector *dets[MAXTHREADS];
     analogDetector<uint16_t> *dd[MAXTHREADS];
     //int ithread{0}; // Thread index
-    std::vector<int> thread_counters_by_sc{}; // Round-robin counters for threads for each storage cell 
+    std::vector<int> thread_counters_by_sc{}; // Counters for threads for each storage cell 
     int* image;
     int* ff;
     double* ped;

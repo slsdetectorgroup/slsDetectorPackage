@@ -905,8 +905,13 @@ void Module::startReceiver() {
 }
 
 void Module::stopReceiver() {
+    auto rxStatusPrior = getReceiverStatus();
     sendToReceiver(F_STOP_RECEIVER, static_cast<int>(shm()->stoppedFlag),
                    nullptr);
+
+    if (rxStatusPrior == IDLE && getReceiverStreaming()) {
+        restreamStopFromReceiver();
+    }
 }
 
 void Module::startAcquisition() {

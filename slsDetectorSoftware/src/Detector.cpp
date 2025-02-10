@@ -889,11 +889,11 @@ void Detector::clearAcquiringFlag() { pimpl->setAcquiringFlag(0); }
 void Detector::startReceiver() { pimpl->Parallel(&Module::startReceiver, {}); }
 
 void Detector::stopReceiver() {
-    auto status = getReceiverStatus();
+    auto rxStatusPrior = getReceiverStatus();
     pimpl->Parallel(&Module::stopReceiver, {});
 
-    // if receiver idle prior, restream stop header
-    if (status.squash(defs::runStatus::RUNNING) == defs::runStatus::IDLE) {
+    if (rxStatusPrior.squash(defs::runStatus::RUNNING) ==
+        defs::runStatus::IDLE) {
         pimpl->Parallel(&Module::restreamStopFromReceiver, {});
     }
 }

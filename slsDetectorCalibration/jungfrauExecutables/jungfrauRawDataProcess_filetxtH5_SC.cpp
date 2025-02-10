@@ -100,10 +100,6 @@ int main(int argc, char *argv[]) {
                " [xmin xmax ymin ymax] [nframes] "
 	             " NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS! "
             << std::endl;
-        std::cout
-            << "nframes <0 means sum everything; nframes=0 means one file per "
-               "run; nframes>0 means one file every nframes"
-            << std::endl;
         return 1;
     }
 
@@ -139,10 +135,6 @@ int main(int argc, char *argv[]) {
     bool validate_rank=true;
     if (argc > 5)
       validate_rank = atoi(argv[5]);
-
-    int nframes = 0;
-    if (argc > 10)
-      nframes = atoi(argv[10]);
 
     //Get vector of filenames from input txt-file
     std::vector<std::string> filenames{};
@@ -196,11 +188,9 @@ int main(int argc, char *argv[]) {
 
     std::time_t end_time;
 
-    std::cout << "output directory is " << outdir << std::endl;
+    std::cout << "Output directory is " << outdir << std::endl;
     if (pedfilename.length()!=0)
-        std::cout << "pedestal file is " << pedfilename << std::endl;
-    
-    std::cout << "Nframes is " << nframes << std::endl;
+        std::cout << "Pedestal file is " << pedfilename << std::endl;
 
     uint32_t nnx, nny;
 
@@ -231,7 +221,7 @@ int main(int argc, char *argv[]) {
 
         firstfileh5->CloseResources();
     } else {
-        std::cerr << "Could not open data file " << filenames[0]
+        std::cerr << "Error: Could not open data file " << filenames[0]
 		          << " for validating rank " << std::endl;
     }
 
@@ -245,7 +235,7 @@ int main(int argc, char *argv[]) {
     char* buff;
 
     mt->StartThreads();
-    mt->popFree(buff);
+    mt->popFree(buff); // Get the first pointer to write image to
 
     int ifr = 0; //frame counter of while loop
     int framenumber = 0; //framenumber as read from file (detector)
@@ -256,10 +246,7 @@ int main(int argc, char *argv[]) {
 
         std::string froot = getRootString(pedfilename);
 
-        std::cout << "PEDESTAL " << std::endl;
-
-	    std::string const fname(pedfilename);
-	    std::cout << fname << std::endl;
+        std::cout << "PEDESTAL " << pedfilename << std::endl;
 	    std::time(&end_time);
 	    std::cout << "aaa " << std::ctime(&end_time) << std::endl;
 
@@ -270,7 +257,7 @@ int main(int argc, char *argv[]) {
         pedefile->SetFrameIndexPath(frameindexpath);
         pedefile->SetImageDataPath(datasetpath);
 	    //      //open file
-	    if ( pedefile->OpenResources(fname.c_str(),validate_rank) ) {
+	    if ( pedefile->OpenResources(pedfilename.c_str(),validate_rank) ) {
 
             // Initialize offset vector to 0
             h5rank = pedefile->GetRank();
@@ -319,15 +306,17 @@ int main(int argc, char *argv[]) {
 	          ;
 	        }
 
-	        std::cout << "froot " << froot << std::endl;
-	        auto imgfname = createFileName( outdir, froot, "ped", "" );
+	        std::cout << "Writing pedestal to " << getRootString(pedfilename) << "_ped_SCxx.tiff" << std::endl;
+	        auto imgfname = createFileName( outdir, getRootString(pedfilename), "ped", "" );
 	        mt->writePedestal(imgfname.c_str());
-	        imgfname = createFileName( outdir, froot, "rms", "");
+            std::cout << "Writing pedestal rms to " << getRootString(pedfilename) << "_rms_SCxx.tiff" << std::endl;
+	        imgfname = createFileName( outdir, getRootString(pedfilename), "rms", "");
 	        mt->writePedestalRMS(imgfname.c_str());
 
-	      } else
-	        std::cout << "Could not open pedestal file " << fname
+	      } else {
+	        std::cerr << "Error: Could not open pedestal file " << pedfilename
 		                << " for reading " << std::endl;
+          }
 
       std::time(&end_time);
       std::cout << std::ctime(&end_time) << std::endl;
@@ -338,16 +327,10 @@ int main(int argc, char *argv[]) {
 
     mt->setFrameMode(eFrame);
 
-    FILE* of = nullptr;
+    std::vector<FILE*> of(nSC, nullptr);
     
     for (unsigned int ifile = 0; ifile != filenames.size(); ++ifile) {
-        std::cout << "DATA ";
-        std::string fsuffix{};
-        std::string const fprefix( getRootString(filenames[ifile]) );
-        std::string imgfname( createFileName( outdir, fprefix, fsuffix, "tiff" ) );
-        std::string const cfname( createFileName( outdir, fprefix, fsuffix, "clust" ) );
-        std::cout << filenames[ifile] << " ";
-        std::cout << imgfname << std::endl;
+        std::cout << "DATA " << filenames[ifile] << " " << std::endl;
         std::time(&end_time);
         std::cout << std::ctime(&end_time) << std::endl;
 
@@ -355,37 +338,45 @@ int main(int argc, char *argv[]) {
         auto fileh5 = std::make_unique<HDF5File>();
         fileh5->SetFrameIndexPath(frameindexpath);
         fileh5->SetImageDataPath(datasetpath);
-        //      //open file
-      
+
+        // Open HDF5 file
         if ( fileh5->OpenResources(filenames[ifile].c_str(), validate_rank) ) {
+
+            std::vector<std::string> cfnames(nSC);
+            for ( int s = 0; s < nSC; ++s ) {
+                std::string fsuffix = "_SC" + std::to_string(s);
+                cfnames[s] = createFileName( outdir, getRootString(filenames[ifile]), fsuffix, "clust" );
+            }
 	      
-	        if (of == nullptr) {
-	          of = fopen(cfname.c_str(), "w");
-	          if (of) {
-	            if (mt) {
-		            mt->setFilePointer(of);
-		            std::cout << "file pointer set " << std::endl;
-	            } else {
-		            std::cerr << "Error: mt is null." << std::endl;
-		            return 1;
-	            }
-	            //mt->setFilePointer(of);
-	            //std::cout << "file pointer set " << std::endl;
-	            //std::cout << "Here! " << framenumber << " ";
-	          } else {
-	            std::cout << "Could not open " << cfname
-			                  << " for writing " << std::endl;
-	            mt->setFilePointer(nullptr);
-	            return 1;
-	          }
-	        }
+            //Open output files and set file pointers according to storage cells
+            for ( int f = 0; f < of.size(); ++f ) {
+                if (!of[f]) {
+                    of[f] = fopen(cfnames[f].c_str(), "w");
+                    if (of[f])
+                    {
+                        if (mt) {
+		                    mt->setFilePointer(of[f],f); // assumes f == sc
+		                    std::cout << "File pointer set for storage cell " << f << std::endl;
+	                    } else {
+		                    std::cerr << "Error: mt is null." << std::endl;
+		                    return 1;
+	                    }
+                    } else {
+	                    std::cerr << "Error: could not open " << cfnames[f]
+			                      << " for writing " << std::endl;
+	                    mt->setFilePointer(nullptr,f);
+	                    return 1;
+                
+                    }
+                }
+            }
 	      
 	
-	//     //while read frame
+	        // Read frames
 	        framenumber = 0;
 	        std::fill(h5offset.begin(), h5offset.end(), 0);
 	        ifr = 0;
-	        //std::cout << "Here! " << framenumber << " ";
+	        
 	        while ( decoder->readNextFrame(*fileh5, framenumber, h5offset, buff) ) {
 	        
 	            if ((ifr + 1) % 1000 == 0) {
@@ -412,8 +403,7 @@ int main(int argc, char *argv[]) {
 	            ++ifr;
 	            if (ifr % 1000 == 0) {
 	                std::cout << " " << ifr << " " << framenumber << " " << h5offset[0];
-                    if (n_storageCells>1)
-			            std::cout << " sc " << storageCell;
+                    if (n_storageCells>1) std::cout << " sc " << storageCell;
                     std::cout << "\n";
                 }
 
@@ -430,20 +420,24 @@ int main(int argc, char *argv[]) {
 
 	        //std::cout << "cc --" << std::endl;
 	      
-	        imgfname = createFileName( outdir, fprefix, fsuffix, "" );
+	        auto imgfname = createFileName( outdir, getRootString(filenames[ifile]), "", "" );
 	        std::cout << "Writing tiff to " << imgfname << "_SCxx.tiff" << std::endl;
 	        mt->writeImage(imgfname.c_str());
 	        mt->clearImage();
-	        if (of) {
-	          fclose(of);
-	          of = nullptr;
-	          mt->setFilePointer(nullptr);
-	        }
+
+            // Close output files
+            for ( int f = 0; f < of.size(); ++f ) {
+	            if (of[f]) {
+	                fclose(of[f]);
+	                mt->setFilePointer(nullptr,f);
+                    of[f] = nullptr;
+	            }
+            }
 	      
 	        std::time(&end_time);
 	        std::cout << std::ctime(&end_time) << std::endl;
         } else {
-	        std::cout << "Could not open " << filenames[ifile] << " for reading "
+	        std::cerr << "Error: Could not open " << filenames[ifile] << " for reading "
 		              << std::endl;
         }
     }

@@ -920,25 +920,14 @@ void Module::startReadout() {
 }
 
 void Module::stopAcquisition() {
-
-    // get det status before stopping acq
-    runStatus detStatus = ERROR;
-    try {
-        detStatus = getRunStatus();
-    } catch (...) {
-    }
-
     sendToDetectorStop(F_STOP_ACQUISITION);
     shm()->stoppedFlag = true;
+}
 
-    // restream dummy header, if rxr streaming and det idle before stop
-    try {
-        if (shm()->useReceiverFlag && getReceiverStreaming()) {
-            if (detStatus == IDLE && getReceiverStatus() == IDLE) {
-                restreamStopFromReceiver();
-            }
-        }
-    } catch (...) {
+void Module::checkRestreamStopFromReceiver() {
+    if (shm()->useReceiverFlag && getReceiverStreaming() &&
+        getReceiverStatus() == IDLE) {
+        restreamStopFromReceiver();
     }
 }
 

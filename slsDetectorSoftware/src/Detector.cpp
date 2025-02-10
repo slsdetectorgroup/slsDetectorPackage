@@ -888,7 +888,15 @@ void Detector::clearAcquiringFlag() { pimpl->setAcquiringFlag(0); }
 
 void Detector::startReceiver() { pimpl->Parallel(&Module::startReceiver, {}); }
 
-void Detector::stopReceiver() { pimpl->Parallel(&Module::stopReceiver, {}); }
+void Detector::stopReceiver() {
+    auto status = getReceiverStatus();
+    pimpl->Parallel(&Module::stopReceiver, {});
+
+    // if receiver idle prior, restream stop header
+    if (status.squash(defs::runStatus::RUNNING) == defs::runStatus::IDLE) {
+        pimpl->Parallel(&Module::restreamStopFromReceiver, {});
+    }
+}
 
 void Detector::startDetector(Positions pos) {
     pimpl->startAcquisition(false, pos);
@@ -902,7 +910,6 @@ void Detector::stopDetector(Positions pos) {
 
     int retries{0};
     auto status = getDetectorStatus(pos);
-    auto detectorStatusPrior = status;
 
     // jf sync fix: status [stopped or idle] = [stopped]
     // sync issue: (master idle sometimes, slaves stopped)
@@ -946,19 +953,6 @@ void Detector::stopDetector(Positions pos) {
     } break;
     default:
         break;
-    }
-
-    // if detector was idle prior, rx idle and restreaming enabled,
-    // restream dummy stop header
-    if (detectorStatusPrior.contains_only(defs::runStatus::IDLE,
-                                          defs::runStatus::STOPPED,
-                                          defs::runStatus::ERROR)) {
-        if (getUseReceiverFlag(pos).squash(false) &&
-            getRxZmqDataStream(pos).squash(false) &&
-            getReceiverStatus(pos).squash(defs::runStatus::RUNNING) ==
-                defs::runStatus::IDLE) {
-            pimpl->Parallel(&Module::restreamStopFromReceiver, pos);
-        }
     }
 }
 

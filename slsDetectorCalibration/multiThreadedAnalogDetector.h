@@ -380,6 +380,8 @@ class multiThreadedAnalogDetector {
                     dd[thread_idx] = sc_detectors[s]->Clone(); // Other threads get clones
                 }
 
+                std::cout << "Assigned thread " << thread_idx << " to storage cell " << s << std::endl;
+
                 dd[thread_idx]->setId(thread_idx);
                 
                 // Store which threads belong to which SC
@@ -526,7 +528,7 @@ class multiThreadedAnalogDetector {
         }; // t ... threshold
 
         // Loop over each storage cell
-        for (auto const& [sc, _] : sc_to_threads) {
+        for (auto const& [sc, _] : sc_to_threads) { // structured bindings [sc, _] only available with -std=c++17
             std::string imgname(base_imgname);
             if (nSC > 1) imgname += "_SC" + std::to_string(sc);
             imgname += ".tiff";

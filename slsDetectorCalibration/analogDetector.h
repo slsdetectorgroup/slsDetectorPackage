@@ -3,7 +3,7 @@
 #ifndef ANALOGDETECTOR_H
 #define ANALOGDETECTOR_H
 
-//#include <mutex>
+#include <mutex>
 
 #include "commonModeSubtractionNew.h"
 #include "ghostSummation.h"

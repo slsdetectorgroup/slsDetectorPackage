@@ -948,11 +948,17 @@ void Detector::stopDetector(Positions pos) {
         break;
     }
 
-    // call checkrestreamstop for each detector
+    // if detector was idle prior, rx idle and restreaming enabled,
+    // restream dummy stop header
     if (detectorStatusPrior.contains_only(defs::runStatus::IDLE,
                                           defs::runStatus::STOPPED,
                                           defs::runStatus::ERROR)) {
-        pimpl->Parallel(&Module::checkRestreamStopFromReceiver, pos);
+        if (getUseReceiverFlag(pos).squash(false) &&
+            getRxZmqDataStream(pos).squash(false) &&
+            getReceiverStatus(pos).squash(defs::runStatus::RUNNING) ==
+                defs::runStatus::IDLE) {
+            pimpl->Parallel(&Module::restreamStopFromReceiver, pos);
+        }
     }
 }
 

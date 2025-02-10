@@ -924,13 +924,6 @@ void Module::stopAcquisition() {
     shm()->stoppedFlag = true;
 }
 
-void Module::checkRestreamStopFromReceiver() {
-    if (shm()->useReceiverFlag && getReceiverStreaming() &&
-        getReceiverStatus() == IDLE) {
-        restreamStopFromReceiver();
-    }
-}
-
 void Module::restreamStopFromReceiver() {
     sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER);
 }

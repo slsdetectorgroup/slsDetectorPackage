@@ -346,34 +346,58 @@ class multiThreadedAnalogDetector {
     multiThreadedAnalogDetector(analogDetector<uint16_t> *d, int num_threads,
                                 int fs = 1000, int num_sc = 1)
         : stop(0), nThreads(num_threads), nSC(num_sc) {
-            
-        std::vector< analogDetector<uint16_t>* > dd(nThreads, nullptr); // instead of making it a class member
 
+        /*
         dd[0] = d;
         if (nThreads == 1)
             dd[0]->setId(100);
         else
             dd[0]->setId(0);
-        for (int i = 1; i < nThreads; i++) {
-            dd[i] = d->Clone();
-            dd[i]->setId(i);
+        */
+
+        // Create separate detectorObjects for each SC (each owns its mutex)
+        std::vector< analogDetector<uint16_t>* > sc_detectors(nSC, nullptr);
+        sc_detectors[0] = d; // First storage cell uses the given detector
+
+        for (int sc = 1; sc < nSC; ++sc) {
+            sc_detectors[sc] = d->Copy(); // Ensure unique mutex for each SC
         }
 
+        // Distribute threads among storage cells
+        int threads_per_sc = nThreads / nSC;
+        int remaining_threads = nThreads % nSC; // additional safety measure if nThreads is not divisible by nSC
+
+        sc_to_threads.clear();
+        for (int s = 0, thread_idx = 0; s < nSC; ++s) {
+            // Remaining threads (if any) are assigned to the first storage cells
+            int current_sc_threads = threads_per_sc + (s < remaining_threads ? 1 : 0);
+
+            for (int t = 0; t < current_sc_threads; ++t, ++thread_idx) {
+
+                if (t == 0) {
+                    dd[thread_idx] = sc_detectors[s]; // First thread gets main SC detector
+                } else {
+                    dd[thread_idx] = sc_detectors[s]->Clone(); // Other threads get clones
+                }
+
+                dd[thread_idx]->setId(thread_idx);
+                
+                // Store which threads belong to which SC
+                sc_to_threads[s].push_back(thread_idx);
+            }
+        }
+
+        if (nSC == 1 && nThreads == 1) {
+            dd[0]->setId(100);
+        }
+
+        // Initialize threadedAnalogDetector objects
         for (int i = 0; i < nThreads; i++) {
             cout << "**" << i << endl;
             dets[i] = new threadedAnalogDetector(dd[i], fs);
         }
 
-        // Pre-assign threads to storage cells in a round-robin manner
-        int threads_per_sc = nThreads / nSC;
-        sc_to_threads.clear();
-        for (int s = 0; s < nSC; ++s) {
-            for (int t = 0; t < threads_per_sc; ++t) {
-                int assigned_thread = s * threads_per_sc + t;
-                sc_to_threads[s].push_back(assigned_thread);
-            }
-        }
-        // Set all thread counter to zero for each storage cell
+        // Set all thread counters to zero for each storage cell
         thread_counters_by_sc.resize(nSC,0);
 
         image = nullptr;
@@ -841,7 +865,7 @@ class multiThreadedAnalogDetector {
     bool stop;
     const int nThreads;
     threadedAnalogDetector *dets[MAXTHREADS];
-    //analogDetector<uint16_t> *dd[MAXTHREADS]; // VH: as I understand it this is a helper object used only in the constructor
+    analogDetector<uint16_t> *dd[MAXTHREADS];
     //int ithread{0}; // Thread index
     std::vector<int> thread_counters_by_sc{}; // Round-robin counters for threads for each storage cell 
     int* image;

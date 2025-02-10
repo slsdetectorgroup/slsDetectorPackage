@@ -54,7 +54,7 @@ std::string ClientInterface::getReceiverVersion() { return APIRECEIVER; }
 
 /***callback functions***/
 void ClientInterface::registerCallBackStartAcquisition(
-    int (*func)(const startCallbackHeader, void *), void *arg) {
+    void (*func)(const startCallbackHeader, void *), void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
 }

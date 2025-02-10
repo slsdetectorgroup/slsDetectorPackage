@@ -230,7 +230,7 @@ void Correlate(Status *stat) {
     zmq_ctx_destroy(context);
 }
 
-int StartAcquisitionCallback(
+void StartAcquisitionCallback(
     const slsDetectorDefs::startCallbackHeader callbackHeader,
     void *objectPointer) {
     LOG(printHeadersLevel)
@@ -298,7 +298,6 @@ int StartAcquisitionCallback(
         }
     }
     sem_post(&stat->available);
-    return slsDetectorDefs::OK; // TODO: change return to void
 }
 
 void AcquisitionFinishedCallback(

@@ -198,7 +198,7 @@ void Correlate(Status *stat) {
                     stat->headers.clear();
                 }
             } else {
-                //print_frames(stat->frames);
+                // print_frames(stat->frames);
                 auto common_keys = find_keys(stat->frames);
                 for (const auto &key : common_keys) {
                     std::vector<zmq_msg_t *> parts;
@@ -230,22 +230,23 @@ void Correlate(Status *stat) {
     zmq_ctx_destroy(context);
 }
 
-int StartAcquisitionCallback(const slsDetectorDefs::startCallbackHeader callbackHeader,
-             void *objectPointer) {
-    LOG(printHeadersLevel) << "Start Acquisition:"
-                           << "\n\t["
-                           << "\n\tUDP Port : "
-                           << sls::ToString(callbackHeader.udpPort)
-                           << "\n\tDynamic Range : "
-                           << callbackHeader.dynamicRange
-                           << "\n\tDetector Shape : "
-                           << sls::ToString(callbackHeader.detectorShape)
-                           << "\n\tImage Size : " << callbackHeader.imageSize
-                           << "\n\tFile Path : " << callbackHeader.filePath
-                           << "\n\tFile Name : " << callbackHeader.fileName
-                           << "\n\tFile Index : " << callbackHeader.fileIndex
-                           << "\n\tQuad Enable : " << callbackHeader.quad
-                           << "\n\t]";
+int StartAcquisitionCallback(
+    const slsDetectorDefs::startCallbackHeader callbackHeader,
+    void *objectPointer) {
+    LOG(printHeadersLevel)
+        << "Start Acquisition:"
+        << "\n\t["
+        << "\n\tUDP Port : " << sls::ToString(callbackHeader.udpPort)
+        << "\n\tDynamic Range : " << callbackHeader.dynamicRange
+        << "\n\tDetector Shape : "
+        << sls::ToString(callbackHeader.detectorShape)
+        << "\n\tImage Size : " << callbackHeader.imageSize
+        << "\n\tFile Path : " << callbackHeader.filePath
+        << "\n\tFile Name : " << callbackHeader.fileName
+        << "\n\tFile Index : " << callbackHeader.fileIndex
+        << "\n\tQuad Enable : " << callbackHeader.quad
+        << "\n\tAdditional Json Header : "
+        << sls::ToString(callbackHeader.addJsonHeader).c_str() << "\n\t]";
     std::ostringstream oss;
     oss << "{\"htype\":\"header\""
         << ", \"udpPorts\":" << sls::ToString(callbackHeader.udpPort)
@@ -255,7 +256,22 @@ int StartAcquisitionCallback(const slsDetectorDefs::startCallbackHeader callback
         << "\", \"fileIndex\":" << callbackHeader.fileIndex
         << ", \"detshape\":" << sls::ToString(callbackHeader.detectorShape)
         << ", \"size\":" << callbackHeader.imageSize
-        << ", \"quad\":" << (callbackHeader.quad ? 1 : 0) << "}\n";
+        << ", \"quad\":" << (callbackHeader.quad ? 1 : 0);
+
+    if (!callbackHeader.addJsonHeader.empty()) {
+        oss << ", \"addJsonHeader\": {";
+        for (auto it = callbackHeader.addJsonHeader.begin();
+             it != callbackHeader.addJsonHeader.end(); ++it) {
+            if (it != callbackHeader.addJsonHeader.begin()) {
+                oss << ", ";
+            }
+            oss << "\"" << it->first.c_str() << "\":\"" << it->second.c_str()
+                << "\"";
+        }
+        oss << " } ";
+    }
+    oss << "}\n";
+
     std::string message = oss.str();
     LOG(sls::logDEBUG) << "Start Acquisition message:" << std::endl << message;
     int length = message.length();
@@ -322,8 +338,9 @@ void AcquisitionFinishedCallback(
 }
 
 void GetDataCallback(slsDetectorDefs::sls_receiver_header &header,
-             slsDetectorDefs::dataCallbackHeader callbackHeader,
-             char *dataPointer, size_t &imageSize, void *objectPointer) {
+                     slsDetectorDefs::dataCallbackHeader callbackHeader,
+                     char *dataPointer, size_t &imageSize,
+                     void *objectPointer) {
 
     slsDetectorDefs::sls_detector_header detectorHeader = header.detHeader;
 
@@ -338,7 +355,7 @@ void GetDataCallback(slsDetectorDefs::sls_receiver_header &header,
                        "\n\tAcq Index : %lu"
                        "\n\tFrame Index :%lu"
                        "\n\tProgress : %.2f%%"
-                       "\n\tCompelte Image :%s"
+                       "\n\tComplete Image :%s"
                        "\n\tFlip Rows :%s"
                        "\n\tAdditional Json Header : %s"
                        "\n\t]"
@@ -386,6 +403,7 @@ void GetDataCallback(slsDetectorDefs::sls_receiver_header &header,
         << ", \"flipRows\":" << (callbackHeader.flipRows ? 1 : 0)
         << ", \"progress\":" << callbackHeader.progress
         << ", \"completeImage\":" << (callbackHeader.completeImage ? 1 : 0)
+        << ", \"imageSize\":" << imageSize
         << ", \"frameNumber\":" << detectorHeader.frameNumber
         << ", \"expLength\":" << detectorHeader.expLength
         << ", \"packetNumber\":" << detectorHeader.packetNumber
@@ -532,9 +550,10 @@ int main(int argc, char *argv[]) {
         threads.emplace_back([semaphore, port, user_data]() {
             sls::Receiver receiver(port);
 
-            receiver.registerCallBackStartAcquisition(StartAcquisitionCallback, user_data);
-            receiver.registerCallBackAcquisitionFinished(AcquisitionFinishedCallback,
-                                                         user_data);
+            receiver.registerCallBackStartAcquisition(StartAcquisitionCallback,
+                                                      user_data);
+            receiver.registerCallBackAcquisitionFinished(
+                AcquisitionFinishedCallback, user_data);
             receiver.registerCallBackRawDataReady(GetDataCallback, user_data);
             /**	- as long as no Ctrl+C */
             sem_wait(semaphore);

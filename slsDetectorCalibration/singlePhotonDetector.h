@@ -61,8 +61,9 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
           clusterSize(csize), clusterSizeY(csize), c2(1), c3(1), clusters(NULL),
           quad(UNDEFINED_QUADRANT), tot(0), quadTot(0), ownsMutex(true) {    // The original object owns the mutex {
 
-        fm = new pthread_mutex_t;
-	    pthread_mutex_init(fm, NULL);
+        //fm = new pthread_mutex_t;
+	    //pthread_mutex_init(fm, NULL);
+        fm = new std::mutex();
 
         eventMask = new eventType *[ny];
         //  val=new double*[ny];
@@ -94,7 +95,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
         delete[] eventMask;
         if (ownsMutex) {
             if (fm) {
-                pthread_mutex_destroy(fm); // Destroy the mutex
+                //pthread_mutex_destroy(fm); // Destroy the mutex (not necessary with std::mutex)
                 delete fm; // Free the memory allocated for the mutex
                 fm = nullptr;  // Set the pointer to nullptr to avoid dangling pointer
             }
@@ -130,6 +131,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
         c3 = sqrt(clusterSizeY * clusterSize);
 
         clusters = new single_photon_hit[nx * ny];
+        //std::copy(orig->clusters, orig->clusters + (nx * ny), clusters); //possibly superfluous
 
         // cluster=clusters;
 
@@ -154,8 +156,9 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
     singlePhotonDetector(singlePhotonDetector const& other)
         : analogDetector<uint16_t>(other), ownsMutex(true) {
 
-        fm = new pthread_mutex_t; // create a new mutex
-	    pthread_mutex_init(fm, NULL);
+        //fm = new pthread_mutex_t; // create a new mutex
+	    //pthread_mutex_init(fm, NULL);
+        fm = new std::mutex();  // New unique mutex per copy
 
         nDark = other.nDark;
         myFile = other.myFile;
@@ -733,13 +736,14 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
     void writeClusters(int fn) {
         if (myFile) {
             // cout << "++" << endl;
-            pthread_mutex_lock(fm);
+            //pthread_mutex_lock(fm); // This is dangerous! What if writeClusters() throws? Then the mutex is never unlocked!
+            std::lock_guard<std::mutex> lock(*fm); // safer, RAII-based locking
             //   cout <<"**********************************"<< fn << " " <<
             //   nphFrame << endl;
             writeClusters(myFile, clusters, nphFrame, fn);
             // for (int i=0; i<nphFrame; i++)
             //  (clusters+i)->write(myFile);
-            pthread_mutex_unlock(fm);
+            //pthread_mutex_unlock(fm); // unsafe
             // cout << "--" << endl;
         }
     };
@@ -777,7 +781,14 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
         ema = eMax;
     };
 
-    void setMutex(pthread_mutex_t *m) { fm = m; };
+    //void setMutex(pthread_mutex_t *m) { fm = m; };
+    void setMutex(std::mutex* m) { 
+        if (ownsMutex && fm) {
+            delete fm;  // Cleanup old mutex
+        }
+        fm = m;
+        ownsMutex = false;
+    };
 
   protected:
     int nDark; /**< number of frames to be used at the beginning of the dataset
@@ -799,7 +810,8 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
     int nphFrame;
 
     //    double **val;
-    pthread_mutex_t* fm;      // Pointer to the shared mutex
+    //pthread_mutex_t* fm;      // Pointer to the shared mutex
+    std::mutex* fm;           // Pointer to the shared (or unique) mutex (safer version)
     bool ownsMutex;           // Flag to indicate ownership
 };
 

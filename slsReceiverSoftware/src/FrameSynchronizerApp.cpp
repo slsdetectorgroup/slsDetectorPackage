@@ -54,16 +54,36 @@ struct Status {
         sem_init(&available, 0, 0);
     }
 };
+Status *global_status = nullptr;
+
+void cleanup() {
+    if (global_status) {
+        std::lock_guard<std::mutex> lock(global_status->mtx);
+        for (auto &outer_pair : global_status->frames) {
+            for (auto &inner_pair : outer_pair.second) {
+                for (zmq_msg_t *msg : inner_pair.second) {
+                    if (msg) {
+                        zmq_msg_close(msg);
+                        delete msg;
+                    }
+                }
+                inner_pair.second.clear();
+            }
+            outer_pair.second.clear();
+        }
+        global_status->frames.clear();
+    }
+
+    for (size_t i = 0; i != semaphores.size(); ++i) {
+        sem_post(semaphores[i]);
+    }
+}
 
 /**
  * Control+C Interrupt Handler
  * to let all the processes know to exit properly
  */
-void sigInterruptHandler(int p) {
-    for (size_t i = 0; i != semaphores.size(); ++i) {
-        sem_post(semaphores[i]);
-    }
-}
+void sigInterruptHandler(int p) { cleanup(); }
 
 /**
  * prints usage of this example program
@@ -78,7 +98,7 @@ std::string getHelpMessage() {
     return os.str();
 }
 
-void zmq_free(void *data, void *hint) { free(data); }
+void zmq_free(void *data, void *hint) { delete[] static_cast<char *>(data); }
 
 void print_frames(
     const std::map<unsigned int,
@@ -195,6 +215,12 @@ void Correlate(Status *stat) {
                     LOG(sls::logDEBUG) << "Sending all start messages";
                     stat->starting = false;
                     zmq_send_multipart(socket, stat->headers);
+                    for (zmq_msg_t *msg : stat->headers) {
+                        if (msg) {
+                            zmq_msg_close(msg);
+                            delete msg;
+                        }
+                    }
                     stat->headers.clear();
                 }
             } else {
@@ -222,6 +248,12 @@ void Correlate(Status *stat) {
                 LOG(sls::logDEBUG) << "Sending all end messages";
                 // clean up all remaining frames
                 zmq_send_multipart(socket, stat->ends);
+                for (zmq_msg_t *msg : stat->ends) {
+                    if (msg) {
+                        zmq_msg_close(msg);
+                        delete msg;
+                    }
+                }
                 stat->ends.clear();
             }
         }
@@ -285,17 +317,20 @@ void StartAcquisitionCallback(
         std::lock_guard<std::mutex> lock(stat->mtx);
         stat->headers.push_back(hmsg);
         stat->starting = true;
-        for (int port : callbackHeader.udpPort) {
+        /*for (int port : callbackHeader.udpPort) {
             // clear cache for udp port
             for (auto &pair : stat->frames[port]) {
                 // clearing cache for acq index
-                for (auto msg : pair.second) {
-                    zmq_msg_close(msg);
-                    free(msg);
+                for (zmq_msg_t *msg : pair.second) {
+                    if (msg) {
+                        zmq_msg_close(msg);
+                        delete msg;
+                    }
                 }
+                pair.second.clear();
             }
             stat->frames[port].clear();
-        }
+        }*/
     }
     sem_post(&stat->available);
 }
@@ -332,6 +367,20 @@ void AcquisitionFinishedCallback(
     {
         std::lock_guard<std::mutex> lock(stat->mtx);
         stat->ends.push_back(hmsg);
+        for (int port : callbackHeader.udpPort) {
+            // clear cache for udp port
+            for (auto &pair : stat->frames[port]) {
+                // clearing cache for acq index
+                for (zmq_msg_t *msg : pair.second) {
+                    if (msg) {
+                        zmq_msg_close(msg);
+                        delete msg;
+                    }
+                }
+                pair.second.clear();
+            }
+            stat->frames[port].clear();
+        }
     }
     sem_post(&stat->available);
 }
@@ -535,6 +584,7 @@ int main(int argc, char *argv[]) {
     }
 
     Status stat{true, false, (unsigned long)numReceivers};
+    global_status = &stat; // store pointer for signal handler
     void *user_data = static_cast<void *>(&stat);
 
     std::thread combinerThread(Correlate, &stat);
@@ -557,6 +607,7 @@ int main(int argc, char *argv[]) {
             /**	- as long as no Ctrl+C */
             sem_wait(semaphore);
             sem_destroy(semaphore);
+            delete semaphore;
         });
     }
 

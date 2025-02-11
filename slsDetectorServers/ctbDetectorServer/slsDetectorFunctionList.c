@@ -2573,13 +2573,14 @@ int readSample(int ns) {
                          FIFO_DIN_STATUS_FIFO_EMPTY_OFST);
             if (!fifoEmtpy)
                 break;
-            usleep(20);
             if (times == 0)
-                printf('\n');
+                printf("\n");
             ++times;
-            if (times % 10 == 0) {
+            printf(".");
+            usleep(200);
+            /*if (times % 10 == 0) {
                 printf(".");
-            }
+            }*/
         }
 
         // read fifo and write it to current position of data pointer

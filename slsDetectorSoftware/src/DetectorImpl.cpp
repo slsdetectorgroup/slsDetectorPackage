@@ -1177,9 +1177,13 @@ int DetectorImpl::acquire() {
         if (dataReady == nullptr) {
             setJoinThreadFlag(true);
         } else if (receiver) {
+            // wait for post processor to process the dummy
+            if (numZmqRunning == 0 && dataReady != nullptr) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            }
+            // increase time for fewer dummy packets to process
             while (numZmqRunning != 0) {
                 Parallel(&Module::restreamStopFromReceiver, {});
-                // increase time for fewer dummy packets to process
                 std::this_thread::sleep_for(std::chrono::seconds(2));
             }
         }

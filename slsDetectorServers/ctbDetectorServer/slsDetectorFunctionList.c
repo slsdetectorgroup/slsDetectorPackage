@@ -2566,11 +2566,20 @@ int readSample(int ns) {
 
         // wait for data
         int fifoEmtpy = 1;
+        int times = 0;
         while (fifoEmtpy) {
             fifoEmtpy = ((bus_r(FIFO_DIN_STATUS_REG) &
                           FIFO_DIN_STATUS_FIFO_EMPTY_MSK) >>
                          FIFO_DIN_STATUS_FIFO_EMPTY_OFST);
+            if (!fifoEmtpy)
+                break;
             usleep(20);
+            if (times == 0)
+                printf('\n');
+            ++times;
+            if (times % 10 == 0) {
+                printf(".");
+            }
         }
 
         // read fifo and write it to current position of data pointer

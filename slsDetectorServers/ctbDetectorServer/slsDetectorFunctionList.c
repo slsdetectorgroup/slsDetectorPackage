@@ -2551,8 +2551,7 @@ int readSample(int ns) {
 
     // read digital output
     if (digitalEnable && ns < ndSamples) {
-
-        if (!(ns % 1000)) {
+        /*if (!(ns % 1000)) {
             LOG(logDEBUG1,
                 ("Reading sample ns:%d of %d DEmtpy:%d DFull:%d Status:0x%x\n",
                  ns, ndSamples,
@@ -2563,6 +2562,15 @@ int readSample(int ns) {
                    FIFO_DIN_STATUS_FIFO_FULL_MSK) >>
                   FIFO_DIN_STATUS_FIFO_FULL_OFST),
                  bus_r(STATUS_REG)));
+        }*/
+
+        // wait for data
+        int fifoEmtpy = 1;
+        while (fifoEmtpy) {
+            fifoEmtpy = ((bus_r(FIFO_DIN_STATUS_REG) &
+                          FIFO_DIN_STATUS_FIFO_EMPTY_MSK) >>
+                         FIFO_DIN_STATUS_FIFO_EMPTY_OFST);
+            usleep(20);
         }
 
         // read fifo and write it to current position of data pointer

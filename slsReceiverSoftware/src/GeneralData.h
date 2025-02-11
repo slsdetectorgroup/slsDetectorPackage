@@ -622,8 +622,8 @@ class ChipTestBoardData : public GeneralData {
             readoutType == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
             nDigitalChans = NCHAN_DIGITAL;
             nDigitalBytes = (sizeof(uint64_t) * nDigitalSamples);
-            LOG(logDEBUG1) << "Number of Digital Channels:" << nDigitalChans
-                           << " Databytes: " << nDigitalBytes;
+            LOG(logINFORED) << "Number of Digital Channels:" << nDigitalChans
+                            << " Databytes: " << nDigitalBytes;
         }
         // transceiver channels
         if (readoutType == slsDetectorDefs::TRANSCEIVER_ONLY ||
@@ -643,8 +643,8 @@ class ChipTestBoardData : public GeneralData {
         imageSize = nAnalogBytes + nDigitalBytes + nTransceiverBytes;
         packetsPerFrame = ceil((double)imageSize / (double)dataSize);
 
-        LOG(logDEBUG1) << "Total Number of Channels:" << nPixelsX
-                       << " Databytes: " << imageSize;
+        LOG(logINFORED) << "Total Number of Channels:" << nPixelsX
+                        << " Databytes: " << imageSize;
     };
 };
 

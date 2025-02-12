@@ -37,29 +37,34 @@ sls::TLogLevel printHeadersLevel = sls::logDEBUG;
     printf("\033[%dm" f RESET, 30 + c + 1, ##__VA_ARGS__)
 
 /** Structure handling different threads */
-struct Status {
+using ZmqMsgList = std::vector<zmq_msg_t *>;
+using FrameMap = std::map<uint64_t, ZmqMsgList>;
+using PortFrameMap = std::map<uint16_t, FrameMap>;
+struct FrameStatus {
     bool starting = true;
     bool terminate = false;
-    unsigned long num_receivers;
+    int num_receivers;
     sem_t available;
     std::mutex mtx;
-    std::vector<zmq_msg_t *> headers;
-    std::map<unsigned int,
-             std::map<long unsigned int, std::vector<zmq_msg_t *>>>
-        frames;
-    std::vector<zmq_msg_t *> ends;
+    ZmqMsgList headers;
+    PortFrameMap frames;
+    ZmqMsgList ends;
 
-    Status(bool start, bool term, unsigned long num_recv)
+    FrameStatus(bool start, bool term, int num_recv)
         : starting(start), terminate(term), num_receivers(num_recv) {
         sem_init(&available, 0, 0);
     }
 };
-Status *global_status = nullptr;
+FrameStatus *global_frame_status = nullptr;
 
-void cleanup() {
-    if (global_status) {
-        std::lock_guard<std::mutex> lock(global_status->mtx);
-        for (auto &outer_pair : global_status->frames) {
+/**
+ * Control+C Interrupt Handler
+ * to let all the processes know to exit properly
+ */
+void sigInterruptHandler(int p) {
+    if (global_frame_status) {
+        std::lock_guard<std::mutex> lock(global_frame_status->mtx);
+        for (auto &outer_pair : global_frame_status->frames) {
             for (auto &inner_pair : outer_pair.second) {
                 for (zmq_msg_t *msg : inner_pair.second) {
                     if (msg) {
@@ -71,19 +76,13 @@ void cleanup() {
             }
             outer_pair.second.clear();
         }
-        global_status->frames.clear();
+        global_frame_status->frames.clear();
     }
 
     for (size_t i = 0; i != semaphores.size(); ++i) {
         sem_post(semaphores[i]);
     }
 }
-
-/**
- * Control+C Interrupt Handler
- * to let all the processes know to exit properly
- */
-void sigInterruptHandler(int p) { cleanup(); }
 
 /**
  * prints usage of this example program
@@ -100,104 +99,85 @@ std::string getHelpMessage() {
 
 void zmq_free(void *data, void *hint) { delete[] static_cast<char *>(data); }
 
-void print_frames(
-    const std::map<unsigned int,
-                   std::map<long unsigned int, std::vector<zmq_msg_t *>>>
-        &frames) {
+void print_frames(const PortFrameMap &frame_port_map) {
     LOG(sls::logDEBUG) << "Printing frames";
-    for (const auto &outer_pair : frames) {
-        unsigned int udpPort = outer_pair.first;
-        const auto &trigger_map = outer_pair.second;
+    for (const auto &it : frame_port_map) {
+        uint16_t udpPort = it.first;
+        const auto &frame_map = it.second;
         LOG(sls::logDEBUG) << "UDP port: " << udpPort;
-        for (const auto &inner_pair : trigger_map) {
-            long unsigned int acqIndex = inner_pair.first;
-            const auto &msg_vector = inner_pair.second;
-            LOG(sls::logDEBUG) << "  acq index: " << acqIndex << '['
-                               << msg_vector.size() << ']';
+        for (const auto &frame : frame_map) {
+            uint64_t fnum = frame.first;
+            const auto &msg_list = frame.second;
+            LOG(sls::logDEBUG)
+                << "  acq index: " << fnum << '[' << msg_list.size() << ']';
         }
     }
 }
 
-std::set<long unsigned int>
-find_keys(const std::map<unsigned int,
-                         std::map<long unsigned int, std::vector<zmq_msg_t *>>>
-              &maps) {
-    std::set<long unsigned int>
-        all_keys; // Set to collect all unique keys across all maps
-    std::set<long unsigned int> valid_keys; // Set to store final valid keys
-
-    // If no maps are provided, return empty set
-    if (maps.empty()) {
-        return valid_keys;
+std::set<uint64_t> get_valid_fnums(const PortFrameMap &port_frame_map) {
+    // empty list
+    std::set<uint64_t> valid_fnums;
+    if (port_frame_map.empty()) {
+        return valid_fnums;
     }
 
-    // Collect all unique keys from all maps
-    for (const auto &[port, trigger_map] : maps) {
-        for (const auto &[idx, msgs] : trigger_map) {
-            all_keys.insert(idx);
+    // collect all unique frame numbers from all ports
+    std::set<uint64_t> unique_fnums;
+    for (auto it = port_frame_map.begin(); it != port_frame_map.begin(); ++it) {
+        const FrameMap &frame_map = it->second;
+        for (auto frame = frame_map.begin(); frame != frame_map.end();
+             ++frame) {
+            unique_fnums.insert(frame->first);
         }
     }
 
-    // Now check each key against all maps (udp ports)
-    for (const auto &key : all_keys) {
-        LOG(sls::logDEBUG) << "Checking key: " << key;
+    // collect valid frame numbers
+    for (auto &fnum : unique_fnums) {
         bool is_valid = true;
-        for (const auto &[port, map] : maps) {
-            auto it = map.find(key);
-            if (it != map.end()) {
+        for (auto it = port_frame_map.begin(); it != port_frame_map.end();
+             ++it) {
+            uint16_t port = it->first;
+            const FrameMap &frame_map = it->second;
+            auto frame = frame_map.find(fnum);
+            // invalid: fnum missing in one port
+            if (frame == frame_map.end()) {
                 LOG(sls::logDEBUG)
-                    << "  Key " << key << " found in map " << port;
-            } else {
-                // Key is missing, check if the map has a larger key
-                LOG(sls::logDEBUG)
-                    << "  Key " << key << " missing in map " << port;
-                auto upper_it = map.upper_bound(key);
-                if (upper_it != map.end()) {
-                    LOG(sls::logDEBUG)
-                        << ", but found larger key: " << upper_it->first
-                        << std::endl;
-                } else {
-                    LOG(sls::logDEBUG) << ", no larger key found. Key " << key
-                                       << " is invalid.\n";
+                    << "Fnum " << fnum << " is missing in port " << port;
+                // invalid: fnum greater than all in that port
+                auto last_frame = std::prev(frame_map.end());
+                auto last_fnum = last_frame->first;
+                if (fnum > last_fnum) {
+                    LOG(sls::logDEBUG) << "And no larger fnum found. Fnum "
+                                       << fnum << " is invalid.\n";
                     is_valid = false;
                     break;
                 }
             }
         }
-
         if (is_valid) {
-            LOG(sls::logDEBUG) << "  Key " << key << " is valid.\n";
-            valid_keys.insert(key);
-        } else {
-            LOG(sls::logDEBUG) << "  Key " << key << " is not valid.\n";
+            valid_fnums.insert(fnum);
         }
     }
 
-    return valid_keys;
+    return valid_fnums;
 }
 
-int zmq_send_multipart(void *socket, const std::vector<zmq_msg_t *> &messages) {
+int zmq_send_multipart(void *socket, const ZmqMsgList &messages) {
     size_t num_messages = messages.size();
-
-    // Iterate over each message in the vector
-    for (size_t i = 0; i < num_messages; ++i) {
+    for (size_t i = 0; i != num_messages; ++i) {
         zmq_msg_t *msg = messages[i];
-
-        // Determine flags: ZMQ_SNDMORE for all messages except the last
+        // determine flags: ZMQ_SNDMORE for all messages except the last
         int flags = (i == num_messages - 1) ? 0 : ZMQ_SNDMORE;
-
-        // Send the message part
         if (zmq_msg_send(msg, socket, flags) == -1) {
             LOG(sls::logERROR)
                 << "Error sending message: " << zmq_strerror(zmq_errno());
             return slsDetectorDefs::FAIL;
         }
     }
-
     return slsDetectorDefs::OK;
 }
 
-void Correlate(Status *stat) {
+void Correlate(FrameStatus *stat) {
     void *context = zmq_ctx_new();
 
     void *socket = zmq_socket(context, ZMQ_PUSH);
@@ -211,9 +191,11 @@ void Correlate(Status *stat) {
         {
             std::lock_guard<std::mutex> lock(stat->mtx);
             if (stat->starting) {
-                if (stat->headers.size() == stat->num_receivers) {
-                    LOG(sls::logDEBUG) << "Sending all start messages";
+                // sending all start packets
+                if (static_cast<int>(stat->headers.size()) ==
+                    stat->num_receivers) {
                     stat->starting = false;
+                    // clean up
                     zmq_send_multipart(socket, stat->headers);
                     for (zmq_msg_t *msg : stat->headers) {
                         if (msg) {
@@ -225,29 +207,39 @@ void Correlate(Status *stat) {
                 }
             } else {
                 // print_frames(stat->frames);
-                auto common_keys = find_keys(stat->frames);
-                for (const auto &key : common_keys) {
-                    std::vector<zmq_msg_t *> parts;
-                    for (const auto &[port, trigger_map] : stat->frames) {
-                        auto it = trigger_map.find(key);
-                        if (it != trigger_map.end()) {
-                            parts.insert(parts.end(),
-                                         stat->frames[port][key].begin(),
-                                         stat->frames[port][key].end());
-                            LOG(sls::logDEBUG)
-                                << "  Key " << key << " found in map " << port;
-                            stat->frames[port].erase(key);
+                auto valid_fnums = get_valid_fnums(stat->frames);
+                // sending all valid fnum data packets
+                for (const auto &fnum : valid_fnums) {
+                    ZmqMsgList msg_list;
+                    PortFrameMap &port_frame_map = stat->frames;
+                    for (auto it = port_frame_map.begin();
+                         it != port_frame_map.end(); ++it) {
+                        uint16_t port = it->first;
+                        const FrameMap &frame_map = it->second;
+                        auto frame = frame_map.find(fnum);
+                        if (frame != frame_map.end()) {
+                            msg_list.insert(msg_list.end(),
+                                            stat->frames[port][fnum].begin(),
+                                            stat->frames[port][fnum].end());
+                            // clean up
+                            for (zmq_msg_t *msg : stat->frames[port][fnum]) {
+                                if (msg) {
+                                    zmq_msg_close(msg);
+                                    delete msg;
+                                }
+                            }
+                            stat->frames[port].erase(fnum);
                         }
                     }
-                    LOG(sls::logDEBUG) << key << " ";
-                    LOG(printHeadersLevel) << "Sending data for index " << key;
-                    zmq_send_multipart(socket, parts);
+                    LOG(printHeadersLevel)
+                        << "Sending data packets for fnum " << fnum;
+                    zmq_send_multipart(socket, msg_list);
                 }
             }
-            if (stat->ends.size() == stat->num_receivers) {
-                LOG(sls::logDEBUG) << "Sending all end messages";
-                // clean up all remaining frames
+            // sending all end packets
+            if (static_cast<int>(stat->ends.size()) == stat->num_receivers) {
                 zmq_send_multipart(socket, stat->ends);
+                // clean up
                 for (zmq_msg_t *msg : stat->ends) {
                     if (msg) {
                         zmq_msg_close(msg);
@@ -306,31 +298,19 @@ void StartAcquisitionCallback(
 
     std::string message = oss.str();
     LOG(sls::logDEBUG) << "Start Acquisition message:" << std::endl << message;
+
     int length = message.length();
     char *hdata = new char[length];
     memcpy(hdata, message.c_str(), length);
-
     zmq_msg_t *hmsg = new zmq_msg_t;
     zmq_msg_init_data(hmsg, hdata, length, zmq_free, NULL);
-    Status *stat = static_cast<Status *>(objectPointer);
+
+    // push zmq msg into stat to be processed
+    FrameStatus *stat = static_cast<FrameStatus *>(objectPointer);
     {
         std::lock_guard<std::mutex> lock(stat->mtx);
         stat->headers.push_back(hmsg);
         stat->starting = true;
-        /*for (int port : callbackHeader.udpPort) {
-            // clear cache for udp port
-            for (auto &pair : stat->frames[port]) {
-                // clearing cache for acq index
-                for (zmq_msg_t *msg : pair.second) {
-                    if (msg) {
-                        zmq_msg_close(msg);
-                        delete msg;
-                    }
-                }
-                pair.second.clear();
-            }
-            stat->frames[port].clear();
-        }*/
     }
     sem_post(&stat->available);
 }
@@ -358,26 +338,27 @@ void AcquisitionFinishedCallback(
     int length = message.length();
     LOG(sls::logDEBUG) << "Acquisition Finished message:" << std::endl
                        << message;
+
     char *hdata = new char[length];
     memcpy(hdata, message.c_str(), length);
-
     zmq_msg_t *hmsg = new zmq_msg_t;
     zmq_msg_init_data(hmsg, hdata, length, zmq_free, NULL);
-    Status *stat = static_cast<Status *>(objectPointer);
+
+    // push zmq msg into stat to be processed
+    FrameStatus *stat = static_cast<FrameStatus *>(objectPointer);
     {
         std::lock_guard<std::mutex> lock(stat->mtx);
         stat->ends.push_back(hmsg);
+        // clean up just in case
         for (int port : callbackHeader.udpPort) {
-            // clear cache for udp port
-            for (auto &pair : stat->frames[port]) {
-                // clearing cache for acq index
-                for (zmq_msg_t *msg : pair.second) {
+            for (auto &frame_map : stat->frames[port]) {
+                for (zmq_msg_t *msg : frame_map.second) {
                     if (msg) {
                         zmq_msg_close(msg);
                         delete msg;
                     }
                 }
-                pair.second.clear();
+                frame_map.second.clear();
             }
             stat->frames[port].clear();
         }
@@ -481,24 +462,23 @@ void GetDataCallback(slsDetectorDefs::sls_receiver_header &header,
     oss << "}\n";
     std::string message = oss.str();
     LOG(sls::logDEBUG) << "Data message:" << std::endl << message;
-    int length = message.length();
 
+    // creating header part of data packet
+    int length = message.length();
     char *hdata = new char[length];
     memcpy(hdata, message.c_str(), length);
     zmq_msg_t *hmsg = new zmq_msg_t;
     zmq_msg_init_data(hmsg, hdata, length, zmq_free, NULL);
-    LOG(sls::logDEBUG) << callbackHeader.udpPort << ": created header frame";
 
+    // created data part of data packet
     char *data = new char[imageSize];
     zmq_msg_t *msg = new zmq_msg_t;
     zmq_msg_init_data(msg, data, imageSize, zmq_free, NULL);
-    LOG(sls::logDEBUG) << callbackHeader.udpPort
-                       << ": copied data to data frame";
 
-    Status *stat = static_cast<Status *>(objectPointer);
+    // push both parts into stat to be processed
+    FrameStatus *stat = static_cast<FrameStatus *>(objectPointer);
     {
         std::lock_guard<std::mutex> lock(stat->mtx);
-        LOG(sls::logDEBUG) << callbackHeader.udpPort << "put data in cache";
         stat->frames[callbackHeader.udpPort][header.detHeader.frameNumber]
             .push_back(hmsg);
         stat->frames[callbackHeader.udpPort][header.detHeader.frameNumber]
@@ -583,13 +563,14 @@ int main(int argc, char *argv[]) {
         cprintf(RED, "Could not set handler function for SIGPIPE\n");
     }
 
-    Status stat{true, false, (unsigned long)numReceivers};
-    global_status = &stat; // store pointer for signal handler
-    void *user_data = static_cast<void *>(&stat);
+    FrameStatus stat{true, false, numReceivers};
+    // store pointer for signal handler
+    global_frame_status = &stat;
 
+    // thread synchronizing all packets
+    void *user_data = static_cast<void *>(&stat);
     std::thread combinerThread(Correlate, &stat);
 
-    /** - loop over number of receivers */
     for (int i = 0; i != numReceivers; ++i) {
         sem_t *semaphore = new sem_t;
         sem_init(semaphore, 1, 0);

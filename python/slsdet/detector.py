@@ -2913,7 +2913,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def timing_info_decoder(self):
-        """[Jungfrau] [Jungfrau] Advanced Command and only for SWISSFEL and SHINE. Sets the bunch id or timing info decoder. Default is SWISSFEL.
+        """[Jungfrau] [Jungfrau] Advanced Command and only for SWISSFEL and SHINE. Sets the bunch id or timing info decoder. Default is SWISSFEL. Only allowed for pcbv2.0.
         Enum: timingInfoDecoder
         """
         return self.getTimingInfoDecoder()

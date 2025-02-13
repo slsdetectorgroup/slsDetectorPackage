@@ -1382,7 +1382,7 @@ class Detector {
     Result<defs::timingInfoDecoder>
     getTimingInfoDecoder(Positions pos = {}) const;
 
-    /** [Jungfrau] Advanced Command! */
+    /** [Jungfrau] Advanced Command! Only for pcb v2.0 */
     void setTimingInfoDecoder(defs::timingInfoDecoder value,
                               Positions pos = {});
 

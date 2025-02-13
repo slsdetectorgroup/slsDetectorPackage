@@ -11136,6 +11136,12 @@ int set_timing_info_decoder(int file_des) {
             modeNotImplemented("Timing info decoder index", (int)arg);
             break;
         }
+        if (ret == OK && isHardwareVersion_1_0()) {
+            ret = FAIL;
+            sprintf(mess, "Could not set timing info decoder. Not supported "
+                          "for hardware version 1.0\n");
+            LOG(logERROR, (mess));
+        }
         if (ret == OK) {
             ret = setTimingInfoDecoder(arg);
             if (ret == FAIL) {

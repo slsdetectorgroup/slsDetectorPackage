@@ -114,6 +114,8 @@ void print_frames(const PortFrameMap &frame_port_map) {
     }
 }
 
+/** Valid frame numbers mean they exist across all ports or
+ * has at least a larger fnum in the port with the missing fnum **/
 std::set<uint64_t> get_valid_fnums(const PortFrameMap &port_frame_map) {
     // empty list
     std::set<uint64_t> valid_fnums;
@@ -311,6 +313,19 @@ void StartAcquisitionCallback(
         std::lock_guard<std::mutex> lock(stat->mtx);
         stat->headers.push_back(hmsg);
         stat->starting = true;
+        // clean up old frames
+        for (int port : callbackHeader.udpPort) {
+            for (auto &frame_map : stat->frames[port]) {
+                for (zmq_msg_t *msg : frame_map.second) {
+                    if (msg) {
+                        zmq_msg_close(msg);
+                        delete msg;
+                    }
+                }
+                frame_map.second.clear();
+            }
+            stat->frames[port].clear();
+        }
     }
     sem_post(&stat->available);
 }
@@ -349,19 +364,6 @@ void AcquisitionFinishedCallback(
     {
         std::lock_guard<std::mutex> lock(stat->mtx);
         stat->ends.push_back(hmsg);
-        // clean up just in case
-        for (int port : callbackHeader.udpPort) {
-            for (auto &frame_map : stat->frames[port]) {
-                for (zmq_msg_t *msg : frame_map.second) {
-                    if (msg) {
-                        zmq_msg_close(msg);
-                        delete msg;
-                    }
-                }
-                frame_map.second.clear();
-            }
-            stat->frames[port].clear();
-        }
     }
     sem_post(&stat->available);
 }

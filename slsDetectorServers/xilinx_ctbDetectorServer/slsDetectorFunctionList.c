@@ -492,7 +492,15 @@ void setTransceiverAlignment(int align) {
 #endif
 
 int isTransceiverAligned() {
-    return (bus_r(TRANSCEIVERSTATUS) & RXBYTEISALIGNED_MSK);
+    int times = 0;
+    int retval = bus_r(TRANSCEIVERSTATUS2) & RXLOCKED_MSK;
+    while(retval){
+    	retval = bus_r(TRANSCEIVERSTATUS2) & RXLOCKED_MSK;
+    	times++;
+    	usleep(10);
+    	if(times == 5 ) return 1;
+    }
+    return retval;
 }
 
 int waitTransceiverAligned(char *mess) {
@@ -511,7 +519,7 @@ int waitTransceiverAligned(char *mess) {
     int times = 0;
     while (transceiverWordAligned == 0) {
         if (times++ > WAIT_TIME_OUT_0US_TIMES) {
-            sprintf(mess, "Transceiver alignment timed out\n");
+            sprintf(mess, "Transceiver alignment timed out. Check connection, p-n inversions, LSB-MSB inversions, link error counters and channel enable settings\n");
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -1491,30 +1499,11 @@ int startStateMachine() {
     return OK;
 #endif
 
-    LOG(logINFOBLUE, ("Starting State Machine\n"));
-    // cleanFifos(); removing this for now as its done before readout pattern
+    LOG(logINFOBLUE, ("Starting readout\n"));
 
-    // start state machine
-    bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
-
-    LOG(logINFORED, ("Waiting for exposing to be done\n"));
-    int exposingDone = (bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK);
-    while (exposingDone != 0) {
-        usleep(0);
-        exposingDone = (bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK);
-    }
-
-    LOG(logINFORED, ("Starting readout of chip to fifo\n"));
+    // MM:readout via pattern does not work right now due to firmware bug, readout via MatterhornCTRL for the moment
+    //bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
     bus_w(MATTERHORNSPICTRL, bus_r(MATTERHORNSPICTRL) | STARTREAD_P_MSK);
-
-    LOG(logINFORED, ("Waiting until k-words or end of acquisition\n"));
-    usleep(0);
-    int commaDet = (bus_r(TRANSCEIVERSTATUS) & RXCOMMADET_MSK);
-    while (commaDet == 0) {
-        usleep(0);
-        commaDet = (bus_r(TRANSCEIVERSTATUS) & RXCOMMADET_MSK);
-    }
-    LOG(logINFORED, ("Kwords or end of acquisition detected\n"));
 
     return OK;
 }

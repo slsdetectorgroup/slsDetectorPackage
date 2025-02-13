@@ -1,5 +1,5 @@
 # Prepare MH02 configuration
-reg 0x600 0x00000C41
+reg 0x600 0x00000041
 reg 0x604 0x01200004
 
 # configure Matterhorn SPI

@@ -193,6 +193,8 @@ class ClientInterface : private virtual slsDetectorDefs {
     pid_t tcpThreadId{0};
     std::vector<std::string> udpips =
         std::vector<std::string>(MAX_NUMBER_OF_LISTENING_THREADS);
+    // necessary if Receiver objects using threads with callbacks
+    static std::mutex callbackMutex;
 };
 
 } // namespace sls

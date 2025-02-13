@@ -494,11 +494,12 @@ void setTransceiverAlignment(int align) {
 int isTransceiverAligned() {
     int times = 0;
     int retval = bus_r(TRANSCEIVERSTATUS2) & RXLOCKED_MSK;
-    while(retval){
-    	retval = bus_r(TRANSCEIVERSTATUS2) & RXLOCKED_MSK;
-    	times++;
-    	usleep(10);
-    	if(times == 5 ) return 1;
+    while (retval) {
+        retval = bus_r(TRANSCEIVERSTATUS2) & RXLOCKED_MSK;
+        times++;
+        usleep(10);
+        if (times == 5)
+            return 1;
     }
     return retval;
 }
@@ -519,7 +520,9 @@ int waitTransceiverAligned(char *mess) {
     int times = 0;
     while (transceiverWordAligned == 0) {
         if (times++ > WAIT_TIME_OUT_0US_TIMES) {
-            sprintf(mess, "Transceiver alignment timed out. Check connection, p-n inversions, LSB-MSB inversions, link error counters and channel enable settings\n");
+            sprintf(mess, "Transceiver alignment timed out. Check connection, "
+                          "p-n inversions, LSB-MSB inversions, link error "
+                          "counters and channel enable settings\n");
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -1501,8 +1504,9 @@ int startStateMachine() {
 
     LOG(logINFOBLUE, ("Starting readout\n"));
 
-    // MM:readout via pattern does not work right now due to firmware bug, readout via MatterhornCTRL for the moment
-    //bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
+    // MM:readout via pattern does not work right now due to firmware bug,
+    // readout via MatterhornCTRL for the moment
+    // bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
     bus_w(MATTERHORNSPICTRL, bus_r(MATTERHORNSPICTRL) | STARTREAD_P_MSK);
 
     return OK;

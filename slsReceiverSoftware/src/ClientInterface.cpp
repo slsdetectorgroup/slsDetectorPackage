@@ -33,6 +33,8 @@ using Interface = ServerInterface;
 #define gettid() syscall(SYS_gettid)
 #endif
 
+std::mutex ClientInterface::callbackMutex;
+
 ClientInterface::~ClientInterface() {
     killTcpThread = true;
     LOG(logINFO) << "Shutting down TCP Socket on port " << portNumber;
@@ -55,12 +57,14 @@ std::string ClientInterface::getReceiverVersion() { return APIRECEIVER; }
 /***callback functions***/
 void ClientInterface::registerCallBackStartAcquisition(
     int (*func)(const startCallbackHeader, void *), void *arg) {
+    std::lock_guard<std::mutex> lock(callbackMutex);
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
 }
 
 void ClientInterface::registerCallBackAcquisitionFinished(
     void (*func)(const endCallbackHeader, void *), void *arg) {
+    std::lock_guard<std::mutex> lock(callbackMutex);
     acquisitionFinishedCallBack = func;
     pAcquisitionFinished = arg;
 }
@@ -69,6 +73,7 @@ void ClientInterface::registerCallBackRawDataReady(
     void (*func)(sls_receiver_header &, dataCallbackHeader, char *, size_t &,
                  void *),
     void *arg) {
+    std::lock_guard<std::mutex> lock(callbackMutex);
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
 }
@@ -461,15 +466,18 @@ void ClientInterface::setDetectorType(detectorType arg) {
                            std::string(e.what()) + ']');
     }
     // callbacks after (in setdetectortype, the object is reinitialized)
-    if (startAcquisitionCallBack != nullptr)
-        impl()->registerCallBackStartAcquisition(startAcquisitionCallBack,
-                                                 pStartAcquisition);
-    if (acquisitionFinishedCallBack != nullptr)
-        impl()->registerCallBackAcquisitionFinished(acquisitionFinishedCallBack,
-                                                    pAcquisitionFinished);
-    if (rawDataReadyCallBack != nullptr)
-        impl()->registerCallBackRawDataReady(rawDataReadyCallBack,
-                                             pRawDataReady);
+    {
+        std::lock_guard<std::mutex> lock(callbackMutex);
+        if (startAcquisitionCallBack != nullptr)
+            impl()->registerCallBackStartAcquisition(startAcquisitionCallBack,
+                                                     pStartAcquisition);
+        if (acquisitionFinishedCallBack != nullptr)
+            impl()->registerCallBackAcquisitionFinished(
+                acquisitionFinishedCallBack, pAcquisitionFinished);
+        if (rawDataReadyCallBack != nullptr)
+            impl()->registerCallBackRawDataReady(rawDataReadyCallBack,
+                                                 pRawDataReady);
+    }
 
     impl()->setThreadIds(parentThreadId, tcpThreadId);
 }

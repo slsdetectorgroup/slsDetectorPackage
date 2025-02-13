@@ -62,6 +62,12 @@ FrameStatus *global_frame_status = nullptr;
  * to let all the processes know to exit properly
  */
 void sigInterruptHandler(int p) {
+    for (size_t i = 0; i != semaphores.size(); ++i) {
+        sem_post(semaphores[i]);
+    }
+}
+
+void cleanup() {
     if (global_frame_status) {
         std::lock_guard<std::mutex> lock(global_frame_status->mtx);
         for (auto &outer_pair : global_frame_status->frames) {
@@ -77,10 +83,6 @@ void sigInterruptHandler(int p) {
             outer_pair.second.clear();
         }
         global_frame_status->frames.clear();
-    }
-
-    for (size_t i = 0; i != semaphores.size(); ++i) {
-        sem_post(semaphores[i]);
     }
 }
 
@@ -188,10 +190,15 @@ void Correlate(FrameStatus *stat) {
         LOG(sls::logERROR) << "failed to bind";
     }
 
-    while (!stat->terminate) {
+    while (true) {
         sem_wait(&(stat->available));
         {
             std::lock_guard<std::mutex> lock(stat->mtx);
+
+            if (stat->terminate) {
+                break;
+            }
+
             if (stat->starting) {
                 // sending all start packets
                 if (static_cast<int>(stat->headers.size()) ==
@@ -580,9 +587,8 @@ int main(int argc, char *argv[]) {
         semaphores.push_back(semaphore);
 
         uint16_t port = startTCPPort + i;
-        threads.emplace_back([semaphore, port, user_data]() {
+        threads.emplace_back([i, semaphore, port, user_data]() {
             sls::Receiver receiver(port);
-
             receiver.registerCallBackStartAcquisition(StartAcquisitionCallback,
                                                       user_data);
             receiver.registerCallBackAcquisitionFinished(
@@ -592,6 +598,10 @@ int main(int argc, char *argv[]) {
             sem_wait(semaphore);
             sem_destroy(semaphore);
             delete semaphore;
+
+            // clean up frames
+            if (i == 0)
+                cleanup();
         });
     }
 
@@ -599,8 +609,11 @@ int main(int argc, char *argv[]) {
         thread.join();
     }
 
-    stat.terminate = true;
-    sem_post(&stat.available);
+    {
+        std::lock_guard<std::mutex> lock(stat.mtx);
+        stat.terminate = true;
+        sem_post(&stat.available);
+    }
     combinerThread.join();
     sem_destroy(&stat.available);
 

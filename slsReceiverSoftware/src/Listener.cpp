@@ -149,12 +149,12 @@ void Listener::CreateUDPSocket(int &actualSize) {
             packetSize = generalData->vetoPacketSize;
         }
 
-        std::string ip =
-            (eth.length() ? InterfaceNameToIp(eth).str().c_str() : "");
-
+        std::string ip;
+        if (eth.length() > 0)
+            ip = InterfaceNameToIp(eth).str();
         udpSocket = nullptr;
         udpSocket = make_unique<UdpRxSocket>(
-            udpPortNumber, packetSize, (ip.length() ? ip.c_str() : nullptr),
+            udpPortNumber, packetSize, (ip.empty() ? nullptr : ip.c_str()),
             generalData->udpSocketBufferSize);
         LOG(logINFO) << index << ": UDP port opened at port " << udpPortNumber
                      << " (" << (ip.length() ? ip : "any") << ')';
@@ -213,10 +213,13 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s, int &actualSize) {
     try {
         // to allowe ports to be bound from udpsocket
         udpSocket.reset();
-        UdpRxSocket g(
-            udpPortNumber, packetSize,
-            (eth.length() ? InterfaceNameToIp(eth).str().c_str() : nullptr),
-            generalData->udpSocketBufferSize);
+
+        std::string ip;
+        if (eth.length() > 0)
+            ip = InterfaceNameToIp(eth).str();
+        UdpRxSocket g(udpPortNumber, packetSize,
+                      (ip.empty() ? nullptr : ip.c_str()),
+                      generalData->udpSocketBufferSize);
 
         // doubled due to kernel bookkeeping (could also be less due to
         // permissions)

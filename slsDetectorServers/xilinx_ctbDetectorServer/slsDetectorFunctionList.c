@@ -1505,13 +1505,6 @@ int startStateMachine() {
     //bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
     bus_w(MATTERHORNSPICTRL, bus_r(MATTERHORNSPICTRL) | STARTREAD_P_MSK);
 
-    LOG(logINFOBLUE, ("Waiting for readout done\n"));
-    int res = bus_r(STATUS_REG);
-    while (res != 0) {
-        usleep(0);
-        res = bus_r(STATUS_REG);
-    }
-    LOG(logINFOBLUE, ("end of acquisition\n"));
     return OK;
 }
 

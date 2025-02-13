@@ -1210,7 +1210,7 @@ polarity:
       input_types: [ defs::polarity ]
 
 timing_info_decoder:
-  help: "[swissfel|shine]\n\t[Jungfrau] Advanced Command and only for Swissfel and Shine. Sets the bunch id or timing info decoder. Default is swissfel."
+  help: "[swissfel|shine]\n\t[Jungfrau] Advanced Command and only for Swissfel and Shine. Sets the bunch id or timing info decoder. Default is swissfel. Only allowed for pcbv2.0."
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:

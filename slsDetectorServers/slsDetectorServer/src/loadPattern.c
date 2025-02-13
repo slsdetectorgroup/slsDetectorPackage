@@ -1056,7 +1056,7 @@ int loadPatternFile(char *patFname, char *errMessage) {
             uint64_t arg = 0;
 
             // cannot scan values
-#ifdef VIRTUAL
+#if defined(VIRTUAL) || defined(XILINX_CHIPTESTBOARDD)
             if (sscanf(line, "%s 0x%lx", command, &arg) != 2) {
 #else
             if (sscanf(line, "%s 0x%llx", command, &arg) != 2) {

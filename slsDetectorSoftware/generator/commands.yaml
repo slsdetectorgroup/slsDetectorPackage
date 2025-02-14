@@ -468,7 +468,7 @@ subdeadtime:
       function: setSubDeadTime
 
 compdisabletime:
-  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Time before end of exposure when comparator is disabled. It is only possible for chipv1.1."
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Time before end of exposure when comparator is disabled."
   inherit_actions: TIME_COMMAND
   actions:
     GET:
@@ -1123,7 +1123,7 @@ temp_control:
       input_types: [ bool ]
 
 autocompdisable:
-  help: "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, the on-chip gain switching is active during the entire exposure.This mode disables the on - chip gain switching comparator automatically after 93.75% (only for chipv1.0) of exposure time (only for longer than 100us). It is possible to set the duration for chipv1.1 using compdisabletime command.\n\tDefault is 0 or this mode disabled(comparator enabled throughout). 1 enables mode. 0 disables mode. "
+  help: "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, the on-chip gain switching is active during the entire exposure.This mode disables the on - chip gain switching comparator automatically and the duration is set using compdisabletime command.\n\tDefault is 0 or this mode disabled(comparator enabled throughout). 1 enables mode. 0 disables mode. "
   inherit_actions: INTEGER_COMMAND_VEC_ID
   actions:
     GET:

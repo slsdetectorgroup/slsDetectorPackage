@@ -2566,7 +2566,7 @@ class Detector(CppDetectorApi):
 
         Note
         -----
-        By default, the on-chip gain switching is active during the entire exposure. This mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). The % is only for chipv1.0, the duration can be set for chipv1.1.\n
+        By default, the on-chip gain switching is active during the entire exposure. This mode disables the on-chip gain switching comparator automatically and the duration is set using compdisabletime.\n
         Default is 0 or this mode disabled (comparator enabled throughout). 1 enables mode. 0 disables mode. 
         """
         return self.getAutoComparatorDisable()
@@ -2582,8 +2582,6 @@ class Detector(CppDetectorApi):
 
         Note
         -----
-        It is only possible for chipv1.1.
-
         :getter: always returns in seconds. To get in DurationWrapper, use getComparatorDisableTime
 
         Example

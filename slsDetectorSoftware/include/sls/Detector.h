@@ -1304,11 +1304,9 @@ class Detector {
      * //TODO naming
      * By default, the on-chip gain switching is active during the
      * entire exposure. This mode disables the on-chip gain switching comparator
-     * automatically after 93.75% of exposure time (only for longer than 100us).
-     * The % is for chipv1.0. One can set the duration for chipv1.1 using
-     * setComparatorDisableTime\n Default is false or this mode
-     * disabled(comparator enabled throughout). true enables mode. 0 disables
-     * mode.
+     * automatically and the duration is set using setComparatorDisableTime\n
+     * Default is false or this mode disabled(comparator enabled throughout).
+     * true enables mode. 0 disables mode.
      */
     void setAutoComparatorDisable(bool value, Positions pos = {});
 
@@ -1316,7 +1314,7 @@ class Detector {
     Result<ns> getComparatorDisableTime(Positions pos = {}) const;
 
     /** [Jungfrau] Time before end of exposure when comparator is
-     * disabled. It is only possible for chipv1.1.*/
+     * disabled.*/
     void setComparatorDisableTime(ns t, Positions pos = {});
 
     /** [Jungfrau] Advanced TODO naming */

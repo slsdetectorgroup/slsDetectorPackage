@@ -762,10 +762,9 @@ autocompdisable:
   function_alias: autocompdisable
   help: "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, the on-chip\
     \ gain switching is active during the entire exposure.This mode disables the on\
-    \ - chip gain switching comparator automatically after 93.75% (only for chipv1.0)\
-    \ of exposure time (only for longer than 100us). It is possible to set the duration\
-    \ for chipv1.1 using compdisabletime command.\n\tDefault is 0 or this mode disabled(comparator\
-    \ enabled throughout). 1 enables mode. 0 disables mode. "
+    \ - chip gain switching comparator automatically and the duration is set using\
+    \ compdisabletime command.\n\tDefault is 0 or this mode disabled(comparator enabled\
+    \ throughout). 1 enables mode. 0 disables mode. "
   infer_action: true
   template: true
 badchannels:
@@ -1607,7 +1606,7 @@ compdisabletime:
   command_name: compdisabletime
   function_alias: compdisabletime
   help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Time before end of\
-    \ exposure when comparator is disabled. It is only possible for chipv1.1."
+    \ exposure when comparator is disabled."
   infer_action: true
   template: true
 confadc:
@@ -11386,7 +11385,8 @@ timing_info_decoder:
   command_name: timing_info_decoder
   function_alias: timing_info_decoder
   help: "[swissfel|shine]\n\t[Jungfrau] Advanced Command and only for Swissfel and\
-    \ Shine. Sets the bunch id or timing info decoder. Default is swissfel."
+    \ Shine. Sets the bunch id or timing info decoder. Default is swissfel. Only allowed\
+    \ for pcbv2.0."
   infer_action: true
   template: true
 timinglist:

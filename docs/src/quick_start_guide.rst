@@ -128,6 +128,10 @@ For Multiple Modules
         # set file path
         fpath /tmp
 
+.. note ::   
+    The **hostname** and **detsize** command in a multi module system can affect the row and column values in the udp/zmq header. The modules are stacked row by row until they reach the y-axis limit set by detsize (if specified). Then, stacking continues in the next column and so on. 
+
+    
 Gui
 ----
 

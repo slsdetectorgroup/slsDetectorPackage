@@ -65,7 +65,12 @@ class Detector {
 
     Result<std::string> getHostname(Positions pos = {}) const;
 
-    /**Frees shared memory, adds detectors to the list. */
+    /**Frees shared memory, adds detectors to the list. The row and column
+     * values in the udp/zmq header are affected by the order in this command
+     * and the setDetectorSize function. The modules are stacked row by row
+     * until they reach the y-axis limit set by detsize (if specified). Then,
+     * stacking continues in the next column and so on. This only affects row
+     * and column in udp/zmq header.*/
     void setHostname(const std::vector<std::string> &hostname);
 
     /** connects to n servers at local host starting at specific control port.

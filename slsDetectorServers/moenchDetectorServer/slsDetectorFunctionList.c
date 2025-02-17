@@ -1927,7 +1927,8 @@ void *start_timer(void *arg) {
         getNextFrameNumber(&frameNr);
         int iRxEntry = firstDest;
         for (int iframes = 0; iframes != numFrames; ++iframes) {
-            usleep(transmissionDelayUs);
+            if (transmissionDelayUs)
+                usleep(transmissionDelayUs);
 
             // check if manual stop
             if (sharedMemory_getStop() == 1) {

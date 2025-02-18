@@ -34,9 +34,8 @@ class ClientInterface : private virtual slsDetectorDefs {
 
     //***callback functions***
     /** params: file path, file name, file index, image size */
-    void registerCallBackStartAcquisition(int (*func)(const startCallbackHeader,
-                                                      void *),
-                                          void *arg);
+    void registerCallBackStartAcquisition(
+        void (*func)(const startCallbackHeader, void *), void *arg);
 
     /** params: total frames caught */
     void registerCallBackAcquisitionFinished(
@@ -180,8 +179,8 @@ class ClientInterface : private virtual slsDetectorDefs {
 
     //***callback parameters***
 
-    int (*startAcquisitionCallBack)(const startCallbackHeader,
-                                    void *) = nullptr;
+    void (*startAcquisitionCallBack)(const startCallbackHeader,
+                                     void *) = nullptr;
     void *pStartAcquisition{nullptr};
     void (*acquisitionFinishedCallBack)(const endCallbackHeader,
                                         void *) = nullptr;
@@ -194,6 +193,8 @@ class ClientInterface : private virtual slsDetectorDefs {
     pid_t tcpThreadId{0};
     std::vector<std::string> udpips =
         std::vector<std::string>(MAX_NUMBER_OF_LISTENING_THREADS);
+    // necessary if Receiver objects using threads with callbacks
+    static std::mutex callbackMutex;
 };
 
 } // namespace sls

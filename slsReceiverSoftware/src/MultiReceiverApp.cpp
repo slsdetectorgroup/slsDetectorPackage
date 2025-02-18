@@ -53,8 +53,8 @@ std::string getHelpMessage() {
  * enabled) if registerCallBackRawDataReady or
  * registerCallBackRawDataModifyReady registered, users get data
  */
-int StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
-             void *objectPointer) {
+void StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
+              void *objectPointer) {
     LOG(sls::logINFOBLUE) << "#### Start Acquisition:"
                           << "\n\t["
                           << "\n\tUDP Port : "
@@ -71,7 +71,6 @@ int StartAcq(const slsDetectorDefs::startCallbackHeader callbackHeader,
                           << "\n\tAdditional Json Header : "
                           << sls::ToString(callbackHeader.addJsonHeader)
                           << "\n\t]";
-    return 0;
 }
 
 /** Acquisition Finished Call back */

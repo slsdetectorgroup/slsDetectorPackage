@@ -198,7 +198,12 @@ std::string Caller::hostname(int action) {
         os << "\n\tFrees shared memory and sets hostname (or IP address) of "
               "all modules concatenated by +.\n\t Virtual servers can already "
               "use the port in hostname separated by ':' and ports incremented "
-              "by 2 to accomodate the stop server as well."
+              "by 2 to accomodate the stop server as well. The row and column "
+              "values in the udp/zmq header are affected by the order in this "
+              "command and the detsize command. The modules are stacked row by "
+              "row until they reach the y-axis limit set by detsize (if "
+              "specified). Then, stacking continues in the next column and so "
+              "on. This only affects row and column in udp/zmq header."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {

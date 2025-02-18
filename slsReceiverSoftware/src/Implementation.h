@@ -265,9 +265,8 @@ class Implementation : private virtual slsDetectorDefs {
      *                                                *
      * ************************************************/
     /** params: file path, file name, file index, image size */
-    void registerCallBackStartAcquisition(int (*func)(const startCallbackHeader,
-                                                      void *),
-                                          void *arg);
+    void registerCallBackStartAcquisition(
+        void (*func)(const startCallbackHeader, void *), void *arg);
     /** params: total frames caught */
     void registerCallBackAcquisitionFinished(
         void (*func)(const endCallbackHeader, void *), void *arg);
@@ -374,7 +373,8 @@ class Implementation : private virtual slsDetectorDefs {
     int ctbDbitOffset{0};
 
     // callbacks
-    int (*startAcquisitionCallBack)(const startCallbackHeader, void *){nullptr};
+    void (*startAcquisitionCallBack)(const startCallbackHeader,
+                                     void *){nullptr};
     void *pStartAcquisition{nullptr};
     void (*acquisitionFinishedCallBack)(const endCallbackHeader,
                                         void *){nullptr};

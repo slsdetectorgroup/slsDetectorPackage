@@ -138,13 +138,34 @@ if (SLS_USE_RECEIVER_BINARIES)
         slsProjectWarnings
     )
 
-    install(TARGETS slsReceiver slsMultiReceiver
+    add_executable(slsFrameSynchronizer
+        src/FrameSynchronizerApp.cpp
+    )
+
+    set_target_properties(slsFrameSynchronizer PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
+    if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
+        set_property(TARGET slsFrameSynchronizer PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    endif()
+
+    target_link_libraries(slsFrameSynchronizer 
+    PUBLIC
+        slsReceiverStatic
+        pthread
+        rt
+    PRIVATE
+        slsProjectWarnings
+        "$<BUILD_INTERFACE:libzmq-static>"
+    )
+
+    install(TARGETS slsReceiver slsMultiReceiver slsFrameSynchronizer
         EXPORT "${TARGETS_EXPORT_NAME}"
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sls
-)
+    )
 
 endif(SLS_USE_RECEIVER_BINARIES)
 

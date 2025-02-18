@@ -262,8 +262,7 @@ TEST_CASE("compdisabletime", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU &&
-        det.getChipVersion().squash() * 10 == 11) {
+    if (det_type == defs::JUNGFRAU) {
         auto prev_val = det.getComparatorDisableTime();
         {
             std::ostringstream oss;
@@ -670,7 +669,8 @@ TEST_CASE("pedestalmode", "[.cmdcall]") {
 TEST_CASE("timing_info_decoder", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    if (det.getDetectorType().squash() == defs::JUNGFRAU) {
+    if (det.getDetectorType().squash() == defs::JUNGFRAU &&
+        det.getHardwareVersion().squash() == "2.0") {
         auto prev_val = det.getTimingInfoDecoder();
         /*{
             std::ostringstream oss;

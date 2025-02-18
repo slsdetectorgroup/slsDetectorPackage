@@ -73,9 +73,9 @@ Description
 
 * **modId**: module ID picked up from det_id_[detector type].txt on the detector cpu.
 
-* **row**: row position of the module in the detector system. It is calculated by the order of the module in hostname command, as well as the detsize command.
+* **row**: row position of the module in the detector system. It is calculated by the order of the module in hostname command, as well as the detsize command. The modules are stacked row by row until they reach the y-axis limit set by detsize (if specified). Then, stacking continues in the next column and so on.
 
-* **column**: column position of the module in the detector system.  It is calculated by the order of the module in hostname command, as well as the detsize command.
+* **column**: column position of the module in the detector system.  It is calculated by the order of the module in hostname command, as well as the detsize command. The modules are stacked row by row until they reach the y-axis limit set by detsize (if specified). Then, stacking continues in the next column and so on.
 
 * **detType**: detector type from enum of detectorType in the package.
 

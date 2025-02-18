@@ -1802,7 +1802,7 @@ void Implementation::setTransceiverEnableMask(uint32_t mask) {
  *                                                *
  * ************************************************/
 void Implementation::registerCallBackStartAcquisition(
-    int (*func)(const startCallbackHeader, void *), void *arg) {
+    void (*func)(const startCallbackHeader, void *), void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
 }

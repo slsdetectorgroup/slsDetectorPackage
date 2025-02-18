@@ -134,7 +134,7 @@ std::string Receiver::getReceiverVersion() {
 }
 
 void Receiver::registerCallBackStartAcquisition(
-    int (*func)(const startCallbackHeader, void *), void *arg) {
+    void (*func)(const startCallbackHeader, void *), void *arg) {
     tcpipInterface->registerCallBackStartAcquisition(func, arg);
 }
 

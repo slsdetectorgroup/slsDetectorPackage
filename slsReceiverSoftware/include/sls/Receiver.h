@@ -45,9 +45,8 @@ class Receiver : private virtual slsDetectorDefs {
      * Call back arguments are:
      * - startCallbackHeader metadata
      */
-    void registerCallBackStartAcquisition(int (*func)(const startCallbackHeader,
-                                                      void *),
-                                          void *arg);
+    void registerCallBackStartAcquisition(
+        void (*func)(const startCallbackHeader, void *), void *arg);
 
     /**
      * Call back for acquisition finished

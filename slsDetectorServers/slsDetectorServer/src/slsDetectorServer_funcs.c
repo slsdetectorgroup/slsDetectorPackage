@@ -9098,16 +9098,9 @@ int get_comp_disable_time(int file_des) {
     functionNotImplemented();
 #else
     // get only
-    if (getChipVersion() != 11) {
-        ret = FAIL;
-        strcpy(mess,
-               "Cannot get comparator disable time. Only valid for chipv1.1\n");
-        LOG(logERROR, (mess));
-    } else {
-        retval = getComparatorDisableTime();
-        LOG(logDEBUG1,
-            ("retval comp disable time %lld ns\n", (long long int)retval));
-    }
+    retval = getComparatorDisableTime();
+    LOG(logDEBUG1,
+        ("retval comp disable time %lld ns\n", (long long int)retval));
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
@@ -9125,23 +9118,16 @@ int set_comp_disable_time(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (getChipVersion() != 11) {
-            ret = FAIL;
-            strcpy(mess, "Cannot get comparator disable time. Only valid for "
-                         "chipv1.1\n");
+        ret = setComparatorDisableTime(arg);
+        int64_t retval = getComparatorDisableTime();
+        LOG(logDEBUG1,
+            ("retval get comp disable time %lld ns\n", (long long int)retval));
+        if (ret == FAIL) {
+            sprintf(mess,
+                    "Could not set comp disable time. Set %lld ns, read "
+                    "%lld ns.\n",
+                    (long long int)arg, (long long int)retval);
             LOG(logERROR, (mess));
-        } else {
-            ret = setComparatorDisableTime(arg);
-            int64_t retval = getComparatorDisableTime();
-            LOG(logDEBUG1, ("retval get comp disable time %lld ns\n",
-                            (long long int)retval));
-            if (ret == FAIL) {
-                sprintf(mess,
-                        "Could not set comp disable time. Set %lld ns, read "
-                        "%lld ns.\n",
-                        (long long int)arg, (long long int)retval);
-                LOG(logERROR, (mess));
-            }
         }
     }
 #endif
@@ -11143,6 +11129,12 @@ int set_timing_info_decoder(int file_des) {
         default:
             modeNotImplemented("Timing info decoder index", (int)arg);
             break;
+        }
+        if (ret == OK && isHardwareVersion_1_0()) {
+            ret = FAIL;
+            sprintf(mess, "Could not set timing info decoder. Not supported "
+                          "for hardware version 1.0\n");
+            LOG(logERROR, (mess));
         }
         if (ret == OK) {
             ret = setTimingInfoDecoder(arg);

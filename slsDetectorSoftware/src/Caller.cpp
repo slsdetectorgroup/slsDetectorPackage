@@ -1018,7 +1018,7 @@ std::string Caller::autocompdisable(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([0, 1]
-	[Jungfrau] Auto comparator disable mode. By default, the on-chip gain switching is active during the entire exposure.This mode disables the on - chip gain switching comparator automatically after 93.75% (only for chipv1.0) of exposure time (only for longer than 100us). It is possible to set the duration for chipv1.1 using compdisabletime command.
+	[Jungfrau] Auto comparator disable mode. By default, the on-chip gain switching is active during the entire exposure.This mode disables the on - chip gain switching comparator automatically and the duration is set using compdisabletime command.
 	Default is 0 or this mode disabled(comparator enabled throughout). 1 enables mode. 0 disables mode.  )V0G0N"
            << std::endl;
         return os.str();
@@ -2108,7 +2108,7 @@ std::string Caller::compdisabletime(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([duration] [(optional unit) ns|us|ms|s]
-	[Jungfrau] Time before end of exposure when comparator is disabled. It is only possible for chipv1.1. )V0G0N"
+	[Jungfrau] Time before end of exposure when comparator is disabled. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -14655,7 +14655,7 @@ std::string Caller::timing_info_decoder(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([swissfel|shine]
-	[Jungfrau] Advanced Command and only for Swissfel and Shine. Sets the bunch id or timing info decoder. Default is swissfel. )V0G0N"
+	[Jungfrau] Advanced Command and only for Swissfel and Shine. Sets the bunch id or timing info decoder. Default is swissfel. Only allowed for pcbv2.0. )V0G0N"
            << std::endl;
         return os.str();
     }

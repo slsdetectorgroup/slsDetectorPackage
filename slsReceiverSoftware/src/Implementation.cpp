@@ -111,7 +111,6 @@ void Implementation::SetupFifoStructure() {
 void Implementation::setDetectorType(const detectorType d) {
 
     switch (d) {
-    case GOTTHARD:
     case EIGER:
     case JUNGFRAU:
     case MOENCH:
@@ -131,9 +130,6 @@ void Implementation::setDetectorType(const detectorType d) {
 
     // set detector specific variables
     switch (d) {
-    case GOTTHARD:
-        generalData = new GotthardData();
-        break;
     case EIGER:
         generalData = new EigerData();
         break;

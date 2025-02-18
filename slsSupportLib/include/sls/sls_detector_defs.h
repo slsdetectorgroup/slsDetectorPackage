@@ -92,7 +92,7 @@ class slsDetectorDefs {
     enum detectorType {
         GENERIC,
         EIGER,
-        GOTTHARD,
+        GOTTHARD /** deprecated */,
         JUNGFRAU,
         CHIPTESTBOARD,
         MOENCH,
@@ -704,12 +704,7 @@ struct detParameters {
     explicit detParameters(slsDetectorDefs::detectorType type) {
         switch (type) {
         case slsDetectorDefs::detectorType::GOTTHARD:
-            nChanX = 128;
-            nChanY = 1;
-            nChipX = 10;
-            nChipY = 1;
-            nDacs = 8;
-            break;
+            throw sls::RuntimeError("Gotthard is deprecated from v10.0.0!");
         case slsDetectorDefs::detectorType::MOENCH:
             nChanX = 400;
             nChanY = 400;

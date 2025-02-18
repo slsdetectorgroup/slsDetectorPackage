@@ -196,7 +196,7 @@ std::string ToString(const defs::detectorType s) {
     case defs::EIGER:
         return std::string("Eiger");
     case defs::GOTTHARD:
-        return std::string("Gotthard");
+        throw RuntimeError("Gotthard is deprecated from v10.0.0!");
     case defs::JUNGFRAU:
         return std::string("Jungfrau");
     case defs::CHIPTESTBOARD:
@@ -707,7 +707,7 @@ template <> defs::detectorType StringTo(const std::string &s) {
     if (s == "Eiger")
         return defs::EIGER;
     if (s == "Gotthard")
-        return defs::GOTTHARD;
+        throw RuntimeError("Gotthard is deprecated from v10.0.0!");
     if (s == "Jungfrau")
         return defs::JUNGFRAU;
     if (s == "ChipTestBoard")

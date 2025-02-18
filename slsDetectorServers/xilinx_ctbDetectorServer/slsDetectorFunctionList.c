@@ -492,7 +492,16 @@ void setTransceiverAlignment(int align) {
 #endif
 
 int isTransceiverAligned() {
-    return (bus_r(TRANSCEIVERSTATUS) & RXBYTEISALIGNED_MSK);
+    int times = 0;
+    int retval = bus_r(TRANSCEIVERSTATUS2) & RXLOCKED_MSK;
+    while (retval) {
+        retval = bus_r(TRANSCEIVERSTATUS2) & RXLOCKED_MSK;
+        times++;
+        usleep(10);
+        if (times == 5)
+            return 1;
+    }
+    return retval;
 }
 
 int waitTransceiverAligned(char *mess) {
@@ -511,7 +520,9 @@ int waitTransceiverAligned(char *mess) {
     int times = 0;
     while (transceiverWordAligned == 0) {
         if (times++ > WAIT_TIME_OUT_0US_TIMES) {
-            sprintf(mess, "Transceiver alignment timed out\n");
+            sprintf(mess, "Transceiver alignment timed out. Check connection, "
+                          "p-n inversions, LSB-MSB inversions, link error "
+                          "counters and channel enable settings\n");
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -587,34 +598,197 @@ int getPowerChip() {
 
 int configureChip(char *mess) {
     LOG(logINFOBLUE, ("\tConfiguring chip\n"));
-
-    // enable correct endianness (Only for MH_PR_2)
-    // uint32_t addr = MATTERHORNSPIREG1;
-    // bus_w(addr, bus_r(addr) &~MATTERHORNSPI1_MSK);
-    // bus_w(addr, bus_r(addr) | ((0x40000 << MATTERHORNSPI1_OFST) &
-    // MATTERHORNSPI1_MSK));
-
-    // start configuration
-    uint32_t addr = MATTERHORNSPICTRL;
-    bus_w(addr, bus_r(addr) | CONFIGSTART_P_MSK);
-    bus_w(addr, bus_r(addr) & ~CONFIGSTART_P_MSK);
-
-    // wait until configuration is done
-#ifndef VIRTUAL
-    int configDone = (bus_r(MATTERHORNSPICTRL) & BUSY_MSK);
-    int times = 0;
-    while (configDone == 0) {
-        if (times++ > WAIT_TIME_OUT_0US_TIMES) {
-            sprintf(mess, "Configuration of chip timed out\n");
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-        usleep(0);
-        configDone = (bus_r(MATTERHORNSPICTRL) & BUSY_MSK);
+    chipConfigured = 0;
+    if (readConfigFile(mess, CONFIG_CHIP_FILE, "chip config") == FAIL) {
+        return FAIL;
     }
-#endif
+    if (readConfigFile(mess, RESET_CHIP_FILE, "reset chip") == FAIL) {
+        return FAIL;
+    }
+    LOG(logINFOBLUE, ("Chip configured.\n"));
     chipConfigured = 1;
-    LOG(logINFOBLUE, ("\tChip configured\n"));
+    return OK;
+}
+
+int readConfigFile(char *mess, char *fileName, char *fileType) {
+    const int fileNameSize = 128;
+    char fname[fileNameSize];
+    if (getAbsPath(fname, fileNameSize, fileName) == FAIL) {
+        sprintf(mess, "Could not get full path for %s file [%s].\n", fileType,
+                fname);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    if (access(fname, F_OK) != 0) {
+        sprintf(mess, "Could not find %s file [%s].\n", fileType, fname);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    FILE *fd = fopen(fname, "r");
+    if (fd == NULL) {
+        sprintf(mess, "Could not open on-board detector server %s file [%s].\n",
+                fileType, fname);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFOBLUE, ("Reading %s file %s\n", fileType, fname));
+
+    const size_t LZ = 256;
+    char line[LZ];
+    memset(line, 0, LZ);
+    char command[LZ];
+
+    // keep reading a line
+    while (fgets(line, LZ, fd)) {
+
+        // ignore comments
+        if (line[0] == '#') {
+            LOG(logDEBUG1, ("Ignoring Comment\n"));
+            continue;
+        }
+
+        // ignore empty lines
+        if (strlen(line) <= 1) {
+            LOG(logDEBUG1, ("Ignoring Empty line\n"));
+            continue;
+        }
+
+        // removing leading spaces
+        if (line[0] == ' ' || line[0] == '\t') {
+            int len = strlen(line);
+            // find first valid character
+            int i = 0;
+            for (i = 0; i < len; ++i) {
+                if (line[i] != ' ' && line[i] != '\t') {
+                    break;
+                }
+            }
+            // ignore the line full of spaces (last char \n)
+            if (i >= len - 1) {
+                LOG(logDEBUG1, ("Ignoring line full of spaces\n"));
+                continue;
+            }
+            // copying only valid char
+            char temp[LZ];
+            memset(temp, 0, LZ);
+            memcpy(temp, line + i, strlen(line) - i);
+            memset(line, 0, LZ);
+            memcpy(line, temp, strlen(temp));
+            LOG(logDEBUG1, ("Removing leading spaces.\n"));
+        }
+
+        LOG(logDEBUG1, ("Command to process: (size:%d) %.*s\n", strlen(line),
+                        strlen(line) - 1, line));
+        memset(command, 0, LZ);
+
+        // reg command
+        if (!strncmp(line, "reg", strlen("reg"))) {
+            uint32_t addr = 0;
+            uint32_t val = 0;
+            if (sscanf(line, "%s %x %x", command, &addr, &val) != 3) {
+                sprintf(mess, "Could not scan reg command. Line:[%s].\n", line);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+            bus_w(addr, val);
+            LOG(logINFOBLUE, ("Wrote 0x%x to 0x%x\n", val, addr));
+        }
+
+        // setbit command
+        else if (!strncmp(line, "setbit", strlen("setbit"))) {
+            uint32_t addr = 0;
+            uint32_t bit = 0;
+            if (sscanf(line, "%s %x %d", command, &addr, &bit) != 3) {
+                sprintf(mess, "Could not scan setbit command. Line:[%s].\n",
+                        line);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+            bus_w(addr, bus_r(addr) | (1 << bit));
+            LOG(logINFOBLUE, ("Set bit %d in 0x%x\n", bit, addr));
+        }
+
+        // clearbit command
+        else if (!strncmp(line, "clearbit", strlen("clearbit"))) {
+            uint32_t addr = 0;
+            uint32_t bit = 0;
+            if (sscanf(line, "%s %x %d", command, &addr, &bit) != 3) {
+                sprintf(mess, "Could not scan clearbit command. Line:[%s].\n",
+                        line);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+            bus_w(addr, bus_r(addr) & ~(1 << bit));
+            LOG(logINFOBLUE, ("Cleared bit %d in 0x%x\n", bit, addr));
+        }
+
+        // pollbit command
+        else if (!strncmp(line, "pollbit", strlen("pollbit"))) {
+            uint32_t addr = 0;
+            uint32_t bit = 0;
+            uint32_t val = 0;
+            if (sscanf(line, "%s %x %d %d", command, &addr, &bit, &val) != 4) {
+                sprintf(mess, "Could not scan pollbit command. Line:[%s].\n",
+                        line);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+#ifndef VIRTUAL
+            int times = 0;
+            while (((bus_r(addr) >> bit) & 0x1) != val) {
+                if (times++ > WAIT_TIME_OUT_0US_TIMES) {
+                    sprintf(mess, "Polling bit %d in 0x%x timed out\n", bit,
+                            addr);
+                    LOG(logERROR, (mess));
+                    return FAIL;
+                }
+                usleep(0);
+            }
+#endif
+            LOG(logINFOBLUE, ("Polled bit %d in 0x%x\n", bit, addr));
+        }
+
+        // patternX command
+        else if (!strncmp(line, "patternX", strlen("patternX"))) {
+            // take a file name and call loadPAtterFile
+            char patternFileName[LZ];
+            if (sscanf(line, "%s %s", command, patternFileName) != 2) {
+                sprintf(mess, "Could not scan patternX command. Line:[%s].\n",
+                        line);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+            if (loadPatternFile(patternFileName, mess) == FAIL) {
+                return FAIL;
+            }
+            LOG(logINFOBLUE, ("loaded pattern [%s].\n", patternFileName));
+        }
+
+        // sleep command
+        else if (!strncmp(line, "sleep", strlen("sleep"))) {
+            int time = 0;
+            if (sscanf(line, "%s %d", command, &time) != 2) {
+                sprintf(mess, "Could not scan sleep command. Line:[%s].\n",
+                        line);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+            usleep(time * 1000 * 1000);
+            LOG(logINFOBLUE, ("Slept for %d s\n", time));
+        }
+
+        // other commands
+        else {
+            sprintf(mess,
+                    "Could not scan command from on-board server "
+                    "%s file. Line:[%s].\n",
+                    fileType, line);
+            break;
+        }
+        memset(line, 0, LZ);
+    }
+    fclose(fd);
+    LOG(logINFOBLUE, ("Successfully read %s file.\n", fileType));
     return OK;
 }
 
@@ -1328,30 +1502,12 @@ int startStateMachine() {
     return OK;
 #endif
 
-    LOG(logINFOBLUE, ("Starting State Machine\n"));
-    // cleanFifos(); removing this for now as its done before readout pattern
+    LOG(logINFOBLUE, ("Starting readout\n"));
 
-    // start state machine
-    bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
-
-    LOG(logINFORED, ("Waiting for exposing to be done\n"));
-    int exposingDone = (bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK);
-    while (exposingDone != 0) {
-        usleep(0);
-        exposingDone = (bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK);
-    }
-
-    LOG(logINFORED, ("Starting readout of chip to fifo\n"));
+    // MM:readout via pattern does not work right now due to firmware bug,
+    // readout via MatterhornCTRL for the moment
+    // bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
     bus_w(MATTERHORNSPICTRL, bus_r(MATTERHORNSPICTRL) | STARTREAD_P_MSK);
-
-    LOG(logINFORED, ("Waiting until k-words or end of acquisition\n"));
-    usleep(0);
-    int commaDet = (bus_r(TRANSCEIVERSTATUS) & RXCOMMADET_MSK);
-    while (commaDet == 0) {
-        usleep(0);
-        commaDet = (bus_r(TRANSCEIVERSTATUS) & RXCOMMADET_MSK);
-    }
-    LOG(logINFORED, ("Kwords or end of acquisition detected\n"));
 
     return OK;
 }
@@ -1467,56 +1623,6 @@ int stopStateMachine() {
     return OK;
 }
 
-int startReadOut() {
-    LOG(logINFOBLUE, ("Starting Readout\n"));
-#ifdef VIRTUAL
-    // cannot set #frames and exptiem temporarily to 1 and 0,
-    // because have to set it back after readout (but this is non blocking)
-    return startStateMachine();
-#endif
-    // check if data in fifo
-    int ret = FAIL;
-    if (transceiverEnable) {
-        if ((bus_r(X_FIFO_EMPTY_STATUS_REG) & X_FIFO_EMPTY_STATUS_MSK) !=
-            X_FIFO_EMPTY_STATUS_MSK) {
-            LOG(logINFO, ("Data in transceiver fifo\n"));
-            ret = OK;
-        }
-    }
-    if (analogEnable) {
-        if (bus_r(A_FIFO_EMPTY_STATUS_REG) != BIT32_MSK) {
-            LOG(logINFO, ("Data in analog fifo\n"));
-            ret = OK;
-        }
-    }
-    if (digitalEnable) {
-        if ((bus_r(D_FIFO_EMPTY_STATUS_REG) & D_FIFO_EMPTY_STATUS_MSK) !=
-            D_FIFO_EMPTY_STATUS_MSK) {
-            LOG(logINFO, ("Data in digital fifo\n"));
-            ret = OK;
-        }
-    }
-    // if no module, dont check fifo empty
-    if (checkModuleFlag && ret == FAIL) {
-        LOG(logERROR, ("No data in fifo\n"));
-        return FAIL;
-    }
-
-    LOG(logINFOBLUE, ("Streaming data from fifo\n"));
-    bus_w(FIFO_TO_GB_CONTROL_REG,
-          bus_r(FIFO_TO_GB_CONTROL_REG) | START_STREAMING_P_MSK);
-
-    // wait until streaming is done (not same as fifo empty)
-    int streamingBusy = (bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK);
-    while (streamingBusy != 0) {
-        usleep(0);
-        streamingBusy = (bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK);
-    }
-    LOG(logINFORED, ("Streaming done\n"));
-
-    return OK;
-}
-
 int softwareTrigger() {
 #ifndef VIRTUAL
     // ready for trigger
@@ -1552,36 +1658,33 @@ enum runStatus getRunStatus() {
     LOG(logINFOBLUE, ("Status: IDLE\n"));
     return IDLE;
 #endif
-    uint32_t retval = bus_r(FLOW_STATUS_REG);
-    LOG(logINFO, ("Flow Status Register: %08x\n", retval));
+    uint32_t retval = bus_r(STATUS_REG);
+    LOG(logINFO, ("Status Register: %08x\n", retval));
 
-    if (retval & RSM_TRG_WAIT_MSK) {
-        LOG(logINFOBLUE, ("Status: WAITING\n"));
-        return WAITING;
-    } else if (retval & RSM_BUSY_MSK) {
-        LOG(logINFOBLUE, ("Status: RUNNING (exposing)\n"));
-        return RUNNING;
-    } else if (bus_r(MATTERHORNSPICTRL) & READOUTFROMASIC_MSK) {
-        LOG(logINFOBLUE, ("Status: RUNNING (data from chip to fifo)\n"));
-        return RUNNING;
-    } else if (bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK) {
-        LOG(logINFOBLUE, ("Status: TRANSMITTING\n"));
-        return TRANSMITTING;
+    if (retval == 0x0) {
+        return IDLE;
     }
 
-    LOG(logINFOBLUE, ("Status: IDLE\n"));
-    return IDLE;
-    // TODO: STOPPED, ERROR?
+    if (retval & RX_NOT_GOOD_MSK) {
+        LOG(logINFOBLUE, ("Status: ERROR\n"));
+        return ERROR;
+    }
+
+    if (retval & WAIT_FOR_TRIGGER_MSK) {
+        LOG(logINFOBLUE, ("Status: WAITING\n"));
+        return WAITING;
+    }
+
+    LOG(logINFOBLUE, ("Status: RUNNING\n"));
+    return RUNNING;
+    // TODO: STOPPED?
 }
 
 u_int32_t runBusy() {
 #ifdef VIRTUAL
     return ((sharedMemory_getStatus() == RUNNING) ? 1 : 0);
 #endif
-    uint32_t exposingBusy = bus_r(FLOW_STATUS_REG) & RSM_BUSY_MSK;
-    uint32_t fillingFifoBusy = bus_r(MATTERHORNSPICTRL) & READOUTFROMASIC_MSK;
-    uint32_t streamingBusy = bus_r(STATUSREG1) & TRANSMISSIONBUSY_MSK;
-    return (exposingBusy || fillingFifoBusy || streamingBusy);
+    return (bus_r(STATUS_REG));
 }
 
 void waitForAcquisitionEnd() {

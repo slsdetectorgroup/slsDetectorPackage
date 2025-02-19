@@ -211,9 +211,6 @@ class Implementation : private virtual slsDetectorDefs {
     void setCounterMask(const uint32_t i);
     uint32_t getDynamicRange() const;
     void setDynamicRange(const uint32_t i);
-    ROI getROI() const;
-    /* [Gotthard] */
-    void setDetectorROI(ROI arg);
     bool getTenGigaEnable() const;
     /* [Eiger][Ctb] */
     void setTenGigaEnable(const bool b);

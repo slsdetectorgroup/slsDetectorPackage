@@ -998,7 +998,6 @@ void Implementation::StartMasterWriter() {
                  generalData->readoutType == DIGITAL_AND_TRANSCEIVER)
                     ? 1
                     : 0;
-            masterAttributes.detectorRoi = generalData->detectorRoi;
             masterAttributes.counterMask = generalData->counterMask;
             masterAttributes.exptimeArray[0] = acquisitionTime1;
             masterAttributes.exptimeArray[1] = acquisitionTime2;
@@ -1589,22 +1588,6 @@ void Implementation::setDynamicRange(const uint32_t i) {
         }
     }
     LOG(logINFO) << "Dynamic Range: " << generalData->dynamicRange;
-}
-
-slsDetectorDefs::ROI Implementation::getROI() const {
-    return generalData->detectorRoi;
-}
-
-void Implementation::setDetectorROI(slsDetectorDefs::ROI arg) {
-    if (generalData->detectorRoi.xmin != arg.xmin ||
-        generalData->detectorRoi.xmax != arg.xmax) {
-        // only for gotthard
-        generalData->SetDetectorROI(arg);
-        SetupFifoStructure();
-    }
-
-    LOG(logINFO) << "Detector ROI: " << ToString(generalData->detectorRoi);
-    LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
 bool Implementation::getTenGigaEnable() const {

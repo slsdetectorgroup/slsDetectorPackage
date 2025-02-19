@@ -125,7 +125,7 @@ class slsDetectorDefs {
         int x{0};
         int y{0};
         xy() = default;
-        xy(int x, int y) : x(x), y(y){};
+        xy(int x, int y) : x(x), y(y) {};
     } __attribute__((packed));
 #endif
 
@@ -227,9 +227,9 @@ class slsDetectorDefs {
         int ymin{-1};
         int ymax{-1};
         ROI() = default;
-        ROI(int xmin, int xmax) : xmin(xmin), xmax(xmax){};
+        ROI(int xmin, int xmax) : xmin(xmin), xmax(xmax) {};
         ROI(int xmin, int xmax, int ymin, int ymax)
-            : xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax){};
+            : xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax) {};
         constexpr std::array<int, 4> getIntArray() const {
             return std::array<int, 4>({xmin, xmax, ymin, ymax});
         }
@@ -648,7 +648,7 @@ enum streamingInterface {
         readoutMode roMode{ANALOG_ONLY};
         uint32_t adcMask{0};
         uint32_t adc10gMask{0};
-        ROI roi;
+        ROI roi; /** keep for backward compatibility? */
         uint32_t countermask{0};
         burstMode burstType{BURST_INTERNAL};
         int64_t expTime1Ns{0};

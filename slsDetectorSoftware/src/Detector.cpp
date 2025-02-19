@@ -209,10 +209,6 @@ std::vector<defs::detectorSettings> Detector::getSettingsList() const {
         return std::vector<defs::detectorSettings>{
             defs::STANDARD, defs::HIGHGAIN, defs::LOWGAIN, defs::VERYHIGHGAIN,
             defs::VERYLOWGAIN};
-    case defs::GOTTHARD:
-        return std::vector<defs::detectorSettings>{
-            defs::HIGHGAIN, defs::DYNAMICGAIN, defs::LOWGAIN, defs::MEDIUMGAIN,
-            defs::VERYHIGHGAIN};
     case defs::JUNGFRAU:
         return std::vector<defs::detectorSettings>{defs::GAIN0,
                                                    defs::HIGHGAIN0};
@@ -678,9 +674,6 @@ std::vector<defs::dacIndex> Detector::getTemperatureList() const {
         return std::vector<defs::dacIndex>{defs::SLOW_ADC_TEMP};
     case defs::JUNGFRAU:
     case defs::MOENCH:
-    case defs::GOTTHARD:
-        return std::vector<defs::dacIndex>{defs::TEMPERATURE_ADC,
-                                           defs::TEMPERATURE_FPGA};
     case defs::EIGER:
         return std::vector<defs::dacIndex>{
             defs::TEMPERATURE_FPGA,  defs::TEMPERATURE_FPGAEXT,
@@ -741,10 +734,6 @@ std::vector<defs::dacIndex> Detector::getDacList() const {
             defs::VCAL,      defs::VCMP_RL, defs::RXB_RB,   defs::RXB_LB,
             defs::VCMP_RR,   defs::VCP,     defs::VCN,      defs::VISHAPER,
             defs::VTHRESHOLD};
-    case defs::GOTTHARD:
-        return std::vector<defs::dacIndex>{
-            defs::VREF_DS,   defs::VCASCN_PB, defs::VCASCP_PB, defs::VOUT_CM,
-            defs::VCASC_OUT, defs::VIN_CM,    defs::VREF_COMP, defs::IB_TESTC};
     case defs::JUNGFRAU:
         return std::vector<defs::dacIndex>{
             defs::VB_COMP,   defs::VDD_PROT, defs::VIN_COM, defs::VREF_PRECH,
@@ -1810,27 +1799,6 @@ Result<defs::collectionMode> Detector::getCollectionMode(Positions pos) const {
 
 void Detector::setCollectionMode(defs::collectionMode value, Positions pos) {
     pimpl->Parallel(&Module::setCollectionMode, pos, value);
-}
-
-// Gotthard Specific
-
-Result<defs::ROI> Detector::getROI(Positions pos) const {
-    return pimpl->Parallel(&Module::getROI, pos);
-}
-
-void Detector::setROI(defs::ROI value, int module_id) {
-    if (module_id < 0 && size() > 1) {
-        throw RuntimeError("Cannot set ROI for all modules simultaneously");
-    }
-    pimpl->Parallel(&Module::setROI, {module_id}, value);
-}
-
-void Detector::clearROI(Positions pos) {
-    pimpl->Parallel(&Module::clearROI, pos);
-}
-
-Result<ns> Detector::getExptimeLeft(Positions pos) const {
-    return pimpl->Parallel(&Module::getExptimeLeft, pos);
 }
 
 // Gotthard2 Specific

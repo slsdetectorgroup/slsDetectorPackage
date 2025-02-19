@@ -63,7 +63,6 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_version(ServerInterface &socket);
     int setup_receiver(ServerInterface &socket);
     void setDetectorType(detectorType arg);
-    int set_detector_roi(ServerInterface &socket);
     int set_num_frames(ServerInterface &socket);
     int set_num_triggers(ServerInterface &socket);
     int set_num_bursts(ServerInterface &socket);

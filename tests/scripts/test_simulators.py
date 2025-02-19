@@ -57,7 +57,6 @@ def killAllStaleProcesses():
     killProcess('jungfrauDetectorServer_virtual')
     killProcess('mythen3DetectorServer_virtual')
     killProcess('gotthard2DetectorServer_virtual')
-    killProcess('gotthardDetectorServer_virtual')
     killProcess('ctbDetectorServer_virtual')
     killProcess('moenchDetectorServer_virtual')
     killProcess('xilinx_ctbDetectorServer_virtual')
@@ -128,10 +127,7 @@ def loadConfig(name, rx_hostname, settingsdir):
             d.hostname = 'localhost'
             d.rx_hostname = rx_hostname
             d.udp_dstip = 'auto'
-            if d.type == detectorType.GOTTHARD:
-                d.udp_srcip = d.udp_dstip
-            else:
-                d.udp_srcip = 'auto'
+            d.udp_srcip = 'auto'
         if d.type == detectorType.JUNGFRAU or d.type == detectorType.MOENCH or d.type == detectorType.XILINX_CHIPTESTBOARD:
             d.powerchip = 1
         if d.type == detectorType.XILINX_CHIPTESTBOARD:
@@ -187,7 +183,6 @@ if args.servers is None:
         'jungfrau',
         'mythen3',
         'gotthard2',
-        'gotthard',
         'ctb',
         'moench',
         'xilinx_ctb'

@@ -29,6 +29,8 @@ The dump.json is the AST of the file `slsDetectorPackage/slsSupportLib/src/ToStr
 # to generate the dump.json file
 cd slsSupportLib/src
 clang++ -Xclang -ast-dump=json -Xclang -ast-dump-filter -Xclang StringTo -c ToString.cpp -I ../include/ -std=gnu++11 > ../../slsDetectorSoftware/generator/autocomplete/dump.json 
+cd ../../slsDetectorSoftware/generator/autocomplete
+python autocomplete.py -f
 # clang version used: 14.0.0-1ubuntu1.1
 ```
 

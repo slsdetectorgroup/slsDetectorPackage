@@ -39,7 +39,6 @@ class InferAction {
     int chipversion();
     int clearbit();
     int clearbusy();
-    int clearroi();
     int clientversion();
     int clkdiv();
     int clkfreq();
@@ -77,7 +76,6 @@ class InferAction {
     int exptime1();
     int exptime2();
     int exptime3();
-    int exptimel();
     int extrastoragecells();
     int extsampling();
     int extsamplingsrc();
@@ -187,7 +185,6 @@ class InferAction {
     int reg();
     int resetdacs();
     int resetfpga();
-    int roi();
     int romode();
     int row();
     int runclk();
@@ -373,7 +370,6 @@ class InferAction {
         {"chipversion", &InferAction::chipversion},
         {"clearbit", &InferAction::clearbit},
         {"clearbusy", &InferAction::clearbusy},
-        {"clearroi", &InferAction::clearroi},
         {"clientversion", &InferAction::clientversion},
         {"clkdiv", &InferAction::clkdiv},
         {"clkfreq", &InferAction::clkfreq},
@@ -411,7 +407,6 @@ class InferAction {
         {"exptime1", &InferAction::exptime1},
         {"exptime2", &InferAction::exptime2},
         {"exptime3", &InferAction::exptime3},
-        {"exptimel", &InferAction::exptimel},
         {"extrastoragecells", &InferAction::extrastoragecells},
         {"extsampling", &InferAction::extsampling},
         {"extsamplingsrc", &InferAction::extsamplingsrc},
@@ -524,7 +519,6 @@ class InferAction {
         {"reg", &InferAction::reg},
         {"resetdacs", &InferAction::resetdacs},
         {"resetfpga", &InferAction::resetfpga},
-        {"roi", &InferAction::roi},
         {"romode", &InferAction::romode},
         {"row", &InferAction::row},
         {"runclk", &InferAction::runclk},

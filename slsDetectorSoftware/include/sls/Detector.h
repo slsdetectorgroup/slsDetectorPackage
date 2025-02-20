@@ -1391,7 +1391,7 @@ class Detector {
 
     ///@}
 
-     /** @name Gotthard2 Specific */
+    /** @name Gotthard2 Specific */
     ///@{
     /**************************************************
      *                                                *

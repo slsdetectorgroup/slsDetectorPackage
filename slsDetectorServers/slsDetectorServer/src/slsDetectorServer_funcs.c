@@ -2499,7 +2499,7 @@ int get_exptime(int file_des) {
     if (receiveData(file_des, &gateIndex, sizeof(gateIndex), INT32) < 0)
         return printSocketReadError();
 
-    // get only
+        // get only
 #ifdef MYTHEN3D
     if (gateIndex < 0 || gateIndex > 2) {
         ret = FAIL;
@@ -7108,7 +7108,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // bursts
+        // bursts
 #ifdef GOTTHARD2D
     i64 = getNumBursts();
 #else
@@ -7118,7 +7118,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // additional storage cells
+        // additional storage cells
 #if defined(JUNGFRAUD)
     i32 = getNumAdditionalStorageCells();
 #else
@@ -7128,7 +7128,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // analog samples
+        // analog samples
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     i32 = getNumAnalogSamples();
 #else
@@ -7138,7 +7138,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // digital samples
+        // digital samples
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     i32 = getNumDigitalSamples();
 #else
@@ -7148,7 +7148,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // exptime
+        // exptime
 #ifdef MYTHEN3D
     i64 = 0;
 #else
@@ -7164,7 +7164,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // sub exptime
+        // sub exptime
 #ifdef EIGERD
     i64 = getSubExpTime();
 #else
@@ -7174,7 +7174,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // sub deadtime
+        // sub deadtime
 #ifdef EIGERD
     i64 = getSubDeadTime();
 #else
@@ -7184,7 +7184,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // activate
+        // activate
 #ifdef EIGERD
     i32 = 0;
     getActivate(&i32);
@@ -7195,7 +7195,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // data stream left
+        // data stream left
 #ifdef EIGERD
     i32 = 0;
     getDataStream(LEFT, &i32);
@@ -7206,7 +7206,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // data stream right
+        // data stream right
 #ifdef EIGERD
     i32 = 0;
     getDataStream(RIGHT, &i32);
@@ -7217,7 +7217,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // quad
+        // quad
 #ifdef EIGERD
     i32 = getQuad();
 #else
@@ -7227,7 +7227,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // ReadNRows
+        // ReadNRows
 #if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)
     i32 = getReadNRows();
 #else
@@ -7267,7 +7267,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // 10 gbe
+        // 10 gbe
 #if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MYTHEN3D)
     i32 = enableTenGigabitEthernet(GET_FLAG);
 #else
@@ -7277,7 +7277,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // readout mode
+        // readout mode
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     i32 = getReadoutMode();
 #else
@@ -7287,7 +7287,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // adc mask
+        // adc mask
 #if defined(CHIPTESTBOARDD)
     u32 = getADCEnableMask();
 #else
@@ -7297,7 +7297,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // 10g adc mask
+        // 10g adc mask
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     u32 = getADCEnableMask_10G();
 #else
@@ -7334,7 +7334,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // burst mode
+        // burst mode
 #ifdef GOTTHARD2D
     i32 = (int)getBurstMode();
 #else
@@ -7344,7 +7344,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // exptime1
+        // exptime1
 #ifdef MYTHEN3D
     i64 = getExpTime(0);
 #else
@@ -7354,7 +7354,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // exptime2
+        // exptime2
 #ifdef MYTHEN3D
     i64 = getExpTime(1);
 #else
@@ -7364,7 +7364,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // exptime3
+        // exptime3
 #ifdef MYTHEN3D
     i64 = getExpTime(2);
 #else
@@ -7374,7 +7374,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // gatedelay1
+        // gatedelay1
 #ifdef MYTHEN3D
     i64 = getGateDelay(0);
 #else
@@ -7384,7 +7384,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // gatedelay2
+        // gatedelay2
 #ifdef MYTHEN3D
     i64 = getGateDelay(1);
 #else
@@ -7394,7 +7394,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // gatedelay3
+        // gatedelay3
 #ifdef MYTHEN3D
     i64 = getGateDelay(2);
 #else
@@ -7404,7 +7404,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // gates
+        // gates
 #ifdef MYTHEN3D
     i32 = getNumGates();
 #else
@@ -7434,7 +7434,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // transceiver samples
+        // transceiver samples
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     i32 = getNumTransceiverSamples();
 #else
@@ -7444,7 +7444,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // transceiver mask
+        // transceiver mask
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     u32 = getTransceiverEnableMask();
 #else

@@ -60,8 +60,8 @@ class GeneralData {
     slsDetectorDefs::frameDiscardPolicy frameDiscardMode{
         slsDetectorDefs::NO_DISCARD};
 
-    GeneralData() {};
-    virtual ~GeneralData() {};
+    GeneralData(){};
+    virtual ~GeneralData(){};
 
     // Returns the pixel depth in byte, 4 bits being 0.5 byte
     float GetPixelDepth() { return float(dynamicRange) / 8; }

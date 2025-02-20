@@ -674,6 +674,8 @@ std::vector<defs::dacIndex> Detector::getTemperatureList() const {
         return std::vector<defs::dacIndex>{defs::SLOW_ADC_TEMP};
     case defs::JUNGFRAU:
     case defs::MOENCH:
+        return std::vector<defs::dacIndex>{defs::TEMPERATURE_ADC,
+                                           defs::TEMPERATURE_FPGA};
     case defs::EIGER:
         return std::vector<defs::dacIndex>{
             defs::TEMPERATURE_FPGA,  defs::TEMPERATURE_FPGAEXT,

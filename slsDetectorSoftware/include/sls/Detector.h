@@ -97,7 +97,7 @@ class Detector {
 
     Result<std::string> getKernelVersion(Positions pos = {}) const;
 
-    /* [Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][CTB] */
+    /* [Jungfrau][Moench][Mythen3][Gotthard2][CTB] */
     Result<int64_t> getSerialNumber(Positions pos = {}) const;
 
     /** [Eiger][Gotthard2][Mythen3][Jungfrau][Moench] 6 bit value (ideally
@@ -106,7 +106,7 @@ class Detector {
 
     Result<std::string> getReceiverVersion(Positions pos = {}) const;
 
-    /** Options: EIGER, JUNGFRAU, GOTTHARD, MOENCH, MYTHEN3, GOTTHARD2,
+    /** Options: EIGER, JUNGFRAU, MOENCH, MYTHEN3, GOTTHARD2,
      * CHIPTESTBOARD, XILINX_CHIPTESTBOARD */
     Result<defs::detectorType> getDetectorType(Positions pos = {}) const;
 
@@ -134,10 +134,10 @@ class Detector {
     /** list of possible settings for this detector */
     std::vector<defs::detectorSettings> getSettingsList() const;
 
-    /** [Jungfrau][Moench][Gotthard][Gotthard2][Mythen3] */
+    /** [Jungfrau][Moench][Gotthard2][Mythen3] */
     Result<defs::detectorSettings> getSettings(Positions pos = {}) const;
 
-    /** [Jungfrau] GAIN0, HIGHGAIN0 \n [Gotthard] DYNAMICGAIN, HIGHGAIN,
+    /** [Jungfrau] GAIN0, HIGHGAIN0 \n  DYNAMICGAIN, HIGHGAIN,
      * LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n [Gotthard2] DYNAMICGAIN,
      * FIXGAIN1, FIXGAIN2 \n [Mythen3] STANDARD, FAST,
      * HIGHGAIN. Also changes vrshaper and vrpreamp \n [Eiger] Use threshold
@@ -312,11 +312,11 @@ class Detector {
 
     void setNumberOfTriggers(int64_t value);
 
-    /** [Gotthard][Jungfrau][Moench][Eiger][CTB][Xilinx CTB][Gotthard2]  \n
+    /** [Jungfrau][Moench][Eiger][CTB][Xilinx CTB][Gotthard2]  \n
      * [Mythen3] use function with gate index **/
     Result<ns> getExptime(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][Eiger][CTB][Xilinx CTB][Gotthard2]  \n
+    /** [Jungfrau][Moench][Eiger][CTB][Xilinx CTB][Gotthard2]  \n
      * [Mythen3] sets exptime for all gate signals. To specify gate index, use
      * function with gate index **/
     void setExptime(ns t, Positions pos = {});
@@ -325,25 +325,25 @@ class Detector {
 
     void setPeriod(ns t, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx CTB] */
+    /** [Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx CTB] */
     Result<ns> getDelayAfterTrigger(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx CTB] */
+    /** [Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx CTB] */
     void setDelayAfterTrigger(ns value, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Xilinx CTB]
+    /** [Jungfrau][Moench][CTB][Mythen3][Xilinx CTB]
      * [Gotthard2] only in continuous auto mode */
     Result<int64_t> getNumberOfFramesLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Xilinx CTB]
+    /** [Jungfrau][Moench][CTB][Mythen3][Xilinx CTB]
      * Only when external trigger used */
     Result<int64_t> getNumberOfTriggersLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx CTB]
+    /** [Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx CTB]
      * [Gotthard2] only in continuous mode */
     Result<ns> getPeriodLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][CTB][Mythen3][Xilinx CTB]
+    /** [Jungfrau][Moench][CTB][Mythen3][Xilinx CTB]
      * [Gotthard2] only in continuous mode */
     Result<ns> getDelayAfterTriggerLeft(Positions pos = {}) const;
 
@@ -352,7 +352,7 @@ class Detector {
     /**
      * [Eiger] Options: 4, 8, 12, 16, 32. If i is 32, also sets clkdivider to 2,
      * else sets clkdivider to 1 \n [Mythen3] Options: 8, 16, 32 \n
-     * [Jungfrau][Moench][Gotthard][CTB][Mythen3][Gotthard2][Xilinx CTB] 16
+     * [Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx CTB] 16
      */
     void setDynamicRange(int value);
 
@@ -362,7 +362,7 @@ class Detector {
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 
     /**
-     * [Gotthard][Jungfrau][Moench][Gotthard][CTB][Gotthard2][Xilinx CTB]
+     * [Jungfrau][Moench][CTB][Gotthard2][Xilinx CTB]
      * Options: AUTO_TIMING, TRIGGER_EXPOSURE \n [Mythen3] Options: AUTO_TIMING,
      * TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n [Eiger] Options: AUTO_TIMING,
      * TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
@@ -391,25 +391,23 @@ class Detector {
     /** [Jungfrau][Moench][CTB] */
     Result<int> getADCPhase(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][CTB]
+    /** [Jungfrau][Moench][CTB]
      * [Jungfrau][Moench] Absolute phase shift. Changing Speed also resets
      * adcphase to recommended defaults. \n [Ctb] Absolute phase shift. Changing
-     * adcclk also resets adcphase and sets it to previous values. \n [Gotthard]
-     * Relative phase shift
+     * adcclk also resets adcphase and sets it to previous values.
      */
     void setADCPhase(int value, Positions pos = {});
 
     /** [Jungfrau][Moench][CTB] */
     Result<int> getMaxADCPhaseShift(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][CTB] */
+    /** [Jungfrau][Moench][CTB] */
     Result<int> getADCPhaseInDegrees(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][Moench][CTB]
+    /** [Jungfrau][Moench][CTB]
      * [Jungfrau][Moench] Absolute phase shift. Changing Speed also resets
      * adcphase to recommended defaults. \n [Ctb] Absolute phase shift. Changing
-     * adcclk also resets adcphase and sets it to previous values. \n [Gotthard]
-     * Relative phase shift
+     * adcclk also resets adcphase and sets it to previous values.
      */
     void setADCPhaseInDegrees(int value, Positions pos = {});
 
@@ -462,7 +460,6 @@ class Detector {
     Result<int> getHighVoltage(Positions pos = {}) const;
 
     /**
-     * [Gotthard] Options: 0, 90, 110, 120, 150, 180, 200
      * [Jungfrau][Moench][CTB] Options: 0, 60 - 200
      * [Eiger][Mythen3][Gotthard2] Options: 0 - 200
      */
@@ -482,11 +479,10 @@ class Detector {
      */
     void setPowerChip(bool on, Positions pos = {});
 
-    /** [Gotthard][Eiger virtual] */
+    /** [Eiger virtual] */
     Result<int> getImageTestMode(Positions pos = {});
 
-    /** [Gotthard] If 1, adds channel intensity with precalculated values.
-     * Default is 0 \n
+    /**
      * [Eiger][Jungfrau][Moench] Only for virtual servers, if 1, pixels are
      * saturated. If 0, increasing intensity */
     void setImageTestMode(const int value, Positions pos = {});
@@ -497,7 +493,6 @@ class Detector {
     /**
      * (Degrees)
      * [Mythen3][Gotthard2][Xilinx Ctb] Options: TEMPERATURE_FPGA
-     * [Gotthard] Options: TEMPERATURE_ADC, TEMPERATURE_FPGA \n
      * [Jungfrau][Moench] Options: TEMPERATURE_ADC, TEMPERATURE_FPGA \n
      * [Eiger] Options: TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT, TEMPERATURE_10GE,
      * TEMPERATURE_DCDC, TEMPERATURE_SODL, TEMPERATURE_SODR, TEMPERATURE_FPGA2,
@@ -508,10 +503,10 @@ class Detector {
     /** gets list of dac enums for this detector */
     std::vector<defs::dacIndex> getDacList() const;
 
-    /** [Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3] */
+    /** [Eiger][Jungfrau][Moench][Gotthard2][Mythen3] */
     Result<int> getDefaultDac(defs::dacIndex index, Positions pos = {});
 
-    /** [Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3] */
+    /** [Eiger][Jungfrau][Moench][Gotthard2][Mythen3] */
     void setDefaultDac(defs::dacIndex index, int defaultValue,
                        Positions pos = {});
 
@@ -523,7 +518,7 @@ class Detector {
     void setDefaultDac(defs::dacIndex index, int defaultValue,
                        defs::detectorSettings sett, Positions pos = {});
 
-    /** [Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3]
+    /** [Eiger][Jungfrau][Moench][Gotthard2][Mythen3]
     reset to defaults, hardReset will reset to hardcoded defaults on on-board
     server */
     void resetToDefaultDacs(const bool hardReset, Positions pos = {});
@@ -542,13 +537,12 @@ class Detector {
     void setOnChipDAC(defs::dacIndex index, int chipIndex, int value,
                       Positions pos = {});
 
-    /** [Gotthard] signal index is 0
-     * [Mythen3] signal index 0-3 for master input, 4-7 master output signals */
+    /** [Mythen3] signal index 0-3 for master input, 4-7 master output signals
+     */
     Result<defs::externalSignalFlag>
     getExternalSignalFlags(int signalIndex, Positions pos = {}) const;
 
-    /** [Gotthard]  signal index is 0
-     * Options: TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE
+    /**
      * [Mythen3] signal index 0 is master input trigger signal, 1-3 for master
      * input gate signals, 4 is busy out signal, 5-7 is master output gate
      * signals.
@@ -1397,34 +1391,7 @@ class Detector {
 
     ///@}
 
-    /** @name Gotthard Specific */
-    ///@{
-    /**************************************************
-     *                                                *
-     *    Gotthard Specific                           *
-     *                                                *
-     * ************************************************/
-
-    /** [Gotthard]*/
-    Result<defs::ROI> getROI(Positions pos = {}) const;
-
-    /**
-     * [Gotthard] Region of interest in detector \n
-     * Options: Only a single ROI per module \n
-     * Either all channels or a single adc or 2 chips (256 channels). Default is
-     * all channels enabled (-1 -1). \n module_id is position index
-     */
-    void setROI(defs::ROI value, int module_id);
-
-    /** [Gotthard] Clear ROI to all channels enabled. Default is all channels
-     * enabled. */
-    void clearROI(Positions pos = {});
-
-    /** [Gotthard] */
-    Result<ns> getExptimeLeft(Positions pos = {}) const;
-    ///@}
-
-    /** @name Gotthard2 Specific */
+     /** @name Gotthard2 Specific */
     ///@{
     /**************************************************
      *                                                *
@@ -2006,7 +1973,7 @@ class Detector {
     /** [CTB][Moench] */
     void setADCPipeline(int value, Positions pos = {});
 
-    /**  [Jungfrau][Moench][Gotthard][CTB][Mythen3][Gotthard2]
+    /**  [Jungfrau][Moench][CTB][Mythen3][Gotthard2]
      * Advanced user Function!
      * Program firmware from command line, after which detector controller is
      * rebooted. forceDeleteNormalFile is true, if normal file found
@@ -2035,12 +2002,12 @@ class Detector {
      */
     void updateKernel(const std::string &fname, Positions pos = {});
 
-    /** [Jungfrau][Moench][Gotthard][CTB][Mythen3][Gotthard2][Xilinx CTB]
+    /** [Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx CTB]
      * Advanced user Function! */
     void rebootController(Positions pos = {});
 
     /**
-     * Advanced user Function!\n [Jungfrau][Moench][Gotthard][CTB] Updates the
+     * Advanced user Function!\n [Jungfrau][Moench][CTB] Updates the
      * firmware, detector server, make a soft link and then reboots detector
      * controller. \n [Mythen3][Gotthard2] Will require a script to start up the
      * shorter named server link at start up \n sname is full path name of
@@ -2080,16 +2047,16 @@ class Detector {
     /** Advanced user Function!  */
     Result<int> getBit(uint32_t addr, int bitnr, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Advanced user
+    /** [Jungfrau][Moench][Mythen3][Gotthard2][CTB] Advanced user
      * Function! */
     void executeFirmwareTest(Positions pos = {});
 
-    /** [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] Advanced user
+    /** [Jungfrau][Moench][Mythen3][Gotthard2][CTB] Advanced user
      * Function! Writes different values in a R/W register and confirms the
      * writes to check bus */
     void executeBusTest(Positions pos = {});
 
-    /** [Gotthard][Jungfrau][Moench][CTB] Advanced user Function! not possible
+    /** [Jungfrau][Moench][CTB] Advanced user Function! not possible
      * to read back */
     void writeAdcRegister(uint32_t addr, uint32_t value, Positions pos = {});
 

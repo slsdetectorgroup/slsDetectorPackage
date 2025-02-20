@@ -2436,7 +2436,7 @@ TEST_CASE("scan", "[.cmdcall]") {
         break;
     case defs::EIGER:
         ind = defs::VCMP_LL;
-        notImplementedInd = defs::VCASCP_PB;
+        notImplementedInd = defs::VIN_COM;
         break;
     case defs::JUNGFRAU:
         ind = defs::VB_COMP;

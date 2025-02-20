@@ -54,13 +54,9 @@ vcn:  dac
 vishaper:  dac
 iodelay:  dac
 vref_ds:  dac
-vcascn_pb:  dac
-vcascp_pb:  dac
 vout_cm:  dac
-vcasc_out:  dac
 vin_cm:  dac
 vref_comp:  dac
-ib_test_c:  dac
 vrshaper_n:  dac
 vipre:  dac
 vdcsh:  dac
@@ -151,7 +147,6 @@ storagecells:  extrastoragecells
 auto_comp_disable:  autocompdisable
 comp_disable_time:  compdisabletime
 
-#Gotthard Specific
 #Gotthard2 Specific
 #Mythen3 Specific
 #CTB Specific

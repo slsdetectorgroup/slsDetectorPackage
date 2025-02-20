@@ -39,7 +39,6 @@ This document describes the differences between vx.x.x and vx.0.2
     Jungfrau    9.0.0
     Mythen3     9.0.0
     Gotthard2   9.0.0
-    Gotthard    9.0.0
     Moench      9.0.0
   
 
@@ -75,9 +74,6 @@ This document describes the differences between vx.x.x and vx.0.2
 
     Moench      26.10.2023 (v2.0)                   (updated in 9.0.0)
 
-    Gotthard    08.02.2018 (50um and 25um Master)
-                09.02.2018 (25 um Slave) 
-
 
     Detector Upgrade
     ----------------
@@ -89,8 +85,6 @@ This document describes the differences between vx.x.x and vx.0.2
     Mythen3    via command <.rbf>
     Gotthard2  via command <.rbf>
     Moench     via command <.pof>
-
-    Gotthard cannot be upgraded remotely  
 
     Except Eiger, 
         upgrade 

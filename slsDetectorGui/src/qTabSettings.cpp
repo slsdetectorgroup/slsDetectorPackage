@@ -18,8 +18,6 @@ qTabSettings::qTabSettings(QWidget *parent, Detector *detector)
 qTabSettings::~qTabSettings() {}
 
 void qTabSettings::SetupWidgetWindow() {
-    comboHV->hide();
-    lblComboHV->hide();
     lblSpinHV->hide();
     spinHV->hide();
     hvmin = HV_MIN;
@@ -100,9 +98,6 @@ void qTabSettings::SetupWidgetWindow() {
     } else if (detType == slsDetectorDefs::MOENCH) {
         lblSpinHV->show();
         spinHV->show();
-    } else if (detType == slsDetectorDefs::GOTTHARD) {
-        comboHV->show();
-        lblComboHV->show();
     } else if (detType == slsDetectorDefs::GOTTHARD2) {
         lblSpinHV->show();
         spinHV->show();
@@ -189,8 +184,6 @@ void qTabSettings::ShowFixG0(bool expertMode) {
 
 void qTabSettings::Initialization() {
     // High voltage
-    connect(comboHV, SIGNAL(currentIndexChanged(int)), this,
-            SLOT(SetHighVoltage()));
     connect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));
 
     // Settings
@@ -231,12 +224,10 @@ void qTabSettings::Initialization() {
 
 void qTabSettings::GetHighVoltage() {
     // not enabled for eiger
-    if (!comboHV->isVisible() && !spinHV->isVisible())
+    if (!spinHV->isVisible())
         return;
     LOG(logDEBUG) << "Getting High Voltage";
     disconnect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));
-    disconnect(comboHV, SIGNAL(currentIndexChanged(int)), this,
-               SLOT(SetHighVoltage()));
     try {
         Result<int> retvals = det->getHighVoltage();
 
@@ -258,55 +249,19 @@ void qTabSettings::GetHighVoltage() {
                 master_retvals.tsquash("Inconsistent values for high voltage.");
         }
 
-        // spinHV
-        if (spinHV->isVisible()) {
-            if (retval != 0 && retval < hvmin && retval > HV_MAX) {
-                throw RuntimeError(std::string("Unknown High Voltage: ") +
-                                   std::to_string(retval));
-            }
-            spinHV->setValue(retval);
+        if (retval != 0 && retval < hvmin && retval > HV_MAX) {
+            throw RuntimeError(std::string("Unknown High Voltage: ") +
+                               std::to_string(retval));
         }
-        // combo HV
-        else {
-            switch (retval) {
-            case 0:
-                comboHV->setCurrentIndex(HV_0);
-                break;
-            case 90:
-                comboHV->setCurrentIndex(HV_90);
-                break;
-            case 110:
-                comboHV->setCurrentIndex(HV_110);
-                break;
-            case 120:
-                comboHV->setCurrentIndex(HV_120);
-                break;
-            case 150:
-                comboHV->setCurrentIndex(HV_150);
-                break;
-            case 180:
-                comboHV->setCurrentIndex(HV_180);
-                break;
-            case 200:
-                comboHV->setCurrentIndex(HV_200);
-                break;
-            default:
-                throw RuntimeError(std::string("Unknown High Voltage: ") +
-                                   std::to_string(retval));
-            }
-        }
+        spinHV->setValue(retval);
     }
     CATCH_DISPLAY("Could not get high voltage.", "qTabSettings::GetHighVoltage")
     connect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));
-    connect(comboHV, SIGNAL(currentIndexChanged(int)), this,
-            SLOT(SetHighVoltage()));
 }
 
 void qTabSettings::SetHighVoltage() {
-    int val = (comboHV->isVisible() ? comboHV->currentText().toInt()
-                                    : spinHV->value());
+    int val = spinHV->value();
     LOG(logINFO) << "Setting high voltage:" << val;
-
     try {
         det->setHighVoltage(val);
     }

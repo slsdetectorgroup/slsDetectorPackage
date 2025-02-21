@@ -192,7 +192,6 @@ void qDetectorMain::SetUpDetector(const std::string &config_file, int multiID) {
         actionLoadTrimbits->setEnabled(true);
         actionSaveTrimbits->setEnabled(true);
         break;
-    case slsDetectorDefs::GOTTHARD:
     case slsDetectorDefs::JUNGFRAU:
     case slsDetectorDefs::MOENCH:
     case slsDetectorDefs::GOTTHARD2:
@@ -405,12 +404,12 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
 
 void qDetectorMain::ExecuteHelp(QAction *action) {
     if (action == actionAbout) {
-        LOG(logINFO) << "About Common GUI for Jungfrau, Eiger, Mythen3, "
-                        "Gotthard, Gotthard2 and Moench detectors";
+        LOG(logDEBUG) << "About Common GUI for Jungfrau, Eiger, Mythen3, "
+                         "Gotthard2 and Moench detectors";
 
-        std::string clientVersion = "unknown";
+        std::string packageVersion = "unknown";
         try {
-            clientVersion = det->getClientVersion();
+            packageVersion = det->getPackageVersion();
         }
         CATCH_DISPLAY("Could not get client version.",
                       "qDetectorMain::ExecuteHelp")
@@ -419,12 +418,12 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
             qDefs::INFORMATION,
             "<p style=\"font-family:verdana;\">"
 
-            "<b>SLS Detector Client version:  " +
-                clientVersion +
+            "<b>SLS Detector Package:  v" +
+                packageVersion +
                 "</b><br><br>"
 
                 "Common GUI to control the SLS Detectors: "
-                "Jungfrau, Eiger, Mythen3, Gotthard, Gotthard2 and "
+                "Jungfrau, Eiger, Mythen3, Gotthard2 and "
                 "Moench.<br><br>"
 
                 "It can be operated in parallel with the command "

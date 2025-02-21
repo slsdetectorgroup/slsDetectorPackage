@@ -28,9 +28,6 @@ void qTabAdvanced::SetupWidgetWindow() {
         spinSubDeadTime->setEnabled(true);
         comboSubDeadTimeUnit->setEnabled(true);
         break;
-    case slsDetectorDefs::GOTTHARD:
-        tab_roi->setEnabled(true);
-        break;
     case slsDetectorDefs::MYTHEN3:
         tab_trimming->setEnabled(true);
         lblDiscardBits->setEnabled(true);
@@ -114,14 +111,6 @@ void qTabAdvanced::Initialization() {
     connect(spinRxrZMQPort, SIGNAL(valueChanged(int)), this,
             SLOT(SetRxrZMQPort(int)));
 
-    // roi
-    if (tab_roi->isEnabled()) {
-        connect(comboReadout, SIGNAL(currentIndexChanged(int)), this,
-                SLOT(GetROI()));
-        connect(btnSetRoi, SIGNAL(clicked()), this, SLOT(SetROI()));
-        connect(btnClearRoi, SIGNAL(clicked()), this, SLOT(ClearROI()));
-    }
-
     // storage cells
     if (lblNumStoragecells->isEnabled()) {
         connect(spinNumStoragecells, SIGNAL(valueChanged(int)), this,
@@ -173,23 +162,16 @@ void qTabAdvanced::PopulateDetectors() {
     LOG(logDEBUG) << "Populating detectors";
     disconnect(comboDetector, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetDetector()));
-    disconnect(comboReadout, SIGNAL(currentIndexChanged(int)), this,
-               SLOT(GetROI()));
 
     comboDetector->clear();
-    comboReadout->clear();
     auto res = det->getHostname();
     for (auto &it : res) {
         comboDetector->addItem(QString(it.c_str()));
-        comboReadout->addItem(QString(it.c_str()));
     }
     comboDetector->setCurrentIndex(0);
-    comboReadout->setCurrentIndex(0);
 
     connect(comboDetector, SIGNAL(currentIndexChanged(int)), this,
             SLOT(SetDetector()));
-    connect(comboReadout, SIGNAL(currentIndexChanged(int)), this,
-            SLOT(GetROI()));
 }
 
 void qTabAdvanced::GetControlPort() {
@@ -570,40 +552,6 @@ void qTabAdvanced::SetRxrZMQPort(int port) {
                  &qTabAdvanced::GetRxrZMQPort)
 }
 
-void qTabAdvanced::GetROI() {
-    LOG(logDEBUG) << "Getting ROI";
-    try {
-        slsDetectorDefs::ROI roi =
-            det->getROI({comboReadout->currentIndex()})[0];
-        spinXmin->setValue(roi.xmin);
-        spinXmax->setValue(roi.xmax);
-    }
-    CATCH_DISPLAY("Could not get ROI.", "qTabAdvanced::GetROI")
-}
-
-void qTabAdvanced::ClearROI() {
-    LOG(logINFO) << "Clearing ROI";
-    spinXmin->setValue(-1);
-    spinXmax->setValue(-1);
-    SetROI();
-    LOG(logDEBUG) << "ROIs cleared";
-}
-
-void qTabAdvanced::SetROI() {
-
-    slsDetectorDefs::ROI roi(spinXmin->value(), spinXmax->value());
-
-    // set roi
-    LOG(logINFO) << "Setting ROI: [" << roi.xmin << ", " << roi.xmax << "]";
-    try {
-        det->setROI(roi, {comboReadout->currentIndex()});
-    }
-    CATCH_DISPLAY("Could not set these ROIs.", "qTabAdvanced::SetROI")
-
-    // update corrected list
-    GetROI();
-}
-
 void qTabAdvanced::GetAllTrimbits() {
     LOG(logDEBUG) << "Getting all trimbits value";
     disconnect(spinSetAllTrimbits, SIGNAL(valueChanged(int)), this,
@@ -830,11 +778,6 @@ void qTabAdvanced::Refresh() {
 
     // update all network widgets
     SetDetector();
-
-    // roi
-    if (tab_roi->isEnabled()) {
-        GetROI();
-    }
 
     // storage cells
     if (lblNumStoragecells->isEnabled()) {

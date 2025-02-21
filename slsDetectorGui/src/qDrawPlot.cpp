@@ -83,9 +83,7 @@ void qDrawPlot::SetupWidgetWindow() {
         fileSaveName = "Image";
     }
 
-    gotthard25 = ((detType == slsDetectorDefs::GOTTHARD2 ||
-                   detType == slsDetectorDefs::GOTTHARD) &&
-                  det->size() == 2);
+    gotthard25 = (detType == slsDetectorDefs::GOTTHARD2 && det->size() == 2);
 
     SetupPlots();
     SetDataCallBack(true);

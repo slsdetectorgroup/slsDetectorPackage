@@ -503,6 +503,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
                 }
 #endif
                 if (ee == PHOTON && val[iy * nx + ix] == max) {
+                    good = 1;
                     ee = PHOTON_MAX;
                     // cout << "**" <<id<< " " << iframe << " "  << nDark << " "
                     // << ix << " " << iy << " " << rms << " " << max << " " <<
@@ -536,7 +537,6 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
 		      cout << max << " " <<  val[iy * nx + ix] << endl;
 		    }
 		    //else (clusters + nph)->print();
-                    good = 1;
                     if (eMin > 0 && tot < eMin)
                         good = 0;
                     if (eMax > 0 && tot > eMax)

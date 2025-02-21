@@ -102,9 +102,9 @@ void Detector::loadParameters(const std::vector<std::string> &parameters) {
         parser.Parse(current_line);
         int m_id = parser.multi_id();
         if (m_id != detShmId) {
-            LOG(logWARNING)
-                << "Ignoring multi-detector index [" + std::to_string(m_id) +
-                       "] in config file. Maybe for 'config' command?";
+            throw RuntimeError(
+                "Ignoring multi-detector index [" + std::to_string(m_id) +
+                "] in config file. Maybe use it for 'config' command?");
         }
         caller.call(parser.command(), parser.arguments(), parser.detector_id(),
                     defs::PUT_ACTION, std::cout, parser.receiver_id());

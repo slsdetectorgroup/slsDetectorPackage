@@ -4,11 +4,44 @@ Command line interface
 Usage
 -------------
 
-Commands can be used either with sls_detector_get or sls_detector_put
+| **Detectors and Shared Memory:**
+| Each detector uses a unique shared memory identified by a detector index, derived from the hostname. If the hostname contains a '-', the number preceding it is the detector index.
 
-.. code-block::
+    .. code-block::
 
-    sls_detector_get exptime
+        # For detector with index 2 in shared memory
+        sls_detector_put 2-hostname bchip133+bchip123+bchip456
+        
+        # Without '-', the detector index defaults to 0
+        sls_detector_put hostname bchip133+bchip123+bchip456
+
+        # Accessing all modules with detector index 2
+        sls_detector_put 2-exptime
+
+        # Starting acquisition only for detector wiht index 2
+        sls_detector_put 2-start
+
+| **Modules within a Detector:**
+| Modules are indexed based on their order in the hostname list. To configure a specific module, prefix the command with the module index and ':'.
+
+    .. code-block::
+
+        # Applies to all modules of detector 0
+        p exptime 5s
+
+        # Applies to only the 4th module
+        p 3:exptime 5s
+
+| **Command Execution:**
+| Commands can be executed using:
+
+*   sls_detector_put: setting values
+*   sls_detector_get: getting values
+*   sls_detector: automatically infers based on the number of arguments.
+*   sls_detector_help: gets help on the specific command
+*   sls_detector_acquire: initiates acquisition with the detector. This command blocks until the entire acquisition process is completed.
+
+
 
 Help
 --------
@@ -28,12 +61,15 @@ Help
     # list of deprecated commands
     list deprecated
 
-    # autocompletion
-    # bash_autocomplete.sh or zsh_autocomplete.sh must be sourced from the 
-    # main package folder to enable auto completion of commands and arguments 
-    # for the command line on that shell.
-    source bash_autocomplete.sh
 
+Autocompletion
+---------------
+
+bash_autocomplete.sh or zsh_autocomplete.sh must be sourced from the main package folder to enable auto completion of commands and arguments for the command line on that shell.
+
+.. code-block::
+
+    source bash_autocomplete.sh
   
 
 Commands

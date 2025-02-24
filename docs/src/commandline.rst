@@ -4,8 +4,24 @@ Command line interface
 Usage
 -------------
 
-| **Detectors and Shared Memory:**
-| Each detector uses a unique shared memory identified by a detector index, derived from the hostname. If the hostname contains a '-', the number preceding it is the detector index.
+The syntax is *'[detector index]-[module index]:[command]'*, where the indices are by default '0', when not specified.
+
+Module index
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Modules are indexed based on their order in the hostname command. They are used to configure a specific module within a detector and are followed by a ':' in syntax.
+
+    .. code-block::
+
+        # Applies to all modules of detector 0
+        sls_detector_put exptime 5s
+
+        # Applies to only the 4th module
+        sls_detector_put 3:exptime 5s
+
+
+Detector index
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This index is useful when configuring multiple detectors from a single host. Each detector uses a unique shared memory identified by a detector index, derived again from the hostname command. It is followed by a '-'. 
 
     .. code-block::
 
@@ -21,25 +37,19 @@ Usage
         # Starting acquisition only for detector wiht index 2
         sls_detector_put 2-start
 
-| **Modules within a Detector:**
-| Modules are indexed based on their order in the hostname list. To configure a specific module, prefix the command with the module index and ':'.
+        # Applies to the 2nd detector, 4th module
+        sls_detector_put 1-3:exptime 5s
 
-    .. code-block::
 
-        # Applies to all modules of detector 0
-        p exptime 5s
+Command Execution
+^^^^^^^^^^^^^^^^^^^^^^^
+Commands can be executed using:
 
-        # Applies to only the 4th module
-        p 3:exptime 5s
-
-| **Command Execution:**
-| Commands can be executed using:
-
-*   sls_detector_put: setting values
-*   sls_detector_get: getting values
-*   sls_detector: automatically infers based on the number of arguments.
-*   sls_detector_help: gets help on the specific command
-*   sls_detector_acquire: initiates acquisition with the detector. This command blocks until the entire acquisition process is completed.
+*   **sls_detector_put**: setting values
+*   **sls_detector_get**: getting values
+*   **sls_detector**: automatically infers based on the number of arguments.
+*   **sls_detector_help**: gets help on the specific command
+*   **sls_detector_acquire**: initiates acquisition with the detector. This command blocks until the entire acquisition process is completed.
 
 
 

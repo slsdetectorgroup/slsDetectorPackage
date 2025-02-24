@@ -1974,9 +1974,6 @@ int autoCompDisable(int on) {
 }
 
 int setComparatorDisableTime(int64_t val) {
-    if (getChipVersion() != 11) {
-        return FAIL;
-    }
     if (val < 0) {
         LOG(logERROR,
             ("Invalid comp disable time: %lld ns\n", (long long int)val));

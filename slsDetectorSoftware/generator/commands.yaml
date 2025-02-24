@@ -3467,7 +3467,7 @@ udp_dstlist:
       output: [ ToString(args) ]
 
 txdelay:
-  help: "[n_delay]\n\t[Eiger][Jungfrau][Moench][Mythen3] Set transmission delay for all modules in the detector using the step size provided.Sets up \n\t[Eiger] txdelay_left to (2 * mod_index * n_delay), \n\t[Eiger] txdelay_right to ((2 * mod_index + 1) * n_delay) and \n\t[Eiger] txdelay_frame to (2 *num_modules * n_delay)\n\t[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules * n_delay) for every module."
+  help: "[n_delay]\n\t[Eiger][Jungfrau][Moench][Mythen3] Set transmission delay for all modules in the detector using the step size provided.Sets up \n\t[Eiger] txdelay_left to (2 * mod_index * n_delay), \n\t[Eiger] txdelay_right to ((2 * mod_index + 1) * n_delay) and \n\t[Eiger] txdelay_frame to (2 * num_modules * n_delay)\n\t[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules * n_delay) for every module."
   actions:
     GET:
       argc: 0

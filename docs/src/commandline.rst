@@ -34,10 +34,10 @@ This index is useful when configuring multiple detectors from a single host. Eac
         # Accessing all modules with detector index 2
         sls_detector_put 2-exptime
 
-        # Starting acquisition only for detector wiht index 2
+        # Starting acquisition only for detector with index 2
         sls_detector_put 2-start
 
-        # Applies to the 2nd detector, 4th module
+        # Applies only to the 2nd detector, 4th module
         sls_detector_put 1-3:exptime 5s
 
 

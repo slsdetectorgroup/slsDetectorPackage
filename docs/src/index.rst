@@ -39,7 +39,7 @@ Welcome to slsDetectorPackage's documentation!
 
 .. toctree::
     :caption: Command line
-    :maxdepth: 2
+    :maxdepth: 1
 
     commandline  
     quick_start_guide

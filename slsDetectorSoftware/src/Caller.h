@@ -872,6 +872,7 @@ class Caller {
         {"i_c", "im_c"},
         {"i_d", "im_d"},
         {"i_io", "im_io"},
+        {"patternX", "pattern"},
         {"copydetectorserver", "updatedetectorserver"},
         {"nframes", "framecounter"},
         {"now", "runtime"},

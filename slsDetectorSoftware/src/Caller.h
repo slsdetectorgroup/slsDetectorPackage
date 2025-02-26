@@ -543,7 +543,7 @@ class Caller {
         {"patnloop1", &Caller::patnloop1},
         {"patnloop2", &Caller::patnloop2},
         {"patsetbit", &Caller::patsetbit},
-        {"patternX", &Caller::pattern},
+        {"pattern", &Caller::pattern},
         {"patternstart", &Caller::patternstart},
         {"patwait", &Caller::patwait},
         {"patwait0", &Caller::patwait0},

@@ -3912,8 +3912,7 @@ diodelay:
       cast_input: [ true, true ]
       output: [ ToString(args) ]
 
-# pattern is a keyword in yaml, so patternX is used to avoid it
-patternX:
+pattern:
   help: "[fname]\n\t[Mythen3][Ctb][Xilinx Ctb] Loads ASCII pattern file directly to server (instead of executing line by line)"
   command_name: "pattern"
   actions:

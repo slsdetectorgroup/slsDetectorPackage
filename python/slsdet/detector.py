@@ -2580,8 +2580,6 @@ class Detector(CppDetectorApi):
     def compdisabletime(self):
         """[Jungfrau] Time before end of exposure when comparator is disabled. 
 
-        Note
-        -----
         :getter: always returns in seconds. To get in DurationWrapper, use getComparatorDisableTime
 
         Example

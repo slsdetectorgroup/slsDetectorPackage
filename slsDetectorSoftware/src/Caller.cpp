@@ -15119,7 +15119,7 @@ std::string Caller::txdelay(int action) {
 	[Eiger][Jungfrau][Moench][Mythen3] Set transmission delay for all modules in the detector using the step size provided.Sets up 
 	[Eiger] txdelay_left to (2 * mod_index * n_delay), 
 	[Eiger] txdelay_right to ((2 * mod_index + 1) * n_delay) and 
-	[Eiger] txdelay_frame to (2 *num_modules * n_delay)
+	[Eiger] txdelay_frame to (2 * num_modules * n_delay)
 	[Jungfrau][Moench][Mythen3] txdelay_frame to (num_modules * n_delay) for every module. )V0G0N"
            << std::endl;
         return os.str();

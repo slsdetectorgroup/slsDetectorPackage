@@ -38,13 +38,13 @@ Arguments
 
 
 .. _Automatic start servers:
+
 Automatic start 
 ------------------
 
 One can start the on-board detector server automatically upon powering on the board.
 
-#. Create a soft link to the binary on board 
-   :
+#. Create a soft link to the binary on board:
       .. code-block:: bash
       
          ln -sf someDetectorServervx.x.x someDetectorServer
@@ -86,8 +86,7 @@ One can start the on-board detector server automatically upon powering on the bo
          /root/xxxDetectorServer >> /dev/null &
 
 
-#. Sync, reboot and verify
-   :
+#. Sync, reboot and verify:
       .. code-block:: bash
       
          sync

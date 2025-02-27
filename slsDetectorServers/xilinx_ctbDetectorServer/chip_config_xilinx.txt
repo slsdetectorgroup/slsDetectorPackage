@@ -17,7 +17,7 @@ reg 0x658 0x0
 reg 0x658 0x61e0
 
 # Enable MH02 PLL clock
-patternX enable_clock_pattern.pyat
+pattern enable_clock_pattern.pyat
 # start the flow
 setbit 0x108 0
 clearbit 0x108 0

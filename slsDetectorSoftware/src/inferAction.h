@@ -488,7 +488,7 @@ class InferAction {
         {"patnloop1", &InferAction::patnloop1},
         {"patnloop2", &InferAction::patnloop2},
         {"patsetbit", &InferAction::patsetbit},
-        {"patternX", &InferAction::pattern},
+        {"pattern", &InferAction::pattern},
         {"patternstart", &InferAction::patternstart},
         {"patwait", &InferAction::patwait},
         {"patwait0", &InferAction::patwait0},

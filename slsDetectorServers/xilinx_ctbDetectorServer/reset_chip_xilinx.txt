@@ -36,5 +36,5 @@ reg 0x5D8 0x0
 setbit 0x500 18
 
 # load default pattern
-patternX readout_pattern.pyat
+pattern readout_pattern.pyat
 

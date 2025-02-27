@@ -99,6 +99,12 @@ void Detector::loadParameters(const std::vector<std::string> &parameters) {
     CmdParser parser;
     for (const auto &current_line : parameters) {
         parser.Parse(current_line);
+        if (parser.multi_id() != 0) {
+            throw RuntimeError(
+                "Multi-detector indices [" + std::to_string(parser.multi_id()) +
+                "] are not allowed in the file. Instead, use the index for "
+                "'config' or 'parameters' command?");
+        }
         caller.call(parser.command(), parser.arguments(), parser.detector_id(),
                     defs::PUT_ACTION, std::cout, parser.receiver_id());
     }

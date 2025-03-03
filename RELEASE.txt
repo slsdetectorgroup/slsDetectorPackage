@@ -28,6 +28,25 @@ This document describes the differences between v9.1.0 and v9.0.0
 =====================================
 
 
+
+1.1 New or Changed Features
+============================
+
+
+
+1.2 Resolved Features 
+======================
+
+
+    Client
+    -------
+
+
+    *   Command line - Multi detector index inside file
+        Multi detector index '[index]-' was ignored silently in the config/parameter
+        file since 5.0.0. Now, it will throw an exception. Please use the multi
+        detector index on the 'config' or 'parameter' command instead.
+
  
 
 
@@ -35,12 +54,12 @@ This document describes the differences between v9.1.0 and v9.0.0
 ==========================================
 
 
-    Eiger       9.1.0
+    Eiger       9.0.0
     Jungfrau    9.1.0
-    Mythen3     9.1.0
-    Gotthard2   9.1.0
-    Gotthard    9.1.0
-    Moench      9.1.0
+    Mythen3     9.0.0
+    Gotthard2   9.0.0
+    Gotthard    9.0.0
+    Moench      9.0.0
   
 
     On-board Detector Server Upgrade

@@ -1,7 +1,7 @@
-SLS Detector Package Major Release x.x.x released on xx.xx.202x
+SLS Detector Package Minor Release 9.1.0 released on 15.03.2025
 ===============================================================
 
-This document describes the differences between vx.x.x and vx.0.2   
+This document describes the differences between v9.1.0 and v9.0.0   
 
 
 
@@ -35,12 +35,12 @@ This document describes the differences between vx.x.x and vx.0.2
 ==========================================
 
 
-    Eiger       9.0.0
-    Jungfrau    9.0.0
-    Mythen3     9.0.0
-    Gotthard2   9.0.0
-    Gotthard    9.0.0
-    Moench      9.0.0
+    Eiger       9.1.0
+    Jungfrau    9.1.0
+    Mythen3     9.1.0
+    Gotthard2   9.1.0
+    Gotthard    9.1.0
+    Moench      9.1.0
   
 
     On-board Detector Server Upgrade
@@ -66,14 +66,14 @@ This document describes the differences between vx.x.x and vx.0.2
 
     Eiger       02.10.2023 (v32)                    (updated in 7.0.3)
     
-    Jungfrau    20.09.2023 (v1.5, HW v1.0)          (updated in 8.0.0)
-                21.09.2023 (v2.5, HW v2.0)          (updated in 8.0.0)
+    Jungfrau    xx.03.2025 (v1.6, HW v1.0)          (updated in 9.1.0)
+                xx.03.2025 (v2.6, HW v2.0)          (updated in 9.1.0)
 
-    Mythen3     11.10.2024 (v1.5)                   (updated in 9.0.0)
+    Mythen3     13.11.2024 (v2.0)                   (updated in 9.0.0)
 
     Gotthard2   03.10.2024 (v1.0)                   (updated in 9.0.0)
 
-    Moench      26.10.2023 (v2.0)                   (updated in 9.0.0)
+    Moench      26.10.2023 (v2.0)                   (updated in 8.0.2)
 
     Gotthard    08.02.2018 (50um and 25um Master)
                 09.02.2018 (25 um Slave) 

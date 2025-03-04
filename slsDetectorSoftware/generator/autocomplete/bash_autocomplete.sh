@@ -1593,7 +1593,7 @@ fi
 fi
 return 0
 }
-__patternX() {
+__pattern() {
 FCN_RETURN=""
 if [[ ${IS_GET} -eq 1 ]]; then
 if [[ "${cword}" == "2" ]]; then

@@ -6472,7 +6472,7 @@ patsetbit:
     \ pattern to the selected bits."
   infer_action: true
   template: true
-patternX:
+pattern:
   actions:
     PUT:
       args:

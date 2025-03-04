@@ -751,12 +751,12 @@ int readConfigFile(char *mess, char *fileName, char *fileType) {
             LOG(logINFOBLUE, ("Polled bit %d in 0x%x\n", bit, addr));
         }
 
-        // patternX command
-        else if (!strncmp(line, "patternX", strlen("patternX"))) {
-            // take a file name and call loadPAtterFile
+        // pattern command
+        else if (!strncmp(line, "pattern", strlen("pattern"))) {
+            // take a file name and call loadPatterFile
             char patternFileName[LZ];
             if (sscanf(line, "%s %s", command, patternFileName) != 2) {
-                sprintf(mess, "Could not scan patternX command. Line:[%s].\n",
+                sprintf(mess, "Could not scan pattern command. Line:[%s].\n",
                         line);
                 LOG(logERROR, (mess));
                 return FAIL;

@@ -7307,24 +7307,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // roi
-    {
-        ROI roi = {-1, -1, -1, -1};
-        n += sendData(file_des, &roi.xmin, sizeof(int), INT32);
-        if (n < 0)
-            return printSocketReadError();
-        n += sendData(file_des, &roi.xmax, sizeof(int), INT32);
-        if (n < 0)
-            return printSocketReadError();
-        n += sendData(file_des, &roi.ymin, sizeof(int), INT32);
-        if (n < 0)
-            return printSocketReadError();
-        n += sendData(file_des, &roi.ymax, sizeof(int), INT32);
-        if (n < 0)
-            return printSocketReadError();
-    }
-
-    // counter mask
+        // counter mask
 #ifdef MYTHEN3D
     u32 = getCounterMask();
 #else

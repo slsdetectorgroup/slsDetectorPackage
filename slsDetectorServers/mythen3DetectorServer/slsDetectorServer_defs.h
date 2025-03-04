@@ -50,7 +50,7 @@
 #define DEFAULT_NUM_CYCLES               (1)
 #define DEFAULT_GATE_WIDTH               (100 * 1000 * 1000) // ns
 #define DEFAULT_GATE_DELAY               (0)
-#define DEFAULT_PERIOD                   (2 * 1000 * 1000) // ns
+#define DEFAULT_PERIOD                   (0) // ns
 #define DEFAULT_DELAY_AFTER_TRIGGER      (0)
 #define DEFAULT_HIGH_VOLTAGE             (0)
 #define DEFAULT_TIMING_MODE              (AUTO_TIMING)

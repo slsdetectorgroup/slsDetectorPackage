@@ -10,4 +10,4 @@
 #define APICTB       "developer 0x250131"
 #define APIMYTHEN3   "developer 0x250131"
 #define APIXILINXCTB "developer 0x250213"
-#define APIJUNGFRAU "developer 0x250224"
+#define APIJUNGFRAU  "developer 0x250224"

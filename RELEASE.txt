@@ -33,10 +33,60 @@ This document describes the differences between v9.1.0 and v9.0.0
 ============================
 
 
+    Receiver
+    --------
+
+
+    *   Frame Synchronizer
+        Added a new binary, similar to slsMultiReceiver, to thread receiver 
+        processes, use callbacks for data synchronization and stream out ZMQ
+        multipart messages (for each UDP port) together for each acquisition index
+        without reconstructing the image. Included start and end ZMQ messages 
+        as well for the start and end callback parameters.
+
+
+    Documentation
+    -------------
+
+
+    *   Command line - multi module and multi detector indices
+        Help on this topic has been added to the 'Command line' topic.
+
+
+    *   Row and column index (UDP header or callback)
+        Help on how this is determined from the hostname is added to the 'UDP
+        Header' and the 'Quick Start Guide' topics. Also added to the help in '
+        hostname' command line help. Please note that this can be overwritten by
+        corresponding row and column commands.
+
+
 
 1.2 Resolved Features 
 ======================
 
+
+    Firmware
+    ---------
+
+
+    *   [Jungfrau] Column select and filter resistor
+        Configuration fix for chip v1.1 for these parameters
+
+
+    Firmware & On-board Detector Server
+    ------------------------------------
+
+
+    *   [Jungfrau] Timing Info Decoder 
+        Only allowed for hardware v2.0 now.
+
+
+    *   [Jungfrau] Auto Comparator Disable - chip v1.0
+        Previously, this mode for chip v1.0 automatically disabled the on-chip
+        gain switching compatator after a fixed portion of the exposure time.
+        Now, one must set also the comparator disable time using 'compdisabletime'
+        just as in chip v1.1.
+        
 
     Client
     -------
@@ -47,7 +97,48 @@ This document describes the differences between v9.1.0 and v9.0.0
         file since 5.0.0. Now, it will throw an exception. Please use the multi
         detector index on the 'config' or 'parameter' command instead.
 
+
+    *   [Mythen3] patternX command autocompletes the argument to a path now.
+
+
+    Receiver
+    --------
+
+
+    *   Multiple Receiver objects in multiple threads
+        slsMultiReceiver uses child processes, but if user rewrote to use multiple
+        receiver objects in multiple threads instead, a callback mutex is now
+        implemented to handle the locking mechanism between threads for the callbacks. 
+
+
+    *   Removed potentially unsafe str().c_str() calls.
+
  
+    ZMQ
+    ---
+
+
+    *   [Moench] Reduced significant print out in zmq processing using energy
+        threshold.
+
+
+    *   [Moench] Zmq dummy packet restreaming command did nothing
+        Temporary solution was to move from 'stop' to 'rx_stop' as 'stop' did not
+        go further if module is idle.
+
+
+    *   [Moench] Too many Zmq dummy packets- unclear end in acquire
+        Give time to process dummy packet before restreaming it and wait more 
+        before restreaming to reduce amoutn of zmq dummy packets to process.
+
+
+    Simulators
+    -----------
+
+
+    *   [Jungfrau][Moench] Slightly faster transmistting time by removing sleeping
+        only if there is a transmission delay
+
 
 
 2  On-board Detector Server Compatibility

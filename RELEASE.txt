@@ -73,7 +73,7 @@ This document describes the differences between v9.1.0 and v9.0.0
         Configuration fix for chip v1.1 for these parameters
 
 
-    Firmware & On-board Detector Server
+    Firmware &/ On-board Detector Server
     ------------------------------------
 
 
@@ -86,6 +86,9 @@ This document describes the differences between v9.1.0 and v9.0.0
         gain switching compatator after a fixed portion of the exposure time.
         Now, one must set also the comparator disable time using 'compdisabletime'
         just as in chip v1.1.
+
+
+    *   [Mythen3] Default period on server start up is 0 now.
         
 
     Client

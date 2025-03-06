@@ -123,6 +123,9 @@ def visit(node):
     if node.kind == cindex.CursorKind.CLASS_DECL:
         if node.displayname == "Detector":
             for child in node.get_children():
+                # Skip assignment operators
+                if child.kind == cindex.CursorKind.CXX_METHOD and child.spelling == "operator=":
+                    continue
                 if (
                     child.kind == cindex.CursorKind.CXX_METHOD
                     and child.access_specifier == cindex.AccessSpecifier.PUBLIC

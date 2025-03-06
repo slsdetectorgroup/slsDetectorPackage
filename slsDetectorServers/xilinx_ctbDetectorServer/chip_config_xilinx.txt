@@ -1,0 +1,24 @@
+# Prepare MH02 configuration
+reg 0xB1B0 0x00000041
+reg 0xB1B4 0x01200004
+
+# configure Matterhorn SPI
+setbit 0xB1B8 0
+
+# wait till config is done
+pollbit 0xB1B8 3 0
+
+# reset transceiver
+reg 0xB820 0x0
+reg 0xB820 0x1
+reg 0xB820 0x0
+
+# set MSB LSB inversions and polarity for transceiver
+reg 0xB820 0x61e0
+
+# Enable MH02 PLL clock
+pattern enable_clock_pattern.pyat
+# start the flow
+setbit 0xB004 0
+clearbit 0xB004 0
+sleep 1

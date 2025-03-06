@@ -197,6 +197,8 @@ int isChipConfigured();
 int powerChip(int on, char *mess);
 int getPowerChip();
 int configureChip(char *mess);
+int readConfigFile(char *mess, char *fileName, char *fileType);
+int resetChip(char *mess);
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) ||       \
     defined(MYTHEN3D) || defined(GOTTHARD2D)
@@ -742,8 +744,7 @@ int softwareTrigger();
 #if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)
 int softwareTrigger(int block);
 #endif
-#if defined(EIGERD) || defined(MYTHEN3D) || defined(CHIPTESTBOARDD) ||         \
-    defined(XILINX_CHIPTESTBOARDD)
+#if defined(EIGERD) || defined(MYTHEN3D) || defined(CHIPTESTBOARDD)
 int startReadOut();
 #endif
 enum runStatus getRunStatus();

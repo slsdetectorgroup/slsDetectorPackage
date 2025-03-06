@@ -1,0 +1,40 @@
+
+# turn off clock
+setbit 0xB1B0 16 
+setbit 0xB1B8 0
+sleep 1
+
+# reset Matterhorn periphery
+setbit 0xB1B8 1
+sleep 1
+
+# turn on clock
+clearbit 0xB1B0 16
+setbit 0xB1B8 0
+sleep 1
+
+# reset rx transceiver datapath
+setbit 0xB820 4
+sleep 1
+
+# reset 8b10b counters
+setbit 0xB820 9
+setbit 0xB820 10
+setbit 0xB820 11
+setbit 0xB820 12
+sleep 1
+clearbit 0xB820 9
+clearbit 0xB820 10
+
+# reset buffer fifos
+reg 0x9024 0xFFFFFFFF
+reg 0x9028 0xFFFFFFFF
+reg 0x902C 0xFFFFFFFF
+reg 0x9024 0x0
+reg 0x9028 0x0
+reg 0x902C 0x0
+setbit 0xA000 18
+
+# load default pattern
+pattern readout_pattern.pyat
+

@@ -78,6 +78,12 @@ if (SLS_USE_HDF5)
        list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcessStrxQuadH5)
        target_include_directories(jungfrauRawDataProcessStrxQuadH5 PRIVATE ${HDF5_INCLUDE_DIRS}  ${CMAKE_INSTALL_PREFIX}/include)
        target_link_libraries(jungfrauRawDataProcessStrxQuadH5 PRIVATE ${HDF5_LIBRARIES})
+
+       add_executable(jungfrauRawDataProcessStrxQuadH5SC jungfrauRawDataProcess_filetxtH5_SC.cpp)
+       #target_compile_definitions(jungfrauRawDataProcessStrxQuadH5 PRIVATE JFSTRXQH5)
+       list(APPEND JUNGFRAU_EXECUTABLES jungfrauRawDataProcessStrxQuadH5SC)
+       target_include_directories(jungfrauRawDataProcessStrxQuadH5SC PRIVATE ${HDF5_INCLUDE_DIRS}  ${CMAKE_INSTALL_PREFIX}/include)
+       target_link_libraries(jungfrauRawDataProcessStrxQuadH5SC PRIVATE ${HDF5_LIBRARIES})
     endif ()
 endif (SLS_USE_HDF5)
 
@@ -126,7 +132,13 @@ if (SLS_USE_HDF5)
 								    ${HDF5_INCLUDE_DIRS}
 								    ${CMAKE_INSTALL_PREFIX}/include
 								    )
-	target_link_libraries(jungfrauRawDataProcessStrxQuadH5 PRIVATE ${HDF5_LIBRARIES})
+	    target_link_libraries(jungfrauRawDataProcessStrxQuadH5 PRIVATE ${HDF5_LIBRARIES})
+
+        target_include_directories(jungfrauRawDataProcessStrxQuadH5SC PRIVATE 
+								    ${HDF5_INCLUDE_DIRS}
+								    ${CMAKE_INSTALL_PREFIX}/include
+								    )
+	    target_link_libraries(jungfrauRawDataProcessStrxQuadH5SC PRIVATE ${HDF5_LIBRARIES})
 
    endif ()
 endif (SLS_USE_HDF5)

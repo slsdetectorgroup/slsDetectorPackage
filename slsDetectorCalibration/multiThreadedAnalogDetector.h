@@ -524,7 +524,7 @@ class multiThreadedAnalogDetector {
 
         // Lambda for pixel conversion
         auto convert_pixel = [t](int pixel) -> float {
-            return (t > 0) ? static_cast<float>(std::max(0, pixel)) / t : pixel;
+            return (t > 0) ? static_cast<float>(std::max(0, pixel)) / static_cast<float>(t) : pixel;
         }; // t ... threshold
 
         // Loop over each storage cell

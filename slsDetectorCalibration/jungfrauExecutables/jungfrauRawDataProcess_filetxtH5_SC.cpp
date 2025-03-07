@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
     int const nsigma = 5;
     int const nped = 10000;
 
-    int cf = 0;
+    //int cf = 0;
 
     std::string const txtfilename(argv[1]);
     std::string const outdir(argv[2]);
@@ -192,7 +192,7 @@ int main(int argc, char *argv[]) {
     if (pedfilename.length()!=0)
         std::cout << "Pedestal file is " << pedfilename << std::endl;
 
-    uint32_t nnx, nny;
+    //uint32_t nnx, nny;
 
     singlePhotonDetector* filter =
       new singlePhotonDetector(decoder, 3, nsigma, 1, NULL, nped, 200, -1, -1, NULL, NULL);
@@ -237,7 +237,7 @@ int main(int argc, char *argv[]) {
     mt->StartThreads();
     mt->popFree(buff); // Get the first pointer to write image to
 
-    int ifr = 0; //frame counter of while loop
+    size_t ifr = 0; //frame counter of while loop
     int framenumber = 0; //framenumber as read from file (detector)
     std::vector<hsize_t> h5offset; //hyperslab offset internal to HDF5File::ReadImage
     hsize_t h5rank;
@@ -323,7 +323,7 @@ int main(int argc, char *argv[]) {
     }
     
     ifr = 0;
-    int ioutfile = 0;
+    //int ioutfile = 0;
 
     mt->setFrameMode(eFrame);
 
@@ -349,7 +349,7 @@ int main(int argc, char *argv[]) {
             }
 	      
             //Open output files and set file pointers according to storage cells
-            for ( int f = 0; f < of.size(); ++f ) {
+            for ( size_t f = 0; f < of.size(); ++f ) {
                 if (!of[f]) {
                     of[f] = fopen(cfnames[f].c_str(), "w");
                     if (of[f])
@@ -426,7 +426,7 @@ int main(int argc, char *argv[]) {
 	        mt->clearImage();
 
             // Close output files
-            for ( int f = 0; f < of.size(); ++f ) {
+            for ( size_t f = 0; f < of.size(); ++f ) {
 	            if (of[f]) {
 	                fclose(of[f]);
 	                mt->setFilePointer(nullptr,f);

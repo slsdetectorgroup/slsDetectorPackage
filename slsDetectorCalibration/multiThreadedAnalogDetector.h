@@ -817,7 +817,7 @@ class multiThreadedAnalogDetector {
             WriteToTiff(gm.data(), imgname.c_str(), nx, ny);
 
             // Clean up memory
-            delete[] rms;
+            //delete[] rms; //This would cause double-free since the pointer is already handled by sc_pedestals_rms[sc]
             if(sc_pedestals_rms[sc]) {
                 delete[] sc_pedestals_rms[sc]; 
                 sc_pedestals_rms[sc] = nullptr;

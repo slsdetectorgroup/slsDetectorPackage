@@ -54,12 +54,18 @@ std::string getRootString( std::string const& filepath ) {
 //   fext:    file extension (e.g. "raw")
 std::string createFileName( std::string const& dir, std::string const& fprefix="run",
 			    std::string const& fsuffix="", std::string const& fext="raw", int const outfilecounter=-1 ) {
+  std::string return_string;
   if (outfilecounter >= 0)
-    return fmt::format("{:s}/{:s}_{:s}_f{:05d}.{:s}", dir, fprefix, fsuffix, outfilecounter, fext);
+    return_string = fmt::format("{:s}/{:s}_{:s}_f{:05d}", dir, fprefix, fsuffix, outfilecounter);
   else if (fsuffix.length()!=0)
-    return fmt::format("{:s}/{:s}_{:s}.{:s}", dir, fprefix, fsuffix, fext);
+    return_string = fmt::format("{:s}/{:s}_{:s}", dir, fprefix, fsuffix);
   else
-    return fmt::format("{:s}/{:s}.{:s}", dir, fprefix, fext);
+    return_string = fmt::format("{:s}/{:s}", dir, fprefix);
+
+  if (fext.length()!=0)
+    return_string += "." + fext;
+
+  return return_string;
 }
 
 

@@ -69,8 +69,6 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
         << "roMode:" << r.roMode << std::endl
         << "adcMask:" << r.adcMask << std::endl
         << "adc10gMask:" << r.adc10gMask << std::endl
-        << "roi.xmin:" << r.roi.xmin << std::endl
-        << "roi.xmax:" << r.roi.xmax << std::endl
         << "countermask:" << r.countermask << std::endl
         << "burstType:" << r.burstType << std::endl
         << "exptime1:" << ToString(std::chrono::nanoseconds(r.expTime1Ns))
@@ -429,20 +427,12 @@ std::string ToString(const defs::dacIndex s) {
         return std::string("vthreshold");
     case defs::VREF_DS:
         return std::string("vref_ds");
-    case defs::VCASCN_PB:
-        return std::string("vcascn_pb");
-    case defs::VCASCP_PB:
-        return std::string("vcascp_pb");
     case defs::VOUT_CM:
         return std::string("vout_cm");
-    case defs::VCASC_OUT:
-        return std::string("vcasc_out");
     case defs::VIN_CM:
         return std::string("vin_cm");
     case defs::VREF_COMP:
         return std::string("vref_comp");
-    case defs::IB_TESTC:
-        return std::string("ib_test_c");
     case defs::VB_COMP:
         return std::string("vb_comp");
     case defs::VDD_PROT:
@@ -918,20 +908,12 @@ template <> defs::dacIndex StringTo(const std::string &s) {
         return defs::VTHRESHOLD;
     if (s == "vref_ds")
         return defs::VREF_DS;
-    if (s == "vcascn_pb")
-        return defs::VCASCN_PB;
-    if (s == "vcascp_pb")
-        return defs::VCASCP_PB;
     if (s == "vout_cm")
         return defs::VOUT_CM;
-    if (s == "vcasc_out")
-        return defs::VCASC_OUT;
     if (s == "vin_cm")
         return defs::VIN_CM;
     if (s == "vref_comp")
         return defs::VREF_COMP;
-    if (s == "ib_test_c")
-        return defs::IB_TESTC;
     if (s == "vb_comp")
         return defs::VB_COMP;
     if (s == "vdd_prot")

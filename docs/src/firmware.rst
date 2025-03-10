@@ -131,42 +131,6 @@ Program from console
 
 
 
-Gotthard I
------------
-
-Download 
-^^^^^^^^^^^^^
-- detector server corresponding to package in slsDetectorPackage/serverBin
-
-- `pof files <https://github.com/slsdetectorgroup/slsDetectorFirmware>`__
-
-
-.. _firmware upgrade using blaster for blackfin:
-
-Upgrade
-^^^^^^^^
-.. warning ::
-    | Gotthard firmware cannot be upgraded remotely and requires the use of USB-Blaster.
-    | It is generally updated by us.
-
-#. Download `Altera Quartus software or Quartus programmer <https://fpgasoftware.intel.com/20.1/?edition=standard&platform=linux&product=qprogrammer#tabs-4>`__.
-   
-
-#. Start Quartus programmer, click on Hardware Setup. In the "Currently selected hardware" window, select USB-Blaster.
-
-#. In the Mode combo box, select "Active Serial Programming".
-
-#. Plug the end of your USB-Blaster with the adaptor provided to the connector 'AS config' on the Gotthard board.
-
-#. Click on 'Add file'. Select programming (pof) file provided by us.
-
-#. Check "Program/Configure" and "Verify". Push the start button. Wait until the programming process is finished.
-
-#. In case of error messages, check the polarity of cable (that pin1 corresponds) and that the correct programming connector is selected.
-
-#. Reboot the detector.
-
-
 Mythen III
 -----------
 
@@ -396,7 +360,3 @@ How to get back mtd3 drive remotely (udpating kernel)
             more /proc/mtd # verify mtd3 is listed
             
 
-Last Resort using USB Blaster
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If none of these steps work, the last resort might be physically upgrading the firmware using a USB blaster, which also requires opening up the detector. Instructions for all the blackfin detectors are the same as the one for :ref:`gotthard firmware upgrade <firmware upgrade using blaster for blackfin>`.

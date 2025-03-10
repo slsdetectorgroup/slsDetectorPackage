@@ -530,15 +530,6 @@ TEST_CASE("dac", "[.cmdcall][.dacs]") {
         REQUIRE_THROWS(caller.call("dac", {"vb_ds"}, -1, GET));
         REQUIRE_THROWS(caller.call("dac", {"vref_ds"}, -1, GET));
         REQUIRE_THROWS(caller.call("dac", {"vref_comp"}, -1, GET));
-        // gotthard
-        REQUIRE_THROWS(caller.call("dac", {"vref_ds"}, -1, GET));
-        REQUIRE_THROWS(caller.call("dac", {"vcascn_pb"}, -1, GET));
-        REQUIRE_THROWS(caller.call("dac", {"vcascp_pb"}, -1, GET));
-        REQUIRE_THROWS(caller.call("dac", {"vout_cm"}, -1, GET));
-        REQUIRE_THROWS(caller.call("dac", {"vcasc_out"}, -1, GET));
-        REQUIRE_THROWS(caller.call("dac", {"vin_cm"}, -1, GET));
-        REQUIRE_THROWS(caller.call("dac", {"vref_comp"}, -1, GET));
-        REQUIRE_THROWS(caller.call("dac", {"ib_test_c"}, -1, GET));
         // mythen3
         REQUIRE_THROWS(caller.call("dac", {"vrpreamp"}, -1, GET));
         REQUIRE_THROWS(caller.call("dac", {"vrshaper"}, -1, GET));

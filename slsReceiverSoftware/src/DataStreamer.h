@@ -88,7 +88,6 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     const GeneralData *generalData{nullptr};
     Fifo *fifo{nullptr};
     ZmqSocket *zmqSocket{nullptr};
-    int adcConfigured{-1};
     uint64_t fileIndex{0};
     bool flipRows{false};
     std::map<std::string, std::string> additionalJsonHeader;
@@ -107,8 +106,6 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     bool startedFlag{false};
     uint64_t firstIndex{0};
     std::string fileNametoStream;
-    /** Complete buffer used for detectorRoi, eg. shortGotthard */
-    char *completeBuffer{nullptr};
 
     xy numPorts{1, 1};
     bool quadEnable{false};

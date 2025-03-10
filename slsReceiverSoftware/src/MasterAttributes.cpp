@@ -10,9 +10,6 @@ void MasterAttributes::GetBinaryAttributes(
     w->StartObject();
     GetCommonBinaryAttributes(w);
     switch (detType) {
-    case slsDetectorDefs::GOTTHARD:
-        GetGotthardBinaryAttributes(w);
-        break;
     case slsDetectorDefs::JUNGFRAU:
         GetJungfrauBinaryAttributes(w);
         break;
@@ -45,9 +42,6 @@ void MasterAttributes::GetBinaryAttributes(
 void MasterAttributes::WriteHDF5Attributes(H5::H5File *fd, H5::Group *group) {
     WriteCommonHDF5Attributes(fd, group);
     switch (detType) {
-    case slsDetectorDefs::GOTTHARD:
-        WriteGotthardHDF5Attributes(fd, group);
-        break;
     case slsDetectorDefs::JUNGFRAU:
         WriteJungfrauHDF5Attributes(fd, group);
         break;
@@ -385,23 +379,6 @@ void MasterAttributes::WriteHDF5TenGiga(H5::H5File *fd, H5::Group *group) {
     dataset.write(&tenGiga, H5::PredType::NATIVE_INT);
 }
 
-void MasterAttributes::WriteHDF5ROI(H5::H5File *fd, H5::Group *group) {
-    // Roi xmin
-    {
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::DataSet dataset = group->createDataSet(
-            "roi xmin", H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&detectorRoi.xmin, H5::PredType::NATIVE_INT);
-    }
-    // Roi xmax
-    {
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::DataSet dataset = group->createDataSet(
-            "roi xmax", H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&detectorRoi.xmax, H5::PredType::NATIVE_INT);
-    }
-}
-
 void MasterAttributes::WriteHDF5NumUDPInterfaces(H5::H5File *fd,
                                                  H5::Group *group) {
     H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
@@ -603,30 +580,6 @@ void MasterAttributes::WriteHDF5TransceiverSamples(H5::H5File *fd,
     H5::DataSet dataset = group->createDataSet(
         "Transceiver Samples", H5::PredType::NATIVE_INT, dataspace);
     dataset.write(&transceiverSamples, H5::PredType::NATIVE_INT);
-}
-#endif
-
-void MasterAttributes::GetGotthardBinaryAttributes(
-    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
-    w->Key("Exptime");
-    w->String(ToString(exptime).c_str());
-    w->Key("Period");
-    w->String(ToString(period).c_str());
-    w->Key("Detector Roi");
-    w->StartObject();
-    w->Key("xmin");
-    w->Uint(detectorRoi.xmin);
-    w->Key("xmax");
-    w->Uint(detectorRoi.xmax);
-    w->EndObject();
-};
-
-#ifdef HDF5C
-void MasterAttributes::WriteGotthardHDF5Attributes(H5::H5File *fd,
-                                                   H5::Group *group) {
-    MasterAttributes::WriteHDF5Exptime(fd, group);
-    MasterAttributes::WriteHDF5Period(fd, group);
-    MasterAttributes::WriteHDF5ROI(fd, group);
 }
 #endif
 

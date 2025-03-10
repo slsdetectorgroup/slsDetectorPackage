@@ -230,9 +230,9 @@ void DetectorImpl::addModule(const std::string &name) {
     // get type by connecting
     detectorType type = Module::getTypeFromDetector(hostname, port);
 
-    // gotthard cannot have more than 2 modules (50um=1, 25um=2
-    if ((type == GOTTHARD || type == GOTTHARD2) && modules.size() > 2) {
-        throw RuntimeError("Gotthard cannot have more than 2 modules. Please "
+    // gotthard2 cannot have more than 2 modules (50um=1, 25um=2
+    if (type == GOTTHARD2 && modules.size() > 2) {
+        throw RuntimeError("GotthardII cannot have more than 2 modules. Please "
                            "free the shared memory and start again.");
     }
 
@@ -1187,11 +1187,6 @@ int DetectorImpl::acquire() {
         if (acquisition_finished != nullptr) {
             // status
             auto statusList = Parallel(&Module::getRunStatus, {});
-            // if any slave still waiting, wait up to 1s (gotthard)
-            for (int i = 0; i != 20 && statusList.any(WAITING); ++i) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(50));
-                statusList = Parallel(&Module::getRunStatus, {});
-            }
             runStatus status = statusList.squash(ERROR);
             // inconsistent status (squash error), but none of them in error
             if (status == ERROR && (!statusList.any(ERROR))) {
@@ -1235,7 +1230,6 @@ bool DetectorImpl::handleSynchronization(Positions pos) {
         switch (shm()->detType) {
         case defs::MYTHEN3:
         case defs::GOTTHARD2:
-        case defs::GOTTHARD:
             handleSync = true;
             break;
         case defs::JUNGFRAU:
@@ -1290,11 +1284,6 @@ void DetectorImpl::startAcquisition(const bool blocking, Positions pos) {
             // ensure all status normal (slaves not blocking)
             // to catch those slaves that are still 'waiting'
             auto statusList = Parallel(&Module::getRunStatus, pos);
-            // if any slave still waiting, wait up to 1s (gotthard)
-            for (int i = 0; i != 20 && statusList.any(WAITING); ++i) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(50));
-                statusList = Parallel(&Module::getRunStatus, pos);
-            }
             if (!statusList.contains_only(IDLE, STOPPED, RUN_FINISHED)) {
                 throw RuntimeError("Acquisition not successful. "
                                    "Unexpected detector status");
@@ -1442,7 +1431,6 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         }
         break;
     case EIGER:
-    case GOTTHARD:
         throw RuntimeError("programfpga not implemented for this detector");
     default:
         throw RuntimeError(

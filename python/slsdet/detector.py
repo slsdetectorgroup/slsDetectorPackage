@@ -274,7 +274,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def serialnumber(self):
-        """Jungfrau][Gotthard][Mythen3][Gotthard2][CTB][Moench] Serial number of detector """
+        """Jungfrau][Mythen3][Gotthard2][CTB][Moench] Serial number of detector """
         return ut.lhex(self.getSerialNumber())
 
     @property
@@ -312,7 +312,7 @@ class Detector(CppDetectorApi):
         -----
         [Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets clkdivider to 2 (quarter speed), else to 0 (full speed)\n
         [Mythen3] Options: 8, 16, 32 \n
-        [Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2][Xilinx Ctb] 16
+        [Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx Ctb] 16
         """
         return self.getDynamicRange()
 
@@ -372,7 +372,6 @@ class Detector(CppDetectorApi):
         
         [Eiger] Use threshold command to load settings
         [Jungfrau] GAIN0, HIGHGAIN0 \n
-        [Gotthard] DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n
         [Gotthard2] DYNAMICGAIN, FIXGAIN1, FIXGAIN2 \n
         [Eiger] settings loaded from file found in settingspath
         [Moench] G1_HIGHGAIN, G1_LOWGAIN, G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN, G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN
@@ -404,7 +403,7 @@ class Detector(CppDetectorApi):
     @element
     def framesl(self):
         """
-        [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx CTB] Number of frames left in acquisition.\n
+        [Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx CTB] Number of frames left in acquisition.\n
 
         Note
         ----
@@ -635,7 +634,7 @@ class Detector(CppDetectorApi):
     @element
     def periodl(self):
         """
-        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Period left for current frame.
+        [Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Period left for current frame.
 
         Note
         -----
@@ -657,7 +656,7 @@ class Detector(CppDetectorApi):
     @element
     def delay(self):
         """
-        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Delay after trigger, accepts either a value in seconds, DurationWrapper or datetime.timedelta
+        [Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Delay after trigger, accepts either a value in seconds, DurationWrapper or datetime.timedelta
 
         :getter: always returns in seconds. To get in DurationWrapper, use getDelayAfterTrigger
 
@@ -699,7 +698,7 @@ class Detector(CppDetectorApi):
     @element
     def delayl(self):
         """
-        [Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Delay left after trigger during acquisition, accepts either a value in seconds, datetime.timedelta or DurationWrapper
+        [Jungfrau][Moench][CTB][Mythen3][Gotthard2][Xilinx Ctb] Delay left after trigger during acquisition, accepts either a value in seconds, datetime.timedelta or DurationWrapper
 
         Note
         -----
@@ -1444,8 +1443,6 @@ class Detector(CppDetectorApi):
     @udp_srcip.setter
     def udp_srcip(self, ip):
         if ip == "auto":
-            if self.type == detectorType.GOTTHARD:
-                raise NotImplementedError('Auto for udp_srcip cannot be used for GotthardI')
             ip = socket.gethostbyname(self.hostname[0])        
         ip = ut.make_ip(ip)
         ut.set_using_dict(self.setSourceUDPIP, ip)
@@ -1526,7 +1523,6 @@ class Detector(CppDetectorApi):
 
         Note
         -----
-        [Gotthard] 0, 90, 110, 120, 150, 180, 200 \n
         [Eiger][Mythen3][Gotthard2] 0 - 200 \n
         [Jungfrau][Moench][Ctb] 0, 60 - 200
         """
@@ -1654,7 +1650,7 @@ class Detector(CppDetectorApi):
     def master(self):
         """
         [Eiger][Gotthard2][Jungfrau][Moench] Sets (half) module to master and other(s) to slaves.\n
-        [Gotthard][Gotthard2][Mythen3][Eiger][Jungfrau][Moench] Gets if the current (half) module is master.
+        [Gotthard2][Mythen3][Eiger][Jungfrau][Moench] Gets if the current (half) module is master.
         """
         return self.getMaster()
 
@@ -1912,7 +1908,7 @@ class Detector(CppDetectorApi):
 
     @property
     def adcreg(self):
-        """[Jungfrau][Moench][Ctb][Gotthard] Writes to an adc register 
+        """[Jungfrau][Moench][Ctb] Writes to an adc register 
 
         Note
         -----
@@ -1941,7 +1937,7 @@ class Detector(CppDetectorApi):
     @element
     def triggersl(self):
         """
-        [Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx CTB] Number of triggers left in acquisition.\n
+        [Jungfrau][Moench][Mythen3][Gotthard2][CTB][Xilinx CTB] Number of triggers left in acquisition.\n
         
         Note
         ----
@@ -2206,7 +2202,7 @@ class Detector(CppDetectorApi):
         Note
         -----
         Default: AUTO_TIMING \n
-        [Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx Ctb] AUTO_TIMING, TRIGGER_EXPOSURE \n
+        [Jungfrau][Moench][Ctb][Gotthard2][Xilinx Ctb] AUTO_TIMING, TRIGGER_EXPOSURE \n
         [Mythen3] AUTO_TIMING, TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n
         [Eiger] AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
         """
@@ -2263,7 +2259,7 @@ class Detector(CppDetectorApi):
     def type(self):
         """ Returns detector type. 
         Enum: detectorType
-        [EIGER, JUNGFRAU, GOTTHARD, MOENCH, MYTHEN3, GOTTHARD2, CHIPTESTBOARD]
+        [EIGER, JUNGFRAU, MOENCH, MYTHEN3, GOTTHARD2, CHIPTESTBOARD]
 
         :setter: Not implemented
         """
@@ -3479,15 +3475,13 @@ class Detector(CppDetectorApi):
     @property
     @element
     def adcphase(self):
-        """[Gotthard][Jungfrau][Moench][CTB] Sets phase shift of ADC clock. 
+        """[Jungfrau][Moench][CTB] Sets phase shift of ADC clock. 
 
         Note
         -----
         [Jungfrau][Moench] Absolute phase shift. Changing Speed also resets adcphase to recommended defaults.\n
-        [Ctb] Absolute phase shift. Changing adcclk also resets adcphase and sets it to previous values.\n
-        [Gotthard] Relative phase shift.
+        [Ctb] Absolute phase shift. Changing adcclk also resets adcphase and sets it to previous values.
 
-        :getter: Not implemented for Gotthard
         """
         return self.getADCPhase()
 
@@ -4087,27 +4081,6 @@ class Detector(CppDetectorApi):
         """
         return ClkDivProxy(self)
 
-
-    """
-    ---------------------------<<<Gotthard specific>>>---------------------------
-    """
-
-    @property
-    def exptimel(self):
-        """[Gotthard] Exposure time left for current frame.
-        
-        :getter: always returns in seconds. To get in DurationWrapper, use getExptimeLeft
-        :setter: Not Implemented
-        
-        Example
-        -----------
-        >>> d.exptimel
-        181.23
-        >>> d.getExptimeLeft()
-        [sls::DurationWrapper(total_seconds: 181.23 count: 181230000000)]
-        """
-        t = self.getExptimeLeft()
-        return reduce_time(t)
 
 
     """

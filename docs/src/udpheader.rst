@@ -92,14 +92,14 @@ Detector Enum
     ================    ========
     GENERIC             0
     EIGER               1
-    GOTTHARD            2    
+    GOTTHARD*           2    
     JUNGFRAU            3    
     CHIPTESTBOARD       4        
     MOENCH              5
     MYTHEN3             6
     GOTTHARD2           7    
     ================    ========
-
+    * deprecated since v10.0.0
 
 
 Previous Versions

@@ -232,13 +232,6 @@ TEST_CASE("settings", "[.cmdcall]") {
         sett.push_back("g4_hg");
         sett.push_back("g4_lg");
         break;
-    case defs::GOTTHARD:
-        sett.push_back("highgain");
-        sett.push_back("dynamicgain");
-        sett.push_back("lowgain");
-        sett.push_back("mediumgain");
-        sett.push_back("veryhighgain");
-        break;
     case defs::GOTTHARD2:
         sett.push_back("dynamicgain");
         sett.push_back("fixgain1");
@@ -613,8 +606,8 @@ TEST_CASE("master", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2 ||
-        det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+        det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU ||
+        det_type == defs::MOENCH) {
         REQUIRE_NOTHROW(caller.call("master", {}, -1, GET));
         if (det_type == defs::EIGER || det_type == defs::GOTTHARD2 ||
             det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
@@ -902,9 +895,6 @@ TEST_CASE("delay", "[.cmdcall]") {
     if (det_type == defs::EIGER) {
         REQUIRE_THROWS(caller.call("delay", {"1"}, -1, PUT));
         REQUIRE_THROWS(caller.call("delay", {}, -1, GET));
-    } else if (det_type == defs::GOTTHARD) {
-        // extra delays for master (can throw when setting)
-        REQUIRE_NOTHROW(caller.call("delay", {}, -1, GET));
     } else {
         auto prev_val = det.getDelayAfterTrigger();
         {
@@ -1204,34 +1194,25 @@ TEST_CASE("adcphase", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::GOTTHARD || det_type == defs::JUNGFRAU ||
-        det_type == defs::MOENCH || det_type == defs::CHIPTESTBOARD) {
-        if (det_type == defs::GOTTHARD) {
-            std::ostringstream oss1;
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::CHIPTESTBOARD) {
+        auto prev_val = det.getADCPhase();
+        {
+            std::ostringstream oss1, oss2;
             caller.call("adcphase", {"20"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "adcphase 20\n");
-            // cant get, cant use deg
-            REQUIRE_THROWS(caller.call("adcphase", {}, -1, GET));
-            REQUIRE_THROWS(caller.call("adcphase", {"20", "deg"}, -1, PUT));
-        } else {
-            auto prev_val = det.getADCPhase();
-            {
-                std::ostringstream oss1, oss2;
-                caller.call("adcphase", {"20"}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "adcphase 20\n");
-                caller.call("adcphase", {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "adcphase 20\n");
-            }
-            {
-                std::ostringstream oss1, oss2;
-                caller.call("adcphase", {"20", "deg"}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "adcphase 20 deg\n");
-                caller.call("adcphase", {"deg"}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "adcphase 20 deg\n");
-            }
-            for (int i = 0; i != det.size(); ++i) {
-                det.setADCPhase(prev_val[i], {i});
-            }
+            caller.call("adcphase", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "adcphase 20\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            caller.call("adcphase", {"20", "deg"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "adcphase 20 deg\n");
+            caller.call("adcphase", {"deg"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "adcphase 20 deg\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setADCPhase(prev_val[i], {i});
         }
     } else {
         REQUIRE_THROWS(caller.call("adcphase", {"0"}, -1, PUT));
@@ -1426,27 +1407,9 @@ TEST_CASE("highvoltage", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type != defs::XILINX_CHIPTESTBOARD) {
         auto prev_val = det.getHighVoltage();
-        // selected values
-        if (det_type == defs::GOTTHARD) {
-            REQUIRE_THROWS(caller.call("highvoltage", {"50"}, -1, PUT));
-            {
-                std::ostringstream oss1, oss2;
-                caller.call("highvoltage", {"90"}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "highvoltage 90\n");
-                caller.call("highvoltage", {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "highvoltage 90\n");
-            }
-            {
-                std::ostringstream oss1, oss2;
-                caller.call("highvoltage", {"0"}, -1, PUT, oss1);
-                REQUIRE(oss1.str() == "highvoltage 0\n");
-                caller.call("highvoltage", {}, -1, GET, oss2);
-                REQUIRE(oss2.str() == "highvoltage 0\n");
-            }
-        }
         // range 0, 60 - 200
-        else if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-                 det_type == defs::CHIPTESTBOARD) {
+        if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+            det_type == defs::CHIPTESTBOARD) {
             REQUIRE_THROWS(caller.call("highvoltage", {"50"}, -1, PUT));
             {
                 std::ostringstream oss1, oss2;
@@ -1580,27 +1543,8 @@ TEST_CASE("imagetest", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     // cannot test only for virtual eiger/jungfrau
-    if (det_type == defs::GOTTHARD) {
-        auto prev_val = det.getImageTestMode();
-        {
-            std::ostringstream oss1, oss2;
-            caller.call("imagetest", {"1"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "imagetest 1\n");
-            caller.call("imagetest", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "imagetest 1\n");
-        }
-        {
-            std::ostringstream oss1, oss2;
-            caller.call("imagetest", {"0"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "imagetest 0\n");
-            caller.call("imagetest", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "imagetest 0\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setImageTestMode(prev_val[i], {i});
-        }
-    } else if (det_type != defs::JUNGFRAU && det_type != defs::MOENCH &&
-               det_type != defs::EIGER) {
+    if (det_type != defs::JUNGFRAU && det_type != defs::MOENCH &&
+        det_type != defs::EIGER) {
         // wont fail for eiger and jungfrau/moench virtual servers
         REQUIRE_THROWS(caller.call("imagetest", {}, -1, GET));
     }
@@ -1610,32 +1554,7 @@ TEST_CASE("extsig", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::GOTTHARD) {
-        auto prev_val = det.getExternalSignalFlags(0);
-        REQUIRE_THROWS(caller.call("extsig", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("extsig", {"1"}, -1, GET));
-        REQUIRE_THROWS(caller.call("extsig", {"0", "inversion_on"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("extsig", {"0", "inversion_off"}, -1, PUT));
-        {
-            std::ostringstream oss1, oss2;
-            caller.call("extsig", {"0", "trigger_in_rising_edge"}, -1, PUT,
-                        oss1);
-            REQUIRE(oss1.str() == "extsig 0 trigger_in_rising_edge\n");
-            caller.call("extsig", {"0"}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "extsig 0 trigger_in_rising_edge\n");
-        }
-        {
-            std::ostringstream oss1, oss2;
-            caller.call("extsig", {"0", "trigger_in_falling_edge"}, -1, PUT,
-                        oss1);
-            REQUIRE(oss1.str() == "extsig 0 trigger_in_falling_edge\n");
-            caller.call("extsig", {"0"}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "extsig 0 trigger_in_falling_edge\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setExternalSignalFlags(0, prev_val[i], {i});
-        }
-    } else if (det_type == defs::MYTHEN3) {
+    if (det_type == defs::MYTHEN3) {
         auto prev_val_0 = det.getExternalSignalFlags(0);
         auto prev_val_1 = det.getExternalSignalFlags(1);
         REQUIRE_THROWS(caller.call("extsig", {}, -1, GET));
@@ -2022,8 +1941,7 @@ TEST_CASE("temp_adc", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::GOTTHARD) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         REQUIRE_NOTHROW(caller.call("temp_adc", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(caller.call("temp_adc", {}, 0, GET, oss));
@@ -2518,7 +2436,7 @@ TEST_CASE("scan", "[.cmdcall]") {
         break;
     case defs::EIGER:
         ind = defs::VCMP_LL;
-        notImplementedInd = defs::VCASCP_PB;
+        notImplementedInd = defs::VIN_COM;
         break;
     case defs::JUNGFRAU:
         ind = defs::VB_COMP;
@@ -2526,10 +2444,6 @@ TEST_CASE("scan", "[.cmdcall]") {
         break;
     case defs::MOENCH:
         ind = defs::VIN_CM;
-        notImplementedInd = defs::VSVP;
-        break;
-    case defs::GOTTHARD:
-        ind = defs::VREF_DS;
         notImplementedInd = defs::VSVP;
         break;
     case defs::GOTTHARD2:
@@ -3284,8 +3198,7 @@ TEST_CASE("rebootcontroller", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
         det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD2 || det_type == defs::GOTTHARD ||
-        det_type == defs::XILINX_CHIPTESTBOARD) {
+        det_type == defs::GOTTHARD2 || det_type == defs::XILINX_CHIPTESTBOARD) {
         // TODO: reboot real server?
         // REQUIRE_NOTHROW(caller.call("rebootcontroller", {}, -1, PUT));
         REQUIRE_THROWS(caller.call("rebootcontroller", {}, -1, GET));
@@ -3357,7 +3270,7 @@ TEST_CASE("adcreg", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::CHIPTESTBOARD || det_type == defs::GOTTHARD) {
+        det_type == defs::CHIPTESTBOARD) {
         std::ostringstream oss;
         caller.call("adcreg", {"0x8", "0x3"}, -1, PUT, oss);
         REQUIRE(oss.str() == "adcreg [0x8, 0x3]\n");
@@ -3464,9 +3377,8 @@ TEST_CASE("firmwaretest", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::CHIPTESTBOARD || det_type == defs::GOTTHARD ||
-        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2 ||
-        det_type == defs::XILINX_CHIPTESTBOARD) {
+        det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD2 || det_type == defs::XILINX_CHIPTESTBOARD) {
         std::ostringstream oss;
         caller.call("firmwaretest", {}, -1, PUT, oss);
         REQUIRE(oss.str() == "firmwaretest successful\n");
@@ -3482,8 +3394,8 @@ TEST_CASE("bustest", "[.cmdcall]") {
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::CHIPTESTBOARD || det_type == defs::GOTTHARD ||
-        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
+        det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD2) {
         std::ostringstream oss;
         caller.call("bustest", {}, -1, PUT, oss);
         REQUIRE(oss.str() == "bustest successful\n");

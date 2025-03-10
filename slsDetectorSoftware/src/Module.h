@@ -420,16 +420,6 @@ class Module : public virtual slsDetectorDefs {
 
     /**************************************************
      *                                                *
-     *    Gotthard Specific                           *
-     *                                                *
-     * ************************************************/
-    slsDetectorDefs::ROI getROI() const;
-    void setROI(slsDetectorDefs::ROI arg);
-    void clearROI();
-    int64_t getExptimeLeft() const;
-
-    /**************************************************
-     *                                                *
      *    Gotthard2 Specific                          *
      *                                                *
      * ************************************************/

@@ -111,7 +111,6 @@ int main(int argc, char *argv[]) {
         {"help", no_argument, NULL, 'h'},
         {"version", no_argument, NULL, 'v'},
         {"port", required_argument, NULL, 'p'},
-        {"phaseshift", required_argument, NULL, 'f'},
         {"nomodule", no_argument, NULL, 'g'}, // generic
         {"devel", no_argument, NULL, 'd'},
         {"update", no_argument, NULL, 'u'},
@@ -127,7 +126,7 @@ int main(int argc, char *argv[]) {
     int c = 0;
 
     while (c != -1) {
-        c = getopt_long(argc, argv, "hvp:f:gduim:t:s", long_options,
+        c = getopt_long(argc, argv, "hvp:gduim:t:s", long_options,
                         &option_index);
 
         // Detect the end of the options

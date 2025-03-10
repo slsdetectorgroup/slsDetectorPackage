@@ -1293,20 +1293,6 @@ void init_det(py::module &m) {
         (void (Detector::*)(defs::collectionMode, sls::Positions)) &
             Detector::setCollectionMode,
         py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("getROI",
-                       (Result<defs::ROI>(Detector::*)(sls::Positions) const) &
-                           Detector::getROI,
-                       py::arg() = Positions{});
-    CppDetectorApi.def("setROI",
-                       (void (Detector::*)(defs::ROI, int)) & Detector::setROI,
-                       py::arg(), py::arg());
-    CppDetectorApi.def(
-        "clearROI", (void (Detector::*)(sls::Positions)) & Detector::clearROI,
-        py::arg() = Positions{});
-    CppDetectorApi.def("getExptimeLeft",
-                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
-                           Detector::getExptimeLeft,
-                       py::arg() = Positions{});
     CppDetectorApi.def("getNumberOfBursts",
                        (Result<int64_t>(Detector::*)(sls::Positions) const) &
                            Detector::getNumberOfBursts,

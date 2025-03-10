@@ -56,7 +56,6 @@ class MasterAttributes {
     uint32_t transceiverMask{0};
     uint32_t transceiver{0};
     uint32_t transceiverSamples{0};
-    slsDetectorDefs::ROI detectorRoi{};
     slsDetectorDefs::ROI receiverRoi{};
     uint32_t counterMask{0};
     std::array<ns, 3> exptimeArray{};
@@ -85,7 +84,6 @@ class MasterAttributes {
     void WriteHDF5Period(H5::H5File *fd, H5::Group *group);
     void WriteHDF5DynamicRange(H5::H5File *fd, H5::Group *group);
     void WriteHDF5TenGiga(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5ROI(H5::H5File *fd, H5::Group *group);
     void WriteHDF5NumUDPInterfaces(H5::H5File *fd, H5::Group *group);
     void WriteHDF5ReadNRows(H5::H5File *fd, H5::Group *group);
     void WriteHDF5ThresholdEnergy(H5::H5File *fd, H5::Group *group);
@@ -109,12 +107,6 @@ class MasterAttributes {
     void WriteHDF5TransceiverMask(H5::H5File *fd, H5::Group *group);
     void WriteHDF5TransceiverFlag(H5::H5File *fd, H5::Group *group);
     void WriteHDF5TransceiverSamples(H5::H5File *fd, H5::Group *group);
-#endif
-
-    void GetGotthardBinaryAttributes(
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
-#ifdef HDF5C
-    void WriteGotthardHDF5Attributes(H5::H5File *fd, H5::Group *group);
 #endif
 
     void GetJungfrauBinaryAttributes(

@@ -20,9 +20,7 @@
 #include <unistd.h>
 
 // defined in the detector specific Makefile
-#ifdef GOTTHARDD
-const enum detectorType myDetectorType = GOTTHARD;
-#elif EIGERD
+#ifdef EIGERD
 const enum detectorType myDetectorType = EIGER;
 #elif JUNGFRAUD
 const enum detectorType myDetectorType = JUNGFRAU;
@@ -281,7 +279,6 @@ void function_table() {
     flist[F_SET_STORAGE_CELL_DELAY] = &set_storage_cell_delay;
     flist[F_GET_FRAMES_LEFT] = &get_frames_left;
     flist[F_GET_TRIGGERS_LEFT] = &get_triggers_left;
-    flist[F_GET_EXPTIME_LEFT] = &get_exptime_left;
     flist[F_GET_PERIOD_LEFT] = &get_period_left;
     flist[F_GET_DELAY_AFTER_TRIGGER_LEFT] = &get_delay_after_trigger_left;
     flist[F_GET_MEASURED_PERIOD] = &get_measured_period;
@@ -290,8 +287,6 @@ void function_table() {
     flist[F_GET_ACTUAL_TIME] = &get_actual_time;
     flist[F_GET_MEASUREMENT_TIME] = &get_measurement_time;
     flist[F_SET_DYNAMIC_RANGE] = &set_dynamic_range;
-    flist[F_SET_ROI] = &set_roi;
-    flist[F_GET_ROI] = &get_roi;
     flist[F_LOCK_SERVER] = &lock_server;
     flist[F_GET_LAST_CLIENT_IP] = &get_last_client_ip;
     flist[F_ENABLE_TEN_GIGA] = &enable_ten_giga;
@@ -643,7 +638,7 @@ int get_external_signal_flag(int file_des) {
 
     LOG(logDEBUG1, ("Getting external signal flag (%d)\n", arg));
 
-#if !defined(GOTTHARDD) && !defined(MYTHEN3D)
+#if !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // get
@@ -674,7 +669,7 @@ int set_external_signal_flag(int file_des) {
     LOG(logDEBUG1,
         ("Setting external signal flag [%d] to %d\n", signalIndex, flag));
 
-#if !defined(GOTTHARDD) && !defined(MYTHEN3D)
+#if !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     if (Server_VerifyLock() == OK) {
@@ -832,8 +827,8 @@ int set_firmware_test(int file_des) {
     memset(mess, 0, sizeof(mess));
     LOG(logDEBUG1, ("Executing firmware test\n"));
 
-#if !defined(GOTTHARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D) &&  \
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&    \
+    !defined(GOTTHARD2D) && !defined(MYTHEN3D) &&                              \
     !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
@@ -851,8 +846,8 @@ int set_bus_test(int file_des) {
     memset(mess, 0, sizeof(mess));
     LOG(logDEBUG1, ("Executing bus test\n"));
 
-#if !defined(GOTTHARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&    \
+    !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     ret = testBus();
@@ -873,8 +868,7 @@ int set_image_test_mode(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting image test mode to \n", arg));
 
-#if defined(GOTTHARDD) ||                                                      \
-    ((defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)) &&            \
+#if ((defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)) &&            \
      defined(VIRTUAL))
     setTestImageMode(arg);
 #else
@@ -889,8 +883,7 @@ int get_image_test_mode(int file_des) {
     int retval = -1;
     LOG(logDEBUG1, ("Getting image test mode\n"));
 
-#if defined(GOTTHARDD) ||                                                      \
-    ((defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)) &&            \
+#if ((defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)) &&            \
      defined(VIRTUAL))
     retval = getTestImageMode();
     LOG(logDEBUG1, ("image test mode retval: %d\n", retval));
@@ -904,32 +897,7 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
     enum DACINDEX serverDacIndex = -1;
     // check if dac exists for this detector
     switch (ind) {
-#ifdef GOTTHARDD
-    case VREF_DS:
-        serverDacIndex = G_VREF_DS;
-        break;
-    case VCASCN_PB:
-        serverDacIndex = G_VCASCN_PB;
-        break;
-    case VCASCP_PB:
-        serverDacIndex = G_VCASCP_PB;
-        break;
-    case VOUT_CM:
-        serverDacIndex = G_VOUT_CM;
-        break;
-    case VCASC_OUT:
-        serverDacIndex = G_VCASC_OUT;
-        break;
-    case VIN_CM:
-        serverDacIndex = G_VIN_CM;
-        break;
-    case VREF_COMP:
-        serverDacIndex = G_VREF_COMP;
-        break;
-    case IB_TESTC:
-        serverDacIndex = G_IB_TESTC;
-        break;
-#elif EIGERD
+#ifdef EIGERD
     case VTHRESHOLD:
         serverDacIndex = E_VTHRESHOLD;
         break;
@@ -1274,15 +1242,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
 #endif
 #endif
 
-#ifdef GOTTHARDD
-        if (retval == -1) {
-            ret = FAIL;
-            strcpy(mess, "Invalid Voltage. Valid values are 0, 90, "
-                         "110, 120, 150, 180, 200\n");
-            LOG(logERROR, (mess));
-        } else
-            validate(&ret, mess, val, retval, "set high voltage", DEC);
-#elif EIGERD
+#ifdef EIGERD
         if ((retval != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval < 0)) {
             ret = FAIL;
             if (retval == -1)
@@ -1525,7 +1485,7 @@ int get_adc(int file_des) {
         serverAdcIndex = TEMP_FPGA;
         break;
 #endif
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD) || defined(MOENCHD)
     case TEMPERATURE_FPGA:
         serverAdcIndex = TEMP_FPGA;
         break;
@@ -1695,13 +1655,8 @@ int write_register(int file_des) {
             LOG(logERROR, (mess));
         }
 #else
-#ifdef GOTTHARDD
-        writeRegister16And32(addr, val);
-        uint32_t retval = readRegister16And32(addr);
-#else
         writeRegister(addr, val);
         uint32_t retval = readRegister(addr);
-#endif
         LOG(logDEBUG1, ("Write register retval (0x%x): 0x%x\n", addr, retval));
         // validate
         if (validate && ret == OK && retval != val) {
@@ -1738,8 +1693,6 @@ int read_register(int file_des) {
                 addr);
         LOG(logERROR, (mess));
     }
-#elif GOTTHARDD
-    retval = readRegister16And32(addr);
 #else
     retval = readRegister(addr);
 #endif
@@ -1873,12 +1826,6 @@ void validate_settings(enum detectorSettings sett) {
 #elif JUNGFRAUD
     case GAIN0:
     case HIGHGAIN0:
-#elif GOTTHARDD
-    case DYNAMICGAIN:
-    case HIGHGAIN:
-    case LOWGAIN:
-    case MEDIUMGAIN:
-    case VERYHIGHGAIN:
 #elif GOTTHARD2D
     case DYNAMICGAIN:
     case FIXGAIN1:
@@ -1939,16 +1886,6 @@ int set_settings(int file_des) {
 
         if ((int)isett != GET_FLAG) {
             validate(&ret, mess, (int)isett, (int)retval, "set settings", DEC);
-#ifdef GOTTHARDD
-            if (ret == OK) {
-                ret = resetToDefaultDacs(0);
-                if (ret == FAIL) {
-                    strcpy(mess, "Could change settings, but could not set to "
-                                 "default dacs\n");
-                    LOG(logERROR, (mess));
-                }
-            }
-#endif
 #ifdef MYTHEN3D
             // changed for setsettings (direct),
             // custom trimbit file (setmodule with myMod.reg as -1),
@@ -2707,8 +2644,8 @@ int get_delay_after_trigger(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&  \
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&    \
+    !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&                              \
     !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
@@ -2730,8 +2667,8 @@ int set_delay_after_trigger(int file_des) {
     LOG(logDEBUG1,
         ("Setting delay after trigger %lld ns\n", (long long int)arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&  \
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&    \
+    !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&                              \
     !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
@@ -2941,8 +2878,8 @@ int get_frames_left(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&  \
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&    \
+    !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&                              \
     !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
@@ -2959,8 +2896,8 @@ int get_triggers_left(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&  \
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&    \
+    !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&                              \
     !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
@@ -2971,28 +2908,13 @@ int get_triggers_left(int file_des) {
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
-int get_exptime_left(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    int64_t retval = -1;
-
-#ifndef GOTTHARDD
-    functionNotImplemented();
-#else
-    // get only
-    retval = getExpTimeLeft();
-    LOG(logDEBUG1, ("retval exptime left %lld ns\n", (long long int)retval));
-#endif
-    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
-}
-
 int get_period_left(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&  \
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&    \
+    !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&                              \
     !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
@@ -3008,8 +2930,8 @@ int get_delay_after_trigger_left(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) &&         \
-    !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&  \
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&    \
+    !defined(MYTHEN3D) && !defined(GOTTHARD2D) &&                              \
     !defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
@@ -3133,9 +3055,8 @@ int set_dynamic_range(int file_des) {
         case 16:
         case 32:
 #endif
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MOENCHD) ||            \
-    defined(CHIPTESTBOARDD) || defined(GOTTHARD2D) ||                          \
-    defined(XILINX_CHIPTESTBOARDD)
+#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) ||       \
+    defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
         case 16:
 #endif
             if (dr >= 0) {
@@ -3164,67 +3085,6 @@ int set_dynamic_range(int file_des) {
         }
     }
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
-}
-
-int set_roi(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    ROI arg;
-
-    // receive ROI
-    if (receiveData(file_des, &arg.xmin, sizeof(int), INT32) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, &arg.xmax, sizeof(int), INT32) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, &arg.ymin, sizeof(int), INT32) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, &arg.ymax, sizeof(int), INT32) < 0)
-        return printSocketReadError();
-    LOG(logDEBUG1, ("Set ROI: [%d, %d, %d, %d]\n", arg.xmin, arg.xmax, arg.ymin,
-                    arg.ymax));
-
-#ifndef GOTTHARDD
-    functionNotImplemented();
-#else
-    // only set
-    if (Server_VerifyLock() == OK) {
-        ret = setROI(arg);
-        if (ret == FAIL) {
-            sprintf(mess, "Could not set ROI. Invalid xmin or xmax\n");
-            LOG(logERROR, (mess));
-        }
-        // old firmware requires a redo configure mac
-        else {
-            configure_mac();
-        }
-    }
-#endif
-
-    return Server_SendResult(file_des, INT32, NULL, 0);
-}
-
-int get_roi(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    ROI retval;
-
-#ifndef GOTTHARDD
-    functionNotImplemented();
-#else
-    // only get
-    retval = getROI();
-    LOG(logDEBUG1, ("nRois: (%d, %d, %d, %d)\n", retval.xmin, retval.xmax,
-                    retval.ymin, retval.ymax));
-#endif
-
-    Server_SendResult(file_des, INT32, NULL, 0);
-    if (ret != FAIL) {
-        sendData(file_des, &retval.xmin, sizeof(int), INT32);
-        sendData(file_des, &retval.xmax, sizeof(int), INT32);
-        sendData(file_des, &retval.ymin, sizeof(int), INT32);
-        sendData(file_des, &retval.ymax, sizeof(int), INT32);
-    }
-    return ret;
 }
 
 int lock_server(int file_des) {
@@ -3276,8 +3136,8 @@ int enable_ten_giga(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG, ("Setting 10GbE: %d\n", arg));
 
-#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARDD) ||            \
-    defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
+#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARD2D) ||           \
+    defined(XILINX_CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // set & get
@@ -3696,12 +3556,6 @@ int write_adc_register(int file_des) {
     if (Server_VerifyLock() == OK) {
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD)
         AD9257_Set(addr, val);
-#elif GOTTHARDD
-        if (isHardwareVersion_1_0()) {
-            AD9252_Set(addr, val);
-        } else {
-            AD9257_Set(addr, val);
-        }
 #endif
     }
 #endif
@@ -4068,7 +3922,7 @@ int program_fpga(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
-#if defined(EIGERD) || defined(GOTTHARDD)
+#if defined(EIGERD)
     functionNotImplemented();
     return Server_SendResult(file_des, INT32, NULL, 0);
 #else
@@ -4082,8 +3936,7 @@ int reset_fpga(int file_des) {
     memset(mess, 0, sizeof(mess));
 
     LOG(logDEBUG1, ("Reset FPGA\n"));
-#if defined(EIGERD) || defined(GOTTHARDD) || defined(GOTTHARD2D) ||            \
-    defined(MYTHEN3D)
+#if defined(EIGERD) || defined(GOTTHARD2D) || defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
@@ -6060,7 +5913,7 @@ int set_clock_phase(int file_des) {
                     (args[2] == 0 ? "" : "degrees")));
 
 #if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&    \
-    !defined(GOTTHARDD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
+    !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
@@ -6070,8 +5923,7 @@ int set_clock_phase(int file_des) {
         int inDegrees = args[2] == 0 ? 0 : 1;
         enum CLKINDEX c = 0;
         switch (ind) {
-#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD) ||       \
-    defined(GOTTHARDD)
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
         case ADC_CLOCK:
             c = ADC_CLK;
             break;
@@ -6101,15 +5953,6 @@ int set_clock_phase(int file_des) {
             sprintf(modeName, "%s clock (%d) phase %s", clock_names[c], (int)c,
                     (inDegrees == 0 ? "" : "(degrees)"));
 
-            // gotthard1d doesnt take degrees and cannot get phase
-#ifdef GOTTHARDD
-            if (inDegrees != 0) {
-                ret = FAIL;
-                strcpy(mess,
-                       "Cannot set phase in degrees for this detector.\n");
-                LOG(logERROR, (mess));
-            }
-#else
             if (getPhase(c, inDegrees) == val) {
                 LOG(logINFO, ("Same %s: %d\n", modeName, val));
             } else if (inDegrees && (val < 0 || val > 359)) {
@@ -6126,18 +5969,12 @@ int set_clock_phase(int file_des) {
                         "phase shifts)\n",
                         modeName, val, getMaxPhase(c) - 1);
                 LOG(logERROR, (mess));
-            }
-#endif
-            else {
+            } else {
                 int ret = setPhase(c, val, inDegrees);
                 if (ret == FAIL) {
                     sprintf(mess, "Could not set %s to %d.\n", modeName, val);
                     LOG(logERROR, (mess));
-                }
-
-                // gotthard1d doesnt take degrees and cannot get phase
-#ifndef GOTTHARDD
-                else {
+                } else {
                     int retval = getPhase(c, inDegrees);
                     LOG(logDEBUG1, ("retval %s : %d\n", modeName, retval));
                     if (!inDegrees) {
@@ -6153,7 +5990,6 @@ int set_clock_phase(int file_des) {
                         }
                     }
                 }
-#endif
             }
         }
     }
@@ -7471,32 +7307,7 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // roi
-    {
-        ROI roi;
-#ifdef GOTTHARDD
-        roi = getROI();
-#else
-        roi.xmin = -1;
-        roi.xmax = -1;
-        roi.ymin = -1;
-        roi.ymax = -1;
-#endif
-        n += sendData(file_des, &roi.xmin, sizeof(int), INT32);
-        if (n < 0)
-            return printSocketReadError();
-        n += sendData(file_des, &roi.xmax, sizeof(int), INT32);
-        if (n < 0)
-            return printSocketReadError();
-        n += sendData(file_des, &roi.ymin, sizeof(int), INT32);
-        if (n < 0)
-            return printSocketReadError();
-        n += sendData(file_des, &roi.ymax, sizeof(int), INT32);
-        if (n < 0)
-            return printSocketReadError();
-    }
-
-    // counter mask
+        // counter mask
 #ifdef MYTHEN3D
     u32 = getCounterMask();
 #else
@@ -8601,8 +8412,8 @@ int get_master(int file_des) {
 
     LOG(logDEBUG1, ("Getting master\n"));
 
-#if !defined(MYTHEN3D) && !defined(EIGERD) && !defined(GOTTHARDD) &&           \
-    !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(MYTHEN3D) && !defined(EIGERD) && !defined(GOTTHARD2D) &&          \
+    !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     ret = isMaster(&retval);
@@ -9897,8 +9708,7 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
                                   char *checksum, char *serverName,
                                   int forceDeleteNormalFile) {
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&    \
-    !defined(GOTTHARDD)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD)
     ret = FAIL;
     sprintf(mess,
             "Could not %s. program via blackfin not implmented for this "
@@ -10605,15 +10415,9 @@ int set_bit(int file_des) {
             ret = setBit(addr, nBit, validate);
 #else
             uint32_t bitmask = (1 << nBit);
-#ifdef GOTTHARDD
-            uint32_t val = readRegister16And32(addr) | bitmask;
-            writeRegister16And32(addr, val);
-            uint32_t retval = readRegister16And32(addr) | bitmask;
-#else
             uint32_t val = readRegister(addr) | bitmask;
             writeRegister(addr, val);
             uint32_t retval = readRegister(addr) | bitmask;
-#endif
             if (validate && (!(retval & bitmask))) {
                 ret = FAIL;
             }
@@ -10654,15 +10458,9 @@ int clear_bit(int file_des) {
             ret = clearBit(addr, nBit, validate);
 #else
             uint32_t bitmask = (1 << nBit);
-#ifdef GOTTHARDD
-            uint32_t val = readRegister16And32(addr) & ~bitmask;
-            writeRegister16And32(addr, val);
-            uint32_t retval = readRegister16And32(addr) & ~bitmask;
-#else
             uint32_t val = readRegister(addr) & ~bitmask;
             writeRegister(addr, val);
             uint32_t retval = readRegister(addr) & ~bitmask;
-#endif
             if (validate && (retval & bitmask)) {
                 ret = FAIL;
             }
@@ -10703,11 +10501,7 @@ int get_bit(int file_des) {
             LOG(logERROR, (mess));
         }
 #else
-#ifdef GOTTHARDD
-        uint32_t regval = readRegister16And32(addr);
-#else
         uint32_t regval = readRegister(addr);
-#endif
         retval = (regval & (1 << nBit)) >> nBit;
         LOG(logDEBUG1, ("regval: 0x%x bit value:0%d\n", regval, retval));
 #endif

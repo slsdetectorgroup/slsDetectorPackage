@@ -47,7 +47,6 @@ void qTabPlot::SetupWidgetWindow() {
     // enabling according to det type
     is1d = false;
     switch (det->getDetectorType().squash()) {
-    case slsDetectorDefs::GOTTHARD:
     case slsDetectorDefs::MYTHEN3:
         is1d = true;
         break;

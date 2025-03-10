@@ -57,9 +57,6 @@ struct image_structure {
 // parameters to calculate fifo depth
 #define SAMPLE_TIME_IN_NS (100000000) // 100ms
 
-// to differentiate between gotthard and short gotthard
-#define GOTTHARD_PACKET_SIZE (1286)
-
 #define DUMMY_PACKET_VALUE (0xFFFFFFFF)
 
 #define LISTENER_PRIORITY  (90)

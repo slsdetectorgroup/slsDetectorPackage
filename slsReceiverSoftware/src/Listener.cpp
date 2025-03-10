@@ -350,8 +350,6 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header &dstHeader,
         carryOverFlag = false;
     }
 
-    // until last packet isHeaderEmpty to account for gotthard short frame, else
-    // never entering this loop)
     while (numpackets < pperFrame) {
         // listen to new packet
         if (!udpSocketAlive || !udpSocket->ReceivePacket(&listeningPacket[0])) {
@@ -463,15 +461,6 @@ void Listener::CopyPacket(char *dst, char *src, uint32_t dataSize,
 
     // copy packet data
     switch (generalData->detType) {
-    // for gotthard,
-    // 1st packet: 4 bytes fnum, CACA + CACA, 639*2 bytes data
-    // 2nd packet: 4 bytes fnum, previous 1*2 bytes data  + 640*2 bytes data
-    case GOTTHARD:
-        if (!pnum)
-            memcpy(dst, &src[detHeaderSize + 2], dataSize - 2);
-        else
-            memcpy(dst + dataSize - 2, &src[detHeaderSize - 2], dataSize + 2);
-        break;
     case CHIPTESTBOARD:
     case XILINX_CHIPTESTBOARD:
         if (pnum == (generalData->packetsPerFrame - 1))
@@ -517,14 +506,7 @@ void Listener::GetPacketIndices(uint64_t &fnum, uint32_t &pnum, uint64_t &bnum,
         fnum = header->frameNumber;
         pnum = header->packetNumber;
     } else {
-        // set first packet to be odd or even (check required when switching
-        // from roi to no roi)
-        if (generalData->detType == GOTTHARD && !startedFlag) {
-            oddStartingPacket =
-                generalData->SetOddStartingPacket(index, &packet[0]);
-        }
-        generalData->GetHeaderInfo(index, &packet[0], oddStartingPacket, fnum,
-                                   pnum, bnum);
+        generalData->GetHeaderInfo(index, &packet[0], fnum, pnum, bnum);
     }
 }
 

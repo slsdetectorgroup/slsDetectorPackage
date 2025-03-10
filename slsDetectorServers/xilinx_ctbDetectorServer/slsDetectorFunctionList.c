@@ -492,6 +492,9 @@ void setTransceiverAlignment(int align) {
 #endif
 
 int isTransceiverAligned() {
+#ifdef VIRTUAL
+    return 1;
+#endif
     int times = 0;
     int retval = bus_r(TRANSCEIVERSTATUS2) & RXLOCKED_MSK;
     while (retval) {

@@ -2,27 +2,17 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "sls/sls_detector_defs.h"
 #include "slsDetectorServer_defs.h" // DAC_INDEX, ADC_INDEX, also include RegisterDefs.h
-#ifdef GOTTHARDD
-#include "AD9252.h"  // old board compatibility
-#include "clogger.h" // runState(enum TLogLevel)
-#endif
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MOENCHD) ||            \
-    defined(CHIPTESTBOARDD)
+
+#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD)
 #include "AD9257.h" // commonServerFunctions.h, blackfin.h, ansi.h
 #endif
 
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
-#include "programViaNios.h"
-#elif defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD) ||     \
-    defined(GOTTHARDD)
-#include "programViaBlackfin.h"
-#endif
-
-#if defined(MYTHEN3D) || defined(GOTTHARD2D)
 #include "nios.h"
-#elif defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MOENCHD) ||          \
-    defined(CHIPTESTBOARDD)
+#include "programViaNios.h"
+#elif defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
 #include "blackfin.h"
+#include "programViaBlackfin.h"
 #endif
 
 #ifdef ARMPROCESSOR
@@ -76,8 +66,7 @@ int testBus();
 #endif
 #endif
 
-#if defined(GOTTHARDD) ||                                                      \
-    ((defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)) &&            \
+#if ((defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)) &&            \
      defined(VIRTUAL))
 void setTestImageMode(int ival);
 int getTestImageMode();
@@ -102,7 +91,7 @@ u_int16_t getHardwareVersionNumber();
 u_int16_t getHardwareSerialNumber();
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARD2D) ||           \
-    defined(MYTHEN3D) || defined(GOTTHARDD)
+    defined(MYTHEN3D)
 int isHardwareVersion_1_0();
 #endif
 #if defined(JUNGFRAUD)
@@ -162,8 +151,7 @@ void setADIFDefaults();
 #if defined(GOTTHARD2D) || defined(EIGERD) || defined(JUNGFRAUD)
 int readConfigFile();
 #endif
-#if defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||            \
-    defined(MYTHEN3D)
+#if defined(GOTTHARD2D) || defined(EIGERD) || defined(MYTHEN3D)
 int checkCommandLineConfiguration();
 #endif
 #ifdef EIGERD
@@ -177,9 +165,6 @@ int readRegister(uint32_t offset, uint32_t *retval);
 int setBit(const uint32_t addr, const int nBit, int validate);
 int clearBit(const uint32_t addr, const int nBit, int validate);
 int getBit(const uint32_t addr, const int nBit, int *retval);
-#elif GOTTHARDD
-void writeRegister16And32(uint32_t offset, uint32_t data);
-uint32_t readRegister16And32(uint32_t offset);
 #endif
 
 // firmware functions (resets)
@@ -205,26 +190,11 @@ int resetChip(char *mess);
 void cleanFifos();
 void resetCore();
 void resetPeripheral();
-#elif GOTTHARDD
-void setPhaseShiftOnce();
-void setPhaseShift(int numphaseshift);
-void cleanFifos();
-void setADCSyncRegister();
-void setDAQRegister();
-void setChipOfInterestRegister(int adc);
-void setROIADC(int adc);
-void setGbitReadout();
-int readConfigFile();
-void setMasterSlaveConfiguration();
 #endif
 
 // parameters - dr, roi
 int setDynamicRange(int dr);
 int getDynamicRange(int *retval);
-#ifdef GOTTHARDD
-int setROI(ROI arg);
-ROI getROI();
-#endif
 #if defined(JUNGFRAUD) || defined(MOENCHD)
 void setADCInvertRegister(uint32_t val);
 uint32_t getADCInvertRegister();
@@ -336,9 +306,8 @@ void updatePacketizing();
 int64_t getNumFramesLeft();
 int64_t getNumTriggersLeft();
 #endif
-#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARDD) ||            \
-    defined(CHIPTESTBOARDD) || defined(MYTHEN3D) || defined(GOTTHARD2D) ||     \
-    defined(XILINX_CHIPTESTBOARDD)
+#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) ||       \
+    defined(MYTHEN3D) || defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
 int setDelayAfterTrigger(int64_t val);
 int64_t getDelayAfterTrigger();
 int64_t getDelayAfterTriggerLeft();
@@ -346,9 +315,6 @@ int64_t getPeriodLeft();
 #endif
 #ifdef GOTTHARD2D
 int64_t getNumBurstsLeft();
-#endif
-#ifdef GOTTHARDD
-int64_t getExpTimeLeft();
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) ||       \
     defined(MYTHEN3D) || defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
@@ -462,8 +428,8 @@ int setMaster(enum MASTERINDEX m);
 int setTop(enum TOPINDEX t);
 int isTop(int *retval);
 #endif
-#if defined(MYTHEN3D) || defined(EIGERD) || defined(GOTTHARDD) ||              \
-    defined(GOTTHARD2D) || defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(MYTHEN3D) || defined(EIGERD) || defined(GOTTHARD2D) ||             \
+    defined(JUNGFRAUD) || defined(MOENCHD)
 int isMaster(int *retval);
 #endif
 
@@ -489,15 +455,12 @@ int setAnalogPulsing(int enable);
 int setNegativePolarity(int enable);
 int setDACS(int *dacs);
 #endif
-#if defined(GOTTHARDD) || defined(MYTHEN3D)
+#if defined(MYTHEN3D)
 void setExtSignal(int signalIndex, enum externalSignalFlag mode);
 int getExtSignal(int signalIndex);
 #endif
 
 // configure mac
-#ifdef GOTTHARDD
-void calcChecksum(mac_conf *mac, int sourceip, int destip);
-#endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARD2D)
 void setNumberofUDPInterfaces(int val);
 #endif
@@ -524,9 +487,6 @@ void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
     defined(MYTHEN3D) || defined(CHIPTESTBOARDD) ||                            \
     defined(XILINX_CHIPTESTBOARDD)
 void calcChecksum(udp_header *udp);
-#endif
-#ifdef GOTTHARDD
-int getAdcConfigured();
 #endif
 
 int configureMAC();
@@ -640,10 +600,6 @@ int setActivate(int enable);
 int getActivate(int *retval);
 int getDataStream(enum portPosition port, int *retval);
 int setDataStream(enum portPosition port, int enable);
-
-// gotthard specific - adc phase
-#elif GOTTHARDD
-int setPhase(enum CLKINDEX ind, int val, int degrees);
 
 #elif MYTHEN3D
 int checkDetectorType(char *mess);
@@ -763,14 +719,9 @@ int checkFifoForEndOfAcquisition();
 int readFrameFromFifo();
 #endif
 
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MOENCHD) ||            \
-    defined(CHIPTESTBOARDD) || defined(MYTHEN3D) || defined(GOTTHARD2D) ||     \
-    defined(XILINX_CHIPTESTBOARDD)
+#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) ||       \
+    defined(MYTHEN3D) || defined(GOTTHARD2D) || defined(XILINX_CHIPTESTBOARDD)
 u_int32_t runBusy();
-#endif
-
-#ifdef GOTTHARDD
-u_int32_t runState(enum TLogLevel lev);
 #endif
 
 // common

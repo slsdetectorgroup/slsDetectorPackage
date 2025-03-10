@@ -22,10 +22,7 @@ DataStreamer::DataStreamer(int index) : ThreadObject(index, TypeName) {
     LOG(logDEBUG) << "DataStreamer " << index << " created";
 }
 
-DataStreamer::~DataStreamer() {
-    CloseZmqSocket();
-    delete[] completeBuffer;
-}
+DataStreamer::~DataStreamer() { CloseZmqSocket(); }
 
 void DataStreamer::SetFifo(Fifo *f) { fifo = f; }
 
@@ -62,19 +59,7 @@ void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
     StopRunning();
     startedFlag = false;
     firstIndex = 0;
-
     fileNametoStream = fname;
-    if (completeBuffer) {
-        delete[] completeBuffer;
-        completeBuffer = nullptr;
-    }
-    if (generalData->detType == GOTTHARD &&
-        generalData->detectorRoi.xmin != -1) {
-        adcConfigured =
-            generalData->GetAdcConfigured(index, generalData->detectorRoi);
-        completeBuffer = new char[generalData->imageSizeComplete];
-        memset(completeBuffer, 0, generalData->imageSizeComplete);
-    }
 }
 
 void DataStreamer::RecordFirstIndex(uint64_t fnum, size_t firstImageIndex) {
@@ -160,40 +145,15 @@ void DataStreamer::ProcessAnImage(sls_detector_header header, size_t size,
     uint64_t fnum = header.frameNumber;
     LOG(logDEBUG1) << "DataStreamer " << index << ": fnum:" << fnum;
 
-    // shortframe gotthard
-    if (completeBuffer) {
-        // disregarding the size modified from callback (always using
-        // imageSizeComplete instead of size because gui needs
-        // imagesizecomplete and listener writes imagesize to size
-
-        if (!SendDataHeader(header, generalData->imageSizeComplete,
-                            generalData->nPixelsXComplete,
-                            generalData->nPixelsYComplete)) {
-            LOG(logERROR) << "Could not send zmq header for fnum " << fnum
-                          << " and streamer " << index;
-        }
-        memcpy(completeBuffer + ((generalData->imageSize) * adcConfigured),
-               data, size);
-
-        if (!zmqSocket->SendData(completeBuffer,
-                                 generalData->imageSizeComplete)) {
-            LOG(logERROR) << "Could not send zmq data for fnum " << fnum
-                          << " and streamer " << index;
-        }
+    if (!SendDataHeader(header, size, generalData->nPixelsX,
+                        generalData->nPixelsY)) {
+        LOG(logERROR) << "Could not send zmq header for fnum " << fnum
+                      << " and streamer " << index;
     }
 
-    // normal
-    else {
-
-        if (!SendDataHeader(header, size, generalData->nPixelsX,
-                            generalData->nPixelsY)) {
-            LOG(logERROR) << "Could not send zmq header for fnum " << fnum
-                          << " and streamer " << index;
-        }
-        if (!zmqSocket->SendData(data, size)) {
-            LOG(logERROR) << "Could not send zmq data for fnum " << fnum
-                          << " and streamer " << index;
-        }
+    if (!zmqSocket->SendData(data, size)) {
+        LOG(logERROR) << "Could not send zmq data for fnum " << fnum
+                      << " and streamer " << index;
     }
 }
 

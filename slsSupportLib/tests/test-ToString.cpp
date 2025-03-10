@@ -130,7 +130,6 @@ TEST_CASE("string to std::chrono::duration", "[support]") {
 TEST_CASE("string to detectorType") {
     using dt = slsDetectorDefs::detectorType;
     REQUIRE(StringTo<dt>("Eiger") == dt::EIGER);
-    REQUIRE(StringTo<dt>("Gotthard") == dt::GOTTHARD);
     REQUIRE(StringTo<dt>("Jungfrau") == dt::JUNGFRAU);
     REQUIRE(StringTo<dt>("ChipTestBoard") == dt::CHIPTESTBOARD);
     REQUIRE(StringTo<dt>("Moench") == dt::MOENCH);

@@ -112,10 +112,6 @@ IpAddr Caller::getDstIpFromAuto() {
 }
 
 IpAddr Caller::getSrcIpFromAuto() {
-    if (det->getDetectorType().squash() == defs::GOTTHARD) {
-        throw RuntimeError(
-            "Cannot use 'auto' for udp_srcip for GotthardI Detector.");
-    }
     std::string hostname =
         det->getHostname(std::vector<int>{det_id}).squash("none");
     // Hostname could be ip try to decode otherwise look up the hostname
@@ -511,7 +507,7 @@ std::string Caller::udp_srcip(int action) {
               "ip.\n\t[Eiger] Set only for 10G. For 1G, detector will replace "
               "with its own DHCP IP address. \n\tOne can also set this to "
               "'auto' for 1 GbE data and virtual detectors. It will set to IP "
-              "of detector. Not available for GotthardI"
+              "of detector."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         auto t = det->getSourceUDPIP(std::vector<int>{det_id});

@@ -40,13 +40,6 @@ class GeneralData {
     uint32_t fifoDepth{0};
     int numUDPInterfaces{1};
     uint32_t headerPacketSize{0};
-    /** Streaming (for ROI - mainly short Gotthard)  */
-    uint32_t nPixelsXComplete{0};
-    /** Streaming (for ROI - mainly short Gotthard)  */
-    uint32_t nPixelsYComplete{0};
-    /** Streaming (for ROI - mainly short Gotthard) - Image size (in bytes) */
-    uint32_t imageSizeComplete{0};
-    /** if standard header implemented in firmware */
     bool standardheader{false};
     uint32_t udpSocketBufferSize{RECEIVE_SOCKET_BUFFER_SIZE};
     uint32_t vetoDataSize{0};
@@ -62,7 +55,6 @@ class GeneralData {
     slsDetectorDefs::readoutMode readoutType{slsDetectorDefs::ANALOG_ONLY};
     uint32_t adcEnableMaskOneGiga{BIT32_MASK};
     uint32_t adcEnableMaskTenGiga{BIT32_MASK};
-    slsDetectorDefs::ROI detectorRoi{};
     uint32_t counterMask{0};
     uint32_t transceiverMask{0};
     slsDetectorDefs::frameDiscardPolicy frameDiscardMode{
@@ -84,14 +76,12 @@ class GeneralData {
      * Get Header Infomation (frame number, packet number)
      * @param index thread index for debugging purposes
      * @param packetData pointer to data
-     * @param oddStartingPacket odd starting packet (gotthard)
      * @param frameNumber frame number
      * @param packetNumber packet number
      * @param bunchId bunch Id
      */
     virtual void GetHeaderInfo(int index, char *packetData,
-                               bool oddStartingPacket, uint64_t &frameNumber,
-                               uint32_t &packetNumber,
+                               uint64_t &frameNumber, uint32_t &packetNumber,
                                uint64_t &bunchId) const {
         frameNumber = ((uint32_t)(*((uint32_t *)(packetData))));
         frameNumber++;
@@ -100,27 +90,12 @@ class GeneralData {
         bunchId = -1;
     }
 
-    virtual void SetDetectorROI(slsDetectorDefs::ROI i) {
-        ThrowGenericError("SetDetectorROI");
-    };
-
-    /**@returns adc configured */
-    virtual int GetAdcConfigured(int index, slsDetectorDefs::ROI i) const {
-        ThrowGenericError("GetAdcConfigured");
-        return 0;
-    };
-
     virtual void SetDynamicRange(int dr) {
         ThrowGenericError("SetDynamicRange");
     };
 
     virtual void SetTenGigaEnable(bool tgEnable) {
         ThrowGenericError("SetTenGigaEnable");
-    };
-
-    virtual bool SetOddStartingPacket(int index, char *packetData) {
-        ThrowGenericError("SetOddStartingPacket");
-        return false;
     };
 
     virtual void SetNumberofInterfaces(const int n) {
@@ -172,139 +147,6 @@ class GeneralData {
 
     virtual void SetTransceiverEnableMask(int n) {
         ThrowGenericError("SetTransceiverEnableMask");
-    };
-};
-
-class GotthardData : public GeneralData {
-
-  private:
-    const int nChan = 128;
-    const int nChipsPerAdc = 2;
-
-  public:
-    GotthardData() {
-        detType = slsDetectorDefs::GOTTHARD;
-        nPixelsY = 1;
-        headerSizeinPacket = 6;
-        framesPerFile = MAX_FRAMES_PER_FILE;
-        UpdateImageSize();
-    };
-
-    /**
-     * Get Header Infomation (frame number, packet number)
-     * @param index thread index for debugging purposes
-     * @param packetData pointer to data
-     * @param oddStartingPacket odd starting packet (gotthard)
-     * @param frameNumber frame number
-     * @param packetNumber packet number
-     * @param bunchId bunch Id
-     */
-    void GetHeaderInfo(int index, char *packetData, bool oddStartingPacket,
-                       uint64_t &frameNumber, uint32_t &packetNumber,
-                       uint64_t &bunchId) const {
-        if (nPixelsX == 1280) {
-            frameNumber = *reinterpret_cast<uint32_t *>(packetData);
-            if (oddStartingPacket)
-                frameNumber++;
-            packetNumber = frameNumber & packetIndexMask;
-            frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
-        } else {
-            frameNumber = *reinterpret_cast<uint32_t *>(packetData);
-            packetNumber = 0;
-        }
-        bunchId = -1;
-    }
-
-    /** @returns adc configured */
-    int GetAdcConfigured(int index, slsDetectorDefs::ROI i) const {
-        int adc = -1;
-        // single adc
-        if (i.xmin != -1) {
-            // gotthard can have only one adc per detector enabled (or all)
-            // adc = mid value/numchans also for only 1 roi
-            adc = ((((i.xmax) + (i.xmin)) / 2) / (nChan * nChipsPerAdc));
-            if ((adc < 0) || (adc > 4)) {
-                LOG(logWARNING) << index
-                                << ": Deleting ROI. "
-                                   "Adc value should be between 0 and 4";
-                adc = -1;
-            }
-        }
-        LOG(logINFO) << "Adc Configured: " << adc;
-        return adc;
-    };
-
-    /**
-     * Set odd starting packet (gotthard)
-     * @param index thread index for debugging purposes
-     * @param packetData pointer to data
-     * @returns true or false for odd starting packet number
-     */
-    bool SetOddStartingPacket(int index, char *packetData) {
-        bool oddStartingPacket = true;
-        // care only if no roi
-        if (nPixelsX == 1280) {
-            uint32_t fnum = ((uint32_t)(*((uint32_t *)(packetData))));
-            uint32_t firstData = ((uint32_t)(*((uint32_t *)(packetData + 4))));
-            // first packet
-            if (firstData == 0xCACACACA) {
-                // packet number should be 0, but is 1 => so odd starting packet
-                if (fnum & packetIndexMask) {
-                    oddStartingPacket = true;
-                } else {
-                    oddStartingPacket = false;
-                }
-            }
-            // second packet
-            else {
-                // packet number should be 1, but is 0 => so odd starting packet
-                if (!(fnum & packetIndexMask)) {
-                    oddStartingPacket = true;
-                } else {
-                    oddStartingPacket = false;
-                }
-            }
-        }
-        return oddStartingPacket;
-    };
-
-    void SetDetectorROI(slsDetectorDefs::ROI i) {
-        detectorRoi = i;
-        UpdateImageSize();
-    };
-
-  private:
-    void UpdateImageSize() {
-
-        // all adcs
-        if (detectorRoi.xmin == -1) {
-            nPixelsX = 1280;
-            dataSize = 1280;
-            packetsPerFrame = 2;
-            frameIndexMask = 0xFFFFFFFE;
-            frameIndexOffset = 1;
-            packetIndexMask = 1;
-            framesPerFile = MAX_FRAMES_PER_FILE;
-            nPixelsXComplete = 0;
-            nPixelsYComplete = 0;
-            imageSizeComplete = 0;
-            fifoDepth = 50000;
-        } else {
-            nPixelsX = 256;
-            dataSize = 512;
-            packetsPerFrame = 1;
-            frameIndexMask = 0xFFFFFFFF;
-            frameIndexOffset = 0;
-            packetIndexMask = 0;
-            framesPerFile = SHORT_MAX_FRAMES_PER_FILE;
-            nPixelsXComplete = 1280;
-            nPixelsYComplete = 1;
-            imageSizeComplete = 1280 * 2;
-            fifoDepth = 75000;
-        }
-        imageSize = int(nPixelsX * nPixelsY * GetPixelDepth());
-        packetSize = headerSizeinPacket + dataSize;
-        packetsPerFrame = imageSize / dataSize;
     };
 };
 
@@ -502,14 +344,12 @@ class Gotthard2Data : public GeneralData {
      * Get Header Infomation (frame number, packet number) for veto packets
      * @param index thread index for debugging purposes
      * @param packetData pointer to data
-     * @param oddStartingPacket odd starting packet (gotthard)
      * @param frameNumber frame number
      * @param packetNumber packet number
      * @param bunchId bunch Id
      */
-    void GetHeaderInfo(int index, char *packetData, bool oddStartingPacket,
-                       uint64_t &frameNumber, uint32_t &packetNumber,
-                       uint64_t &bunchId) const {
+    void GetHeaderInfo(int index, char *packetData, uint64_t &frameNumber,
+                       uint32_t &packetNumber, uint64_t &bunchId) const {
         frameNumber = *reinterpret_cast<uint64_t *>(packetData);
         bunchId = *reinterpret_cast<uint64_t *>(packetData + 8);
         packetNumber = 0;

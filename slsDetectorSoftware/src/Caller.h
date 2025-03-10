@@ -82,7 +82,6 @@ class Caller {
     std::string chipversion(int action);
     std::string clearbit(int action);
     std::string clearbusy(int action);
-    std::string clearroi(int action);
     std::string clientversion(int action);
     std::string clkdiv(int action);
     std::string clkfreq(int action);
@@ -120,7 +119,6 @@ class Caller {
     std::string exptime1(int action);
     std::string exptime2(int action);
     std::string exptime3(int action);
-    std::string exptimel(int action);
     std::string extrastoragecells(int action);
     std::string extsampling(int action);
     std::string extsamplingsrc(int action);
@@ -230,7 +228,6 @@ class Caller {
     std::string reg(int action);
     std::string resetdacs(int action);
     std::string resetfpga(int action);
-    std::string roi(int action);
     std::string romode(int action);
     std::string row(int action);
     std::string runclk(int action);
@@ -428,7 +425,6 @@ class Caller {
         {"chipversion", &Caller::chipversion},
         {"clearbit", &Caller::clearbit},
         {"clearbusy", &Caller::clearbusy},
-        {"clearroi", &Caller::clearroi},
         {"clientversion", &Caller::clientversion},
         {"clkdiv", &Caller::clkdiv},
         {"clkfreq", &Caller::clkfreq},
@@ -466,7 +462,6 @@ class Caller {
         {"exptime1", &Caller::exptime1},
         {"exptime2", &Caller::exptime2},
         {"exptime3", &Caller::exptime3},
-        {"exptimel", &Caller::exptimel},
         {"extrastoragecells", &Caller::extrastoragecells},
         {"extsampling", &Caller::extsampling},
         {"extsamplingsrc", &Caller::extsamplingsrc},
@@ -579,7 +574,6 @@ class Caller {
         {"reg", &Caller::reg},
         {"resetdacs", &Caller::resetdacs},
         {"resetfpga", &Caller::resetfpga},
-        {"roi", &Caller::roi},
         {"romode", &Caller::romode},
         {"row", &Caller::row},
         {"runclk", &Caller::runclk},
@@ -784,13 +778,9 @@ class Caller {
         {"vishaper", "dac"},
         {"iodelay", "dac"},
         {"vref_ds", "dac"},
-        {"vcascn_pb", "dac"},
-        {"vcascp_pb", "dac"},
         {"vout_cm", "dac"},
-        {"vcasc_out", "dac"},
         {"vin_cm", "dac"},
         {"vref_comp", "dac"},
-        {"ib_test_c", "dac"},
         {"vrshaper_n", "dac"},
         {"vipre", "dac"},
         {"vdcsh", "dac"},

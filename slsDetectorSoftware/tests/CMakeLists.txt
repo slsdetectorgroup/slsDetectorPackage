@@ -13,7 +13,6 @@ target_sources(tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-jungfrau.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-mythen3.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-gotthard2.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-gotthard.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-chiptestboard.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-xilinx-chiptestboard.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-moench.cpp

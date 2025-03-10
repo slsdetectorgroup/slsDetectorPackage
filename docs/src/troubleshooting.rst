@@ -385,14 +385,6 @@ Cannot get data without a module attached
 You cannot get data without a module attached as a specific pin is floating. Attach module to get data.
 
 
-Gotthard
-----------
-
-
-Missing first frame or next frame after a delay
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Connect the data link from the Module directly to receiver pc or to a private network.
-
 
 Mythen3
 --------

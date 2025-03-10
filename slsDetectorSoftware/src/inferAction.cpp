@@ -426,18 +426,6 @@ int InferAction::clearbusy() {
     }
 }
 
-int InferAction::clearroi() {
-
-    if (args.size() == 0) {
-        return slsDetectorDefs::PUT_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
-}
-
 int InferAction::clientversion() {
 
     if (args.size() == 0) {
@@ -1024,22 +1012,6 @@ int InferAction::exptime3() {
 
     if (args.size() == 2) {
         return slsDetectorDefs::PUT_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
-}
-
-int InferAction::exptimel() {
-
-    if (args.size() == 0) {
-        return slsDetectorDefs::GET_ACTION;
-    }
-
-    if (args.size() == 1) {
-        return slsDetectorDefs::GET_ACTION;
     }
 
     else {
@@ -2473,22 +2445,6 @@ int InferAction::resetdacs() {
 int InferAction::resetfpga() {
 
     if (args.size() == 0) {
-        return slsDetectorDefs::PUT_ACTION;
-    }
-
-    else {
-
-        throw RuntimeError("Could not infer action: Wrong number of arguments");
-    }
-}
-
-int InferAction::roi() {
-
-    if (args.size() == 0) {
-        return slsDetectorDefs::GET_ACTION;
-    }
-
-    if (args.size() == 2) {
         return slsDetectorDefs::PUT_ACTION;
     }
 

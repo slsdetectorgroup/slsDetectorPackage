@@ -4,7 +4,6 @@
 # empty branch = developer branch in updateAPIVersion.sh
 branch=""
 det_list=("ctbDetectorServer" 
-	"gotthardDetectorServer" 
 	"gotthard2DetectorServer"
 	"jungfrauDetectorServer"
 	"mythen3DetectorServer"

@@ -1967,29 +1967,6 @@ void Module::setCollectionMode(const defs::collectionMode value) {
     sendToDetector(F_SET_COLLECTION_MODE, static_cast<int>(value), nullptr);
 }
 
-// Gotthard Specific
-
-slsDetectorDefs::ROI Module::getROI() const {
-    return sendToDetector<slsDetectorDefs::ROI>(F_GET_ROI);
-}
-
-void Module::setROI(slsDetectorDefs::ROI arg) {
-    if (arg.xmin < 0 || arg.xmax >= getNumberOfChannels().x) {
-        arg.xmin = -1;
-        arg.xmax = -1;
-    }
-    sendToDetector(F_SET_ROI, arg, nullptr);
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_RECEIVER_SET_DETECTOR_ROI, arg, nullptr);
-    }
-}
-
-void Module::clearROI() { setROI(slsDetectorDefs::ROI{}); }
-
-int64_t Module::getExptimeLeft() const {
-    return sendToDetectorStop<int64_t>(F_GET_EXPTIME_LEFT);
-}
-
 // Gotthard2 Specific
 
 int64_t Module::getNumberOfBursts() const {
@@ -3440,8 +3417,6 @@ const std::string Module::getDetectorAPI() const {
         return APIEIGER;
     case JUNGFRAU:
         return APIJUNGFRAU;
-    case GOTTHARD:
-        return APIGOTTHARD;
     case CHIPTESTBOARD:
         return APICTB;
     case MOENCH:

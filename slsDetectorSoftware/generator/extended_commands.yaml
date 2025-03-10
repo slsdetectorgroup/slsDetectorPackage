@@ -480,12 +480,11 @@ adcphase:
         store_result_in_t: false
   command_name: adcphase
   function_alias: adcphase
-  help: "[n_value] [(optional)deg]\n\t[Jungfrau][Moench][Ctb][Gotthard] Phase shift\
-    \ of ADC clock. \n\t[Jungfrau][Moench] Absolute phase shift. If deg used, then\
-    \ shift in degrees. Changing Speed also resets adcphase to recommended defaults.\n\
-    \t[Ctb] Absolute phase shift. If deg used, then shift in degrees. Changing adcclk\
-    \ also resets adcphase and sets it to previous values.\n\t[Gotthard] Relative\
-    \ phase shift. Cannot get"
+  help: "[n_value] [(optional)deg]\n\t[Jungfrau][Moench][Ctb] Phase shift of ADC clock.\
+    \ \n\t[Jungfrau][Moench] Absolute phase shift. If deg used, then shift in degrees.\
+    \ Changing Speed also resets adcphase to recommended defaults.\n\t[Ctb] Absolute\
+    \ phase shift. If deg used, then shift in degrees. Changing adcclk also resets\
+    \ adcphase and sets it to previous values."
   infer_action: true
 adcpipeline:
   actions:
@@ -552,8 +551,8 @@ adcreg:
         store_result_in_t: false
   command_name: adcreg
   function_alias: adcreg
-  help: "[address] [value]\n\t[Jungfrau][Moench][Ctb][Gotthard] Writes to an adc register\
-    \ in hex. Advanced user Function!"
+  help: "[address] [value]\n\t[Jungfrau][Moench][Ctb] Writes to an adc register in\
+    \ hex. Advanced user Function!"
   infer_action: true
 adcvpp:
   actions:
@@ -1026,9 +1025,9 @@ bustest:
         store_result_in_t: false
   command_name: bustest
   function_alias: bustest
-  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Bus test, ie. Writes\
-    \ different values in a R/W register and confirms the writes to check bus.\n\t\
-    Advanced User function!"
+  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb] Bus test, ie. Writes different\
+    \ values in a R/W register and confirms the writes to check bus.\n\tAdvanced User\
+    \ function!"
   infer_action: true
   template: true
 cdsgain:
@@ -1184,28 +1183,6 @@ clearbusy:
   function_alias: clearbusy
   help: "\n\tIf acquisition aborted during acquire command, use this to clear acquiring\
     \ flag in shared memory before starting next acquisition"
-  infer_action: true
-  template: true
-clearroi:
-  actions:
-    PUT:
-      args:
-      - arg_types: []
-        argc: 0
-        cast_input: []
-        check_det_id: false
-        convert_det_id: true
-        function: clearROI
-        input: []
-        input_types: []
-        output:
-        - '"successful"'
-        require_det_id: true
-        store_result_in_t: false
-  command_name: clearroi
-  function_alias: clearroi
-  help: "\n\t[Gotthard] Resets Region of interest in detector. All channels enabled.\
-    \ Default is all channels enabled."
   infer_action: true
   template: true
 clientversion:
@@ -2598,7 +2575,7 @@ delay:
         store_result_in_t: false
   command_name: delay
   function_alias: delay
-  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Moench][Xilinx\
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Moench][Xilinx\
     \ Ctb] Delay after trigger"
   infer_action: true
   template: true
@@ -2633,8 +2610,8 @@ delayl:
         store_result_in_t: true
   command_name: delayl
   function_alias: delayl
-  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Delay\
-    \ Left in Acquisition. \n\t[Gotthard2] only in continuous mode."
+  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Delay Left in\
+    \ Acquisition. \n\t[Gotthard2] only in continuous mode."
   infer_action: true
   template: true
 detectorserverversion:
@@ -2806,7 +2783,7 @@ dr:
   function_alias: dr
   help: "[value]\n\tDynamic Range or number of bits per pixel in detector.\n\t[Eiger]\
     \ Options: 4, 8, 12, 16, 32. If set to 32, also sets clkdivider to 2, else to\
-    \ 0.\n\t[Mythen3] Options: 8, 16, 32\n\t[Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2][Xilinx\
+    \ 0.\n\t[Mythen3] Options: 8, 16, 32\n\t[Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx\
     \ Ctb] 16"
   infer_action: true
   template: true
@@ -2994,7 +2971,7 @@ exptime:
         store_result_in_t: false
   command_name: exptime
   function_alias: exptime
-  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb][Xilinx\
+  help: "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger][Jungfrau][Moench][Gotthard2][Ctb][Xilinx\
     \ Ctb] Exposure time\n\t[Mythen3] Exposure time of all gate signals in auto and\
     \ trigger mode (internal gating). To specify gate index, use exptime1, exptime2,\
     \ exptime3."
@@ -3327,41 +3304,6 @@ exptime3:
     \ mode (internal gating)."
   infer_action: true
   template: true
-exptimel:
-  actions:
-    GET:
-      args:
-      - arg_types: []
-        argc: 0
-        cast_input: []
-        check_det_id: false
-        convert_det_id: true
-        function: getExptimeLeft
-        input: []
-        input_types: []
-        output:
-        - OutString(t)
-        require_det_id: true
-        store_result_in_t: true
-      - arg_types:
-        - special::time_unit
-        argc: 1
-        cast_input: []
-        check_det_id: false
-        convert_det_id: true
-        function: getExptimeLeft
-        input: []
-        input_types: []
-        output:
-        - OutString(t , args[0])
-        require_det_id: true
-        store_result_in_t: true
-  command_name: exptimel
-  function_alias: exptimel
-  help: "[(optional unit) ns|us|ms|s]\n\t[Gotthard] Exposure time left for current\
-    \ frame. "
-  infer_action: true
-  template: true
 extrastoragecells:
   actions:
     GET:
@@ -3531,9 +3473,8 @@ extsig:
         store_result_in_t: false
   command_name: extsig
   function_alias: extsig
-  help: "[n_signal] [signal_type]\n\t[Gotthard][Mythen3] External signal mode for\
-    \ trigger timing mode.\n\t[Gotthard] [0] [trigger_in_rising_edge|trigger_in_falling_edge]\n\
-    \t[Mythen3] [0-7] [trigger_in_rising_edge|trigger_in_falling_edge|inversion_on|inversion_off]\n\
+  help: "[n_signal] [signal_type]\n\t[Mythen3] External signal mode for trigger timing\
+    \ mode.\n\t[Mythen3] [0-7] [trigger_in_rising_edge|trigger_in_falling_edge|inversion_on|inversion_off]\n\
     \t where 0 is master input trigger signal, 1-3 is master input gate signals, 4\
     \ is busy out signal and 5-7 is master output gate signals."
   infer_action: true
@@ -3714,8 +3655,8 @@ firmwaretest:
         store_result_in_t: false
   command_name: firmwaretest
   function_alias: firmwaretest
-  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Firmware\
-    \ test, ie. reads a read fixed pattern from a register."
+  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Firmware test,\
+    \ ie. reads a read fixed pattern from a register."
   infer_action: true
   template: true
 firmwareversion:
@@ -4075,8 +4016,8 @@ framesl:
         store_result_in_t: true
   command_name: framesl
   function_alias: framesl
-  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number\
-    \ of frames left in acquisition. \n\t[Gotthard2] only in continuous auto mode."
+  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of frames\
+    \ left in acquisition. \n\t[Gotthard2] only in continuous auto mode."
   infer_action: true
   template: true
 frametime:
@@ -4847,8 +4788,8 @@ highvoltage:
         store_result_in_t: false
   command_name: highvoltage
   function_alias: highvoltage
-  help: "[n_value]\n\tHigh voltage to the sensor in Voltage. \n\t[Gotthard] [0|90|110|120|150|180|200]\
-    \ \n\t[Eiger][Mythen3][Gotthard2] 0-200 \n\t[Jungfrau][Moench][Ctb] [0|60-200]"
+  help: "[n_value]\n\tHigh voltage to the sensor in Voltage. \n\t[Eiger][Mythen3][Gotthard2]\
+    \ 0-200 \n\t[Jungfrau][Moench][Ctb] [0|60-200]"
   infer_action: true
   template: true
 hostname:
@@ -5041,10 +4982,8 @@ imagetest:
         store_result_in_t: false
   command_name: imagetest
   function_alias: imagetest
-  help: "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated values when\
-    \ taking an acquisition. Default is 0.\n\t[Eiger][Jungfrau][Moench] Only for Virtual\
-    \ servers. If 0, each pixel intensity incremented by 1. If 1, all pixels almost\
-    \ saturated."
+  help: "[0, 1]\n\t[Eiger][Jungfrau][Moench] Only for Virtual servers. If 0, each\
+    \ pixel intensity incremented by 1. If 1, all pixels almost saturated."
   infer_action: true
   template: true
 initialchecks:
@@ -5370,8 +5309,8 @@ master:
   command_name: master
   function_alias: master
   help: "[0, 1]\n\t[Eiger][Gotthard2][Jungfrau][Moench] Sets (half) module to master\
-    \ and other(s) to slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger][Jungfrau][Moench]\
-    \ Gets if the current (half) module is master."
+    \ and other(s) to slaves.\n\t[Gotthard2][Mythen3][Eiger][Jungfrau][Moench] Gets\
+    \ if the current (half) module is master."
   infer_action: true
   template: true
 maxadcphaseshift:
@@ -7183,8 +7122,8 @@ periodl:
         store_result_in_t: true
   command_name: periodl
   function_alias: periodl
-  help: "\n\t[Gotthard][Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx Ctb] Period\
-    \ left for current frame. \n\t[Gotthard2] only in continuous mode."
+  help: "\n\t[Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx Ctb] Period left for\
+    \ current frame. \n\t[Gotthard2] only in continuous mode."
   infer_action: true
   template: true
 polarity:
@@ -7920,8 +7859,8 @@ rebootcontroller:
         store_result_in_t: false
   command_name: rebootcontroller
   function_alias: rebootcontroller
-  help: "\n\t[Jungfrau][Moench][Ctb][Gotthard][Mythen3][Gotthard2][Xilinx Ctb] Reboot\
-    \ controller of detector."
+  help: "\n\t[Jungfrau][Moench][Ctb][Mythen3][Gotthard2][Xilinx Ctb] Reboot controller\
+    \ of detector."
   infer_action: true
   template: true
 reg:
@@ -8052,7 +7991,7 @@ resetdacs:
         store_result_in_t: false
   command_name: resetdacs
   function_alias: resetdacs
-  help: "[(optional) hard] \n\t[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3]Reset\
+  help: "[(optional) hard] \n\t[Eiger][Jungfrau][Moench][Gotthard2][Mythen3]Reset\
     \ dac values to the defaults. A 'hard' optional reset will reset the dacs to the\
     \ hardcoded defaults in on-board detector server."
   infer_action: true
@@ -8077,54 +8016,6 @@ resetfpga:
   help: "\n\t[Jungfrau][Moench][Ctb][Xilinx Ctb] Reset FPGA."
   infer_action: true
   template: true
-roi:
-  actions:
-    GET:
-      args:
-      - arg_types: []
-        argc: 0
-        cast_input: []
-        check_det_id: false
-        convert_det_id: true
-        function: getROI
-        input: []
-        input_types: []
-        output:
-        - t
-        require_det_id: true
-        store_result_in_t: true
-    PUT:
-      args:
-      - arg_types:
-        - int
-        - int
-        argc: 2
-        cast_input:
-        - false
-        check_det_id: false
-        convert_det_id: false
-        exceptions:
-        - condition: det_id == -1 && det->size() > 1
-          message: '"Cannot execute ROI at multi module level"'
-        extra_variables:
-        - name: t
-          type: defs::ROI
-          value: defs::ROI(StringTo<int>(args[0]), StringTo<int>(args[1]))
-        function: setROI
-        input:
-        - t
-        input_types:
-        - defs::ROI
-        output:
-        - t
-        require_det_id: true
-        store_result_in_t: false
-  command_name: roi
-  function_alias: roi
-  help: "[xmin] [xmax] \n\t[Gotthard] Region of interest in detector.\n\tOptions:\
-    \ Only a single ROI per module. \n\tEither all channels or a single adc or 2 chips\
-    \ (256 channels). Default is all channels enabled (-1 -1). "
-  infer_action: true
 romode:
   actions:
     GET:
@@ -9651,8 +9542,7 @@ serialnumber:
         store_result_in_t: true
   command_name: serialnumber
   function_alias: serialnumber
-  help: "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb]\n\tSerial number\
-    \ of detector."
+  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb]\n\tSerial number of detector."
   infer_action: true
   template: true
 setbit:
@@ -9767,13 +9657,11 @@ settings:
   help: "[standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain,\
     \ highgain0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, verylowgain, g1_hg,\
     \ g1_lg, g2_hc_hg, g2_hc_lg, g2_lc_hg, g2_lc_lg, g4_hg, g4_lg, gain0]\n\t Detector\
-    \ Settings\n\t[Jungfrau] - [ gain0 | highgain0]\n\t[Gotthard] - [dynamicgain |\
-    \ highgain | lowgain | mediumgain | veryhighgain]\n\t[Gotthard] Also loads default\
-    \ dacs on to the detector.\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]\n\
-    \t[Mythen3] - [standard | fast | highgain] Also changes vrshaper and vrpreamp.\
-    \ \n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] threshold and settings\
-    \ loaded from file found in settingspath. \n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg\
-    \ | g2_hc_lg | g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
+    \ Settings\n\t[Jungfrau] - [ gain0 | highgain0]\n\t[Gotthard2] - [dynamicgain\
+    \ | fixgain1 | fixgain2]\n\t[Mythen3] - [standard | fast | highgain] Also changes\
+    \ vrshaper and vrpreamp. \n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger]\
+    \ threshold and settings loaded from file found in settingspath. \n\t[Moench]\
+    \ - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
   infer_action: true
   template: true
 settingslist:
@@ -10736,7 +10624,7 @@ temp_adc:
         store_result_in_t: true
   command_name: temp_adc
   function_alias: temp_adc
-  help: "[n_value]\n\t[Jungfrau][Moench][Gotthard] ADC Temperature"
+  help: "[n_value]\n\t[Jungfrau][Moench] ADC Temperature"
   infer_action: true
   template: true
 temp_control:
@@ -10872,8 +10760,8 @@ temp_fpga:
         store_result_in_t: true
   command_name: temp_fpga
   function_alias: temp_fpga
-  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Xilinx\
-    \ CTB] FPGA Temperature"
+  help: "[n_value]\n\t[Eiger][Jungfrau][Moench][Mythen3][Gotthard2][Xilinx CTB] FPGA\
+    \ Temperature"
   infer_action: true
   template: true
 temp_fpgaext:
@@ -11344,8 +11232,8 @@ timing:
   command_name: timing
   function_alias: timing
   help: "[auto|trigger|gating|burst_trigger|trigger_gating]\n\tTiming Mode of detector.\n\
-    \t[Jungfrau][Moench][Gotthard][Ctb][Gotthard2][Xilinx Ctb] [auto|trigger]\n\t\
-    [Mythen3] [auto|trigger|gating|trigger_gating]\n\t[Eiger] [auto|trigger|gating|burst_trigger]"
+    \t[Jungfrau][Moench][Ctb][Gotthard2][Xilinx Ctb] [auto|trigger]\n\t[Mythen3] [auto|trigger|gating|trigger_gating]\n\
+    \t[Eiger] [auto|trigger|gating|burst_trigger]"
   infer_action: true
   template: true
 timing_info_decoder:
@@ -11614,8 +11502,8 @@ triggersl:
         store_result_in_t: true
   command_name: triggersl
   function_alias: triggersl
-  help: "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number\
-    \ of triggers left in acquisition. Only when external trigger used."
+  help: "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][Ctb][Xilinx Ctb] Number of triggers\
+    \ left in acquisition. Only when external trigger used."
   infer_action: true
   template: true
 trimbits:
@@ -11960,8 +11848,8 @@ type:
         store_result_in_t: true
   command_name: type
   function_alias: type
-  help: "\n\tReturns detector type. Can be Eiger, Jungfrau, Gotthard, Moench, Mythen3,\
-    \ Gotthard2, ChipTestBoard, Xilinx_ChipTestBoard"
+  help: "\n\tReturns detector type. Can be Eiger, Jungfrau, Moench, Mythen3, Gotthard2,\
+    \ ChipTestBoard, Xilinx_ChipTestBoard"
   infer_action: true
   template: true
 udp_cleardst:
@@ -12569,11 +12457,11 @@ update:
   command_name: update
   function_alias: update
   help: "\n\tWithout tftp: [server_name (incl fullpath)] [fname.pof (incl full path)]\
-    \ This does not use tftp.\n\t\t[Jungfrau][Moench][Gotthard][Ctb] Updates the firmware,\
-    \ detector server, deletes old server, creates the symbolic link and then reboots\
-    \ detector controller. \n\t\t[Mythen3][Gotthard2] will require a script to start\
-    \ up the shorter named server link at start up. \n\t\tserver_name is full path\
-    \ name of detector server binary\n\t\tfname is full path of programming file"
+    \ This does not use tftp.\n\t\t[Jungfrau][Moench][Ctb] Updates the firmware, detector\
+    \ server, deletes old server, creates the symbolic link and then reboots detector\
+    \ controller. \n\t\t[Mythen3][Gotthard2] will require a script to start up the\
+    \ shorter named server link at start up. \n\t\tserver_name is full path name of\
+    \ detector server binary\n\t\tfname is full path of programming file"
   infer_action: true
 updatedetectorserver:
   actions:

@@ -92,7 +92,7 @@ class slsDetectorDefs {
     enum detectorType {
         GENERIC,
         EIGER,
-        GOTTHARD,
+        GOTTHARD /** deprecated */,
         JUNGFRAU,
         CHIPTESTBOARD,
         MOENCH,
@@ -333,13 +333,9 @@ typedef struct {
         VTHRESHOLD,
         IO_DELAY,
         VREF_DS,
-        VCASCN_PB,
-        VCASCP_PB,
         VOUT_CM,
-        VCASC_OUT,
         VIN_CM,
         VREF_COMP,
-        IB_TESTC,
         VB_COMP,
         VDD_PROT,
         VIN_COM,
@@ -648,7 +644,6 @@ enum streamingInterface {
         readoutMode roMode{ANALOG_ONLY};
         uint32_t adcMask{0};
         uint32_t adc10gMask{0};
-        ROI roi;
         uint32_t countermask{0};
         burstMode burstType{BURST_INTERNAL};
         int64_t expTime1Ns{0};
@@ -704,12 +699,7 @@ struct detParameters {
     explicit detParameters(slsDetectorDefs::detectorType type) {
         switch (type) {
         case slsDetectorDefs::detectorType::GOTTHARD:
-            nChanX = 128;
-            nChanY = 1;
-            nChipX = 10;
-            nChipY = 1;
-            nDacs = 8;
-            break;
+            throw sls::RuntimeError("Gotthard is deprecated from v10.0.0!");
         case slsDetectorDefs::detectorType::MOENCH:
             nChanX = 400;
             nChanY = 400;

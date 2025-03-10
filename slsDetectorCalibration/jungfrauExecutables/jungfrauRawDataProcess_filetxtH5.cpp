@@ -242,8 +242,6 @@ int main(int argc, char *argv[]) {
 
     if (pedfilename.length()>1) {
 
-      std::string froot = getRootString(pedfilename);
-
       std::cout << "PEDESTAL " << std::endl;
 
       if (pedfilename.find(".tif") == std::string::npos) { //not a tiff file
@@ -290,10 +288,11 @@ int main(int argc, char *argv[]) {
 	          ;
 	        }
 
-	        std::cout << "froot " << froot << std::endl;
-	        auto imgfname = createFileName( outdir, froot, "ped", "tiff");
+	        std::cout << "Writing pedestal to " << getRootString(pedfilename) << "_ped.tiff" << std::endl;
+	        auto imgfname = createFileName( outdir, getRootString(pedfilename), "ped", "");
 	        mt->writePedestal(imgfname.c_str());
-	        imgfname = createFileName( outdir, froot, "rms", "tiff");
+          std::cout << "Writing pedestal rms to " << getRootString(pedfilename) << "_rms.tiff" << std::endl;
+	        imgfname = createFileName( outdir, getRootString(pedfilename), "rms", "");
 	        mt->writePedestalRMS(imgfname.c_str());
 
 	      } else
@@ -330,13 +329,10 @@ int main(int argc, char *argv[]) {
     
     //NOTE THAT THE DATA FILES HAVE TO BE IN THE RIGHT ORDER SO THAT PEDESTAL TRACKING WORKS!
     for (unsigned int ifile = 0; ifile != filenames.size(); ++ifile) {
-      std::cout << "DATA ";
-      std::string fsuffix{};
-      std::string const fprefix( getRootString(filenames[ifile]) );
-      std::string imgfname( createFileName( outdir, fprefix, fsuffix, "tiff" ) );
-      std::string const cfname( createFileName( outdir, fprefix, fsuffix, "clust" ) );
-      std::cout << filenames[ifile] << " ";
-      std::cout << imgfname << std::endl;
+      std::cout << "DATA " << filenames[ifile] << " " << std::endl;
+      auto imgfname( createFileName( outdir, getRootString(filenames[ifile]), "", "" ) );
+      std::string const cfname( createFileName( outdir, getRootString(filenames[ifile]), "", "clust" ) );
+      
       std::time(&end_time);
       std::cout << std::ctime(&end_time) << std::endl;
 
@@ -396,7 +392,7 @@ int main(int argc, char *argv[]) {
                       << std::endl;
 	        if (nframes > 0) {
 	          if (ifr % nframes == 0) {
-	            imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ioutfile );
+	            imgfname = createFileName( outdir, getRootString(filenames[ifile]), "", "", ioutfile );
 	            mt->writeImage(imgfname.c_str(), thr1);
 	            mt->clearImage();
 	            ++ioutfile;
@@ -417,8 +413,8 @@ int main(int argc, char *argv[]) {
 	      //std::cout << "cc --" << std::endl;
 	      if (nframes >= 0) {
 	        if (nframes > 0)
-	          imgfname = createFileName( outdir, fprefix, fsuffix, "tiff", ioutfile );
-	        std::cout << "Writing tiff to " << imgfname << " " << thr1
+	          imgfname = createFileName( outdir, getRootString(filenames[ifile]), "", "", ioutfile );
+	        std::cout << "Writing tiff to " << imgfname << " " << thr1 << ".tiff"
 		                << std::endl;
 	        mt->writeImage(imgfname.c_str(), thr1);
 	        mt->clearImage();
@@ -435,9 +431,9 @@ int main(int argc, char *argv[]) {
 		              << std::endl;
     }
     if (nframes < 0) {     
-      std::string fprefix( getRootString(filenames[0]) ); //Possibly, non-ideal name choice for file
-      std::string imgfname( createFileName( outdir, fprefix, "sum", "tiff" ) );
-      std::cout << "Writing tiff to " << imgfname << " " << thr1 << std::endl;
+      //std::string fprefix( getRootString(filenames[0]) ); //Possibly, non-ideal name choice for file
+      auto imgfname( createFileName( outdir, getRootString(filenames[0]), "sum", "" ) );
+      std::cout << "Writing tiff to " << imgfname << " " << thr1 << ".tiff" << std::endl;
       mt->writeImage(imgfname.c_str(), thr1);
     }
 

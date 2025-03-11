@@ -27,6 +27,7 @@ set_target_properties(_slsdet PROPERTIES
 set( PYTHON_FILES
     slsdet/__init__.py
     slsdet/adcs.py
+    slsdet/bits.py
     slsdet/dacs.py
     slsdet/powers.py
     slsdet/decorators.py
@@ -36,8 +37,10 @@ set( PYTHON_FILES
     slsdet/eiger.py
     slsdet/enums.py
     slsdet/errors.py
+    slsdet/format.py
     slsdet/gaincaps.py
     slsdet/pattern.py
+    slsdet/patterntools.py
     slsdet/gotthard2.py
     slsdet/moench.py
     slsdet/proxy.py

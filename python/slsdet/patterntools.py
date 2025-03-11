@@ -151,7 +151,23 @@ class pat:
         print("Waittime",self.pattern.waittime)
         print("Words",self.pattern.word[self.pattern.word>0])
         print("########################################")
-          
+
+    def to_lines(self):
+        pwords=''
+        for i in range(self.pattern.limits[1]):
+            l='patword '+hexFormat(i,4)+' '+hexFormat(self.pattern.word[i],16)+'\n'
+            pwords+=l
+        for i in range(6):
+            l='patloop'+str(i)+' '+hexFormat(self.pattern.loop[i*2],4)+' '+hexFormat(self.pattern.loop[i*2+1],4)+'\n'+'patnloop'+str(i)+' '+str(self.pattern.nloop[i])+'\n'
+            pwords+=l
+        for i in range(6):
+            l='patwait'+str(i)+' '+hexFormat(self.pattern.wait[i],4)+'\n'+'patwaittime'+str(i)+' '+str(self.pattern.waittime[i])+'\n'
+            pwords+=l
+        
+        l='patlimits '+hexFormat(self.pattern.limits[0],4)+' '+hexFormat(self.pattern.limits[1],4)+'\n'
+        pwords+=l
+        return pwords
+
     def saveToFile(self,fname):
         pwords=''
         for i in range(self.pattern.limits[1]):

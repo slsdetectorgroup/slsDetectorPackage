@@ -31,7 +31,7 @@ This document describes the differences between v9.1.0 and v9.0.0
     --------
 
 
-    *   Frame Synchronizer
+    *   Frame Synchronizer (experimental)
         Added a new binary, similar to slsMultiReceiver, to thread receiver 
         processes, use callbacks for data synchronization and stream out ZMQ
         multipart messages (for each UDP port) together for each acquisition index

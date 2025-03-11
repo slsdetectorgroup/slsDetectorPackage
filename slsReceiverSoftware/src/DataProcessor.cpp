@@ -75,9 +75,7 @@ void DataProcessor::SetCtbDbitList(std::vector<int> value) {
     ctbDbitList = value;
 }
 
-void DataProcessor::SetReorder(const bool value) {
-    reorder = value;
-}
+void DataProcessor::SetReorder(const bool value) { reorder = value; }
 
 void DataProcessor::SetCtbDbitOffset(int value) { ctbDbitOffset = value; }
 
@@ -536,9 +534,10 @@ void DataProcessor::PadMissingPackets(sls_receiver_header header, char *data) {
 
 /** ctb specific */
 void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
-    size_t nAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes(); 
+    size_t nAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
     size_t nDigitalDataBytes = generalData->GetNumberOfDigitalDatabytes();
-    size_t nTransceiverDataBytes = generalData->GetNumberOfTransceiverDatabytes();
+    size_t nTransceiverDataBytes =
+        generalData->GetNumberOfTransceiverDatabytes();
     // TODO! (Erik) Refactor and add tests
     int ctbDigitalDataBytes = nDigitalDataBytes - ctbDbitOffset;
 
@@ -553,18 +552,21 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
 
     const int numDigitalSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
 
-    int totalNumBytes = 0; //number of bytes for selected digital data given by dtbDbitList
+    int totalNumBytes =
+        0; // number of bytes for selected digital data given by dtbDbitList
 
-    //store each selected bit from all samples consecutively
-    if(reorder) {
-        int numBitsPerDbit = numDigitalSamples; //num bits per selected digital Bit for all samples
+    // store each selected bit from all samples consecutively
+    if (reorder) {
+        int numBitsPerDbit = numDigitalSamples; // num bits per selected digital
+                                                // Bit for all samples
         if ((numBitsPerDbit % 8) != 0)
             numBitsPerDbit += (8 - (numDigitalSamples % 8));
         totalNumBytes = (numBitsPerDbit / 8) * ctbDbitList.size();
     }
-    //store all selected bits from one sample consecutively 
-    else { 
-        size_t numBitsPerSample = ctbDbitList.size(); //num bits for all selected bits per sample
+    // store all selected bits from one sample consecutively
+    else {
+        size_t numBitsPerSample =
+            ctbDbitList.size(); // num bits for all selected bits per sample
         if ((numBitsPerSample % 8) != 0)
             numBitsPerSample += (8 - (numBitsPerSample % 8));
         totalNumBytes = (numBitsPerSample / 8) * numDigitalSamples;
@@ -573,7 +575,7 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
     std::vector<uint8_t> result(totalNumBytes, 0);
     uint8_t *dest = &result[0];
 
-    if(reorder) {
+    if (reorder) {
         // loop through digital bit enable vector
         int bitoffset = 0;
         for (auto bi : ctbDbitList) {
@@ -596,8 +598,7 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
                 }
             }
         }
-    }
-    else {
+    } else {
         // loop through the digital data
         int bitoffset = 0;
         for (auto *ptr = source; ptr < (source + numDigitalSamples); ++ptr) {
@@ -625,13 +626,15 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
     // copy back to memory and update size
     memcpy(data + nAnalogDataBytes, result.data(),
            totalNumBytes * sizeof(uint8_t));
-    
+
     size = totalNumBytes * sizeof(uint8_t) + nAnalogDataBytes +
            nTransceiverDataBytes;
-    
-    //check if size changed, if so move transceiver data to avoid gap in memory 
-    if(size < nAnalogDataBytes + nDigitalDataBytes + nTransceiverDataBytes)
-        memmove(data + nAnalogDataBytes + totalNumBytes * sizeof(uint8_t), data + nAnalogDataBytes + nDigitalDataBytes, nTransceiverDataBytes); 
+
+    // check if size changed, if so move transceiver data to avoid gap in memory
+    if (size < nAnalogDataBytes + nDigitalDataBytes + nTransceiverDataBytes)
+        memmove(data + nAnalogDataBytes + totalNumBytes * sizeof(uint8_t),
+                data + nAnalogDataBytes + nDigitalDataBytes,
+                nTransceiverDataBytes);
 
     LOG(logDEBUG1) << "totalNumBytes: " << totalNumBytes
                    << " nAnalogDataBytes:" << nAnalogDataBytes

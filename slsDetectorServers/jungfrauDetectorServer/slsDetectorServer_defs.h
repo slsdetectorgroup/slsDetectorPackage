@@ -5,8 +5,8 @@
 #include "sls/sls_detector_defs.h"
 
 #define MIN_REQRD_VRSN_T_RD_API  0x171220
-#define REQRD_FRMWRE_VRSN_BOARD2 0x230920 // 1.0 pcb (version = 010)
-#define REQRD_FRMWRE_VRSN        0x230921 // 2.0 pcb (version = 011)
+#define REQRD_FRMWRE_VRSN_BOARD2 0x250209 // 1.0 pcb (version = 010)
+#define REQRD_FRMWRE_VRSN        0x250208 // 2.0 pcb (version = 011)
 
 #define NUM_HARDWARE_VERSIONS (2)
 #define HARDWARE_VERSION_NUMBERS                                               \

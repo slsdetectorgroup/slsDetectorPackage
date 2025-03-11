@@ -46,6 +46,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void SetStreamingStartFnum(uint32_t value);
     void SetFramePadding(bool enable);
     void SetCtbDbitList(std::vector<int> value);
+    void SetReorder(const bool reorder);
     void SetCtbDbitOffset(int value);
     void SetQuadEnable(bool value);
     void SetFlipRows(bool fd);
@@ -139,9 +140,11 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     /**
      * Align corresponding digital bits together (CTB only if ctbDbitlist is not
-     * empty)
+     * empty) 
+     * set variable reorder to true if, data should be rearranged such that 
+     * individual digital bits from all samples are consecutive in memory
      */
-    void RearrangeDbitData(size_t &size, char *data);
+    void ArrangeDbitData(size_t &size, char *data); 
 
     void CropImage(size_t &size, char *data);
 
@@ -165,6 +168,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     struct timespec timerbegin {};
     bool framePadding;
     std::vector<int> ctbDbitList;
+    bool reorder{false}; //true if data should be reordered TODO: add as mode
     int ctbDbitOffset;
     std::atomic<bool> startedFlag{false};
     std::atomic<uint64_t> firstIndex{0};

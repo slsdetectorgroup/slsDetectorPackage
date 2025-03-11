@@ -9,5 +9,5 @@
 #define APIRECEIVER  "9.1.0 0x250204"
 #define APICTB       "9.1.0 0x250204"
 #define APIXILINXCTB "9.1.0 0x250204"
-#define APIJUNGFRAU  "9.1.0 0x250224"
 #define APIMYTHEN3   "9.1.0 0x250304"
+#define APIJUNGFRAU  "9.1.0 0x250311"

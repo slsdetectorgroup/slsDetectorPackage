@@ -179,8 +179,8 @@ This document describes the differences between v9.1.0 and v9.0.0
 
     Eiger       02.10.2023 (v32)                    (updated in 7.0.3)
     
-    Jungfrau    xx.03.2025 (v1.6, HW v1.0)          (updated in 9.1.0)
-                xx.03.2025 (v2.6, HW v2.0)          (updated in 9.1.0)
+    Jungfrau    09.02.2025 (v1.6, HW v1.0)          (updated in 9.1.0)
+                08.02.2025 (v2.6, HW v2.0)          (updated in 9.1.0)
 
     Mythen3     13.11.2024 (v2.0)                   (updated in 9.0.0)
 

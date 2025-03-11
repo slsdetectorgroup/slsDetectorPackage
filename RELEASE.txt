@@ -7,15 +7,9 @@ This document describes the differences between v9.1.0 and v9.0.0
 
     CONTENTS
     --------
-    1           New, Changed or Resolved Features
-        1.1     Compilation
-        1.2     Callback
-        1.3     Python
-        1.4     Client
-        1.5     Detector Server
-        1.6     Simulator
-        1.7     Receiver
-        1.8     Gui
+    1           Changes
+        1.1     New or Changed Features
+        1.2     Resolved Features
     2           On-board Detector Server Compatibility
     3           Firmware Requirements
     4           Kernel Requirements
@@ -24,8 +18,8 @@ This document describes the differences between v9.1.0 and v9.0.0
 
 
 
-1 New, Changed or Resolved Features
-=====================================
+1 Changes
+==========
 
 
 
@@ -150,7 +144,7 @@ This document describes the differences between v9.1.0 and v9.0.0
 
     Eiger       9.0.0
     Jungfrau    9.1.0
-    Mythen3     9.0.0
+    Mythen3     9.1.0
     Gotthard2   9.0.0
     Gotthard    9.0.0
     Moench      9.0.0

@@ -344,7 +344,7 @@ int main(int argc, char *argv[]) {
 
             std::vector<std::string> cfnames(nSC);
             for ( int s = 0; s < nSC; ++s ) {
-                std::string fsuffix = "_SC" + std::to_string(s);
+                std::string fsuffix = "SC" + std::to_string(s);
                 cfnames[s] = createFileName( outdir, getRootString(filenames[ifile]), fsuffix, "clust" );
             }
 	      

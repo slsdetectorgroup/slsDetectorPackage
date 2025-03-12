@@ -101,6 +101,12 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      */
     void ArrangeDbitData(size_t &size, char *data);
 
+    /**
+     * reorder datastream such that individual digital bits from all samples are
+     * stored consecutively in memory
+     */
+    void Reorder(size_t &size, char *data);
+
   private:
     void RecordFirstIndex(uint64_t fnum);
 

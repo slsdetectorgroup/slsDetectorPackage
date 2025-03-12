@@ -956,6 +956,42 @@ TEST_CASE("rx_dbitoffset", "[.cmdcall][.rx]") {
     }
 }
 
+TEST_CASE("rx_dbitreorder", "[.cmdcall][.rx]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
+        auto prev_val = det.getRxDbitReorder();
+        {
+            std::ostringstream oss;
+            caller.call("rx_dbitreorder", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_dbitreorder 1\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("rx_dbitreorder", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_dbitreorder 0\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("rx_dbitreorder", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_dbitreorder 1\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("rx_dbitreorder", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "rx_dbitreorder 1\n");
+        }
+        REQUIRE_THROWS(caller.call("rx_dbitreorder", {"15"}, -1, PUT));
+        for (int i = 0; i != det.size(); ++i) {
+            det.setRxDbitReorder(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(caller.call("rx_dbitoffset", {}, -1, GET));
+    }
+}
+
 TEST_CASE("rx_jsonaddheader", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);

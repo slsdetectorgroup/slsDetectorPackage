@@ -32,11 +32,10 @@ This document describes the differences between v9.1.0 and v9.0.0
 
 
     *   Frame Synchronizer (experimental)
-        Added a new binary, similar to slsMultiReceiver, to thread receiver 
-        processes, use callbacks for data synchronization and stream out ZMQ
-        multipart messages (for each UDP port) together for each acquisition index
-        without reconstructing the image. Included start and end ZMQ messages 
-        as well for the start and end callback parameters.
+        Added a new binary, similar to slsMultiReceiver, to collect images from
+        several receivers and stream them out as a ZMQ  multipart message 
+        (one part for each UDP port). No reconstuction of the image. Includeds start 
+        and end ZMQ messages as well for the start and end callback parameters.
 
 
     Documentation

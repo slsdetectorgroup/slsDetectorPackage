@@ -2277,6 +2277,14 @@ void Detector::setRxDbitOffset(int value, Positions pos) {
     pimpl->Parallel(&Module::setReceiverDbitOffset, pos, value);
 }
 
+Result<bool> Detector::getRxDbitReorder(Positions pos) const {
+    return pimpl->Parallel(&Module::getReceiverDbitReorder, pos);
+}
+
+void Detector::setRxDbitReorder(bool reorder, Positions pos) {
+    pimpl->Parallel(&Module::setReceiverDbitReorder, pos, reorder);
+}
+
 void Detector::setDigitalIODelay(uint64_t pinMask, int delay, Positions pos) {
     pimpl->Parallel(&Module::setDigitalIODelay, pos, pinMask, delay);
 }

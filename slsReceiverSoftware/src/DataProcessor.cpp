@@ -75,9 +75,9 @@ void DataProcessor::SetCtbDbitList(std::vector<int> value) {
     ctbDbitList = value;
 }
 
-void DataProcessor::SetReorder(const bool value) { reorder = value; }
-
 void DataProcessor::SetCtbDbitOffset(int value) { ctbDbitOffset = value; }
+
+void DataProcessor::SetCtbDbitReorder(bool value) { ctbDbitReorder = value; }
 
 void DataProcessor::SetQuadEnable(bool value) { quadEnable = value; }
 
@@ -556,7 +556,7 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
         0; // number of bytes for selected digital data given by dtbDbitList
 
     // store each selected bit from all samples consecutively
-    if (reorder) {
+    if (ctbDbitReorder) {
         int numBitsPerDbit = numDigitalSamples; // num bits per selected digital
                                                 // Bit for all samples
         if ((numBitsPerDbit % 8) != 0)
@@ -575,7 +575,7 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
     std::vector<uint8_t> result(totalNumBytes, 0);
     uint8_t *dest = &result[0];
 
-    if (reorder) {
+    if (ctbDbitReorder) {
         // loop through digital bit enable vector
         int bitoffset = 0;
         for (auto bi : ctbDbitList) {

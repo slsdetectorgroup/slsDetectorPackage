@@ -8305,6 +8305,47 @@ rx_dbitoffset:
   help: "[n_bytes]\n\t[Ctb] Offset in bytes in digital data to skip in receiver."
   infer_action: true
   template: true
+rx_dbitreorder:
+  actions:
+    GET:
+      args:
+      - arg_types: []
+        argc: 0
+        cast_input: []
+        check_det_id: false
+        convert_det_id: true
+        function: getRxDbitReorder
+        input: []
+        input_types: []
+        output:
+        - OutString(t)
+        require_det_id: true
+        store_result_in_t: true
+    PUT:
+      args:
+      - arg_types:
+        - bool
+        argc: 1
+        cast_input:
+        - true
+        check_det_id: false
+        convert_det_id: true
+        function: setRxDbitReorder
+        input:
+        - args[0]
+        input_types:
+        - bool
+        output:
+        - args.front()
+        require_det_id: true
+        store_result_in_t: false
+  command_name: rx_dbitreorder
+  function_alias: rx_dbitreorder
+  help: "[0, 1]\n\t[Ctb] Reorder digital data to group together all samples per signal.\
+    \ Default is 1. Setting to 0 means 'do not reorder' and to keep what the board\
+    \ spits out, which is that all signals in a sample are grouped together."
+  infer_action: true
+  template: true
 rx_discardpolicy:
   actions:
     GET:

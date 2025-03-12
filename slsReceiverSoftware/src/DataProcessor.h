@@ -46,8 +46,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void SetStreamingStartFnum(uint32_t value);
     void SetFramePadding(bool enable);
     void SetCtbDbitList(std::vector<int> value);
-    void SetReorder(const bool reorder);
     void SetCtbDbitOffset(int value);
+    void SetCtbDbitReorder(bool value);
     void SetQuadEnable(bool value);
     void SetFlipRows(bool fd);
     void SetNumberofTotalFrames(uint64_t value);
@@ -168,8 +168,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     struct timespec timerbegin {};
     bool framePadding;
     std::vector<int> ctbDbitList;
-    bool reorder{false}; // true if data should be reordered TODO: add as mode
-    int ctbDbitOffset;
+    int ctbDbitOffset{0};
+    bool ctbDbitReorder{false};
     std::atomic<bool> startedFlag{false};
     std::atomic<uint64_t> firstIndex{0};
     bool quadEnable{false};

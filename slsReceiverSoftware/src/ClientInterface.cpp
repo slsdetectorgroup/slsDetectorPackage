@@ -218,6 +218,8 @@ int ClientInterface::functionTable(){
     flist[F_RECEIVER_SET_TRANSCEIVER_MASK]  =   &ClientInterface::set_transceiver_mask;
     flist[F_RECEIVER_SET_ROW]               =   &ClientInterface::set_row;
     flist[F_RECEIVER_SET_COLUMN]            =   &ClientInterface::set_column;    
+    flist[F_GET_RECEIVER_DBIT_REORDER]      =   &ClientInterface::get_dbit_reorder;
+    flist[F_SET_RECEIVER_DBIT_REORDER]      =   &ClientInterface::set_dbit_reorder;
 
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
@@ -1786,6 +1788,27 @@ int ClientInterface::set_column(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting column to " << value;
     impl()->setColumn(value);
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_dbit_reorder(Interface &socket) {
+    if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD)
+        functionNotImplemented();
+    int retval = impl()->getDbitReorder();
+    LOG(logDEBUG1) << "Dbit reorder retval: " << retval;
+    return socket.sendResult(retval);
+}
+
+int ClientInterface::set_dbit_reorder(Interface &socket) {
+    auto arg = socket.Receive<int>();
+    if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD)
+        functionNotImplemented();
+    if (arg < 0) {
+        throw RuntimeError("Invalid dbit reorder: " + std::to_string(arg));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting Dbit offset: " << arg;
+    impl()->setDbitReorder(arg);
     return socket.Send(OK);
 }
 

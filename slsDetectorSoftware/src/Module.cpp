@@ -2509,6 +2509,15 @@ void Module::setReceiverDbitOffset(int value) {
     sendToReceiver(F_SET_RECEIVER_DBIT_OFFSET, value, nullptr);
 }
 
+bool Module::getReceiverDbitReorder() const {
+    return sendToReceiver<int>(F_GET_RECEIVER_DBIT_REORDER);
+}
+
+void Module::setReceiverDbitReorder(bool reorder) {
+    sendToReceiver(F_SET_RECEIVER_DBIT_REORDER, static_cast<int>(reorder),
+                   nullptr);
+}
+
 void Module::setDigitalIODelay(uint64_t pinMask, int delay) {
     uint64_t args[]{pinMask, static_cast<uint64_t>(delay)};
     sendToDetector(F_DIGITAL_IO_DELAY, args, nullptr);

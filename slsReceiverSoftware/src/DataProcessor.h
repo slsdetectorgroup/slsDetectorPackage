@@ -92,6 +92,15 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                                                    size_t &, void *),
                                       void *arg);
 
+  protected:
+    /**
+     * Align corresponding digital bits together (CTB only if ctbDbitlist is not
+     * empty)
+     * set variable reorder to true if, data should be rearranged such that
+     * individual digital bits from all samples are consecutive in memory
+     */
+    void ArrangeDbitData(size_t &size, char *data);
+
   private:
     void RecordFirstIndex(uint64_t fnum);
 
@@ -137,14 +146,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     bool CheckCount();
 
     void PadMissingPackets(sls_receiver_header header, char *data);
-
-    /**
-     * Align corresponding digital bits together (CTB only if ctbDbitlist is not
-     * empty)
-     * set variable reorder to true if, data should be rearranged such that
-     * individual digital bits from all samples are consecutive in memory
-     */
-    void ArrangeDbitData(size_t &size, char *data);
 
     void CropImage(size_t &size, char *data);
 

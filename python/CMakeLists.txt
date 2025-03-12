@@ -37,10 +37,9 @@ set( PYTHON_FILES
     slsdet/eiger.py
     slsdet/enums.py
     slsdet/errors.py
-    slsdet/format.py
     slsdet/gaincaps.py
     slsdet/pattern.py
-    slsdet/patterntools.py
+    slsdet/PatternGenerator.py
     slsdet/gotthard2.py
     slsdet/moench.py
     slsdet/proxy.py

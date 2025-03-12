@@ -1,10 +1,10 @@
 from . import Detector, Pattern
 from .bits import setbit, clearbit
-from .format import hexFormat, hexFormat_nox, binFormat, binFormat_nob, decFormat
+import textwrap
+from pathlib import Path
 
 
-
-class pat:
+class PatternGenerator:
     """
     Class to generate a pattern for the SLS detector. Intents to as closely as possible 
     mimic the old pattern generation in the C code.
@@ -13,14 +13,20 @@ class pat:
         self.pattern = Pattern()
         self.iaddr = 0
 
-    def SB(self, *args):
-        for i in args:
-            self.pattern.word[self.iaddr] = setbit(i, self.pattern.word[self.iaddr])
+    def SB(self, *bits):
+        """
+        Set one or several bits. Change will take affect with the next PW.
+        """
+        for bit in bits:
+            self.pattern.word[self.iaddr] = setbit(bit, self.pattern.word[self.iaddr])
         return self.pattern.word[self.iaddr]
  
-    def CB(self, *args):
-        for i in args:
-            self.pattern.word[self.iaddr] = clearbit(i, self.pattern.word[self.iaddr])
+    def CB(self, *bits):
+        """
+        Clear one or several bits. Change will take affect with the next PW.
+        """
+        for bit in bits:
+            self.pattern.word[self.iaddr] = clearbit(bit, self.pattern.word[self.iaddr])
         return self.pattern.word[self.iaddr]
     
 
@@ -28,20 +34,21 @@ class pat:
         if verbose:
             print(f'{self.iaddr:#06x} {self.pattern.word[self.iaddr]:#018x}') 
         
-        self.iaddr += 1
+        #Limits are inclusive so we need to increment the address before writing the next word
         self.pattern.limits[1] = self.iaddr
+        self.iaddr += 1
         self.pattern.word[self.iaddr] = self.pattern.word[self.iaddr-1]
 
     def PW(self, x = 1, verbose = False):
         for i in range(x):
             self._pw(verbose)
             
-    def REPEAT(self, x, verbose = False):
-        for i in range(x):
-            self._pw(verbose)
+    # def REPEAT(self, x, verbose = False):
+    #     for i in range(x):
+    #         self._pw(verbose)
 
-    def PW2(self, verbose = 0):
-        self.REPEAT(2, verbose)
+    # def PW2(self, verbose = 0):
+    #     self.REPEAT(2, verbose)
 
 
     def CLOCKS(self, bit, times = 1, length = 1, verbose = False):
@@ -133,7 +140,6 @@ class pat:
         """
         self.pattern.startloop[i] = self.iaddr
 
-
     def setstoploop(self, i):
         """
         Set stoploop[i] to the current address.
@@ -177,56 +183,43 @@ class pat:
         self.setwaittime(i, t)
 
     
-    def patInfo(self):
-        print("### SUMMARY OF PATTERN PARAMETERS ###")
-        print("Pattern limits (patlimits):",self.pattern.limits) 
-        print("startloop:",self.pattern.startloop)
-        print("stoploop:",self.pattern.stoploop)
-        print("Nloop:",self.pattern.nloop)
-        print("Wait:",self.pattern.wait)
-        print("Waittime",self.pattern.waittime)
-        print("Words", self.pattern.word[self.pattern.word>0])
-        print("########################################")
+    def __repr__(self):
+        return textwrap.dedent(f"""\
+                            PatternBuilder:
+                                patlimits: {self.pattern.limits}
+                                startloop: {self.pattern.startloop}
+                                stoploop: {self.pattern.stoploop}
+                                nloop: {self.pattern.nloop}
+                                wait: {self.pattern.wait}
+                                waittime: {self.pattern.waittime}""")
 
-    def to_lines(self):
-        """
-        Convert pattern to text representation.
-        """
-        lines = []
-
-        # write pattern words
-        for i in range(self.pattern.limits[0], self.pattern.limits[1], 1):
-            lines.append(f'patword {hexFormat(i,4)} {hexFormat(self.pattern.word[i],16)}')
-
-        # write ioctrl and limits (TODO! Should this always be here?)
-        lines.append(f'patioctrl {hexFormat(self.pattern.ioctrl,16)}')
-        lines.append(f'patlimits {hexFormat(self.pattern.limits[0],4)} {hexFormat(self.pattern.limits[1],4)}')
-
-        # write loop limits
-        for i in range(6):
-            lines.append(f'patloop {i} {hexFormat(self.pattern.startloop[i],4)} {hexFormat(self.pattern.stoploop[i],4)}')                    
-            lines.append(f'patnloop {i} {self.pattern.nloop[i]}')
-
-
-        # write wait times
-        for i in range(6):
-            lines.append(f'patwait {i} {hexFormat(self.pattern.wait[i],4)}')
-            lines.append(f'patwaittime {i} {self.pattern.waittime[i]}')
-        
-        
-
-        return lines
+    def __str__(self):
+        return self.pattern.str()
     
     def print(self):
-        for l in self.to_lines():
-            print(l)
+        print(self)
 
-    def saveToFile(self, fname):
-        with open(fname,'w') as f:
-            f.writelines(l + '\n' for l in self.to_lines())
+    def save(self, fname):
+        """Save pattern to text file"""
+        fname = str(fname) #Accept also Path objects, but C++ code needs a string
+        self.pattern.save(fname)
+
+    def load(self, fname):
+        """Load pattern from text file"""
+        fname = str(fname) #Accept also Path objects, but C++ code needs a string
+        n = self.pattern.load(fname)
+
+        #If the firs and only word is 0 we assume an empty pattern
+        if n == 1 and self.pattern.word[0] == 0:
+            n = 0
+        self.iaddr = n
+
+        #To make PW work as expected we need to set 1+last word to the last word
+        if n > 0:
+            self.pattern.word[n] = self.pattern.word[n-1]
+
         
-
-    def load(self, det):
+    def send_to_detector(self, det):
         """
         Load the pattern into the detector.
         """

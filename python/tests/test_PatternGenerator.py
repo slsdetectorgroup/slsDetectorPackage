@@ -1,6 +1,5 @@
 import pytest 
-
-from slsdet.patterntools import pat
+from slsdet import PatternGenerator
 
 
 def apply_detconf(p):
@@ -76,18 +75,45 @@ def apply_detconf(p):
     return p    
 
 
+
+
+
+def test_first_two_PW():
+    p = PatternGenerator()
+
+    #The pattern is created with a single empty word
+    assert p.pattern.limits[0] == 0
+    assert p.pattern.limits[1] == 0
+
+    p.SB(8)
+    p.PW()
+
+    #When doing the first PW the empty word is overwritten
+    assert p.pattern.limits[0] == 0
+    assert p.pattern.limits[1] == 0
+    assert p.pattern.word[0] == 256
+
+    p.SB(9)
+    p.PW()
+
+    #When doing the second PW we add a new word
+    assert p.pattern.limits[0] == 0
+    assert p.pattern.limits[1] == 1
+    assert p.pattern.word[0] == 256
+    assert p.pattern.word[1] == 768
+
 def test_simple_pattern():
     """
     Using enable pll pattern for MH02
     """
     en_pll_clk = 15
-    p = pat()
+    p = PatternGenerator()
     p = apply_detconf(p)
     p.SB(en_pll_clk)
     p.PW()
     p.PW() 
 
-    lines = p.to_lines()
+    lines = str(p).split("\n")
 
     enable_pll_pattern = [
         "patword 0x0000 0x0000000000008000",
@@ -119,6 +145,8 @@ def test_simple_pattern():
         "patwait 5 0x1fff",
         "patwaittime 5 0",
     ]
+
+    assert len(lines) == len(enable_pll_pattern)
 
     for i, line in enumerate(lines):
         assert line == enable_pll_pattern[i]

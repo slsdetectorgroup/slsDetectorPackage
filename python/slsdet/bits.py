@@ -2,9 +2,11 @@ import numpy as np
 
 
 def setbit(bit, word):
-    mask = 1 << bit
     if isinstance(word, np.generic):
-        mask = word.dtype.type(mask)
+        mask = word.dtype.type(1)
+        mask = mask << bit
+    else:
+        mask = 1 << bit
     return word | mask
 
 

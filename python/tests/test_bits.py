@@ -8,7 +8,6 @@ def test_clearbit_on_python_int():
     assert r == 4
     assert val == 5
 
-
 def test_setbit_on_python_int():
     val = 5  # 0b101
     r = setbit(1, val)
@@ -28,12 +27,15 @@ def test_clearbit_doesnt_change_type():
     assert isinstance(ret, np.uint8)
 
 
+
 def test_setbit_on_array_element():
     arr = np.zeros(10, dtype=np.uint64)
     arr[5] = setbit(0, arr[5])
     arr[5] = setbit(1, arr[5])
     arr[5] = setbit(4, arr[5])
+    assert arr[4] == 0
     assert arr[5] == 19  # 0b10011
+    assert arr[6] == 0
 
 
 def test_setbit_arr():

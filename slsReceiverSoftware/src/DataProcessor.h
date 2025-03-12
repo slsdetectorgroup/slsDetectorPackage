@@ -107,6 +107,11 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      */
     void Reorder(size_t &size, char *data);
 
+    /**
+     * remove trailing bits in digital data stream
+     */
+    void RemoveTrailingBits(size_t &size, char *data);
+
   private:
     void RecordFirstIndex(uint64_t fnum);
 
@@ -172,7 +177,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     uint32_t streamingTimerInMs;
     uint32_t streamingStartFnum;
     uint32_t currentFreqCount{0};
-    struct timespec timerbegin {};
+    struct timespec timerbegin{};
     bool framePadding;
     std::vector<int> ctbDbitList;
     bool reorder{false}; // true if data should be reordered TODO: add as mode

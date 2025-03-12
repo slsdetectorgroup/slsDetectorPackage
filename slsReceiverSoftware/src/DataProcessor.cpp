@@ -358,13 +358,13 @@ void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
     if (framePadding && nump < generalData->packetsPerFrame)
         PadMissingPackets(header, data);
 
-    if (reorder && ctbDbitList.empty()) {
-        Reorder(size, data);
-    }
-
-    // rearrange ctb digital bits (if ctbDbitlist is not empty)
+    // rearrange ctb digital bits
     if (!ctbDbitList.empty()) {
         ArrangeDbitData(size, data);
+    } else if (reorder) {
+        Reorder(size, data);
+    } else if (ctbDbitOffset > 0) {
+        RemoveTrailingBits(size, data);
     }
 
     // 'stream Image' check has to be done here before crop image
@@ -534,6 +534,29 @@ void DataProcessor::PadMissingPackets(sls_receiver_header header, char *data) {
         }
         --nmissing;
     }
+}
+
+void DataProcessor::RemoveTrailingBits(size_t &size, char *data) {
+    const size_t nAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
+    const size_t nDigitalDataBytes = generalData->GetNumberOfDigitalDatabytes();
+    const size_t nTransceiverDataBytes =
+        generalData->GetNumberOfTransceiverDatabytes();
+
+    const size_t ctbDigitalDataBytes = nDigitalDataBytes - ctbDbitOffset;
+
+    // no digital data
+    if (ctbDigitalDataBytes == 0) {
+        LOG(logWARNING)
+            << "No digital data for call back, yet ctbDbitOffset is non zero.";
+        return;
+    }
+
+    // update size and copy data
+    memmove(data + nAnalogDataBytes,
+            data + nAnalogDataBytes + ctbDigitalDataBytes,
+            ctbDigitalDataBytes + nTransceiverDataBytes);
+
+    size = nAnalogDataBytes + ctbDigitalDataBytes + nTransceiverDataBytes;
 }
 
 void DataProcessor::Reorder(size_t &size, char *data) {

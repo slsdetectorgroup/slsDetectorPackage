@@ -216,7 +216,7 @@ bool HDF5File::OpenFrameIndexDataset() {
 
 int HDF5File::OpenResources (char const*const fname, bool validate) {
 
-	cprintf(BLUE, "Attempting to open file: %s\n", fname);
+	std::cout << "Debug HDF5File.cpp: Attempting to open file " << fname << std::endl;
 	// Open File
 	file = H5Fopen (fname, H5F_ACC_RDONLY, H5P_DEFAULT);
 	if (file < 0) {

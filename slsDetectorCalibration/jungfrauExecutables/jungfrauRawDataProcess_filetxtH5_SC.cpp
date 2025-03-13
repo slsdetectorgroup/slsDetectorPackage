@@ -13,6 +13,7 @@
 #include "singlePhotonDetector.h"
 
 #include <fstream>
+#include <csignal>
 #include <map>
 #include <memory>
 #include <stdio.h>
@@ -88,6 +89,13 @@ int adjustThreads(int requestedThreads, int nSC) {
     return adjustedThreads;
 }
 
+// Signal handler for segmentation faults
+void signal_handler(int signum) {
+    std::cerr << "Caught signal " << signum << ": Segmentation fault (core dump)" << std::endl;
+    // Handle the error (e.g., clean up, abort, etc.)
+    exit(signum);  // Exit program with the signal code
+}
+
 
 int main(int argc, char *argv[]) {
 
@@ -102,6 +110,9 @@ int main(int argc, char *argv[]) {
             << std::endl;
         return 1;
     }
+
+    // Set up the signal handler for segmentation faults
+    signal(SIGSEGV, signal_handler);
 
     int const fifosize = 100; //1000;
     int const nthreads = 10;

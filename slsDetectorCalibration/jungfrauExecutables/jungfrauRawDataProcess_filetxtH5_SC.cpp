@@ -210,6 +210,7 @@ int main(int argc, char *argv[]) {
     auto firstfileh5 = std::make_unique<HDF5File>();
     firstfileh5->SetFrameIndexPath(frameindexpath);
     firstfileh5->SetImageDataPath(datasetpath);
+    std::cout << "Debug" << std::endl;
     if ( firstfileh5->OpenResources(filenames[0].c_str(), validate_rank) ) {
 
         // Validate number of threads

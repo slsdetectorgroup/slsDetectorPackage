@@ -191,7 +191,7 @@ endif()
 # to control options for the libraries
 if(NOT TARGET slsProjectOptions)
     add_library(slsProjectOptions INTERFACE)
-    target_compile_features(slsProjectOptions INTERFACE cxx_std_11)
+    target_compile_features(slsProjectOptions INTERFACE cxx_std_17)
 endif()
 
 if (NOT TARGET slsProjectWarnings)

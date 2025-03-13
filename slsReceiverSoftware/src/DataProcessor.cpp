@@ -358,9 +358,13 @@ void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
     if (framePadding && nump < generalData->packetsPerFrame)
         PadMissingPackets(header, data);
 
-    // rearrange ctb digital bits (if ctbDbitlist is not empty)
+    // rearrange ctb digital bits
     if (!ctbDbitList.empty()) {
         ArrangeDbitData(size, data);
+    } else if (reorder) {
+        Reorder(size, data);
+    } else if (ctbDbitOffset > 0) {
+        RemoveTrailingBits(size, data);
     }
 
     // 'stream Image' check has to be done here before crop image
@@ -532,6 +536,111 @@ void DataProcessor::PadMissingPackets(sls_receiver_header header, char *data) {
     }
 }
 
+void DataProcessor::RemoveTrailingBits(size_t &size, char *data) {
+    const size_t nAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
+    const size_t nDigitalDataBytes = generalData->GetNumberOfDigitalDatabytes();
+    const size_t nTransceiverDataBytes =
+        generalData->GetNumberOfTransceiverDatabytes();
+
+    const size_t ctbDigitalDataBytes = nDigitalDataBytes - ctbDbitOffset;
+
+    // no digital data
+    if (ctbDigitalDataBytes == 0) {
+        LOG(logWARNING)
+            << "No digital data for call back, yet ctbDbitOffset is non zero.";
+        return;
+    }
+
+    // update size and copy data
+    memmove(data + nAnalogDataBytes,
+            data + nAnalogDataBytes + ctbDigitalDataBytes,
+            ctbDigitalDataBytes + nTransceiverDataBytes);
+
+    size = nAnalogDataBytes + ctbDigitalDataBytes + nTransceiverDataBytes;
+}
+
+void DataProcessor::Reorder(size_t &size, char *data) {
+    const size_t nAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
+    const size_t nDigitalDataBytes = generalData->GetNumberOfDigitalDatabytes();
+    const size_t nTransceiverDataBytes =
+        generalData->GetNumberOfTransceiverDatabytes();
+
+    const size_t ctbDigitalDataBytes = nDigitalDataBytes - ctbDbitOffset;
+
+    // no digital data
+    if (ctbDigitalDataBytes == 0) {
+        LOG(logWARNING)
+            << "No digital data for call back, yet reorder is set to 1.";
+        return;
+    }
+
+    auto *source = (uint64_t *)(data + nAnalogDataBytes + ctbDbitOffset);
+
+    const size_t numDigitalSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
+
+    size_t numBytesPerBit =
+        0; // number of bytes per bit in digital data after reordering
+
+    if ((numDigitalSamples % 8) == 0)
+        numBytesPerBit = numDigitalSamples / 8;
+    else
+        numBytesPerBit = numDigitalSamples / 8 + 1;
+
+    size_t totalNumBytes =
+        numBytesPerBit *
+        64; // number of bytes for digital data after reordering
+
+    LOG(logDEBUG1) << "totalNumBytes: " << totalNumBytes
+                   << " nAnalogDataBytes:" << nAnalogDataBytes
+                   << " nDigitalDataBytes: " << nDigitalDataBytes
+                   << " ctbDbitOffset:" << ctbDbitOffset
+                   << " nTransceiverDataBytes:" << nTransceiverDataBytes
+                   << " size:" << size << " numsamples:" << numDigitalSamples;
+
+    std::vector<uint8_t> result(totalNumBytes, 0);
+    uint8_t *dest = &result[0];
+
+    int bitoffset = 0;
+    // reorder
+    for (size_t bi = 0; bi < 64; ++bi) {
+
+        if (bitoffset != 0) {
+            bitoffset = 0;
+            ++dest;
+        }
+
+        for (auto *ptr = source; ptr < (source + numDigitalSamples); ++ptr) {
+            uint8_t bit = (*ptr >> bi) & 1;
+            *dest |= bit << bitoffset; // most significant bits will be padded
+            ++bitoffset;
+
+            if (bitoffset == 8) {
+                bitoffset = 0;
+                ++dest;
+            }
+        }
+    }
+
+    // move transceiver data to not overwrite and avoid gap in memory
+    if (totalNumBytes != nDigitalDataBytes)
+        memmove(data + nAnalogDataBytes + totalNumBytes * sizeof(uint8_t),
+                data + nAnalogDataBytes + nDigitalDataBytes,
+                nTransceiverDataBytes);
+
+    // copy back to memory and update size
+    size = totalNumBytes * sizeof(uint8_t) + nAnalogDataBytes +
+           nTransceiverDataBytes;
+
+    memcpy(data + nAnalogDataBytes, result.data(),
+           totalNumBytes * sizeof(uint8_t));
+
+    LOG(logDEBUG1) << "totalNumBytes: " << totalNumBytes
+                   << " nAnalogDataBytes:" << nAnalogDataBytes
+                   << " ctbDbitOffset:" << ctbDbitOffset
+                   << " nTransceiverDataBytes:" << nTransceiverDataBytes
+                   << " size:" << size;
+}
+
 /** ctb specific */
 void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
     size_t nAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
@@ -589,7 +698,7 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
             for (auto *ptr = source; ptr < (source + numDigitalSamples);) {
                 // get selected bit from each 8 bit
                 uint8_t bit = (*ptr++ >> bi) & 1;
-                *dest |= bit << bitoffset;
+                *dest |= bit << bitoffset; // stored as least significant
                 ++bitoffset;
                 // extract destination in 8 bit batches
                 if (bitoffset == 8) {

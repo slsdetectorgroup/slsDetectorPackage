@@ -92,6 +92,26 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                                                    size_t &, void *),
                                       void *arg);
 
+  protected:
+    /**
+     * Align corresponding digital bits together (CTB only if ctbDbitlist is not
+     * empty)
+     * set variable reorder to true if, data should be rearranged such that
+     * individual digital bits from all samples are consecutive in memory
+     */
+    void ArrangeDbitData(size_t &size, char *data);
+
+    /**
+     * reorder datastream such that individual digital bits from all samples are
+     * stored consecutively in memory
+     */
+    void Reorder(size_t &size, char *data);
+
+    /**
+     * remove trailing bits in digital data stream
+     */
+    void RemoveTrailingBits(size_t &size, char *data);
+
   private:
     void RecordFirstIndex(uint64_t fnum);
 
@@ -138,14 +158,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     void PadMissingPackets(sls_receiver_header header, char *data);
 
-    /**
-     * Align corresponding digital bits together (CTB only if ctbDbitlist is not
-     * empty)
-     * set variable reorder to true if, data should be rearranged such that
-     * individual digital bits from all samples are consecutive in memory
-     */
-    void ArrangeDbitData(size_t &size, char *data);
-
     void CropImage(size_t &size, char *data);
 
     static const std::string typeName;
@@ -165,7 +177,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     uint32_t streamingTimerInMs;
     uint32_t streamingStartFnum;
     uint32_t currentFreqCount{0};
-    struct timespec timerbegin {};
+    struct timespec timerbegin{};
     bool framePadding;
     std::vector<int> ctbDbitList;
     int ctbDbitOffset{0};

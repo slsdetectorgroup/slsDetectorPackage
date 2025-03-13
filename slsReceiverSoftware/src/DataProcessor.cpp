@@ -361,7 +361,7 @@ void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
     // rearrange ctb digital bits
     if (!ctbDbitList.empty()) {
         ArrangeDbitData(size, data);
-    } else if (reorder) {
+    } else if (ctbDbitReorder) {
         Reorder(size, data);
     } else if (ctbDbitOffset > 0) {
         RemoveTrailingBits(size, data);

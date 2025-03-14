@@ -41,8 +41,15 @@ void printDatatypeSize(hid_t dataset) {
 	H5T_class_t class_id = H5Tget_class(datatype);
 	size_t type_size = H5Tget_size(datatype);
 
+	H5Tclose(datatype);
+
 	std::cout << " dataset type class: " << class_id 
           	  << ", size: " << type_size << " bytes\n";
+
+	//Ensure the read datatype matches a system native type correctly
+	//hid_t read_type = (type_size == 8) ? H5T_NATIVE_LLONG : H5T_NATIVE_UINT;
+
+	//return read_type;
 
 }
 
@@ -193,23 +200,53 @@ bool HDF5File::OpenFrameIndexDataset() {
 		H5Dclose (fi_dataset);
 		return false;
 	}
-	H5Sclose (fi_dataspace);
 
 	// allocate frame index memory
 	frame_index_list.resize(fi_dims[0]); //file_dims
 
-	// print datatype size of dataset
+	// read and print datatype size of dataset
 	std::cout << "Frame index";
 	printDatatypeSize(fi_dataset);
 
+	// make sure we only read the first column of the frame index dataset (not all storage cells)
+	//NOTE: For XFEL datasets, this may mean that some frame numbers are skipped
+	//(because they assign a unique frame number to every storage cell)
+	//Possibly, there is a cleaner fix for this...
+	std::vector<hsize_t> start(fi_rank,0);
+	std::vector<hsize_t> count(fi_rank,1);
+	count[0] = fi_dims[0];
+	hid_t memspace = H5Screate_simple (fi_rank, count.data(), nullptr);
+	if (memspace < 0) {
+    	std::cerr << "Error: Failed to create memory space for HDF5 read operation\n";
+		H5Sclose(memspace);
+		H5Sclose(fi_dataspace);
+		H5Dclose(fi_dataset);
+    	return false;
+	}
+
+	// Create hyperslab selection
+	if (H5Sselect_hyperslab(fi_dataspace, H5S_SELECT_SET, start.data(), nullptr, count.data(), nullptr) < 0 ) {
+		cprintf (RED,"Could not create hyperslab for %s\n", vectorToString(start).c_str());
+		std::cerr << "Error: Hyperslab creation failed for " << vectorToString(start) << "\n";
+		H5Sclose(memspace);
+		H5Sclose (fi_dataspace);
+		H5Dclose(fi_dataset);
+		return false;
+	}
+
 	//read frame index values
 	//Is u32 correct? I would think not. But I get a segmentation fault if I use u64.
-	if (H5Dread (fi_dataset, H5T_STD_U64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, frame_index_list.data()) < 0) {
+	if (H5Dread (fi_dataset, H5T_STD_U64LE, memspace, fi_dataspace, H5P_DEFAULT, frame_index_list.data()) < 0) {
 		cprintf (RED,"Could not read frame index dataset %s\n", index_datasetname.c_str());
 		std::cerr << "Error: Could not read frame index dataset\n";
+		H5Sclose(memspace);
+		H5Sclose (fi_dataspace);
 		H5Dclose (fi_dataset);
 		return false;
 	}
+
+	H5Sclose(memspace);
+	H5Sclose (fi_dataspace);
 	H5Dclose(fi_dataset);
 	return true;
 }

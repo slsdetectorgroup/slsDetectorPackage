@@ -177,11 +177,11 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     uint32_t streamingTimerInMs;
     uint32_t streamingStartFnum;
     uint32_t currentFreqCount{0};
-    struct timespec timerbegin{};
+    struct timespec timerbegin {};
     bool framePadding;
     std::vector<int> ctbDbitList;
     bool reorder{false}; // true if data should be reordered TODO: add as mode
-    int ctbDbitOffset;
+    int ctbDbitOffset{0};
     std::atomic<bool> startedFlag{false};
     std::atomic<uint64_t> firstIndex{0};
     bool quadEnable{false};

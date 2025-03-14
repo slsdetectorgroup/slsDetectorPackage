@@ -2,7 +2,7 @@
 // Copyright (C) 2025 Contributors to the SLS Detector Package
 /************************************************
  * @file test-ArrangeDataBasedOnBitList.cpp
- * @short test case for DataProcessor member function ArrangeDbitData,
+ * @short test case for DataProcessor rearrange functions,
  ***********************************************/
 
 #include "DataProcessor.h"
@@ -36,7 +36,7 @@ class GeneralDataTest : public GeneralData {
     int nTransceiverBytes;
 };
 
-// oke maybe just make it static
+// dummy DataProcessor class for testing
 class DataProcessorTest : public DataProcessor {
   public:
     DataProcessorTest() : DataProcessor(0){};
@@ -44,91 +44,356 @@ class DataProcessorTest : public DataProcessor {
     void ArrangeDbitData(size_t &size, char *data) {
         DataProcessor::ArrangeDbitData(size, data);
     }
-};
 
-TEST_CASE("Arrange with reorder false") {
-    DataProcessorTest dataprocessor;
-
-    std::vector<int> bitlist{1, 4, 5};
-    dataprocessor.SetCtbDbitList(bitlist);
-
-    size_t num_digital_samples = 5; // size_t or uint8_t ?
-    size_t num_digital_bytes = num_digital_samples * 8;
-    size_t num_analog_bytes = 1;
-    size_t num_transceiver_bytes = 2;
-    size_t random_offset_bytes = 0;
-
-    size_t size = num_analog_bytes + num_digital_bytes + num_transceiver_bytes +
-                  random_offset_bytes;
-
-    char *data = new char[size];
-
-    char dummy_value = static_cast<char>(125);
-    memset(data, dummy_value, num_analog_bytes);
-    memset(data + num_analog_bytes, 0xFF,
-           num_digital_bytes); // all digital bits are one
-    memset(data + num_digital_bytes + num_analog_bytes, dummy_value,
-           num_transceiver_bytes);
-
-    GeneralDataTest *generaldata = new GeneralDataTest;
-    generaldata->SetNumberOfAnalogDatabytes(num_analog_bytes);
-    generaldata->SetNumberOfDigitalDatabytes(num_digital_bytes);
-    generaldata->SetNumberOfTransceiverDatabytes(num_transceiver_bytes);
-
-    dataprocessor.SetGeneralData(generaldata);
-
-    size_t new_num_digital_bytes =
-        (bitlist.size() / 8 + static_cast<size_t>(bitlist.size() % 8 != 0)) *
-        num_digital_samples;
-
-    size_t new_size =
-        num_analog_bytes + num_transceiver_bytes + new_num_digital_bytes;
-
-    char *new_data = new char[new_size];
-
-    memset(new_data, dummy_value, num_analog_bytes);
-
-    // TODO: Make test more explicit and less generic
-    size_t num_bytes_for_bitlist =
-        bitlist.size() / 8 + static_cast<size_t>(bitlist.size() % 8 != 0);
-
-    // 125 7 7 7 7 7 125 125
-    for (size_t sample = 0; sample < num_digital_samples; ++sample) {
-        if (bitlist.size() / 8 != 0) {
-            memset(new_data + sample * num_bytes_for_bitlist + num_analog_bytes,
-                   0xFF,
-                   bitlist.size() / 8); // set to 1
-        } else if (bitlist.size() % 8 != 0) {
-            memset(new_data + sample * num_bytes_for_bitlist +
-                       bitlist.size() / 8 + num_analog_bytes,
-                   static_cast<char>(pow(2, (bitlist.size() % 8)) - 1),
-                   1); // convert binary number to decimal
-        }
+    void Reorder(size_t &size, char *data) {
+        DataProcessor::Reorder(size, data);
     }
 
-    memset(new_data + new_num_digital_bytes + num_analog_bytes, dummy_value,
-           num_transceiver_bytes);
+    void RemoveTrailingBits(size_t &size, char *data) {
+        DataProcessor::RemoveTrailingBits(size, data);
+    }
+};
 
-    dataprocessor.ArrangeDbitData(size, data);
+/**
+ * test fixture for Testing,
+ * num_analog_bytes = 1 byte has a value of 125
+ * num_transceiver_bytes = 2 both bytes have a value of 125
+ * num_digital_bytes is variable and is defined by number of samples
+ * default num sample is 5
+ * all bytes in digital data take a value of 255
+ */
+class DataProcessorTestFixture {
+  public:
+    DataProcessorTestFixture() {
+        // setup Test Fixture
+        dataprocessor = new DataProcessorTest;
+        generaldata = new GeneralDataTest;
 
-    CHECK(size == new_size);
+        // set_num_samples(num_samples);
 
-    CHECK(memcmp(data, new_data, size) == 0);
+        generaldata->SetNumberOfAnalogDatabytes(num_analog_bytes);
+        generaldata->SetNumberOfTransceiverDatabytes(num_transceiver_bytes);
+        generaldata->SetNumberOfDigitalDatabytes(num_digital_bytes +
+                                                 num_random_offset_bytes);
 
-    // Free allocated memory
-    delete[] data;
-    delete[] new_data;
-    delete generaldata;
+        dataprocessor->SetGeneralData(generaldata);
+    }
+
+    ~DataProcessorTestFixture() {
+        delete[] data;
+        delete dataprocessor;
+        delete generaldata;
+    }
+
+    size_t get_size() const {
+        return num_analog_bytes + num_digital_bytes + num_transceiver_bytes +
+               num_random_offset_bytes;
+    }
+
+    void set_num_samples(const size_t value) {
+        num_samples = value;
+        num_digital_bytes = num_samples * 8; // 64 (8 bytes) per sample
+
+        generaldata->SetNumberOfDigitalDatabytes(num_digital_bytes +
+                                                 num_random_offset_bytes);
+    }
+
+    void set_random_offset_bytes(const size_t value) {
+        num_random_offset_bytes = value;
+        generaldata->SetNumberOfDigitalDatabytes(num_digital_bytes +
+                                                 num_random_offset_bytes);
+    }
+
+    void set_data() {
+        delete[] data;
+        data = new char[get_size()];
+
+        // set testing data
+        memset(data, dummy_value, num_analog_bytes); // set to dummy value
+        memset(data + num_analog_bytes, 0,
+               num_random_offset_bytes); // set to zero
+        memset(data + num_analog_bytes + num_random_offset_bytes, 0xFF,
+               num_digital_bytes); // all digital bits are one
+        memset(data + num_digital_bytes + num_analog_bytes +
+                   num_random_offset_bytes,
+               dummy_value,
+               num_transceiver_bytes); // set to dummy value
+    }
+
+    DataProcessorTest *dataprocessor;
+    GeneralDataTest *generaldata;
+    const size_t num_analog_bytes = 1;
+    const size_t num_transceiver_bytes = 2;
+    const char dummy_value = static_cast<char>(125);
+    size_t num_digital_bytes = 40; // num_samples * 8 = 5 * 8 = 40
+    size_t num_random_offset_bytes = 0;
+    size_t num_samples = 5;
+    char *data = nullptr;
+};
+
+TEST_CASE_METHOD(DataProcessorTestFixture, "Remove Trailing Bits",
+                 "[.dataprocessor][.bitoffset]") {
+
+    const size_t num_random_offset_bytes = 3;
+    set_random_offset_bytes(num_random_offset_bytes);
+    set_data();
+
+    dataprocessor->SetCtbDbitOffset(num_random_offset_bytes);
+
+    size_t expected_size = get_size() - num_random_offset_bytes;
+
+    char *expected_data = new char[expected_size];
+    memset(expected_data, dummy_value, num_analog_bytes); // set to 125
+    memset(expected_data + num_analog_bytes, 0xFF,
+           num_digital_bytes); // set to 1
+    memset(expected_data + num_digital_bytes + num_analog_bytes, dummy_value,
+           num_transceiver_bytes); // set to 125
+
+    size_t size = get_size();
+    dataprocessor->RemoveTrailingBits(size, data);
+
+    CHECK(size == expected_size);
+
+    CHECK(memcmp(data, expected_data, expected_size) == 0);
+
+    delete[] expected_data;
 }
 
-// TEST_CASE("Arrange with reorder on") {
+// parametric test tested with num_samples = 5, num_samples = 10, num_samples =
+// 8
+TEST_CASE_METHOD(DataProcessorTestFixture, "Reorder all",
+                 "[.dataprocessor][.reorder]") {
+    // parameters: num_samples, expected_num_digital_bytes,
+    // expected_digital_part
+    auto parameters = GENERATE(
+        std::make_tuple(5, 64, std::vector<uint8_t>{0b00011111}),
+        std::make_tuple(10, 2 * 64, std::vector<uint8_t>{0xFF, 0b00000011}),
+        std::make_tuple(8, 64, std::vector<uint8_t>{0xFF}));
 
-//}
+    size_t num_samples, expected_num_digital_bytes;
+    std::vector<uint8_t> expected_digital_part;
+    std::tie(num_samples, expected_num_digital_bytes, expected_digital_part) =
+        parameters;
 
-// test case reorder on and bitoffset set
+    // set number of samples for test fixture -> create data
+    set_num_samples(num_samples);
+    set_data();
 
-// test with different samples
+    dataprocessor->SetReorder(true); // set reorder to true
 
-// test with sample number not divisable and ctbitlist not divisable
+    const size_t expected_size =
+        num_analog_bytes + num_transceiver_bytes + expected_num_digital_bytes;
+
+    // create expected data
+    char *expected_data = new char[expected_size];
+
+    memset(expected_data, dummy_value, num_analog_bytes); // set to 125
+    for (size_t bit = 0; bit < 64; ++bit) {
+        memcpy(expected_data + num_analog_bytes +
+                   expected_digital_part.size() * bit,
+               expected_digital_part.data(), expected_digital_part.size());
+    }
+    memset(expected_data + expected_num_digital_bytes + num_analog_bytes,
+           dummy_value,
+           num_transceiver_bytes); // set to 125
+
+    size_t size = get_size();
+    dataprocessor->Reorder(size, data); // call reorder
+
+    CHECK(size == expected_size);
+    CHECK(memcmp(data, expected_data, expected_size) == 0);
+
+    delete[] expected_data;
+}
+
+TEST_CASE_METHOD(DataProcessorTestFixture,
+                 "Reorder all and remove trailing bits",
+                 "[.dataprocessor][.reorder]") {
+
+    // set number of samples for test fixture -> create data
+    const size_t num_random_offset_bytes = 3;
+    set_random_offset_bytes(num_random_offset_bytes);
+    set_data();
+
+    dataprocessor->SetCtbDbitOffset(num_random_offset_bytes);
+    dataprocessor->SetReorder(true); // set reorder to true
+
+    const size_t expected_num_digital_bytes = 64;
+    std::vector<uint8_t> expected_digital_part{0b00011111};
+
+    const size_t expected_size =
+        num_analog_bytes + num_transceiver_bytes + expected_num_digital_bytes;
+
+    // create expected data
+    char *expected_data = new char[expected_size];
+
+    memset(expected_data, dummy_value, num_analog_bytes); // set to 125
+    for (size_t bit = 0; bit < 64; ++bit) {
+        memcpy(expected_data + num_analog_bytes +
+                   expected_digital_part.size() * bit,
+               expected_digital_part.data(), expected_digital_part.size());
+    }
+    memset(expected_data + expected_num_digital_bytes + num_analog_bytes,
+           dummy_value,
+           num_transceiver_bytes); // set to 125
+
+    size_t size = get_size();
+    dataprocessor->Reorder(size, data); // call reorder
+
+    CHECK(size == expected_size);
+    CHECK(memcmp(data, expected_data, expected_size) == 0);
+
+    delete[] expected_data;
+}
+
+TEST_CASE_METHOD(DataProcessorTestFixture, "Arrange bitlist with reorder false",
+                 "[.dataprocessor][.retrievebitlist]") {
+    // parameters: num_samples, bitlist, expected_num_digital_bytes,
+    // expected_digital_part
+    auto parameters = GENERATE(
+        std::make_tuple(5, std::vector<int>{1, 4, 5}, 5,
+                        std::vector<uint8_t>{0b00000111}),
+        std::make_tuple(5, std::vector<int>{1, 5, 3, 7, 8, 50, 42, 60, 39}, 10,
+                        std::vector<uint8_t>{0xFF, 0b00000001}),
+        std::make_tuple(5, std::vector<int>{1, 5, 3, 7, 8, 50, 42, 60}, 5,
+                        std::vector<uint8_t>{0xFF}));
+
+    size_t num_samples, expected_num_digital_bytes;
+    std::vector<uint8_t> expected_digital_part;
+    std::vector<int> bitlist;
+    std::tie(num_samples, bitlist, expected_num_digital_bytes,
+             expected_digital_part) = parameters;
+
+    dataprocessor->SetCtbDbitList(bitlist);
+
+    dataprocessor->SetReorder(false);
+
+    set_num_samples(num_samples);
+    set_data();
+
+    size_t expected_size =
+        num_analog_bytes + num_transceiver_bytes + expected_num_digital_bytes;
+
+    // create expected data
+    char *expected_data = new char[expected_size];
+
+    memset(expected_data, dummy_value, num_analog_bytes);
+
+    for (size_t sample = 0; sample < num_samples; ++sample) {
+        memcpy(expected_data + num_analog_bytes +
+                   expected_digital_part.size() * sample,
+               expected_digital_part.data(), expected_digital_part.size());
+    }
+
+    memset(expected_data + expected_num_digital_bytes + num_analog_bytes,
+           dummy_value, num_transceiver_bytes);
+
+    size_t size = get_size();
+    dataprocessor->ArrangeDbitData(size, data);
+
+    CHECK(size == expected_size);
+
+    CHECK(memcmp(data, expected_data, expected_size) == 0);
+
+    delete[] expected_data;
+}
+
+TEST_CASE_METHOD(DataProcessorTestFixture, "Arrange bitlist with reorder true",
+                 "[.dataprocessor][.retrievebitlist]") {
+    // parameters: num_samples, bitlist, expected_num_digital_bytes,
+    // expected_digital_part
+    auto parameters = GENERATE(
+        std::make_tuple(5, std::vector<int>{1, 4, 5}, 3,
+                        std::vector<uint8_t>{0b00011111}),
+        std::make_tuple(10, std::vector<int>{1, 4, 5}, 6,
+                        std::vector<uint8_t>{0xFF, 0b00000011}),
+        std::make_tuple(8, std::vector<int>{1, 5, 3, 7, 8, 50, 42, 60, 39}, 9,
+                        std::vector<uint8_t>{0xFF}));
+
+    size_t num_samples, expected_num_digital_bytes;
+    std::vector<uint8_t> expected_digital_part;
+    std::vector<int> bitlist;
+    std::tie(num_samples, bitlist, expected_num_digital_bytes,
+             expected_digital_part) = parameters;
+
+    dataprocessor->SetCtbDbitList(bitlist);
+
+    dataprocessor->SetReorder(true);
+
+    set_num_samples(num_samples);
+    set_data();
+
+    size_t expected_size =
+        num_analog_bytes + num_transceiver_bytes + expected_num_digital_bytes;
+
+    // create expected data
+    char *expected_data = new char[expected_size];
+
+    memset(expected_data, dummy_value, num_analog_bytes);
+
+    for (size_t sample = 0; sample < bitlist.size(); ++sample) {
+        memcpy(expected_data + num_analog_bytes +
+                   expected_digital_part.size() * sample,
+               expected_digital_part.data(), expected_digital_part.size());
+    }
+
+    memset(expected_data + expected_num_digital_bytes + num_analog_bytes,
+           dummy_value, num_transceiver_bytes);
+
+    size_t size = get_size();
+    dataprocessor->ArrangeDbitData(size, data);
+
+    CHECK(size == expected_size);
+
+    CHECK(memcmp(data, expected_data, expected_size) == 0);
+
+    delete[] expected_data;
+}
+
+TEST_CASE_METHOD(DataProcessorTestFixture,
+                 "Arrange bitlist and remove trailing bits",
+                 "[.dataprocessor][.retrievebitlist]") {
+
+    size_t num_random_offset_bytes = 3;
+    std::vector<int> bitlist{1, 4, 5};
+
+    set_random_offset_bytes(num_random_offset_bytes);
+    set_data();
+
+    dataprocessor->SetCtbDbitList(bitlist);
+
+    dataprocessor->SetReorder(false);
+
+    dataprocessor->SetCtbDbitOffset(num_random_offset_bytes);
+
+    std::vector<uint8_t> expected_digital_part{0b00000111};
+    const size_t expected_num_digital_bytes = 5;
+
+    size_t expected_size =
+        num_analog_bytes + num_transceiver_bytes + expected_num_digital_bytes;
+
+    // create expected data
+    char *expected_data = new char[expected_size];
+
+    memset(expected_data, dummy_value, num_analog_bytes);
+
+    for (size_t sample = 0; sample < num_samples; ++sample) {
+        memcpy(expected_data + num_analog_bytes +
+                   expected_digital_part.size() * sample,
+               expected_digital_part.data(), expected_digital_part.size());
+    }
+
+    memset(expected_data + expected_num_digital_bytes + num_analog_bytes,
+           dummy_value, num_transceiver_bytes);
+
+    size_t size = get_size();
+    dataprocessor->ArrangeDbitData(size, data);
+
+    CHECK(size == expected_size);
+
+    CHECK(memcmp(data, expected_data, expected_size) == 0);
+
+    delete[] expected_data;
+}
 
 } // namespace sls

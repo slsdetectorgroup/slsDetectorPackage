@@ -915,10 +915,10 @@ void Implementation::CreateUDPSockets() {
 }
 
 void Implementation::SetupWriter() {
-    
+
     try {
-        //check if filePath empty and throw error
-        if(filePath.empty()){
+        // check if filePath empty and throw error
+        if (filePath.empty()) {
             throw ReceiverError("File path cannot be empty");
         }
         // check if folder exists and throw if it cant create

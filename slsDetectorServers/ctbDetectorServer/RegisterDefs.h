@@ -201,14 +201,14 @@
 /* FIFO Transceiver Fill level RO register */
 #define FIFO_TIN_FILL_REG                   (0x45 << MEM_MAP_SHIFT)
 #define FIFO_TIN_FILL_FIFO_1_OFST           (0)
-#define FIFO_TIN_FILL_FIFO_1_MSK            (0x000001FF << FIFO_TIN_FILL_FIFO__1_OFST)
+#define FIFO_TIN_FILL_FIFO_1_MSK            (0x00001FFF << FIFO_TIN_FILL_FIFO__1_OFST)
 #define FIFO_TIN_FILL_FIFO_2_OFST           (16)
-#define FIFO_TIN_FILL_FIFO_2_MSK            (0x000001FF << FIFO_TIN_FILL_FIFO__2_OFST)
+#define FIFO_TIN_FILL_FIFO_2_MSK            (0x00001FFF << FIFO_TIN_FILL_FIFO__2_OFST)
 
 /* FIFO ADC Fill level RO register */
 #define FIFO_ADC_FILL_REG                   (0x46 << MEM_MAP_SHIFT)
 #define FIFO_ADC_FILL_FIFO_OFST             (0)
-#define FIFO_ADC_FILL_FIFO_MSK              (0x000001FF << FIFO_ADC_FILL_FIFO_OFST)
+#define FIFO_ADC_FILL_FIFO_MSK              (0x00001FFF << FIFO_ADC_FILL_FIFO_OFST)
 
 /* Enable continuos readout register */
 #define CONTINUOUS_RO_ENABLE_REG            (0x47 << MEM_MAP_SHIFT)

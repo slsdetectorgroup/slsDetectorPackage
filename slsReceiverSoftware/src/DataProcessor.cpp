@@ -552,8 +552,7 @@ void DataProcessor::RemoveTrailingBits(size_t &size, char *data) {
     }
 
     // update size and copy data
-    memmove(data + nAnalogDataBytes,
-            data + nAnalogDataBytes + ctbDigitalDataBytes,
+    memmove(data + nAnalogDataBytes, data + nAnalogDataBytes + ctbDbitOffset,
             ctbDigitalDataBytes + nTransceiverDataBytes);
 
     size = nAnalogDataBytes + ctbDigitalDataBytes + nTransceiverDataBytes;
@@ -575,6 +574,7 @@ void DataProcessor::Reorder(size_t &size, char *data) {
     }
 
     auto *source = (uint64_t *)(data + nAnalogDataBytes + ctbDbitOffset);
+    // TODO: leads to unaligned data
 
     const size_t numDigitalSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
 
@@ -589,13 +589,6 @@ void DataProcessor::Reorder(size_t &size, char *data) {
     size_t totalNumBytes =
         numBytesPerBit *
         64; // number of bytes for digital data after reordering
-
-    LOG(logDEBUG1) << "totalNumBytes: " << totalNumBytes
-                   << " nAnalogDataBytes:" << nAnalogDataBytes
-                   << " nDigitalDataBytes: " << nDigitalDataBytes
-                   << " ctbDbitOffset:" << ctbDbitOffset
-                   << " nTransceiverDataBytes:" << nTransceiverDataBytes
-                   << " size:" << size << " numsamples:" << numDigitalSamples;
 
     std::vector<uint8_t> result(totalNumBytes, 0);
     uint8_t *dest = &result[0];
@@ -666,8 +659,9 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
 
     // store each selected bit from all samples consecutively
     if (ctbDbitReorder) {
-        int numBitsPerDbit = numDigitalSamples; // num bits per selected digital
-                                                // Bit for all samples
+        size_t numBitsPerDbit =
+            numDigitalSamples; // num bits per selected digital
+                               // Bit for all samples
         if ((numBitsPerDbit % 8) != 0)
             numBitsPerDbit += (8 - (numDigitalSamples % 8));
         totalNumBytes = (numBitsPerDbit / 8) * ctbDbitList.size();

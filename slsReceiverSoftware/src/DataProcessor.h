@@ -181,7 +181,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     bool framePadding;
     std::vector<int> ctbDbitList;
     int ctbDbitOffset{0};
-    bool ctbDbitReorder{false};
+    bool ctbDbitReorder{true};
     std::atomic<bool> startedFlag{false};
     std::atomic<uint64_t> firstIndex{0};
     bool quadEnable{false};

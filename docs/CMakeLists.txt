@@ -40,6 +40,7 @@ set(SPHINX_SOURCE_FILES
   src/pydetector.rst
   src/pyenums.rst
   src/pyexamples.rst
+  src/pyPatternGenerator.rst
   src/servers.rst
   src/receiver_api.rst
   src/result.rst

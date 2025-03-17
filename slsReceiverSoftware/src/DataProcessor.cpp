@@ -573,18 +573,35 @@ void DataProcessor::Reorder(size_t &size, char *data) {
         return;
     }
 
-    auto *source = (uint64_t *)(data + nAnalogDataBytes + ctbDbitOffset);
-    // TODO: leads to unaligned data
+    // make sure data is aligned to 8 bytes before casting to uint64_t
+    char *ptr = data + nAnalogDataBytes + ctbDbitOffset;
+    uint64_t *source = nullptr;
+    using AlignedBuffer =
+        std::aligned_storage<sizeof(uint64_t), alignof(uint64_t)>::type;
+    std::unique_ptr<AlignedBuffer[]> tempbuffer;
+
+    if (reinterpret_cast<uintptr_t>(ptr) % alignof(uint64_t) == 0) {
+        // If aligned, directly cast to uint64_t pointer
+        source = reinterpret_cast<uint64_t *>(ptr);
+    } else {
+        // Allocate a temporary buffer with proper alignment
+        tempbuffer = std::make_unique<AlignedBuffer[]>(ctbDigitalDataBytes /
+                                                       sizeof(uint64_t));
+
+        std::memcpy(tempbuffer.get(), ptr, ctbDigitalDataBytes);
+        source = reinterpret_cast<uint64_t *>(tempbuffer.get());
+    }
+
+    // auto *source = (uint64_t *)(data + nAnalogDataBytes + ctbDbitOffset);
+    //  TODO: leads to unaligned data
 
     const size_t numDigitalSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
 
     size_t numBytesPerBit =
-        0; // number of bytes per bit in digital data after reordering
-
-    if ((numDigitalSamples % 8) == 0)
-        numBytesPerBit = numDigitalSamples / 8;
-    else
-        numBytesPerBit = numDigitalSamples / 8 + 1;
+        (numDigitalSamples % 8 == 0)
+            ? numDigitalSamples / 8
+            : numDigitalSamples / 8 +
+                  1; // number of bytes per bit in digital data after reordering
 
     size_t totalNumBytes =
         numBytesPerBit *
@@ -595,10 +612,13 @@ void DataProcessor::Reorder(size_t &size, char *data) {
 
     int bitoffset = 0;
     // reorder
+    int count = 0;
+    int written = 0;
     for (size_t bi = 0; bi < 64; ++bi) {
 
         if (bitoffset != 0) {
             bitoffset = 0;
+            ++count;
             ++dest;
         }
 
@@ -606,11 +626,12 @@ void DataProcessor::Reorder(size_t &size, char *data) {
             uint8_t bit = (*ptr >> bi) & 1;
             *dest |= bit << bitoffset; // most significant bits will be padded
             ++bitoffset;
-
             if (bitoffset == 8) {
                 bitoffset = 0;
+                ++count;
                 ++dest;
             }
+            ++written;
         }
     }
 

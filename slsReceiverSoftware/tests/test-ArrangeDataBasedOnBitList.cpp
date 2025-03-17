@@ -39,8 +39,8 @@ class GeneralDataTest : public GeneralData {
 // dummy DataProcessor class for testing
 class DataProcessorTest : public DataProcessor {
   public:
-    DataProcessorTest() : DataProcessor(0){};
-    ~DataProcessorTest(){};
+    DataProcessorTest() : DataProcessor(0) {};
+    ~DataProcessorTest() {};
     void ArrangeDbitData(size_t &size, char *data) {
         DataProcessor::ArrangeDbitData(size, data);
     }

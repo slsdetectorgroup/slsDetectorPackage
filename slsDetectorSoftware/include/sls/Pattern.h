@@ -23,6 +23,7 @@ typedef struct __attribute__((packed)) {
 #ifdef __cplusplus
 class Pattern {
     patternParameters *pat = new patternParameters{};
+    std::ostream& stream(std::ostream &os) const;
 
   public:
     Pattern();
@@ -34,7 +35,7 @@ class Pattern {
     patternParameters *data() const;
     size_t size() const noexcept { return sizeof(patternParameters); }
     void validate() const;
-    void load(const std::string &fname);
+    size_t load(const std::string &fname);
     void save(const std::string &fname);
     std::string str() const;
 };

@@ -20,8 +20,10 @@ void init_pattern(py::module &m) {
     });
 
     py::class_<sls::Pattern> Pattern(m, "Pattern");
-    Pattern.def(py::init());
-    Pattern.def("load", &sls::Pattern::load);
-    Pattern.def("data", (pat * (sls::Pattern::*)()) & sls::Pattern::data,
+    Pattern.def(py::init())
+    .def("load", &sls::Pattern::load)
+    .def("save", &sls::Pattern::save)
+    .def("str", &sls::Pattern::str)
+    .def("data", (pat * (sls::Pattern::*)()) & sls::Pattern::data,
                 py::return_value_policy::reference);
 }

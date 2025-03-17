@@ -12,6 +12,7 @@ from .gotthard2 import Gotthard2
 from .moench import Moench
 from .pattern import Pattern, patternParameters
 from .gaincaps import Mythen3GainCapsWrapper
+from .PatternGenerator import PatternGenerator
 
 import _slsdet
 xy = _slsdet.xy

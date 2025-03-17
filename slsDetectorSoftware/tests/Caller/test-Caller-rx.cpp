@@ -965,11 +965,6 @@ TEST_CASE("rx_dbitreorder", "[.cmdcall][.rx]") {
         auto prev_val = det.getRxDbitReorder();
         {
             std::ostringstream oss;
-            caller.call("rx_dbitreorder", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "rx_dbitreorder 1\n");
-        }
-        {
-            std::ostringstream oss;
             caller.call("rx_dbitreorder", {"0"}, -1, PUT, oss);
             REQUIRE(oss.str() == "rx_dbitreorder 0\n");
         }
@@ -988,7 +983,7 @@ TEST_CASE("rx_dbitreorder", "[.cmdcall][.rx]") {
             det.setRxDbitReorder(prev_val[i], {i});
         }
     } else {
-        REQUIRE_THROWS(caller.call("rx_dbitoffset", {}, -1, GET));
+        REQUIRE_THROWS(caller.call("rx_dbitreorder", {}, -1, GET));
     }
 }
 

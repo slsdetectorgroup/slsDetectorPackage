@@ -10700,6 +10700,68 @@ std::string Caller::rx_dbitoffset(int action) {
     return os.str();
 }
 
+std::string Caller::rx_dbitreorder(int action) {
+
+    std::ostringstream os;
+    // print help
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << R"V0G0N([0, 1]
+	[Ctb] Reorder digital data to group together all samples per signal. Default is 1. Setting to 0 means 'do not reorder' and to keep what the board spits out, which is that all signals in a sample are grouped together. )V0G0N"
+           << std::endl;
+        return os.str();
+    }
+
+    // check if action and arguments are valid
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (1 && args.size() != 0) {
+            throw RuntimeError("Wrong number of arguments for action GET");
+        }
+
+        if (args.size() == 0) {
+        }
+
+    }
+
+    else if (action == slsDetectorDefs::PUT_ACTION) {
+        if (1 && args.size() != 1) {
+            throw RuntimeError("Wrong number of arguments for action PUT");
+        }
+
+        if (args.size() == 1) {
+            try {
+                StringTo<bool>(args[0]);
+            } catch (...) {
+                throw RuntimeError("Could not convert argument 0 to bool");
+            }
+        }
+
+    }
+
+    else {
+
+        throw RuntimeError("INTERNAL ERROR: Invalid action: supported actions "
+                           "are ['GET', 'PUT']");
+    }
+
+    // generate code for each action
+    if (action == slsDetectorDefs::GET_ACTION) {
+        if (args.size() == 0) {
+            auto t = det->getRxDbitReorder(std::vector<int>{det_id});
+            os << OutString(t) << '\n';
+        }
+    }
+
+    if (action == slsDetectorDefs::PUT_ACTION) {
+        if (args.size() == 1) {
+            auto arg0 = StringTo<bool>(args[0]);
+            det->setRxDbitReorder(arg0, std::vector<int>{det_id});
+            os << args.front() << '\n';
+        }
+    }
+
+    return os.str();
+}
+
 std::string Caller::rx_discardpolicy(int action) {
 
     std::ostringstream os;

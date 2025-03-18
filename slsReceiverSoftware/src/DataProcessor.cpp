@@ -26,6 +26,49 @@
 
 namespace sls {
 
+// TODO: move somewhere else
+template <typename T> struct AlignedData {
+    T *ptr; // Aligned data pointer
+    std::unique_ptr<std::aligned_storage_t<sizeof(T), alignof(T)>[]> buffer;
+
+    AlignedData(
+        T *p,
+        std::unique_ptr<std::aligned_storage_t<sizeof(T), alignof(T)>[]> buf)
+        : ptr(p), buffer(std::move(buf)) {}
+};
+
+// TODO: should not be in this file any suggestions to move it to a more
+// appropriate file?
+// TODO: Add unit test
+/*
+ * AlignData
+ * Aligns data to a given type T with proper alignment
+ * @param data: pointer to data
+ * @param size: size of data to align in bytes
+ * @return: aligned data
+ */
+template <typename T>
+void AlignData(AlignedData<T> &aligneddata, char *data, size_t size) {
+    using AlignedBuffer =
+        typename std::aligned_storage<sizeof(T), alignof(T)>::type;
+    std::unique_ptr<AlignedBuffer[]> tempbuffer;
+
+    if (reinterpret_cast<uintptr_t>(data) % alignof(uint64_t) == 0) {
+        // If aligned directly cast to pointer
+
+        aligneddata.ptr = reinterpret_cast<T *>(data);
+
+    } else {
+        // Allocate a temporary buffer with proper alignment
+        tempbuffer = std::make_unique<AlignedBuffer[]>(size / sizeof(T));
+        // size = ctbDigitaldbt;
+
+        std::memcpy(tempbuffer.get(), data, size);
+        aligneddata.buffer = std::move(tempbuffer);
+        aligneddata.ptr = reinterpret_cast<T *>(aligneddata.buffer.get());
+    }
+}
+
 const std::string DataProcessor::typeName = "DataProcessor";
 
 DataProcessor::DataProcessor(int index) : ThreadObject(index, typeName) {
@@ -574,26 +617,11 @@ void DataProcessor::Reorder(size_t &size, char *data) {
     }
 
     // make sure data is aligned to 8 bytes before casting to uint64_t
-    char *ptr = data + nAnalogDataBytes + ctbDbitOffset;
-    uint64_t *source = nullptr;
-    using AlignedBuffer =
-        std::aligned_storage<sizeof(uint64_t), alignof(uint64_t)>::type;
-    std::unique_ptr<AlignedBuffer[]> tempbuffer;
+    AlignedData<uint64_t> aligned_data(nullptr, nullptr);
+    AlignData<uint64_t>(aligned_data, data + nAnalogDataBytes + ctbDbitOffset,
+                        ctbDigitalDataBytes);
 
-    if (reinterpret_cast<uintptr_t>(ptr) % alignof(uint64_t) == 0) {
-        // If aligned, directly cast to uint64_t pointer
-        source = reinterpret_cast<uint64_t *>(ptr);
-    } else {
-        // Allocate a temporary buffer with proper alignment
-        tempbuffer = std::make_unique<AlignedBuffer[]>(ctbDigitalDataBytes /
-                                                       sizeof(uint64_t));
-
-        std::memcpy(tempbuffer.get(), ptr, ctbDigitalDataBytes);
-        source = reinterpret_cast<uint64_t *>(tempbuffer.get());
-    }
-
-    // auto *source = (uint64_t *)(data + nAnalogDataBytes + ctbDbitOffset);
-    //  TODO: leads to unaligned data
+    uint64_t *source = aligned_data.ptr;
 
     const size_t numDigitalSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
 
@@ -612,13 +640,10 @@ void DataProcessor::Reorder(size_t &size, char *data) {
 
     int bitoffset = 0;
     // reorder
-    int count = 0;
-    int written = 0;
     for (size_t bi = 0; bi < 64; ++bi) {
 
         if (bitoffset != 0) {
             bitoffset = 0;
-            ++count;
             ++dest;
         }
 
@@ -628,10 +653,8 @@ void DataProcessor::Reorder(size_t &size, char *data) {
             ++bitoffset;
             if (bitoffset == 8) {
                 bitoffset = 0;
-                ++count;
                 ++dest;
             }
-            ++written;
         }
     }
 
@@ -671,7 +694,13 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
         return;
     }
 
-    auto *source = (uint64_t *)(data + nAnalogDataBytes + ctbDbitOffset);
+    AlignedData<uint64_t> aligned_data(nullptr, nullptr);
+    AlignData<uint64_t>(aligned_data, data + nAnalogDataBytes + ctbDbitOffset,
+                        ctbDigitalDataBytes);
+
+    uint64_t *source = aligned_data.ptr;
+
+    // auto *source = (uint64_t *)(data + nAnalogDataBytes + ctbDbitOffset);
 
     const int numDigitalSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
 
@@ -747,18 +776,18 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
         }
     }
 
-    // copy back to memory and update size
-    memcpy(data + nAnalogDataBytes, result.data(),
-           totalNumBytes * sizeof(uint8_t));
-
     size = totalNumBytes * sizeof(uint8_t) + nAnalogDataBytes +
            nTransceiverDataBytes;
 
     // check if size changed, if so move transceiver data to avoid gap in memory
-    if (size < nAnalogDataBytes + nDigitalDataBytes + nTransceiverDataBytes)
+    if (size != nAnalogDataBytes + nDigitalDataBytes + nTransceiverDataBytes)
         memmove(data + nAnalogDataBytes + totalNumBytes * sizeof(uint8_t),
                 data + nAnalogDataBytes + nDigitalDataBytes,
                 nTransceiverDataBytes);
+
+    // copy back to memory and update size
+    memcpy(data + nAnalogDataBytes, result.data(),
+           totalNumBytes * sizeof(uint8_t));
 
     LOG(logDEBUG1) << "totalNumBytes: " << totalNumBytes
                    << " nAnalogDataBytes:" << nAnalogDataBytes

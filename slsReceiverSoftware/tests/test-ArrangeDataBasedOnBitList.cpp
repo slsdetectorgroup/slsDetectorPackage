@@ -106,7 +106,11 @@ class DataProcessorTestFixture {
 
     void set_data() {
         delete[] data;
-        data = new char[get_size()];
+        uint64_t max_bytes_per_bit =
+            num_samples % 8 == 0 ? num_samples / 8 : num_samples / 8 + 1;
+        uint64_t reserved_size =
+            get_size() - num_digital_bytes + max_bytes_per_bit * 64;
+        data = new char[reserved_size];
 
         // set testing data
         memset(data, dummy_value, num_analog_bytes); // set to dummy value

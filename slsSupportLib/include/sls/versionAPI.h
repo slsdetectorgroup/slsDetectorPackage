@@ -8,6 +8,6 @@
 #define APICTB       "9.1.0 0x250204"
 #define APIXILINXCTB "9.1.0 0x250204"
 #define APIMYTHEN3   "9.1.0 0x250304"
-#define APIJUNGFRAU  "9.1.0 0x250311"
 #define APILIB       "9.1.0 0x250311"
 #define APIRECEIVER  "9.1.0 0x250311"
+#define APIJUNGFRAU  "9.1.0 0x250318"

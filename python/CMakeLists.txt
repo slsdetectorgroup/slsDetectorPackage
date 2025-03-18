@@ -72,9 +72,18 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/../VERSION
 if(SLS_INSTALL_PYTHONEXT)
     install(TARGETS _slsdet
         EXPORT "${TARGETS_EXPORT_NAME}"
-        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/python
+        LIBRARY DESTINATION slsdet
+        COMPONENT python
     )
+    install(
+        FILES ${PYTHON_FILES} 
+        DESTINATION slsdet
+        COMPONENT python
+        )
+    install(
+        FILES ../VERSION 
+        DESTINATION slsdet
+        COMPONENT python
+        )
 
-    install(FILES ${PYTHON_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/python/slsdet)
-    install(FILES ../VERSION DESTINATION ${CMAKE_INSTALL_PREFIX}/python/slsdet)
 endif()

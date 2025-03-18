@@ -1,0 +1,22 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "pybind11", "numpy"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "slsDetectorPackage"
+version = "2025.2.18"
+
+
+[tool.scikit-build]
+cmake.verbose = true
+cmake.build-type = "Release"
+install.components = ["python"]
+
+
+[tool.scikit-build.cmake.define]
+SLS_USE_RECEIVER = "OFF"
+SLS_USE_RECEIVER_BINARIES = "OFF"
+SLS_USE_TEXTCLIENT = "OFF"
+SLS_USE_PYTHON = "ON"
+SLS_INSTALL_PYTHONEXT = "ON"
+SLS_BUILD_SHARED_LIBRARIES = "OFF"

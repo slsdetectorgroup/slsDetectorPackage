@@ -50,30 +50,32 @@ outputs:
         - libgcc-ng
 
   - name: slsdet
-    script: build_pylib.sh
+    script: 
+      - unset CMAKE_GENERATOR && {{ PYTHON }} -m pip install . -vv  # [not win]
 
     requirements:
       build:
-        - python
+        - python {{python}}
         - {{ compiler('c') }}
         - {{compiler('cxx')}}
-        - {{ pin_subpackage('slsdetlib', exact=True) }}
-        - setuptools
-        - pybind11=2.13
+        # - {{ pin_subpackage('slsdetlib', exact=True) }} #discuss keeping pinning for simplicity?
+        - pybind11>=2.13
 
       host:
-        - python
-        - {{ pin_subpackage('slsdetlib', exact=True) }}
+        - cmake
+        - ninja
+        - python {{python}}
+        - pip
         - setuptools
-        - pybind11=2.13
+        - pybind11>=2.13
+        - scikit-build-core
 
 
       run:
         - libstdcxx-ng
         - libgcc-ng
-        - python
-        - numpy
-        - {{ pin_subpackage('slsdetlib', exact=True) }}
+        - python {{python}}
+
 
     test:
       imports:

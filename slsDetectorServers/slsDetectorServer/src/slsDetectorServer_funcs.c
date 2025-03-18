@@ -10891,11 +10891,18 @@ int get_timing_info_decoder(int file_des) {
     functionNotImplemented();
 #else
     // get only
-    ret = getTimingInfoDecoder(&retval);
-    LOG(logDEBUG1, ("retval timing info decoder: %d\n", retval));
-    if (ret == FAIL) {
-        strcpy(mess, "Could not get timing info decoder\n");
+    if (isHardwareVersion_1_0()) {
+        ret = FAIL;
+        sprintf(mess, "Could not get timing info decoder. Not supported "
+                      "for hardware version 1.0\n");
         LOG(logERROR, (mess));
+    } else {
+        ret = getTimingInfoDecoder(&retval);
+        LOG(logDEBUG1, ("retval timing info decoder: %d\n", retval));
+        if (ret == FAIL) {
+            strcpy(mess, "Could not get timing info decoder\n");
+            LOG(logERROR, (mess));
+        }
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));

@@ -3,7 +3,7 @@ requires = ["scikit-build-core>=0.10", "pybind11", "numpy"]
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "slsDetectorPackage"
+name = "slsdet"
 version = "2025.2.18"
 
 
@@ -14,9 +14,11 @@ install.components = ["python"]
 
 
 [tool.scikit-build.cmake.define]
+#Only build the control software and python ext
 SLS_USE_RECEIVER = "OFF"
 SLS_USE_RECEIVER_BINARIES = "OFF"
 SLS_USE_TEXTCLIENT = "OFF"
+SLS_BUILD_SHARED_LIBRARIES = "OFF"
+
 SLS_USE_PYTHON = "ON"
 SLS_INSTALL_PYTHONEXT = "ON"
-SLS_BUILD_SHARED_LIBRARIES = "OFF"

@@ -20,7 +20,7 @@ target_link_libraries(_slsdet PUBLIC
 
 
 set_target_properties(_slsdet PROPERTIES
-                        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+                        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/slsdet
                     )
 
 #Copy Python code 

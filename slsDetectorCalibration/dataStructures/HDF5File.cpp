@@ -362,7 +362,14 @@ int HDF5File::ReadImage (uint16_t* image, std::vector<hsize_t>& offset ) {
 	// Check if we reached the end of file
 	// Compares that the offsets of frame and storage cell (Z and S) have reached the end of file
 	// Excludes X and Y indices (of the image dataset) from the comparison
+	// As it is now, this never triggers, because frame_offset[1] is never equals file_dims[1]=16
+	/*
 	if( std::equal( frame_offset.cbegin(), frame_offset.cend()-2, file_dims.cbegin() ) ) {
+		printf("End of file reached\n");
+		return -1;
+	}
+	*/
+	if (frame_offset[0] == file_dims[0]) {
 		printf("End of file reached\n");
 		return -1;
 	}

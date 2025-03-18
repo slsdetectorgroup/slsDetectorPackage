@@ -89,14 +89,37 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
        Destructor. Deletes the cluster structure, event mask, and destroys the mutex.
     */
     virtual ~singlePhotonDetector() {
-        delete[] clusters;
-        for (int i = 0; i < ny; i++)
-            delete[] eventMask[i];
-        delete[] eventMask;
+        std::cout << "#### Debug: Destructing singlePhotonDetector! ####" << std::endl;
+        if (clusters) {
+            std::cout << "#### Debug: Deleting singlePhotonDetector member clusters at " << clusters << " ####" << std::endl;
+            delete[] clusters;
+            std::cout << "#### Debug: Deleted singlePhotonDetector member clusters! ####" << std::endl;
+            clusters = nullptr;
+        }
+        for (int i = 0; i < ny; i++) {
+            if (eventMask[i]) {
+                if (i==0) {
+                    std::cout << "#### Debug: Deleting singlePhotonDetector member eventMask[i]! ####" << std::endl;
+                }
+                delete[] eventMask[i];
+                if (i==0) {
+                    std::cout << "#### Debug: Deleted singlePhotonDetector member eventMask[i]! ####" << std::endl;
+                }
+                eventMask[i] = nullptr;
+            }
+        }
+        if (eventMask) { 
+            std::cout << "#### Debug: Deleting singlePhotonDetector member eventMask at " << eventMask << " ####" << std::endl;
+            delete[] eventMask;
+            std::cout << "#### Debug: Deleted singlePhotonDetector member eventMask! ####" << std::endl;
+            eventMask = nullptr;
+        }
         if (ownsMutex) {
             if (fm) {
                 //pthread_mutex_destroy(fm); // Destroy the mutex (not necessary with std::mutex)
+                std::cout << "#### Debug: Deleting std::mutex singlePhotonDetector member fm at " << fm << " ####" << std::endl;
                 delete fm; // Free the memory allocated for the mutex
+                std::cout << "#### Debug: Deleted std::mutex singlePhotonDetector member fm! ####" << std::endl;
                 fm = nullptr;  // Set the pointer to nullptr to avoid dangling pointer
             }
         }
@@ -166,7 +189,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
         eventMask = new eventType *[ny];
         for (int i = 0; i < ny; i++) {
             eventMask[i] = new eventType[nx];
-            std::copy(other.eventMask[i], other.eventMask[i] + nx, eventMask[i]);
+            //std::copy(other.eventMask[i], other.eventMask[i] + nx, eventMask[i]);
         }
 
         eMin = other.eMin;
@@ -180,7 +203,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
         c3 = sqrt(clusterSizeY * clusterSize);
 
         clusters = new single_photon_hit[nx * ny];
-        std::copy(other.clusters, other.clusters + (nx * ny), clusters);
+        //std::copy(other.clusters, other.clusters + (nx * ny), clusters);
 
         setClusterSize(clusterSize);
 

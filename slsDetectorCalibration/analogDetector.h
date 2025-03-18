@@ -8,9 +8,9 @@
 #include "commonModeSubtractionNew.h"
 #include "ghostSummation.h"
 #include "pedestalSubtraction.h"
+#include "sls/tiffIO.h"
 #include "slsDetectorData.h"
 #include "slsInterpolation.h"
-#include "sls/tiffIO.h"
 #include <pthread.h>
 
 #ifdef ROOTSPECTRUM
@@ -91,7 +91,7 @@ template <class dataType> class analogDetector {
         ymax = ny;
         fMode = ePedestal;
         dMode = eInterpolating;
-        //std::cout << "dMode " << dMode << std::endl;
+        // std::cout << "dMode " << dMode << std::endl;
         thr = 0;
         myFile = NULL;
 #ifdef ROOTSPECTRUM
@@ -113,38 +113,47 @@ template <class dataType> class analogDetector {
        destructor. Deletes the pdestalSubtraction array and the image
     */
     virtual ~analogDetector() {
-        std::cout << "#### Debug: Destructing analogDetector! ####" << std::endl;
+        std::cout << "#### Debug: Destructing analogDetector! ####"
+                  << std::endl;
         for (int i = 0; i < ny; i++) {
             std::cout << " # " << i;
-            if (stat[i]) { 
-                if (i==0) {
-                    std::cout << "#### Debug: Deleting analogDetector member stat[" << i << "] at " << stat[i] << " ####" << std::endl;
+            if (stat[i]) {
+                if (i == 0) {
+                    std::cout
+                        << "#### Debug: Deleting analogDetector member stat["
+                        << i << "] at " << stat[i] << " ####" << std::endl;
                 }
                 delete[] stat[i];
-                if (i==0) {
-                    std::cout << "#### Debug: Deleted analogDetector member stat[" << i << "]! ####" << std::endl;
+                if (i == 0) {
+                    std::cout
+                        << "#### Debug: Deleted analogDetector member stat["
+                        << i << "]! ####" << std::endl;
                 }
-                stat[i] = nullptr; 
+                stat[i] = nullptr;
             }
-            //delete[] stat[i];
+            // delete[] stat[i];
             /* delete [] pedMean[i];  */
             /* delete [] pedVariance[i]; */
         }
         std::cout << " #\n";
         /* delete [] pedMean;  */
         /* delete [] pedVariance; */
-        //delete[] stat;
-        //delete[] image;
-        if (stat) { 
-            std::cout << "#### Debug: Deleting analogDetector member stat at " << stat << " ####" << std::endl;
+        // delete[] stat;
+        // delete[] image;
+        if (stat) {
+            std::cout << "#### Debug: Deleting analogDetector member stat at "
+                      << stat << " ####" << std::endl;
             delete[] stat;
-            std::cout << "#### Debug: Deleted analogDetector member stat! ####" << std::endl;
+            std::cout << "#### Debug: Deleted analogDetector member stat! ####"
+                      << std::endl;
             stat = nullptr;
         }
-        if (image) { 
-            std::cout << "#### Debug: Deleting analogDetector member image at " << image << " ####" << std::endl;
+        if (image) {
+            std::cout << "#### Debug: Deleting analogDetector member image at "
+                      << image << " ####" << std::endl;
             delete[] image;
-            std::cout << "#### Debug: Deleted analogDetector member image! ####" << std::endl;
+            std::cout << "#### Debug: Deleted analogDetector member image! ####"
+                      << std::endl;
             image = nullptr;
         }
 #ifdef ROOTSPECTRUM
@@ -164,7 +173,8 @@ template <class dataType> class analogDetector {
      */
     analogDetector(analogDetector *orig) {
         /* copy construction from orig*/
-        std::cout << "#### Debug: Calling analogDetector cloning method! ####" << std::endl;
+        std::cout << "#### Debug: Calling analogDetector cloning method! ####"
+                  << std::endl;
         det = orig->det;
         nx = orig->nx;
         ny = orig->ny;
@@ -181,7 +191,7 @@ template <class dataType> class analogDetector {
         // nSigma=orig->nSigma;
         fMode = orig->fMode;
         dMode = orig->dMode;
-        //std::cout << "dMode " << dMode << std::endl;
+        // std::cout << "dMode " << dMode << std::endl;
         myFile = orig->myFile;
 
         stat = new pedestalSubtraction *[ny];
@@ -247,6 +257,59 @@ template <class dataType> class analogDetector {
     }
 
     /**
+       constructor creating a deep copy of another analog detector
+       \param other analog Detector structure to be copied
+     */
+    analogDetector(const analogDetector &other)
+        : det(other.det), nx(other.nx), ny(other.ny), dataSign(other.dataSign),
+          iframe(other.iframe), gmap(other.gmap), id(other.id),
+          xmin(other.xmin), xmax(other.xmax), ymin(other.ymin),
+          ymax(other.ymax), thr(other.thr), fMode(other.fMode),
+          dMode(other.dMode), myFile(NULL) {
+
+        std::cout << "#### Debug: Calling analogDetector copy constructor! ####"
+                  << std::endl;
+
+        // Deep copy the stat array
+        stat = new pedestalSubtraction *[ny];
+        for (int i = 0; i < ny; i++) {
+            stat[i] = new pedestalSubtraction[nx];
+            std::copy(other.stat[i], other.stat[i] + nx, stat[i]);
+        }
+
+        // Deep copy image array
+        image = new int[nx * ny];
+        std::copy(other.image, other.image + (nx * ny), image);
+
+        // Copy common-mode subtraction object (if it exists)
+        if (other.cmSub) {
+            cmSub = other.cmSub->Clone();
+            std::cout << "Copying cmSub" << std::endl;
+        } else {
+            cmSub = nullptr;
+        }
+
+        // Copy ghost summation object (if it exists)
+        if (other.ghSum) {
+            ghSum = other.ghSum->Clone();
+            std::cout << "Copying ghSum" << std::endl;
+        } else {
+            ghSum = nullptr;
+        }
+
+        // Ensure pedestal values are copied properly
+        int nped = other.GetNPedestals(0, 0);
+        for (int iy = 0; iy < ny; ++iy) {
+            for (int ix = 0; ix < nx; ++ix) {
+                stat[iy][ix].SetNPedestals(nped);
+                setPedestal(ix, iy, other.getPedestal(ix, iy),
+                            other.getPedestalRMS(ix, iy),
+                            other.GetNPedestals(ix, iy));
+            }
+        }
+    }
+
+    /**
        clone. Must be virtual!
        \returns a clone of the original analog detector
      */
@@ -254,10 +317,11 @@ template <class dataType> class analogDetector {
 
     /**
        Deep copy. Must be virtual!
-       This is a new addition because of multithreaded storage cell data (where each sc has its own mutex).
-       If the pure virtual function exists here, EVERY derived class has to overwrite it!
-       That means a Copy() function must also be implemented in any derived class.
-       \returns a deep copy of the original analog detector
+       This is a new addition because of multithreaded storage cell data (where
+       each sc has its own mutex). If the pure virtual function exists here,
+       EVERY derived class has to overwrite it! That means a Copy() function
+       must also be implemented in any derived class. \returns a deep copy of
+       the original analog detector
      */
     virtual analogDetector *Copy() = 0;
 
@@ -587,6 +651,11 @@ template <class dataType> class analogDetector {
         return ped;
     };
 
+    // Const version for use in the copy constructor
+    virtual double getPedestal(int ix, int iy, int cm = 0) const {
+        return stat[iy][ix].getPedestal();
+    };
+
     /**
        gets  pedestal rms (i.e. noise)
        \param ix pixel x coordinate
@@ -603,6 +672,11 @@ template <class dataType> class analogDetector {
             }
         }
         return ped;
+    };
+
+    // Const version for use in the copy constructor
+    virtual double getPedestalRMS(int ix, int iy) const {
+        return stat[iy][ix].getPedestalRMS();
     };
 
     /**
@@ -1265,7 +1339,7 @@ template <class dataType> class analogDetector {
     /** gets number of samples for moving average pedestal calculation
            \returns actual number of samples
        */
-    int GetNPedestals(int ix, int iy) {
+    int GetNPedestals(int ix, int iy) const {
         if (ix >= 0 && ix < nx && iy >= 0 && iy < ny)
             return stat[iy][ix].GetNPedestals();
         else

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 project(slsDetectorPackage)
 
 # Read VERSION file into project version
@@ -28,6 +28,10 @@ include(cmake/SlsAddFlag.cmake)
 include(FetchContent)
 option(SLS_FETCH_ZMQ_FROM_GITHUB "Fetch zmq from github" OFF)
 option(SLS_FETCH_PYBIND11_FROM_GITHUB "Fetch pybind11 from github" OFF)
+
+if(${SKBUILD})
+    message(STATUS "Building with scikit-build")
+endif()
 
 if(SLS_FETCH_ZMQ_FROM_GITHUB)
     # Opt in to pull down a zmq version from github instead of

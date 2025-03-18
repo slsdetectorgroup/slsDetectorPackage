@@ -113,49 +113,20 @@ template <class dataType> class analogDetector {
        destructor. Deletes the pdestalSubtraction array and the image
     */
     virtual ~analogDetector() {
-        std::cout << "#### Debug: Destructing analogDetector! ####"
-                  << std::endl;
+        // std::cout << "#### Debug: Destructing analogDetector! ####"
+        //           << std::endl;
         for (int i = 0; i < ny; i++) {
-            std::cout << " # " << i;
-            if (stat[i]) {
-                if (i == 0) {
-                    std::cout
-                        << "#### Debug: Deleting analogDetector member stat["
-                        << i << "] at " << stat[i] << " ####" << std::endl;
-                }
-                delete[] stat[i];
-                if (i == 0) {
-                    std::cout
-                        << "#### Debug: Deleted analogDetector member stat["
-                        << i << "]! ####" << std::endl;
-                }
-                stat[i] = nullptr;
-            }
+            if (stat[i]) { delete[] stat[i]; stat[i] = nullptr; }
             // delete[] stat[i];
             /* delete [] pedMean[i];  */
             /* delete [] pedVariance[i]; */
         }
-        std::cout << " #\n";
         /* delete [] pedMean;  */
         /* delete [] pedVariance; */
         // delete[] stat;
         // delete[] image;
-        if (stat) {
-            std::cout << "#### Debug: Deleting analogDetector member stat at "
-                      << stat << " ####" << std::endl;
-            delete[] stat;
-            std::cout << "#### Debug: Deleted analogDetector member stat! ####"
-                      << std::endl;
-            stat = nullptr;
-        }
-        if (image) {
-            std::cout << "#### Debug: Deleting analogDetector member image at "
-                      << image << " ####" << std::endl;
-            delete[] image;
-            std::cout << "#### Debug: Deleted analogDetector member image! ####"
-                      << std::endl;
-            image = nullptr;
-        }
+        if (stat) { delete[] stat; stat = nullptr; }
+        if (image) { delete[] image; image = nullptr; }
 #ifdef ROOTSPECTRUM
         delete hs;
 #ifdef ROOTCLUST
@@ -173,8 +144,8 @@ template <class dataType> class analogDetector {
      */
     analogDetector(analogDetector *orig) {
         /* copy construction from orig*/
-        std::cout << "#### Debug: Calling analogDetector cloning method! ####"
-                  << std::endl;
+        // std::cout << "#### Debug: Calling analogDetector cloning method! ####"
+        //           << std::endl;
         det = orig->det;
         nx = orig->nx;
         ny = orig->ny;
@@ -267,8 +238,8 @@ template <class dataType> class analogDetector {
           ymax(other.ymax), thr(other.thr), fMode(other.fMode),
           dMode(other.dMode), myFile(NULL) {
 
-        std::cout << "#### Debug: Calling analogDetector copy constructor! ####"
-                  << std::endl;
+        // std::cout << "#### Debug: Calling analogDetector copy constructor! ####"
+        //           << std::endl;
 
         // Deep copy the stat array
         stat = new pedestalSubtraction *[ny];

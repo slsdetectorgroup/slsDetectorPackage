@@ -89,37 +89,16 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
        Destructor. Deletes the cluster structure, event mask, and destroys the mutex.
     */
     virtual ~singlePhotonDetector() {
-        std::cout << "#### Debug: Destructing singlePhotonDetector! ####" << std::endl;
-        if (clusters) {
-            std::cout << "#### Debug: Deleting singlePhotonDetector member clusters at " << clusters << " ####" << std::endl;
-            delete[] clusters;
-            std::cout << "#### Debug: Deleted singlePhotonDetector member clusters! ####" << std::endl;
-            clusters = nullptr;
-        }
+        // std::cout << "#### Debug: Destructing singlePhotonDetector! ####" << std::endl;
+        if (clusters) { delete[] clusters; clusters = nullptr; }
         for (int i = 0; i < ny; i++) {
-            if (eventMask[i]) {
-                if (i==0) {
-                    std::cout << "#### Debug: Deleting singlePhotonDetector member eventMask[i]! ####" << std::endl;
-                }
-                delete[] eventMask[i];
-                if (i==0) {
-                    std::cout << "#### Debug: Deleted singlePhotonDetector member eventMask[i]! ####" << std::endl;
-                }
-                eventMask[i] = nullptr;
-            }
+            if (eventMask[i]) { delete[] eventMask[i]; eventMask[i] = nullptr; }
         }
-        if (eventMask) { 
-            std::cout << "#### Debug: Deleting singlePhotonDetector member eventMask at " << eventMask << " ####" << std::endl;
-            delete[] eventMask;
-            std::cout << "#### Debug: Deleted singlePhotonDetector member eventMask! ####" << std::endl;
-            eventMask = nullptr;
-        }
+        if (eventMask) { delete[] eventMask; eventMask = nullptr; }
         if (ownsMutex) {
             if (fm) {
                 //pthread_mutex_destroy(fm); // Destroy the mutex (not necessary with std::mutex)
-                std::cout << "#### Debug: Deleting std::mutex singlePhotonDetector member fm at " << fm << " ####" << std::endl;
                 delete fm; // Free the memory allocated for the mutex
-                std::cout << "#### Debug: Deleted std::mutex singlePhotonDetector member fm! ####" << std::endl;
                 fm = nullptr;  // Set the pointer to nullptr to avoid dangling pointer
             }
         }

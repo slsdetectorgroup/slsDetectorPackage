@@ -113,16 +113,14 @@ class threadedAnalogDetector {
 
     virtual ~threadedAnalogDetector() {
 
-        std::cout << "#### Debug: Destructing threadedAnalogDetector! ####" << std::endl;
+        // std::cout << "#### Debug: Destructing threadedAnalogDetector! ####" << std::endl;
 
         StopThread();
 
         if (fifoFree) { delete fifoFree; fifoFree = nullptr; }
         if (fifoData) { delete fifoData; fifoData = nullptr; }
         if (det) { 
-            std::cout << "#### Debug: Deleting threadedAnalogDetector member det at " << det << " ####" << std::endl;
             delete det; // Call destructor for singlePhotonDetector
-            std::cout << "#### Debug: Deleted threadedAnalogDetector member det! ####" << std::endl;
             det = nullptr; 
         } 
     }
@@ -363,14 +361,13 @@ class multiThreadedAnalogDetector {
         */
 
         // Create separate detectorObjects for each SC (each owns its mutex)
-        std::cout << "#### Debug: Constructing vector of analogDetector objects! ####" << std::endl;
         std::vector< analogDetector<uint16_t>* > sc_detectors(nSC, nullptr);
         sc_detectors[0] = d; // First storage cell uses the given detector
-        std::cout << "#### Debug: Copied analogDetector object for storage cell 0! ####" << std::endl;
+        // std::cout << "#### Debug: Copied analogDetector object for storage cell 0! ####" << std::endl;
 
         for (int sc = 1; sc < nSC; ++sc) {
             sc_detectors[sc] = d->Copy(); // Ensure unique mutex for each SC
-            std::cout << "#### Debug: Copied analogDetector object for storage cell " << sc << "! ####" << std::endl;
+            // std::cout << "#### Debug: Copied analogDetector object for storage cell " << sc << "! ####" << std::endl;
         }
 
         // Distribute threads among storage cells
@@ -419,7 +416,7 @@ class multiThreadedAnalogDetector {
     }
 
     virtual ~multiThreadedAnalogDetector() {
-        std::cout << "#### Debug: Destructing multiThreadedAnalogDetector! ####" << std::endl;
+        // std::cout << "#### Debug: Destructing multiThreadedAnalogDetector! ####" << std::endl;
         //StopThreads(); // Superfluous, leads to double delete
         
         /* Reverse loop for destruction.
@@ -427,9 +424,7 @@ class multiThreadedAnalogDetector {
          * (ensure shared mutex is deleted last).
          * Optional solution: reference counting (safer but more complex) */
         for (int i = nThreads - 1; i >= 0; --i) {
-            std::cout << "#### Debug: Deleting multiThreadedAnalogDetector member dets[" << i << "] at " << dets[i] << " ####" << std::endl;
             delete dets[i]; //StopThread() called by each ~threadedAnalogDetector()
-            std::cout << "#### Debug: Deleted multiThreadedAnalogDetector member dets [" << i << "]! ####" << std::endl;
             dets[i] = nullptr;
         }
         

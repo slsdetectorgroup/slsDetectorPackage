@@ -1,0 +1,46 @@
+package:
+  name: slsdet
+  version: 2025.2.18 #TODO! how to not duplicate this?
+
+source:
+  path: ../..
+
+build:
+  number: 0
+  script:
+    - unset CMAKE_GENERATOR && {{ PYTHON }} -m pip install . -vv  # [not win]
+    - {{ PYTHON }} -m pip install . -vv  # [win]
+
+requirements:
+  build:
+    - python {{python}}
+    - {{ compiler('c') }}
+    - {{ stdlib("c") }}
+    - {{ compiler('cxx') }}
+
+
+  host:
+    - cmake
+    - ninja
+    - python {{python}}
+    - pip
+    - scikit-build-core
+    - pybind11 >=2.13.0
+    - fmt
+    - zeromq
+    - nlohmann_json
+    - catch2
+
+  run:
+    - python {{python}}
+    - numpy
+
+
+test:
+  imports:
+    - slsdet
+
+
+about:
+  summary: An example project built with pybind11 and scikit-build.
+  # license_file: LICENSE

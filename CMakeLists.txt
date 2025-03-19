@@ -13,8 +13,6 @@ set(PROJECT_VERSION ${PROJECT_VERSION_STRING})
 add_compile_definitions(SLS_DET_VERSION="${PROJECT_VERSION}")
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 cmake_policy(SET CMP0074 NEW)
 
@@ -31,9 +29,6 @@ include(FetchContent)
 option(SLS_FETCH_ZMQ_FROM_GITHUB "Fetch zmq from github" OFF)
 option(SLS_FETCH_PYBIND11_FROM_GITHUB "Fetch pybind11 from github" OFF)
 
-if(${SKBUILD})
-    message(STATUS "Building with scikit-build")
-endif()
 
 if(SLS_FETCH_ZMQ_FROM_GITHUB)
     # Opt in to pull down a zmq version from github instead of
@@ -202,7 +197,7 @@ endif()
 # to control options for the libraries
 if(NOT TARGET slsProjectOptions)
     add_library(slsProjectOptions INTERFACE)
-#    target_compile_features(slsProjectOptions INTERFACE cxx_std_11)
+   target_compile_features(slsProjectOptions INTERFACE cxx_std_11)
 endif()
 
 if (NOT TARGET slsProjectWarnings)

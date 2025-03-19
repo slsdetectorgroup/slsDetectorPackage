@@ -992,7 +992,9 @@ void Implementation::StartMasterWriter() {
                     : 0;
             masterAttributes.digitalSamples = generalData->nDigitalSamples;
             masterAttributes.dbitoffset = ctbDbitOffset;
+            masterAttributes.dbitreorder = ctbDbitReorder;
             masterAttributes.dbitlist = 0;
+
             for (auto &i : ctbDbitList) {
                 masterAttributes.dbitlist |= (static_cast<uint64_t>(1) << i);
             }

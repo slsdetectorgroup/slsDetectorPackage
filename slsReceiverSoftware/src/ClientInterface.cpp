@@ -1807,7 +1807,7 @@ int ClientInterface::set_dbit_reorder(Interface &socket) {
         throw RuntimeError("Invalid dbit reorder: " + std::to_string(arg));
     }
     verifyIdle(socket);
-    LOG(logDEBUG1) << "Setting Dbit offset: " << arg;
+    LOG(logDEBUG1) << "Setting Dbit reorder: " << arg;
     impl()->setDbitReorder(arg);
     return socket.Send(OK);
 }

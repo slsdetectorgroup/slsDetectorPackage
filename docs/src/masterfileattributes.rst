@@ -345,6 +345,9 @@ Chip Test Board
    +-----------------------+-------------------------------------------------+
    | Dbit Offset           | Digital offset of valid data in bytes           |
    +-----------------------+-------------------------------------------------+
+   | Dbit Reorder          | Group bits of all samples together to have them |
+   |                       | contiguous in the file                          |
+   +-----------------------+-------------------------------------------------+
    | Dbit Bitset           | Digital 64 bit mask of bits enabled in receiver |
    +-----------------------+-------------------------------------------------+
    | Transceiver Mask      | Mask of channels enabled in Transceiver         |

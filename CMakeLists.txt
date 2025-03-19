@@ -13,6 +13,8 @@ set(PROJECT_VERSION ${PROJECT_VERSION_STRING})
 add_compile_definitions(SLS_DET_VERSION="${PROJECT_VERSION}")
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 cmake_policy(SET CMP0074 NEW)
 
@@ -58,6 +60,11 @@ set(ENABLE_CPACK OFF CACHE BOOL "")
 set(ENABLE_CLANG OFF CACHE BOOL "")
 set(ENABLE_CURVE OFF CACHE BOOL "")
 set(ENABLE_DRAFTS OFF CACHE BOOL "")
+set(ENABLE_PRECOMPILED OFF CACHE BOOL "")
+set(WITH_DOC OFF CACHE BOOL "")
+set(WITH_DOCS OFF CACHE BOOL "")
+
+ 
 
 # Using GetProperties and Populate to be able to exclude zmq
 # from install (not possible with FetchContent_MakeAvailable(libzmq))
@@ -195,7 +202,7 @@ endif()
 # to control options for the libraries
 if(NOT TARGET slsProjectOptions)
     add_library(slsProjectOptions INTERFACE)
-    target_compile_features(slsProjectOptions INTERFACE cxx_std_11)
+#    target_compile_features(slsProjectOptions INTERFACE cxx_std_11)
 endif()
 
 if (NOT TARGET slsProjectWarnings)

@@ -8,12 +8,12 @@ if [ ! -d "install" ]; then
     mkdir install
 fi
 cd build
-cmake .. \
+cmake .. -G Ninja \
       -DCMAKE_PREFIX_PATH=$CONDA_PREFIX \
       -DCMAKE_INSTALL_PREFIX=install \
       -DSLS_USE_TEXTCLIENT=ON \
       -DSLS_USE_RECEIVER=ON \
-      -DSLS_USE_GUI=ON \
+      -DSLS_USE_GUI=OFF \
       -DSLS_USE_MOENCH=ON\
       -DSLS_USE_TESTS=ON \
       -DSLS_USE_PYTHON=OFF \
@@ -25,4 +25,5 @@ echo "Building using: ${NCORES} cores"
 cmake --build . -- -j${NCORES}
 cmake --build . --target install
 
+export SLSDETNAME=automated_tests
 CTEST_OUTPUT_ON_FAILURE=1 ctest -j 1

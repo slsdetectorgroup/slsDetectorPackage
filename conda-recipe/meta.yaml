@@ -15,23 +15,28 @@ build:
 requirements:
   build:
     - {{ compiler('c') }}
-    - {{stdlib('c')}}
-    - {{compiler('cxx')}}
+    - {{ compiler('cxx') }}
     - cmake<=3.28
     - ninja
     - qt 5.*
 
   host:
-    - libstdcxx-ng
-    - libgcc-ng
-    - libgl-devel
-    - libtiff
-    - zlib
+    # - libstdcxx-ng
+    # - libgcc-ng
+    - xorg-libx11
+    - xorg-libice
+    - xorg-libxext
+    - xorg-libsm
+    - xorg-libxau
+    - xorg-libxrender
+    - xorg-libxfixes
     - expat
-  
+    - libtiff
+    - libpng
+
   run:
-    - libstdcxx-ng
-    - libgcc-ng 
+    # - libstdcxx-ng
+    # - libgcc-ng 
 
 
 outputs:
@@ -42,72 +47,68 @@ outputs:
       build:
         - {{ compiler('c') }}
         - {{compiler('cxx')}}
-        - libstdcxx-ng
-        - libgcc-ng
+        # - libstdcxx-ng
+        # - libgcc-ng
 
       run: 
-        - libstdcxx-ng
-        - libgcc-ng
+        # - libstdcxx-ng
+        # - libgcc-ng
 
-  - name: slsdet
-    script: 
-      - unset CMAKE_GENERATOR && {{ PYTHON }} -m pip install . -vv  # [not win]
+  # - name: slsdet
+  #   script: build_pylib.sh
 
-    requirements:
-      build:
-        - python {{python}}
-        - {{ compiler('c') }}
-        - {{compiler('cxx')}}
-        # - {{ pin_subpackage('slsdetlib', exact=True) }} #discuss keeping pinning for simplicity?
-        - pybind11>=2.13
+  #   requirements:
+  #     build:
+  #       - python
+  #       - {{ compiler('c') }}
+  #       - {{compiler('cxx')}}
+  #       - {{ pin_subpackage('slsdetlib', exact=True) }}
+  #       - setuptools
+  #       - pybind11=2.13
 
-      host:
-        - cmake
-        - ninja
-        - python {{python}}
-        - pip
-        - setuptools
-        - pybind11>=2.13
-        - scikit-build-core
+  #     host:
+  #       - python
+  #       - {{ pin_subpackage('slsdetlib', exact=True) }}
+  #       - setuptools
+  #       - pybind11=2.13
 
 
-      run:
-        - libstdcxx-ng
-        - libgcc-ng
-        - python {{python}}
+  #     run:
+  #       - libstdcxx-ng
+  #       - libgcc-ng
+  #       - python
+  #       - numpy
+  #       - {{ pin_subpackage('slsdetlib', exact=True) }}
+
+  #   test:
+  #     imports:
+  #       - slsdet
 
 
-    test:
-      imports:
-        - slsdet
+  # - name: slsdetgui
+  #   script: copy_gui.sh
+  #   requirements:
+
+  #     build:
+  #       - {{ compiler('c') }}
+  #       - {{compiler('cxx')}}
+  #       - {{ pin_subpackage('slsdetlib', exact=True) }}
+
+  #     run:
+  #       - {{ pin_subpackage('slsdetlib', exact=True) }}
+  #       - qt 5.*
+  #       - expat
+
+  # - name: moenchzmq
+  #   script: copy_moench.sh
+  #   requirements:
+
+  #     build:
+  #       - {{ compiler('c') }}
+  #       - {{compiler('cxx')}}
+  #       - {{ pin_subpackage('slsdetlib', exact=True) }}
 
 
-  - name: slsdetgui
-    script: copy_gui.sh
-    requirements:
-
-      build:
-        - {{ compiler('c') }}
-        - {{compiler('cxx')}}
-        - {{ pin_subpackage('slsdetlib', exact=True) }}
-        
-
-      run:
-        - {{ pin_subpackage('slsdetlib', exact=True) }}
-        - qt 5.*
-        - expat
-
-  - name: moenchzmq
-    script: copy_moench.sh
-    requirements:
-
-      build:
-        - {{ compiler('c') }}
-        - {{compiler('cxx')}}
-        - {{ pin_subpackage('slsdetlib', exact=True) }}
-
-
-      run:
-        - {{ pin_subpackage('slsdetlib', exact=True) }}
-        - expat
-
+  #     run:
+  #       - {{ pin_subpackage('slsdetlib', exact=True) }}
+  #       - expat

@@ -25,5 +25,4 @@ echo "Building using: ${NCORES} cores"
 cmake --build . -- -j${NCORES}
 cmake --build . --target install
 
-export SLSDETNAME=automated_tests
 CTEST_OUTPUT_ON_FAILURE=1 ctest -j 1

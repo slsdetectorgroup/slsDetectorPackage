@@ -1729,6 +1729,15 @@ class Detector {
     /** [CTB] Set number of bytes of digital data to skip in the Receiver */
     void setRxDbitOffset(int value, Positions pos = {});
 
+    /** [CTB] */
+    Result<bool> getRxDbitReorder(Positions pos = {}) const;
+
+    /** [CTB] Reorder digital data to group together all samples per signal.
+     * Default is true. Setting to false means 'do not reorder' and to keep what
+     * the board spits out, which is that all signals in a sample are grouped
+     * together */
+    void setRxDbitReorder(bool reorder, Positions pos = {});
+
     /**
      * [CTB] Set Digital IO Delay
      * cannot get

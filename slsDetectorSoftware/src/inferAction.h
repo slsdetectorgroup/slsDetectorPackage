@@ -193,6 +193,7 @@ class InferAction {
     int rx_clearroi();
     int rx_dbitlist();
     int rx_dbitoffset();
+    int rx_dbitreorder();
     int rx_discardpolicy();
     int rx_fifodepth();
     int rx_frameindex();
@@ -527,6 +528,7 @@ class InferAction {
         {"rx_clearroi", &InferAction::rx_clearroi},
         {"rx_dbitlist", &InferAction::rx_dbitlist},
         {"rx_dbitoffset", &InferAction::rx_dbitoffset},
+        {"rx_dbitreorder", &InferAction::rx_dbitreorder},
         {"rx_discardpolicy", &InferAction::rx_discardpolicy},
         {"rx_fifodepth", &InferAction::rx_fifodepth},
         {"rx_frameindex", &InferAction::rx_frameindex},

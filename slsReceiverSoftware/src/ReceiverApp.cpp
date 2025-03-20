@@ -6,6 +6,7 @@
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
+#include "sls/versionAPI.h"
 
 #include <csignal> //SIGINT
 #include <getopt.h>
@@ -36,19 +37,23 @@ int main(int argc, char *argv[]) {
         "with privileges. \n\n";
 
     static struct option long_options[] = {
-        {"help", no_argument, nullptr, 'h'},
         {"version", no_argument, nullptr, 'v'},
         {"rx_tcpport", required_argument, nullptr, 't'},
         {"port", required_argument, nullptr, 'p'},
         {"uid", required_argument, nullptr, 'u'},
+        {"help", no_argument, nullptr, 'h'},
         {nullptr, 0, nullptr, 0}};
 
     int option_index = 0;
     int opt = 0;
-    while (-1 != (opt = getopt_long(argc, argv, "hvt:p:u:", long_options,
+    while (-1 != (opt = getopt_long(argc, argv, "vt:p:u:h", long_options,
                                     &option_index))) {
 
         switch (opt) {
+
+        case 'v':
+            std::cout << argv[0] << " Version: " << APIRECEIVER << std::endl;
+            exit(EXIT_SUCCESS);
 
         case 't':
             LOG(sls::logWARNING)

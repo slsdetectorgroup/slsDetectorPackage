@@ -181,8 +181,8 @@ std::string getHelpMessage() {
            "\t-n, --num-receivers : Number of receivers.\n" +
            "\t-p, --port          : TCP port to communicate with client for "
            "configuration. Non-zero and 16 bit.\n" +
-           "\t-c, --callback      : Enable dummy callbacks. Disabled (0) by "
-           "default. Prints frame header for debugging.\n" +
+           "\t-c, --callback      : Enable dummy callbacks for debugging. "
+           "Disabled by default. \n" +
            "\t-u, --uid           : Set effective user id if receiver started "
            "with privileges. \n\n";
 }
@@ -203,21 +203,25 @@ int main(int argc, char *argv[]) {
     std::string help_message = getHelpMessage();
 
     static struct option long_options[] = {
-        {"help", no_argument, nullptr, 'h'},
         {"version", no_argument, nullptr, 'v'},
         {"num-receivers", required_argument, nullptr, 'n'},
         {"rx_tcpport", required_argument, nullptr, 't'},
         {"port", required_argument, nullptr, 'p'},
-        {"callback", required_argument, nullptr, 'c'},
+        {"callback", no_argument, nullptr, 'c'},
         {"uid", required_argument, nullptr, 'u'},
+        {"help", no_argument, nullptr, 'h'},
         {nullptr, 0, nullptr, 0}};
 
     int option_index = 0;
     int opt = 0;
-    while (-1 != (opt = getopt_long(argc, argv, "hvn:t:p:u:c:", long_options,
+    while (-1 != (opt = getopt_long(argc, argv, "vn:t:p:cu:h", long_options,
                                     &option_index))) {
 
         switch (opt) {
+
+        case 'v':
+            std::cout << argv[0] << " Version: " << APIRECEIVER << std::endl;
+            exit(EXIT_SUCCESS);
 
         case 'n':
             try {
@@ -234,6 +238,7 @@ int main(int argc, char *argv[]) {
         case 't':
             LOG(sls::logWARNING)
                 << "Deprecated option. Please use 'p' or '--port'.";
+            //[[fallthrough]]; TODO: for when we update to c++17
         case 'p':
             try {
                 startPort = sls::StringTo<uint16_t>(optarg);
@@ -244,12 +249,7 @@ int main(int argc, char *argv[]) {
             break;
 
         case 'c':
-            try {
-                callbackEnabled = sls::StringTo<bool>(optarg);
-            } catch (...) {
-                throw sls::RuntimeError("Invalid callback enable." +
-                                        help_message);
-            }
+            callbackEnabled = true;
             break;
 
         case 'u':

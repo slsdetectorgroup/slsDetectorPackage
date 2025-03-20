@@ -7,10 +7,12 @@
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
+#include "sls/sls_detector_exceptions.h"
 #include "sls/versionAPI.h"
 
 #include <csignal> //SIGINT
 #include <cstring>
+#include <getopt.h>
 #include <iostream>
 #include <semaphore.h>
 #include <sys/wait.h> //wait
@@ -28,28 +30,6 @@
     printf("\033[%dm" f RESET, 30 + c + 1, ##__VA_ARGS__)
 
 sem_t semaphore;
-
-/**
- * Control+C Interrupt Handler
- * to let all the processes know to exit properly
- */
-void sigInterruptHandler(int p) { sem_post(&semaphore); }
-
-/**
- * prints usage of this example program
- */
-std::string getHelpMessage() {
-    std::ostringstream os;
-    os << "\nUsage:\n\n"
-       << "./slsMultiReceiver --version or -v\n"
-       << "\t - Gets the slsMultiReceiver version\n\n"
-       << "./slsMultiReceiver [start tcp port] [num recevers] [call back "
-          "option (optional)]\n"
-       << "\t - tcp port has to be non-zero and 16 bit\n"
-       << "\t - call back option is 0 (disabled) by default, 1 prints frame "
-          "header for debugging\n";
-    return os.str();
-}
 
 /**
  * Start Acquisition Call back (slsMultiReceiver writes data if file write
@@ -154,6 +134,60 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
 }
 
 /**
+ * Control+C Interrupt Handler
+ * to let all the processes know to exit properly
+ */
+void sigInterruptHandler(int p) { sem_post(&semaphore); }
+
+void GetDeprecatedCommandLineOptions(int argc, char *argv[],
+                                     uint16_t &startPort,
+                                     uint16_t &numReceivers,
+                                     bool &callbackEnabled) {
+    std::string deprecatedMessage =
+        "Detected deprecated Options. Please update.\n";
+    if (argc > 1) {
+        try {
+            if (argc == 3 || argc == 4) {
+                startPort = sls::StringTo<uint16_t>(argv[1]);
+                numReceivers = sls::StringTo<uint16_t>(argv[2]);
+                if (numReceivers > 1024) {
+                    LOG(sls::logWARNING) << deprecatedMessage;
+                    LOG(sls::logERROR)
+                        << "Did you mix up the order of the arguments?";
+                    exit(EXIT_FAILURE);
+                }
+                if (numReceivers == 0) {
+                    LOG(sls::logWARNING) << deprecatedMessage;
+                    LOG(sls::logERROR) << "Invalid number of receivers.";
+                    exit(EXIT_FAILURE);
+                }
+                if (argc == 4) {
+                    callbackEnabled = sls::StringTo<bool>(argv[3]);
+                }
+            } else
+                throw std::runtime_error("Invalid number of arguments");
+        } catch (const std::exception &e) {
+            LOG(sls::logWARNING) << deprecatedMessage;
+            LOG(sls::logERROR) << e.what();
+            exit(EXIT_FAILURE);
+        }
+    }
+}
+
+std::string getHelpMessage() {
+    std::string name = "slsMultiReceiver";
+    return "\nUsage: " + name + " Options:\n" +
+           "\t-v, --version       : Version of " + name + ".\n" +
+           "\t-n, --num-receivers : Number of receivers.\n" +
+           "\t-p, --port          : TCP port to communicate with client for "
+           "configuration. Non-zero and 16 bit.\n" +
+           "\t-c, --callback      : Enable dummy callbacks. Disabled (0) by "
+           "default. Prints frame header for debugging.\n" +
+           "\t-u, --uid           : Set effective user id if receiver started "
+           "with privileges. \n\n";
+}
+
+/**
  * Example of main program using the Receiver class
  *
  * - Defines in file for:
@@ -161,59 +195,108 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
  *  	- Default Start TCP port is 1954
  */
 int main(int argc, char *argv[]) {
+    uint16_t startPort = DEFAULT_TCP_RX_PORTNO;
+    uint16_t numReceivers = 1;
+    bool callbackEnabled = false;
+    uid_t userid = -1;
 
-    // version
-    if (argc == 2) {
-        std::string sargv1 = std::string(argv[1]);
-        if (sargv1 == "--version" || sargv1 == "-v") {
-            std::cout << "slsMultiReceiver Version: " << APIRECEIVER
-                      << std::endl;
+    std::string help_message = getHelpMessage();
+
+    static struct option long_options[] = {
+        {"help", no_argument, nullptr, 'h'},
+        {"version", no_argument, nullptr, 'v'},
+        {"num-receivers", required_argument, nullptr, 'n'},
+        {"rx_tcpport", required_argument, nullptr, 't'},
+        {"port", required_argument, nullptr, 'p'},
+        {"callback", required_argument, nullptr, 'c'},
+        {"uid", required_argument, nullptr, 'u'},
+        {nullptr, 0, nullptr, 0}};
+
+    int option_index = 0;
+    int opt = 0;
+    while (-1 != (opt = getopt_long(argc, argv, "hvn:t:p:u:c:", long_options,
+                                    &option_index))) {
+
+        switch (opt) {
+
+        case 'n':
+            try {
+                numReceivers = sls::StringTo<uint16_t>(optarg);
+                if (numReceivers == 0 || numReceivers > 100) {
+                    throw std::runtime_error("Invalid argument.");
+                }
+            } catch (...) {
+                throw sls::RuntimeError("Invalid number of receivers." +
+                                        help_message);
+            }
+            break;
+
+        case 't':
+            LOG(sls::logWARNING)
+                << "Deprecated option. Please use 'p' or '--port'.";
+        case 'p':
+            try {
+                startPort = sls::StringTo<uint16_t>(optarg);
+            } catch (...) {
+                throw sls::RuntimeError("Could not scan port number." +
+                                        help_message);
+            }
+            break;
+
+        case 'c':
+            try {
+                callbackEnabled = sls::StringTo<bool>(optarg);
+            } catch (...) {
+                throw sls::RuntimeError("Invalid callback enable." +
+                                        help_message);
+            }
+            break;
+
+        case 'u':
+            try {
+                userid = sls::StringTo<uint32_t>(optarg);
+            } catch (...) {
+                throw sls::RuntimeError("Invalid uid." + help_message);
+            }
+            break;
+
+        case 'h':
+            std::cout << help_message << std::endl;
             exit(EXIT_SUCCESS);
+        default:
+            // maintain backward compatibility of [startport] [num-receivers]
+            // [callback]
+            GetDeprecatedCommandLineOptions(argc, argv, startPort, numReceivers,
+                                            callbackEnabled);
+            throw sls::RuntimeError(help_message);
         }
     }
 
-    /**	- set default values */
-    int numReceivers = 1;
-    uint16_t startTCPPort = DEFAULT_TCP_RX_PORTNO;
-    int withCallback = 0;
-    sem_init(&semaphore, 1, 0);
+    LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';
+    LOG(sls::logINFO) << "Number of Receivers: " << numReceivers;
+    LOG(sls::logINFO) << "Start TCP Port: " << startPort;
+    LOG(sls::logINFO) << "Callback Enable: " << callbackEnabled;
 
-    /**	- get number of receivers and start tcp port from command line
-     * arguments */
-    if (argc > 1) {
-        try {
-            if (argc == 3 || argc == 4) {
-                startTCPPort = sls::StringTo<uint16_t>(argv[1]);
-                if (startTCPPort == 0) {
-                    throw std::runtime_error("Invalid start tcp port");
-                }
-                numReceivers = std::stoi(argv[2]);
-                if (numReceivers > 1024) {
-                    cprintf(RED,
-                            "Did you mix up the order of the arguments?\n%s\n",
-                            getHelpMessage().c_str());
-                    return EXIT_FAILURE;
-                }
-                if (numReceivers == 0) {
-                    cprintf(RED, "Invalid number of receivers.\n%s\n",
-                            getHelpMessage().c_str());
-                    return EXIT_FAILURE;
-                }
-                if (argc == 4) {
-                    withCallback = std::stoi(argv[3]);
-                }
-            } else
-                throw std::runtime_error("Invalid number of arguments");
-        } catch (const std::exception &e) {
-            cprintf(RED, "Error: %s\n%s\n", e.what(), getHelpMessage().c_str());
-            return EXIT_FAILURE;
+    // set effective id if provided
+    if (userid != static_cast<uid_t>(-1)) {
+        if (geteuid() == userid) {
+            LOG(sls::logINFO)
+                << "Process already has the same Effective UID " << userid;
+        } else {
+            if (seteuid(userid) != 0) {
+                std::ostringstream oss;
+                oss << "Could not set Effective UID to " << userid;
+                throw sls::RuntimeError(oss.str());
+            }
+            if (geteuid() != userid) {
+                std::ostringstream oss;
+                oss << "Could not set Effective UID to " << userid << ". Got "
+                    << geteuid();
+                throw sls::RuntimeError(oss.str());
+            }
+            LOG(sls::logINFO) << "Process Effective UID changed to " << userid;
         }
     }
-
-    cprintf(BLUE, "Parent Process Created [ Tid: %ld ]\n", (long)gettid());
-    cprintf(RESET, "Number of Receivers: %d\n", numReceivers);
-    cprintf(RESET, "Start TCP Port: %hu\n", startTCPPort);
-    cprintf(RESET, "Callback Enable: %d\n", withCallback);
 
     /** - Catch signal SIGINT to close files and call destructors properly */
     struct sigaction sa;
@@ -222,7 +305,7 @@ int main(int argc, char *argv[]) {
     sigemptyset(&sa.sa_mask); // dont block additional signals during invocation
                               // of handler
     if (sigaction(SIGINT, &sa, nullptr) == -1) {
-        cprintf(RED, "Could not set handler function for SIGINT\n");
+        LOG(sls::logERROR) << "Could not set handler function for SIGINT";
     }
 
     /** - Ignore SIG_PIPE, prevents global signal handler, handle locally,
@@ -234,10 +317,11 @@ int main(int argc, char *argv[]) {
     sigemptyset(&asa.sa_mask); // dont block additional signals during
                                // invocation of handler
     if (sigaction(SIGPIPE, &asa, nullptr) == -1) {
-        cprintf(RED, "Could not set handler function for SIGPIPE\n");
+        LOG(sls::logERROR) << "Could not set handler function for SIGPIPE";
     }
 
     /** - loop over number of receivers */
+    sem_init(&semaphore, 1, 0);
     for (int i = 0; i < numReceivers; ++i) {
 
         /**	- fork process to create child process */
@@ -246,35 +330,38 @@ int main(int argc, char *argv[]) {
         /**	- if fork failed, raise SIGINT and properly destroy all child
          * processes */
         if (pid < 0) {
-            cprintf(RED, "fork() failed. Killing all the receiver objects\n");
+            LOG(sls::logERROR)
+                << "fork() failed. Killing all the receiver objects";
             raise(SIGINT);
         }
 
         /**	- if child process */
         else if (pid == 0) {
-            cprintf(BLUE, "Child process %d [ Tid: %ld ]\n", i, (long)gettid());
+            LOG(sls::logINFOBLUE)
+                << "Child process " << i << " [ Tid: " << gettid() << ']';
 
             try {
-                uint16_t port = startTCPPort + i;
+                uint16_t port = startPort + i;
                 sls::Receiver receiver(port);
 
                 /**	- register callbacks. remember to set file write enable
                  * to 0 (using the client) if we should not write files and you
                  * will write data using the callbacks */
-                if (withCallback) {
+                if (callbackEnabled) {
 
                     /** - Call back for start acquisition */
-                    cprintf(BLUE, "Registering StartAcq()\n");
+                    LOG(sls::logINFOBLUE) << "Registering StartAcq()";
                     receiver.registerCallBackStartAcquisition(StartAcq,
                                                               nullptr);
 
                     /** - Call back for acquisition finished */
-                    cprintf(BLUE, "Registering AcquisitionFinished()\n");
+                    LOG(sls::logINFOBLUE)
+                        << "Registering AcquisitionFinished()";
                     receiver.registerCallBackAcquisitionFinished(
                         AcquisitionFinished, nullptr);
 
                     /* 	- Call back for raw data */
-                    cprintf(BLUE, "Registering GetData() \n");
+                    LOG(sls::logINFOBLUE) << "Registering GetData()";
                     receiver.registerCallBackRawDataReady(GetData, nullptr);
                 }
 
@@ -288,8 +375,8 @@ int main(int argc, char *argv[]) {
                 throw;
             }
 
-            cprintf(BLUE, "Exiting Child Process [ Tid: %ld ]\n",
-                    (long)gettid());
+            LOG(sls::logINFOBLUE)
+                << "Exiting Child Process [ Tid: " << gettid() << ']';
             exit(EXIT_SUCCESS);
         }
     }
@@ -301,12 +388,12 @@ int main(int argc, char *argv[]) {
     sigemptyset(&sa.sa_mask); // dont block additional signals during invocation
                               // of handler
     if (sigaction(SIGINT, &sa, nullptr) == -1) {
-        cprintf(RED, "Could not set handler function for SIGINT\n");
+        LOG(sls::logERROR) << "Could not set handler function for SIGINT";
     }
 
     /** - Print Ready and Instructions how to exit */
     std::cout << "Ready ... \n";
-    cprintf(RESET, "\n[ Press \'Ctrl+c\' to exit ]\n");
+    LOG(sls::logINFO) << "\n[ Press \'Ctrl+c\' to exit ]";
 
     /** - Parent process waits for all child processes to exit */
     for (;;) {
@@ -315,18 +402,19 @@ int main(int argc, char *argv[]) {
         // no child closed
         if (childPid == -1) {
             if (errno == ECHILD) {
-                cprintf(GREEN, "All Child Processes have been closed\n");
+                LOG(sls::logINFOGREEN)
+                    << "All Child Processes have been closed";
                 break;
             } else {
-                cprintf(RED, "Unexpected error from waitpid(): (%s)\n",
-                        strerror(errno));
+                LOG(sls::logERROR)
+                    << "Unexpected error from waitpid(): " << strerror(errno);
                 break;
             }
         }
 
         // child closed
-        cprintf(BLUE, "Exiting Child Process [ Tid: %ld ]\n",
-                (long int)childPid);
+        LOG(sls::logINFOBLUE)
+            << "Exiting Child Process [ Tid: " << childPid << ']';
     }
 
     std::cout << "Goodbye!\n";

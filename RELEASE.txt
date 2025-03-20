@@ -109,6 +109,14 @@ This document describes the differences between v9.1.0 and v9.0.0
 
     *   Removed potentially unsafe str().c_str() calls.
 
+
+    *   slsMultiReceiver Ctrl + C
+        Now cleans up properly upon Ctrl + C, including exiting the Arping thread.
+
+    
+    *   slsMultiReceiver version
+        --version or -v now gives the version of slsMultiReceiver.
+
  
     ZMQ
     ---

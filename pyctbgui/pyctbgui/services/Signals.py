@@ -113,7 +113,6 @@ class SignalsTab(QtWidgets.QWidget):
                 if not isPlottedArray[i]:
                     offset += nbitsPerDBit
                     arr[idx, :] = np.nan
-
                     continue
                 for iSample in range(dSamples):
                     # all samples for digital bit together from slsReceiver
@@ -128,10 +127,11 @@ class SignalsTab(QtWidgets.QWidget):
             arr = np.empty((dSamples, len(rx_dbitlist)), dtype=np.uint8) #store all samples
             for iSample in range(dSamples): 
                 offset = nbitsPerSample * iSample
-                for idx, i in enumerate(rx_dbitlist): #TODO i think ctBitlist is reordered CHECK!!!
+                for idx, i in enumerate(rx_dbitlist): 
                     if not isPlottedArray[i]:
                         offset += 1
                         arr[iSample, idx] = np.nan
+
                     index = int(offset/8)
                     iBit = idx % 8
                     bit = (digital_array[index] >> iBit) & 1
@@ -146,6 +146,8 @@ class SignalsTab(QtWidgets.QWidget):
         #data: raw waveform data
         #dsamples: digital samples
         #asamples: analog samples
+
+        self.refresh()
         
         waveforms = {}
         isPlottedArray = {i: getattr(self.view, f"checkBoxBIT{i}Plot").isChecked() for i in self.rx_dbitlist}

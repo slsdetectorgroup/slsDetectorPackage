@@ -27,6 +27,7 @@ requirements:
     - libgcc-ng
     - libgl-devel  # [linux]
     - libtiff
+    - zlib
 
   run:
     - libstdcxx-ng

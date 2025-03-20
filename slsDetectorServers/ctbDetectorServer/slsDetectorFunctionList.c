@@ -2258,10 +2258,16 @@ void *start_timer(void *arg) {
     int packetsPerFrame = ceil((double)imageSize / (double)dataSize);
 
     // Generate Data
-    char imageData[imageSize];
+    char imageData[imageSize]; //
     memset(imageData, 0, imageSize);
+    /*
     for (int i = 0; i < imageSize; i += sizeof(uint16_t)) {
         *((uint16_t *)(imageData + i)) = i;
+    }
+    */
+
+    for (int i = 0; i < imageSize; i += 2 * sizeof(uint64_t)) {
+        *((uint64_t *)(imageData + i)) = 0xffffffffffffffff;
     }
 
     // Send data

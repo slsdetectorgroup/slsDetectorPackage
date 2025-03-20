@@ -40,7 +40,9 @@ void sigInterruptHandler(int p) { sem_post(&semaphore); }
  */
 std::string getHelpMessage() {
     std::ostringstream os;
-    os << "\nUsage:\n"
+    os << "\nUsage:\n\n"
+       << "./slsMultiReceiver --version or -v\n"
+       << "\t - Gets the slsMultiReceiver version\n\n"
        << "./slsMultiReceiver [start tcp port] [num recevers] [call back "
           "option (optional)]\n"
        << "\t - tcp port has to be non-zero and 16 bit\n"
@@ -165,7 +167,8 @@ int main(int argc, char *argv[]) {
     if (argc == 2) {
         std::string sargv1 = std::string(argv[1]);
         if (sargv1 == "--version" || sargv1 == "-v") {
-            std::cout << "SLS Receiver Version: " << APIRECEIVER << std::endl;
+            std::cout << "slsMultiReceiver Version: " << APIRECEIVER
+                      << std::endl;
             exit(EXIT_SUCCESS);
         }
     }

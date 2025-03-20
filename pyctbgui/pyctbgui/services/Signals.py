@@ -113,6 +113,7 @@ class SignalsTab(QtWidgets.QWidget):
                 if not isPlottedArray[i]:
                     offset += nbitsPerDBit
                     arr[idx, :] = np.nan
+
                     continue
                 for iSample in range(dSamples):
                     # all samples for digital bit together from slsReceiver

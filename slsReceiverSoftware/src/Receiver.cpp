@@ -62,7 +62,7 @@ Receiver::Receiver(int argc, char *argv[]) : tcpipInterface(nullptr) {
         "\t                          started with privileges. \n\n";
 
     while (c != -1) {
-        c = getopt_long(argc, argv, "hvf:t:u:", long_options, &option_index);
+        c = getopt_long(argc, argv, "hvt:u:", long_options, &option_index);
 
         // Detect the end of the options.
         if (c == -1)
@@ -87,7 +87,7 @@ Receiver::Receiver(int argc, char *argv[]) : tcpipInterface(nullptr) {
             break;
 
         case 'v':
-            std::cout << "SLS Receiver Version: " << APIRECEIVER << std::endl;
+            std::cout << "slsReceiver Version: " << APIRECEIVER << std::endl;
             LOG(logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
             exit(EXIT_SUCCESS);
 

@@ -7,6 +7,7 @@
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
+#include "sls/versionAPI.h"
 
 #include <csignal> //SIGINT
 #include <cstring>
@@ -159,6 +160,15 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
  */
 int main(int argc, char *argv[]) {
 
+    // version
+    if (argc == 2) {
+        std::string sargv1 = std::string(argv[1]);
+        if (sargv1 == "--version" || sargv1 == "-v") {
+            std::cout << "SLS Receiver Version: " << APIRECEIVER << std::endl;
+            exit(EXIT_SUCCESS);
+        }
+    }
+
     /**	- set default values */
     int numReceivers = 1;
     uint16_t startTCPPort = DEFAULT_TCP_RX_PORTNO;
@@ -241,40 +251,43 @@ int main(int argc, char *argv[]) {
         else if (pid == 0) {
             cprintf(BLUE, "Child process %d [ Tid: %ld ]\n", i, (long)gettid());
 
-            std::unique_ptr<sls::Receiver> receiver = nullptr;
             try {
-                receiver = sls::make_unique<sls::Receiver>(startTCPPort + i);
+                uint16_t port = startTCPPort + i;
+                sls::Receiver receiver(port);
+
+                /**	- register callbacks. remember to set file write enable
+                 * to 0 (using the client) if we should not write files and you
+                 * will write data using the callbacks */
+                if (withCallback) {
+
+                    /** - Call back for start acquisition */
+                    cprintf(BLUE, "Registering StartAcq()\n");
+                    receiver.registerCallBackStartAcquisition(StartAcq,
+                                                              nullptr);
+
+                    /** - Call back for acquisition finished */
+                    cprintf(BLUE, "Registering AcquisitionFinished()\n");
+                    receiver.registerCallBackAcquisitionFinished(
+                        AcquisitionFinished, nullptr);
+
+                    /* 	- Call back for raw data */
+                    cprintf(BLUE, "Registering GetData() \n");
+                    receiver.registerCallBackRawDataReady(GetData, nullptr);
+                }
+
+                /**	- as long as no Ctrl+C */
+                sem_wait(&semaphore);
+                sem_destroy(&semaphore);
+
             } catch (...) {
                 LOG(sls::logINFOBLUE)
                     << "Exiting Child Process [ Tid: " << gettid() << " ]";
                 throw;
             }
-            /**	- register callbacks. remember to set file write enable to 0
-             * (using the client) if we should not write files and you will
-             * write data using the callbacks */
-            if (withCallback) {
 
-                /** - Call back for start acquisition */
-                cprintf(BLUE, "Registering StartAcq()\n");
-                receiver->registerCallBackStartAcquisition(StartAcq, nullptr);
-
-                /** - Call back for acquisition finished */
-                cprintf(BLUE, "Registering AcquisitionFinished()\n");
-                receiver->registerCallBackAcquisitionFinished(
-                    AcquisitionFinished, nullptr);
-
-                /* 	- Call back for raw data */
-                cprintf(BLUE, "Registering GetData() \n");
-                receiver->registerCallBackRawDataReady(GetData, nullptr);
-            }
-
-            /**	- as long as no Ctrl+C */
-            sem_wait(&semaphore);
-            sem_destroy(&semaphore);
             cprintf(BLUE, "Exiting Child Process [ Tid: %ld ]\n",
                     (long)gettid());
             exit(EXIT_SUCCESS);
-            break;
         }
     }
 

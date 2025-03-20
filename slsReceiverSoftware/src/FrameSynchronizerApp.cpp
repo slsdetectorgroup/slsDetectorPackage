@@ -10,6 +10,7 @@
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
+#include "sls/versionAPI.h"
 
 #include <csignal> //SIGINT
 #include <cstdio>
@@ -92,7 +93,9 @@ void cleanup() {
 std::string getHelpMessage() {
     std::ostringstream os;
     os << "\nUsage:\n"
-          "./slsFrameSynchronizer [start tcp port] [num recevers] [print "
+       << "./slsFrameSynchronizer --version or -v\n"
+       << "\t - Gets the slsFrameSynchronizer version\n\n"
+       << "./slsFrameSynchronizer [start tcp port] [num recevers] [print "
           "callback headers (optional)]\n"
        << "\t - tcp port has to be non-zero and 16 bit\n"
        << "\t - print callback headers option is 0 (disabled) by default\n";
@@ -504,6 +507,16 @@ void GetDataCallback(slsDetectorDefs::sls_receiver_header &header,
  *  	- Default Start TCP port is 1954
  */
 int main(int argc, char *argv[]) {
+
+    // version
+    if (argc == 2) {
+        std::string sargv1 = std::string(argv[1]);
+        if (sargv1 == "--version" || sargv1 == "-v") {
+            std::cout << "slsFrameSynchronizer Version: " << APIRECEIVER
+                      << std::endl;
+            exit(EXIT_SUCCESS);
+        }
+    }
 
     /**	- set default values */
     int numReceivers = 1;

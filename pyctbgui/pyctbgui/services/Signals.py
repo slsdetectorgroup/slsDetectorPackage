@@ -22,6 +22,7 @@ class SignalsTab(QtWidgets.QWidget):
         self.plotTab = None
         self.legend: LegendItem | None = None
         self.rx_dbitoffset = None
+        self.rx_dbitreorder = None
         self.rx_dbitlist = None
 
     def refresh(self):
@@ -29,6 +30,7 @@ class SignalsTab(QtWidgets.QWidget):
         self.updateDigitalBitEnable()
         self.updateIOOut()
         self.getDBitOffset()
+        self.getDBitReorder()
 
     def connect_ui(self):
         for i in range(Defines.signals.count):
@@ -49,6 +51,7 @@ class SignalsTab(QtWidgets.QWidget):
             partial(self.setIOOutRange, Defines.signals.half, Defines.signals.count))
         self.view.lineEditPatIOCtrl.editingFinished.connect(self.setIOOutReg)
         self.view.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
+        self.view.checkBoxDBitReorder.stateChanged.connect(self.setDbitReorder)
 
     def setup_ui(self):
         self.plotTab = self.mainWindow.plotTab
@@ -87,60 +90,74 @@ class SignalsTab(QtWidgets.QWidget):
                 self.legend.addItem(plot, name)
 
     @recordOrApplyPedestal
-    def _processWaveformData(self, data, aSamples, dSamples, rx_dbitlist, isPlottedArray, rx_dbitoffset, romode,
+    def _processWaveformData(self, data, aSamples, dSamples, rx_reorder, rx_dbitlist, isPlottedArray, romode,
                              nADCEnabled):
-        """
-        transform raw waveform data into a processed numpy array
-        @param data:  raw waveform data
-        """
-        dbitoffset = rx_dbitoffset
+        
+        #transform raw waveform data into a processed numpy array
+        #@param data:  raw waveform data
+    
+        start_digital_data = 0 
         if romode == 2:
-            dbitoffset += nADCEnabled * 2 * aSamples
-        digital_array = np.array(np.frombuffer(data, offset=dbitoffset, dtype=np.uint8))
-        nbitsPerDBit = dSamples
-        if nbitsPerDBit % 8 != 0:
-            nbitsPerDBit += (8 - (dSamples % 8))
-        offset = 0
-        arr = []
-        for i in rx_dbitlist:
-            # where numbits * numsamples is not a multiple of 8
-            if offset % 8 != 0:
-                offset += (8 - (offset % 8))
-            if not isPlottedArray[i]:
-                offset += nbitsPerDBit
-                return None
-            waveform = np.zeros(dSamples)
-            for iSample in range(dSamples):
-                # all samples for digital bit together from slsReceiver
-                index = int(offset / 8)
-                iBit = offset % 8
-                bit = (digital_array[index] >> iBit) & 1
-                waveform[iSample] = bit
-                offset += 1
-            arr.append(waveform)
-
-        return np.array(arr)
-
+            start_digital_data += nADCEnabled * 2 * aSamples
+        digital_array = np.array(np.frombuffer(data, offset=start_digital_data, dtype=np.uint8))
+        if rx_reorder:
+            nbitsPerDBit = dSamples
+            arr = np.empty((rx_dbitlist.size, dSamples), dtype=np.uint8) 
+            if nbitsPerDBit % 8 != 0:
+                nbitsPerDBit += (8 - (dSamples % 8))
+            offset = 0
+            for i in rx_dbitlist:
+                # where numbits * numsamples is not a multiple of 8
+                if offset % 8 != 0:
+                    offset += (8 - (offset % 8))
+                if not isPlottedArray[i]:
+                    offset += nbitsPerDBit
+                    arr[i, :] = np.nan
+                    continue
+                for iSample in range(dSamples):
+                    # all samples for digital bit together from slsReceiver
+                    index = int(offset / 8)
+                    iBit = offset % 8
+                    bit = (digital_array[index] >> iBit) & 1
+                    arr[i,iSample] = bit
+                    offset += 1
+            return arr
+        else: 
+            nbitsPerSample = int(rx_dbitlist.size) if rx_dbitlist.size % 8 == 0 else int(rx_dbitlist.size + (8 - (rx_dbitlist.size % 8)))
+            arr = np.empty((dSamples, rx_dbitlist.size), dtype=np.uint8) #store all samples
+            for iSample in range(dSamples): 
+                offset = nbitsPerSample * iSample
+                for i in range(rx_dbitlist): #TODO i think ctBitlist is reordered CHECK!!!
+                    if not isPlottedArray[i]:
+                        offset += 1
+                        arr[iSample, i] = np.nan
+                    index = int(offset/8)
+                    iBit = i % 8
+                    bit = (digital_array[index] >> iBit) & 1
+                    arr[iSample, i] = bit
+                    offset += 1
+            return arr.T.copy() 
+                
     def processWaveformData(self, data, aSamples, dSamples):
-        """
-        view function
-        plots processed waveform data
-        data: raw waveform data
-        dsamples: digital samples
-        asamples: analog samples
-        """
+        
+        #view function
+        #plots processed waveform data
+        #data: raw waveform data
+        #dsamples: digital samples
+        #asamples: analog samples
+        
         waveforms = {}
         isPlottedArray = {i: getattr(self.view, f"checkBoxBIT{i}Plot").isChecked() for i in self.rx_dbitlist}
 
-        digital_array = self._processWaveformData(data, aSamples, dSamples, self.rx_dbitlist, isPlottedArray,
-                                                  self.rx_dbitoffset, self.mainWindow.romode.value,
+        digital_array = self._processWaveformData(data, aSamples, dSamples, self.rx_dbitreorder, self.rx_dbitlist, isPlottedArray,
+                                                  self.mainWindow.romode.value,
                                                   self.mainWindow.nADCEnabled)
 
         irow = 0
-        for idx, i in enumerate(self.rx_dbitlist):
+        for idx, i in enumerate(self.rx_dbitlist): #TODO i think ctBitlist is reordered CHECK!!!
             # bits enabled but not plotting
-            waveform = digital_array[idx]
-            if waveform is None:
+            waveform = digital_array[idx, :]
+            if np.isnan(waveform[0]):
                 continue
             self.mainWindow.digitalPlots[i].setData(waveform)
             plotName = getattr(self.view, f"labelBIT{i}").text()
@@ -151,7 +168,9 @@ class SignalsTab(QtWidgets.QWidget):
                 irow += 1
             else:
                 self.mainWindow.digitalPlots[i].setY(0)
+            
         return waveforms
+
 
     def initializeAllDigitalPlots(self):
         self.mainWindow.plotDigitalWaveform = pg.plot()
@@ -360,8 +379,18 @@ class SignalsTab(QtWidgets.QWidget):
         self.view.spinBoxDBitOffset.setValue(self.rx_dbitoffset)
         self.view.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
 
+    def getDBitReorder(self):
+        self.view.checkBoxDBitReorder.stateChanged.disconnect()
+        self.rx_dbitreorder = self.det.rx_dbitreorder
+        self.view.checkBoxDBitReorder.setChecked(self.rx_dbitreorder)
+        self.view.checkBoxDBitReorder.stateChanged.connect(self.setDbitReorder)
+
+
     def setDbitOffset(self):
         self.det.rx_dbitoffset = self.view.spinBoxDBitOffset.value()
+
+    def setDbitReorder(self):
+        self.det.rx_dbitreorder = self.view.checkBoxDBitReorder.isChecked()
 
     def saveParameters(self) -> list:
         commands = []
@@ -369,5 +398,6 @@ class SignalsTab(QtWidgets.QWidget):
         if len(dblist) > 0:
             commands.append(f"rx_dbitlist {', '.join(dblist)}")
         commands.append(f"rx_dbitoffset {self.view.spinBoxDBitOffset.value()}")
+        commands.append(f"rx_dbitreorder {self.view.checkBoxDBitReorder.isChecked()}")
         commands.append(f"patioctrl {self.view.lineEditPatIOCtrl.text()}")
         return commands

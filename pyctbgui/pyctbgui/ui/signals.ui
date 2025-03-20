@@ -6074,6 +6074,33 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QGridLayout" name="gridLayout_17">
+       <item row="0" column="4">
+        <widget class="QSpinBox" name="spinBoxDBitOffset">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>150</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
        <item row="0" column="3">
         <widget class="QLabel" name="label_66">
          <property name="font">
@@ -6083,6 +6110,31 @@
          </property>
          <property name="text">
           <string>DBit Offset:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="6">
+        <widget class="QCheckBox" name="checkBoxDBitReorder">
+         <property name="text">
+          <string>DBit Reorder</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_48">
+         <property name="minimumSize">
+          <size>
+           <width>50</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>IO Control Register:</string>
          </property>
         </widget>
        </item>
@@ -6133,50 +6185,18 @@
          </property>
         </spacer>
        </item>
-       <item row="0" column="4">
-        <widget class="QSpinBox" name="spinBoxDBitOffset">
-         <property name="minimumSize">
+       <item row="0" column="5">
+        <spacer name="horizontalSpacer_22">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
           <size>
-           <width>150</width>
-           <height>32</height>
+           <width>40</width>
+           <height>20</height>
           </size>
          </property>
-         <property name="maximumSize">
-          <size>
-           <width>150</width>
-           <height>32</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(255, 255, 255);</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_48">
-         <property name="minimumSize">
-          <size>
-           <width>50</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>IO Control Register:</string>
-         </property>
-        </widget>
+        </spacer>
        </item>
       </layout>
      </widget>

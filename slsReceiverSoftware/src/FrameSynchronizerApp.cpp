@@ -88,21 +88,6 @@ void cleanup() {
     }
 }
 
-/**
- * prints usage of this example program
- */
-std::string getHelpMessage() {
-    std::ostringstream os;
-    os << "\nUsage:\n"
-       << "./slsFrameSynchronizer --version or -v\n"
-       << "\t - Gets the slsFrameSynchronizer version\n\n"
-       << "./slsFrameSynchronizer [start tcp port] [num recevers] [print "
-          "callback headers (optional)]\n"
-       << "\t - tcp port has to be non-zero and 16 bit\n"
-       << "\t - print callback headers option is 0 (disabled) by default\n";
-    return os.str();
-}
-
 void zmq_free(void *data, void *hint) { delete[] static_cast<char *>(data); }
 
 void print_frames(const PortFrameMap &frame_port_map) {

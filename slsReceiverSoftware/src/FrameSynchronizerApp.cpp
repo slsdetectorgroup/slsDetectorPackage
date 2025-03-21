@@ -565,9 +565,16 @@ int main(int argc, char *argv[]) {
         case 'h':
             std::cout << help_message << std::endl;
             exit(EXIT_SUCCESS);
+
         default:
-            throw sls::RuntimeError(help_message);
+            LOG(sls::logERROR) << help_message;
+            exit(EXIT_FAILURE);
         }
+    }
+    // remaining arguments
+    if (optind < argc) {
+        LOG(sls::logERROR) << "Invalid arguments\n" << help_message;
+        exit(EXIT_FAILURE);
     }
 
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';

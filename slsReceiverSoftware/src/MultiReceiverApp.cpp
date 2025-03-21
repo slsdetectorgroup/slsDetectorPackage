@@ -263,13 +263,17 @@ int main(int argc, char *argv[]) {
         case 'h':
             std::cout << help_message << std::endl;
             exit(EXIT_SUCCESS);
+
         default:
-            // maintain backward compatibility of [startport] [num-receivers]
-            // [callback]
-            GetDeprecatedCommandLineOptions(argc, argv, startPort, numReceivers,
-                                            callbackEnabled);
-            throw sls::RuntimeError(help_message);
+            LOG(sls::logERROR) << help_message;
+            exit(EXIT_FAILURE);
         }
+    }
+    // if remaining arguments, maintain backward compatibility of [startport]
+    // [num-receivers] [callback]
+    if (optind < argc) {
+        GetDeprecatedCommandLineOptions(argc, argv, startPort, numReceivers,
+                                        callbackEnabled);
     }
 
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';

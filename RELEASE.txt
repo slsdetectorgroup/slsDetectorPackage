@@ -1,4 +1,4 @@
-SLS Detector Package Minor Release 9.1.0 released on 15.03.2025
+SLS Detector Package Minor Release 9.1.0 released on 26.03.2025
 ===============================================================
 
 This document describes the differences between v9.1.0 and v9.0.0   

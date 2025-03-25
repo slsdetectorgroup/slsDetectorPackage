@@ -201,14 +201,14 @@
 /* FIFO Transceiver Fill level RO register */
 #define FIFO_TIN_FILL_REG                   (0x45 << MEM_MAP_SHIFT)
 #define FIFO_TIN_FILL_FIFO_1_OFST           (0)
-#define FIFO_TIN_FILL_FIFO_1_MSK            (0x00001FFF << FIFO_TIN_FILL_FIFO__1_OFST)
+#define FIFO_TIN_FILL_FIFO_1_MSK            (0x00003FFF << FIFO_TIN_FILL_FIFO__1_OFST)
 #define FIFO_TIN_FILL_FIFO_2_OFST           (16)
-#define FIFO_TIN_FILL_FIFO_2_MSK            (0x00001FFF << FIFO_TIN_FILL_FIFO__2_OFST)
+#define FIFO_TIN_FILL_FIFO_2_MSK            (0x00003FFF << FIFO_TIN_FILL_FIFO__2_OFST)
 
 /* FIFO ADC Fill level RO register */
 #define FIFO_ADC_FILL_REG                   (0x46 << MEM_MAP_SHIFT)
 #define FIFO_ADC_FILL_FIFO_OFST             (0)
-#define FIFO_ADC_FILL_FIFO_MSK              (0x00001FFF << FIFO_ADC_FILL_FIFO_OFST)
+#define FIFO_ADC_FILL_FIFO_MSK              (0x00003FFF << FIFO_ADC_FILL_FIFO_OFST)
 
 /* Enable continuos readout register */
 #define CONTINUOUS_RO_ENABLE_REG            (0x47 << MEM_MAP_SHIFT)
@@ -218,6 +218,11 @@
 #define CONTINUOUS_RO_ADC_ENABLE_MSK        (0x00000001 << CONTINUOUS_RO_ADC_ENABLE_OFST)
 #define CONTINUOUS_RO_TIN_ENABLE_MSK        (0x00000001 << CONTINUOUS_RO_TIN_ENABLE_OFST)
 #define CONTINUOUS_RO_DBIT_ENABLE_MSK       (0x00000001 << CONTINUOUS_RO_DBIT_ENABLE_OFST)
+#define DBIT_INJECT_COUNTER_ENA_OFST        (3) // continuously injects fake-data into the dbit fifo when enabled. 
+#define DBIT_INJECT_COUNTER_ENA_MSK         (0x00000001 << DBIT_INJECT_COUNTER_ENA_OFST)
+#define DBIT_INJECT_COUNTER_CLKDIV_OFST     (8) // Additional clock divider for fake-data injection
+#define DBIT_INJECT_COUNTER_CLKDIV_MSK      (0x000000FF << DBIT_INJECT_COUNTER_CLKDIV_OFST)
+
 
 /* FIFO Transceiver In 64 bit RO register */
 #define FIFO_TIN_LSB_REG (0x31 << MEM_MAP_SHIFT)
@@ -226,7 +231,7 @@
 /* FIFO Digital In Status RO register */
 #define FIFO_DIN_STATUS_REG             (0x3B << MEM_MAP_SHIFT)
 #define FIFO_DIN_STATUS_FIFO_FILL_OFST  (0)
-#define FIFO_DIN_STATUS_FIFO_FILL_MSK   (0x00001FFF)
+#define FIFO_DIN_STATUS_FIFO_FILL_MSK   (0x00003FFF)
 #define FIFO_DIN_STATUS_FIFO_FULL_OFST  (30)
 #define FIFO_DIN_STATUS_FIFO_FULL_MSK   (0x00000001 << FIFO_DIN_STATUS_FIFO_FULL_OFST)
 #define FIFO_DIN_STATUS_FIFO_EMPTY_OFST (31)

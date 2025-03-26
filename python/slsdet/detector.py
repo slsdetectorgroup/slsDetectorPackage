@@ -151,6 +151,10 @@ class Detector(CppDetectorApi):
     def hostname(self):
         """Frees shared memory and sets hostname (or IP address) of all modules concatenated by + 
         Virtual servers can already use the port in hostname separated by ':' and ports incremented by 2 to accomodate the stop server as well.
+
+        Note
+        -----
+        The row and column values in the udp/zmq header are affected by the order in this command and the detsize command. The modules are stacked row by row until they reach the y-axis limit set by detsize (if specified). Then, stacking continues in the next column and so on. This only affects row and column in udp/zmq header.
         
         Example
         -------
@@ -2566,7 +2570,7 @@ class Detector(CppDetectorApi):
 
         Note
         -----
-        By default, the on-chip gain switching is active during the entire exposure. This mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). The % is only for chipv1.0, the duration can be set for chipv1.1.\n
+        By default, the on-chip gain switching is active during the entire exposure. This mode disables the on-chip gain switching comparator automatically and the duration is set using compdisabletime.\n
         Default is 0 or this mode disabled (comparator enabled throughout). 1 enables mode. 0 disables mode. 
         """
         return self.getAutoComparatorDisable()
@@ -2579,10 +2583,6 @@ class Detector(CppDetectorApi):
     @element
     def compdisabletime(self):
         """[Jungfrau] Time before end of exposure when comparator is disabled. 
-
-        Note
-        -----
-        It is only possible for chipv1.1.
 
         :getter: always returns in seconds. To get in DurationWrapper, use getComparatorDisableTime
 
@@ -2913,7 +2913,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def timing_info_decoder(self):
-        """[Jungfrau] [Jungfrau] Advanced Command and only for SWISSFEL and SHINE. Sets the bunch id or timing info decoder. Default is SWISSFEL.
+        """[Jungfrau] [Jungfrau] Advanced Command and only for SWISSFEL and SHINE. Sets the bunch id or timing info decoder. Default is SWISSFEL. Only allowed for pcbv2.0.
         Enum: timingInfoDecoder
         """
         return self.getTimingInfoDecoder()

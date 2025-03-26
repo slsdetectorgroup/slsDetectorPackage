@@ -2013,102 +2013,106 @@ int acquire(int blocking, int file_des) {
 #if defined(JUNGFRAUD)
             // chipv1.1 has to be configured before acquisition
             if (getChipVersion() == 11 && !isChipConfigured()) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition. Chip is not configured. "
-                         "Power it on to configure it.\n");
-            LOG(logERROR, (mess));
-        } else
+                ret = FAIL;
+                strcpy(mess,
+                       "Could not start acquisition. Chip is not configured. "
+                       "Power it on to configure it.\n");
+                LOG(logERROR, (mess));
+            } else
 #endif
 #if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
-            if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                 getReadoutMode() == ANALOG_ONLY) &&
-                (getNumAnalogSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not start acquisition. Invalid number of analog "
-                    "samples: %d.\n",
-                    getNumAnalogSamples());
-            LOG(logERROR, (mess));
-        } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                    getReadoutMode() == DIGITAL_ONLY ||
-                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                   (getNumDigitalSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(mess,
+                if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
+                     getReadoutMode() == ANALOG_ONLY) &&
+                    (getNumAnalogSamples() <= 0)) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not start acquisition. Invalid number of analog "
+                        "samples: %d.\n",
+                        getNumAnalogSamples());
+                LOG(logERROR, (mess));
+            } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
+                        getReadoutMode() == DIGITAL_ONLY ||
+                        getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                       (getNumDigitalSamples() <= 0)) {
+                ret = FAIL;
+                sprintf(
+                    mess,
                     "Could not start acquisition. Invalid number of digital "
                     "samples: %d.\n",
                     getNumDigitalSamples());
-            LOG(logERROR, (mess));
-        } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
-                    getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
-                   (getNumTransceiverSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not start acquisition. Invalid number of "
-                    "transceiver "
-                    "samples: %d.\n",
-                    getNumTransceiverSamples());
-            LOG(logERROR, (mess));
-        } else
+                LOG(logERROR, (mess));
+            } else if ((getReadoutMode() == TRANSCEIVER_ONLY ||
+                        getReadoutMode() == DIGITAL_AND_TRANSCEIVER) &&
+                       (getNumTransceiverSamples() <= 0)) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not start acquisition. Invalid number of "
+                        "transceiver "
+                        "samples: %d.\n",
+                        getNumTransceiverSamples());
+                LOG(logERROR, (mess));
+            } else
 #endif
 #ifdef EIGERD
-            // check for hardware mac and hardware ip
-            if (udpDetails[0].srcmac != getDetectorMAC()) {
-            ret = FAIL;
-            uint64_t sourcemac = getDetectorMAC();
-            char src_mac[MAC_ADDRESS_SIZE];
-            getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
-            sprintf(mess,
-                    "Invalid udp source mac address for this detector. "
-                    "Must be "
-                    "same as hardware detector mac address %s\n",
-                    src_mac);
-            LOG(logERROR, (mess));
-        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                   (udpDetails[0].srcip != getDetectorIP())) {
-            ret = FAIL;
-            uint32_t sourceip = getDetectorIP();
-            char src_ip[INET_ADDRSTRLEN];
-            getIpAddressinString(src_ip, sourceip);
-            sprintf(mess,
-                    "Invalid udp source ip address for this detector. Must "
-                    "be "
-                    "same as hardware detector ip address %s in 1G readout "
-                    "mode \n",
-                    src_ip);
-            LOG(logERROR, (mess));
-        } else
-#endif
-            if (configured == FAIL) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because ");
-            strcat(mess, configureMessage);
-            LOG(logERROR, (mess));
-        } else if (sharedMemory_getScanStatus() == RUNNING) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because a scan is "
-                         "already running!\n");
-            LOG(logERROR, (mess));
-        } else {
-            memset(scanErrMessage, 0, MAX_STR_LENGTH);
-            sharedMemory_setScanStop(0);
-            sharedMemory_setScanStatus(IDLE); // if it was error
-            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
-                               &blocking)) {
-                ret = FAIL;
-                strcpy(mess, "Could not start acquisition thread!\n");
-                LOG(logERROR, (mess));
-            } else {
-                // wait for blocking always (scan or not)
-                // non blocking-no scan also wait (for error message)
-                // non blcoking-scan dont wait (there is
-                // scanErrorMessage)
-                if (blocking || !scan) {
-                    pthread_join(pthread_tid, NULL);
+                // check for hardware mac and hardware ip
+                if (udpDetails[0].srcmac != getDetectorMAC()) {
+                    ret = FAIL;
+                    uint64_t sourcemac = getDetectorMAC();
+                    char src_mac[MAC_ADDRESS_SIZE];
+                    getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
+                    sprintf(mess,
+                            "Invalid udp source mac address for this detector. "
+                            "Must be "
+                            "same as hardware detector mac address %s\n",
+                            src_mac);
+                    LOG(logERROR, (mess));
+                } else if (!enableTenGigabitEthernet(GET_FLAG) &&
+                           (udpDetails[0].srcip != getDetectorIP())) {
+                    ret = FAIL;
+                    uint32_t sourceip = getDetectorIP();
+                    char src_ip[INET_ADDRSTRLEN];
+                    getIpAddressinString(src_ip, sourceip);
+                    sprintf(
+                        mess,
+                        "Invalid udp source ip address for this detector. Must "
+                        "be "
+                        "same as hardware detector ip address %s in 1G readout "
+                        "mode \n",
+                        src_ip);
+                    LOG(logERROR, (mess));
                 } else
-                    pthread_detach(pthread_tid);
-            }
-        }
+#endif
+                    if (configured == FAIL) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not start acquisition because ");
+                    strcat(mess, configureMessage);
+                    LOG(logERROR, (mess));
+                } else if (sharedMemory_getScanStatus() == RUNNING) {
+                    ret = FAIL;
+                    strcpy(mess,
+                           "Could not start acquisition because a scan is "
+                           "already running!\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    memset(scanErrMessage, 0, MAX_STR_LENGTH);
+                    sharedMemory_setScanStop(0);
+                    sharedMemory_setScanStatus(IDLE); // if it was error
+                    if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                                       &blocking)) {
+                        ret = FAIL;
+                        strcpy(mess, "Could not start acquisition thread!\n");
+                        LOG(logERROR, (mess));
+                    } else {
+                        // wait for blocking always (scan or not)
+                        // non blocking-no scan also wait (for error message)
+                        // non blcoking-scan dont wait (there is
+                        // scanErrorMessage)
+                        if (blocking || !scan) {
+                            pthread_join(pthread_tid, NULL);
+                        } else
+                            pthread_detach(pthread_tid);
+                    }
+                }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -9086,16 +9090,9 @@ int get_comp_disable_time(int file_des) {
     functionNotImplemented();
 #else
     // get only
-    if (getChipVersion() != 11) {
-        ret = FAIL;
-        strcpy(mess,
-               "Cannot get comparator disable time. Only valid for chipv1.1\n");
-        LOG(logERROR, (mess));
-    } else {
-        retval = getComparatorDisableTime();
-        LOG(logDEBUG1,
-            ("retval comp disable time %lld ns\n", (long long int)retval));
-    }
+    retval = getComparatorDisableTime();
+    LOG(logDEBUG1,
+        ("retval comp disable time %lld ns\n", (long long int)retval));
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
@@ -9113,23 +9110,16 @@ int set_comp_disable_time(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (getChipVersion() != 11) {
-            ret = FAIL;
-            strcpy(mess, "Cannot get comparator disable time. Only valid for "
-                         "chipv1.1\n");
+        ret = setComparatorDisableTime(arg);
+        int64_t retval = getComparatorDisableTime();
+        LOG(logDEBUG1,
+            ("retval get comp disable time %lld ns\n", (long long int)retval));
+        if (ret == FAIL) {
+            sprintf(mess,
+                    "Could not set comp disable time. Set %lld ns, read "
+                    "%lld ns.\n",
+                    (long long int)arg, (long long int)retval);
             LOG(logERROR, (mess));
-        } else {
-            ret = setComparatorDisableTime(arg);
-            int64_t retval = getComparatorDisableTime();
-            LOG(logDEBUG1, ("retval get comp disable time %lld ns\n",
-                            (long long int)retval));
-            if (ret == FAIL) {
-                sprintf(mess,
-                        "Could not set comp disable time. Set %lld ns, read "
-                        "%lld ns.\n",
-                        (long long int)arg, (long long int)retval);
-                LOG(logERROR, (mess));
-            }
         }
     }
 #endif
@@ -11100,11 +11090,18 @@ int get_timing_info_decoder(int file_des) {
     functionNotImplemented();
 #else
     // get only
-    ret = getTimingInfoDecoder(&retval);
-    LOG(logDEBUG1, ("retval timing info decoder: %d\n", retval));
-    if (ret == FAIL) {
-        strcpy(mess, "Could not get timing info decoder\n");
+    if (isHardwareVersion_1_0()) {
+        ret = FAIL;
+        sprintf(mess, "Could not get timing info decoder. Not supported "
+                      "for hardware version 1.0\n");
         LOG(logERROR, (mess));
+    } else {
+        ret = getTimingInfoDecoder(&retval);
+        LOG(logDEBUG1, ("retval timing info decoder: %d\n", retval));
+        if (ret == FAIL) {
+            strcpy(mess, "Could not get timing info decoder\n");
+            LOG(logERROR, (mess));
+        }
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -11131,6 +11128,12 @@ int set_timing_info_decoder(int file_des) {
         default:
             modeNotImplemented("Timing info decoder index", (int)arg);
             break;
+        }
+        if (ret == OK && isHardwareVersion_1_0()) {
+            ret = FAIL;
+            sprintf(mess, "Could not set timing info decoder. Not supported "
+                          "for hardware version 1.0\n");
+            LOG(logERROR, (mess));
         }
         if (ret == OK) {
             ret = setTimingInfoDecoder(arg);

@@ -7,7 +7,12 @@ support_lib = ../../slsSupportLib/include/
 det_lib = ../../slsDetectorSoftware/include/sls/
 md5_dir = ../../slsSupportLib/src/
 
-CROSS  		= aarch64-none-linux-gnu-
+ifeq ($(shell uname -m),aarch64)
+    # no cross compilation needed when on aarch64
+    CROSS = 
+else
+    CROSS = aarch64-none-linux-gnu-
+endif
 CC    		= $(CROSS)gcc
 #TODO: allow these warnings and fix code
 CFLAGS		+=  -Wall -std=gnu99 -Wno-format-overflow -Wno-format-truncation -DXILINX_CHIPTESTBOARDD -DARMPROCESSOR -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir)  #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 

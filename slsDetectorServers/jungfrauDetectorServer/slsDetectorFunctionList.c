@@ -1974,9 +1974,6 @@ int autoCompDisable(int on) {
 }
 
 int setComparatorDisableTime(int64_t val) {
-    if (getChipVersion() != 11) {
-        return FAIL;
-    }
     if (val < 0) {
         LOG(logERROR,
             ("Invalid comp disable time: %lld ns\n", (long long int)val));
@@ -2817,7 +2814,8 @@ void *start_timer(void *arg) {
         getNextFrameNumber(&frameNr);
         int iRxEntry = firstDest;
         for (int iframes = 0; iframes != numFrames; ++iframes) {
-            usleep(transmissionDelayUs);
+            if (transmissionDelayUs)
+                usleep(transmissionDelayUs);
 
             // check if manual stop
             if (sharedMemory_getStop() == 1) {

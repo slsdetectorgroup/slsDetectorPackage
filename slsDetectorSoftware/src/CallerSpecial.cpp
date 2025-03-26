@@ -210,7 +210,12 @@ std::string Caller::hostname(int action) {
         os << "\n\tFrees shared memory and sets hostname (or IP address) of "
               "all modules concatenated by +.\n\t Virtual servers can already "
               "use the port in hostname separated by ':' and ports incremented "
-              "by 2 to accomodate the stop server as well."
+              "by 2 to accomodate the stop server as well. The row and column "
+              "values in the udp/zmq header are affected by the order in this "
+              "command and the detsize command. The modules are stacked row by "
+              "row until they reach the y-axis limit set by detsize (if "
+              "specified). Then, stacking continues in the next column and so "
+              "on. This only affects row and column in udp/zmq header."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -1020,10 +1025,16 @@ std::string Caller::slowadc(int action) {
 std::string Caller::rx_dbitlist(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << "[all] or [i0] [i1] [i2]... \n\t[Ctb] List of digital signal "
-              "bits read out. If all is used instead of a list, all digital "
-              "bits (64) enabled. Each element in list can be 0 - 63 and must "
-              "be non repetitive."
+        os << "[all] or [none] or [i0] [i1] [i2]... \n\t[Ctb] List of digital "
+              "signal bits enabled and rearranged according to the signals "
+              "(all samples of each signal is put together). If 'all' is used "
+              "instead of a list, all digital bits (64) enabled. Each element "
+              "in list can be 0 - 63 and must be non repetitive. The option "
+              "'none' will still spit out all data as is from the detector, "
+              "but without rearranging it. Please note that when using the "
+              "receiver list, the data size will be bigger if the number of "
+              "samples is not divisible by 8 as every signal bit is padded to "
+              "the next byte when combining all the samples in the receiver."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -1041,7 +1052,9 @@ std::string Caller::rx_dbitlist(int action) {
             for (unsigned int i = 0; i < 64; ++i) {
                 t[i] = i;
             }
-        } else {
+        }
+        // 'none' option already covered as t is empty by default
+        else if (args[0] != "none") {
             unsigned int ntrim = args.size();
             t.resize(ntrim);
             for (unsigned int i = 0; i < ntrim; ++i) {

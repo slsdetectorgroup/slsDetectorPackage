@@ -152,12 +152,12 @@ int main(int argc, char *argv[]) {
             strcpy(version, APIXILINXCTB);
 #endif
             LOG(logINFO, ("SLS Detector Server Version: %s\n", version));
-            exit(EXIT_SUCCESS);
+            return EXIT_SUCCESS;
 
         case 'p':
             if (sscanf(optarg, "%d", &portno) != 1) {
                 LOG(logERROR, ("Cannot scan port argument\n%s", helpMessage));
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
             }
             LOG(logINFO, ("Detected port: %d\n", portno));
             break;
@@ -188,7 +188,7 @@ int main(int argc, char *argv[]) {
             ignoreConfigFileFlag = 1;
 #else
             LOG(logERROR, ("No server config files for this detector\n"));
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
 #endif
             break;
 
@@ -196,11 +196,11 @@ int main(int argc, char *argv[]) {
 #if !defined(VIRTUAL) && !defined(EIGERD)
             LOG(logERROR, ("Cannot set master via the detector server for this "
                            "detector\n"));
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
 #elif defined(GOTTHARD2D) || defined(EIGERD) || defined(MYTHEN3D)
             if (sscanf(optarg, "%d", &masterCommandLine) != 1) {
                 LOG(logERROR, ("Cannot scan master argument\n%s", helpMessage));
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
             }
             if (masterCommandLine == 1) {
                 LOG(logINFO, ("Detector Master mode\n"));
@@ -209,7 +209,7 @@ int main(int argc, char *argv[]) {
             }
 #else
             LOG(logERROR, ("No master implemented for this detector server\n"));
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
 #endif
             break;
 
@@ -217,7 +217,7 @@ int main(int argc, char *argv[]) {
 #ifdef EIGERD
             if (sscanf(optarg, "%d", &topCommandLine) != 1) {
                 LOG(logERROR, ("Cannot scan top argument\n%s", helpMessage));
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
             }
             if (topCommandLine == 1) {
                 LOG(logINFO, ("Detector Top mode\n"));
@@ -226,16 +226,16 @@ int main(int argc, char *argv[]) {
             }
 #else
             LOG(logERROR, ("No top implemented for this detector server\n"));
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
 #endif
             break;
 
         case 'h':
             printf("%s", helpMessage);
-            exit(EXIT_SUCCESS);
+            return EXIT_SUCCESS;
         default:
             printf("\n%s", helpMessage);
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
     }
 
@@ -376,5 +376,5 @@ int main(int argc, char *argv[]) {
 #endif
     }
     LOG(logINFO, ("Goodbye!\n"));
-    return 0;
+    return EXIT_SUCCESS;
 }

@@ -63,7 +63,7 @@ Example:
 
 Patmask configures bit 0 and 8 of the pattern to be set to their value in patsetbit. These bits will be ignored during pattern execution and will always be 0 (bit 8) and 1 (bit 0). 
 
-**CTB Pattern Bit Positions**
+**CTB Pattern Bit Mapping**
 
 .. table:: 
 
@@ -87,10 +87,19 @@ A: adc enable
 
 Connections of the signals above to actual pads of a chip depend on the layout of the used detector adapter board.
 
-**Xilinx_CTB Pattern Positions**
+**Xilinx_CTB Pattern Bit Mapping**
 
-TODO
+.. table:: 
 
-**Mythen3 Pattern Positions**
+   +-------+----------------+
+   | 63-32 |  31-0          |
+   +-------+----------------+
+   |  ---  | DIO            |
+   +-------+----------------+
+
+DIO: Driving the 32 FPGA pins corresponding to the lowest 32 bits of the patioctrl command. If bits in patioctrl are 0, the same bit positions in DIO will switch to input pins and connect to dbit sampling. Additionally, some of these 32 bits have an automatic override by detector-specific statemachines which is active whenever these sm's are running (currently bits 7,8,11,14 and 20).
+
+
+**Mythen3 Pattern Bit Mapping**
 
 TODO

@@ -527,7 +527,7 @@ int main(int argc, char *argv[]) {
 
         case 'v':
             std::cout << argv[0] << " Version: " << APIRECEIVER << std::endl;
-            exit(EXIT_SUCCESS);
+            return (EXIT_SUCCESS);
 
         case 'n':
             try {
@@ -564,17 +564,17 @@ int main(int argc, char *argv[]) {
 
         case 'h':
             std::cout << help_message << std::endl;
-            exit(EXIT_SUCCESS);
+            return (EXIT_SUCCESS);
 
         default:
             LOG(sls::logERROR) << help_message;
-            exit(EXIT_FAILURE);
+            return (EXIT_FAILURE);
         }
     }
     // remaining arguments
     if (optind < argc) {
         LOG(sls::logERROR) << "Invalid arguments\n" << help_message;
-        exit(EXIT_FAILURE);
+        return (EXIT_FAILURE);
     }
 
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';

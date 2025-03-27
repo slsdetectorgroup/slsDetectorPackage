@@ -139,10 +139,9 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
  */
 void sigInterruptHandler(int p) { sem_post(&semaphore); }
 
-void GetDeprecatedCommandLineOptions(int argc, char *argv[],
-                                     uint16_t &startPort,
-                                     uint16_t &numReceivers,
-                                     bool &callbackEnabled) {
+int GetDeprecatedCommandLineOptions(int argc, char *argv[], uint16_t &startPort,
+                                    uint16_t &numReceivers,
+                                    bool &callbackEnabled) {
     std::string deprecatedMessage =
         "Detected deprecated Options. Please update.\n";
     if (argc > 1) {
@@ -154,12 +153,12 @@ void GetDeprecatedCommandLineOptions(int argc, char *argv[],
                     LOG(sls::logWARNING) << deprecatedMessage;
                     LOG(sls::logERROR)
                         << "Did you mix up the order of the arguments?";
-                    exit(EXIT_FAILURE);
+                    return slsDetectorDefs::FAIL;
                 }
                 if (numReceivers == 0) {
                     LOG(sls::logWARNING) << deprecatedMessage;
                     LOG(sls::logERROR) << "Invalid number of receivers.";
-                    exit(EXIT_FAILURE);
+                    return slsDetectorDefs::FAIL;
                 }
                 if (argc == 4) {
                     callbackEnabled = sls::StringTo<bool>(argv[3]);
@@ -169,9 +168,10 @@ void GetDeprecatedCommandLineOptions(int argc, char *argv[],
         } catch (const std::exception &e) {
             LOG(sls::logWARNING) << deprecatedMessage;
             LOG(sls::logERROR) << e.what();
-            exit(EXIT_FAILURE);
+            return slsDetectorDefs::FAIL;
         }
     }
+    return slsDetectorDefs::OK;
 }
 
 std::string getHelpMessage() {
@@ -221,7 +221,7 @@ int main(int argc, char *argv[]) {
 
         case 'v':
             std::cout << argv[0] << " Version: " << APIRECEIVER << std::endl;
-            exit(EXIT_SUCCESS);
+            return EXIT_SUCCESS;
 
         case 'n':
             try {
@@ -262,18 +262,20 @@ int main(int argc, char *argv[]) {
 
         case 'h':
             std::cout << help_message << std::endl;
-            exit(EXIT_SUCCESS);
+            return EXIT_SUCCESS;
 
         default:
             LOG(sls::logERROR) << help_message;
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
     }
     // if remaining arguments, maintain backward compatibility of [startport]
     // [num-receivers] [callback]
     if (optind < argc) {
-        GetDeprecatedCommandLineOptions(argc, argv, startPort, numReceivers,
-                                        callbackEnabled);
+        if (slsDetectorDefs::FAIL ==
+            GetDeprecatedCommandLineOptions(argc, argv, startPort, numReceivers,
+                                            callbackEnabled))
+            return EXIT_FAILURE;
     }
 
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';
@@ -381,7 +383,7 @@ int main(int argc, char *argv[]) {
 
             LOG(sls::logINFOBLUE)
                 << "Exiting Child Process [ Tid: " << gettid() << ']';
-            exit(EXIT_SUCCESS);
+            return EXIT_SUCCESS;
         }
     }
 
@@ -422,5 +424,5 @@ int main(int argc, char *argv[]) {
     }
 
     std::cout << "Goodbye!\n";
-    return 0;
+    return EXIT_SUCCESS;
 }

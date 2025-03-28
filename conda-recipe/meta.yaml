@@ -17,7 +17,7 @@ requirements:
     - {{ compiler('c') }}
     - {{stdlib('c')}}
     - {{compiler('cxx')}}
-    - cmake
+    - cmake<=3.28
     - ninja
     - qt 5.*
 

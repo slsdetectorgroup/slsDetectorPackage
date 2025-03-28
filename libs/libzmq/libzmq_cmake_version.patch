@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index dd3d8eb9..75c321fd 100644
+index dd3d8eb9..c0187747 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -1,11 +1,7 @@
+@@ -1,11 +1,8 @@
  # CMake build script for ZeroMQ
  project(ZeroMQ)
  
@@ -12,6 +12,7 @@ index dd3d8eb9..75c321fd 100644
 -  cmake_minimum_required(VERSION 2.8.12)
 -endif()
 +cmake_minimum_required(VERSION 3.15)
++message(STATUS "Patched cmake version")
  
  include(CheckIncludeFiles)
  include(CheckCCompilerFlag)

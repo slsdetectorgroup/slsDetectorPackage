@@ -41,19 +41,19 @@ endif()
 
 # Patch libzmq to set minimum cmake version to 3.15 to avoid warnings
 # with newer cmake versions
-set(ZMQ_PATCH_CMAKE git apply ${CMAKE_CURRENT_LIST_DIR}/libs/libzmq/libzmq_cmake_version.patch)
-
+# Patch is applied in the FetchContent_Declare
 set(SLS_LIBZMQ_VERSION "4.3.4")
 
 
 if(SLS_FETCH_ZMQ_FROM_GITHUB)
     # Opt in to pull down a zmq version from github instead of
-    # using the bundled verison
+    # using the bundled version
     FetchContent_Declare(
         libzmq
         GIT_REPOSITORY https://github.com/zeromq/libzmq.git
         GIT_TAG        v${SLS_LIBZMQ_VERSION}
-        PATCH_COMMAND ${ZMQ_PATCH_CMAKE}
+        PATCH_COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR> patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq_cmake_version.patch
+        UPDATE_DISCONNECTED 1
     )
 else()
     # Standard behaviour use libzmq included in this repo (libs/libzmq)
@@ -61,7 +61,8 @@ else()
         libzmq
         URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq-${SLS_LIBZMQ_VERSION}.tar.gz
         URL_HASH MD5=cc20b769ac10afa352e5ed2769bb23b3
-        PATCH_COMMAND ${ZMQ_PATCH_CMAKE}
+        PATCH_COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR> patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq_cmake_version.patch
+        UPDATE_DISCONNECTED 1
     )
 endif()
 

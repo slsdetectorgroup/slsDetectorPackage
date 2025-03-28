@@ -37,7 +37,7 @@ The maximal number of patword addresses is 8192. However, it is possible to exte
    patloop 0 0x0001 0x0003
    patnloop 0 7
 
-The first argument of both commands is the ID of the loop. Ctb and Xilinx_Ctb can have 6 loops (ID 0-5), Mythen3 can have 4 loop definitions. The commands above configure the loop with ID 0 to run 7 times and jump from the patword with address 3 to the patword with address 1. Important: if patnloop is set to 1 the addesses 0x1-0x3 will execute exactly once, if it is set to 0 the pattern addresses will be skipped.
+The first argument of both commands is the ID of the loop. Ctb and Xilinx_Ctb can have 6 loops (ID 0-5), Mythen3 can have 4 loop definitions. The commands above configure the loop with ID 0 to run 7 times and jump from the patword with address 3 to the patword with address 1. Important: If patnloop is set to 1, the addresses 0x1-0x3 will execute exactly once; if it is set to 0, the pattern addresses will be skipped.
 
 The same idea is used to introduce wait times. The example below causes the patword at address 0x0002 to be active for 9 clock cycles before the execution continues.
 
@@ -50,18 +50,21 @@ Waits can be placed inside a loop and loops can be nested.
 
 **patioctrl**
 
-The function of each bit in the sequence of 64-bit words depends on the connected detector and firmware version. Some of the 64 bits might connect directly to pads of a chip. The patioctrl command is used to configure the direction of some of these signals (not all of them !! See tables below). Signals where the corresponding bit in the argument of patioctrl is set to 1 will be driveen from the FPGA.
+The function of each bit in the sequence of 64-bit words depends on the connected detector and firmware version. Some of the 64 bits might connect directly to pads of a chip. The patioctrl command is used to configure the direction of some of these signals (not all of them !! See tables below). Signals where the corresponding bit in the argument of patioctrl is set to 1 will be driven from the FPGA.
 
 **patsetbit and patmask**
 
 The functions patsetbit and patmask can be used to ignore a specific bit of the pattern.
 Example:
+
 .. code-block::
 
    patmask 0x0101
    patsetbit 0x0001
 
-Patmask configures bit 0 and 8 of the pattern to be set to their value in patsetbit. These bits will be ignored during pattern execution and will always be 0 (bit 8) and 1 (bit 0). 
+Patmask configures bit 0 and 8 of the pattern to be set to their value in patsetbit. These bits will be ignored during pattern execution and will always be 0 (bit 8) and 1 (bit 0).
+
+The mappings of bit positions in the pattern word to signals/pads of the FPGA are listed below for the three detector types where patterns are used. In the case of the two CTB's, connections of the signals to actual pads of a chip depend on the layout of the used detector adapter board. Therefore, each type of detector adapter board adds an additional mapping layer.
 
 **CTB Pattern Bit Mapping**
 
@@ -75,17 +78,15 @@ Patmask configures bit 0 and 8 of the pattern to be set to their value in patset
 
 DIO: Driving the 32 FPGA pins corresponding to the lowest 32 bits of the patioctrl command. If bits in patioctrl are 0, the same bit positions in DIO will switch to input pins and connect to dbit sampling. Additionally, some of these 32 bits have an automatic override by detector-specific statemachines which is active whenever these sm's are running (currently bits 7,8,11,14 and 20).
 
-DO: Directly connected to 16 FPGA pins. Output only. Not influenced by patioctrl. Also connected to bit 47-32 in all Ctb dbit samples. All of them can be used as dbit sample trigger. In Addition, every bit of DO can be selected as trigger for sending out a udp packet with samples to the receiver.
+DO: Directly connected to 16 FPGA pins. Output only. Not influenced by patioctrl. Also connected to bit 47-32 in all Ctb dbit samples. All of them can be used as dbit sample trigger. In addition, every bit of DO can be selected as trigger for sending out a udp packet with samples to the receiver.
 
 EXTIO: Similar to DIO, but not used as input to the fpga. With the corresponding patioctrl bits set to 0 these pins will switch to a high impedance mode and be ignored by the firmware.
 
-T: Driving the trigger output
+T: trigger output
 
 D: enable signal for digital sampling
 
 A: adc enable
-
-Connections of the signals above to actual pads of a chip depend on the layout of the used detector adapter board.
 
 **Xilinx_CTB Pattern Bit Mapping**
 
@@ -102,4 +103,20 @@ DIO: Driving the 32 FPGA pins corresponding to the lowest 32 bits of the patioct
 
 **Mythen3 Pattern Bit Mapping**
 
-TODO
+.. table:: 
+
+   +-------+--------+-------+--------+------------+----------+----------+-----+-----+
+   | 63-33 |  32    | 31-25 |  24    | 23         |  22      | 21       | 20  | 19  |
+   +-------+--------+-------+--------+------------+----------+----------+-----+-----+
+   |  ---  | signARD|  ---  | CHSclk |  cnt_rst   |  sto_rst | STATLOAD | STO | SIN |
+   +-------+--------+-------+--------+------------+----------+----------+-----+-----+
+
+.. table:: 
+
+   +---------+-----+-------+-------+----+-------+---------+--------+
+   | 18      | 17  | 16-14 | 13    | 12 | 11    | 10      | 9-0    |
+   +---------+-----+-------+-------+----+-------+---------+--------+
+   | SR_MODE | clk | EN    | PULSE | RD | CHSIN | ANAMode | TBLOAD |
+   +---------+-----+-------+-------+----+-------+---------+--------+
+
+For Mythen3 the pattern word only connects to output pins of the FPGA when the pattern is running. Afterwards the signals will switch back to other logic in the FPGA. Both CTB's hold the last executed pattern word until a new pattern is started.

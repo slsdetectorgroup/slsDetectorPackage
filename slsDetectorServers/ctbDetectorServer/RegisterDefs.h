@@ -65,8 +65,8 @@
     (0x000000FF << STATUS_PT_CNTRL_STTS_OFF_OFST)
 #define STATUS_IDLE_MSK (0x677FF)
 
-/* Look at me RO register TODO */
-#define LOOK_AT_ME_REG (0x03 << MEM_MAP_SHIFT)
+/* Register containing the git hash of the FPGA firmware */
+#define FIRMWARE_GIT_HASH_REG (0x03 << MEM_MAP_SHIFT)
 
 /* System Status RO register */
 #define SYSTEM_STATUS_REG (0x04 << MEM_MAP_SHIFT)

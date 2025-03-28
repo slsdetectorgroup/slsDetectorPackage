@@ -2,18 +2,12 @@
 c_compiler:
   - gcc                        # [linux]
 
-c_compiler_version: 
-  - 13 # [linux]
-
 c_stdlib:
   - sysroot                    # [linux]
 
 cxx_compiler:
   - gxx                        # [linux]
 
-
-cxx_compiler_version:
-  - 13 # [linux]
 
 c_stdlib_version:              # [linux]
   - 2.17                       # [linux]

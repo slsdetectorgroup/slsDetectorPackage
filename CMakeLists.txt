@@ -31,9 +31,6 @@ option(SLS_FETCH_PYBIND11_FROM_GITHUB "Fetch pybind11 from github" OFF)
 
 
 
-
-
-
 # Allow FetchContent_Populate to be called with a single argument
 # otherwise deprecated warning is issued
 # Note: From cmake 3.28 we can pass EXCLUDE_FROM_ALL to FetchContent_Declare
@@ -44,7 +41,7 @@ endif()
 
 # Patch libzmq to set minimum cmake version to 3.15 to avoid warnings
 # with newer cmake versions
-set(zmq_patch_version git apply ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq_cmake_version.patch)
+set(ZMQ_PATCH_CMAKE git apply ${CMAKE_CURRENT_LIST_DIR}/libs/libzmq/libzmq_cmake_version.patch)
 
 set(SLS_LIBZMQ_VERSION "4.3.4")
 
@@ -56,7 +53,7 @@ if(SLS_FETCH_ZMQ_FROM_GITHUB)
         libzmq
         GIT_REPOSITORY https://github.com/zeromq/libzmq.git
         GIT_TAG        v${SLS_LIBZMQ_VERSION}
-        PATCH_COMMAND ${zmq_patch_version}
+        PATCH_COMMAND ${ZMQ_PATCH_CMAKE}
     )
 else()
     # Standard behaviour use libzmq included in this repo (libs/libzmq)
@@ -64,7 +61,7 @@ else()
         libzmq
         URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq-${SLS_LIBZMQ_VERSION}.tar.gz
         URL_HASH MD5=cc20b769ac10afa352e5ed2769bb23b3
-        PATCH_COMMAND ${zmq_patch_version}
+        PATCH_COMMAND ${ZMQ_PATCH_CMAKE}
     )
 endif()
 

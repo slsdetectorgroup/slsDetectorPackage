@@ -9,7 +9,7 @@ This file contains the specialization for the Moench detector
 
 from .detector import Detector, freeze
 from .dacs import DetectorDacs
-import _slsdet
+from . import _slsdet
 dacIndex = _slsdet.slsDetectorDefs.dacIndex
 from .detector_property import DetectorProperty
 

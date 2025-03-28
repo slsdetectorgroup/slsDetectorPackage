@@ -1,4 +1,4 @@
-name: CMake
+name: Native CMake Build
 
 on: [push, pull_request]
 

@@ -14,7 +14,7 @@ from .pattern import Pattern, patternParameters
 from .gaincaps import Mythen3GainCapsWrapper
 from .PatternGenerator import PatternGenerator
 
-import _slsdet
+from . import _slsdet
 xy = _slsdet.xy
 defs = _slsdet.slsDetectorDefs
 

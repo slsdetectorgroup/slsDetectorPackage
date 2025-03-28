@@ -4,7 +4,6 @@
 mkdir -p $PREFIX/lib
 mkdir -p $PREFIX/bin
 mkdir -p $PREFIX/include/sls
-# mkdir $PREFIX/include/slsDetectorPackage
 
 #Shared and static libraries
 cp build/install/lib/* $PREFIX/lib/

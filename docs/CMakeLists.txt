@@ -54,6 +54,7 @@ set(SPHINX_SOURCE_FILES
   src/serverdefaults.rst
   src/quick_start_guide.rst
   src/troubleshooting.rst
+  src/pattern.rst
   src/receivers.rst
   src/slsreceiver.rst
   src/udpheader.rst

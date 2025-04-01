@@ -10,13 +10,13 @@ version = "2025.3.19"
 [tool.cibuildwheel]
 before-all = "uname -a"
 
-[tool.scikit-build-core]
+[tool.scikit-build]
 build.verbose = true
 cmake.build-type = "Release"
 install.components = ["python"]
 
 
-[tool.scikit-build-core.cmake.define]
+[tool.scikit-build.cmake.define]
 #Only build the control software and python ext
 SLS_USE_RECEIVER = "OFF"
 SLS_USE_RECEIVER_BINARIES = "OFF"

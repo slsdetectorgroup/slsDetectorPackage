@@ -1,6 +1,6 @@
 package:
   name: slsdet
-  version: 2025.2.18 #TODO! how to not duplicate this?
+  version: 2025.3.19 #TODO! how to not duplicate this?
 
 source:
   path: ../..
@@ -9,7 +9,6 @@ build:
   number: 0
   script:
     - unset CMAKE_GENERATOR && {{ PYTHON }} -m pip install . -vv  # [not win]
-    - {{ PYTHON }} -m pip install . -vv  # [win]
 
 requirements:
   build:

@@ -17,6 +17,7 @@ cp build/install/bin/sls_detector_help $PREFIX/bin/.
 cp build/install/bin/sls_detector $PREFIX/bin/.
 cp build/install/bin/slsReceiver $PREFIX/bin/.
 cp build/install/bin/slsMultiReceiver $PREFIX/bin/.
+cp build/install/bin/slsFrameSynchronizer $PREFIX/bin/.
 
 
 cp build/install/include/sls/* $PREFIX/include/sls

@@ -23,7 +23,7 @@ The example above writes a five-word pattern into FPGA memory. The first argumen
 
    patlimits 0x0000 0x0004
 
-This instructs the firmware to execute the commands from address 0 to 4 (including 0 and 4). The execution can be started from the GUI or with the commands
+This instructs the firmware to execute the commands from address 0 to 4 (including 0 and 4). The execution can be started from the pyctbgui or with the commands
 
 .. code-block::
 
@@ -76,7 +76,7 @@ The mappings of bit positions in the pattern word to signals/pads of the FPGA ar
    |  A |  D|  --- |  T | EXTIO    | DO, stream source | DIO            |
    +----+---+------+----+----------+-------------------+----------------+
 
-DIO: Driving the 32 FPGA pins corresponding to the lowest 32 bits of the patioctrl command. If bits in patioctrl are 0, the same bit positions in DIO will switch to input pins and connect to dbit sampling. Additionally, some of these 32 bits have an automatic override by detector-specific statemachines which is active whenever these sm's are running (currently bits 7,8,11,14 and 20).
+DIO: Driving the 32 FPGA pins corresponding to the lowest 32 bits of the patioctrl command. If bits in patioctrl are 0, the same bit positions in DIO will switch to input pins and connect to dbit sampling. Additionally, some of these 32 bits have an automatic override by detector-specific statemachines which is active whenever one of these statemachines is running (currently bits 7,8,11,14 and 20).
 
 DO: Directly connected to 16 FPGA pins. Output only. Not influenced by patioctrl. Also connected to bit 47-32 in all Ctb dbit samples. All of them can be used as dbit sample trigger. In addition, every bit of DO can be selected as trigger for sending out a udp packet with samples to the receiver.
 

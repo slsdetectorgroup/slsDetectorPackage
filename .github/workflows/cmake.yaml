@@ -40,10 +40,8 @@ jobs:
         run: ctest -C ${{env.BUILD_TYPE}} -j1
 
       - name: Python unit tests
-        working-directory: ${{github.workspace}}
+        working-directory: ${{github.workspace}}/build/bin
         run: |
-          echo "PYTHONPATH=${{github.workspace}}/build/bin" >> $GITHUB_ENV
-          echo %PYTHONPATH%
-          python -m pytest python/tests
+          python -m pytest ${{github.workspace}}/python/tests
 
 

@@ -33,7 +33,7 @@ jobs:
 
       - name: Build
         # Build your program with the given configuration
-        run: cmake --build ${{github.workspace}}/build -j2 --config ${{env.BUILD_TYPE}}
+        run: cmake --build ${{github.workspace}}/build -j4 --config ${{env.BUILD_TYPE}}
 
       - name: C++ unit tests
         working-directory: ${{github.workspace}}/build
@@ -42,7 +42,7 @@ jobs:
       - name: Python unit tests
         working-directory: ${{github.workspace}}
         run: |
-          echo "PYTHONPATH=${{github.workspace}}/build/bin" >> $GITHUB_ENV3
+          echo "PYTHONPATH=${{github.workspace}}/build/bin" >> $GITHUB_ENV
           echo %PYTHONPATH%
           python -m pytest python/tests
 

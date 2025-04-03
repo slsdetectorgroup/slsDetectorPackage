@@ -42,8 +42,6 @@ jobs:
       - name: Python unit tests
         working-directory: ${{github.workspace}}
         run: |
-          # Activate the Python virtual environment
-          source ${{github.workspace}}/venv/bin/activate
           python -m pytest python/tests
 
 

@@ -42,6 +42,8 @@ jobs:
       - name: Python unit tests
         working-directory: ${{github.workspace}}
         run: |
+          echo "PYTHONPATH=${{github.workspace}}/build/bin" >> $GITHUB_ENV3
+          echo %PYTHONPATH%
           python -m pytest python/tests
 
 

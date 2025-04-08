@@ -96,14 +96,14 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     /**
      * Align corresponding digital bits together (CTB only if ctbDbitlist is not
      * empty)
-     * set variable reorder to true if, data should be rearranged such that
-     * individual digital bits from all samples are consecutive in memory
+     * set variable reorder to true if data should be rearranged such that
+     * it groups each signal (0-63) from all the different samples together
      */
     void ArrangeDbitData(size_t &size, char *data);
 
     /**
-     * reorder datastream such that individual digital bits from all samples are
-     * stored consecutively in memory
+     * reorder datastream such that each signal (0-63) from all the different
+     * samples are grouped together and stored consecutively in memory
      */
     void Reorder(size_t &size, char *data);
 

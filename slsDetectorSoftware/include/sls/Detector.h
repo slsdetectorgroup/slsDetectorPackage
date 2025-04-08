@@ -1732,7 +1732,8 @@ class Detector {
     /** [CTB] */
     Result<bool> getRxDbitReorder(Positions pos = {}) const;
 
-    /** [CTB] Reorder digital data to group together all samples per signal.
+    /** [CTB] Reorder digital data such that it groups each signal (0-63)
+     * from all the different samples together.
      * Default is true. Setting to false means 'do not reorder' and to keep what
      * the board spits out, which is that all signals in a sample are grouped
      * together */

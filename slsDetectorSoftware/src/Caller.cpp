@@ -10706,7 +10706,7 @@ std::string Caller::rx_dbitreorder(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([0, 1]
-	[Ctb] Reorder digital data to group together all samples per signal. Default is 1. Setting to 0 means 'do not reorder' and to keep what the board spits out, which is that all signals in a sample are grouped together. )V0G0N"
+	[Ctb] Reorder digital data such that it groups each signal (0-63) from all the different samples together . Default is 1. Setting to 0 means 'do not reorder' and to keep what the board spits out, which is that all signals in a sample are grouped together. )V0G0N"
            << std::endl;
         return os.str();
     }

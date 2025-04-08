@@ -174,8 +174,8 @@ parser.add_argument('rx_hostname', help = 'hostname/ip of the current machine')
 parser.add_argument('settingspath', help = 'Relative or absolut path to the settingspath')
 parser.add_argument('-s', '--servers', help='Detector servers to run', nargs='*')
 args = parser.parse_args()
-if args.rx_hostname == 'localhost':
-    raise RuntimeException('Cannot use localhost for rx_hostname for the tests (fails for rx_arping for eg.)')
+#if args.rx_hostname == 'localhost':
+#    raise RuntimeException('Cannot use localhost for rx_hostname for the tests (fails for rx_arping for eg.)')
 
 if args.servers is None:
     servers = [

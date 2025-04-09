@@ -90,7 +90,7 @@ class SignalsTab(QtWidgets.QWidget):
                 self.legend.addItem(plot, name)
 
     @recordOrApplyPedestal
-    def _processWaveformData(self, data, aSamples, dSamples, rx_reorder, rx_dbitlist, isPlottedArray, romode,
+    def _processWaveformData(self, data, aSamples, dSamples, rx_dbitreorder, rx_dbitlist, isPlottedArray, romode,
                              nADCEnabled):
         
         #transform raw waveform data into a processed numpy array
@@ -100,44 +100,46 @@ class SignalsTab(QtWidgets.QWidget):
         if romode == 2:
             start_digital_data += nADCEnabled * 2 * aSamples
         digital_array = np.array(np.frombuffer(data, offset=start_digital_data, dtype=np.uint8)) 
-        if rx_reorder:
-            arr = np.empty((len(rx_dbitlist), dSamples), dtype=np.uint8) 
+        if rx_dbitreorder:
+            samples_per_bit = np.empty((len(rx_dbitlist), dSamples), dtype=np.uint8) #stored per row all the corresponding signals of all samples 
             nbitsPerDBit = dSamples
             if nbitsPerDBit % 8 != 0:
                 nbitsPerDBit += (8 - (dSamples % 8))
-            offset = 0
+            bit_index = 0
             for idx, i in enumerate(rx_dbitlist):
                 # where numbits * numsamples is not a multiple of 8
-                if offset % 8 != 0:
-                    offset += (8 - (offset % 8))
+                if bit_index % 8 != 0:
+                    bit_index += (8 - (bit_index % 8))
                 if not isPlottedArray[i]:
-                    offset += nbitsPerDBit
-                    arr[idx, :] = np.nan
+                    bit_index += nbitsPerDBit
+                    samples_per_bit[idx, :] = np.nan
                     continue
                 for iSample in range(dSamples):
                     # all samples for digital bit together from slsReceiver
-                    index = int(offset / 8)
-                    iBit = offset % 8
+                    index = int(bit_index / 8)
+                    iBit = bit_index % 8
                     bit = (digital_array[index] >> iBit) & 1
-                    arr[idx,iSample] = bit
-                    offset += 1
-            return arr
+                    samples_per_bit[idx,iSample] = bit
+                    bit_index += 1
+            return samples_per_bit
         else: 
             nbitsPerSample = len(rx_dbitlist) if len(rx_dbitlist) % 8 == 0 else len(rx_dbitlist) + (8 - (len(rx_dbitlist) % 8))
-            arr = np.empty((dSamples, len(rx_dbitlist)), dtype=np.uint8) #store all samples
+            bits_per_sample = np.empty((dSamples, len(rx_dbitlist)), dtype=np.uint8) #store per row all selected bits of a sample
             for iSample in range(dSamples): 
-                offset = nbitsPerSample * iSample
+                bit_index = nbitsPerSample * iSample
                 for idx, i in enumerate(rx_dbitlist): 
                     if not isPlottedArray[i]:
-                        offset += 1
-                        arr[iSample, idx] = np.nan
+                        bit_index += 1
+                        bits_per_sample[iSample, idx] = np.nan
 
-                    index = int(offset/8)
+                    index = int(bit_index/8)
                     iBit = idx % 8
                     bit = (digital_array[index] >> iBit) & 1
-                    arr[iSample, idx] = bit
-                    offset += 1
-            return arr.T.copy() 
+                    bits_per_sample[iSample, idx] = bit
+                    bit_index += 1
+            return bits_per_sample.T.copy() 
+
+
                 
     def processWaveformData(self, data, aSamples, dSamples):
         
@@ -157,7 +159,7 @@ class SignalsTab(QtWidgets.QWidget):
                                                   self.mainWindow.nADCEnabled)
 
         irow = 0
-        for idx, i in enumerate(self.rx_dbitlist): #TODO i think ctBitlist is reordered CHECK!!!
+        for idx, i in enumerate(self.rx_dbitlist): 
             # bits enabled but not plotting
             waveform = digital_array[idx, :]
             if np.isnan(waveform[0]):

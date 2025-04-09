@@ -10,4 +10,4 @@
 #define APIJUNGFRAU  "9.1.0 0x250318"
 #define APILIB       "9.1.0 0x250325"
 #define APIRECEIVER  "9.1.0 0x250325"
-#define APIMYTHEN3   "9.1.0 0x250409"
+#define APIMYTHEN3   "9.1.1 0x250409"

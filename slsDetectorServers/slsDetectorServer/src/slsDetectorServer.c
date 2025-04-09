@@ -148,6 +148,8 @@ int main(int argc, char *argv[]) {
             strcpy(version, APIMYTHEN3);
 #elif GOTTHARD2D
             strcpy(version, APIGOTTHARD2);
+#elif XILINX_CHIPTESTBOARDD
+            strcpy(version, APIXILINXCTB);
 #endif
             LOG(logINFO, ("SLS Detector Server Version: %s\n", version));
             exit(EXIT_SUCCESS);

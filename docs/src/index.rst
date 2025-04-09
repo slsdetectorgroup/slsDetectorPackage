@@ -36,6 +36,7 @@ Welcome to slsDetectorPackage's documentation!
     pydetector
     pyenums
     pyexamples
+    pyPatternGenerator
 
 .. toctree::
     :caption: Command line

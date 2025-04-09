@@ -93,7 +93,8 @@ void Pattern::validate() const {
     }
 }
 
-void Pattern::load(const std::string &fname) {
+size_t Pattern::load(const std::string &fname) {
+    size_t numPatWords = 0;
     std::ifstream input_file(fname);
     if (!input_file) {
         throw RuntimeError("Could not open pattern file " + fname +
@@ -125,6 +126,7 @@ void Pattern::load(const std::string &fname) {
                     throw RuntimeError("Invalid address for " + ToString(args));
                 }
                 pat->word[addr] = StringTo<uint64_t>(args[2]);
+                ++numPatWords;
             } else if (cmd == "patioctrl") {
                 if (nargs != 1) {
                     throw RuntimeError("Invalid arguments for " +
@@ -238,6 +240,41 @@ void Pattern::load(const std::string &fname) {
             }
         }
     }
+    return numPatWords;
+}
+
+std::ostream& Pattern::stream(std::ostream &os) const{
+    for (uint32_t i = pat->limits[0]; i <= pat->limits[1]; ++i) {
+        os << "patword " << ToStringHex(i, 4) << " "
+                    << ToStringHex(pat->word[i], 16) << std::endl;
+    }
+
+    // patioctrl
+    os << "patioctrl " << ToStringHex(pat->ioctrl, 16) << std::endl;
+
+    // patlimits
+    os << "patlimits " << ToStringHex(pat->limits[0], 4) << " "
+                << ToStringHex(pat->limits[1], 4) << std::endl;
+
+    for (size_t i = 0; i < MAX_PATTERN_LEVELS; ++i) {
+        // patloop
+        os << "patloop " << i << " "
+                    << ToStringHex(pat->startloop[i], 4) << " "
+                    << ToStringHex(pat->stoploop[i], 4) << std::endl;
+        // patnloop
+        os << "patnloop " << i << " " << pat->nloop[i] << std::endl;
+    }
+
+    for (size_t i = 0; i < MAX_PATTERN_LEVELS; ++i) {
+        // patwait
+        os << "patwait " << i << " " << ToStringHex(pat->wait[i], 4)
+                    << std::endl;
+        // patwaittime
+        os << "patwaittime " << i << " " << pat->waittime[i];
+        if (i<MAX_PATTERN_LEVELS-1)
+            os << std::endl;
+    }
+    return os;
 }
 
 void Pattern::save(const std::string &fname) {
@@ -246,65 +283,12 @@ void Pattern::save(const std::string &fname) {
         throw RuntimeError("Could not open pattern file " + fname +
                            " for writing");
     }
-    std::ostringstream os;
-    // pattern word
-    for (uint32_t i = pat->limits[0]; i <= pat->limits[1]; ++i) {
-        output_file << "patword " << ToStringHex(i, 4) << " "
-                    << ToStringHex(pat->word[i], 16) << std::endl;
-    }
-
-    // patioctrl
-    output_file << "patioctrl " << ToStringHex(pat->ioctrl, 16) << std::endl;
-
-    // patlimits
-    output_file << "patlimits " << ToStringHex(pat->limits[0], 4) << " "
-                << ToStringHex(pat->limits[1], 4) << std::endl;
-
-    for (size_t i = 0; i < MAX_PATTERN_LEVELS; ++i) {
-        // patloop
-        output_file << "patloop " << i << " "
-                    << ToStringHex(pat->startloop[i], 4) << " "
-                    << ToStringHex(pat->stoploop[i], 4) << std::endl;
-        // patnloop
-        output_file << "patnloop " << i << " " << pat->nloop[i] << std::endl;
-    }
-
-    for (size_t i = 0; i < MAX_PATTERN_LEVELS; ++i) {
-        // patwait
-        output_file << "patwait " << i << " " << ToStringHex(pat->wait[i], 4)
-                    << std::endl;
-        // patwaittime
-        output_file << "patwaittime " << i << " " << pat->waittime[i]
-                    << std::endl;
-    }
+    stream(output_file);
 }
 
 std::string Pattern::str() const {
     std::ostringstream oss;
-    oss << '[' << std::setfill('0') << std::endl;
-    int addr_width = 4;
-    int word_width = 16;
-    for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
-        if (pat->word[i] != 0) {
-            oss << "patword " << ToStringHex(i, addr_width) << " "
-                << ToStringHex(pat->word[i], word_width) << std::endl;
-        }
-    }
-    oss << "patioctrl " << ToStringHex(pat->ioctrl, word_width) << std::endl
-        << "patlimits " << ToStringHex(pat->limits[0], addr_width) << " "
-        << ToStringHex(pat->limits[1], addr_width) << std::endl;
-
-    for (int i = 0; i != MAX_PATTERN_LEVELS; ++i) {
-        oss << "patloop " << i << ' '
-            << ToStringHex(pat->startloop[i], addr_width) << " "
-            << ToStringHex(pat->stoploop[i], addr_width) << std::endl
-            << "patnloop " << pat->nloop[i] << std::endl
-            << "patwait " << i << ' ' << ToStringHex(pat->wait[i], addr_width)
-            << std::endl
-            << "patwaittime " << i << ' ' << pat->waittime[i] << std::endl;
-    }
-
-    oss << ']';
+    stream(oss);
     return oss.str();
 }
 

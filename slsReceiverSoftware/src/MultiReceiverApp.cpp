@@ -150,8 +150,9 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
         // header->packetsMask.to_string().c_str(),
         ((uint8_t)(*((uint8_t *)(dataPointer)))), imageSize);
 
-    // if data is modified, eg ROI and size is reduced
-    imageSize = 26000;
+    // if data is modified, can affect size
+    // only reduction in size allowed, not increase
+    // imageSize = 26000;
 }
 
 /**

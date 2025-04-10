@@ -2265,7 +2265,7 @@ void *start_timer(void *arg) {
     if (imageData == NULL) {
         LOG(logERROR, ("Can not allocate image Data RAM."
                        "Probable cause: Memory Leak.\n"));
-        return FAIL;
+        return NULL;
     }
     /*
     for (int i = 0; i < imageSize; i += sizeof(uint16_t)) {

@@ -23,6 +23,7 @@
 #include <cerrno>
 #include <cstring>
 #include <iostream>
+#include <numeric>
 
 namespace sls {
 
@@ -362,7 +363,9 @@ void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
     if (!ctbDbitList.empty()) {
         ArrangeDbitData(size, data);
     } else if (ctbDbitReorder) {
-        Reorder(size, data);
+        ctbDbitList.resize(64);
+        std::iota(ctbDbitList.begin(), ctbDbitList.end(), 0);
+        ArrangeDbitData(size, data);
     } else if (ctbDbitOffset > 0) {
         RemoveTrailingBits(size, data);
     }
@@ -556,83 +559,6 @@ void DataProcessor::RemoveTrailingBits(size_t &size, char *data) {
             ctbDigitalDataBytes + nTransceiverDataBytes);
 
     size = nAnalogDataBytes + ctbDigitalDataBytes + nTransceiverDataBytes;
-}
-
-void DataProcessor::Reorder(size_t &size, char *data) {
-    const size_t nAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
-    const size_t nDigitalDataBytes = generalData->GetNumberOfDigitalDatabytes();
-    const size_t nTransceiverDataBytes =
-        generalData->GetNumberOfTransceiverDatabytes();
-
-    const size_t ctbDigitalDataBytes = nDigitalDataBytes - ctbDbitOffset;
-
-    // no digital data
-    if (ctbDigitalDataBytes == 0) {
-        LOG(logWARNING)
-            << "No digital data for call back, yet reorder is set to 1.";
-        return;
-    }
-
-    // make sure data is aligned to 8 bytes before casting to uint64_t
-    // AlignedData<uint64_t> aligned_data(data + nAnalogDataBytes +
-    // ctbDbitOffset, ctbDigitalDataBytes);
-
-    char *source =
-        data + nAnalogDataBytes + ctbDbitOffset; // aligned_data.aligned_ptr;
-
-    const size_t numDigitalSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
-
-    size_t numBytesPerBit =
-        (numDigitalSamples % 8 == 0)
-            ? numDigitalSamples / 8
-            : numDigitalSamples / 8 +
-                  1; // number of bytes per bit in digital data after reordering
-
-    size_t totalNumBytes =
-        numBytesPerBit *
-        64; // number of bytes for digital data after reordering
-
-    std::vector<uint8_t> result(totalNumBytes, 0);
-    uint8_t *dest = &result[0];
-
-    int bitoffset = 0;
-    // reorder
-    for (size_t bi = 0; bi < 64; ++bi) {
-
-        if (bitoffset != 0) {
-            bitoffset = 0;
-            ++dest;
-        }
-
-        for (auto *ptr = source; ptr < (source + numDigitalSamples); ++ptr) {
-            uint8_t bit = (*ptr >> bi) & 1;
-            *dest |= bit << bitoffset; // most significant bits will be padded
-            ++bitoffset;
-            if (bitoffset == 8) {
-                bitoffset = 0;
-                ++dest;
-            }
-        }
-    }
-
-    // move transceiver data to not overwrite and avoid gap in memory
-    if (totalNumBytes != nDigitalDataBytes)
-        memmove(data + nAnalogDataBytes + totalNumBytes * sizeof(uint8_t),
-                data + nAnalogDataBytes + nDigitalDataBytes,
-                nTransceiverDataBytes);
-
-    // copy back to memory and update size
-    size = totalNumBytes * sizeof(uint8_t) + nAnalogDataBytes +
-           nTransceiverDataBytes;
-
-    memcpy(data + nAnalogDataBytes, result.data(),
-           totalNumBytes * sizeof(uint8_t));
-
-    LOG(logDEBUG1) << "totalNumBytes: " << totalNumBytes
-                   << " nAnalogDataBytes:" << nAnalogDataBytes
-                   << " ctbDbitOffset:" << ctbDbitOffset
-                   << " nTransceiverDataBytes:" << nTransceiverDataBytes
-                   << " size:" << size;
 }
 
 /** ctb specific */

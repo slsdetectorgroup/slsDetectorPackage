@@ -39,14 +39,10 @@ class GeneralDataTest : public GeneralData {
 // dummy DataProcessor class for testing
 class DataProcessorTest : public DataProcessor {
   public:
-    DataProcessorTest() : DataProcessor(0){};
-    ~DataProcessorTest(){};
+    DataProcessorTest() : DataProcessor(0) {};
+    ~DataProcessorTest() {};
     void ArrangeDbitData(size_t &size, char *data) {
         DataProcessor::ArrangeDbitData(size, data);
-    }
-
-    void Reorder(size_t &size, char *data) {
-        DataProcessor::Reorder(size, data);
     }
 
     void RemoveTrailingBits(size_t &size, char *data) {
@@ -183,6 +179,9 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Reorder all",
     set_num_samples(num_samples);
     set_data();
 
+    std::vector<int> bitlist(64);
+    std::iota(bitlist.begin(), bitlist.end(), 0);
+    dataprocessor->SetCtbDbitList(bitlist);
     dataprocessor->SetCtbDbitReorder(true); // set reorder to true
 
     const size_t expected_size =
@@ -202,7 +201,7 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Reorder all",
            num_transceiver_bytes); // set to 125
 
     size_t size = get_size();
-    dataprocessor->Reorder(size, data); // call reorder
+    dataprocessor->ArrangeDbitData(size, data); // call reorder
 
     CHECK(size == expected_size);
     CHECK(memcmp(data, expected_data, expected_size) == 0);
@@ -219,6 +218,9 @@ TEST_CASE_METHOD(DataProcessorTestFixture,
     set_random_offset_bytes(num_random_offset_bytes);
     set_data();
 
+    std::vector<int> bitlist(64);
+    std::iota(bitlist.begin(), bitlist.end(), 0);
+    dataprocessor->SetCtbDbitList(bitlist);
     dataprocessor->SetCtbDbitOffset(num_random_offset_bytes);
     dataprocessor->SetCtbDbitReorder(true); // set reorder to true
 
@@ -242,7 +244,7 @@ TEST_CASE_METHOD(DataProcessorTestFixture,
            num_transceiver_bytes); // set to 125
 
     size_t size = get_size();
-    dataprocessor->Reorder(size, data); // call reorder
+    dataprocessor->ArrangeDbitData(size, data); // call reorder
 
     CHECK(size == expected_size);
     CHECK(memcmp(data, expected_data, expected_size) == 0);

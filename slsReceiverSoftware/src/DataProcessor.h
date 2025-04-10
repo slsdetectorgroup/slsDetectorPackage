@@ -102,12 +102,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void ArrangeDbitData(size_t &size, char *data);
 
     /**
-     * reorder datastream such that each signal (0-63) from all the different
-     * samples are grouped together and stored consecutively in memory
-     */
-    void Reorder(size_t &size, char *data);
-
-    /**
      * remove trailing bits in digital data stream
      */
     void RemoveTrailingBits(size_t &size, char *data);
@@ -179,7 +173,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     uint32_t currentFreqCount{0};
     struct timespec timerbegin{};
     bool framePadding;
-    std::vector<int> ctbDbitList;
+    std::vector<int> ctbDbitList{};
     int ctbDbitOffset{0};
     bool ctbDbitReorder{true};
     std::atomic<bool> startedFlag{false};

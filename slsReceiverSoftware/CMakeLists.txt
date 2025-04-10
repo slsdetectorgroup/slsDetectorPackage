@@ -17,7 +17,6 @@ set(SOURCES
 
 set(PUBLICHEADERS
     include/sls/Receiver.h
-    include/sls/utils.h
 )
 
 # HDF5 file writing 

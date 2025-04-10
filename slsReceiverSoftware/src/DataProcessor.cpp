@@ -24,8 +24,6 @@
 #include <cstring>
 #include <iostream>
 
-#include "sls/utils.h"
-
 namespace sls {
 
 const std::string DataProcessor::typeName = "DataProcessor";
@@ -576,10 +574,11 @@ void DataProcessor::Reorder(size_t &size, char *data) {
     }
 
     // make sure data is aligned to 8 bytes before casting to uint64_t
-    AlignedData<uint64_t> aligned_data(data + nAnalogDataBytes + ctbDbitOffset,
-                                       ctbDigitalDataBytes);
+    // AlignedData<uint64_t> aligned_data(data + nAnalogDataBytes +
+    // ctbDbitOffset, ctbDigitalDataBytes);
 
-    uint64_t *source = aligned_data.aligned_ptr;
+    char *source =
+        data + nAnalogDataBytes + ctbDbitOffset; // aligned_data.aligned_ptr;
 
     const size_t numDigitalSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
 
@@ -652,11 +651,7 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
         return;
     }
 
-    // make sure data is aligned to 8 bytes before casting to uint64_t
-    AlignedData<uint64_t> aligned_data(data + nAnalogDataBytes + ctbDbitOffset,
-                                       ctbDigitalDataBytes);
-
-    uint64_t *source = aligned_data.aligned_ptr;
+    char *source = (data + nAnalogDataBytes + ctbDbitOffset);
 
     const int numDigitalSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
 
@@ -694,10 +689,13 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
                 ++dest;
             }
 
+            uint8_t byte_index = bi / 8;
+
             // loop through the frame digital data
-            for (auto *ptr = source; ptr < (source + numDigitalSamples);) {
+            for (auto *ptr = source + byte_index;
+                 ptr < (source + 8 * numDigitalSamples); ptr += 8) {
                 // get selected bit from each 8 bit
-                uint8_t bit = (*ptr++ >> bi) & 1;
+                uint8_t bit = (*ptr >> bi % 8) & 1;
                 *dest |= bit << bitoffset; // stored as least significant
                 ++bitoffset;
                 // extract destination in 8 bit batches
@@ -710,7 +708,8 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
     } else {
         // loop through the digital data
         int bitoffset = 0;
-        for (auto *ptr = source; ptr < (source + numDigitalSamples); ++ptr) {
+        for (auto *ptr = source; ptr < (source + 8 * numDigitalSamples);
+             ptr += 8) {
             // where bit enable vector size is not a multiple of 8
             if (bitoffset != 0) {
                 bitoffset = 0;
@@ -720,7 +719,9 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
             // loop through digital bit enable vector
             for (auto bi : ctbDbitList) {
                 // get selected bit from each 64 bit
-                uint8_t bit = (*ptr >> bi) & 1;
+                uint8_t byte_index = bi / 8;
+
+                uint8_t bit = (*(ptr + byte_index) >> (bi % 8)) & 1;
                 *dest |= bit << bitoffset;
                 ++bitoffset;
                 // extract destination in 8 bit batches

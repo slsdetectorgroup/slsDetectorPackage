@@ -2262,6 +2262,11 @@ void *start_timer(void *arg) {
     char *imageData = (char *)malloc(imageSize);
     memset(imageData, 0, imageSize);
 
+    if (imageData == NULL) {
+        LOG(logERROR, ("Can not allocate image Data RAM."
+                       "Probable cause: Memory Leak.\n"));
+        return FAIL;
+    }
     /*
     for (int i = 0; i < imageSize; i += sizeof(uint16_t)) {
         *((uint16_t *)(imageData + i)) = i;

@@ -223,6 +223,9 @@
 #define DBIT_INJECT_COUNTER_CLKDIV_OFST     (8) // Additional clock divider for fake-data injection
 #define DBIT_INJECT_COUNTER_CLKDIV_MSK      (0x000000FF << DBIT_INJECT_COUNTER_CLKDIV_OFST)
 
+/* 64-bit FPGA chip ID. Unique for every device. read-only */
+#define FPGA_chipID_0_REG                       (0x48 << MEM_MAP_SHIFT)
+#define FPGA_chipID_1_REG                       (0x49 << MEM_MAP_SHIFT)
 
 /* FIFO Transceiver In 64 bit RO register */
 #define FIFO_TIN_LSB_REG (0x31 << MEM_MAP_SHIFT)

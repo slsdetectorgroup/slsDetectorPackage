@@ -199,6 +199,40 @@ with open(fname, 'w') as fp:
 
     try:
         startGeneralTests(fp, file_results)
+        killAllStaleProcesses(fp)
+
+        for server in servers:
+            try:
+                # print to terminal for progress
+                sys.stdout = original_stdout
+                sys.stderr = original_stderr
+                file_results = prefix_fname + '_results_cmd_' + server + '.txt'
+                Log(Fore.BLUE, 'Cmd tests for ' + server + ' (results: ' + file_results + ')')
+                sys.stdout = fp
+                sys.stderr = fp
+                Log(Fore.BLUE, 'Cmd tests for ' + server + ' (results: ' + file_results + ')')
+                
+                # cmd tests for det
+                cleanup(server, fp)
+                startServer(server)
+                startReceiver(server)
+                loadConfig(server, args.rx_hostname, args.settingspath)
+                startCmdTests(server, fp, file_results)
+                cleanup(server, fp)
+                
+                # redirect to terminal
+                sys.stdout = original_stdout
+                sys.stderr = original_stderr
+                Log(Fore.GREEN, 'Passed all tests for virtual detectors \n' + str(servers))
+        
+            except Exception as e:
+                # redirect to terminal
+                sys.stdout = original_stdout
+                sys.stderr = original_stderr
+                Log(Fore.RED, f'Exception caught while testing {server}. Cleaning up...')
+
+                break
+
     except Exception as e:
         # redirect to terminal
         sys.stdout = original_stdout
@@ -206,39 +240,5 @@ with open(fname, 'w') as fp:
         Log(Fore.RED, f'Exception caught with general testing. Cleaning up...')
         Log(Fore.RED, str(e))
         cleanSharedmemory(sys.stdout)
-    
-    killAllStaleProcesses(fp)
-
-    for server in servers:
-        try:
-            # print to terminal for progress
-            sys.stdout = original_stdout
-            sys.stderr = original_stderr
-            file_results = prefix_fname + '_results_cmd_' + server + '.txt'
-            Log(Fore.BLUE, 'Cmd tests for ' + server + ' (results: ' + file_results + ')')
-            sys.stdout = fp
-            sys.stderr = fp
-            Log(Fore.BLUE, 'Cmd tests for ' + server + ' (results: ' + file_results + ')')
-            
-            # cmd tests for det
-            cleanup(server, fp)
-            startServer(server)
-            startReceiver(server)
-            loadConfig(server, args.rx_hostname, args.settingspath)
-            startCmdTests(server, fp, file_results)
-            cleanup(server, fp)
-            
-            # redirect to terminal
-            sys.stdout = original_stdout
-            sys.stderr = original_stderr
-            Log(Fore.GREEN, 'Passed all tests for virtual detectors \n' + str(servers))
-    
-        except Exception as e:
-            # redirect to terminal
-            sys.stdout = original_stdout
-            sys.stderr = original_stderr
-            Log(Fore.RED, f'Exception caught while testing {server}. Cleaning up...')
-
-            break
-
+        
 

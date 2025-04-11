@@ -150,9 +150,21 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
         // header->packetsMask.to_string().c_str(),
         ((uint8_t)(*((uint8_t *)(dataPointer)))), imageSize);
 
-    // if data is modified, can affect size
-    // only reduction in size allowed, not increase
-    // imageSize = 26000;
+    // // example of how to use roi or modify data that is later written to file
+    // slsDetectorDefs::ROI roi{0, 10, 0, 20};
+    // int width = roi.xmax - roi.xmin;
+    // int height = roi.ymax - roi.ymin;
+    // uint8_t *destPtr = (uint8_t *)dataPointer;
+    // for (int irow = roi.ymin; irow < roi.ymax; ++irow) {
+    //     memcpy(destPtr,
+    //            ((uint8_t *)(dataPointer + irow * callbackHeader.shape.x +
+    //                         roi.xmin)),
+    //            width);
+    //     destPtr += width;
+    // }
+    // memcpy((uint8_t*)dataPointer, (uint8_t*)dataPointer
+    // // setting roi for eg. changes size
+    // imageSize = width * height;
 }
 
 /**

@@ -531,7 +531,7 @@ void ZmqSocket::PrintError() {
 
 // Nested class to do RAII handling of socket descriptors
 ZmqSocket::mySocketDescriptors::mySocketDescriptors(bool server)
-    : server(server), contextDescriptor(nullptr), socketDescriptor(nullptr){};
+    : server(server), contextDescriptor(nullptr), socketDescriptor(nullptr) {};
 ZmqSocket::mySocketDescriptors::~mySocketDescriptors() {
     Disconnect();
     Close();

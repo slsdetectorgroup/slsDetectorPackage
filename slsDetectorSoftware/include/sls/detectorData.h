@@ -17,7 +17,7 @@ class detectorData {
         : progressIndex(progressIndex), fileName(fileName),
           fileIndex(fileIndex), nx(nx), ny(ny), data(data),
           databytes(databytes), dynamicRange(dynamicRange),
-          completeImage(completeImage){};
+          completeImage(completeImage) {};
 
     detectorData(double progressIndex, std::string fileName, int nx, int ny,
                  char *data, int databytes, int dynamicRange,
@@ -26,11 +26,11 @@ class detectorData {
         : progressIndex(progressIndex), fileName(fileName),
           fileIndex(fileIndex), nx(nx), ny(ny), data(data),
           databytes(databytes), dynamicRange(dynamicRange),
-          completeImage(completeImage), rxRoi(rxRoi){};
+          completeImage(completeImage), rxRoi(rxRoi) {};
     /**
      * data has to be deleted by caller
      */
-    ~detectorData(){};
+    ~detectorData() {};
 
     int64_t getChannel(int i) {
         int off = dynamicRange / 8;

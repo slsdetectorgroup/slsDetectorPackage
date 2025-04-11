@@ -4,7 +4,7 @@
 This file is used to start up simulators, receivers and run all the tests on them and finally kill the simulators and receivers.
 '''
 import argparse
-import os, sys, subprocess, time, colorama, signal
+import os, sys, subprocess, time, colorama
 
 from colorama import Fore
 from slsdet import Detector, detectorType, detectorSettings
@@ -23,23 +23,9 @@ def Log(color, message):
 
 
 def checkIfProcessRunning(processName):
-    cmd = "ps -ef | grep " + processName
-    print(cmd)
-    res=subprocess.getoutput(cmd)
-    print(res)
-    # eg. of output
-    #l_user  250506  243295  0 14:38 pts/5    00:00:00 /bin/sh -c ps -ef | grep slsReceiver
-    #l_user  250508  250506  0 14:38 pts/5    00:00:00 grep slsReceiver
-
-    print('how many')
-    cmd = "ps -ef | grep " + processName + " | wc -l"
-    print(cmd)
-    res=subprocess.getoutput(cmd)
-    print(res)
-
-    if res == '2':
-        return False
-    return True
+    cmd = f"pgrep -f {processName}"
+    res = subprocess.getoutput(cmd)
+    return bool(res.strip())
 
 
 def killProcess(name):
@@ -52,7 +38,7 @@ def killProcess(name):
         print('process not running : ' + name)
 
 
-def killAllStaleProcesses():
+def killAllStaleProcesses(fp):
     killProcess('eigerDetectorServer_virtual')
     killProcess('jungfrauDetectorServer_virtual')
     killProcess('mythen3DetectorServer_virtual')
@@ -62,9 +48,9 @@ def killAllStaleProcesses():
     killProcess('xilinx_ctbDetectorServer_virtual')
     killProcess('slsReceiver')
     killProcess('slsMultiReceiver')
-    cleanSharedmemory()
+    cleanSharedmemory(fp)
 
-def cleanup(name):
+def cleanup(name, fp):
     '''
     kill both servers, receivers and clean shared memory
     '''
@@ -72,9 +58,9 @@ def cleanup(name):
     killProcess(name + 'DetectorServer_virtual')
     killProcess('slsReceiver')
     killProcess('slsMultiReceiver')
-    cleanSharedmemory()
+    cleanSharedmemory(fp)
 
-def cleanSharedmemory():
+def cleanSharedmemory(fp):
     Log(Fore.GREEN, 'Cleaning up shared memory...')
     try:
         p = subprocess.run(['sls_detector_get', 'free'], stdout=fp, stderr=fp)
@@ -87,8 +73,8 @@ def startProcessInBackground(name):
         # in background and dont print output
         p = subprocess.Popen(name.split(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, restore_signals=False) 
         Log(Fore.GREEN, 'Starting up ' + name + ' ...')
-    except:
-        Log(Fore.RED, 'Could not start ' + name)
+    except Exception as e:
+        Log(Fore.RED, f'Could not start {name}:{e}')
         raise
 
 def startServer(name):
@@ -139,8 +125,11 @@ def loadConfig(name, rx_hostname, settingsdir):
 def startCmdTests(name, fp, fname):
     Log(Fore.GREEN, 'Cmd Tests for ' + name)
     cmd = 'tests --abort [.cmdcall] -s -o ' + fname
-    p = subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
-    p.check_returncode()
+    try:
+        subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
+    except subprocess.CalledProcessError as e:
+        Log(Fore.RED, f'Command failed for {name}:\n{e}')
+        raise
 
     with open (fname, 'r') as f:
         for line in f:
@@ -154,9 +143,7 @@ def startCmdTests(name, fp, fname):
 def startGeneralTests(fp, fname):
     Log(Fore.GREEN, 'General Tests')
     cmd = 'tests --abort -s -o ' + fname
-    p = subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
-    p.check_returncode()
-
+    subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
     with open (fname, 'r') as f:
         for line in f:
             if "FAILED" in line:
@@ -201,15 +188,26 @@ Log(Fore.BLUE, '\nLog File: ' + fname)
 
 with open(fname, 'w') as fp:
 
+
+
     # general tests
     file_results = prefix_fname + '_results_general.txt'
     Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
     sys.stdout = fp
     sys.stderr = fp
     Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
-    startGeneralTests(fp, file_results)
 
-    killAllStaleProcesses()
+    try:
+        startGeneralTests(fp, file_results)
+    except Exception as e:
+        # redirect to terminal
+        sys.stdout = original_stdout
+        sys.stderr = original_stderr
+        Log(Fore.RED, f'Exception caught with general testing. Cleaning up...')
+        Log(Fore.RED, str(e))
+        cleanSharedmemory(sys.stdout)
+    
+    killAllStaleProcesses(fp)
 
     for server in servers:
         try:
@@ -223,24 +221,24 @@ with open(fname, 'w') as fp:
             Log(Fore.BLUE, 'Cmd tests for ' + server + ' (results: ' + file_results + ')')
             
             # cmd tests for det
-            cleanup(server)
+            cleanup(server, fp)
             startServer(server)
             startReceiver(server)
             loadConfig(server, args.rx_hostname, args.settingspath)
             startCmdTests(server, fp, file_results)
-            cleanup(server)
-        except:
-            Log(Fore.RED, 'Exception caught. Cleaning up.')
-            cleanup(server)
+            cleanup(server, fp)
+            
+            # redirect to terminal
             sys.stdout = original_stdout
             sys.stderr = original_stderr
-            Log(Fore.RED, 'Cmd tests failed for ' + server + '!!!')
-            raise
+            Log(Fore.GREEN, 'Passed all tests for virtual detectors \n' + str(servers))
+    
+        except Exception as e:
+            # redirect to terminal
+            sys.stdout = original_stdout
+            sys.stderr = original_stderr
+            Log(Fore.RED, f'Exception caught while testing {server}. Cleaning up...')
+
+            break
 
 
-    Log(Fore.GREEN, 'Passed all tests for virtual detectors \n' + str(servers))
-
-# redirect to terminal
-sys.stdout = original_stdout
-sys.stderr = original_stderr
-Log(Fore.GREEN, 'Passed all tests for virtual detectors \n' + str(servers) + '\nYayyyy! :) ')

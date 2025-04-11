@@ -515,16 +515,6 @@ void DataProcessor::PadMissingPackets(sls_receiver_header header, char *data) {
 
         // missing packet
         switch (generalData->detType) {
-        // for gotthard, 1st packet: 4 bytes fnum, CACA + CACA, 639*2 bytes
-        // data
-        //              2nd packet: 4 bytes fnum, previous 1*2 bytes data  +
-        //              640*2 bytes data !!
-        case GOTTHARD:
-            if (pnum == 0u)
-                memset(data + (pnum * dsize), 0xFF, dsize - 2);
-            else
-                memset(data + (pnum * dsize), 0xFF, dsize + 2);
-            break;
         case CHIPTESTBOARD:
         case XILINX_CHIPTESTBOARD:
             if (pnum == (pperFrame - 1))

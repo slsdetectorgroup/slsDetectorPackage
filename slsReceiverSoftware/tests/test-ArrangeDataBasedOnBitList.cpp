@@ -16,6 +16,8 @@ namespace sls {
 class GeneralDataTest : public GeneralData {
 
   public:
+    GeneralDataTest() { detType = slsDetectorDefs::CHIPTESTBOARD; }
+
     int GetNumberOfAnalogDatabytes() { return nAnalogBytes; };
 
     int GetNumberOfDigitalDatabytes() { return nDigitalBytes; };

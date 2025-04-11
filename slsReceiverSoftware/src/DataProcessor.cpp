@@ -336,6 +336,7 @@ void DataProcessor::StopProcessing(char *buf) {
 
 void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
                                    size_t &firstImageIndex, char *data) {
+
     uint64_t fnum = header.detHeader.frameNumber;
     LOG(logDEBUG1) << "DataProcessing " << index << ": fnum:" << fnum;
     currentFrameIndex = fnum;
@@ -540,6 +541,13 @@ void DataProcessor::PadMissingPackets(sls_receiver_header header, char *data) {
 }
 
 void DataProcessor::RemoveTrailingBits(size_t &size, char *data) {
+
+    if (!(generalData->detType == slsDetectorDefs::CHIPTESTBOARD ||
+          generalData->detType == slsDetectorDefs::XILINX_CHIPTESTBOARD)) {
+        throw std::runtime_error("behavior undefined for detector " +
+                                 std::to_string(generalData->detType));
+    }
+
     const size_t nAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
     const size_t nDigitalDataBytes = generalData->GetNumberOfDigitalDatabytes();
     const size_t nTransceiverDataBytes =
@@ -563,6 +571,13 @@ void DataProcessor::RemoveTrailingBits(size_t &size, char *data) {
 
 /** ctb specific */
 void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
+
+    if (!(generalData->detType == slsDetectorDefs::CHIPTESTBOARD ||
+          generalData->detType == slsDetectorDefs::XILINX_CHIPTESTBOARD)) {
+        throw std::runtime_error("behavior undefined for detector " +
+                                 std::to_string(generalData->detType));
+    }
+
     size_t nAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
     size_t nDigitalDataBytes = generalData->GetNumberOfDigitalDatabytes();
     size_t nTransceiverDataBytes =

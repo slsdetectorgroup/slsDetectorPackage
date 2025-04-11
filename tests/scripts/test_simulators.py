@@ -128,14 +128,16 @@ def startCmdTests(name, fp, fname):
     try:
         subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
     except subprocess.CalledProcessError as e:
-        Log(Fore.RED, f'Command tests failed for {name}:\n{e}')
-        raise
+        pass
 
     with open (fname, 'r') as f:
         for line in f:
             if "FAILED" in line:
                 msg = 'Cmd tests failed for ' + name + '!!!'
+                sys.stdout = original_stdout
                 Log(Fore.RED, msg)
+                Log(Fore.RED, line)
+                sys.stdout = fp
                 raise Exception(msg)
 
     Log(Fore.GREEN, 'Cmd Tests successful for ' + name)
@@ -146,14 +148,15 @@ def startGeneralTests(fp, fname):
     try:
         subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
     except subprocess.CalledProcessError as e:
-        Log(Fore.RED, f'General tests failed:\n{e}')
-        raise
+        pass
 
     with open (fname, 'r') as f:
         for line in f:
             if "FAILED" in line:
                 msg = 'General tests failed !!!'
-                Log(Fore.RED, msg)
+                sys.stdout = original_stdout
+                Log(Fore.RED, msg + '\n' + line)
+                sys.stdout = fp
                 raise Exception(msg)
 
     Log(Fore.GREEN, 'General Tests successful')
@@ -206,6 +209,7 @@ with open(fname, 'w') as fp:
         startGeneralTests(fp, file_results)
         killAllStaleProcesses(fp)
 
+        testError = False
         for server in servers:
             try:
                 # print to terminal for progress
@@ -230,12 +234,14 @@ with open(fname, 'w') as fp:
                 sys.stdout = original_stdout
                 sys.stderr = original_stderr
                 Log(Fore.RED, f'Exception caught while testing {server}. Cleaning up...')
+                testError = True
                 break
 
         # redirect to terminal
         sys.stdout = original_stdout
         sys.stderr = original_stderr
-        Log(Fore.GREEN, 'Passed all tests for virtual detectors \n' + str(servers))
+        if not testError:
+            Log(Fore.GREEN, 'Passed all tests for virtual detectors \n' + str(servers))
 
 
     except Exception as e:
@@ -243,7 +249,6 @@ with open(fname, 'w') as fp:
         sys.stdout = original_stdout
         sys.stderr = original_stderr
         Log(Fore.RED, f'Exception caught with general testing. Cleaning up...')
-        Log(Fore.RED, str(e))
         cleanSharedmemory(sys.stdout)
         
 

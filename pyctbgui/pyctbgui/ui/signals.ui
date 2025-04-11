@@ -6115,6 +6115,11 @@
        </item>
        <item row="0" column="6">
         <widget class="QCheckBox" name="checkBoxDBitReorder">
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>DBit Reorder</string>
          </property>

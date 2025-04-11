@@ -585,6 +585,9 @@ TEST_CASE("fpath", "[.cmdcall]") {
         REQUIRE(oss.str() == "fpath /tmp\n");
     }
     for (int i = 0; i != det.size(); ++i) {
+        if (prev_val[i].empty()) {
+            continue;
+        }
         det.setFilePath(prev_val[i], {i});
     }
 }

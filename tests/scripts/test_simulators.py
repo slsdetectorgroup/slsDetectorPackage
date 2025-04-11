@@ -128,7 +128,7 @@ def startCmdTests(name, fp, fname):
     try:
         subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
     except subprocess.CalledProcessError as e:
-        Log(Fore.RED, f'Command failed for {name}:\n{e}')
+        Log(Fore.RED, f'Command tests failed for {name}:\n{e}')
         raise
 
     with open (fname, 'r') as f:
@@ -143,7 +143,12 @@ def startCmdTests(name, fp, fname):
 def startGeneralTests(fp, fname):
     Log(Fore.GREEN, 'General Tests')
     cmd = 'tests --abort -s -o ' + fname
-    subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
+    try:
+        subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
+    except subprocess.CalledProcessError as e:
+        Log(Fore.RED, f'General tests failed:\n{e}')
+        raise
+
     with open (fname, 'r') as f:
         for line in f:
             if "FAILED" in line:
@@ -220,18 +225,18 @@ with open(fname, 'w') as fp:
                 startCmdTests(server, fp, file_results)
                 cleanup(server, fp)
                 
-                # redirect to terminal
-                sys.stdout = original_stdout
-                sys.stderr = original_stderr
-                Log(Fore.GREEN, 'Passed all tests for virtual detectors \n' + str(servers))
-        
             except Exception as e:
                 # redirect to terminal
                 sys.stdout = original_stdout
                 sys.stderr = original_stderr
                 Log(Fore.RED, f'Exception caught while testing {server}. Cleaning up...')
-
                 break
+
+        # redirect to terminal
+        sys.stdout = original_stdout
+        sys.stderr = original_stderr
+        Log(Fore.GREEN, 'Passed all tests for virtual detectors \n' + str(servers))
+
 
     except Exception as e:
         # redirect to terminal

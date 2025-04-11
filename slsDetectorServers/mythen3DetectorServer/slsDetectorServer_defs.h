@@ -9,7 +9,8 @@
 
 #define NUM_HARDWARE_VERSIONS    (2)
 #define HARDWARE_VERSION_NUMBERS {0x0, 0x2};
-#define HARDWARE_VERSION_NAMES   {"1.0", "1.2"}
+#define HARDWARE_VERSION_NAMES                                                 \
+    { "1.0", "1.2" }
 
 #define LINKED_SERVER_NAME "mythen3DetectorServer"
 
@@ -129,12 +130,15 @@ enum DACINDEX {
 
 enum ADCINDEX { TEMP_FPGA };
 
-#define NUMSETTINGS                       (3)
-#define NSPECIALDACS                      (2)
-#define SPECIALDACINDEX                   {M_VRPREAMP, M_VRSHAPER};
-#define SPECIAL_DEFAULT_STANDARD_DAC_VALS {1100, 1280}
-#define SPECIAL_DEFAULT_FAST_DAC_VALS     {300, 1500}
-#define SPECIAL_DEFAULT_HIGHGAIN_DAC_VALS {1300, 1100}
+#define NUMSETTINGS     (3)
+#define NSPECIALDACS    (2)
+#define SPECIALDACINDEX {M_VRPREAMP, M_VRSHAPER};
+#define SPECIAL_DEFAULT_STANDARD_DAC_VALS                                      \
+    { 1100, 1280 }
+#define SPECIAL_DEFAULT_FAST_DAC_VALS                                          \
+    { 300, 1500 }
+#define SPECIAL_DEFAULT_HIGHGAIN_DAC_VALS                                      \
+    { 1300, 1100 }
 
 enum CLKINDEX { SYSTEM_C0, SYSTEM_C1, SYSTEM_C2, NUM_CLOCKS };
 #define NUM_CLOCKS_TO_SET (1)

@@ -33,5 +33,5 @@ class Timer {
     std::string name_;
 };
 
-}; // namespace sls
+};     // namespace sls
 #endif // TIMER_H

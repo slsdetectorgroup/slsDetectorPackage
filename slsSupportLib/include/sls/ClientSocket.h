@@ -28,22 +28,22 @@ class ClientSocket : public DataSocket {
 class ReceiverSocket : public ClientSocket {
   public:
     ReceiverSocket(const std::string &hostname, uint16_t port_number)
-        : ClientSocket("Receiver", hostname, port_number) {};
-    ReceiverSocket(struct sockaddr_in addr) : ClientSocket("Receiver", addr) {};
+        : ClientSocket("Receiver", hostname, port_number){};
+    ReceiverSocket(struct sockaddr_in addr) : ClientSocket("Receiver", addr){};
 };
 
 class DetectorSocket : public ClientSocket {
   public:
     DetectorSocket(const std::string &hostname, uint16_t port_number)
-        : ClientSocket("Detector", hostname, port_number) {};
-    DetectorSocket(struct sockaddr_in addr) : ClientSocket("Detector", addr) {};
+        : ClientSocket("Detector", hostname, port_number){};
+    DetectorSocket(struct sockaddr_in addr) : ClientSocket("Detector", addr){};
 };
 
 class GuiSocket : public ClientSocket {
   public:
     GuiSocket(const std::string &hostname, uint16_t port_number)
-        : ClientSocket("Gui", hostname, port_number) {};
-    GuiSocket(struct sockaddr_in addr) : ClientSocket("Gui", addr) {};
+        : ClientSocket("Gui", hostname, port_number){};
+    GuiSocket(struct sockaddr_in addr) : ClientSocket("Gui", addr){};
 };
 
 }; // namespace sls

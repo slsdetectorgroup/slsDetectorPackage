@@ -170,12 +170,10 @@ def startGeneralTests(fp, fname):
 
 # parse cmd line for rx_hostname and settingspath using the argparse library
 parser = argparse.ArgumentParser(description = 'automated tests with the virtual detector servers')
-parser.add_argument('rx_hostname', help = 'hostname/ip of the current machine')
-parser.add_argument('settingspath', help = 'Relative or absolut path to the settingspath')
+parser.add_argument('rx_hostname', nargs='?', default='localhost', help = 'hostname/ip of the current machine')
+parser.add_argument('settingspath', nargs='?', default='../../settingsdir', help = 'Relative or absolut path to the settingspath')
 parser.add_argument('-s', '--servers', help='Detector servers to run', nargs='*')
 args = parser.parse_args()
-#if args.rx_hostname == 'localhost':
-#    raise RuntimeException('Cannot use localhost for rx_hostname for the tests (fails for rx_arping for eg.)')
 
 if args.servers is None:
     servers = [

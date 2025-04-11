@@ -2568,6 +2568,22 @@ int InferAction::rx_dbitoffset() {
     }
 }
 
+int InferAction::rx_dbitreorder() {
+
+    if (args.size() == 0) {
+        return slsDetectorDefs::GET_ACTION;
+    }
+
+    if (args.size() == 1) {
+        return slsDetectorDefs::PUT_ACTION;
+    }
+
+    else {
+
+        throw RuntimeError("Could not infer action: Wrong number of arguments");
+    }
+}
+
 int InferAction::rx_discardpolicy() {
 
     if (args.size() == 0) {

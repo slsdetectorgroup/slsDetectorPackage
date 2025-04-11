@@ -60,8 +60,8 @@ class GeneralData {
     slsDetectorDefs::frameDiscardPolicy frameDiscardMode{
         slsDetectorDefs::NO_DISCARD};
 
-    GeneralData(){};
-    virtual ~GeneralData(){};
+    GeneralData() {};
+    virtual ~GeneralData() {};
 
     // Returns the pixel depth in byte, 4 bits being 0.5 byte
     float GetPixelDepth() { return float(dynamicRange) / 8; }
@@ -443,6 +443,7 @@ class ChipTestBoardData : public GeneralData {
         nDigitalBytes = 0;
         nTransceiverBytes = 0;
         int nAnalogChans = 0, nDigitalChans = 0, nTransceiverChans = 0;
+        uint64_t digital_bytes_reserved = 0;
 
         // analog channels (normal, analog/digital readout)
         if (readoutType == slsDetectorDefs::ANALOG_ONLY ||
@@ -461,7 +462,12 @@ class ChipTestBoardData : public GeneralData {
             readoutType == slsDetectorDefs::ANALOG_AND_DIGITAL ||
             readoutType == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
             nDigitalChans = NCHAN_DIGITAL;
-            nDigitalBytes = (sizeof(uint64_t) * nDigitalSamples);
+            // allocate enough memory to support reordering of digital bits
+            uint32_t num_bytes_per_bit = (nDigitalSamples % 8 == 0)
+                                             ? nDigitalSamples / 8
+                                             : nDigitalSamples / 8 + 1;
+            digital_bytes_reserved = 64 * num_bytes_per_bit;
+            nDigitalBytes = sizeof(uint64_t) * nDigitalSamples;
             LOG(logDEBUG1) << "Number of Digital Channels:" << nDigitalChans
                            << " Databytes: " << nDigitalBytes;
         }
@@ -480,7 +486,7 @@ class ChipTestBoardData : public GeneralData {
         nPixelsX = nAnalogChans + nDigitalChans + nTransceiverChans;
         dataSize = tengigaEnable ? 8144 : UDP_PACKET_DATA_BYTES;
         packetSize = headerSizeinPacket + dataSize;
-        imageSize = nAnalogBytes + nDigitalBytes + nTransceiverBytes;
+        imageSize = nAnalogBytes + digital_bytes_reserved + nTransceiverBytes;
         packetsPerFrame = ceil((double)imageSize / (double)dataSize);
 
         LOG(logDEBUG1) << "Total Number of Channels:" << nPixelsX
@@ -563,6 +569,7 @@ class XilinxChipTestBoardData : public GeneralData {
         nDigitalBytes = 0;
         nTransceiverBytes = 0;
         int nAnalogChans = 0, nDigitalChans = 0, nTransceiverChans = 0;
+        uint64_t digital_bytes_reserved = 0;
 
         // analog channels (normal, analog/digital readout)
         if (readoutType == slsDetectorDefs::ANALOG_ONLY ||
@@ -580,7 +587,11 @@ class XilinxChipTestBoardData : public GeneralData {
             readoutType == slsDetectorDefs::ANALOG_AND_DIGITAL ||
             readoutType == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
             nDigitalChans = NCHAN_DIGITAL;
-            nDigitalBytes = (sizeof(uint64_t) * nDigitalSamples);
+            uint32_t num_bytes_per_bit = (nDigitalSamples % 8 == 0)
+                                             ? nDigitalSamples / 8
+                                             : nDigitalSamples / 8 + 1;
+            digital_bytes_reserved = 64 * num_bytes_per_bit;
+            nDigitalBytes = sizeof(uint64_t) * nDigitalSamples;
             LOG(logDEBUG1) << "Number of Digital Channels:" << nDigitalChans
                            << " Databytes: " << nDigitalBytes;
         }
@@ -598,7 +609,7 @@ class XilinxChipTestBoardData : public GeneralData {
         }
         nPixelsX = nAnalogChans + nDigitalChans + nTransceiverChans;
 
-        imageSize = nAnalogBytes + nDigitalBytes + nTransceiverBytes;
+        imageSize = nAnalogBytes + digital_bytes_reserved + nTransceiverBytes;
         packetsPerFrame = ceil((double)imageSize / (double)dataSize);
 
         LOG(logDEBUG1) << "Total Number of Channels:" << nPixelsX

@@ -252,6 +252,10 @@ class Implementation : private virtual slsDetectorDefs {
     int getDbitOffset() const;
     /* [Ctb] */
     void setDbitOffset(const int s);
+    bool getDbitReorder() const;
+    /* [Ctb] */
+    void setDbitReorder(const bool reorder);
+
     uint32_t getTransceiverEnableMask() const;
     /* [Ctb] */
     void setTransceiverEnableMask(const uint32_t mask);
@@ -368,6 +372,7 @@ class Implementation : private virtual slsDetectorDefs {
     std::vector<int64_t> rateCorrections;
     std::vector<int> ctbDbitList;
     int ctbDbitOffset{0};
+    bool ctbDbitReorder{true};
 
     // callbacks
     void (*startAcquisitionCallBack)(const startCallbackHeader,

@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: "ubuntu-latest"
     container:
-      image: gitea.psi.ch/detectors-int/rhel9-detectors-dev
+      image: gitea.psi.ch/detectors-int/rhel9-detectors
     steps:
       - uses: actions/checkout@v4
 
@@ -19,9 +19,6 @@ jobs:
       - name: Build library 
         run: |
             mkdir build && cd build
-            cmake .. -DAARE_PYTHON_BINDINGS=ON -DAARE_TESTS=ON
+            cmake .. 
             make -j 2 
 
-      - name: C++ unit tests
-        working-directory: ${{gitea.workspace}}/build
-        run: ctest

@@ -1,0 +1,27 @@
+name: Build on RHEL9
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: "ubuntu-latest"
+    container:
+      image: gitea.psi.ch/detectors-int/rhel9-detectors-dev
+    steps:
+      - uses: actions/checkout@v4
+
+
+      - name: Build library 
+        run: |
+            mkdir build && cd build
+            cmake .. -DAARE_PYTHON_BINDINGS=ON -DAARE_TESTS=ON
+            make -j 2 
+
+      - name: C++ unit tests
+        working-directory: ${{gitea.workspace}}/build
+        run: ctest

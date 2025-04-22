@@ -304,7 +304,7 @@ patternParameters *setChannelRegisterChip(int ichip, char *mask,
                 chanReg |= (0x1 << (3 + icounter));
             }
         }
-
+        chanReg /= 2;
         // deserialize
         if (chanReg & CHAN_REG_BAD_CHANNEL_MSK) {
             LOG(logINFOBLUE,

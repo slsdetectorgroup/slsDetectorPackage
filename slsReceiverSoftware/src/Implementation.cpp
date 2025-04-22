@@ -202,6 +202,7 @@ void Implementation::SetupDataProcessor(int i) {
     dataProcessor[i]->SetFramePadding(framePadding);
     dataProcessor[i]->SetCtbDbitList(ctbDbitList);
     dataProcessor[i]->SetCtbDbitOffset(ctbDbitOffset);
+    dataProcessor[i]->SetCtbDbitReorder(ctbDbitReorder);
     dataProcessor[i]->SetQuadEnable(quadEnable);
     dataProcessor[i]->SetFlipRows(flipRows);
     dataProcessor[i]->SetNumberofTotalFrames(numberOfTotalFrames);
@@ -991,7 +992,9 @@ void Implementation::StartMasterWriter() {
                     : 0;
             masterAttributes.digitalSamples = generalData->nDigitalSamples;
             masterAttributes.dbitoffset = ctbDbitOffset;
+            masterAttributes.dbitreorder = ctbDbitReorder;
             masterAttributes.dbitlist = 0;
+
             for (auto &i : ctbDbitList) {
                 masterAttributes.dbitlist |= (static_cast<uint64_t>(1) << i);
             }
@@ -1764,6 +1767,15 @@ void Implementation::setDbitOffset(const int s) {
     for (const auto &it : dataProcessor)
         it->SetCtbDbitOffset(ctbDbitOffset);
     LOG(logINFO) << "Dbit offset: " << ctbDbitOffset;
+}
+
+bool Implementation::getDbitReorder() const { return ctbDbitReorder; }
+
+void Implementation::setDbitReorder(const bool reorder) {
+    ctbDbitReorder = reorder;
+    for (const auto &it : dataProcessor)
+        it->SetCtbDbitReorder(ctbDbitReorder);
+    LOG(logINFO) << "Dbit reorder: " << ctbDbitReorder;
 }
 
 uint32_t Implementation::getTransceiverEnableMask() const {

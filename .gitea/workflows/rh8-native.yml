@@ -13,7 +13,10 @@ jobs:
     container:
       image: gitea.psi.ch/detectors/rhel8-detectors-dev
     steps:
-      - uses: actions/checkout@v3
+      - name: Clone repository
+        run: |
+          echo Cloning ${{ github.ref_name }}
+          git clone https://${{secrets.GITHUB_TOKEN}}@gitea.psi.ch/${{ github.repository }}.git --branch=${{ github.ref_name }} .
 
       - name: Build library 
         run: |

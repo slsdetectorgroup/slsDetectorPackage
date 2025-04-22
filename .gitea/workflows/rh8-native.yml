@@ -15,12 +15,8 @@ jobs:
     steps:
       # workaround until actions/checkout@v4 is available for RH8
       # - uses: actions/checkout@v4
-      - name: Clone repository
-        run: |
-          echo Cloning ${{ github.ref_name }}
-          git clone https://${{secrets.GITHUB_TOKEN}}@gitea.psi.ch/${{ github.repository }}.git --branch=${{ github.ref_name }} .
-
-
+      steps:
+      - uses: actions/checkout@v3
 
       - name: Build library 
         run: |

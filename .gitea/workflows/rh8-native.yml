@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: "ubuntu-latest"
     container:
-      image: gitea.psi.ch/detectors-int/rhel8-detectors-dev
+      image: gitea.psi.ch/detectors/rhel8-detectors-dev
     steps:
       # workaround until actions/checkout@v4 is available for RH8
       # - uses: actions/checkout@v4

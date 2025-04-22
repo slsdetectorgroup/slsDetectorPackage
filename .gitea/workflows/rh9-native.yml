@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: "ubuntu-latest"
     container:
-      image: gitea.psi.ch/detectors-int/rhel9-detectors
+      image: gitea.psi.ch/detectors/rhel9-detectors-dev
     steps:
       - uses: actions/checkout@v4
 

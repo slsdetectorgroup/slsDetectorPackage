@@ -21,7 +21,7 @@ jobs:
       - name: Build library 
         run: |
             mkdir build && cd build
-            cmake .. -DSLS_USE_PYTHON=ON -DSLS_USE_TESTS=ON -DPython_FIND_VIRTUALENV=FIRST
+            cmake .. -DSLS_USE_PYTHON=ON -DSLS_USE_TESTS=ON 
             make -j 2 
 
       - name: C++ unit tests

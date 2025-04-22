@@ -1,8 +1,8 @@
+#{% set version = load_file('VERSION').strip %}
 package:
   name: sls_detector_software
-  version: 2025.3.19
-
-
+  version: {{ environ.get('VERSION') }} #2025.3.19
+  
 source:
   path: ../..
 

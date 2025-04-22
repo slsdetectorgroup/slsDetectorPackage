@@ -1,7 +1,7 @@
+
 package:
   name: slsdet
-  version: 2025.3.19 #TODO! how to not duplicate this?
-
+  version: 0.0.0 
 source:
   path: ../..
 

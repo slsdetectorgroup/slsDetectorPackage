@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "slsdet"
-version = "2025.3.19"
+version = "0.0.0"
 
 [tool.cibuildwheel]
 before-all = "uname -a"

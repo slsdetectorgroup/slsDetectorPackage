@@ -1,10 +1,11 @@
+source:
+  path: ../..
+
+{% set version = load_file_regex(load_file = 'VERSION', regex_pattern = '(\d+\.\d+\.\d+)').group(1) %}
 
 package:
   name: slsdet
-  version: {{ environ.get('VERSION') }} #2025.3.19
-  
-source:
-  path: ../..
+  version: {{ version }} #
 
 build:
   number: 0
@@ -17,7 +18,6 @@ requirements:
     - {{ compiler('c') }}
     - {{ stdlib("c") }}
     - {{ compiler('cxx') }}
-
 
   host:
     - cmake

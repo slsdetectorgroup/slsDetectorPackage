@@ -1,8 +1,7 @@
 source:
   path: ../..
 
-{% set version = load_file_regex(load_file = 'VERSION', regex_pattern = '(\d+\.\d+\.\d+)').group(1) %}
-
+{% set version = load_file_regex(load_file = 'VERSION', regex_pattern = '(\d+\.\d+\.\d+(?:[\.\w\-]+)?)').group(1) %}
 package:
   name: slsdet
   version: {{ version }} #

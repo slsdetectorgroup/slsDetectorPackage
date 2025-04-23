@@ -17,8 +17,8 @@ def get_version():
     version = sys.argv[1]
     
     # Validate that the version argument matches semantic versioning format (X.Y.Z)
-    if not re.match(r'^\d+\.\d+\.\d+$', version):
-        print("Error: Version argument must be in semantic versioning format (X.Y.Z)")
+    if not re.match(r'^\d+\.\d+\.\d+(?:[\-\.][\.\w\-]+)?+$', version):
+        print("Error: Version argument must be in semantic versioning format (X.Y.Z[./-][postfix])")
         sys.exit(1)
     
     return version

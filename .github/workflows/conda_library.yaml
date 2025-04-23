@@ -33,7 +33,7 @@ jobs:
         run: conda config --set anaconda_upload no
 
       - name: Build
-        run: ./conda-recipes/build_conda.sh build_output main-library
+        run: conda build ./conda-recipes/main-library --build-folder build_output 
 
       - name: Upload all Conda packages
         uses: actions/upload-artifact@v4

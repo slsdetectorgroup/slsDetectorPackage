@@ -7,6 +7,7 @@ Script to update VERSION file with semantic versioning if provided as an argumen
 import sys
 import re
 import toml
+from packaging.version import Version, InvalidVersion
 
 def get_version():
 
@@ -16,21 +17,22 @@ def get_version():
 
     version = sys.argv[1]
     
-    # Validate that the version argument matches semantic versioning format (X.Y.Z)
-    if not re.match(r'^\d+\.\d+\.\d+(?:[\-\.][\.\w\-]+)?+$', version):
-        print("Error: Version argument must be in semantic versioning format (X.Y.Z[./-][postfix])")
+    try:
+        v = Version(version)  # normalize according to PEP 440 specification
+        return v
+    except InvalidVersion as e:
+        print(f"Invalid version {version}. Version format must follow semantic versioning format of python PEP 440 version identification specification.")
         sys.exit(1)
     
-    return version
 
 def write_version_to_file(version):
     with open("VERSION", "w") as version_file:
-        version_file.write(version)
+        version_file.write(str(version))
     print(f"Version {version} written to VERSION file.")
 
 def update_pyproject_toml_file(version):
     pyproject = toml.load("pyproject.toml")
-    pyproject["project"]["version"] = version
+    pyproject["project"]["version"] = str(version)
     toml.dump(pyproject, open("pyproject.toml", "w")) #write back
     print(f"Version in pyproject.toml set to {version}")
 

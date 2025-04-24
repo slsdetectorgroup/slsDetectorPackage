@@ -1,7 +1,7 @@
 source:
   path: ../..
 
-{% set version = load_file_regex(load_file = 'VERSION', regex_pattern = '(\d+\.\d+\.\d+(?:[\.\-][\.\w\-]+)?)').group(1) %}
+{% set version = load_file_regex(load_file = 'VERSION', regex_pattern = '(\d+(?:\.\d+)*+(?:[\+\w\.]+))').group(1) %}
 package:
   name: sls_detector_software
   version: {{ version }} #2025.3.19
@@ -48,8 +48,6 @@ outputs:
       run: 
         - libstdcxx-ng
         - libgcc-ng
-
-
 
 
   - name: slsdetgui

@@ -1,10 +1,16 @@
+[tool.scikit-build.metadata.version]
+provider = "scikit_build_core.metadata.regex"
+input = "VERSION"
+regex = '^(?P<version>\d+(?:\.\d+)*(?:[\.\+\w]+)?)$'
+result = "{version}" 
+
 [build-system]
 requires = [ "scikit-build-core>=0.10", "pybind11", "numpy",]
 build-backend = "scikit_build_core.build"
 
 [project]
 name = "slsdet"
-version = "0.0.0"
+dynamic = ["version"]
 
 [tool.cibuildwheel]
 before-all = "uname -a"

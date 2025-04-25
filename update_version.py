@@ -5,9 +5,12 @@ Script to update VERSION file with semantic versioning if provided as an argumen
 """
 
 import sys
-import re
-import toml
+import os
+
 from packaging.version import Version, InvalidVersion
+
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def get_version():
 
@@ -26,19 +29,13 @@ def get_version():
     
 
 def write_version_to_file(version):
-    with open("VERSION", "w") as version_file:
+    version_file_path = os.path.join(SCRIPT_DIR, "VERSION")
+    with open(version_file_path, "w") as version_file:
         version_file.write(str(version))
     print(f"Version {version} written to VERSION file.")
-
-def update_pyproject_toml_file(version):
-    pyproject = toml.load("pyproject.toml")
-    pyproject["project"]["version"] = str(version)
-    toml.dump(pyproject, open("pyproject.toml", "w")) #write back
-    print(f"Version in pyproject.toml set to {version}")
 
 # Main script
 if __name__ == "__main__":
 
     version = get_version()
     write_version_to_file(version)
-    update_pyproject_toml_file(version)

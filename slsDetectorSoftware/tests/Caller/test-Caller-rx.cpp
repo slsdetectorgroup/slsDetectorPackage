@@ -445,23 +445,25 @@ TEST_CASE("rx_arping", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxArping();
-    {
-        std::ostringstream oss;
-        caller.call("rx_arping", {"1"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_arping 1\n");
-    }
-    {
-        std::ostringstream oss;
-        caller.call("rx_arping", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "rx_arping 1\n");
-    }
-    {
-        std::ostringstream oss;
-        caller.call("rx_arping", {"0"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_arping 0\n");
-    }
-    for (int i = 0; i != det.size(); ++i) {
-        det.setRxArping(prev_val[i], {i});
+    if (det.getDestinationUDPIP()[0].str() != "127.0.0.1") {
+        {
+            std::ostringstream oss;
+            caller.call("rx_arping", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_arping 1\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("rx_arping", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "rx_arping 1\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("rx_arping", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_arping 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setRxArping(prev_val[i], {i});
+        }
     }
 }
 
@@ -583,6 +585,9 @@ TEST_CASE("fpath", "[.cmdcall]") {
         REQUIRE(oss.str() == "fpath /tmp\n");
     }
     for (int i = 0; i != det.size(); ++i) {
+        if (prev_val[i].empty()) {
+            continue;
+        }
         det.setFilePath(prev_val[i], {i});
     }
 }

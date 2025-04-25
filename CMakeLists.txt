@@ -333,7 +333,8 @@ if (SLS_USE_INTEGRATION_TESTS)
 endif (SLS_USE_INTEGRATION_TESTS)
 
 if (SLS_USE_PYTHON)
-    find_package (Python 3.8 COMPONENTS Interpreter Development)
+    find_package (Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)
+    set(PYBIND11_FINDPYTHON ON) # Needed for RH8
     if(SLS_FETCH_PYBIND11_FROM_GITHUB)
         FetchContent_Declare(
             pybind11

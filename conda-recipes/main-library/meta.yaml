@@ -4,7 +4,7 @@ source:
 {% set version = load_file_regex(load_file = 'VERSION', regex_pattern = '(\d+(?:\.\d+)*(?:[\+\w\.]+))').group(1) %}
 package:
   name: sls_detector_software
-  version: {{ version }} #2025.3.19
+  version: {{ version }} 
   
 build:
   number: 0

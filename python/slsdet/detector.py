@@ -3465,6 +3465,16 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def rx_dbitreorder(self):
+        """[Ctb] Reorder digital data to group together all samples per signal. Default is 1. Setting to 0 means 'do not reorder' and to keep what the board spits out, which is that all signals in a sample are grouped together."""
+        return self.getRxDbitReorder()
+
+    @rx_dbitreorder.setter
+    def rx_dbitreorder(self, value):
+        ut.set_using_dict(self.setRxDbitReorder, value)
+
+    @property
+    @element
     def maxadcphaseshift(self):
         """[Jungfrau][Moench][CTB] Absolute maximum Phase shift of ADC clock.
         

@@ -19,10 +19,11 @@ def get_version():
         return "0.0.0"
 
     version = sys.argv[1]
-    
+
     try:
-        v = Version(version)  # normalize according to PEP 440 specification
-        return v
+        v = Version(version)  # normalizcheck if version follows PEP 440 specification
+        #replace -
+        return version.replace("-", ".")
     except InvalidVersion as e:
         print(f"Invalid version {version}. Version format must follow semantic versioning format of python PEP 440 version identification specification.")
         sys.exit(1)
@@ -31,7 +32,7 @@ def get_version():
 def write_version_to_file(version):
     version_file_path = os.path.join(SCRIPT_DIR, "VERSION")
     with open(version_file_path, "w") as version_file:
-        version_file.write(str(version))
+        version_file.write(version)
     print(f"Version {version} written to VERSION file.")
 
 # Main script

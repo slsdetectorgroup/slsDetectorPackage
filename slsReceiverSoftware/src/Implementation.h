@@ -370,9 +370,6 @@ class Implementation : private virtual slsDetectorDefs {
     int thresholdEnergyeV{-1};
     std::array<int, 3> thresholdAllEnergyeV = {{-1, -1, -1}};
     std::vector<int64_t> rateCorrections;
-    std::vector<int> ctbDbitList;
-    int ctbDbitOffset{0};
-    bool ctbDbitReorder{true};
 
     // callbacks
     void (*startAcquisitionCallBack)(const startCallbackHeader,

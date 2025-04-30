@@ -551,6 +551,7 @@ int ClientInterface::set_num_analog_samples(Interface &socket) {
     if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD) {
         functionNotImplemented();
     }
+    verifyIdle(socket);
     try {
         impl()->setNumberofAnalogSamples(value);
     } catch (const std::exception &e) {
@@ -567,6 +568,7 @@ int ClientInterface::set_num_digital_samples(Interface &socket) {
     if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD) {
         functionNotImplemented();
     }
+    verifyIdle(socket);
     try {
         impl()->setNumberofDigitalSamples(value);
     } catch (const std::exception &e) {
@@ -1736,6 +1738,7 @@ int ClientInterface::set_num_transceiver_samples(Interface &socket) {
     if (detType != CHIPTESTBOARD && detType != XILINX_CHIPTESTBOARD) {
         functionNotImplemented();
     }
+    verifyIdle(socket);
     try {
         impl()->setNumberofTransceiverSamples(value);
     } catch (const std::exception &e) {

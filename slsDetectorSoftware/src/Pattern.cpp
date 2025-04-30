@@ -243,10 +243,10 @@ size_t Pattern::load(const std::string &fname) {
     return numPatWords;
 }
 
-std::ostream& Pattern::stream(std::ostream &os) const{
+std::ostream &Pattern::stream(std::ostream &os) const {
     for (uint32_t i = pat->limits[0]; i <= pat->limits[1]; ++i) {
         os << "patword " << ToStringHex(i, 4) << " "
-                    << ToStringHex(pat->word[i], 16) << std::endl;
+           << ToStringHex(pat->word[i], 16) << std::endl;
     }
 
     // patioctrl
@@ -254,13 +254,12 @@ std::ostream& Pattern::stream(std::ostream &os) const{
 
     // patlimits
     os << "patlimits " << ToStringHex(pat->limits[0], 4) << " "
-                << ToStringHex(pat->limits[1], 4) << std::endl;
+       << ToStringHex(pat->limits[1], 4) << std::endl;
 
     for (size_t i = 0; i < MAX_PATTERN_LEVELS; ++i) {
         // patloop
-        os << "patloop " << i << " "
-                    << ToStringHex(pat->startloop[i], 4) << " "
-                    << ToStringHex(pat->stoploop[i], 4) << std::endl;
+        os << "patloop " << i << " " << ToStringHex(pat->startloop[i], 4) << " "
+           << ToStringHex(pat->stoploop[i], 4) << std::endl;
         // patnloop
         os << "patnloop " << i << " " << pat->nloop[i] << std::endl;
     }
@@ -268,10 +267,10 @@ std::ostream& Pattern::stream(std::ostream &os) const{
     for (size_t i = 0; i < MAX_PATTERN_LEVELS; ++i) {
         // patwait
         os << "patwait " << i << " " << ToStringHex(pat->wait[i], 4)
-                    << std::endl;
+           << std::endl;
         // patwaittime
         os << "patwaittime " << i << " " << pat->waittime[i];
-        if (i<MAX_PATTERN_LEVELS-1)
+        if (i < MAX_PATTERN_LEVELS - 1)
             os << std::endl;
     }
     return os;

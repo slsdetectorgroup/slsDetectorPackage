@@ -236,6 +236,7 @@ class Caller {
     std::string rx_clearroi(int action);
     std::string rx_dbitlist(int action);
     std::string rx_dbitoffset(int action);
+    std::string rx_dbitreorder(int action);
     std::string rx_discardpolicy(int action);
     std::string rx_fifodepth(int action);
     std::string rx_frameindex(int action);
@@ -582,6 +583,7 @@ class Caller {
         {"rx_clearroi", &Caller::rx_clearroi},
         {"rx_dbitlist", &Caller::rx_dbitlist},
         {"rx_dbitoffset", &Caller::rx_dbitoffset},
+        {"rx_dbitreorder", &Caller::rx_dbitreorder},
         {"rx_discardpolicy", &Caller::rx_discardpolicy},
         {"rx_fifodepth", &Caller::rx_fifodepth},
         {"rx_frameindex", &Caller::rx_frameindex},

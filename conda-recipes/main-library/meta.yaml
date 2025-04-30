@@ -1,0 +1,77 @@
+source:
+  path: ../..
+
+{% set version = load_file_regex(load_file = 'VERSION', regex_pattern = '(\d+(?:\.\d+)*(?:[\+\w\.]+))').group(1) %}
+package:
+  name: sls_detector_software
+  version: {{ version }} 
+  
+build:
+  number: 0
+  binary_relocation: True
+  rpaths: 
+    - lib/
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ stdlib("c") }}
+    - {{ compiler('cxx') }}
+    - git
+    - cmake
+    - ninja
+    - qt 5.*
+
+  host:
+    - libstdcxx-ng
+    - libgcc-ng
+    - libgl-devel  # [linux]
+    - libtiff
+    - zlib
+
+  run:
+    - libstdcxx-ng
+    - libgcc-ng 
+
+
+outputs:
+  - name: slsdetlib
+    script: copy_lib.sh
+
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{ stdlib("c") }}
+        - {{ compiler('cxx') }}
+
+      run: 
+        - libstdcxx-ng
+        - libgcc-ng
+
+
+  - name: slsdetgui
+    script: copy_gui.sh
+    requirements:
+
+      build:
+        - {{ compiler('c') }}
+        - {{compiler('cxx')}}
+        - {{ pin_subpackage('slsdetlib', exact=True) }}
+
+      run:
+        - {{ pin_subpackage('slsdetlib', exact=True) }}
+        - qt 5.*
+
+
+  - name: moenchzmq
+    script: copy_moench.sh
+    requirements:
+
+      build:
+        - {{ compiler('c') }}
+        - {{compiler('cxx')}}
+        - {{ pin_subpackage('slsdetlib', exact=True) }}
+
+
+      run:
+        - {{ pin_subpackage('slsdetlib', exact=True) }}

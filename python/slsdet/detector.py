@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
-from _slsdet import CppDetectorApi
-from _slsdet import slsDetectorDefs
-from _slsdet import IpAddr, MacAddr
+from ._slsdet import CppDetectorApi
+from ._slsdet import slsDetectorDefs
+from ._slsdet import IpAddr, MacAddr
 
 runStatus = slsDetectorDefs.runStatus
 timingMode = slsDetectorDefs.timingMode
@@ -15,7 +15,7 @@ defs = slsDetectorDefs
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable, hostname_list
-from _slsdet import xy
+from ._slsdet import xy
 from .gaincaps import Mythen3GainCapsWrapper
 from . import utils as ut
 from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
@@ -3462,6 +3462,16 @@ class Detector(CppDetectorApi):
     @rx_dbitoffset.setter
     def rx_dbitoffset(self, value):
         ut.set_using_dict(self.setRxDbitOffset, value)
+
+    @property
+    @element
+    def rx_dbitreorder(self):
+        """[Ctb] Reorder digital data to group together all samples per signal. Default is 1. Setting to 0 means 'do not reorder' and to keep what the board spits out, which is that all signals in a sample are grouped together."""
+        return self.getRxDbitReorder()
+
+    @rx_dbitreorder.setter
+    def rx_dbitreorder(self, value):
+        ut.set_using_dict(self.setRxDbitReorder, value)
 
     @property
     @element

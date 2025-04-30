@@ -1,0 +1,29 @@
+name: Build on RHEL8
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: "ubuntu-latest"
+    container:
+      image: gitea.psi.ch/detectors/rhel8-detectors-dev
+    steps:
+      - name: Clone repository
+        run: |
+          echo Cloning ${{ github.ref_name }}
+          git clone https://${{secrets.GITHUB_TOKEN}}@gitea.psi.ch/${{ github.repository }}.git --branch=${{ github.ref_name }} .
+
+      - name: Build library 
+        run: |
+            mkdir build && cd build
+            cmake .. -DSLS_USE_PYTHON=ON -DSLS_USE_TESTS=ON 
+            make -j 2 
+
+      - name: C++ unit tests
+        working-directory: ${{gitea.workspace}}/build
+        run: ctest

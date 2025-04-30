@@ -45,8 +45,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void SetStreamingTimerInMs(uint32_t value);
     void SetStreamingStartFnum(uint32_t value);
     void SetFramePadding(bool enable);
-    void SetCtbDbitList(std::vector<int> value);
-    void SetCtbDbitOffset(int value);
     void SetQuadEnable(bool value);
     void SetFlipRows(bool fd);
     void SetNumberofTotalFrames(uint64_t value);
@@ -90,6 +88,20 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                                                    dataCallbackHeader, char *,
                                                    size_t &, void *),
                                       void *arg);
+
+  protected:
+    /**
+     * Align corresponding digital bits together (CTB only if ctbDbitlist is not
+     * empty)
+     * set variable reorder to true if data should be rearranged such that
+     * it groups each signal (0-63) from all the different samples together
+     */
+    void ArrangeDbitData(size_t &size, char *data);
+
+    /**
+     * remove trailing bits in digital data stream
+     */
+    void RemoveTrailingBits(size_t &size, char *data);
 
   private:
     void RecordFirstIndex(uint64_t fnum);
@@ -137,12 +149,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     void PadMissingPackets(sls_receiver_header header, char *data);
 
-    /**
-     * Align corresponding digital bits together (CTB only if ctbDbitlist is not
-     * empty)
-     */
-    void RearrangeDbitData(size_t &size, char *data);
-
     void CropImage(size_t &size, char *data);
 
     static const std::string typeName;
@@ -162,10 +168,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     uint32_t streamingTimerInMs;
     uint32_t streamingStartFnum;
     uint32_t currentFreqCount{0};
-    struct timespec timerbegin {};
+    struct timespec timerbegin{};
     bool framePadding;
-    std::vector<int> ctbDbitList;
-    int ctbDbitOffset;
     std::atomic<bool> startedFlag{false};
     std::atomic<uint64_t> firstIndex{0};
     bool quadEnable{false};

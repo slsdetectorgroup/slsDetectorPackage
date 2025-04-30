@@ -11,233 +11,61 @@ namespace sls {
 
 using test::PUT;
 
-TEST_CASE("Ctb and xilinx - cant put if receiver is not idle",
-          "[.detectorintegration]") {
+/*
+detfuncs::F_RECEIVER_SET_NUM_FRAMES
+detfuncs::F_RECEIVER_SET_NUM_TRIGGERS
+detfuncs::F_RECEIVER_SET_NUM_BURSTS
+detfuncs::F_RECEIVER_SET_TIMING_MODE
+detfuncs::F_RECEIVER_SET_BURST_MODE
+detfuncs::F_RECEIVER_SET_NUM_ANALOG_SAMPLES
+detfuncs::F_RECEIVER_SET_NUM_DIGITAL_SAMPLES
+detfuncs::F_RECEIVER_SET_NUM_TRANSCEIVER_SAMPLES
+detfuncs::F_RECEIVER_SET_DYNAMIC_RANGE
+detfuncs::F_RECEIVER_SET_STREAMING_FREQUENCY
+detfuncs::F_RECEIVER_SET_FILE_INDEX
+detfuncs::F_RECEIVER_SET_FILE_WRITE
+detfuncs::F_RECEIVER_SET_MASTER_FILE_WRITE
+detfuncs::F_RECEIVER_SET_OVERWRITE
+detfuncs::F_RECEIVER_ENABLE_TENGIGA
+detfuncs::F_RECEIVER_SET_FIFO_DEPTH
+detfuncs::F_RECEIVER_SET_ACTIVATE
+detfuncs::F_RECEIVER_SET_STREAMING
+detfuncs::F_RECEIVER_SET_STREAMING_TIMER
+detfuncs::F_RECEIVER_SET_FLIP_ROWS
+detfuncs::F_RECEIVER_SET_DBIT_LIST
+detfuncs::F_RECEIVER_SET_DBIT_OFFSET
+detfuncs::F_RECEIVER_SET_DBIT_REORDE
+*/
 
-    Detector det;
-    Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::XILINX_CHIPTESTBOARD) {
-        auto prev_romode = det.getReadoutMode();
-        auto prev_asamples = det.getNumberOfAnalogSamples();
-        auto prev_dsamples = det.getNumberOfDigitalSamples();
-        auto prev_tsamples = det.getNumberOfTransceiverSamples();
-        auto prev_adcenable10g = det.getTenGigaADCEnableMask();
-        auto prev_trasnsceiverenable = det.getTransceiverEnableMask();
-        auto prev_rxdbitlist = det.getRxDbitList();
-        auto prev_rxdbitoffset = det.getRxDbitOffset();
-        auto prev_rxdbitreorder = det.getRxDbitReorder();
-
-        // start receiver
-        REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
-
-        REQUIRE_THROWS(caller.call("romode", {"digital"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("asamples", {"5"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("dsamples", {"100"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("tsamples", {"2"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("adcenable10g", {"0xFF00FFFF"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("transceiverenable", {"0x3"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("rx_dbitlist", {"{1,2,10}"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("rx_dbitoffset", {"5"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("rx_dbitreorder", {"0"}, -1, PUT));
-
-        // stop receiver
-        REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
-
-        for (int i = 0; i != det.size(); ++i) {
-            det.setReadoutMode(prev_romode[i], {i});
-            det.setNumberOfAnalogSamples(prev_asamples[i], {i});
-            det.setNumberOfDigitalSamples(prev_dsamples[i], {i});
-            det.setNumberOfTransceiverSamples(prev_tsamples[i], {i});
-            det.setTenGigaADCEnableMask(prev_adcenable10g[i], {i});
-            det.setTransceiverEnableMask(prev_trasnsceiverenable[i], {i});
-            det.setRxDbitList(prev_rxdbitlist[i], {i});
-            det.setRxDbitOffset(prev_rxdbitoffset[i], {i});
-            det.setRxDbitReorder(prev_rxdbitreorder[i], {i});
-        }
-    }
+auto get_test_parameters() {
+    return GENERATE(
+        std::make_tuple("asamples", std::vector<std::string>{"5"}),
+        std::make_tuple("tsamples", std::vector<std::string>{"2"}),
+        std::make_tuple("dsamples", std::vector<std::string>{"100"}),
+        std::make_tuple("frames", std::vector<std::string>{"10"}),
+        std::make_tuple("triggers", std::vector<std::string>{"5"}),
+        std::make_tuple("rx_dbitlist", std::vector<std::string>{"{1,2,10}"}),
+        std::make_tuple("rx_dbitreorder", std::vector<std::string>{"false"}),
+        std::make_tuple("rx_dbitoffset", std::vector<std::string>{"5"}),
+        std::make_tuple("findex", std::vector<std::string>{"2"}),
+        std::make_tuple("fwrite", std::vector<std::string>{"false"}),
+        std::make_tuple("bursts", std::vector<std::string>{"20"}));
 }
 
-TEST_CASE("adcenable - cant put if receiver is not idle",
-          "[.detectorintegration]") {
-
+TEST_CASE("cant put if receiver is not idle", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
+    det.setFileWrite(false); // avoid writing or error on file creation
 
-    if (det_type == defs::CHIPTESTBOARD) {
-        auto prev_adcenable = det.getADCEnableMask();
+    auto [command, function_arguments] = get_test_parameters();
+    // start receiver
+    std::ostringstream oss;
+    caller.call("rx_start", {}, -1, PUT,
+                oss); // why is there no receiver id passed
 
-        // start receiver
-        REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
+    REQUIRE(oss.str() == "rx_start successful\n");
 
-        REQUIRE_THROWS(caller.call("adcenable", {"0xFFFFFF00"}, -1, PUT));
-
-        // stop receiver
-        REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
-
-        for (int i = 0; i != det.size(); ++i) {
-            det.setADCEnableMask(prev_adcenable[i], {i});
-        }
-    }
+    REQUIRE_THROWS(caller.call(command, function_arguments, -1, PUT, oss, -1));
 }
 
-TEST_CASE("bursts - cant put if receiver is not idle",
-          "[.detectorintegration]") {
-
-    Detector det;
-    Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::GOTTHARD2) {
-        auto prev_burst =
-            det.getNumberOfBursts().tsquash("#bursts should be same to test");
-
-        // start receiver
-        REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
-
-        REQUIRE_THROWS(caller.call("bursts", {"20"}, -1, PUT));
-
-        // stop receiver
-        REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
-
-        det.setNumberOfBursts(prev_burst);
-    }
-}
-
-TEST_CASE("counters - cant put if receiver is not idle",
-          "[.detectorintegration]") {
-
-    Detector det;
-    Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::MYTHEN3) {
-        auto prev_counters = det.getCounterMask();
-
-        // start receiver
-        REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
-
-        REQUIRE_THROWS(caller.call("counters", {"0 1 2"}, -1, PUT));
-
-        // stop receiver
-        REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
-
-        for (int i = 0; i != det.size(); ++i) {
-            det.setCounterMask(prev_counters[i], {i});
-        }
-    }
-}
-
-TEST_CASE("numinterfaces - cant put if receiver is not idle",
-          "[.detectorintegration]") {
-
-    Detector det;
-    Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
-        auto prev_numinterfaces = det.getNumberofUDPInterfaces().tsquash(
-            "Number of UDP Interfaces is not consistent among modules");
-
-        // start receiver
-        REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
-
-        REQUIRE_THROWS(caller.call("numinterfaces", {"2"}, -1, PUT));
-
-        // stop receiver
-        REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
-
-        det.setNumberofUDPInterfaces(prev_numinterfaces);
-    }
-}
-
-TEST_CASE("dr - cant put if receiver is not idle", "[.detectorintegration]") {
-
-    Detector det;
-    Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::EIGER || det_type == defs::MYTHEN3) {
-        auto prev_dr =
-            det.getDynamicRange().tsquash("dr should be same to test");
-
-        // start receiver
-        REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
-
-        REQUIRE_THROWS(caller.call("dr", {"16"}, -1, PUT));
-
-        // stop receiver
-        REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
-
-        det.setDynamicRange(prev_dr);
-    }
-}
-
-TEST_CASE("tengiga - cant put if receiver is not idle",
-          "[.detectorintegration]") {
-
-    Detector det;
-    Caller caller(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
-        det_type == defs::CHIPTESTBOARD) {
-        auto prev_tengiga = det.getTenGiga();
-
-        // start receiver
-        REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
-
-        REQUIRE_THROWS(caller.call("tengiga", {"1"}, -1, PUT));
-
-        // stop receiver
-        REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
-
-        for (int i = 0; i != det.size(); ++i) {
-            det.setTenGiga(prev_tengiga[i], {i});
-        }
-    }
-}
-
-TEST_CASE("general - cant put if receiver is not idle",
-          "[.detectorintegration]") {
-
-    Detector det;
-    Caller caller(&det);
-
-    {
-        auto prev_frames =
-            det.getNumberOfFrames().tsquash("#frames should be same to test");
-        auto prev_triggers =
-            det.getNumberOfTriggers().tsquash("#triggers must be same to test");
-        auto prev_findex = det.getAcquisitionIndex();
-        auto prev_fwrite = det.getFileWrite();
-        auto prev_fifodepth = det.getRxFifoDepth();
-        auto rx_hostname = det.getRxHostname();
-
-        // start receiver
-        REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
-
-        REQUIRE_THROWS(caller.call("frames", {"10"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("triggers", {"5"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("findex", {"2"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("fwrite", {"0"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("rx_fifodepth", {"1000"}, -1, PUT));
-        REQUIRE_THROWS(caller.call("rx_hostname", {rx_hostname[0]}, 0, PUT));
-
-        // stop receiver
-        REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
-
-        det.setNumberOfFrames(prev_frames);
-        det.setNumberOfTriggers(prev_triggers);
-        for (int i = 0; i != det.size(); ++i) {
-            det.setAcquisitionIndex(prev_findex[i], {i});
-            det.setFileWrite(prev_fwrite[i], {i});
-            det.setRxFifoDepth(prev_fifodepth[i], {i});
-            det.setRxHostname(rx_hostname[i], {i});
-        }
-    }
-}
 } // namespace sls

@@ -17,6 +17,61 @@ namespace sls {
 using test::GET;
 using test::PUT;
 
+TEST_CASE("mythen3_acquire_check_file_size", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type =
+        det.getDetectorType().tsquash("Inconsistent detector types to test");
+
+    if (det_type == defs::MYTHEN3) {
+
+        // save previous state
+        testFileInfo prev_file_info = get_file_state(det);
+        testCommonDetAcquireInfo prev_det_config_info =
+            get_common_acquire_config_state(det);
+
+        // save previous specific det type config
+        auto dynamic_range =
+            det.getDynamicRange().tsquash("inconsistent dynamic range to test");
+        uint32_t counter_mask =
+            det.getCounterMask().tsquash("inconsistent counter mask to test");
+
+        // defaults
+        int num_frames_to_acquire = 2;
+        testFileInfo test_file_info;
+        set_file_state(det, test_file_info);
+        testCommonDetAcquireInfo det_config;
+        det_config.num_frames_to_acquire = num_frames_to_acquire;
+        set_common_acquire_config_state(det, det_config);
+
+        // set default specific det type config
+        det.setDynamicRange(16);
+        int test_counter_mask = 0x1;
+        int num_counters = __builtin_popcount(counter_mask);
+        det.setCounterMask(test_counter_mask);
+
+        // acquire
+        test_acquire_with_receiver(caller, std::chrono::seconds{2});
+
+        // check frames caught
+        test_frames_caught(det, num_frames_to_acquire);
+
+        // check file size (assuming local pc)
+        // num_channels * num_chips * num_counters
+        size_t expected_image_size = 128 * 10 * num_counters * 2;
+        test_acquire_binary_file_size(test_file_info, num_frames_to_acquire,
+                                      expected_image_size);
+
+        // restore previous state
+        set_file_state(det, prev_file_info);
+        set_common_acquire_config_state(det, prev_det_config_info);
+
+        // restore previous specific det type config
+        det.setDynamicRange(dynamic_range);
+        det.setCounterMask(counter_mask);
+    }
+}
+
 /* dacs */
 
 TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmdcall][.dacs]") {

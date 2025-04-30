@@ -591,6 +591,7 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
 
     // store each selected bit from all samples consecutively
     if (ctbDbitReorder) {
+        LOG(logINFORED) << "Reordering digital data";
         size_t numBitsPerDbit =
             numDigitalSamples; // num bits per selected digital
                                // Bit for all samples
@@ -605,6 +606,8 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
         if ((numBitsPerSample % 8) != 0)
             numBitsPerSample += (8 - (numBitsPerSample % 8));
         totalNumBytes = (numBitsPerSample / 8) * numDigitalSamples;
+        LOG(logINFORED) << "total numDigital bytes without reorder:"
+                        << totalNumBytes;
     }
 
     std::vector<uint8_t> result(totalNumBytes, 0);
@@ -677,11 +680,11 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
     memcpy(data + nAnalogDataBytes, result.data(),
            totalNumBytes * sizeof(uint8_t));
 
-    LOG(logDEBUG1) << "totalNumBytes: " << totalNumBytes
-                   << " nAnalogDataBytes:" << nAnalogDataBytes
-                   << " ctbDbitOffset:" << ctbDbitOffset
-                   << " nTransceiverDataBytes:" << nTransceiverDataBytes
-                   << " size:" << size;
+    LOG(logINFORED) << "totalNumBytes: " << totalNumBytes
+                    << " nAnalogDataBytes:" << nAnalogDataBytes
+                    << " ctbDbitOffset:" << ctbDbitOffset
+                    << " nTransceiverDataBytes:" << nTransceiverDataBytes
+                    << " size:" << size;
 }
 
 void DataProcessor::CropImage(size_t &size, char *data) {

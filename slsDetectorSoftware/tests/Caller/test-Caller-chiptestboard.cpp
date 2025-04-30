@@ -17,6 +17,257 @@ namespace sls {
 using test::GET;
 using test::PUT;
 
+struct testCtbAcquireInfo {
+    defs::readoutMode readout_mode{defs::ANALOG_AND_DIGITAL};
+    bool teng_giga{false};
+    int num_adc_samples{5000};
+    int num_dbit_samples{6000};
+    int num_trans_samples{288};
+    uint32_t adc_enable_1g{0xFFFFFFFF};
+    uint32_t adc_enable_10g{0xFFFFFFFF};
+    int dbit_offset{0};
+    std::vector<int> dbit_list{0, 12, 2, 43};
+    bool dbit_reorder{false};
+    uint32_t transceiver_mask{0x3};
+};
+
+testCtbAcquireInfo get_ctb_config_state(const Detector &det) {
+    return testCtbAcquireInfo{
+        det.getReadoutMode().tsquash("inconsistent readout mode to test"),
+        det.getTenGiga().tsquash("inconsistent ten giga enable to test"),
+        det.getNumberOfAnalogSamples().tsquash(
+            "inconsistent number of analog samples to test"),
+        det.getNumberOfDigitalSamples().tsquash(
+            "inconsistent number of digital samples to test"),
+        det.getNumberOfTransceiverSamples().tsquash(
+            "inconsistent number of transceiver samples to test"),
+        det.getADCEnableMask().tsquash("inconsistent adc enable mask to test"),
+        det.getTenGigaADCEnableMask().tsquash(
+            "inconsistent ten giga adc enable mask to test"),
+        det.getRxDbitOffset().tsquash("inconsistent rx dbit offset to test"),
+        det.getRxDbitList().tsquash("inconsistent rx dbit list to test"),
+        det.getRxDbitReorder().tsquash("inconsistent rx dbit reorder to test"),
+        det.getTransceiverEnableMask().tsquash(
+            "inconsistent transceiver mask to test")};
+}
+
+void set_ctb_config_state(Detector &det,
+                          const testCtbAcquireInfo &ctb_config_info) {
+    det.setReadoutMode(ctb_config_info.readout_mode);
+    det.setTenGiga(ctb_config_info.teng_giga);
+    det.setNumberOfAnalogSamples(ctb_config_info.num_adc_samples);
+    det.setNumberOfDigitalSamples(ctb_config_info.num_dbit_samples);
+    det.setNumberOfTransceiverSamples(ctb_config_info.num_trans_samples);
+    det.setADCEnableMask(ctb_config_info.adc_enable_1g);
+    det.setTenGigaADCEnableMask(ctb_config_info.adc_enable_10g);
+    det.setRxDbitOffset(ctb_config_info.dbit_offset);
+    det.setRxDbitList(ctb_config_info.dbit_list);
+    det.setRxDbitReorder(ctb_config_info.dbit_reorder);
+    det.setTransceiverEnableMask(ctb_config_info.transceiver_mask);
+}
+
+void test_ctb_acquire_with_receiver(const testCtbAcquireInfo &test_info,
+                                    int64_t num_frames_to_acquire,
+                                    Detector &det, Caller &caller) {
+
+    // save previous state
+    testFileInfo prev_file_info = get_file_state(det);
+    testCommonDetAcquireInfo prev_det_config_info =
+        // overwrite exptime if not using virtual ctb server
+        get_common_acquire_config_state(det);
+    testCtbAcquireInfo prev_ctb_config_info = get_ctb_config_state(det);
+
+    // defaults
+    testFileInfo test_file_info;
+    set_file_state(det, test_file_info);
+    testCommonDetAcquireInfo det_config;
+    det_config.num_frames_to_acquire = num_frames_to_acquire;
+    set_common_acquire_config_state(det, det_config);
+
+    // set ctb config
+    set_ctb_config_state(det, test_info);
+
+    // acquire
+    test_acquire_with_receiver(caller, std::chrono::seconds{2});
+
+    // check frames caught
+    test_frames_caught(det, num_frames_to_acquire);
+
+    // calculate image size
+    uint64_t num_analog_bytes = 0, num_digital_bytes = 0,
+             num_transceiver_bytes = 0;
+    if (test_info.readout_mode == defs::ANALOG_ONLY ||
+        test_info.readout_mode == defs::ANALOG_AND_DIGITAL) {
+        uint32_t adc_enable_mask =
+            (test_info.teng_giga ? test_info.adc_enable_1g
+                                 : test_info.adc_enable_10g);
+        int num_analog_chans = __builtin_popcount(adc_enable_mask);
+        const int num_bytes_per_sample = 2;
+        num_analog_bytes =
+            num_analog_chans * num_bytes_per_sample * test_info.num_adc_samples;
+        std::cout << "[Analog Databytes: " << num_analog_bytes << ']';
+    }
+
+    // digital channels
+    if (test_info.readout_mode == defs::DIGITAL_ONLY ||
+        test_info.readout_mode == defs::ANALOG_AND_DIGITAL ||
+        test_info.readout_mode == defs::DIGITAL_AND_TRANSCEIVER) {
+        int num_digital_samples = test_info.num_dbit_samples;
+        if (test_info.dbit_offset > 0) {
+            uint64_t num_digital_bytes_reserved =
+                num_digital_samples * sizeof(uint64_t);
+            num_digital_bytes_reserved -= test_info.dbit_offset;
+            num_digital_samples = num_digital_bytes_reserved / sizeof(uint64_t);
+        }
+        int num_digital_chans = test_info.dbit_list.size();
+        if (num_digital_chans == 0) {
+            num_digital_chans = 64;
+        }
+        if (!test_info.dbit_reorder) {
+            uint32_t num_bits_per_sample = num_digital_chans;
+            if (num_bits_per_sample % 8 != 0) {
+                num_bits_per_sample += (8 - (num_bits_per_sample % 8));
+            }
+            num_digital_bytes = (num_bits_per_sample / 8) * num_digital_samples;
+        } else {
+            uint32_t num_bits_per_bit = num_digital_samples;
+            if (num_bits_per_bit % 8 != 0) {
+                num_bits_per_bit += (8 - (num_bits_per_bit % 8));
+            }
+            num_digital_bytes = num_digital_chans * (num_bits_per_bit / 8);
+        }
+        std::cout << "[Digital Databytes: " << num_digital_bytes << ']';
+    }
+    // transceiver channels
+    if (test_info.readout_mode == defs::TRANSCEIVER_ONLY ||
+        test_info.readout_mode == defs::DIGITAL_AND_TRANSCEIVER) {
+        int num_transceiver_chans =
+            __builtin_popcount(test_info.transceiver_mask);
+        const int num_bytes_per_channel = 8;
+        num_transceiver_bytes = num_transceiver_chans * num_bytes_per_channel *
+                                test_info.num_trans_samples;
+        std::cout << "[Transceiver Databytes: " << num_transceiver_bytes << ']';
+    }
+    std::cout << std::endl;
+    // check file size (assuming local pc)
+    uint64_t expected_image_size =
+        num_analog_bytes + num_digital_bytes + num_transceiver_bytes;
+    std::cout << "Expected image size: " << expected_image_size << std::endl;
+    test_acquire_binary_file_size(test_file_info, num_frames_to_acquire,
+                                  expected_image_size);
+
+    // restore previous state
+    set_file_state(det, prev_file_info);
+    set_common_acquire_config_state(det, prev_det_config_info);
+    set_ctb_config_state(det, prev_ctb_config_info);
+}
+
+TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type =
+        det.getDetectorType().tsquash("Inconsistent detector types to test");
+
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
+        int num_frames_to_acquire = 2;
+        // all the test cases
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
+            set_ctb_config_state(det, test_ctb_config);
+            test_ctb_acquire_with_receiver(test_ctb_config,
+                                           num_frames_to_acquire, det, caller);
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
+            test_ctb_config.dbit_offset = 16;
+            set_ctb_config_state(det, test_ctb_config);
+            test_ctb_acquire_with_receiver(test_ctb_config,
+                                           num_frames_to_acquire, det, caller);
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
+            test_ctb_config.dbit_reorder = true;
+            set_ctb_config_state(det, test_ctb_config);
+            test_ctb_acquire_with_receiver(test_ctb_config,
+                                           num_frames_to_acquire, det, caller);
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
+            test_ctb_config.dbit_offset = 16;
+            test_ctb_config.dbit_reorder = true;
+            set_ctb_config_state(det, test_ctb_config);
+            test_ctb_acquire_with_receiver(test_ctb_config,
+                                           num_frames_to_acquire, det, caller);
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
+            test_ctb_config.dbit_offset = 16;
+            test_ctb_config.dbit_list.clear();
+            set_ctb_config_state(det, test_ctb_config);
+            test_ctb_acquire_with_receiver(test_ctb_config,
+                                           num_frames_to_acquire, det, caller);
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
+            test_ctb_config.dbit_offset = 16;
+            test_ctb_config.dbit_list.clear();
+            test_ctb_config.dbit_reorder = true;
+            set_ctb_config_state(det, test_ctb_config);
+            test_ctb_acquire_with_receiver(test_ctb_config,
+                                           num_frames_to_acquire, det, caller);
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+            set_ctb_config_state(det, test_ctb_config);
+            test_ctb_acquire_with_receiver(test_ctb_config,
+                                           num_frames_to_acquire, det, caller);
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+            test_ctb_config.dbit_offset = 16;
+            set_ctb_config_state(det, test_ctb_config);
+            test_ctb_acquire_with_receiver(test_ctb_config,
+                                           num_frames_to_acquire, det, caller);
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+            test_ctb_config.dbit_list.clear();
+            set_ctb_config_state(det, test_ctb_config);
+            test_ctb_acquire_with_receiver(test_ctb_config,
+                                           num_frames_to_acquire, det, caller);
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+            test_ctb_config.dbit_offset = 16;
+            test_ctb_config.dbit_list.clear();
+            set_ctb_config_state(det, test_ctb_config);
+            test_ctb_acquire_with_receiver(test_ctb_config,
+                                           num_frames_to_acquire, det, caller);
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+            test_ctb_config.dbit_offset = 16;
+            test_ctb_config.dbit_list.clear();
+            test_ctb_config.dbit_reorder = true;
+            set_ctb_config_state(det, test_ctb_config);
+            test_ctb_acquire_with_receiver(test_ctb_config,
+                                           num_frames_to_acquire, det, caller);
+        }
+    }
+}
+
 /* dacs */
 
 TEST_CASE("dacname", "[.cmdcall]") {

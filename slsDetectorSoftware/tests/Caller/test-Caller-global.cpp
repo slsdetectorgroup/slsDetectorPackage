@@ -88,4 +88,91 @@ void test_onchip_dac_caller(defs::dacIndex index, const std::string &dacname,
     }
 }
 
+testFileInfo get_file_state(const Detector &det) {
+    return testFileInfo{
+        det.getFilePath().tsquash("Inconsistent file path"),
+        det.getFileNamePrefix().tsquash("Inconsistent file prefix"),
+        det.getAcquisitionIndex().tsquash(
+            "Inconsistent file acquisition index"),
+        det.getFileWrite().tsquash("Inconsistent file write state"),
+        det.getFileOverWrite().tsquash("Inconsistent file overwrite state"),
+        det.getFileFormat().tsquash("Inconsistent file format")};
+}
+
+void set_file_state(Detector &det, const testFileInfo &file_info) {
+    if (!file_info.file_path.empty())
+        det.setFilePath(file_info.file_path);
+    det.setFileNamePrefix(file_info.file_prefix);
+    det.setAcquisitionIndex(file_info.file_acq_index);
+    det.setFileWrite(file_info.file_write);
+    det.setFileOverWrite(file_info.file_overwrite);
+    det.setFileFormat(file_info.file_format);
+}
+
+void test_acquire_binary_file_size(const testFileInfo &file_info,
+                                   uint64_t num_frames_to_acquire,
+                                   uint64_t expected_image_size) {
+    assert(file_info.file_format == defs::BINARY);
+    std::string fname = file_info.file_path + "/" + file_info.file_prefix +
+                        "_d0_f0_" + std::to_string(file_info.file_acq_index) +
+                        ".raw";
+    uint64_t expected_file_size =
+        num_frames_to_acquire *
+        (expected_image_size + sizeof(defs::sls_receiver_header));
+    std::cout << "exepected file size: " << expected_file_size
+              << " receiver header size :" << sizeof(defs::sls_receiver_header)
+              << " num frames:" << num_frames_to_acquire << std::endl;
+    auto actual_file_size = std::filesystem::file_size(fname);
+    REQUIRE(actual_file_size == expected_file_size);
+}
+
+void test_frames_caught(const Detector &det, int num_frames_to_acquire) {
+    auto frames_caught = det.getFramesCaught().tsquash(
+        "Inconsistent number of frames caught")[0];
+    REQUIRE(frames_caught == num_frames_to_acquire);
+}
+
+void test_acquire_with_receiver(Caller &caller, std::chrono::seconds timeout) {
+    REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
+    REQUIRE_NOTHROW(caller.call("start", {}, -1, PUT));
+    std::this_thread::sleep_for(timeout);
+    REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
+}
+
+testCommonDetAcquireInfo get_common_acquire_config_state(const Detector &det) {
+    testCommonDetAcquireInfo det_config_info{
+        det.getTimingMode().tsquash("Inconsistent timing mode"),
+        det.getNumberOfFrames().tsquash("Inconsistent number of frames"),
+        det.getNumberOfTriggers().tsquash("Inconsistent number of triggers"),
+        det.getPeriod().tsquash("Inconsistent period"),
+        {}};
+    auto det_type =
+        det.getDetectorType().tsquash("Inconsistent detector types to test");
+    if (det_type != defs::MYTHEN3) {
+        det_config_info.exptime[0] =
+            det.getExptime().tsquash("inconsistent exptime to test");
+    } else {
+        det_config_info.exptime =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+    }
+    return det_config_info;
+}
+
+void set_common_acquire_config_state(
+    Detector &det, const testCommonDetAcquireInfo &det_config_info) {
+    det.setTimingMode(det_config_info.timing_mode);
+    det.setNumberOfFrames(det_config_info.num_frames_to_acquire);
+    det.setNumberOfTriggers(det_config_info.num_triggers);
+    det.setPeriod(det_config_info.period);
+    auto det_type =
+        det.getDetectorType().tsquash("Inconsistent detector types to test");
+    if (det_type != defs::MYTHEN3) {
+        det.setExptime(det_config_info.exptime[0]);
+    } else {
+        for (int iGate = 0; iGate < 3; ++iGate) {
+            det.setExptime(iGate, det_config_info.exptime[iGate]);
+        }
+    }
+}
+
 } // namespace sls

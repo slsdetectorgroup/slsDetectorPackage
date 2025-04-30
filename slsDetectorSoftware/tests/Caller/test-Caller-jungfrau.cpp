@@ -15,6 +15,63 @@ namespace sls {
 using test::GET;
 using test::PUT;
 
+TEST_CASE("jungfrau_acquire_check_file_size", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type =
+        det.getDetectorType().tsquash("Inconsistent detector types to test");
+
+    if (det_type == defs::JUNGFRAU) {
+
+        // save previous state
+        testFileInfo prev_file_info = get_file_state(det);
+        testCommonDetAcquireInfo prev_det_config_info =
+            get_common_acquire_config_state(det);
+
+        // save previous specific det type config
+        auto num_udp_interfaces = det.getNumberofUDPInterfaces().tsquash(
+            "inconsistent number of udp interfaces");
+        auto n_rows =
+            det.getReadNRows().tsquash("inconsistent number of rows to test");
+
+        // defaults
+        int num_frames_to_acquire = 2;
+        testFileInfo test_file_info;
+        set_file_state(det, test_file_info);
+        testCommonDetAcquireInfo det_config;
+        det_config.num_frames_to_acquire = num_frames_to_acquire;
+        set_common_acquire_config_state(det, det_config);
+
+        // set default specific det type config
+        det.setReadNRows(512);
+
+        // acquire
+        test_acquire_with_receiver(caller, std::chrono::seconds{2});
+
+        // check frames caught
+        test_frames_caught(det, num_frames_to_acquire);
+
+        // check file size (assuming local pc)
+        size_t expected_image_size = 0;
+        // pixels_row_per_chip * pixels_col_per_chip * num_chips *
+        // bytes_per_pixel
+        if (num_udp_interfaces == 1) {
+            expected_image_size = 256 * 256 * 8 * 2;
+        } else {
+            expected_image_size = 256 * 256 * 4 * 2;
+        }
+        test_acquire_binary_file_size(test_file_info, num_frames_to_acquire,
+                                      expected_image_size);
+
+        // restore previous state
+        set_file_state(det, prev_file_info);
+        set_common_acquire_config_state(det, prev_det_config_info);
+
+        // restore previous specific det type config
+        det.setReadNRows(n_rows);
+    }
+}
+
 /* dacs */
 
 TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmdcall][.dacs]") {

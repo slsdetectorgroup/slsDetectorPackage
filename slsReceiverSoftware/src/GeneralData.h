@@ -52,7 +52,7 @@ class GeneralData {
     uint32_t nAnalogSamples{0};
     uint32_t nDigitalSamples{0};
     uint32_t nTransceiverSamples{0};
-    std::vector<int> ctbDbitList;
+    std::vector<int> ctbDbitList{};
     int ctbDbitOffset{0};
     bool ctbDbitReorder{false};
     slsDetectorDefs::readoutMode readoutType{slsDetectorDefs::ANALOG_ONLY};

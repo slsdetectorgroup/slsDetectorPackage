@@ -73,8 +73,6 @@ class DataProcessorTestFixture {
         dataprocessor = new DataProcessorTest;
         generaldata = new GeneralDataTest;
 
-        // set_num_samples(num_samples);
-
         generaldata->SetNumberOfAnalogDatabytes(num_analog_bytes);
         generaldata->SetNumberOfTransceiverDatabytes(num_transceiver_bytes);
         generaldata->SetNumberOfDigitalDatabytes(num_digital_bytes +

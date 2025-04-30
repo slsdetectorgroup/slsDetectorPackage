@@ -295,8 +295,6 @@ void DataProcessor::ThreadExecution() {
                        memImage->data);
     } catch (const std::exception &e) {
         fifo->FreeAddress(buffer);
-        LOG(logERROR) << "DataProcessor " << index << ": Failed to Process. "
-                      << e.what() << std::endl;
         throw RuntimeError(e.what());
     }
 

@@ -32,17 +32,23 @@ class GeneralDataTest : public GeneralData {
         nTransceiverBytes = value;
     }
 
+    void SetCtbDbitOffset(const int value) { ctbDbitOffset = value; }
+
+    void SetCtbDbitList(const std::vector<int> &value) { ctbDbitList = value; }
+
+    void SetCtbDbitReorder(const bool value) { ctbDbitReorder = value; }
+
   private:
-    int nAnalogBytes;
-    int nDigitalBytes;
-    int nTransceiverBytes;
+    int nAnalogBytes{};
+    int nDigitalBytes{};
+    int nTransceiverBytes{};
 };
 
 // dummy DataProcessor class for testing
 class DataProcessorTest : public DataProcessor {
   public:
-    DataProcessorTest() : DataProcessor(0){};
-    ~DataProcessorTest(){};
+    DataProcessorTest() : DataProcessor(0) {};
+    ~DataProcessorTest() {};
     void ArrangeDbitData(size_t &size, char *data) {
         DataProcessor::ArrangeDbitData(size, data);
     }
@@ -140,7 +146,7 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Remove Trailing Bits",
     set_random_offset_bytes(num_random_offset_bytes);
     set_data();
 
-    dataprocessor->SetCtbDbitOffset(num_random_offset_bytes);
+    generaldata->SetCtbDbitOffset(num_random_offset_bytes);
 
     size_t expected_size = get_size() - num_random_offset_bytes;
 
@@ -183,8 +189,8 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Reorder all",
 
     std::vector<int> bitlist(64);
     std::iota(bitlist.begin(), bitlist.end(), 0);
-    dataprocessor->SetCtbDbitList(bitlist);
-    dataprocessor->SetCtbDbitReorder(true); // set reorder to true
+    generaldata->SetCtbDbitList(bitlist);
+    generaldata->SetCtbDbitReorder(true); // set reorder to true
 
     const size_t expected_size =
         num_analog_bytes + num_transceiver_bytes + expected_num_digital_bytes;
@@ -222,9 +228,9 @@ TEST_CASE_METHOD(DataProcessorTestFixture,
 
     std::vector<int> bitlist(64);
     std::iota(bitlist.begin(), bitlist.end(), 0);
-    dataprocessor->SetCtbDbitList(bitlist);
-    dataprocessor->SetCtbDbitOffset(num_random_offset_bytes);
-    dataprocessor->SetCtbDbitReorder(true); // set reorder to true
+    generaldata->SetCtbDbitList(bitlist);
+    generaldata->SetCtbDbitOffset(num_random_offset_bytes);
+    generaldata->SetCtbDbitReorder(true); // set reorder to true
 
     const size_t expected_num_digital_bytes = 64;
     std::vector<uint8_t> expected_digital_part{0b00011111};
@@ -272,9 +278,9 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Arrange bitlist with reorder false",
     std::tie(num_samples, bitlist, expected_num_digital_bytes,
              expected_digital_part) = parameters;
 
-    dataprocessor->SetCtbDbitList(bitlist);
+    generaldata->SetCtbDbitList(bitlist);
 
-    dataprocessor->SetCtbDbitReorder(false);
+    generaldata->SetCtbDbitReorder(false);
 
     set_num_samples(num_samples);
     set_data();
@@ -324,9 +330,9 @@ TEST_CASE_METHOD(DataProcessorTestFixture, "Arrange bitlist with reorder true",
     std::tie(num_samples, bitlist, expected_num_digital_bytes,
              expected_digital_part) = parameters;
 
-    dataprocessor->SetCtbDbitList(bitlist);
+    generaldata->SetCtbDbitList(bitlist);
 
-    dataprocessor->SetCtbDbitReorder(true);
+    generaldata->SetCtbDbitReorder(true);
 
     set_num_samples(num_samples);
     set_data();
@@ -368,11 +374,11 @@ TEST_CASE_METHOD(DataProcessorTestFixture,
     set_random_offset_bytes(num_random_offset_bytes);
     set_data();
 
-    dataprocessor->SetCtbDbitList(bitlist);
+    generaldata->SetCtbDbitList(bitlist);
 
-    dataprocessor->SetCtbDbitReorder(false);
+    generaldata->SetCtbDbitReorder(false);
 
-    dataprocessor->SetCtbDbitOffset(num_random_offset_bytes);
+    generaldata->SetCtbDbitOffset(num_random_offset_bytes);
 
     std::vector<uint8_t> expected_digital_part{0b00000111};
     const size_t expected_num_digital_bytes = 5;

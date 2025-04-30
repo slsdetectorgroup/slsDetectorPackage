@@ -45,9 +45,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void SetStreamingTimerInMs(uint32_t value);
     void SetStreamingStartFnum(uint32_t value);
     void SetFramePadding(bool enable);
-    void SetCtbDbitList(std::vector<int> value);
-    void SetCtbDbitOffset(int value);
-    void SetCtbDbitReorder(bool value);
     void SetQuadEnable(bool value);
     void SetFlipRows(bool fd);
     void SetNumberofTotalFrames(uint64_t value);
@@ -171,11 +168,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     uint32_t streamingTimerInMs;
     uint32_t streamingStartFnum;
     uint32_t currentFreqCount{0};
-    struct timespec timerbegin {};
+    struct timespec timerbegin{};
     bool framePadding;
-    std::vector<int> ctbDbitList{};
-    int ctbDbitOffset{0};
-    bool ctbDbitReorder{true};
     std::atomic<bool> startedFlag{false};
     std::atomic<uint64_t> firstIndex{0};
     bool quadEnable{false};

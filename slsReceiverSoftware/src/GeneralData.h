@@ -52,6 +52,9 @@ class GeneralData {
     uint32_t nAnalogSamples{0};
     uint32_t nDigitalSamples{0};
     uint32_t nTransceiverSamples{0};
+    std::vector<int> ctbDbitList;
+    int ctbDbitOffset{0};
+    bool ctbDbitReorder{false};
     slsDetectorDefs::readoutMode readoutType{slsDetectorDefs::ANALOG_ONLY};
     uint32_t adcEnableMaskOneGiga{BIT32_MASK};
     uint32_t adcEnableMaskTenGiga{BIT32_MASK};
@@ -147,6 +150,18 @@ class GeneralData {
 
     virtual void SetTransceiverEnableMask(int n) {
         ThrowGenericError("SetTransceiverEnableMask");
+    };
+
+    virtual void SetctbDbitOffset(const int n) {
+        ThrowGenericError("SetctbDbitOffset");
+    };
+
+    virtual void SetctbDbitList(const std::vector<int> &value) {
+        ThrowGenericError("SetctbDbitList");
+    };
+
+    virtual void SetctbDbitReorder(const bool reorder) {
+        ThrowGenericError("SetctbDbitReorder");
     };
 };
 
@@ -387,6 +402,7 @@ class ChipTestBoardData : public GeneralData {
         framesPerFile = CTB_MAX_FRAMES_PER_FILE;
         fifoDepth = 2500;
         standardheader = true;
+        ctbDbitReorder = true;
         UpdateImageSize();
     };
 
@@ -411,6 +427,12 @@ class ChipTestBoardData : public GeneralData {
         nTransceiverSamples = n;
         UpdateImageSize();
     };
+
+    void SetctbDbitOffset(const int value) { ctbDbitOffset = value; }
+
+    void SetctbDbitList(const std::vector<int> &value) { ctbDbitList = value; }
+
+    void SetctbDbitReorder(const bool value) { ctbDbitReorder = value; }
 
     void SetOneGigaAdcEnableMask(int n) {
         adcEnableMaskOneGiga = n;
@@ -518,6 +540,7 @@ class XilinxChipTestBoardData : public GeneralData {
         dataSize = 8144;
         packetSize = headerSizeinPacket + dataSize;
         tengigaEnable = true;
+        ctbDbitReorder = true;
         UpdateImageSize();
     };
 
@@ -542,6 +565,12 @@ class XilinxChipTestBoardData : public GeneralData {
         nTransceiverSamples = n;
         UpdateImageSize();
     };
+
+    void SetctbDbitOffset(const int value) { ctbDbitOffset = value; }
+
+    void SetctbDbitList(const std::vector<int> &value) { ctbDbitList = value; }
+
+    void SetctbDbitReorder(const bool value) { ctbDbitReorder = value; }
 
     void SetOneGigaAdcEnableMask(int n) {
         adcEnableMaskOneGiga = n;

@@ -200,9 +200,6 @@ void Implementation::SetupDataProcessor(int i) {
     dataProcessor[i]->SetStreamingTimerInMs(streamingTimerInMs);
     dataProcessor[i]->SetStreamingStartFnum(streamingStartFnum);
     dataProcessor[i]->SetFramePadding(framePadding);
-    dataProcessor[i]->SetCtbDbitList(ctbDbitList);
-    dataProcessor[i]->SetCtbDbitOffset(ctbDbitOffset);
-    dataProcessor[i]->SetCtbDbitReorder(ctbDbitReorder);
     dataProcessor[i]->SetQuadEnable(quadEnable);
     dataProcessor[i]->SetFlipRows(flipRows);
     dataProcessor[i]->SetNumberofTotalFrames(numberOfTotalFrames);
@@ -991,11 +988,11 @@ void Implementation::StartMasterWriter() {
                     ? 1
                     : 0;
             masterAttributes.digitalSamples = generalData->nDigitalSamples;
-            masterAttributes.dbitoffset = ctbDbitOffset;
-            masterAttributes.dbitreorder = ctbDbitReorder;
+            masterAttributes.dbitoffset = generalData->ctbDbitOffset;
+            masterAttributes.dbitreorder = generalData->ctbDbitReorder;
             masterAttributes.dbitlist = 0;
 
-            for (auto &i : ctbDbitList) {
+            for (auto &i : generalData->ctbDbitList) {
                 masterAttributes.dbitlist |= (static_cast<uint64_t>(1) << i);
             }
             masterAttributes.transceiverSamples =
@@ -1751,31 +1748,29 @@ void Implementation::setTenGigaADCEnableMask(uint32_t mask) {
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
-std::vector<int> Implementation::getDbitList() const { return ctbDbitList; }
+std::vector<int> Implementation::getDbitList() const {
+    return generalData->ctbDbitList;
+}
 
 void Implementation::setDbitList(const std::vector<int> &v) {
-    ctbDbitList = v;
-    for (const auto &it : dataProcessor)
-        it->SetCtbDbitList(ctbDbitList);
-    LOG(logINFO) << "Dbit list: " << ToString(ctbDbitList);
+    generalData->SetctbDbitList(v);
+    LOG(logINFO) << "Dbit list: " << ToString(v);
 }
 
-int Implementation::getDbitOffset() const { return ctbDbitOffset; }
+int Implementation::getDbitOffset() const { return generalData->ctbDbitOffset; }
 
 void Implementation::setDbitOffset(const int s) {
-    ctbDbitOffset = s;
-    for (const auto &it : dataProcessor)
-        it->SetCtbDbitOffset(ctbDbitOffset);
-    LOG(logINFO) << "Dbit offset: " << ctbDbitOffset;
+    generalData->SetctbDbitOffset(s);
+    LOG(logINFO) << "Dbit offset: " << s;
 }
 
-bool Implementation::getDbitReorder() const { return ctbDbitReorder; }
+bool Implementation::getDbitReorder() const {
+    return generalData->ctbDbitReorder;
+}
 
 void Implementation::setDbitReorder(const bool reorder) {
-    ctbDbitReorder = reorder;
-    for (const auto &it : dataProcessor)
-        it->SetCtbDbitReorder(ctbDbitReorder);
-    LOG(logINFO) << "Dbit reorder: " << ctbDbitReorder;
+    generalData->SetctbDbitReorder(reorder);
+    LOG(logINFO) << "Dbit reorder: " << reorder;
 }
 
 uint32_t Implementation::getTransceiverEnableMask() const {

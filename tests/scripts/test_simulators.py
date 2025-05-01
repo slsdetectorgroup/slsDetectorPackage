@@ -32,8 +32,8 @@ def killProcess(name):
     if checkIfProcessRunning(name):
         Log(Fore.GREEN, 'killing ' + name)
         p = subprocess.run(['killall', name])
-        #if p.returncode != 0:
-        #    raise RuntimeException('killall failed for ' + name)
+        if p.returncode != 0 and checkIfProcessRunning(name):
+            raise RuntimeException('killall failed for ' + name)
     else:
         print('process not running : ' + name)
 

@@ -352,16 +352,20 @@ void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
     if (framePadding && nump < generalData->packetsPerFrame)
         PadMissingPackets(header, data);
 
-    // rearrange ctb digital bits
-    if (!generalData->ctbDbitList.empty()) {
-        ArrangeDbitData(size, data);
-    } else if (generalData->ctbDbitReorder) {
-        std::vector<int> ctbDbitList(64);
-        std::iota(ctbDbitList.begin(), ctbDbitList.end(), 0);
-        generalData->SetctbDbitList(ctbDbitList);
-        ArrangeDbitData(size, data);
-    } else if (generalData->ctbDbitOffset > 0) {
-        RemoveTrailingBits(size, data);
+    if (generalData->readoutType == slsDetectorDefs::DIGITAL_ONLY ||
+        generalData->readoutType == slsDetectorDefs::ANALOG_AND_DIGITAL ||
+        generalData->readoutType == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
+        // rearrange ctb digital bits
+        if (!generalData->ctbDbitList.empty()) {
+            ArrangeDbitData(size, data);
+        } else if (generalData->ctbDbitReorder) {
+            std::vector<int> ctbDbitList(64);
+            std::iota(ctbDbitList.begin(), ctbDbitList.end(), 0);
+            generalData->SetctbDbitList(ctbDbitList);
+            ArrangeDbitData(size, data);
+        } else if (generalData->ctbDbitOffset > 0) {
+            RemoveTrailingBits(size, data);
+        }
     }
 
     // 'stream Image' check has to be done here before crop image

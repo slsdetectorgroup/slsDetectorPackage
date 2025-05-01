@@ -47,7 +47,7 @@ TEST_CASE("mythen3_acquire_check_file_size", "[.cmdcall]") {
         // set default specific det type config
         det.setDynamicRange(16);
         int test_counter_mask = 0x1;
-        int num_counters = __builtin_popcount(counter_mask);
+        int num_counters = __builtin_popcount(test_counter_mask);
         det.setCounterMask(test_counter_mask);
 
         // acquire

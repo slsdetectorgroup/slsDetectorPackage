@@ -19,7 +19,7 @@ using test::PUT;
 
 struct testCtbAcquireInfo {
     defs::readoutMode readout_mode{defs::ANALOG_AND_DIGITAL};
-    bool teng_giga{false};
+    bool ten_giga{false};
     int num_adc_samples{5000};
     int num_dbit_samples{6000};
     int num_trans_samples{288};
@@ -54,7 +54,7 @@ testCtbAcquireInfo get_ctb_config_state(const Detector &det) {
 void set_ctb_config_state(Detector &det,
                           const testCtbAcquireInfo &ctb_config_info) {
     det.setReadoutMode(ctb_config_info.readout_mode);
-    det.setTenGiga(ctb_config_info.teng_giga);
+    det.setTenGiga(ctb_config_info.ten_giga);
     det.setNumberOfAnalogSamples(ctb_config_info.num_adc_samples);
     det.setNumberOfDigitalSamples(ctb_config_info.num_dbit_samples);
     det.setNumberOfTransceiverSamples(ctb_config_info.num_trans_samples);
@@ -99,8 +99,8 @@ void test_ctb_acquire_with_receiver(const testCtbAcquireInfo &test_info,
     if (test_info.readout_mode == defs::ANALOG_ONLY ||
         test_info.readout_mode == defs::ANALOG_AND_DIGITAL) {
         uint32_t adc_enable_mask =
-            (test_info.teng_giga ? test_info.adc_enable_1g
-                                 : test_info.adc_enable_10g);
+            (test_info.ten_giga ? test_info.adc_enable_1g
+                                : test_info.adc_enable_10g);
         int num_analog_chans = __builtin_popcount(adc_enable_mask);
         const int num_bytes_per_sample = 2;
         num_analog_bytes =

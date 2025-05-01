@@ -23,8 +23,8 @@ struct testCtbAcquireInfo {
     int num_adc_samples{5000};
     int num_dbit_samples{6000};
     int num_trans_samples{288};
-    uint32_t adc_enable_1g{0xFFFFFFFF};
-    uint32_t adc_enable_10g{0xFFFFFFFF};
+    uint32_t adc_enable_1g{0xFFFFFF00};
+    uint32_t adc_enable_10g{0xFF00FFFF};
     int dbit_offset{0};
     std::vector<int> dbit_list{0, 12, 2, 43};
     bool dbit_reorder{false};
@@ -99,8 +99,8 @@ void test_ctb_acquire_with_receiver(const testCtbAcquireInfo &test_info,
     if (test_info.readout_mode == defs::ANALOG_ONLY ||
         test_info.readout_mode == defs::ANALOG_AND_DIGITAL) {
         uint32_t adc_enable_mask =
-            (test_info.ten_giga ? test_info.adc_enable_1g
-                                : test_info.adc_enable_10g);
+            (test_info.ten_giga ? test_info.adc_enable_10g
+                                : test_info.adc_enable_1g);
         int num_analog_chans = __builtin_popcount(adc_enable_mask);
         const int num_bytes_per_sample = 2;
         num_analog_bytes =

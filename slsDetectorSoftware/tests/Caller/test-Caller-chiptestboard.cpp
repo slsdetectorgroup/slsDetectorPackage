@@ -260,6 +260,26 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall]") {
             test_ctb_acquire_with_receiver(test_ctb_config,
                                            num_frames_to_acquire, det, caller);
         }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::TRANSCEIVER_ONLY;
+            test_ctb_config.dbit_offset = 16;
+            test_ctb_config.dbit_list.clear();
+            test_ctb_config.dbit_reorder = true;
+            set_ctb_config_state(det, test_ctb_config);
+            test_ctb_acquire_with_receiver(test_ctb_config,
+                                           num_frames_to_acquire, det, caller);
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::ANALOG_ONLY;
+            test_ctb_config.dbit_offset = 16;
+            test_ctb_config.dbit_list.clear();
+            test_ctb_config.dbit_reorder = true;
+            set_ctb_config_state(det, test_ctb_config);
+            test_ctb_acquire_with_receiver(test_ctb_config,
+                                           num_frames_to_acquire, det, caller);
+        }
     }
 }
 

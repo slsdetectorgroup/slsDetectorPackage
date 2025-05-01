@@ -52,15 +52,16 @@ TEST_CASE("moench_acquire_check_file_size", "[.cmdcall]") {
         test_frames_caught(det, num_frames_to_acquire);
 
         // check file size (assuming local pc)
-        size_t expected_image_size = 0;
-        // pixels_row * pixels_col * bytes_per_pixel
-        if (num_udp_interfaces == 1) {
-            expected_image_size = 400 * 400 * 2;
-        } else {
-            expected_image_size = 400 * 200 * 2;
+        {
+            detParameters par(det_type);
+            int bytes_per_pixel = det.getDynamicRange().squash() / 8;
+            // if 2 udp interfaces, data split into half
+            size_t expected_image_size = (par.nChanX * par.nChanY * par.nChipX *
+                                          par.nChipY * bytes_per_pixel) /
+                                         num_udp_interfaces;
+            test_acquire_binary_file_size(test_file_info, num_frames_to_acquire,
+                                          expected_image_size);
         }
-        test_acquire_binary_file_size(test_file_info, num_frames_to_acquire,
-                                      expected_image_size);
 
         // restore previous state
         set_file_state(det, prev_file_info);

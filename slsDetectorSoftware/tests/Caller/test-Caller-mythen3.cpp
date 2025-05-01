@@ -45,8 +45,9 @@ TEST_CASE("mythen3_acquire_check_file_size", "[.cmdcall]") {
         set_common_acquire_config_state(det, det_config);
 
         // set default specific det type config
-        det.setDynamicRange(16);
-        int test_counter_mask = 0x1;
+        int test_dynamic_range = 16;
+        det.setDynamicRange(test_dynamic_range);
+        int test_counter_mask = 0x3;
         int num_counters = __builtin_popcount(test_counter_mask);
         det.setCounterMask(test_counter_mask);
 
@@ -57,10 +58,16 @@ TEST_CASE("mythen3_acquire_check_file_size", "[.cmdcall]") {
         test_frames_caught(det, num_frames_to_acquire);
 
         // check file size (assuming local pc)
-        // num_channels * num_chips * num_counters
-        size_t expected_image_size = 128 * 10 * num_counters * 2;
-        test_acquire_binary_file_size(test_file_info, num_frames_to_acquire,
-                                      expected_image_size);
+        {
+            detParameters par(det_type);
+            int bytes_per_pixel = test_dynamic_range / 8;
+            int num_channels_per_counter = par.nChanX / 3;
+            size_t expected_image_size = num_channels_per_counter *
+                                         num_counters * par.nChipX *
+                                         bytes_per_pixel;
+            test_acquire_binary_file_size(test_file_info, num_frames_to_acquire,
+                                          expected_image_size);
+        }
 
         // restore previous state
         set_file_state(det, prev_file_info);

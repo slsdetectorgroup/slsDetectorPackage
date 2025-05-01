@@ -58,11 +58,14 @@ TEST_CASE("gotthard2_acquire_check_file_size", "[.cmdcall]") {
         test_frames_caught(det, num_frames_to_acquire);
 
         // check file size (assuming local pc)
-        // num_channels * num_chips * bytes_per_pixel * num_frames
-        size_t expected_image_size = 128 * 10 * 2;
-        test_acquire_binary_file_size(test_file_info, num_frames_to_acquire,
-                                      expected_image_size);
-
+        {
+            detParameters par(det_type);
+            int bytes_per_pixel = det.getDynamicRange().squash() / 8;
+            size_t expected_image_size =
+                par.nChanX * par.nChipX * bytes_per_pixel;
+            test_acquire_binary_file_size(test_file_info, num_frames_to_acquire,
+                                          expected_image_size);
+        }
         // restore previous state
         set_file_state(det, prev_file_info);
         set_common_acquire_config_state(det, prev_det_config_info);

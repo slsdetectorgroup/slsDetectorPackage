@@ -115,7 +115,7 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall]") {
             test_ctb_config.dbit_offset = 16;
             test_ctb_config.dbit_list.clear();
             test_ctb_config.dbit_reorder = true;
-            REQUIRE_NOTHROW(test_ctb_aclogDEBUGquire_with_receiver(
+            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
                 test_ctb_config, num_frames_to_acquire, det, caller));
         }
         {

@@ -53,11 +53,13 @@ auto get_test_parameters() {
 }
 
 TEST_CASE("cant put if receiver is not idle", "[.cmdcall][.rx]") {
+    std::cout << "im in here: " << std::endl;
     Detector det;
     Caller caller(&det);
     det.setFileWrite(false); // avoid writing or error on file creation
 
     auto [command, function_arguments] = get_test_parameters();
+
     // start receiver
     std::ostringstream oss;
     caller.call("rx_start", {}, -1, PUT,

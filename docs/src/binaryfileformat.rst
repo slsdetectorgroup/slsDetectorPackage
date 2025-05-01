@@ -359,6 +359,7 @@ Chip Test Board
         "Digital Flag": 0,
         "Digital Samples": 1000,
         "Dbit Offset": 0,
+        "Dbit Reorder": 1, 
         "Dbit Bitset": 0,
         "Transceiver Mask": "0x3",
         "Transceiver Flag": 0,

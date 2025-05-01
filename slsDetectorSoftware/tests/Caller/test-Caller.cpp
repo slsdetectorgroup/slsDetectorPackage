@@ -3236,7 +3236,7 @@ TEST_CASE("reg", "[.cmdcall]") {
             addr = 0x80;
         }
         if (det_type == defs::GOTTHARD2) {
-            addr = 0x20;
+            addr = 0x298;
         }
         std::string saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
@@ -3292,7 +3292,7 @@ TEST_CASE("setbit", "[.cmdcall]") {
             addr = 0x80;
         }
         if (det_type == defs::GOTTHARD2) {
-            addr = 0x20;
+            addr = 0x298;
         }
         std::string saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
@@ -3322,7 +3322,7 @@ TEST_CASE("clearbit", "[.cmdcall]") {
             addr = 0x80;
         }
         if (det_type == defs::GOTTHARD2) {
-            addr = 0x20;
+            addr = 0x298;
         }
         std::string saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
@@ -3352,7 +3352,7 @@ TEST_CASE("getbit", "[.cmdcall]") {
             addr = 0x80;
         }
         if (det_type == defs::GOTTHARD2) {
-            addr = 0x20;
+            addr = 0x298;
         }
         std::string saddr = ToStringHex(addr);
         auto prev_val = det.readRegister(addr);

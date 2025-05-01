@@ -8,7 +8,7 @@ if [ ! -d "install" ]; then
     mkdir install
 fi
 cd build
-cmake .. \
+cmake .. -G Ninja \
       -DCMAKE_PREFIX_PATH=$CONDA_PREFIX \
       -DCMAKE_INSTALL_PREFIX=install \
       -DSLS_USE_TEXTCLIENT=ON \
@@ -18,7 +18,7 @@ cmake .. \
       -DSLS_USE_TESTS=ON \
       -DSLS_USE_PYTHON=OFF \
       -DCMAKE_BUILD_TYPE=Release \
-      -DSLS_USE_HDF5=OFF\
+      -DSLS_USE_HDF5=OFF \
      
 NCORES=$(getconf _NPROCESSORS_ONLN)
 echo "Building using: ${NCORES} cores"

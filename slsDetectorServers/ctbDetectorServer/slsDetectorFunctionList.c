@@ -15,6 +15,7 @@
 #include "loadPattern.h"
 
 #include <netinet/in.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h> // usleep
 #ifdef VIRTUAL
@@ -2258,10 +2259,22 @@ void *start_timer(void *arg) {
     int packetsPerFrame = ceil((double)imageSize / (double)dataSize);
 
     // Generate Data
-    char imageData[imageSize];
+    char *imageData = (char *)malloc(imageSize);
     memset(imageData, 0, imageSize);
+
+    if (imageData == NULL) {
+        LOG(logERROR, ("Can not allocate image Data RAM."
+                       "Probable cause: Memory Leak.\n"));
+        return NULL;
+    }
+    /*
     for (int i = 0; i < imageSize; i += sizeof(uint16_t)) {
         *((uint16_t *)(imageData + i)) = i;
+    }
+    */
+
+    for (int i = 0; i < imageSize; i += 2 * sizeof(uint64_t)) {
+        *((uint64_t *)(imageData + i)) = 0xffffffffffffffff;
     }
 
     // Send data
@@ -2318,6 +2331,8 @@ void *start_timer(void *arg) {
         }
         setNextFrameNumber(frameNr + numFrames);
     }
+
+    free(imageData);
 
     closeUDPSocket(0);
 

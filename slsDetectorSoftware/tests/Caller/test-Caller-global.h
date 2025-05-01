@@ -27,6 +27,20 @@ struct testCommonDetAcquireInfo {
     std::chrono::nanoseconds period{std::chrono::milliseconds{2}};
 };
 
+struct testCtbAcquireInfo {
+    defs::readoutMode readout_mode{defs::ANALOG_AND_DIGITAL};
+    bool ten_giga{false};
+    int num_adc_samples{5000};
+    int num_dbit_samples{6000};
+    int num_trans_samples{288};
+    uint32_t adc_enable_1g{0xFFFFFF00};
+    uint32_t adc_enable_10g{0xFF00FFFF};
+    int dbit_offset{0};
+    std::vector<int> dbit_list{0, 12, 2, 43};
+    bool dbit_reorder{false};
+    uint32_t transceiver_mask{0x3};
+};
+
 void test_valid_port_caller(const std::string &command,
                             const std::vector<std::string> &arguments,
                             int detector_id, int action);
@@ -49,5 +63,13 @@ void test_acquire_with_receiver(Caller &caller, std::chrono::seconds timeout);
 testCommonDetAcquireInfo get_common_acquire_config_state(const Detector &det);
 void set_common_acquire_config_state(
     Detector &det, const testCommonDetAcquireInfo &det_config_info);
+
+testCtbAcquireInfo get_ctb_config_state(const Detector &det);
+void set_ctb_config_state(Detector &det,
+                          const testCtbAcquireInfo &ctb_config_info);
+uint64_t calculate_ctb_image_size(const testCtbAcquireInfo &test_info);
+void test_ctb_acquire_with_receiver(const testCtbAcquireInfo &test_info,
+                                    int64_t num_frames_to_acquire,
+                                    Detector &det, Caller &caller);
 
 } // namespace sls

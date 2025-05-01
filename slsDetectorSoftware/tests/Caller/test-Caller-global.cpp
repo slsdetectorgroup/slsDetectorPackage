@@ -119,9 +119,6 @@ void test_acquire_binary_file_size(const testFileInfo &file_info,
     uint64_t expected_file_size =
         num_frames_to_acquire *
         (expected_image_size + sizeof(defs::sls_receiver_header));
-    std::cout << "exepected file size: " << expected_file_size
-              << " receiver header size :" << sizeof(defs::sls_receiver_header)
-              << " num frames:" << num_frames_to_acquire << std::endl;
     auto actual_file_size = std::filesystem::file_size(fname);
     REQUIRE(actual_file_size == expected_file_size);
 }

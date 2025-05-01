@@ -29,6 +29,7 @@ TEST_CASE("jungfrau_acquire_check_file_size", "[.cmdcall]") {
             get_common_acquire_config_state(det);
 
         // save previous specific det type config
+        auto exptime = det.getExptime().tsquash("inconsistent exptime to test");
         auto num_udp_interfaces = det.getNumberofUDPInterfaces().tsquash(
             "inconsistent number of udp interfaces");
         auto n_rows =
@@ -43,6 +44,7 @@ TEST_CASE("jungfrau_acquire_check_file_size", "[.cmdcall]") {
         set_common_acquire_config_state(det, det_config);
 
         // set default specific det type config
+        det.setExptime(std::chrono::microseconds{200});
         det.setReadNRows(512);
 
         // acquire
@@ -67,6 +69,7 @@ TEST_CASE("jungfrau_acquire_check_file_size", "[.cmdcall]") {
         set_common_acquire_config_state(det, prev_det_config_info);
 
         // restore previous specific det type config
+        det.setExptime(exptime);
         det.setReadNRows(n_rows);
     }
 }

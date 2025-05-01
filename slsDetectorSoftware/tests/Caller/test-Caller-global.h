@@ -25,9 +25,6 @@ struct testCommonDetAcquireInfo {
     int64_t num_frames_to_acquire{2};
     int64_t num_triggers{1};
     std::chrono::nanoseconds period{std::chrono::milliseconds{2}};
-    std::array<std::chrono::nanoseconds, 3> exptime{
-        std::chrono::microseconds{200}, std::chrono::nanoseconds{0},
-        std::chrono::nanoseconds{0}};
 };
 
 void test_valid_port_caller(const std::string &command,

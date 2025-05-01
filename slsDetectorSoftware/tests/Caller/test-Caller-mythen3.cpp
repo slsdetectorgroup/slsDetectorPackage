@@ -31,6 +31,8 @@ TEST_CASE("mythen3_acquire_check_file_size", "[.cmdcall]") {
             get_common_acquire_config_state(det);
 
         // save previous specific det type config
+        auto exptime =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
         auto dynamic_range =
             det.getDynamicRange().tsquash("inconsistent dynamic range to test");
         uint32_t counter_mask =
@@ -45,6 +47,7 @@ TEST_CASE("mythen3_acquire_check_file_size", "[.cmdcall]") {
         set_common_acquire_config_state(det, det_config);
 
         // set default specific det type config
+        det.setExptime(-1, std::chrono::microseconds{200});
         int test_dynamic_range = 16;
         det.setDynamicRange(test_dynamic_range);
         int test_counter_mask = 0x3;
@@ -74,6 +77,9 @@ TEST_CASE("mythen3_acquire_check_file_size", "[.cmdcall]") {
         set_common_acquire_config_state(det, prev_det_config_info);
 
         // restore previous specific det type config
+        for (int iGate = 0; iGate < 3; ++iGate) {
+            det.setExptime(iGate, exptime[iGate]);
+        }
         det.setDynamicRange(dynamic_range);
         det.setCounterMask(counter_mask);
     }

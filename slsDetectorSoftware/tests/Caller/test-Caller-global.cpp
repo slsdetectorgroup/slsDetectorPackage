@@ -137,22 +137,11 @@ void test_acquire_with_receiver(Caller &caller, std::chrono::seconds timeout) {
 }
 
 testCommonDetAcquireInfo get_common_acquire_config_state(const Detector &det) {
-    testCommonDetAcquireInfo det_config_info{
+    return testCommonDetAcquireInfo{
         det.getTimingMode().tsquash("Inconsistent timing mode"),
         det.getNumberOfFrames().tsquash("Inconsistent number of frames"),
         det.getNumberOfTriggers().tsquash("Inconsistent number of triggers"),
-        det.getPeriod().tsquash("Inconsistent period"),
-        {}};
-    auto det_type =
-        det.getDetectorType().tsquash("Inconsistent detector types to test");
-    if (det_type != defs::MYTHEN3) {
-        det_config_info.exptime[0] =
-            det.getExptime().tsquash("inconsistent exptime to test");
-    } else {
-        det_config_info.exptime =
-            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
-    }
-    return det_config_info;
+        det.getPeriod().tsquash("Inconsistent period")};
 }
 
 void set_common_acquire_config_state(
@@ -161,15 +150,6 @@ void set_common_acquire_config_state(
     det.setNumberOfFrames(det_config_info.num_frames_to_acquire);
     det.setNumberOfTriggers(det_config_info.num_triggers);
     det.setPeriod(det_config_info.period);
-    auto det_type =
-        det.getDetectorType().tsquash("Inconsistent detector types to test");
-    if (det_type != defs::MYTHEN3) {
-        det.setExptime(det_config_info.exptime[0]);
-    } else {
-        for (int iGate = 0; iGate < 3; ++iGate) {
-            det.setExptime(iGate, det_config_info.exptime[iGate]);
-        }
-    }
 }
 
 } // namespace sls

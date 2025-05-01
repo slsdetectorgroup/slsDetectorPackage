@@ -72,14 +72,6 @@ void DataProcessor::SetStreamingStartFnum(uint32_t value) {
 
 void DataProcessor::SetFramePadding(bool enable) { framePadding = enable; }
 
-void DataProcessor::SetCtbDbitList(std::vector<int> value) {
-    ctbDbitList = value;
-}
-
-void DataProcessor::SetCtbDbitOffset(int value) { ctbDbitOffset = value; }
-
-void DataProcessor::SetCtbDbitReorder(bool value) { ctbDbitReorder = value; }
-
 void DataProcessor::SetQuadEnable(bool value) { quadEnable = value; }
 
 void DataProcessor::SetFlipRows(bool fd) {
@@ -303,7 +295,7 @@ void DataProcessor::ThreadExecution() {
                        memImage->data);
     } catch (const std::exception &e) {
         fifo->FreeAddress(buffer);
-        return;
+        throw RuntimeError(e.what());
     }
 
     // stream (if time/freq to stream) or free
@@ -361,13 +353,14 @@ void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
         PadMissingPackets(header, data);
 
     // rearrange ctb digital bits
-    if (!ctbDbitList.empty()) {
+    if (!generalData->ctbDbitList.empty()) {
         ArrangeDbitData(size, data);
-    } else if (ctbDbitReorder) {
-        ctbDbitList.resize(64);
+    } else if (generalData->ctbDbitReorder) {
+        std::vector<int> ctbDbitList(64);
         std::iota(ctbDbitList.begin(), ctbDbitList.end(), 0);
+        generalData->SetctbDbitList(ctbDbitList);
         ArrangeDbitData(size, data);
-    } else if (ctbDbitOffset > 0) {
+    } else if (generalData->ctbDbitOffset > 0) {
         RemoveTrailingBits(size, data);
     }
 
@@ -542,6 +535,7 @@ void DataProcessor::RemoveTrailingBits(size_t &size, char *data) {
     const size_t nDigitalDataBytes = generalData->GetNumberOfDigitalDatabytes();
     const size_t nTransceiverDataBytes =
         generalData->GetNumberOfTransceiverDatabytes();
+    const size_t ctbDbitOffset = generalData->ctbDbitOffset;
 
     const size_t ctbDigitalDataBytes = nDigitalDataBytes - ctbDbitOffset;
 
@@ -568,10 +562,14 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
                                  std::to_string(generalData->detType));
     }
 
-    size_t nAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
-    size_t nDigitalDataBytes = generalData->GetNumberOfDigitalDatabytes();
-    size_t nTransceiverDataBytes =
+    const size_t nAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
+    const size_t nDigitalDataBytes = generalData->GetNumberOfDigitalDatabytes();
+    const size_t nTransceiverDataBytes =
         generalData->GetNumberOfTransceiverDatabytes();
+    const size_t ctbDbitOffset = generalData->ctbDbitOffset;
+    const bool ctbDbitReorder = generalData->ctbDbitReorder;
+    const auto ctbDbitList = generalData->ctbDbitList;
+
     // TODO! (Erik) Refactor and add tests
     int ctbDigitalDataBytes = nDigitalDataBytes - ctbDbitOffset;
 

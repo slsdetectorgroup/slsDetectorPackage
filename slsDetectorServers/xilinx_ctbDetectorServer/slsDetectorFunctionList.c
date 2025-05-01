@@ -1537,8 +1537,12 @@ void *start_timer(void *arg) {
                     packetSize, packetsPerFrame));
 
     // Generate Data
-    char imageData[imageSize];
+    char *imageData = (char *)malloc(imageSize);
     memset(imageData, 0, imageSize);
+    if (imageData == NULL) {
+        LOG(logERROR, ("Can not allocate image.\n"));
+        return NULL;
+    }
     for (int i = 0; i < imageSize; i += sizeof(uint16_t)) {
         *((uint16_t *)(imageData + i)) = i;
     }
@@ -1561,6 +1565,7 @@ void *start_timer(void *arg) {
         usleep(expUs);
 
         int srcOffset = 0;
+        int dataSent = 0;
         // loop packet
         for (int i = 0; i != packetsPerFrame; ++i) {
 
@@ -1577,10 +1582,12 @@ void *start_timer(void *arg) {
             header->column = detPos[X];
 
             // fill data
+            int remaining = imageSize - dataSent;
+            int dataSize = remaining < maxDataSize ? remaining : maxDataSize;
             memcpy(packetData + sizeof(sls_detector_header),
-                   imageData + srcOffset,
-                   (imageSize < maxDataSize ? imageSize : maxDataSize));
-            srcOffset += maxDataSize;
+                   imageData + srcOffset, dataSize);
+            srcOffset += dataSize;
+            dataSent += dataSize;
 
             sendUDPPacket(0, 0, packetData, packetSize);
         }

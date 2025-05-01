@@ -105,7 +105,6 @@ void test_ctb_acquire_with_receiver(const testCtbAcquireInfo &test_info,
         const int num_bytes_per_sample = 2;
         num_analog_bytes =
             num_analog_chans * num_bytes_per_sample * test_info.num_adc_samples;
-        std::cout << "[Analog Databytes: " << num_analog_bytes << ']';
     }
 
     // digital channels
@@ -136,7 +135,6 @@ void test_ctb_acquire_with_receiver(const testCtbAcquireInfo &test_info,
             }
             num_digital_bytes = num_digital_chans * (num_bits_per_bit / 8);
         }
-        std::cout << "[Digital Databytes: " << num_digital_bytes << ']';
     }
     // transceiver channels
     if (test_info.readout_mode == defs::TRANSCEIVER_ONLY ||
@@ -146,13 +144,10 @@ void test_ctb_acquire_with_receiver(const testCtbAcquireInfo &test_info,
         const int num_bytes_per_channel = 8;
         num_transceiver_bytes = num_transceiver_chans * num_bytes_per_channel *
                                 test_info.num_trans_samples;
-        std::cout << "[Transceiver Databytes: " << num_transceiver_bytes << ']';
     }
-    std::cout << std::endl;
     // check file size (assuming local pc)
     uint64_t expected_image_size =
         num_analog_bytes + num_digital_bytes + num_transceiver_bytes;
-    std::cout << "Expected image size: " << expected_image_size << std::endl;
     test_acquire_binary_file_size(test_file_info, num_frames_to_acquire,
                                   expected_image_size);
 

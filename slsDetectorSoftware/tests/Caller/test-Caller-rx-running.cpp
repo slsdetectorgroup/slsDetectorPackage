@@ -45,29 +45,28 @@ auto get_test_parameters() {
         std::make_tuple("frames", std::vector<std::string>{"10"}),
         std::make_tuple("triggers", std::vector<std::string>{"5"}),
         std::make_tuple("rx_dbitlist", std::vector<std::string>{"{1,2,10}"}),
-        std::make_tuple("rx_dbitreorder", std::vector<std::string>{"false"}),
+        std::make_tuple("rx_dbitreorder", std::vector<std::string>{"0"}),
         std::make_tuple("rx_dbitoffset", std::vector<std::string>{"5"}),
         std::make_tuple("findex", std::vector<std::string>{"2"}),
-        std::make_tuple("fwrite", std::vector<std::string>{"false"}),
+        std::make_tuple("fwrite", std::vector<std::string>{"0"}),
         std::make_tuple("bursts", std::vector<std::string>{"20"}));
 }
 
 TEST_CASE("cant put if receiver is not idle", "[.cmdcall][.rx]") {
-    std::cout << "im in here: " << std::endl;
+    auto [command, function_arguments] = get_test_parameters();
+
     Detector det;
     Caller caller(&det);
-    det.setFileWrite(false); // avoid writing or error on file creation
-
-    auto [command, function_arguments] = get_test_parameters();
 
     // start receiver
     std::ostringstream oss;
-    caller.call("rx_start", {}, -1, PUT,
-                oss); // why is there no receiver id passed
-
+    caller.call("rx_start", {}, -1, PUT, oss);
     REQUIRE(oss.str() == "rx_start successful\n");
 
     REQUIRE_THROWS(caller.call(command, function_arguments, -1, PUT, oss, -1));
-}
 
+    std::ostringstream oss_stop;
+    caller.call("rx_stop", {}, -1, PUT, oss_stop);
+    REQUIRE(oss_stop.str() == "rx_stop successful\n");
+}
 } // namespace sls

@@ -23,7 +23,7 @@ def Log(color, message):
 
 
 def checkIfProcessRunning(processName):
-    cmd = f"pgrep -f {processName}"
+    cmd = f"pgrep {processName}"
     res = subprocess.getoutput(cmd)
     return bool(res.strip())
 
@@ -206,9 +206,9 @@ with open(fname, 'w') as fp:
     Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
 
     try:
-        startGeneralTests(fp, file_results)
         killAllStaleProcesses(fp)
-
+        startGeneralTests(fp, file_results)
+        
         testError = False
         for server in servers:
             try:

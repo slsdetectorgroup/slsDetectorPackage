@@ -17,6 +17,119 @@ namespace sls {
 using test::GET;
 using test::PUT;
 
+TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type =
+        det.getDetectorType().tsquash("Inconsistent detector types to test");
+
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
+        int num_frames_to_acquire = 2;
+        // all the test cases
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
+            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
+                test_ctb_config, num_frames_to_acquire, det, caller));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
+            test_ctb_config.dbit_offset = 16;
+            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
+                test_ctb_config, num_frames_to_acquire, det, caller));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
+            test_ctb_config.dbit_reorder = true;
+            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
+                test_ctb_config, num_frames_to_acquire, det, caller));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
+            test_ctb_config.dbit_offset = 16;
+            test_ctb_config.dbit_reorder = true;
+            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
+                test_ctb_config, num_frames_to_acquire, det, caller));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
+            test_ctb_config.dbit_offset = 16;
+            test_ctb_config.dbit_list.clear();
+            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
+                test_ctb_config, num_frames_to_acquire, det, caller));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
+            test_ctb_config.dbit_offset = 16;
+            test_ctb_config.dbit_list.clear();
+            test_ctb_config.dbit_reorder = true;
+            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
+                test_ctb_config, num_frames_to_acquire, det, caller));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
+                test_ctb_config, num_frames_to_acquire, det, caller));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+            test_ctb_config.dbit_offset = 16;
+            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
+                test_ctb_config, num_frames_to_acquire, det, caller));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+            test_ctb_config.dbit_list.clear();
+            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
+                test_ctb_config, num_frames_to_acquire, det, caller));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+            test_ctb_config.dbit_offset = 16;
+            test_ctb_config.dbit_list.clear();
+            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
+                test_ctb_config, num_frames_to_acquire, det, caller));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+            test_ctb_config.dbit_offset = 16;
+            test_ctb_config.dbit_list.clear();
+            test_ctb_config.dbit_reorder = true;
+            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
+                test_ctb_config, num_frames_to_acquire, det, caller));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::TRANSCEIVER_ONLY;
+            test_ctb_config.dbit_offset = 16;
+            test_ctb_config.dbit_list.clear();
+            test_ctb_config.dbit_reorder = true;
+            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
+                test_ctb_config, num_frames_to_acquire, det, caller));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config;
+            test_ctb_config.readout_mode = defs::ANALOG_ONLY;
+            test_ctb_config.dbit_offset = 16;
+            test_ctb_config.dbit_list.clear();
+            test_ctb_config.dbit_reorder = true;
+            REQUIRE_NOTHROW(test_ctb_acquire_with_receiver(
+                test_ctb_config, num_frames_to_acquire, det, caller));
+        }
+    }
+}
+
 /* dacs */
 
 TEST_CASE("dacname", "[.cmdcall]") {

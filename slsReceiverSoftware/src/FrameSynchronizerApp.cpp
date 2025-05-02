@@ -130,7 +130,7 @@ std::set<uint64_t> get_valid_fnums(const PortFrameMap &port_frame_map) {
 
     // collect all unique frame numbers from all ports
     std::set<uint64_t> unique_fnums;
-    for (auto it = port_frame_map.begin(); it != port_frame_map.begin(); ++it) {
+    for (auto it = port_frame_map.begin(); it != port_frame_map.end(); ++it) {
         const FrameMap &frame_map = it->second;
         for (auto frame = frame_map.begin(); frame != frame_map.end();
              ++frame) {
@@ -151,9 +151,10 @@ std::set<uint64_t> get_valid_fnums(const PortFrameMap &port_frame_map) {
                 LOG(sls::logDEBUG)
                     << "Fnum " << fnum << " is missing in port " << port;
                 // invalid: fnum greater than all in that port
-                auto last_frame = std::prev(frame_map.end());
-                auto last_fnum = last_frame->first;
-                if (fnum > last_fnum) {
+                auto last_frame =
+                    frame_map.upper_bound(fnum); // std::prev(frame_map.end());
+                // auto last_fnum = last_frame->first;
+                if (last_frame == frame_map.end()) { //(fnum > last_fnum) {
                     LOG(sls::logDEBUG) << "And no larger fnum found. Fnum "
                                        << fnum << " is invalid.\n";
                     is_valid = false;

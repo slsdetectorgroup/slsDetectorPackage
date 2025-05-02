@@ -234,6 +234,7 @@ with open(fname, 'w') as fp:
                     traceback.print_exc(file=fp_error)  # This will log the full traceback
 
                 testError = True
+                cleanup(fp)
                 break
 
         # redirect to terminal
@@ -248,5 +249,5 @@ with open(fname, 'w') as fp:
         sys.stdout = original_stdout
         sys.stderr = original_stderr
         Log(Fore.RED, f'Exception caught with general testing. Cleaning up...')
-        cleanSharedmemory(sys.stdout)
+        cleanup(fp)
         

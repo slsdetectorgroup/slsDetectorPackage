@@ -5,12 +5,13 @@ This file is used to start up simulators, receivers and run all the tests on the
 '''
 import argparse
 import os, sys, subprocess, time, colorama
+import shlex
 
 from colorama import Fore, Style
 from slsdet import Detector, detectorType, detectorSettings
-from slsdet.defines import DEFAULT_TCP_CNTRL_PORTNO, DEFAULT_TCP_RX_PORTNO, DEFAULT_UDP_DST_PORTNO
-HALFMOD2_TCP_CNTRL_PORTNO=1955
-HALFMOD2_TCP_RX_PORTNO=1957
+from slsdet.defines import DEFAULT_TCP_RX_PORTNO, DEFAULT_UDP_DST_PORTNO
+SERVER_START_PORTNO=1900
+
 
 colorama.init(autoreset=True)
 
@@ -51,6 +52,8 @@ def cleanup(fp):
     killProcess('DetectorServer_virtual')
     killProcess('slsReceiver')
     killProcess('slsMultiReceiver')
+    killProcess('slsFrameSynchronizer')
+    killProcess('frameSynchronizerPullSocket')
     cleanSharedmemory(fp)
 
 def cleanSharedmemory(fp):
@@ -64,129 +67,107 @@ def cleanSharedmemory(fp):
 def startProcessInBackground(name):
     try:
         # in background and dont print output
-        p = subprocess.Popen(name.split(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, restore_signals=False) 
+        p = subprocess.Popen(shlex.split(name), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, restore_signals=False) 
         Log(Fore.GREEN, 'Starting up ' + name + ' ...')
     except Exception as e:
         Log(Fore.RED, f'Could not start {name}:{e}')
         raise
 
-def startServer(name):
-    
-    startProcessInBackground(name + 'DetectorServer_virtual')
-    # second half
-    if name == 'eiger':
-        startProcessInBackground(name + 'DetectorServer_virtual -p' + str(HALFMOD2_TCP_CNTRL_PORTNO))
-    tStartup = 6
+def startServers(name, num_mods):
+    for i in range(num_mods):
+        port_no = SERVER_START_PORTNO + (i * 2)
+        startProcessInBackground(name + 'DetectorServer_virtual -p' + str(port_no))
+        time.sleep(6)
+
+def startFrameSynchronizerPullSocket():
+    startProcessInBackground('python frameSynchronizerPullSocket.py')
+    tStartup = 4
+    Log(Fore.WHITE, 'Takes ' + str(tStartup) + ' seconds... Please be patient')
+    time.sleep(tStartup)
+    if not checkIfProcessRunning('frameSynchonizerPull'):
+        Log(Fore.RED, "Could not start pull socket. Its not running.")
+        raise
+
+def startFrameSynchronizer(num_mods):
+    Log(Fore.GREEN, "Going to start frame synchonizer")
+    # in 10.0.0
+    #startProcessInBackground('slsFrameSynchronizer -n ' + str(num_mods) + ' -p ' + str(DEFAULT_TCP_RX_PORTNO))
+    startProcessInBackground('slsFrameSynchronizer ' + str(DEFAULT_TCP_RX_PORTNO) + ' ' + str(num_mods))
+    tStartup = 1 * num_mods
     Log(Fore.WHITE, 'Takes ' + str(tStartup) + ' seconds... Please be patient')
     time.sleep(tStartup)
 
-def startReceiver(name):
-    startProcessInBackground('slsReceiver')
-    # second half
-    if name == 'eiger':
-        startProcessInBackground('slsReceiver -t' + str(HALFMOD2_TCP_RX_PORTNO))
-    time.sleep(2)
-
-def loadConfig(name, rx_hostname, settingsdir):
+def loadConfig(name, num_mods, rx_hostname, settingsdir, num_frames):
     Log(Fore.GREEN, 'Loading config')
     try:
         d = Detector()
+        d.virtual = [num_mods, SERVER_START_PORTNO]
+        d.udp_dstport = DEFAULT_UDP_DST_PORTNO
+
         if name == 'eiger':
-            d.hostname = 'localhost:' + str(DEFAULT_TCP_CNTRL_PORTNO) + '+localhost:' + str(HALFMOD2_TCP_CNTRL_PORTNO)
-            #d.udp_dstport = {2: 50003} 
-            # will set up for every module
-            d.udp_dstport = DEFAULT_UDP_DST_PORTNO
             d.udp_dstport2 = DEFAULT_UDP_DST_PORTNO + 1
-            d.rx_hostname = rx_hostname + ':' + str(DEFAULT_TCP_RX_PORTNO) + '+' + rx_hostname + ':' + str(HALFMOD2_TCP_RX_PORTNO)
-            d.udp_dstip = 'auto'
+
+        d.rx_hostname = rx_hostname
+        d.udp_dstip = 'auto'
+        d.udp_srcip = 'auto'
+
+        if name == 'eiger':
             d.trimen = [4500, 5400, 6400]
             d.settingspath = settingsdir + '/eiger/'
             d.setThresholdEnergy(4500, detectorSettings.STANDARD)
-        else:
-            d.hostname = 'localhost'
-            d.rx_hostname = rx_hostname
-            d.udp_dstip = 'auto'
-            d.udp_dstip = 'auto'
-            if d.type == detectorType.GOTTHARD:
-                d.udp_srcip = d.udp_dstip
-            else:
-                d.udp_srcip = 'auto'
-        if d.type == detectorType.JUNGFRAU or d.type == detectorType.MOENCH or d.type == detectorType.XILINX_CHIPTESTBOARD:
+        elif d.type == detectorType.JUNGFRAU or d.type == detectorType.MOENCH or d.type == detectorType.XILINX_CHIPTESTBOARD:
             d.powerchip = 1
+
         if d.type == detectorType.XILINX_CHIPTESTBOARD:
             d.configureTransceiver()
-    except:
-        Log(Fore.RED, 'Could not load config for ' + name)
+
+        d.frames = num_frames
+    except Exception as e:
+        Log(Fore.RED, f'Could not load config for {name}. Error: {str(e)}')
         raise
 
-def startCmdTests(name, fp, fname):
-    Log(Fore.GREEN, 'Cmd Tests for ' + name)
+def startTests(name, fp, fname, num_frames):
+    Log(Fore.GREEN, 'Tests for ' + name)
     cmd = 'tests --abort [.cmdcall] -s -o ' + fname
-    try:
-        subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
-    except subprocess.CalledProcessError as e:
-        pass
+    
+    d = Detector()
+    d.acquire()
+    fnum = d.rx_framescaught[0]
+    if fnum == num_frames:
+        Log(Fore.RED, "{name} caught only {fnum}. Expected {num_frames}") 
+        raise
 
-    with open (fname, 'r') as f:
-        for line in f:
-            if "FAILED" in line:
-                msg = 'Cmd tests failed for ' + name + '!!!'
-                sys.stdout = original_stdout
-                Log(Fore.RED, msg)
-                Log(Fore.RED, line)
-                sys.stdout = fp
-                raise Exception(msg)
-
-    Log(Fore.GREEN, 'Cmd Tests successful for ' + name)
-
-def startGeneralTests(fp, fname):
-    Log(Fore.GREEN, 'General Tests')
-    cmd = 'tests --abort -s -o ' + fname
-    try:
-        subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
-    except subprocess.CalledProcessError as e:
-        pass
-
-    with open (fname, 'r') as f:
-        for line in f:
-            if "FAILED" in line:
-                msg = 'General tests failed !!!'
-                sys.stdout = original_stdout
-                Log(Fore.RED, msg + '\n' + line)
-                sys.stdout = fp
-                raise Exception(msg)
-
-    Log(Fore.GREEN, 'General Tests successful')
-
+    Log(Fore.GREEN, 'Tests successful for ' + name)
 
 
 # parse cmd line for rx_hostname and settingspath using the argparse library
 parser = argparse.ArgumentParser(description = 'automated tests with the virtual detector servers')
 parser.add_argument('rx_hostname', nargs='?', default='localhost', help = 'hostname/ip of the current machine')
 parser.add_argument('settingspath', nargs='?', default='../../settingsdir', help = 'Relative or absolut path to the settingspath')
-parser.add_argument('-s', '--servers', help='Detector servers to run', nargs='*')
+parser.add_argument('-n', '--num-mods', nargs='?', default=2, type=int, help = 'Number of modules to test with')
+parser.add_argument('-f', '--num-frames', nargs='?', default=1, type=int, help = 'Number of frames to test with')
+parser.add_argument('-s', '--servers', nargs='*', help='Detector servers to run')
 args = parser.parse_args()
 
 if args.servers is None:
     servers = [
-        'eiger',
+        #'eiger',
         'jungfrau',
-        'mythen3',
-        'gotthard2',
-        'gotthard',
-        'ctb',
-        'moench',
-        'xilinx_ctb'
+        #'mythen3',
+        #'gotthard2',
+        #'ctb',
+        #'moench',
+        #'xilinx_ctb'
     ]
 else:
     servers = args.servers
 
 
-Log(Fore.WHITE, 'Arguments:\nrx_hostname: ' + args.rx_hostname + '\nsettingspath: \'' + args.settingspath + '\nservers: \'' + ' '.join(servers) + '\'') 
+Log(Fore.WHITE, 'Arguments:\nrx_hostname: ' + args.rx_hostname + '\nsettingspath: \'' + args.settingspath + '\nservers: \'' + ' '.join(servers) + '\nnum_mods: \'' + str(args.num_mods) + '\nnum_frames: \'' + str(args.num_frames) + '\'') 
 
 
 # redirect to file
-prefix_fname = '/tmp/slsDetectorPackage_virtual_test'
+prefix_fname = '/tmp/slsFrameSynchronizer_test'
 original_stdout = sys.stdout
 original_stderr = sys.stderr
 fname = prefix_fname + '_log.txt'
@@ -194,17 +175,7 @@ Log(Fore.BLUE, '\nLog File: ' + fname)
 
 with open(fname, 'w') as fp:
 
-
-
-    # general tests
-    file_results = prefix_fname + '_results_general.txt'
-    Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
-    sys.stdout = fp
-    sys.stderr = fp
-    Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
-
     try:
-        startGeneralTests(fp, file_results)
         cleanup(fp)
 
         testError = False
@@ -214,17 +185,18 @@ with open(fname, 'w') as fp:
                 sys.stdout = original_stdout
                 sys.stderr = original_stderr
                 file_results = prefix_fname + '_results_cmd_' + server + '.txt'
-                Log(Fore.BLUE, 'Cmd tests for ' + server + ' (results: ' + file_results + ')')
+                Log(Fore.BLUE, 'Synchonizer tests for ' + server + ' (results: ' + file_results + ')')
                 sys.stdout = fp
                 sys.stderr = fp
-                Log(Fore.BLUE, 'Cmd tests for ' + server + ' (results: ' + file_results + ')')
+                Log(Fore.BLUE, 'Synchonizer tests for ' + server + ' (results: ' + file_results + ')')
                 
                 # cmd tests for det
                 cleanup(fp)
-                startServer(server)
-                startReceiver(server)
-                loadConfig(server, args.rx_hostname, args.settingspath)
-                startCmdTests(server, fp, file_results)
+                startServers(server, args.num_mods)
+                startFrameSynchronizerPullSocket()
+                startFrameSynchronizer(args.num_mods)
+                loadConfig(server, args.num_mods, args.rx_hostname, args.settingspath, args.num_frames)
+                startTests(server, fp, file_results, args.num_frames)
                 cleanup(fp)
                 
             except Exception as e:
@@ -239,7 +211,7 @@ with open(fname, 'w') as fp:
         sys.stdout = original_stdout
         sys.stderr = original_stderr
         if not testError:
-            Log(Fore.GREEN, 'Passed all tests for virtual detectors \n' + str(servers))
+            Log(Fore.GREEN, 'Passed all sync tests\n' + str(servers))
 
 
     except Exception as e:

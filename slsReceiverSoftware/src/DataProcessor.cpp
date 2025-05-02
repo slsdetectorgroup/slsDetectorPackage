@@ -679,11 +679,11 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
     memcpy(data + nAnalogDataBytes, result.data(),
            totalNumBytes * sizeof(uint8_t));
 
-    LOG(logDEBUG1) << "totalNumBytes: " << totalNumBytes
+    LOG(logDEBUG1) << "nDigitalDataBytes: " << totalNumBytes
                    << " nAnalogDataBytes:" << nAnalogDataBytes
                    << " ctbDbitOffset:" << ctbDbitOffset
                    << " nTransceiverDataBytes:" << nTransceiverDataBytes
-                   << " size:" << size;
+                   << " toal size:" << size;
 }
 
 void DataProcessor::CropImage(size_t &size, char *data) {

@@ -55,7 +55,7 @@ TEST_CASE("mythen3_acquire_check_file_size", "[.cmdcall]") {
         det.setCounterMask(test_counter_mask);
 
         // acquire
-        test_acquire_with_receiver(caller, std::chrono::seconds{2});
+        test_acquire_with_receiver(caller, det);
 
         // check frames caught
         test_frames_caught(det, num_frames_to_acquire);

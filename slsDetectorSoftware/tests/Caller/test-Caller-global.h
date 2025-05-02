@@ -58,7 +58,7 @@ void test_acquire_binary_file_size(const testFileInfo &file_info,
 
 void test_frames_caught(const Detector &det, int num_frames_to_acquire);
 
-void test_acquire_with_receiver(Caller &caller, std::chrono::seconds timeout);
+void test_acquire_with_receiver(Caller &caller, const Detector &det);
 
 testCommonDetAcquireInfo get_common_acquire_config_state(const Detector &det);
 void set_common_acquire_config_state(

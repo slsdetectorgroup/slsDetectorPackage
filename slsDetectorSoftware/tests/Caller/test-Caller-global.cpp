@@ -130,10 +130,21 @@ void test_frames_caught(const Detector &det, int num_frames_to_acquire) {
     REQUIRE(frames_caught == num_frames_to_acquire);
 }
 
-void test_acquire_with_receiver(Caller &caller, std::chrono::seconds timeout) {
+void test_acquire_with_receiver(Caller &caller, const Detector &det) {
     REQUIRE_NOTHROW(caller.call("rx_start", {}, -1, PUT));
     REQUIRE_NOTHROW(caller.call("start", {}, -1, PUT));
-    std::this_thread::sleep_for(timeout);
+    bool idle = false;
+    while (!idle) {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(caller.call("status", {}, -1, GET));
+        auto statusList = det.getDetectorStatus();
+        if (statusList.any(defs::ERROR)) {
+            throw std::runtime_error("error status while acquiring");
+        }
+        if (statusList.contains_only(defs::IDLE, defs::STOPPED)) {
+            idle = true;
+        }
+    }
     REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
 }
 
@@ -285,8 +296,7 @@ void test_ctb_acquire_with_receiver(const testCtbAcquireInfo &test_info,
     set_ctb_config_state(det, test_info);
 
     // acquire
-    REQUIRE_NOTHROW(
-        test_acquire_with_receiver(caller, std::chrono::seconds{2}));
+    REQUIRE_NOTHROW(test_acquire_with_receiver(caller, det));
 
     // check frames caught
     REQUIRE_NOTHROW(test_frames_caught(det, num_frames_to_acquire));

@@ -199,15 +199,9 @@ with open(fname, 'w') as fp:
     Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
 
     try:
-<<<<<<< HEAD
-        killAllStaleProcesses(fp)
+        cleanup(fp)
         startGeneralTests(fp, file_results)
         
-=======
-        startGeneralTests(fp, file_results)
-        cleanup(fp)
-
->>>>>>> developer
         testError = False
         for server in servers:
             try:

@@ -33,10 +33,9 @@ def killProcess(name):
         Log(Fore.GREEN, f"Killing '{name}' processes with PIDs: {', '.join(pids)}")
         for pid in pids:
             try:
-                cmd = f"kill -9 {pid}"
-                p = subprocess.run(['kill', '-9', pid])
+                p = subprocess.run(['kill', pid])
                 if p.returncode != 0 and bool(checkIfProcessRunning(name)):
-                    raise RuntimeException(f"'kill -9' failed for {name} with pid {pid}")
+                    raise RuntimeException(f"Could not kill {name} with pid {pid}")
             except Exception as e:
                 Log(Fore.RED, f"Failed to kill process {name} pid:{pid}. Exception occured: [code:{e}, msg:{e.stderr}]")
                 raise               

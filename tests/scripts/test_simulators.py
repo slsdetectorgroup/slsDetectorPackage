@@ -22,7 +22,7 @@ class RuntimeException (Exception):
         super().__init__(Log(Fore.RED, message))
     
 def checkIfProcessRunning(processName):
-    cmd = f"pgrep -f {processName}"
+    cmd = f"pgrep {processName}"
     res = subprocess.getoutput(cmd)
     return res.strip().splitlines()
 
@@ -199,9 +199,9 @@ with open(fname, 'w') as fp:
     Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
 
     try:
-        startGeneralTests(fp, file_results)
         cleanup(fp)
-
+        startGeneralTests(fp, file_results)
+        
         testError = False
         for server in servers:
             try:

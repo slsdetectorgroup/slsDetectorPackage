@@ -65,7 +65,7 @@ configure_file( scripts/test_virtual.py
 )
 
 configure_file(scripts/frameSynchronizerPullSocket.py 
-    ${CMAKE_BINARY_DIR}/frameSynchronizerPullSocket.py COPYONLY)
+    ${CMAKE_BINARY_DIR}/bin/frameSynchronizerPullSocket.py COPYONLY)
 
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/../VERSION  

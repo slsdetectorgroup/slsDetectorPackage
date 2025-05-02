@@ -5,7 +5,7 @@ This file is used to start up simulators, receivers and run all the tests on the
 '''
 import argparse
 import os, sys, subprocess, time, colorama
-import shlex
+import shlex, traceback, json
 
 from colorama import Fore, Style
 from slsdet import Detector, detectorType, detectorSettings
@@ -15,8 +15,8 @@ SERVER_START_PORTNO=1900
 
 colorama.init(autoreset=True)
 
-def Log(color, message):
-    print(f"{color}{message}{Style.RESET_ALL}", flush=True)
+def Log(color, message, stream=sys.stdout):
+    print(f"{color}{message}{Style.RESET_ALL}", file=stream, flush=True)
 
 class RuntimeException (Exception):
     def __init__ (self, message):
@@ -28,10 +28,10 @@ def checkIfProcessRunning(processName):
     return res.strip().splitlines()
 
 
-def killProcess(name):
+def killProcess(name, fp):
     pids = checkIfProcessRunning(name)
     if pids:
-        Log(Fore.GREEN, f"Killing '{name}' processes with PIDs: {', '.join(pids)}")
+        Log(Fore.WHITE, f"Killing '{name}' processes with PIDs: {', '.join(pids)}", fp)
         for pid in pids:
             try:
                 p = subprocess.run(['kill', pid])
@@ -48,16 +48,17 @@ def cleanup(fp):
     '''
     kill both servers, receivers and clean shared memory
     '''
-    Log(Fore.GREEN, 'Cleaning up...')
-    killProcess('DetectorServer_virtual')
-    killProcess('slsReceiver')
-    killProcess('slsMultiReceiver')
-    killProcess('slsFrameSynchronizer')
-    killProcess('frameSynchronizerPullSocket')
+    Log(Fore.WHITE, 'Cleaning up')
+    Log(Fore.WHITE, 'Cleaning up', fp)
+    killProcess('DetectorServer_virtual', fp)
+    killProcess('slsReceiver', fp)
+    killProcess('slsMultiReceiver', fp)
+    killProcess('slsFrameSynchronizer', fp)
+    killProcess('frameSynchronizerPullSocket', fp)
     cleanSharedmemory(fp)
 
 def cleanSharedmemory(fp):
-    Log(Fore.GREEN, 'Cleaning up shared memory...')
+    Log(Fore.WHITE, 'Cleaning up shared memory...', fp)
     try:
         p = subprocess.run(['sls_detector_get', 'free'], stdout=fp, stderr=fp)
     except:
@@ -68,37 +69,41 @@ def startProcessInBackground(name):
     try:
         # in background and dont print output
         p = subprocess.Popen(shlex.split(name), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, restore_signals=False) 
-        Log(Fore.GREEN, 'Starting up ' + name + ' ...')
+        Log(Fore.WHITE, 'Starting up ' + name + ' ...', fp)
     except Exception as e:
         Log(Fore.RED, f'Could not start {name}:{e}')
         raise
 
 def startServers(name, num_mods):
+    Log(Fore.WHITE, 'Starting server')
     for i in range(num_mods):
         port_no = SERVER_START_PORTNO + (i * 2)
         startProcessInBackground(name + 'DetectorServer_virtual -p' + str(port_no))
         time.sleep(6)
 
-def startFrameSynchronizerPullSocket():
-    startProcessInBackground('python frameSynchronizerPullSocket.py')
-    tStartup = 4
-    Log(Fore.WHITE, 'Takes ' + str(tStartup) + ' seconds... Please be patient')
-    time.sleep(tStartup)
-    if not checkIfProcessRunning('frameSynchonizerPull'):
-        Log(Fore.RED, "Could not start pull socket. Its not running.")
+def startFrameSynchronizerPullSocket(fname, fp):
+    Log(Fore.WHITE, 'Starting sync pull socket')
+    Log(Fore.WHITE, f"Starting up Synchronizer pull socket. Log: {fname}", fp)
+    Log(Fore.WHITE, f"Synchronizer pull socket log: {fname}")
+    cmd = ['python', '-u', 'frameSynchronizerPullSocket.py']  
+    try:
+        with open(fname, 'w') as fp:
+            subprocess.Popen(cmd, stdout=fp, stderr=fp, text=True)
+    except Exception as e:
+        Log(Fore.RED, f"failed to start synchronizer pull socket: {e}")
         raise
 
 def startFrameSynchronizer(num_mods):
-    Log(Fore.GREEN, "Going to start frame synchonizer")
+    Log(Fore.WHITE, 'Starting frame synchronizer')
     # in 10.0.0
     #startProcessInBackground('slsFrameSynchronizer -n ' + str(num_mods) + ' -p ' + str(DEFAULT_TCP_RX_PORTNO))
     startProcessInBackground('slsFrameSynchronizer ' + str(DEFAULT_TCP_RX_PORTNO) + ' ' + str(num_mods))
     tStartup = 1 * num_mods
-    Log(Fore.WHITE, 'Takes ' + str(tStartup) + ' seconds... Please be patient')
     time.sleep(tStartup)
 
-def loadConfig(name, num_mods, rx_hostname, settingsdir, num_frames):
-    Log(Fore.GREEN, 'Loading config')
+def loadConfig(name, num_mods, rx_hostname, settingsdir, num_frames, fp):
+    Log(Fore.WHITE, 'Loading config')
+    Log(Fore.WHITE, 'Loading config', fp)
     try:
         d = Detector()
         d.virtual = [num_mods, SERVER_START_PORTNO]
@@ -126,18 +131,46 @@ def loadConfig(name, num_mods, rx_hostname, settingsdir, num_frames):
         Log(Fore.RED, f'Could not load config for {name}. Error: {str(e)}')
         raise
 
-def startTests(name, fp, fname, num_frames):
-    Log(Fore.GREEN, 'Tests for ' + name)
+def validate_htype_counts(log_path, num_mods, num_frames):
+    htype_counts = {
+        "header": 0,
+        "series_end": 0,
+        "module": 0
+    }
+
+    with open(log_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if not line or not line.startswith('{'):
+                continue
+            try:
+                data = json.loads(line)
+                htype = data.get("htype")
+                if htype in htype_counts:
+                    htype_counts[htype] += 1
+            except json.JSONDecodeError:
+                continue  # or log malformed line
+
+    for htype, expected_count in [("header", num_mods), ("series_end", num_mods * num_frames), ("module", num_mods)]:
+        if htype_counts[htype] != expected_count:
+            msg = f"Expected 2 '{htype}' entries, found {htype_counts[htype]}"
+            Log(Fore.RED, msg)
+            raise RuntimeError(msg)
+
+def startTests(name, num_mods, num_frames, fp, file_pull_socket):
+    Log(Fore.WHITE, 'Tests for ' + name)
+    Log(Fore.WHITE, 'Tests for ' + name, fp)
     cmd = 'tests --abort [.cmdcall] -s -o ' + fname
     
     d = Detector()
     d.acquire()
     fnum = d.rx_framescaught[0]
-    if fnum == num_frames:
-        Log(Fore.RED, "{name} caught only {fnum}. Expected {num_frames}") 
+    if fnum != num_frames:
+        Log(Fore.RED, f"{name} caught only {fnum}. Expected {num_frames}") 
         raise
 
-    Log(Fore.GREEN, 'Tests successful for ' + name)
+    validate_htype_counts(file_pull_socket, num_mods, num_frames)
+    Log(Fore.GREEN, f"Log file htype checks passed for {name}", fp)
 
 
 # parse cmd line for rx_hostname and settingspath using the argparse library
@@ -176,27 +209,20 @@ Log(Fore.BLUE, '\nLog File: ' + fname)
 with open(fname, 'w') as fp:
 
     try:
-        cleanup(fp)
-
         testError = False
         for server in servers:
             try:
-                # print to terminal for progress
-                sys.stdout = original_stdout
-                sys.stderr = original_stderr
-                file_results = prefix_fname + '_results_cmd_' + server + '.txt'
-                Log(Fore.BLUE, 'Synchonizer tests for ' + server + ' (results: ' + file_results + ')')
-                sys.stdout = fp
-                sys.stderr = fp
-                Log(Fore.BLUE, 'Synchonizer tests for ' + server + ' (results: ' + file_results + ')')
+                Log(Fore.BLUE, '\nSynchonizer tests for ' + server, fp)
+                Log(Fore.BLUE, '\nSynchonizer tests for ' + server)
                 
                 # cmd tests for det
                 cleanup(fp)
                 startServers(server, args.num_mods)
-                startFrameSynchronizerPullSocket()
+                file_pull_socket = prefix_fname + '_pull_socket_' + server + '.txt'
+                startFrameSynchronizerPullSocket(file_pull_socket, fp)
                 startFrameSynchronizer(args.num_mods)
-                loadConfig(server, args.num_mods, args.rx_hostname, args.settingspath, args.num_frames)
-                startTests(server, fp, file_results, args.num_frames)
+                loadConfig(server, args.num_mods, args.rx_hostname, args.settingspath, args.num_frames, fp)
+                startTests(server, args.num_mods, args.num_frames, fp, file_pull_socket)
                 cleanup(fp)
                 
             except Exception as e:
@@ -204,6 +230,9 @@ with open(fname, 'w') as fp:
                 sys.stdout = original_stdout
                 sys.stderr = original_stderr
                 Log(Fore.RED, f'Exception caught while testing {server}. Cleaning up...')
+                with open(fname, 'a') as fp_error:
+                    traceback.print_exc(file=fp_error)  # This will log the full traceback
+
                 testError = True
                 break
 

@@ -219,7 +219,6 @@ void Correlate(FrameStatus *stat) {
                 // sending all valid fnum data packets
                 for (const auto &fnum : valid_fnums) {
                     ZmqMsgList msg_list;
-                    // PortFrameMap &port_frame_map = stat->frames;
                     for (const auto &it : stat->frames) {
                         const uint16_t port = it.first;
                         const FrameMap &frame_map = it.second;

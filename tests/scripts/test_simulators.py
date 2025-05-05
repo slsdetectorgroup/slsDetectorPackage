@@ -204,6 +204,7 @@ with open(fname, 'w') as fp:
     Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
 
     try:
+        cleanup(fp)
         startGeneralTests(fp, file_results)
         cleanup(fp)
 

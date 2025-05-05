@@ -65,7 +65,7 @@ def cleanSharedmemory(fp):
         Log(Fore.RED, 'Could not free shared memory')
         raise
 
-def startProcessInBackground(name):
+def startProcessInBackground(name, fp):
     try:
         # in background and dont print output
         p = subprocess.Popen(shlex.split(name), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, restore_signals=False) 
@@ -78,7 +78,7 @@ def startServers(name, num_mods):
     Log(Fore.WHITE, 'Starting server')
     for i in range(num_mods):
         port_no = SERVER_START_PORTNO + (i * 2)
-        startProcessInBackground(name + 'DetectorServer_virtual -p' + str(port_no))
+        startProcessInBackground(name + 'DetectorServer_virtual -p' + str(port_no), fp)
         time.sleep(6)
 
 def startFrameSynchronizerPullSocket(fname, fp):
@@ -93,11 +93,11 @@ def startFrameSynchronizerPullSocket(fname, fp):
         Log(Fore.RED, f"failed to start synchronizer pull socket: {e}")
         raise
 
-def startFrameSynchronizer(num_mods):
+def startFrameSynchronizer(num_mods, fp):
     Log(Fore.WHITE, 'Starting frame synchronizer')
     # in 10.0.0
     #startProcessInBackground('slsFrameSynchronizer -n ' + str(num_mods) + ' -p ' + str(DEFAULT_TCP_RX_PORTNO))
-    startProcessInBackground('slsFrameSynchronizer ' + str(DEFAULT_TCP_RX_PORTNO) + ' ' + str(num_mods))
+    startProcessInBackground('slsFrameSynchronizer ' + str(DEFAULT_TCP_RX_PORTNO) + ' ' + str(num_mods), fp)
     tStartup = 1 * num_mods
     time.sleep(tStartup)
 
@@ -114,13 +114,10 @@ def loadConfig(name, num_mods, rx_hostname, settingsdir, num_frames, fp):
 
         d.rx_hostname = rx_hostname
         d.udp_dstip = 'auto'
-        d.udp_srcip = 'auto'
+        if name != "eiger":
+            d.udp_srcip = 'auto'
 
-        if name == 'eiger':
-            d.trimen = [4500, 5400, 6400]
-            d.settingspath = settingsdir + '/eiger/'
-            d.setThresholdEnergy(4500, detectorSettings.STANDARD)
-        elif d.type == detectorType.JUNGFRAU or d.type == detectorType.MOENCH or d.type == detectorType.XILINX_CHIPTESTBOARD:
+        if name == "jungfrau" or name == "moench" or name == "xilinx_ctb":
             d.powerchip = 1
 
         if d.type == detectorType.XILINX_CHIPTESTBOARD:
@@ -131,13 +128,14 @@ def loadConfig(name, num_mods, rx_hostname, settingsdir, num_frames, fp):
         Log(Fore.RED, f'Could not load config for {name}. Error: {str(e)}')
         raise
 
-def validate_htype_counts(log_path, num_mods, num_frames):
+def validate_htype_counts(log_path, num_mods, num_ports_per_module, num_frames):
     htype_counts = {
         "header": 0,
         "series_end": 0,
         "module": 0
     }
 
+    # get a count of each htype from file
     with open(log_path, 'r') as f:
         for line in f:
             line = line.strip()
@@ -151,9 +149,9 @@ def validate_htype_counts(log_path, num_mods, num_frames):
             except json.JSONDecodeError:
                 continue  # or log malformed line
 
-    for htype, expected_count in [("header", num_mods), ("series_end", num_mods * num_frames), ("module", num_mods)]:
+    for htype, expected_count in [("header", num_mods), ("series_end", num_mods), ("module", num_ports_per_module * num_mods * num_frames)]:
         if htype_counts[htype] != expected_count:
-            msg = f"Expected 2 '{htype}' entries, found {htype_counts[htype]}"
+            msg = f"Expected {expected_count} '{htype}' entries, found {htype_counts[htype]}"
             Log(Fore.RED, msg)
             raise RuntimeError(msg)
 
@@ -163,13 +161,16 @@ def startTests(name, num_mods, num_frames, fp, file_pull_socket):
     cmd = 'tests --abort [.cmdcall] -s -o ' + fname
     
     d = Detector()
+    num_ports_per_module = d.numinterfaces
+    if name == "gotthard2":
+        num_ports_per_module = 1
     d.acquire()
     fnum = d.rx_framescaught[0]
     if fnum != num_frames:
         Log(Fore.RED, f"{name} caught only {fnum}. Expected {num_frames}") 
         raise
 
-    validate_htype_counts(file_pull_socket, num_mods, num_frames)
+    validate_htype_counts(file_pull_socket, num_mods, num_ports_per_module, num_frames)
     Log(Fore.GREEN, f"Log file htype checks passed for {name}", fp)
 
 
@@ -184,13 +185,13 @@ args = parser.parse_args()
 
 if args.servers is None:
     servers = [
-        #'eiger',
+        'eiger',
         'jungfrau',
-        #'mythen3',
-        #'gotthard2',
-        #'ctb',
-        #'moench',
-        #'xilinx_ctb'
+        'mythen3',
+        'gotthard2',
+        'ctb',
+        'moench',
+        'xilinx_ctb'
     ]
 else:
     servers = args.servers
@@ -220,7 +221,7 @@ with open(fname, 'w') as fp:
                 startServers(server, args.num_mods)
                 file_pull_socket = prefix_fname + '_pull_socket_' + server + '.txt'
                 startFrameSynchronizerPullSocket(file_pull_socket, fp)
-                startFrameSynchronizer(args.num_mods)
+                startFrameSynchronizer(args.num_mods, fp)
                 loadConfig(server, args.num_mods, args.rx_hostname, args.settingspath, args.num_frames, fp)
                 startTests(server, args.num_mods, args.num_frames, fp, file_pull_socket)
                 cleanup(fp)

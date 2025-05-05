@@ -148,12 +148,6 @@ std::set<uint64_t> get_valid_fnums(const PortFrameMap &port_frame_map) {
             if (frame == frame_map.end()) {
                 LOG(sls::logDEBUG)
                     << "Fnum " << fnum << " is missing in port " << port;
-                /*
-                // invalid: fnum greater than all in that port
-                auto last_frame = std::prev(frame_map.end());
-                auto last_fnum = last_frame->first;
-                if (fnum > last_fnum) {
-                */
                 auto upper_frame = frame_map.upper_bound(fnum);
                 if (upper_frame == frame_map.end()) {
                     LOG(sls::logDEBUG) << "And no larger fnum found. Fnum "
@@ -234,13 +228,6 @@ void Correlate(FrameStatus *stat) {
                             msg_list.insert(msg_list.end(),
                                             stat->frames[port][fnum].begin(),
                                             stat->frames[port][fnum].end());
-                            // clean up
-                            /*for (zmq_msg_t *msg : stat->frames[port][fnum]) {
-                                if (msg) {
-                                    zmq_msg_close(msg);
-                                    delete msg;
-                                }
-                            }*/
                             stat->frames[port].erase(fnum);
                         }
                     }

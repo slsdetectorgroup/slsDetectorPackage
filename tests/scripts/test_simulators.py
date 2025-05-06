@@ -4,22 +4,18 @@
 This file is used to start up simulators, receivers and run all the tests on them and finally kill the simulators and receivers.
 '''
 import argparse
-import os, sys, subprocess, time, colorama
+import os, sys, subprocess, time
 
-from colorama import Fore, Style
 from slsdet import Detector, detectorType, detectorSettings
 from slsdet.defines import DEFAULT_TCP_CNTRL_PORTNO, DEFAULT_TCP_RX_PORTNO, DEFAULT_UDP_DST_PORTNO
 HALFMOD2_TCP_CNTRL_PORTNO=1955
 HALFMOD2_TCP_RX_PORTNO=1957
 
-colorama.init(autoreset=True)
-
-def Log(color, message):
-    print(f"{color}{message}{Style.RESET_ALL}", flush=True)
+from utils_for_test import Log, LogLevel
 
 class RuntimeException (Exception):
     def __init__ (self, message):
-        super().__init__(Log(Fore.RED, message))
+        super().__init__(Log(LogLevel.INFORED, message))
     
 def checkIfProcessRunning(processName):
     cmd = f"pgrep -f {processName}"
@@ -30,45 +26,42 @@ def checkIfProcessRunning(processName):
 def killProcess(name):
     pids = checkIfProcessRunning(name)
     if pids:
-        Log(Fore.GREEN, f"Killing '{name}' processes with PIDs: {', '.join(pids)}")
+        Log(LogLevel.INFOGREEN, f"Killing '{name}' processes with PIDs: {', '.join(pids)}")
         for pid in pids:
             try:
                 p = subprocess.run(['kill', pid])
                 if p.returncode != 0 and bool(checkIfProcessRunning(name)):
                     raise RuntimeException(f"Could not kill {name} with pid {pid}")
             except Exception as e:
-                Log(Fore.RED, f"Failed to kill process {name} pid:{pid}. Exception occured: [code:{e}, msg:{e.stderr}]")
-                raise               
+                raise RuntimeException(f"Failed to kill process {name} pid:{pid}. Exception occured: [code:{e}, msg:{e.stderr}]")
     #else:
-    #    Log(Fore.WHITE, 'process not running : ' + name)
+    #    Log(LogLevel.INFO, 'process not running : ' + name)
 
 
 def cleanup(fp):
     '''
     kill both servers, receivers and clean shared memory
     '''
-    Log(Fore.GREEN, 'Cleaning up...')
+    Log(LogLevel.INFOGREEN, 'Cleaning up...')
     killProcess('DetectorServer_virtual')
     killProcess('slsReceiver')
     killProcess('slsMultiReceiver')
     cleanSharedmemory(fp)
 
 def cleanSharedmemory(fp):
-    Log(Fore.GREEN, 'Cleaning up shared memory...')
+    Log(LogLevel.INFOGREEN, 'Cleaning up shared memory...')
     try:
         p = subprocess.run(['sls_detector_get', 'free'], stdout=fp, stderr=fp)
     except:
-        Log(Fore.RED, 'Could not free shared memory')
-        raise
+        raise RuntimeException('Could not free shared memory')
 
 def startProcessInBackground(name):
     try:
         # in background and dont print output
         p = subprocess.Popen(name.split(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, restore_signals=False) 
-        Log(Fore.GREEN, 'Starting up ' + name + ' ...')
+        Log(LogLevel.INFOGREEN, 'Starting up ' + name + ' ...')
     except Exception as e:
-        Log(Fore.RED, f'Could not start {name}:{e}')
-        raise
+        raise RuntimeException(f'Could not start {name}:{e}')
 
 def startServer(name):
     
@@ -77,7 +70,7 @@ def startServer(name):
     if name == 'eiger':
         startProcessInBackground(name + 'DetectorServer_virtual -p' + str(HALFMOD2_TCP_CNTRL_PORTNO))
     tStartup = 6
-    Log(Fore.WHITE, 'Takes ' + str(tStartup) + ' seconds... Please be patient')
+    Log(LogLevel.INFO, 'Takes ' + str(tStartup) + ' seconds... Please be patient')
     time.sleep(tStartup)
 
 def startReceiver(name):
@@ -88,7 +81,7 @@ def startReceiver(name):
     time.sleep(2)
 
 def loadConfig(name, rx_hostname, settingsdir):
-    Log(Fore.GREEN, 'Loading config')
+    Log(LogLevel.INFOGREEN, 'Loading config')
     try:
         d = Detector()
         if name == 'eiger':
@@ -116,11 +109,10 @@ def loadConfig(name, rx_hostname, settingsdir):
         if d.type == detectorType.XILINX_CHIPTESTBOARD:
             d.configureTransceiver()
     except:
-        Log(Fore.RED, 'Could not load config for ' + name)
-        raise
+        raise RuntimeException('Could not load config for ' + name)
 
 def startCmdTests(name, fp, fname):
-    Log(Fore.GREEN, 'Cmd Tests for ' + name)
+    Log(LogLevel.INFOGREEN, 'Cmd Tests for ' + name)
     cmd = 'tests --abort [.cmdcall] -s -o ' + fname
     try:
         subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
@@ -132,15 +124,14 @@ def startCmdTests(name, fp, fname):
             if "FAILED" in line:
                 msg = 'Cmd tests failed for ' + name + '!!!'
                 sys.stdout = original_stdout
-                Log(Fore.RED, msg)
-                Log(Fore.RED, line)
+                Log(LogLevel.ERROR, f"{msg}\n{line}")
                 sys.stdout = fp
                 raise Exception(msg)
 
-    Log(Fore.GREEN, 'Cmd Tests successful for ' + name)
+    Log(LogLevel.INFOGREEN, 'Cmd Tests successful for ' + name)
 
 def startGeneralTests(fp, fname):
-    Log(Fore.GREEN, 'General Tests')
+    Log(LogLevel.INFOGREEN, 'General Tests')
     cmd = 'tests --abort -s -o ' + fname
     try:
         subprocess.run(cmd.split(), stdout=fp, stderr=fp, check=True, text=True)
@@ -152,11 +143,11 @@ def startGeneralTests(fp, fname):
             if "FAILED" in line:
                 msg = 'General tests failed !!!'
                 sys.stdout = original_stdout
-                Log(Fore.RED, msg + '\n' + line)
+                Log(LogLevel.ERROR, msg + '\n' + line)
                 sys.stdout = fp
                 raise Exception(msg)
 
-    Log(Fore.GREEN, 'General Tests successful')
+    Log(LogLevel.INFOGREEN, 'General Tests successful')
 
 
 
@@ -182,7 +173,7 @@ else:
     servers = args.servers
 
 
-Log(Fore.WHITE, 'Arguments:\nrx_hostname: ' + args.rx_hostname + '\nsettingspath: \'' + args.settingspath + '\nservers: \'' + ' '.join(servers) + '\'') 
+Log(LogLevel.INFO, 'Arguments:\nrx_hostname: ' + args.rx_hostname + '\nsettingspath: \'' + args.settingspath + '\nservers: \'' + ' '.join(servers) + '\'') 
 
 
 # redirect to file
@@ -190,7 +181,7 @@ prefix_fname = '/tmp/slsDetectorPackage_virtual_test'
 original_stdout = sys.stdout
 original_stderr = sys.stderr
 fname = prefix_fname + '_log.txt'
-Log(Fore.BLUE, '\nLog File: ' + fname) 
+Log(LogLevel.INFOBLUE, '\nLog File: ' + fname) 
 
 with open(fname, 'w') as fp:
 
@@ -198,10 +189,10 @@ with open(fname, 'w') as fp:
 
     # general tests
     file_results = prefix_fname + '_results_general.txt'
-    Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
+    Log(LogLevel.INFOBLUE, 'General tests (results: ' + file_results + ')')
     sys.stdout = fp
     sys.stderr = fp
-    Log(Fore.BLUE, 'General tests (results: ' + file_results + ')')
+    Log(LogLevel.INFOBLUE, 'General tests (results: ' + file_results + ')')
 
     try:
         cleanup(fp)
@@ -215,10 +206,10 @@ with open(fname, 'w') as fp:
                 sys.stdout = original_stdout
                 sys.stderr = original_stderr
                 file_results = prefix_fname + '_results_cmd_' + server + '.txt'
-                Log(Fore.BLUE, 'Cmd tests for ' + server + ' (results: ' + file_results + ')')
+                Log(LogLevel.INFOBLUE, 'Cmd tests for ' + server + ' (results: ' + file_results + ')')
                 sys.stdout = fp
                 sys.stderr = fp
-                Log(Fore.BLUE, 'Cmd tests for ' + server + ' (results: ' + file_results + ')')
+                Log(LogLevel.INFOBLUE, 'Cmd tests for ' + server + ' (results: ' + file_results + ')')
                 
                 # cmd tests for det
                 cleanup(fp)
@@ -232,7 +223,7 @@ with open(fname, 'w') as fp:
                 # redirect to terminal
                 sys.stdout = original_stdout
                 sys.stderr = original_stderr
-                Log(Fore.RED, f'Exception caught while testing {server}. Cleaning up...')
+                Log(LogLevel.INFORED, f'Exception caught while testing {server}. Cleaning up...')
                 testError = True
                 break
 
@@ -240,13 +231,13 @@ with open(fname, 'w') as fp:
         sys.stdout = original_stdout
         sys.stderr = original_stderr
         if not testError:
-            Log(Fore.GREEN, 'Passed all tests for virtual detectors \n' + str(servers))
+            Log(LogLevel.INFOGREEN, 'Passed all tests for virtual detectors \n' + str(servers))
 
 
     except Exception as e:
         # redirect to terminal
         sys.stdout = original_stdout
         sys.stderr = original_stderr
-        Log(Fore.RED, f'Exception caught with general testing. Cleaning up...')
+        Log(LogLevel.INFORED, f'Exception caught with general testing. Cleaning up...')
         cleanSharedmemory(sys.stdout)
         

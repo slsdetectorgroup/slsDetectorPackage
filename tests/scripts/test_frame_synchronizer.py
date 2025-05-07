@@ -115,6 +115,7 @@ def startTestsForAll(args, fp):
             acquire()
             testFramesCaught(server, args.num_frames)
             testZmqHeadetTypeCount(server, args.num_mods, args.num_frames, fp)
+            Log(LogLevel.INFO, '\n')
         except Exception as e:
             raise RuntimeException(f'Synchronizer Tests failed')
 

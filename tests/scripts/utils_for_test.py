@@ -71,7 +71,7 @@ def killProcess(name, fp):
                 if p.returncode != 0 and bool(checkIfProcessRunning(name)):
                     raise RuntimeException(f"Could not kill {name} with pid {pid}")
             except Exception as e:
-                raise RuntimeException(f"Failed to kill process {name} pid:{pid}. Error: {str(e)}]") from e
+                raise RuntimeException(f"Failed to kill process {name} pid:{pid}. Error: {str(e)}") from e
     #else:
     #    Log(LogLevel.INFO, 'process not running : ' + name)
 

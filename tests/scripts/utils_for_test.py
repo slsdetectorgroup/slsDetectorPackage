@@ -229,7 +229,7 @@ def ParseArguments(description, default_num_mods=1):
             'jungfrau',
             'mythen3',
             'gotthard2',
-            'gotthard'
+            'gotthard',
             'ctb',
             'moench',
             'xilinx_ctb'

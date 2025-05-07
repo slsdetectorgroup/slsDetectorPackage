@@ -71,7 +71,7 @@ def killProcess(name, fp):
                 if p.returncode != 0 and bool(checkIfProcessRunning(name)):
                     raise RuntimeException(f"Could not kill {name} with pid {pid}")
             except Exception as e:
-                raise RuntimeException(f"Failed to kill process {name} pid:{pid}. Exception occured: [code:{e}, msg:{e.stderr}]")
+                raise RuntimeException(f"Failed to kill process {name} pid:{pid}. Error: {str(e)}]") from e
     #else:
     #    Log(LogLevel.INFO, 'process not running : ' + name)
 
@@ -101,7 +101,7 @@ def startProcessInBackground(cmd, fp):
     try:
         p = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, restore_signals=False) 
     except Exception as e:
-        raise RuntimeException(f'Failed to start {cmd}:{e}')
+        raise RuntimeException(f'Failed to start {cmd}:{str(e)}') from e
 
 
 def startProcessInBackgroundWithLogFile(cmd, fp, log_file_name):
@@ -111,7 +111,7 @@ def startProcessInBackgroundWithLogFile(cmd, fp, log_file_name):
         with open(log_file_name, 'w') as log_fp:
             subprocess.Popen(cmd, stdout=log_fp, stderr=log_fp, text=True)
     except Exception as e:
-        raise RuntimeException(f'Failed to start {cmd}:{e}')
+        raise RuntimeException(f'Failed to start {cmd}:{str(e)}') from e
 
 
 def runProcessWithLogFile(name, cmd, fp, log_file_name):
@@ -124,8 +124,8 @@ def runProcessWithLogFile(name, cmd, fp, log_file_name):
     except subprocess.CalledProcessError as e:
         pass    
     except Exception as e:
-        Log(LogLevel.ERROR, f'Failed to run {name}:{e}', fp)
-        raise RuntimeException(f'Failed to run {name}:{e}')
+        Log(LogLevel.ERROR, f'Failed to run {name}:{str(e)}', fp)
+        raise RuntimeException(f'Failed to run {name}:{str(e)}')
     
     with open (log_file_name, 'r') as f:
         for line in f:
@@ -154,7 +154,7 @@ def connectToVirtualServers(name, num_mods):
     try:
         d = Detector()
     except Exception as e:
-        raise RuntimeException(f'Could not create Detector object for {name}. Error: {str(e)}')
+        raise RuntimeException(f'Could not create Detector object for {name}. Error: {str(e)}') from e
 
     counts_sec = 5
     while (counts_sec != 0):
@@ -200,7 +200,7 @@ def loadConfig(name, rx_hostname, settingsdir, fp, num_mods = 1, num_frames = 1)
 
         d.frames = num_frames
     except Exception as e:
-        raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}')
+        raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
 
 
 def ParseArguments(description, default_num_mods=1):

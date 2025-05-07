@@ -65,7 +65,7 @@ def startCmdTestsForAll(args, fp):
             loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, fp=fp, num_mods=num_mods)
             runProcessWithLogFile('Cmd Tests for ' + server, cmd, fp, fname)
         except Exception as e:
-            raise RuntimeException(f'Cmd Tests failed for {server}.')
+            raise RuntimeException(f'Cmd Tests failed for {server}.') from e
 
     Log(LogLevel.INFOGREEN, 'Passed all tests for all detectors \n' + str(args.servers))
 

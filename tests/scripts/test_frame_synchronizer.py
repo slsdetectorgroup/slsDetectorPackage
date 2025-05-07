@@ -44,7 +44,7 @@ def startFrameSynchronizer(num_mods, fp):
     time.sleep(1)
 
 
-def acquire():
+def acquire(fp):
     Log(LogLevel.INFO, 'Acquiring')
     Log(LogLevel.INFO, 'Acquiring', fp)
     d = Detector()
@@ -112,7 +112,7 @@ def startTestsForAll(args, fp):
             startFrameSynchronizerPullSocket(server, fp)
             startFrameSynchronizer(args.num_mods, fp)
             loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, fp=fp, num_mods=args.num_mods, num_frames=args.num_frames)
-            acquire()
+            acquire(fp)
             testFramesCaught(server, args.num_frames)
             testZmqHeadetTypeCount(server, args.num_mods, args.num_frames, fp)
             Log(LogLevel.INFO, '\n')

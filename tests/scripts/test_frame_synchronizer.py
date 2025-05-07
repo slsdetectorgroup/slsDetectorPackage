@@ -96,7 +96,7 @@ def testZmqHeadetTypeCount(name, num_mods, num_frames, fp):
                 msg = f"Expected {expected_count} '{htype}' entries, found {htype_counts[htype]}"
                 raise RuntimeException(msg)
     except Exception as e:
-        raise RuntimeException(f'Failed to get zmq header count type. Error:{e}')
+        raise RuntimeException(f'Failed to get zmq header count type. Error:{str(e)}') from e
         
     Log(LogLevel.INFOGREEN, f"Zmq Header type count test passed for {name}")
     Log(LogLevel.INFOGREEN, f"Zmq Header type count test passed for {name}", fp)
@@ -117,7 +117,7 @@ def startTestsForAll(args, fp):
             testZmqHeadetTypeCount(server, args.num_mods, args.num_frames, fp)
             Log(LogLevel.INFO, '\n')
         except Exception as e:
-            raise RuntimeException(f'Synchronizer Tests failed')
+            raise RuntimeException(f'Synchronizer Tests failed') from e
 
     Log(LogLevel.INFOGREEN, 'Passed all synchronizer tests for all detectors \n' + str(args.servers))
   

@@ -224,20 +224,24 @@ void Correlate(FrameStatus *stat) {
                             msg_list.insert(msg_list.end(),
                                             stat->frames[port][fnum].begin(),
                                             stat->frames[port][fnum].end());
-                            stat->frames[port].erase(fnum);
                         }
                     }
                     LOG(printHeadersLevel)
                         << "Sending data packets for fnum " << fnum;
                     zmq_send_multipart(socket, msg_list);
+                    // clean up
                     for (const auto &it : stat->frames) {
                         const uint16_t port = it.first;
-                        // clean up
-                        for (zmq_msg_t *msg : stat->frames[port][fnum]) {
-                            if (msg) {
-                                zmq_msg_close(msg);
-                                delete msg;
+                        const FrameMap &frame_map = it.second;
+                        auto frame = frame_map.find(fnum);
+                        if (frame != frame_map.end()) {
+                            for (zmq_msg_t *msg : frame->second) {
+                                if (msg) {
+                                    zmq_msg_close(msg);
+                                    delete msg;
+                                }
                             }
+                            stat->frames[port].erase(fnum);
                         }
                     }
                 }
@@ -253,6 +257,21 @@ void Correlate(FrameStatus *stat) {
                     }
                 }
                 stat->ends.clear();
+                // clean up old frames
+                for (auto &it : stat->frames) {
+                    FrameMap &frame_map = it.second;
+                    for (auto &frame : frame_map) {
+                        for (zmq_msg_t *msg : frame.second) {
+                            if (msg) {
+                                zmq_msg_close(msg);
+                                delete msg;
+                            }
+                        }
+                        frame.second.clear();
+                    }
+                    frame_map.clear();
+                }
+                stat->frames.clear();
             }
         }
     }

@@ -140,6 +140,8 @@ def startDetectorVirtualServer(name :str, num_mods, fp):
     for i in range(num_mods):
         port_no = SERVER_START_PORTNO + (i * 2)
         cmd = [name + 'DetectorServer_virtual', '-p', str(port_no)]
+        if name == 'gotthard':
+            cmd += ['-m', '1']
         startProcessInBackground(cmd, fp)
         match name:
             case 'jungfrau':

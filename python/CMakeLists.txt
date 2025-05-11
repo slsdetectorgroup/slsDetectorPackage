@@ -65,6 +65,9 @@ configure_file( scripts/test_virtual.py
     ${CMAKE_BINARY_DIR}/test_virtual.py 
 )
 
+configure_file(scripts/frameSynchronizerPullSocket.py 
+   ${CMAKE_BINARY_DIR}/bin/frameSynchronizerPullSocket.py COPYONLY)
+
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/../VERSION  
     ${CMAKE_BINARY_DIR}/bin/slsdet/VERSION
 )

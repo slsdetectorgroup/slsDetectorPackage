@@ -64,6 +64,10 @@ configure_file( scripts/test_virtual.py
     ${CMAKE_BINARY_DIR}/test_virtual.py 
 )
 
+configure_file(scripts/frameSynchronizerPullSocket.py 
+    ${CMAKE_BINARY_DIR}/bin/frameSynchronizerPullSocket.py COPYONLY)
+
+
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/../VERSION  
     ${CMAKE_BINARY_DIR}/bin/slsdet/VERSION
 )
@@ -77,3 +81,4 @@ if(SLS_INSTALL_PYTHONEXT)
     install(FILES ${PYTHON_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/python/slsdet)
     install(FILES ../VERSION DESTINATION ${CMAKE_INSTALL_PREFIX}/python/slsdet)
 endif()
+

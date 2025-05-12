@@ -65,8 +65,8 @@
     (0x000000FF << STATUS_PT_CNTRL_STTS_OFF_OFST)
 #define STATUS_IDLE_MSK (0x677FF)
 
-/* Look at me RO register TODO */
-#define LOOK_AT_ME_REG (0x03 << MEM_MAP_SHIFT)
+/* Register containing the git hash of the FPGA firmware */
+#define FIRMWARE_GIT_HASH_REG (0x03 << MEM_MAP_SHIFT)
 
 /* System Status RO register */
 #define SYSTEM_STATUS_REG (0x04 << MEM_MAP_SHIFT)
@@ -198,12 +198,43 @@
 #define FIFO_TIN_STATUS_FIFO_EMPTY_4_MSK    (0x00000001 << FIFO_TIN_STATUS_FIFO_EMPTY_4_OFST)
 #define FIFO_TIN_STATUS_FIFO_EMPTY_ALL_MSK  (0x0000000F << FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST)
 
+/* FIFO Transceiver Fill level RO register */
+#define FIFO_TIN_FILL_REG                   (0x45 << MEM_MAP_SHIFT)
+#define FIFO_TIN_FILL_FIFO_1_OFST           (0)
+#define FIFO_TIN_FILL_FIFO_1_MSK            (0x00003FFF << FIFO_TIN_FILL_FIFO__1_OFST)
+#define FIFO_TIN_FILL_FIFO_2_OFST           (16)
+#define FIFO_TIN_FILL_FIFO_2_MSK            (0x00003FFF << FIFO_TIN_FILL_FIFO__2_OFST)
+
+/* FIFO ADC Fill level RO register */
+#define FIFO_ADC_FILL_REG                   (0x46 << MEM_MAP_SHIFT)
+#define FIFO_ADC_FILL_FIFO_OFST             (0)
+#define FIFO_ADC_FILL_FIFO_MSK              (0x00003FFF << FIFO_ADC_FILL_FIFO_OFST)
+
+/* Enable continuos readout register */
+#define CONTINUOUS_RO_ENABLE_REG            (0x47 << MEM_MAP_SHIFT)
+#define CONTINUOUS_RO_ADC_ENABLE_OFST       (0)
+#define CONTINUOUS_RO_TIN_ENABLE_OFST       (1)
+#define CONTINUOUS_RO_DBIT_ENABLE_OFST      (2)
+#define CONTINUOUS_RO_ADC_ENABLE_MSK        (0x00000001 << CONTINUOUS_RO_ADC_ENABLE_OFST)
+#define CONTINUOUS_RO_TIN_ENABLE_MSK        (0x00000001 << CONTINUOUS_RO_TIN_ENABLE_OFST)
+#define CONTINUOUS_RO_DBIT_ENABLE_MSK       (0x00000001 << CONTINUOUS_RO_DBIT_ENABLE_OFST)
+#define DBIT_INJECT_COUNTER_ENA_OFST        (3) // continuously injects fake-data into the dbit fifo when enabled. 
+#define DBIT_INJECT_COUNTER_ENA_MSK         (0x00000001 << DBIT_INJECT_COUNTER_ENA_OFST)
+#define DBIT_INJECT_COUNTER_CLKDIV_OFST     (8) // Additional clock divider for fake-data injection
+#define DBIT_INJECT_COUNTER_CLKDIV_MSK      (0x000000FF << DBIT_INJECT_COUNTER_CLKDIV_OFST)
+
+/* 64-bit FPGA chip ID. Unique for every device. read-only */
+#define FPGA_chipID_0_REG                       (0x48 << MEM_MAP_SHIFT)
+#define FPGA_chipID_1_REG                       (0x49 << MEM_MAP_SHIFT)
+
 /* FIFO Transceiver In 64 bit RO register */
 #define FIFO_TIN_LSB_REG (0x31 << MEM_MAP_SHIFT)
 #define FIFO_TIN_MSB_REG (0x32 << MEM_MAP_SHIFT)
 
 /* FIFO Digital In Status RO register */
 #define FIFO_DIN_STATUS_REG             (0x3B << MEM_MAP_SHIFT)
+#define FIFO_DIN_STATUS_FIFO_FILL_OFST  (0)
+#define FIFO_DIN_STATUS_FIFO_FILL_MSK   (0x00003FFF)
 #define FIFO_DIN_STATUS_FIFO_FULL_OFST  (30)
 #define FIFO_DIN_STATUS_FIFO_FULL_MSK   (0x00000001 << FIFO_DIN_STATUS_FIFO_FULL_OFST)
 #define FIFO_DIN_STATUS_FIFO_EMPTY_OFST (31)
@@ -272,44 +303,6 @@
 #define DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_MSK   (0x00000003 << DUMMY_TRNSCVR_FIFO_CHNNL_SLCT_OFST)
 #define DUMMY_TRNSCVR_FIFO_RD_STRBE_OFST    (14)
 #define DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK     (0x00000001 << DUMMY_TRNSCVR_FIFO_RD_STRBE_OFST)
-
-/* Receiver IP Address RW register */
-#define RX_IP_REG (0x45 << MEM_MAP_SHIFT)
-
-/* UDP Port RW register */
-#define UDP_PORT_REG (0x46 << MEM_MAP_SHIFT)
-
-#define UDP_PORT_RX_OFST (0)
-#define UDP_PORT_RX_MSK  (0x0000FFFF << UDP_PORT_RX_OFST)
-#define UDP_PORT_TX_OFST (16)
-#define UDP_PORT_TX_MSK  (0x0000FFFF << UDP_PORT_TX_OFST)
-
-/* Receiver Mac Address 64 bit RW register */
-#define RX_MAC_LSB_REG (0x47 << MEM_MAP_SHIFT)
-#define RX_MAC_MSB_REG (0x48 << MEM_MAP_SHIFT)
-
-#define RX_MAC_LSB_OFST (0)
-#define RX_MAC_LSB_MSK  (0xFFFFFFFF << RX_MAC_LSB_OFST)
-#define RX_MAC_MSB_OFST (0)
-#define RX_MAC_MSB_MSK  (0x0000FFFF << RX_MAC_MSB_OFST)
-
-/* Detector/ Transmitter Mac Address 64 bit RW register */
-#define TX_MAC_LSB_REG (0x49 << MEM_MAP_SHIFT)
-#define TX_MAC_MSB_REG (0x4A << MEM_MAP_SHIFT)
-
-#define TX_MAC_LSB_OFST (0)
-#define TX_MAC_LSB_MSK  (0xFFFFFFFF << TX_MAC_LSB_OFST)
-#define TX_MAC_MSB_OFST (0)
-#define TX_MAC_MSB_MSK  (0x0000FFFF << TX_MAC_MSB_OFST)
-
-/* Detector/ Transmitter IP Address RW register */
-#define TX_IP_REG (0x4B << MEM_MAP_SHIFT)
-
-/* Detector/ Transmitter IP Checksum RW register */
-#define TX_IP_CHECKSUM_REG (0x4C << MEM_MAP_SHIFT)
-
-#define TX_IP_CHECKSUM_OFST (0)
-#define TX_IP_CHECKSUM_MSK  (0x0000FFFF << TX_IP_CHECKSUM_OFST)
 
 /* Configuration RW register */
 #define CONFIG_REG (0x4D << MEM_MAP_SHIFT)

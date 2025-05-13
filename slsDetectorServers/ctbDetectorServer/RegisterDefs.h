@@ -119,7 +119,7 @@
 #define MOD_SERIAL_NUMBER_VRSN_MSK  (0x0000003F << MOD_SERIAL_NUMBER_VRSN_OFST)
 
 /* API Version RO register */
-#define API_VERSION_REG (0x0F << MEM_MAP_SHIFT)
+#define API_VERSION_REG (0x0B << MEM_MAP_SHIFT)
 
 #define API_VERSION_OFST           (0)
 #define API_VERSION_MSK            (0x00FFFFFF << API_VERSION_OFST)
@@ -128,24 +128,24 @@
 
 /* Time from Start 64 bit RO register. t = GCLK x 50 ns. Reset using
  * CONTROL_CRST. TODO */
-#define TIME_FROM_START_LSB_REG (0x10 << MEM_MAP_SHIFT)
-#define TIME_FROM_START_MSB_REG (0x11 << MEM_MAP_SHIFT)
+#define TIME_FROM_START_LSB_REG (0x97 << MEM_MAP_SHIFT)
+#define TIME_FROM_START_MSB_REG (0x98 << MEM_MAP_SHIFT)
 
 /* Delay Left 64 bit RO register. t = DLY x 50 ns. TODO */
-#define DELAY_LEFT_LSB_REG (0x12 << MEM_MAP_SHIFT)
-#define DELAY_LEFT_MSB_REG (0x13 << MEM_MAP_SHIFT)
+#define DELAY_LEFT_LSB_REG (0x8D << MEM_MAP_SHIFT)
+#define DELAY_LEFT_MSB_REG (0x8E << MEM_MAP_SHIFT)
 
 /* Triggers Left 64 bit RO register TODO */
-#define CYCLES_LEFT_LSB_REG (0x14 << MEM_MAP_SHIFT)
-#define CYCLES_LEFT_MSB_REG (0x15 << MEM_MAP_SHIFT)
+#define CYCLES_LEFT_LSB_REG (0x8F << MEM_MAP_SHIFT)
+#define CYCLES_LEFT_MSB_REG (0x90 << MEM_MAP_SHIFT)
 
 /* Frames Left 64 bit RO register TODO */
-#define FRAMES_LEFT_LSB_REG (0x16 << MEM_MAP_SHIFT)
-#define FRAMES_LEFT_MSB_REG (0x17 << MEM_MAP_SHIFT)
+#define FRAMES_LEFT_LSB_REG (0x91 << MEM_MAP_SHIFT)
+#define FRAMES_LEFT_MSB_REG (0x92 << MEM_MAP_SHIFT)
 
 /* Period Left 64 bit RO register. t = T x 50 ns. TODO */
-#define PERIOD_LEFT_LSB_REG (0x18 << MEM_MAP_SHIFT)
-#define PERIOD_LEFT_MSB_REG (0x19 << MEM_MAP_SHIFT)
+#define PERIOD_LEFT_LSB_REG (0x93 << MEM_MAP_SHIFT)
+#define PERIOD_LEFT_MSB_REG (0x94 << MEM_MAP_SHIFT)
 
 /* Exposure Time Left 64 bit RO register */
 // #define EXPTIME_LEFT_LSB_REG                (0x1A << MEM_MAP_SHIFT) // Not
@@ -160,34 +160,34 @@
 //// Not used in FW
 
 /* Data In 64 bit RO register TODO */
-#define DATA_IN_LSB_REG (0x1E << MEM_MAP_SHIFT)
-#define DATA_IN_MSB_REG (0x1F << MEM_MAP_SHIFT)
+#define DATA_IN_LSB_REG (0x10 << MEM_MAP_SHIFT)
+#define DATA_IN_MSB_REG (0x11 << MEM_MAP_SHIFT)
 
 /* Pattern Out 64 bit RO register */
-#define PATTERN_OUT_LSB_REG (0x20 << MEM_MAP_SHIFT)
-#define PATTERN_OUT_MSB_REG (0x21 << MEM_MAP_SHIFT)
+#define PATTERN_OUT_LSB_REG (0x80 << MEM_MAP_SHIFT)
+#define PATTERN_OUT_MSB_REG (0x81 << MEM_MAP_SHIFT)
 
 /* Frame number of next acquisition register (64 bit register) */
-#define NEXT_FRAME_NUMB_LOCAL_LSB_REG (0x22 << MEM_MAP_SHIFT)
-#define NEXT_FRAME_NUMB_LOCAL_MSB_REG (0x23 << MEM_MAP_SHIFT)
+#define NEXT_FRAME_NUMB_LOCAL_LSB_REG (0x12 << MEM_MAP_SHIFT)
+#define NEXT_FRAME_NUMB_LOCAL_MSB_REG (0x13 << MEM_MAP_SHIFT)
 
 /* Frames From Start PG 64 bit RO register. Reset using CONTROL_CRST. TODO */
-#define FRAMES_FROM_START_PG_LSB_REG (0x24 << MEM_MAP_SHIFT)
-#define FRAMES_FROM_START_PG_MSB_REG (0x25 << MEM_MAP_SHIFT)
+#define FRAMES_FROM_START_PG_LSB_REG (0x99 << MEM_MAP_SHIFT)
+#define FRAMES_FROM_START_PG_MSB_REG (0x9A << MEM_MAP_SHIFT)
 
 /* Start Frame Time (Measurement Time) 64 bit register (timestamp at a frame
  * start until reset) TODO */
-#define START_FRAME_TIME_LSB_REG (0x26 << MEM_MAP_SHIFT)
-#define START_FRAME_TIME_MSB_REG (0x27 << MEM_MAP_SHIFT)
+#define START_FRAME_TIME_LSB_REG (0x9B << MEM_MAP_SHIFT)
+#define START_FRAME_TIME_MSB_REG (0x9C << MEM_MAP_SHIFT)
 
 /* Power Status RO register */
-#define POWER_STATUS_REG (0x29 << MEM_MAP_SHIFT)
+#define POWER_STATUS_REG (0x18 << MEM_MAP_SHIFT)
 
 #define POWER_STATUS_ALRT_OFST (27)
 #define POWER_STATUS_ALRT_MSK  (0x0000001F << POWER_STATUS_ALRT_OFST)
 
 /* FIFO Transceiver In Status RO register */
-#define FIFO_TIN_STATUS_REG                 (0x30 << MEM_MAP_SHIFT)
+#define FIFO_TIN_STATUS_REG                 (0x1A << MEM_MAP_SHIFT)
 #define FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST   (4)
 #define FIFO_TIN_STATUS_FIFO_EMPTY_1_MSK    (0x00000001 << FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST)
 #define FIFO_TIN_STATUS_FIFO_EMPTY_2_OFST   (5)
@@ -199,19 +199,19 @@
 #define FIFO_TIN_STATUS_FIFO_EMPTY_ALL_MSK  (0x0000000F << FIFO_TIN_STATUS_FIFO_EMPTY_1_OFST)
 
 /* FIFO Transceiver Fill level RO register */
-#define FIFO_TIN_FILL_REG                   (0x45 << MEM_MAP_SHIFT)
+#define FIFO_TIN_FILL_REG                   (0x25 << MEM_MAP_SHIFT)
 #define FIFO_TIN_FILL_FIFO_1_OFST           (0)
 #define FIFO_TIN_FILL_FIFO_1_MSK            (0x00003FFF << FIFO_TIN_FILL_FIFO__1_OFST)
 #define FIFO_TIN_FILL_FIFO_2_OFST           (16)
 #define FIFO_TIN_FILL_FIFO_2_MSK            (0x00003FFF << FIFO_TIN_FILL_FIFO__2_OFST)
 
 /* FIFO ADC Fill level RO register */
-#define FIFO_ADC_FILL_REG                   (0x46 << MEM_MAP_SHIFT)
+#define FIFO_ADC_FILL_REG                   (0x26 << MEM_MAP_SHIFT)
 #define FIFO_ADC_FILL_FIFO_OFST             (0)
 #define FIFO_ADC_FILL_FIFO_MSK              (0x00003FFF << FIFO_ADC_FILL_FIFO_OFST)
 
 /* Enable continuos readout register */
-#define CONTINUOUS_RO_ENABLE_REG            (0x47 << MEM_MAP_SHIFT)
+#define CONTINUOUS_RO_ENABLE_REG            (0x27 << MEM_MAP_SHIFT)
 #define CONTINUOUS_RO_ADC_ENABLE_OFST       (0)
 #define CONTINUOUS_RO_TIN_ENABLE_OFST       (1)
 #define CONTINUOUS_RO_DBIT_ENABLE_OFST      (2)
@@ -224,15 +224,15 @@
 #define DBIT_INJECT_COUNTER_CLKDIV_MSK      (0x000000FF << DBIT_INJECT_COUNTER_CLKDIV_OFST)
 
 /* 64-bit FPGA chip ID. Unique for every device. read-only */
-#define FPGA_chipID_0_REG                       (0x48 << MEM_MAP_SHIFT)
-#define FPGA_chipID_1_REG                       (0x49 << MEM_MAP_SHIFT)
+#define FPGA_chipID_0_REG                       (0x28 << MEM_MAP_SHIFT)
+#define FPGA_chipID_1_REG                       (0x29 << MEM_MAP_SHIFT)
 
 /* FIFO Transceiver In 64 bit RO register */
-#define FIFO_TIN_LSB_REG (0x31 << MEM_MAP_SHIFT)
-#define FIFO_TIN_MSB_REG (0x32 << MEM_MAP_SHIFT)
+#define FIFO_TIN_LSB_REG (0x1B << MEM_MAP_SHIFT)
+#define FIFO_TIN_MSB_REG (0x1C << MEM_MAP_SHIFT)
 
 /* FIFO Digital In Status RO register */
-#define FIFO_DIN_STATUS_REG             (0x3B << MEM_MAP_SHIFT)
+#define FIFO_DIN_STATUS_REG             (0x1D << MEM_MAP_SHIFT)
 #define FIFO_DIN_STATUS_FIFO_FILL_OFST  (0)
 #define FIFO_DIN_STATUS_FIFO_FILL_MSK   (0x00003FFF)
 #define FIFO_DIN_STATUS_FIFO_FULL_OFST  (30)
@@ -241,11 +241,11 @@
 #define FIFO_DIN_STATUS_FIFO_EMPTY_MSK  (0x00000001 << FIFO_DIN_STATUS_FIFO_EMPTY_OFST)
 
 /* FIFO Digital In 64 bit RO register */
-#define FIFO_DIN_LSB_REG (0x3C << MEM_MAP_SHIFT)
-#define FIFO_DIN_MSB_REG (0x3D << MEM_MAP_SHIFT)
+#define FIFO_DIN_LSB_REG (0x1E << MEM_MAP_SHIFT)
+#define FIFO_DIN_MSB_REG (0x1F << MEM_MAP_SHIFT)
 
 /* SPI (Serial Peripheral Interface) DAC, HV RW register */
-#define SPI_REG (0x40 << MEM_MAP_SHIFT)
+#define SPI_REG (0x20 << MEM_MAP_SHIFT)
 
 #define SPI_DAC_SRL_DGTL_OTPT_OFST (0)
 #define SPI_DAC_SRL_DGTL_OTPT_MSK  (0x00000001 << SPI_DAC_SRL_DGTL_OTPT_OFST)
@@ -261,7 +261,7 @@
 #define SPI_HV_SRL_CS_OTPT_MSK     (0x00000001 << SPI_HV_SRL_CS_OTPT_OFST)
 
 /* ADC SPI (Serial Peripheral Interface) RW register */
-#define ADC_SPI_REG (0x41 << MEM_MAP_SHIFT)
+#define ADC_SPI_REG (0x21 << MEM_MAP_SHIFT)
 
 #define ADC_SPI_SRL_CLK_OTPT_OFST (0)
 #define ADC_SPI_SRL_CLK_OTPT_MSK  (0x00000001 << ADC_SPI_SRL_CLK_OTPT_OFST)
@@ -271,7 +271,7 @@
 #define ADC_SPI_SRL_CS_OTPT_MSK   (0x0000000F << ADC_SPI_SRL_CS_OTPT_OFST)
 
 /* ADC Offset RW register */
-#define ADC_OFFSET_REG (0x42 << MEM_MAP_SHIFT)
+#define ADC_OFFSET_REG (0x22 << MEM_MAP_SHIFT)
 
 #define ADC_OFFSET_ADC_PPLN_OFST (0)
 #define ADC_OFFSET_ADC_PPLN_MSK  (0x000000FF << ADC_OFFSET_ADC_PPLN_OFST)
@@ -279,7 +279,7 @@
 #define ADC_OFFSET_DBT_PPLN_MSK  (0x000000FF << ADC_OFFSET_DBT_PPLN_OFST)
 
 /* ADC Port Invert RW register */
-#define ADC_PORT_INVERT_REG (0x43 << MEM_MAP_SHIFT)
+#define ADC_PORT_INVERT_REG (0x23 << MEM_MAP_SHIFT)
 
 #define ADC_PORT_INVERT_0_INPT_OFST (0)
 #define ADC_PORT_INVERT_0_INPT_MSK  (0x000000FF << ADC_PORT_INVERT_0_INPT_OFST)
@@ -291,7 +291,7 @@
 #define ADC_PORT_INVERT_3_INPT_MSK  (0x000000FF << ADC_PORT_INVERT_3_INPT_OFST)
 
 /* Dummy RW register */
-#define DUMMY_REG (0x44 << MEM_MAP_SHIFT)
+#define DUMMY_REG (0x24 << MEM_MAP_SHIFT)
 
 #define DUMMY_FIFO_CHNNL_SLCT_OFST          (0)
 #define DUMMY_FIFO_CHNNL_SLCT_MSK           (0x0000003F << DUMMY_FIFO_CHNNL_SLCT_OFST)
@@ -305,7 +305,7 @@
 #define DUMMY_TRNSCVR_FIFO_RD_STRBE_MSK     (0x00000001 << DUMMY_TRNSCVR_FIFO_RD_STRBE_OFST)
 
 /* Configuration RW register */
-#define CONFIG_REG (0x4D << MEM_MAP_SHIFT)
+#define CONFIG_REG (0x2D << MEM_MAP_SHIFT)
 
 #define CONFIG_LED_DSBL_OFST           (0)
 #define CONFIG_LED_DSBL_MSK            (0x00000001 << CONFIG_LED_DSBL_OFST)
@@ -320,7 +320,7 @@
 #define CONFIG_GB10_SND_UDP_MSK  (0x00000001 << CONFIG_GB10_SND_UDP_OFST)
 
 /* External Signal RW register */
-#define EXT_SIGNAL_REG (0x4E << MEM_MAP_SHIFT)
+#define EXT_SIGNAL_REG (0x2E << MEM_MAP_SHIFT)
 
 #define EXT_SIGNAL_OFST      (0)
 #define EXT_SIGNAL_MSK       (0x00000001 << EXT_SIGNAL_OFST)
@@ -328,7 +328,7 @@
 #define EXT_SIGNAL_TRGGR_VAL ((0x1 << EXT_SIGNAL_OFST) & EXT_SIGNAL_MSK)
 
 /* Control RW register */
-#define CONTROL_REG (0x4F << MEM_MAP_SHIFT)
+#define CONTROL_REG (0x2F << MEM_MAP_SHIFT)
 
 #define CONTROL_STRT_ACQSTN_OFST (0)
 #define CONTROL_STRT_ACQSTN_MSK  (0x00000001 << CONTROL_STRT_ACQSTN_OFST)
@@ -368,10 +368,10 @@
 #define CONTROL_CLR_ACQSTN_FIFO_MSK  (0x00000001 << CONTROL_CLR_ACQSTN_FIFO_OFST)
 
 /* Reconfiguratble PLL Paramater RW register */
-#define PLL_PARAM_REG (0x50 << MEM_MAP_SHIFT)
+#define PLL_PARAM_REG (0x30 << MEM_MAP_SHIFT)
 
 /* Reconfiguratble PLL Control RW regiser */
-#define PLL_CNTRL_REG (0x51 << MEM_MAP_SHIFT)
+#define PLL_CNTRL_REG (0x31 << MEM_MAP_SHIFT)
 
 #define PLL_CNTRL_RCNFG_PRMTR_RST_OFST (0)
 #define PLL_CNTRL_RCNFG_PRMTR_RST_MSK                                          \
@@ -384,7 +384,7 @@
 #define PLL_CNTRL_ADDR_MSK      (0x0000003F << PLL_CNTRL_ADDR_OFST)
 
 /* Pattern Control RW register */
-#define PATTERN_CNTRL_REG (0x52 << MEM_MAP_SHIFT)
+#define PATTERN_CNTRL_REG (0x88 << MEM_MAP_SHIFT)
 
 #define PATTERN_CNTRL_WR_OFST   (0)
 #define PATTERN_CNTRL_WR_MSK    (0x00000001 << PATTERN_CNTRL_WR_OFST)
@@ -394,7 +394,7 @@
 #define PATTERN_CNTRL_ADDR_MSK  (0x00001FFF << PATTERN_CNTRL_ADDR_OFST)
 
 /* Pattern Limit RW regiser */
-#define PATTERN_LIMIT_REG (0x53 << MEM_MAP_SHIFT)
+#define PATTERN_LIMIT_REG (0x89 << MEM_MAP_SHIFT)
 
 #define PATTERN_LIMIT_STRT_OFST (0)
 #define PATTERN_LIMIT_STRT_MSK  (0x00001FFF << PATTERN_LIMIT_STRT_OFST)
@@ -402,7 +402,7 @@
 #define PATTERN_LIMIT_STP_MSK   (0x00001FFF << PATTERN_LIMIT_STP_OFST)
 
 /* Pattern Loop 0 Address RW regiser */
-#define PATTERN_LOOP_0_ADDR_REG (0x54 << MEM_MAP_SHIFT)
+#define PATTERN_LOOP_0_ADDR_REG (0xA0 << MEM_MAP_SHIFT)
 
 #define PATTERN_LOOP_0_ADDR_STRT_OFST (0)
 #define PATTERN_LOOP_0_ADDR_STRT_MSK                                           \
@@ -411,10 +411,10 @@
 #define PATTERN_LOOP_0_ADDR_STP_MSK  (0x00001FFF << PATTERN_LOOP_0_ADDR_STP_OFST)
 
 /* Pattern Loop 0 Iteration RW regiser */
-#define PATTERN_LOOP_0_ITERATION_REG (0x55 << MEM_MAP_SHIFT)
+#define PATTERN_LOOP_0_ITERATION_REG (0xA1 << MEM_MAP_SHIFT)
 
 /* Pattern Loop 1 Address RW regiser */
-#define PATTERN_LOOP_1_ADDR_REG (0x56 << MEM_MAP_SHIFT)
+#define PATTERN_LOOP_1_ADDR_REG (0xA5 << MEM_MAP_SHIFT)
 
 #define PATTERN_LOOP_1_ADDR_STRT_OFST (0)
 #define PATTERN_LOOP_1_ADDR_STRT_MSK                                           \
@@ -423,10 +423,10 @@
 #define PATTERN_LOOP_1_ADDR_STP_MSK  (0x00001FFF << PATTERN_LOOP_1_ADDR_STP_OFST)
 
 /* Pattern Loop 1 Iteration RW regiser */
-#define PATTERN_LOOP_1_ITERATION_REG (0x57 << MEM_MAP_SHIFT)
+#define PATTERN_LOOP_1_ITERATION_REG (0xA6 << MEM_MAP_SHIFT)
 
 /* Pattern Loop 2 Address RW regiser */
-#define PATTERN_LOOP_2_ADDR_REG (0x58 << MEM_MAP_SHIFT)
+#define PATTERN_LOOP_2_ADDR_REG (0xAA << MEM_MAP_SHIFT)
 
 #define PATTERN_LOOP_2_ADDR_STRT_OFST (0)
 #define PATTERN_LOOP_2_ADDR_STRT_MSK                                           \
@@ -435,29 +435,29 @@
 #define PATTERN_LOOP_2_ADDR_STP_MSK  (0x00001FFF << PATTERN_LOOP_2_ADDR_STP_OFST)
 
 /* Pattern Loop 2 Iteration RW regiser */
-#define PATTERN_LOOP_2_ITERATION_REG (0x59 << MEM_MAP_SHIFT)
+#define PATTERN_LOOP_2_ITERATION_REG (0xAB << MEM_MAP_SHIFT)
 
 /* Pattern Wait 0 RW regiser */
-#define PATTERN_WAIT_0_ADDR_REG (0x5A << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_0_ADDR_REG (0xA2 << MEM_MAP_SHIFT)
 
 #define PATTERN_WAIT_0_ADDR_OFST (0)
 #define PATTERN_WAIT_0_ADDR_MSK  (0x00001FFF << PATTERN_WAIT_0_ADDR_OFST)
 // FIXME: is mask 3FF
 
 /* Pattern Wait 1 RW regiser */
-#define PATTERN_WAIT_1_ADDR_REG (0x5B << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_1_ADDR_REG (0xA7 << MEM_MAP_SHIFT)
 
 #define PATTERN_WAIT_1_ADDR_OFST (0)
 #define PATTERN_WAIT_1_ADDR_MSK  (0x00001FFF << PATTERN_WAIT_1_ADDR_OFST)
 
 /* Pattern Wait 2 RW regiser */
-#define PATTERN_WAIT_2_ADDR_REG (0x5C << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_2_ADDR_REG (0xAC << MEM_MAP_SHIFT)
 
 #define PATTERN_WAIT_2_ADDR_OFST (0)
 #define PATTERN_WAIT_2_ADDR_MSK  (0x00001FFF << PATTERN_WAIT_2_ADDR_OFST)
 
 /* Samples RW register */
-#define SAMPLES_REG (0x5D << MEM_MAP_SHIFT)
+#define SAMPLES_REG (0x32 << MEM_MAP_SHIFT)
 
 #define SAMPLES_DIGITAL_OFST (0)
 #define SAMPLES_DIGITAL_MSK  (0x0000FFFF << SAMPLES_DIGITAL_OFST)
@@ -465,7 +465,7 @@
 #define SAMPLES_ANALOG_MSK   (0x0000FFFF << SAMPLES_ANALOG_OFST)
 
 /** Power RW register */
-#define POWER_REG (0x5E << MEM_MAP_SHIFT)
+#define POWER_REG (0x33 << MEM_MAP_SHIFT)
 
 #define POWER_ENBL_VLTG_RGLTR_OFST  (16)
 #define POWER_ENBL_VLTG_RGLTR_MSK   (0x0000001F << POWER_ENBL_VLTG_RGLTR_OFST)
@@ -473,25 +473,25 @@
 #define POWER_HV_INTERNAL_SLCT_MSK  (0x00000001 << POWER_HV_INTERNAL_SLCT_OFST)
 
 /* Number of samples from transceiver RW register */
-#define SAMPLES_TRANSCEIVER_REG  (0x5F << MEM_MAP_SHIFT)
+#define SAMPLES_TRANSCEIVER_REG  (0x34 << MEM_MAP_SHIFT)
 #define SAMPLES_TRANSCEIVER_OFST (0)
 #define SAMPLES_TRANSCEIVER_MSK  (0x0000FFFF << SAMPLES_TRANSCEIVER_OFST)
 
 /* Delay 64 bit RW register. t = DLY x 50 ns. */
-#define DELAY_LSB_REG (0x60 << MEM_MAP_SHIFT)
-#define DELAY_MSB_REG (0x61 << MEM_MAP_SHIFT)
+#define DELAY_LSB_REG (0x8D << MEM_MAP_SHIFT)
+#define DELAY_MSB_REG (0x8E << MEM_MAP_SHIFT)
 
 /* Triggers 64 bit RW register */
-#define CYCLES_LSB_REG (0x62 << MEM_MAP_SHIFT)
-#define CYCLES_MSB_REG (0x63 << MEM_MAP_SHIFT)
+#define CYCLES_LSB_REG (0x8F << MEM_MAP_SHIFT)
+#define CYCLES_MSB_REG (0x90 << MEM_MAP_SHIFT)
 
 /* Frames 64 bit RW register */
-#define FRAMES_LSB_REG (0x64 << MEM_MAP_SHIFT)
-#define FRAMES_MSB_REG (0x65 << MEM_MAP_SHIFT)
+#define FRAMES_LSB_REG (0x91 << MEM_MAP_SHIFT)
+#define FRAMES_MSB_REG (0x92 << MEM_MAP_SHIFT)
 
 /* Period 64 bit RW register */
-#define PERIOD_LSB_REG (0x66 << MEM_MAP_SHIFT)
-#define PERIOD_MSB_REG (0x67 << MEM_MAP_SHIFT)
+#define PERIOD_LSB_REG (0x93 << MEM_MAP_SHIFT)
+#define PERIOD_MSB_REG (0x94 << MEM_MAP_SHIFT)
 
 /* Period 64 bit RW register */
 // #define EXPTIME_LSB_REG    			    (0x68 << MEM_MAP_SHIFT) //
@@ -506,33 +506,27 @@
 
 /* Pattern IO Control 64 bit RW regiser
  * Each bit configured as output(1)/ input(0) */
-#define PATTERN_IO_CNTRL_LSB_REG (0x6C << MEM_MAP_SHIFT)
-#define PATTERN_IO_CNTRL_MSB_REG (0x6D << MEM_MAP_SHIFT)
-
-/* Pattern IO Clock Control 64 bit RW regiser
- * When bit n enabled (1), clocked output for DIO[n] (T run clock)
- * When bit n disabled (0), Dio[n] driven by its pattern output */
-#define PATTERN_IO_CLK_CNTRL_LSB_REG (0x6E << MEM_MAP_SHIFT)
-#define PATTERN_IO_CLK_CNTRL_MSB_REG (0x6F << MEM_MAP_SHIFT)
+#define PATTERN_IO_CNTRL_LSB_REG (0x8A << MEM_MAP_SHIFT)
+#define PATTERN_IO_CNTRL_MSB_REG (0x8B << MEM_MAP_SHIFT)
 
 /* Pattern In 64 bit RW register */
-#define PATTERN_IN_LSB_REG (0x70 << MEM_MAP_SHIFT)
-#define PATTERN_IN_MSB_REG (0x71 << MEM_MAP_SHIFT)
+#define PATTERN_IN_LSB_REG (0x82 << MEM_MAP_SHIFT)
+#define PATTERN_IN_MSB_REG (0x83 << MEM_MAP_SHIFT)
 
 /* Pattern Wait Timer 0 64 bit RW register. t = PWT1 x T run clock */
-#define PATTERN_WAIT_TIMER_0_LSB_REG (0x72 << MEM_MAP_SHIFT)
-#define PATTERN_WAIT_TIMER_0_MSB_REG (0x73 << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_TIMER_0_LSB_REG (0xA3 << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_TIMER_0_MSB_REG (0xA4 << MEM_MAP_SHIFT)
 
 /* Pattern Wait Timer 1 64 bit RW register. t = PWT2 x T run clock */
-#define PATTERN_WAIT_TIMER_1_LSB_REG (0x74 << MEM_MAP_SHIFT)
-#define PATTERN_WAIT_TIMER_1_MSB_REG (0x75 << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_TIMER_1_LSB_REG (0xA8 << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_TIMER_1_MSB_REG (0xA9 << MEM_MAP_SHIFT)
 
 /* Pattern Wait Timer 2 64 bit RW register. t = PWT3 x T run clock */
-#define PATTERN_WAIT_TIMER_2_LSB_REG (0x76 << MEM_MAP_SHIFT)
-#define PATTERN_WAIT_TIMER_2_MSB_REG (0x77 << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_TIMER_2_LSB_REG (0xAD << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_TIMER_2_MSB_REG (0xAE << MEM_MAP_SHIFT)
 
 /* Readout enable RW register */
-#define READOUT_10G_ENABLE_REG (0x79 << MEM_MAP_SHIFT)
+#define READOUT_10G_ENABLE_REG (0x3C << MEM_MAP_SHIFT)
 
 #define READOUT_10G_ENABLE_ANLG_OFST    (0)
 #define READOUT_10G_ENABLE_ANLG_MSK     (0x000000FF << READOUT_10G_ENABLE_ANLG_OFST)
@@ -543,7 +537,7 @@
     (0x0000000F << READOUT_10G_ENABLE_TRNSCVR_OFST)
 
 /* Digital Bit External Trigger RW register */
-#define DBIT_EXT_TRG_REG (0x7B << MEM_MAP_SHIFT)
+#define DBIT_EXT_TRG_REG (0x3E << MEM_MAP_SHIFT)
 
 #define DBIT_EXT_TRG_SRC_OFST      (0)
 #define DBIT_EXT_TRG_SRC_MSK       (0x0000003F << DBIT_EXT_TRG_SRC_OFST)
@@ -551,7 +545,7 @@
 #define DBIT_EXT_TRG_OPRTN_MD_MSK  (0x00000001 << DBIT_EXT_TRG_OPRTN_MD_OFST)
 
 /* Pin Delay 0 RW register */
-#define OUTPUT_DELAY_0_REG              (0x7C << MEM_MAP_SHIFT)
+#define OUTPUT_DELAY_0_REG              (0x3F << MEM_MAP_SHIFT)
 #define OUTPUT_DELAY_0_OTPT_STTNG_STEPS (25)
 #define OUTPUT_DELAY_0_OTPT_STTNG_OFST                                         \
     (0) // t = OTPT_STTNG * 25 ps, max for Cyclone V = 775 ps
@@ -567,18 +561,18 @@
 
 /* Pin Delay 1 RW register
  * Each bit configured as enable for dynamic output delay configuration */
-#define PIN_DELAY_1_REG (0x7D << MEM_MAP_SHIFT)
+#define PIN_DELAY_1_REG (0x40 << MEM_MAP_SHIFT)
 
 /** Pattern Mask 64 bit RW regiser */
-#define PATTERN_MASK_LSB_REG (0x80 << MEM_MAP_SHIFT)
-#define PATTERN_MASK_MSB_REG (0x81 << MEM_MAP_SHIFT)
+#define PATTERN_MASK_LSB_REG (0x84 << MEM_MAP_SHIFT)
+#define PATTERN_MASK_MSB_REG (0x85 << MEM_MAP_SHIFT)
 
 /** Pattern Set 64 bit RW regiser */
-#define PATTERN_SET_LSB_REG (0x82 << MEM_MAP_SHIFT)
-#define PATTERN_SET_MSB_REG (0x83 << MEM_MAP_SHIFT)
+#define PATTERN_SET_LSB_REG (0x86 << MEM_MAP_SHIFT)
+#define PATTERN_SET_MSB_REG (0x87 << MEM_MAP_SHIFT)
 
 /* Pattern Loop 3 Address RW regiser */
-#define PATTERN_LOOP_3_ADDR_REG (0x84 << MEM_MAP_SHIFT)
+#define PATTERN_LOOP_3_ADDR_REG (0xAF << MEM_MAP_SHIFT)
 
 #define PATTERN_LOOP_3_ADDR_STRT_OFST (0)
 #define PATTERN_LOOP_3_ADDR_STRT_MSK                                           \
@@ -587,10 +581,10 @@
 #define PATTERN_LOOP_3_ADDR_STP_MSK  (0x00001FFF << PATTERN_LOOP_3_ADDR_STP_OFST)
 
 /* Pattern Loop 3 Iteration RW regiser */
-#define PATTERN_LOOP_3_ITERATION_REG (0x85 << MEM_MAP_SHIFT)
+#define PATTERN_LOOP_3_ITERATION_REG (0xB0 << MEM_MAP_SHIFT)
 
 /* Pattern Loop 4 Address RW regiser */
-#define PATTERN_LOOP_4_ADDR_REG (0x86 << MEM_MAP_SHIFT)
+#define PATTERN_LOOP_4_ADDR_REG (0xB4 << MEM_MAP_SHIFT)
 
 #define PATTERN_LOOP_4_ADDR_STRT_OFST (0)
 #define PATTERN_LOOP_4_ADDR_STRT_MSK                                           \
@@ -599,10 +593,10 @@
 #define PATTERN_LOOP_4_ADDR_STP_MSK  (0x00001FFF << PATTERN_LOOP_4_ADDR_STP_OFST)
 
 /* Pattern Loop 4 Iteration RW regiser */
-#define PATTERN_LOOP_4_ITERATION_REG (0x87 << MEM_MAP_SHIFT)
+#define PATTERN_LOOP_4_ITERATION_REG (0xB5 << MEM_MAP_SHIFT)
 
 /* Pattern Loop 5 Address RW regiser */
-#define PATTERN_LOOP_5_ADDR_REG (0x88 << MEM_MAP_SHIFT)
+#define PATTERN_LOOP_5_ADDR_REG (0xB9 << MEM_MAP_SHIFT)
 
 #define PATTERN_LOOP_5_ADDR_STRT_OFST (0)
 #define PATTERN_LOOP_5_ADDR_STRT_MSK                                           \
@@ -611,43 +605,43 @@
 #define PATTERN_LOOP_5_ADDR_STP_MSK  (0x00001FFF << PATTERN_LOOP_5_ADDR_STP_OFST)
 
 /* Pattern Loop 5 Iteration RW regiser */
-#define PATTERN_LOOP_5_ITERATION_REG (0x89 << MEM_MAP_SHIFT)
+#define PATTERN_LOOP_5_ITERATION_REG (0xBA << MEM_MAP_SHIFT)
 
 /* Pattern Wait 3 RW regiser */
-#define PATTERN_WAIT_3_ADDR_REG (0x8A << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_3_ADDR_REG (0xB1 << MEM_MAP_SHIFT)
 
 #define PATTERN_WAIT_3_ADDR_OFST (0)
 #define PATTERN_WAIT_3_ADDR_MSK  (0x00001FFF << PATTERN_WAIT_3_ADDR_OFST)
 
 /* Pattern Wait 4 RW regiser */
-#define PATTERN_WAIT_4_ADDR_REG (0x8B << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_4_ADDR_REG (0xB6 << MEM_MAP_SHIFT)
 
 #define PATTERN_WAIT_4_ADDR_OFST (0)
 #define PATTERN_WAIT_4_ADDR_MSK  (0x00001FFF << PATTERN_WAIT_4_ADDR_OFST)
 
 /* Pattern Wait 5 RW regiser */
-#define PATTERN_WAIT_5_ADDR_REG (0x8C << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_5_ADDR_REG (0xBB << MEM_MAP_SHIFT)
 
 #define PATTERN_WAIT_5_ADDR_OFST (0)
 #define PATTERN_WAIT_5_ADDR_MSK  (0x00001FFF << PATTERN_WAIT_5_ADDR_OFST)
 
 /* Pattern Wait Timer 3 64 bit RW register. t = PWT1 x T run clock */
-#define PATTERN_WAIT_TIMER_3_LSB_REG (0x8D << MEM_MAP_SHIFT)
-#define PATTERN_WAIT_TIMER_3_MSB_REG (0x8E << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_TIMER_3_LSB_REG (0xB2 << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_TIMER_3_MSB_REG (0xB3 << MEM_MAP_SHIFT)
 
 /* Pattern Wait Timer 4 64 bit RW register. t = PWT1 x T run clock */
-#define PATTERN_WAIT_TIMER_4_LSB_REG (0x8F << MEM_MAP_SHIFT)
-#define PATTERN_WAIT_TIMER_4_MSB_REG (0x90 << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_TIMER_4_LSB_REG (0xB7 << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_TIMER_4_MSB_REG (0xB8 << MEM_MAP_SHIFT)
 
 /* Pattern Wait Timer 5 64 bit RW register. t = PWT1 x T run clock */
-#define PATTERN_WAIT_TIMER_5_LSB_REG (0x91 << MEM_MAP_SHIFT)
-#define PATTERN_WAIT_TIMER_5_MSB_REG (0x92 << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_TIMER_5_LSB_REG (0xBC << MEM_MAP_SHIFT)
+#define PATTERN_WAIT_TIMER_5_MSB_REG (0xBD << MEM_MAP_SHIFT)
 
 /* Slow ADC SPI Value RO register */
-#define ADC_SLOW_DATA_REG (0x93 << MEM_MAP_SHIFT)
+#define ADC_SLOW_DATA_REG (0x41 << MEM_MAP_SHIFT)
 
 /* Slow ADC SPI Value Config register */
-#define ADC_SLOW_CFG_REG (0x94 << MEM_MAP_SHIFT)
+#define ADC_SLOW_CFG_REG (0x42 << MEM_MAP_SHIFT)
 /** Read back CFG Register */
 #define ADC_SLOW_CFG_RB_OFST (2)
 #define ADC_SLOW_CFG_RB_MSK  (0x00000001 << ADC_SLOW_CFG_RB_OFST)
@@ -726,7 +720,7 @@
     ((0x1 << ADC_SLOW_CFG_CFG_OFST) & ADC_SLOW_CFG_CFG_MSK)
 
 /* Slow ADC SPI Value Control register */
-#define ADC_SLOW_CTRL_REG (0x95 << MEM_MAP_SHIFT)
+#define ADC_SLOW_CTRL_REG (0x43 << MEM_MAP_SHIFT)
 
 #define ADC_SLOW_CTRL_STRT_OFST (0)
 #define ADC_SLOW_CTRL_STRT_MSK  (0x00000001 << ADC_SLOW_CTRL_STRT_OFST)

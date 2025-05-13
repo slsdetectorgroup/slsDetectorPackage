@@ -24,8 +24,23 @@ This document describes the differences between v9.1.1 and v9.1.0
    ---------------
 
 
-   *    [Mythen3] Fix trimbits and badchannels
+    *   [Mythen3] Fix trimbits and badchannels
         They were shifted by 1. Fixed.
+
+
+    Receiver
+    --------
+
+
+    *   slsFrameSynchronizer - does not stream out frames
+        It streamed out start and stop zmq packets but did 
+        not stream out frames with no error message. Fixed.
+
+
+    *   slsMultiReceiver - 3rd Command line argument (vebose option)
+        When this option to print headers is enabled, the sample call back 
+        headers update the image size to a random number 26112. This 
+        is fixed and left commented out for easy reference for users.
 
 
 

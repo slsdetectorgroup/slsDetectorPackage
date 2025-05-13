@@ -135,6 +135,7 @@ void setupDetector();
 #if defined(CHIPTESTBOARDD)
 int updateDatabytesandAllocateRAM();
 void updateDataBytes();
+void enableBlackfinAMCExternalAccessExtension();
 #endif
 
 #if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)

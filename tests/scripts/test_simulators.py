@@ -6,7 +6,7 @@ This file is used to start up simulators, receivers and run all the tests on the
 import argparse
 import os, sys, subprocess, time, colorama
 
-from colorama import Fore
+from colorama import Fore, Style
 from slsdet import Detector, detectorType, detectorSettings
 from slsdet.defines import DEFAULT_TCP_CNTRL_PORTNO, DEFAULT_TCP_RX_PORTNO, DEFAULT_UDP_DST_PORTNO
 HALFMOD2_TCP_CNTRL_PORTNO=1955
@@ -14,48 +14,41 @@ HALFMOD2_TCP_RX_PORTNO=1957
 
 colorama.init(autoreset=True)
 
+def Log(color, message):
+    print(f"{color}{message}{Style.RESET_ALL}", flush=True)
+
 class RuntimeException (Exception):
     def __init__ (self, message):
-        super().__init__(Fore.RED + message)
+        super().__init__(Log(Fore.RED, message))
     
-def Log(color, message):
-    print('\n' + color + message, flush=True)
-
-
 def checkIfProcessRunning(processName):
     cmd = f"pgrep -f {processName}"
     res = subprocess.getoutput(cmd)
-    return bool(res.strip())
+    return res.strip().splitlines()
 
 
 def killProcess(name):
-    if checkIfProcessRunning(name):
-        Log(Fore.GREEN, 'killing ' + name)
-        p = subprocess.run(['killall', name])
-        if p.returncode != 0:
-            raise RuntimeException('killall failed for ' + name)
-    else:
-        print('process not running : ' + name)
+    pids = checkIfProcessRunning(name)
+    if pids:
+        Log(Fore.GREEN, f"Killing '{name}' processes with PIDs: {', '.join(pids)}")
+        for pid in pids:
+            try:
+                p = subprocess.run(['kill', pid])
+                if p.returncode != 0 and bool(checkIfProcessRunning(name)):
+                    raise RuntimeException(f"Could not kill {name} with pid {pid}")
+            except Exception as e:
+                Log(Fore.RED, f"Failed to kill process {name} pid:{pid}. Exception occured: [code:{e}, msg:{e.stderr}]")
+                raise               
+    #else:
+    #    Log(Fore.WHITE, 'process not running : ' + name)
 
 
-def killAllStaleProcesses(fp):
-    killProcess('eigerDetectorServer_virtual')
-    killProcess('jungfrauDetectorServer_virtual')
-    killProcess('mythen3DetectorServer_virtual')
-    killProcess('gotthard2DetectorServer_virtual')
-    killProcess('ctbDetectorServer_virtual')
-    killProcess('moenchDetectorServer_virtual')
-    killProcess('xilinx_ctbDetectorServer_virtual')
-    killProcess('slsReceiver')
-    killProcess('slsMultiReceiver')
-    cleanSharedmemory(fp)
-
-def cleanup(name, fp):
+def cleanup(fp):
     '''
     kill both servers, receivers and clean shared memory
     '''
     Log(Fore.GREEN, 'Cleaning up...')
-    killProcess(name + 'DetectorServer_virtual')
+    killProcess('DetectorServer_virtual')
     killProcess('slsReceiver')
     killProcess('slsMultiReceiver')
     cleanSharedmemory(fp)
@@ -184,7 +177,7 @@ else:
     servers = args.servers
 
 
-Log(Fore.WHITE, 'Arguments:\nrx_hostname: ' + args.rx_hostname + '\nsettingspath: \'' + args.settingspath + '\'') 
+Log(Fore.WHITE, 'Arguments:\nrx_hostname: ' + args.rx_hostname + '\nsettingspath: \'' + args.settingspath + '\nservers: \'' + ' '.join(servers) + '\'') 
 
 
 # redirect to file
@@ -207,7 +200,7 @@ with open(fname, 'w') as fp:
 
     try:
         startGeneralTests(fp, file_results)
-        killAllStaleProcesses(fp)
+        cleanup(fp)
 
         testError = False
         for server in servers:
@@ -222,12 +215,12 @@ with open(fname, 'w') as fp:
                 Log(Fore.BLUE, 'Cmd tests for ' + server + ' (results: ' + file_results + ')')
                 
                 # cmd tests for det
-                cleanup(server, fp)
+                cleanup(fp)
                 startServer(server)
                 startReceiver(server)
                 loadConfig(server, args.rx_hostname, args.settingspath)
                 startCmdTests(server, fp, file_results)
-                cleanup(server, fp)
+                cleanup(fp)
                 
             except Exception as e:
                 # redirect to terminal

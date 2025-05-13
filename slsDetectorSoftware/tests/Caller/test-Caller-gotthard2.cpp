@@ -17,6 +17,69 @@ namespace sls {
 using test::GET;
 using test::PUT;
 
+TEST_CASE("gotthard2_acquire_check_file_size", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type =
+        det.getDetectorType().tsquash("Inconsistent detector types to test");
+
+    if (det_type == defs::GOTTHARD2) {
+
+        // save previous state
+        testFileInfo prev_file_info = get_file_state(det);
+        testCommonDetAcquireInfo prev_det_config_info =
+            get_common_acquire_config_state(det);
+
+        // save previous specific det type config
+        auto exptime = det.getExptime().tsquash("inconsistent exptime to test");
+        auto burst_mode =
+            det.getBurstMode().tsquash("inconsistent burst mode to test");
+        auto number_of_bursts = det.getNumberOfBursts().tsquash(
+            "inconsistent number of bursts to test");
+        auto burst_period =
+            det.getBurstPeriod().tsquash("inconsistent burst period to test");
+
+        // defaults
+        int num_frames_to_acquire = 2;
+        testFileInfo test_file_info;
+        set_file_state(det, test_file_info);
+        testCommonDetAcquireInfo det_config;
+        det_config.num_frames_to_acquire = num_frames_to_acquire;
+        set_common_acquire_config_state(det, det_config);
+
+        // set default specific det type config
+        det.setExptime(std::chrono::microseconds{200});
+        det.setBurstMode(defs::CONTINUOUS_EXTERNAL);
+        det.setNumberOfBursts(1);
+        det.setBurstPeriod(std::chrono::milliseconds{0});
+
+        // acquire
+        test_acquire_with_receiver(caller, det);
+
+        // check frames caught
+        test_frames_caught(det, num_frames_to_acquire);
+
+        // check file size (assuming local pc)
+        {
+            detParameters par(det_type);
+            int bytes_per_pixel = det.getDynamicRange().squash() / 8;
+            size_t expected_image_size =
+                par.nChanX * par.nChipX * bytes_per_pixel;
+            test_acquire_binary_file_size(test_file_info, num_frames_to_acquire,
+                                          expected_image_size);
+        }
+        // restore previous state
+        set_file_state(det, prev_file_info);
+        set_common_acquire_config_state(det, prev_det_config_info);
+
+        // restore previous specific det type config
+        det.setExptime(exptime);
+        det.setBurstMode(burst_mode);
+        det.setNumberOfBursts(number_of_bursts);
+        det.setBurstPeriod(burst_period);
+    }
+}
+
 // time specific measurements for gotthard2
 TEST_CASE("timegotthard2", "[.cmdcall]") {
     Detector det;

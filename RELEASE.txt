@@ -225,3 +225,4 @@ This document describes the differences between v9.1.1 and v9.1.0
 
         dhanya.thattil@psi.ch
         erik.frojdh@psi.ch
+        alice.mazzoleni@psi.ch

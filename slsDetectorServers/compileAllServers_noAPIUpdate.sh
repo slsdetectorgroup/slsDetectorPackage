@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 
-# empty branch = developer branch in updateAPIVersion.sh
-branch=""
 det_list=("ctbDetectorServer" 
 	"gotthard2DetectorServer"
 	"jungfrauDetectorServer"
@@ -10,14 +8,14 @@ det_list=("ctbDetectorServer"
 	"moenchDetectorServer"
 	"xilinx_ctbDetectorServer"
 	)
-usage="\nUsage: compileAllServers.sh [server|all(opt)] [branch(opt)]. \n\tNo arguments mean all servers with 'developer' branch. \n\tNo 'branch' input means 'developer branch'"
+usage="\nUsage: compileAllServers.sh [server|all(opt)]. \n\tNo arguments mean all servers with 'developer' branch."
 
 # arguments
 if [ $# -eq 0 ]; then
 	# no argument, all servers
 	declare -a det=${det_list[@]}
 	echo "Compiling all servers"
-elif [ $# -eq 1 ] || [ $# -eq 2 ]; then
+elif [ $# -eq 1 ]; then
 	# 'all' servers
 	if [[ $1 == "all" ]]; then
 		declare -a det=${det_list[@]}
@@ -31,16 +29,6 @@ elif [ $# -eq 1 ] || [ $# -eq 2 ]; then
 		fi
 		declare -a det=("${1}")
 		#echo "Compiling only $1"
-	fi
-	# branch
-	if [ $# -eq 2 ]; then
-		# arg in list
-		if [[ $det_list == *$2* ]]; then
-			echo -e "Invalid argument 2: $2. $usage"
-			return -1
-		fi
-		branch+=$2
-		#echo "with branch $branch"
 	fi
 else
 	echo -e "Too many arguments.$usage"
@@ -59,8 +47,7 @@ do
 	file="${i}_developer"
 	echo -e "Compiling $dir [$file]"
 	cd $dir
-	make clean
-	if make API_BRANCH=$branch; then
+	if make clean; then
 		deterror[$idet]="OK"
 	else
 		deterror[$idet]="FAIL"

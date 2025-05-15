@@ -25,15 +25,15 @@ version: clean versioning $(PROGS)
 
 boot: $(OBJS) 
 
-version_branch=$(API_BRANCH)
 version_name=APICTB
 version_path=slsDetectorServers/ctbDetectorServer
 versioning: 
-	cd ../../ && echo $(PWD) && echo `tput setaf 6; ./updateAPIVersion.sh $(version_name) $(version_path) $(version_branch);  tput sgr0;`
+	cd ../../ && echo $(PWD) && echo `tput setaf 6; python updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
 
 
 $(PROGS): $(OBJS)
 #	echo $(OBJS) 
+	cd $(current_dir)
 	mkdir -p $(DESTDIR) 
 	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS) 
 	mv $(PROGS) $(DESTDIR)
@@ -41,7 +41,7 @@ $(PROGS): $(OBJS)
 	rm $(main_src)*.o  $(md5_dir)*.o
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb $(main_src)*.o $(md5_dir)*.o
+	cd $(current_dir) && rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb $(main_src)*.o $(md5_dir)*.o
 	
 
 	

@@ -60,3 +60,5 @@ include(Catch)
 catch_discover_tests(tests)
 
 configure_file(scripts/test_simulators.py ${CMAKE_BINARY_DIR}/bin/test_simulators.py COPYONLY)
+configure_file(scripts/test_frame_synchronizer.py ${CMAKE_BINARY_DIR}/bin/test_frame_synchronizer.py COPYONLY)
+configure_file(scripts/utils_for_test.py ${CMAKE_BINARY_DIR}/bin/utils_for_test.py COPYONLY)

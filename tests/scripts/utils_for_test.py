@@ -138,11 +138,9 @@ def runProcessWithLogFile(name, cmd, fp, log_file_name):
 
 def startDetectorVirtualServer(name :str, num_mods, fp):
     for i in range(num_mods):
-        subprocess.run(["which", name + "DetectorServer_virtual"])
-        
         port_no = SERVER_START_PORTNO + (i * 2)
         cmd = [name + 'DetectorServer_virtual', '-p', str(port_no)]
-        startProcessInBackgroundWithLogFile(cmd, fp, "/tmp/virtual_det_" + name + str(i) + ".txt")
+        startProcessInBackground(cmd, fp)
         match name:
             case 'jungfrau':
                 time.sleep(7)
@@ -158,7 +156,7 @@ def connectToVirtualServers(name, num_mods):
     except Exception as e:
         raise RuntimeException(f'Could not create Detector object for {name}. Error: {str(e)}') from e
 
-    counts_sec = 100
+    counts_sec = 5
     while (counts_sec != 0):
         try:
             d.virtual = [num_mods, SERVER_START_PORTNO]
@@ -203,8 +201,6 @@ def loadConfig(name, rx_hostname, settingsdir, fp, num_mods = 1, num_frames = 1)
         d.frames = num_frames
     except Exception as e:
         raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
-    
-    return d
 
 
 def ParseArguments(description, default_num_mods=1):

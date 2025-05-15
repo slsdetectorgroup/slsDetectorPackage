@@ -60,6 +60,7 @@ do
 	file="${i}_developer"
 	echo -e "Compiling $dir [$file]"
 	cd $dir
+	make clean
 	if make $target; then
 		deterror[$idet]="OK"
 	else

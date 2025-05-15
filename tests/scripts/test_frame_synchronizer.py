@@ -44,16 +44,14 @@ def startFrameSynchronizer(num_mods, fp):
     time.sleep(1)
 
 
-def acquire(fp):
+def acquire(fp, det):
     Log(LogLevel.INFO, 'Acquiring')
     Log(LogLevel.INFO, 'Acquiring', fp)
-    d = Detector()
-    d.acquire()
+    det.acquire()
 
 
-def testFramesCaught(name, num_frames):
-    d = Detector()
-    fnum = d.rx_framescaught[0]
+def testFramesCaught(name, det, num_frames):
+    fnum = det.rx_framescaught[0]
     if fnum != num_frames:
         raise RuntimeException(f"{name} caught only {fnum}. Expected {num_frames}") 
     
@@ -61,7 +59,7 @@ def testFramesCaught(name, num_frames):
     Log(LogLevel.INFOGREEN, f'Frames caught test passed for {name}', fp)
 
 
-def testZmqHeadetTypeCount(name, num_mods, num_frames, fp):
+def testZmqHeadetTypeCount(name, det, num_mods, num_frames, fp):
 
     Log(LogLevel.INFO, f"Testing Zmq Header type count for {name}")
     Log(LogLevel.INFO, f"Testing Zmq Header type count for {name}", fp)
@@ -88,8 +86,7 @@ def testZmqHeadetTypeCount(name, num_mods, num_frames, fp):
                     continue
 
         # test if file contents matches expected counts
-        d = Detector()
-        num_ports_per_module = 1 if name == "gotthard2" else d.numinterfaces
+        num_ports_per_module = 1 if name == "gotthard2" else det.numinterfaces
         total_num_frame_parts = num_ports_per_module * num_mods * num_frames
         for htype, expected_count in [("header", num_mods), ("series_end", num_mods), ("module", total_num_frame_parts)]:
             if htype_counts[htype] != expected_count:
@@ -111,10 +108,10 @@ def startTestsForAll(args, fp):
             startDetectorVirtualServer(server, args.num_mods, fp)
             startFrameSynchronizerPullSocket(server, fp)
             startFrameSynchronizer(args.num_mods, fp)
-            loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, fp=fp, num_mods=args.num_mods, num_frames=args.num_frames)
-            acquire(fp)
-            testFramesCaught(server, args.num_frames)
-            testZmqHeadetTypeCount(server, args.num_mods, args.num_frames, fp)
+            d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, fp=fp, num_mods=args.num_mods, num_frames=args.num_frames)
+            acquire(fp, d)
+            testFramesCaught(server, d, args.num_frames)
+            testZmqHeadetTypeCount(server, d, args.num_mods, args.num_frames, fp)
             Log(LogLevel.INFO, '\n')
         except Exception as e:
             raise RuntimeException(f'Synchronizer Tests failed') from e

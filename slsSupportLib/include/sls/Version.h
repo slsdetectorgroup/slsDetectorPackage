@@ -11,7 +11,7 @@ class Version {
   private:
     std::string version_;
     std::string date_;
-    const std::string defaultBranch_ = "developer";
+    inline static const std::string defaultBranch_[] = {"developer", "0.0.0"};
 
   public:
     explicit Version(const std::string &s);

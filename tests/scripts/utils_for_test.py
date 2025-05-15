@@ -142,7 +142,7 @@ def startDetectorVirtualServer(name :str, num_mods, fp):
         cmd = [name + 'DetectorServer_virtual', '-p', str(port_no)]
         if name == 'gotthard':
             cmd += ['-m', '1']
-        startProcessInBackground(cmd, fp)
+        startProcessInBackgroundWithLogFile(cmd, fp, "/tmp/virtual_det_" + name + str(i) + ".txt")
         match name:
             case 'jungfrau':
                 time.sleep(7)
@@ -206,6 +206,8 @@ def loadConfig(name, rx_hostname, settingsdir, fp, num_mods = 1, num_frames = 1)
         d.frames = num_frames
     except Exception as e:
         raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
+    
+    return d
 
 
 def ParseArguments(description, default_num_mods=1):

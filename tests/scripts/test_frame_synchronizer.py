@@ -28,6 +28,7 @@ from utils_for_test import (
 LOG_PREFIX_FNAME = '/tmp/slsFrameSynchronizer_test'
 MAIN_LOG_FNAME = LOG_PREFIX_FNAME + '_log.txt'
 PULL_SOCKET_PREFIX_FNAME = LOG_PREFIX_FNAME + '_pull_socket_'
+FRAME_SYNCHRONIZER_PREFIX_FNAME = LOG_PREFIX_FNAME + "_framesynchronizer_"
 
 
 def startFrameSynchronizerPullSocket(name, fp):
@@ -36,23 +37,23 @@ def startFrameSynchronizerPullSocket(name, fp):
     startProcessInBackgroundWithLogFile(cmd, fp, fname)
 
 
-def startFrameSynchronizer(num_mods, fp):
+def startFrameSynchronizer(name, num_mods, fp):
     cmd = ['slsFrameSynchronizer', str(DEFAULT_TCP_RX_PORTNO), str(num_mods)]
     # in 10.0.0
     #cmd = ['slsFrameSynchronizer', '-p', str(DEFAULT_TCP_RX_PORTNO), '-n', str(num_mods)]
-    startProcessInBackground(cmd, fp)
+    #startProcessInBackground(cmd, fp)
+    fname = FRAME_SYNCHRONIZER_PREFIX_FNAME + name + '.txt'
+    startProcessInBackgroundWithLogFile(cmd, fp, fname)
     time.sleep(1)
 
 
-def acquire(fp):
+def acquire(fp, d):
     Log(LogLevel.INFO, 'Acquiring')
     Log(LogLevel.INFO, 'Acquiring', fp)
-    d = Detector()
     d.acquire()
 
 
-def testFramesCaught(name, num_frames):
-    d = Detector()
+def testFramesCaught(name, d, num_frames):
     fnum = d.rx_framescaught[0]
     if fnum != num_frames:
         raise RuntimeException(f"{name} caught only {fnum}. Expected {num_frames}") 
@@ -61,7 +62,7 @@ def testFramesCaught(name, num_frames):
     Log(LogLevel.INFOGREEN, f'Frames caught test passed for {name}', fp)
 
 
-def testZmqHeadetTypeCount(name, num_mods, num_frames, fp):
+def testZmqHeadetTypeCount(name, d, num_mods, num_frames, fp):
 
     Log(LogLevel.INFO, f"Testing Zmq Header type count for {name}")
     Log(LogLevel.INFO, f"Testing Zmq Header type count for {name}", fp)
@@ -88,7 +89,6 @@ def testZmqHeadetTypeCount(name, num_mods, num_frames, fp):
                     continue
 
         # test if file contents matches expected counts
-        d = Detector()
         num_ports_per_module = 1 if name == "gotthard2" else d.numinterfaces
         total_num_frame_parts = num_ports_per_module * num_mods * num_frames
         for htype, expected_count in [("header", num_mods), ("series_end", num_mods), ("module", total_num_frame_parts)]:
@@ -110,13 +110,14 @@ def startTestsForAll(args, fp):
             cleanup(fp)
             startDetectorVirtualServer(server, args.num_mods, fp)
             startFrameSynchronizerPullSocket(server, fp)
-            startFrameSynchronizer(args.num_mods, fp)
-            loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, fp=fp, num_mods=args.num_mods, num_frames=args.num_frames)
-            acquire(fp)
-            testFramesCaught(server, args.num_frames)
-            testZmqHeadetTypeCount(server, args.num_mods, args.num_frames, fp)
+            startFrameSynchronizer(server, args.num_mods, fp)
+            d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, fp=fp, num_mods=args.num_mods, num_frames=args.num_frames)
+            acquire(fp, d)
+            testFramesCaught(server, d, args.num_frames)
+            testZmqHeadetTypeCount(server, d, args.num_mods, args.num_frames, fp)
             Log(LogLevel.INFO, '\n')
         except Exception as e:
+            Log(LogLevel.ERROR, f"error msg: {str(e)}")
             raise RuntimeException(f'Synchronizer Tests failed') from e
 
     Log(LogLevel.INFOGREEN, 'Passed all synchronizer tests for all detectors \n' + str(args.servers))

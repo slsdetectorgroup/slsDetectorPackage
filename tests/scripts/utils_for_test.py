@@ -109,8 +109,9 @@ def startProcessInBackgroundWithLogFile(cmd, fp, log_file_name):
     Log(LogLevel.INFOBLUE, 'Starting up ' +  ' '.join(cmd) + '. Log: ' +  log_file_name, fp)
     try:
         with open(log_file_name, 'w') as log_fp:
-            subprocess.Popen(cmd, stdout=log_fp, stderr=log_fp, text=True)
+            subprocess.Popen(cmd, stdout=log_fp, stderr=sys.stderr, text=True) 
     except Exception as e:
+        Log(LogLevel.ERROR, f"error msg: {str(e)}")
         raise RuntimeException(f'Failed to start {cmd}:{str(e)}') from e
 
 
@@ -120,7 +121,7 @@ def runProcessWithLogFile(name, cmd, fp, log_file_name):
     Log(LogLevel.INFOBLUE, 'Cmd: ' + ' '.join(cmd), fp)
     try:
         with open(log_file_name, 'w') as log_fp:
-            subprocess.run(cmd, stdout=log_fp, stderr=log_fp, check=True, text=True)
+            subprocess.run(cmd, stdout=log_fp, stderr=sys.stderr, check=True, text=True)
     except subprocess.CalledProcessError as e:
         pass    
     except Exception as e:
@@ -138,6 +139,8 @@ def runProcessWithLogFile(name, cmd, fp, log_file_name):
 
 def startDetectorVirtualServer(name :str, num_mods, fp):
     for i in range(num_mods):
+        subprocess.run(["which", name + "DetectorServer_virtual"])
+        
         port_no = SERVER_START_PORTNO + (i * 2)
         cmd = [name + 'DetectorServer_virtual', '-p', str(port_no)]
         startProcessInBackground(cmd, fp)
@@ -156,7 +159,7 @@ def connectToVirtualServers(name, num_mods):
     except Exception as e:
         raise RuntimeException(f'Could not create Detector object for {name}. Error: {str(e)}') from e
 
-    counts_sec = 5
+    counts_sec = 100
     while (counts_sec != 0):
         try:
             d.virtual = [num_mods, SERVER_START_PORTNO]
@@ -201,6 +204,8 @@ def loadConfig(name, rx_hostname, settingsdir, fp, num_mods = 1, num_frames = 1)
         d.frames = num_frames
     except Exception as e:
         raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
+    
+    return d
 
 
 def ParseArguments(description, default_num_mods=1):

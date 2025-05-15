@@ -47,11 +47,15 @@ class Logger {
 
   public:
     Logger() = default;
-    explicit Logger(TLogLevel level) : level(level){};
+    explicit Logger(TLogLevel level) : level(level) {};
     ~Logger() {
         // output in the destructor to allow for << syntax
         os << RESET << '\n';
-        std::clog << os.str() << std::flush; // Single write
+        if (level == TLogLevel::logERROR)
+            std::clog << os.str() << std::flush; // Single write
+        else {
+            std::cout << os.str() << std::flush;
+        }
     }
 
     static TLogLevel &ReportingLevel() { // singelton eeh

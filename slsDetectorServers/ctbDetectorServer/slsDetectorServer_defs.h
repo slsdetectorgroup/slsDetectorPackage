@@ -7,11 +7,9 @@
 #define MIN_REQRD_VRSN_T_RD_API 0x181130
 #define REQRD_FRMWR_VRSN        0x230705
 
-#define NUM_HARDWARE_VERSIONS (1)
-#define HARDWARE_VERSION_NUMBERS                                               \
-    { 0x3f }
-#define HARDWARE_VERSION_NAMES                                                 \
-    { "5.1" }
+#define NUM_HARDWARE_VERSIONS    (1)
+#define HARDWARE_VERSION_NUMBERS {0x3f}
+#define HARDWARE_VERSION_NAMES   {"5.1"}
 
 #define LINKED_SERVER_NAME "ctbDetectorServer"
 

@@ -1,7 +1,7 @@
 Custom Receiver
 =================
 
-The receiver essentially listens to UDP data packats sent out by the detector.
+The receiver essentially listens to UDP data packets sent out by the detector.
 
 To know more about detector receiver setup in the config file, please check out :ref:`the detector-receiver UDP configuration in the config file<detector udp header config>` and the :ref:`detector udp format<detector udp header>`.
 

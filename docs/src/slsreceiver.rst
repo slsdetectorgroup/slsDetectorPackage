@@ -46,12 +46,10 @@ Starting up the Receiver
 -------------------------
 For a Single Module
     .. code-block:: bash  
+        
+        slsReceiver # default port 1954
 
-        # default port 1954
-        slsReceiver
-
-        # custom port 2012
-        slsReceiver -t2012
+        slsReceiver -t2012 # custom port 2012
 
 
 For Multiple Modules
@@ -59,18 +57,15 @@ For Multiple Modules
 
         # each receiver (for each module) requires a unique tcp port (if all on same machine)
 
-        # using slsReceiver in multiple consoles (one for each module)
+        # option 1 (one for each module)
         slsReceiver
         slsReceiver -t1955
 
-        # slsMultiReceiver [starting port] [number of receivers/modules]
+        # option 2
         slsMultiReceiver 2012 2
+
+        # option 3
         slsFrameSynchronizer 2012 2
-
-
-        # slsMultiReceiver [starting port] [number of receivers/modules] [print for debugging]
-        slsMultiReceiver 2012 2 1
-        slsFrameSynchronizer 2012 2 1
 
 
 
@@ -79,7 +74,7 @@ Client Commands
 
 * Client commands to the receiver begin with **rx_** or **f_** (file commands).
 
-* **rx_hostname** has to be the first command to the receiver so the client knows which reciever process to communicate with.
+* **rx_hostname** has to be the first command to the receiver so the client knows which receiver process to communicate with.
 
 * Can use 'auto' for **udp_dstip** if using 1GbE interface or the :ref:`virtual simulators<Virtual Detector Servers>`.
 
@@ -91,35 +86,37 @@ The following are the different ways to establish contact using **rx_hostname** 
 
     .. code-block:: bash  
 
-        # default receiver tcp port (1954)
+        # ---single module---
+
+        # default receiver port at 1954
+        rx_hostname xxx
+       
+        # custom receiver port
+        rx_hostname xxx:1957 # option 1
+       
+        rx_tcpport 1957  # option 2
         rx_hostname xxx
 
-        # custom receiver port
-        rx_hostname xxx:1957
 
-        # custom receiver port
-        rx_tcpport 1954
-        rx_hostname xxx
+        # ---multi module---
 
-        # multi modules with custom ports
-        rx_hostname xxx:1955+xxx:1956+
-        
-        
-        # multi modules using increasing tcp ports when using multi detector command
+        # using increasing tcp ports
         rx_tcpport 1955
         rx_hostname xxx
 
-        # or specify multi modules with custom ports on same rxr pc
-        0:rx_tcpport 1954
+        # custom ports
+        rx_hostname xxx:1955+xxx:1958+ # option 1
+
+        0:rx_tcpport 1954 # option 2
         1:rx_tcpport 1955
         2:rx_tcpport 1956
         rx_hostname xxx
 
-        # multi modules with custom ports on different rxr pc
+        # custom ports on different receiver machines
         0:rx_tcpport 1954
         0:rx_hostname xxx
         1:rx_tcpport 1955
-        1:rx_hostname yyy
+        1:rx_hostname yyyrxr
 
 
 | Example commands:

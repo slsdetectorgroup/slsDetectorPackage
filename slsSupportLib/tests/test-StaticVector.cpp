@@ -293,7 +293,7 @@ SCENARIO("Assigning containers to each other", "[support]") {
             }
         }
         WHEN("We create a const StaticVector") {
-            const StaticVector<int, 5> c(a);
+            const StaticVector<int, 3> c(a);
             THEN("The values are still the same using const operators") {
                 REQUIRE(c[0] == 1);
                 REQUIRE(c[1] == 2);

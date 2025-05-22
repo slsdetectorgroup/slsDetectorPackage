@@ -27,6 +27,7 @@ requirements:
     - libgl-devel
     - libtiff
     - zlib
+    - expat
   
   run:
     - libstdcxx-ng
@@ -87,6 +88,7 @@ outputs:
         - {{ compiler('c') }}
         - {{compiler('cxx')}}
         - {{ pin_subpackage('slsdetlib', exact=True) }}
+        
 
       run:
         - {{ pin_subpackage('slsdetlib', exact=True) }}

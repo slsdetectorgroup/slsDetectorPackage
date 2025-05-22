@@ -88,6 +88,7 @@ message(STATUS "RAPID: ${SLS_INTERNAL_RAPIDJSON_DIR}")
 target_link_libraries(slsSupportObject 
   PUBLIC
     slsProjectOptions 
+    ${STD_FS_LIB} # from helpers.cmake
     
   PRIVATE
     slsProjectWarnings

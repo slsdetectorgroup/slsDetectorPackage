@@ -8,14 +8,11 @@
 #include <sstream>
 #include <vector>
 
-
 using sls::StaticVector;
 
 TEST_CASE("StaticVector is a container") {
     REQUIRE(sls::is_container<StaticVector<int, 7>>::value == true);
 }
-
-
 
 TEST_CASE("Comparing StaticVector containers") {
     StaticVector<int, 5> a{0, 1, 2};
@@ -344,4 +341,3 @@ TEST_CASE("StaticVector stream") {
     oss << vec;
     REQUIRE(oss.str() == "[33, 85667, 2]");
 }
-

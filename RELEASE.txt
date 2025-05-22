@@ -1,15 +1,13 @@
-SLS Detector Package Minor Release 9.1.0 released on 28.03.2025
-===============================================================
+SLS Detector Package Bug Fix Release 9.1.1 released on 22.05.2025
+==================================================================
 
-This document describes the differences between v9.1.0 and v9.0.0   
+This document describes the differences between v9.1.1 and v9.1.0   
 
 
 
     CONTENTS
     --------
-    1           Changes
-        1.1     New or Changed Features
-        1.2     Resolved Features
+    1           Resolved Features
     2           On-board Detector Server Compatibility
     3           Firmware Requirements
     4           Kernel Requirements
@@ -18,130 +16,32 @@ This document describes the differences between v9.1.0 and v9.0.0
 
 
 
-1 Changes
-==========
-
-
-
-1.1 New or Changed Features
-============================
-
-
-    Receiver
-    --------
-
-
-    *   Frame Synchronizer (experimental)
-        Added a new binary, similar to slsMultiReceiver, to collect images from
-        several receivers and stream them out as a ZMQ  multipart message 
-        (one part for each UDP port). No reconstuction of the image. Includeds start 
-        and end ZMQ messages as well for the start and end callback parameters.
-
-
-    Documentation
-    -------------
-
-
-    *   Command line - multi module and multi detector indices
-        Help on this topic has been added to the 'Command line' topic.
-
-
-    *   Row and column index (UDP header or callback)
-        Help on how this is determined from the hostname is added to the 'UDP
-        Header' and the 'Quick Start Guide' topics. Also added to the help in '
-        hostname' command line help. Please note that this can be overwritten by
-        corresponding row and column commands.
-
-
-
-1.2 Resolved Features 
+1 Resolved Features 
 ======================
 
 
-    Firmware
-    ---------
+   Detector Server
+   ---------------
 
 
-    *   [Jungfrau] Column select and filter resistor
-        Configuration fix for chip v1.1 for these parameters
-
-
-    Firmware &/ On-board Detector Server
-    ------------------------------------
-
-
-    *   [Jungfrau] Timing Info Decoder 
-        Only allowed for hardware v2.0 now.
-
-
-    *   [Jungfrau] Auto Comparator Disable - chip v1.0
-        Previously, this mode for chip v1.0 automatically disabled the on-chip
-        gain switching compatator after a fixed portion of the exposure time.
-        Now, one must set also the comparator disable time using 'compdisabletime'
-        just as in chip v1.1.
-
-
-    *   [Mythen3] Default period on server start up is 0 now.
-        
-
-    Client
-    -------
-
-
-    *   Command line - Multi detector index inside file
-        Multi detector index '[index]-' was ignored silently in the config/parameter
-        file since 5.0.0. Now, it will throw an exception. Please use the multi
-        detector index on the 'config' or 'parameter' command instead.
-
-
-    *   [Mythen3] patternX command autocompletes the argument to a path now.
+    *   [Mythen3] Fix trimbits and badchannels
+        They were shifted by 1. Fixed.
 
 
     Receiver
     --------
 
 
-    *   Multiple Receiver objects in multiple threads
-        slsMultiReceiver uses child processes, but if user rewrote to use multiple
-        receiver objects in multiple threads instead, a callback mutex is now
-        implemented to handle the locking mechanism between threads for the callbacks. 
+    *   slsFrameSynchronizer - does not stream out frames
+        It streamed out start and stop zmq packets but did 
+        not stream out frames with no error message. Fixed.
+        Updated documentation.
 
 
-    *   Removed potentially unsafe str().c_str() calls.
-
-
-    *   slsMultiReceiver Ctrl + C
-        Now cleans up properly upon Ctrl + C, including exiting the Arping thread.
-
-    
-    *   slsMultiReceiver version
-        --version or -v now gives the version of slsMultiReceiver.
-
- 
-    ZMQ
-    ---
-
-
-    *   [Moench] Reduced significant print out in zmq processing using energy
-        threshold.
-
-
-    *   [Moench] Zmq dummy packet restreaming command did nothing
-        Temporary solution was to move from 'stop' to 'rx_stop' as 'stop' did not
-        go further if module is idle.
-
-
-    *   [Moench] Too many Zmq dummy packets- unclear end in acquire
-        Give time to process dummy packet before restreaming it and wait more 
-        before restreaming to reduce amoutn of zmq dummy packets to process.
-
-
-    Simulators
-    -----------
-
-
-    *   [Jungfrau][Moench] Slightly faster transmistting time by removing sleeping
-        only if there is a transmission delay
+    *   slsMultiReceiver - 3rd Command line argument (vebose option)
+        When this option to print headers is enabled, the sample call back 
+        headers update the image size to a random number 26112. This 
+        is fixed and left commented out for easy reference for users.
 
 
 
@@ -151,7 +51,7 @@ This document describes the differences between v9.1.0 and v9.0.0
 
     Eiger       9.0.0
     Jungfrau    9.1.0
-    Mythen3     9.1.0
+    Mythen3     9.1.1
     Gotthard2   9.0.0
     Gotthard    9.0.0
     Moench      9.0.0
@@ -326,3 +226,4 @@ This document describes the differences between v9.1.0 and v9.0.0
 
         dhanya.thattil@psi.ch
         erik.frojdh@psi.ch
+        alice.mazzoleni@psi.ch

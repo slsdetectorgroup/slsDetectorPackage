@@ -107,11 +107,11 @@ void zmq_free(void *data, void *hint) { delete[] static_cast<char *>(data); }
 void print_frames(const PortFrameMap &frame_port_map) {
     LOG(sls::logDEBUG) << "Printing frames";
     for (const auto &it : frame_port_map) {
-        uint16_t udpPort = it.first;
+        const uint16_t udpPort = it.first;
         const auto &frame_map = it.second;
         LOG(sls::logDEBUG) << "UDP port: " << udpPort;
         for (const auto &frame : frame_map) {
-            uint64_t fnum = frame.first;
+            const uint64_t fnum = frame.first;
             const auto &msg_list = frame.second;
             LOG(sls::logDEBUG)
                 << "  acq index: " << fnum << '[' << msg_list.size() << ']';
@@ -130,30 +130,26 @@ std::set<uint64_t> get_valid_fnums(const PortFrameMap &port_frame_map) {
 
     // collect all unique frame numbers from all ports
     std::set<uint64_t> unique_fnums;
-    for (auto it = port_frame_map.begin(); it != port_frame_map.begin(); ++it) {
-        const FrameMap &frame_map = it->second;
-        for (auto frame = frame_map.begin(); frame != frame_map.end();
-             ++frame) {
-            unique_fnums.insert(frame->first);
+    for (const auto &it : port_frame_map) {
+        const FrameMap &frame_map = it.second;
+        for (const auto &frame : frame_map) {
+            unique_fnums.insert(frame.first);
         }
     }
 
     // collect valid frame numbers
     for (auto &fnum : unique_fnums) {
         bool is_valid = true;
-        for (auto it = port_frame_map.begin(); it != port_frame_map.end();
-             ++it) {
-            uint16_t port = it->first;
-            const FrameMap &frame_map = it->second;
+        for (const auto &it : port_frame_map) {
+            const uint16_t port = it.first;
+            const FrameMap &frame_map = it.second;
             auto frame = frame_map.find(fnum);
             // invalid: fnum missing in one port
             if (frame == frame_map.end()) {
                 LOG(sls::logDEBUG)
                     << "Fnum " << fnum << " is missing in port " << port;
-                // invalid: fnum greater than all in that port
-                auto last_frame = std::prev(frame_map.end());
-                auto last_fnum = last_frame->first;
-                if (fnum > last_fnum) {
+                auto upper_frame = frame_map.upper_bound(fnum);
+                if (upper_frame == frame_map.end()) {
                     LOG(sls::logDEBUG) << "And no larger fnum found. Fnum "
                                        << fnum << " is invalid.\n";
                     is_valid = false;
@@ -223,18 +219,26 @@ void Correlate(FrameStatus *stat) {
                 // sending all valid fnum data packets
                 for (const auto &fnum : valid_fnums) {
                     ZmqMsgList msg_list;
-                    PortFrameMap &port_frame_map = stat->frames;
-                    for (auto it = port_frame_map.begin();
-                         it != port_frame_map.end(); ++it) {
-                        uint16_t port = it->first;
-                        const FrameMap &frame_map = it->second;
+                    for (const auto &it : stat->frames) {
+                        const uint16_t port = it.first;
+                        const FrameMap &frame_map = it.second;
                         auto frame = frame_map.find(fnum);
                         if (frame != frame_map.end()) {
                             msg_list.insert(msg_list.end(),
                                             stat->frames[port][fnum].begin(),
                                             stat->frames[port][fnum].end());
-                            // clean up
-                            for (zmq_msg_t *msg : stat->frames[port][fnum]) {
+                        }
+                    }
+                    LOG(printHeadersLevel)
+                        << "Sending data packets for fnum " << fnum;
+                    zmq_send_multipart(socket, msg_list);
+                    // clean up
+                    for (const auto &it : stat->frames) {
+                        const uint16_t port = it.first;
+                        const FrameMap &frame_map = it.second;
+                        auto frame = frame_map.find(fnum);
+                        if (frame != frame_map.end()) {
+                            for (zmq_msg_t *msg : frame->second) {
                                 if (msg) {
                                     zmq_msg_close(msg);
                                     delete msg;
@@ -243,9 +247,6 @@ void Correlate(FrameStatus *stat) {
                             stat->frames[port].erase(fnum);
                         }
                     }
-                    LOG(printHeadersLevel)
-                        << "Sending data packets for fnum " << fnum;
-                    zmq_send_multipart(socket, msg_list);
                 }
             }
             // sending all end packets
@@ -259,6 +260,21 @@ void Correlate(FrameStatus *stat) {
                     }
                 }
                 stat->ends.clear();
+                // clean up old frames
+                for (auto &it : stat->frames) {
+                    FrameMap &frame_map = it.second;
+                    for (auto &frame : frame_map) {
+                        for (zmq_msg_t *msg : frame.second) {
+                            if (msg) {
+                                zmq_msg_close(msg);
+                                delete msg;
+                            }
+                        }
+                        frame.second.clear();
+                    }
+                    frame_map.clear();
+                }
+                stat->frames.clear();
             }
         }
     }

@@ -14,7 +14,7 @@ from .moench import Moench
 from .pattern import Pattern, patternParameters
 from .gaincaps import Mythen3GainCapsWrapper
 
-import _slsdet
+from . import _slsdet
 xy = _slsdet.xy
 defs = _slsdet.slsDetectorDefs
 
@@ -40,4 +40,7 @@ def read_version():
         raise RuntimeError("VERSION file not found in slsdet package from init.py")
     
 __version__ = read_version()
+
+
+
 

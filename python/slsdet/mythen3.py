@@ -11,7 +11,7 @@ from .detector import Detector, freeze
 
 # from .adcs import Adc, DetectorAdcs
 from .dacs import DetectorDacs
-import _slsdet
+from . import _slsdet
 dacIndex = _slsdet.slsDetectorDefs.dacIndex
 gc_enums = _slsdet.slsDetectorDefs.M3_GainCaps
 from .detector_property import DetectorProperty

@@ -15,6 +15,7 @@
 #include "loadPattern.h"
 
 #include <netinet/in.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h> // usleep
@@ -93,6 +94,10 @@ void basictests() {
     LOG(logINFOBLUE, ("********* Chip Test Board Virtual Server *********\n"));
 #else
     LOG(logINFOBLUE, ("************* Chip Test Board Server *************\n"));
+    initError = enableBlackfinAMCExternalAccessExtension(initErrorMessage);
+    if (initError == FAIL) {
+        return;
+    }
     initError = defineGPIOpins(initErrorMessage);
     if (initError == FAIL) {
         return;
@@ -436,6 +441,32 @@ uint32_t getDetectorIP() {
     // LOG(logINFO, ("ip:%x\n",res);
 
     return res;
+}
+
+int enableBlackfinAMCExternalAccessExtension(char *mess) {
+    unsigned int value;
+    const char *file_path = BFIN_AMC_ACCESS_EXTENSION_FNAME;
+    FILE *file = fopen(file_path, "r");
+    if (!file) {
+        strcpy(mess, "Failed to enable blackfin AMC access extension. Could "
+                     "not read EBIU_AMBCTL1\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    fscanf(file, "%x", &value);
+    fclose(file);
+
+    value |= BFIN_AMC_ACCESS_EXTENSION_ENA_VAL;
+    file = fopen(file_path, "w");
+    if (!file) {
+        strcpy(mess, "Failed to enable blackfin AMC access extension. Could "
+                     "not write EBIU_AMBCTL1\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    fprintf(file, "0x%x", value);
+    fclose(file);
+    return OK;
 }
 
 /* initialization */

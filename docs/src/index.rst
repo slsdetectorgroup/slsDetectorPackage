@@ -81,8 +81,9 @@ Welcome to slsDetectorPackage's documentation!
     :caption: Receiver
     :maxdepth: 2
 
-    receivers
     slsreceiver
+    receivers
+    
 
 .. toctree::
     :caption: Receiver Files

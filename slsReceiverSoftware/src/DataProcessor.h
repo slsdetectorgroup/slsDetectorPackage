@@ -168,7 +168,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     uint32_t streamingTimerInMs;
     uint32_t streamingStartFnum;
     uint32_t currentFreqCount{0};
-    struct timespec timerbegin{};
+    struct timespec timerbegin {};
     bool framePadding;
     std::atomic<bool> startedFlag{false};
     std::atomic<uint64_t> firstIndex{0};

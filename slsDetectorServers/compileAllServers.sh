@@ -11,8 +11,11 @@ det_list=("ctbDetectorServer
 	)
 usage="\nUsage: compileAllServers.sh [server|all(opt)] [update_api(opt)]. \n\tNo arguments mean all servers with 'developer' branch. \n\tupdate_api if true updates the api to version in VERSION file"
 
-update_api=false
-target=clean
+update_api=true
+target=version
+
+
+
 # arguments
 if [ $# -eq 0 ]; then
 	# no argument, all servers
@@ -38,9 +41,8 @@ elif [ $# -eq 1 ] || [ $# -eq 2 ]; then
 
 	if [ $# -eq 2 ]; then
 		update_api=$2
-		if $update_api ; then
-			target=version
-			echo "updating api to $(cat ../VERSION)"
+		if not $update_api ; then
+			target=clean
 		fi
 	fi
 else
@@ -52,6 +54,9 @@ declare -a deterror=("OK" "OK" "OK" "OK" "OK" "OK")
 
 echo -e "list is ${det[@]}"
 
+if $update_api; then
+	echo "updating api to $(cat ../VERSION)"
+fi
 # compile each server
 idet=0
 for i in ${det[@]}
@@ -68,7 +73,6 @@ do
 	fi
 	mv bin/$dir bin/$file
 	git add -f bin/$file
-	cp bin/$file /tftpboot/
 	cd ..
 	echo -e "\n\n"
 	((++idet))

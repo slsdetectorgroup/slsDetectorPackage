@@ -20,7 +20,7 @@ VERSION_FILE = SCRIPT_DIR + "/VERSION"
 
 parser = argparse.ArgumentParser(description = 'updates API version')
 parser.add_argument('api_module_name', choices=["APILIB", "APIRECEIVER", "APICTB", "APIGOTTHARD2", "APIMOENCH", "APIEIGER", "APIXILINXCTB", "APIJUNGFRAU", "APIMYTHEN3"], help = 'module name to change api version options are: ["APILIB", "APIRECEIVER", "APICTB", "APIGOTTHARD2", "APIMOENCH", "APIEIGER", "APIXILINXCTB", "APIJUNGFRAU", "APIMYTHEN3"]')
-parser.add_argument('api_dir', help = 'Relative or absolut path to the module code')
+parser.add_argument('api_dir', help = 'Relative or absolute path to the module code')
 
 def update_api_file(new_api : str, api_module_name : str, api_file_name : str): 
 

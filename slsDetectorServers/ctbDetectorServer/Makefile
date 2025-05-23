@@ -33,7 +33,6 @@ versioning:
 
 $(PROGS): $(OBJS)
 #	echo $(OBJS) 
-	cd $(current_dir)
 	mkdir -p $(DESTDIR) 
 	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS) 
 	mv $(PROGS) $(DESTDIR)
@@ -41,7 +40,7 @@ $(PROGS): $(OBJS)
 	rm $(main_src)*.o  $(md5_dir)*.o
 
 clean:
-	cd $(current_dir) && rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb $(main_src)*.o $(md5_dir)*.o
+	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb $(main_src)*.o $(md5_dir)*.o
 	
 
 	

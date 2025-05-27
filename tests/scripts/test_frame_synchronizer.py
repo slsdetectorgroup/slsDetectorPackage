@@ -20,6 +20,7 @@ from utils_for_test import (
     cleanSharedmemory,
     startProcessInBackground,
     startProcessInBackgroundWithLogFile,
+    checkLogForErrors,
     startDetectorVirtualServer,
     loadConfig,
     ParseArguments
@@ -34,6 +35,9 @@ def startFrameSynchronizerPullSocket(name, fp):
     fname = PULL_SOCKET_PREFIX_FNAME + name + '.txt'
     cmd = ['python', '-u', 'frameSynchronizerPullSocket.py']  
     startProcessInBackgroundWithLogFile(cmd, fp, fname)
+    time.sleep(1)
+    checkLogForErrors(fp, fname)
+    
 
 
 def startFrameSynchronizer(num_mods, fp):

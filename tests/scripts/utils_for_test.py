@@ -104,7 +104,7 @@ def startProcessInBackground(cmd, fp):
         raise RuntimeException(f'Failed to start {cmd}:{str(e)}') from e
 
 
-def startProcessInBackgroundWithLogFile(cmd, fp, log_file_name):
+def startProcessInBackgroundWithLogFile(cmd, fp, log_file_name: str):
     Log(LogLevel.INFOBLUE, 'Starting up ' +  ' '.join(cmd) + '. Log: ' +  log_file_name)
     Log(LogLevel.INFOBLUE, 'Starting up ' +  ' '.join(cmd) + '. Log: ' +  log_file_name, fp)
     try:
@@ -112,6 +112,22 @@ def startProcessInBackgroundWithLogFile(cmd, fp, log_file_name):
             subprocess.Popen(cmd, stdout=log_fp, stderr=log_fp, text=True)
     except Exception as e:
         raise RuntimeException(f'Failed to start {cmd}:{str(e)}') from e
+
+
+def checkLogForErrors(fp, log_file_path: str):
+    try:
+        with open(log_file_path, 'r') as log_file:
+            for line in log_file:
+                if 'Error' in line:
+                    Log(LogLevel.ERROR, f"Error found in log: {line.strip()}")
+                    Log(LogLevel.ERROR, f"Error found in log: {line.strip()}", fp)
+                    raise RuntimeException("Error found in log file")
+    except FileNotFoundError:
+        print(f"Log file not found: {log_file_path}")
+        raise
+    except Exception as e:
+        print(f"Exception while reading log: {e}")
+        raise
 
 
 def runProcessWithLogFile(name, cmd, fp, log_file_name):

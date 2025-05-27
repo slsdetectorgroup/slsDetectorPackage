@@ -5,7 +5,12 @@ Script to update VERSION file with semantic versioning if provided as an argumen
 """
 
 import sys
-import re
+import os
+
+from packaging.version import Version, InvalidVersion
+
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def get_version():
 
@@ -14,20 +19,21 @@ def get_version():
         return "0.0.0"
 
     version = sys.argv[1]
-    
-    # Validate that the version argument matches semantic versioning format (X.Y.Z)
-    if not re.match(r'^\d+\.\d+\.\d+$', version):
-        print("Error: Version argument must be in semantic versioning format (X.Y.Z)")
+
+    try:
+        v = Version(version)  # normalizcheck if version follows PEP 440 specification
+        #replace -
+        return version.replace("-", ".")
+    except InvalidVersion as e:
+        print(f"Invalid version {version}. Version format must follow semantic versioning format of python PEP 440 version identification specification.")
         sys.exit(1)
     
-    return version
-
 
 def write_version_to_file(version):
-    with open("VERSION", "w") as version_file:
+    version_file_path = os.path.join(SCRIPT_DIR, "VERSION")
+    with open(version_file_path, "w") as version_file:
         version_file.write(version)
     print(f"Version {version} written to VERSION file.")
-
 
 # Main script
 if __name__ == "__main__":

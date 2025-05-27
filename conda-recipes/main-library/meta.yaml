@@ -1,11 +1,11 @@
+source:
+  path: ../..
+
+{% set version = load_file_regex(load_file = 'VERSION', regex_pattern = '(\d+(?:\.\d+)*(?:[\+\w\.]+))').group(1) %}
 package:
   name: sls_detector_software
-  version: {{ environ.get('GIT_DESCRIBE_TAG', '') }}
-
-
-source:
-  path: ..
-
+  version: {{ version }} 
+  
 build:
   number: 0
   binary_relocation: True
@@ -15,20 +15,21 @@ build:
 requirements:
   build:
     - {{ compiler('c') }}
-    - {{stdlib('c')}}
-    - {{compiler('cxx')}}
-    - cmake<=3.28
+    - {{ stdlib("c") }}
+    - {{ compiler('cxx') }}
+    - git
+    - cmake
     - ninja
     - qt 5.*
 
   host:
     - libstdcxx-ng
     - libgcc-ng
-    - libgl-devel
+    - libgl-devel  # [linux]
     - libtiff
     - zlib
     - expat
-  
+
   run:
     - libstdcxx-ng
     - libgcc-ng 
@@ -41,43 +42,12 @@ outputs:
     requirements:
       build:
         - {{ compiler('c') }}
-        - {{compiler('cxx')}}
-        - libstdcxx-ng
-        - libgcc-ng
+        - {{ stdlib("c") }}
+        - {{ compiler('cxx') }}
 
       run: 
         - libstdcxx-ng
         - libgcc-ng
-
-  - name: slsdet
-    script: build_pylib.sh
-
-    requirements:
-      build:
-        - python
-        - {{ compiler('c') }}
-        - {{compiler('cxx')}}
-        - {{ pin_subpackage('slsdetlib', exact=True) }}
-        - setuptools
-        - pybind11=2.13
-
-      host:
-        - python
-        - {{ pin_subpackage('slsdetlib', exact=True) }}
-        - setuptools
-        - pybind11=2.13
-
-
-      run:
-        - libstdcxx-ng
-        - libgcc-ng
-        - python
-        - numpy
-        - {{ pin_subpackage('slsdetlib', exact=True) }}
-
-    test:
-      imports:
-        - slsdet
 
 
   - name: slsdetgui
@@ -88,12 +58,11 @@ outputs:
         - {{ compiler('c') }}
         - {{compiler('cxx')}}
         - {{ pin_subpackage('slsdetlib', exact=True) }}
-        
 
       run:
         - {{ pin_subpackage('slsdetlib', exact=True) }}
         - qt 5.*
-        - expat
+
 
   - name: moenchzmq
     script: copy_moench.sh
@@ -107,5 +76,3 @@ outputs:
 
       run:
         - {{ pin_subpackage('slsdetlib', exact=True) }}
-        - expat
-

@@ -42,6 +42,7 @@ set(SPHINX_SOURCE_FILES
   src/pyexamples.rst
   src/pyPatternGenerator.rst
   src/servers.rst
+  src/multidet.rst
   src/receiver_api.rst
   src/result.rst
   src/type_traits.rst

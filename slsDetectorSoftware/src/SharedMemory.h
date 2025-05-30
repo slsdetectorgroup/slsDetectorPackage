@@ -25,8 +25,12 @@
 #include <unistd.h>
 
 namespace sls {
-
-#define SHM_DETECTOR_PREFIX "/slsDetectorPackage_detector_"
+#ifdef __APPLE__
+    // On macOS SHM_NAME_MAX is 31 so we need the shortest possible prefix
+    #define SHM_DETECTOR_PREFIX "/sls_"
+#else
+    #define SHM_DETECTOR_PREFIX "/slsDetectorPackage_detector_"
+#endif
 #define SHM_MODULE_PREFIX   "_module_"
 #define SHM_ENV_NAME        "SLSDETNAME"
 
@@ -203,6 +207,11 @@ template <typename T> class SharedMemory {
             throw SharedMemoryError(msg);
         }
 
+        #ifdef __APPLE__
+        // On macOS, fstat returns the allocated size and not the requested size.
+        // This means we can't check for size since we always get for example 16384 bytes.
+        return;
+        #endif
         auto actual_size = static_cast<size_t>(sb.st_size);
         auto expected_size = sizeof(T);
         if (actual_size != expected_size) {

@@ -1203,7 +1203,7 @@ void Module::setDestinationUDPIP(const IpAddr ip) {
     }
     sendToDetector(F_SET_DEST_UDP_IP, ip, nullptr);
     if (shm()->useReceiverFlag) {
-        MacAddr retval(0LU);
+        MacAddr retval{uint64_t(0)};
         sendToReceiver(F_SET_RECEIVER_UDP_IP, ip, retval);
         LOG(logINFO) << "Setting destination udp mac of Module " << moduleIndex
                      << " to " << retval;
@@ -1226,7 +1226,7 @@ void Module::setDestinationUDPIP2(const IpAddr ip) {
     }
     sendToDetector(F_SET_DEST_UDP_IP2, ip, nullptr);
     if (shm()->useReceiverFlag) {
-        MacAddr retval(0LU);
+        MacAddr retval{uint64_t(0)};
         sendToReceiver(F_SET_RECEIVER_UDP_IP2, ip, retval);
         LOG(logINFO) << "Setting destination udp mac2 of Module " << moduleIndex
                      << " to " << retval;

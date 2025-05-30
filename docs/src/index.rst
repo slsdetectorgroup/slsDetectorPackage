@@ -29,6 +29,12 @@ Welcome to slsDetectorPackage's documentation!
     examples
 
 .. toctree::
+    :caption: how to
+    :maxdepth: 2
+
+    multidet
+
+.. toctree::
     :caption: Python API
     :maxdepth: 2
 

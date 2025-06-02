@@ -4,9 +4,18 @@ Using multiple detectors
 The slsDetectorPackage supports using several detectors on the same computer.
 This can either be two users, that need to use the same computer without interfering
 with each other, or the same user that wants to use multiple detectors at the same time.
-The detectors in turn can consist of multiple modules.
+The detectors in turn can consist of multiple modules. For example, a 9M Jungfrau detector
+consists of 18 modules which typically are addressed at once as a single detector.
 
-In order to do this we have two tools to our disposal:
+.. note ::
+
+    To address a single module of a multi-module detector you can use the module index. 
+    
+    - Command line: :ref:`cl-module-index-label`
+    - Python: :ref:`py-module-index-label`
+
+
+Coming back to multiple detectors we have two tools to our disposal:
 
 #. Detector index 
 #. The SLSDETNAME environment variable
@@ -187,3 +196,4 @@ using the same:
 
     The computer that you are using need to have enough resources to run multiple detectors at the same time.
     This includes CPU and network bandwidth. Please coordinate with the other users!
+

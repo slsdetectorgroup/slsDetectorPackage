@@ -30,12 +30,7 @@ This document describes the differences between v9.2.0 and v9.1.1
     *   slsdet is available on PyPI from this release onwards
 
 
-
-    Documentation
-    -------------
-
-
-    *   Documentation on slsFrameSynchronizer updated.
+    *   Updated documentation on python module installation
 
 
 

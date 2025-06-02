@@ -1,13 +1,13 @@
-SLS Detector Package Bug Fix Release 9.1.1 released on 22.05.2025
+SLS Detector Package Minor Release 9.2.0 released on 02.06.2025
 ==================================================================
 
-This document describes the differences between v9.1.1 and v9.1.0   
+This document describes the differences between v9.2.0 and v9.1.1
 
 
 
     CONTENTS
     --------
-    1           Resolved Features
+    1           New or Changed Features
     2           On-board Detector Server Compatibility
     3           Firmware Requirements
     4           Kernel Requirements
@@ -16,32 +16,26 @@ This document describes the differences between v9.1.1 and v9.1.0
 
 
 
-1 Resolved Features 
-======================
+1 New or Changed Features
+=========================
 
 
-   Detector Server
-   ---------------
+    Python
+    ------
 
 
-    *   [Mythen3] Fix trimbits and badchannels
-        They were shifted by 1. Fixed.
+    *   Python module is now built using scikit-build-core
+    
+
+    *   slsdet is available on PyPI from this release onwards
 
 
-    Receiver
-    --------
+
+    Documentation
+    -------------
 
 
-    *   slsFrameSynchronizer - does not stream out frames
-        It streamed out start and stop zmq packets but did 
-        not stream out frames with no error message. Fixed.
-        Updated documentation.
-
-
-    *   slsMultiReceiver - 3rd Command line argument (vebose option)
-        When this option to print headers is enabled, the sample call back 
-        headers update the image size to a random number 26112. This 
-        is fixed and left commented out for easy reference for users.
+    *   Documentation on slsFrameSynchronizer updated.
 
 
 

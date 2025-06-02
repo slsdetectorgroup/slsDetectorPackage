@@ -57,6 +57,21 @@ When configuring a detector you can specify a detector index. The default is 0.
     $ sls_detector_get frames
     10
 
+The detector index is added to the name of the shared memory segment, so in this case
+the shared memory segments would be:
+
+.. code-block:: bash
+
+
+    #First detector
+    /dev/shm/slsDetectorPackage_detector_0
+    /dev/shm/slsDetectorPackage_detector_0_module_0
+
+    #Second detector
+    /dev/shm/slsDetectorPackage_detector_1
+    /dev/shm/slsDetectorPackage_detector_1_module_0
+
+
 **Python**
 
 The main difference between the command line and the Python API is that you set the index
@@ -171,7 +186,7 @@ example we can see that two single module detectors are configured one with inde
 SLSDETNAME is set to `Anna` so it makes sense to assume that she is the user that configured these detectors.
 
 
-.. code-block :: bash
+.. code-block:: bash
 
     # List the files in /dev/shm that starts with sls
     $ ls /dev/shm/sls*
@@ -179,6 +194,20 @@ SLSDETNAME is set to `Anna` so it makes sense to assume that she is the user tha
     /dev/shm/slsDetectorPackage_detector_0_module_0_Anna
     /dev/shm/slsDetectorPackage_detector_1_Anna
     /dev/shm/slsDetectorPackage_detector_1_module_0_Anna
+
+We also provide a command: user, which gets information about the shared memory segment that
+the client points to without doing any changed. 
+
+.. code-block:: bash
+
+    #in this case 3 simulated Mythen3 modules
+    $ sls_detector_get user
+    user 
+    Hostname: localhost+localhost+localhost+
+    Type: Mythen3
+    PID: 1226078
+    User: l_msdetect
+    Date: Mon Jun  2 05:46:20 PM CEST 2025
 
 
 Other considerations
@@ -188,7 +217,7 @@ The shared memory is not the only way to interfere with other users. You also ne
 using the same:
 
 * rx_tcpport
-* udp_dstport
+* Unique combination of udp_dstip and udp_dstport
 * rx_zmqport
 * zmqport
 

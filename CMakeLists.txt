@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 project(slsDetectorPackage)
 
 # Read VERSION file into project version
@@ -29,20 +29,40 @@ include(FetchContent)
 option(SLS_FETCH_ZMQ_FROM_GITHUB "Fetch zmq from github" OFF)
 option(SLS_FETCH_PYBIND11_FROM_GITHUB "Fetch pybind11 from github" OFF)
 
+
+
+# Allow FetchContent_Populate to be called with a single argument
+# otherwise deprecated warning is issued
+# Note: From cmake 3.28 we can pass EXCLUDE_FROM_ALL to FetchContent_Declare
+# and avoid direct use of Populate
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.30")
+    cmake_policy(SET CMP0169 OLD) 
+endif()
+
+# Patch libzmq to set minimum cmake version to 3.15 to avoid warnings
+# with newer cmake versions
+# Patch is applied in the FetchContent_Declare
+set(SLS_LIBZMQ_VERSION "4.3.4")
+
+
 if(SLS_FETCH_ZMQ_FROM_GITHUB)
     # Opt in to pull down a zmq version from github instead of
-    # using the bundled verison
+    # using the bundled version
     FetchContent_Declare(
         libzmq
         GIT_REPOSITORY https://github.com/zeromq/libzmq.git
-        GIT_TAG        v4.3.4
+        GIT_TAG        v${SLS_LIBZMQ_VERSION}
+        PATCH_COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR> patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq_cmake_version.patch
+        UPDATE_DISCONNECTED 1
     )
 else()
     # Standard behaviour use libzmq included in this repo (libs/libzmq)
     FetchContent_Declare(
         libzmq
-        URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq-4.3.4.tar.gz
+        URL ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq-${SLS_LIBZMQ_VERSION}.tar.gz
         URL_HASH MD5=cc20b769ac10afa352e5ed2769bb23b3
+        PATCH_COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR> patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/libs/libzmq/libzmq_cmake_version.patch
+        UPDATE_DISCONNECTED 1
     )
 endif()
 
@@ -54,6 +74,11 @@ set(ENABLE_CPACK OFF CACHE BOOL "")
 set(ENABLE_CLANG OFF CACHE BOOL "")
 set(ENABLE_CURVE OFF CACHE BOOL "")
 set(ENABLE_DRAFTS OFF CACHE BOOL "")
+set(ENABLE_PRECOMPILED OFF CACHE BOOL "")
+set(WITH_DOC OFF CACHE BOOL "")
+set(WITH_DOCS OFF CACHE BOOL "")
+
+ 
 
 # Using GetProperties and Populate to be able to exclude zmq
 # from install (not possible with FetchContent_MakeAvailable(libzmq))
@@ -191,7 +216,7 @@ endif()
 # to control options for the libraries
 if(NOT TARGET slsProjectOptions)
     add_library(slsProjectOptions INTERFACE)
-    target_compile_features(slsProjectOptions INTERFACE cxx_std_11)
+   target_compile_features(slsProjectOptions INTERFACE cxx_std_11)
 endif()
 
 if (NOT TARGET slsProjectWarnings)
@@ -329,9 +354,15 @@ if (SLS_USE_CTBGUI)
     add_subdirectory(pyctbgui)
 endif(SLS_USE_CTBGUI)
 
-configure_file( .clang-tidy  
-    ${CMAKE_BINARY_DIR}/.clang-tidy  
-)
+# Workaround for file note being copied to build directory
+# when issuing a python -m build
+# TODO! Proper fix
+if(EXISTS ".clang-tidy")
+    configure_file(.clang-tidy  
+        ${CMAKE_BINARY_DIR}/.clang-tidy  
+    )
+endif()
+
 
 if (SLS_BUILD_EXAMPLES)
     add_subdirectory(sample)

@@ -1,17 +1,20 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 
-# empty branch = developer branch in updateAPIVersion.sh
-branch=""
 det_list=("ctbDetectorServer  
 	gotthardDetectorServer  
 	gotthard2DetectorServer 
 	jungfrauDetectorServer 
 	mythen3DetectorServer 
 	moenchDetectorServer
-	xilinx_ctbDetectorServer" 
+	xilinx_ctbDetectorServer"
 	)
-usage="\nUsage: compileAllServers.sh [server|all(opt)] [branch(opt)]. \n\tNo arguments mean all servers with 'developer' branch. \n\tNo 'branch' input means 'developer branch'"
+usage="\nUsage: compileAllServers.sh [server|all(opt)] [update_api(opt)]. \n\tNo arguments mean all servers with 'developer' branch. \n\tupdate_api if true updates the api to version in VERSION file"
+
+update_api=true
+target=version
+
+
 
 # arguments
 if [ $# -eq 0 ]; then
@@ -35,15 +38,12 @@ elif [ $# -eq 1 ] || [ $# -eq 2 ]; then
 		declare -a det=("${1}")
 		#echo "Compiling only $1"
 	fi
-	# branch
+
 	if [ $# -eq 2 ]; then
-		# arg in list
-		if [[ $det_list == *$2* ]]; then
-			echo -e "Invalid argument 2: $2. $usage"
-			return 1
+		update_api=$2
+		if not $update_api ; then
+			target=clean
 		fi
-		branch+=$2
-		#echo "with branch $branch"
 	fi
 else
 	echo -e "Too many arguments.$usage"
@@ -54,6 +54,9 @@ declare -a deterror=("OK" "OK" "OK" "OK" "OK" "OK")
 
 echo -e "list is ${det[@]}"
 
+if $update_api; then
+	echo "updating api to $(cat ../VERSION)"
+fi
 # compile each server
 idet=0
 for i in ${det[@]}
@@ -63,14 +66,13 @@ do
 	echo -e "Compiling $dir [$file]"
 	cd $dir
 	make clean
-	if make version API_BRANCH=$branch; then
+	if make $target; then
 		deterror[$idet]="OK"
 	else
 		deterror[$idet]="FAIL"
 	fi
 	mv bin/$dir bin/$file
 	git add -f bin/$file
-	cp bin/$file /tftpboot/
 	cd ..
 	echo -e "\n\n"
 	((++idet))

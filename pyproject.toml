@@ -1,0 +1,37 @@
+[tool.scikit-build.metadata.version]
+provider = "scikit_build_core.metadata.regex"
+input = "VERSION"
+regex = '^(?P<version>\d+(?:\.\d+)*(?:[\.\+\w]+)?)$'
+result = "{version}" 
+
+[build-system]
+requires = [ "scikit-build-core>=0.10", "pybind11", "numpy",]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "slsdet"
+dynamic = ["version"]
+dependencies = [
+    "numpy", 
+]
+
+[tool.cibuildwheel]
+before-all = "uname -a"
+build = "cp{311,312,313}-manylinux_x86_64"
+
+[tool.scikit-build.build]
+verbose = true
+
+[tool.scikit-build.cmake]
+build-type = "Release"
+
+[tool.scikit-build.install]
+components = [ "python",]
+
+[tool.scikit-build.cmake.define]
+SLS_USE_RECEIVER = "OFF"
+SLS_USE_RECEIVER_BINARIES = "OFF"
+SLS_USE_TEXTCLIENT = "OFF"
+SLS_BUILD_SHARED_LIBRARIES = "OFF"
+SLS_USE_PYTHON = "ON"
+SLS_INSTALL_PYTHONEXT = "ON"

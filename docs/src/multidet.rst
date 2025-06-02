@@ -2,7 +2,7 @@ Using multiple detectors
 ==========================
 
 The slsDetectorPackage supports using several detectors on the same computer.
-This can either be two users, that needs to use the same computer without interfering
+This can either be two users, that need to use the same computer without interfering
 with each other, or the same user that wants to use multiple detectors at the same time.
 The detectors in turn can consist of multiple modules.
 
@@ -22,14 +22,18 @@ When configuring a detector you can specify a detector index. The default is 0.
 
 .. code-block:: bash
 
-    # Configure detector with index 0
+    # Given that we have two detectors (my-det and my-det2) that we want to use,
+    # we can configure them with different indices.
+
+    # Configure the first detector with index 0
     $ sls_detector_put hostname my-det
     
-    # Set number of frames for detector 0 to 19
+    # Set number of frames for detector 0 to 10
     $ sls_detector_put frames 10
 
 
-    # Configure detector with index 1 (notice the 1- before hostname)
+    # 
+    #Configure the second detector with index 1 (notice the 1- before hostname)
     $ sls_detector_put 1-hostname my-det2
     
 
@@ -55,6 +59,10 @@ The C++ API works int the same way.
 
     from slsdet import Detector
     
+
+    # The same can be achieved in Python by creating a detector object with an index.
+    # Again we have two detectors (my-det and my-det2) that we want to use:
+
     # Configure detector with index 0
     d = Detector()
 

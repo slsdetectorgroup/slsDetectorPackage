@@ -1,0 +1,42 @@
+name: slsdet
+
+on: [pull_request]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest, ] # macos-12, windows-2019]
+        python-version: ["3.12",]
+
+    runs-on: ${{ matrix.platform }}
+
+    # The setup-miniconda action needs this to activate miniconda
+    defaults:
+      run:
+        shell: "bash -l {0}"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get conda
+        uses: conda-incubator/setup-miniconda@v3.0.4
+        with:
+          python-version: ${{ matrix.python-version }}
+          channels: conda-forge
+
+      - name: Prepare
+        run: conda install conda-build conda-verify pytest anaconda-client
+
+      - name: Disable upload
+        run: conda config --set anaconda_upload no
+
+      - name: Build
+        run: conda build conda-recipes/python-client --output-folder build_output 
+
+      - name: Upload all Conda packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: conda-packages
+          path: build_output/**  # Uploads all packages

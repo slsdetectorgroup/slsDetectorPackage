@@ -1,0 +1,45 @@
+source:
+  path: ../..
+
+{% set version = load_file_regex(load_file = 'VERSION', regex_pattern = '(\d+(?:\.\d+)*(?:[\+\w\.]+))').group(1) %}
+package:
+  name: slsdet
+  version: {{ version }} 
+
+build:
+  number: 0
+  script:
+    - unset CMAKE_GENERATOR && {{ PYTHON }} -m pip install . -vv  # [not win]
+
+requirements:
+  build:
+    - python {{python}}
+    - {{ compiler('c') }}
+    - {{ stdlib("c") }}
+    - {{ compiler('cxx') }}
+
+  host:
+    - cmake
+    - ninja
+    - python {{python}}
+    - pip
+    - scikit-build-core
+    - pybind11 >=2.13.0
+    - fmt
+    - zeromq
+    - nlohmann_json
+    - catch2
+
+  run:
+    - python {{python}}
+    - numpy
+
+
+test:
+  imports:
+    - slsdet
+
+
+about:
+  summary: An example project built with pybind11 and scikit-build.
+  # license_file: LICENSE

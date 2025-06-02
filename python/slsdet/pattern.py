@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
-import _slsdet
+from . import _slsdet
 
-from _slsdet import Pattern
+from ._slsdet import Pattern
 
 
 class patternParameters(_slsdet.patternParameters):

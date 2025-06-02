@@ -6,7 +6,7 @@ but not directly used in controlling the detector
 """
 
 from collections import namedtuple
-import _slsdet  #C++ lib
+from . import _slsdet  #C++ lib
 import functools
 import datetime as dt
 import pathlib

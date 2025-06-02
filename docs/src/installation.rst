@@ -6,18 +6,33 @@
 Installation
 ===============
 
-One can either install pre-built binaries using conda or build from source.
+.. contents::
+   :local:
+   :depth: 2
+   :backlinks: top
 
-.. warning ::
-    
-    Before building from source make sure that you have the 
-    :doc:`dependencies <../dependencies>` installed. If installing using conda, conda will 
-    manage the dependencies. Avoid also installing packages with pip. 
+
+Overview
+--------------
+
+The ``slsDetectorPackage`` provides core detector software implemented in C++, along with Python bindings packaged as the ``slsdet`` Python extension module. Choose the option that best fits your environment and use case.
+
+:ref:`conda pre-built binaries`: 
+Install pre-built binaries for the C++ client, receiver, GUI and the Python API (``slsdet``), simplifying setup across platforms.
+
+:ref:`pip`:
+Install only the Python extension module, either by downloading the pre-built library from PyPI or by building the extension locally from source. Available only from v9.2.0 onwards.
+
+:ref:`build from source`: 
+Compile the entire package yourself, including both the C++ core and the Python bindings, for maximum control and customization. However, make sure that you have the :doc:`dependencies <../dependencies>` installed. If installing using conda, conda will manage the dependencies. Avoid installing packages with pip and conda simultaneously.
+
+
+
    
+.. _conda pre-built binaries:
 
-
-Install binaries using conda
-----------------------------------
+1. Install pre-built binaries using conda (Recommended)
+--------------------------------------------------------
 
 Conda is not only useful to manage python environments but can also
 be used as a user space package manager. Dates in the tag (for eg. 2020.07.23.dev0) 
@@ -63,12 +78,29 @@ We have four different packages available:
     conda search moenchzmq
 
 
+.. _pip:
+
+2. Pip
+-------
+The Python extension module ``slsdet`` can be installed using pip. This is available from v9.2.0 onwards.
+
+.. code-block:: bash
+    
+    #Install the Python extension module from PyPI
+    pip install slsdet
+
+    # or install the python extension locally from source
+    git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 9.2.0
+    cd slsDetectorPackage
+    pip install .
 
 
-Build from source
-----------------------
+.. _build from source:
 
-1. Download Source Code from github
+3. Build from source
+-------------------------
+
+3.1. Download Source Code from github
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
@@ -83,12 +115,12 @@ Build from source
 
 
 
-2. Build from Source
+3.2. Build from Source
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 One can either build using cmake or use the in-built cmk.sh script.
 
-Build using CMake
+3.2.1. Build using CMake
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
@@ -135,7 +167,7 @@ Example cmake options               Comment
     For v7.x.x of slsDetectorPackage and older, refer :ref:`zeromq notes for cmake option to hint library location. <zeromq for different slsDetectorPackage versions>` 
 
 
-Build using in-built cmk.sh script
+3.2.2. Build using in-built cmk.sh script
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
@@ -185,8 +217,8 @@ Build using in-built cmk.sh script
     For v7.x.x of slsDetectorPackage and older, refer :ref:`zeromq notes for cmk script option to hint library location. <zeromq for different slsDetectorPackage versions>` 
 
 
-Build on old distributions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3.3. Build on old distributions using conda
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If your linux distribution doesn't come with a C++11 compiler (gcc>4.8) then 
 it's possible to install a newer gcc using conda and build the slsDetectorPackage
@@ -210,7 +242,7 @@ using this compiler
 
 
 
-Build slsDetectorGui (Qt5)
+3.4. Build slsDetectorGui (Qt5)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. Using pre-built binary on conda
@@ -271,7 +303,7 @@ Build slsDetectorGui (Qt5)
 
 
 
-Build this documentation
+3.5. Build this documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The documentation for the slsDetectorPackage is build using a combination 
@@ -294,8 +326,8 @@ is to use conda
     make rst # rst only, saves time in case the API did not change
 
 
-Pybind and Zeromq
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+4. Pybind and Zeromq
+-------------------------
 
 .. _pybind for different slsDetectorPackage versions:
 

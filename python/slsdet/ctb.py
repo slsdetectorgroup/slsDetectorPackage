@@ -4,7 +4,7 @@ from .detector import Detector, freeze
 from .utils import element_if_equal
 from .dacs import DetectorDacs, NamedDacs
 from .powers import DetectorPowers, NamedPowers
-import _slsdet
+from . import _slsdet
 dacIndex = _slsdet.slsDetectorDefs.dacIndex
 from .detector_property import DetectorProperty
 

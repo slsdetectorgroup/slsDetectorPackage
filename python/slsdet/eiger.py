@@ -11,7 +11,7 @@ Created on Wed Dec  6 11:51:18 2017
 from .detector import Detector
 from .temperature import Temperature, DetectorTemperature
 from .dacs import DetectorDacs
-import _slsdet
+from . import _slsdet
 dacIndex = _slsdet.slsDetectorDefs.dacIndex
 from .detector_property import DetectorProperty
 

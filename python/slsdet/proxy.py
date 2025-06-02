@@ -3,7 +3,7 @@
 from .utils import element_if_equal
 from .enums import dacIndex
 from .defines import M3_MAX_PATTERN_LEVELS, MAX_PATTERN_LEVELS
-from _slsdet import slsDetectorDefs
+from ._slsdet import slsDetectorDefs
 detectorType = slsDetectorDefs.detectorType
 
 

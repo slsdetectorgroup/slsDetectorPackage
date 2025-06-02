@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
-from _slsdet import CppDetectorApi
-from _slsdet import slsDetectorDefs
-from _slsdet import IpAddr, MacAddr
+from ._slsdet import CppDetectorApi
+from ._slsdet import slsDetectorDefs
+from ._slsdet import IpAddr, MacAddr
 
 runStatus = slsDetectorDefs.runStatus
 timingMode = slsDetectorDefs.timingMode
@@ -15,7 +15,7 @@ defs = slsDetectorDefs
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable, hostname_list
-from _slsdet import xy
+from ._slsdet import xy
 from .gaincaps import Mythen3GainCapsWrapper
 from . import utils as ut
 from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 

@@ -196,7 +196,7 @@ SLSDETNAME is set to `Anna` so it makes sense to assume that she is the user tha
     /dev/shm/slsDetectorPackage_detector_1_module_0_Anna
 
 We also provide a command: user, which gets information about the shared memory segment that
-the client points to without doing any changed. 
+the client points to without doing any changes. 
 
 .. code-block:: bash
 

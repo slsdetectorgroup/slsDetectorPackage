@@ -466,28 +466,24 @@ void MasterAttributes::WriteHDF5CounterMask(H5::H5File *fd, H5::Group *group) {
 }
 
 void MasterAttributes::WriteHDF5ExptimeArray(H5::H5File *fd, H5::Group *group) {
-    for (int i = 0; i != 3; ++i) {
-        char c[1024]{};
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::StrType strdatatype(H5::PredType::C_S1, 256);
-        H5::DataSet dataset =
-            group->createDataSet("Exposure Time1", strdatatype, dataspace);
-        strcpy_safe(c, ToString(exptimeArray[i]));
-        dataset.write(c, strdatatype);
-    }
+    char c[1024]{};
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::DataSet dataset =
+        group->createDataSet("Exposure Times", strdatatype, dataspace);
+    strcpy_safe(c, ToString(exptimeArray));
+    dataset.write(c, strdatatype);
 }
 
 void MasterAttributes::WriteHDF5GateDelayArray(H5::H5File *fd,
                                                H5::Group *group) {
-    for (int i = 0; i != 3; ++i) {
-        char c[1024]{};
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::StrType strdatatype(H5::PredType::C_S1, 256);
-        H5::DataSet dataset =
-            group->createDataSet("Gate Delay1", strdatatype, dataspace);
-        strcpy_safe(c, ToString(gateDelayArray[i]));
-        dataset.write(c, strdatatype);
-    }
+    char c[1024]{};
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::DataSet dataset =
+        group->createDataSet("Gate Delays", strdatatype, dataspace);
+    strcpy_safe(c, ToString(gateDelayArray));
+    dataset.write(c, strdatatype);
 }
 
 void MasterAttributes::WriteHDF5Gates(H5::H5File *fd, H5::Group *group) {

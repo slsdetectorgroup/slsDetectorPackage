@@ -2,10 +2,23 @@
 reg 0xC00C 0x00000041
 reg 0xC010 0x01200004
 
+# turn on external CLKSEL for trimbit upload
+setbit 0xC00C 17
+
 # configure Matterhorn SPI
 setbit 0xC014 0
 
 # wait till config is done
+pollbit 0xC014 3 0
+
+# set trimbits to 0
+pattern put_trimbits_zero.pyat
+setbit 0xB030 0
+clearbit 0xB030 0
+sleep 1
+pollbit 0xB004 0 0
+clearbit 0xC00C 17
+setbit 0xC014 0
 pollbit 0xC014 3 0
 
 # reset transceiver

@@ -51,6 +51,7 @@ $(PROGS): $(OBJS)
 	cp chip_config_xilinx.txt $(DESTDIR)
 	cp reset_chip_xilinx.txt $(DESTDIR)
 	cp enable_clock_pattern.pyat $(DESTDIR)
+	cp put_trimbits_zero.pyat $(DESTDIR)
 	cp readout_pattern.pyat $(DESTDIR)
 	rm $(main_src)*.o $(md5_dir)*.o
 clean:

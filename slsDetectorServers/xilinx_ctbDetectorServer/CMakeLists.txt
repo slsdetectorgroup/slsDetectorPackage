@@ -44,5 +44,6 @@ install(TARGETS xilinx_ctbDetectorServer_virtual
 configure_file(chip_config_xilinx.txt ${CMAKE_BINARY_DIR}/bin/chip_config_xilinx.txt COPYONLY)
 configure_file(reset_chip_xilinx.txt ${CMAKE_BINARY_DIR}/bin/reset_chip_xilinx.txt COPYONLY)
 configure_file(enable_clock_pattern.pyat ${CMAKE_BINARY_DIR}/bin/enable_clock_pattern.pyat COPYONLY)
+configure_file(put_trimbits_zero.pyat ${CMAKE_BINARY_DIR}/bin/put_trimbits_zero.pyat COPYONLY)
 configure_file(readout_pattern.pyat ${CMAKE_BINARY_DIR}/bin/readout_pattern.pyat COPYONLY)
 

@@ -152,6 +152,12 @@ class MasterAttributes {
 #ifdef HDF5C
     void WriteXilinxCtbHDF5Attributes(H5::H5File *fd, H5::Group *group);
 #endif
+    private:
+#ifdef HDF5C
+    static const int HSTR_LEN = 1024;
+#endif
 };
+
+
 
 } // namespace sls

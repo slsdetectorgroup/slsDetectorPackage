@@ -19,8 +19,8 @@ namespace sls {
 // files
 
 // versions
-#define HDF5_WRITER_VERSION   (6.7) // 1 decimal places
-#define BINARY_WRITER_VERSION (7.3) // 1 decimal places
+#define HDF5_WRITER_VERSION   (7.0) 
+#define BINARY_WRITER_VERSION (7.3) 
 
 #define MAX_FRAMES_PER_FILE            20000
 #define SHORT_MAX_FRAMES_PER_FILE      100000

@@ -16,6 +16,17 @@ namespace sls {
 
 using namespace sls::time;
 
+TEST_CASE("Convert bool to string", "[support]") {
+    REQUIRE(ToString(true) == "1");
+    REQUIRE(ToString(false) == "0");
+}
+
+TEST_CASE("Convert string to bool", "[support]") {
+    REQUIRE(StringTo<bool>("1") == true);
+    REQUIRE(StringTo<bool>("0") == false);
+}
+
+
 TEST_CASE("Integer conversions", "[support]") {
     REQUIRE(ToString(0) == "0");
     REQUIRE(ToString(1) == "1");

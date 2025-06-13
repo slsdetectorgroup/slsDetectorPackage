@@ -169,14 +169,6 @@ void MasterAttributes::GetFinalBinaryAttributes(
 void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
                                                  H5::Group *group) {
     char c[1024]{};
-    // version
-    {
-        double version = BINARY_WRITER_VERSION;
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::Attribute attribute = fd->createAttribute(
-            "Version", H5::PredType::NATIVE_DOUBLE, dataspace);
-        attribute.write(H5::PredType::NATIVE_DOUBLE, &version);
-    }
     // timestamp
     {
         time_t t = std::time(nullptr);

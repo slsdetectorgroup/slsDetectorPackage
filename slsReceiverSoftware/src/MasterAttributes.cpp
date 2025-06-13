@@ -279,33 +279,14 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
             "Total Frames", H5::PredType::STD_U64LE, dataspace);
         dataset.write(&totalFrames, H5::PredType::STD_U64LE);
     }
-    // Receiver Roi xmin
+    // Receiver Roi
     {
         H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::StrType strdatatype(H5::PredType::C_S1, 1024);
         H5::DataSet dataset = group->createDataSet(
-            "receiver roi xmin", H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&receiverRoi.xmin, H5::PredType::NATIVE_INT);
-    }
-    // Receiver Roi xmax
-    {
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::DataSet dataset = group->createDataSet(
-            "receiver roi xmax", H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&receiverRoi.xmax, H5::PredType::NATIVE_INT);
-    }
-    // Receiver Roi ymin
-    {
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::DataSet dataset = group->createDataSet(
-            "receiver roi ymin", H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&receiverRoi.ymin, H5::PredType::NATIVE_INT);
-    }
-    // Receiver Roi ymax
-    {
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::DataSet dataset = group->createDataSet(
-            "receiver roi ymax", H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&receiverRoi.ymax, H5::PredType::NATIVE_INT);
+            "receiver roi", H5::PredType::NATIVE_INT, dataspace);
+        strcpy_safe(c, ToString(receiverRoi));
+        dataset.write(c, strdatatype);
     }
 }
 

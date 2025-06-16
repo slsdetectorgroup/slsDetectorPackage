@@ -31,7 +31,6 @@
 
 namespace sls {
 
-
 DetectorImpl::DetectorImpl(int detector_index, bool verify, bool update)
     : detectorIndex(detector_index), shm(detector_index, -1),
       ctb_shm(detector_index, -1, CtbConfig::shm_tag()) {
@@ -536,7 +535,7 @@ void DetectorImpl::readFrameFromReceiver() {
     bool quadEnable = false;
     // to flip image
     bool eiger = false;
-    std::array<int, 4> rxRoi {};//TODO: get roi from json header 
+    std::array<int, 4> rxRoi{}; // TODO: get roi from json header
 
     std::vector<bool> runningList(zmqSocket.size());
     std::vector<bool> connectList(zmqSocket.size());
@@ -1703,44 +1702,53 @@ std::vector<defs::ROI> DetectorImpl::getRxROI() const {
         throw RuntimeError("No Modules added");
     }
 
-    return std::vector<defs::ROI>{};
-//TODO
+    // return std::vector<defs::ROI>{};
+    return rxRoiTemp;
+    // TODO
 }
 
-bool DetectorImpl::roisOverlap(const defs::ROI& a, const defs::ROI& b) {
-    return !(a.xmax < b.xmin || a.xmin > b.xmax ||
-         a.ymax < b.ymin || a.ymin > b.ymax);
-
+bool DetectorImpl::roisOverlap(const defs::ROI &a, const defs::ROI &b) {
+    return !(a.xmax < b.xmin || a.xmin > b.xmax || a.ymax < b.ymin ||
+             a.ymin > b.ymax);
 }
 
-void DetectorImpl::validateROIs(const std::vector<defs::ROI>& rois) {
+void DetectorImpl::validateROIs(const std::vector<defs::ROI> &rois) {
     for (size_t i = 0; i < rois.size(); ++i) {
-        const auto& roi = rois[i];
+        const auto &roi = rois[i];
 
         if (roi.noRoi()) {
             throw RuntimeError("Invalid Roi of size 0. Roi: " + ToString(roi));
         }
         if (roi.completeRoi()) {
             throw RuntimeError("Did you mean the clear roi command (API: "
-                            "clearRxROI, cmd: rx_clearroi) Roi: " + ToString(roi) + "?");
+                               "clearRxROI, cmd: rx_clearroi) Roi: " +
+                               ToString(roi) + "?");
         }
         if (roi.xmin > roi.xmax || roi.ymin > roi.ymax) {
             throw RuntimeError(
-                "Invalid Roi. xmin/ymin exceeds xmax/ymax. Roi: " + ToString(roi));
+                "Invalid Roi. xmin/ymin exceeds xmax/ymax. Roi: " +
+                ToString(roi));
         }
 
         if (roi.xmin < 0 || roi.xmax >= shm()->numberOfChannels.x) {
-            throw RuntimeError("ROI x-dimension outside detector bounds. Roi: " + ToString(roi));
+            throw RuntimeError(
+                "ROI x-dimension outside detector bounds. Roi: " +
+                ToString(roi));
         }
 
         bool is2D = (modules[0]->getNumberOfChannels().y > 1 ? true : false);
         if (is2D) {
             if (roi.ymin < 0 || roi.ymax >= shm()->numberOfChannels.y) {
-                throw RuntimeError("ROI y-dimension outside detector bounds. Roi: " + ToString(roi));
+                throw RuntimeError(
+                    "ROI y-dimension outside detector bounds. Roi: " +
+                    ToString(roi));
             }
         } else {
-            if ((roi.ymin != -1 && roi.ymin != 0) || (roi.ymax != -1 && roi.ymax != 0)) {
-                throw RuntimeError("Invalid Y range for 1D detector: should be -1. Roi: " + ToString(roi));
+            if ((roi.ymin != -1 && roi.ymin != 0) ||
+                (roi.ymax != -1 && roi.ymax != 0)) {
+                throw RuntimeError(
+                    "Invalid Y range for 1D detector: should be -1. Roi: " +
+                    ToString(roi));
             }
         }
 
@@ -1753,7 +1761,7 @@ void DetectorImpl::validateROIs(const std::vector<defs::ROI>& rois) {
     }
 }
 
-void DetectorImpl::setRxROI(const std::vector<defs::ROI>& args) {
+void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
     if (shm()->detType == CHIPTESTBOARD ||
         shm()->detType == defs::XILINX_CHIPTESTBOARD) {
         throw RuntimeError("RxRoi not implemented for this Detector");
@@ -1761,18 +1769,18 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI>& args) {
     if (modules.size() == 0) {
         throw RuntimeError("No Modules added");
     }
-    
+
     validateROIs(args);
 
-//TODO
+    rxRoiTemp = args;
+
+    // TODO
 }
 
-void DetectorImpl::clearRxROI() {
-    ;// TODO: clear roi
-}
+void DetectorImpl::clearRxROI() { rxRoiTemp.clear(); }
 
 int DetectorImpl::getNumberOfUdpPortsInRxROI() const {
-    return 0;// TODO
+    return 0; // TODO
 }
 
 void DetectorImpl::getBadChannels(const std::string &fname,

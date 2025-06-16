@@ -1367,12 +1367,10 @@ void Detector::setRxArping(bool value, Positions pos) {
     pimpl->Parallel(&Module::setRxArping, pos, value);
 }
 
-std::vector<defs::ROI> Detector::getRxROI() const  {
-    return pimpl->getRxROI();
-}
+std::vector<defs::ROI> Detector::getRxROI() const { return pimpl->getRxROI(); }
 
 // RxROIs can be set for all types except CTB. At multi level without gap pixels
-void Detector::setRxROI(const std::vector<defs::ROI>& args) {
+void Detector::setRxROI(const std::vector<defs::ROI> &args) {
     pimpl->setRxROI(args);
 }
 
@@ -1380,7 +1378,6 @@ void Detector::clearRxROI() { pimpl->clearRxROI(); }
 
 int Detector::getNumberOfUdpPortsInRxROI() const {
     return pimpl->getNumberOfUdpPortsInRxROI();
-
 }
 
 // File

@@ -988,12 +988,11 @@ class Detector {
     std::vector<defs::ROI> getRxROI() const;
 
     /** only at multi module level without gap pixels */
-    void setRxROI(const std::vector<defs::ROI>& args);
+    void setRxROI(const std::vector<defs::ROI> &args);
 
     void clearRxROI();
 
     int getNumberOfUdpPortsInRxROI() const;
-
 
     ///@}
 

@@ -719,50 +719,124 @@ std::string Caller::rx_zmqip(int action) {
     }
     return os.str();
 }
-/* TODO
+
 std::string Caller::rx_roi(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
         os << "[xmin] [xmax] [ymin] [ymax]\n\tRegion of interest in "
-              "receiver.\n\tOnly allowed at multi module level and without gap "
+              "receiver.\n\t"
+           << "For a list of rois, use '[' and '];' to distinguish between "
+              "rois and use comma inside the square brackets.\n\t"
+           << "For example: [0, 100, 0, 100];[200, 300, 0, 100] will set two "
+              "rois.\n\t"
+           << "Only allowed at multi module level and without gap "
               "pixels."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        if (det_id == -1) {
-            auto t = det->getRxROI();
-            os << t << '\n';
+        if (det_id != -1) {
+            throw RuntimeError("Cannot execute receiver ROI at module level");
         } else {
-            auto t = det->getIndividualRxROIs(std::vector<int>{det_id});
-            os << t << '\n';
+            auto t = det->getRxROI();
+            // os << ToString(t) << '\n';
+            for (const auto &r : t) {
+                os << r << ';';
+            }
+            if (!t.empty()) {
+                os.seekp(-1, std::ios_base::end); // remove trailing ;
+            }
+            os << '\n';
         }
     } else if (action == defs::PUT_ACTION) {
-        defs::ROI t;
-        // 2 or 4 arguments
-        if (args.size() != 2 && args.size() != 4) {
-            WrongNumberOfParameters(2);
-        }
-        if (args.size() == 2 || args.size() == 4) {
+        std::vector<defs::ROI> rois;
+
+        // Support multiple args with bracketed ROIs, or single arg with
+        // semicolon-separated vector
+        bool isVectorInput =
+            std::all_of(args.begin(), args.end(), [](const std::string &a) {
+                return a.find('[') != std::string::npos &&
+                       a.find(']') != std::string::npos;
+            });
+
+        // previous format: 2 or 4 separate args
+        if ((args.size() == 2 || args.size() == 4) && !isVectorInput) {
+            defs::ROI t;
             t.xmin = StringTo<int>(args[0]);
             t.xmax = StringTo<int>(args[1]);
+            if (args.size() == 4) {
+                t.ymin = StringTo<int>(args[2]);
+                t.ymax = StringTo<int>(args[3]);
+            }
+            rois.emplace_back(t);
+        } else {
+            if (!isVectorInput)
+                WrongNumberOfParameters(2);
+            else {
+                for (const auto &arg : args) {
+                    auto subRois = parseRoiVector(arg);
+                    rois.insert(rois.end(), subRois.begin(), subRois.end());
+                }
+            }
         }
-        if (args.size() == 4) {
-            t.ymin = StringTo<int>(args[2]);
-            t.ymax = StringTo<int>(args[3]);
-        }
+
         // only multi level
         if (det_id != -1) {
             throw RuntimeError("Cannot execute receiver ROI at module level");
         }
-        det->setRxROI(t);
-        os << t << '\n';
+
+        det->setRxROI(rois);
+        // os << ToString(rois) << '\n';
+        for (const auto &r : rois) {
+            os << r << ';';
+        }
+        if (!rois.empty()) {
+            os.seekp(-1, std::ios_base::end); // remove trailing ;
+        }
+        os << '\n';
     } else {
         throw RuntimeError("Unknown action");
     }
     return os.str();
-}*/
+}
+
+std::vector<defs::ROI> Caller::parseRoiVector(const std::string &input) {
+    std::vector<defs::ROI> rois;
+    std::stringstream ss(input);
+    std::string token;
+
+    while (std::getline(ss, token, ';')) {
+        token.erase(std::remove_if(token.begin(), token.end(), ::isspace),
+                    token.end());
+        if (token.empty())
+            continue;
+        if (token.front() != '[' || token.back() != ']') {
+            throw RuntimeError("Each ROI must be enclosed in square brackets: "
+                               "[xmin,xmax,ymin,ymax]");
+        }
+        token = token.substr(1, token.size() - 2); // remove brackets
+        std::vector<std::string> parts;
+        std::stringstream inner(token);
+        std::string num;
+        while (std::getline(inner, num, ',')) {
+            parts.push_back(num);
+        }
+
+        if (parts.size() != 4) {
+            throw RuntimeError("ROI must have 4 comma-separated integers");
+        }
+
+        defs::ROI roi;
+        roi.xmin = StringTo<int>(parts[0]);
+        roi.xmax = StringTo<int>(parts[1]);
+        roi.ymin = StringTo<int>(parts[2]);
+        roi.ymax = StringTo<int>(parts[3]);
+        rois.emplace_back(roi);
+    }
+    return rois;
+}
+
 std::string Caller::ratecorr(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {

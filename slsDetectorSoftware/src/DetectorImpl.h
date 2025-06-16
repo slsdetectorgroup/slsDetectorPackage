@@ -302,7 +302,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     verifyUniqueRxHost(const std::vector<std::string> &names) const;
 
     std::vector<defs::ROI> getRxROI() const;
-    void setRxROI(const std::vector<defs::ROI>& args);
+    void setRxROI(const std::vector<defs::ROI> &args);
     void clearRxROI();
     int getNumberOfUdpPortsInRxROI() const;
 
@@ -427,8 +427,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void verifyUniqueHost(
         bool isDet, std::vector<std::pair<std::string, uint16_t>> &hosts) const;
 
-    bool roisOverlap(const defs::ROI& a, const defs::ROI& b);
-    void validateROIs(const std::vector<defs::ROI>& rois);
+    bool roisOverlap(const defs::ROI &a, const defs::ROI &b);
+    void validateROIs(const std::vector<defs::ROI> &rois);
 
     const int detectorIndex{0};
     SharedMemory<sharedDetector> shm{0, -1};
@@ -457,6 +457,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     void (*dataReady)(detectorData *, uint64_t, uint32_t, void *){nullptr};
     void *pCallbackArg{nullptr};
+
+    std::vector<defs::ROI> rxRoiTemp;
 };
 
 } // namespace sls

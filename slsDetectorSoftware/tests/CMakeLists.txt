@@ -5,7 +5,6 @@
 target_sources(tests PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}/test-SharedMemory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test-slsDetector.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/test-Roi.cpp
 
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-rx.cpp

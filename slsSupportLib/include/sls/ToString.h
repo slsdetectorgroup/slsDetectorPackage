@@ -348,5 +348,23 @@ std::vector<T> StringTo(const std::vector<std::string> &strings) {
         result.push_back(StringTo<T>(s));
     return result;
 }
+/*
+template <typename T>
+std::string ToString(const std::vector<T> &vec) {
+    std::ostringstream oss;
+    oss << "[";
+    for (size_t i = 0; i < vec.size(); ++i) {
+        oss << vec[i];
+        if (i != vec.size() - 1)
+            oss << ", ";
+    }
+    oss << "]";
+    return oss.str();
+}*/
+
+/*template <typename T>
+std::ostream &operator<<(std::ostream &os, const std::vector<T> &v) {
+    return os << ToString(v);
+}*/
 
 } // namespace sls

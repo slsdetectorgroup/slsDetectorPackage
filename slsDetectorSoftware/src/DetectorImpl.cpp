@@ -1704,74 +1704,7 @@ std::vector<defs::ROI> DetectorImpl::getRxROI() const {
     }
 
     return std::vector<defs::ROI>{};
-    /*
-    // complete detector in roi
-    auto t = Parallel(&Module::getRxROI, {});
-    if (t.equal() && t.front().completeRoi()) {
-        LOG(logDEBUG) << "no roi";
-        return defs::ROI(0, shm()->numberOfChannels.x - 1, 0,
-                         shm()->numberOfChannels.y - 1);
-    }
-
-    defs::xy numChansPerMod = modules[0]->getNumberOfChannels();
-    bool is2D = (numChansPerMod.y > 1 ? true : false);
-    defs::xy geometry = getPortGeometry();
-
-    defs::ROI retval{};
-    for (size_t iModule = 0; iModule != modules.size(); ++iModule) {
-
-        defs::ROI moduleRoi = modules[iModule]->getRxROI();
-        if (moduleRoi.noRoi()) {
-            LOG(logDEBUG) << iModule << ": no roi";
-        } else {
-            // expand complete roi
-            if (moduleRoi.completeRoi()) {
-                moduleRoi.xmin = 0;
-                moduleRoi.xmax = numChansPerMod.x;
-                if (is2D) {
-                    moduleRoi.ymin = 0;
-                    moduleRoi.ymax = numChansPerMod.y;
-                }
-            }
-            LOG(logDEBUG) << iModule << ": " << moduleRoi;
-
-            // get roi at detector level
-            defs::xy pos = calculatePosition(iModule, geometry);
-            defs::ROI moduleFullRoi{};
-            moduleFullRoi.xmin = numChansPerMod.x * pos.x + moduleRoi.xmin;
-            moduleFullRoi.xmax = numChansPerMod.x * pos.x + moduleRoi.xmax;
-            if (is2D) {
-                moduleFullRoi.ymin = numChansPerMod.y * pos.y + moduleRoi.ymin;
-                moduleFullRoi.ymax = numChansPerMod.y * pos.y + moduleRoi.ymax;
-            }
-            LOG(logDEBUG) << iModule << ": (full roi)" << moduleFullRoi;
-
-            // get min and max
-            if (retval.xmin == -1 || moduleFullRoi.xmin < retval.xmin) {
-                LOG(logDEBUG) << iModule << ": xmin updated";
-                retval.xmin = moduleFullRoi.xmin;
-            }
-            if (retval.xmax == -1 || moduleFullRoi.xmax > retval.xmax) {
-                LOG(logDEBUG) << iModule << ": xmax updated";
-                retval.xmax = moduleFullRoi.xmax;
-            }
-            if (retval.ymin == -1 || moduleFullRoi.ymin < retval.ymin) {
-                LOG(logDEBUG) << iModule << ": ymin updated";
-                retval.ymin = moduleFullRoi.ymin;
-            }
-            if (retval.ymax == -1 || moduleFullRoi.ymax > retval.ymax) {
-                LOG(logDEBUG) << iModule << ": ymax updated";
-                retval.ymax = moduleFullRoi.ymax;
-            }
-        }
-        LOG(logDEBUG) << iModule << ": (retval): " << retval;
-    }
-    if (retval.ymin == -1) {
-        retval.ymin = 0;
-        retval.ymax = 0;
-    }
-    return retval;
-    */
+//TODO
 }
 
 bool DetectorImpl::roisOverlap(const defs::ROI& a, const defs::ROI& b) {
@@ -1831,94 +1764,11 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI>& args) {
     
     validateROIs(args);
 
-/*
-    defs::xy numChansPerMod = modules[0]->getNumberOfChannels();
-    bool is2D = (numChansPerMod.y > 1 ? true : false);
-    defs::xy geometry = getPortGeometry();
-
-
-    for (size_t iModule = 0; iModule != modules.size(); ++iModule) {
-        // default init = complete roi
-        defs::ROI moduleRoi{};
-
-        // incomplete roi
-        if (!arg.completeRoi()) {
-            // multi module Gotthard2
-            if (shm()->detType == GOTTHARD2 && size() > 1) {
-                moduleRoi.xmin = arg.xmin / 2;
-                moduleRoi.xmax = arg.xmax / 2;
-                if (iModule == 0) {
-                    // all should be even
-                    if (arg.xmin % 2 != 0) {
-                        ++moduleRoi.xmin;
-                    }
-                } else if (iModule == 1) {
-                    // all should be odd
-                    if (arg.xmax % 2 == 0) {
-                        --moduleRoi.xmax;
-                    }
-                } else {
-                    throw RuntimeError("Cannot have more than 2 modules for a "
-                                       "Gotthard2 detector");
-                }
-            } else {
-                // get module limits
-                defs::xy pos = calculatePosition(iModule, geometry);
-                defs::ROI moduleFullRoi{};
-                moduleFullRoi.xmin = numChansPerMod.x * pos.x;
-                moduleFullRoi.xmax = numChansPerMod.x * (pos.x + 1) - 1;
-                if (is2D) {
-                    moduleFullRoi.ymin = numChansPerMod.y * pos.y;
-                    moduleFullRoi.ymax = numChansPerMod.y * (pos.y + 1) - 1;
-                }
-
-                // no roi
-                if (arg.xmin > moduleFullRoi.xmax ||
-                    arg.xmax < moduleFullRoi.xmin ||
-                    (is2D && (arg.ymin > moduleFullRoi.ymax ||
-                              arg.ymax < moduleFullRoi.ymin))) {
-                    moduleRoi.setNoRoi();
-                }
-                // incomplete module roi
-                else if (arg.xmin > moduleFullRoi.xmin ||
-                         arg.xmax < moduleFullRoi.xmax ||
-                         (is2D && (arg.ymin > moduleFullRoi.ymin ||
-                                   arg.ymax < moduleFullRoi.ymax))) {
-                    moduleRoi.xmin = (arg.xmin <= moduleFullRoi.xmin)
-                                         ? 0
-                                         : (arg.xmin % numChansPerMod.x);
-                    moduleRoi.xmax = (arg.xmax >= moduleFullRoi.xmax)
-                                         ? numChansPerMod.x - 1
-                                         : (arg.xmax % numChansPerMod.x);
-                    if (is2D) {
-                        moduleRoi.ymin = (arg.ymin <= moduleFullRoi.ymin)
-                                             ? 0
-                                             : (arg.ymin % numChansPerMod.y);
-                        moduleRoi.ymax = (arg.ymax >= moduleFullRoi.ymax)
-                                             ? numChansPerMod.y - 1
-                                             : (arg.ymax % numChansPerMod.y);
-                    }
-                }
-            }
-        }
-        modules[iModule]->setRxROI(moduleRoi);
-    }
-    // updating shm rx_roi for gui purposes
-    shm()->rx_roi = arg;
-
-    // metadata
-    if (arg.completeRoi()) {
-        modules[0]->setRxROIMetadata(defs::ROI(0, shm()->numberOfChannels.x - 1,
-                                               0,
-                                               shm()->numberOfChannels.y - 1));
-    } else {
-        modules[0]->setRxROIMetadata(arg);
-    }
-        */
+//TODO
 }
 
 void DetectorImpl::clearRxROI() {
-    ;//Parallel(&Module::setRxROI, {}, defs::ROI{}); TODO: clear roi
+    ;// TODO: clear roi
 }
 
 int DetectorImpl::getNumberOfUdpPortsInRxROI() const {

@@ -1739,12 +1739,13 @@ readout:
     PUT:
       function: startDetectorReadout
 
-rx_clearroi:
-  inherit_actions: EXECUTE_SET_COMMAND_NOID
-  help: "\n\tResets Region of interest in receiver. Default is all channels/pixels enabled."
-  actions:
-    PUT:
-      function: clearRxROI
+# TODO
+#rx_clearroi:
+#  inherit_actions: EXECUTE_SET_COMMAND_NOID
+#  help: "\n\tResets Region of interest in receiver. Default is all channels/pixels enabled."
+#  actions:
+#    PUT:
+#      function: clearRxROI
 
 ################# EXECUTE_SET_COMMAND ########################
 start:
@@ -2592,17 +2593,18 @@ rx_zmqip:
         PUT:
           argc: -1
 
-rx_roi:
-    is_description: true
-    actions:
-        GET:
-          argc: 0
-        PUT:
-          args:
-            - argc: 2
-              arg_types: [ int, int ]
-            - argc: 4
-              arg_types: [ int, int, int, int ]
+#TODO
+#rx_roi:
+#    is_description: true
+#    actions:
+#        GET:
+#          argc: 0
+#        PUT:
+#          args:
+#            - argc: 2
+#              arg_types: [ int, int ]
+#            - argc: 4
+#              arg_types: [ int, int, int, int ]
 
 ratecorr:
     is_description: true

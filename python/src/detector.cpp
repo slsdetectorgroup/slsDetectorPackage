@@ -924,17 +924,6 @@ void init_det(py::module &m) {
                        (void (Detector::*)(bool, sls::Positions)) &
                            Detector::setRxArping,
                        py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("getIndividualRxROIs",
-                       (Result<defs::ROI>(Detector::*)(sls::Positions) const) &
-                           Detector::getIndividualRxROIs,
-                       py::arg());
-    CppDetectorApi.def("getRxROI",
-                       (defs::ROI(Detector::*)() const) & Detector::getRxROI);
-    CppDetectorApi.def(
-        "setRxROI", (void (Detector::*)(const defs::ROI)) & Detector::setRxROI,
-        py::arg());
-    CppDetectorApi.def("clearRxROI",
-                       (void (Detector::*)()) & Detector::clearRxROI);
     CppDetectorApi.def(
         "getFileFormat",
         (Result<defs::fileFormat>(Detector::*)(sls::Positions) const) &

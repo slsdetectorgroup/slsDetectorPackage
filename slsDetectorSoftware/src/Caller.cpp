@@ -10594,7 +10594,7 @@ std::string Caller::rx_arping(int action) {
 
     return os.str();
 }
-
+/*
 std::string Caller::rx_clearroi(int action) {
 
     std::ostringstream os;
@@ -10637,7 +10637,7 @@ std::string Caller::rx_clearroi(int action) {
 
     return os.str();
 }
-
+*/
 std::string Caller::rx_dbitoffset(int action) {
 
     std::ostringstream os;

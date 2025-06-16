@@ -985,15 +985,15 @@ class Detector {
      * every minute. Useful in 10G mode. */
     void setRxArping(bool value, Positions pos = {});
 
-    /** at module level */
-    Result<defs::ROI> getIndividualRxROIs(Positions pos) const;
-
-    defs::ROI getRxROI() const;
+    std::vector<defs::ROI> getRxROI() const;
 
     /** only at multi module level without gap pixels */
-    void setRxROI(const defs::ROI value);
+    void setRxROI(const std::vector<defs::ROI>& args);
 
     void clearRxROI();
+
+    int getNumberOfUdpPortsInRxROI() const;
+
 
     ///@}
 

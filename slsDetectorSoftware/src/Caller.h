@@ -233,7 +233,7 @@ class Caller {
     std::string runclk(int action);
     std::string runtime(int action);
     std::string rx_arping(int action);
-    std::string rx_clearroi(int action);
+    //std::string rx_clearroi(int action);
     std::string rx_dbitlist(int action);
     std::string rx_dbitoffset(int action);
     std::string rx_dbitreorder(int action);
@@ -251,7 +251,7 @@ class Caller {
     std::string rx_padding(int action);
     std::string rx_printconfig(int action);
     std::string rx_realudpsocksize(int action);
-    std::string rx_roi(int action);
+    //std::string rx_roi(int action);
     std::string rx_silent(int action);
     std::string rx_start(int action);
     std::string rx_status(int action);
@@ -580,7 +580,7 @@ class Caller {
         {"runclk", &Caller::runclk},
         {"runtime", &Caller::runtime},
         {"rx_arping", &Caller::rx_arping},
-        {"rx_clearroi", &Caller::rx_clearroi},
+        //{"rx_clearroi", &Caller::rx_clearroi},
         {"rx_dbitlist", &Caller::rx_dbitlist},
         {"rx_dbitoffset", &Caller::rx_dbitoffset},
         {"rx_dbitreorder", &Caller::rx_dbitreorder},
@@ -598,7 +598,7 @@ class Caller {
         {"rx_padding", &Caller::rx_padding},
         {"rx_printconfig", &Caller::rx_printconfig},
         {"rx_realudpsocksize", &Caller::rx_realudpsocksize},
-        {"rx_roi", &Caller::rx_roi},
+        //{"rx_roi", &Caller::rx_roi},
         {"rx_silent", &Caller::rx_silent},
         {"rx_start", &Caller::rx_start},
         {"rx_status", &Caller::rx_status},

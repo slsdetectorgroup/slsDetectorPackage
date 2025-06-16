@@ -24,7 +24,7 @@ class detectorData;
 class Module;
 
 #define DETECTOR_SHMAPIVERSION 0x190809
-#define DETECTOR_SHMVERSION    0x220505
+#define DETECTOR_SHMVERSION    0x250616
 #define SHORT_STRING_LENGTH    50
 
 /**
@@ -65,8 +65,6 @@ struct sharedDetector {
     bool gapPixels;
     /** high water mark of listening tcp port (only data) */
     int zmqHwm;
-    /** in shm for gui purposes */
-    defs::ROI rx_roi{};
 };
 
 class DetectorImpl : public virtual slsDetectorDefs {
@@ -303,9 +301,10 @@ class DetectorImpl : public virtual slsDetectorDefs {
     std::vector<std::pair<std::string, uint16_t>>
     verifyUniqueRxHost(const std::vector<std::string> &names) const;
 
-    defs::ROI getRxROI() const;
-    void setRxROI(const defs::ROI arg);
+    std::vector<defs::ROI> getRxROI() const;
+    void setRxROI(const std::vector<defs::ROI>& args);
     void clearRxROI();
+    int getNumberOfUdpPortsInRxROI() const;
 
     void getBadChannels(const std::string &fname, Positions pos) const;
     void setBadChannels(const std::string &fname, Positions pos);
@@ -427,6 +426,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     void verifyUniqueHost(
         bool isDet, std::vector<std::pair<std::string, uint16_t>> &hosts) const;
+
+    bool roisOverlap(const defs::ROI& a, const defs::ROI& b);
+    void validateROIs(const std::vector<defs::ROI>& rois);
 
     const int detectorIndex{0};
     SharedMemory<sharedDetector> shm{0, -1};

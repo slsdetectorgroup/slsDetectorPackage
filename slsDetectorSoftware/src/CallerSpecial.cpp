@@ -719,6 +719,7 @@ std::string Caller::rx_zmqip(int action) {
     }
     return os.str();
 }
+/* TODO
 std::string Caller::rx_roi(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
@@ -761,7 +762,7 @@ std::string Caller::rx_roi(int action) {
         throw RuntimeError("Unknown action");
     }
     return os.str();
-}
+}*/
 std::string Caller::ratecorr(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {

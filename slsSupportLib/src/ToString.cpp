@@ -5,12 +5,7 @@
 
 namespace sls {
 
-
-std::string ToString(bool value) {
-    return value ? "1" : "0";
-}
-
-
+std::string ToString(bool value) { return value ? "1" : "0"; }
 
 std::string ToString(const slsDetectorDefs::xy &coord) {
     std::ostringstream oss;

@@ -1544,31 +1544,6 @@ void DetectorImpl::setDefaultDac(defs::dacIndex index, int defaultValue,
     Parallel(&Module::setDefaultDac, pos, index, defaultValue, sett);
 }
 
-defs::xy DetectorImpl::getPortGeometry() const {
-    defs::xy portGeometry(1, 1);
-    switch (shm()->detType) {
-    case EIGER:
-        portGeometry.x = modules[0]->getNumberofUDPInterfacesFromShm();
-        break;
-    case JUNGFRAU:
-    case MOENCH:
-        portGeometry.y = modules[0]->getNumberofUDPInterfacesFromShm();
-        break;
-    default:
-        break;
-    }
-    return portGeometry;
-}
-
-defs::xy DetectorImpl::calculatePosition(int moduleIndex,
-                                         defs::xy geometry) const {
-    defs::xy pos{};
-    int maxYMods = shm()->numberOfModules.y;
-    pos.y = (moduleIndex % maxYMods) * geometry.y;
-    pos.x = (moduleIndex / maxYMods) * geometry.x;
-    return pos;
-}
-
 void DetectorImpl::verifyUniqueDetHost(const uint16_t port,
                                        std::vector<int> positions) const {
     // port for given positions
@@ -1707,9 +1682,10 @@ std::vector<defs::ROI> DetectorImpl::getRxROI() const {
     // TODO
 }
 
-bool DetectorImpl::roisOverlap(const defs::ROI &a, const defs::ROI &b) {
-    return !(a.xmax < b.xmin || a.xmin > b.xmax || a.ymax < b.ymin ||
-             a.ymin > b.ymax);
+bool DetectorImpl::roisOverlap(const defs::ROI &a, const defs::ROI &b) const {
+    bool xOverlap = !(a.xmax < b.xmin || a.xmin > b.xmax);
+    bool yOverlap = !(a.ymax < b.ymin || a.ymin > b.ymax);
+    return xOverlap && yOverlap;
 }
 
 void DetectorImpl::validateROIs(const std::vector<defs::ROI> &rois) {
@@ -1719,10 +1695,13 @@ void DetectorImpl::validateROIs(const std::vector<defs::ROI> &rois) {
         if (roi.noRoi()) {
             throw RuntimeError("Invalid Roi of size 0. Roi: " + ToString(roi));
         }
+        bool is2D = (modules[0]->getNumberOfChannels().y > 1 ? true : false);
         if (roi.completeRoi()) {
-            throw RuntimeError("Did you mean the clear roi command (API: "
-                               "clearRxROI, cmd: rx_clearroi) Roi: " +
-                               ToString(roi) + "?");
+            std::ostringstream oss;
+            oss << "Did you mean the clear roi command (API: clearRxROI, cmd: "
+                   "rx_clearroi) Roi: [ -1, -1 ";
+            oss << (is2D ? ", -1, -1 ]?" : "]?");
+            throw RuntimeError(oss.str());
         }
         if (roi.xmin > roi.xmax || roi.ymin > roi.ymax) {
             throw RuntimeError(
@@ -1736,7 +1715,6 @@ void DetectorImpl::validateROIs(const std::vector<defs::ROI> &rois) {
                 ToString(roi));
         }
 
-        bool is2D = (modules[0]->getNumberOfChannels().y > 1 ? true : false);
         if (is2D) {
             if (roi.ymin < 0 || roi.ymax >= shm()->numberOfChannels.y) {
                 throw RuntimeError(
@@ -1754,9 +1732,111 @@ void DetectorImpl::validateROIs(const std::vector<defs::ROI> &rois) {
 
         for (size_t j = i + 1; j < rois.size(); ++j) {
             if (roisOverlap(rois[i], rois[j])) {
-                clearRxROI();
-                throw RuntimeError("Overlapping ROIs detected — all cleared.");
+                throw RuntimeError("Invalid Overlapping Rois.");
             }
+        }
+    }
+}
+
+defs::xy DetectorImpl::calculatePosition(size_t moduleIndex,
+                                         const defs::xy &geometry) const {
+    if ((geometry.x != 0 && geometry.x != 1) ||
+        (geometry.y != 0 && geometry.y != 1)) {
+        throw RuntimeError("Invalid geometry configuration. Geometry: " +
+                           ToString(geometry));
+    }
+
+    if (moduleIndex >= static_cast<size_t>(geometry.x * geometry.y)) {
+        throw RuntimeError("Module index " + std::to_string(moduleIndex) +
+                           " out of bounds.");
+    }
+
+    int x = moduleIndex % geometry.x;
+    int y = moduleIndex / geometry.x;
+    return defs::xy{x, y};
+}
+
+defs::xy DetectorImpl::getPortGeometry() const {
+    defs::xy portGeometry(1, 1);
+    switch (shm()->detType) {
+    case EIGER:
+        portGeometry.x = modules[0]->getNumberofUDPInterfacesFromShm();
+        break;
+    case JUNGFRAU:
+    case MOENCH:
+        portGeometry.y = modules[0]->getNumberofUDPInterfacesFromShm();
+        break;
+    default:
+        break;
+    }
+    return portGeometry;
+}
+
+defs::xy DetectorImpl::calculatePosition(int moduleIndex,
+                                         defs::xy geometry) const {
+    int maxYMods = shm()->numberOfModules.y;
+    int y = (moduleIndex % maxYMods) * geometry.y;
+    int x = (moduleIndex / maxYMods) * geometry.x;
+    return defs::xy{x, y};
+}
+
+defs::ROI DetectorImpl::getModuleROI(int moduleIndex) const {
+    const defs::xy modSize = modules[0]->getNumberOfChannels();
+    // calculate module position (not taking into account port geometry)
+    const defs::xy modPos = calculatePosition(moduleIndex, defs::xy{1, 1});
+    return defs::ROI{modSize.x * modPos.x, modSize.x * (modPos.x + 1) - 1,
+                     modSize.y * modPos.y,
+                     modSize.y * (modPos.y + 1) - 1}; // convert y for 1d?
+}
+
+void DetectorImpl::convertGlobalRoiToPortLevel(
+    const defs::ROI &userRoi, const defs::ROI &moduleRoi,
+    std::vector<std::map<int, defs::ROI>> &portRois) const {
+    const defs::xy modSize = modules[0]->getNumberOfChannels();
+    const defs::xy geometry = getPortGeometry();
+    const int numPorts = geometry.x * geometry.y;
+    if (numPorts > 2) {
+        throw RuntimeError("Only up to 2 ports per module supported.");
+    }
+
+    for (int port = 0; port < numPorts; ++port) {
+        defs::ROI portRoi = moduleRoi;
+        // Calculate port ROI boundaries (split vertically or horizontally)
+        if (geometry.x == 2) {
+            int midX = (moduleRoi.xmin + moduleRoi.xmax) / 2;
+            if (port == 0)
+                portRoi.xmax = midX;
+            else
+                portRoi.xmin = midX + 1;
+        } else if (geometry.y == 2) {
+            int midY = (moduleRoi.ymin + moduleRoi.ymax) / 2;
+            if (port == 0)
+                portRoi.ymax = midY;
+            else
+                portRoi.ymin = midY + 1;
+        }
+
+        // Check if user ROI overlaps with this port ROI
+        if (roisOverlap(userRoi, portRoi)) {
+            defs::ROI clipped{};
+            clipped.xmin = std::max(userRoi.xmin, portRoi.xmin);
+            clipped.xmax = std::min(userRoi.xmax, portRoi.xmax);
+            if (modSize.y > 1) {
+                clipped.ymin = std::max(userRoi.ymin, portRoi.ymin);
+                clipped.ymax = std::min(userRoi.ymax, portRoi.ymax);
+            }
+
+            // Check if port ROI already exists for this port
+            for (const auto &m : portRois) {
+                if (m.find(port) != m.end()) {
+                    throw RuntimeError(
+                        "Multiple ROIs specified for the same port " +
+                        std::to_string(port) +
+                        " with ROI: " + ToString(userRoi));
+                }
+            }
+
+            portRois.push_back({{port, clipped}});
         }
     }
 }
@@ -1772,9 +1852,28 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
 
     validateROIs(args);
 
-    rxRoiTemp = args;
+    for (size_t iModule = 0; iModule < modules.size(); ++iModule) {
+        auto moduleGlobalRoi = getModuleROI(iModule);
 
-    // TODO
+        // at most 2 rois per module (for each port)
+        std::vector<std::map<int, defs::ROI>> portRois;
+
+        for (const auto &arg : args) {
+            if (roisOverlap(arg, moduleGlobalRoi)) {
+                convertGlobalRoiToPortLevel(arg, moduleGlobalRoi, portRois);
+            }
+        }
+        // print the rois for debugging
+        LOG(logINFOBLUE) << "Module " << iModule << " RxROIs:";
+        for (const auto &portRoi : portRois) {
+            for (const auto &roi : portRoi) {
+                LOG(logINFOBLUE)
+                    << "  Port " << roi.first << ": " << ToString(roi.second);
+            }
+        }
+        // modules[iModule]->setRxROIs(portRois); TODO
+    }
+    rxRoiTemp = args;
 }
 
 void DetectorImpl::clearRxROI() { rxRoiTemp.clear(); }

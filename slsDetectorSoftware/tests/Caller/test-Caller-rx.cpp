@@ -491,45 +491,42 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                 caller.call("rx_roi", {"10", "15"}, -1, PUT, oss);
                 REQUIRE(oss.str() == "rx_roi [10, 15]\n");
             }
-            REQUIRE_THROWS(caller.call("rx_roi", {"-1", "-1"}, -1, PUT));
-            REQUIRE_THROWS(
-                caller.call("rx_roi", {"10", "15", "25", "30"}, -1, PUT));
             // vector of rois
-            {
-                std::ostringstream oss;
-                caller.call("rx_roi", {"[5, 10, -1, -1]; [25, 20, -1, -1]"}, -1,
-                            PUT, oss);
-                REQUIRE(oss.str() ==
-                        "rx_roi [5, 10, -1, -1]; [25, 20, -1, -1]\n");
-            }
-            REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 20, -1, -1; 25, 30 -1, -1]"}, -1, PUT));
-            REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 20, -1]; [25, 30 -1, -1]"}, -1, PUT));
             // separated by space is allowed
             REQUIRE_NOTHROW(caller.call(
                 "rx_roi", {"[5, 10, -1, -1]", "[25, 28, -1, -1]"}, -1, PUT));
-            REQUIRE_NOTHROW(caller.call("rx_roi",
-                                        {"[0, 10, -1, -1];[20, 30, -1, -1];[9, "
-                                         "10, -1, -1];[40, 50, -1, -1]"},
-                                        -1, PUT));
-            // overlapping rois
-            REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[0, 10,-1, -1];[5, 15, -1, -1]"}, 0, PUT));
-            // xmin > xmax
-            REQUIRE_THROWS(caller.call("rx_roi", {"[12, 8, -1, -1]"}, 0, PUT));
-            // outside detector bounds
-            REQUIRE_THROWS(
-                caller.call("rx_roi", {"[95, 105, -1, -1]"}, 0, PUT));
-            // module level not allowed
-            REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 10, -1, -1]; [25, 28, -1, -1]"}, 0, PUT));
+            // separated by semicolon is allowed
+            REQUIRE_NOTHROW(caller.call(
+                "rx_roi", {"[0, 10, -1, -1];[20, 30, -1, -1];[40, 50, -1, -1]"},
+                -1, PUT));
             // square brackets missing
             REQUIRE_THROWS(caller.call(
                 "rx_roi", {"[5, 20, -1, -1; 25, 30, -1, -1]"}, -1, PUT));
             // invalid roi, 4 parts expected
             REQUIRE_THROWS(caller.call(
                 "rx_roi", {"[5, 20, -1]; [25, 30, -1, -1]"}, -1, PUT));
+            REQUIRE_THROWS(caller.call("rx_roi", {"0", "0"}, -1, PUT));
+            REQUIRE_THROWS(caller.call("rx_roi", {"-1", "-1"}, -1, PUT));
+            // xmin > xmax
+            REQUIRE_THROWS(caller.call("rx_roi", {"[12, 8, -1, -1]"}, -1, PUT));
+            // outside detector bounds
+            REQUIRE_THROWS(caller.call(
+                "rx_roi",
+                {"[95," + std::to_string(detsize.x + 5) + ", -1, -1]"}, -1,
+                PUT));
+            // module level not allowed
+            REQUIRE_THROWS(caller.call(
+                "rx_roi", {"[5, 10, -1, -1]; [25, 28, -1, -1]"}, 0, PUT));
+            // overlapping rois
+            REQUIRE_THROWS(caller.call(
+                "rx_roi", {"[0, 10,-1, -1];[5, 15, -1, -1]"}, -1, PUT));
+            // valid
+            {
+                std::ostringstream oss;
+                caller.call("rx_roi", {"[5, 10, -1, -1]; [15, 20, -1, -1]"}, -1,
+                            PUT, oss);
+                REQUIRE(oss.str() == "rx_roi [5, 10];[15, 20]\n");
+            }
         }
         // 2d
         else {
@@ -555,9 +552,46 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                                          std::to_string(detsize.y - 5) +
                                          std::string("]\n"));
             }
+            // vector of rois
+            // separated by space is allowed
+            REQUIRE_NOTHROW(caller.call(
+                "rx_roi", {"[5, 10, 20, 30]", "[25, 28, 14, 15]"}, -1, PUT));
+            // separated by semicolon is allowed
+            REQUIRE_NOTHROW(caller.call("rx_roi",
+                                        {"[0, 10, 0, 10];[20, 30, 0, 10];[0, "
+                                         "10, 20, 30];[40, 50, 0, 10]"},
+                                        -1, PUT));
+            // square brackets missing
+            REQUIRE_THROWS(caller.call(
+                "rx_roi", {"[5, 20, 20, 30; 25, 30, 14, 15]"}, -1, PUT));
+            // invalid roi, 4 parts expected
+            REQUIRE_THROWS(caller.call(
+                "rx_roi", {"[5, 20, 20]; [25, 30, 14, 15]"}, -1, PUT));
+            REQUIRE_THROWS(
+                caller.call("rx_roi", {"0", "0", "0", "0"}, -1, PUT));
             REQUIRE_THROWS(
                 caller.call("rx_roi", {"-1", "-1", "-1", "-1"}, -1, PUT));
-            // vector of rois
+            // xmin > xmax
+            REQUIRE_THROWS(caller.call("rx_roi", {"[12, 8, 0, 10]"}, -1, PUT));
+            // ymin > ymax
+            REQUIRE_THROWS(caller.call("rx_roi", {"[0, 10, 20, 5]"}, -1, PUT));
+            // outside detector bounds
+            REQUIRE_THROWS(caller.call(
+                "rx_roi", {"[95," + std::to_string(detsize.x + 5) + ", 0, 10]"},
+                -1, PUT));
+            REQUIRE_THROWS(caller.call(
+                "rx_roi",
+                {"[95, 100, 0, " + std::to_string(detsize.y + 5) + "]"}, -1,
+                PUT));
+            // module level not allowed
+            REQUIRE_THROWS(caller.call(
+                "rx_roi", {"[5, 10, 20, 30]; [25, 28, 14, 15]"}, 0, PUT));
+            // overlapping rois
+            REQUIRE_THROWS(caller.call(
+                "rx_roi", {"[0, 10, 0, 10];[5, 15, 0, 10]"}, -1, PUT));
+            REQUIRE_THROWS(caller.call(
+                "rx_roi", {"[0, 10, 0, 10];[0, 10, 9, 11]"}, -1, PUT));
+            //  valid
             {
                 std::ostringstream oss;
                 caller.call("rx_roi", {"[5, 10, 20, 30]; [25, 28, 14, 15]"}, -1,
@@ -565,31 +599,6 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                 REQUIRE(oss.str() ==
                         "rx_roi [5, 10, 20, 30];[25, 28, 14, 15]\n");
             }
-            // separated by space is allowed
-            REQUIRE_NOTHROW(caller.call(
-                "rx_roi", {"[5, 10, 20, 30]", "[25, 28, 14, 15]"}, -1, PUT));
-            REQUIRE_NOTHROW(caller.call("rx_roi",
-                                        {"[0, 10, 0, 10];[20, 30, 0, 10];[0, "
-                                         "10, 20, 30];[40, 50, 0, 10]"},
-                                        -1, PUT));
-            // overlapping rois
-            REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[0, 10, 0, 10];[5, 15, 0, 10]"}, 0, PUT));
-            // xmin > xmax
-            REQUIRE_THROWS(caller.call("rx_roi", {"[12, 8, 0, 10]"}, 0, PUT));
-            // ymin > ymax
-            REQUIRE_THROWS(caller.call("rx_roi", {"[0, 10, 20, 5]"}, 0, PUT));
-            // outside detector bounds
-            REQUIRE_THROWS(caller.call("rx_roi", {"[95, 105, 0, 10]"}, 0, PUT));
-            // module level not allowed
-            REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 10, 20, 30]; [25, 28, 14, 15]"}, 0, PUT));
-            // square brackets missing
-            REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 20, 20, 30; 25, 30, 14, 15]"}, -1, PUT));
-            // invalid roi, 4 parts expected
-            REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 20, 20]; [25, 30, 14, 15]"}, -1, PUT));
         }
 
         for (int i = 0; i != det.size(); ++i) {

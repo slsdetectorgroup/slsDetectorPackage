@@ -421,14 +421,19 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     int kbhit();
 
-    defs::xy getPortGeometry() const;
-    defs::xy calculatePosition(int moduleIndex, defs::xy geometry) const;
-
     void verifyUniqueHost(
         bool isDet, std::vector<std::pair<std::string, uint16_t>> &hosts) const;
 
-    bool roisOverlap(const defs::ROI &a, const defs::ROI &b);
+    bool roisOverlap(const defs::ROI &a, const defs::ROI &b) const;
     void validateROIs(const std::vector<defs::ROI> &rois);
+    defs::xy calculatePosition(size_t moduleIndex,
+                               const defs::xy &geometry) const;
+    defs::xy getPortGeometry() const;
+    defs::xy calculatePosition(int moduleIndex, defs::xy geometry) const;
+    defs::ROI getModuleROI(int moduleIndex) const;
+    void convertGlobalRoiToPortLevel(
+        const defs::ROI &userRoi, const defs::ROI &moduleRoi,
+        std::vector<std::map<int, defs::ROI>> &portRois) const;
 
     const int detectorIndex{0};
     SharedMemory<sharedDetector> shm{0, -1};

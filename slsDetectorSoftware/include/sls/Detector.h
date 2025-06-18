@@ -119,6 +119,10 @@ class Detector {
 
     Result<defs::xy> getModuleSize(Positions pos = {}) const;
 
+    defs::xy getPortPerModuleGeometry() const;
+
+    Result<defs::xy> getPortSize(Positions pos = {}) const;
+
     /** Gets the actual full detector size. It is the same even if ROI changes
      */
     defs::xy getDetectorSize() const;

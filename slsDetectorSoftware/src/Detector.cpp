@@ -201,6 +201,22 @@ Result<defs::xy> Detector::getModuleSize(Positions pos) const {
     return pimpl->Parallel(&Module::getNumberOfChannels, pos);
 }
 
+defs::xy Detector::getPortPerModuleGeometry() const {
+    return pimpl->getPortGeometry();
+}
+
+Result<defs::xy> Detector::getPortSize(Positions pos) const {
+    Result<defs::xy> res = pimpl->Parallel(&Module::getNumberOfChannels, pos);
+    defs::xy portGeometry = getPortPerModuleGeometry();
+    for (auto &it : res) {
+        if (portGeometry.x == 2)
+            it.x /= 2;
+        if (portGeometry.y == 2)
+            it.y /= 2;
+    }
+    return res;
+}
+
 defs::xy Detector::getDetectorSize() const {
     return pimpl->getNumberOfChannels();
 }

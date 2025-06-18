@@ -722,16 +722,15 @@ std::string Caller::rx_zmqip(int action) {
 
 std::string Caller::rx_roi(int action) {
     std::ostringstream os;
+    std::string helpMessage = std::string("[xmin] [xmax] [ymin] [ymax]\n\tRegion of interest in receiver.\n\t")
+           + "For a list of rois, use '[' and ']; ' to distinguish between "
+              "rois and use comma inside the square brackets.\n\t If one fails to use space after semicolon, please use quotes"
+           + "For example: [0,100,0,100]; [200,300,0,100] will set two "
+              "rois.or '[0,100,0,100];[200,300,0,100]' when the vector is a single string\n\t"
+           + "Only allowed at multi module level and without gap "
+              "pixels.\n";
     if (action == defs::HELP_ACTION) {
-        os << "[xmin] [xmax] [ymin] [ymax]\n\tRegion of interest in "
-              "receiver.\n\t"
-           << "For a list of rois, use '[' and '];' to distinguish between "
-              "rois and use comma inside the square brackets.\n\t"
-           << "For example: [0, 100, 0, 100];[200, 300, 0, 100] will set two "
-              "rois.\n\t"
-           << "Only allowed at multi module level and without gap "
-              "pixels."
-           << '\n';
+        os << helpMessage;
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
@@ -759,26 +758,29 @@ std::string Caller::rx_roi(int action) {
                 return a.find('[') != std::string::npos &&
                        a.find(']') != std::string::npos;
             });
-
-        // previous format: 2 or 4 separate args
-        if ((args.size() == 2 || args.size() == 4) && !isVectorInput) {
-            defs::ROI t;
-            t.xmin = StringTo<int>(args[0]);
-            t.xmax = StringTo<int>(args[1]);
-            if (args.size() == 4) {
-                t.ymin = StringTo<int>(args[2]);
-                t.ymax = StringTo<int>(args[3]);
-            }
-            rois.emplace_back(t);
-        } else {
-            if (!isVectorInput)
-                WrongNumberOfParameters(2);
-            else {
-                for (const auto &arg : args) {
-                    auto subRois = parseRoiVector(arg);
-                    rois.insert(rois.end(), subRois.begin(), subRois.end());
+        try {
+            // previous format: 2 or 4 separate args
+            if ((args.size() == 2 || args.size() == 4) && !isVectorInput) {
+                defs::ROI t;
+                t.xmin = StringTo<int>(args[0]);
+                t.xmax = StringTo<int>(args[1]);
+                if (args.size() == 4) {
+                    t.ymin = StringTo<int>(args[2]);
+                    t.ymax = StringTo<int>(args[3]);
+                }
+                rois.emplace_back(t);
+            } else {
+                if (!isVectorInput)
+                    WrongNumberOfParameters(2);
+                else {
+                    for (const auto &arg : args) {
+                        auto subRois = parseRoiVector(arg);
+                        rois.insert(rois.end(), subRois.begin(), subRois.end());
+                    }
                 }
             }
+        } catch (const std::exception &e) {
+            throw RuntimeError("Could not parse ROI: " + helpMessage);
         }
 
         // only multi level
@@ -791,9 +793,9 @@ std::string Caller::rx_roi(int action) {
         for (const auto &r : rois) {
             os << r << ';';
         }
-        if (!rois.empty()) {
-            os.seekp(-1, std::ios_base::end); // remove trailing ;
-        }
+        //if (!rois.empty()) {
+       //     os.seekp(-1, std::ios_base::end); // remove trailing ;
+        //}
         os << '\n';
     } else {
         throw RuntimeError("Unknown action");

@@ -301,6 +301,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     std::vector<std::pair<std::string, uint16_t>>
     verifyUniqueRxHost(const std::vector<std::string> &names) const;
 
+    defs::xy getPortGeometry() const;
     std::vector<defs::ROI> getRxROI() const;
     void setRxROI(const std::vector<defs::ROI> &args);
     void clearRxROI();
@@ -428,7 +429,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void validateROIs(const std::vector<defs::ROI> &rois);
     defs::xy calculatePosition(size_t moduleIndex,
                                const defs::xy &geometry) const;
-    defs::xy getPortGeometry() const;
     defs::xy calculatePosition(int moduleIndex, defs::xy geometry) const;
     defs::ROI getModuleROI(int moduleIndex) const;
     void convertGlobalRoiToPortLevel(

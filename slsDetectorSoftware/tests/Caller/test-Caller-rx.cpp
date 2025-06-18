@@ -466,7 +466,6 @@ TEST_CASE("rx_arping", "[.cmdcall][.rx]") {
         }
     }
 }
-
 TEST_CASE("rx_roi", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
@@ -479,8 +478,7 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
         defs::xy detsize = det.getDetectorSize();
 
         // 1d
-        if (det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2 ||
-            det_type == defs::MYTHEN3) {
+        if (det_type == defs::GOTTHARD2 || det_type == defs::MYTHEN3) {
             {
                 std::ostringstream oss;
                 caller.call("rx_roi", {"5", "10"}, -1, PUT, oss);
@@ -491,20 +489,6 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                 caller.call("rx_roi", {"10", "15"}, -1, PUT, oss);
                 REQUIRE(oss.str() == "rx_roi [10, 15]\n");
             }
-            // vector of rois
-            // separated by space is allowed
-            REQUIRE_NOTHROW(caller.call(
-                "rx_roi", {"[5, 10, -1, -1]", "[25, 28, -1, -1]"}, -1, PUT));
-            // separated by semicolon is allowed
-            REQUIRE_NOTHROW(caller.call(
-                "rx_roi", {"[0, 10, -1, -1];[20, 30, -1, -1];[40, 50, -1, -1]"},
-                -1, PUT));
-            // square brackets missing
-            REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 20, -1, -1; 25, 30, -1, -1]"}, -1, PUT));
-            // invalid roi, 4 parts expected
-            REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 20, -1]; [25, 30, -1, -1]"}, -1, PUT));
             REQUIRE_THROWS(caller.call("rx_roi", {"0", "0"}, -1, PUT));
             REQUIRE_THROWS(caller.call("rx_roi", {"-1", "-1"}, -1, PUT));
             // xmin > xmax
@@ -516,19 +500,37 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                 PUT));
             // module level not allowed
             REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 10, -1, -1]; [25, 28, -1, -1]"}, 0, PUT));
+                "rx_roi", {"[5, 10, -1, -1]"}, 0, PUT));
+
+            // vector of rois
+            // square brackets missing
+            REQUIRE_THROWS(caller.call(
+                "rx_roi", {"[5, 20, -1, -1; 25, 30, -1, -1]"}, -1, PUT));
+            // invalid roi, 4 parts expected
+            REQUIRE_THROWS(caller.call(
+                "rx_roi", {"[5, 20, -1]; [25, 30, -1, -1]"}, -1, PUT));
             // overlapping rois
             REQUIRE_THROWS(caller.call(
                 "rx_roi", {"[0, 10,-1, -1];[5, 15, -1, -1]"}, -1, PUT));
-            // valid
-            {
+
+            if (det.size() == 2) {
+                auto moduleSize = det.getModuleSize()[0];
+                std::string stringMin =  std::to_string(moduleSize.x);
+                std::string stringMax =  std::to_string(moduleSize.x + 1);
+
+                // separated by space is allowed
+                REQUIRE_NOTHROW(caller.call(
+                    "rx_roi", {"[5, 10, -1, -1]", "[" + stringMin + ", " + stringMax + ", -1, -1]"}, -1, PUT));
                 std::ostringstream oss;
-                caller.call("rx_roi", {"[5, 10, -1, -1]; [15, 20, -1, -1]"}, -1,
-                            PUT, oss);
-                REQUIRE(oss.str() == "rx_roi [5, 10];[15, 20]\n");
+                // separated by semicolon is allowed
+                REQUIRE_NOTHROW(caller.call(
+                    "rx_roi", {"[5, 10, -1, -1];[" + stringMin + ", " + stringMax + ", -1, -1]"}, -1, PUT, oss));
+                REQUIRE(oss.str() ==
+                        "rx_roi [5, 10];[" + stringMin + ", " + stringMax + "]\n");
+
             }
         }
-        // 2d
+        // 2d eiger, jungfrau, moench
         else {
             {
                 std::ostringstream oss;
@@ -552,21 +554,6 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                                          std::to_string(detsize.y - 5) +
                                          std::string("]\n"));
             }
-            // vector of rois
-            // separated by space is allowed
-            REQUIRE_NOTHROW(caller.call(
-                "rx_roi", {"[5, 10, 20, 30]", "[25, 28, 14, 15]"}, -1, PUT));
-            // separated by semicolon is allowed
-            REQUIRE_NOTHROW(caller.call("rx_roi",
-                                        {"[0, 10, 0, 10];[20, 30, 0, 10];[0, "
-                                         "10, 20, 30];[40, 50, 0, 10]"},
-                                        -1, PUT));
-            // square brackets missing
-            REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 20, 20, 30; 25, 30, 14, 15]"}, -1, PUT));
-            // invalid roi, 4 parts expected
-            REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 20, 20]; [25, 30, 14, 15]"}, -1, PUT));
             REQUIRE_THROWS(
                 caller.call("rx_roi", {"0", "0", "0", "0"}, -1, PUT));
             REQUIRE_THROWS(
@@ -585,19 +572,58 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                 PUT));
             // module level not allowed
             REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 10, 20, 30]; [25, 28, 14, 15]"}, 0, PUT));
+                "rx_roi", {"[5, 10, 20, 30]"}, 0, PUT));
+
+            // vector of rois
+            // square brackets missing
+            REQUIRE_THROWS(caller.call(
+                "rx_roi", {"[5, 20, 20, 30; 25, 30, 14, 15]"}, -1, PUT));
+            // invalid roi, 4 parts expected
+            REQUIRE_THROWS(caller.call(
+                "rx_roi", {"[5, 20, 20]; [25, 30, 14, 15]"}, -1, PUT));
             // overlapping rois
             REQUIRE_THROWS(caller.call(
                 "rx_roi", {"[0, 10, 0, 10];[5, 15, 0, 10]"}, -1, PUT));
             REQUIRE_THROWS(caller.call(
                 "rx_roi", {"[0, 10, 0, 10];[0, 10, 9, 11]"}, -1, PUT));
-            //  valid
-            {
+
+            auto portSize = det.getPortSize()[0];
+            if (det_type == defs::EIGER) {
+                std::string stringMin =  std::to_string(portSize.x);
+                std::string stringMax =  std::to_string(portSize.x + 1);
+
+                // separated by space is allowed
+                REQUIRE_NOTHROW(caller.call(
+                    "rx_roi", {"[5, 10, 20, 30]", "[" + stringMin + ", " + stringMax + ", 20, 30]"}, -1, PUT));
                 std::ostringstream oss;
-                caller.call("rx_roi", {"[5, 10, 20, 30]; [25, 28, 14, 15]"}, -1,
-                            PUT, oss);
+                // separated by semicolon is allowed
+                REQUIRE_NOTHROW(caller.call(
+                    "rx_roi", {"[5, 10, 20, 30];[" + stringMin + ", " + stringMax + ", 20, 30]"}, -1, PUT, oss));
                 REQUIRE(oss.str() ==
-                        "rx_roi [5, 10, 20, 30];[25, 28, 14, 15]\n");
+                    "rx_roi [5, 10, 20, 30];[" + stringMin + ", " + stringMax + ", 20, 30]\n");
+            }
+            if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+                // 2 interfaces or 2 modules
+                if ((det.getNumberofUDPInterfaces().tsquash(
+                        "inconsistent number of interfaces") == 2) || (det.size() == 2)) {
+                    std::string stringMin = std::to_string(portSize.y);
+                    std::string stringMax = std::to_string(portSize.y + 1);
+                    if (det.size() == 2) {
+                        auto moduleSize = det.getModuleSize()[0];
+                        stringMin =  std::to_string(moduleSize.y);
+                        stringMax =  std::to_string(moduleSize.y + 1);
+                    }
+
+                    // separated by space is allowed
+                    REQUIRE_NOTHROW(caller.call(
+                        "rx_roi", {"[5, 10, 20, 30]", "[25, 28, " + stringMin + ", " + stringMax + "]"}, -1, PUT));
+                    std::ostringstream oss;
+                    // separated by semicolon is allowed
+                    REQUIRE_NOTHROW(caller.call(
+                        "rx_roi", {"[5, 10, 20, 30];[25, 28, " + stringMin + ", " +  stringMax + "]"}, -1, PUT, oss));
+                    REQUIRE(oss.str() ==
+                        "rx_roi [5, 10, 20, 30];[25, 28, " + stringMin + ", " +  stringMax + "]\n");
+                }
             }
         }
 
@@ -606,6 +632,7 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
         }
     }
 }
+
 
 TEST_CASE("rx_clearroi", "[.cmdcall]") {
     Detector det;

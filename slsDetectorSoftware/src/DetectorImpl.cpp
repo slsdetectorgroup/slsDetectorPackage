@@ -1791,7 +1791,7 @@ defs::ROI DetectorImpl::getModuleROI(int moduleIndex) const {
 
 void DetectorImpl::convertGlobalRoiToPortLevel(
     const defs::ROI &userRoi, const defs::ROI &moduleRoi,
-    std::vector<std::map<int, defs::ROI>> &portRois) const {
+    std::array<defs::ROI, 2> &portRois) const {
     const defs::xy modSize = modules[0]->getNumberOfChannels();
     const defs::xy geometry = getPortGeometry();
     const int numPorts = geometry.x * geometry.y;
@@ -1827,16 +1827,13 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
             }
 
             // Check if port ROI already exists for this port
-            for (const auto &m : portRois) {
-                if (m.find(port) != m.end()) {
-                    throw RuntimeError(
-                        "Multiple ROIs specified for the same port " +
-                        std::to_string(port) +
-                        " with ROI: " + ToString(userRoi));
-                }
+            if (!portRois[port].completeRoi()) {
+                throw RuntimeError(
+                    "Multiple ROIs specified for the same port " +
+                    std::to_string(port) +
+                    " with ROI: " + ToString(userRoi));
             }
-
-            portRois.push_back({{port, clipped}});
+            portRois[port] = clipped;
         }
     }
 }
@@ -1856,7 +1853,7 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
         auto moduleGlobalRoi = getModuleROI(iModule);
 
         // at most 2 rois per module (for each port)
-        std::vector<std::map<int, defs::ROI>> portRois;
+        std::array<defs::ROI, 2> portRois{};
 
         for (const auto &arg : args) {
             if (roisOverlap(arg, moduleGlobalRoi)) {
@@ -1865,18 +1862,23 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
         }
         // print the rois for debugging
         LOG(logINFOBLUE) << "Module " << iModule << " RxROIs:";
-        for (const auto &portRoi : portRois) {
-            for (const auto &roi : portRoi) {
-                LOG(logINFOBLUE)
-                    << "  Port " << roi.first << ": " << ToString(roi.second);
-            }
+        for (size_t iPort = 0; iPort != 2; iPort++) {
+            LOG(logINFOBLUE)
+                    << "  Port " << iPort << ": " << ToString(portRois[iPort]);
         }
-        // modules[iModule]->setRxROIs(portRois); TODO
+        modules[iModule]->setRxROI(portRois);
     }
     rxRoiTemp = args;
+    // metadata
+    modules[0]->setRxROIMetadata(args);
 }
 
-void DetectorImpl::clearRxROI() { rxRoiTemp.clear(); }
+void DetectorImpl::clearRxROI() { 
+    rxRoiTemp.clear();
+    for (size_t iModule = 0; iModule < modules.size(); ++iModule) {
+        modules[iModule]->setRxROI(std::array<defs::ROI, 2>{}); 
+    }
+}
 
 int DetectorImpl::getNumberOfUdpPortsInRxROI() const {
     return 0; // TODO

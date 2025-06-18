@@ -989,14 +989,16 @@ class Detector {
      * every minute. Useful in 10G mode. */
     void setRxArping(bool value, Positions pos = {});
 
+    /** Returns multi level ROIs */
     std::vector<defs::ROI> getRxROI() const;
 
-    /** only at multi module level without gap pixels */
+    /** Returns port level ROIs. Max 2 ports and hence max 2 elements per readout */
+    Result<std::array<defs::ROI, 2>> getRxROI(int module_id) const;
+
+    /** only at multi module level without gap pixels. At most, 1 ROI per UDP port */
     void setRxROI(const std::vector<defs::ROI> &args);
 
     void clearRxROI();
-
-    int getNumberOfUdpPortsInRxROI() const;
 
     ///@}
 

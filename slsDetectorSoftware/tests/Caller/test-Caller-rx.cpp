@@ -482,12 +482,12 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
             {
                 std::ostringstream oss;
                 caller.call("rx_roi", {"5", "10"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "rx_roi [5, 10]\n");
+                REQUIRE(oss.str() == "rx_roi [[5, 10]]\n");
             }
             {
                 std::ostringstream oss;
                 caller.call("rx_roi", {"10", "15"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "rx_roi [10, 15]\n");
+                REQUIRE(oss.str() == "rx_roi [[10, 15]]\n");
             }
             REQUIRE_THROWS(caller.call("rx_roi", {"0", "0"}, -1, PUT));
             REQUIRE_THROWS(caller.call("rx_roi", {"-1", "-1"}, -1, PUT));
@@ -526,7 +526,7 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                 REQUIRE_NOTHROW(caller.call(
                     "rx_roi", {"[5, 10, -1, -1];[" + stringMin + ", " + stringMax + ", -1, -1]"}, -1, PUT, oss));
                 REQUIRE(oss.str() ==
-                        "rx_roi [5, 10];[" + stringMin + ", " + stringMax + "]\n");
+                        "rx_roi [[5, 10], [" + stringMin + ", " + stringMax + "]]\n");
 
             }
         }
@@ -535,12 +535,12 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
             {
                 std::ostringstream oss;
                 caller.call("rx_roi", {"10", "15", "1", "5"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "rx_roi [10, 15, 1, 5]\n");
+                REQUIRE(oss.str() == "rx_roi [[10, 15, 1, 5]]\n");
             }
             {
                 std::ostringstream oss;
                 caller.call("rx_roi", {"10", "22", "18", "19"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "rx_roi [10, 22, 18, 19]\n");
+                REQUIRE(oss.str() == "rx_roi [[10, 22, 18, 19]]\n");
             }
             {
                 std::ostringstream oss;
@@ -548,11 +548,11 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                             {"1", std::to_string(detsize.x - 5), "1",
                              std::to_string(detsize.y - 5)},
                             -1, PUT, oss);
-                REQUIRE(oss.str() == std::string("rx_roi [1, ") +
+                REQUIRE(oss.str() == std::string("rx_roi [[1, ") +
                                          std::to_string(detsize.x - 5) +
                                          std::string(", 1, ") +
                                          std::to_string(detsize.y - 5) +
-                                         std::string("]\n"));
+                                         std::string("]]\n"));
             }
             REQUIRE_THROWS(
                 caller.call("rx_roi", {"0", "0", "0", "0"}, -1, PUT));
@@ -600,7 +600,7 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                 REQUIRE_NOTHROW(caller.call(
                     "rx_roi", {"[5, 10, 20, 30];[" + stringMin + ", " + stringMax + ", 20, 30]"}, -1, PUT, oss));
                 REQUIRE(oss.str() ==
-                    "rx_roi [5, 10, 20, 30];[" + stringMin + ", " + stringMax + ", 20, 30]\n");
+                    "rx_roi [[5, 10, 20, 30], [" + stringMin + ", " + stringMax + ", 20, 30]]\n");
             }
             if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
                 // 2 interfaces or 2 modules
@@ -622,7 +622,7 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                     REQUIRE_NOTHROW(caller.call(
                         "rx_roi", {"[5, 10, 20, 30];[25, 28, " + stringMin + ", " +  stringMax + "]"}, -1, PUT, oss));
                     REQUIRE(oss.str() ==
-                        "rx_roi [5, 10, 20, 30];[25, 28, " + stringMin + ", " +  stringMax + "]\n");
+                        "rx_roi [[5, 10, 20, 30], [25, 28, " + stringMin + ", " +  stringMax + "]]\n");
                 }
             }
         }

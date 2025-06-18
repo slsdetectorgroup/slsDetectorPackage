@@ -739,14 +739,7 @@ std::string Caller::rx_roi(int action) {
             throw RuntimeError("Cannot execute receiver ROI at module level");
         } else {
             auto t = det->getRxROI();
-            // os << ToString(t) << '\n';
-            for (const auto &r : t) {
-                os << r << ';';
-            }
-            if (!t.empty()) {
-                os.seekp(-1, std::ios_base::end); // remove trailing ;
-            }
-            os << '\n';
+            os << ToString(t) << '\n';
         }
     } else if (action == defs::PUT_ACTION) {
         std::vector<defs::ROI> rois;
@@ -789,14 +782,7 @@ std::string Caller::rx_roi(int action) {
         }
 
         det->setRxROI(rois);
-        // os << ToString(rois) << '\n';
-        for (const auto &r : rois) {
-            os << r << ';';
-        }
-        //if (!rois.empty()) {
-       //     os.seekp(-1, std::ios_base::end); // remove trailing ;
-        //}
-        os << '\n';
+        os << ToString(rois) << '\n';
     } else {
         throw RuntimeError("Unknown action");
     }

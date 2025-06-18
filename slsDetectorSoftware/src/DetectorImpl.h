@@ -433,7 +433,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     defs::ROI getModuleROI(int moduleIndex) const;
     void convertGlobalRoiToPortLevel(
         const defs::ROI &userRoi, const defs::ROI &moduleRoi,
-        std::vector<std::map<int, defs::ROI>> &portRois) const;
+        std::array<defs::ROI, 2> &portRois) const;
 
     const int detectorIndex{0};
     SharedMemory<sharedDetector> shm{0, -1};

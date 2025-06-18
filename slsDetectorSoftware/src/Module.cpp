@@ -1520,20 +1520,29 @@ bool Module::getRxArping() const {
 void Module::setRxArping(bool enable) {
     sendToReceiver(F_SET_RECEIVER_ARPING, static_cast<int>(enable), nullptr);
 }
-/*
-defs::ROI Module::getRxROI() const {
-    return sendToReceiver<slsDetectorDefs::ROI>(F_RECEIVER_GET_RECEIVER_ROI);
+
+std::array<defs::ROI, 2> Module::getRxROI() const {
+    return sendToReceiver<std::array<slsDetectorDefs::ROI, 2>>(F_RECEIVER_GET_RECEIVER_ROI);
 }
 
-void Module::setRxROI(const slsDetectorDefs::ROI arg) {
-    LOG(logDEBUG) << moduleIndex << ": " << arg;
-    sendToReceiver(F_RECEIVER_SET_RECEIVER_ROI, arg, nullptr);
+void Module::setRxROI(std::array<defs::ROI, 2> portRois) {
+    /*LOG(logDEBUG) << "Sending to receiver " << moduleIndex << " [rx roi: " << ToString(portRois)
+                  << ']';
+    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    receiver.Send(F_RECEIVER_SET_RECEIVER_ROI);
+    receiver.setFnum(F_RECEIVER_SET_RECEIVER_ROI);
+    receiver.Send(portRois);
+    if (receiver.Receive<int>() == FAIL) {
+        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
+                            " returned error: " + receiver.readErrorMessage());
+    }*/
+    sendToReceiver(F_RECEIVER_SET_RECEIVER_ROI, portRois, nullptr);
 }
 
-void Module::setRxROIMetadata(const slsDetectorDefs::ROI arg) {
+void Module::setRxROIMetadata(const std::vector<slsDetectorDefs::ROI> &arg) {
     sendToReceiver(F_RECEIVER_SET_RECEIVER_ROI_METADATA, arg, nullptr);
 }
-*/
+
 // File
 slsDetectorDefs::fileFormat Module::getFileFormat() const {
     return sendToReceiver<fileFormat>(F_GET_RECEIVER_FILE_FORMAT);

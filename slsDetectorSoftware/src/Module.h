@@ -302,7 +302,7 @@ class Module : public virtual slsDetectorDefs {
     bool getRxArping() const;
     void setRxArping(bool enable);
     std::array<defs::ROI, 2> getRxROI() const;
-    void setRxROI(const std::array<slsDetectorDefs::ROI, 2> portRois);
+    void setRxROI(const std::array<slsDetectorDefs::ROI, 2> &portRois);
     void setRxROIMetadata(const std::vector<slsDetectorDefs::ROI> &args);
 
     /**************************************************

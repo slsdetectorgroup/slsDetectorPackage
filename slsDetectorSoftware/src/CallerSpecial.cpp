@@ -722,13 +722,19 @@ std::string Caller::rx_zmqip(int action) {
 
 std::string Caller::rx_roi(int action) {
     std::ostringstream os;
-    std::string helpMessage = std::string("[xmin] [xmax] [ymin] [ymax]\n\tRegion of interest in receiver.\n\t")
-           + "For a list of rois, use '[' and ']; ' to distinguish between "
-              "rois and use comma inside the square brackets.\n\t If one fails to use space after semicolon, please use quotes"
-           + "For example: [0,100,0,100]; [200,300,0,100] will set two "
-              "rois.or '[0,100,0,100];[200,300,0,100]' when the vector is a single string\n\t"
-           + "Only allowed at multi module level and without gap "
-              "pixels.\n";
+    std::string helpMessage =
+        std::string("[xmin] [xmax] [ymin] [ymax]\n\tRegion of interest in "
+                    "receiver.\n\t") +
+        "For a list of rois, use '[' and ']; ' to distinguish between "
+        "rois and use comma inside the square brackets.\n\t If one fails to "
+        "use space after semicolon, please use quotes" +
+        "For example: [0,100,0,100]; [200,300,0,100] will set two "
+        "rois.or '[0,100,0,100];[200,300,0,100]' when the vector is a single "
+        "string\n\n\t" +
+        "Only allowed to set at multi module level and without gap "
+        "ixels.\n\n\t" +
+        "One can get rx_roi also at port level, by specifying the module id "
+        "and it will return the roi for each port.\n";
     if (action == defs::HELP_ACTION) {
         os << helpMessage;
     } else if (action == defs::GET_ACTION) {
@@ -736,7 +742,8 @@ std::string Caller::rx_roi(int action) {
             WrongNumberOfParameters(0);
         }
         if (det_id != -1) {
-            throw RuntimeError("Cannot execute receiver ROI at module level");
+            auto t = det->getRxROI(det_id);
+            os << ToString(t) << '\n';
         } else {
             auto t = det->getRxROI();
             os << ToString(t) << '\n';

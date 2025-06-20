@@ -57,7 +57,7 @@ class MasterAttributes {
     uint32_t transceiverMask{0};
     uint32_t transceiver{0};
     uint32_t transceiverSamples{0};
-    slsDetectorDefs::ROI receiverRoi{};
+    std::vector<slsDetectorDefs::ROI> rois{};
     uint32_t counterMask{0};
     std::array<ns, 3> exptimeArray{};
     std::array<ns, 3> gateDelayArray{};
@@ -80,77 +80,78 @@ class MasterAttributes {
         rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
     void WriteCommonHDF5Attributes(H5::H5File *fd, H5::Group *group);
-    void WriteFinalHDF5Attributes(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5Exptime(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5Period(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5DynamicRange(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5TenGiga(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5NumUDPInterfaces(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5ReadNRows(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5ThresholdEnergy(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5ThresholdEnergies(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5SubExpTime(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5SubPeriod(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5SubQuad(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5RateCorrections(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5CounterMask(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5ExptimeArray(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5GateDelayArray(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5Gates(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5BurstMode(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5AdcMask(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5AnalogFlag(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5AnalogSamples(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5DigitalFlag(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5DigitalSamples(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5DbitOffset(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5DbitList(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5DbitReorder(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5TransceiverMask(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5TransceiverFlag(H5::H5File *fd, H5::Group *group);
-    void WriteHDF5TransceiverSamples(H5::H5File *fd, H5::Group *group);
+    void WriteFinalHDF5Attributes(H5::Group *group);
+    void WriteHDF5ROIs(H5::Group *group);
+    void WriteHDF5Exptime(H5::Group *group);
+    void WriteHDF5Period(H5::Group *group);
+    void WriteHDF5DynamicRange(H5::Group *group);
+    void WriteHDF5TenGiga(H5::Group *group);
+    void WriteHDF5NumUDPInterfaces(H5::Group *group);
+    void WriteHDF5ReadNRows(H5::Group *group);
+    void WriteHDF5ThresholdEnergy(H5::Group *group);
+    void WriteHDF5ThresholdEnergies(H5::Group *group);
+    void WriteHDF5SubExpTime(H5::Group *group);
+    void WriteHDF5SubPeriod(H5::Group *group);
+    void WriteHDF5SubQuad(H5::Group *group);
+    void WriteHDF5RateCorrections(H5::Group *group);
+    void WriteHDF5CounterMask(H5::Group *group);
+    void WriteHDF5ExptimeArray(H5::Group *group);
+    void WriteHDF5GateDelayArray(H5::Group *group);
+    void WriteHDF5Gates(H5::Group *group);
+    void WriteHDF5BurstMode(H5::Group *group);
+    void WriteHDF5AdcMask(H5::Group *group);
+    void WriteHDF5AnalogFlag(H5::Group *group);
+    void WriteHDF5AnalogSamples(H5::Group *group);
+    void WriteHDF5DigitalFlag(H5::Group *group);
+    void WriteHDF5DigitalSamples(H5::Group *group);
+    void WriteHDF5DbitOffset(H5::Group *group);
+    void WriteHDF5DbitList(H5::Group *group);
+    void WriteHDF5DbitReorder(H5::Group *group);
+    void WriteHDF5TransceiverMask(H5::Group *group);
+    void WriteHDF5TransceiverFlag(H5::Group *group);
+    void WriteHDF5TransceiverSamples(H5::Group *group);
 #endif
 
     void GetJungfrauBinaryAttributes(
         rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
-    void WriteJungfrauHDF5Attributes(H5::H5File *fd, H5::Group *group);
+    void WriteJungfrauHDF5Attributes(H5::Group *group);
 #endif
 
     void GetEigerBinaryAttributes(
         rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
-    void WriteEigerHDF5Attributes(H5::H5File *fd, H5::Group *group);
+    void WriteEigerHDF5Attributes(H5::Group *group);
 #endif
 
     void GetMythen3BinaryAttributes(
         rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
-    void WriteMythen3HDF5Attributes(H5::H5File *fd, H5::Group *group);
+    void WriteMythen3HDF5Attributes(H5::Group *group);
 #endif
 
     void GetGotthard2BinaryAttributes(
         rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
-    void WriteGotthard2HDF5Attributes(H5::H5File *fd, H5::Group *group);
+    void WriteGotthard2HDF5Attributes(H5::Group *group);
 #endif
 
     void GetMoenchBinaryAttributes(
         rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
-    void WriteMoenchHDF5Attributes(H5::H5File *fd, H5::Group *group);
+    void WriteMoenchHDF5Attributes(H5::Group *group);
 #endif
 
     void
     GetCtbBinaryAttributes(rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
-    void WriteCtbHDF5Attributes(H5::H5File *fd, H5::Group *group);
+    void WriteCtbHDF5Attributes(H5::Group *group);
 #endif
 
     void GetXilinxCtbBinaryAttributes(
         rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
-    void WriteXilinxCtbHDF5Attributes(H5::H5File *fd, H5::Group *group);
+    void WriteXilinxCtbHDF5Attributes(H5::Group *group);
 #endif
 };
 

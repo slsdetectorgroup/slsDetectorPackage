@@ -1693,19 +1693,19 @@ int ClientInterface::set_arping(Interface &socket) {
 }
 
 int ClientInterface::get_receiver_roi(Interface &socket) {
-    auto retval = impl()->getReceiverROI();
-    LOG(logDEBUG1) << "Receiver roi retval:" << ToString(retval);
-    return socket.sendResult(retval);
+    auto retvals = impl()->getPortROIs();
+    LOG(logDEBUG1) << "Receiver roi retval:" << ToString(retvals);
+    return socket.sendResult(retvals);
 }
 
 int ClientInterface::set_receiver_roi(Interface &socket) {
-    auto arg = socket.Receive<ROI>();
+    auto args = socket.Receive<std::array<ROI, 2>>();
     if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
-    LOG(logDEBUG1) << "Set Receiver ROI: " << ToString(arg);
+    LOG(logDEBUG1) << "Set Receiver ROI: " << ToString(args);
     verifyIdle(socket);
     try {
-        impl()->setReceiverROI(arg);
+        impl()->setPortROIs(args);
     } catch (const std::exception &e) {
         throw RuntimeError("Could not set Receiver ROI [" +
                            std::string(e.what()) + ']');
@@ -1715,18 +1715,24 @@ int ClientInterface::set_receiver_roi(Interface &socket) {
 }
 
 int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
-    auto arg = socket.Receive<ROI>();
+    auto roiSize = socket.Receive<int>();
+    if (roiSize <= 0) {
+        throw RuntimeError("Invalid number of ReceiverROI metadata: " +
+                           std::to_string(roiSize));
+    }
+    LOG(logDEBUG) << "Number of ReceiverROI metadata: " << roiSize;
+    std::vector<ROI> rois(roiSize);
+    socket.Receive(rois);
     if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
-    LOG(logDEBUG1) << "Set Receiver ROI Metadata: " << ToString(arg);
     verifyIdle(socket);
+    LOG(logINFO) << "Setting ReceiverROI metadata[" << roiSize << ']';
     try {
-        impl()->setReceiverROIMetadata(arg);
+        impl()->setMultiROIMetadata(rois);
     } catch (const std::exception &e) {
         throw RuntimeError("Could not set ReceiverROI metadata [" +
                            std::string(e.what()) + ']');
     }
-
     return socket.Send(OK);
 }
 

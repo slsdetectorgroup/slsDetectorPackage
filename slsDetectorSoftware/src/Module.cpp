@@ -1525,22 +1525,22 @@ std::array<defs::ROI, 2> Module::getRxROI() const {
     return sendToReceiver<std::array<slsDetectorDefs::ROI, 2>>(F_RECEIVER_GET_RECEIVER_ROI);
 }
 
-void Module::setRxROI(std::array<defs::ROI, 2> portRois) {
-    /*LOG(logDEBUG) << "Sending to receiver " << moduleIndex << " [rx roi: " << ToString(portRois)
-                  << ']';
-    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    receiver.Send(F_RECEIVER_SET_RECEIVER_ROI);
-    receiver.setFnum(F_RECEIVER_SET_RECEIVER_ROI);
-    receiver.Send(portRois);
-    if (receiver.Receive<int>() == FAIL) {
-        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                            " returned error: " + receiver.readErrorMessage());
-    }*/
+void Module::setRxROI(const std::array<defs::ROI, 2> &portRois) {
     sendToReceiver(F_RECEIVER_SET_RECEIVER_ROI, portRois, nullptr);
 }
 
-void Module::setRxROIMetadata(const std::vector<slsDetectorDefs::ROI> &arg) {
-    sendToReceiver(F_RECEIVER_SET_RECEIVER_ROI_METADATA, arg, nullptr);
+void Module::setRxROIMetadata(const std::vector<slsDetectorDefs::ROI> &args) {
+    LOG(logDEBUG) << "Sending to receiver " << moduleIndex
+                  << " [roi metadata: " << ToString(args) << ']';
+    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    receiver.Send(F_RECEIVER_SET_RECEIVER_ROI_METADATA);
+    receiver.setFnum(F_RECEIVER_SET_RECEIVER_ROI_METADATA);
+    receiver.Send(static_cast<int>(args.size()));
+    receiver.Send(args);
+    if (receiver.Receive<int>() == FAIL) {
+        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
+                            " returned error: " + receiver.readErrorMessage());
+    }
 }
 
 // File

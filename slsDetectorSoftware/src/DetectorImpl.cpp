@@ -1766,6 +1766,7 @@ defs::xy DetectorImpl::getPortGeometry() const {
     case MOENCH:
         portGeometry.y = modules[0]->getNumberofUDPInterfacesFromShm();
         break;
+    case GOTTHARD2: // 2nd port if used is for veto, not data
     default:
         break;
     }

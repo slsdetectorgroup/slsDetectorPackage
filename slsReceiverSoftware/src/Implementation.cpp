@@ -409,13 +409,13 @@ void Implementation::setPortROIs(const std::array<defs::ROI, 2> &args) {
     for (size_t i = 0; i != dataStreamer.size(); ++i) {
         dataStreamer[i]->SetPortROI(portRois[i]);
     }
-    LOG(logINFOBLUE) << "Rois (per port): " << ToString(portRois);
+    LOG(logINFO) << "Rois (per port): " << ToString(portRois);
 }
 
 void Implementation::setMultiROIMetadata(
     const std::vector<slsDetectorDefs::ROI> &args) {
     multiRoiMetadata = args;
-    LOG(logINFOBLUE) << "Multi ROI Metadata: " << ToString(multiRoiMetadata);
+    LOG(logINFO) << "Multi ROI Metadata: " << ToString(multiRoiMetadata);
 }
 
 /**************************************************

@@ -1716,13 +1716,11 @@ int ClientInterface::set_receiver_roi(Interface &socket) {
 
 int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
     auto roiSize = socket.Receive<int>();
-    if (roiSize <= 0) {
-        throw RuntimeError("Invalid number of ReceiverROI metadata: " +
-                           std::to_string(roiSize));
-    }
     LOG(logDEBUG) << "Number of ReceiverROI metadata: " << roiSize;
     std::vector<ROI> rois(roiSize);
-    socket.Receive(rois);
+    if (roiSize > 0) {
+        socket.Receive(rois);
+    }
     if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
     verifyIdle(socket);

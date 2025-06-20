@@ -623,6 +623,27 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                         "rx_roi", {"[5, 10, 20, 30];[25, 28, " + stringMin + ", " +  stringMax + "]"}, -1, PUT, oss));
                     REQUIRE(oss.str() ==
                         "rx_roi [[5, 10, 20, 30], [25, 28, " + stringMin + ", " +  stringMax + "]]\n");
+
+                    // verify individual roi
+                    if (det_type == defs::JUNGFRAU) {
+                        std::ostringstream oss, oss1;
+                        REQUIRE_NOTHROW(caller.call(
+                            "rx_roi", {"[100,500,100,400]"}, -1, PUT, oss));
+                        REQUIRE(oss.str() == "rx_roi [[100, 500, 100, 400]]\n");
+                        REQUIRE_NOTHROW(
+                            caller.call("rx_roi", {}, 0, GET, oss1));
+                        REQUIRE(oss1.str() == "rx_roi [[[100, 500, 100, 255], "
+                                              "[100, 500, 256, 400]]]\n");
+                    } else {
+                        std::ostringstream oss, oss1;
+                        REQUIRE_NOTHROW(caller.call(
+                            "rx_roi", {"[100,200,100,300]"}, -1, PUT, oss));
+                        REQUIRE(oss.str() == "rx_roi [[100, 200, 100, 300]]\n");
+                        REQUIRE_NOTHROW(
+                            caller.call("rx_roi", {}, 0, GET, oss1));
+                        REQUIRE(oss1.str() == "rx_roi [[[100, 200, 100, 199], "
+                                              "[100, 200, 200, 300]]]\n");
+                    }
                 }
             }
         }

@@ -619,7 +619,7 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                         caller.call("rx_roi", {}, 0, GET, oss1));
                     // eiger returns 2 values for 2 ports per module
                     if (det_type == defs::EIGER) {
-                        REQUIRE(oss1.str() == "rx_roi [[[" + stringMin + ", " + std::to_string(portSize.x - 1) + "20, 30], [" + std::to_string(portSize.x + 1) + ", " + stringMax + ", 20, 30]]]\n");
+                        REQUIRE(oss1.str() == "rx_roi [[[" + stringMin + ", " + std::to_string(portSize.x - 1) + ", 20, 30], [" + std::to_string(portSize.x) + ", " + stringMax + ", 20, 30]]]\n");
                     }
                     // others return only 1 roi per module (1 port per module) 
                     else {
@@ -655,7 +655,7 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                         caller.call("rx_roi", {}, 0, GET, oss1));
                     // non-eiger  with 2 interfaces returns 2 values for 2 ports per module
                     if (numinterfaces == 2) {
-                        REQUIRE(oss1.str() == "rx_roi [[[20, 30, " + stringMin + ", " + std::to_string(portSize.y - 1) + "], [20, 30, " + std::to_string(portSize.y + 1) + ", " + stringMax + "]]]\n");
+                        REQUIRE(oss1.str() == "rx_roi [[[20, 30, " + stringMin + ", " + std::to_string(portSize.y - 1) + "], [20, 30, " + std::to_string(portSize.y) + ", " + stringMax + "]]]\n");
                     }
                     // others return only 1 roi per module (1 port per module) 
                     else {

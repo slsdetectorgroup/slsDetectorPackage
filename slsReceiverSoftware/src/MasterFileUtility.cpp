@@ -208,149 +208,151 @@ std::string CreateVirtualHDF5File(
         attribute.write(H5::PredType::NATIVE_DOUBLE, &dValue);
 
         // complete detector in roi
-        /*if (multiRoi.empty()) {
-             int ny = nPixelsY * numModY;
-             int nx = nPixelsX * numModX;
-             if (nPixelsY == 1) {
-                 multiRoi.push_back(defs::ROI{0, nx - 1});
-             } else {
-                 multiRoi.push_back(defs::ROI{0, nx - 1, 0, ny - 1});
-             }
-         }*/
-
-        // for (size_t iRoi = 0; iRoi != multiRoi.size(); ++iRoi) {
-
-        // dataspace
-        hsize_t vdsDims[DATA_RANK] = {numImagesCaught, numModY * nDimy,
-                                      numModZ * nDimz};
-        hsize_t vdsDimsPara[VDS_PARA_RANK] = {numImagesCaught,
-                                              numModY * numModZ};
-        H5::DataSpace vdsDataSpace(DATA_RANK, vdsDims, nullptr);
-        H5::DataSpace vdsDataSpacePara(VDS_PARA_RANK, vdsDimsPara, nullptr);
-
-        // property list
-        H5::DSetCreatPropList plist;
-        uint64_t fill_value = -1;
-        plist.setFillValue(dataType, &fill_value);
-        std::vector<H5::DSetCreatPropList> plistPara(paraSize);
-        // ignoring last fill (string)
-        for (unsigned int i = 0; i != plistPara.size() - 1; ++i) {
-            plistPara[i].setFillValue(parameterDataTypes[i], &fill_value);
+        if (multiRoi.size() == 1 && multiRoi[0].isComplete()) {
+            int ny = nPixelsY * numModY;
+            int nx = nPixelsX * numModX;
+            if (nPixelsY == 1) {
+                multiRoi.push_back(defs::ROI{0, nx - 1});
+            } else {
+                multiRoi.push_back(defs::ROI{0, nx - 1, 0, ny - 1});
+            }
         }
 
-        // hyperslab (files)
-        int numFiles = numImagesCaught / maxFramesPerFile;
-        if (numImagesCaught % maxFramesPerFile)
-            ++numFiles;
-        uint64_t framesSaved = 0;
-        for (int iFile = 0; iFile < numFiles; ++iFile) {
+        for (size_t iRoi = 0; iRoi != multiRoi.size(); ++iRoi) {
 
-            uint64_t nDimx =
-                ((numImagesCaught - framesSaved) > maxFramesPerFile)
-                    ? maxFramesPerFile
-                    : (numImagesCaught - framesSaved);
+            // dataspace
+            hsize_t vdsDims[DATA_RANK] = {numImagesCaught, numModY * nDimy,
+                                          numModZ * nDimz};
+            hsize_t vdsDimsPara[VDS_PARA_RANK] = {numImagesCaught,
+                                                  numModY * numModZ};
+            H5::DataSpace vdsDataSpace(DATA_RANK, vdsDims, nullptr);
+            H5::DataSpace vdsDataSpacePara(VDS_PARA_RANK, vdsDimsPara, nullptr);
 
-            hsize_t startLocation[DATA_RANK] = {framesSaved, 0, 0};
-            hsize_t strideBetweenBlocks[DATA_RANK] = {1, 1, 1};
-            hsize_t numBlocks[DATA_RANK] = {nDimx, nDimy, nDimz};
-            hsize_t blockSize[DATA_RANK] = {1, 1, 1};
-
-            hsize_t startLocationPara[VDS_PARA_RANK] = {framesSaved, 0};
-            hsize_t strideBetweenBlocksPara[VDS_PARA_RANK] = {1, 1};
-            hsize_t numBlocksPara[VDS_PARA_RANK] = {nDimx, 1};
-            hsize_t blockSizePara[VDS_PARA_RANK] = {1, 1};
-
-            // interleaving for g2
-            if (gotthard25um) {
-                strideBetweenBlocks[2] = 2;
+            // property list
+            H5::DSetCreatPropList plist;
+            uint64_t fill_value = -1;
+            plist.setFillValue(dataType, &fill_value);
+            std::vector<H5::DSetCreatPropList> plistPara(paraSize);
+            // ignoring last fill (string)
+            for (unsigned int i = 0; i != plistPara.size() - 1; ++i) {
+                plistPara[i].setFillValue(parameterDataTypes[i], &fill_value);
             }
 
-            for (unsigned int iReadout = 0; iReadout < numModY * numModZ;
-                 ++iReadout) {
+            // hyperslab (files)
+            int numFiles = numImagesCaught / maxFramesPerFile;
+            if (numImagesCaught % maxFramesPerFile)
+                ++numFiles;
+            uint64_t framesSaved = 0;
+            for (int iFile = 0; iFile < numFiles; ++iFile) {
 
-                // interleaving for g2 (startLocation is 0 and 1)
+                uint64_t nDimx =
+                    ((numImagesCaught - framesSaved) > maxFramesPerFile)
+                        ? maxFramesPerFile
+                        : (numImagesCaught - framesSaved);
+
+                hsize_t startLocation[DATA_RANK] = {framesSaved, 0, 0};
+                hsize_t strideBetweenBlocks[DATA_RANK] = {1, 1, 1};
+                hsize_t numBlocks[DATA_RANK] = {nDimx, nDimy, nDimz};
+                hsize_t blockSize[DATA_RANK] = {1, 1, 1};
+
+                hsize_t startLocationPara[VDS_PARA_RANK] = {framesSaved, 0};
+                hsize_t strideBetweenBlocksPara[VDS_PARA_RANK] = {1, 1};
+                hsize_t numBlocksPara[VDS_PARA_RANK] = {nDimx, 1};
+                hsize_t blockSizePara[VDS_PARA_RANK] = {1, 1};
+
+                // interleaving for g2
                 if (gotthard25um) {
-                    startLocation[2] = iReadout;
+                    strideBetweenBlocks[2] = 2;
                 }
 
-                vdsDataSpace.selectHyperslab(H5S_SELECT_SET, numBlocks,
-                                             startLocation, strideBetweenBlocks,
-                                             blockSize);
+                for (unsigned int iReadout = 0; iReadout < numModY * numModZ;
+                     ++iReadout) {
 
-                vdsDataSpacePara.selectHyperslab(
-                    H5S_SELECT_SET, numBlocksPara, startLocationPara,
-                    strideBetweenBlocksPara, blockSizePara);
-
-                // source file name
-                std::ostringstream os;
-                os << filePath << "/" << fileNamePrefix << "_d"
-                   << (modulePos * numUnitsPerReadout + iReadout) << "_f"
-                   << iFile << '_' << fileIndex << ".h5";
-                std::string srcFileName = os.str();
-                LOG(logDEBUG1) << srcFileName;
-
-                // find relative path
-                std::string relative_srcFileName = srcFileName;
-                {
-                    size_t p = srcFileName.rfind('/', srcFileName.length());
-                    if (p != std::string::npos)
-                        relative_srcFileName = (srcFileName.substr(
-                            p + 1, srcFileName.length() - p));
-                }
-
-                // source dataspace
-                hsize_t srcDims[DATA_RANK] = {nDimx, nDimy, nDimz};
-                hsize_t srcDimsMax[DATA_RANK] = {H5S_UNLIMITED, nDimy, nDimz};
-                H5::DataSpace srcDataSpace(DATA_RANK, srcDims, srcDimsMax);
-                hsize_t srcDimsPara[PARA_RANK] = {nDimx};
-                hsize_t srcDimsMaxPara[PARA_RANK] = {H5S_UNLIMITED};
-                H5::DataSpace srcDataSpacePara(PARA_RANK, srcDimsPara,
-                                               srcDimsMaxPara);
-                // temporary fixfor corner case bug:
-                // (framescaught not multiple of framesperfile,
-                // virtual parameter datasets error loading (bad scalar
-                // value))
-                if (nDimx != maxFramesPerFile) {
-                    hsize_t count[1] = {nDimx};
-                    hsize_t start[1] = {0};
-                    srcDataSpacePara.selectHyperslab(
-                        H5S_SELECT_SET, count, start, strideBetweenBlocksPara,
-                        blockSizePara);
-                }
-
-                // mapping of property list
-                plist.setVirtual(vdsDataSpace, relative_srcFileName.c_str(),
-                                 DATASET_NAME, srcDataSpace);
-                for (unsigned int p = 0; p < paraSize; ++p) {
-                    plistPara[p].setVirtual(
-                        vdsDataSpacePara, relative_srcFileName.c_str(),
-                        parameterNames[p].c_str(), srcDataSpacePara);
-                }
-
-                // H5Sclose(srcDataspace);
-                // H5Sclose(srcDataspace_para);
-
-                if (!gotthard25um) {
-                    startLocation[2] += nDimz;
-                    if (startLocation[2] >= (numModZ * nDimz)) {
-                        startLocation[2] = 0;
-                        startLocation[1] += nDimy;
+                    // interleaving for g2 (startLocation is 0 and 1)
+                    if (gotthard25um) {
+                        startLocation[2] = iReadout;
                     }
-                }
-                ++startLocationPara[1];
-            }
-            framesSaved += nDimx;
-        }
-        // datasets
-        H5::DataSet vdsDataSet(
-            fd->createDataSet(DATASET_NAME, dataType, vdsDataSpace, plist));
 
-        for (unsigned int p = 0; p < paraSize; ++p) {
-            H5::DataSet vdsDataSetPara(fd->createDataSet(
-                parameterNames[p].c_str(), parameterDataTypes[p],
-                vdsDataSpacePara, plistPara[p]));
+                    vdsDataSpace.selectHyperslab(
+                        H5S_SELECT_SET, numBlocks, startLocation,
+                        strideBetweenBlocks, blockSize);
+
+                    vdsDataSpacePara.selectHyperslab(
+                        H5S_SELECT_SET, numBlocksPara, startLocationPara,
+                        strideBetweenBlocksPara, blockSizePara);
+
+                    // source file name
+                    std::ostringstream os;
+                    os << filePath << "/" << fileNamePrefix << "_d"
+                       << (modulePos * numUnitsPerReadout + iReadout) << "_f"
+                       << iFile << '_' << fileIndex << ".h5";
+                    std::string srcFileName = os.str();
+                    LOG(logDEBUG1) << srcFileName;
+
+                    // find relative path
+                    std::string relative_srcFileName = srcFileName;
+                    {
+                        size_t p = srcFileName.rfind('/', srcFileName.length());
+                        if (p != std::string::npos)
+                            relative_srcFileName = (srcFileName.substr(
+                                p + 1, srcFileName.length() - p));
+                    }
+
+                    // source dataspace
+                    hsize_t srcDims[DATA_RANK] = {nDimx, nDimy, nDimz};
+                    hsize_t srcDimsMax[DATA_RANK] = {H5S_UNLIMITED, nDimy,
+                                                     nDimz};
+                    H5::DataSpace srcDataSpace(DATA_RANK, srcDims, srcDimsMax);
+                    hsize_t srcDimsPara[PARA_RANK] = {nDimx};
+                    hsize_t srcDimsMaxPara[PARA_RANK] = {H5S_UNLIMITED};
+                    H5::DataSpace srcDataSpacePara(PARA_RANK, srcDimsPara,
+                                                   srcDimsMaxPara);
+                    // temporary fixfor corner case bug:
+                    // (framescaught not multiple of framesperfile,
+                    // virtual parameter datasets error loading (bad scalar
+                    // value))
+                    // TODO WHY????
+                    /*if (nDimx != maxFramesPerFile) {
+                        hsize_t count[1] = {nDimx};
+                        hsize_t start[1] = {0};
+                        srcDataSpacePara.selectHyperslab(
+                            H5S_SELECT_SET, count, start,
+                    strideBetweenBlocksPara, blockSizePara);
+                    }*/
+
+                    // mapping of property list
+                    plist.setVirtual(vdsDataSpace, relative_srcFileName.c_str(),
+                                     DATASET_NAME, srcDataSpace);
+                    for (unsigned int p = 0; p < paraSize; ++p) {
+                        plistPara[p].setVirtual(
+                            vdsDataSpacePara, relative_srcFileName.c_str(),
+                            parameterNames[p].c_str(), srcDataSpacePara);
+                    }
+
+                    // H5Sclose(srcDataspace);
+                    // H5Sclose(srcDataspace_para);
+
+                    if (!gotthard25um) {
+                        startLocation[2] += nDimz;
+                        if (startLocation[2] >= (numModZ * nDimz)) {
+                            startLocation[2] = 0;
+                            startLocation[1] += nDimy;
+                        }
+                    }
+                    ++startLocationPara[1];
+                }
+                framesSaved += nDimx;
+            }
+            // datasets
+            H5::DataSet vdsDataSet(
+                fd->createDataSet(DATASET_NAME, dataType, vdsDataSpace, plist));
+
+            for (unsigned int p = 0; p < paraSize; ++p) {
+                H5::DataSet vdsDataSetPara(fd->createDataSet(
+                    parameterNames[p].c_str(), parameterDataTypes[p],
+                    vdsDataSpacePara, plistPara[p]));
+            }
         }
-        //}
 
         fd->close();
     } catch (const H5::Exception &error) {

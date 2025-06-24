@@ -39,7 +39,8 @@ std::string CreateVirtualHDF5File(
     const uint64_t numImagesCaught, const int numModX, const int numModY,
     const H5::DataType dataType, const std::vector<std::string> parameterNames,
     const std::vector<H5::DataType> parameterDataTypes,
-    std::mutex *hdf5LibMutex, bool gotthard25um);
+    std::mutex *hdf5LibMutex, bool gotthard25um,
+    std::vector<defs::ROI> &multiRoi);
 #endif
 } // namespace masterFileUtility
 

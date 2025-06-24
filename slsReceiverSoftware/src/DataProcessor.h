@@ -40,6 +40,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void SetUdpPortNumber(const uint16_t portNumber);
     void SetActivate(bool enable);
     void SetPortROI(const ROI arg);
+    void setMultiROIMetadata(const std::vector<slsDetectorDefs::ROI> &args);
     void SetDataStreamEnable(bool enable);
     void SetStreamingFrequency(uint32_t value);
     void SetStreamingTimerInMs(uint32_t value);
@@ -162,6 +163,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     ROI portRoi{};
     bool isPartiallyInRoi{false};
     bool isOutsideRoi{false};
+    std::vector<ROI> multiRoiMetadata{};
+
     std::unique_ptr<char[]> completeImageToStreamBeforeCropping;
     /** if 0, sending random images with a timer */
     uint32_t streamingFrequency;

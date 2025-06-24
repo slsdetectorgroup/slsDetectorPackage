@@ -200,6 +200,8 @@ void Implementation::SetupDataProcessor(int i) {
     } else {
         dataProcessor[i]->SetPortROI(portRois[i]);
     }
+    if (i == 0)
+        dataProcessor[0]->setMultiROIMetadata(multiRoiMetadata);
     dataProcessor[i]->SetDataStreamEnable(dataStreamEnable);
     dataProcessor[i]->SetStreamingFrequency(streamingFrequency);
     dataProcessor[i]->SetStreamingTimerInMs(streamingTimerInMs);
@@ -414,13 +416,16 @@ void Implementation::setPortROIs(const std::vector<defs::ROI> &args) {
 
     for (size_t i = 0; i != listener.size(); ++i)
         listener[i]->SetIsOutsideRoi(i >= portRois.size());
-    for (size_t i = 0; i != dataProcessor.size(); ++i)
+    for (size_t i = 0; i != dataProcessor.size(); ++i) {
         if (i >= portRois.size()) {
             ROI roi{0, 0, 0, 0};
             dataProcessor[i]->SetPortROI(roi);
         } else {
             dataProcessor[i]->SetPortROI(portRois[i]);
         }
+    }
+    if (dataProcessor.size() > 0)
+        dataProcessor[0]->setMultiROIMetadata(multiRoiMetadata);
     for (size_t i = 0; i != dataStreamer.size(); ++i) {
         if (i >= portRois.size()) {
             ROI roi{0, 0, 0, 0};
@@ -435,6 +440,8 @@ void Implementation::setPortROIs(const std::vector<defs::ROI> &args) {
 void Implementation::setMultiROIMetadata(
     const std::vector<slsDetectorDefs::ROI> &args) {
     multiRoiMetadata = args;
+    if (dataProcessor.size() > 0)
+        dataProcessor[0]->setMultiROIMetadata(multiRoiMetadata);
     LOG(logINFO) << "Multi ROI Metadata: " << ToString(multiRoiMetadata);
 }
 

@@ -54,6 +54,11 @@ void DataProcessor::SetPortROI(ROI roi) {
     isOutsideRoi = portRoi.noRoi();
 }
 
+void DataProcessor::setMultiROIMetadata(
+    const std::vector<slsDetectorDefs::ROI> &args) {
+    multiRoiMetadata = args;
+}
+
 void DataProcessor::SetDataStreamEnable(bool enable) {
     dataStreamEnable = enable;
 }
@@ -203,9 +208,9 @@ std::string DataProcessor::CreateVirtualFile(
     const int modulePos, const int numModX, const int numModY,
     std::mutex *hdf5LibMutex) {
 
-    if (isPartiallyInRoi) {
-        throw std::runtime_error(
-            "Skipping virtual hdf5 file since rx_roi is enabled.");
+    if (!multiRoiMetadata.empty() && generalData->dynamicRange == 4) {
+        throw std::runtime_error("Skipping virtual hdf5 file since rx_roi is "
+                                 "enabled in 4 bit mode.");
     }
 
     bool gotthard25um = ((generalData->detType == GOTTHARD ||
@@ -227,7 +232,7 @@ std::string DataProcessor::CreateVirtualFile(
         generalData->nPixelsX, generalData->nPixelsY, generalData->dynamicRange,
         numFramesCaught, numModX, numModY, dataFile->GetPDataType(),
         dataFile->GetParameterNames(), dataFile->GetParameterDataTypes(),
-        hdf5LibMutex, gotthard25um);
+        hdf5LibMutex, gotthard25um, multiRoiMetadata);
 }
 
 void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
@@ -235,7 +240,7 @@ void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
                                      const bool silentMode,
                                      std::mutex *hdf5LibMutex) {
 
-    if (isPartiallyInRoi) {
+    if (!multiRoiMetadata.empty()) {
         throw std::runtime_error(
             "Should not be here, roi with hdf5 virtual should throw.");
     }

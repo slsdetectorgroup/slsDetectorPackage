@@ -714,7 +714,7 @@ class Detector {
      * restarts client and receiver zmq sockets if zmq streaming enabled. \n
      * [Gotthard2] second interface enabled to send veto information via 10Gbps
      * for debugging. By default, if veto enabled, it is sent via 2.5 gbps
-     * interface. */
+     * interface. \nSetting this resets the receiver roi */
     void setNumberofUDPInterfaces(int n, Positions pos = {});
 
     /** [Jungfrau][Moench] */
@@ -995,7 +995,8 @@ class Detector {
     /** Returns port level ROIs. Max 2 ports and hence max 2 elements per readout */
     std::vector<defs::ROI> getRxROI(int module_id) const;
 
-    /** only at multi module level without gap pixels. At most, 1 ROI per UDP port */
+    /** only at multi module level without gap pixels. At most, 1 ROI per UDP
+     * port. Setting number of udp interfaces will clear the roi */
     void setRxROI(const std::vector<defs::ROI> &args);
 
     void clearRxROI();

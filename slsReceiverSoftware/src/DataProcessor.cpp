@@ -208,10 +208,10 @@ std::string DataProcessor::CreateVirtualFile(
     const int modulePos, const int numModX, const int numModY,
     std::mutex *hdf5LibMutex) {
 
-    if (!multiRoiMetadata.empty() && generalData->dynamicRange == 4) {
+    /*if (!multiRoiMetadata.empty() && generalData->dynamicRange == 4) {
         throw std::runtime_error("Skipping virtual hdf5 file since rx_roi is "
                                  "enabled in 4 bit mode.");
-    }
+    }*/
 
     bool gotthard25um = ((generalData->detType == GOTTHARD ||
                           generalData->detType == GOTTHARD2) &&
@@ -240,10 +240,10 @@ void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
                                      const bool silentMode,
                                      std::mutex *hdf5LibMutex) {
 
-    if (!multiRoiMetadata.empty()) {
+    /*if (!multiRoiMetadata.empty()) {
         throw std::runtime_error(
             "Should not be here, roi with hdf5 virtual should throw.");
-    }
+    }*/
     std::string fname{virtualFileName}, masterfname{masterFileName};
     // if no virtual file, link data file
     if (virtualFileName.empty()) {

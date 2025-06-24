@@ -307,8 +307,8 @@ class Implementation : private virtual slsDetectorDefs {
     bool framePadding{true};
     pid_t parentThreadId;
     pid_t tcpThreadId;
-    std::vector<ROI> portRois{};
-    std::vector<ROI> multiRoiMetadata{};
+    std::vector<slsDetectorDefs::ROI> portRois{1};
+    std::vector<slsDetectorDefs::ROI> multiRoiMetadata{1};
 
     // file parameters
     fileFormat fileFormatType{BINARY};

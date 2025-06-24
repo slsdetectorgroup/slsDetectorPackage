@@ -184,7 +184,7 @@ void Implementation::SetupListener(int i) {
     listener[i]->SetUdpPortNumber(udpPortNum[i]);
     listener[i]->SetEthernetInterface(eth[i]);
     listener[i]->SetActivate(activated);
-    listener[i]->SetIsOutsideRoi(i >= (int)portRois.size());
+    listener[i]->SetIsOutsideRoi(portRois[i].noRoi());
     listener[i]->SetDetectorDatastream(detectorDataStream[i]);
     listener[i]->SetSilentMode(silentMode);
 }
@@ -194,12 +194,7 @@ void Implementation::SetupDataProcessor(int i) {
     dataProcessor[i]->SetGeneralData(generalData);
     dataProcessor[i]->SetUdpPortNumber(udpPortNum[i]);
     dataProcessor[i]->SetActivate(activated);
-    if (i >= (int)portRois.size()) {
-        ROI roi{0, 0, 0, 0};
-        dataProcessor[i]->SetPortROI(roi);
-    } else {
-        dataProcessor[i]->SetPortROI(portRois[i]);
-    }
+    dataProcessor[i]->SetPortROI(portRois[i]);
     if (i == 0)
         dataProcessor[0]->setMultiROIMetadata(multiRoiMetadata);
     dataProcessor[i]->SetDataStreamEnable(dataStreamEnable);
@@ -223,12 +218,7 @@ void Implementation::SetupDataStreamer(int i) {
     dataStreamer[i]->SetFlipRows(flipRows);
     dataStreamer[i]->SetNumberofPorts(numPorts);
     dataStreamer[i]->SetNumberofTotalFrames(numberOfTotalFrames);
-    if (i >= (int)portRois.size()) {
-        ROI roi{0, 0, 0, 0};
-        dataStreamer[i]->SetPortROI(roi);
-    } else {
-        dataStreamer[i]->SetPortROI(portRois[i]);
-    }
+    dataStreamer[i]->SetPortROI(portRois[i]);
 }
 
 slsDetectorDefs::xy Implementation::getDetectorSize() const {
@@ -415,24 +405,14 @@ void Implementation::setPortROIs(const std::vector<defs::ROI> &args) {
     portRois = args;
 
     for (size_t i = 0; i != listener.size(); ++i)
-        listener[i]->SetIsOutsideRoi(i >= portRois.size());
+        listener[i]->SetIsOutsideRoi(portRois[i].noRoi());
     for (size_t i = 0; i != dataProcessor.size(); ++i) {
-        if (i >= portRois.size()) {
-            ROI roi{0, 0, 0, 0};
-            dataProcessor[i]->SetPortROI(roi);
-        } else {
-            dataProcessor[i]->SetPortROI(portRois[i]);
-        }
+        dataProcessor[i]->SetPortROI(portRois[i]);
     }
     if (dataProcessor.size() > 0)
         dataProcessor[0]->setMultiROIMetadata(multiRoiMetadata);
     for (size_t i = 0; i != dataStreamer.size(); ++i) {
-        if (i >= portRois.size()) {
-            ROI roi{0, 0, 0, 0};
-            dataStreamer[i]->SetPortROI(roi);
-        } else {
-            dataStreamer[i]->SetPortROI(portRois[i]);
-        }
+        dataStreamer[i]->SetPortROI(portRois[i]);
     }
     LOG(logINFO) << "Rois (per port): " << ToString(portRois);
 }
@@ -737,7 +717,7 @@ void Implementation::stopReceiver() {
             } else if (!detectorDataStream[i]) {
                 summary = (i == 0 ? "\n\tDeactivated Left Port"
                                   : "\n\tDeactivated Right Port");
-            } else if (i >= (int)portRois.size()) {
+            } else if (portRois[i].noRoi()) {
                 summary = "\n\tNo Roi on Port[" + std::to_string(i) + ']';
             } else {
                 std::ostringstream os;
@@ -909,7 +889,8 @@ void Implementation::StartMasterWriter() {
             masterAttributes.scanParams = scanParams;
             masterAttributes.totalFrames = numberOfTotalFrames;
             // complete ROI (for each port TODO?)
-            if (multiRoiMetadata.empty()) {
+            if (multiRoiMetadata.size() == 1 &&
+                multiRoiMetadata[0].completeRoi()) {
                 int nTotalPixelsX = (generalData->nPixelsX * numPorts.x);
                 int nTotalPixelsY = (generalData->nPixelsY * numPorts.y);
                 if (nTotalPixelsY == 1) {
@@ -1049,8 +1030,13 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
 
         // fifo
         SetupFifoStructure();
+
+        // roi cleared - complete detector
+        std::vector<ROI> rois(n);
+        std::vector<ROI> multiRoi(1);
         // recalculate port rois booleans for listener, processor and streamer
-        setPortROIs(portRois);
+        setPortROIs(rois);
+        setMultiROIMetadata(multiRoi);
 
         // create threads
         for (int i = 0; i < generalData->numUDPInterfaces; ++i) {

@@ -1534,8 +1534,10 @@ std::vector<defs::ROI> Module::getRxROI() const {
     std::vector<ROI> retval(nPorts);
     if (nPorts > 0)
         client.Receive(retval);
-    if (nPorts > shm()->numUDPInterfaces) {
-        throw RuntimeError("Invalid number of rois: " + std::to_string(nPorts) + ". Max: " + std::to_string(shm()->numUDPInterfaces));
+    if (nPorts != shm()->numUDPInterfaces) {
+        throw RuntimeError(
+            "Invalid number of rois: " + std::to_string(nPorts) +
+            ". Expected: " + std::to_string(shm()->numUDPInterfaces));
     }
     LOG(logDEBUG1) << "ROI of Receiver" << moduleIndex << ": "
                    << ToString(retval);
@@ -1548,11 +1550,11 @@ void Module::setRxROI(const std::vector<defs::ROI> &portRois) {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("No receiver to set ROI.");
     }
-    if ((int)portRois.size() > shm()->numUDPInterfaces) {
-        throw RuntimeError("Invalid number of ROIs: " +
-                           std::to_string(portRois.size()) +
-                           ". Max: " + std::to_string(shm()->numUDPInterfaces));
-    }   
+    if ((int)portRois.size() != shm()->numUDPInterfaces) {
+        throw RuntimeError(
+            "Invalid number of ROIs: " + std::to_string(portRois.size()) +
+            ". Expected: " + std::to_string(shm()->numUDPInterfaces));
+    }
     // check number of ports
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     client.Send(F_RECEIVER_SET_RECEIVER_ROI);
@@ -1577,6 +1579,10 @@ void Module::setRxROIMetadata(const std::vector<slsDetectorDefs::ROI> &args) {
     receiver.Send(size);
     if (size > 0)
         receiver.Send(args);
+    if (size < 1) {
+        throw RuntimeError("Invalid number of ROI metadata: " +
+                           std::to_string(size) + ". Min: 1.");
+    }
     if (receiver.Receive<int>() == FAIL) {
         throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
                             " returned error: " + receiver.readErrorMessage());

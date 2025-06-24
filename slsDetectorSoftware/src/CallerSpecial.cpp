@@ -734,7 +734,8 @@ std::string Caller::rx_roi(int action) {
         "Only allowed to set at multi module level and without gap "
         "ixels.\n\n\t" +
         "One can get rx_roi also at port level, by specifying the module id "
-        "and it will return the roi for each port.\n";
+        "and it will return the roi for each port.\n"
+        "Setting number of udp interfaces will clear the rx_roi\n";
     if (action == defs::HELP_ACTION) {
         os << helpMessage;
     } else if (action == defs::GET_ACTION) {

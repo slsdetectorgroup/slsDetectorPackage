@@ -184,7 +184,7 @@ void Implementation::SetupListener(int i) {
     listener[i]->SetUdpPortNumber(udpPortNum[i]);
     listener[i]->SetEthernetInterface(eth[i]);
     listener[i]->SetActivate(activated);
-    listener[i]->SetIsOutsideRoi(portRois[i].noRoi());
+    listener[i]->SetIsOutsideRoi(i >= (int)portRois.size());
     listener[i]->SetDetectorDatastream(detectorDataStream[i]);
     listener[i]->SetSilentMode(silentMode);
 }
@@ -194,7 +194,12 @@ void Implementation::SetupDataProcessor(int i) {
     dataProcessor[i]->SetGeneralData(generalData);
     dataProcessor[i]->SetUdpPortNumber(udpPortNum[i]);
     dataProcessor[i]->SetActivate(activated);
-    dataProcessor[i]->SetPortROI(portRois[i]);
+    if (i >= (int)portRois.size()) {
+        ROI roi{0, 0, 0, 0};
+        dataProcessor[i]->SetPortROI(roi);
+    } else {
+        dataProcessor[i]->SetPortROI(portRois[i]);
+    }
     dataProcessor[i]->SetDataStreamEnable(dataStreamEnable);
     dataProcessor[i]->SetStreamingFrequency(streamingFrequency);
     dataProcessor[i]->SetStreamingTimerInMs(streamingTimerInMs);
@@ -216,7 +221,12 @@ void Implementation::SetupDataStreamer(int i) {
     dataStreamer[i]->SetFlipRows(flipRows);
     dataStreamer[i]->SetNumberofPorts(numPorts);
     dataStreamer[i]->SetNumberofTotalFrames(numberOfTotalFrames);
-    dataStreamer[i]->SetPortROI(portRois[i]);
+    if (i >= (int)portRois.size()) {
+        ROI roi{0, 0, 0, 0};
+        dataStreamer[i]->SetPortROI(roi);
+    } else {
+        dataStreamer[i]->SetPortROI(portRois[i]);
+    }
 }
 
 slsDetectorDefs::xy Implementation::getDetectorSize() const {
@@ -395,19 +405,29 @@ void Implementation::setArping(const bool i,
     }
 }
 
-std::array<slsDetectorDefs::ROI, 2> Implementation::getPortROIs() const {
+std::vector<slsDetectorDefs::ROI> Implementation::getPortROIs() const {
     return portRois;
 }
 
-void Implementation::setPortROIs(const std::array<defs::ROI, 2> &args) {
+void Implementation::setPortROIs(const std::vector<defs::ROI> &args) {
     portRois = args;
 
     for (size_t i = 0; i != listener.size(); ++i)
-        listener[i]->SetIsOutsideRoi(portRois[i].noRoi());
+        listener[i]->SetIsOutsideRoi(i >= portRois.size());
     for (size_t i = 0; i != dataProcessor.size(); ++i)
-        dataProcessor[i]->SetPortROI(portRois[i]);
+        if (i >= portRois.size()) {
+            ROI roi{0, 0, 0, 0};
+            dataProcessor[i]->SetPortROI(roi);
+        } else {
+            dataProcessor[i]->SetPortROI(portRois[i]);
+        }
     for (size_t i = 0; i != dataStreamer.size(); ++i) {
-        dataStreamer[i]->SetPortROI(portRois[i]);
+        if (i >= portRois.size()) {
+            ROI roi{0, 0, 0, 0};
+            dataStreamer[i]->SetPortROI(roi);
+        } else {
+            dataStreamer[i]->SetPortROI(portRois[i]);
+        }
     }
     LOG(logINFO) << "Rois (per port): " << ToString(portRois);
 }
@@ -710,7 +730,7 @@ void Implementation::stopReceiver() {
             } else if (!detectorDataStream[i]) {
                 summary = (i == 0 ? "\n\tDeactivated Left Port"
                                   : "\n\tDeactivated Right Port");
-            } else if (portRois[i].noRoi()) {
+            } else if (i >= (int)portRois.size()) {
                 summary = "\n\tNo Roi on Port[" + std::to_string(i) + ']';
             } else {
                 std::ostringstream os;
@@ -881,7 +901,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.framePadding = framePadding;
             masterAttributes.scanParams = scanParams;
             masterAttributes.totalFrames = numberOfTotalFrames;
-            // complete ROI
+            // complete ROI (for each port TODO?)
             if (multiRoiMetadata.empty()) {
                 int nTotalPixelsX = (generalData->nPixelsX * numPorts.x);
                 int nTotalPixelsY = (generalData->nPixelsY * numPorts.y);

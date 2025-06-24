@@ -302,10 +302,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
     verifyUniqueRxHost(const std::vector<std::string> &names) const;
 
     defs::xy getPortGeometry() const;
-    std::vector<defs::ROI> getRxROI() const;
+    std::vector<defs::ROI> getRxROI(int module_id = -1) const;
     void setRxROI(const std::vector<defs::ROI> &args);
     void clearRxROI();
-    int getNumberOfUdpPortsInRxROI() const;
 
     void getBadChannels(const std::string &fname, Positions pos) const;
     void setBadChannels(const std::string &fname, Positions pos);
@@ -433,7 +432,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     defs::ROI getModuleROI(int moduleIndex) const;
     void convertGlobalRoiToPortLevel(
         const defs::ROI &userRoi, const defs::ROI &moduleRoi,
-        std::array<defs::ROI, 2> &portRois) const;
+        std::vector<defs::ROI> &portRois) const;
 
     const int detectorIndex{0};
     SharedMemory<sharedDetector> shm{0, -1};

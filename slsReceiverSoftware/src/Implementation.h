@@ -58,8 +58,8 @@ class Implementation : private virtual slsDetectorDefs {
     bool getArping() const;
     pid_t getArpingProcessId() const;
     void setArping(const bool i, const std::vector<std::string> ips);
-    std::array<defs::ROI, 2> getPortROIs() const;
-    void setPortROIs(const std::array<defs::ROI, 2> &args);
+    std::vector<defs::ROI> getPortROIs() const;
+    void setPortROIs(const std::vector<defs::ROI> &args);
     void setMultiROIMetadata(const std::vector<slsDetectorDefs::ROI> &args);
 
     /**************************************************
@@ -307,7 +307,7 @@ class Implementation : private virtual slsDetectorDefs {
     bool framePadding{true};
     pid_t parentThreadId;
     pid_t tcpThreadId;
-    std::array<ROI, 2> portRois{};
+    std::vector<ROI> portRois{};
     std::vector<ROI> multiRoiMetadata{};
 
     // file parameters

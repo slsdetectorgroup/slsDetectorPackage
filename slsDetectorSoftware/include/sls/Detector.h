@@ -993,7 +993,7 @@ class Detector {
     std::vector<defs::ROI> getRxROI() const;
 
     /** Returns port level ROIs. Max 2 ports and hence max 2 elements per readout */
-    Result<std::array<defs::ROI, 2>> getRxROI(int module_id) const;
+    std::vector<defs::ROI> getRxROI(int module_id) const;
 
     /** only at multi module level without gap pixels. At most, 1 ROI per UDP port */
     void setRxROI(const std::vector<defs::ROI> &args);

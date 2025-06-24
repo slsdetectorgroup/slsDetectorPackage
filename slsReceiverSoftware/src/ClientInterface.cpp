@@ -1695,11 +1695,24 @@ int ClientInterface::set_arping(Interface &socket) {
 int ClientInterface::get_receiver_roi(Interface &socket) {
     auto retvals = impl()->getPortROIs();
     LOG(logDEBUG1) << "Receiver roi retval:" << ToString(retvals);
-    return socket.sendResult(retvals);
+    auto size = static_cast<int>(retvals.size());
+    socket.Send(size);
+    if (size > 0)
+        socket.Send(retvals);
+    return OK;
 }
 
 int ClientInterface::set_receiver_roi(Interface &socket) {
-    auto args = socket.Receive<std::array<ROI, 2>>();
+    auto roiSize = socket.Receive<int>();
+    std::vector<ROI> args(roiSize);
+    if (roiSize > 0) {
+        socket.Receive(args);
+    }
+    if (roiSize > impl()->getNumberofUDPInterfaces()) {
+        throw RuntimeError("Invalid number of ROIs received: " +
+                           std::to_string(roiSize) + ". Max: " +
+                           std::to_string(impl()->getNumberofUDPInterfaces()));
+    }
     if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
     LOG(logDEBUG1) << "Set Receiver ROI: " << ToString(args);
@@ -1716,7 +1729,7 @@ int ClientInterface::set_receiver_roi(Interface &socket) {
 
 int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
     auto roiSize = socket.Receive<int>();
-    LOG(logDEBUG) << "Number of ReceiverROI metadata: " << roiSize;
+    LOG(logDEBUG1) << "Number of ReceiverROI metadata: " << roiSize;
     std::vector<ROI> rois(roiSize);
     if (roiSize > 0) {
         socket.Receive(rois);

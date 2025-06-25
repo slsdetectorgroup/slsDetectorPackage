@@ -1689,12 +1689,6 @@ std::vector<defs::ROI> DetectorImpl::getRxROI(int module_id) const {
     // TODO
 }
 
-bool DetectorImpl::roisOverlap(const defs::ROI &a, const defs::ROI &b) const {
-    bool xOverlap = !(a.xmax < b.xmin || a.xmin > b.xmax);
-    bool yOverlap = !(a.ymax < b.ymin || a.ymin > b.ymax);
-    return xOverlap && yOverlap;
-}
-
 void DetectorImpl::validateROIs(const std::vector<defs::ROI> &rois) {
     for (size_t i = 0; i < rois.size(); ++i) {
         const auto &roi = rois[i];
@@ -1738,29 +1732,11 @@ void DetectorImpl::validateROIs(const std::vector<defs::ROI> &rois) {
         }
 
         for (size_t j = i + 1; j < rois.size(); ++j) {
-            if (roisOverlap(rois[i], rois[j])) {
+            if (rois[i].overlap(rois[j])) {
                 throw RuntimeError("Invalid Overlapping Rois.");
             }
         }
     }
-}
-
-defs::xy DetectorImpl::calculatePosition(size_t moduleIndex,
-                                         const defs::xy &geometry) const {
-    if ((geometry.x != 0 && geometry.x != 1) ||
-        (geometry.y != 0 && geometry.y != 1)) {
-        throw RuntimeError("Invalid geometry configuration. Geometry: " +
-                           ToString(geometry));
-    }
-
-    if (moduleIndex >= static_cast<size_t>(geometry.x * geometry.y)) {
-        throw RuntimeError("Module index " + std::to_string(moduleIndex) +
-                           " out of bounds.");
-    }
-
-    int x = moduleIndex % geometry.x;
-    int y = moduleIndex / geometry.x;
-    return defs::xy{x, y};
 }
 
 defs::xy DetectorImpl::getPortGeometry() const {
@@ -1780,21 +1756,22 @@ defs::xy DetectorImpl::getPortGeometry() const {
     return portGeometry;
 }
 
-defs::xy DetectorImpl::calculatePosition(int moduleIndex,
-                                         defs::xy geometry) const {
+defs::xy DetectorImpl::calculatePosition(int moduleIndex) const {
     int maxYMods = shm()->numberOfModules.y;
-    int y = (moduleIndex % maxYMods) * geometry.y;
-    int x = (moduleIndex / maxYMods) * geometry.x;
+    int y = (moduleIndex % maxYMods);
+    int x = (moduleIndex / maxYMods);
     return defs::xy{x, y};
 }
 
 defs::ROI DetectorImpl::getModuleROI(int moduleIndex) const {
     const defs::xy modSize = modules[0]->getNumberOfChannels();
     // calculate module position (not taking into account port geometry)
-    const defs::xy modPos = calculatePosition(moduleIndex, defs::xy{1, 1});
-    return defs::ROI{modSize.x * modPos.x, modSize.x * (modPos.x + 1) - 1,
-                     modSize.y * modPos.y,
-                     modSize.y * (modPos.y + 1) - 1}; // convert y for 1d?
+    const defs::xy modPos = calculatePosition(moduleIndex);
+    const int xmin = modSize.x * modPos.x;
+    const int xmax = xmin + modSize.x - 1;
+    const int ymin = modSize.y * modPos.y;
+    const int ymax = ymin + modSize.y - 1;
+    return defs::ROI{xmin, xmax, ymin, ymax};
 }
 
 void DetectorImpl::convertGlobalRoiToPortLevel(
@@ -1830,7 +1807,7 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
         }
 
         // Check if user ROI overlaps with this port ROI
-        if (roisOverlap(userRoi, portRoi)) {
+        if (userRoi.overlap(portRoi)) {
             defs::ROI clipped{};
             clipped.xmin = std::max(userRoi.xmin, portRoi.xmin);
             clipped.xmax = std::min(userRoi.xmax, portRoi.xmax);
@@ -1874,7 +1851,7 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
         std::vector<defs::ROI> portRois(nPortsPerModule);
 
         for (const auto &arg : args) {
-            if (roisOverlap(arg, moduleGlobalRoi)) {
+            if (arg.overlap(moduleGlobalRoi)) {
                 convertGlobalRoiToPortLevel(arg, moduleGlobalRoi, portRois);
             }
         }

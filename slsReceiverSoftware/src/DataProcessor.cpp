@@ -208,11 +208,9 @@ std::string DataProcessor::CreateVirtualFile(
     const int modulePos, const int numModX, const int numModY,
     std::mutex *hdf5LibMutex) {
 
-    /*if (!multiRoiMetadata.empty() && generalData->dynamicRange == 4) {
-        throw std::runtime_error("Skipping virtual hdf5 file since rx_roi is "
-                                 "enabled in 4 bit mode.");
-    }*/
-
+    int ny = generalData->nPixelsY;
+    if (generalData->dynamicRange == 4)
+        ny = generalData->nPixelsY / 2;
     bool gotthard25um = ((generalData->detType == GOTTHARD ||
                           generalData->detType == GOTTHARD2) &&
                          (numModX * numModY) == 2);
@@ -229,7 +227,7 @@ std::string DataProcessor::CreateVirtualFile(
     return masterFileUtility::CreateVirtualHDF5File(
         filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
         modulePos, generalData->numUDPInterfaces, framesPerFile,
-        generalData->nPixelsX, generalData->nPixelsY, generalData->dynamicRange,
+        generalData->nPixelsX, ny, generalData->dynamicRange,
         numFramesCaught, numModX, numModY, dataFile->GetPDataType(),
         dataFile->GetParameterNames(), dataFile->GetParameterDataTypes(),
         hdf5LibMutex, gotthard25um, multiRoiMetadata);
@@ -251,7 +249,7 @@ void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
     }
     masterFileUtility::LinkHDF5FileInMaster(masterfname, fname,
                                             dataFile->GetParameterNames(),
-                                            silentMode, hdf5LibMutex);
+                                            silentMode, hdf5LibMutex, multiRoiMetadata.size());
 }
 #endif
 

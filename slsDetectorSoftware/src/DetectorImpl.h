@@ -426,9 +426,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     bool roisOverlap(const defs::ROI &a, const defs::ROI &b) const;
     void validateROIs(const std::vector<defs::ROI> &rois);
-    defs::xy calculatePosition(size_t moduleIndex,
-                               const defs::xy &geometry) const;
-    defs::xy calculatePosition(int moduleIndex, defs::xy geometry) const;
+    defs::xy calculatePosition(int moduleIndex) const;
     defs::ROI getModuleROI(int moduleIndex) const;
     void convertGlobalRoiToPortLevel(
         const defs::ROI &userRoi, const defs::ROI &moduleRoi,

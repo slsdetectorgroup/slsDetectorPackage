@@ -49,7 +49,7 @@ std::string CreateMasterBinaryFile(const std::string &filePath,
 void LinkHDF5FileInMaster(std::string &masterFileName,
                           std::string &dataFilename,
                           std::vector<std::string> parameterNames,
-                          const bool silentMode, std::mutex *hdf5LibMutex) {
+                          const bool silentMode, std::mutex *hdf5LibMutex, size_t multiRoiSize) {
 
     std::lock_guard<std::mutex> lock(*hdf5LibMutex);
     std::unique_ptr<H5::H5File> fd{nullptr};
@@ -67,27 +67,32 @@ void LinkHDF5FileInMaster(std::string &masterFileName,
         fd = make_unique<H5::H5File>(dataFilename.c_str(), H5F_ACC_RDONLY,
                                      H5::FileCreatPropList::DEFAULT, flist);
 
-        // create link for data dataset
-        H5::DataSet dset = fd->openDataSet(DATASET_NAME);
-        std::string linkname =
-            std::string("/entry/data/") + std::string(DATASET_NAME);
-        if (H5Lcreate_external(dataFilename.c_str(), DATASET_NAME,
-                               masterfd.getLocId(), linkname.c_str(),
-                               H5P_DEFAULT, H5P_DEFAULT) < 0) {
-            throw RuntimeError(
-                "Could not create link to data dataset in master");
-        }
+        for (size_t iRoi = 0; iRoi != multiRoiSize; ++iRoi) {
 
-        // create link for parameter datasets
-        for (unsigned int i = 0; i < parameterNames.size(); ++i) {
-            H5::DataSet pDset = fd->openDataSet(parameterNames[i].c_str());
-            linkname = std::string("/entry/data/") + parameterNames[i];
-            if (H5Lcreate_external(dataFilename.c_str(),
-                                   parameterNames[i].c_str(),
-                                   masterfd.getLocId(), linkname.c_str(),
-                                   H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            // create link for data dataset
+            std::string datasetname = DATASET_NAME + '_' + std::to_string(iRoi);
+            H5::DataSet dset = fd->openDataSet(datasetname);
+            std::string linkname =
+                std::string("/entry/data/") + datasetname;
+            if (H5Lcreate_external(dataFilename.c_str(), datasetname.c_str(),
+                                masterfd.getLocId(), linkname.c_str(),
+                                H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 throw RuntimeError(
-                    "Could not create link to parameter dataset in master");
+                    "Could not create link to data dataset in master");
+            }
+
+            // create link for parameter datasets
+            for (unsigned int i = 0; i < parameterNames.size(); ++i) {
+                std::string parameterDsetName = parameterNames[i] + '_' + std::to_string(iRoi);
+                H5::DataSet pDset = fd->openDataSet(parameterDsetName.c_str());
+                linkname = std::string("/entry/data/") + parameterDsetName;
+                if (H5Lcreate_external(dataFilename.c_str(),
+                                    parameterDsetName.c_str(),
+                                    masterfd.getLocId(), linkname.c_str(),
+                                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                    throw RuntimeError(
+                        "Could not create link to parameter dataset in master");
+                }
             }
         }
         fd->close();
@@ -160,18 +165,51 @@ std::string CreateMasterHDF5File(const std::string &filePath,
     return fileName;
 }
 
+defs::ROI GetGlobalPortRoi(const int iPort, const defs::xy portSize, const int numPortsY) {
+    defs::xy portPos = {(iPort / numPortsY), (iPort % numPortsY)};
+    const int xmin = portSize.x * portPos.x;
+    const int xmax = xmin + portSize.x - 1;
+    const int ymin = portSize.y * portPos.y;
+    const int ymax = ymin + portSize.y - 1;
+    return defs::ROI{xmin, xmax, ymin, ymax}; 
+}
+
+int GetNumPortsInRoi(const defs::ROI roi, const defs::xy portSize) {
+    if (portSize.x == 0 || portSize.y == 0) {
+        throw RuntimeError("Port width or height cannot be zero");
+    }
+    int iPortXMin = roi.xmin / portSize.x;
+    int iPortXMax = roi.xmax / portSize.x;
+    int iPortYMin = roi.ymin / portSize.y;
+    int iPortYMax = roi.ymax / portSize.y;
+    return ((iPortXMax - iPortXMin + 1) * (iPortYMax - iPortYMin + 1));
+}
+
 /** Will not be called if dynamic range is 4 and roi enabled */
 std::string CreateVirtualHDF5File(
     const std::string &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numUnitsPerReadout,
-    const uint32_t maxFramesPerFile, const uint32_t nPixelsX,
-    const uint32_t nPixelsY, const uint32_t dynamicRange,
+    const uint32_t maxFramesPerFile, const int nPixelsX,
+    const int nPixelsY, const uint32_t dynamicRange,
     const uint64_t numImagesCaught, const int numModX, const int numModY,
     const H5::DataType dataType, const std::vector<std::string> parameterNames,
     const std::vector<H5::DataType> parameterDataTypes,
     std::mutex *hdf5LibMutex, bool gotthard25um,
-    std::vector<defs::ROI> &multiRoi) {
+    std::vector<defs::ROI> multiRoi) {
+
+    // cannot create
+    if (!multiRoi.empty()) {
+        if (dynamicRange == 4) {
+            throw std::runtime_error("Skipping virtual hdf5 file since rx_roi is "
+                                 "enabled and it is in 4 bit mode.");
+        }
+        if (gotthard25um && (numModX * numModY) == 2) {
+            throw std::runtime_error("Skipping virtual hdf5 file since rx_roi is "
+                                 "enabled and there are 2 Gotthard 25um modules.");
+        }
+    }
+
 
     // virtual file name
     std::ostringstream osfn;
@@ -180,9 +218,6 @@ std::string CreateVirtualHDF5File(
     std::string fileName = osfn.str();
 
     unsigned int paraSize = parameterNames.size();
-    uint64_t numModZ = numModX;
-    uint32_t nDimy = nPixelsY;
-    uint32_t nDimz = ((dynamicRange == 4) ? (nPixelsX / 2) : nPixelsX);
 
     std::lock_guard<std::mutex> lock(*hdf5LibMutex);
 
@@ -208,7 +243,7 @@ std::string CreateVirtualHDF5File(
         attribute.write(H5::PredType::NATIVE_DOUBLE, &dValue);
 
         // complete detector in roi
-        /*if (multiRoi.size() == 1 && multiRoi[0].completeRoi()) {
+        if (multiRoi.size() == 1 && multiRoi[0].completeRoi()) {
             int ny = nPixelsY * numModY;
             int nx = nPixelsX * numModX;
             if (nPixelsY == 1) {
@@ -216,15 +251,23 @@ std::string CreateVirtualHDF5File(
             } else {
                 multiRoi.push_back(defs::ROI{0, nx - 1, 0, ny - 1});
             }
-        }*/
+        }
+
+        uint64_t depth = numImagesCaught;
+        uint64_t nports = numModX * numModY;
+        int numFiles = numImagesCaught / maxFramesPerFile;
+        if (numImagesCaught % maxFramesPerFile)
+                ++numFiles;
+        defs::xy portSize{nPixelsX, nPixelsY};
 
         for (size_t iRoi = 0; iRoi != multiRoi.size(); ++iRoi) {
+            uint64_t width = multiRoi[iRoi].width();
+            uint64_t height = multiRoi[iRoi].height();
+            uint64_t nportsInRoi = GetNumPortsInRoi(multiRoi[iRoi], portSize);
 
             // dataspace
-            hsize_t vdsDims[DATA_RANK] = {numImagesCaught, numModY * nDimy,
-                                          numModZ * nDimz};
-            hsize_t vdsDimsPara[VDS_PARA_RANK] = {numImagesCaught,
-                                                  numModY * numModZ};
+            hsize_t vdsDims[DATA_RANK] = {depth, height, width};
+            hsize_t vdsDimsPara[VDS_PARA_RANK] = {depth, nportsInRoi};
             H5::DataSpace vdsDataSpace(DATA_RANK, vdsDims, nullptr);
             H5::DataSpace vdsDataSpacePara(VDS_PARA_RANK, vdsDimsPara, nullptr);
 
@@ -239,38 +282,59 @@ std::string CreateVirtualHDF5File(
             }
 
             // hyperslab (files)
-            int numFiles = numImagesCaught / maxFramesPerFile;
-            if (numImagesCaught % maxFramesPerFile)
-                ++numFiles;
             uint64_t framesSaved = 0;
-            for (int iFile = 0; iFile < numFiles; ++iFile) {
+            for (int iFile = 0; iFile != numFiles; ++iFile) {
+                
+                uint64_t nImagesInFile = numImagesCaught - framesSaved;
+                if ((numImagesCaught - framesSaved) > maxFramesPerFile)
+                    nImagesInFile = maxFramesPerFile;
 
-                uint64_t nDimx =
-                    ((numImagesCaught - framesSaved) > maxFramesPerFile)
-                        ? maxFramesPerFile
-                        : (numImagesCaught - framesSaved);
-
+                // start location and blocksize recalculated later for each readout (because of irregular roi)
                 hsize_t startLocation[DATA_RANK] = {framesSaved, 0, 0};
+                hsize_t nx = static_cast<hsize_t>(nPixelsX);
+                hsize_t ny = static_cast<hsize_t>(nPixelsY);
+                hsize_t blockSize[DATA_RANK] = {nImagesInFile, nx, ny};
                 hsize_t strideBetweenBlocks[DATA_RANK] = {1, 1, 1};
-                hsize_t numBlocks[DATA_RANK] = {nDimx, nDimy, nDimz};
-                hsize_t blockSize[DATA_RANK] = {1, 1, 1};
+                hsize_t numBlocks[DATA_RANK] = {1, 1, 1};
 
+
+                // start location of parameter datasets is recalcualted later
                 hsize_t startLocationPara[VDS_PARA_RANK] = {framesSaved, 0};
                 hsize_t strideBetweenBlocksPara[VDS_PARA_RANK] = {1, 1};
-                hsize_t numBlocksPara[VDS_PARA_RANK] = {nDimx, 1};
-                hsize_t blockSizePara[VDS_PARA_RANK] = {1, 1};
+                hsize_t numBlocksPara[VDS_PARA_RANK] = {1, 1};
+                hsize_t blockSizePara[VDS_PARA_RANK] = {nImagesInFile, 1};
 
                 // interleaving for g2
                 if (gotthard25um) {
                     strideBetweenBlocks[2] = 2;
                 }
 
-                for (unsigned int iReadout = 0; iReadout < numModY * numModZ;
-                     ++iReadout) {
+                for (unsigned int iReadout = 0; iReadout < nports; ++iReadout) {
 
+                    // skip if roi does not overlap
+                    auto globalPortRoi = GetGlobalPortRoi(iReadout, portSize, numModY);
+                    if (!globalPortRoi.overlap(multiRoi[iRoi]))
+                        continue; 
+
+                    // calculate start location  (with roi)
+                    int xmin = std::max(multiRoi[iRoi].xmin, globalPortRoi.xmin);
+                    int xmax = std::min(multiRoi[iRoi].xmax, globalPortRoi.xmax);
+                    int ymin = std::max(multiRoi[iRoi].ymin, globalPortRoi.ymin);
+                    int ymax = std::min(multiRoi[iRoi].ymax, globalPortRoi.ymax);
+                    uint32_t portRoiHeight  = ymax - ymin + 1;
+                    uint32_t portRoiWidth  = xmax - xmin + 1;
+
+                    // recalculating start location and block size
+                    ++startLocationPara[1];
+                    if (!gotthard25um) {
+                        startLocation[1] = ymin;
+                        startLocation[2] = xmin;
+                        blockSize[1] = portRoiHeight;
+                        blockSize[2] = portRoiWidth;
+                    }
                     // interleaving for g2 (startLocation is 0 and 1)
-                    if (gotthard25um) {
-                        startLocation[2] = iReadout;
+                    else {
+                        ++startLocation[2];
                     }
 
                     vdsDataSpace.selectHyperslab(
@@ -299,11 +363,11 @@ std::string CreateVirtualHDF5File(
                     }
 
                     // source dataspace
-                    hsize_t srcDims[DATA_RANK] = {nDimx, nDimy, nDimz};
-                    hsize_t srcDimsMax[DATA_RANK] = {H5S_UNLIMITED, nDimy,
-                                                     nDimz};
+                    hsize_t srcDims[DATA_RANK] = {nImagesInFile, portRoiHeight, portRoiWidth};
+                    hsize_t srcDimsMax[DATA_RANK] = {H5S_UNLIMITED, portRoiHeight,
+                                                     portRoiWidth};
                     H5::DataSpace srcDataSpace(DATA_RANK, srcDims, srcDimsMax);
-                    hsize_t srcDimsPara[PARA_RANK] = {nDimx};
+                    hsize_t srcDimsPara[PARA_RANK] = {nImagesInFile};
                     hsize_t srcDimsMaxPara[PARA_RANK] = {H5S_UNLIMITED};
                     H5::DataSpace srcDataSpacePara(PARA_RANK, srcDimsPara,
                                                    srcDimsMaxPara);
@@ -312,8 +376,8 @@ std::string CreateVirtualHDF5File(
                     // virtual parameter datasets error loading (bad scalar
                     // value))
                     // TODO WHY????
-                    /*if (nDimx != maxFramesPerFile) {
-                        hsize_t count[1] = {nDimx};
+                    /*if (nDimz != maxFramesPerFile) {
+                        hsize_t count[1] = {nDimz};
                         hsize_t start[1] = {0};
                         srcDataSpacePara.selectHyperslab(
                             H5S_SELECT_SET, count, start,
@@ -321,27 +385,22 @@ std::string CreateVirtualHDF5File(
                     }*/
 
                     // mapping of property list
+                    std::string datasetname = DATASET_NAME + '_' + std::to_string(iRoi);
                     plist.setVirtual(vdsDataSpace, relative_srcFileName.c_str(),
-                                     DATASET_NAME, srcDataSpace);
+                                     datasetname.c_str(), srcDataSpace);
                     for (unsigned int p = 0; p < paraSize; ++p) {
+                        std::string parameterDsetName = parameterNames[p] + '_' + std::to_string(iRoi);
                         plistPara[p].setVirtual(
                             vdsDataSpacePara, relative_srcFileName.c_str(),
-                            parameterNames[p].c_str(), srcDataSpacePara);
+                            parameterDsetName.c_str(), srcDataSpacePara);
                     }
 
                     // H5Sclose(srcDataspace);
                     // H5Sclose(srcDataspace_para);
 
-                    if (!gotthard25um) {
-                        startLocation[2] += nDimz;
-                        if (startLocation[2] >= (numModZ * nDimz)) {
-                            startLocation[2] = 0;
-                            startLocation[1] += nDimy;
-                        }
-                    }
                     ++startLocationPara[1];
                 }
-                framesSaved += nDimx;
+                framesSaved += nImagesInFile;
             }
             // datasets
             H5::DataSet vdsDataSet(

@@ -1860,6 +1860,10 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
         throw RuntimeError("No Modules added");
     }
 
+    if (args.empty()) {
+        return clearRxROI();
+    }
+
     validateROIs(args);
     int nPortsPerModule = Parallel(&Module::getNumberofUDPInterfacesFromShm, {}).tsquash("Inconsistent number of udp ports set up per module");
 

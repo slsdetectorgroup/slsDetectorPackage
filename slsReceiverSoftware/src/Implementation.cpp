@@ -155,8 +155,17 @@ void Implementation::setDetectorType(const detectorType d) {
         break;
     }
 
+    if (d == EIGER) {
+        // resets ROIs and sets size to 2
+        std::vector<ROI> rois(2);
+        std::vector<ROI> multiRoi(1);
+        setPortROIs(rois);
+        setMultiROIMetadata(multiRoi);
+    }
+
     SetLocalNetworkParameters();
     SetupFifoStructure();
+
 
     // create threads
     for (int i = 0; i < generalData->numUDPInterfaces; ++i) {
@@ -1013,6 +1022,8 @@ int Implementation::getNumberofUDPInterfaces() const {
 
 // not Eiger
 void Implementation::setNumberofUDPInterfaces(const int n) {
+    LOG(logDEBUG) << "Setting Number of UDP Interfaces: " << n;
+
     if (generalData->detType == EIGER) {
         throw RuntimeError("Cannot set number of UDP interfaces for Eiger");
     }
@@ -1031,10 +1042,9 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
         // fifo
         SetupFifoStructure();
 
-        // roi cleared - complete detector
+        // roi cleared - complete detector and sets roi vector size
         std::vector<ROI> rois(n);
         std::vector<ROI> multiRoi(1);
-        // recalculate port rois booleans for listener, processor and streamer
         setPortROIs(rois);
         setMultiROIMetadata(multiRoi);
 

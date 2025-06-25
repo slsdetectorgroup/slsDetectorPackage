@@ -208,7 +208,7 @@ std::string CreateVirtualHDF5File(
         attribute.write(H5::PredType::NATIVE_DOUBLE, &dValue);
 
         // complete detector in roi
-        if (multiRoi.size() == 1 && multiRoi[0].isComplete()) {
+        /*if (multiRoi.size() == 1 && multiRoi[0].completeRoi()) {
             int ny = nPixelsY * numModY;
             int nx = nPixelsX * numModX;
             if (nPixelsY == 1) {
@@ -216,7 +216,7 @@ std::string CreateVirtualHDF5File(
             } else {
                 multiRoi.push_back(defs::ROI{0, nx - 1, 0, ny - 1});
             }
-        }
+        }*/
 
         for (size_t iRoi = 0; iRoi != multiRoi.size(); ++iRoi) {
 

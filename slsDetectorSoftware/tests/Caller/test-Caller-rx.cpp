@@ -626,10 +626,13 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                         REQUIRE(oss1.str() == "rx_roi [[" + stringMin + ", " + std::to_string(portSize.x - 1) + "20, 30]]\n");
                     }
                 }
+                std::cout << "done with eiger roi tests" << std::endl;
             }
 
             // multiple ports vertically
-            else if (numinterfaces == 2 || (det.size() == 2 && det.getModuleGeometry().y > 1)) {
+            if (((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) && (numinterfaces == 2)) || 
+            (det.size() == 2 && det.getModuleGeometry().y > 1)) {
+                std::cout << "starting with jungfrau or other tests" << std::endl;
                 std::string stringMin =  std::to_string(portSize.y);
                 std::string stringMax =  std::to_string(portSize.y + 1);
 
@@ -653,13 +656,19 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                     REQUIRE(oss.str() == "rx_roi [[20, 30, " + stringMin + ", " + stringMax + "]]\n");
                     REQUIRE_NOTHROW(
                         caller.call("rx_roi", {}, 0, GET, oss1));
-                    // non-eiger  with 2 interfaces returns 2 values for 2 ports per module
-                    if (numinterfaces == 2) {
+                    
+                    // non-eiger with 2 interfaces returns 2 values for 2 ports per module
+                    if ((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) && (numinterfaces == 2)) {
                         REQUIRE(oss1.str() == "rx_roi [[20, 30, " + stringMin + ", " + std::to_string(portSize.y - 1) + "], [20, 30, " + std::to_string(portSize.y) + ", " + stringMax + "]]\n");
                     }
                     // others return only 1 roi per module (1 port per module) 
                     else {
-                        REQUIRE(oss1.str() == "rx_roi [[20, 30, " + stringMin + ", " + std::to_string(portSize.y - 1) + "]]\n");
+                        // (eiger 2 ports)
+                        if (det_type == defs::EIGER) {
+                            REQUIRE(oss1.str() == "rx_roi [[20, 30, " + stringMin + ", " + std::to_string(portSize.y - 1) + "], [-1, -1]]\n");
+                        } else {
+                            REQUIRE(oss1.str() == "rx_roi [[20, 30, " + stringMin + ", " + std::to_string(portSize.y - 1) + "]]\n");
+                        }
                     }
                 }
             }

@@ -626,13 +626,11 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                         REQUIRE(oss1.str() == "rx_roi [[" + stringMin + ", " + std::to_string(portSize.x - 1) + "20, 30]]\n");
                     }
                 }
-                std::cout << "done with eiger roi tests" << std::endl;
             }
 
             // multiple ports vertically
             if (((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) && (numinterfaces == 2)) || 
             (det.size() == 2 && det.getModuleGeometry().y > 1)) {
-                std::cout << "starting with jungfrau or other tests" << std::endl;
                 std::string stringMin =  std::to_string(portSize.y);
                 std::string stringMax =  std::to_string(portSize.y + 1);
 

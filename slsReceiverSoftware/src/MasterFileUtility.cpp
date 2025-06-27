@@ -230,6 +230,7 @@ std::string CreateVirtualHDF5File(
     std::unique_ptr<H5::H5File> fd{nullptr};
     try {
         H5::Exception::dontPrint(); // to handle errors
+        H5Eset_auto(H5E_DEFAULT, (H5E_auto2_t)H5Eprint, stderr);
 
         // file
         H5::FileAccPropList fapl;
@@ -248,6 +249,7 @@ std::string CreateVirtualHDF5File(
             "version", H5::PredType::NATIVE_DOUBLE, dataspace_attr);
         attribute.write(H5::PredType::NATIVE_DOUBLE, &dValue);
 
+        LOG(logINFORED) << "Rois:" << ToString(multiRoi);
 
         for (size_t iRoi = 0; iRoi != multiRoi.size(); ++iRoi) {
         
@@ -277,6 +279,17 @@ std::string CreateVirtualHDF5File(
             int numFiles = numImagesCaught / maxFramesPerFile;
             if (numImagesCaught % maxFramesPerFile)
                     ++numFiles;
+            LOG(logINFORED) << "Current Roi: " << currentRoi
+                << " detectorSize: " << ToString(detectorSize)
+                << " portSize: " << ToString(portSize)
+                << " nTotalPorts: " << nTotalPorts
+                << " roiWidth: " << roiWidth
+                << " roiHeight: " << roiHeight
+                << " nPortsInRoi: " << nPortsInRoi
+                << " nImages: " << nImages
+                << " numFiles: " << numFiles
+                << " maxFramesPerFile: " << maxFramesPerFile;
+                
             hsize_t vdsDims[DATA_RANK] = {nImages, roiHeight, roiWidth};
             hsize_t vdsDimsPara[VDS_PARA_RANK] = {nImages, nPortsInRoi};
             H5::DataSpace vdsDataSpace(DATA_RANK, vdsDims, nullptr);
@@ -332,8 +345,8 @@ std::string CreateVirtualHDF5File(
 
                     // recalculating start location and block size
                     if (!gotthard25um) {
-                        startLocation[1] = ymin;
-                        startLocation[2] = xmin;
+                        startLocation[1] = ymin - currentRoi.ymin;
+                        startLocation[2] = xmin - currentRoi.xmin;
                         blockSize[1] = portRoiHeight;
                         blockSize[2] = portRoiWidth;
                     }
@@ -341,6 +354,12 @@ std::string CreateVirtualHDF5File(
                     else {
                         ++startLocation[2];
                     }
+                    LOG(logINFORED) << "iReadout: " << iReadout
+                        << " globalPortRoi: " << globalPortRoi
+                        << " startLocation: " << ToString(startLocation)
+                        << " blockSize: " << ToString(blockSize)
+                        << " portRoiHeight: " << portRoiHeight
+                        << " portRoiWidth: " << portRoiWidth;
                                     
                     vdsDataSpace.selectHyperslab(
                         H5S_SELECT_SET, numBlocks, startLocation,

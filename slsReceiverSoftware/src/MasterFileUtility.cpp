@@ -70,7 +70,9 @@ void LinkHDF5FileInMaster(std::string &masterFileName,
         for (size_t iRoi = 0; iRoi != multiRoiSize; ++iRoi) {
 
             // create link for data dataset
-            std::string datasetname = DATASET_NAME + '_' + std::to_string(iRoi);
+            std::string datasetname = std::string(DATASET_NAME);
+            if (multiRoiSize > 1)
+                datasetname += ('_' + std::to_string(iRoi));
             H5::DataSet dset = fd->openDataSet(datasetname);
             std::string linkname =
                 std::string("/entry/data/") + datasetname;
@@ -83,7 +85,9 @@ void LinkHDF5FileInMaster(std::string &masterFileName,
 
             // create link for parameter datasets
             for (unsigned int i = 0; i < parameterNames.size(); ++i) {
-                std::string parameterDsetName = parameterNames[i] + '_' + std::to_string(iRoi);
+                std::string parameterDsetName = parameterNames[i];
+                if (multiRoiSize > 1)
+                    parameterDsetName += ('_' + std::to_string(iRoi));
                 H5::DataSet pDset = fd->openDataSet(parameterDsetName.c_str());
                 linkname = std::string("/entry/data/") + parameterDsetName;
                 if (H5Lcreate_external(dataFilename.c_str(),
@@ -198,8 +202,13 @@ std::string CreateVirtualHDF5File(
     std::mutex *hdf5LibMutex, bool gotthard25um,
     std::vector<defs::ROI> multiRoi) {
 
-    // cannot create
-    if (!multiRoi.empty()) {
+    bool completeRoi = false;
+    if (multiRoi.size() == 1 && multiRoi[0].completeRoi()) {
+        completeRoi = true;   
+    }
+
+    // roi not allowed in 4 bit mode and with gotthard 2 mods
+    if (!completeRoi) {
         if (dynamicRange == 4) {
             throw std::runtime_error("Skipping virtual hdf5 file since rx_roi is "
                                  "enabled and it is in 4 bit mode.");
@@ -216,11 +225,8 @@ std::string CreateVirtualHDF5File(
     osfn << filePath << "/" << fileNamePrefix << "_virtual"
          << "_" << fileIndex << ".h5";
     std::string fileName = osfn.str();
-
     unsigned int paraSize = parameterNames.size();
-
     std::lock_guard<std::mutex> lock(*hdf5LibMutex);
-
     std::unique_ptr<H5::H5File> fd{nullptr};
     try {
         H5::Exception::dontPrint(); // to handle errors
@@ -242,32 +248,37 @@ std::string CreateVirtualHDF5File(
             "version", H5::PredType::NATIVE_DOUBLE, dataspace_attr);
         attribute.write(H5::PredType::NATIVE_DOUBLE, &dValue);
 
-        // complete detector in roi
-        if (multiRoi.size() == 1 && multiRoi[0].completeRoi()) {
-            int ny = nPixelsY * numModY;
-            int nx = nPixelsX * numModX;
-            if (nPixelsY == 1) {
-                multiRoi.push_back(defs::ROI{0, nx - 1});
-            } else {
-                multiRoi.push_back(defs::ROI{0, nx - 1, 0, ny - 1});
-            }
-        }
-
-        uint64_t depth = numImagesCaught;
-        uint64_t nports = numModX * numModY;
-        int numFiles = numImagesCaught / maxFramesPerFile;
-        if (numImagesCaught % maxFramesPerFile)
-                ++numFiles;
-        defs::xy portSize{nPixelsX, nPixelsY};
 
         for (size_t iRoi = 0; iRoi != multiRoi.size(); ++iRoi) {
-            uint64_t width = multiRoi[iRoi].width();
-            uint64_t height = multiRoi[iRoi].height();
-            uint64_t nportsInRoi = GetNumPortsInRoi(multiRoi[iRoi], portSize);
+        
+            auto currentRoi = multiRoi[iRoi];
+            defs::xy detectorSize = {nPixelsX * numModX, nPixelsY * numModY};
+            if (completeRoi) {
+                currentRoi = defs::ROI{0, detectorSize.x - 1, 
+                                        0, detectorSize.y - 1};
+            }
+            if (multiRoi[iRoi].completeRoi()&& iRoi != 0) 
+                throw RuntimeError("Cannot have complete roi and multiple rois");
+
+            // get detector shape and number of ports in roi
+            defs::xy portSize{nPixelsX, nPixelsY};
+            uint32_t nTotalPorts = numModX * numModY;
+            hsize_t roiWidth = detectorSize.x;
+            hsize_t roiHeight = detectorSize.y;
+            hsize_t nPortsInRoi = nTotalPorts;
+            if (!completeRoi) {
+                roiWidth = multiRoi[iRoi].width();
+                roiHeight = multiRoi[iRoi].height();
+                nPortsInRoi = GetNumPortsInRoi(multiRoi[iRoi], portSize);
+            }
 
             // dataspace
-            hsize_t vdsDims[DATA_RANK] = {depth, height, width};
-            hsize_t vdsDimsPara[VDS_PARA_RANK] = {depth, nportsInRoi};
+            uint64_t nImages = numImagesCaught;
+            int numFiles = numImagesCaught / maxFramesPerFile;
+            if (numImagesCaught % maxFramesPerFile)
+                    ++numFiles;
+            hsize_t vdsDims[DATA_RANK] = {nImages, roiHeight, roiWidth};
+            hsize_t vdsDimsPara[VDS_PARA_RANK] = {nImages, nPortsInRoi};
             H5::DataSpace vdsDataSpace(DATA_RANK, vdsDims, nullptr);
             H5::DataSpace vdsDataSpacePara(VDS_PARA_RANK, vdsDimsPara, nullptr);
 
@@ -285,58 +296,52 @@ std::string CreateVirtualHDF5File(
             uint64_t framesSaved = 0;
             for (int iFile = 0; iFile != numFiles; ++iFile) {
                 
-                uint64_t nImagesInFile = numImagesCaught - framesSaved;
+                // images in src file
+                uint64_t nSrcFileImages = numImagesCaught - framesSaved;
                 if ((numImagesCaught - framesSaved) > maxFramesPerFile)
-                    nImagesInFile = maxFramesPerFile;
+                    nSrcFileImages = maxFramesPerFile;
 
-                // start location and blocksize recalculated later for each readout (because of irregular roi)
-                hsize_t startLocation[DATA_RANK] = {framesSaved, 0, 0};
-                hsize_t nx = static_cast<hsize_t>(nPixelsX);
-                hsize_t ny = static_cast<hsize_t>(nPixelsY);
-                hsize_t blockSize[DATA_RANK] = {nImagesInFile, nx, ny};
                 hsize_t strideBetweenBlocks[DATA_RANK] = {1, 1, 1};
                 hsize_t numBlocks[DATA_RANK] = {1, 1, 1};
-
-
-                // start location of parameter datasets is recalcualted later
-                hsize_t startLocationPara[VDS_PARA_RANK] = {framesSaved, 0};
                 hsize_t strideBetweenBlocksPara[VDS_PARA_RANK] = {1, 1};
                 hsize_t numBlocksPara[VDS_PARA_RANK] = {1, 1};
-                hsize_t blockSizePara[VDS_PARA_RANK] = {nImagesInFile, 1};
+                hsize_t blockSizePara[VDS_PARA_RANK] = {nSrcFileImages, 1};
+
+                // following recalculated for every readout
+                hsize_t blockSize[DATA_RANK] = {nSrcFileImages, static_cast<hsize_t>(nPixelsY), static_cast<hsize_t>(nPixelsX)};
+                hsize_t startLocation[DATA_RANK] = {framesSaved, 0, 0};
+                hsize_t startLocationPara[VDS_PARA_RANK] = {framesSaved, 0};
 
                 // interleaving for g2
                 if (gotthard25um) {
                     strideBetweenBlocks[2] = 2;
                 }
 
-                for (unsigned int iReadout = 0; iReadout < nports; ++iReadout) {
-
-                    // skip if roi does not overlap
+                for (unsigned int iReadout = 0; iReadout < nTotalPorts; ++iReadout) {
                     auto globalPortRoi = GetGlobalPortRoi(iReadout, portSize, numModY);
-                    if (!globalPortRoi.overlap(multiRoi[iRoi]))
+                    if (!globalPortRoi.overlap(currentRoi))
                         continue; 
 
-                    // calculate start location  (with roi)
-                    int xmin = std::max(multiRoi[iRoi].xmin, globalPortRoi.xmin);
-                    int xmax = std::min(multiRoi[iRoi].xmax, globalPortRoi.xmax);
-                    int ymin = std::max(multiRoi[iRoi].ymin, globalPortRoi.ymin);
-                    int ymax = std::min(multiRoi[iRoi].ymax, globalPortRoi.ymax);
-                    uint32_t portRoiHeight  = ymax - ymin + 1;
-                    uint32_t portRoiWidth  = xmax - xmin + 1;
+                    // calculate start location (special for roi)
+                    int xmin = std::max(currentRoi.xmin, globalPortRoi.xmin);
+                    int xmax = std::min(currentRoi.xmax, globalPortRoi.xmax);
+                    int ymin = std::max(currentRoi.ymin, globalPortRoi.ymin);
+                    int ymax = std::min(currentRoi.ymax, globalPortRoi.ymax);
+                    hsize_t portRoiHeight  = ymax - ymin + 1;
+                    hsize_t portRoiWidth  = xmax - xmin + 1;
 
                     // recalculating start location and block size
-                    ++startLocationPara[1];
                     if (!gotthard25um) {
                         startLocation[1] = ymin;
                         startLocation[2] = xmin;
                         blockSize[1] = portRoiHeight;
                         blockSize[2] = portRoiWidth;
                     }
-                    // interleaving for g2 (startLocation is 0 and 1)
+                    // interleaving for g2 (startLocation is 0 and 1) (g2 had no roi)
                     else {
                         ++startLocation[2];
                     }
-
+                                    
                     vdsDataSpace.selectHyperslab(
                         H5S_SELECT_SET, numBlocks, startLocation,
                         strideBetweenBlocks, blockSize);
@@ -363,14 +368,13 @@ std::string CreateVirtualHDF5File(
                     }
 
                     // source dataspace
-                    hsize_t srcDims[DATA_RANK] = {nImagesInFile, portRoiHeight, portRoiWidth};
+                    hsize_t srcDims[DATA_RANK] = {nSrcFileImages, portRoiHeight, portRoiWidth};
                     hsize_t srcDimsMax[DATA_RANK] = {H5S_UNLIMITED, portRoiHeight,
                                                      portRoiWidth};
                     H5::DataSpace srcDataSpace(DATA_RANK, srcDims, srcDimsMax);
-                    hsize_t srcDimsPara[PARA_RANK] = {nImagesInFile};
+                    hsize_t srcDimsPara[PARA_RANK] = {nSrcFileImages};
                     hsize_t srcDimsMaxPara[PARA_RANK] = {H5S_UNLIMITED};
-                    H5::DataSpace srcDataSpacePara(PARA_RANK, srcDimsPara,
-                                                   srcDimsMaxPara);
+                    H5::DataSpace srcDataSpacePara(PARA_RANK, srcDimsPara, srcDimsMaxPara); 
                     // temporary fixfor corner case bug:
                     // (framescaught not multiple of framesperfile,
                     // virtual parameter datasets error loading (bad scalar
@@ -385,30 +389,33 @@ std::string CreateVirtualHDF5File(
                     }*/
 
                     // mapping of property list
-                    std::string datasetname = DATASET_NAME + '_' + std::to_string(iRoi);
                     plist.setVirtual(vdsDataSpace, relative_srcFileName.c_str(),
-                                     datasetname.c_str(), srcDataSpace);
+                                     DATASET_NAME, srcDataSpace);
                     for (unsigned int p = 0; p < paraSize; ++p) {
-                        std::string parameterDsetName = parameterNames[p] + '_' + std::to_string(iRoi);
                         plistPara[p].setVirtual(
                             vdsDataSpacePara, relative_srcFileName.c_str(),
-                            parameterDsetName.c_str(), srcDataSpacePara);
+                            parameterNames[p].c_str(), srcDataSpacePara);
                     }
 
-                    // H5Sclose(srcDataspace);
-                    // H5Sclose(srcDataspace_para);
-
+                    // map next readout
                     ++startLocationPara[1];
                 }
-                framesSaved += nImagesInFile;
+                framesSaved += nSrcFileImages;
             }
             // datasets
+            std::string datasetname = std::string(DATASET_NAME);
+            // suffix '_[iRoi]' for multiple rois
+            if (multiRoi.size() > 1)
+                datasetname += ('_' + std::to_string(iRoi));
             H5::DataSet vdsDataSet(
-                fd->createDataSet(DATASET_NAME, dataType, vdsDataSpace, plist));
-
+                fd->createDataSet(datasetname, dataType, vdsDataSpace, plist));
             for (unsigned int p = 0; p < paraSize; ++p) {
+                std::string parameterDsetName = parameterNames[p];
+                // suffix '_[iRoi]' for multiple rois
+                if (multiRoi.size() > 1)
+                    parameterDsetName += ('_' + std::to_string(iRoi));
                 H5::DataSet vdsDataSetPara(fd->createDataSet(
-                    parameterNames[p].c_str(), parameterDataTypes[p],
+                    parameterDsetName.c_str(), parameterDataTypes[p],
                     vdsDataSpacePara, plistPara[p]));
             }
         }

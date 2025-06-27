@@ -690,7 +690,7 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
 }
 
 void DataProcessor::CropImage(size_t &size, char *data) {
-    LOG(logDEBUG) << "Cropping Image to ROI " << ToString(portRoi);
+    LOG(logDEBUG1) << "Cropping Image to ROI " << ToString(portRoi);
     int nPixelsX = generalData->nPixelsX;
     int xmin = portRoi.xmin;
     int xmax = portRoi.xmax;
@@ -702,7 +702,7 @@ void DataProcessor::CropImage(size_t &size, char *data) {
         ywidth = 1;
         ymin = 0;
     }
-
+    
     // calculate total roi size
     double bytesPerPixel = generalData->dynamicRange / 8.00;
     int startOffset = (int)((nPixelsX * ymin + xmin) * bytesPerPixel);

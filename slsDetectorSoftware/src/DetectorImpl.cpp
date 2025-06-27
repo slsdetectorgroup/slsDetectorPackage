@@ -1809,15 +1809,16 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
         // Check if user ROI overlaps with this port ROI
         if (userRoi.overlap(portRoi)) {
             defs::ROI clipped{};
-            clipped.xmin = std::max(userRoi.xmin, portRoi.xmin);
-            clipped.xmax = std::min(userRoi.xmax, portRoi.xmax);
+            // Clip user ROI to port ROI
+            clipped.xmin = std::max(userRoi.xmin, portRoi.xmin) - portRoi.xmin;
+            clipped.xmax = std::min(userRoi.xmax, portRoi.xmax) - portRoi.xmin;
             if (modSize.y > 1) {
-                clipped.ymin = std::max(userRoi.ymin, portRoi.ymin);
-                clipped.ymax = std::min(userRoi.ymax, portRoi.ymax);
+                clipped.ymin = std::max(userRoi.ymin, portRoi.ymin) - portRoi.ymin;
+                clipped.ymax = std::min(userRoi.ymax, portRoi.ymax) - portRoi.ymin;
             }
 
             // Check if port ROI already exists for this port
-            if (!portRois[port].completeRoi()) {
+            if (!portRois[port].completeRoi() && !portRois[port].noRoi()) {
                 throw RuntimeError(
                     "Multiple ROIs specified for the same port " +
                     std::to_string(port) +

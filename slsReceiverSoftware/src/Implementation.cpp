@@ -411,6 +411,19 @@ std::vector<slsDetectorDefs::ROI> Implementation::getPortROIs() const {
 }
 
 void Implementation::setPortROIs(const std::vector<defs::ROI> &args) {
+    int nx = static_cast<int>(generalData->nPixelsX);
+    int ny = static_cast<int>(generalData->nPixelsY);
+    // validate rois
+    for (auto &it : args) {
+        if (it.completeRoi() || it.noRoi()) {
+            continue; // valid
+        }
+        if (it.xmin < 0 || it.ymin < 0 || it.xmax < 0 || it.ymax < 0 ||
+            it.xmin >= nx || it.xmax >= nx ||
+            it.ymin >= ny || it.ymax >= ny) {
+            throw RuntimeError("Invalid ROI coordinates: " + ToString(it));
+        }
+    }
     portRois = args;
 
     for (size_t i = 0; i != listener.size(); ++i)

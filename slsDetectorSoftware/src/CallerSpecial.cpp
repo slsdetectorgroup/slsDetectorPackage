@@ -819,15 +819,17 @@ std::vector<defs::ROI> Caller::parseRoiVector(const std::string &input) {
             parts.push_back(num);
         }
 
-        if (parts.size() != 4) {
-            throw RuntimeError("ROI must have 4 comma-separated integers");
+        if (parts.size() != 2 && parts.size() != 4) {
+            throw RuntimeError("ROI must have 2 or 4 comma-separated integers");
         }
 
         defs::ROI roi;
         roi.xmin = StringTo<int>(parts[0]);
         roi.xmax = StringTo<int>(parts[1]);
-        roi.ymin = StringTo<int>(parts[2]);
-        roi.ymax = StringTo<int>(parts[3]);
+        if (parts.size() == 4) {
+            roi.ymin = StringTo<int>(parts[2]);
+            roi.ymax = StringTo<int>(parts[3]);
+        }
         rois.emplace_back(roi);
     }
     return rois;

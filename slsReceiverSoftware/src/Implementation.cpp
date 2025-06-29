@@ -450,6 +450,10 @@ void Implementation::setMultiROIMetadata(
     LOG(logINFO) << "Multi ROI Metadata: " << ToString(multiRoiMetadata);
 }
 
+std::vector<slsDetectorDefs::ROI> Implementation::getMultiROIMetadata() const {
+    return multiRoiMetadata;
+}
+
 /**************************************************
  *                                                 *
  *   File Parameters                               *

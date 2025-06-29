@@ -1675,18 +1675,14 @@ std::vector<defs::ROI> DetectorImpl::getRxROI(int module_id) const {
     if (modules.size() == 0) {
         throw RuntimeError("No Modules added");
     }
-
-    // individual module rois
+    if (module_id >= (int)modules.size()) {
+        throw RuntimeError("Invalid module id: " + std::to_string(module_id));
+    }   
     if (module_id >= 0) {
-        if (module_id >= (int)modules.size())
-            throw RuntimeError("Invalid module index " + std::to_string(module_id) + ". Out of bounds.");
         return modules[module_id]->getRxROI();
     }
 
-    // multi roi
-    // return std::vector<defs::ROI>{};
-    return rxRoiTemp;
-    // TODO
+    return modules[0]->getRxROIMetadata();
 }
 
 void DetectorImpl::validateROIs(const std::vector<defs::ROI> &rois) {
@@ -1875,17 +1871,16 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
         }
         modules[iModule]->setRxROI(portRois);
     }
-    rxRoiTemp = args;
     // metadata
     modules[0]->setRxROIMetadata(args);
 }
 
 void DetectorImpl::clearRxROI() { 
-    rxRoiTemp.clear();
     int nPortsPerModule = Parallel(&Module::getNumberofUDPInterfacesFromShm, {}).tsquash("Inconsistent number of udp ports set up per module");
     for (size_t iModule = 0; iModule < modules.size(); ++iModule) {
         modules[iModule]->setRxROI(std::vector<defs::ROI>(nPortsPerModule)); 
     }
+    modules[0]->setRxROIMetadata(std::vector<defs::ROI>(1));
 }
 
 void DetectorImpl::getBadChannels(const std::string &fname,

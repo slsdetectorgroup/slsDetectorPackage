@@ -304,6 +304,7 @@ class Module : public virtual slsDetectorDefs {
     std::vector<defs::ROI> getRxROI() const;
     void setRxROI(const std::vector<slsDetectorDefs::ROI> &portRois);
     void setRxROIMetadata(const std::vector<slsDetectorDefs::ROI> &args);
+    std::vector<slsDetectorDefs::ROI> getRxROIMetadata() const;
 
     /**************************************************
      *                                                *

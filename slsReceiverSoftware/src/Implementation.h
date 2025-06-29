@@ -61,6 +61,7 @@ class Implementation : private virtual slsDetectorDefs {
     std::vector<defs::ROI> getPortROIs() const;
     void setPortROIs(const std::vector<defs::ROI> &args);
     void setMultiROIMetadata(const std::vector<slsDetectorDefs::ROI> &args);
+    std::vector<slsDetectorDefs::ROI> getMultiROIMetadata() const;
 
     /**************************************************
      *                                                 *

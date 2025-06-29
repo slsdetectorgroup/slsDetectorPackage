@@ -220,6 +220,7 @@ int ClientInterface::functionTable(){
     flist[F_RECEIVER_SET_COLUMN]            =   &ClientInterface::set_column;    
     flist[F_GET_RECEIVER_DBIT_REORDER]      =   &ClientInterface::get_dbit_reorder;
     flist[F_SET_RECEIVER_DBIT_REORDER]      =   &ClientInterface::set_dbit_reorder;
+    flist[F_RECEIVER_GET_ROI_METADATA]      =   &ClientInterface::get_roi_metadata;
 
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
@@ -1836,6 +1837,18 @@ int ClientInterface::set_dbit_reorder(Interface &socket) {
     LOG(logDEBUG1) << "Setting Dbit reorder: " << arg;
     impl()->setDbitReorder(arg);
     return socket.Send(OK);
+}
+
+int ClientInterface::get_roi_metadata(Interface &socket) {
+    if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
+        functionNotImplemented();
+    auto retvals = impl()->getMultiROIMetadata();
+    LOG(logINFORED) << "Receiver ROI metadata retval:" << ToString(retvals);
+    auto size = static_cast<int>(retvals.size());
+    socket.Send(size);
+    if (size > 0)
+        socket.Send(retvals);
+    return OK;
 }
 
 } // namespace sls

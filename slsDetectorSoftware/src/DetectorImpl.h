@@ -459,8 +459,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     void (*dataReady)(detectorData *, uint64_t, uint32_t, void *){nullptr};
     void *pCallbackArg{nullptr};
-
-    std::vector<defs::ROI> rxRoiTemp;
 };
 
 } // namespace sls

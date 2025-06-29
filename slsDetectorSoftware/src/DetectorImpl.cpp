@@ -1769,8 +1769,11 @@ defs::ROI DetectorImpl::getModuleROI(int moduleIndex) const {
     const defs::xy modPos = calculatePosition(moduleIndex);
     const int xmin = modSize.x * modPos.x;
     const int xmax = xmin + modSize.x - 1;
-    const int ymin = modSize.y * modPos.y;
-    const int ymax = ymin + modSize.y - 1;
+    int ymin = -1, ymax = -1;
+    if (modSize.y > 1) {
+        ymin = modSize.y * modPos.y;
+        ymax = ymin + modSize.y - 1;
+    }
     return defs::ROI{xmin, xmax, ymin, ymax};
 }
 
@@ -1780,6 +1783,7 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
     const defs::xy modSize = modules[0]->getNumberOfChannels();
     const defs::xy geometry = getPortGeometry();
     const int numPorts = geometry.x * geometry.y;
+
     if (numPorts > 2) {
         throw RuntimeError("Only up to 2 ports per module supported.");
     }
@@ -1806,16 +1810,20 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
                 portRoi.ymin = midY + 1;
         }
 
-        // Check if user ROI overlaps with this port ROI
+        // Check if user ROI overlaps with port
         if (userRoi.overlap(portRoi)) {
             defs::ROI clipped{};
             // Clip user ROI to port ROI
             clipped.xmin = std::max(userRoi.xmin, portRoi.xmin) - portRoi.xmin;
             clipped.xmax = std::min(userRoi.xmax, portRoi.xmax) - portRoi.xmin;
+            LOG(logDEBUG1) << "User ROI: " << ToString(userRoi)
+                    << ", Port ROI: " << ToString(portRoi) << " clipped roi:"<< ToString(clipped);
             if (modSize.y > 1) {
                 clipped.ymin = std::max(userRoi.ymin, portRoi.ymin) - portRoi.ymin;
                 clipped.ymax = std::min(userRoi.ymax, portRoi.ymax) - portRoi.ymin;
             }
+            LOG(logDEBUG1) << "Clipped ROI for port " << port
+                    << ": " << ToString(clipped);
 
             // Check if port ROI already exists for this port
             if (!portRois[port].completeRoi() && !portRois[port].noRoi()) {
@@ -1847,19 +1855,22 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
 
     for (size_t iModule = 0; iModule < modules.size(); ++iModule) {
         auto moduleGlobalRoi = getModuleROI(iModule);
+        LOG(logDEBUG1) << "Module " << iModule
+                << " Global ROI: " << ToString(moduleGlobalRoi);
 
         // at most 2 rois per module (for each port)
         std::vector<defs::ROI> portRois(nPortsPerModule);
 
+        // check overlap with module
         for (const auto &arg : args) {
             if (arg.overlap(moduleGlobalRoi)) {
                 convertGlobalRoiToPortLevel(arg, moduleGlobalRoi, portRois);
             }
         }
         // print the rois for debugging
-        LOG(logINFOBLUE) << "Module " << iModule << " RxROIs:";
+        LOG(logDEBUG1) << "Module " << iModule << " RxROIs:";
         for (size_t iPort = 0; iPort != portRois.size(); iPort++) {
-            LOG(logINFOBLUE)
+            LOG(logDEBUG1)
                     << "  Port " << iPort << ": " << ToString(portRois[iPort]);
         }
         modules[iModule]->setRxROI(portRois);

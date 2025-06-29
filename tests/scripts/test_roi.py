@@ -56,12 +56,14 @@ def loadConfigForRoi(name, fp, num_mods = 1, num_interfaces = 1):
             d.udp_srcip = 'auto'
         if name == 'jungfrau' or name == 'moench':
             d.udp_dstip2 = 'auto'
+            d.powerchip = 1
+
+        d.frames = 5
 
     except Exception as e:
         raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
-
-
-
+    
+    return d
 
 def startTestsForAll(fp):
     servers = [
@@ -85,7 +87,7 @@ def startTestsForAll(fp):
                 cleanup(fp)
                 startDetectorVirtualServer(server, nmods, fp)
                 startReceiver(nmods, fp)
-                loadConfigForRoi(name=server, fp=fp, num_mods=nmods, num_interfaces=ninterfaces)
+                d = loadConfigForRoi(name=server, fp=fp, num_mods=nmods, num_interfaces=ninterfaces)
 
                 fname = ROI_TEST_FNAME + server + '.txt'
                 cmd = ['tests', 'rx_roi', '--abort', '-s']

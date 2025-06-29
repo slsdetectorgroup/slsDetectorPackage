@@ -8,6 +8,7 @@
 #include "test-Caller-global.h"
 
 #include <sstream>
+#include <filesystem>
 
 #include "sls/versionAPI.h"
 #include "tests/globals.h"
@@ -684,6 +685,46 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                     }
                 }
             }
+        }
+
+        // check master file creation
+        // TODO: check roi in master file
+        {
+            auto prev_write = det.getFileWrite().tsquash(
+                "inconsistent file write values in test");
+            auto prev_path = det.getFilePath().tsquash(
+                "inconsistent file path values in test");
+            auto prev_format = det.getFileFormat().tsquash(
+                "inconsistent file format values in test");
+            auto prev_index = det.getAcquisitionIndex().tsquash(
+                "inconsistent file index values in test");
+            auto prev_fname = det.getFileNamePrefix().tsquash(
+                "inconsistent file name prefix values in test");
+            
+            det.setFileWrite(true);
+            det.setFilePath("/tmp");
+            det.setFileNamePrefix("test");
+
+            det.setAcquisitionIndex(0);
+            det.setFileFormat(defs::BINARY);
+            REQUIRE_NOTHROW(caller.call("acquire", {}, -1, PUT));
+            std::string file_path = "/tmp/test_master_0.json";
+            REQUIRE(std::filesystem::exists(file_path) == true);
+
+            det.setAcquisitionIndex(0);
+            det.setFileFormat(defs::HDF5);
+            REQUIRE_NOTHROW(caller.call("acquire", {}, -1, PUT));
+            file_path = "/tmp/test_master_0.h5";
+            REQUIRE(std::filesystem::exists(file_path) == true);
+            file_path = "/tmp/test_virtual_0.h5";
+            REQUIRE(std::filesystem::exists(file_path) == true);
+
+            det.setFileWrite(prev_write);
+            if (!prev_path.empty())
+                det.setFilePath(prev_path);
+            det.setFileFormat(prev_format);
+            det.setAcquisitionIndex(prev_index);
+            det.setFileNamePrefix(prev_fname);
         }
 
         for (int i = 0; i != det.size(); ++i) {

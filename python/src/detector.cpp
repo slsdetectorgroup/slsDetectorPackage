@@ -109,6 +109,13 @@ void init_det(py::module &m) {
                        (Result<defs::xy>(Detector::*)(sls::Positions) const) &
                            Detector::getModuleSize,
                        py::arg() = Positions{});
+    CppDetectorApi.def("getPortPerModuleGeometry",
+                       (defs::xy(Detector::*)() const) &
+                           Detector::getPortPerModuleGeometry);
+    CppDetectorApi.def("getPortSize",
+                       (Result<defs::xy>(Detector::*)(sls::Positions) const) &
+                           Detector::getPortSize,
+                       py::arg() = Positions{});
     CppDetectorApi.def("getDetectorSize", (defs::xy(Detector::*)() const) &
                                               Detector::getDetectorSize);
     CppDetectorApi.def("setDetectorSize",
@@ -924,6 +931,19 @@ void init_det(py::module &m) {
                        (void (Detector::*)(bool, sls::Positions)) &
                            Detector::setRxArping,
                        py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("getRxROI",
+                       (std::vector<defs::ROI>(Detector::*)() const) &
+                           Detector::getRxROI);
+    CppDetectorApi.def("getRxROI",
+                       (std::vector<defs::ROI>(Detector::*)(int) const) &
+                           Detector::getRxROI,
+                       py::arg());
+    CppDetectorApi.def("setRxROI",
+                       (void (Detector::*)(const std::vector<defs::ROI> &)) &
+                           Detector::setRxROI,
+                       py::arg());
+    CppDetectorApi.def("clearRxROI",
+                       (void (Detector::*)()) & Detector::clearRxROI);
     CppDetectorApi.def(
         "getFileFormat",
         (Result<defs::fileFormat>(Detector::*)(sls::Positions) const) &

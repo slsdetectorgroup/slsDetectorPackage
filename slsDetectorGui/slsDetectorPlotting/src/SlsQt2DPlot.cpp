@@ -350,25 +350,25 @@ void SlsQt2DPlot::showSpectrogram(bool on) {
     Update();
 }
 
-void SlsQt2DPlot::EnableRoiBox(std::array<int, 4> roi) {
-    if (roiBox == nullptr) {
-        roiBox = new QwtPlotShapeItem();
+void SlsQt2DPlot::EnableRoiBoxes(std::vector<slsDetectorDefs::ROI> roi) {
+    roiBoxes.clear();
+    for (auto &r : roi) {
+        auto box = std::make_unique<QwtPlotShapeItem>();
+        box->setPen(QColor(Qt::yellow), 2.0, Qt::SolidLine);
+        // TopLeft - BottomRight (max points are +1 on graph)
+        QRectF myRect(QPointF(r.xmin, r.ymin), QPointF(r.xmax - 1, r.ymax - 1));
+        box->setRect(myRect);
+        box->attach(this);
+        roiBoxes.push_back(std::move(box));
     }
-    roiBox->setPen(QColor(Qt::yellow), 2.0, Qt::SolidLine);
-
-    // TopLeft - BottomRight (max points are +1 on graph)
-    QRect myRect(QPoint(roi[0], roi[2]), QPoint(roi[1] - 1, roi[3] - 1));
-    roiBox->setRect(QRectF(myRect));
-
-    roiBox->attach(this);
     replot();
 }
 
-void SlsQt2DPlot::DisableRoiBox() {
-    if (roiBox != nullptr) {
-        roiBox->detach();
-        replot();
+void SlsQt2DPlot::DisableRoiBoxes() {
+    for (auto &r : roiBoxes) {
+        r->detach();
     }
+    replot();
 }
 
 } // namespace sls

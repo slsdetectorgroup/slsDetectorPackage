@@ -539,6 +539,7 @@ void qDetectorMain::EnableTabs(bool enable) {
             tabDeveloper->Refresh();
 
         tabPlot->Refresh();
+        plot->UpdateROI();
         plot->StartAcquisition();
     } else { // to enable scan box
         tabPlot->Refresh();

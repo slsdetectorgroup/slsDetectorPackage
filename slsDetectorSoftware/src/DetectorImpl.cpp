@@ -535,7 +535,6 @@ void DetectorImpl::readFrameFromReceiver() {
     bool quadEnable = false;
     // to flip image
     bool eiger = false;
-    std::array<int, 4> rxRoi{}; // TODO: get roi from json header
 
     std::vector<bool> runningList(zmqSocket.size());
     std::vector<bool> connectList(zmqSocket.size());
@@ -732,7 +731,7 @@ void DetectorImpl::readFrameFromReceiver() {
             thisData = new detectorData(currentProgress, currentFileName,
                                         nDetActualPixelsX, nDetActualPixelsY,
                                         callbackImage, imagesize, dynamicRange,
-                                        currentFileIndex, completeImage, rxRoi);
+                                        currentFileIndex, completeImage);
             try {
                 dataReady(
                     thisData, currentFrameIndex,

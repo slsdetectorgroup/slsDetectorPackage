@@ -1843,7 +1843,7 @@ int ClientInterface::get_roi_metadata(Interface &socket) {
     if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
     auto retvals = impl()->getMultiROIMetadata();
-    LOG(logINFORED) << "Receiver ROI metadata retval:" << ToString(retvals);
+    LOG(logDEBUG1) << "Receiver ROI metadata retval:" << ToString(retvals);
     auto size = static_cast<int>(retvals.size());
     socket.Send(size);
     if (size > 0)

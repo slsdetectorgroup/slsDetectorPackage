@@ -462,24 +462,26 @@ void SlsQt1DPlot::SetLog(int axisId, bool yes) {
     Update();
 }
 
-void SlsQt1DPlot::EnableRoiBox(std::array<int, 4> roi) {
-    if (roiBox == nullptr) {
-        roiBox = new QwtPlotShapeItem();
-        roiBox->attach(this);
-        roiBox->setPen(QColor(Qt::yellow), 2.0, Qt::SolidLine);
+void SlsQt1DPlot::EnableRoiBoxes(std::vector<slsDetectorDefs::ROI> roi,
+                                 int ymin, int ymax) {
+    roiBoxes.clear();
+    for (auto &r : roi) {
+        auto box = std::make_unique<QwtPlotShapeItem>();
+        box->setPen(QColor(Qt::yellow), 2.0, Qt::SolidLine);
+        // TopLeft - BottomRight (max points are +1 on graph)
+        QRectF myRect(QPointF(r.xmin, ymin), QPointF(r.xmax - 1, ymax - 1));
+        box->setRect(myRect);
+        box->attach(this);
+        roiBoxes.push_back(std::move(box));
     }
-
-    // TopLeft - BottomRight (max points are +1 on graph)
-    QRect myRect(QPoint(roi[0], roi[2]), QPoint(roi[1] - 1, roi[3] - 1));
-    roiBox->setRect(QRectF(myRect));
     replot();
 }
 
-void SlsQt1DPlot::DisableRoiBox() {
-    if (roiBox != nullptr) {
-        roiBox->detach();
-        replot();
+void SlsQt1DPlot::DisableRoiBoxes() {
+    for (auto &r : roiBoxes) {
+        r->detach();
     }
+    replot();
 }
 
 void SlsQt1DPlot::SetZoomX(const QRectF &rect) {

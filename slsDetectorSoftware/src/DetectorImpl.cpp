@@ -1676,7 +1676,7 @@ std::vector<defs::ROI> DetectorImpl::getRxROI(int module_id) const {
     }
     if (module_id >= (int)modules.size()) {
         throw RuntimeError("Invalid module id: " + std::to_string(module_id));
-    }   
+    }
     if (module_id >= 0) {
         return modules[module_id]->getRxROI();
     }
@@ -1783,9 +1783,10 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
         throw RuntimeError("Only up to 2 ports per module supported.");
     }
     if (numPorts != (int)portRois.size()) {
-        throw RuntimeError("Number of port ROIs does not match number of ports in module. Expected: " +
-                           std::to_string(numPorts) + ", got: " +
-                           std::to_string(portRois.size()));
+        throw RuntimeError("Number of port ROIs does not match number of ports "
+                           "in module. Expected: " +
+                           std::to_string(numPorts) +
+                           ", got: " + std::to_string(portRois.size()));
     }
 
     for (int port = 0; port < numPorts; ++port) {
@@ -1812,20 +1813,22 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
             clipped.xmin = std::max(userRoi.xmin, portRoi.xmin) - portRoi.xmin;
             clipped.xmax = std::min(userRoi.xmax, portRoi.xmax) - portRoi.xmin;
             LOG(logDEBUG1) << "User ROI: " << ToString(userRoi)
-                    << ", Port ROI: " << ToString(portRoi) << " clipped roi:"<< ToString(clipped);
+                           << ", Port ROI: " << ToString(portRoi)
+                           << " clipped roi:" << ToString(clipped);
             if (modSize.y > 1) {
-                clipped.ymin = std::max(userRoi.ymin, portRoi.ymin) - portRoi.ymin;
-                clipped.ymax = std::min(userRoi.ymax, portRoi.ymax) - portRoi.ymin;
+                clipped.ymin =
+                    std::max(userRoi.ymin, portRoi.ymin) - portRoi.ymin;
+                clipped.ymax =
+                    std::min(userRoi.ymax, portRoi.ymax) - portRoi.ymin;
             }
-            LOG(logDEBUG1) << "Clipped ROI for port " << port
-                    << ": " << ToString(clipped);
+            LOG(logDEBUG1) << "Clipped ROI for port " << port << ": "
+                           << ToString(clipped);
 
             // Check if port ROI already exists for this port
             if (!portRois[port].completeRoi() && !portRois[port].noRoi()) {
                 throw RuntimeError(
                     "Multiple ROIs specified for the same port " +
-                    std::to_string(port) +
-                    " with ROI: " + ToString(userRoi));
+                    std::to_string(port) + " with ROI: " + ToString(userRoi));
             }
             portRois[port] = clipped;
         }
@@ -1846,12 +1849,14 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
     }
 
     validateROIs(args);
-    int nPortsPerModule = Parallel(&Module::getNumberofUDPInterfacesFromShm, {}).tsquash("Inconsistent number of udp ports set up per module");
+    int nPortsPerModule =
+        Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
+            .tsquash("Inconsistent number of udp ports set up per module");
 
     for (size_t iModule = 0; iModule < modules.size(); ++iModule) {
         auto moduleGlobalRoi = getModuleROI(iModule);
         LOG(logDEBUG1) << "Module " << iModule
-                << " Global ROI: " << ToString(moduleGlobalRoi);
+                       << " Global ROI: " << ToString(moduleGlobalRoi);
 
         // at most 2 rois per module (for each port)
         std::vector<defs::ROI> portRois(nPortsPerModule);
@@ -1865,8 +1870,8 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
         // print the rois for debugging
         LOG(logDEBUG1) << "Module " << iModule << " RxROIs:";
         for (size_t iPort = 0; iPort != portRois.size(); iPort++) {
-            LOG(logDEBUG1)
-                    << "  Port " << iPort << ": " << ToString(portRois[iPort]);
+            LOG(logDEBUG1) << "  Port " << iPort << ": "
+                           << ToString(portRois[iPort]);
         }
         modules[iModule]->setRxROI(portRois);
     }
@@ -1874,10 +1879,12 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
     modules[0]->setRxROIMetadata(args);
 }
 
-void DetectorImpl::clearRxROI() { 
-    int nPortsPerModule = Parallel(&Module::getNumberofUDPInterfacesFromShm, {}).tsquash("Inconsistent number of udp ports set up per module");
+void DetectorImpl::clearRxROI() {
+    int nPortsPerModule =
+        Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
+            .tsquash("Inconsistent number of udp ports set up per module");
     for (size_t iModule = 0; iModule < modules.size(); ++iModule) {
-        modules[iModule]->setRxROI(std::vector<defs::ROI>(nPortsPerModule)); 
+        modules[iModule]->setRxROI(std::vector<defs::ROI>(nPortsPerModule));
     }
     modules[0]->setRxROIMetadata(std::vector<defs::ROI>(1));
 }

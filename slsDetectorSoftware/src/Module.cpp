@@ -1526,7 +1526,7 @@ std::vector<defs::ROI> Module::getRxROI() const {
     // check number of ports
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("No receiver to get ROI.");
-    }       
+    }
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     client.Send(F_RECEIVER_GET_RECEIVER_ROI);
     client.setFnum(F_RECEIVER_GET_RECEIVER_ROI);
@@ -1561,12 +1561,12 @@ void Module::setRxROI(const std::vector<defs::ROI> &portRois) {
     client.setFnum(F_RECEIVER_SET_RECEIVER_ROI);
     int size = static_cast<int>(portRois.size());
     client.Send(size);
-    if (size > 0) 
+    if (size > 0)
         client.Send(portRois);
     if (client.Receive<int>() == FAIL) {
         throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
                             " returned error: " + client.readErrorMessage());
-    }   
+    }
 }
 
 std::vector<slsDetectorDefs::ROI> Module::getRxROIMetadata() const {
@@ -1587,8 +1587,7 @@ std::vector<slsDetectorDefs::ROI> Module::getRxROIMetadata() const {
         throw RuntimeError("Invalid number of ROI metadata: " +
                            std::to_string(size) + ". Min: 1.");
     }
-    LOG(logDEBUG1) << "ROI metadata of Receiver: "
-                   << ToString(retval);
+    LOG(logDEBUG1) << "ROI metadata of Receiver: " << ToString(retval);
     return retval;
 }
 

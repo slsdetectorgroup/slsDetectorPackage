@@ -723,19 +723,30 @@ std::string Caller::rx_zmqip(int action) {
 std::string Caller::rx_roi(int action) {
     std::ostringstream os;
     std::string helpMessage =
-        std::string("[xmin] [xmax] [ymin] [ymax]\n\tRegion of interest in "
-                    "receiver.\n\t") +
-        "For a list of rois, use '[' and ']; ' to distinguish between "
-        "rois and use comma inside the square brackets.\n\t If one fails to "
-        "use space after semicolon, please use quotes" +
-        "For example: [0,100,0,100]; [200,300,0,100] will set two "
-        "rois.or '[0,100,0,100];[200,300,0,100]' when the vector is a single "
-        "string\n\n\t" +
-        "Only allowed to set at multi module level and without gap "
-        "ixels.\n\n\t" +
-        "One can get rx_roi also at port level, by specifying the module id "
-        "and it will return the roi for each port.\n"
-        "Setting number of udp interfaces will clear the rx_roi\n";
+        std::string("[xmin] [xmax] [ymin] [ymax]\n") +
+        "\tDefines a single region of interest (ROI) in the receiver.\n"
+        "\tFor example, to set a single ROI: 0 100 20 30\n\n"
+
+        "\tTo specify multiple ROIs, use square brackets between ROIs and "
+        "commas inside for each ROI. \n"
+        "\tInside each bracket, no spaces allowed.\n\n"
+
+        "\tIf you use semicolon (along with '['and ']' to separate rois), \n"
+        "\tenclose the entire list in quotes.\n"
+        "\tExamples:\n"
+        "\t  [0,100,0,100] [200,300,0,100]\n"
+        "\t  \"[0,100,0,100];[200,300,0,100]\"\n\n"
+
+        "\tNotes:\n"
+        "\t- ROIs can only be set at the multi-module level.\n"
+        "\t- ROIs coordinates assume no gap pixels, even if they are enabled "
+        "in gui.\n"
+        "\t- To retrieve ROIs per port, specify the module ID when using the "
+        "get command.\n"
+        "\t- Use the command 'rx_clearroi' to clear all ROIs.\n"
+        "\t- Changing the number of UDP interfaces will automatically clear "
+        "the current ROIs.\n";
+
     if (action == defs::HELP_ACTION) {
         os << helpMessage;
     } else if (action == defs::GET_ACTION) {
@@ -751,9 +762,8 @@ std::string Caller::rx_roi(int action) {
         }
     } else if (action == defs::PUT_ACTION) {
         std::vector<defs::ROI> rois;
-
         // Support multiple args with bracketed ROIs, or single arg with
-        // semicolon-separated vector
+        // semicolon-separated vector in quotes
         bool isVectorInput =
             std::all_of(args.begin(), args.end(), [](const std::string &a) {
                 return a.find('[') != std::string::npos &&
@@ -781,7 +791,9 @@ std::string Caller::rx_roi(int action) {
                 }
             }
         } catch (const std::exception &e) {
-            throw RuntimeError("Could not parse ROI: " + helpMessage);
+            throw RuntimeError("Could not parse ROI: Did you use spaces inside "
+                               "the brackets? Use sls_detector_help " +
+                               cmd + " to get the right syntax expected.");
         }
 
         // only multi level
@@ -802,16 +814,19 @@ std::vector<defs::ROI> Caller::parseRoiVector(const std::string &input) {
     std::stringstream ss(input);
     std::string token;
 
-    while (std::getline(ss, token, ';')) {
-        token.erase(std::remove_if(token.begin(), token.end(), ::isspace),
-                    token.end());
+    while (std::getline(ss, token, ']')) {
+        // remove spaces and semicolons
+        token.erase(
+            std::remove_if(token.begin(), token.end(),
+                           [](char c) { return std::isspace(c) || c == ';'; }),
+            token.end());
         if (token.empty())
             continue;
-        if (token.front() != '[' || token.back() != ']') {
+        if (token.front() != '[') {
             throw RuntimeError("Each ROI must be enclosed in square brackets: "
                                "[xmin,xmax,ymin,ymax]");
         }
-        token = token.substr(1, token.size() - 2); // remove brackets
+        token = token.substr(1, token.size() - 1); // remove brackets
         std::vector<std::string> parts;
         std::stringstream inner(token);
         std::string num;

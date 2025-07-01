@@ -507,13 +507,13 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
             // vector of rois
             // square brackets missing
             REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 20, -1, -1; 25, 30, -1, -1]"}, -1, PUT));
+                "rx_roi", {"[5, 20, -1, -1] 25, 30, -1, -1]"}, -1, PUT));
             // invalid roi, 4 parts expected
             REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 20, -1]; [25, 30, -1, -1]"}, -1, PUT));
+                "rx_roi", {"[5, 20, -1] [25, 30, -1, -1]"}, -1, PUT));
             // overlapping rois
             REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[0, 10,-1, -1];[5, 15, -1, -1]"}, -1, PUT));
+                "rx_roi", {"[0, 10,-1, -1] [5, 15, -1, -1]"}, -1, PUT));
 
             if (det.size() == 2) {
                 auto moduleSize = det.getModuleSize()[0];
@@ -527,7 +527,8 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                      "[" + stringMin + ", " + stringMax + ", -1, -1]"},
                     -1, PUT));
                 std::ostringstream oss;
-                // separated by semicolon is allowed
+                // separated by semicolon with quotes is allowed (skips
+                // cmdParser)
                 REQUIRE_NOTHROW(caller.call("rx_roi",
                                             {"[5, 10, -1, -1];[" + stringMin +
                                              ", " + stringMax + ", -1, -1]"},
@@ -598,15 +599,15 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
             // vector of rois
             // square brackets missing
             REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 20, 20, 30; 25, 30, 14, 15]"}, -1, PUT));
+                "rx_roi", {"[5, 20, 20, 30] 25, 30, 14, 15]"}, -1, PUT));
             // invalid roi, 4 parts expected
             REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 20, 20]; [25, 30, 14, 15]"}, -1, PUT));
+                "rx_roi", {"[5, 20, 20] [25, 30, 14, 15]"}, -1, PUT));
             // overlapping rois
             REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[0, 10, 0, 10];[5, 15, 0, 10]"}, -1, PUT));
+                "rx_roi", {"[0, 10, 0, 10] [5, 15, 0, 10]"}, -1, PUT));
             REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[0, 10, 0, 10];[0, 10, 9, 11]"}, -1, PUT));
+                "rx_roi", {"[0, 10, 0, 10] [0, 10, 9, 11]"}, -1, PUT));
 
             int numinterfaces = det.getNumberofUDPInterfaces().tsquash(
                 "inconsistent number of interfaces");
@@ -624,7 +625,8 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                      "[" + stringMin + ", " + stringMax + ", 20, 30]"},
                     -1, PUT));
                 std::ostringstream oss;
-                // separated by semicolon is allowed
+                // separated by semicolon with quotes is allowed (skips
+                // cmdParser)
                 REQUIRE_NOTHROW(caller.call("rx_roi",
                                             {"[5, 10, 20, 30];[" + stringMin +
                                              ", " + stringMax + ", 20, 30]"},
@@ -676,7 +678,8 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                                                         ", " + stringMax + "]"},
                                 -1, PUT));
                 std::ostringstream oss;
-                // separated by semicolon is allowed
+                // separated by semicolon is allowed with quotes (skips
+                // cmdParser)
                 REQUIRE_NOTHROW(
                     caller.call("rx_roi",
                                 {"[5, 10, 20, 30];[25, 28, " + stringMin +

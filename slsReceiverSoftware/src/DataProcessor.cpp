@@ -238,10 +238,6 @@ void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
                                      const bool silentMode,
                                      std::mutex *hdf5LibMutex) {
 
-    /*if (!multiRoiMetadata.empty()) {
-        throw std::runtime_error(
-            "Should not be here, roi with hdf5 virtual should throw.");
-    }*/
     std::string fname{virtualFileName}, masterfname{masterFileName};
     // if no virtual file, link data file
     if (virtualFileName.empty()) {

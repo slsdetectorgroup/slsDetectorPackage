@@ -507,7 +507,9 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
             // vector of rois
             // square brackets missing
             REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 20, -1, -1] 25, 30, -1, -1]"}, -1, PUT));
+                "rx_roi", {"[5, 20, -1, -1]; 25, 30, -1, -1]"}, -1, PUT));
+            REQUIRE_THROWS(caller.call(
+                "rx_roi", {"[5, 20, -1, -1]; [25, 30, -1, -1"}, -1, PUT));
             // invalid roi, 4 parts expected
             REQUIRE_THROWS(caller.call(
                 "rx_roi", {"[5, 20, -1] [25, 30, -1, -1]"}, -1, PUT));
@@ -599,7 +601,9 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
             // vector of rois
             // square brackets missing
             REQUIRE_THROWS(caller.call(
-                "rx_roi", {"[5, 20, 20, 30] 25, 30, 14, 15]"}, -1, PUT));
+                "rx_roi", {"[5, 20, 20, 30]; 25, 30, 14, 15]"}, -1, PUT));
+            REQUIRE_THROWS(caller.call(
+                "rx_roi", {"[5, 20, 20, 30]; [25, 30, 14, 15"}, -1, PUT));
             // invalid roi, 4 parts expected
             REQUIRE_THROWS(caller.call(
                 "rx_roi", {"[5, 20, 20] [25, 30, 14, 15]"}, -1, PUT));

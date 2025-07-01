@@ -386,18 +386,6 @@ std::string CreateVirtualHDF5File(
                     hsize_t srcDimsMaxPara[PARA_RANK] = {H5S_UNLIMITED};
                     H5::DataSpace srcDataSpacePara(PARA_RANK, srcDimsPara,
                                                    srcDimsMaxPara);
-                    // temporary fixfor corner case bug:
-                    // (framescaught not multiple of framesperfile,
-                    // virtual parameter datasets error loading (bad scalar
-                    // value))
-                    // TODO WHY????
-                    /*if (nDimz != maxFramesPerFile) {
-                        hsize_t count[1] = {nDimz};
-                        hsize_t start[1] = {0};
-                        srcDataSpacePara.selectHyperslab(
-                            H5S_SELECT_SET, count, start,
-                    strideBetweenBlocksPara, blockSizePara);
-                    }*/
 
                     // mapping of property list
                     plist.setVirtual(vdsDataSpace, relative_srcFileName.c_str(),

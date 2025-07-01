@@ -753,13 +753,8 @@ std::string Caller::rx_roi(int action) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        if (det_id != -1) {
-            auto t = det->getRxROI(det_id);
-            os << ToString(t) << '\n';
-        } else {
-            auto t = det->getRxROI();
-            os << ToString(t) << '\n';
-        }
+        auto t = det->getRxROI(det_id);
+        os << ToString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         std::vector<defs::ROI> rois;
         // Support multiple args with bracketed ROIs, or single arg with

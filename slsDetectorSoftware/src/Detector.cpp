@@ -1383,8 +1383,6 @@ void Detector::setRxArping(bool value, Positions pos) {
     pimpl->Parallel(&Module::setRxArping, pos, value);
 }
 
-std::vector<defs::ROI> Detector::getRxROI() const { return pimpl->getRxROI(); }
-
 std::vector<defs::ROI> Detector::getRxROI(int module_id) const {
     return pimpl->getRxROI(module_id);
 }

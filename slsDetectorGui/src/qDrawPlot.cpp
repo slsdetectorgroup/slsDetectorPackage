@@ -639,7 +639,8 @@ void qDrawPlot::UpdateROI() {
         // roi enabled
         if (roi.size() > 1 || !roi[0].completeRoi()) {
             hasRoi = true;
-            // update gap pixels (gap pixels only for 2d)
+            // update gap pixels
+            // hardcoded gap pixels because only for eiger and jungfrau
             if (isGapPixels) {
                 for (auto &r : roi) {
                     r.xmin += ((r.xmin / 1024) * 6 + (r.xmin / 256) * 2);

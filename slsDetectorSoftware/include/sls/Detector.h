@@ -996,8 +996,9 @@ class Detector {
      * readout */
     std::vector<defs::ROI> getRxROI(int module_id) const;
 
-    /** only at multi module level without gap pixels. At most, 1 ROI per UDP
-     * port. Setting number of udp interfaces will clear the roi */
+    /** only at multi module level without gap pixels. If more than 1 ROI per
+     * UDP port, it will throw. Setting number of udp interfaces will clear the
+     * roi */
     void setRxROI(const std::vector<defs::ROI> &args);
 
     void clearRxROI();

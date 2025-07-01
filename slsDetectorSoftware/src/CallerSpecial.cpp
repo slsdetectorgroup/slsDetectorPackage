@@ -756,7 +756,9 @@ std::string Caller::rx_roi(int action) {
         auto t = det->getRxROI(det_id);
         os << ToString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        std::vector<defs::ROI> rois;
+        if (det_id != -1) {
+            throw RuntimeError("Cannot set receiver ROI at module level");
+        }
         // Support multiple args with bracketed ROIs, or single arg with
         // semicolon-separated vector in quotes
         bool isVectorInput =
@@ -764,36 +766,36 @@ std::string Caller::rx_roi(int action) {
                 return a.find('[') != std::string::npos &&
                        a.find(']') != std::string::npos;
             });
+        std::vector<defs::ROI> rois;
         try {
-            // previous format: 2 or 4 separate args
-            if ((args.size() == 2 || args.size() == 4) && !isVectorInput) {
-                defs::ROI t;
-                t.xmin = StringTo<int>(args[0]);
-                t.xmax = StringTo<int>(args[1]);
-                if (args.size() == 4) {
-                    t.ymin = StringTo<int>(args[2]);
-                    t.ymax = StringTo<int>(args[3]);
-                }
-                rois.emplace_back(t);
-            } else {
-                if (!isVectorInput)
-                    WrongNumberOfParameters(2);
-                else {
-                    for (const auto &arg : args) {
-                        auto subRois = parseRoiVector(arg);
-                        rois.insert(rois.end(), subRois.begin(), subRois.end());
+            // single roi in previous format: [xmin,xmax,ymin,ymax]
+            if (!isVectorInput) {
+                if (args.size() == 2 || args.size() == 4) {
+                    defs::ROI t;
+                    t.xmin = StringTo<int>(args[0]);
+                    t.xmax = StringTo<int>(args[1]);
+                    if (args.size() == 4) {
+                        t.ymin = StringTo<int>(args[2]);
+                        t.ymax = StringTo<int>(args[3]);
                     }
+                    rois.emplace_back(t);
+                } else {
+                    WrongNumberOfParameters(2);
+                }
+            }
+            // multiple roi or single roi with brackets
+            // multiple roi: multiple args with bracketed ROIs, or single arg
+            // with semicolon-bracketed Rois in quotes
+            else {
+                for (const auto &arg : args) {
+                    auto subRois = parseRoiVector(arg);
+                    rois.insert(rois.end(), subRois.begin(), subRois.end());
                 }
             }
         } catch (const std::exception &e) {
             throw RuntimeError("Could not parse ROI: Did you use spaces inside "
                                "the brackets? Use sls_detector_help " +
                                cmd + " to get the right syntax expected.");
-        }
-
-        // only multi level
-        if (det_id != -1) {
-            throw RuntimeError("Cannot execute receiver ROI at module level");
         }
 
         det->setRxROI(rois);

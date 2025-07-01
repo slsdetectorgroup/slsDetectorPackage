@@ -745,7 +745,8 @@ std::string Caller::rx_roi(int action) {
         "get command.\n"
         "\t- Use the command 'rx_clearroi' to clear all ROIs.\n"
         "\t- Changing the number of UDP interfaces will automatically clear "
-        "the current ROIs.\n";
+        "the current ROIs.\n\n"
+        "\t- Cannot be set for CTB or Xilinx CTB.\n";
 
     if (action == defs::HELP_ACTION) {
         os << helpMessage;

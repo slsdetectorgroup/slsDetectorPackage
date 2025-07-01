@@ -1387,7 +1387,6 @@ std::vector<defs::ROI> Detector::getRxROI(int module_id) const {
     return pimpl->getRxROI(module_id);
 }
 
-// RxROIs can be set for all types except CTB. At multi level without gap pixels
 void Detector::setRxROI(const std::vector<defs::ROI> &args) {
     pimpl->setRxROI(args);
 }

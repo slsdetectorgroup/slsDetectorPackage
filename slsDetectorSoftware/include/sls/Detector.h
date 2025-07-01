@@ -995,7 +995,7 @@ class Detector {
 
     /** only at multi module level without gap pixels. If more than 1 ROI per
      * UDP port, it will throw. Setting number of udp interfaces will clear the
-     * roi */
+     * roi. Cannot be set for CTB or Xilinx CTB */
     void setRxROI(const std::vector<defs::ROI> &args);
 
     void clearRxROI();

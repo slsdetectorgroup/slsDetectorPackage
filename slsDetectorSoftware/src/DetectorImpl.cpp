@@ -1783,9 +1783,10 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
         throw RuntimeError("Only up to 2 ports per module supported.");
     }
     if (numPortsPerModule != (int)portRois.size()) {
-        throw RuntimeError("Number of port ROIs does not match number of ports in module. Expected: " +
-                           std::to_string(numPortsPerModule) + ", got: " +
-                           std::to_string(portRois.size()));
+        throw RuntimeError("Number of port ROIs does not match number of ports "
+                           "in module. Expected: " +
+                           std::to_string(numPortsPerModule) +
+                           ", got: " + std::to_string(portRois.size()));
     }
 
     for (int port = 0; port != numPortsPerModule; ++port) {
@@ -1818,7 +1819,8 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
                     std::min(userRoi.ymax, portRoi.ymax) - portRoi.ymin;
             }
 
-            // Check if port ROI already exists for this port (from another user roi)
+            // Check if port ROI already exists for this port (from another user
+            // roi)
             if (!portRois[port].completeRoi() && !portRois[port].noRoi()) {
                 throw RuntimeError(
                     "Multiple ROIs specified for the same port " +

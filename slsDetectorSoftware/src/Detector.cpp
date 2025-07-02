@@ -208,8 +208,11 @@ defs::xy Detector::getPortPerModuleGeometry() const {
 Result<defs::xy> Detector::getPortSize(Positions pos) const {
     Result<defs::xy> res = pimpl->Parallel(&Module::getNumberOfChannels, pos);
     defs::xy portGeometry = getPortPerModuleGeometry();
-    if ((portGeometry.x != 1 && portGeometry.x != 2) || (portGeometry.y != 1 && portGeometry.y != 2)) {
-        throw RuntimeError("Port size is not 1 or 2 in either dimension. Port geometry:" + ToString(portGeometry));
+    if ((portGeometry.x != 1 && portGeometry.x != 2) ||
+        (portGeometry.y != 1 && portGeometry.y != 2)) {
+        throw RuntimeError(
+            "Port size is not 1 or 2 in either dimension. Port geometry:" +
+            ToString(portGeometry));
     }
     for (auto &it : res) {
         it.x /= portGeometry.x;

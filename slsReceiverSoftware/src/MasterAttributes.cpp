@@ -155,7 +155,7 @@ void MasterAttributes::GetFinalBinaryAttributes(
 }
 
 void MasterAttributes::GetBinaryRois(
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Receiver Rois");
     w->StartArray();
     for (const slsDetectorDefs::ROI &roi : rois) {

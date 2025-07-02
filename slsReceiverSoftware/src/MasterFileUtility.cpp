@@ -208,20 +208,6 @@ std::string CreateVirtualHDF5File(
         completeRoi = true;
     }
 
-    // roi not allowed in 4 bit mode and with gotthard 2 mods
-    if (!completeRoi) {
-        if (dynamicRange == 4) {
-            throw std::runtime_error(
-                "Skipping virtual hdf5 file since rx_roi is "
-                "enabled and it is in 4 bit mode.");
-        }
-        if (gotthard25um && (numModX * numModY) == 2) {
-            throw std::runtime_error(
-                "Skipping virtual hdf5 file since rx_roi is "
-                "enabled and there are 2 Gotthard 25um modules.");
-        }
-    }
-
     // virtual file name
     std::ostringstream osfn;
     osfn << filePath << "/" << fileNamePrefix << "_virtual"

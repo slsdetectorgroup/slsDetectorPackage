@@ -206,14 +206,11 @@ std::string DataProcessor::CreateVirtualFile(
     const std::string &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numModX, const int numModY,
-    std::mutex *hdf5LibMutex) {
+    std::mutex *hdf5LibMutex, bool gotthard25um) {
 
     int ny = generalData->nPixelsY;
     if (generalData->dynamicRange == 4)
         ny /= 2;
-    bool gotthard25um = ((generalData->detType == GOTTHARD ||
-                          generalData->detType == GOTTHARD2) &&
-                         (numModX * numModY) == 2);
 
     // 0 for infinite files
     uint32_t framesPerFile =

@@ -992,14 +992,30 @@ void Implementation::StartMasterWriter() {
                 fileFormatType, &masterAttributes, &hdf5LibMutex);
         }
 #ifdef HDF5C
+        // create virtual and master file
         if (fileFormatType == HDF5) {
+
+             bool gotthard25um = ((generalData->detType == GOTTHARD || generalData->detType == GOTTHARD2) && (numPorts.x * numPorts.y) == 2);
+
+            // virtual hdf5 not allowed with roi for the following cases in hdf5
+            if (multiRoiMetadata.size() > 1 || (!multiRoiMetadata[0].completeRoi())) {
+                if (generalData->dynamicRange == 4) {
+                    throw std::runtime_error("Skipping virtual hdf5 file since rx_roi is enabled and it is in 4 bit mode.");
+                }
+                if (gotthard25um && (numPorts.x * numPorts.y) == 2) {
+                    throw std::runtime_error(
+                        "Skipping virtual hdf5 file since rx_roi is "
+                        "enabled and there are 2 Gotthard 25um modules.");
+                }
+            }
+       
             std::string virtualFileName;
             // create virtual hdf5 file (if multiple files)
             if (dataProcessor[0]->GetFilesInAcquisition() > 1 ||
                 (numPorts.x * numPorts.y) > 1) {
                 virtualFileName = dataProcessor[0]->CreateVirtualFile(
                     filePath, fileName, fileIndex, overwriteEnable, silentMode,
-                    modulePos, numPorts.x, numPorts.y, &hdf5LibMutex);
+                    modulePos, numPorts.x, numPorts.y, &hdf5LibMutex, gotthard25um);
             }
             // link file in master
             if (masterFileWriteEnable) {

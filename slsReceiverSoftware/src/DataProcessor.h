@@ -70,7 +70,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                                   const bool overWriteEnable,
                                   const bool silentMode, const int modulePos,
                                   const int numModX, const int numModY,
-                                  std::mutex *hdf5LibMutex);
+                                  std::mutex *hdf5LibMutex, bool gotthard25um);
     void LinkFileInMaster(const std::string &masterFileName,
                           const std::string &virtualFileName,
                           const bool silentMode, std::mutex *hdf5LibMutex);

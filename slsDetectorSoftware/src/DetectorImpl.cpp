@@ -1777,28 +1777,28 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
     const defs::ROI &userRoi, const defs::ROI &moduleRoi,
     std::vector<defs::ROI> &portRois) const {
     const defs::xy modSize = modules[0]->getNumberOfChannels();
-    const defs::xy geometry = getPortGeometry();
-    const int numPorts = geometry.x * geometry.y;
+    const defs::xy portGeometry = getPortGeometry();
+    const int numPortsPerModule = portGeometry.x * portGeometry.y;
 
-    if (numPorts > 2) {
+    if (numPortsPerModule > 2) {
         throw RuntimeError("Only up to 2 ports per module supported.");
     }
-    if (numPorts != (int)portRois.size()) {
+    if (numPortsPerModule != (int)portRois.size()) {
         throw RuntimeError("Number of port ROIs does not match number of ports in module. Expected: " +
-                           std::to_string(numPorts) + ", got: " +
+                           std::to_string(numPortsPerModule) + ", got: " +
                            std::to_string(portRois.size()));
     }
 
-    for (int port = 0; port < numPorts; ++port) {
+    for (int port = 0; port != numPortsPerModule; ++port) {
         defs::ROI portRoi = moduleRoi;
-        // Calculate port ROI boundaries (split vertically or horizontally)
-        if (geometry.x == 2) {
+        // Recalculate port ROI boundaries (split vertically or horizontally)
+        if (portGeometry.x == 2) {
             int midX = (moduleRoi.xmin + moduleRoi.xmax) / 2;
             if (port == 0)
                 portRoi.xmax = midX;
             else
                 portRoi.xmin = midX + 1;
-        } else if (geometry.y == 2) {
+        } else if (portGeometry.y == 2) {
             int midY = (moduleRoi.ymin + moduleRoi.ymax) / 2;
             if (port == 0)
                 portRoi.ymax = midY;
@@ -1806,22 +1806,18 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
                 portRoi.ymin = midY + 1;
         }
 
-        // Check if user ROI overlaps with port
+        // find overlapped roi (port vs user roi)
         if (userRoi.overlap(portRoi)) {
             defs::ROI clipped{};
             // Clip user ROI to port ROI
             clipped.xmin = std::max(userRoi.xmin, portRoi.xmin) - portRoi.xmin;
             clipped.xmax = std::min(userRoi.xmax, portRoi.xmax) - portRoi.xmin;
-            LOG(logDEBUG1) << "User ROI: " << ToString(userRoi)
-                    << ", Port ROI: " << ToString(portRoi) << " clipped roi:"<< ToString(clipped);
             if (modSize.y > 1) {
                 clipped.ymin = std::max(userRoi.ymin, portRoi.ymin) - portRoi.ymin;
                 clipped.ymax = std::min(userRoi.ymax, portRoi.ymax) - portRoi.ymin;
             }
-            LOG(logDEBUG1) << "Clipped ROI for port " << port
-                    << ": " << ToString(clipped);
 
-            // Check if port ROI already exists for this port
+            // Check if port ROI already exists for this port (from another user roi)
             if (!portRois[port].completeRoi() && !portRois[port].noRoi()) {
                 throw RuntimeError(
                     "Multiple ROIs specified for the same port " +
@@ -1851,9 +1847,6 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
 
     for (size_t iModule = 0; iModule < modules.size(); ++iModule) {
         auto moduleGlobalRoi = getModuleROI(iModule);
-        LOG(logDEBUG1) << "Module " << iModule
-                << " Global ROI: " << ToString(moduleGlobalRoi);
-
         // at most 2 rois per module (for each port)
         std::vector<defs::ROI> portRois(nPortsPerModule);
 
@@ -1863,12 +1856,7 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
                 convertGlobalRoiToPortLevel(arg, moduleGlobalRoi, portRois);
             }
         }
-        // print the rois for debugging
-        LOG(logDEBUG1) << "Module " << iModule << " RxROIs:";
-        for (size_t iPort = 0; iPort != portRois.size(); iPort++) {
-            LOG(logDEBUG1)
-                    << "  Port " << iPort << ": " << ToString(portRois[iPort]);
-        }
+
         modules[iModule]->setRxROI(portRois);
     }
     // metadata

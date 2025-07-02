@@ -154,6 +154,17 @@ void MasterAttributes::GetFinalBinaryAttributes(
     w->EndObject();
 }
 
+void MasterAttributes::GetBinaryRois(
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
+    w->Key("Receiver Rois");
+    w->StartArray();
+    for (const slsDetectorDefs::ROI &roi : rois) {
+        std::string roi_str = ToString(roi);
+        w->String(roi_str.c_str());
+    }
+    w->EndArray();
+}
+
 #ifdef HDF5C
 void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
                                                  H5::Group *group) {
@@ -555,13 +566,7 @@ void MasterAttributes::WriteHDF5TransceiverSamples(H5::Group *group) {
 
 void MasterAttributes::GetJungfrauBinaryAttributes(
     rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
-    w->Key("Receiver Rois");
-    w->StartArray();
-    for (const slsDetectorDefs::ROI &roi : rois) {
-        std::string roi_str = ToString(roi);
-        w->String(roi_str.c_str());
-    }
-    w->EndArray();
+    GetBinaryRois(w);
     w->Key("Exptime");
     w->String(ToString(exptime).c_str());
     w->Key("Period");
@@ -584,13 +589,7 @@ void MasterAttributes::WriteJungfrauHDF5Attributes(H5::Group *group) {
 
 void MasterAttributes::GetMoenchBinaryAttributes(
     rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
-    w->Key("Receiver Rois");
-    w->StartArray();
-    for (const slsDetectorDefs::ROI &roi : rois) {
-        std::string roi_str = ToString(roi);
-        w->String(roi_str.c_str());
-    }
-    w->EndArray();
+    GetBinaryRois(w);
     w->Key("Exptime");
     w->String(ToString(exptime).c_str());
     w->Key("Period");
@@ -613,13 +612,7 @@ void MasterAttributes::WriteMoenchHDF5Attributes(H5::Group *group) {
 
 void MasterAttributes::GetEigerBinaryAttributes(
     rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
-    w->Key("Receiver Rois");
-    w->StartArray();
-    for (const slsDetectorDefs::ROI &roi : rois) {
-        std::string roi_str = ToString(roi);
-        w->String(roi_str.c_str());
-    }
-    w->EndArray();
+    GetBinaryRois(w);
     w->Key("Dynamic Range");
     w->Uint(dynamicRange);
     w->Key("Ten Giga");
@@ -660,13 +653,7 @@ void MasterAttributes::WriteEigerHDF5Attributes(H5::Group *group) {
 
 void MasterAttributes::GetMythen3BinaryAttributes(
     rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
-    w->Key("Receiver Rois");
-    w->StartArray();
-    for (const slsDetectorDefs::ROI &roi : rois) {
-        std::string roi_str = ToString(roi);
-        w->String(roi_str.c_str());
-    }
-    w->EndArray();
+    GetBinaryRois(w);
     w->Key("Dynamic Range");
     w->Uint(dynamicRange);
     w->Key("Ten Giga");
@@ -705,13 +692,7 @@ void MasterAttributes::WriteMythen3HDF5Attributes(H5::Group *group) {
 
 void MasterAttributes::GetGotthard2BinaryAttributes(
     rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
-    w->Key("Receiver Rois");
-    w->StartArray();
-    for (const slsDetectorDefs::ROI &roi : rois) {
-        std::string roi_str = ToString(roi);
-        w->String(roi_str.c_str());
-    }
-    w->EndArray();
+    GetBinaryRois(w);
     w->Key("Exptime");
     w->String(ToString(exptime).c_str());
     w->Key("Period");

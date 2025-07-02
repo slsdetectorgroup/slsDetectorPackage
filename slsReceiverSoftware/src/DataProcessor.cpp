@@ -210,7 +210,7 @@ std::string DataProcessor::CreateVirtualFile(
 
     int ny = generalData->nPixelsY;
     if (generalData->dynamicRange == 4)
-        ny = generalData->nPixelsY / 2;
+        ny /= 2;
     bool gotthard25um = ((generalData->detType == GOTTHARD ||
                           generalData->detType == GOTTHARD2) &&
                          (numModX * numModY) == 2);

@@ -156,11 +156,7 @@ void Implementation::setDetectorType(const detectorType d) {
     }
 
     if (d == EIGER) {
-        // resets ROIs and sets size to 2
-        std::vector<ROI> rois(2);
-        std::vector<ROI> multiRoi(1);
-        setPortROIs(rois);
-        setMultiROIMetadata(multiRoi);
+        ResetRois();
     }
 
     SetLocalNetworkParameters();
@@ -409,6 +405,15 @@ std::vector<slsDetectorDefs::ROI> Implementation::getPortROIs() const {
     return portRois;
 }
 
+void Implementation::ResetRois() {
+    int numports = generalData->numUDPInterfaces;
+    std::vector<ROI> rois(numports);
+    std::vector<ROI> multiRoi(1);
+    setPortROIs(rois);
+    setMultiROIMetadata(multiRoi);
+}
+
+
 void Implementation::setPortROIs(const std::vector<defs::ROI> &args) {
     int nx = static_cast<int>(generalData->nPixelsX);
     int ny = static_cast<int>(generalData->nPixelsY);
@@ -432,8 +437,6 @@ void Implementation::setPortROIs(const std::vector<defs::ROI> &args) {
     for (size_t i = 0; i != dataProcessor.size(); ++i) {
         dataProcessor[i]->SetPortROI(portRois[i]);
     }
-    if (dataProcessor.size() > 0)
-        dataProcessor[0]->setMultiROIMetadata(multiRoiMetadata);
     for (size_t i = 0; i != dataStreamer.size(); ++i) {
         dataStreamer[i]->SetPortROI(portRois[i]);
     }
@@ -1040,8 +1043,6 @@ int Implementation::getNumberofUDPInterfaces() const {
 
 // not Eiger
 void Implementation::setNumberofUDPInterfaces(const int n) {
-    LOG(logDEBUG) << "Setting Number of UDP Interfaces: " << n;
-
     if (generalData->detType == EIGER) {
         throw RuntimeError("Cannot set number of UDP interfaces for Eiger");
     }
@@ -1060,11 +1061,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
         // fifo
         SetupFifoStructure();
 
-        // roi cleared - complete detector and sets roi vector size
-        std::vector<ROI> rois(n);
-        std::vector<ROI> multiRoi(1);
-        setPortROIs(rois);
-        setMultiROIMetadata(multiRoi);
+        ResetRois();
 
         // create threads
         for (int i = 0; i < generalData->numUDPInterfaces; ++i) {

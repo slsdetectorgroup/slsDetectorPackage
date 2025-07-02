@@ -78,6 +78,8 @@ class MasterAttributes {
         rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
     void GetFinalBinaryAttributes(
         rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
+    void GetBinaryRois(
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
     void WriteCommonHDF5Attributes(H5::H5File *fd, H5::Group *group);
     void WriteFinalHDF5Attributes(H5::Group *group);

@@ -54,7 +54,7 @@ void DataStreamer::SetAdditionalJsonHeader(
 }
 
 void DataStreamer::SetPortROI(ROI roi) {
-    if (roi.completeRoi()) {//TODO: just not send zmq if not in roi?
+    if (roi.completeRoi()) { // TODO: just not send zmq if not in roi?
         portRoi =
             ROI(0, generalData->nPixelsX - 1, 0, generalData->nPixelsY - 1);
     } else {

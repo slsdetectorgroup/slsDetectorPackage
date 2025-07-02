@@ -166,7 +166,6 @@ void Implementation::setDetectorType(const detectorType d) {
     SetLocalNetworkParameters();
     SetupFifoStructure();
 
-
     // create threads
     for (int i = 0; i < generalData->numUDPInterfaces; ++i) {
 
@@ -418,12 +417,11 @@ void Implementation::setPortROIs(const std::vector<defs::ROI> &args) {
         if (it.completeRoi() || it.noRoi()) {
             continue; // valid
         }
-         if (it.xmin < 0 || it.xmax < 0 || 
-            it.xmin >= nx || it.xmax >= nx) {
+        if (it.xmin < 0 || it.xmax < 0 || it.xmin >= nx || it.xmax >= nx) {
             throw RuntimeError("Invalid ROIvx coordinates: " + ToString(it));
-        }       
-        if (ny > 1 && (it.ymin < 0 || it.ymax < 0 || 
-            it.ymin >= ny || it.ymax >= ny)) {
+        }
+        if (ny > 1 &&
+            (it.ymin < 0 || it.ymax < 0 || it.ymin >= ny || it.ymax >= ny)) {
             throw RuntimeError("Invalid ROI y coordinates: " + ToString(it));
         }
     }

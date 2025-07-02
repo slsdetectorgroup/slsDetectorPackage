@@ -227,8 +227,8 @@ std::string DataProcessor::CreateVirtualFile(
     return masterFileUtility::CreateVirtualHDF5File(
         filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
         modulePos, generalData->numUDPInterfaces, framesPerFile,
-        generalData->nPixelsX, ny, generalData->dynamicRange,
-        numFramesCaught, numModX, numModY, dataFile->GetPDataType(),
+        generalData->nPixelsX, ny, generalData->dynamicRange, numFramesCaught,
+        numModX, numModY, dataFile->GetPDataType(),
         dataFile->GetParameterNames(), dataFile->GetParameterDataTypes(),
         hdf5LibMutex, gotthard25um, multiRoiMetadata);
 }
@@ -238,18 +238,14 @@ void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
                                      const bool silentMode,
                                      std::mutex *hdf5LibMutex) {
 
-    /*if (!multiRoiMetadata.empty()) {
-        throw std::runtime_error(
-            "Should not be here, roi with hdf5 virtual should throw.");
-    }*/
     std::string fname{virtualFileName}, masterfname{masterFileName};
     // if no virtual file, link data file
     if (virtualFileName.empty()) {
         fname = dataFile->GetFileName();
     }
-    masterFileUtility::LinkHDF5FileInMaster(masterfname, fname,
-                                            dataFile->GetParameterNames(),
-                                            silentMode, hdf5LibMutex, multiRoiMetadata.size());
+    masterFileUtility::LinkHDF5FileInMaster(
+        masterfname, fname, dataFile->GetParameterNames(), silentMode,
+        hdf5LibMutex, multiRoiMetadata.size());
 }
 #endif
 
@@ -702,7 +698,7 @@ void DataProcessor::CropImage(size_t &size, char *data) {
         ywidth = 1;
         ymin = 0;
     }
-    
+
     // calculate total roi size
     double bytesPerPixel = generalData->dynamicRange / 8.00;
     int startOffset = (int)((nPixelsX * ymin + xmin) * bytesPerPixel);

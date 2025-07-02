@@ -535,7 +535,6 @@ void DetectorImpl::readFrameFromReceiver() {
     bool quadEnable = false;
     // to flip image
     bool eiger = false;
-    std::array<int, 4> rxRoi{}; // TODO: get roi from json header
 
     std::vector<bool> runningList(zmqSocket.size());
     std::vector<bool> connectList(zmqSocket.size());
@@ -732,7 +731,7 @@ void DetectorImpl::readFrameFromReceiver() {
             thisData = new detectorData(currentProgress, currentFileName,
                                         nDetActualPixelsX, nDetActualPixelsY,
                                         callbackImage, imagesize, dynamicRange,
-                                        currentFileIndex, completeImage, rxRoi);
+                                        currentFileIndex, completeImage);
             try {
                 dataReady(
                     thisData, currentFrameIndex,
@@ -1677,7 +1676,7 @@ std::vector<defs::ROI> DetectorImpl::getRxROI(int module_id) const {
     }
     if (module_id >= (int)modules.size()) {
         throw RuntimeError("Invalid module id: " + std::to_string(module_id));
-    }   
+    }
     if (module_id >= 0) {
         return modules[module_id]->getRxROI();
     }
@@ -1813,16 +1812,17 @@ void DetectorImpl::convertGlobalRoiToPortLevel(
             clipped.xmin = std::max(userRoi.xmin, portRoi.xmin) - portRoi.xmin;
             clipped.xmax = std::min(userRoi.xmax, portRoi.xmax) - portRoi.xmin;
             if (modSize.y > 1) {
-                clipped.ymin = std::max(userRoi.ymin, portRoi.ymin) - portRoi.ymin;
-                clipped.ymax = std::min(userRoi.ymax, portRoi.ymax) - portRoi.ymin;
+                clipped.ymin =
+                    std::max(userRoi.ymin, portRoi.ymin) - portRoi.ymin;
+                clipped.ymax =
+                    std::min(userRoi.ymax, portRoi.ymax) - portRoi.ymin;
             }
 
             // Check if port ROI already exists for this port (from another user roi)
             if (!portRois[port].completeRoi() && !portRois[port].noRoi()) {
                 throw RuntimeError(
                     "Multiple ROIs specified for the same port " +
-                    std::to_string(port) +
-                    " with ROI: " + ToString(userRoi));
+                    std::to_string(port) + " with ROI: " + ToString(userRoi));
             }
             portRois[port] = clipped;
         }
@@ -1843,7 +1843,9 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
     }
 
     validateROIs(args);
-    int nPortsPerModule = Parallel(&Module::getNumberofUDPInterfacesFromShm, {}).tsquash("Inconsistent number of udp ports set up per module");
+    int nPortsPerModule =
+        Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
+            .tsquash("Inconsistent number of udp ports set up per module");
 
     for (size_t iModule = 0; iModule < modules.size(); ++iModule) {
         auto moduleGlobalRoi = getModuleROI(iModule);
@@ -1856,17 +1858,18 @@ void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
                 convertGlobalRoiToPortLevel(arg, moduleGlobalRoi, portRois);
             }
         }
-
         modules[iModule]->setRxROI(portRois);
     }
     // metadata
     modules[0]->setRxROIMetadata(args);
 }
 
-void DetectorImpl::clearRxROI() { 
-    int nPortsPerModule = Parallel(&Module::getNumberofUDPInterfacesFromShm, {}).tsquash("Inconsistent number of udp ports set up per module");
+void DetectorImpl::clearRxROI() {
+    int nPortsPerModule =
+        Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
+            .tsquash("Inconsistent number of udp ports set up per module");
     for (size_t iModule = 0; iModule < modules.size(); ++iModule) {
-        modules[iModule]->setRxROI(std::vector<defs::ROI>(nPortsPerModule)); 
+        modules[iModule]->setRxROI(std::vector<defs::ROI>(nPortsPerModule));
     }
     modules[0]->setRxROIMetadata(std::vector<defs::ROI>(1));
 }

@@ -230,12 +230,8 @@ class slsDetectorDefs {
         ROI(int xmin, int xmax) : xmin(xmin), xmax(xmax){};
         ROI(int xmin, int xmax, int ymin, int ymax)
             : xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax){};
-        constexpr int width() const {
-            return (xmax - xmin + 1);
-        }   
-        constexpr int height() const {
-            return (ymax - ymin + 1);
-        }
+        constexpr int width() const { return (xmax - xmin + 1); }
+        constexpr int height() const { return (ymax - ymin + 1); }
         constexpr std::array<int, 4> getIntArray() const {
             return std::array<int, 4>({xmin, xmax, ymin, ymax});
         }
@@ -252,7 +248,7 @@ class slsDetectorDefs {
             ymin = 0;
             ymax = 0;
         }
-        constexpr bool overlap(const ROI & other) const {
+        constexpr bool overlap(const ROI &other) const {
             return ((xmin <= other.xmax && xmax >= other.xmin) &&
                     (ymin <= other.ymax && ymax >= other.ymin));
         }

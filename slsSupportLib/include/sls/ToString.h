@@ -349,5 +349,4 @@ std::vector<T> StringTo(const std::vector<std::string> &strings) {
     return result;
 }
 
-
 } // namespace sls

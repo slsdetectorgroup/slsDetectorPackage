@@ -428,9 +428,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void validateROIs(const std::vector<defs::ROI> &rois);
     defs::xy calculatePosition(int moduleIndex) const;
     defs::ROI getModuleROI(int moduleIndex) const;
-    void convertGlobalRoiToPortLevel(
-        const defs::ROI &userRoi, const defs::ROI &moduleRoi,
-        std::vector<defs::ROI> &portRois) const;
+    void convertGlobalRoiToPortLevel(const defs::ROI &userRoi,
+                                     const defs::ROI &moduleRoi,
+                                     std::vector<defs::ROI> &portRois) const;
 
     const int detectorIndex{0};
     SharedMemory<sharedDetector> shm{0, -1};

@@ -552,8 +552,8 @@ int main(int argc, char *argv[]) {
                     throw std::runtime_error("Invalid argument.");
                 }
             } catch (...) {
-                throw sls::RuntimeError("Invalid number of receivers." +
-                                        help_message);
+                throw sls::RuntimeError(
+                    "Invalid number of receivers. Max: 100." + help_message);
             }
             break;
 

@@ -739,6 +739,8 @@ std::string Caller::rx_roi(int action) {
 
         "\tNotes:\n"
         "\t- ROIs can only be set at the multi-module level.\n"
+        "\t- If multi module ROIs ends up with more then 1 ROI per UDP "
+        "port or if they overlap each other, it will throw an error.\n"
         "\t- ROIs coordinates assume no gap pixels, even if they are enabled "
         "in gui.\n"
         "\t- To retrieve ROIs per port, specify the module ID when using the "

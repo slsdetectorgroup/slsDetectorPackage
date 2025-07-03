@@ -150,10 +150,11 @@ int GetDeprecatedCommandLineOptions(int argc, char *argv[], uint16_t &startPort,
             if (argc == 3 || argc == 4) {
                 startPort = sls::StringTo<uint16_t>(argv[1]);
                 numReceivers = sls::StringTo<uint16_t>(argv[2]);
-                if (numReceivers > 1024) {
+                if (numReceivers > 100) {
                     LOG(sls::logWARNING) << deprecatedMessage;
                     LOG(sls::logERROR)
-                        << "Did you mix up the order of the arguments?";
+                        << "Did you mix up the order of the arguments? Max "
+                           "number of recievers: 100";
                     return slsDetectorDefs::FAIL;
                 }
                 if (numReceivers == 0) {

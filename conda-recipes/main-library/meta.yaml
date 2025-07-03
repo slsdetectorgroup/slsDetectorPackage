@@ -1,11 +1,11 @@
-package:
-  name: sls_detector_software
-  version: 2025.3.19
-
-
 source:
   path: ../..
 
+{% set version = load_file_regex(load_file = 'VERSION', regex_pattern = '(\d+(?:\.\d+)*(?:[\+\w\.]+))').group(1) %}
+package:
+  name: sls_detector_software
+  version: {{ version }} 
+  
 build:
   number: 0
   binary_relocation: True
@@ -28,7 +28,8 @@ requirements:
     - libgl-devel  # [linux]
     - libtiff
     - zlib
-
+    - expat
+  
   run:
     - libstdcxx-ng
     - libgcc-ng 
@@ -49,8 +50,6 @@ outputs:
         - libgcc-ng
 
 
-
-
   - name: slsdetgui
     script: copy_gui.sh
     requirements:
@@ -59,6 +58,7 @@ outputs:
         - {{ compiler('c') }}
         - {{compiler('cxx')}}
         - {{ pin_subpackage('slsdetlib', exact=True) }}
+        
 
       run:
         - {{ pin_subpackage('slsdetlib', exact=True) }}

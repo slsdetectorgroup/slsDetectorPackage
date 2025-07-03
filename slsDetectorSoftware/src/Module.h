@@ -510,6 +510,8 @@ class Module : public virtual slsDetectorDefs {
     void setReceiverDbitList(std::vector<int> list);
     int getReceiverDbitOffset() const;
     void setReceiverDbitOffset(int value);
+    bool getReceiverDbitReorder() const;
+    void setReceiverDbitReorder(bool value);
     void setDigitalIODelay(uint64_t pinMask, int delay);
     bool getLEDEnable() const;
     void setLEDEnable(bool enable);

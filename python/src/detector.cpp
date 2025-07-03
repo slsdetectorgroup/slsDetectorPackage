@@ -1664,6 +1664,14 @@ void init_det(py::module &m) {
                        (void (Detector::*)(int, sls::Positions)) &
                            Detector::setRxDbitOffset,
                        py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("getRxDbitReorder",
+                       (Result<bool>(Detector::*)(sls::Positions) const) &
+                           Detector::getRxDbitReorder,
+                       py::arg() = Positions{});
+    CppDetectorApi.def("setRxDbitReorder",
+                       (void (Detector::*)(bool, sls::Positions)) &
+                           Detector::setRxDbitReorder,
+                       py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("setDigitalIODelay",
                        (void (Detector::*)(uint64_t, int, sls::Positions)) &
                            Detector::setDigitalIODelay,

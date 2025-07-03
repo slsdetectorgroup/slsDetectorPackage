@@ -51,6 +51,7 @@ class MasterAttributes {
     uint32_t analogSamples{0};
     uint32_t digital{0};
     uint32_t digitalSamples{0};
+    uint32_t dbitreorder{1};
     uint32_t dbitoffset{0};
     uint64_t dbitlist{0};
     uint32_t transceiverMask{0};
@@ -104,6 +105,7 @@ class MasterAttributes {
     void WriteHDF5DigitalSamples(H5::H5File *fd, H5::Group *group);
     void WriteHDF5DbitOffset(H5::H5File *fd, H5::Group *group);
     void WriteHDF5DbitList(H5::H5File *fd, H5::Group *group);
+    void WriteHDF5DbitReorder(H5::H5File *fd, H5::Group *group);
     void WriteHDF5TransceiverMask(H5::H5File *fd, H5::Group *group);
     void WriteHDF5TransceiverFlag(H5::H5File *fd, H5::Group *group);
     void WriteHDF5TransceiverSamples(H5::H5File *fd, H5::Group *group);

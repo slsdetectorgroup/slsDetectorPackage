@@ -25,11 +25,10 @@ version: clean versioning $(PROGS) #hv9m_blackfin_server
 	
 boot: $(OBJS) 
 
-version_branch=$(API_BRANCH)
 version_name=APIEIGER
 version_path=slsDetectorServers/eigerDetectorServer
 versioning: 
-	cd ../../ && echo $(PWD) && echo `tput setaf 6; ./updateAPIVersion.sh $(version_name) $(version_path) $(version_branch);  tput sgr0;`
+	cd ../../ && echo $(PWD) && echo `tput setaf 6; python updateAPIVersion.py $(version_name) $(version_path);  tput sgr0;`
 
 
 $(PROGS):  $(OBJS)

@@ -252,6 +252,10 @@ class Implementation : private virtual slsDetectorDefs {
     int getDbitOffset() const;
     /* [Ctb] */
     void setDbitOffset(const int s);
+    bool getDbitReorder() const;
+    /* [Ctb] */
+    void setDbitReorder(const bool reorder);
+
     uint32_t getTransceiverEnableMask() const;
     /* [Ctb] */
     void setTransceiverEnableMask(const uint32_t mask);
@@ -366,8 +370,6 @@ class Implementation : private virtual slsDetectorDefs {
     int thresholdEnergyeV{-1};
     std::array<int, 3> thresholdAllEnergyeV = {{-1, -1, -1}};
     std::vector<int64_t> rateCorrections;
-    std::vector<int> ctbDbitList;
-    int ctbDbitOffset{0};
 
     // callbacks
     void (*startAcquisitionCallBack)(const startCallbackHeader,

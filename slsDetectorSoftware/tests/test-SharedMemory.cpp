@@ -18,11 +18,16 @@ struct Data {
 constexpr int shm_id = 10;
 
 TEST_CASE("Create SharedMemory read and write", "[detector]") {
+    const char *env_p = std::getenv("SLSDETNAME");
+    std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
 
     SharedMemory<Data> shm(shm_id, -1);
+    if (shm.exists()) {
+        shm.removeSharedMemory();
+    }
     shm.createSharedMemory();
     CHECK(shm.getName() == std::string("/slsDetectorPackage_detector_") +
-                               std::to_string(shm_id));
+                               std::to_string(shm_id) + env_name);
 
     shm()->x = 3;
     shm()->y = 5.7;
@@ -90,10 +95,12 @@ TEST_CASE("Open two shared memories to the same place", "[detector]") {
 }
 
 TEST_CASE("Move SharedMemory", "[detector]") {
+    const char *env_p = std::getenv("SLSDETNAME");
+    std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
 
     SharedMemory<Data> shm(shm_id, -1);
     CHECK(shm.getName() == std::string("/slsDetectorPackage_detector_") +
-                               std::to_string(shm_id));
+                               std::to_string(shm_id) + env_name);
     shm.createSharedMemory();
     shm()->x = 9;
 
@@ -104,15 +111,19 @@ TEST_CASE("Move SharedMemory", "[detector]") {
     REQUIRE_THROWS(
         shm()); // trying to access should throw instead of returning a nullptr
     CHECK(shm2.getName() == std::string("/slsDetectorPackage_detector_") +
-                                std::to_string(shm_id));
+                                std::to_string(shm_id) + env_name);
     shm2.removeSharedMemory();
 }
 
 TEST_CASE("Create several shared memories", "[detector]") {
+    const char *env_p = std::getenv("SLSDETNAME");
+    std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
+
     constexpr int N = 5;
     std::vector<SharedMemory<int>> v;
     v.reserve(N);
     for (int i = 0; i != N; ++i) {
+        std::cout << "i:" << i << std::endl;
         v.emplace_back(shm_id + i, -1);
         CHECK(v[i].exists() == false);
         v[i].createSharedMemory();
@@ -123,7 +134,7 @@ TEST_CASE("Create several shared memories", "[detector]") {
     for (int i = 0; i != N; ++i) {
         CHECK(*v[i]() == i);
         CHECK(v[i].getName() == std::string("/slsDetectorPackage_detector_") +
-                                    std::to_string(i + shm_id));
+                                    std::to_string(i + shm_id) + env_name);
     }
 
     for (int i = 0; i != N; ++i) {
@@ -133,8 +144,12 @@ TEST_CASE("Create several shared memories", "[detector]") {
 }
 
 TEST_CASE("Create create a shared memory with a tag") {
+    const char *env_p = std::getenv("SLSDETNAME");
+    std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
+
     SharedMemory<int> shm(0, -1, "ctbdacs");
-    REQUIRE(shm.getName() == "/slsDetectorPackage_detector_0_ctbdacs");
+    REQUIRE(shm.getName() ==
+            "/slsDetectorPackage_detector_0" + env_name + "_ctbdacs");
 }
 
 TEST_CASE("Create create a shared memory with a tag when SLSDETNAME is set") {

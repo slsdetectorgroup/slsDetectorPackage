@@ -17,6 +17,74 @@ namespace sls {
 using test::GET;
 using test::PUT;
 
+TEST_CASE("mythen3_acquire_check_file_size", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type =
+        det.getDetectorType().tsquash("Inconsistent detector types to test");
+
+    if (det_type == defs::MYTHEN3) {
+
+        // save previous state
+        testFileInfo prev_file_info = get_file_state(det);
+        testCommonDetAcquireInfo prev_det_config_info =
+            get_common_acquire_config_state(det);
+
+        // save previous specific det type config
+        auto exptime =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        auto dynamic_range =
+            det.getDynamicRange().tsquash("inconsistent dynamic range to test");
+        uint32_t counter_mask =
+            det.getCounterMask().tsquash("inconsistent counter mask to test");
+
+        // defaults
+        int num_frames_to_acquire = 2;
+        testFileInfo test_file_info;
+        set_file_state(det, test_file_info);
+        testCommonDetAcquireInfo det_config;
+        det_config.num_frames_to_acquire = num_frames_to_acquire;
+        set_common_acquire_config_state(det, det_config);
+
+        // set default specific det type config
+        det.setExptime(-1, std::chrono::microseconds{200});
+        int test_dynamic_range = 16;
+        det.setDynamicRange(test_dynamic_range);
+        int test_counter_mask = 0x3;
+        int num_counters = __builtin_popcount(test_counter_mask);
+        det.setCounterMask(test_counter_mask);
+
+        // acquire
+        test_acquire_with_receiver(caller, det);
+
+        // check frames caught
+        test_frames_caught(det, num_frames_to_acquire);
+
+        // check file size (assuming local pc)
+        {
+            detParameters par(det_type);
+            int bytes_per_pixel = test_dynamic_range / 8;
+            int num_channels_per_counter = par.nChanX / 3;
+            size_t expected_image_size = num_channels_per_counter *
+                                         num_counters * par.nChipX *
+                                         bytes_per_pixel;
+            test_acquire_binary_file_size(test_file_info, num_frames_to_acquire,
+                                          expected_image_size);
+        }
+
+        // restore previous state
+        set_file_state(det, prev_file_info);
+        set_common_acquire_config_state(det, prev_det_config_info);
+
+        // restore previous specific det type config
+        for (int iGate = 0; iGate < 3; ++iGate) {
+            det.setExptime(iGate, exptime[iGate]);
+        }
+        det.setDynamicRange(dynamic_range);
+        det.setCounterMask(counter_mask);
+    }
+}
+
 /* dacs */
 
 TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmdcall][.dacs]") {

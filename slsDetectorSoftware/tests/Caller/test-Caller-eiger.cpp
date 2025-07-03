@@ -17,6 +17,70 @@ namespace sls {
 using test::GET;
 using test::PUT;
 
+TEST_CASE("eiger_acquire_check_file_size", "[.cmdcall]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type =
+        det.getDetectorType().tsquash("Inconsistent detector types to test");
+
+    if (det_type == defs::EIGER) {
+
+        // save previous state
+        testFileInfo prev_file_info = get_file_state(det);
+        testCommonDetAcquireInfo prev_det_config_info =
+            get_common_acquire_config_state(det);
+
+        // save previous specific det type config
+        auto exptime = det.getExptime().tsquash("inconsistent exptime to test");
+        auto n_rows =
+            det.getReadNRows().tsquash("inconsistent number of rows to test");
+        auto dynamic_range =
+            det.getDynamicRange().tsquash("inconsistent dynamic range to test");
+        REQUIRE(false ==
+                det.getTenGiga().tsquash("inconsistent 10Giga to test"));
+
+        // defaults
+        int num_frames_to_acquire = 2;
+        testFileInfo test_file_info;
+        set_file_state(det, test_file_info);
+        testCommonDetAcquireInfo det_config;
+        det_config.num_frames_to_acquire = num_frames_to_acquire;
+        set_common_acquire_config_state(det, det_config);
+
+        // set default specific det type config
+        det.setExptime(std::chrono::microseconds{200});
+        det.setReadNRows(256);
+        det.setDynamicRange(16);
+
+        // acquire
+        test_acquire_with_receiver(caller, det);
+
+        // check frames caught
+        test_frames_caught(det, num_frames_to_acquire);
+
+        // check file size (assuming local pc)
+        {
+            detParameters par(det_type);
+            // data split into half due to 2 udp interfaces per half module
+            int num_chips = (par.nChipX / 2);
+            int bytes_per_pixel = (dynamic_range / 8);
+            size_t expected_image_size =
+                par.nChanX * par.nChanY * num_chips * bytes_per_pixel;
+            test_acquire_binary_file_size(test_file_info, num_frames_to_acquire,
+                                          expected_image_size);
+        }
+
+        // restore previous state
+        set_file_state(det, prev_file_info);
+        set_common_acquire_config_state(det, prev_det_config_info);
+
+        // restore previous specific det type config
+        det.setExptime(exptime);
+        det.setReadNRows(n_rows);
+        det.setDynamicRange(dynamic_range);
+    }
+}
+
 /** temperature */
 
 TEST_CASE("temp_fpgaext", "[.cmdcall]") {

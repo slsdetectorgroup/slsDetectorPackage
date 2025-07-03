@@ -12,6 +12,7 @@
 #include <thread>
 
 #include "tests/globals.h"
+#include <filesystem>
 
 namespace sls {
 

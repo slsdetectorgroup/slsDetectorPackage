@@ -445,23 +445,25 @@ TEST_CASE("rx_arping", "[.cmdcall][.rx]") {
     Detector det;
     Caller caller(&det);
     auto prev_val = det.getRxArping();
-    {
-        std::ostringstream oss;
-        caller.call("rx_arping", {"1"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_arping 1\n");
-    }
-    {
-        std::ostringstream oss;
-        caller.call("rx_arping", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "rx_arping 1\n");
-    }
-    {
-        std::ostringstream oss;
-        caller.call("rx_arping", {"0"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_arping 0\n");
-    }
-    for (int i = 0; i != det.size(); ++i) {
-        det.setRxArping(prev_val[i], {i});
+    if (det.getDestinationUDPIP()[0].str() != "127.0.0.1") {
+        {
+            std::ostringstream oss;
+            caller.call("rx_arping", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_arping 1\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("rx_arping", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "rx_arping 1\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("rx_arping", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_arping 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setRxArping(prev_val[i], {i});
+        }
     }
 }
 
@@ -583,6 +585,9 @@ TEST_CASE("fpath", "[.cmdcall]") {
         REQUIRE(oss.str() == "fpath /tmp\n");
     }
     for (int i = 0; i != det.size(); ++i) {
+        if (prev_val[i].empty()) {
+            continue;
+        }
         det.setFilePath(prev_val[i], {i});
     }
 }
@@ -953,6 +958,37 @@ TEST_CASE("rx_dbitoffset", "[.cmdcall][.rx]") {
         }
     } else {
         REQUIRE_THROWS(caller.call("rx_dbitoffset", {}, -1, GET));
+    }
+}
+
+TEST_CASE("rx_dbitreorder", "[.cmdcall][.rx]") {
+    Detector det;
+    Caller caller(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::XILINX_CHIPTESTBOARD) {
+        auto prev_val = det.getRxDbitReorder();
+        {
+            std::ostringstream oss;
+            caller.call("rx_dbitreorder", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_dbitreorder 0\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("rx_dbitreorder", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_dbitreorder 1\n");
+        }
+        {
+            std::ostringstream oss;
+            caller.call("rx_dbitreorder", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "rx_dbitreorder 1\n");
+        }
+        REQUIRE_THROWS(caller.call("rx_dbitreorder", {"15"}, -1, PUT));
+        for (int i = 0; i != det.size(); ++i) {
+            det.setRxDbitReorder(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(caller.call("rx_dbitreorder", {}, -1, GET));
     }
 }
 

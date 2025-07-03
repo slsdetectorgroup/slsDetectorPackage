@@ -345,6 +345,9 @@ Chip Test Board
    +-----------------------+-------------------------------------------------+
    | Dbit Offset           | Digital offset of valid data in bytes           |
    +-----------------------+-------------------------------------------------+
+   | Dbit Reorder          | Reorder such that it groups each signal (0-63)  |
+   |                       | from all the different samples together         |                 
+   +-----------------------+-------------------------------------------------+
    | Dbit Bitset           | Digital 64 bit mask of bits enabled in receiver |
    +-----------------------+-------------------------------------------------+
    | Transceiver Mask      | Mask of channels enabled in Transceiver         |

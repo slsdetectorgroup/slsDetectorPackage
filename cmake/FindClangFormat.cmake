@@ -25,7 +25,9 @@ mark_as_advanced(
     ClangFormat_BIN)
 
 if(ClangFormat_FOUND)
-    exec_program(${ClangFormat_BIN} ${CMAKE_CURRENT_SOURCE_DIR} ARGS --version OUTPUT_VARIABLE CLANG_VERSION_TEXT)
+    execute_process(COMMAND ${ClangFormat_BIN} --version
+                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                 OUTPUT_VARIABLE CLANG_VERSION_TEXT)
     string(REGEX MATCH "([0-9]+)\\.[0-9]+\\.[0-9]+" CLANG_VERSION ${CLANG_VERSION_TEXT})
     if((${CLANG_VERSION} GREATER "9") OR (${CLANG_VERSION} EQUAL "9"))
         # A CMake script to find all source files and setup clang-format targets for them

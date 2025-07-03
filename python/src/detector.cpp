@@ -932,10 +932,7 @@ void init_det(py::module &m) {
                            Detector::setRxArping,
                        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getRxROI",
-                       (std::vector<defs::ROI>(Detector::*)() const) &
-                           Detector::getRxROI);
-    CppDetectorApi.def("getRxROI",
-                       (std::vector<defs::ROI>(Detector::*)(int) const) &
+                       (std::vector<defs::ROI> (Detector::*)(int) const) &
                            Detector::getRxROI,
                        py::arg());
     CppDetectorApi.def("setRxROI",

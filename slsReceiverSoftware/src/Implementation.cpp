@@ -156,9 +156,7 @@ void Implementation::setDetectorType(const detectorType d) {
     }
 
     // number of portrois should be equal to number of interfaces
-    if (d == EIGER) {
-        ResetRois();
-    }
+    ResetRois();
 
     SetLocalNetworkParameters();
     SetupFifoStructure();

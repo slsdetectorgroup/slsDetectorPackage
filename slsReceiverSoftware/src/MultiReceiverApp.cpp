@@ -240,7 +240,7 @@ int main(int argc, char *argv[]) {
         case 't':
             LOG(sls::logWARNING)
                 << "Deprecated option. Please use 'p' or '--port'.";
-            //[[fallthrough]]; TODO: for when we update to c++17
+            [[fallthrough]];
         case 'p':
             try {
                 startPort = sls::StringTo<uint16_t>(optarg);

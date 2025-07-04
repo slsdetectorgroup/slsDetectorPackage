@@ -13,6 +13,7 @@ set(SOURCES
     src/Arping.cpp
     src/MasterAttributes.cpp
     src/MasterFileUtility.cpp
+    src/CommandLineOptions.cpp
 )
 
 set(PUBLICHEADERS

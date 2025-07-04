@@ -30,6 +30,7 @@ Receiver::~Receiver() = default;
 Receiver::Receiver(uint16_t port) {
     validatePortNumber(port);
     tcpipInterface = make_unique<ClientInterface>(port);
+    if (port == 1957)  throw RuntimeError("throwing for 1957");
 }
 
 std::string Receiver::getReceiverVersion() {

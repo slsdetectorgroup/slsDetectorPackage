@@ -7,13 +7,10 @@
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
-#include "sls/sls_detector_exceptions.h"
-#include "sls/versionAPI.h"
+#include "CommandLineOptions.h"
 
 #include <csignal> //SIGINT
 #include <cstring>
-#include <getopt.h>
-#include <iostream>
 #include <semaphore.h>
 #include <sys/wait.h> //wait
 #include <unistd.h>
@@ -140,171 +137,17 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
  */
 void sigInterruptHandler(int p) { sem_post(&semaphore); }
 
-int GetDeprecatedCommandLineOptions(int argc, char *argv[], uint16_t &startPort,
-                                    uint16_t &numReceivers,
-                                    bool &callbackEnabled) {
-    std::string deprecatedMessage =
-        "Detected deprecated Options. Please update.\n";
-    if (argc > 1) {
-        try {
-            if (argc == 3 || argc == 4) {
-                startPort = sls::StringTo<uint16_t>(argv[1]);
-                numReceivers = sls::StringTo<uint16_t>(argv[2]);
-                if (numReceivers > 100) {
-                    LOG(sls::logWARNING) << deprecatedMessage;
-                    LOG(sls::logERROR)
-                        << "Did you mix up the order of the arguments? Max "
-                           "number of recievers: 100";
-                    return slsDetectorDefs::FAIL;
-                }
-                if (numReceivers == 0) {
-                    LOG(sls::logWARNING) << deprecatedMessage;
-                    LOG(sls::logERROR) << "Invalid number of receivers.";
-                    return slsDetectorDefs::FAIL;
-                }
-                if (argc == 4) {
-                    callbackEnabled = sls::StringTo<bool>(argv[3]);
-                }
-            } else
-                throw std::runtime_error("Invalid number of arguments");
-        } catch (const std::exception &e) {
-            LOG(sls::logWARNING) << deprecatedMessage;
-            LOG(sls::logERROR) << e.what();
-            return slsDetectorDefs::FAIL;
-        }
-    }
-    return slsDetectorDefs::OK;
-}
 
-std::string getHelpMessage() {
-    std::string name = "slsMultiReceiver";
-    return "\nUsage: " + name + " Options:\n" +
-           "\t-v, --version       : Version of " + name + ".\n" +
-           "\t-n, --num-receivers : Number of receivers.\n" +
-           "\t-p, --port          : TCP port to communicate with client for "
-           "configuration. Non-zero and 16 bit.\n" +
-           "\t-c, --callback      : Enable dummy callbacks for debugging. "
-           "Disabled by default. \n" +
-           "\t-u, --uid           : Set effective user id if receiver started "
-           "with privileges. \n\n";
-}
 
-/**
- * Example of main program using the Receiver class
- *
- * - Defines in file for:
- *  	- Default Number of receivers is 1
- *  	- Default Start TCP port is 1954
- */
 int main(int argc, char *argv[]) {
-    uint16_t startPort = DEFAULT_TCP_RX_PORTNO;
-    uint16_t numReceivers = 1;
-    bool callbackEnabled = false;
-    uid_t userid = -1;
 
-    std::string help_message = getHelpMessage();
-
-    static struct option long_options[] = {
-        {"version", no_argument, nullptr, 'v'},
-        {"num-receivers", required_argument, nullptr, 'n'},
-        {"rx_tcpport", required_argument, nullptr, 't'},
-        {"port", required_argument, nullptr, 'p'},
-        {"callback", no_argument, nullptr, 'c'},
-        {"uid", required_argument, nullptr, 'u'},
-        {"help", no_argument, nullptr, 'h'},
-        {nullptr, 0, nullptr, 0}};
-
-    int option_index = 0;
-    int opt = 0;
-    while (-1 != (opt = getopt_long(argc, argv, "vn:t:p:cu:h", long_options,
-                                    &option_index))) {
-
-        switch (opt) {
-
-        case 'v':
-            std::cout << argv[0] << " Version: " << APIRECEIVER << std::endl;
-            return EXIT_SUCCESS;
-
-        case 'n':
-            try {
-                numReceivers = sls::StringTo<uint16_t>(optarg);
-                if (numReceivers == 0 || numReceivers > 100) {
-                    throw std::runtime_error("Invalid argument.");
-                }
-            } catch (...) {
-                throw sls::RuntimeError("Invalid number of receivers." +
-                                        help_message);
-            }
-            break;
-
-        case 't':
-            LOG(sls::logWARNING)
-                << "Deprecated option. Please use 'p' or '--port'.";
-            [[fallthrough]];
-        case 'p':
-            try {
-                startPort = sls::StringTo<uint16_t>(optarg);
-            } catch (...) {
-                throw sls::RuntimeError("Could not scan port number." +
-                                        help_message);
-            }
-            break;
-
-        case 'c':
-            callbackEnabled = true;
-            break;
-
-        case 'u':
-            try {
-                userid = sls::StringTo<uint32_t>(optarg);
-            } catch (...) {
-                throw sls::RuntimeError("Invalid uid." + help_message);
-            }
-            break;
-
-        case 'h':
-            std::cout << help_message << std::endl;
-            return EXIT_SUCCESS;
-
-        default:
-            LOG(sls::logERROR) << help_message;
-            return EXIT_FAILURE;
-        }
-    }
-    // if remaining arguments, maintain backward compatibility of [startport]
-    // [num-receivers] [callback]
-    if (optind < argc) {
-        if (slsDetectorDefs::FAIL ==
-            GetDeprecatedCommandLineOptions(argc, argv, startPort, numReceivers,
-                                            callbackEnabled))
-            return EXIT_FAILURE;
+    auto opts = parseCommandLine(AppType::MultiReceiver, argc, argv);
+    auto& o = std::get<CommonOptions>(opts);
+    if (o.versionRequested || o.helpRequested) {
+        return EXIT_SUCCESS;
     }
 
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';
-    LOG(sls::logINFO) << "Number of Receivers: " << numReceivers;
-    LOG(sls::logINFO) << "Start TCP Port: " << startPort;
-    LOG(sls::logINFO) << "Callback Enable: " << callbackEnabled;
-
-    // set effective id if provided
-    if (userid != static_cast<uid_t>(-1)) {
-        if (geteuid() == userid) {
-            LOG(sls::logINFO)
-                << "Process already has the same Effective UID " << userid;
-        } else {
-            if (seteuid(userid) != 0) {
-                std::ostringstream oss;
-                oss << "Could not set Effective UID to " << userid;
-                throw sls::RuntimeError(oss.str());
-            }
-            if (geteuid() != userid) {
-                std::ostringstream oss;
-                oss << "Could not set Effective UID to " << userid << ". Got "
-                    << geteuid();
-                throw sls::RuntimeError(oss.str());
-            }
-            LOG(sls::logINFO) << "Process Effective UID changed to " << userid;
-        }
-    }
 
     /** - Catch signal SIGINT to close files and call destructors properly */
     struct sigaction sa;
@@ -330,7 +173,8 @@ int main(int argc, char *argv[]) {
 
     /** - loop over number of receivers */
     sem_init(&semaphore, 1, 0);
-    for (int i = 0; i < numReceivers; ++i) {
+    auto& m = std::get<MultiReceiverOptions>(opts);
+    for (int i = 0; i < m.numReceivers; ++i) {
 
         /**	- fork process to create child process */
         pid_t pid = fork();
@@ -349,13 +193,13 @@ int main(int argc, char *argv[]) {
                 << "Child process " << i << " [ Tid: " << gettid() << ']';
 
             try {
-                uint16_t port = startPort + i;
+                uint16_t port = o.port + i;
                 sls::Receiver receiver(port);
 
                 /**	- register callbacks. remember to set file write enable
                  * to 0 (using the client) if we should not write files and you
                  * will write data using the callbacks */
-                if (callbackEnabled) {
+                if (m.callbackEnabled) {
 
                     /** - Call back for start acquisition */
                     LOG(sls::logINFOBLUE) << "Registering StartAcq()";

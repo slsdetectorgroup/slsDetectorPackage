@@ -36,7 +36,9 @@ struct FrameSyncOptions : CommonOptions {
 using ParsedOptions = std::variant<CommonOptions, MultiReceiverOptions, FrameSyncOptions>;
 
 ParsedOptions parseCommandLine(AppType app, int argc, char* argv[]);
+int GetDeprecatedCommandLineOptions(int argc, char *argv[], uint16_t &startPort, uint16_t &numReceivers, bool &optionalArg);
 void setEffectiveUID(uid_t uid);
+std::string getTypeString(const AppType app);
 std::string getVersion(AppType app);
 std::string getHelpMessage(AppType app);
 

@@ -6,11 +6,9 @@
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
-#include "sls/versionAPI.h"
 #include "CommandLineOptions.h"
 
 #include <csignal> //SIGINT
-#include <getopt.h>
 #include <semaphore.h>
 #include <unistd.h>
 
@@ -33,8 +31,6 @@ int main(int argc, char *argv[]) {
     }
 
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << " ]";
-    LOG(sls::logINFO) << "Port: " << o.port;
-
 
     // Catch signal SIGINT to close files and call destructors properly
     struct sigaction sa;

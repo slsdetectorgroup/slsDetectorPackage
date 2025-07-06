@@ -10,13 +10,11 @@
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
-#include "sls/versionAPI.h"
+#include "CommandLineOptions.h"
 
 #include <csignal> //SIGINT
 #include <cstdio>
 #include <cstring>
-#include <getopt.h>
-#include <iostream>
 #include <mutex>
 #include <ostream>
 #include <semaphore.h>
@@ -501,123 +499,14 @@ void GetDataCallback(slsDetectorDefs::sls_receiver_header &header,
     sem_post(&stat->available);
 }
 
-/**
- * Example of main program using the Receiver class
- *
- * - Defines in file for:
- *  	- Default Number of receivers is 1
- *  	- Default Start TCP port is 1954
- */
 int main(int argc, char *argv[]) {
-    uint16_t startPort = DEFAULT_TCP_RX_PORTNO;
-    uint16_t numReceivers = 1;
-    bool printHeaders = false;
-    uid_t userid = -1;
-
-    std::string help_message =
-        "\nUsage: " + std::string(argv[0]) + " Options:\n" +
-        "\t-v, --version       : Version of " + std::string(argv[0]) + ".\n" +
-        "\t-n, --num-receivers : Number of receivers.\n" +
-        "\t-p, --port          : TCP port to communicate with client for "
-        "configuration. Non-zero and 16 bit.\n" +
-        "\t-c, --print-headers : Print callback headers for debugging. "
-        "Disabled by default.\n" +
-        "\t-u, --uid           : Set effective user id if receiver started "
-        "with privileges. \n\n";
-
-    static struct option long_options[] = {
-        {"version", no_argument, nullptr, 'v'},
-        {"num-receivers", required_argument, nullptr, 'n'},
-        {"port", required_argument, nullptr, 'p'},
-        {"print-headers", no_argument, nullptr, 'c'},
-        {"uid", required_argument, nullptr, 'u'},
-        {"help", no_argument, nullptr, 'h'},
-        {nullptr, 0, nullptr, 0}};
-
-    int option_index = 0;
-    int opt = 0;
-    while (-1 != (opt = getopt_long(argc, argv, "vn:p:cu:h", long_options,
-                                    &option_index))) {
-
-        switch (opt) {
-
-        case 'v':
-            std::cout << argv[0] << " Version: " << APIRECEIVER << std::endl;
-            return (EXIT_SUCCESS);
-
-        case 'n':
-            try {
-                numReceivers = sls::StringTo<uint16_t>(optarg);
-                if (numReceivers == 0 || numReceivers > 100) {
-                    throw std::runtime_error("Invalid argument.");
-                }
-            } catch (...) {
-                throw sls::RuntimeError(
-                    "Invalid number of receivers. Max: 100." + help_message);
-            }
-            break;
-
-        case 'p':
-            try {
-                startPort = sls::StringTo<uint16_t>(optarg);
-            } catch (...) {
-                throw sls::RuntimeError("Could not scan port number." +
-                                        help_message);
-            }
-            break;
-
-        case 'c':
-            printHeaders = true;
-            break;
-
-        case 'u':
-            try {
-                userid = sls::StringTo<uint32_t>(optarg);
-            } catch (...) {
-                throw sls::RuntimeError("Invalid uid." + help_message);
-            }
-            break;
-
-        case 'h':
-            std::cout << help_message << std::endl;
-            return (EXIT_SUCCESS);
-
-        default:
-            LOG(sls::logERROR) << help_message;
-            return (EXIT_FAILURE);
-        }
-    }
-    // remaining arguments
-    if (optind < argc) {
-        LOG(sls::logERROR) << "Invalid arguments\n" << help_message;
-        return (EXIT_FAILURE);
+    auto opts = parseCommandLine(AppType::MultiReceiver, argc, argv);
+    auto& o = std::get<CommonOptions>(opts);
+    if (o.versionRequested || o.helpRequested) {
+        return EXIT_SUCCESS;
     }
 
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';
-    LOG(sls::logINFO) << "Number of Receivers: " << numReceivers;
-    LOG(sls::logINFO) << "Start TCP Port: " << startPort;
-    LOG(sls::logINFO) << "Print Callback Headers: " << printHeaders;
-
-    // set effective id if provided
-    if (userid != static_cast<uid_t>(-1)) {
-        if (geteuid() == userid) {
-            LOG(sls::logINFO)
-                << "Process already has the same Effective UID " << userid;
-        } else {
-            if (seteuid(userid) != 0) {
-                std::ostringstream oss;
-                oss << "Could not set Effective UID to " << userid;
-                throw sls::RuntimeError(oss.str());
-            }
-            if (geteuid() != userid) {
-                std::ostringstream oss;
-                oss << "Could not set Effective UID to " << userid << ". Got "
-                    << geteuid();
-                throw sls::RuntimeError(oss.str());
-            }
-            LOG(sls::logINFO) << "Process Effective UID changed to " << userid;
-        }
-    }
 
     /** - Catch signal SIGINT to close files and call destructors properly */
     struct sigaction sa;
@@ -641,7 +530,8 @@ int main(int argc, char *argv[]) {
         cprintf(RED, "Could not set handler function for SIGPIPE\n");
     }
 
-    FrameStatus stat{true, false, numReceivers};
+    auto& f = std::get<FrameSyncOptions>(opts);
+    FrameStatus stat{true, false, f.numReceivers};
     // store pointer for signal handler
     global_frame_status = &stat;
 
@@ -649,12 +539,12 @@ int main(int argc, char *argv[]) {
     void *user_data = static_cast<void *>(&stat);
     std::thread combinerThread(Correlate, &stat);
 
-    for (int i = 0; i != numReceivers; ++i) {
+    for (int i = 0; i != f.numReceivers; ++i) {
         sem_t *semaphore = new sem_t;
         sem_init(semaphore, 1, 0);
         semaphores.push_back(semaphore);
 
-        uint16_t port = startPort + i;
+        uint16_t port = o.port + i;
         threads.emplace_back([i, semaphore, port, user_data]() {
             sls::Receiver receiver(port);
             receiver.registerCallBackStartAcquisition(StartAcquisitionCallback,

@@ -7,11 +7,15 @@
 #include "sls/ToString.h"
 #include "sls/logger.h"
 
+#define MAX_RECEIVERS 1024
+
 ParsedOptions parseCommandLine(AppType app, int argc, char* argv[]) {
     CommonOptions base;
     base.port = DEFAULT_TCP_RX_PORTNO;
     MultiReceiverOptions multi;
     FrameSyncOptions frame;
+    uint16_t numReceivers = 1;
+    bool optionalArg = false;
 
     int opt;
     int option_index = 0;
@@ -31,6 +35,7 @@ ParsedOptions parseCommandLine(AppType app, int argc, char* argv[]) {
 
     static struct option multi_opts[] = {
         {"callback", no_argument, nullptr, 'c'},
+        {"rx_tcpport", required_argument, nullptr, 't'},
         {"num-receivers", required_argument, nullptr, 'n'},
         {nullptr, 0, nullptr, 0}
     };
@@ -44,7 +49,7 @@ ParsedOptions parseCommandLine(AppType app, int argc, char* argv[]) {
     std::vector<option> options;
     options.insert(options.end(), std::begin(common_opts), std::end(common_opts) - 1);
 
-     if (app == AppType::SingleReceiver) {
+    if (app == AppType::SingleReceiver) {
         options.insert(options.end(), std::begin(single_opts), std::end(single_opts) - 1);
     } else if (app == AppType::MultiReceiver) {
         options.insert(options.end(), std::begin(multi_opts), std::end(multi_opts) - 1);
@@ -55,8 +60,9 @@ ParsedOptions parseCommandLine(AppType app, int argc, char* argv[]) {
     std::string optstring = "vp:u:h";
     if (app == AppType::SingleReceiver) {
         optstring += "t:";
-    }
-    if (app == AppType::MultiReceiver || app == AppType::FrameSynchronizer) {
+    } else if (app == AppType::MultiReceiver) {
+        optstring += "cn:t:";
+    } else if (app == AppType::FrameSynchronizer) {
         optstring += "cn:";
     }
 
@@ -97,17 +103,28 @@ ParsedOptions parseCommandLine(AppType app, int argc, char* argv[]) {
                 break;
 
             case 'n':
-                if (app == AppType::MultiReceiver)
-                    multi.numReceivers = sls::StringTo<uint16_t>(optarg);
-                else if (app == AppType::FrameSynchronizer)
-                    frame.numReceivers = sls::StringTo<uint16_t>(optarg);
+                try {
+                    if (app == AppType::MultiReceiver)
+                        multi.numReceivers = sls::StringTo<uint16_t>(optarg);
+                    else if (app == AppType::FrameSynchronizer)
+                        frame.numReceivers = sls::StringTo<uint16_t>(optarg);
+                    if (numReceivers < 0 || numReceivers > MAX_RECEIVERS) {
+                        throw sls::RuntimeError("Invalid number of receivers. Max: "   + std::to_string(MAX_RECEIVERS));
+                    }
+                    multi.numReceivers = numReceivers;
+                    frame.numReceivers = numReceivers;
+                } catch (...) {
+                    throw sls::RuntimeError("Invalid number of receivers parsed." + std::to_string(numReceivers));
+                }
                 break;
 
             case 'c':
-                if (app == AppType::MultiReceiver)
+                optionalArg = true;
+                if (app == AppType::MultiReceiver) {
                     multi.callbackEnabled = true;
-                else if (app == AppType::FrameSynchronizer)
+                } else if (app == AppType::FrameSynchronizer) {
                     frame.printHeaders = true;
+                }
                 break;
 
             default:
@@ -116,20 +133,71 @@ ParsedOptions parseCommandLine(AppType app, int argc, char* argv[]) {
     }
     // remaining arguments
     if (optind < argc) {
-        throw(sls::RuntimeError(std::string("Invalid arguments\n") + getHelpMessage(app)));
+        // maintain backward compatibility of [start port] [num receivers] [optional arg] ( for multi receiver and frame synchronizer )
+        if (app != AppType::SingleReceiver && slsDetectorDefs::OK == GetDeprecatedCommandLineOptions(argc, argv, base.port, numReceivers, optionalArg)) {
+            if (app == AppType::MultiReceiver) {
+                multi.numReceivers = numReceivers;
+                multi.callbackEnabled = optionalArg;
+            } else if (app == AppType::FrameSynchronizer) {
+                frame.numReceivers = numReceivers;
+                frame.printHeaders = optionalArg;
+            }
+        } else {
+            throw sls::RuntimeError("Invalid arguments." + getHelpMessage(app));
+        }
     }
 
+    LOG(sls::logINFO) << "Number of receivers: " << numReceivers;
+    LOG(sls::logINFO) << "TCP Port: " << base.port;
     switch (app) {
-        case AppType::SingleReceiver: return base;
+        case AppType::SingleReceiver: 
+            return base;
         case AppType::MultiReceiver:
+            LOG(sls::logINFO) << "Call back enable: " << multi.callbackEnabled;
             static_cast<CommonOptions&>(multi) = base;
             return multi;
         case AppType::FrameSynchronizer:
+            LOG(sls::logINFO) << "Print headers: " << frame.printHeaders;
             static_cast<CommonOptions&>(frame) = base;
             return frame;
     }
 
     throw std::logic_error("Unknown AppType");
+}
+
+
+int GetDeprecatedCommandLineOptions(int argc, char *argv[], uint16_t &startPort, uint16_t &numReceivers, bool &optionalArg) {
+    std::string deprecatedMessage =
+        "Detected deprecated Options. Please update.\n";
+    if (argc > 1) {
+        try {
+            if (argc == 3 || argc == 4) {
+                startPort = sls::StringTo<uint16_t>(argv[1]);
+                numReceivers = sls::StringTo<uint16_t>(argv[2]);
+                if (numReceivers > MAX_RECEIVERS) {
+                    LOG(sls::logWARNING) << deprecatedMessage;
+                    LOG(sls::logERROR)
+                        << "Did you mix up the order of the arguments? Max "
+                           "number of recievers: " << MAX_RECEIVERS;
+                    return slsDetectorDefs::FAIL;
+                }
+                if (numReceivers == 0) {
+                    LOG(sls::logWARNING) << deprecatedMessage;
+                    LOG(sls::logERROR) << "Invalid number of receivers. Options: 1 - " << MAX_RECEIVERS;
+                    return slsDetectorDefs::FAIL;
+                }
+                if (argc == 4) {
+                    optionalArg = sls::StringTo<bool>(argv[3]);
+                }
+            } else
+                throw std::runtime_error("Invalid number of arguments");
+        } catch (const std::exception &e) {
+            LOG(sls::logWARNING) << deprecatedMessage;
+            LOG(sls::logERROR) << e.what();
+            return slsDetectorDefs::FAIL;
+        }
+    }
+    return slsDetectorDefs::OK;
 }
 
 void setEffectiveUID(uid_t uid) {

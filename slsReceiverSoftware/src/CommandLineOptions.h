@@ -2,12 +2,9 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
-
-
-#include <variant>
-#include <getopt.h>
-#include <unistd.h>
 #include <cstdint>
+#include <string>
+#include <variant>
 
 enum class AppType {
     MultiReceiver,
@@ -41,4 +38,4 @@ void setEffectiveUID(uid_t uid);
 std::string getTypeString(const AppType app);
 std::string getVersion(AppType app);
 std::string getHelpMessage(AppType app);
-
+void setupSignalHandler(int signal, void (*handler)(int));

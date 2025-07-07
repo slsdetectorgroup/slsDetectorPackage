@@ -7,6 +7,11 @@
 #include "sls/ToString.h"
 #include "sls/logger.h"
 
+#include <csignal>
+#include <cstring>
+#include <getopt.h>
+#include <unistd.h>
+
 #define MAX_RECEIVERS 1024
 
 ParsedOptions parseCommandLine(AppType app, int argc, char* argv[]) {
@@ -108,7 +113,7 @@ ParsedOptions parseCommandLine(AppType app, int argc, char* argv[]) {
                         multi.numReceivers = sls::StringTo<uint16_t>(optarg);
                     else if (app == AppType::FrameSynchronizer)
                         frame.numReceivers = sls::StringTo<uint16_t>(optarg);
-                    if (numReceivers < 0 || numReceivers > MAX_RECEIVERS) {
+                    if (numReceivers == 0 || numReceivers > MAX_RECEIVERS) {
                         throw sls::RuntimeError("Invalid number of receivers. Max: "   + std::to_string(MAX_RECEIVERS));
                     }
                     multi.numReceivers = numReceivers;
@@ -256,5 +261,17 @@ std::string getHelpMessage(AppType app) {
             "Disabled by default.\n" +
             "\t-u, --uid           : Set effective user id if receiver started "
             "with privileges. \n\n";
+    }
+    throw sls::RuntimeError("Unknown AppType for help message");
+}
+
+void setupSignalHandler(int signal, void (*handler)(int)) {
+    // Catch signal SIGINT to close files and call destructors properly
+    struct sigaction sa{};
+    sa.sa_handler = handler;
+    sigemptyset(&sa.sa_mask); // dont block additional signals
+    sa.sa_flags = 0;
+    if (sigaction(signal, &sa, nullptr) == -1) {
+        LOG(sls::logERROR) << "Could not set handler for " << strsignal(signal);
     }
 }

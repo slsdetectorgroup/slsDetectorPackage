@@ -2,12 +2,12 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 /* Creates the slsMultiReceiver for running multiple receivers form a single
  * binary */
+#include "CommandLineOptions.h"
 #include "sls/Receiver.h"
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
-#include "CommandLineOptions.h"
 
 #include <csignal> //SIGINT
 #include <cstring>
@@ -25,8 +25,6 @@
  * recievers */
 #define PRINT_IN_COLOR(c, f, ...)                                              \
     printf("\033[%dm" f RESET, 30 + c + 1, ##__VA_ARGS__)
-
-sem_t semaphore;
 
 /**
  * Start Acquisition Call back (slsMultiReceiver writes data if file write
@@ -131,49 +129,34 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
     // imageSize = 26000;
 }
 
+sem_t semaphore;
+
 /**
  * Control+C Interrupt Handler
  * to let all the processes know to exit properly
+ * All child processes will call the handler (parent process set to ignore)
  */
-void sigInterruptHandler(int p) { sem_post(&semaphore); }
-
-
+void sigInterruptHandler(int signal) {
+    (void)signal; // suppress unused warning if needed
+    sem_post(&semaphore);
+}
 
 int main(int argc, char *argv[]) {
 
     auto opts = parseCommandLine(AppType::MultiReceiver, argc, argv);
     auto& o = std::get<CommonOptions>(opts);
+    auto &m = std::get<MultiReceiverOptions>(opts);
     if (o.versionRequested || o.helpRequested) {
         return EXIT_SUCCESS;
     }
 
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';
 
-    /** - Catch signal SIGINT to close files and call destructors properly */
-    struct sigaction sa;
-    sa.sa_flags = 0;                     // no flags
-    sa.sa_handler = sigInterruptHandler; // handler function
-    sigemptyset(&sa.sa_mask); // dont block additional signals during invocation
-                              // of handler
-    if (sigaction(SIGINT, &sa, nullptr) == -1) {
-        LOG(sls::logERROR) << "Could not set handler function for SIGINT";
-    }
-
-    /** - Ignore SIG_PIPE, prevents global signal handler, handle locally,
-       instead of a server crashing due to client crash when writing, it just
-       gives error */
-    struct sigaction asa;
-    asa.sa_flags = 0;          // no flags
-    asa.sa_handler = SIG_IGN;  // handler function
-    sigemptyset(&asa.sa_mask); // dont block additional signals during
-                               // invocation of handler
-    if (sigaction(SIGPIPE, &asa, nullptr) == -1) {
-        LOG(sls::logERROR) << "Could not set handler function for SIGPIPE";
-    }
-
-    /** - loop over number of receivers */
+    setupSignalHandler(SIGINT, sigInterruptHandler); // close files on ctrl+c
+    setupSignalHandler(SIGPIPE, SIG_IGN); // handle locally on socket crash
     sem_init(&semaphore, 1, 0);
-    auto& m = std::get<MultiReceiverOptions>(opts);
+
+    /** - loop over receivers */
     for (int i = 0; i < m.numReceivers; ++i) {
 
         /**	- fork process to create child process */
@@ -218,6 +201,7 @@ int main(int argc, char *argv[]) {
                 }
 
                 /**	- as long as no Ctrl+C */
+                // each child process gets a copy of the semaphore
                 sem_wait(&semaphore);
                 sem_destroy(&semaphore);
 
@@ -233,15 +217,9 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    /** - Parent process ignores SIGINT (exits only when all child process
-     * exits) */
-    sa.sa_flags = 0;          // no flags
-    sa.sa_handler = SIG_IGN;  // handler function
-    sigemptyset(&sa.sa_mask); // dont block additional signals during invocation
-                              // of handler
-    if (sigaction(SIGINT, &sa, nullptr) == -1) {
-        LOG(sls::logERROR) << "Could not set handler function for SIGINT";
-    }
+    /** - Parent process ignores SIGINT and waits for all the child processes to
+     * handle the signal */
+    setupSignalHandler(SIGINT, SIG_IGN);
 
     /** - Print Ready and Instructions how to exit */
     std::cout << "Ready ... \n";

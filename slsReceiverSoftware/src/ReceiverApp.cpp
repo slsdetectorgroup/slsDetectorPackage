@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 /* slsReceiver */
+#include "CommandLineOptions.h"
 #include "sls/Receiver.h"
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
-#include "CommandLineOptions.h"
 
 #include <csignal> //SIGINT
 #include <semaphore.h>
@@ -20,7 +20,14 @@
 
 sem_t semaphore;
 
-void sigInterruptHandler(int p) { sem_post(&semaphore); }
+/**
+ * Control+C Interrupt Handler
+ * to let all the other process know to exit properly
+ */
+void sigInterruptHandler(int signal) {
+    (void)signal; // suppress unused warning if needed
+    sem_post(&semaphore);
+}
 
 int main(int argc, char *argv[]) {
 
@@ -32,28 +39,10 @@ int main(int argc, char *argv[]) {
 
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << " ]";
 
-    // Catch signal SIGINT to close files and call destructors properly
-    struct sigaction sa;
-    sa.sa_flags = 0;                     // no flags
-    sa.sa_handler = sigInterruptHandler; // handler function
-    sigemptyset(&sa.sa_mask); // dont block additional signals during invocation
-                              // of handler
-    if (sigaction(SIGINT, &sa, nullptr) == -1) {
-        LOG(sls::logERROR) << "Could not set handler function for SIGINT";
-    }
-
-    // if socket crash, ignores SISPIPE, prevents global signal handler
-    // subsequent read/write to socket gives error - must handle locally
-    struct sigaction asa;
-    asa.sa_flags = 0;          // no flags
-    asa.sa_handler = SIG_IGN;  // handler function
-    sigemptyset(&asa.sa_mask); // dont block additional signals during
-                               // invocation of handler
-    if (sigaction(SIGPIPE, &asa, nullptr) == -1) {
-        LOG(sls::logERROR) << "Could not set handler function for SIGPIPE";
-    }
-
+    setupSignalHandler(SIGINT, sigInterruptHandler); // close files on ctrl+c
+    setupSignalHandler(SIGPIPE, SIG_IGN); // handle locally on socket crash
     sem_init(&semaphore, 1, 0);
+
     try {
         sls::Receiver r(o.port);
         LOG(sls::logINFO) << "[ Press \'Ctrl+c\' to exit ]";

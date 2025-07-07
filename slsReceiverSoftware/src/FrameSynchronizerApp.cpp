@@ -5,12 +5,12 @@
  * reconstructing image. Sample python script for pull socket for this combiner
  * in python/scripts folder. TODO: Not handling empty frames from one socket
  */
+#include "CommandLineOptions.h"
 #include "sls/Receiver.h"
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
-#include "CommandLineOptions.h"
 
 #include <csignal> //SIGINT
 #include <cstdio>
@@ -28,7 +28,6 @@
 #include <zmq.h>
 
 std::vector<std::thread> threads;
-std::vector<sem_t *> semaphores;
 sls::TLogLevel printHeadersLevel = sls::logDEBUG;
 
 /** Define Colors to print data call back in different colors for different
@@ -56,16 +55,6 @@ struct FrameStatus {
     }
 };
 FrameStatus *global_frame_status = nullptr;
-
-/**
- * Control+C Interrupt Handler
- * to let all the processes know to exit properly
- */
-void sigInterruptHandler(int p) {
-    for (size_t i = 0; i != semaphores.size(); ++i) {
-        sem_post(semaphores[i]);
-    }
-}
 
 void cleanup() {
     if (global_frame_status) {
@@ -499,38 +488,37 @@ void GetDataCallback(slsDetectorDefs::sls_receiver_header &header,
     sem_post(&stat->available);
 }
 
+std::vector<sem_t> semaphores;
+
+/**
+ * Control+C Interrupt Handler
+ * to let all the processes know to exit properly
+ * Only the main thread will call this handler
+ */
+void sigInterruptHandler(int p) {
+    (void)signal; // suppress unused warning if needed
+    for (auto &s : semaphores) {
+        sem_post(&s);
+    }
+}
+
 int main(int argc, char *argv[]) {
     auto opts = parseCommandLine(AppType::MultiReceiver, argc, argv);
-    auto& o = std::get<CommonOptions>(opts);
+    auto &o = std::get<CommonOptions>(opts);
+    auto &f = std::get<FrameSyncOptions>(opts);
     if (o.versionRequested || o.helpRequested) {
         return EXIT_SUCCESS;
     }
 
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';
 
-    /** - Catch signal SIGINT to close files and call destructors properly */
-    struct sigaction sa;
-    sa.sa_flags = 0;                     // no flags
-    sa.sa_handler = sigInterruptHandler; // handler function
-    sigemptyset(&sa.sa_mask); // dont block additional signals during invocation
-                              // of handler
-    if (sigaction(SIGINT, &sa, nullptr) == -1) {
-        cprintf(RED, "Could not set handler function for SIGINT\n");
+    setupSignalHandler(SIGINT, sigInterruptHandler); // close files on ctrl+c
+    setupSignalHandler(SIGPIPE, SIG_IGN); // handle locally on socket crash
+    semaphores.resize(f.numReceivers);
+    for (auto &s : semaphores) {
+        sem_init(&s, 1, 0);
     }
 
-    /** - Ignore SIG_PIPE, prevents global signal handler, handle locally,
-       instead of a server crashing due to client crash when writing, it just
-       gives error */
-    struct sigaction asa;
-    asa.sa_flags = 0;          // no flags
-    asa.sa_handler = SIG_IGN;  // handler function
-    sigemptyset(&asa.sa_mask); // dont block additional signals during
-                               // invocation of handler
-    if (sigaction(SIGPIPE, &asa, nullptr) == -1) {
-        cprintf(RED, "Could not set handler function for SIGPIPE\n");
-    }
-
-    auto& f = std::get<FrameSyncOptions>(opts);
     FrameStatus stat{true, false, f.numReceivers};
     // store pointer for signal handler
     global_frame_status = &stat;
@@ -540,11 +528,8 @@ int main(int argc, char *argv[]) {
     std::thread combinerThread(Correlate, &stat);
 
     for (int i = 0; i != f.numReceivers; ++i) {
-        sem_t *semaphore = new sem_t;
-        sem_init(semaphore, 1, 0);
-        semaphores.push_back(semaphore);
-
         uint16_t port = o.port + i;
+        sem_t *semaphore = &semaphores[i];
         threads.emplace_back([i, semaphore, port, user_data]() {
             sls::Receiver receiver(port);
             receiver.registerCallBackStartAcquisition(StartAcquisitionCallback,
@@ -552,10 +537,11 @@ int main(int argc, char *argv[]) {
             receiver.registerCallBackAcquisitionFinished(
                 AcquisitionFinishedCallback, user_data);
             receiver.registerCallBackRawDataReady(GetDataCallback, user_data);
+
             /**	- as long as no Ctrl+C */
+            // each child shares the common semaphore
             sem_wait(semaphore);
             sem_destroy(semaphore);
-            delete semaphore;
 
             // clean up frames
             if (i == 0)
@@ -563,8 +549,8 @@ int main(int argc, char *argv[]) {
         });
     }
 
-    for (auto &thread : threads) {
-        thread.join();
+    for (auto &t : threads) {
+        t.join();
     }
 
     {

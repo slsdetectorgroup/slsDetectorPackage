@@ -143,7 +143,8 @@ void sigInterruptHandler(int signal) {
 
 int main(int argc, char *argv[]) {
 
-    auto opts = parseCommandLine(AppType::MultiReceiver, argc, argv);
+    CommandLineOptions cli(AppType::SingleReceiver);
+    auto opts = cli.parse(argc, argv);
     auto& o = std::get<CommonOptions>(opts);
     auto &m = std::get<MultiReceiverOptions>(opts);
     if (o.versionRequested || o.helpRequested) {
@@ -152,8 +153,11 @@ int main(int argc, char *argv[]) {
 
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';
 
-    setupSignalHandler(SIGINT, sigInterruptHandler); // close files on ctrl+c
-    setupSignalHandler(SIGPIPE, SIG_IGN); // handle locally on socket crash
+    // close files on ctrl+c
+    CommandLineOptions::setupSignalHandler(SIGINT, sigInterruptHandler);
+    // handle locally on socket crash
+    CommandLineOptions::setupSignalHandler(SIGPIPE, SIG_IGN);
+
     sem_init(&semaphore, 1, 0);
 
     /** - loop over receivers */
@@ -219,7 +223,7 @@ int main(int argc, char *argv[]) {
 
     /** - Parent process ignores SIGINT and waits for all the child processes to
      * handle the signal */
-    setupSignalHandler(SIGINT, SIG_IGN);
+    CommandLineOptions::setupSignalHandler(SIGINT, SIG_IGN);
 
     /** - Print Ready and Instructions how to exit */
     std::cout << "Ready ... \n";

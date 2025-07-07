@@ -503,7 +503,8 @@ void sigInterruptHandler(int p) {
 }
 
 int main(int argc, char *argv[]) {
-    auto opts = parseCommandLine(AppType::MultiReceiver, argc, argv);
+    CommandLineOptions cli(AppType::SingleReceiver);
+    auto opts = cli.parse(argc, argv);
     auto &o = std::get<CommonOptions>(opts);
     auto &f = std::get<FrameSyncOptions>(opts);
     if (o.versionRequested || o.helpRequested) {
@@ -512,8 +513,11 @@ int main(int argc, char *argv[]) {
 
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';
 
-    setupSignalHandler(SIGINT, sigInterruptHandler); // close files on ctrl+c
-    setupSignalHandler(SIGPIPE, SIG_IGN); // handle locally on socket crash
+    // close files on ctrl+c
+    CommandLineOptions::setupSignalHandler(SIGINT, sigInterruptHandler);
+    // handle locally on socket crash
+    CommandLineOptions::setupSignalHandler(SIGPIPE, SIG_IGN);
+
     semaphores.resize(f.numReceivers);
     for (auto &s : semaphores) {
         sem_init(&s, 1, 0);

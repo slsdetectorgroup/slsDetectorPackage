@@ -37,10 +37,11 @@ using ParsedOptions = std::variant<CommonOptions, MultiReceiverOptions, FrameSyn
 class CommandLineOptions {
   public:
     constexpr explicit CommandLineOptions(AppType app) : appType_(app) {}
+    ParsedOptions parse(const std::vector<std::string> &args); // for testing
     ParsedOptions parse(int argc, char *argv[]);
-    std::string getTypeString();
-    std::string getVersion();
-    std::string getHelpMessage();
+    std::string getTypeString() const;
+    std::string getVersion() const;
+    std::string getHelpMessage() const;
     static void setupSignalHandler(int signal, void (*handler)(int));
     static void setEffectiveUID(uid_t uid);
 
@@ -49,14 +50,17 @@ class CommandLineOptions {
     std::vector<option> buildOptionList() const;
     std::string buildOptString() const;
 
+    static uint16_t parsePort(const char *optarg);
+    static uint16_t parseNumReceivers(const char *optarg);
+    static uid_t parseUID(const char *optarg);
     void handleCommonOption(int opt, const char *optarg, CommonOptions &base);
     void handleAppSpecificOption(int opt, const char *optarg,
                                  CommonOptions &base,
                                  MultiReceiverOptions &multi,
                                  FrameSyncOptions &frame);
 
-    static int GetDeprecated(int argc, char *argv[], uint16_t &startPort,
-                             uint16_t &numReceivers, bool &optionalArg);
+    static void GetDeprecated(int argc, char *argv[], uint16_t &startPort,
+                              uint16_t &numReceivers, bool &optionalArg);
 
     static constexpr uint16_t MAX_RECEIVERS = 1000;
 };

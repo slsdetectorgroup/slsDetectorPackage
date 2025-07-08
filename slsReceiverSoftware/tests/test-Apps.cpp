@@ -146,7 +146,7 @@ namespace sls {
             REQUIRE_NOTHROW(s.parse({"", "-n", "10"})); // valid
 
             auto opts = s.parse({""});
-            std::visit([&](const auto& o) {
+            std::visit([](const auto& o) {
                 using T = decltype(o);
                     if constexpr (is_type<MultiReceiverOptions, T>()) {
                         REQUIRE(o.numReceivers == 1); // default
@@ -159,7 +159,7 @@ namespace sls {
             }, opts);
 
             opts = s.parse({"", "-n", "5"});
-            std::visit([&](const auto& o) {
+            std::visit([](const auto& o) {
                 using T = decltype(o);
                     if constexpr (is_type<MultiReceiverOptions, T>()) {
                         REQUIRE(o.numReceivers == 5);
@@ -173,7 +173,7 @@ namespace sls {
 
 
             opts = s.parse({"", "-c", "-n", "3"});
-            std::visit([&](const auto& o) {
+            std::visit([](const auto& o) {
                 using T = decltype(o);
                     if constexpr (is_type<MultiReceiverOptions, T>()) {
                         REQUIRE(o.numReceivers == 3);
@@ -213,7 +213,7 @@ namespace sls {
 
                 // default
                 auto opts = s.parse({""});
-                std::visit([&](const auto& o) {
+                std::visit([](const auto& o) {
                     using T = decltype(o);
                     if constexpr (is_type<MultiReceiverOptions, T>()) {
                             REQUIRE(o.port == 1954);
@@ -228,7 +228,7 @@ namespace sls {
                 }, opts);
 
                 opts = s.parse({"", "1958", "10"});
-                std::visit([&](const auto& o) {
+                std::visit([](const auto& o) {
                     using T = decltype(o);
                     if constexpr (is_type<MultiReceiverOptions, T>()) {
                             REQUIRE(o.port == 1958);
@@ -243,7 +243,7 @@ namespace sls {
                 }, opts);
 
                 opts = s.parse({"", "1958", "10", "1"});
-                std::visit([&](const auto& o) {
+                std::visit([](const auto& o) {
                     using T = decltype(o);
                     if constexpr (is_type<MultiReceiverOptions, T>()) {
                             REQUIRE(o.port == 1958);

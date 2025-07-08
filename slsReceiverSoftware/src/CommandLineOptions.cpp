@@ -28,7 +28,8 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
     MultiReceiverOptions multi;
     FrameSyncOptions frame;
 
-    auto optString = buildOptString();
+    // leading  '+' to stop parsing at first non-option argument (to allow for deprecated options)
+    auto optString = "+" + buildOptString(); 
     auto longOptions = buildOptionList();
 
     optind = 0; // reset getopt
@@ -52,7 +53,7 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
             handleAppSpecificOption(opt, optarg, base, multi, frame);
             break;
         default:
-            throw sls::RuntimeError("Invalid arguments." + getHelpMessage());
+            throw sls::RuntimeError("Invalidddd arguments." + getHelpMessage());
         }
     }
 
@@ -237,7 +238,7 @@ void CommandLineOptions::handleAppSpecificOption(int opt, const char *optarg,
     }
 
     case 't':
-        LOG(sls::logWARNING) << "Deprecated option 't' and '--rx_tcport'. Use "
+        LOG(sls::logWARNING) << "Deprecated option '-t' and '--rx_tcport'. Use "
                                 "'p' or '--port' instead.";
         base.port = parsePort(optarg);
         break;

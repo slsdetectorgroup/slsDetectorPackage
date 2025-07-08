@@ -58,7 +58,9 @@ int main(int argc, char *argv[]) {
         sem_wait(&semaphore);
         sem_destroy(&semaphore);
     } catch (...) {
-        // pass
+        sem_destroy(&semaphore);
+        LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
+        throw;
     }
     LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
     LOG(sls::logINFO) << "Exiting Receiver";

@@ -503,16 +503,15 @@ void sigInterruptHandler(int p) {
 }
 
 int main(int argc, char *argv[]) {
-    CommandLineOptions cli(AppType::SingleReceiver);
+    CommandLineOptions cli(AppType::FrameSynchronizer);
     ParsedOptions opts;
     try {
         opts = cli.parse(argc, argv);
     } catch (sls::RuntimeError &e) {
         return EXIT_FAILURE;
     }
-    auto &o = std::get<CommonOptions>(opts);
     auto &f = std::get<FrameSyncOptions>(opts);
-    if (o.versionRequested || o.helpRequested) {
+    if (f.versionRequested || f.helpRequested) {
         return EXIT_SUCCESS;
     }
 
@@ -525,7 +524,7 @@ int main(int argc, char *argv[]) {
 
     semaphores.resize(f.numReceivers);
     for (auto &s : semaphores) {
-        sem_init(&s, 1, 0);
+        sem_init(&s, 0, 0);
     }
 
     FrameStatus stat{true, false, f.numReceivers};
@@ -537,24 +536,35 @@ int main(int argc, char *argv[]) {
     std::thread combinerThread(Correlate, &stat);
 
     for (int i = 0; i != f.numReceivers; ++i) {
-        uint16_t port = o.port + i;
+        uint16_t port = f.port + i;
         sem_t *semaphore = &semaphores[i];
         threads.emplace_back([i, semaphore, port, user_data]() {
-            sls::Receiver receiver(port);
-            receiver.registerCallBackStartAcquisition(StartAcquisitionCallback,
-                                                      user_data);
-            receiver.registerCallBackAcquisitionFinished(
-                AcquisitionFinishedCallback, user_data);
-            receiver.registerCallBackRawDataReady(GetDataCallback, user_data);
+            LOG(sls::logINFOBLUE)
+                << "Thread " << i << " [ Tid: " << gettid() << ']';
+            try {
+                sls::Receiver receiver(port);
+                receiver.registerCallBackStartAcquisition(StartAcquisitionCallback,
+                                                        user_data);
+                receiver.registerCallBackAcquisitionFinished(
+                    AcquisitionFinishedCallback, user_data);
+                receiver.registerCallBackRawDataReady(GetDataCallback, user_data);
 
-            /**	- as long as no Ctrl+C */
-            // each child shares the common semaphore
-            sem_wait(semaphore);
-            sem_destroy(semaphore);
-
-            // clean up frames
-            if (i == 0)
+                /**	- as long as no Ctrl+C */
+                // each child shares the common semaphore
+                sem_wait(semaphore);
+            } catch (...) {
+                LOG(sls::logINFOBLUE)
+                    << "Exiting Thread " << i  << " [ Tid: " << gettid() << " ]";
+                for (auto &s : semaphores) 
+                    sem_destroy(&s);
                 cleanup();
+                if (global_frame_status)
+                    sem_destroy(&(global_frame_status->available));
+                std::exit(EXIT_FAILURE);
+            }
+            LOG(sls::logINFOBLUE)
+                    << "Exiting Thread " << i  << " [ Tid: " << gettid() << " ]";
+            sem_destroy(semaphore);
         });
     }
 
@@ -562,6 +572,7 @@ int main(int argc, char *argv[]) {
         t.join();
     }
 
+    cleanup();
     {
         std::lock_guard<std::mutex> lock(stat.mtx);
         stat.terminate = true;

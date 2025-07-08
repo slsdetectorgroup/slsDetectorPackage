@@ -143,16 +143,15 @@ void sigInterruptHandler(int signal) {
 
 int main(int argc, char *argv[]) {
 
-    CommandLineOptions cli(AppType::SingleReceiver);
+    CommandLineOptions cli(AppType::MultiReceiver);
     ParsedOptions opts;
     try {
         opts = cli.parse(argc, argv);
     } catch (sls::RuntimeError &e) {
         return EXIT_FAILURE;
     }
-    auto& o = std::get<CommonOptions>(opts);
     auto &m = std::get<MultiReceiverOptions>(opts);
-    if (o.versionRequested || o.helpRequested) {
+    if (m.versionRequested || m.helpRequested) {
         return EXIT_SUCCESS;
     }
 
@@ -185,7 +184,7 @@ int main(int argc, char *argv[]) {
                 << "Child process " << i << " [ Tid: " << gettid() << ']';
 
             try {
-                uint16_t port = o.port + i;
+                uint16_t port = m.port + i;
                 sls::Receiver receiver(port);
 
                 /**	- register callbacks. remember to set file write enable
@@ -215,6 +214,7 @@ int main(int argc, char *argv[]) {
                 sem_destroy(&semaphore);
 
             } catch (...) {
+                sem_destroy(&semaphore);
                 LOG(sls::logINFOBLUE)
                     << "Exiting Child Process [ Tid: " << gettid() << " ]";
                 throw;
@@ -250,10 +250,6 @@ int main(int argc, char *argv[]) {
                 break;
             }
         }
-
-        // child closed
-        LOG(sls::logINFOBLUE)
-            << "Exiting Child Process [ Tid: " << childPid << ']';
     }
 
     std::cout << "Goodbye!\n";

@@ -200,7 +200,7 @@ namespace sls {
                 REQUIRE_THROWS(s.parse({"", "110", "1954"}));// mix order
                 REQUIRE_THROWS(s.parse({"", "1023", "10"}));// privileged port
                 REQUIRE_THROWS(s.parse({"", "2000", "0"}));// invalid num receivers
-                REQUIRE_THROWS(s.parse({"", "2000", "1000"}));// invalid num receivers
+                REQUIRE_THROWS(s.parse({"", "2000", "1001"}));// invalid num receivers
                 REQUIRE_THROWS(s.parse({"", "1954", "1", "2"}));// invalid 3rd opt
 
                 REQUIRE_NOTHROW(s.parse({""})); 
@@ -217,13 +217,13 @@ namespace sls {
                             REQUIRE(o.callbackEnabled == false);
 
                     } else if constexpr (is_type<FrameSyncOptions>(o)) {
-                            REQUIRE(o.port == 1958);
-                            REQUIRE(o.numReceivers == 10);
+                            REQUIRE(o.port == 1954);
+                            REQUIRE(o.numReceivers == 1);
                             REQUIRE(o.printHeaders == false); // default
                     }
                 }, opts);
 
-                auto opts = s.parse({"", "1958", "10"});
+                opts = s.parse({"", "1958", "10"});
                 std::visit([&](const auto& o) {
                     if constexpr (is_type<MultiReceiverOptions>(o)) {
                             REQUIRE(o.port == 1958);
@@ -237,7 +237,7 @@ namespace sls {
                     }
                 }, opts);
 
-                auto opts = s.parse({"", "1958", "1", "1"});
+                opts = s.parse({"", "1958", "10", "1"});
                 std::visit([&](const auto& o) {
                     if constexpr (is_type<MultiReceiverOptions>(o)) {
                             REQUIRE(o.port == 1958);
@@ -264,13 +264,13 @@ namespace sls {
         REQUIRE(n == 1);
         REQUIRE(o == false);
        
-        auto [p, n, o] = CommandLineOptions::ParseDeprecated({"", "1955", "6"});
-        REQUIRE(p == 1954);
+        std::tie(p, n, o) = CommandLineOptions::ParseDeprecated({"", "1955", "6"});
+        REQUIRE(p == 1955);
         REQUIRE(n == 6);
         REQUIRE(o == false);
 
-        auto [p, n, o] = CommandLineOptions::ParseDeprecated({"", "1955", "6", "1"});
-        REQUIRE(p == 1954);
+        std::tie(p, n, o) = CommandLineOptions::ParseDeprecated({"", "1955", "6", "1"});
+        REQUIRE(p == 1955);
         REQUIRE(n == 6);
         REQUIRE(o == true);
     }

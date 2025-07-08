@@ -28,9 +28,6 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
     MultiReceiverOptions multi;
     FrameSyncOptions frame;
 
-    uint16_t numReceivers = 1;
-    bool optionalArg = false;
-
     auto optString = buildOptString();
     auto longOptions = buildOptionList();
 
@@ -62,34 +59,40 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
     // remaining arguments
     if (optind < argc) {
 
-        // no deprecated arguments
+        // deprecated and current options => invalid
+        if (base.port != DEFAULT_TCP_RX_PORTNO ||
+            multi.numReceivers != 1 || frame.numReceivers != 1 || multi.callbackEnabled != false || frame.printHeaders != false) {
+            LOG(sls::logWARNING)
+                << "Cannot use both deprecated options and the valid options simultaneously. Please use only the new options.\n";
+        }
+
+        // unsupported deprecated arguments
         if (appType_ == AppType::SingleReceiver) {
             throw sls::RuntimeError("Invalid arguments." + getHelpMessage());
         }
 
-        // maintain backward compatibility of [start port] [num receivers]
-        // [optional arg]
-        if (argc != 3 && argc != 4) {
-            throw sls::RuntimeError("Invalid number of arguments." +
-                                    getHelpMessage());
-        }
-
-        GetDeprecated(argc, argv, base.port, numReceivers, optionalArg);
+        // parse deprecated arguments
+        std::vector<std::string> args(argv, argv + argc);
+        auto [p, n, o] = ParseDeprecated(args);
+        
+        // set options
+        base.port = p;
         if (appType_ == AppType::MultiReceiver) {
-            multi.numReceivers = numReceivers;
-            multi.callbackEnabled = optionalArg;
+            multi.numReceivers = n;
+            multi.callbackEnabled = o;
         } else if (appType_ == AppType::FrameSynchronizer) {
-            frame.numReceivers = numReceivers;
-            frame.printHeaders = optionalArg;
+            frame.numReceivers = n;
+            frame.printHeaders = o;
         }
     }
 
     // Logging
-    LOG(sls::logINFO) << "Number of receivers: " << numReceivers;
     LOG(sls::logINFO) << "TCP Port: " << base.port;
     if (appType_ == AppType::MultiReceiver) {
+        LOG(sls::logINFO) << "Number of receivers: " << multi.numReceivers;
         LOG(sls::logINFO) << "Callback enabled: " << multi.callbackEnabled;
     } else if (appType_ == AppType::FrameSynchronizer) {
+        LOG(sls::logINFO) << "Number of receivers: " << frame.numReceivers;
         LOG(sls::logINFO) << "Print headers: " << frame.printHeaders;
     }
 
@@ -241,30 +244,37 @@ void CommandLineOptions::handleAppSpecificOption(int opt, const char *optarg,
     }
 }
 
-void CommandLineOptions::GetDeprecated(int argc, char *argv[],
-                                       uint16_t &startPort,
-                                       uint16_t &numReceivers,
-                                       bool &optionalArg) {
-    if (argc > 1) {
-        if (argc == 3 || argc == 4) {
-            LOG(sls::logWARNING)
-                << "Detected deprecated Options. Please update.\n";
+/* maintain backward compatibility of [start port] [num receivers] [optional arg] */
+std::tuple<uint16_t, uint16_t, bool> CommandLineOptions::ParseDeprecated(const std::vector<std::string> &args) {
 
-            startPort = parsePort(argv[1]);
-            numReceivers = parseNumReceivers(argv[2]);
-
-            if (argc == 4) {
-                try {
-                    optionalArg = sls::StringTo<bool>(argv[3]);
-                } catch (...) {
-                    throw sls::RuntimeError("Invalid optional argument "
-                                            "parsed. Expected 1 (true) or "
-                                            "0 (false).");
-                }
-            }
-        } else
-            throw std::runtime_error("Invalid number of arguments");
+    size_t nargs = args.size();
+    if (nargs != 1 && nargs != 3 && nargs != 4) {
+        throw sls::RuntimeError("Invalid number of arguments.");
     }
+
+    LOG(sls::logWARNING)
+        << "Deprecated options will be removed in future versions. "
+                "Please use the new options.\n";
+
+    // default deprecated values
+    if (nargs == 1) {
+        return std::make_tuple(DEFAULT_TCP_RX_PORTNO, 1, false);
+    }
+
+    // parse deprecated arguments
+    uint16_t p = parsePort(args[1].c_str());
+    uint16_t n = parseNumReceivers(args[2].c_str());
+    bool o = false;
+    if (nargs == 4) {
+        try {
+            o = sls::StringTo<bool>(args[3].c_str());
+        } catch (...) {
+            throw sls::RuntimeError("Invalid optional argument "
+                                    "parsed. Expected 1 (true) or "
+                                    "0 (false).");
+        }
+    }
+    return std::make_tuple(p, n, o);
 }
 
 std::string CommandLineOptions::getTypeString() const {

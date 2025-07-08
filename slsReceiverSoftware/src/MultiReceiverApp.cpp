@@ -144,7 +144,12 @@ void sigInterruptHandler(int signal) {
 int main(int argc, char *argv[]) {
 
     CommandLineOptions cli(AppType::SingleReceiver);
-    auto opts = cli.parse(argc, argv);
+    ParsedOptions opts;
+    try {
+        opts = cli.parse(argc, argv);
+    } catch (sls::RuntimeError &e) {
+        return EXIT_FAILURE;
+    }
     auto& o = std::get<CommonOptions>(opts);
     auto &m = std::get<MultiReceiverOptions>(opts);
     if (o.versionRequested || o.helpRequested) {

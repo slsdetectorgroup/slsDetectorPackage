@@ -7,6 +7,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <tuple>
 
 enum class AppType {
     MultiReceiver,
@@ -44,7 +45,7 @@ class CommandLineOptions {
     std::string getHelpMessage() const;
     static void setupSignalHandler(int signal, void (*handler)(int));
     static void setEffectiveUID(uid_t uid);
-
+    static std::tuple<uint16_t, uint16_t, bool> ParseDeprecated(const std::vector<std::string> &args);
   private:
     AppType appType_;
     std::vector<option> buildOptionList() const;
@@ -59,8 +60,8 @@ class CommandLineOptions {
                                  MultiReceiverOptions &multi,
                                  FrameSyncOptions &frame);
 
-    static void GetDeprecated(int argc, char *argv[], uint16_t &startPort,
-                              uint16_t &numReceivers, bool &optionalArg);
+
+
 
     static constexpr uint16_t MAX_RECEIVERS = 1000;
 };

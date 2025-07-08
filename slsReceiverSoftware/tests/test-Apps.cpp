@@ -9,7 +9,7 @@
 namespace sls {
 
     template<typename T, typename U>
-    constexpr bool is_type(const U&) {
+    constexpr bool is_type() {
         return std::is_same_v<std::decay_t<U>, T>;
     }
 
@@ -147,11 +147,12 @@ namespace sls {
 
             auto opts = s.parse({""});
             std::visit([&](const auto& o) {
-                if constexpr (is_type<MultiReceiverOptions>(o)) {
+                using T = decltype(o);
+                    if constexpr (is_type<MultiReceiverOptions, T>()) {
                         REQUIRE(o.numReceivers == 1); // default
                         REQUIRE(o.callbackEnabled == false);
 
-                } else if constexpr (is_type<FrameSyncOptions>(o)) {
+                } else if constexpr (is_type<FrameSyncOptions, T>()) {
                         REQUIRE(o.numReceivers == 1); // default
                         REQUIRE(o.printHeaders == false);
                 }
@@ -159,11 +160,12 @@ namespace sls {
 
             opts = s.parse({"", "-n", "5"});
             std::visit([&](const auto& o) {
-                if constexpr (is_type<MultiReceiverOptions>(o)) {
+                using T = decltype(o);
+                    if constexpr (is_type<MultiReceiverOptions, T>()) {
                         REQUIRE(o.numReceivers == 5);
                         REQUIRE(o.callbackEnabled == false); // default
 
-                } else if constexpr (is_type<FrameSyncOptions>(o)) {
+                } else if constexpr (is_type<FrameSyncOptions, T>()) {
                         REQUIRE(o.numReceivers == 5);
                         REQUIRE(o.printHeaders == false); // default
                 }
@@ -172,11 +174,12 @@ namespace sls {
 
             opts = s.parse({"", "-c", "-n", "3"});
             std::visit([&](const auto& o) {
-                if constexpr (is_type<MultiReceiverOptions>(o)) {
+                using T = decltype(o);
+                    if constexpr (is_type<MultiReceiverOptions, T>()) {
                         REQUIRE(o.numReceivers == 3);
                         REQUIRE(o.callbackEnabled == true);
 
-                } else if constexpr (is_type<FrameSyncOptions>(o)) {
+                } else if constexpr (is_type<FrameSyncOptions, T>()) {
                         REQUIRE(o.numReceivers == 3);
                         REQUIRE(o.printHeaders == true);
                 }
@@ -211,12 +214,13 @@ namespace sls {
                 // default
                 auto opts = s.parse({""});
                 std::visit([&](const auto& o) {
-                    if constexpr (is_type<MultiReceiverOptions>(o)) {
+                    using T = decltype(o);
+                    if constexpr (is_type<MultiReceiverOptions, T>()) {
                             REQUIRE(o.port == 1954);
                             REQUIRE(o.numReceivers == 1);
                             REQUIRE(o.callbackEnabled == false);
 
-                    } else if constexpr (is_type<FrameSyncOptions>(o)) {
+                    } else if constexpr (is_type<FrameSyncOptions, T>()) {
                             REQUIRE(o.port == 1954);
                             REQUIRE(o.numReceivers == 1);
                             REQUIRE(o.printHeaders == false); // default
@@ -225,12 +229,13 @@ namespace sls {
 
                 opts = s.parse({"", "1958", "10"});
                 std::visit([&](const auto& o) {
-                    if constexpr (is_type<MultiReceiverOptions>(o)) {
+                    using T = decltype(o);
+                    if constexpr (is_type<MultiReceiverOptions, T>()) {
                             REQUIRE(o.port == 1958);
                             REQUIRE(o.numReceivers == 10);
                             REQUIRE(o.callbackEnabled == false); // default
 
-                    } else if constexpr (is_type<FrameSyncOptions>(o)) {
+                    } else if constexpr (is_type<FrameSyncOptions, T>()) {
                             REQUIRE(o.port == 1958);
                             REQUIRE(o.numReceivers == 10);
                             REQUIRE(o.printHeaders == false); // default
@@ -239,12 +244,13 @@ namespace sls {
 
                 opts = s.parse({"", "1958", "10", "1"});
                 std::visit([&](const auto& o) {
-                    if constexpr (is_type<MultiReceiverOptions>(o)) {
+                    using T = decltype(o);
+                    if constexpr (is_type<MultiReceiverOptions, T>()) {
                             REQUIRE(o.port == 1958);
                             REQUIRE(o.numReceivers == 10);
                             REQUIRE(o.callbackEnabled == true); // default
 
-                    } else if constexpr (is_type<FrameSyncOptions>(o)) {
+                    } else if constexpr (is_type<FrameSyncOptions, T>()) {
                             REQUIRE(o.port == 1958);
                             REQUIRE(o.numReceivers == 10);
                             REQUIRE(o.printHeaders == true); // default

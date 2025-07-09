@@ -50,7 +50,7 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
             handleAppSpecificOption(opt, optarg, base, multi, frame);
             break;
         default:
-            throw sls::RuntimeError("Invalidddd arguments." + getHelpMessage());
+            throw sls::RuntimeError("Invalid arguments." + getHelpMessage());
         }
     }
 

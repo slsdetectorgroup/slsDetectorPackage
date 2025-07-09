@@ -541,45 +541,44 @@ int main(int argc, char *argv[]) {
     void *user_data = static_cast<void *>(&stat);
     std::thread combinerThread(Correlate, &stat);
 
+    std::exception_ptr threadException = nullptr;
     for (int i = 0; i != f.numReceivers; ++i) {
         uint16_t port = f.port + i;
         sem_t *semaphore = &semaphores[i];
-        threads.emplace_back([i, semaphore, port, user_data]() {
-            LOG(sls::logINFOBLUE)
-                << "Thread " << i << " [ Tid: " << gettid() << ']';
-            try {
-                sls::Receiver receiver(port);
-                receiver.registerCallBackStartAcquisition(
-                    StartAcquisitionCallback, user_data);
-                receiver.registerCallBackAcquisitionFinished(
-                    AcquisitionFinishedCallback, user_data);
-                receiver.registerCallBackRawDataReady(GetDataCallback,
-                                                      user_data);
+        threads.emplace_back(
+            [i, semaphore, port, user_data, &threadException]() {
+                LOG(sls::logINFOBLUE)
+                    << "Thread " << i << " [ Tid: " << gettid() << ']';
+                try {
+                    sls::Receiver receiver(port);
+                    receiver.registerCallBackStartAcquisition(
+                        StartAcquisitionCallback, user_data);
+                    receiver.registerCallBackAcquisitionFinished(
+                        AcquisitionFinishedCallback, user_data);
+                    receiver.registerCallBackRawDataReady(GetDataCallback,
+                                                          user_data);
 
-                /**	- as long as no Ctrl+C */
-                // each child shares the common semaphore
-                sem_wait(semaphore);
-            } catch (...) {
+                    /**	- as long as no Ctrl+C */
+                    // each child shares the common semaphore
+                    sem_wait(semaphore);
+                } catch (...) {
+                    // capture exception and raise SIGINT to exit gracefully
+                    threadException = std::current_exception();
+                    raise(SIGINT);
+                }
                 LOG(sls::logINFOBLUE)
                     << "Exiting Thread " << i << " [ Tid: " << gettid() << " ]";
-                for (auto &s : semaphores)
-                    sem_destroy(&s);
-                cleanup();
-                if (global_frame_status)
-                    sem_destroy(&(global_frame_status->available));
-                std::exit(EXIT_FAILURE);
-            }
-            LOG(sls::logINFOBLUE)
-                << "Exiting Thread " << i << " [ Tid: " << gettid() << " ]";
-            sem_destroy(semaphore);
-        });
+            });
     }
 
     for (auto &t : threads) {
         t.join();
     }
 
+    for (auto &s : semaphores)
+        sem_destroy(&s);
     cleanup();
+
     {
         std::lock_guard<std::mutex> lock(stat.mtx);
         stat.terminate = true;
@@ -587,6 +586,19 @@ int main(int argc, char *argv[]) {
     }
     combinerThread.join();
     sem_destroy(&stat.available);
+
+    if (threadException) {
+        try {
+            std::rethrow_exception(threadException);
+        } catch (const std::exception &e) {
+            LOG(sls::logERROR)
+                << "Unhandled exception from thread: " << e.what();
+            return EXIT_FAILURE;
+        } catch (...) {
+            LOG(sls::logERROR) << "Unknown exception occurred in thread";
+            return EXIT_FAILURE;
+        }
+    }
 
     LOG(sls::logINFOBLUE) << "Goodbye!";
     return EXIT_SUCCESS;

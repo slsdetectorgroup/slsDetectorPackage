@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     } catch (sls::RuntimeError &e) {
         return EXIT_FAILURE;
     }
-    auto& o = std::get<CommonOptions>(opts);
+    auto &o = std::get<CommonOptions>(opts);
     if (o.versionRequested || o.helpRequested) {
         return EXIT_SUCCESS;
     }

@@ -549,19 +549,20 @@ int main(int argc, char *argv[]) {
                 << "Thread " << i << " [ Tid: " << gettid() << ']';
             try {
                 sls::Receiver receiver(port);
-                receiver.registerCallBackStartAcquisition(StartAcquisitionCallback,
-                                                        user_data);
+                receiver.registerCallBackStartAcquisition(
+                    StartAcquisitionCallback, user_data);
                 receiver.registerCallBackAcquisitionFinished(
                     AcquisitionFinishedCallback, user_data);
-                receiver.registerCallBackRawDataReady(GetDataCallback, user_data);
+                receiver.registerCallBackRawDataReady(GetDataCallback,
+                                                      user_data);
 
                 /**	- as long as no Ctrl+C */
                 // each child shares the common semaphore
                 sem_wait(semaphore);
             } catch (...) {
                 LOG(sls::logINFOBLUE)
-                    << "Exiting Thread " << i  << " [ Tid: " << gettid() << " ]";
-                for (auto &s : semaphores) 
+                    << "Exiting Thread " << i << " [ Tid: " << gettid() << " ]";
+                for (auto &s : semaphores)
                     sem_destroy(&s);
                 cleanup();
                 if (global_frame_status)
@@ -569,7 +570,7 @@ int main(int argc, char *argv[]) {
                 std::exit(EXIT_FAILURE);
             }
             LOG(sls::logINFOBLUE)
-                    << "Exiting Thread " << i  << " [ Tid: " << gettid() << " ]";
+                << "Exiting Thread " << i << " [ Tid: " << gettid() << " ]";
             sem_destroy(semaphore);
         });
     }

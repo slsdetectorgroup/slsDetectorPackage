@@ -5,16 +5,11 @@
 #include <cstdint>
 #include <getopt.h>
 #include <string>
+#include <tuple>
 #include <variant>
 #include <vector>
-#include <tuple>
 
-enum class AppType {
-    MultiReceiver,
-    SingleReceiver,
-    FrameSynchronizer
-};
-
+enum class AppType { MultiReceiver, SingleReceiver, FrameSynchronizer };
 
 struct CommonOptions {
     uint16_t port = -1;
@@ -33,7 +28,8 @@ struct FrameSyncOptions : CommonOptions {
     bool printHeaders = false;
 };
 
-using ParsedOptions = std::variant<CommonOptions, MultiReceiverOptions, FrameSyncOptions>;
+using ParsedOptions =
+    std::variant<CommonOptions, MultiReceiverOptions, FrameSyncOptions>;
 
 class CommandLineOptions {
   public:
@@ -45,7 +41,9 @@ class CommandLineOptions {
     std::string getHelpMessage() const;
     static void setupSignalHandler(int signal, void (*handler)(int));
     static void setEffectiveUID(uid_t uid);
-    static std::tuple<uint16_t, uint16_t, bool> ParseDeprecated(const std::vector<std::string> &args);
+    static std::tuple<uint16_t, uint16_t, bool>
+    ParseDeprecated(const std::vector<std::string> &args);
+
   private:
     AppType appType_;
     std::vector<option> buildOptionList() const;
@@ -59,9 +57,6 @@ class CommandLineOptions {
                                  CommonOptions &base,
                                  MultiReceiverOptions &multi,
                                  FrameSyncOptions &frame);
-
-
-
 
     static constexpr uint16_t MAX_RECEIVERS = 1000;
 };

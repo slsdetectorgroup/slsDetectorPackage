@@ -2,10 +2,10 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 
 #include "CommandLineOptions.h"
-#include "sls/sls_detector_defs.h"
-#include "sls/versionAPI.h"
 #include "sls/ToString.h"
 #include "sls/logger.h"
+#include "sls/sls_detector_defs.h"
+#include "sls/versionAPI.h"
 
 #include <csignal>
 #include <cstring>
@@ -28,7 +28,7 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
     FrameSyncOptions frame;
     base.port = DEFAULT_TCP_RX_PORTNO;
 
-    auto optString = buildOptString(); 
+    auto optString = buildOptString();
     auto longOptions = buildOptionList();
     optind = 0; // reset getopt
     int opt, option_index = 0;
@@ -40,12 +40,10 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
         case 'h':
             handleCommonOption(opt, optarg, base);
             return base; // exit after version/help
-
         case 'p':
         case 'u':
             handleCommonOption(opt, optarg, base);
             break;
-
         case 'c':
         case 'n':
         case 't':
@@ -60,10 +58,12 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
     if (optind < argc) {
 
         // deprecated and current options => invalid
-        if (base.port != DEFAULT_TCP_RX_PORTNO ||
-            multi.numReceivers != 1 || frame.numReceivers != 1 || multi.callbackEnabled != false || frame.printHeaders != false) {
-            LOG(sls::logWARNING)
-                << "Cannot use both deprecated options and the valid options simultaneously. Please move away from the deprecated options.\n";
+        if (base.port != DEFAULT_TCP_RX_PORTNO || multi.numReceivers != 1 ||
+            frame.numReceivers != 1 || multi.callbackEnabled != false ||
+            frame.printHeaders != false) {
+            LOG(sls::logWARNING) << "Cannot use both deprecated options and "
+                                    "the valid options simultaneously. Please "
+                                    "move away from the deprecated options.\n";
         }
 
         // unsupported deprecated arguments
@@ -74,7 +74,6 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
         // parse deprecated arguments
         std::vector<std::string> args(argv, argv + argc);
         auto [p, n, o] = ParseDeprecated(args);
-        
         // set options
         base.port = p;
         if (appType_ == AppType::MultiReceiver) {
@@ -113,9 +112,9 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
 std::vector<option> CommandLineOptions::buildOptionList() const {
     std::vector<option> opts = {
         {"version", no_argument, nullptr, 'v'},
+        {"help", no_argument, nullptr, 'h'},
         {"port", required_argument, nullptr, 'p'},
         {"uid", required_argument, nullptr, 'u'},
-        {"help", no_argument, nullptr, 'h'},
     };
     switch (appType_) {
     case AppType::SingleReceiver:
@@ -135,7 +134,7 @@ std::vector<option> CommandLineOptions::buildOptionList() const {
 }
 
 std::string CommandLineOptions::buildOptString() const {
-    std::string optstr = "vp:u:h";
+    std::string optstr = "vhp:u:";
     if (appType_ == AppType::MultiReceiver ||
         appType_ == AppType::FrameSynchronizer)
         optstr += "cn:";
@@ -241,8 +240,10 @@ void CommandLineOptions::handleAppSpecificOption(int opt, const char *optarg,
     }
 }
 
-/* maintain backward compatibility of [start port] [num receivers] [optional arg] */
-std::tuple<uint16_t, uint16_t, bool> CommandLineOptions::ParseDeprecated(const std::vector<std::string> &args) {
+/* maintain backward compatibility of [start port] [num receivers] [optional
+ * arg] */
+std::tuple<uint16_t, uint16_t, bool>
+CommandLineOptions::ParseDeprecated(const std::vector<std::string> &args) {
 
     size_t nargs = args.size();
     if (nargs != 1 && nargs != 3 && nargs != 4) {
@@ -251,7 +252,7 @@ std::tuple<uint16_t, uint16_t, bool> CommandLineOptions::ParseDeprecated(const s
 
     LOG(sls::logWARNING)
         << "Deprecated options will be removed in future versions. "
-                "Please use the new options.\n";
+           "Please use the new options.\n";
 
     // default deprecated values
     if (nargs == 1) {
@@ -334,7 +335,7 @@ std::string CommandLineOptions::getHelpMessage() const {
 
 void CommandLineOptions::setupSignalHandler(int signal, void (*handler)(int)) {
     // Catch signal SIGINT to close files and call destructors properly
-    struct sigaction sa{};
+    struct sigaction sa {};
     sa.sa_handler = handler;
     sigemptyset(&sa.sa_mask); // dont block additional signals
     sa.sa_flags = 0;

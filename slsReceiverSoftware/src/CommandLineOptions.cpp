@@ -45,6 +45,7 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
         case 'u':
             handleCommonOption(opt, optarg, base);
             break;
+
         case 'c':
         case 'n':
         case 't':
@@ -62,7 +63,7 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
         if (base.port != DEFAULT_TCP_RX_PORTNO ||
             multi.numReceivers != 1 || frame.numReceivers != 1 || multi.callbackEnabled != false || frame.printHeaders != false) {
             LOG(sls::logWARNING)
-                << "Cannot use both deprecated options and the valid options simultaneously. Please use only the new options.\n";
+                << "Cannot use both deprecated options and the valid options simultaneously. Please move away from the deprecated options.\n";
         }
 
         // unsupported deprecated arguments
@@ -116,22 +117,19 @@ std::vector<option> CommandLineOptions::buildOptionList() const {
         {"uid", required_argument, nullptr, 'u'},
         {"help", no_argument, nullptr, 'h'},
     };
-
     switch (appType_) {
     case AppType::SingleReceiver:
         opts.push_back({"rx_tcpport", required_argument, nullptr, 't'});
         break;
     case AppType::MultiReceiver:
-        opts.push_back({"callback", no_argument, nullptr, 'c'});
-        opts.push_back({"rx_tcpport", required_argument, nullptr, 't'});
         opts.push_back({"num-receivers", required_argument, nullptr, 'n'});
+        opts.push_back({"callback", no_argument, nullptr, 'c'});
         break;
     case AppType::FrameSynchronizer:
         opts.push_back({"num-receivers", required_argument, nullptr, 'n'});
         opts.push_back({"print-headers", no_argument, nullptr, 'c'});
         break;
     }
-
     opts.push_back({nullptr, 0, nullptr, 0}); // null-terminator for getopt
     return opts;
 }

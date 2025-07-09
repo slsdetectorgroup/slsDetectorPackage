@@ -11,6 +11,7 @@
 #include <cstring>
 #include <unistd.h>
 
+/** for testing */
 ParsedOptions CommandLineOptions::parse(const std::vector<std::string> &args) {
     std::vector<char *> argv;
     argv.reserve(args.size());
@@ -23,15 +24,12 @@ ParsedOptions CommandLineOptions::parse(const std::vector<std::string> &args) {
 
 ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
     CommonOptions base;
-    base.port = DEFAULT_TCP_RX_PORTNO;
-
     MultiReceiverOptions multi;
     FrameSyncOptions frame;
+    base.port = DEFAULT_TCP_RX_PORTNO;
 
-    // leading  '+' to stop parsing at first non-option argument (to allow for deprecated options)
-    auto optString = "+" + buildOptString(); 
+    auto optString = buildOptString(); 
     auto longOptions = buildOptionList();
-
     optind = 0; // reset getopt
     int opt, option_index = 0;
 

@@ -33,7 +33,7 @@ using ParsedOptions =
 
 class CommandLineOptions {
   public:
-    constexpr explicit CommandLineOptions(AppType app) : appType_(app) {}
+    explicit CommandLineOptions(AppType app);
     ParsedOptions parse(const std::vector<std::string> &args); // for testing
     ParsedOptions parse(int argc, char *argv[]);
     std::string getTypeString() const;
@@ -46,6 +46,8 @@ class CommandLineOptions {
 
   private:
     AppType appType_;
+    std::string optString_;
+    std::vector<option> longOptions_;
     std::vector<option> buildOptionList() const;
     std::string buildOptString() const;
 

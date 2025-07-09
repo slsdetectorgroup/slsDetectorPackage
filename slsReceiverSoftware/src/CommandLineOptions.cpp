@@ -11,6 +11,10 @@
 #include <cstring>
 #include <unistd.h>
 
+CommandLineOptions::CommandLineOptions(AppType app)
+    : appType_(app), optString_(buildOptString()),
+      longOptions_(buildOptionList()) {}
+
 /** for testing */
 ParsedOptions CommandLineOptions::parse(const std::vector<std::string> &args) {
     std::vector<char *> argv;
@@ -28,13 +32,11 @@ ParsedOptions CommandLineOptions::parse(int argc, char *argv[]) {
     FrameSyncOptions frame;
     base.port = DEFAULT_TCP_RX_PORTNO;
 
-    auto optString = buildOptString();
-    auto longOptions = buildOptionList();
     optind = 0; // reset getopt
     int opt, option_index = 0;
 
-    while ((opt = getopt_long(argc, argv, optString.c_str(), longOptions.data(),
-                              &option_index)) != -1) {
+    while ((opt = getopt_long(argc, argv, optString_.c_str(),
+                              longOptions_.data(), &option_index)) != -1) {
         switch (opt) {
         case 'v':
         case 'h':

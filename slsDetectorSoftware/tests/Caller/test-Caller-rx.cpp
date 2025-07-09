@@ -759,6 +759,7 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
             std::string file_path = "/tmp/test_master_0.json";
             REQUIRE(std::filesystem::exists(file_path) == true);
 
+#ifdef HDF5C
             det.setAcquisitionIndex(0);
             det.setFileFormat(defs::HDF5);
             REQUIRE_NOTHROW(caller.call("acquire", {}, -1, PUT));
@@ -766,6 +767,7 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
             REQUIRE(std::filesystem::exists(file_path) == true);
             file_path = "/tmp/test_virtual_0.h5";
             REQUIRE(std::filesystem::exists(file_path) == true);
+#endif
 
             det.setFileWrite(prev_write);
             if (!prev_path.empty())

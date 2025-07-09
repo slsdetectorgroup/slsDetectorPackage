@@ -24,10 +24,15 @@ target_sources(tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/test-Module.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test-Pattern.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test-CtbConfig.cpp
-    
-
-
 )
+
+# HDF5 file 
+if (SLS_USE_HDF5)
+    target_compile_definitions(tests
+        PUBLIC
+            -DHDF5C ${HDF5_DEFINITIONS}
+    )
+endif (SLS_USE_HDF5)
 
 target_include_directories(tests 
     PUBLIC 

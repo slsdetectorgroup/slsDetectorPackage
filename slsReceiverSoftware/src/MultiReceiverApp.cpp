@@ -212,17 +212,15 @@ int main(int argc, char *argv[]) {
                 // each child process gets a copy of the semaphore
                 sem_wait(&semaphore);
                 sem_destroy(&semaphore);
-
+                LOG(sls::logINFOBLUE)
+                    << "Exiting Child Process [ Tid: " << gettid() << ']';
+                exit(EXIT_SUCCESS);
             } catch (...) {
                 sem_destroy(&semaphore);
                 LOG(sls::logINFOBLUE)
                     << "Exiting Child Process [ Tid: " << gettid() << " ]";
-                throw;
+                exit(EXIT_FAILURE);
             }
-
-            LOG(sls::logINFOBLUE)
-                << "Exiting Child Process [ Tid: " << gettid() << ']';
-            return EXIT_SUCCESS;
         }
     }
 
@@ -236,7 +234,8 @@ int main(int argc, char *argv[]) {
 
     /** - Parent process waits for all child processes to exit */
     for (;;) {
-        pid_t childPid = waitpid(-1, nullptr, 0);
+        int status;
+        pid_t childPid = waitpid(-1, &status, 0);
 
         // no child closed
         if (childPid == -1) {
@@ -250,6 +249,12 @@ int main(int argc, char *argv[]) {
                 break;
             }
         }
+
+        if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
+            std::cerr << "Child " << childPid << " failed\n";
+            kill(0, SIGINT); // signal other children to exit
+        }
+        
     }
 
     std::cout << "Goodbye!\n";

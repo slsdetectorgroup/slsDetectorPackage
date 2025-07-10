@@ -58,9 +58,10 @@ class Implementation : private virtual slsDetectorDefs {
     bool getArping() const;
     pid_t getArpingProcessId() const;
     void setArping(const bool i, const std::vector<std::string> ips);
-    ROI getReceiverROI() const;
-    void setReceiverROI(const ROI arg);
-    void setReceiverROIMetadata(const ROI arg);
+    std::vector<defs::ROI> getPortROIs() const;
+    void setPortROIs(const std::vector<defs::ROI> &args);
+    void setMultiROIMetadata(const std::vector<slsDetectorDefs::ROI> &args);
+    std::vector<slsDetectorDefs::ROI> getMultiROIMetadata() const;
 
     /**************************************************
      *                                                 *
@@ -283,7 +284,7 @@ class Implementation : private virtual slsDetectorDefs {
     void SetupFifoStructure();
 
     const xy GetPortGeometry() const;
-    const ROI GetMaxROIPerPort() const;
+    void ResetRois();
     void ResetParametersforNewAcquisition();
     void CreateUDPSockets();
     void SetupWriter();
@@ -308,10 +309,8 @@ class Implementation : private virtual slsDetectorDefs {
     bool framePadding{true};
     pid_t parentThreadId;
     pid_t tcpThreadId;
-    ROI receiverRoi{};
-    std::array<ROI, 2> portRois{};
-    // receiver roi for complete detector for metadata
-    ROI receiverRoiMetadata{};
+    std::vector<slsDetectorDefs::ROI> portRois;
+    std::vector<slsDetectorDefs::ROI> multiRoiMetadata;
 
     // file parameters
     fileFormat fileFormatType{BINARY};

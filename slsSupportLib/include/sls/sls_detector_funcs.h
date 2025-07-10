@@ -412,6 +412,7 @@ enum detFuncs {
     F_RECEIVER_SET_COLUMN,
     F_GET_RECEIVER_DBIT_REORDER,
     F_SET_RECEIVER_DBIT_REORDER,
+    F_RECEIVER_GET_ROI_METADATA,
 
     NUM_REC_FUNCTIONS
 };
@@ -820,6 +821,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_RECEIVER_SET_COLUMN:             return "F_RECEIVER_SET_COLUMN";
     case F_GET_RECEIVER_DBIT_REORDER:       return "F_GET_RECEIVER_DBIT_REORDER";
     case F_SET_RECEIVER_DBIT_REORDER:       return "F_SET_RECEIVER_DBIT_REORDER";
+    case F_RECEIVER_GET_ROI_METADATA:       return "F_RECEIVER_GET_ROI_METADATA";
 
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";

@@ -39,7 +39,6 @@ class CommandLineOptions {
     std::string getTypeString() const;
     std::string getVersion() const;
     std::string getHelpMessage() const;
-    static void setupSignalHandler(int signal, void (*handler)(int));
     static void setEffectiveUID(uid_t uid);
     static std::tuple<uint16_t, uint16_t, bool>
     ParseDeprecated(const std::vector<std::string> &args);

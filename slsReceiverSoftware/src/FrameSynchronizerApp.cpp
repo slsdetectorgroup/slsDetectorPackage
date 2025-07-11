@@ -10,6 +10,7 @@
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
+#include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
 
 #include <csignal> //SIGINT
@@ -524,9 +525,9 @@ int main(int argc, char *argv[]) {
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';
 
     // close files on ctrl+c
-    CommandLineOptions::setupSignalHandler(SIGINT, sigInterruptHandler);
+    sls::setupSignalHandler(SIGINT, sigInterruptHandler);
     // handle locally on socket crash
-    CommandLineOptions::setupSignalHandler(SIGPIPE, SIG_IGN);
+    sls::setupSignalHandler(SIGPIPE, SIG_IGN);
 
     semaphores.resize(f.numReceivers);
     for (auto &s : semaphores) {

@@ -7,6 +7,7 @@
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
+#include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
 
 #include <csignal> //SIGINT
@@ -158,9 +159,9 @@ int main(int argc, char *argv[]) {
     LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';
 
     // close files on ctrl+c
-    CommandLineOptions::setupSignalHandler(SIGINT, sigInterruptHandler);
+    sls::setupSignalHandler(SIGINT, sigInterruptHandler);
     // handle locally on socket crash
-    CommandLineOptions::setupSignalHandler(SIGPIPE, SIG_IGN);
+    sls::setupSignalHandler(SIGPIPE, SIG_IGN);
 
     sem_init(&semaphore, 1, 0);
 
@@ -226,7 +227,7 @@ int main(int argc, char *argv[]) {
 
     /** - Parent process ignores SIGINT and waits for all the child processes to
      * handle the signal */
-    CommandLineOptions::setupSignalHandler(SIGINT, SIG_IGN);
+    sls::setupSignalHandler(SIGINT, SIG_IGN);
 
     /** - Print Ready and Instructions how to exit */
     std::cout << "Ready ... \n";

@@ -7,7 +7,6 @@
 #include "sls/sls_detector_defs.h"
 #include "sls/versionAPI.h"
 
-#include <csignal>
 #include <cstring>
 #include <unistd.h>
 
@@ -333,17 +332,6 @@ std::string CommandLineOptions::getHelpMessage() const {
                "with privileges. \n\n";
     }
     throw sls::RuntimeError("Unknown AppType for help message");
-}
-
-void CommandLineOptions::setupSignalHandler(int signal, void (*handler)(int)) {
-    // Catch signal SIGINT to close files and call destructors properly
-    struct sigaction sa {};
-    sa.sa_handler = handler;
-    sigemptyset(&sa.sa_mask); // dont block additional signals
-    sa.sa_flags = 0;
-    if (sigaction(signal, &sa, nullptr) == -1) {
-        LOG(sls::logERROR) << "Could not set handler for " << strsignal(signal);
-    }
 }
 
 void CommandLineOptions::setEffectiveUID(uid_t uid) {

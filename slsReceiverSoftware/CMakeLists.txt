@@ -52,6 +52,10 @@ target_link_libraries(slsReceiverObject
     slsProjectWarnings #don't propagate warnigns 
 )
 
+target_compile_definitions(slsReceiverObject 
+    PRIVATE $<$<BOOL:${SLS_USE_TESTS}>:SLS_USE_TESTS>
+)
+
 # HDF5
 if (SLS_USE_HDF5)
     if (HDF5_FOUND)
@@ -87,6 +91,7 @@ set_target_properties(slsReceiverStatic PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
+
 list(APPEND RECEIVER_LIBRARY_TARGETS slsReceiverStatic)
 
 

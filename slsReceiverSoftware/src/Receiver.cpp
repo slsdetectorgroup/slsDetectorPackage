@@ -29,6 +29,11 @@ Receiver::~Receiver() = default;
 
 Receiver::Receiver(uint16_t port) {
     validatePortNumber(port);
+#ifdef SLS_USE_TESTS
+    if (port == 65535) {
+        throw sls::RuntimeError("Throwing for testing purposes. ");
+    }
+#endif
     tcpipInterface = make_unique<ClientInterface>(port);
 }
 

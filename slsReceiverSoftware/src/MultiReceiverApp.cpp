@@ -254,7 +254,6 @@ int main(int argc, char *argv[]) {
             std::cerr << "Child " << childPid << " failed\n";
             kill(0, SIGINT); // signal other children to exit
         }
-        
     }
 
     std::cout << "Goodbye!\n";

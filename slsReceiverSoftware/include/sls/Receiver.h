@@ -13,22 +13,12 @@ class Receiver : private virtual slsDetectorDefs {
   public:
     /**
      * Constructor
-     * Starts up a Receiver server. Reads configuration file, options, and
-     * assembles a Receiver using TCP and UDP detector interfaces
+     * Starts up a Receiver server.
+     * Assembles a Receiver using TCP and UDP detector interfaces
      * throws an exception in case of failure
-     * @param argc from command line
-     * @param argv from command line
+     * @param port TCP/IP port number
      */
-    Receiver(int argc, char *argv[]);
-
-    /**
-     * Constructor
-     * Starts up a Receiver server. Reads configuration file, options, and
-     * assembles a Receiver using TCP and UDP detector interfaces
-     * throws an exception in case of failure
-     * @param tcpip_port_no TCP/IP port number
-     */
-    Receiver(uint16_t tcpip_port_no = 1954);
+    Receiver(uint16_t port = 1954);
 
     ~Receiver();
 

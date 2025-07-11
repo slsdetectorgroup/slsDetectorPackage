@@ -64,6 +64,7 @@ class MasterAttributes {
     uint32_t gates;
     std::map<std::string, std::string> additionalJsonHeader;
     uint64_t framesInFile{0};
+    slsDetectorDefs::speedLevel readoutSpeed{slsDetectorDefs::FULL_SPEED};
 
     MasterAttributes() = default;
     ~MasterAttributes() = default;
@@ -111,6 +112,7 @@ class MasterAttributes {
     void WriteHDF5TransceiverMask(H5::Group *group);
     void WriteHDF5TransceiverFlag(H5::Group *group);
     void WriteHDF5TransceiverSamples(H5::Group *group);
+    void WriteHDF5ReadoutSpeed(H5::Group *group);
 #endif
 
     void GetJungfrauBinaryAttributes(

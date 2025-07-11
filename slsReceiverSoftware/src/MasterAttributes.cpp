@@ -562,6 +562,16 @@ void MasterAttributes::WriteHDF5TransceiverSamples(H5::Group *group) {
         "Transceiver Samples", H5::PredType::NATIVE_INT, dataspace);
     dataset.write(&transceiverSamples, H5::PredType::NATIVE_INT);
 }
+
+void MasterAttributes::WriteHDF5ReadoutSpeed(H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::DataSet dataset =
+        group->createDataSet("Readout Speed", strdatatype, dataspace);
+    char c[1024]{};
+    strcpy_safe(c, ToString(readoutSpeed));
+    dataset.write(c, strdatatype);
+}
 #endif
 
 void MasterAttributes::GetJungfrauBinaryAttributes(
@@ -575,6 +585,8 @@ void MasterAttributes::GetJungfrauBinaryAttributes(
     w->Uint(numUDPInterfaces);
     w->Key("Number of rows");
     w->Uint(readNRows);
+    w->Key("Readout Speed");
+    w->String(ToString(readoutSpeed).c_str());
 }
 
 #ifdef HDF5C
@@ -584,6 +596,7 @@ void MasterAttributes::WriteJungfrauHDF5Attributes(H5::Group *group) {
     MasterAttributes::WriteHDF5Period(group);
     MasterAttributes::WriteHDF5NumUDPInterfaces(group);
     MasterAttributes::WriteHDF5ReadNRows(group);
+    MasterAttributes::WriteHDF5ReadoutSpeed(group);
 }
 #endif
 
@@ -598,6 +611,8 @@ void MasterAttributes::GetMoenchBinaryAttributes(
     w->Uint(numUDPInterfaces);
     w->Key("Number of rows");
     w->Uint(readNRows);
+    w->Key("Readout Speed");
+    w->String(ToString(readoutSpeed).c_str());
 }
 
 #ifdef HDF5C
@@ -607,6 +622,7 @@ void MasterAttributes::WriteMoenchHDF5Attributes(H5::Group *group) {
     MasterAttributes::WriteHDF5Period(group);
     MasterAttributes::WriteHDF5NumUDPInterfaces(group);
     MasterAttributes::WriteHDF5ReadNRows(group);
+    MasterAttributes::WriteHDF5ReadoutSpeed(group);
 }
 #endif
 
@@ -633,6 +649,8 @@ void MasterAttributes::GetEigerBinaryAttributes(
     w->Int(readNRows);
     w->Key("Rate Corrections");
     w->String(ToString(ratecorr).c_str());
+    w->Key("Readout Speed");
+    w->String(ToString(readoutSpeed).c_str());
 }
 
 #ifdef HDF5C
@@ -648,6 +666,7 @@ void MasterAttributes::WriteEigerHDF5Attributes(H5::Group *group) {
     MasterAttributes::WriteHDF5SubQuad(group);
     MasterAttributes::WriteHDF5ReadNRows(group);
     MasterAttributes::WriteHDF5RateCorrections(group);
+    MasterAttributes::WriteHDF5ReadoutSpeed(group);
 }
 #endif
 
@@ -674,6 +693,8 @@ void MasterAttributes::GetMythen3BinaryAttributes(
     w->Uint(gates);
     w->Key("Threshold Energies");
     w->String(ToString(thresholdAllEnergyeV).c_str());
+    w->Key("Readout Speed");
+    w->String(ToString(readoutSpeed).c_str());
 }
 
 #ifdef HDF5C
@@ -687,6 +708,7 @@ void MasterAttributes::WriteMythen3HDF5Attributes(H5::Group *group) {
     MasterAttributes::WriteHDF5GateDelayArray(group);
     MasterAttributes::WriteHDF5Gates(group);
     MasterAttributes::WriteHDF5ThresholdEnergies(group);
+    MasterAttributes::WriteHDF5ReadoutSpeed(group);
 }
 #endif
 
@@ -699,6 +721,8 @@ void MasterAttributes::GetGotthard2BinaryAttributes(
     w->String(ToString(period).c_str());
     w->Key("Burst Mode");
     w->String(ToString(burstMode).c_str());
+    w->Key("Readout Speed");
+    w->String(ToString(readoutSpeed).c_str());
 }
 
 #ifdef HDF5C
@@ -707,6 +731,7 @@ void MasterAttributes::WriteGotthard2HDF5Attributes(H5::Group *group) {
     MasterAttributes::WriteHDF5Exptime(group);
     MasterAttributes::WriteHDF5Period(group);
     MasterAttributes::WriteHDF5BurstMode(group);
+    MasterAttributes::WriteHDF5ReadoutSpeed(group);
 }
 #endif
 

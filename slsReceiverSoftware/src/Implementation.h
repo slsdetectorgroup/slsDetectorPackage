@@ -256,10 +256,12 @@ class Implementation : private virtual slsDetectorDefs {
     bool getDbitReorder() const;
     /* [Ctb] */
     void setDbitReorder(const bool reorder);
-
     uint32_t getTransceiverEnableMask() const;
     /* [Ctb] */
     void setTransceiverEnableMask(const uint32_t mask);
+    speedLevel getReadoutSpeed() const;
+    /* [Eiger][Jungfrau][Moench][Mythen3][Gotthard2]*/
+    void setReadoutSpeed(const speedLevel i);
 
     /**************************************************
      *                                                *
@@ -369,6 +371,7 @@ class Implementation : private virtual slsDetectorDefs {
     int thresholdEnergyeV{-1};
     std::array<int, 3> thresholdAllEnergyeV = {{-1, -1, -1}};
     std::vector<int64_t> rateCorrections;
+    speedLevel readoutSpeed{FULL_SPEED};
 
     // callbacks
     void (*startAcquisitionCallBack)(const startCallbackHeader,

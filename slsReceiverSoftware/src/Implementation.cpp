@@ -983,6 +983,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.gateDelayArray[2] = gateDelay3;
             masterAttributes.gates = numberOfGates;
             masterAttributes.additionalJsonHeader = additionalJsonHeader;
+            masterAttributes.readoutSpeed = readoutSpeed;
 
             // create master file
             masterFileName = dataProcessor[0]->CreateMasterFile(
@@ -1779,6 +1780,15 @@ void Implementation::setTransceiverEnableMask(uint32_t mask) {
     LOG(logINFO) << "Transceiver Enable Mask: 0x" << std::hex
                  << generalData->transceiverMask << std::dec;
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
+}
+
+slsDetectorDefs::speedLevel Implementation::getReadoutSpeed() const {
+    return readoutSpeed;
+}
+
+void Implementation::setReadoutSpeed(const slsDetectorDefs::speedLevel i) {
+    readoutSpeed = i;
+    LOG(logINFO) << "Readout Speed: " << ToString(readoutSpeed);
 }
 
 /**************************************************

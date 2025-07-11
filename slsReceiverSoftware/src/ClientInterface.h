@@ -167,6 +167,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_dbit_reorder(ServerInterface &socket);
     int set_dbit_reorder(ServerInterface &socket);
     int get_roi_metadata(ServerInterface &socket);
+    int set_readout_speed(ServerInterface &socket);
 
     Implementation *impl() {
         if (receiver != nullptr) {

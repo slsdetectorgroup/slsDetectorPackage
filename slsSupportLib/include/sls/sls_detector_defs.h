@@ -663,6 +663,7 @@ enum streamingInterface {
         scanParameters scanParams{};
         int transceiverSamples{0};
         uint32_t transceiverMask{0};
+        speedLevel readoutSpeed{FULL_SPEED};
     } __attribute__((packed));
 #endif
 

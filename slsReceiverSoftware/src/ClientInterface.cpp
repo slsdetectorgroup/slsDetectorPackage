@@ -220,6 +220,7 @@ int ClientInterface::functionTable(){
     flist[F_RECEIVER_SET_COLUMN]            =   &ClientInterface::set_column;    
     flist[F_GET_RECEIVER_DBIT_REORDER]      =   &ClientInterface::get_dbit_reorder;
     flist[F_SET_RECEIVER_DBIT_REORDER]      =   &ClientInterface::set_dbit_reorder;
+    flist[F_RECEIVER_GET_ROI_METADATA]      =   &ClientInterface::get_roi_metadata;
 
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
@@ -1693,19 +1694,37 @@ int ClientInterface::set_arping(Interface &socket) {
 }
 
 int ClientInterface::get_receiver_roi(Interface &socket) {
-    auto retval = impl()->getReceiverROI();
-    LOG(logDEBUG1) << "Receiver roi retval:" << ToString(retval);
-    return socket.sendResult(retval);
+    auto retvals = impl()->getPortROIs();
+    LOG(logDEBUG1) << "Receiver roi retval:" << ToString(retvals);
+    auto size = static_cast<int>(retvals.size());
+    if (size != impl()->getNumberofUDPInterfaces()) {
+        throw RuntimeError("Invalid number of ROIs received: " +
+                           std::to_string(size) + ". Expected: " +
+                           std::to_string(impl()->getNumberofUDPInterfaces()));
+    }
+    socket.Send(size);
+    if (size > 0)
+        socket.Send(retvals);
+    return OK;
 }
 
 int ClientInterface::set_receiver_roi(Interface &socket) {
-    auto arg = socket.Receive<ROI>();
+    auto roiSize = socket.Receive<int>();
+    std::vector<ROI> args(roiSize);
+    if (roiSize > 0) {
+        socket.Receive(args);
+    }
+    if (roiSize != impl()->getNumberofUDPInterfaces()) {
+        throw RuntimeError("Invalid number of ROIs received: " +
+                           std::to_string(roiSize) + ". Expected: " +
+                           std::to_string(impl()->getNumberofUDPInterfaces()));
+    }
     if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
-    LOG(logDEBUG1) << "Set Receiver ROI: " << ToString(arg);
+    LOG(logDEBUG1) << "Set Receiver ROI: " << ToString(args);
     verifyIdle(socket);
     try {
-        impl()->setReceiverROI(arg);
+        impl()->setPortROIs(args);
     } catch (const std::exception &e) {
         throw RuntimeError("Could not set Receiver ROI [" +
                            std::string(e.what()) + ']');
@@ -1715,18 +1734,26 @@ int ClientInterface::set_receiver_roi(Interface &socket) {
 }
 
 int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
-    auto arg = socket.Receive<ROI>();
+    auto roiSize = socket.Receive<int>();
+    LOG(logDEBUG1) << "Number of ReceiverROI metadata: " << roiSize;
+    if (roiSize < 1) {
+        throw RuntimeError("Invalid number of ROIs received: " +
+                           std::to_string(roiSize) + ". Min: 1.");
+    }
+    std::vector<ROI> rois(roiSize);
+    if (roiSize > 0) {
+        socket.Receive(rois);
+    }
     if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
         functionNotImplemented();
-    LOG(logDEBUG1) << "Set Receiver ROI Metadata: " << ToString(arg);
     verifyIdle(socket);
+    LOG(logINFO) << "Setting ReceiverROI metadata[" << roiSize << ']';
     try {
-        impl()->setReceiverROIMetadata(arg);
+        impl()->setMultiROIMetadata(rois);
     } catch (const std::exception &e) {
         throw RuntimeError("Could not set ReceiverROI metadata [" +
                            std::string(e.what()) + ']');
     }
-
     return socket.Send(OK);
 }
 
@@ -1810,6 +1837,18 @@ int ClientInterface::set_dbit_reorder(Interface &socket) {
     LOG(logDEBUG1) << "Setting Dbit reorder: " << arg;
     impl()->setDbitReorder(arg);
     return socket.Send(OK);
+}
+
+int ClientInterface::get_roi_metadata(Interface &socket) {
+    if (detType == CHIPTESTBOARD || detType == XILINX_CHIPTESTBOARD)
+        functionNotImplemented();
+    auto retvals = impl()->getMultiROIMetadata();
+    LOG(logDEBUG1) << "Receiver ROI metadata retval:" << ToString(retvals);
+    auto size = static_cast<int>(retvals.size());
+    socket.Send(size);
+    if (size > 0)
+        socket.Send(retvals);
+    return OK;
 }
 
 } // namespace sls

@@ -201,6 +201,26 @@ Result<defs::xy> Detector::getModuleSize(Positions pos) const {
     return pimpl->Parallel(&Module::getNumberOfChannels, pos);
 }
 
+defs::xy Detector::getPortPerModuleGeometry() const {
+    return pimpl->getPortGeometry();
+}
+
+Result<defs::xy> Detector::getPortSize(Positions pos) const {
+    Result<defs::xy> res = pimpl->Parallel(&Module::getNumberOfChannels, pos);
+    defs::xy portGeometry = getPortPerModuleGeometry();
+    if ((portGeometry.x != 1 && portGeometry.x != 2) ||
+        (portGeometry.y != 1 && portGeometry.y != 2)) {
+        throw RuntimeError(
+            "Port size is not 1 or 2 in either dimension. Port geometry:" +
+            ToString(portGeometry));
+    }
+    for (auto &it : res) {
+        it.x /= portGeometry.x;
+        it.y /= portGeometry.y;
+    }
+    return res;
+}
+
 defs::xy Detector::getDetectorSize() const {
     return pimpl->getNumberOfChannels();
 }
@@ -1367,13 +1387,13 @@ void Detector::setRxArping(bool value, Positions pos) {
     pimpl->Parallel(&Module::setRxArping, pos, value);
 }
 
-Result<defs::ROI> Detector::getIndividualRxROIs(Positions pos) const {
-    return pimpl->Parallel(&Module::getRxROI, pos);
+std::vector<defs::ROI> Detector::getRxROI(int module_id) const {
+    return pimpl->getRxROI(module_id);
 }
 
-defs::ROI Detector::getRxROI() const { return pimpl->getRxROI(); }
-
-void Detector::setRxROI(const defs::ROI value) { pimpl->setRxROI(value); }
+void Detector::setRxROI(const std::vector<defs::ROI> &args) {
+    pimpl->setRxROI(args);
+}
 
 void Detector::clearRxROI() { pimpl->clearRxROI(); }
 

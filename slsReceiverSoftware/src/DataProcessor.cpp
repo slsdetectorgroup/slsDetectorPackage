@@ -48,10 +48,15 @@ void DataProcessor::SetUdpPortNumber(const uint16_t portNumber) {
 
 void DataProcessor::SetActivate(bool enable) { activated = enable; }
 
-void DataProcessor::SetReceiverROI(ROI roi) {
-    receiverRoi = roi;
-    receiverRoiEnabled = receiverRoi.completeRoi() ? false : true;
-    receiverNoRoi = receiverRoi.noRoi();
+void DataProcessor::SetPortROI(ROI roi) {
+    portRoi = roi;
+    isPartiallyInRoi = portRoi.completeRoi() ? false : true;
+    isOutsideRoi = portRoi.noRoi();
+}
+
+void DataProcessor::setMultiROIMetadata(
+    const std::vector<slsDetectorDefs::ROI> &args) {
+    multiRoiMetadata = args;
 }
 
 void DataProcessor::SetDataStreamEnable(bool enable) {
@@ -154,17 +159,17 @@ void DataProcessor::CreateFirstFiles(const std::string &fileNamePrefix,
     CloseFiles();
 
     // deactivated (half module/ single port or no roi), dont write file
-    if (!activated || !detectorDataStream || receiverNoRoi) {
+    if (!activated || !detectorDataStream || isOutsideRoi) {
         return;
     }
 
 #ifdef HDF5C
     int nx = generalData->nPixelsX;
     int ny = generalData->nPixelsY;
-    if (receiverRoiEnabled) {
-        nx = receiverRoi.xmax - receiverRoi.xmin + 1;
-        ny = receiverRoi.ymax - receiverRoi.ymin + 1;
-        if (receiverRoi.ymax == -1 || receiverRoi.ymin == -1) {
+    if (isPartiallyInRoi) {
+        nx = portRoi.xmax - portRoi.xmin + 1;
+        ny = portRoi.ymax - portRoi.ymin + 1;
+        if (portRoi.ymax == -1 || portRoi.ymin == -1) {
             ny = 1;
         }
     }
@@ -201,16 +206,11 @@ std::string DataProcessor::CreateVirtualFile(
     const std::string &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numModX, const int numModY,
-    std::mutex *hdf5LibMutex) {
+    std::mutex *hdf5LibMutex, bool gotthard25um) {
 
-    if (receiverRoiEnabled) {
-        throw std::runtime_error(
-            "Skipping virtual hdf5 file since rx_roi is enabled.");
-    }
-
-    bool gotthard25um = ((generalData->detType == GOTTHARD ||
-                          generalData->detType == GOTTHARD2) &&
-                         (numModX * numModY) == 2);
+    int ny = generalData->nPixelsY;
+    if (generalData->dynamicRange == 4)
+        ny /= 2;
 
     // 0 for infinite files
     uint32_t framesPerFile =
@@ -224,10 +224,10 @@ std::string DataProcessor::CreateVirtualFile(
     return masterFileUtility::CreateVirtualHDF5File(
         filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
         modulePos, generalData->numUDPInterfaces, framesPerFile,
-        generalData->nPixelsX, generalData->nPixelsY, generalData->dynamicRange,
-        numFramesCaught, numModX, numModY, dataFile->GetPDataType(),
+        generalData->nPixelsX, ny, generalData->dynamicRange, numFramesCaught,
+        numModX, numModY, dataFile->GetPDataType(),
         dataFile->GetParameterNames(), dataFile->GetParameterDataTypes(),
-        hdf5LibMutex, gotthard25um);
+        hdf5LibMutex, gotthard25um, multiRoiMetadata);
 }
 
 void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
@@ -235,18 +235,14 @@ void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
                                      const bool silentMode,
                                      std::mutex *hdf5LibMutex) {
 
-    if (receiverRoiEnabled) {
-        throw std::runtime_error(
-            "Should not be here, roi with hdf5 virtual should throw.");
-    }
     std::string fname{virtualFileName}, masterfname{masterFileName};
     // if no virtual file, link data file
     if (virtualFileName.empty()) {
         fname = dataFile->GetFileName();
     }
-    masterFileUtility::LinkHDF5FileInMaster(masterfname, fname,
-                                            dataFile->GetParameterNames(),
-                                            silentMode, hdf5LibMutex);
+    masterFileUtility::LinkHDF5FileInMaster(
+        masterfname, fname, dataFile->GetParameterNames(), silentMode,
+        hdf5LibMutex, multiRoiMetadata.size());
 }
 #endif
 
@@ -301,7 +297,7 @@ void DataProcessor::ThreadExecution() {
     // stream (if time/freq to stream) or free
     if (streamCurrentFrame) {
         // copy the complete image back if roi enabled
-        if (receiverRoiEnabled) {
+        if (isPartiallyInRoi) {
             memImage->size = generalData->imageSize;
             memcpy(memImage->data, &completeImageToStreamBeforeCropping[0],
                    generalData->imageSize);
@@ -381,7 +377,7 @@ void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
         streamCurrentFrame = false;
     }
 
-    if (receiverRoiEnabled) {
+    if (isPartiallyInRoi) {
         // copy the complete image to stream before cropping
         if (streamCurrentFrame) {
             memcpy(&completeImageToStreamBeforeCropping[0], data,
@@ -687,12 +683,12 @@ void DataProcessor::ArrangeDbitData(size_t &size, char *data) {
 }
 
 void DataProcessor::CropImage(size_t &size, char *data) {
-    LOG(logDEBUG) << "Cropping Image to ROI " << ToString(receiverRoi);
+    LOG(logDEBUG1) << "Cropping Image to ROI " << ToString(portRoi);
     int nPixelsX = generalData->nPixelsX;
-    int xmin = receiverRoi.xmin;
-    int xmax = receiverRoi.xmax;
-    int ymin = receiverRoi.ymin;
-    int ymax = receiverRoi.ymax;
+    int xmin = portRoi.xmin;
+    int xmax = portRoi.xmax;
+    int ymin = portRoi.ymin;
+    int ymax = portRoi.ymax;
     int xwidth = xmax - xmin + 1;
     int ywidth = ymax - ymin + 1;
     if (ymin == -1 || ymax == -1) {

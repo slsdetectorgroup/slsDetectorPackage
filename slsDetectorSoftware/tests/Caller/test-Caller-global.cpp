@@ -312,4 +312,30 @@ void test_ctb_acquire_with_receiver(const testCtbAcquireInfo &test_info,
     set_ctb_config_state(det, prev_ctb_config_info);
 }
 
+void create_files_for_acquire (Detector &det, Caller &caller) {
+    testFileInfo prev_file_info = get_file_state(det);
+    testCommonDetAcquireInfo prev_det_config_info =
+    get_common_acquire_config_state(det);
+
+    // binary
+    testFileInfo test_file_info;
+    set_file_state(det, test_file_info);
+    int num_frames_to_acquire = 1;
+    testCommonDetAcquireInfo det_config;
+    det_config.num_frames_to_acquire = num_frames_to_acquire;
+    set_common_acquire_config_state(det, det_config);
+    REQUIRE_NOTHROW(caller.call("acquire", {}, -1, PUT));
+
+    // hdf5
+#ifdef HDF5C
+    test_file_info.file_format = defs::HDF5;
+    test_file_info.file_acq_index = 0;
+    set_file_state(det, test_file_info);
+    REQUIRE_NOTHROW(caller.call("acquire", {}, -1, PUT));
+#endif
+
+    set_file_state(det, prev_file_info);
+    set_common_acquire_config_state(det, prev_det_config_info);
+}
+
 } // namespace sls

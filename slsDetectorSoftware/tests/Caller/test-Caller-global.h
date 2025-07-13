@@ -71,5 +71,6 @@ uint64_t calculate_ctb_image_size(const testCtbAcquireInfo &test_info);
 void test_ctb_acquire_with_receiver(const testCtbAcquireInfo &test_info,
                                     int64_t num_frames_to_acquire,
                                     Detector &det, Caller &caller);
+void create_files_for_acquire (Detector &det, Caller &caller);
 
 } // namespace sls

@@ -738,37 +738,15 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
         // check master file creation
         // TODO: check roi in master file
         {
-            testFileInfo prev_file_info = get_file_state(det);
-            testCommonDetAcquireInfo prev_det_config_info =
-            get_common_acquire_config_state(det);
-
-            testFileInfo test_file_info;
-            set_file_state(det, test_file_info);
-            int num_frames_to_acquire = 1;
-            testCommonDetAcquireInfo det_config;
-            det_config.num_frames_to_acquire = num_frames_to_acquire;
-            set_common_acquire_config_state(det, det_config);
-
-            REQUIRE_NOTHROW(caller.call("acquire", {}, -1, PUT));
-
+            create_files_for_acquire(det, caller);
             std::string file_path = "/tmp/sls_test_master_0.json";
             REQUIRE(std::filesystem::exists(file_path) == true);
-
 #ifdef HDF5C
-            test_file_info.file_format = defs::HDF5;
-            test_file_info.file_acq_index = 0;
-            set_file_state(det, test_file_info);
-
-            REQUIRE_NOTHROW(caller.call("acquire", {}, -1, PUT));
-
             file_path = "/tmp/test_master_0.h5";
             REQUIRE(std::filesystem::exists(file_path) == true);
             file_path = "/tmp/test_virtual_0.h5";
             REQUIRE(std::filesystem::exists(file_path) == true);
 #endif
-
-            set_file_state(det, prev_file_info);
-            set_common_acquire_config_state(det, prev_det_config_info);
         }
 
         for (int i = 0; i != det.size(); ++i) {

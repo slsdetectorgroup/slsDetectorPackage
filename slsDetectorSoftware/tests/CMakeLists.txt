@@ -17,6 +17,7 @@ target_sources(tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-xilinx-chiptestboard.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-moench.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-global.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-acquire.cpp
 
     
     ${CMAKE_CURRENT_SOURCE_DIR}/test-Result.cpp

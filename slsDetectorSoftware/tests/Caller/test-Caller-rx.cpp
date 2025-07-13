@@ -738,43 +738,37 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
         // check master file creation
         // TODO: check roi in master file
         {
-            auto prev_write = det.getFileWrite().tsquash(
-                "inconsistent file write values in test");
-            auto prev_path = det.getFilePath().tsquash(
-                "inconsistent file path values in test");
-            auto prev_format = det.getFileFormat().tsquash(
-                "inconsistent file format values in test");
-            auto prev_index = det.getAcquisitionIndex().tsquash(
-                "inconsistent file index values in test");
-            auto prev_fname = det.getFileNamePrefix().tsquash(
-                "inconsistent file name prefix values in test");
+            testFileInfo prev_file_info = get_file_state(det);
+            testCommonDetAcquireInfo prev_det_config_info =
+            get_common_acquire_config_state(det);
 
-            det.setFileWrite(true);
-            det.setFilePath("/tmp");
-            det.setFileNamePrefix("test");
+            testFileInfo test_file_info;
+            set_file_state(det, test_file_info);
+            int num_frames_to_acquire = 1;
+            testCommonDetAcquireInfo det_config;
+            det_config.num_frames_to_acquire = num_frames_to_acquire;
+            set_common_acquire_config_state(det, det_config);
 
-            det.setAcquisitionIndex(0);
-            det.setFileFormat(defs::BINARY);
             REQUIRE_NOTHROW(caller.call("acquire", {}, -1, PUT));
-            std::string file_path = "/tmp/test_master_0.json";
+
+            std::string file_path = "/tmp/sls_test_master_0.json";
             REQUIRE(std::filesystem::exists(file_path) == true);
 
 #ifdef HDF5C
-            det.setAcquisitionIndex(0);
-            det.setFileFormat(defs::HDF5);
+            test_file_info.file_format = defs::HDF5;
+            test_file_info.file_acq_index = 0;
+            set_file_state(det, test_file_info);
+
             REQUIRE_NOTHROW(caller.call("acquire", {}, -1, PUT));
+
             file_path = "/tmp/test_master_0.h5";
             REQUIRE(std::filesystem::exists(file_path) == true);
             file_path = "/tmp/test_virtual_0.h5";
             REQUIRE(std::filesystem::exists(file_path) == true);
 #endif
 
-            det.setFileWrite(prev_write);
-            if (!prev_path.empty())
-                det.setFilePath(prev_path);
-            det.setFileFormat(prev_format);
-            det.setAcquisitionIndex(prev_index);
-            det.setFileNamePrefix(prev_fname);
+            set_file_state(det, prev_file_info);
+            set_common_acquire_config_state(det, prev_det_config_info);
         }
 
         for (int i = 0; i != det.size(); ++i) {

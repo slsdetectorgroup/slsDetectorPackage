@@ -15,7 +15,6 @@ namespace sls {
 using test::GET;
 using test::PUT;
 
-
 /* dacs */
 
 TEST_CASE("Setting and reading back moench dacs", "[.cmdcall][.dacs]") {

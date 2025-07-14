@@ -2,7 +2,7 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
-class Caller;
+#include "Caller.h"
 #include "sls/Detector.h"
 #include "sls/sls_detector_defs.h"
 
@@ -68,9 +68,14 @@ testCtbAcquireInfo get_ctb_config_state(const Detector &det);
 void set_ctb_config_state(Detector &det,
                           const testCtbAcquireInfo &ctb_config_info);
 uint64_t calculate_ctb_image_size(const testCtbAcquireInfo &test_info);
-void test_ctb_acquire_with_receiver(const testCtbAcquireInfo &test_info,
-                                    int64_t num_frames_to_acquire,
-                                    Detector &det, Caller &caller);
-void create_files_for_acquire (Detector &det, Caller &caller);
+void test_ctb_file_size_with_acquire(Detector &det, Caller &caller,
+                                     int64_t num_frames,
+                                     const testCtbAcquireInfo &test_info);
+void create_ctb_files_for_acquire(Detector &det, Caller &caller,
+                                  int64_t num_frames,
+                                  const testCtbAcquireInfo &test_info);
+void create_files_for_acquire(Detector &det, Caller &caller,
+                              int64_t num_frames = 1, int dr = 16,
+                              int nc = 0x3);
 
 } // namespace sls

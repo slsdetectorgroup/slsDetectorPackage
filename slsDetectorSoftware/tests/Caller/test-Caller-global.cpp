@@ -274,9 +274,21 @@ uint64_t calculate_ctb_image_size(const testCtbAcquireInfo &test_info) {
     return image_size;
 }
 
-void test_ctb_acquire_with_receiver(const testCtbAcquireInfo &test_info,
-                                    int64_t num_frames_to_acquire,
-                                    Detector &det, Caller &caller) {
+void test_ctb_file_size_with_acquire(Detector &det, Caller &caller,
+                                     int64_t num_frames,
+                                     const testCtbAcquireInfo &test_info) {
+    create_ctb_files_for_acquire(det, caller, num_frames, test_info);
+
+    // check file size (assuming local pc)
+    uint64_t expected_image_size = calculate_ctb_image_size(test_info);
+    testFileInfo test_file_info;
+    REQUIRE_NOTHROW(test_acquire_binary_file_size(test_file_info, num_frames,
+                                                  expected_image_size));
+}
+
+void create_ctb_files_for_acquire(Detector &det, Caller &caller,
+                                  int64_t num_frames,
+                                  const testCtbAcquireInfo &test_info) {
 
     // save previous state
     testFileInfo prev_file_info = get_file_state(det);
@@ -285,26 +297,19 @@ void test_ctb_acquire_with_receiver(const testCtbAcquireInfo &test_info,
         get_common_acquire_config_state(det);
     testCtbAcquireInfo prev_ctb_config_info = get_ctb_config_state(det);
 
-    // defaults
+    // set state for acquire
     testFileInfo test_file_info;
     set_file_state(det, test_file_info);
     testCommonDetAcquireInfo det_config;
-    det_config.num_frames_to_acquire = num_frames_to_acquire;
+    det_config.num_frames_to_acquire = num_frames;
     set_common_acquire_config_state(det, det_config);
-
-    // set ctb config
     set_ctb_config_state(det, test_info);
 
-    // acquire
-    REQUIRE_NOTHROW(test_acquire_with_receiver(caller, det));
-
-    // check frames caught
-    REQUIRE_NOTHROW(test_frames_caught(det, num_frames_to_acquire));
-
-    // check file size (assuming local pc)
-    uint64_t expected_image_size = calculate_ctb_image_size(test_info);
-    REQUIRE_NOTHROW(test_acquire_binary_file_size(
-        test_file_info, num_frames_to_acquire, expected_image_size));
+    // acquire and get num frames caught
+    test_acquire_with_receiver(caller, det);
+    auto frames_caught = det.getFramesCaught().tsquash(
+        "Inconsistent number of frames caught")[0];
+    REQUIRE(frames_caught == num_frames);
 
     // restore previous state
     set_file_state(det, prev_file_info);
@@ -312,28 +317,146 @@ void test_ctb_acquire_with_receiver(const testCtbAcquireInfo &test_info,
     set_ctb_config_state(det, prev_ctb_config_info);
 }
 
-void create_files_for_acquire (Detector &det, Caller &caller) {
+void create_files_for_acquire(Detector &det, Caller &caller, int64_t num_frames,
+                              int dr, int nc) {
+
+    // save previous state
     testFileInfo prev_file_info = get_file_state(det);
     testCommonDetAcquireInfo prev_det_config_info =
-    get_common_acquire_config_state(det);
+        get_common_acquire_config_state(det);
+    // det specific
+    auto det_type =
+        det.getDetectorType().tsquash("Inconsistent detector types to test");
+    sls::ns exptime{};
+    std::array<sls::ns, 3UL> exptimes;
+    int n_rows{};
+    int dynamic_range{};
+    uint32_t counter_mask{};
+    defs::burstMode burst_mode{};
+    int64_t number_of_bursts{};
+    sls::ns burst_period{};
+    switch (det_type) {
+    case defs::JUNGFRAU:
+    case defs::MOENCH:
+        exptime = det.getExptime().tsquash("inconsistent exptime to test");
+        n_rows =
+            det.getReadNRows().tsquash("inconsistent number of rows to test");
+        break;
+    case defs::EIGER:
+        exptime = det.getExptime().tsquash("inconsistent exptime to test");
+        n_rows =
+            det.getReadNRows().tsquash("inconsistent number of rows to test");
+        dynamic_range =
+            det.getDynamicRange().tsquash("inconsistent dynamic range to test");
+        REQUIRE(false ==
+                det.getTenGiga().tsquash("inconsistent 10Giga to test"));
+        break;
+    case defs::MYTHEN3:
+        exptimes =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        dynamic_range =
+            det.getDynamicRange().tsquash("inconsistent dynamic range to test");
+        counter_mask =
+            det.getCounterMask().tsquash("inconsistent counter mask to test");
+        break;
+    case defs::GOTTHARD2:
+        exptime = det.getExptime().tsquash("inconsistent exptime to test");
+        burst_mode =
+            det.getBurstMode().tsquash("inconsistent burst mode to test");
+        number_of_bursts = det.getNumberOfBursts().tsquash(
+            "inconsistent number of bursts to test");
+        burst_period =
+            det.getBurstPeriod().tsquash("inconsistent burst period to test");
+        break;
+    default:
+        break;
+    }
 
-    // binary
+    // set state for acquire
     testFileInfo test_file_info;
     set_file_state(det, test_file_info);
-    int num_frames_to_acquire = 1;
     testCommonDetAcquireInfo det_config;
-    det_config.num_frames_to_acquire = num_frames_to_acquire;
+    det_config.num_frames_to_acquire = num_frames;
     set_common_acquire_config_state(det, det_config);
-    REQUIRE_NOTHROW(caller.call("acquire", {}, -1, PUT));
+    // det specific
+    switch (det_type) {
+    case defs::JUNGFRAU:
+        det.setExptime(std::chrono::microseconds{200});
+        det.setReadNRows(512);
+        break;
+    case defs::MOENCH:
+        det.setExptime(std::chrono::microseconds{200});
+        det.setReadNRows(400);
+        break;
+    case defs::EIGER:
+        det.setExptime(std::chrono::microseconds{200});
+        det.setReadNRows(256);
+        det.setDynamicRange(dr);
+        break;
+    case defs::MYTHEN3:
+        det.setExptime(-1, std::chrono::microseconds{200});
+        det.setDynamicRange(dr);
+        det.setCounterMask(nc);
+        break;
+    case defs::GOTTHARD2:
+        det.setExptime(std::chrono::microseconds{200});
+        det.setBurstMode(defs::CONTINUOUS_EXTERNAL);
+        det.setNumberOfBursts(1);
+        det.setBurstPeriod(std::chrono::milliseconds{0});
+        break;
+    default:
+        break;
+    }
+
+    // acquire and get num frames caught
+    test_acquire_with_receiver(caller, det);
+    auto frames_caught = det.getFramesCaught().tsquash(
+        "Inconsistent number of frames caught")[0];
+    REQUIRE(frames_caught == num_frames);
 
     // hdf5
 #ifdef HDF5C
     test_file_info.file_format = defs::HDF5;
     test_file_info.file_acq_index = 0;
     set_file_state(det, test_file_info);
-    REQUIRE_NOTHROW(caller.call("acquire", {}, -1, PUT));
+
+    // acquire and get num frames caught
+    test_acquire_with_receiver(caller, det);
+    frames_caught = det.getFramesCaught().tsquash(
+        "Inconsistent number of frames caught")[0];
+    REQUIRE(frames_caught == num_frames);
 #endif
 
+    // restore previous state
+    // det specific
+    switch (det_type) {
+    case defs::JUNGFRAU:
+    case defs::MOENCH:
+        det.setExptime(exptime);
+        det.setReadNRows(n_rows);
+        break;
+    case defs::EIGER:
+        det.setExptime(exptime);
+        det.setReadNRows(n_rows);
+        det.setDynamicRange(dynamic_range);
+        break;
+    case defs::MYTHEN3:
+        for (int iGate = 0; iGate < 3; ++iGate) {
+            det.setExptime(iGate, exptimes[iGate]);
+        }
+        det.setDynamicRange(dynamic_range);
+        det.setCounterMask(counter_mask);
+        break;
+    case defs::GOTTHARD2:
+        det.setExptime(exptime);
+        det.setBurstMode(burst_mode);
+        det.setNumberOfBursts(number_of_bursts);
+        det.setBurstPeriod(burst_period);
+        break;
+    default:
+        break;
+    }
+    // file
     set_file_state(det, prev_file_info);
     set_common_acquire_config_state(det, prev_det_config_info);
 }

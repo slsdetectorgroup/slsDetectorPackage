@@ -773,7 +773,11 @@ TEST_CASE("rx_clearroi", "[.cmdcall]") {
             REQUIRE(oss.str() == "rx_clearroi successful\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setRxROI(prev_val);
+            if (prev_val.size() == 1 && prev_val[0].completeRoi()) {
+                det.clearRxROI();
+            } else {
+                det.setRxROI(prev_val);
+            }
         }
     }
 }

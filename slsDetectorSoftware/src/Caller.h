@@ -1,5 +1,5 @@
 // This file is used as input to generate the caller class
-
+#pragma once
 #include "CmdParser.h"
 #include "HelpDacs.h"
 #include "sls/Detector.h"

@@ -107,17 +107,6 @@ void test_master_file_image_size(const Document &doc, Detector &det) {
     case defs::CHIPTESTBOARD:
     case defs::XILINX_CHIPTESTBOARD: {
         testCtbAcquireInfo test_info;
-        test_info.readout_mode = det.getReadoutMode()[0];
-        test_info.ten_giga = det.getTenGiga()[0];
-        test_info.num_adc_samples = det.getNumberOfAnalogSamples()[0];
-        test_info.num_dbit_samples = det.getNumberOfDigitalSamples()[0];
-        test_info.num_trans_samples = det.getNumberOfTransceiverSamples()[0];
-        test_info.adc_enable_1g = det.getADCEnableMask()[0];
-        test_info.adc_enable_10g = det.getTenGigaADCEnableMask()[0];
-        test_info.dbit_offset = det.getRxDbitOffset()[0];
-        test_info.dbit_list = det.getRxDbitList()[0];
-        test_info.dbit_reorder = det.getRxDbitReorder()[0];
-        test_info.transceiver_mask = det.getTransceiverEnableMask()[0];
         size_t image_size = calculate_ctb_image_size(test_info);
         REQUIRE(doc["Image Size in bytes"].GetUint64() == image_size);
     } break;
@@ -259,7 +248,6 @@ void test_master_file_read_n_rows(const Document &doc, Detector &det) {
 void test_master_file_readout_speed(const Document &doc, Detector &det) {
     REQUIRE(doc.HasMember("Readout Speed"));
     auto value = det.getReadoutSpeed().tsquash("Inconsistent readout speed");
-    std::cout << "value:" << value << " str:" << ToString(value) << std::endl;
     REQUIRE(doc["Readout Speed"].GetString() == ToString(value));
 }
 
@@ -319,7 +307,10 @@ void test_master_file_rate_corrections(const Document &doc, Detector &det) {
 void test_master_file_counter_mask(const Document &doc, Detector &det) {
     REQUIRE(doc.HasMember("Counter Mask"));
     auto value = det.getCounterMask().tsquash("Inconsistent counter mask");
-    REQUIRE(doc["Counter Mask"].GetUint() == value);
+    std::stringstream ss;
+    ss << "0x" << std::hex << value;
+    std::string hexStr = ss.str();
+    REQUIRE(doc["Counter Mask"].GetString() == hexStr);
 }
 
 void test_master_file_exptimes(const Document &doc, Detector &det) {
@@ -572,12 +563,6 @@ TEST_CASE("check_master_file_attributes", "[.cmdcall][.cmdattr]") {
     Caller caller(&det);
     auto det_type =
         det.getDetectorType().tsquash("Inconsistent detector types to test");
-    if (det_type == defs::JUNGFRAU) {
-        auto value =
-            det.getReadoutSpeed().tsquash("Inconsistent readout speed");
-        std::cout << "value before acwurei:" << value
-                  << " str:" << ToString(value) << std::endl;
-    }
     switch (det_type) {
     case defs::EIGER:
     case defs::JUNGFRAU:

@@ -148,20 +148,52 @@ void test_acquire_with_receiver(Caller &caller, const Detector &det) {
     REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
 }
 
-testCommonDetAcquireInfo get_common_acquire_config_state(const Detector &det) {
-    return testCommonDetAcquireInfo{
-        det.getTimingMode().tsquash("Inconsistent timing mode"),
-        det.getNumberOfFrames().tsquash("Inconsistent number of frames"),
-        det.getNumberOfTriggers().tsquash("Inconsistent number of triggers"),
-        det.getPeriod().tsquash("Inconsistent period")};
-}
+void create_files_for_acquire(Detector &det, Caller &caller, int64_t num_frames,
+                              std::optional<testCtbAcquireInfo> test_info) {
 
-void set_common_acquire_config_state(
-    Detector &det, const testCommonDetAcquireInfo &det_config_info) {
-    det.setTimingMode(det_config_info.timing_mode);
-    det.setNumberOfFrames(det_config_info.num_frames_to_acquire);
-    det.setNumberOfTriggers(det_config_info.num_triggers);
-    det.setPeriod(det_config_info.period);
+    // save previous state
+    testFileInfo prev_file_info = get_file_state(det);
+    auto prev_num_frames = det.getNumberOfFrames().tsquash(
+        "Inconsistent number of frames to acquire");
+    std::optional<testCtbAcquireInfo> prev_ctb_config_info{};
+    if (test_info) {
+        prev_ctb_config_info = get_ctb_config_state(det);
+    }
+
+    // set state for acquire
+    testFileInfo test_file_info;
+    set_file_state(det, test_file_info);
+    det.setNumberOfFrames(num_frames);
+    if (test_info) {
+        set_ctb_config_state(det, *test_info);
+    }
+
+    // acquire and get num frames caught
+    test_acquire_with_receiver(caller, det);
+    auto frames_caught = det.getFramesCaught().tsquash(
+        "Inconsistent number of frames caught")[0];
+    REQUIRE(frames_caught == num_frames);
+
+    // hdf5
+#ifdef HDF5C
+    test_file_info.file_format = defs::HDF5;
+    test_file_info.file_acq_index = 0;
+    set_file_state(det, test_file_info);
+
+    // acquire and get num frames caught
+    test_acquire_with_receiver(caller, det);
+    frames_caught = det.getFramesCaught().tsquash(
+        "Inconsistent number of frames caught")[0];
+    REQUIRE(frames_caught == num_frames);
+#endif
+
+    // restore previous state
+    // file
+    set_file_state(det, prev_file_info);
+    det.setNumberOfFrames(prev_num_frames);
+    if (test_info) {
+        set_ctb_config_state(det, *prev_ctb_config_info);
+    }
 }
 
 testCtbAcquireInfo get_ctb_config_state(const Detector &det) {
@@ -277,83 +309,13 @@ uint64_t calculate_ctb_image_size(const testCtbAcquireInfo &test_info) {
 void test_ctb_file_size_with_acquire(Detector &det, Caller &caller,
                                      int64_t num_frames,
                                      const testCtbAcquireInfo &test_info) {
-    create_ctb_files_for_acquire(det, caller, num_frames, test_info);
+    create_files_for_acquire(det, caller, num_frames, test_info);
 
     // check file size (assuming local pc)
     uint64_t expected_image_size = calculate_ctb_image_size(test_info);
     testFileInfo test_file_info;
     REQUIRE_NOTHROW(test_acquire_binary_file_size(test_file_info, num_frames,
                                                   expected_image_size));
-}
-
-void create_ctb_files_for_acquire(Detector &det, Caller &caller,
-                                  int64_t num_frames,
-                                  const testCtbAcquireInfo &test_info) {
-
-    // save previous state
-    testFileInfo prev_file_info = get_file_state(det);
-    testCommonDetAcquireInfo prev_det_config_info =
-        // overwrite exptime if not using virtual ctb server
-        get_common_acquire_config_state(det);
-    testCtbAcquireInfo prev_ctb_config_info = get_ctb_config_state(det);
-
-    // set state for acquire
-    testFileInfo test_file_info;
-    set_file_state(det, test_file_info);
-    testCommonDetAcquireInfo det_config;
-    det_config.num_frames_to_acquire = num_frames;
-    set_common_acquire_config_state(det, det_config);
-    set_ctb_config_state(det, test_info);
-
-    // acquire and get num frames caught
-    test_acquire_with_receiver(caller, det);
-    auto frames_caught = det.getFramesCaught().tsquash(
-        "Inconsistent number of frames caught")[0];
-    REQUIRE(frames_caught == num_frames);
-
-    // restore previous state
-    set_file_state(det, prev_file_info);
-    set_common_acquire_config_state(det, prev_det_config_info);
-    set_ctb_config_state(det, prev_ctb_config_info);
-}
-
-void create_files_for_acquire(Detector &det, Caller &caller, int64_t num_frames) {
-
-    // save previous state
-    testFileInfo prev_file_info = get_file_state(det);
-    testCommonDetAcquireInfo prev_det_config_info =
-        get_common_acquire_config_state(det);
-
-    // set state for acquire
-    testFileInfo test_file_info;
-    set_file_state(det, test_file_info);
-    testCommonDetAcquireInfo det_config;
-    det_config.num_frames_to_acquire = num_frames;
-    set_common_acquire_config_state(det, det_config);
-
-    // acquire and get num frames caught
-    test_acquire_with_receiver(caller, det);
-    auto frames_caught = det.getFramesCaught().tsquash(
-        "Inconsistent number of frames caught")[0];
-    REQUIRE(frames_caught == num_frames);
-
-    // hdf5
-#ifdef HDF5C
-    test_file_info.file_format = defs::HDF5;
-    test_file_info.file_acq_index = 0;
-    set_file_state(det, test_file_info);
-
-    // acquire and get num frames caught
-    test_acquire_with_receiver(caller, det);
-    frames_caught = det.getFramesCaught().tsquash(
-        "Inconsistent number of frames caught")[0];
-    REQUIRE(frames_caught == num_frames);
-#endif
-
-    // restore previous state
-    // file
-    set_file_state(det, prev_file_info);
-    set_common_acquire_config_state(det, prev_det_config_info);
 }
 
 } // namespace sls

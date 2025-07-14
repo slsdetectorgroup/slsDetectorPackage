@@ -20,6 +20,7 @@ from utils_for_test import (
     startProcessInBackground,
     startDetectorVirtualServer,
     connectToVirtualServers,
+    loadBasicSettings,
     runProcessWithLogFile
 )
 
@@ -60,26 +61,6 @@ def loadConfigForRoi(name, fp, num_mods = 1, num_interfaces = 1):
             d.powerchip = 1
 
         d.frames = 5
-        # basic settings for easy acquire
-        if name == "jungfrau":
-            d.exptime = timedelta(microseconds = 200)
-            d.readnrows = 512
-        elif name == "moench":
-            d.exptime = timedelta(microseconds = 200)
-            d.readnrows = 400
-        elif name == "eiger":
-            d.exptime = timedelta(microseconds = 200)
-            d.readnrows = 256
-            d.dr = 16
-        elif name == "mythen3":
-            d.setExptime(-1, timedelta(microseconds = 200))
-            d.dr = 16
-            d.counters = [0, 1]
-        elif name == "gotthard2":
-            d.exptime = timedelta(microseconds = 200)
-            d.burstmode = burstMode.CONTINUOUS_EXTERNAL
-            d.bursts = 1
-            d.burstperiod = 0
 
     except Exception as e:
         raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
@@ -109,6 +90,7 @@ def startTestsForAll(fp):
                 startDetectorVirtualServer(server, nmods, fp)
                 startReceiver(nmods, fp)
                 d = loadConfigForRoi(name=server, fp=fp, num_mods=nmods, num_interfaces=ninterfaces)
+                loadBasicSettings(name=server, d=d, fp=fp)
 
                 fname = ROI_TEST_FNAME + server + '.txt'
                 cmd = ['tests', 'rx_roi', '--abort', '-s']

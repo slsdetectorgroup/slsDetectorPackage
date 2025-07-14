@@ -8,6 +8,7 @@
 
 #include <chrono>
 #include <filesystem>
+#include <optional>
 #include <thread>
 
 namespace sls {
@@ -18,13 +19,6 @@ struct testFileInfo {
     bool file_write{true};
     bool file_overwrite{true};
     slsDetectorDefs::fileFormat file_format{slsDetectorDefs::BINARY};
-};
-
-struct testCommonDetAcquireInfo {
-    slsDetectorDefs::timingMode timing_mode{slsDetectorDefs::AUTO_TIMING};
-    int64_t num_frames_to_acquire{2};
-    int64_t num_triggers{1};
-    std::chrono::nanoseconds period{std::chrono::milliseconds{2}};
 };
 
 struct testCtbAcquireInfo {
@@ -60,9 +54,9 @@ void test_frames_caught(const Detector &det, int num_frames_to_acquire);
 
 void test_acquire_with_receiver(Caller &caller, const Detector &det);
 
-testCommonDetAcquireInfo get_common_acquire_config_state(const Detector &det);
-void set_common_acquire_config_state(
-    Detector &det, const testCommonDetAcquireInfo &det_config_info);
+void create_files_for_acquire(
+    Detector &det, Caller &caller, int64_t num_frames = 1,
+    std::optional<testCtbAcquireInfo> test_info = std::nullopt);
 
 testCtbAcquireInfo get_ctb_config_state(const Detector &det);
 void set_ctb_config_state(Detector &det,
@@ -71,10 +65,5 @@ uint64_t calculate_ctb_image_size(const testCtbAcquireInfo &test_info);
 void test_ctb_file_size_with_acquire(Detector &det, Caller &caller,
                                      int64_t num_frames,
                                      const testCtbAcquireInfo &test_info);
-void create_ctb_files_for_acquire(Detector &det, Caller &caller,
-                                  int64_t num_frames,
-                                  const testCtbAcquireInfo &test_info);
-void create_files_for_acquire(Detector &det, Caller &caller,
-                              int64_t num_frames = 1);
 
 } // namespace sls

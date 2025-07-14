@@ -216,7 +216,17 @@ def loadConfig(name, rx_hostname, settingsdir, fp, num_mods = 1, num_frames = 1)
             d.setThresholdEnergy(4500, detectorSettings.STANDARD)
 
         d.frames = num_frames
+      
+    except Exception as e:
+        raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
+    
+    return d
 
+# for easy acquire
+def loadBasicSettings(name, d, fp):
+    Log(LogLevel.INFO, 'Loading basic settings for ' + name)
+    Log(LogLevel.INFO, 'Loading basic settings for ' + name, fp)
+    try:
         # basic settings for easy acquire
         if name == "jungfrau":
             d.exptime = timedelta(microseconds = 200)
@@ -237,13 +247,11 @@ def loadConfig(name, rx_hostname, settingsdir, fp, num_mods = 1, num_frames = 1)
             d.burstmode = burstMode.CONTINUOUS_EXTERNAL
             d.bursts = 1
             d.burstperiod = 0
-       
+        d.period = timedelta(milliseconds = 2)
+
     except Exception as e:
         raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
     
-    return d
-
-
 def ParseArguments(description, default_num_mods=1):
     parser = argparse.ArgumentParser(description)
 

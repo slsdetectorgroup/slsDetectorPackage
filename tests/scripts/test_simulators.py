@@ -21,6 +21,7 @@ from utils_for_test import (
     runProcessWithLogFile,
     startDetectorVirtualServer,
     loadConfig,
+    loadBasicSettings,
     ParseArguments
 )
 
@@ -62,7 +63,8 @@ def startCmdTestsForAll(args, fp):
             cleanup(fp)
             startDetectorVirtualServer(name=server, num_mods=num_mods, fp=fp)
             startReceiver(num_mods, fp)
-            loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, fp=fp, num_mods=num_mods)
+            d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, fp=fp, num_mods=num_mods)
+            loadBasicSettings(name=server, d=d, fp=fp)
             runProcessWithLogFile('Cmd Tests for ' + server, cmd, fp, fname)
         except Exception as e:
             raise RuntimeException(f'Cmd Tests failed for {server}.') from e

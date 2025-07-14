@@ -319,7 +319,7 @@ int ClientInterface::get_version(Interface &socket) {
 
 int ClientInterface::setup_receiver(Interface &socket) {
     auto arg = socket.Receive<rxParameters>();
-    LOG(logDEBUG) << ToString(arg);
+    LOG(logINFOBLUE) << ToString(arg);
 
     MacAddr retvals[2];
     try {

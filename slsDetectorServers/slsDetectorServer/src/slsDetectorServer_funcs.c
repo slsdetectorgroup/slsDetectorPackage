@@ -7444,9 +7444,9 @@ int get_receiver_parameters(int file_des) {
     if (ret == FAIL) {
         sprintf(mess, "Could not get readout speed.\n");
         return sendError(file_des);
-    } else {
-        i32 = 0;
     }
+#else
+    i32 = 0;
 #endif
     n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)

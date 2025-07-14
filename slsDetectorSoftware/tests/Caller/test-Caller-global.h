@@ -75,7 +75,6 @@ void create_ctb_files_for_acquire(Detector &det, Caller &caller,
                                   int64_t num_frames,
                                   const testCtbAcquireInfo &test_info);
 void create_files_for_acquire(Detector &det, Caller &caller,
-                              int64_t num_frames = 1, int dr = 16,
-                              int nc = 0x3);
+                              int64_t num_frames = 1);
 
 } // namespace sls

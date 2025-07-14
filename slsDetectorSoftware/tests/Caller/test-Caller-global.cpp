@@ -317,60 +317,12 @@ void create_ctb_files_for_acquire(Detector &det, Caller &caller,
     set_ctb_config_state(det, prev_ctb_config_info);
 }
 
-void create_files_for_acquire(Detector &det, Caller &caller, int64_t num_frames,
-                              int dr, int nc) {
+void create_files_for_acquire(Detector &det, Caller &caller, int64_t num_frames) {
 
     // save previous state
     testFileInfo prev_file_info = get_file_state(det);
     testCommonDetAcquireInfo prev_det_config_info =
         get_common_acquire_config_state(det);
-    // det specific
-    auto det_type =
-        det.getDetectorType().tsquash("Inconsistent detector types to test");
-    sls::ns exptime{};
-    std::array<sls::ns, 3UL> exptimes;
-    int n_rows{};
-    int dynamic_range{};
-    uint32_t counter_mask{};
-    defs::burstMode burst_mode{};
-    int64_t number_of_bursts{};
-    sls::ns burst_period{};
-    switch (det_type) {
-    case defs::JUNGFRAU:
-    case defs::MOENCH:
-        exptime = det.getExptime().tsquash("inconsistent exptime to test");
-        n_rows =
-            det.getReadNRows().tsquash("inconsistent number of rows to test");
-        break;
-    case defs::EIGER:
-        exptime = det.getExptime().tsquash("inconsistent exptime to test");
-        n_rows =
-            det.getReadNRows().tsquash("inconsistent number of rows to test");
-        dynamic_range =
-            det.getDynamicRange().tsquash("inconsistent dynamic range to test");
-        REQUIRE(false ==
-                det.getTenGiga().tsquash("inconsistent 10Giga to test"));
-        break;
-    case defs::MYTHEN3:
-        exptimes =
-            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
-        dynamic_range =
-            det.getDynamicRange().tsquash("inconsistent dynamic range to test");
-        counter_mask =
-            det.getCounterMask().tsquash("inconsistent counter mask to test");
-        break;
-    case defs::GOTTHARD2:
-        exptime = det.getExptime().tsquash("inconsistent exptime to test");
-        burst_mode =
-            det.getBurstMode().tsquash("inconsistent burst mode to test");
-        number_of_bursts = det.getNumberOfBursts().tsquash(
-            "inconsistent number of bursts to test");
-        burst_period =
-            det.getBurstPeriod().tsquash("inconsistent burst period to test");
-        break;
-    default:
-        break;
-    }
 
     // set state for acquire
     testFileInfo test_file_info;
@@ -378,35 +330,6 @@ void create_files_for_acquire(Detector &det, Caller &caller, int64_t num_frames,
     testCommonDetAcquireInfo det_config;
     det_config.num_frames_to_acquire = num_frames;
     set_common_acquire_config_state(det, det_config);
-    // det specific
-    switch (det_type) {
-    case defs::JUNGFRAU:
-        det.setExptime(std::chrono::microseconds{200});
-        det.setReadNRows(512);
-        break;
-    case defs::MOENCH:
-        det.setExptime(std::chrono::microseconds{200});
-        det.setReadNRows(400);
-        break;
-    case defs::EIGER:
-        det.setExptime(std::chrono::microseconds{200});
-        det.setReadNRows(256);
-        det.setDynamicRange(dr);
-        break;
-    case defs::MYTHEN3:
-        det.setExptime(-1, std::chrono::microseconds{200});
-        det.setDynamicRange(dr);
-        det.setCounterMask(nc);
-        break;
-    case defs::GOTTHARD2:
-        det.setExptime(std::chrono::microseconds{200});
-        det.setBurstMode(defs::CONTINUOUS_EXTERNAL);
-        det.setNumberOfBursts(1);
-        det.setBurstPeriod(std::chrono::milliseconds{0});
-        break;
-    default:
-        break;
-    }
 
     // acquire and get num frames caught
     test_acquire_with_receiver(caller, det);
@@ -428,34 +351,6 @@ void create_files_for_acquire(Detector &det, Caller &caller, int64_t num_frames,
 #endif
 
     // restore previous state
-    // det specific
-    switch (det_type) {
-    case defs::JUNGFRAU:
-    case defs::MOENCH:
-        det.setExptime(exptime);
-        det.setReadNRows(n_rows);
-        break;
-    case defs::EIGER:
-        det.setExptime(exptime);
-        det.setReadNRows(n_rows);
-        det.setDynamicRange(dynamic_range);
-        break;
-    case defs::MYTHEN3:
-        for (int iGate = 0; iGate < 3; ++iGate) {
-            det.setExptime(iGate, exptimes[iGate]);
-        }
-        det.setDynamicRange(dynamic_range);
-        det.setCounterMask(counter_mask);
-        break;
-    case defs::GOTTHARD2:
-        det.setExptime(exptime);
-        det.setBurstMode(burst_mode);
-        det.setNumberOfBursts(number_of_bursts);
-        det.setBurstPeriod(burst_period);
-        break;
-    default:
-        break;
-    }
     // file
     set_file_state(det, prev_file_info);
     set_common_acquire_config_state(det, prev_det_config_info);

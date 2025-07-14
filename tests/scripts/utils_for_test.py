@@ -7,8 +7,9 @@ This file is used for common utils used for integration tests between simulators
 import sys, subprocess, time, argparse
 from enum import Enum
 from colorama import Fore, Style, init
+from datetime import timedelta
 
-from slsdet import Detector, detectorSettings
+from slsdet import Detector, detectorSettings, burstMode
 from slsdet.defines import DEFAULT_TCP_RX_PORTNO, DEFAULT_UDP_DST_PORTNO
 SERVER_START_PORTNO=1900
 
@@ -215,6 +216,28 @@ def loadConfig(name, rx_hostname, settingsdir, fp, num_mods = 1, num_frames = 1)
             d.setThresholdEnergy(4500, detectorSettings.STANDARD)
 
         d.frames = num_frames
+
+        # basic settings for easy acquire
+        if name == "jungfrau":
+            d.exptime = timedelta(microseconds = 200)
+            d.readnrows = 512
+        elif name == "moench":
+            d.exptime = timedelta(microseconds = 200)
+            d.readnrows = 400
+        elif name == "eiger":
+            d.exptime = timedelta(microseconds = 200)
+            d.readnrows = 256
+            d.dr = 16
+        elif name == "mythen3":
+            d.setExptime(-1, timedelta(microseconds = 200))
+            d.dr = 16
+            d.counters = [0, 1]
+        elif name == "gotthard2":
+            d.exptime = timedelta(microseconds = 200)
+            d.burstmode = burstMode.CONTINUOUS_EXTERNAL
+            d.bursts = 1
+            d.burstperiod = 0
+       
     except Exception as e:
         raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
     

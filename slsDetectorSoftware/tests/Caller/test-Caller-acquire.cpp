@@ -55,10 +55,12 @@ TEST_CASE("eiger_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
 
     if (det_type == defs::EIGER) {
 
-        int dynamic_range = 16;
+        int dynamic_range = det.getDynamicRange().squash();
+        if (dynamic_range != 16) {
+            throw RuntimeError("Eiger detector must have dynamic range 16 to test");
+        }
         int num_frames_to_acquire = 2;
-        create_files_for_acquire(det, caller, num_frames_to_acquire,
-                                 dynamic_range);
+        create_files_for_acquire(det, caller, num_frames_to_acquire);
 
         // check file size (assuming local pc)
         {
@@ -83,12 +85,14 @@ TEST_CASE("mythen3_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
 
     if (det_type == defs::MYTHEN3) {
 
-        int dynamic_range = 16;
-        int counter_mask = 0x3;
+        int dynamic_range = det.getDynamicRange().squash();
+        int counter_mask = det.getCounterMask().squash();
+        if (dynamic_range != 16 && counter_mask != 0x3) {
+            throw RuntimeError("Mythen3 detector must have dynamic range 16 and counter mask 0x3 to test");
+        }
         int num_counters = __builtin_popcount(counter_mask);
         int num_frames_to_acquire = 2;
-        create_files_for_acquire(det, caller, num_frames_to_acquire,
-                                 dynamic_range, counter_mask);
+        create_files_for_acquire(det, caller, num_frames_to_acquire);
 
         // check file size (assuming local pc)
         {

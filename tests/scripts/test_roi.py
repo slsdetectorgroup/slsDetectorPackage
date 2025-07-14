@@ -7,8 +7,9 @@ This file is used to start up simulators, receivers and test roi for every detec
 import sys, time
 import traceback
 
-from slsdet import Detector
+from slsdet import Detector, burstMode
 from slsdet.defines import DEFAULT_TCP_RX_PORTNO, DEFAULT_UDP_DST_PORTNO
+from datetime import timedelta
 
 
 from utils_for_test import (
@@ -59,6 +60,26 @@ def loadConfigForRoi(name, fp, num_mods = 1, num_interfaces = 1):
             d.powerchip = 1
 
         d.frames = 5
+        # basic settings for easy acquire
+        if name == "jungfrau":
+            d.exptime = timedelta(microseconds = 200)
+            d.readnrows = 512
+        elif name == "moench":
+            d.exptime = timedelta(microseconds = 200)
+            d.readnrows = 400
+        elif name == "eiger":
+            d.exptime = timedelta(microseconds = 200)
+            d.readnrows = 256
+            d.dr = 16
+        elif name == "mythen3":
+            d.setExptime(-1, timedelta(microseconds = 200))
+            d.dr = 16
+            d.counters = [0, 1]
+        elif name == "gotthard2":
+            d.exptime = timedelta(microseconds = 200)
+            d.burstmode = burstMode.CONTINUOUS_EXTERNAL
+            d.bursts = 1
+            d.burstperiod = 0
 
     except Exception as e:
         raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e

@@ -62,7 +62,8 @@ class GeneralData {
     uint32_t transceiverMask{0};
     slsDetectorDefs::frameDiscardPolicy frameDiscardMode{
         slsDetectorDefs::NO_DISCARD};
-
+    /* actual image size after ctboffset and ctbreorder */
+    uint32_t actualImageSize{0};
     GeneralData(){};
     virtual ~GeneralData(){};
 
@@ -196,6 +197,7 @@ class EigerData : public GeneralData {
         dataSize = (tengigaEnable ? 4096 : 1024);
         packetSize = headerSizeinPacket + dataSize;
         imageSize = int(nPixelsX * nPixelsY * GetPixelDepth());
+        actualImageSize = imageSize;
         packetsPerFrame = imageSize / dataSize;
         fifoDepth = (dynamicRange == 32 ? 100 : 1000);
     };
@@ -226,6 +228,7 @@ class JungfrauData : public GeneralData {
         nPixelsX = (256 * 4);
         nPixelsY = (256 * 2) / numUDPInterfaces;
         imageSize = int(nPixelsX * nPixelsY * GetPixelDepth());
+        actualImageSize = imageSize;
         packetsPerFrame = imageSize / dataSize;
         udpSocketBufferSize = (1000 * 1024 * 1024) / numUDPInterfaces;
     };
@@ -257,6 +260,7 @@ class MoenchData : public GeneralData {
         nPixelsX = (400);
         nPixelsY = (400) / numUDPInterfaces;
         imageSize = int(nPixelsX * nPixelsY * GetPixelDepth());
+        actualImageSize = imageSize;
         packetsPerFrame = imageSize / dataSize;
         udpSocketBufferSize = (1000 * 1024 * 1024) / numUDPInterfaces;
     };
@@ -308,6 +312,7 @@ class Mythen3Data : public GeneralData {
         nPixelsX = (NCHAN * ncounters); // max 1280 channels x 3 counters
         LOG(logINFO) << "nPixelsX: " << nPixelsX;
         imageSize = nPixelsX * nPixelsY * GetPixelDepth();
+        actualImageSize = imageSize;
 
         // 10g
         if (tengigaEnable) {
@@ -374,6 +379,7 @@ class Gotthard2Data : public GeneralData {
     void UpdateImageSize() {
         packetSize = headerSizeinPacket + dataSize;
         imageSize = int(nPixelsX * nPixelsY * GetPixelDepth());
+        actualImageSize = imageSize;
         packetsPerFrame = imageSize / dataSize;
         vetoPacketSize = vetoHsize + vetoDataSize;
         vetoImageSize = vetoDataSize * packetsPerFrame;
@@ -394,7 +400,7 @@ class ChipTestBoardData : public GeneralData {
     /** Constructor */
     ChipTestBoardData() {
         detType = slsDetectorDefs::CHIPTESTBOARD;
-        nPixelsY = 1; // number of samples
+        nPixelsY = 1;
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
         frameIndexMask = 0xFFFFFF; // 10g
         frameIndexOffset = 8;      // 10g
@@ -404,29 +410,29 @@ class ChipTestBoardData : public GeneralData {
         standardheader = true;
         ctbDbitReorder = true;
         UpdateImageSize();
-    };
+    }
 
   public:
-    int GetNumberOfAnalogDatabytes() { return nAnalogBytes; };
+    int GetNumberOfAnalogDatabytes() { return nAnalogBytes; }
 
-    int GetNumberOfDigitalDatabytes() { return nDigitalBytes; };
+    int GetNumberOfDigitalDatabytes() { return nDigitalBytes; }
 
-    int GetNumberOfTransceiverDatabytes() { return nTransceiverBytes; };
+    int GetNumberOfTransceiverDatabytes() { return nTransceiverBytes; }
 
     void SetNumberOfAnalogSamples(int n) {
         nAnalogSamples = n;
         UpdateImageSize();
-    };
+    }
 
     void SetNumberOfDigitalSamples(int n) {
         nDigitalSamples = n;
         UpdateImageSize();
-    };
+    }
 
     void SetNumberOfTransceiverSamples(int n) {
         nTransceiverSamples = n;
         UpdateImageSize();
-    };
+    }
 
     void SetctbDbitOffset(const int value) { ctbDbitOffset = value; }
 
@@ -437,35 +443,37 @@ class ChipTestBoardData : public GeneralData {
     void SetOneGigaAdcEnableMask(int n) {
         adcEnableMaskOneGiga = n;
         UpdateImageSize();
-    };
+    }
 
     void SetTenGigaAdcEnableMask(int n) {
         adcEnableMaskTenGiga = n;
         UpdateImageSize();
-    };
+    }
 
     void SetTransceiverEnableMask(int n) {
         transceiverMask = n;
         UpdateImageSize();
-    };
+    }
 
     void SetReadoutMode(slsDetectorDefs::readoutMode r) {
         readoutType = r;
         UpdateImageSize();
-    };
+    }
 
     void SetTenGigaEnable(bool tg) {
         tengigaEnable = tg;
         UpdateImageSize();
-    };
+    }
 
   private:
     void UpdateImageSize() {
         nAnalogBytes = 0;
-        nDigitalBytes = 0;
+        nDigitalBytes = 0; // size from the detector
         nTransceiverBytes = 0;
         int nAnalogChans = 0, nDigitalChans = 0, nTransceiverChans = 0;
-        uint64_t digital_bytes_reserved = 0;
+        uint64_t nDigitalBytesReserved =
+            0; // reserved for reordering and including dbit offset
+        int nActualDigitalBytes = 0; // actual after removign dbit offset
 
         // analog channels (normal, analog/digital readout)
         if (readoutType == slsDetectorDefs::ANALOG_ONLY ||
@@ -488,10 +496,41 @@ class ChipTestBoardData : public GeneralData {
             uint32_t num_bytes_per_bit = (nDigitalSamples % 8 == 0)
                                              ? nDigitalSamples / 8
                                              : nDigitalSamples / 8 + 1;
-            digital_bytes_reserved = 64 * num_bytes_per_bit;
+            nDigitalBytesReserved = 64 * num_bytes_per_bit;
             nDigitalBytes = sizeof(uint64_t) * nDigitalSamples;
             LOG(logDEBUG1) << "Number of Digital Channels:" << nDigitalChans
-                           << " Databytes: " << nDigitalBytes;
+                           << " Databytes reserved: " << nDigitalBytesReserved;
+
+            // actual digital data size
+            {
+                int nSamples = nDigitalSamples;
+                // remove offset
+                if (ctbDbitOffset > 0) {
+                    int nBytesReserved = nDigitalBytesReserved - ctbDbitOffset;
+                    nSamples = nBytesReserved / sizeof(uint64_t);
+                }
+                // calculate channels
+                int nChans = ctbDbitList.size();
+                if (nChans == 0) {
+                    nChans = NCHAN_DIGITAL;
+                }
+                // calculate actual bytes
+                if (!ctbDbitReorder) {
+                    uint32_t nBitsPerSample = nChans;
+                    if (nBitsPerSample % 8 != 0) {
+                        nBitsPerSample += (8 - (nBitsPerSample % 8));
+                    }
+                    nActualDigitalBytes = (nBitsPerSample / 8) * nSamples;
+                } else {
+                    uint32_t nBitsPerSignal = nSamples;
+                    if (nBitsPerSignal % 8 != 0) {
+                        nBitsPerSignal += (8 - (nBitsPerSignal % 8));
+                    }
+                    nActualDigitalBytes = nChans * (nBitsPerSignal / 8);
+                }
+                LOG(logDEBUG1) << "Number of Actual Digital Channels:" << nChans
+                               << " Databytes: " << nActualDigitalBytes;
+            }
         }
         // transceiver channels
         if (readoutType == slsDetectorDefs::TRANSCEIVER_ONLY ||
@@ -508,12 +547,17 @@ class ChipTestBoardData : public GeneralData {
         nPixelsX = nAnalogChans + nDigitalChans + nTransceiverChans;
         dataSize = tengigaEnable ? 8144 : UDP_PACKET_DATA_BYTES;
         packetSize = headerSizeinPacket + dataSize;
-        imageSize = nAnalogBytes + digital_bytes_reserved + nTransceiverBytes;
+        imageSize = nAnalogBytes + nDigitalBytesReserved + nTransceiverBytes;
         packetsPerFrame = ceil((double)imageSize / (double)dataSize);
 
         LOG(logDEBUG1) << "Total Number of Channels:" << nPixelsX
                        << " Databytes: " << imageSize;
-    };
+
+        // after ctb offset and reorder
+        actualImageSize =
+            nAnalogBytes + nActualDigitalBytes + nTransceiverBytes;
+        LOG(logDEBUG1) << "Actual image size: " << actualImageSize;
+    }
 };
 
 class XilinxChipTestBoardData : public GeneralData {

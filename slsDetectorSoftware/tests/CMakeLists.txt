@@ -38,6 +38,7 @@ endif (SLS_USE_HDF5)
 
 target_compile_options(tests
     PRIVATE
+    # Suppress warnings for deprecated functions in rapidjson
         -Wno-deprecated-declarations
 ) 
 

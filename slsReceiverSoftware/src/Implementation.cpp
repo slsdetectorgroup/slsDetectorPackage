@@ -908,7 +908,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.detType = generalData->detType;
             masterAttributes.timingMode = timingMode;
             masterAttributes.geometry = numPorts;
-            masterAttributes.imageSize = generalData->imageSize;
+            masterAttributes.imageSize = generalData->actualImageSize;
             masterAttributes.nPixels =
                 xy(generalData->nPixelsX, generalData->nPixelsY);
             masterAttributes.maxFramesPerFile = generalData->framesPerFile;

@@ -657,9 +657,13 @@ void Module::setExptime(int gateIndex, int64_t value) {
     int64_t args[]{static_cast<int64_t>(gateIndex), value};
     sendToDetector(F_SET_EXPTIME, args, nullptr);
     if (shm()->useReceiverFlag) {
+        int getGateIndex =
+            (shm()->detType == MYTHEN3 && gateIndex == -1) ? 0 : gateIndex;
+        value = getExptime(getGateIndex); // get exact value due to clk
+        args[1] = value;
         sendToReceiver(F_RECEIVER_SET_EXPTIME, args, nullptr);
     }
-    if (prevVal != value) {
+    if (shm()->detType == EIGER && prevVal != value) {
         updateRateCorrection();
     }
 }
@@ -671,6 +675,7 @@ int64_t Module::getPeriod() const {
 void Module::setPeriod(int64_t value) {
     sendToDetector(F_SET_PERIOD, value, nullptr);
     if (shm()->useReceiverFlag) {
+        value = getPeriod(); // get exact value due to clk
         sendToReceiver(F_RECEIVER_SET_PERIOD, value, nullptr);
     }
 }
@@ -1780,6 +1785,7 @@ void Module::setSubExptime(int64_t value) {
     }
     sendToDetector(F_SET_SUB_EXPTIME, value, nullptr);
     if (shm()->useReceiverFlag) {
+        value = getSubExptime();
         sendToReceiver(F_RECEIVER_SET_SUB_EXPTIME, value, nullptr);
     }
     if (prevVal != value) {
@@ -1794,6 +1800,7 @@ int64_t Module::getSubDeadTime() const {
 void Module::setSubDeadTime(int64_t value) {
     sendToDetector(F_SET_SUB_DEADTIME, value, nullptr);
     if (shm()->useReceiverFlag) {
+        value = getSubDeadTime();
         sendToReceiver(F_RECEIVER_SET_SUB_DEADTIME, value, nullptr);
     }
 }
@@ -2382,6 +2389,8 @@ void Module::setGateDelay(int gateIndex, int64_t value) {
     int64_t args[]{static_cast<int64_t>(gateIndex), value};
     sendToDetector(F_SET_GATE_DELAY, args, nullptr);
     if (shm()->useReceiverFlag) {
+        args[1] = getGateDelay(
+            gateIndex == -1 ? 0 : gateIndex); // get exact value due to clk
         sendToReceiver(F_SET_RECEIVER_GATE_DELAY, args, nullptr);
     }
 }

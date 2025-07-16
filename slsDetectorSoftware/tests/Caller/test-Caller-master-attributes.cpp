@@ -107,7 +107,8 @@ void test_master_file_image_size(const Document &doc, Detector &det) {
     case defs::CHIPTESTBOARD:
     case defs::XILINX_CHIPTESTBOARD: {
         testCtbAcquireInfo test_info;
-        size_t image_size = calculate_ctb_image_size(test_info);
+        size_t image_size = calculate_ctb_image_size(
+            test_info, (det_type == defs::XILINX_CHIPTESTBOARD));
         REQUIRE(doc["Image Size in bytes"].GetUint64() == image_size);
     } break;
     default:
@@ -558,7 +559,7 @@ void test_master_file_metadata(const Document &doc, Detector &det) {
     }
 }
 
-TEST_CASE("check_master_file_attributes", "[.cmdcall][.cmdattr]") {
+TEST_CASE("check_master_file_attributes", "[.cmdcall][.cmdacquire][.cmdattr]") {
     Detector det;
     Caller caller(&det);
     auto det_type =

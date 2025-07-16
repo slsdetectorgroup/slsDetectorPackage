@@ -2,6 +2,7 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "test-Caller-global.h"
 #include "Caller.h"
+#include "GeneralData.h"
 #include "catch.hpp"
 #include "sls/Detector.h"
 #include "sls/logger.h"
@@ -243,79 +244,27 @@ void set_ctb_config_state(Detector &det,
     det.setTransceiverEnableMask(ctb_config_info.transceiver_mask);
 }
 
-uint64_t calculate_ctb_image_size(const testCtbAcquireInfo &test_info) {
-    uint64_t num_analog_bytes = 0, num_digital_bytes = 0,
-             num_transceiver_bytes = 0;
-    if (test_info.readout_mode == defs::ANALOG_ONLY ||
-        test_info.readout_mode == defs::ANALOG_AND_DIGITAL) {
-        uint32_t adc_enable_mask =
-            (test_info.ten_giga ? test_info.adc_enable_10g
-                                : test_info.adc_enable_1g);
-        int num_analog_chans = __builtin_popcount(adc_enable_mask);
-        const int num_bytes_per_sample = 2;
-        num_analog_bytes =
-            num_analog_chans * num_bytes_per_sample * test_info.num_adc_samples;
-        LOG(logDEBUG1) << "[Analog Databytes: " << num_analog_bytes << ']';
-    }
+uint64_t calculate_ctb_image_size(const testCtbAcquireInfo &test_info,
+                                  bool isXilinxCtb) {
 
-    // digital channels
-    if (test_info.readout_mode == defs::DIGITAL_ONLY ||
-        test_info.readout_mode == defs::ANALOG_AND_DIGITAL ||
-        test_info.readout_mode == defs::DIGITAL_AND_TRANSCEIVER) {
-        int num_digital_samples = test_info.num_dbit_samples;
-        if (test_info.dbit_offset > 0) {
-            uint64_t num_digital_bytes_reserved =
-                num_digital_samples * sizeof(uint64_t);
-            num_digital_bytes_reserved -= test_info.dbit_offset;
-            num_digital_samples = num_digital_bytes_reserved / sizeof(uint64_t);
-        }
-        int num_digital_chans = test_info.dbit_list.size();
-        if (num_digital_chans == 0) {
-            num_digital_chans = 64;
-        }
-        if (!test_info.dbit_reorder) {
-            uint32_t num_bits_per_sample = num_digital_chans;
-            if (num_bits_per_sample % 8 != 0) {
-                num_bits_per_sample += (8 - (num_bits_per_sample % 8));
-            }
-            num_digital_bytes = (num_bits_per_sample / 8) * num_digital_samples;
-        } else {
-            uint32_t num_bits_per_bit = num_digital_samples;
-            if (num_bits_per_bit % 8 != 0) {
-                num_bits_per_bit += (8 - (num_bits_per_bit % 8));
-            }
-            num_digital_bytes = num_digital_chans * (num_bits_per_bit / 8);
-        }
-        LOG(logDEBUG1) << "[Digital Databytes: " << num_digital_bytes << ']';
+    sls::CtbImageInputs inputs{};
+    inputs.nAnalogSamples = test_info.num_adc_samples;
+    inputs.adcMask = test_info.adc_enable_10g;
+    if (!isXilinxCtb && !test_info.ten_giga) {
+        inputs.adcMask = test_info.adc_enable_1g;
     }
-    // transceiver channels
-    if (test_info.readout_mode == defs::TRANSCEIVER_ONLY ||
-        test_info.readout_mode == defs::DIGITAL_AND_TRANSCEIVER) {
-        int num_transceiver_chans =
-            __builtin_popcount(test_info.transceiver_mask);
-        const int num_bytes_per_channel = 8;
-        num_transceiver_bytes = num_transceiver_chans * num_bytes_per_channel *
-                                test_info.num_trans_samples;
-        LOG(logDEBUG1) << "[Transceiver Databytes: " << num_transceiver_bytes
-                       << ']';
-    }
+    inputs.nTransceiverSamples = test_info.num_trans_samples;
+    inputs.transceiverMask = test_info.transceiver_mask;
+    inputs.nDigitalSamples = test_info.num_dbit_samples;
+    inputs.dbitOffset = test_info.dbit_offset;
+    inputs.dbitList = test_info.dbit_list;
+    inputs.dbitReorder = test_info.dbit_reorder;
 
+    auto out = computeCtbImageSize(inputs);
     uint64_t image_size =
-        num_analog_bytes + num_digital_bytes + num_transceiver_bytes;
+        out.nAnalogBytes + out.nDigitalBytes + out.nTransceiverBytes;
     LOG(logDEBUG1) << "Expected image size: " << image_size;
     return image_size;
-}
-
-void test_ctb_file_size_with_acquire(Detector &det, Caller &caller,
-                                     int64_t num_frames,
-                                     const testCtbAcquireInfo &test_info) {
-    create_files_for_acquire(det, caller, num_frames, test_info);
-
-    // check file size (assuming local pc)
-    uint64_t expected_image_size = calculate_ctb_image_size(test_info);
-    testFileInfo test_file_info;
-    REQUIRE_NOTHROW(test_acquire_binary_file_size(test_file_info, num_frames,
-                                                  expected_image_size));
 }
 
 } // namespace sls

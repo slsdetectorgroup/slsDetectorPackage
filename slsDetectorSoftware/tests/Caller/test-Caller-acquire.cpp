@@ -135,6 +135,20 @@ TEST_CASE("gotthard2_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
     }
 }
 
+void test_ctb_file_size_with_acquire(Detector &det, Caller &caller,
+                                     int64_t num_frames,
+                                     const testCtbAcquireInfo &test_info,
+                                     bool isXilinxCtb) {
+    create_files_for_acquire(det, caller, num_frames, test_info);
+
+    // check file size (assuming local pc)
+    uint64_t expected_image_size =
+        calculate_ctb_image_size(test_info, isXilinxCtb);
+    testFileInfo test_file_info;
+    REQUIRE_NOTHROW(test_acquire_binary_file_size(test_file_info, num_frames,
+                                                  expected_image_size));
+}
+
 TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
     Detector det;
     Caller caller(&det);
@@ -143,27 +157,31 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
 
     if (det_type == defs::CHIPTESTBOARD ||
         det_type == defs::XILINX_CHIPTESTBOARD) {
+        bool isXilinxCtb = (det_type == defs::XILINX_CHIPTESTBOARD);
         int num_frames_to_acquire = 2;
         // all the test cases
         {
             testCtbAcquireInfo test_ctb_config;
             test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
             REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config));
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
         }
         {
             testCtbAcquireInfo test_ctb_config;
             test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
             test_ctb_config.dbit_offset = 16;
             REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config));
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
         }
         {
             testCtbAcquireInfo test_ctb_config;
             test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
             test_ctb_config.dbit_reorder = true;
             REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config));
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
         }
         {
             testCtbAcquireInfo test_ctb_config;
@@ -171,7 +189,8 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
             test_ctb_config.dbit_offset = 16;
             test_ctb_config.dbit_reorder = true;
             REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config));
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
         }
         {
             testCtbAcquireInfo test_ctb_config;
@@ -179,7 +198,8 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
             test_ctb_config.dbit_offset = 16;
             test_ctb_config.dbit_list.clear();
             REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config));
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
         }
         {
             testCtbAcquireInfo test_ctb_config;
@@ -188,27 +208,31 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
             test_ctb_config.dbit_list.clear();
             test_ctb_config.dbit_reorder = true;
             REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config));
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
         }
         {
             testCtbAcquireInfo test_ctb_config;
             test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
             REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config));
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
         }
         {
             testCtbAcquireInfo test_ctb_config;
             test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
             test_ctb_config.dbit_offset = 16;
             REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config));
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
         }
         {
             testCtbAcquireInfo test_ctb_config;
             test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
             test_ctb_config.dbit_list.clear();
             REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config));
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
         }
         {
             testCtbAcquireInfo test_ctb_config;
@@ -216,7 +240,8 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
             test_ctb_config.dbit_offset = 16;
             test_ctb_config.dbit_list.clear();
             REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config));
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
         }
         {
             testCtbAcquireInfo test_ctb_config;
@@ -225,7 +250,8 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
             test_ctb_config.dbit_list.clear();
             test_ctb_config.dbit_reorder = true;
             REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config));
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
         }
         {
             testCtbAcquireInfo test_ctb_config;
@@ -234,7 +260,8 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
             test_ctb_config.dbit_list.clear();
             test_ctb_config.dbit_reorder = true;
             REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config));
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
         }
         {
             testCtbAcquireInfo test_ctb_config;
@@ -243,7 +270,8 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
             test_ctb_config.dbit_list.clear();
             test_ctb_config.dbit_reorder = true;
             REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config));
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
         }
     }
 }

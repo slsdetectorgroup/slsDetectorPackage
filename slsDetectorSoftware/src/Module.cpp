@@ -657,9 +657,11 @@ void Module::setExptime(int gateIndex, int64_t value) {
     int64_t args[]{static_cast<int64_t>(gateIndex), value};
     sendToDetector(F_SET_EXPTIME, args, nullptr);
     if (shm()->useReceiverFlag) {
-        int getGateIndex =
-            (shm()->detType == MYTHEN3 && gateIndex == -1) ? 0 : gateIndex;
-        value = getExptime(getGateIndex); // get exact value due to clk
+        if (shm()->detType == MYTHEN3 && gateIndex == -1) {
+            value = getExptime(0); // get exact value due to clk
+        } else {
+            value = getExptime(gateIndex); // get exact value due to clk
+        }
         args[1] = value;
         sendToReceiver(F_RECEIVER_SET_EXPTIME, args, nullptr);
     }
@@ -2298,6 +2300,7 @@ void Module::setBurstMode(slsDetectorDefs::burstMode value) {
     sendToDetector(F_SET_BURST_MODE, value, nullptr);
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_BURST_MODE, value, nullptr);
+        setExptime(-1, getExptime(-1)); // update exact exptime in receiver
     }
 }
 

@@ -933,7 +933,6 @@ TEST_CASE("check_master_file_attributes", "[.cmdcall][.cmdacquire][.cmdattr]") {
     auto det_type =
         det.getDetectorType().tsquash("Inconsistent detector types to test");
 
-    LOG(logINFORED) << "exptime:" << ToString(det.getExptime());
     int64_t num_frames = 1;
     switch (det_type) {
     case defs::EIGER:

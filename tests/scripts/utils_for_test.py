@@ -157,7 +157,7 @@ def startDetectorVirtualServer(name :str, num_mods, fp):
     for i in range(num_mods):
         port_no = SERVER_START_PORTNO + (i * 2)
         cmd = [name + 'DetectorServer_virtual', '-p', str(port_no)]
-        startProcessInBackgroundWithLogFile(cmd, fp, "/tmp/virtual_det_" + name + str(i) + ".txt")
+        startProcessInBackgroundWithLogFile(cmd, fp, "/tmp/virtual_det_" + name + "_" + str(i) + ".txt")
         match name:
             case 'jungfrau':
                 time.sleep(7)

@@ -115,10 +115,8 @@ void MasterAttributes::GetCommonBinaryAttributes(
 void MasterAttributes::GetFinalBinaryAttributes(
     rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     // adding few common parameters to the end
-    if (!additionalJsonHeader.empty()) {
-        w->Key("Additional Json Header");
-        w->String(ToString(additionalJsonHeader).c_str());
-    }
+    w->Key("Additional Json Header");
+    w->String(ToString(additionalJsonHeader).c_str());
     w->Key("Frames in File");
     w->Uint64(framesInFile);
     w->Key("Frame Header Format");

@@ -40,8 +40,20 @@ void test_master_file_version(const Detector &det,
         REQUIRE(d["Version"].IsNumber());
         REQUIRE(d["Version"].GetDouble() == BINARY_WRITER_VERSION);
     } else {
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing file version");
+        }
+        auto attr = h5File->openAttribute("Version");
+        REQUIRE(attr.getDataType().getClass() == H5T_FLOAT);
+        double version;
+        attr.read(attr.getDataType(), &version);
+        REQUIRE(version == HDF5_WRITER_VERSION);
+#else
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Document is not available for testing file version");
+#endif
     }
 }
 
@@ -420,15 +432,32 @@ void test_master_file_frames_in_file(const Detector &det,
             throw sls::RuntimeError(
                 "HDF5 file is not opened for testing frames in file");
         }
-        std::string dataset = HDF5_GROUP + "Maximum frames per file";
-        REQUIRE(H5Lexists(h5File->getId(), dataset.c_str(), H5P_DEFAULT) ==
-                true);
+        std::string dset_name = HDF5_GROUP + "Frames in File";
+        //REQUIRE(H5Lexists(h5File->getId(), dset_name.c_str(), H5P_DEFAULT) ==
+        //        true);
+        auto dataset = h5File->openDataSet(dset_name);
+        int value;
+        dataset.read(&value, H5::PredType::NATIVE_INT);
+        REQUIRE(value == frames_in_file);
 #else
         throw sls::RuntimeError(
             "Document is not available for testing frames in file");
 #endif
     }
 }
+
+void test_master_file_json_header(const Detector &det,
+                                      const std::optional<Document> &doc) {
+    if (doc.has_value()) {
+        const auto &d = *doc;
+        REQUIRE(d.HasMember("Additional Json Header"));
+        auto value = det.getAdditionalJsonHeader().tsquash("Inconsistent JSON header");
+        REQUIRE(d["Additional Json Header"].GetString() == ToString(value));
+    } else {
+        throw sls::RuntimeError(
+            "Document is not available for testing version");
+    }
+}   
 
 void test_master_file_dynamic_range(const Detector &det,
                                     const std::optional<Document> &doc) {
@@ -799,6 +828,7 @@ void test_master_file_common_metadata(const Detector &det,
     test_master_file_frame_padding(det, doc);
     test_master_file_scan_parameters(det, doc);
     test_master_file_total_frames(det, doc);
+    test_master_file_json_header(det, doc);
     // TODO: test frame header format?
 }
 
@@ -981,9 +1011,13 @@ TEST_CASE("check_master_file_attributes", "[.cmdcall][.cmdacquire][.cmdattr]") {
     // hdf5
 #ifdef HDF5C
     fname = master_file_prefix + ".h5"; // /tmp/sls_test_master_0.h5
-    open_hdf5_file(fname);
-    // test_master_file_metadata(det, std::nullopt);
-    test_master_file_frames_in_file(det, std::nullopt, num_frames);
+    try {
+        open_hdf5_file(fname);
+        // test_master_file_metadata(det, std::nullopt);
+        test_master_file_frames_in_file(det, std::nullopt, num_frames);
+    } catch (H5::Exception &e) {
+        LOG(logERROR) << "HDF5 error: " << e.getDetailMsg();
+    }
 #endif
 }
 

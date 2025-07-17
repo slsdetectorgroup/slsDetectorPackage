@@ -137,8 +137,10 @@ void test_master_file_image_size(const Detector &det,
         case defs::CHIPTESTBOARD:
         case defs::XILINX_CHIPTESTBOARD: {
             testCtbAcquireInfo test_info;
-            size_t image_size = calculate_ctb_image_size(
-                test_info, (det_type == defs::XILINX_CHIPTESTBOARD));
+            size_t image_size =
+                calculate_ctb_image_size(
+                    test_info, (det_type == defs::XILINX_CHIPTESTBOARD))
+                    .first;
             REQUIRE(d["Image Size in bytes"].GetUint64() == image_size);
         } break;
         default:
@@ -165,6 +167,13 @@ void test_master_file_det_size(const Detector &det,
             "Inconsistent counter mask for Mythen3 detector");
         int num_counters = __builtin_popcount(counter_mask);
         portSize.x = nchan * num_counters;
+    } else if (det_type == defs::CHIPTESTBOARD ||
+               det_type == defs::XILINX_CHIPTESTBOARD) {
+        testCtbAcquireInfo test_info;
+        portSize.x = calculate_ctb_image_size(
+                         test_info, det_type == defs::XILINX_CHIPTESTBOARD)
+                         .second;
+        portSize.y = 1;
     }
 
     if (doc.has_value()) {

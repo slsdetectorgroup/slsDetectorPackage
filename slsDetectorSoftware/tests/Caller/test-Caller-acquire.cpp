@@ -143,7 +143,7 @@ void test_ctb_file_size_with_acquire(Detector &det, Caller &caller,
 
     // check file size (assuming local pc)
     uint64_t expected_image_size =
-        calculate_ctb_image_size(test_info, isXilinxCtb);
+        calculate_ctb_image_size(test_info, isXilinxCtb).first;
     testFileInfo test_file_info;
     REQUIRE_NOTHROW(test_acquire_binary_file_size(test_file_info, num_frames,
                                                   expected_image_size));

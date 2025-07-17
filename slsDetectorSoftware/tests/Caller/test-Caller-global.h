@@ -61,7 +61,7 @@ void create_files_for_acquire(
 testCtbAcquireInfo get_ctb_config_state(const Detector &det);
 void set_ctb_config_state(Detector &det,
                           const testCtbAcquireInfo &ctb_config_info);
-uint64_t calculate_ctb_image_size(const testCtbAcquireInfo &test_info,
-                                  bool isXilinxCtb);
+std::pair<uint64_t, int>
+calculate_ctb_image_size(const testCtbAcquireInfo &test_info, bool isXilinxCtb);
 
 } // namespace sls

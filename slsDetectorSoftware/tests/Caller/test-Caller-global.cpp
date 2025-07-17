@@ -244,8 +244,9 @@ void set_ctb_config_state(Detector &det,
     det.setTransceiverEnableMask(ctb_config_info.transceiver_mask);
 }
 
-uint64_t calculate_ctb_image_size(const testCtbAcquireInfo &test_info,
-                                  bool isXilinxCtb) {
+std::pair<uint64_t, int>
+calculate_ctb_image_size(const testCtbAcquireInfo &test_info,
+                         bool isXilinxCtb) {
 
     sls::CtbImageInputs inputs{};
     inputs.nAnalogSamples = test_info.num_adc_samples;
@@ -264,7 +265,9 @@ uint64_t calculate_ctb_image_size(const testCtbAcquireInfo &test_info,
     uint64_t image_size =
         out.nAnalogBytes + out.nDigitalBytes + out.nTransceiverBytes;
     LOG(logDEBUG1) << "Expected image size: " << image_size;
-    return image_size;
+    int npixelx = out.nPixelsX;
+    LOG(logDEBUG1) << "Expected number of pixels in x: " << npixelx;
+    return std::make_pair(image_size, npixelx);
 }
 
 } // namespace sls

@@ -59,9 +59,8 @@ void test_master_file_version(const Detector &det,
 
 void test_master_file_type(const Detector &det,
                            const std::optional<Document> &doc) {
-        auto det_type =
-            det.getDetectorType().tsquash("Inconsistent detector type");
-                            if (doc.has_value()) {
+    auto det_type = det.getDetectorType().tsquash("Inconsistent detector type");
+    if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Detector Type"));
         REQUIRE(d["Detector Type"].GetString() == ToString(det_type));
@@ -113,7 +112,7 @@ void test_master_file_geometry(const Detector &det,
     auto modGeometry = det.getModuleGeometry();
     auto portperModGeometry = det.getPortPerModuleGeometry();
     auto geometry = defs::xy{modGeometry.x * portperModGeometry.x,
-                            modGeometry.y * portperModGeometry.y};
+                             modGeometry.y * portperModGeometry.y};
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Geometry"));
@@ -144,62 +143,72 @@ void test_master_file_geometry(const Detector &det,
 
 void test_master_file_image_size(const Detector &det,
                                  const std::optional<Document> &doc) {
+
+    auto det_type =
+        det.getDetectorType().tsquash("Inconsistent detector types to test");
+    int bytes_per_pixel = det.getDynamicRange().squash() / 8;
+    detParameters par(det_type);
+
+    uint32_t image_size = 0;
+    switch (det_type) {
+
+    case defs::EIGER: {
+        int num_chips = (par.nChipX / 2);
+        image_size = par.nChanX * par.nChanY * num_chips * bytes_per_pixel;
+    } break;
+
+    case defs::JUNGFRAU:
+    case defs::MOENCH: {
+        auto num_udp_interfaces = det.getNumberofUDPInterfaces().tsquash(
+            "inconsistent number of udp interfaces");
+        image_size = (par.nChanX * par.nChanY * par.nChipX * par.nChipY *
+                      bytes_per_pixel) /
+                     num_udp_interfaces;
+    } break;
+
+    case defs::MYTHEN3: {
+        int counter_mask = det.getCounterMask().squash();
+        int num_counters = __builtin_popcount(counter_mask);
+        int num_channels_per_counter = par.nChanX / MAX_NUM_COUNTERS;
+        image_size = num_channels_per_counter * num_counters * par.nChipX *
+                     bytes_per_pixel;
+    } break;
+
+    case defs::GOTTHARD2: {
+        image_size = par.nChanX * par.nChipX * bytes_per_pixel;
+    } break;
+
+    case defs::CHIPTESTBOARD:
+    case defs::XILINX_CHIPTESTBOARD: {
+        testCtbAcquireInfo test_info;
+        image_size = calculate_ctb_image_size(
+                         test_info, (det_type == defs::XILINX_CHIPTESTBOARD))
+                         .first;
+    } break;
+
+    default:
+        throw sls::RuntimeError("Unsupported detector type for this test");
+    }
+
     if (doc.has_value()) {
         const auto &d = *doc;
-        REQUIRE(d.HasMember("Image Size in bytes"));
-
-        auto det_type = det.getDetectorType().tsquash(
-            "Inconsistent detector types to test");
-
-        int bytes_per_pixel = det.getDynamicRange().squash() / 8;
-        detParameters par(det_type);
-
-        switch (det_type) {
-        case defs::EIGER: {
-            int num_chips = (par.nChipX / 2);
-            size_t image_size =
-                par.nChanX * par.nChanY * num_chips * bytes_per_pixel;
-            REQUIRE(d["Image Size in bytes"].GetUint64() == image_size);
-        } break;
-        case defs::JUNGFRAU:
-        case defs::MOENCH: {
-            auto num_udp_interfaces = det.getNumberofUDPInterfaces().tsquash(
-                "inconsistent number of udp interfaces");
-            size_t image_size = (par.nChanX * par.nChanY * par.nChipX *
-                                 par.nChipY * bytes_per_pixel) /
-                                num_udp_interfaces;
-            REQUIRE(d["Image Size in bytes"].GetUint64() == image_size);
-        } break;
-
-        case defs::MYTHEN3: {
-            int counter_mask = det.getCounterMask().squash();
-            int num_counters = __builtin_popcount(counter_mask);
-            int num_channels_per_counter = par.nChanX / MAX_NUM_COUNTERS;
-            size_t image_size = num_channels_per_counter * num_counters *
-                                par.nChipX * bytes_per_pixel;
-            REQUIRE(d["Image Size in bytes"].GetUint64() == image_size);
-        } break;
-
-        case defs::GOTTHARD2: {
-            size_t image_size = par.nChanX * par.nChipX * bytes_per_pixel;
-            REQUIRE(d["Image Size in bytes"].GetUint64() == image_size);
-        } break;
-
-        case defs::CHIPTESTBOARD:
-        case defs::XILINX_CHIPTESTBOARD: {
-            testCtbAcquireInfo test_info;
-            size_t image_size =
-                calculate_ctb_image_size(
-                    test_info, (det_type == defs::XILINX_CHIPTESTBOARD))
-                    .first;
-            REQUIRE(d["Image Size in bytes"].GetUint64() == image_size);
-        } break;
-        default:
-            throw sls::RuntimeError("Unsupported detector type for this test");
-        }
+        REQUIRE(d.HasMember("Image Size"));
+        REQUIRE(d["Image Size"].GetUint() == image_size);
     } else {
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing image size");
+        }
+        std::string dset_name = HDF5_GROUP + "Image Size";
+        auto dataset = h5File->openDataSet(dset_name);
+        uint32_t value{};
+        dataset.read(&value, H5::PredType::NATIVE_INT);
+        REQUIRE(value == image_size);
+#else
         throw sls::RuntimeError(
-            "Not implemented yet");
+            "Document is not available for testing image size");
+#endif
     }
 }
 
@@ -235,8 +244,22 @@ void test_master_file_det_size(const Detector &det,
         REQUIRE(d["Pixels"]["x"].GetInt() == portSize.x);
         REQUIRE(d["Pixels"]["y"].GetInt() == portSize.y);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing pixels");
+        }
+        std::string dset_name = HDF5_GROUP + "Pixels";
+        auto dataset = h5File->openDataSet(dset_name);
+        H5::CompType cType(sizeof(defs::xy));
+        cType.insertMember("x", HOFFSET(defs::xy, x), H5::PredType::NATIVE_INT);
+        cType.insertMember("y", HOFFSET(defs::xy, y), H5::PredType::NATIVE_INT);
+        defs::xy value{};
+        dataset.read(&value, cType);
+        REQUIRE(value == portSize);
+#else
+        throw sls::RuntimeError("Document is not available for testing pixels");
+#endif
     }
 }
 
@@ -249,8 +272,7 @@ void test_master_file_max_frames_per_file(const Detector &det,
             det.getFramesPerFile().tsquash("Inconsistent frames per file");
         REQUIRE(d["Max Frames Per File"].GetInt() == value);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -263,8 +285,7 @@ void test_master_file_frame_discard_policy(const Detector &det,
             "Inconsistent frame discard policy");
         REQUIRE(d["Frame Discard Policy"].GetString() == ToString(value));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -277,8 +298,7 @@ void test_master_file_frame_padding(const Detector &det,
             det.getPartialFramesPadding().tsquash("Inconsistent frame padding");
         REQUIRE(d["Frame Padding"].GetInt() == value);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -290,8 +310,7 @@ void test_master_file_scan_parameters(const Detector &det,
         auto value = det.getScan().tsquash("Inconsistent scan parameters");
         REQUIRE(d["Scan Parameters"].GetString() == ToString(value));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -344,8 +363,7 @@ void test_master_file_total_frames(const Detector &det,
 
         REQUIRE(d["Total Frames"].GetUint64() == numberOfTotalFrames);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -386,8 +404,7 @@ void test_master_file_rois(const Detector &det,
             }
         }
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -399,8 +416,7 @@ void test_master_file_exptime(const Detector &det,
         auto value = det.getExptime().tsquash("Inconsistent exposure time");
         REQUIRE(d["Exptime"].GetString() == ToString(value));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -412,8 +428,7 @@ void test_master_file_period(const Detector &det,
         auto value = det.getPeriod().tsquash("Inconsistent period");
         REQUIRE(d["Period"].GetString() == ToString(value));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -426,8 +441,7 @@ void test_master_file_num_udp_interfaces(const Detector &det,
             "Inconsistent number of UDP interfaces");
         REQUIRE(d["Number of UDP Interfaces"].GetInt() == value);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -439,8 +453,7 @@ void test_master_file_read_n_rows(const Detector &det,
         auto value = det.getReadNRows().tsquash("Inconsistent number of rows");
         REQUIRE(d["Number of rows"].GetInt() == value);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -453,8 +466,7 @@ void test_master_file_readout_speed(const Detector &det,
             det.getReadoutSpeed().tsquash("Inconsistent readout speed");
         REQUIRE(d["Readout Speed"].GetString() == ToString(value));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -469,32 +481,31 @@ void test_master_file_frames_in_file(const Detector &det,
 #ifdef HDF5C
         if (!h5File.has_value()) {
             throw sls::RuntimeError(
-                "HDF5 file is not opened for testing frames in file");
+                "HDF5 file is not opened for testing frames");
         }
         std::string dset_name = HDF5_GROUP + "Frames in File";
         auto dataset = h5File->openDataSet(dset_name);
-        int value;
+        int value{};
         dataset.read(&value, H5::PredType::NATIVE_INT);
         REQUIRE(value == frames_in_file);
 #else
-        throw sls::RuntimeError(
-            "Document is not available for testing frames in file");
+        throw sls::RuntimeError("Document is not available for testing frames");
 #endif
     }
 }
 
 void test_master_file_json_header(const Detector &det,
-                                      const std::optional<Document> &doc) {
+                                  const std::optional<Document> &doc) {
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Additional Json Header"));
-        auto value = det.getAdditionalJsonHeader().tsquash("Inconsistent JSON header");
+        auto value =
+            det.getAdditionalJsonHeader().tsquash("Inconsistent JSON header");
         REQUIRE(d["Additional Json Header"].GetString() == ToString(value));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
-}   
+}
 
 void test_master_file_dynamic_range(const Detector &det,
                                     const std::optional<Document> &doc) {
@@ -505,8 +516,7 @@ void test_master_file_dynamic_range(const Detector &det,
             det.getDynamicRange().tsquash("Inconsistent dynamic range");
         REQUIRE(d["Dynamic Range"].GetInt() == value);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -518,8 +528,7 @@ void test_master_file_ten_giga(const Detector &det,
         auto value = det.getTenGiga().tsquash("Inconsistent ten giga");
         REQUIRE(d["Ten Giga"].GetInt() == static_cast<int>(value));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -532,8 +541,7 @@ void test_master_file_threshold_energy(const Detector &det,
             det.getThresholdEnergy().tsquash("Inconsistent threshold energy");
         REQUIRE(d["Threshold Energy"].GetInt() == value);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -546,8 +554,7 @@ void test_master_file_sub_exptime(const Detector &det,
             det.getSubExptime().tsquash("Inconsistent sub exposure time");
         REQUIRE(d["Sub Exptime"].GetString() == ToString(value));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 void test_master_file_sub_period(const Detector &det,
@@ -561,8 +568,7 @@ void test_master_file_sub_period(const Detector &det,
         auto value = exptime + deadtime;
         REQUIRE(d["Sub Period"].GetString() == ToString(value));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -574,8 +580,7 @@ void test_master_file_quad(const Detector &det,
         auto value = det.getQuad().tsquash("Inconsistent quad");
         REQUIRE(d["Quad"].GetInt() == static_cast<int>(value));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -589,8 +594,7 @@ void test_master_file_rate_corrections(const Detector &det,
             dead_times.push_back(item.count());
         REQUIRE(d["Rate Corrections"].GetString() == ToString(dead_times));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -602,8 +606,7 @@ void test_master_file_counter_mask(const Detector &det,
         auto value = det.getCounterMask().tsquash("Inconsistent counter mask");
         REQUIRE(d["Counter Mask"].GetUint() == value);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -619,8 +622,7 @@ void test_master_file_exptimes(const Detector &det,
             REQUIRE(d[key.c_str()].GetString() == ToString(value));
         }
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -636,8 +638,7 @@ void test_master_file_gate_delays(const Detector &det,
             REQUIRE(d[key.c_str()].GetString() == ToString(value));
         }
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -650,8 +651,7 @@ void test_master_file_gates(const Detector &det,
             det.getNumberOfGates().tsquash("Inconsistent number of gates");
         REQUIRE(d["Gates"].GetInt() == value);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -664,8 +664,7 @@ void test_master_file_threadhold_energies(const Detector &det,
             "Inconsistent threshold energies");
         REQUIRE(d["Threshold Energies"].GetString() == ToString(value));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -677,8 +676,7 @@ void test_master_file_burst_mode(const Detector &det,
         auto value = det.getBurstMode().tsquash("Inconsistent burst mode");
         REQUIRE(d["Burst Mode"].GetString() == ToString(value));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -697,8 +695,7 @@ void test_master_file_adc_mask(const Detector &det,
         }
         REQUIRE(d["ADC Mask"].GetString() == ToStringHex(value));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -713,8 +710,7 @@ void test_master_file_analog_flag(const Detector &det,
             (romode == defs::ANALOG_ONLY || romode == defs::ANALOG_AND_DIGITAL);
         REQUIRE(d["Analog Flag"].GetInt() == static_cast<int>(value));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -727,8 +723,7 @@ void test_master_file_analog_samples(const Detector &det,
         auto value = test_info.num_adc_samples;
         REQUIRE(d["Analog Samples"].GetInt() == value);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -744,8 +739,7 @@ void test_master_file_digital_flag(const Detector &det,
                       romode == defs::DIGITAL_AND_TRANSCEIVER);
         REQUIRE(d["Digital Flag"].GetInt() == static_cast<int>(value));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -758,8 +752,7 @@ void test_master_file_digital_samples(const Detector &det,
         auto value = test_info.num_dbit_samples;
         REQUIRE(d["Digital Samples"].GetInt() == value);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -772,8 +765,7 @@ void test_master_file_dbit_offset(const Detector &det,
         auto value = test_info.dbit_offset;
         REQUIRE(d["Dbit Offset"].GetInt() == value);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -786,8 +778,7 @@ void test_master_file_dbit_reorder(const Detector &det,
         auto value = test_info.dbit_reorder;
         REQUIRE(d["Dbit Reorder"].GetInt() == value);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -803,8 +794,7 @@ void test_master_file_dbit_bitset(const Detector &det,
         }
         REQUIRE(d["Dbit Bitset"].GetUint64() == value);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -817,8 +807,7 @@ void test_master_file_transceiver_mask(const Detector &det,
         auto value = test_info.transceiver_mask;
         REQUIRE(d["Transceiver Mask"].GetUint() == value);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -833,8 +822,7 @@ void test_master_file_transceiver_flag(const Detector &det,
                       romode == defs::TRANSCEIVER_ONLY);
         REQUIRE(d["Transceiver Flag"].GetInt() == static_cast<int>(value));
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 
@@ -847,8 +835,7 @@ void test_master_file_transceiver_samples(const Detector &det,
         auto value = test_info.num_trans_samples;
         REQUIRE(d["Transceiver Samples"].GetInt() == value);
     } else {
-        throw sls::RuntimeError(
-            "Not implemented yet");
+        throw sls::RuntimeError("Not implemented yet");
     }
 }
 

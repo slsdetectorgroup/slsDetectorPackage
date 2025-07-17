@@ -183,7 +183,7 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
         H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
         H5::DataSet dataset =
             group->createDataSet("Detector Type", strdatatype, dataspace);
-        const char* c = ToString(detType).c_str();
+        const char *c = ToString(detType).c_str();
         dataset.write(&c, strdatatype);
     }
     // timing mode
@@ -192,7 +192,7 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
         H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
         H5::DataSet dataset =
             group->createDataSet("Timing Mode", strdatatype, dataspace);
-        const char* c = ToString(timingMode).c_str();
+        const char *c = ToString(timingMode).c_str();
         dataset.write(&c, strdatatype);
     }
     // geometry
@@ -201,8 +201,7 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
         c.insertMember("x", HOFFSET(defs::xy, x), H5::PredType::NATIVE_INT);
         c.insertMember("y", HOFFSET(defs::xy, y), H5::PredType::NATIVE_INT);
         H5::DataSpace dataspace(H5S_SCALAR);
-        H5::DataSet dataset = group->createDataSet(
-            "Geometry", c, dataspace);
+        H5::DataSet dataset = group->createDataSet("Geometry", c, dataspace);
         dataset.write(&geometry, c);
     }
     // Image Size
@@ -212,20 +211,14 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
             "Image Size", H5::PredType::NATIVE_INT, dataspace);
         dataset.write(&imageSize, H5::PredType::NATIVE_INT);
     }
-    // TODO: make this into an array?
-    // npixels x
+    // Pixels
     {
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::DataSet dataset = group->createDataSet(
-            "Number of pixels in x axis", H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&nPixels.x, H5::PredType::NATIVE_INT);
-    }
-    // npixels y
-    {
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::DataSet dataset = group->createDataSet(
-            "Number of pixels in y axis", H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&nPixels.y, H5::PredType::NATIVE_INT);
+        H5::CompType c(sizeof(defs::xy));
+        c.insertMember("x", HOFFSET(defs::xy, x), H5::PredType::NATIVE_INT);
+        c.insertMember("y", HOFFSET(defs::xy, y), H5::PredType::NATIVE_INT);
+        H5::DataSpace dataspace(H5S_SCALAR);
+        H5::DataSet dataset = group->createDataSet("Pixels", c, dataspace);
+        dataset.write(&nPixels, c);
     }
     // Maximum frames per file
     {

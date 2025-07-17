@@ -740,7 +740,8 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
         {
             create_files_for_acquire(det, caller);
             testFileInfo file_info;
-            std::string master_file_prefix = file_info.getMasterFileNamePrefix();
+            std::string master_file_prefix =
+                file_info.getMasterFileNamePrefix();
 
             std::string fname = master_file_prefix + ".json";
             REQUIRE(std::filesystem::exists(fname) == true);

@@ -534,10 +534,7 @@ void test_master_file_counter_mask(const Detector &det,
         const auto &d = *doc;
         REQUIRE(d.HasMember("Counter Mask"));
         auto value = det.getCounterMask().tsquash("Inconsistent counter mask");
-        std::stringstream ss;
-        ss << "0x" << std::hex << value;
-        std::string hexStr = ss.str();
-        REQUIRE(d["Counter Mask"].GetString() == hexStr);
+        REQUIRE(d["Counter Mask"].GetString() == ToStringHex(value));
     } else {
         throw sls::RuntimeError(
             "Document is not available for testing version");
@@ -624,13 +621,13 @@ void test_master_file_adc_mask(const Detector &det,
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("ADC Mask"));
-        auto tengiga = det.getTenGiga().tsquash("Inconsistent ten giga");
-        auto value = det.getADCEnableMask().tsquash("Inconsistent ADC mask");
+        testCtbAcquireInfo test_ctb_config;
+        auto tengiga = test_ctb_config.ten_giga;
+        auto value = test_ctb_config.adc_enable_1g;
         if (tengiga) {
-            value = det.getTenGigaADCEnableMask().tsquash(
-                "Inconsistent ten giga ADC mask");
+            value = test_ctb_config.adc_enable_10g;
         }
-        REQUIRE(d["ADC Mask"].GetUint() == value);
+        REQUIRE(d["ADC Mask"].GetString() == ToStringHex(value));
     } else {
         throw sls::RuntimeError(
             "Document is not available for testing version");
@@ -642,7 +639,8 @@ void test_master_file_analog_flag(const Detector &det,
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Analog Flag"));
-        auto romode = det.getReadoutMode().tsquash("Inconsistent analog flag");
+        testCtbAcquireInfo test_info;
+        auto romode = test_info.readout_mode;
         auto value =
             (romode == defs::ANALOG_ONLY || romode == defs::ANALOG_AND_DIGITAL);
         REQUIRE(d["Analog Flag"].GetInt() == static_cast<int>(value));
@@ -657,8 +655,8 @@ void test_master_file_analog_samples(const Detector &det,
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Analog Samples"));
-        auto value = det.getNumberOfAnalogSamples().tsquash(
-            "Inconsistent number of analog samples");
+        testCtbAcquireInfo test_info;
+        auto value = test_info.num_adc_samples;
         REQUIRE(d["Analog Samples"].GetInt() == value);
     } else {
         throw sls::RuntimeError(
@@ -671,7 +669,8 @@ void test_master_file_digital_flag(const Detector &det,
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Digital Flag"));
-        auto romode = det.getReadoutMode().tsquash("Inconsistent digital flag");
+        testCtbAcquireInfo test_info;
+        auto romode = test_info.readout_mode;
         auto value = (romode == defs::DIGITAL_ONLY ||
                       romode == defs::ANALOG_AND_DIGITAL ||
                       romode == defs::DIGITAL_AND_TRANSCEIVER);
@@ -687,8 +686,8 @@ void test_master_file_digital_samples(const Detector &det,
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Digital Samples"));
-        auto value = det.getNumberOfDigitalSamples().tsquash(
-            "Inconsistent number of digital samples");
+        testCtbAcquireInfo test_info;
+        auto value = test_info.num_dbit_samples;
         REQUIRE(d["Digital Samples"].GetInt() == value);
     } else {
         throw sls::RuntimeError(
@@ -701,7 +700,8 @@ void test_master_file_dbit_offset(const Detector &det,
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Dbit Offset"));
-        auto value = det.getRxDbitOffset().tsquash("Inconsistent Dbit offset");
+        testCtbAcquireInfo test_info;
+        auto value = test_info.dbit_offset;
         REQUIRE(d["Dbit Offset"].GetInt() == value);
     } else {
         throw sls::RuntimeError(
@@ -714,9 +714,9 @@ void test_master_file_dbit_reorder(const Detector &det,
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Dbit Reorder"));
-        auto value =
-            det.getRxDbitReorder().tsquash("Inconsistent Dbit reorder");
-        REQUIRE(d["Dbit Reorder"].GetString() == ToString(value));
+        testCtbAcquireInfo test_info;
+        auto value = test_info.dbit_reorder;
+        REQUIRE(d["Dbit Reorder"].GetInt() == value);
     } else {
         throw sls::RuntimeError(
             "Document is not available for testing version");
@@ -728,8 +728,12 @@ void test_master_file_dbit_bitset(const Detector &det,
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Dbit Bitset"));
-        auto value = det.getRxDbitList().tsquash("Inconsistent Dbit bitset");
-        REQUIRE(d["Dbit Bitset"].GetString() == ToString(value));
+        testCtbAcquireInfo test_info;
+        uint64_t value = 0;
+        for (auto &i : test_info.dbit_list) {
+            value |= (static_cast<uint64_t>(1) << i);
+        }
+        REQUIRE(d["Dbit Bitset"].GetUint64() == value);
     } else {
         throw sls::RuntimeError(
             "Document is not available for testing version");
@@ -741,8 +745,8 @@ void test_master_file_transceiver_mask(const Detector &det,
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Transceiver Mask"));
-        auto value = det.getTransceiverEnableMask().tsquash(
-            "Inconsistent transceiver mask");
+        testCtbAcquireInfo test_info;
+        auto value = test_info.transceiver_mask;
         REQUIRE(d["Transceiver Mask"].GetUint() == value);
     } else {
         throw sls::RuntimeError(
@@ -755,8 +759,8 @@ void test_master_file_transceiver_flag(const Detector &det,
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Transceiver Flag"));
-        auto romode =
-            det.getReadoutMode().tsquash("Inconsistent transceiver flag");
+        testCtbAcquireInfo test_info;
+        auto romode = test_info.readout_mode;
         auto value = (romode == defs::DIGITAL_AND_TRANSCEIVER ||
                       romode == defs::TRANSCEIVER_ONLY);
         REQUIRE(d["Transceiver Flag"].GetInt() == static_cast<int>(value));
@@ -771,8 +775,8 @@ void test_master_file_transceiver_samples(const Detector &det,
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Transceiver Samples"));
-        auto value = det.getNumberOfTransceiverSamples().tsquash(
-            "Inconsistent number of transceiver samples");
+        testCtbAcquireInfo test_info;
+        auto value = test_info.num_trans_samples;
         REQUIRE(d["Transceiver Samples"].GetInt() == value);
     } else {
         throw sls::RuntimeError(

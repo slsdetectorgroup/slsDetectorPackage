@@ -760,7 +760,7 @@ void MasterAttributes::GetCtbBinaryAttributes(
     w->Key("Dbit Bitset");
     w->Uint64(dbitlist);
     w->Key("Transceiver Mask");
-    w->String(ToStringHex(transceiverMask).c_str());
+    w->Uint(transceiverMask);
     w->Key("Transceiver Flag");
     w->Uint(transceiver);
     w->Key("Transceiver Samples");
@@ -809,7 +809,7 @@ void MasterAttributes::GetXilinxCtbBinaryAttributes(
     w->Key("Dbit Bitset");
     w->Uint64(dbitlist);
     w->Key("Transceiver Mask");
-    w->String(ToStringHex(transceiverMask).c_str());
+    w->Uint(transceiverMask);
     w->Key("Transceiver Flag");
     w->Uint(transceiver);
     w->Key("Transceiver Samples");

@@ -622,10 +622,12 @@ void test_master_file_adc_mask(const Detector &det,
         const auto &d = *doc;
         REQUIRE(d.HasMember("ADC Mask"));
         testCtbAcquireInfo test_ctb_config;
-        auto tengiga = test_ctb_config.ten_giga;
-        auto value = test_ctb_config.adc_enable_1g;
-        if (tengiga) {
-            value = test_ctb_config.adc_enable_10g;
+        auto value = test_ctb_config.adc_enable_10g;
+        auto det_type = det.getDetectorType().squash();
+        if (det_type == defs::CHIPTESTBOARD) {
+            auto tengiga = test_ctb_config.ten_giga;
+            if (!tengiga)
+                value = test_ctb_config.adc_enable_1g;
         }
         REQUIRE(d["ADC Mask"].GetString() == ToStringHex(value));
     } else {
@@ -870,11 +872,13 @@ void test_master_file_gotthard2_metadata(const Detector &det,
 
 void test_master_file_ctb_metadata(const Detector &det,
                                    const std::optional<Document> &doc) {
+    auto det_type = det.getDetectorType().squash();
     test_master_file_common_metadata(det, doc);
     // Ctb specific metadata
     test_master_file_exptime(det, doc);
     test_master_file_period(det, doc);
-    test_master_file_ten_giga(det, doc);
+    if (det_type == defs::CHIPTESTBOARD)
+        test_master_file_ten_giga(det, doc);
     test_master_file_adc_mask(det, doc);
     test_master_file_analog_flag(det, doc);
     test_master_file_analog_samples(det, doc);

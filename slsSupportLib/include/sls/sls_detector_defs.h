@@ -126,6 +126,9 @@ class slsDetectorDefs {
         int y{0};
         xy() = default;
         xy(int x, int y) : x(x), y(y){};
+        constexpr bool operator==(const xy &other) const {
+            return ((x == other.x) && (y == other.y));
+        }
     } __attribute__((packed));
 #endif
 

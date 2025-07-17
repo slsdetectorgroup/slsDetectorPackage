@@ -45,7 +45,7 @@ void test_master_file_version(const Detector &det,
             throw sls::RuntimeError(
                 "HDF5 file is not opened for testing file version");
         }
-        auto attr = h5File->openAttribute("Version");
+        auto attr = h5File->openAttribute("version");
         REQUIRE(attr.getDataType().getClass() == H5T_FLOAT);
         double version;
         attr.read(attr.getDataType(), &version);
@@ -59,47 +59,86 @@ void test_master_file_version(const Detector &det,
 
 void test_master_file_type(const Detector &det,
                            const std::optional<Document> &doc) {
-    if (doc.has_value()) {
+        auto det_type =
+            det.getDetectorType().tsquash("Inconsistent detector type");
+                            if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Detector Type"));
-        auto value =
-            det.getDetectorType().tsquash("Inconsistent detector type");
-        REQUIRE(d["Detector Type"].GetString() == ToString(value));
+        REQUIRE(d["Detector Type"].GetString() == ToString(det_type));
     } else {
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing detector type");
+        }
+        std::string dset_name = HDF5_GROUP + "Detector Type";
+        auto dataset = h5File->openDataSet(dset_name);
+        std::string value;
+        dataset.read(value, dataset.getStrType());
+        REQUIRE(value == ToString(det_type));
+#else
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Document is not available for testing detector type");
+#endif
     }
 }
 
 void test_master_file_timing_mode(const Detector &det,
                                   const std::optional<Document> &doc) {
+    auto timing_mode = det.getTimingMode().tsquash("Inconsistent timing mode");
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Timing Mode"));
-        auto value = det.getTimingMode().tsquash("Inconsistent timing mode");
-        REQUIRE(d["Timing Mode"].GetString() == ToString(value));
+        REQUIRE(d["Timing Mode"].GetString() == ToString(timing_mode));
     } else {
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing timing mode");
+        }
+        std::string dset_name = HDF5_GROUP + "Timing Mode";
+        auto dataset = h5File->openDataSet(dset_name);
+        std::string value;
+        dataset.read(value, dataset.getStrType());
+        REQUIRE(value == ToString(timing_mode));
+#else
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Document is not available for testing timing mode");
+#endif
     }
 }
 
 void test_master_file_geometry(const Detector &det,
                                const std::optional<Document> &doc) {
+    auto modGeometry = det.getModuleGeometry();
+    auto portperModGeometry = det.getPortPerModuleGeometry();
+    auto geometry = defs::xy{modGeometry.x * portperModGeometry.x,
+                            modGeometry.y * portperModGeometry.y};
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Geometry"));
         REQUIRE(d["Geometry"].HasMember("x"));
         REQUIRE(d["Geometry"].HasMember("y"));
-        auto modGeometry = det.getModuleGeometry();
-        auto portperModGeometry = det.getPortPerModuleGeometry();
-        auto value = defs::xy{modGeometry.x * portperModGeometry.x,
-                              modGeometry.y * portperModGeometry.y};
-        REQUIRE(d["Geometry"]["x"].GetInt() == value.x);
-        REQUIRE(d["Geometry"]["y"].GetInt() == value.y);
+        REQUIRE(d["Geometry"]["x"].GetInt() == geometry.x);
+        REQUIRE(d["Geometry"]["y"].GetInt() == geometry.y);
     } else {
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing geometry");
+        }
+        std::string dset_name = HDF5_GROUP + "Geometry";
+        auto dataset = h5File->openDataSet(dset_name);
+        H5::CompType cType(sizeof(defs::xy));
+        cType.insertMember("x", HOFFSET(defs::xy, x), H5::PredType::NATIVE_INT);
+        cType.insertMember("y", HOFFSET(defs::xy, y), H5::PredType::NATIVE_INT);
+        defs::xy value{};
+        dataset.read(&value, cType);
+        REQUIRE(value == geometry);
+#else
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Document is not available for testing geometry");
+#endif
     }
 }
 
@@ -160,7 +199,7 @@ void test_master_file_image_size(const Detector &det,
         }
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -197,7 +236,7 @@ void test_master_file_det_size(const Detector &det,
         REQUIRE(d["Pixels"]["y"].GetInt() == portSize.y);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -211,7 +250,7 @@ void test_master_file_max_frames_per_file(const Detector &det,
         REQUIRE(d["Max Frames Per File"].GetInt() == value);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -225,7 +264,7 @@ void test_master_file_frame_discard_policy(const Detector &det,
         REQUIRE(d["Frame Discard Policy"].GetString() == ToString(value));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -239,7 +278,7 @@ void test_master_file_frame_padding(const Detector &det,
         REQUIRE(d["Frame Padding"].GetInt() == value);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -252,7 +291,7 @@ void test_master_file_scan_parameters(const Detector &det,
         REQUIRE(d["Scan Parameters"].GetString() == ToString(value));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -306,7 +345,7 @@ void test_master_file_total_frames(const Detector &det,
         REQUIRE(d["Total Frames"].GetUint64() == numberOfTotalFrames);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -348,7 +387,7 @@ void test_master_file_rois(const Detector &det,
         }
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -361,7 +400,7 @@ void test_master_file_exptime(const Detector &det,
         REQUIRE(d["Exptime"].GetString() == ToString(value));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -374,7 +413,7 @@ void test_master_file_period(const Detector &det,
         REQUIRE(d["Period"].GetString() == ToString(value));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -388,7 +427,7 @@ void test_master_file_num_udp_interfaces(const Detector &det,
         REQUIRE(d["Number of UDP Interfaces"].GetInt() == value);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -401,7 +440,7 @@ void test_master_file_read_n_rows(const Detector &det,
         REQUIRE(d["Number of rows"].GetInt() == value);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -415,7 +454,7 @@ void test_master_file_readout_speed(const Detector &det,
         REQUIRE(d["Readout Speed"].GetString() == ToString(value));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -433,8 +472,6 @@ void test_master_file_frames_in_file(const Detector &det,
                 "HDF5 file is not opened for testing frames in file");
         }
         std::string dset_name = HDF5_GROUP + "Frames in File";
-        //REQUIRE(H5Lexists(h5File->getId(), dset_name.c_str(), H5P_DEFAULT) ==
-        //        true);
         auto dataset = h5File->openDataSet(dset_name);
         int value;
         dataset.read(&value, H5::PredType::NATIVE_INT);
@@ -455,7 +492,7 @@ void test_master_file_json_header(const Detector &det,
         REQUIRE(d["Additional Json Header"].GetString() == ToString(value));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }   
 
@@ -469,7 +506,7 @@ void test_master_file_dynamic_range(const Detector &det,
         REQUIRE(d["Dynamic Range"].GetInt() == value);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -482,7 +519,7 @@ void test_master_file_ten_giga(const Detector &det,
         REQUIRE(d["Ten Giga"].GetInt() == static_cast<int>(value));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -496,7 +533,7 @@ void test_master_file_threshold_energy(const Detector &det,
         REQUIRE(d["Threshold Energy"].GetInt() == value);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -510,7 +547,7 @@ void test_master_file_sub_exptime(const Detector &det,
         REQUIRE(d["Sub Exptime"].GetString() == ToString(value));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 void test_master_file_sub_period(const Detector &det,
@@ -525,7 +562,7 @@ void test_master_file_sub_period(const Detector &det,
         REQUIRE(d["Sub Period"].GetString() == ToString(value));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -538,7 +575,7 @@ void test_master_file_quad(const Detector &det,
         REQUIRE(d["Quad"].GetInt() == static_cast<int>(value));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -553,7 +590,7 @@ void test_master_file_rate_corrections(const Detector &det,
         REQUIRE(d["Rate Corrections"].GetString() == ToString(dead_times));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -563,10 +600,10 @@ void test_master_file_counter_mask(const Detector &det,
         const auto &d = *doc;
         REQUIRE(d.HasMember("Counter Mask"));
         auto value = det.getCounterMask().tsquash("Inconsistent counter mask");
-        REQUIRE(d["Counter Mask"].GetString() == ToStringHex(value));
+        REQUIRE(d["Counter Mask"].GetUint() == value);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -583,7 +620,7 @@ void test_master_file_exptimes(const Detector &det,
         }
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -600,7 +637,7 @@ void test_master_file_gate_delays(const Detector &det,
         }
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -614,7 +651,7 @@ void test_master_file_gates(const Detector &det,
         REQUIRE(d["Gates"].GetInt() == value);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -628,7 +665,7 @@ void test_master_file_threadhold_energies(const Detector &det,
         REQUIRE(d["Threshold Energies"].GetString() == ToString(value));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -641,7 +678,7 @@ void test_master_file_burst_mode(const Detector &det,
         REQUIRE(d["Burst Mode"].GetString() == ToString(value));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -661,7 +698,7 @@ void test_master_file_adc_mask(const Detector &det,
         REQUIRE(d["ADC Mask"].GetString() == ToStringHex(value));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -677,7 +714,7 @@ void test_master_file_analog_flag(const Detector &det,
         REQUIRE(d["Analog Flag"].GetInt() == static_cast<int>(value));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -691,7 +728,7 @@ void test_master_file_analog_samples(const Detector &det,
         REQUIRE(d["Analog Samples"].GetInt() == value);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -708,7 +745,7 @@ void test_master_file_digital_flag(const Detector &det,
         REQUIRE(d["Digital Flag"].GetInt() == static_cast<int>(value));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -722,7 +759,7 @@ void test_master_file_digital_samples(const Detector &det,
         REQUIRE(d["Digital Samples"].GetInt() == value);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -736,7 +773,7 @@ void test_master_file_dbit_offset(const Detector &det,
         REQUIRE(d["Dbit Offset"].GetInt() == value);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -750,7 +787,7 @@ void test_master_file_dbit_reorder(const Detector &det,
         REQUIRE(d["Dbit Reorder"].GetInt() == value);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -767,7 +804,7 @@ void test_master_file_dbit_bitset(const Detector &det,
         REQUIRE(d["Dbit Bitset"].GetUint64() == value);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -781,7 +818,7 @@ void test_master_file_transceiver_mask(const Detector &det,
         REQUIRE(d["Transceiver Mask"].GetUint() == value);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -797,7 +834,7 @@ void test_master_file_transceiver_flag(const Detector &det,
         REQUIRE(d["Transceiver Flag"].GetInt() == static_cast<int>(value));
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -811,7 +848,7 @@ void test_master_file_transceiver_samples(const Detector &det,
         REQUIRE(d["Transceiver Samples"].GetInt() == value);
     } else {
         throw sls::RuntimeError(
-            "Document is not available for testing version");
+            "Not implemented yet");
     }
 }
 
@@ -1013,10 +1050,11 @@ TEST_CASE("check_master_file_attributes", "[.cmdcall][.cmdacquire][.cmdattr]") {
     fname = master_file_prefix + ".h5"; // /tmp/sls_test_master_0.h5
     try {
         open_hdf5_file(fname);
-        // test_master_file_metadata(det, std::nullopt);
+        test_master_file_metadata(det, std::nullopt);
         test_master_file_frames_in_file(det, std::nullopt, num_frames);
     } catch (H5::Exception &e) {
         LOG(logERROR) << "HDF5 error: " << e.getDetailMsg();
+        throw;
     }
 #endif
 }

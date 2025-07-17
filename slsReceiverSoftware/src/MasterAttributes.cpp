@@ -91,7 +91,7 @@ void MasterAttributes::GetCommonBinaryAttributes(
     w->Key("y");
     w->Uint(geometry.y);
     w->EndObject();
-    w->Key("Image Size in bytes");
+    w->Key("Image Size");
     w->Uint(imageSize);
     w->Key("Pixels");
     w->StartObject();
@@ -167,14 +167,6 @@ void MasterAttributes::GetBinaryRois(
 void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
                                                  H5::Group *group) {
     char c[1024]{};
-    // version
-    {
-        double version = BINARY_WRITER_VERSION;
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::Attribute attribute = fd->createAttribute(
-            "Version", H5::PredType::NATIVE_DOUBLE, dataspace);
-        attribute.write(H5::PredType::NATIVE_DOUBLE, &version);
-    }
     // timestamp
     {
         time_t t = std::time(nullptr);
@@ -188,35 +180,30 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
     // detector type
     {
         H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::StrType strdatatype(H5::PredType::C_S1, 256);
+        H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
         H5::DataSet dataset =
             group->createDataSet("Detector Type", strdatatype, dataspace);
-        strcpy_safe(c, ToString(detType));
-        dataset.write(c, strdatatype);
+        const char* c = ToString(detType).c_str();
+        dataset.write(&c, strdatatype);
     }
     // timing mode
     {
         H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::StrType strdatatype(H5::PredType::C_S1, 256);
+        H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
         H5::DataSet dataset =
             group->createDataSet("Timing Mode", strdatatype, dataspace);
-        strcpy_safe(c, ToString(timingMode));
-        dataset.write(c, strdatatype);
+        const char* c = ToString(timingMode).c_str();
+        dataset.write(&c, strdatatype);
     }
-    // TODO: make this into an array?
-    // geometry x
+    // geometry
     {
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::CompType c(sizeof(defs::xy));
+        c.insertMember("x", HOFFSET(defs::xy, x), H5::PredType::NATIVE_INT);
+        c.insertMember("y", HOFFSET(defs::xy, y), H5::PredType::NATIVE_INT);
+        H5::DataSpace dataspace(H5S_SCALAR);
         H5::DataSet dataset = group->createDataSet(
-            "Geometry in x axis", H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&geometry.x, H5::PredType::NATIVE_INT);
-    }
-    // geometry y
-    {
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::DataSet dataset = group->createDataSet(
-            "Geometry in y axis", H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&geometry.y, H5::PredType::NATIVE_INT);
+            "Geometry", c, dataspace);
+        dataset.write(&geometry, c);
     }
     // Image Size
     {
@@ -224,12 +211,6 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
         H5::DataSet dataset = group->createDataSet(
             "Image Size", H5::PredType::NATIVE_INT, dataspace);
         dataset.write(&imageSize, H5::PredType::NATIVE_INT);
-        H5::DataSpace dataspaceAttr = H5::DataSpace(H5S_SCALAR);
-        H5::StrType strdatatype(H5::PredType::C_S1, 256);
-        H5::Attribute attribute =
-            dataset.createAttribute("Unit", strdatatype, dataspaceAttr);
-        strcpy_safe(c, "bytes");
-        attribute.write(strdatatype, c);
     }
     // TODO: make this into an array?
     // npixels x
@@ -678,7 +659,7 @@ void MasterAttributes::GetMythen3BinaryAttributes(
     w->Key("Period");
     w->String(ToString(period).c_str());
     w->Key("Counter Mask");
-    w->String(ToStringHex(counterMask).c_str());
+    w->Uint(counterMask);
     for (int i = 0; i != 3; ++i) {
         w->Key((std::string("Exptime") + std::to_string(i + 1)).c_str());
         w->String(ToString(exptimeArray[i]).c_str());

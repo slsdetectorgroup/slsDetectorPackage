@@ -157,8 +157,17 @@ void MasterAttributes::GetBinaryRois(
     w->Key("Receiver Rois");
     w->StartArray();
     for (const slsDetectorDefs::ROI &roi : rois) {
-        std::string roi_str = ToString(roi);
-        w->String(roi_str.c_str());
+        auto roiArray = roi.getIntArray();
+        w->StartArray();
+        w->Key("xmin");
+        w->Int(roiArray[0]);
+        w->Key("xmax");
+        w->Int(roiArray[1]);
+        w->Key("ymin");
+        w->Int(roiArray[2]);
+        w->Key("ymax");
+        w->Int(roiArray[3]);
+        w->EndArray();
     }
     w->EndArray();
 }
@@ -166,16 +175,15 @@ void MasterAttributes::GetBinaryRois(
 #ifdef HDF5C
 void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
                                                  H5::Group *group) {
-    char c[1024]{};
     // timestamp
     {
         time_t t = std::time(nullptr);
-        H5::StrType strdatatype(H5::PredType::C_S1, 256);
+        H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
         H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
         H5::DataSet dataset =
             group->createDataSet("Timestamp", strdatatype, dataspace);
-        strcpy_safe(c, std::string(ctime(&t)));
-        dataset.write(c, strdatatype);
+        const char *c = std::string(ctime(&t)).c_str();
+        dataset.write(&c, strdatatype);
     }
     // detector type
     {
@@ -224,17 +232,17 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
     {
         H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
         H5::DataSet dataset = group->createDataSet(
-            "Maximum frames per file", H5::PredType::NATIVE_INT, dataspace);
+            "Maximum Frames Per File", H5::PredType::NATIVE_INT, dataspace);
         dataset.write(&maxFramesPerFile, H5::PredType::NATIVE_INT);
     }
     // Frame Discard Policy
     {
         H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::StrType strdatatype(H5::PredType::C_S1, 256);
+        H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
         H5::DataSet dataset = group->createDataSet("Frame Discard Policy",
                                                    strdatatype, dataspace);
-        strcpy_safe(c, ToString(frameDiscardMode));
-        dataset.write(c, strdatatype);
+        const char *c = ToString(frameDiscardMode).c_str();
+        dataset.write(&c, strdatatype);
     }
     // Frame Padding
     {
@@ -246,11 +254,11 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
     // Scan Parameters
     {
         H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::StrType strdatatype(H5::PredType::C_S1, 256);
+        H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
         H5::DataSet dataset =
             group->createDataSet("Scan Parameters", strdatatype, dataspace);
-        strcpy_safe(c, ToString(scanParams));
-        dataset.write(c, strdatatype);
+        const char *c = ToString(scanParams).c_str();
+        dataset.write(&c, strdatatype);
     }
     // Total Frames
     {
@@ -273,26 +281,25 @@ void MasterAttributes::WriteFinalHDF5Attributes(H5::Group *group) {
     // additional json header
     if (!additionalJsonHeader.empty()) {
         std::string json = ToString(additionalJsonHeader);
-        H5::StrType strdatatype(H5::PredType::C_S1, json.length());
+        H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
         H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
         H5::DataSet dataset = group->createDataSet("Additional JSON Header",
                                                    strdatatype, dataspace);
-        strcpy_safe(c, ToString(additionalJsonHeader));
-        dataset.write(c, strdatatype);
+        const char *c = ToString(additionalJsonHeader).c_str();
+        dataset.write(&c, strdatatype);
     }
 }
 
 void MasterAttributes::WriteHDF5ROIs(H5::Group *group) {
-    hsize_t dims[1] = {rois.size()};
+    H5::CompType c(sizeof(defs::ROI));
+    c.insertMember("xmin", HOFFSET(defs::ROI, xmin), H5::PredType::NATIVE_INT);
+    c.insertMember("xmax", HOFFSET(defs::ROI, xmax), H5::PredType::NATIVE_INT);
+    c.insertMember("ymin", HOFFSET(defs::ROI, ymin), H5::PredType::NATIVE_INT);
+    c.insertMember("ymax", HOFFSET(defs::ROI, ymax), H5::PredType::NATIVE_INT);
+    hsize_t dims[1] = {rois.size()}; // 1d dataspace with size of roi elements
     H5::DataSpace dataspace(1, dims);
-    H5::StrType strdatatype(H5::PredType::C_S1, 1024);
-    H5::DataSet dataset =
-        group->createDataSet("Receiver Rois", strdatatype, dataspace);
-    std::vector<char[1024]> cRois(rois.size());
-    for (size_t i = 0; i < rois.size(); ++i) {
-        strcpy_safe(cRois[i], ToString(rois[i]));
-    }
-    dataset.write(cRois.data(), strdatatype);
+    H5::DataSet dataset = group->createDataSet("Receiver Rois", c, dataspace);
+    dataset.write(rois.data(), c);
 }
 
 void MasterAttributes::WriteHDF5Exptime(H5::Group *group) {

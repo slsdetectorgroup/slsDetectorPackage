@@ -149,7 +149,7 @@ void test_master_file_image_size(const Detector &det,
     int bytes_per_pixel = det.getDynamicRange().squash() / 8;
     detParameters par(det_type);
 
-    uint32_t image_size = 0;
+    int image_size = 0;
     switch (det_type) {
 
     case defs::EIGER: {
@@ -193,7 +193,7 @@ void test_master_file_image_size(const Detector &det,
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Image Size"));
-        REQUIRE(d["Image Size"].GetUint() == image_size);
+        REQUIRE(d["Image Size"].GetInt() == image_size);
     } else {
 #ifdef HDF5C
         if (!h5File.has_value()) {
@@ -202,7 +202,7 @@ void test_master_file_image_size(const Detector &det,
         }
         std::string dset_name = HDF5_GROUP + "Image Size";
         auto dataset = h5File->openDataSet(dset_name);
-        uint32_t value{};
+        int value{};
         dataset.read(&value, H5::PredType::NATIVE_INT);
         REQUIRE(value == image_size);
 #else
@@ -257,6 +257,7 @@ void test_master_file_det_size(const Detector &det,
         defs::xy value{};
         dataset.read(&value, cType);
         REQUIRE(value == portSize);
+
 #else
         throw sls::RuntimeError("Document is not available for testing pixels");
 #endif
@@ -265,146 +266,239 @@ void test_master_file_det_size(const Detector &det,
 
 void test_master_file_max_frames_per_file(const Detector &det,
                                           const std::optional<Document> &doc) {
+    auto max_frames_per_file =
+            det.getFramesPerFile().tsquash("Inconsistent max frames per file");
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Max Frames Per File"));
-        auto value =
-            det.getFramesPerFile().tsquash("Inconsistent frames per file");
-        REQUIRE(d["Max Frames Per File"].GetInt() == value);
+        REQUIRE(d["Max Frames Per File"].GetInt() == max_frames_per_file);
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing max frames per file");
+        }
+        std::string dset_name = HDF5_GROUP + "Maximum Frames Per File";
+        auto dataset = h5File->openDataSet(dset_name);
+        int value{};
+        dataset.read(&value, H5::PredType::NATIVE_INT);
+        REQUIRE(value == max_frames_per_file);
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing max frames per file");
+#endif
     }
 }
 
 void test_master_file_frame_discard_policy(const Detector &det,
                                            const std::optional<Document> &doc) {
+    auto policy = det.getRxFrameDiscardPolicy().tsquash(
+            "Inconsistent frame discard policy");
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Frame Discard Policy"));
-        auto value = det.getRxFrameDiscardPolicy().tsquash(
-            "Inconsistent frame discard policy");
-        REQUIRE(d["Frame Discard Policy"].GetString() == ToString(value));
+        REQUIRE(d["Frame Discard Policy"].GetString() == ToString(policy));
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing frame discard policy");
+        }
+        std::string dset_name = HDF5_GROUP + "Frame Discard Policy";
+        auto dataset = h5File->openDataSet(dset_name);
+        std::string value;
+        dataset.read(value, dataset.getStrType());
+        REQUIRE(value == ToString(policy));
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing frame discard policy");
+#endif
     }
 }
 
 void test_master_file_frame_padding(const Detector &det,
                                     const std::optional<Document> &doc) {
+    auto padding = static_cast<int>(det.getPartialFramesPadding().tsquash("Inconsistent frame padding"));
+
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Frame Padding"));
-        auto value =
-            det.getPartialFramesPadding().tsquash("Inconsistent frame padding");
-        REQUIRE(d["Frame Padding"].GetInt() == value);
+        REQUIRE(d["Frame Padding"].GetInt() == padding);
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing frame padding");
+        }
+        std::string dset_name = HDF5_GROUP + "Frame Padding";
+        auto dataset = h5File->openDataSet(dset_name);
+        int value{};
+        dataset.read(&value, H5::PredType::NATIVE_INT);
+        REQUIRE(value == padding);
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing frame padding");
+#endif
     }
 }
 
 void test_master_file_scan_parameters(const Detector &det,
                                       const std::optional<Document> &doc) {
+    auto scan_params = det.getScan().tsquash("Inconsistent scan parameters");
+    
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Scan Parameters"));
-        auto value = det.getScan().tsquash("Inconsistent scan parameters");
-        REQUIRE(d["Scan Parameters"].GetString() == ToString(value));
+        REQUIRE(d["Scan Parameters"].GetString() == ToString(scan_params));
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing scan parameters");
+        }
+        std::string dset_name = HDF5_GROUP + "Scan Parameters";
+        auto dataset = h5File->openDataSet(dset_name);
+        std::string value;
+        dataset.read(value, dataset.getStrType());
+        REQUIRE(value == ToString(scan_params));
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing scan parameters");
+#endif
     }
 }
 
 void test_master_file_total_frames(const Detector &det,
                                    const std::optional<Document> &doc) {
+    uint64_t repeats = det.getNumberOfTriggers().tsquash(
+        "Inconsistent number of triggers");
+    uint64_t numFrames =
+        det.getNumberOfFrames().tsquash("Inconsistent number of frames");
+    int numAdditionalStorageCells = 0;
+    auto det_type =
+        det.getDetectorType().tsquash("Inconsistent detector types");
+    if (det_type == defs::GOTTHARD2) {
+        auto timing_mode =
+            det.getTimingMode().tsquash("Inconsistent timing mode");
+        auto burst_mode =
+            det.getBurstMode().tsquash("Inconsistent burst mode");
+        auto numBursts = det.getNumberOfBursts().tsquash(
+            "Inconsistent number of bursts");
+        // auto
+        if (timing_mode == defs::AUTO_TIMING) {
+            // burst mode, repeats = #bursts
+            if (burst_mode == defs::BURST_INTERNAL ||
+                burst_mode == defs::BURST_EXTERNAL) {
+                repeats = numBursts;
+            }
+            // continuous, repeats = 1 (no trigger as well)
+            else {
+                repeats = 1;
+            }
+        }
+        // trigger
+        else {
+            // continuous, numFrames is limited
+            if (burst_mode == defs::CONTINUOUS_INTERNAL ||
+                burst_mode == defs::CONTINUOUS_EXTERNAL) {
+                numFrames = 1;
+            }
+        }
+    } else if (det_type == defs::JUNGFRAU) {
+        numAdditionalStorageCells =
+            det.getNumberOfAdditionalStorageCells().tsquash(
+                "Inconsistent number of additional storage cells");
+    }
+    uint64_t total_frames =
+        numFrames * repeats * (int64_t)(numAdditionalStorageCells + 1);
+
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Total Frames"));
-        uint64_t repeats = det.getNumberOfTriggers().tsquash(
-            "Inconsistent number of triggers");
-        uint64_t numFrames =
-            det.getNumberOfFrames().tsquash("Inconsistent number of frames");
-        int numAdditionalStorageCells = 0;
-        auto det_type =
-            det.getDetectorType().tsquash("Inconsistent detector types");
-        if (det_type == defs::GOTTHARD2) {
-            auto timing_mode =
-                det.getTimingMode().tsquash("Inconsistent timing mode");
-            auto burst_mdoe =
-                det.getBurstMode().tsquash("Inconsistent burst mode");
-            auto numBursts = det.getNumberOfBursts().tsquash(
-                "Inconsistent number of bursts");
-            // auto
-            if (timing_mode == defs::AUTO_TIMING) {
-                // burst mode, repeats = #bursts
-                if (burst_mdoe == defs::BURST_INTERNAL ||
-                    burst_mdoe == defs::BURST_EXTERNAL) {
-                    repeats = numBursts;
-                }
-                // continuous, repeats = 1 (no trigger as well)
-                else {
-                    repeats = 1;
-                }
-            }
-            // trigger
-            else {
-                // continuous, numFrames is limited
-                if (burst_mdoe == defs::CONTINUOUS_INTERNAL ||
-                    burst_mdoe == defs::CONTINUOUS_EXTERNAL) {
-                    numFrames = 1;
-                }
-            }
-        } else if (det_type == defs::JUNGFRAU) {
-            numAdditionalStorageCells =
-                det.getNumberOfAdditionalStorageCells().tsquash(
-                    "Inconsistent number of additional storage cells");
-        }
-        uint64_t numberOfTotalFrames =
-            numFrames * repeats * (int64_t)(numAdditionalStorageCells + 1);
-
-        REQUIRE(d["Total Frames"].GetUint64() == numberOfTotalFrames);
+        REQUIRE(d["Total Frames"].GetUint64() == total_frames);
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing total frames");
+        }
+        std::string dset_name = HDF5_GROUP + "Total Frames";
+        auto dataset = h5File->openDataSet(dset_name);
+        uint64_t value{};
+        dataset.read(&value, H5::PredType::STD_U64LE);
+        REQUIRE(value == total_frames);
+#else
+        throw sls::RuntimeError("Document is not available for testing total frames");
+#endif
     }
 }
 
 void test_master_file_rois(const Detector &det,
                            const std::optional<Document> &doc) {
+    auto rois = det.getRxROI();
+    auto detsize = det.getDetectorSize();
+    auto det_type = det.getDetectorType().tsquash(
+        "Inconsistent detector types to test");
+    // compensate for m3 channel size and counter mask mess
+    if (det_type == defs::MYTHEN3) {
+        int nchan = detsize.x / MAX_NUM_COUNTERS;
+        auto counter_mask = det.getCounterMask().tsquash(
+            "Inconsistent counter mask for Mythen3 detector");
+        int num_counters = __builtin_popcount(counter_mask);
+        detsize.x = nchan * num_counters;
+    }
+    // replace -1 for complete ROI
+    bool is2D = (detsize.y > 1);
+    for (auto &roi : rois) {
+        if (roi.completeRoi()) {
+            roi.xmax = detsize.x - 1;
+            if (is2D) {
+                roi.ymax = detsize.y - 1;
+            }
+        }
+    }
+
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Receiver Rois"));
-        auto rois = det.getRxROI();
-        auto file_rois = d["Receiver Rois"].GetArray();
-        REQUIRE(file_rois.Size() == rois.size());
-        auto detsize = det.getDetectorSize();
-        auto det_type = det.getDetectorType().tsquash(
-            "Inconsistent detector types to test");
-        // compensate for m3 channel size and counter mask mess
-        if (det_type == defs::MYTHEN3) {
-            int nchan = detsize.x / MAX_NUM_COUNTERS;
-            auto counter_mask = det.getCounterMask().tsquash(
-                "Inconsistent counter mask for Mythen3 detector");
-            int num_counters = __builtin_popcount(counter_mask);
-            detsize.x = nchan * num_counters;
+        std::vector<defs::ROI> values;
+        for (const auto& item : d["Receiver Rois"].GetArray()) {
+            defs::ROI r{};
+            r.xmin = item["xmin"].GetInt();
+            r.xmax = item["xmax"].GetInt();
+            r.ymin = item["ymin"].GetInt();
+            r.ymax = item["ymax"].GetInt();
+            values.push_back(r);
         }
-        bool is2D = (detsize.y > 1);
+        REQUIRE(values.size() == rois.size());
         for (size_t i = 0; i < rois.size(); ++i) {
-            if (rois[i].completeRoi()) {
-                if (is2D) {
-                    std::string roi_string =
-                        "[0, " + std::to_string(detsize.x - 1) + ", 0, " +
-                        std::to_string(detsize.y - 1) + "]";
-                    REQUIRE(file_rois[i].GetString() == roi_string);
-                } else {
-                    std::string roi_string =
-                        "[0, " + std::to_string(detsize.x - 1) + "]";
-                    REQUIRE(file_rois[i].GetString() == roi_string);
-                }
-            } else {
-                REQUIRE(file_rois[i].GetString() == ToString(rois[i]));
-            }
+            REQUIRE(values[i] == rois[i]);
         }
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing rx rois");
+        }
+        std::string dset_name = HDF5_GROUP + "Receiver Rois";
+        auto dataset = h5File->openDataSet(dset_name);
+        H5::DataSpace dataspace = dataset.getSpace();
+        hsize_t dims[1];
+        dataspace.getSimpleExtentDims(dims);
+        H5::CompType cType(sizeof(defs::ROI));
+        cType.insertMember("xmin", HOFFSET(defs::ROI, xmin), H5::PredType::NATIVE_INT);
+        cType.insertMember("xmax", HOFFSET(defs::ROI, xmax), H5::PredType::NATIVE_INT);
+        cType.insertMember("ymin", HOFFSET(defs::ROI, ymin), H5::PredType::NATIVE_INT);
+        cType.insertMember("ymax", HOFFSET(defs::ROI, ymax), H5::PredType::NATIVE_INT);
+        std::vector<defs::ROI> values(dims[0]);
+        dataset.read(values.data(), cType);
+        REQUIRE(values.size() == rois.size());
+        for (size_t i = 0; i < rois.size(); ++i) {
+            REQUIRE(values[i] == rois[i]);
+        }
+#else
+        throw sls::RuntimeError("Document is not available for testing rx rois");
+#endif
     }
 }
 
@@ -481,7 +575,7 @@ void test_master_file_frames_in_file(const Detector &det,
 #ifdef HDF5C
         if (!h5File.has_value()) {
             throw sls::RuntimeError(
-                "HDF5 file is not opened for testing frames");
+                "HDF5 file is not opened for testing frames in file");
         }
         std::string dset_name = HDF5_GROUP + "Frames in File";
         auto dataset = h5File->openDataSet(dset_name);
@@ -489,21 +583,34 @@ void test_master_file_frames_in_file(const Detector &det,
         dataset.read(&value, H5::PredType::NATIVE_INT);
         REQUIRE(value == frames_in_file);
 #else
-        throw sls::RuntimeError("Document is not available for testing frames");
+        throw sls::RuntimeError("Document is not available for testing frames in file");
 #endif
     }
 }
 
 void test_master_file_json_header(const Detector &det,
                                   const std::optional<Document> &doc) {
+    auto json_header =
+            det.getAdditionalJsonHeader().tsquash("Inconsistent JSON header");
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Additional Json Header"));
-        auto value =
-            det.getAdditionalJsonHeader().tsquash("Inconsistent JSON header");
-        REQUIRE(d["Additional Json Header"].GetString() == ToString(value));
+        REQUIRE(d["Additional Json Header"].GetString() == ToString(json_header));
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing additional json header");
+        }
+        std::string dset_name = HDF5_GROUP + "Additional JSON Header";
+        auto dataset = h5File->openDataSet(dset_name);
+        std::string value;
+        dataset.read(value, dataset.getStrType());
+        REQUIRE(value == ToString(json_header));
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing additional json header");
+#endif
     }
 }
 

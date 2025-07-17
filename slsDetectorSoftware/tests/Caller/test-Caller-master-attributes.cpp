@@ -349,24 +349,42 @@ void test_master_file_scan_parameters(const Detector &det,
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Scan Parameters"));
-        REQUIRE(d["Scan Parameters"].GetString() == ToString(scan_params));
+        const auto& s = doc["Scan Parameters"];
+        defs::scanParameters value{};
+        value.enable = s["enable"].GetInt();
+        value.dacInd = StringTo<defs::dacIndex>(s["dac"].GetString());
+        value.startOffset = s["start offset"].GetInt();
+        value.stopOffset = s["stop offset"].GetInt();
+        value.stepSize = s["step size"].GetInt();
+        value.dacSettleTime_ns = s["dac settle time ns"].GetInt64();
+        REQUIRE(value == scan_params);
     } else {
 #ifdef HDF5C
         if (!h5File.has_value()) {
             throw sls::RuntimeError(
-                "HDF5 file is not opened for testing scan parameters");
+                "HDF5 file is not opened for testing rx rois");
         }
-        std::string dset_name = HDF5_GROUP + "Scan Parameters";
+        std::string dset_name = HDF5_GROUP + "Receiver Rois";
         auto dataset = h5File->openDataSet(dset_name);
-        std::string value;
-        dataset.read(value, dataset.getStrType());
-        REQUIRE(value == ToString(scan_params));
+        H5::DataSpace dataspace = dataset.getSpace();
+        hsize_t dims[1];
+        dataspace.getSimpleExtentDims(dims);
+        H5::CompType cType(sizeof(defs::ROI));
+        cType.insertMember("xmin", HOFFSET(defs::ROI, xmin), H5::PredType::NATIVE_INT);
+        cType.insertMember("xmax", HOFFSET(defs::ROI, xmax), H5::PredType::NATIVE_INT);
+        cType.insertMember("ymin", HOFFSET(defs::ROI, ymin), H5::PredType::NATIVE_INT);
+        cType.insertMember("ymax", HOFFSET(defs::ROI, ymax), H5::PredType::NATIVE_INT);
+        std::vector<defs::ROI> values(dims[0]);
+        dataset.read(values.data(), cType);
+        REQUIRE(values.size() == rois.size());
+        for (size_t i = 0; i < rois.size(); ++i) {
+            REQUIRE(values[i] == rois[i]);
+        }
 #else
-        throw sls::RuntimeError(
-            "Document is not available for testing scan parameters");
+        throw sls::RuntimeError("Document is not available for testing rx rois");
 #endif
     }
-}
+} 
 
 void test_master_file_total_frames(const Detector &det,
                                    const std::optional<Document> &doc) {

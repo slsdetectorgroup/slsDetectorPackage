@@ -107,6 +107,18 @@ void MasterAttributes::GetCommonBinaryAttributes(
     w->Key("Frame Padding");
     w->Uint(framePadding);
     w->Key("Scan Parameters");
+    w->StartObject();
+    w->Key("enable");
+    w->Int(scanParams.enable);
+    w->Key("dac");
+    w->String(ToString(scanParams.dacInd).c_str());
+    w->Key("start offset");
+    w->Int(scanParams.startOffset);
+    w->Key("stop offset");
+    w->Int(scanParams.stopOffset);
+    w->Key("dac settle time ns");
+    w->Int64(scanParams.dacSettleTime_ns);
+    w->EndObject();
     w->String(ToString(scanParams).c_str());
     w->Key("Total Frames");
     w->Uint64(totalFrames);
@@ -158,7 +170,7 @@ void MasterAttributes::GetBinaryRois(
     w->StartArray();
     for (const slsDetectorDefs::ROI &roi : rois) {
         auto roiArray = roi.getIntArray();
-        w->StartArray();
+        w->StartObject();
         w->Key("xmin");
         w->Int(roiArray[0]);
         w->Key("xmax");
@@ -167,7 +179,7 @@ void MasterAttributes::GetBinaryRois(
         w->Int(roiArray[2]);
         w->Key("ymax");
         w->Int(roiArray[3]);
-        w->EndArray();
+        w->EndObject();
     }
     w->EndArray();
 }
@@ -253,12 +265,16 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
     }
     // Scan Parameters
     {
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
-        H5::DataSet dataset =
-            group->createDataSet("Scan Parameters", strdatatype, dataspace);
-        const char *c = ToString(scanParams).c_str();
-        dataset.write(&c, strdatatype);
+        H5::CompType c(sizeof(defs::scanParameters));
+        c.insertMember("enable", HOFFSET(defs::scanParameters, enable), H5::PredType::NATIVE_INT);
+        c.insertMember("dac", HOFFSET(defs::scanParameters, dacInd), H5::StrType(H5::PredType::C_S1, sizeof(defs::scanParameters.dacInd)));
+        c.insertMember("startOffset", HOFFSET(defs::scanParameters, startOffset), H5::PredType::NATIVE_INT);
+        c.insertMember("stopOffset", HOFFSET(defs::scanParameters, stopOffset), H5::PredType::NATIVE_INT);
+        c.insertMember("stepSize", HOFFSET(defs::scanParameters, stepSize), H5::PredType::NATIVE_INT);
+        c.insertMember("dacSettleTime_ns", HOFFSET(defs::scanParameters, dacSettleTime_ns), H5::PredType::STD_64LE);
+        H5::DataSpace dataspace(H5S_SCALAR);
+        H5::DataSet dataset = group->createDataSet("Scan Parameters", c, dataspace);
+        dataset.write(&scanParams, c);
     }
     // Total Frames
     {

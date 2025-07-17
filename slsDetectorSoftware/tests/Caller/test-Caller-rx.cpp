@@ -739,13 +739,16 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
         // TODO: check roi in master file
         {
             create_files_for_acquire(det, caller);
-            std::string file_path = "/tmp/sls_test_master_0.json";
-            REQUIRE(std::filesystem::exists(file_path) == true);
+            testFileInfo file_info;
+            std::string master_file_prefix = file_info.getMasterFileNamePrefix();
+
+            std::string fname = master_file_prefix + ".json";
+            REQUIRE(std::filesystem::exists(fname) == true);
 #ifdef HDF5C
-            file_path = "/tmp/test_master_0.h5";
-            REQUIRE(std::filesystem::exists(file_path) == true);
-            file_path = "/tmp/test_virtual_0.h5";
-            REQUIRE(std::filesystem::exists(file_path) == true);
+            fname = master_file_prefix + ".h5";
+            REQUIRE(std::filesystem::exists(fname) == true);
+            fname = file_info.getVirtualFileName();
+            REQUIRE(std::filesystem::exists(fname) == true);
 #endif
         }
 

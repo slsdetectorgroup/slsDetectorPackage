@@ -19,6 +19,12 @@ struct testFileInfo {
     bool file_write{true};
     bool file_overwrite{true};
     slsDetectorDefs::fileFormat file_format{slsDetectorDefs::BINARY};
+    std::string getMasterFileNamePrefix() const {
+        return file_path + "/" + file_prefix + "_master_" + std::to_string(file_acq_index);
+    }
+    std::string getVirtualFileName() const {
+        return file_path + "/" + file_prefix + "_virtual_" + std::to_string(file_acq_index) + ".h5";
+    }
 };
 
 struct testCtbAcquireInfo {

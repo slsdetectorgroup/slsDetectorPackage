@@ -961,9 +961,7 @@ TEST_CASE("check_master_file_attributes", "[.cmdcall][.cmdacquire][.cmdattr]") {
     }
 
     testFileInfo file_info;
-    std::string master_file_prefix = file_info.file_path + "/" +
-                                     file_info.file_prefix + "_master_" +
-                                     std::to_string(file_info.file_acq_index);
+    std::string master_file_prefix = file_info.getMasterFileNamePrefix();
 
     // binary
     std::string fname =

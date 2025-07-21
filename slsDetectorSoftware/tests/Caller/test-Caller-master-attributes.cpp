@@ -834,28 +834,54 @@ void test_master_file_sub_exptime(const Detector &det,
 }
 void test_master_file_sub_period(const Detector &det,
                                  const std::optional<Document> &doc) {
+    auto exptime = det.getSubExptime().tsquash("Inconsistent sub exptime");
+    auto deadtime =
+            det.getSubDeadTime().tsquash("Inconsistent sub deadtime");
+    auto sub_period = exptime + deadtime;
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Sub Period"));
-        auto exptime = det.getSubExptime().tsquash("Inconsistent sub exptime");
-        auto deadtime =
-            det.getSubDeadTime().tsquash("Inconsistent sub deadtime");
-        auto value = exptime + deadtime;
-        REQUIRE(d["Sub Period"].GetString() == ToString(value));
+        REQUIRE(d["Sub Period"].GetString() == ToString(sub_period));
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing sub period");
+        }
+        std::string dset_name = HDF5_GROUP + "Sub Period";
+        auto dataset = h5File->openDataSet(dset_name);
+        std::string value;
+        dataset.read(value, dataset.getStrType());
+        REQUIRE(value == ToString(sub_period));
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing sub period");
+#endif
     }
 }
 
 void test_master_file_quad(const Detector &det,
                            const std::optional<Document> &doc) {
+    auto quad = static_cast<int>(det.getQuad().tsquash("Inconsistent quad"));
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Quad"));
-        auto value = det.getQuad().tsquash("Inconsistent quad");
-        REQUIRE(d["Quad"].GetInt() == static_cast<int>(value));
+        REQUIRE(d["Quad"].GetInt() == quad);
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing quad");
+        }
+        std::string dset_name = HDF5_GROUP + "Quad";
+        auto dataset = h5File->openDataSet(dset_name);
+        int value{};
+        dataset.read(&value, H5::PredType::NATIVE_INT);
+        REQUIRE(value == quad);
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing quad");
+#endif
     }
 }
 

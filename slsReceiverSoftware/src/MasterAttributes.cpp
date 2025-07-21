@@ -415,13 +415,12 @@ void MasterAttributes::WriteHDF5SubExpTime(H5::Group *group) {
 }
 
 void MasterAttributes::WriteHDF5SubPeriod(H5::Group *group) {
-    char c[1024]{};
     H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
     H5::DataSet dataset =
         group->createDataSet("Sub Period", strdatatype, dataspace);
-    strcpy_safe(c, ToString(subPeriod));
-    dataset.write(c, strdatatype);
+    const char *c = ToString(subPeriod).c_str();
+    dataset.write(&c, strdatatype);
 }
 
 void MasterAttributes::WriteHDF5SubQuad(H5::Group *group) {

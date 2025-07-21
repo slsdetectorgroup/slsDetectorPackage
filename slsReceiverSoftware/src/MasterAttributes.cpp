@@ -431,13 +431,10 @@ void MasterAttributes::WriteHDF5SubQuad(H5::Group *group) {
 }
 
 void MasterAttributes::WriteHDF5RateCorrections(H5::Group *group) {
-    char c[1024]{};
-    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-    H5::StrType strdatatype(H5::PredType::C_S1, 1024);
-    H5::DataSet dataset =
-        group->createDataSet("Rate Corrections", strdatatype, dataspace);
-    strcpy_safe(c, ToString(ratecorr));
-    dataset.write(c, strdatatype);
+    hsize_t dims[1] = {ratecorr.size()}; // 1d dataspace with size of ratecorr elements
+    H5::DataSpace dataspace(1, dims);
+    H5::DataSet dataset = group->createDataSet("Rate Corrections", H5::PredType::STD_I64LE, dataspace);
+    dataset.write(ratecorr.data(), H5::PredType::STD_I64LE);
 }
 
 void MasterAttributes::WriteHDF5CounterMask(H5::Group *group) {
@@ -448,27 +445,31 @@ void MasterAttributes::WriteHDF5CounterMask(H5::Group *group) {
 }
 
 void MasterAttributes::WriteHDF5ExptimeArray(H5::Group *group) {
-    for (int i = 0; i != 3; ++i) {
-        char c[1024]{};
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::StrType strdatatype(H5::PredType::C_S1, 256);
-        H5::DataSet dataset =
-            group->createDataSet("Exposure Time1", strdatatype, dataspace);
-        strcpy_safe(c, ToString(exptimeArray[i]));
-        dataset.write(c, strdatatype);
+    std::vector<const char*> c;
+    for (auto &exptime : exptimeArray) {
+        c.push_back(ToString(exptime).c_str());
     }
+    hsize_t dims[1] = {c.size()};
+    H5::DataSpace space(1, dims);
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
+    H5::DataSet dataset =
+        group->createDataSet("Exposure Time", strdatatype, dataspace);
+    dataset.write(c.data(), strdatatype);
 }
 
 void MasterAttributes::WriteHDF5GateDelayArray(H5::Group *group) {
-    for (int i = 0; i != 3; ++i) {
-        char c[1024]{};
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::StrType strdatatype(H5::PredType::C_S1, 256);
-        H5::DataSet dataset =
-            group->createDataSet("Gate Delay1", strdatatype, dataspace);
-        strcpy_safe(c, ToString(gateDelayArray[i]));
-        dataset.write(c, strdatatype);
+    std::vector<const char*> c;
+    for (auto &gateDelay : gateDelayArray) {
+        c.push_back(ToString(gateDelay).c_str());
     }
+    hsize_t dims[1] = {c.size()};
+    H5::DataSpace space(1, dims);
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
+    H5::DataSet dataset =
+        group->createDataSet("Gate Delay", strdatatype, dataspace);
+    dataset.write(c.data(), strdatatype);
 }
 
 void MasterAttributes::WriteHDF5Gates(H5::Group *group) {
@@ -480,12 +481,11 @@ void MasterAttributes::WriteHDF5Gates(H5::Group *group) {
 
 void MasterAttributes::WriteHDF5BurstMode(H5::Group *group) {
     H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
     H5::DataSet dataset =
         group->createDataSet("Burst Mode", strdatatype, dataspace);
-    char c[1024]{};
-    strcpy_safe(c, ToString(burstMode));
-    dataset.write(c, strdatatype);
+    const char *c = ToString(burstMode).c_str();
+    dataset.write(&c, strdatatype);
 }
 
 void MasterAttributes::WriteHDF5AdcMask(H5::Group *group) {
@@ -649,7 +649,11 @@ void MasterAttributes::GetEigerBinaryAttributes(
     w->Key("Number of rows");
     w->Int(readNRows);
     w->Key("Rate Corrections");
-    w->String(ToString(ratecorr).c_str());
+    w->StartArray();
+    for (const auto &r : ratecorr) {
+        w->Int64(r);
+    }
+    w->EndArray();
     w->Key("Readout Speed");
     w->String(ToString(readoutSpeed).c_str());
 }

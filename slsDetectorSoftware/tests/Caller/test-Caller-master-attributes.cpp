@@ -887,15 +887,34 @@ void test_master_file_quad(const Detector &det,
 
 void test_master_file_rate_corrections(const Detector &det,
                                        const std::optional<Document> &doc) {
+    std::vector<int64_t> dead_times;
+    for (auto item : det.getRateCorrection())
+        dead_times.push_back(item.count());
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Rate Corrections"));
-        std::vector<int64_t> dead_times;
-        for (auto item : det.getRateCorrection())
-            dead_times.push_back(item.count());
-        REQUIRE(d["Rate Corrections"].GetString() == ToString(dead_times));
+        const auto& json_values = d["Rate Corrections"].GetArray();
+        std::vector<int64_t> values;
+        for (auto &item : json_values)
+            values.push_back(item.GetInt64());
+        REQUIRE(values == dead_times);
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing rate corrections");
+        }
+        std::string dset_name = HDF5_GROUP + "Rate Corrections";
+        auto dataset = h5File->openDataSet(dset_name);
+        H5::DataSpace dataspace = dataset.getSpace();
+        hsize_t dims[1];
+        dataspace.getSimpleExtentDims(dims);
+        std::vector<int64_t>values(dims[0]);
+        dataset.read(values.data(), H5::PredType::STD_I64LE);
+        REQUIRE(values == dead_times);
+#else
+        throw sls::RuntimeError("Document is not available for testing rate corrections");
+#endif
     }
 }
 

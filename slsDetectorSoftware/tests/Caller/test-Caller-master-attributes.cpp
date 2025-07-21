@@ -523,8 +523,8 @@ void test_master_file_exptime(const Detector &det,
     auto exptime = det.getExptime().tsquash("Inconsistent exposure time");
     if (doc.has_value()) {
         const auto &d = *doc;
-        REQUIRE(d.HasMember("Exptime"));
-        REQUIRE(d["Exptime"].GetString() == ToString(exptime));
+        REQUIRE(d.HasMember("Exposure Time"));
+        REQUIRE(d["Exposure Time"].GetString() == ToString(exptime));
     } else {
 #ifdef HDF5C
         if (!h5File.has_value()) {
@@ -548,8 +548,8 @@ void test_master_file_period(const Detector &det,
     auto period = det.getPeriod().tsquash("Inconsistent period");
     if (doc.has_value()) {
         const auto &d = *doc;
-        REQUIRE(d.HasMember("Period"));
-        REQUIRE(d["Period"].GetString() == ToString(period));
+        REQUIRE(d.HasMember("Acquisition Period"));
+        REQUIRE(d["Acquisition Period"].GetString() == ToString(period));
     } else {
 #ifdef HDF5C
         if (!h5File.has_value()) {
@@ -920,58 +920,122 @@ void test_master_file_rate_corrections(const Detector &det,
 
 void test_master_file_counter_mask(const Detector &det,
                                    const std::optional<Document> &doc) {
+    auto counter_mask = static_cast<int>(det.getCounterMask().tsquash("Inconsistent counter mask"));
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Counter Mask"));
-        auto value = det.getCounterMask().tsquash("Inconsistent counter mask");
-        REQUIRE(d["Counter Mask"].GetUint() == value);
+        REQUIRE(d["Counter Mask"].GetInt() == counter_mask);
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing counter mask");
+        }
+        std::string dset_name = HDF5_GROUP + "Counter Mask";
+        auto dataset = h5File->openDataSet(dset_name);
+        int value{};
+        dataset.read(&value, H5::PredType::NATIVE_INT);
+        REQUIRE(value == counter_mask);
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing counter mask");
+#endif
     }
 }
 
 void test_master_file_exptimes(const Detector &det,
                                const std::optional<Document> &doc) {
+    auto exptimes = det.getExptimeForAllGates().tsquash("Inconsistent exposure times");
     if (doc.has_value()) {
         const auto &d = *doc;
-        for (int i = 0; i != 3; ++i) {
-            std::string key = "Exptime" + std::to_string(i + 1);
-            REQUIRE(d.HasMember(key.c_str()));
-            auto value = det.getExptime(i).tsquash(
-                "Inconsistent exposure time for " + std::to_string(i + 1));
-            REQUIRE(d[key.c_str()].GetString() == ToString(value));
+        REQUIRE(d.HasMember("Exposure Times"));
+        const auto& values = d["Exposure Times"].GetArray();
+        REQUIRE(values.Size() == exptimes.size());
+        for (size_t i = 0; i < exptimes.size(); ++i) {
+            REQUIRE(values[i].GetString() == ToString(exptimes[i]));
         }
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing exptimes");
+        }
+        std::string dset_name = HDF5_GROUP + "Exposure Times";
+        auto dataset = h5File->openDataSet(dset_name);
+        H5::DataSpace dataspace = dataset.getSpace();
+        hsize_t dims[1];
+        dataspace.getSimpleExtentDims(dims);
+        REQUIRE(dims[0] == exptimes.size());
+        std::vector<std::string>values(dims[0]);
+        H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
+        dataset.read(values.data(), strdatatype);
+        for (size_t i = 0; i < exptimes.size(); ++i) {
+            REQUIRE(values[i] == ToString(exptimes[i]));
+        }
+#else
+        throw sls::RuntimeError("Document is not available for testing exptimes");
+#endif
     }
 }
 
 void test_master_file_gate_delays(const Detector &det,
                                   const std::optional<Document> &doc) {
+    auto gate_delays = det.getGateDelayForAllGates().tsquash("Inconsistent GateDelay");
     if (doc.has_value()) {
         const auto &d = *doc;
-        for (int i = 0; i != 3; ++i) {
-            std::string key = "GateDelay" + std::to_string(i + 1);
-            REQUIRE(d.HasMember(key.c_str()));
-            auto value = det.getGateDelay(i).tsquash(
-                "Inconsistent GateDelay for " + std::to_string(i + 1));
-            REQUIRE(d[key.c_str()].GetString() == ToString(value));
+        REQUIRE(d.HasMember("Gate Delays"));
+        const auto& values = d["Gate Delays"].GetArray();
+        REQUIRE(values.Size() == gate_delays.size());
+        for (size_t i = 0; i < gate_delays.size(); ++i) {
+            REQUIRE(values[i].GetString() == ToString(gate_delays[i]));
         }
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing gate delays");
+        }
+        std::string dset_name = HDF5_GROUP + "Gate Delays";
+        auto dataset = h5File->openDataSet(dset_name);
+        H5::DataSpace dataspace = dataset.getSpace();
+        hsize_t dims[1];
+        dataspace.getSimpleExtentDims(dims);
+        REQUIRE(dims[0] == gate_delays.size());
+        std::vector<std::string>values(dims[0]);
+        H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
+        dataset.read(values.data(), strdatatype);
+        for (size_t i = 0; i < gate_delays.size(); ++i) {
+            REQUIRE(values[i] == ToString(gate_delays[i]));
+        }
+#else
+        throw sls::RuntimeError("Document is not available for testing gate delays");
+#endif
     }
 }
 
 void test_master_file_gates(const Detector &det,
                             const std::optional<Document> &doc) {
+    auto gates =
+            det.getNumberOfGates().tsquash("Inconsistent number of gates");
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Gates"));
-        auto value =
-            det.getNumberOfGates().tsquash("Inconsistent number of gates");
-        REQUIRE(d["Gates"].GetInt() == value);
+        REQUIRE(d["Gates"].GetInt() == gates);
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing gates");
+        }
+        std::string dset_name = HDF5_GROUP + "Gates";
+        auto dataset = h5File->openDataSet(dset_name);
+        int value{};
+        dataset.read(&value, H5::PredType::NATIVE_INT);
+        REQUIRE(value == gates);
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing gates");
+#endif
     }
 }
 

@@ -81,11 +81,25 @@ class MasterAttributes {
         rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
     void GetBinaryRois(rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
+    void WriteHDF5String(H5::Group* group, const std::string& name, const std::string& value);
+    template <typename T>
+    void WriteHDF5Int(H5::Group* group, const std::string& name, const T& value) {
+        H5::DataSpace dataspace(H5S_SCALAR);
+        H5::PredType const* h5type;
+        if constexpr (std::is_same_v<T, int>) {
+            h5type = &H5::PredType::NATIVE_INT;
+        } else if constexpr (std::is_same_v<T, uint64_t>) {
+            h5type = &H5::PredType::STD_U64LE;
+        } else {
+            throw RuntimeError("Unsupported type for WriteHDF5Int");
+        }
+        H5::DataSet dataset = group->createDataSet(name, *h5type, dataspace);
+        dataset.write(&value, *h5type);
+    }
+
     void WriteCommonHDF5Attributes(H5::H5File *fd, H5::Group *group);
     void WriteFinalHDF5Attributes(H5::Group *group);
     void WriteHDF5ROIs(H5::Group *group);
-    void WriteHDF5Exptime(H5::Group *group);
-    void WriteHDF5Period(H5::Group *group);
     void WriteHDF5DynamicRange(H5::Group *group);
     void WriteHDF5TenGiga(H5::Group *group);
     void WriteHDF5NumUDPInterfaces(H5::Group *group);

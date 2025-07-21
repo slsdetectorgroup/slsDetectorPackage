@@ -110,16 +110,17 @@ void MasterAttributes::GetCommonBinaryAttributes(
     w->StartObject();
     w->Key("enable");
     w->Int(scanParams.enable);
-    w->Key("dac");
-    w->String(ToString(scanParams.dacInd).c_str());
+    w->Key("dacInd");
+    w->Int(scanParams.dacInd);
     w->Key("start offset");
     w->Int(scanParams.startOffset);
     w->Key("stop offset");
     w->Int(scanParams.stopOffset);
+    w->Key("step size");
+    w->Int(scanParams.stepSize);
     w->Key("dac settle time ns");
     w->Int64(scanParams.dacSettleTime_ns);
     w->EndObject();
-    w->String(ToString(scanParams).c_str());
     w->Key("Total Frames");
     w->Uint64(totalFrames);
 }
@@ -127,8 +128,15 @@ void MasterAttributes::GetCommonBinaryAttributes(
 void MasterAttributes::GetFinalBinaryAttributes(
     rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     // adding few common parameters to the end
-    w->Key("Additional Json Header");
-    w->String(ToString(additionalJsonHeader).c_str());
+    if (!additionalJsonHeader.empty()) {
+        w->Key("Additional Json Header");
+        w->StartObject();
+        for (const auto &pair : additionalJsonHeader) {
+            w->Key(pair.first.c_str());
+            w->String(pair.second.c_str());
+        }
+        w->EndObject();
+    }
     w->Key("Frames in File");
     w->Uint64(framesInFile);
     w->Key("Frame Header Format");
@@ -267,11 +275,11 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
     {
         H5::CompType c(sizeof(defs::scanParameters));
         c.insertMember("enable", HOFFSET(defs::scanParameters, enable), H5::PredType::NATIVE_INT);
-        c.insertMember("dac", HOFFSET(defs::scanParameters, dacInd), H5::StrType(H5::PredType::C_S1, sizeof(defs::scanParameters.dacInd)));
+        c.insertMember("dacInd", HOFFSET(defs::scanParameters, dacInd), H5::PredType::NATIVE_INT);
         c.insertMember("startOffset", HOFFSET(defs::scanParameters, startOffset), H5::PredType::NATIVE_INT);
         c.insertMember("stopOffset", HOFFSET(defs::scanParameters, stopOffset), H5::PredType::NATIVE_INT);
         c.insertMember("stepSize", HOFFSET(defs::scanParameters, stepSize), H5::PredType::NATIVE_INT);
-        c.insertMember("dacSettleTime_ns", HOFFSET(defs::scanParameters, dacSettleTime_ns), H5::PredType::STD_64LE);
+        c.insertMember("dacSettleTime_ns", HOFFSET(defs::scanParameters, dacSettleTime_ns), H5::PredType::STD_I64LE);
         H5::DataSpace dataspace(H5S_SCALAR);
         H5::DataSet dataset = group->createDataSet("Scan Parameters", c, dataspace);
         dataset.write(&scanParams, c);
@@ -286,7 +294,6 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
 }
 
 void MasterAttributes::WriteFinalHDF5Attributes(H5::Group *group) {
-    char c[1024]{};
     // Total Frames in file
     {
         H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
@@ -296,13 +303,24 @@ void MasterAttributes::WriteFinalHDF5Attributes(H5::Group *group) {
     }
     // additional json header
     if (!additionalJsonHeader.empty()) {
-        std::string json = ToString(additionalJsonHeader);
-        H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
-        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-        H5::DataSet dataset = group->createDataSet("Additional JSON Header",
-                                                   strdatatype, dataspace);
-        const char *c = ToString(additionalJsonHeader).c_str();
-        dataset.write(&c, strdatatype);
+        H5::StrType strType (H5::PredType::C_S1, H5T_VARIABLE);
+        H5::CompType mapType(sizeof(char*) * 2); 
+        mapType.insertMember("Key", 0, strType);
+        mapType.insertMember("Value", sizeof(char*), strType);
+        struct KeyValue {
+            const char* key;
+            const char* value;
+        };
+        std::vector<KeyValue> value;
+        value.reserve(additionalJsonHeader.size());
+        for (const auto &pair : additionalJsonHeader) {
+            value.push_back({pair.first.c_str(), pair.second.c_str()});
+        }
+        hsize_t dims[1] = {value.size()};
+        H5::DataSpace dataspace(1, dims);
+        H5::DataSet dataset = group->createDataSet("Additional Json Header",
+                                                   mapType, dataspace);
+        dataset.write(value.data(), mapType);
     }
 }
 
@@ -320,22 +338,20 @@ void MasterAttributes::WriteHDF5ROIs(H5::Group *group) {
 
 void MasterAttributes::WriteHDF5Exptime(H5::Group *group) {
     H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
     H5::DataSet dataset =
         group->createDataSet("Exposure Time", strdatatype, dataspace);
-    char c[1024]{};
-    strcpy_safe(c, ToString(exptime));
-    dataset.write(c, strdatatype);
+    const char *c = ToString(exptime).c_str();
+    dataset.write(&c, strdatatype);
 }
 
 void MasterAttributes::WriteHDF5Period(H5::Group *group) {
     H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
     H5::DataSet dataset =
         group->createDataSet("Acquisition Period", strdatatype, dataspace);
-    char c[1024]{};
-    strcpy_safe(c, ToString(period));
-    dataset.write(c, strdatatype);
+    const char *c = ToString(period).c_str();
+    dataset.write(&c, strdatatype);
 }
 
 void MasterAttributes::WriteHDF5DynamicRange(H5::Group *group) {
@@ -343,18 +359,12 @@ void MasterAttributes::WriteHDF5DynamicRange(H5::Group *group) {
     H5::DataSet dataset = group->createDataSet(
         "Dynamic Range", H5::PredType::NATIVE_INT, dataspace);
     dataset.write(&dynamicRange, H5::PredType::NATIVE_INT);
-    H5::DataSpace dataspaceAttr = H5::DataSpace(H5S_SCALAR);
-    H5::StrType strdatatype(H5::PredType::C_S1, 256);
-    H5::Attribute attribute =
-        dataset.createAttribute("Unit", strdatatype, dataspaceAttr);
-    char c[1024] = "bits";
-    attribute.write(strdatatype, c);
 }
 
 void MasterAttributes::WriteHDF5TenGiga(H5::Group *group) {
     H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
     H5::DataSet dataset = group->createDataSet(
-        "Ten Giga Enable", H5::PredType::NATIVE_INT, dataspace);
+        "Ten Giga", H5::PredType::NATIVE_INT, dataspace);
     dataset.write(&tenGiga, H5::PredType::NATIVE_INT);
 }
 
@@ -373,17 +383,16 @@ void MasterAttributes::WriteHDF5ReadNRows(H5::Group *group) {
 }
 
 void MasterAttributes::WriteHDF5ThresholdEnergy(H5::Group *group) {
-    char c[1024]{};
     H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
     H5::DataSet dataset = group->createDataSet(
         "Threshold Energy", H5::PredType::NATIVE_INT, dataspace);
     dataset.write(&thresholdEnergyeV, H5::PredType::NATIVE_INT);
     H5::DataSpace dataspaceAttr = H5::DataSpace(H5S_SCALAR);
-    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
     H5::Attribute attribute =
         dataset.createAttribute("Unit", strdatatype, dataspaceAttr);
-    strcpy_safe(c, "eV");
-    attribute.write(strdatatype, c);
+    const char *c = {"eV"};
+    attribute.write(strdatatype, &c);
 }
 
 void MasterAttributes::WriteHDF5ThresholdEnergies(H5::Group *group) {
@@ -397,13 +406,12 @@ void MasterAttributes::WriteHDF5ThresholdEnergies(H5::Group *group) {
 }
 
 void MasterAttributes::WriteHDF5SubExpTime(H5::Group *group) {
-    char c[1024]{};
     H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
     H5::DataSet dataset =
         group->createDataSet("Sub Exposure Time", strdatatype, dataspace);
-    strcpy_safe(c, ToString(subExptime));
-    dataset.write(c, strdatatype);
+    const char *c = ToString(subExptime).c_str();
+    dataset.write(&c, strdatatype);
 }
 
 void MasterAttributes::WriteHDF5SubPeriod(H5::Group *group) {
@@ -560,12 +568,11 @@ void MasterAttributes::WriteHDF5TransceiverSamples(H5::Group *group) {
 
 void MasterAttributes::WriteHDF5ReadoutSpeed(H5::Group *group) {
     H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
-    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
     H5::DataSet dataset =
         group->createDataSet("Readout Speed", strdatatype, dataspace);
-    char c[1024]{};
-    strcpy_safe(c, ToString(readoutSpeed));
-    dataset.write(c, strdatatype);
+    const char *c = ToString(readoutSpeed).c_str();
+    dataset.write(&c, strdatatype);
 }
 #endif
 
@@ -577,9 +584,9 @@ void MasterAttributes::GetJungfrauBinaryAttributes(
     w->Key("Period");
     w->String(ToString(period).c_str());
     w->Key("Number of UDP Interfaces");
-    w->Uint(numUDPInterfaces);
+    w->Int(numUDPInterfaces);
     w->Key("Number of rows");
-    w->Uint(readNRows);
+    w->Int(readNRows);
     w->Key("Readout Speed");
     w->String(ToString(readoutSpeed).c_str());
 }
@@ -603,9 +610,9 @@ void MasterAttributes::GetMoenchBinaryAttributes(
     w->Key("Period");
     w->String(ToString(period).c_str());
     w->Key("Number of UDP Interfaces");
-    w->Uint(numUDPInterfaces);
+    w->Int(numUDPInterfaces);
     w->Key("Number of rows");
-    w->Uint(readNRows);
+    w->Int(readNRows);
     w->Key("Readout Speed");
     w->String(ToString(readoutSpeed).c_str());
 }
@@ -625,16 +632,16 @@ void MasterAttributes::GetEigerBinaryAttributes(
     rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     GetBinaryRois(w);
     w->Key("Dynamic Range");
-    w->Uint(dynamicRange);
+    w->Int(dynamicRange);
     w->Key("Ten Giga");
-    w->Uint(tenGiga);
+    w->Int(tenGiga);
     w->Key("Exptime");
     w->String(ToString(exptime).c_str());
     w->Key("Period");
     w->String(ToString(period).c_str());
     w->Key("Threshold Energy");
     w->Int(thresholdEnergyeV);
-    w->Key("Sub Exptime");
+    w->Key("Sub Exposure Time");
     w->String(ToString(subExptime).c_str());
     w->Key("Sub Period");
     w->String(ToString(subPeriod).c_str());
@@ -669,9 +676,9 @@ void MasterAttributes::GetMythen3BinaryAttributes(
     rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     GetBinaryRois(w);
     w->Key("Dynamic Range");
-    w->Uint(dynamicRange);
+    w->Int(dynamicRange);
     w->Key("Ten Giga");
-    w->Uint(tenGiga);
+    w->Int(tenGiga);
     w->Key("Period");
     w->String(ToString(period).c_str());
     w->Key("Counter Mask");
@@ -737,7 +744,7 @@ void MasterAttributes::GetCtbBinaryAttributes(
     w->Key("Period");
     w->String(ToString(period).c_str());
     w->Key("Ten Giga");
-    w->Uint(tenGiga);
+    w->Int(tenGiga);
     w->Key("ADC Mask");
     w->String(ToStringHex(adcmask).c_str());
     w->Key("Analog Flag");

@@ -349,10 +349,10 @@ void test_master_file_scan_parameters(const Detector &det,
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Scan Parameters"));
-        const auto& s = doc["Scan Parameters"];
+        const auto& s = d["Scan Parameters"].GetObject();
         defs::scanParameters value{};
         value.enable = s["enable"].GetInt();
-        value.dacInd = StringTo<defs::dacIndex>(s["dac"].GetString());
+        value.dacInd = static_cast<defs::dacIndex>(s["dacInd"].GetInt());
         value.startOffset = s["start offset"].GetInt();
         value.stopOffset = s["stop offset"].GetInt();
         value.stepSize = s["step size"].GetInt();
@@ -362,26 +362,22 @@ void test_master_file_scan_parameters(const Detector &det,
 #ifdef HDF5C
         if (!h5File.has_value()) {
             throw sls::RuntimeError(
-                "HDF5 file is not opened for testing rx rois");
+                "HDF5 file is not opened for testing scan parameters");
         }
-        std::string dset_name = HDF5_GROUP + "Receiver Rois";
+        std::string dset_name = HDF5_GROUP + "Scan Parameters";
         auto dataset = h5File->openDataSet(dset_name);
-        H5::DataSpace dataspace = dataset.getSpace();
-        hsize_t dims[1];
-        dataspace.getSimpleExtentDims(dims);
-        H5::CompType cType(sizeof(defs::ROI));
-        cType.insertMember("xmin", HOFFSET(defs::ROI, xmin), H5::PredType::NATIVE_INT);
-        cType.insertMember("xmax", HOFFSET(defs::ROI, xmax), H5::PredType::NATIVE_INT);
-        cType.insertMember("ymin", HOFFSET(defs::ROI, ymin), H5::PredType::NATIVE_INT);
-        cType.insertMember("ymax", HOFFSET(defs::ROI, ymax), H5::PredType::NATIVE_INT);
-        std::vector<defs::ROI> values(dims[0]);
-        dataset.read(values.data(), cType);
-        REQUIRE(values.size() == rois.size());
-        for (size_t i = 0; i < rois.size(); ++i) {
-            REQUIRE(values[i] == rois[i]);
-        }
+        H5::CompType c(sizeof(defs::scanParameters));
+        c.insertMember("enable", HOFFSET(defs::scanParameters, enable), H5::PredType::NATIVE_INT);
+        c.insertMember("dacInd", HOFFSET(defs::scanParameters, dacInd), H5::PredType::NATIVE_INT);
+        c.insertMember("startOffset", HOFFSET(defs::scanParameters, startOffset), H5::PredType::NATIVE_INT);
+        c.insertMember("stopOffset", HOFFSET(defs::scanParameters, stopOffset), H5::PredType::NATIVE_INT);
+        c.insertMember("stepSize", HOFFSET(defs::scanParameters, stepSize), H5::PredType::NATIVE_INT);
+        c.insertMember("dacSettleTime_ns", HOFFSET(defs::scanParameters, dacSettleTime_ns), H5::PredType::STD_I64LE);
+        defs::scanParameters value{};
+        dataset.read(&value, c);
+        REQUIRE(value == scan_params);
 #else
-        throw sls::RuntimeError("Document is not available for testing rx rois");
+        throw sls::RuntimeError("Document is not available for testing scan parameters");
 #endif
     }
 } 
@@ -469,8 +465,10 @@ void test_master_file_rois(const Detector &det,
     bool is2D = (detsize.y > 1);
     for (auto &roi : rois) {
         if (roi.completeRoi()) {
+            roi.xmin = 0;
             roi.xmax = detsize.x - 1;
             if (is2D) {
+                roi.ymin = 0;
                 roi.ymax = detsize.y - 1;
             }
         }
@@ -522,63 +520,128 @@ void test_master_file_rois(const Detector &det,
 
 void test_master_file_exptime(const Detector &det,
                               const std::optional<Document> &doc) {
+    auto exptime = det.getExptime().tsquash("Inconsistent exposure time");
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Exptime"));
-        auto value = det.getExptime().tsquash("Inconsistent exposure time");
-        REQUIRE(d["Exptime"].GetString() == ToString(value));
+        REQUIRE(d["Exptime"].GetString() == ToString(exptime));
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing exptime");
+        }
+        std::string dset_name = HDF5_GROUP + "Exposure Time";
+        auto dataset = h5File->openDataSet(dset_name);
+        std::string value;
+        dataset.read(value, dataset.getStrType());
+        REQUIRE(value == ToString(exptime));
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing exptime");
+#endif
     }
 }
 
 void test_master_file_period(const Detector &det,
                              const std::optional<Document> &doc) {
+    auto period = det.getPeriod().tsquash("Inconsistent period");
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Period"));
-        auto value = det.getPeriod().tsquash("Inconsistent period");
-        REQUIRE(d["Period"].GetString() == ToString(value));
+        REQUIRE(d["Period"].GetString() == ToString(period));
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing period");
+        }
+        std::string dset_name = HDF5_GROUP + "Acquisition Period";
+        auto dataset = h5File->openDataSet(dset_name);
+        std::string value;
+        dataset.read(value, dataset.getStrType());
+        REQUIRE(value == ToString(period));
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing period");
+#endif
     }
 }
 
 void test_master_file_num_udp_interfaces(const Detector &det,
                                          const std::optional<Document> &doc) {
+    auto num_udp_interfaces = det.getNumberofUDPInterfaces().tsquash(
+            "Inconsistent number of UDP interfaces");
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Number of UDP Interfaces"));
-        auto value = det.getNumberofUDPInterfaces().tsquash(
-            "Inconsistent number of UDP interfaces");
-        REQUIRE(d["Number of UDP Interfaces"].GetInt() == value);
+        REQUIRE(d["Number of UDP Interfaces"].GetInt() == num_udp_interfaces);
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing num UDP interfaces");
+        }
+        std::string dset_name = HDF5_GROUP + "Number of UDP Interfaces";
+        auto dataset = h5File->openDataSet(dset_name);
+        int value{};
+        dataset.read(&value, H5::PredType::NATIVE_INT);
+        REQUIRE(value == num_udp_interfaces);
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing num UDP interfaces");
+#endif
     }
 }
 
 void test_master_file_read_n_rows(const Detector &det,
                                   const std::optional<Document> &doc) {
+    auto readnrows = det.getReadNRows().tsquash("Inconsistent number of rows");
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Number of rows"));
-        auto value = det.getReadNRows().tsquash("Inconsistent number of rows");
-        REQUIRE(d["Number of rows"].GetInt() == value);
+        REQUIRE(d["Number of rows"].GetInt() == readnrows);
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing read n rows");
+        }
+        std::string dset_name = HDF5_GROUP + "Number of rows";
+        auto dataset = h5File->openDataSet(dset_name);
+        int value{};
+        dataset.read(&value, H5::PredType::NATIVE_INT);
+        REQUIRE(value == readnrows);
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing read n rows");
+#endif
     }
 }
 
 void test_master_file_readout_speed(const Detector &det,
                                     const std::optional<Document> &doc) {
+        auto readout_speed =
+            det.getReadoutSpeed().tsquash("Inconsistent readout speed");
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Readout Speed"));
-        auto value =
-            det.getReadoutSpeed().tsquash("Inconsistent readout speed");
-        REQUIRE(d["Readout Speed"].GetString() == ToString(value));
+        REQUIRE(d["Readout Speed"].GetString() == ToString(readout_speed));
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing readout speed");
+        }
+        std::string dset_name = HDF5_GROUP + "Readout Speed";
+        auto dataset = h5File->openDataSet(dset_name);
+        std::string value;
+        dataset.read(value, dataset.getStrType());
+        REQUIRE(value == ToString(readout_speed));
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing readout speed");
+#endif
     }
 }
 
@@ -612,19 +675,54 @@ void test_master_file_json_header(const Detector &det,
             det.getAdditionalJsonHeader().tsquash("Inconsistent JSON header");
     if (doc.has_value()) {
         const auto &d = *doc;
+        if (json_header.empty()) {
+            REQUIRE(!d.HasMember("Additional Json Header"));
+            return;
+        }
         REQUIRE(d.HasMember("Additional Json Header"));
-        REQUIRE(d["Additional Json Header"].GetString() == ToString(json_header));
+        const auto& s = d["Additional Json Header"].GetObject();
+        REQUIRE(s.MemberCount() == json_header.size());
+        for (const auto &item : json_header) {
+            REQUIRE(s.HasMember(item.first.c_str()));
+            REQUIRE(s[item.first.c_str()].GetString() == item.second);
+        }
     } else {
 #ifdef HDF5C
         if (!h5File.has_value()) {
             throw sls::RuntimeError(
                 "HDF5 file is not opened for testing additional json header");
         }
-        std::string dset_name = HDF5_GROUP + "Additional JSON Header";
+        std::string dset_name = HDF5_GROUP + "Additional Json Header";
+        if (json_header.empty()) {
+            REQUIRE(!h5File->exists(dset_name));
+            return;
+        }
         auto dataset = h5File->openDataSet(dset_name);
-        std::string value;
-        dataset.read(value, dataset.getStrType());
-        REQUIRE(value == ToString(json_header));
+        // get number of elements
+        H5::DataSpace dataspace = dataset.getSpace();
+        hsize_t dims[1];
+        dataspace.getSimpleExtentDims(dims);
+        size_t n = dims[0];
+        REQUIRE(n == json_header.size());
+        // create compound type for string map
+        H5::StrType strType(H5::PredType::C_S1, H5T_VARIABLE);
+        H5::CompType mapType(sizeof(char*) * 2);
+        mapType.insertMember("key", 0, strType);
+        mapType.insertMember("value", sizeof(char*), strType);
+        struct KeyValue {
+            const char* key;
+            const char* value;
+        };
+        std::vector<KeyValue> kv_vector(n);
+        dataset.read(kv_vector.data(), mapType);
+        std::map<std::string, std::string> value;
+        for (const auto &kv : kv_vector) {
+            value[kv.key] = kv.value; 
+        }
+        for (const auto &item : json_header) {
+            REQUIRE(value.find(item.first) != value.end());
+            REQUIRE(value[item.first] == item.second);
+        }
 #else
         throw sls::RuntimeError(
             "Document is not available for testing additional json header");
@@ -634,52 +732,104 @@ void test_master_file_json_header(const Detector &det,
 
 void test_master_file_dynamic_range(const Detector &det,
                                     const std::optional<Document> &doc) {
+    auto dr =
+            det.getDynamicRange().tsquash("Inconsistent dynamic range");
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Dynamic Range"));
-        auto value =
-            det.getDynamicRange().tsquash("Inconsistent dynamic range");
-        REQUIRE(d["Dynamic Range"].GetInt() == value);
+        REQUIRE(d["Dynamic Range"].GetInt() == dr);
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing dynamic range");
+        }
+        std::string dset_name = HDF5_GROUP + "Dynamic Range";
+        auto dataset = h5File->openDataSet(dset_name);
+        int value{};
+        dataset.read(&value, H5::PredType::NATIVE_INT);
+        REQUIRE(value == dr);
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing dynamic range");
+#endif
     }
 }
 
 void test_master_file_ten_giga(const Detector &det,
                                const std::optional<Document> &doc) {
+    auto ten_giga = static_cast<int>(det.getTenGiga().tsquash("Inconsistent ten giga"));
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Ten Giga"));
-        auto value = det.getTenGiga().tsquash("Inconsistent ten giga");
-        REQUIRE(d["Ten Giga"].GetInt() == static_cast<int>(value));
+        REQUIRE(d["Ten Giga"].GetInt() == ten_giga);
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing ten giga");
+        }
+        std::string dset_name = HDF5_GROUP + "Ten Giga";
+        auto dataset = h5File->openDataSet(dset_name);
+        int value{};
+        dataset.read(&value, H5::PredType::NATIVE_INT);
+        REQUIRE(value == ten_giga);
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing ten giga");
+#endif
     }
 }
 
 void test_master_file_threshold_energy(const Detector &det,
                                        const std::optional<Document> &doc) {
+    auto threshold =
+            det.getThresholdEnergy().tsquash("Inconsistent threshold energy");
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember("Threshold Energy"));
-        auto value =
-            det.getThresholdEnergy().tsquash("Inconsistent threshold energy");
-        REQUIRE(d["Threshold Energy"].GetInt() == value);
+        REQUIRE(d["Threshold Energy"].GetInt() == threshold);
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing threshold energy");
+        }
+        std::string dset_name = HDF5_GROUP + "Threshold Energy";
+        auto dataset = h5File->openDataSet(dset_name);
+        int value{};
+        dataset.read(&value, H5::PredType::NATIVE_INT);
+        REQUIRE(value == threshold);
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing threhsold energy");
+#endif
     }
 }
 
 void test_master_file_sub_exptime(const Detector &det,
                                   const std::optional<Document> &doc) {
+    auto sub_exptime =
+            det.getSubExptime().tsquash("Inconsistent sub exposure time");   
     if (doc.has_value()) {
         const auto &d = *doc;
-        REQUIRE(d.HasMember("Sub Exptime"));
-        auto value =
-            det.getSubExptime().tsquash("Inconsistent sub exposure time");
-        REQUIRE(d["Sub Exptime"].GetString() == ToString(value));
+        REQUIRE(d.HasMember("Sub Exposure Time"));
+        REQUIRE(d["Sub Exposure Time"].GetString() == ToString(sub_exptime));
     } else {
-        throw sls::RuntimeError("Not implemented yet");
+#ifdef HDF5C
+        if (!h5File.has_value()) {
+            throw sls::RuntimeError(
+                "HDF5 file is not opened for testing sub exptime");
+        }
+        std::string dset_name = HDF5_GROUP + "Sub Exposure Time";
+        auto dataset = h5File->openDataSet(dset_name);
+        std::string value;
+        dataset.read(value, dataset.getStrType());
+        REQUIRE(value == ToString(sub_exptime));
+#else
+        throw sls::RuntimeError(
+            "Document is not available for testing sub exptime");
+#endif
     }
 }
 void test_master_file_sub_period(const Detector &det,

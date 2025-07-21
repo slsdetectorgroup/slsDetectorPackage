@@ -551,7 +551,7 @@ enum streamingInterface {
               stepSize(step) {
             dacSettleTime_ns = t.count();
         }
-        bool operator==(const scanParameters &other) const {
+        constexpr bool operator==(const scanParameters &other) const {
             return ((enable == other.enable) && (dacInd == other.dacInd) &&
                     (startOffset == other.startOffset) &&
                     (stopOffset == other.stopOffset) &&

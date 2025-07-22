@@ -182,8 +182,7 @@ void MasterAttributes::WriteHDF5StringArray(
         c.push_back(s.c_str());
     }
     hsize_t dims[1] = {c.size()};
-    H5::DataSpace space(1, dims);
-    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSpace dataspace(1, dims);
     H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
     H5::DataSet dataset = group->createDataSet(name, strdatatype, dataspace);
     dataset.write(c.data(), strdatatype);
@@ -339,7 +338,7 @@ void MasterAttributes::GetJungfrauBinaryAttributes(writer *w) {
     WriteBinary(w, "Acquisition Period", ToString(period));
     WriteBinary(w, "Number of UDP Interfaces", numUDPInterfaces);
     WriteBinary(w, "Number of rows", readNRows);
-    WriteBinary(w, "Readout Speed", readoutSpeed);
+    WriteBinary(w, "Readout Speed", ToString(readoutSpeed));
 }
 
 #ifdef HDF5C
@@ -428,7 +427,7 @@ void MasterAttributes::WriteMythen3HDF5Attributes(H5::Group *group) {
     WriteHDF5ExptimeArray(group);
     WriteHDF5GateDelayArray(group);
     WriteHDF5Int(group, "Gates", gates);
-    WriteHDF5Int(group, "Threashold Energies", thresholdEnergyeV);
+    WriteHDF5Int(group, "Threshold Energies", thresholdAllEnergyeV);
     WriteHDF5String(group, "Readout Speed", ToString(readoutSpeed));
 }
 #endif

@@ -325,9 +325,9 @@ void test_master_file_rois(const std::optional<Document> &doc,
     }
 }
 
-void test_master_file_string_array(const std::optional<Document> &doc,
-                                   const std::string &name,
-                                   const std::array<sls::ns, 3UL> &values) {
+void test_master_file_time_array(const std::optional<Document> &doc,
+                                 const std::string &name,
+                                 const std::array<sls::ns, 3UL> &values) {
     if (doc.has_value()) {
         const auto &d = *doc;
         REQUIRE(d.HasMember(name.c_str()));
@@ -348,11 +348,11 @@ void test_master_file_string_array(const std::optional<Document> &doc,
         hsize_t dims[1];
         dataspace.getSimpleExtentDims(dims);
         REQUIRE(dims[0] == values.size());
-        std::vector<std::string> retvals(dims[0]);
+        std::vector<const char *> retvals(dims[0]);
         H5::StrType strdatatype(H5::PredType::C_S1, H5T_VARIABLE);
         dataset.read(retvals.data(), strdatatype);
         for (size_t i = 0; i < values.size(); ++i) {
-            REQUIRE(retvals[i] == ToString(values[i]));
+            REQUIRE(std::string(retvals[i]) == ToString(values[i]));
         }
 #else
         throw sls::RuntimeError("Document is not available for testing " +
@@ -772,7 +772,7 @@ void test_master_file_exptimes(const Detector &det,
     auto exptimes =
         det.getExptimeForAllGates().tsquash("Inconsistent exposure times");
 
-    test_master_file_string_array(doc, "Exposure Times", exptimes);
+    test_master_file_time_array(doc, "Exposure Times", exptimes);
 }
 
 void test_master_file_gate_delays(const Detector &det,
@@ -780,7 +780,7 @@ void test_master_file_gate_delays(const Detector &det,
     auto gate_delays =
         det.getGateDelayForAllGates().tsquash("Inconsistent GateDelay");
 
-    test_master_file_string_array(doc, "Gate Delays", gate_delays);
+    test_master_file_time_array(doc, "Gate Delays", gate_delays);
 }
 
 void test_master_file_gates(const Detector &det,
@@ -1054,6 +1054,16 @@ Document parse_binary_master_attributes(std::string file_path) {
 
     Document doc;
     ParseResult result = doc.Parse(json_str.c_str());
+    if (result == 0) {
+        std::cout << "JSON parse error: " << GetParseError_En(result.Code())
+                  << " (at offset " << result.Offset() << ")" << std::endl;
+
+        // Optional: Show problematic snippet
+        size_t offset = result.Offset();
+        std::string context =
+            json_str.substr(std::max(0, (int)offset - 20), 40);
+        std::cout << "Context around error: \"" << context << "\"" << std::endl;
+    }
     REQUIRE(result != 0);
     return doc;
 }

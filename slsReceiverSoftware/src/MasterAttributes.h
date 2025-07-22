@@ -4,6 +4,7 @@
 
 #include "receiver_defs.h"
 #include "sls/ToString.h"
+#include "sls/TypeTraits.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
@@ -80,12 +81,17 @@ class MasterAttributes {
             w->Int(value);
         } else if constexpr (std::is_same_v<T, uint64_t>) {
             w->Uint64(value);
+        } else if constexpr (std::is_same_v<T, int64_t>) {
+            w->Int64(value);
         } else if constexpr (std::is_same_v<T, uint32_t>) {
             w->Uint(value);
         } else if constexpr (std::is_same_v<T, std::string>) {
             w->String(value.c_str());
+        } else if constexpr (is_duration<T>::value) {
+            w->String(ToString(value).c_str());
         } else {
-            throw RuntimeError("Unsupported type for HDF5");
+            throw RuntimeError("Unsupported type for Binary write: " +
+                               std::string(typeid(T).name()));
         }
     }
 
@@ -127,6 +133,8 @@ class MasterAttributes {
             return &H5::PredType::NATIVE_INT;
         } else if constexpr (std::is_same_v<T, uint64_t>) {
             return &H5::PredType::STD_U64LE;
+        } else if constexpr (std::is_same_v<T, int64_t>) {
+            return &H5::PredType::STD_I64LE;
         } else if constexpr (std::is_same_v<T, uint32_t>) {
             return &H5::PredType::STD_U32LE;
         } else {
@@ -146,7 +154,8 @@ class MasterAttributes {
     template <typename T>
     typename std::enable_if<std::is_class<T>::value, void>::type
     WriteHDF5Int(H5::Group *group, const std::string &name, const T &value) {
-        auto h5type = GetHDF5Type<T>();
+        using ElemT = typename T::value_type;
+        auto h5type = GetHDF5Type<ElemT>();
         hsize_t dims[1] = {value.size()};
         H5::DataSpace dataspace(1, dims);
         H5::DataSet dataset = group->createDataSet(name, *h5type, dataspace);

@@ -18,6 +18,7 @@
 namespace sls {
 
 using ns = std::chrono::nanoseconds;
+using writer = rapidjson::PrettyWriter<rapidjson::StringBuffer>;
 
 class MasterAttributes {
   public:
@@ -25,7 +26,7 @@ class MasterAttributes {
     slsDetectorDefs::detectorType detType{slsDetectorDefs::GENERIC};
     slsDetectorDefs::timingMode timingMode{slsDetectorDefs::AUTO_TIMING};
     slsDetectorDefs::xy geometry{};
-    uint32_t imageSize{0};
+    int imageSize{0};
     slsDetectorDefs::xy nPixels{};
     uint32_t maxFramesPerFile{0};
     slsDetectorDefs::frameDiscardPolicy frameDiscardMode{
@@ -37,31 +38,31 @@ class MasterAttributes {
     ns period{0};
     slsDetectorDefs::burstMode burstMode{slsDetectorDefs::BURST_INTERNAL};
     int numUDPInterfaces{0};
-    uint32_t dynamicRange{0};
-    uint32_t tenGiga{0};
+    int dynamicRange{0};
+    int tenGiga{0};
     int thresholdEnergyeV{0};
     std::array<int, 3> thresholdAllEnergyeV = {{0, 0, 0}};
     ns subExptime{0};
     ns subPeriod{0};
-    uint32_t quad{0};
-    uint32_t readNRows;
+    int quad{0};
+    int readNRows;
     std::vector<int64_t> ratecorr;
     uint32_t adcmask{0};
-    uint32_t analog{0};
-    uint32_t analogSamples{0};
-    uint32_t digital{0};
-    uint32_t digitalSamples{0};
-    uint32_t dbitreorder{1};
-    uint32_t dbitoffset{0};
+    int analog{0};
+    int analogSamples{0};
+    int digital{0};
+    int digitalSamples{0};
+    int dbitreorder{1};
+    int dbitoffset{0};
     uint64_t dbitlist{0};
-    uint32_t transceiverMask{0};
-    uint32_t transceiver{0};
-    uint32_t transceiverSamples{0};
+    int transceiverMask{0};
+    int transceiver{0};
+    int transceiverSamples{0};
     std::vector<slsDetectorDefs::ROI> rois{};
-    uint32_t counterMask{0};
+    int counterMask{0};
     std::array<ns, 3> exptimeArray{};
     std::array<ns, 3> gateDelayArray{};
-    uint32_t gates;
+    int gates;
     std::map<std::string, std::string> additionalJsonHeader;
     uint64_t framesInFile{0};
     slsDetectorDefs::speedLevel readoutSpeed{slsDetectorDefs::FULL_SPEED};
@@ -69,104 +70,135 @@ class MasterAttributes {
     MasterAttributes() = default;
     ~MasterAttributes() = default;
 
-    void
-    GetBinaryAttributes(rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
+    void GetBinaryAttributes(writer *w);
 #ifdef HDF5C
     void WriteHDF5Attributes(H5::H5File *fd, H5::Group *group);
 #endif
 
-    void GetCommonBinaryAttributes(
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
-    void GetFinalBinaryAttributes(
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
-    void GetBinaryRois(rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
-#ifdef HDF5C
-    void WriteHDF5String(H5::Group* group, const std::string& name, const std::string& value);
-    template <typename T>
-    void WriteHDF5Int(H5::Group* group, const std::string& name, const T& value) {
-        H5::DataSpace dataspace(H5S_SCALAR);
-        H5::PredType const* h5type;
+    template <typename T> void WriteBinaryValue(writer *w, const T &value) {
         if constexpr (std::is_same_v<T, int>) {
-            h5type = &H5::PredType::NATIVE_INT;
+            w->Int(value);
         } else if constexpr (std::is_same_v<T, uint64_t>) {
-            h5type = &H5::PredType::STD_U64LE;
+            w->Uint64(value);
+        } else if constexpr (std::is_same_v<T, uint32_t>) {
+            w->Uint(value);
+        } else if constexpr (std::is_same_v<T, std::string>) {
+            w->String(value.c_str());
         } else {
-            throw RuntimeError("Unsupported type for WriteHDF5Int");
+            throw RuntimeError("Unsupported type for HDF5");
         }
+    }
+
+    template <typename T>
+    std::enable_if_t<(!std::is_class_v<T> || std::is_same_v<T, std::string>),
+                     void>
+    WriteBinary(writer *w, const std::string &name, const T &value) {
+        w->Key(name.c_str());
+        WriteBinaryValue(w, value);
+    }
+
+    template <typename T>
+    std::enable_if_t<(std::is_class_v<T> && !std::is_same_v<T, std::string>),
+                     void>
+    WriteBinary(writer *w, const std::string &name, const T &value) {
+        w->Key(name.c_str());
+        w->StartArray();
+        for (const auto &v : value) {
+            WriteBinaryValue(w, v);
+        }
+        w->EndArray();
+    }
+
+    void WriteBinaryXY(writer *w, const std::string &name, const defs::xy &xy);
+    void WriteBinaryScanParameters(writer *w);
+    void WriteBinaryJsonHeader(writer *w);
+    void WriteBinaryRois(writer *w);
+    void WriteBinaryFrameHeaderFormat(writer *w);
+#ifdef HDF5C
+    void WriteHDF5String(H5::Group *group, const std::string &name,
+                         const std::string &value);
+    void WriteHDF5StringArray(H5::Group *group, const std::string &name,
+                              const std::vector<std::string> &value);
+    void WriteHDF5XY(H5::Group *group, const std::string &name,
+                     const defs::xy &xy);
+
+    template <typename T> H5::PredType const *GetHDF5Type() {
+        if constexpr (std::is_same_v<T, int>) {
+            return &H5::PredType::NATIVE_INT;
+        } else if constexpr (std::is_same_v<T, uint64_t>) {
+            return &H5::PredType::STD_U64LE;
+        } else if constexpr (std::is_same_v<T, uint32_t>) {
+            return &H5::PredType::STD_U32LE;
+        } else {
+            throw RuntimeError("Unsupported type for HDF5");
+        }
+    }
+
+    template <typename T>
+    typename std::enable_if<!std::is_class<T>::value, void>::type
+    WriteHDF5Int(H5::Group *group, const std::string &name, const T &value) {
+        H5::DataSpace dataspace(H5S_SCALAR);
+        auto h5type = GetHDF5Type<T>();
         H5::DataSet dataset = group->createDataSet(name, *h5type, dataspace);
         dataset.write(&value, *h5type);
     }
 
-    void WriteCommonHDF5Attributes(H5::H5File *fd, H5::Group *group);
-    void WriteFinalHDF5Attributes(H5::Group *group);
+    template <typename T>
+    typename std::enable_if<std::is_class<T>::value, void>::type
+    WriteHDF5Int(H5::Group *group, const std::string &name, const T &value) {
+        auto h5type = GetHDF5Type<T>();
+        hsize_t dims[1] = {value.size()};
+        H5::DataSpace dataspace(1, dims);
+        H5::DataSet dataset = group->createDataSet(name, *h5type, dataspace);
+        dataset.write(value.data(), *h5type);
+    }
+
+    void WriteHDF5ScanParameters(H5::Group *group);
+    void WriteHDF5JsonHeader(H5::Group *group);
     void WriteHDF5ROIs(H5::Group *group);
-    void WriteHDF5DynamicRange(H5::Group *group);
-    void WriteHDF5TenGiga(H5::Group *group);
-    void WriteHDF5NumUDPInterfaces(H5::Group *group);
-    void WriteHDF5ReadNRows(H5::Group *group);
-    void WriteHDF5ThresholdEnergy(H5::Group *group);
-    void WriteHDF5ThresholdEnergies(H5::Group *group);
-    void WriteHDF5SubExpTime(H5::Group *group);
-    void WriteHDF5SubPeriod(H5::Group *group);
-    void WriteHDF5SubQuad(H5::Group *group);
-    void WriteHDF5RateCorrections(H5::Group *group);
-    void WriteHDF5CounterMask(H5::Group *group);
     void WriteHDF5ExptimeArray(H5::Group *group);
     void WriteHDF5GateDelayArray(H5::Group *group);
-    void WriteHDF5Gates(H5::Group *group);
-    void WriteHDF5BurstMode(H5::Group *group);
-    void WriteHDF5AdcMask(H5::Group *group);
-    void WriteHDF5AnalogFlag(H5::Group *group);
-    void WriteHDF5AnalogSamples(H5::Group *group);
-    void WriteHDF5DigitalFlag(H5::Group *group);
-    void WriteHDF5DigitalSamples(H5::Group *group);
-    void WriteHDF5DbitOffset(H5::Group *group);
-    void WriteHDF5DbitList(H5::Group *group);
-    void WriteHDF5DbitReorder(H5::Group *group);
-    void WriteHDF5TransceiverMask(H5::Group *group);
-    void WriteHDF5TransceiverFlag(H5::Group *group);
-    void WriteHDF5TransceiverSamples(H5::Group *group);
-    void WriteHDF5ReadoutSpeed(H5::Group *group);
 #endif
 
-    void GetJungfrauBinaryAttributes(
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
+    void GetCommonBinaryAttributes(writer *w);
+    void GetFinalBinaryAttributes(writer *w);
+
+#ifdef HDF5C
+    void WriteCommonHDF5Attributes(H5::H5File *fd, H5::Group *group);
+    void WriteFinalHDF5Attributes(H5::Group *group);
+#endif
+
+    void GetJungfrauBinaryAttributes(writer *w);
 #ifdef HDF5C
     void WriteJungfrauHDF5Attributes(H5::Group *group);
 #endif
 
-    void GetEigerBinaryAttributes(
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
+    void GetEigerBinaryAttributes(writer *w);
 #ifdef HDF5C
     void WriteEigerHDF5Attributes(H5::Group *group);
 #endif
 
-    void GetMythen3BinaryAttributes(
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
+    void GetMythen3BinaryAttributes(writer *w);
 #ifdef HDF5C
     void WriteMythen3HDF5Attributes(H5::Group *group);
 #endif
 
-    void GetGotthard2BinaryAttributes(
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
+    void GetGotthard2BinaryAttributes(writer *w);
 #ifdef HDF5C
     void WriteGotthard2HDF5Attributes(H5::Group *group);
 #endif
 
-    void GetMoenchBinaryAttributes(
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
+    void GetMoenchBinaryAttributes(writer *w);
 #ifdef HDF5C
     void WriteMoenchHDF5Attributes(H5::Group *group);
 #endif
 
-    void
-    GetCtbBinaryAttributes(rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
+    void GetCtbBinaryAttributes(writer *w);
 #ifdef HDF5C
     void WriteCtbHDF5Attributes(H5::Group *group);
 #endif
 
-    void GetXilinxCtbBinaryAttributes(
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
+    void GetXilinxCtbBinaryAttributes(writer *w);
 #ifdef HDF5C
     void WriteXilinxCtbHDF5Attributes(H5::Group *group);
 #endif

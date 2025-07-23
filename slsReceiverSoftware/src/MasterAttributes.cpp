@@ -118,15 +118,13 @@ void MasterAttributes::WriteBinaryScanParameters(writer *w) {
 }
 
 void MasterAttributes::WriteBinaryJsonHeader(writer *w) {
-    if (!additionalJsonHeader.empty()) {
-        w->Key("Additional Json Header");
-        w->StartObject();
-        for (const auto &pair : additionalJsonHeader) {
-            w->Key(pair.first.c_str());
-            w->String(pair.second.c_str());
-        }
-        w->EndObject();
+    w->Key("Additional Json Header");
+    w->StartObject();
+    for (const auto &pair : additionalJsonHeader) {
+        w->Key(pair.first.c_str());
+        w->String(pair.second.c_str());
     }
+    w->EndObject();
 }
 
 void MasterAttributes::WriteBinaryFrameHeaderFormat(writer *w) {
@@ -219,37 +217,35 @@ void MasterAttributes::WriteHDF5ScanParameters(H5::Group *group) {
 }
 
 void MasterAttributes::WriteHDF5JsonHeader(H5::Group *group) {
-    if (!additionalJsonHeader.empty()) {
-        H5::StrType strType(H5::PredType::C_S1, H5T_VARIABLE);
-        H5::CompType mapType(sizeof(char *) * 2);
-        mapType.insertMember("Key", 0, strType);
-        mapType.insertMember("Value", sizeof(char *), strType);
-        // create string struct just so its not dangling pointer
-        // with push_back
-        struct KeyValue {
-            std::string key;
-            std::string value;
-        };
-        struct KVRaw {
-            const char *key;
-            const char *value;
-        };
-        std::vector<KVRaw> raw;
-        std::vector<KeyValue> value;
-        value.reserve(additionalJsonHeader.size());
-        raw.reserve(additionalJsonHeader.size());
-        for (const auto &pair : additionalJsonHeader) {
-            value.push_back({pair.first, pair.second});
-        }
-        for (const auto &item : value) {
-            raw.push_back({item.key.c_str(), item.value.c_str()});
-        }
-        hsize_t dims[1] = {value.size()};
-        H5::DataSpace dataspace(1, dims);
-        H5::DataSet dataset =
-            group->createDataSet("Additional Json Header", mapType, dataspace);
-        dataset.write(raw.data(), mapType);
+    H5::StrType strType(H5::PredType::C_S1, H5T_VARIABLE);
+    H5::CompType mapType(sizeof(char *) * 2);
+    mapType.insertMember("Key", 0, strType);
+    mapType.insertMember("Value", sizeof(char *), strType);
+    // create string struct just so its not dangling pointer
+    // with push_back
+    struct KeyValue {
+        std::string key;
+        std::string value;
+    };
+    struct KVRaw {
+        const char *key;
+        const char *value;
+    };
+    std::vector<KVRaw> raw;
+    std::vector<KeyValue> value;
+    value.reserve(additionalJsonHeader.size());
+    raw.reserve(additionalJsonHeader.size());
+    for (const auto &pair : additionalJsonHeader) {
+        value.push_back({pair.first, pair.second});
     }
+    for (const auto &item : value) {
+        raw.push_back({item.key.c_str(), item.value.c_str()});
+    }
+    hsize_t dims[1] = {value.size()};
+    H5::DataSpace dataspace(1, dims);
+    H5::DataSet dataset =
+        group->createDataSet("Additional Json Header", mapType, dataspace);
+    dataset.write(raw.data(), mapType);
 }
 
 void MasterAttributes::WriteHDF5ROIs(H5::Group *group) {

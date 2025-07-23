@@ -145,7 +145,7 @@ def time_return_lambda(node, args):
 def visit(node):
 
     loc = node.location
-    # skipt if ndoe is outside project directory
+    # skip if ndoe is outside project directory
     if loc.file and not str(loc.file).startswith(str(cargs.build_path.parent)):
         return
     

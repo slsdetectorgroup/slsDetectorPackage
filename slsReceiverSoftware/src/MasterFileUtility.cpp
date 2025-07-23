@@ -144,7 +144,7 @@ std::string CreateMasterHDF5File(const std::string &filePath,
         double dValue = HDF5_WRITER_VERSION;
         H5::DataSpace dataspace_attr = H5::DataSpace(H5S_SCALAR);
         H5::Attribute attribute = fd->createAttribute(
-            "version", H5::PredType::NATIVE_DOUBLE, dataspace_attr);
+            "Version", H5::PredType::NATIVE_DOUBLE, dataspace_attr);
         attribute.write(H5::PredType::NATIVE_DOUBLE, &dValue);
 
         // Create a group in the file
@@ -234,7 +234,7 @@ std::string CreateVirtualHDF5File(
         double dValue = HDF5_WRITER_VERSION;
         H5::DataSpace dataspace_attr = H5::DataSpace(H5S_SCALAR);
         H5::Attribute attribute = fd->createAttribute(
-            "version", H5::PredType::NATIVE_DOUBLE, dataspace_attr);
+            "Version", H5::PredType::NATIVE_DOUBLE, dataspace_attr);
         attribute.write(H5::PredType::NATIVE_DOUBLE, &dValue);
 
         for (size_t iRoi = 0; iRoi != multiRoi.size(); ++iRoi) {

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "Caller.h"
+#include "MasterAttributes.h"
 #include "catch.hpp"
 #include "receiver_defs.h"
 #include "sls/Detector.h"
@@ -329,10 +330,10 @@ void test_master_file_version(const Detector &det,
     // different values for json and hdf5
     // hdf5 version in atttribute and not dataset
     double retval{};
-    std::string name = "Version";
+    std::string name = MasterAttributes::N_VERSION.data();
     if (doc.has_value()) {
         const auto &d = *doc;
-        REQUIRE(d.HasMember("Version"));
+        REQUIRE(d.HasMember(MasterAttributes::N_VERSION.data()));
         read_from_json(d, name, retval);
         REQUIRE(retval == BINARY_WRITER_VERSION);
     } else {
@@ -341,7 +342,7 @@ void test_master_file_version(const Detector &det,
             throw sls::RuntimeError(
                 "HDF5 file is not opened for testing Version");
         }
-        auto attr = h5File->openAttribute("Version");
+        auto attr = h5File->openAttribute(MasterAttributes::N_VERSION.data());
         attr.read(attr.getDataType(), &retval);
         REQUIRE(retval == HDF5_WRITER_VERSION);
 #else
@@ -354,13 +355,15 @@ void test_master_file_version(const Detector &det,
 void test_master_file_type(const Detector &det,
                            const std::optional<Document> &doc) {
     auto det_type = det.getDetectorType().tsquash("Inconsistent detector type");
-    check_master_file<std::string>(doc, "Detector Type", ToString(det_type));
+    check_master_file<std::string>(
+        doc, MasterAttributes::N_DETECTOR_TYPE.data(), ToString(det_type));
 }
 
 void test_master_file_timing_mode(const Detector &det,
                                   const std::optional<Document> &doc) {
     auto timing_mode = det.getTimingMode().tsquash("Inconsistent timing mode");
-    check_master_file<std::string>(doc, "Timing Mode", ToString(timing_mode));
+    check_master_file<std::string>(doc, MasterAttributes::N_TIMING_MODE.data(),
+                                   ToString(timing_mode));
 }
 
 void test_master_file_geometry(const Detector &det,
@@ -369,7 +372,8 @@ void test_master_file_geometry(const Detector &det,
     auto portperModGeometry = det.getPortPerModuleGeometry();
     auto geometry = defs::xy{modGeometry.x * portperModGeometry.x,
                              modGeometry.y * portperModGeometry.y};
-    check_master_file<defs::xy>(doc, "Geometry", geometry);
+    check_master_file<defs::xy>(doc, MasterAttributes::N_GEOMETRY.data(),
+                                geometry);
 }
 
 void test_master_file_image_size(const Detector &det,
@@ -421,7 +425,8 @@ void test_master_file_image_size(const Detector &det,
         throw sls::RuntimeError("Unsupported detector type for this test");
     }
 
-    check_master_file<int>(doc, "Image Size", image_size);
+    check_master_file<int>(doc, MasterAttributes::N_IMAGE_SIZE.data(),
+                           image_size);
 }
 
 void test_master_file_det_size(const Detector &det,
@@ -448,7 +453,8 @@ void test_master_file_det_size(const Detector &det,
         portSize.y = 1;
     }
 
-    check_master_file<defs::xy>(doc, "Pixels", portSize);
+    check_master_file<defs::xy>(doc, MasterAttributes::N_PIXELS.data(),
+                                portSize);
 }
 
 void test_master_file_max_frames_per_file(const Detector &det,
@@ -456,7 +462,8 @@ void test_master_file_max_frames_per_file(const Detector &det,
     auto max_frames_per_file =
         det.getFramesPerFile().tsquash("Inconsistent max frames per file");
 
-    check_master_file<int>(doc, "Max Frames Per File", max_frames_per_file);
+    check_master_file<int>(doc, MasterAttributes::N_MAX_FRAMES_PER_FILE.data(),
+                           max_frames_per_file);
 }
 
 void test_master_file_frame_discard_policy(const Detector &det,
@@ -464,8 +471,8 @@ void test_master_file_frame_discard_policy(const Detector &det,
     auto policy = det.getRxFrameDiscardPolicy().tsquash(
         "Inconsistent frame discard policy");
 
-    check_master_file<std::string>(doc, "Frame Discard Policy",
-                                   ToString(policy));
+    check_master_file<std::string>(
+        doc, MasterAttributes::N_FRAME_DISCARD_POLICY.data(), ToString(policy));
 }
 
 void test_master_file_frame_padding(const Detector &det,
@@ -473,15 +480,16 @@ void test_master_file_frame_padding(const Detector &det,
     auto padding = static_cast<int>(
         det.getPartialFramesPadding().tsquash("Inconsistent frame padding"));
 
-    check_master_file<int>(doc, "Frame Padding", padding);
+    check_master_file<int>(doc, MasterAttributes::N_FRAME_PADDING.data(),
+                           padding);
 }
 
 void test_master_file_scan_parameters(const Detector &det,
                                       const std::optional<Document> &doc) {
     auto scan_params = det.getScan().tsquash("Inconsistent scan parameters");
 
-    check_master_file<defs::scanParameters>(doc, "Scan Parameters",
-                                            scan_params);
+    check_master_file<defs::scanParameters>(
+        doc, MasterAttributes::N_SCAN_PARAMETERS.data(), scan_params);
 }
 
 void test_master_file_total_frames(const Detector &det,
@@ -527,7 +535,8 @@ void test_master_file_total_frames(const Detector &det,
     uint64_t total_frames =
         numFrames * repeats * (int64_t)(numAdditionalStorageCells + 1);
 
-    check_master_file<uint64_t>(doc, "Total Frames", total_frames);
+    check_master_file<uint64_t>(doc, MasterAttributes::N_TOTAL_FRAMES.data(),
+                                total_frames);
 }
 
 void test_master_file_rois(const Detector &det,
@@ -557,21 +566,24 @@ void test_master_file_rois(const Detector &det,
         }
     }
 
-    check_master_file<std::vector<defs::ROI>>(doc, "Receiver Rois", rois);
+    check_master_file<std::vector<defs::ROI>>(
+        doc, MasterAttributes::N_RECEIVER_ROIS.data(), rois);
 }
 
 void test_master_file_exptime(const Detector &det,
                               const std::optional<Document> &doc) {
     auto exptime = det.getExptime().tsquash("Inconsistent exposure time");
 
-    check_master_file<std::string>(doc, "Exposure Time", ToString(exptime));
+    check_master_file<std::string>(
+        doc, MasterAttributes::N_EXPOSURE_TIME.data(), ToString(exptime));
 }
 
 void test_master_file_period(const Detector &det,
                              const std::optional<Document> &doc) {
     auto period = det.getPeriod().tsquash("Inconsistent period");
 
-    check_master_file<std::string>(doc, "Acquisition Period", ToString(period));
+    check_master_file<std::string>(
+        doc, MasterAttributes::N_ACQUISITION_PERIOD.data(), ToString(period));
 }
 
 void test_master_file_num_udp_interfaces(const Detector &det,
@@ -579,14 +591,16 @@ void test_master_file_num_udp_interfaces(const Detector &det,
     auto num_udp_interfaces = det.getNumberofUDPInterfaces().tsquash(
         "Inconsistent number of UDP interfaces");
 
-    check_master_file<int>(doc, "Number of UDP Interfaces", num_udp_interfaces);
+    check_master_file<int>(doc, MasterAttributes::N_NUM_UDP_INTERFACES.data(),
+                           num_udp_interfaces);
 }
 
 void test_master_file_read_n_rows(const Detector &det,
                                   const std::optional<Document> &doc) {
     auto readnrows = det.getReadNRows().tsquash("Inconsistent number of rows");
 
-    check_master_file<int>(doc, "Number of rows", readnrows);
+    check_master_file<int>(doc, MasterAttributes::N_NUMBER_OF_ROWS.data(),
+                           readnrows);
 }
 
 void test_master_file_readout_speed(const Detector &det,
@@ -594,13 +608,14 @@ void test_master_file_readout_speed(const Detector &det,
     auto readout_speed =
         det.getReadoutSpeed().tsquash("Inconsistent readout speed");
 
-    check_master_file<std::string>(doc, "Readout Speed",
-                                   ToString(readout_speed));
+    check_master_file<std::string>(
+        doc, MasterAttributes::N_READOUT_SPEED.data(), ToString(readout_speed));
 }
 
 void test_master_file_frames_in_file(const std::optional<Document> &doc,
                                      const int frames_in_file) {
-    check_master_file<int>(doc, "Frames in File", frames_in_file);
+    check_master_file<int>(doc, MasterAttributes::N_FRAMES_IN_FILE.data(),
+                           frames_in_file);
 }
 
 void test_master_file_json_header(const Detector &det,
@@ -609,14 +624,14 @@ void test_master_file_json_header(const Detector &det,
         det.getAdditionalJsonHeader().tsquash("Inconsistent JSON header");
 
     check_master_file<std::map<std::string, std::string>>(
-        doc, "Additional Json Header", json_header);
+        doc, MasterAttributes::N_ADDITIONAL_JSON_HEADER.data(), json_header);
 }
 
 void test_master_file_dynamic_range(const Detector &det,
                                     const std::optional<Document> &doc) {
     auto dr = det.getDynamicRange().tsquash("Inconsistent dynamic range");
 
-    check_master_file<int>(doc, "Dynamic Range", dr);
+    check_master_file<int>(doc, MasterAttributes::N_DYNAMIC_RANGE.data(), dr);
 }
 
 void test_master_file_ten_giga(const Detector &det,
@@ -624,7 +639,7 @@ void test_master_file_ten_giga(const Detector &det,
     auto ten_giga =
         static_cast<int>(det.getTenGiga().tsquash("Inconsistent ten giga"));
 
-    check_master_file<int>(doc, "Ten Giga", ten_giga);
+    check_master_file<int>(doc, MasterAttributes::N_TEN_GIGA.data(), ten_giga);
 }
 
 void test_master_file_threshold_energy(const Detector &det,
@@ -632,7 +647,8 @@ void test_master_file_threshold_energy(const Detector &det,
     auto threshold =
         det.getThresholdEnergy().tsquash("Inconsistent threshold energy");
 
-    check_master_file<int>(doc, "Threshold Energy", threshold);
+    check_master_file<int>(doc, MasterAttributes::N_THRESHOLD_ENERGY.data(),
+                           threshold);
 }
 
 void test_master_file_sub_exptime(const Detector &det,
@@ -640,7 +656,8 @@ void test_master_file_sub_exptime(const Detector &det,
     auto sub_exptime =
         det.getSubExptime().tsquash("Inconsistent sub exposure time");
 
-    check_master_file<std::string>(doc, "Sub Exposure Time",
+    check_master_file<std::string>(doc,
+                                   MasterAttributes::N_SUB_EXPOSURE_TIME.data(),
                                    ToString(sub_exptime));
 }
 
@@ -650,14 +667,16 @@ void test_master_file_sub_period(const Detector &det,
     auto deadtime = det.getSubDeadTime().tsquash("Inconsistent sub deadtime");
     auto sub_period = exptime + deadtime;
 
-    check_master_file<std::string>(doc, "Sub Period", ToString(sub_period));
+    check_master_file<std::string>(
+        doc, MasterAttributes::N_SUB_ACQUISITION_PERIOD.data(),
+        ToString(sub_period));
 }
 
 void test_master_file_quad(const Detector &det,
                            const std::optional<Document> &doc) {
     auto quad = static_cast<int>(det.getQuad().tsquash("Inconsistent quad"));
 
-    check_master_file<int>(doc, "Quad", quad);
+    check_master_file<int>(doc, MasterAttributes::N_QUAD.data(), quad);
 }
 
 void test_master_file_rate_corrections(const Detector &det,
@@ -666,8 +685,8 @@ void test_master_file_rate_corrections(const Detector &det,
     for (auto item : det.getRateCorrection())
         dead_times.push_back(item.count());
 
-    check_master_file<std::vector<int64_t>>(doc, "Rate Corrections",
-                                            dead_times);
+    check_master_file<std::vector<int64_t>>(
+        doc, MasterAttributes::N_RATE_CORRECTIONS.data(), dead_times);
 }
 
 void test_master_file_counter_mask(const Detector &det,
@@ -675,7 +694,8 @@ void test_master_file_counter_mask(const Detector &det,
     auto counter_mask = static_cast<int>(
         det.getCounterMask().tsquash("Inconsistent counter mask"));
 
-    check_master_file<int>(doc, "Counter Mask", counter_mask);
+    check_master_file<int>(doc, MasterAttributes::N_COUNTER_MASK.data(),
+                           counter_mask);
 }
 
 void test_master_file_exptimes(const Detector &det,
@@ -683,8 +703,8 @@ void test_master_file_exptimes(const Detector &det,
     auto exptimes =
         det.getExptimeForAllGates().tsquash("Inconsistent exposure times");
 
-    check_master_file<std::array<sls::ns, 3UL>>(doc, "Exposure Times",
-                                                exptimes);
+    check_master_file<std::array<sls::ns, 3UL>>(
+        doc, MasterAttributes::N_EXPOSURE_TIMES.data(), exptimes);
 }
 
 void test_master_file_gate_delays(const Detector &det,
@@ -692,15 +712,15 @@ void test_master_file_gate_delays(const Detector &det,
     auto gate_delays =
         det.getGateDelayForAllGates().tsquash("Inconsistent GateDelay");
 
-    check_master_file<std::array<sls::ns, 3UL>>(doc, "Gate Delays",
-                                                gate_delays);
+    check_master_file<std::array<sls::ns, 3UL>>(
+        doc, MasterAttributes::N_GATE_DELAYS.data(), gate_delays);
 }
 
 void test_master_file_gates(const Detector &det,
                             const std::optional<Document> &doc) {
     auto gates = det.getNumberOfGates().tsquash("Inconsistent number of gates");
 
-    check_master_file<int>(doc, "Gates", gates);
+    check_master_file<int>(doc, MasterAttributes::N_GATES.data(), gates);
 }
 
 void test_master_file_threadhold_energies(const Detector &det,
@@ -708,15 +728,16 @@ void test_master_file_threadhold_energies(const Detector &det,
     auto threshold_energies =
         det.getAllThresholdEnergy().tsquash("Inconsistent threshold energies");
 
-    check_master_file<std::array<int, 3UL>>(doc, "Threshold Energies",
-                                            threshold_energies);
+    check_master_file<std::array<int, 3UL>>(
+        doc, MasterAttributes::N_THRESHOLD_ENERGIES.data(), threshold_energies);
 }
 
 void test_master_file_burst_mode(const Detector &det,
                                  const std::optional<Document> &doc) {
     auto burst_mode = det.getBurstMode().tsquash("Inconsistent burst mode");
 
-    check_master_file<std::string>(doc, "Burst Mode", ToString(burst_mode));
+    check_master_file<std::string>(doc, MasterAttributes::N_BURST_MODE.data(),
+                                   ToString(burst_mode));
 }
 
 void test_master_file_adc_mask(const Detector &det,
@@ -730,7 +751,8 @@ void test_master_file_adc_mask(const Detector &det,
             adc_mask = test_ctb_config.adc_enable_1g;
     }
 
-    check_master_file<uint32_t>(doc, "ADC Mask", adc_mask);
+    check_master_file<uint32_t>(doc, MasterAttributes::N_ADC_MASK.data(),
+                                adc_mask);
 }
 
 void test_master_file_analog_flag(const Detector &det,
@@ -740,7 +762,7 @@ void test_master_file_analog_flag(const Detector &det,
     auto analog = static_cast<int>(
         (romode == defs::ANALOG_ONLY || romode == defs::ANALOG_AND_DIGITAL));
 
-    check_master_file<int>(doc, "Analog Flag", analog);
+    check_master_file<int>(doc, MasterAttributes::N_ANALOG.data(), analog);
 }
 
 void test_master_file_analog_samples(const Detector &det,
@@ -748,7 +770,8 @@ void test_master_file_analog_samples(const Detector &det,
     testCtbAcquireInfo test_info;
     auto analog_samples = test_info.num_adc_samples;
 
-    check_master_file<int>(doc, "Analog Samples", analog_samples);
+    check_master_file<int>(doc, MasterAttributes::N_ANALOG_SAMPLES.data(),
+                           analog_samples);
 }
 
 void test_master_file_digital_flag(const Detector &det,
@@ -759,7 +782,7 @@ void test_master_file_digital_flag(const Detector &det,
                                     romode == defs::ANALOG_AND_DIGITAL ||
                                     romode == defs::DIGITAL_AND_TRANSCEIVER);
 
-    check_master_file<int>(doc, "Digital Flag", digital);
+    check_master_file<int>(doc, MasterAttributes::N_DIGITAL.data(), digital);
 }
 
 void test_master_file_digital_samples(const Detector &det,
@@ -767,7 +790,8 @@ void test_master_file_digital_samples(const Detector &det,
     testCtbAcquireInfo test_info;
     auto digital_samples = test_info.num_dbit_samples;
 
-    check_master_file<int>(doc, "Digital Samples", digital_samples);
+    check_master_file<int>(doc, MasterAttributes::N_DIGITAL_SAMPLES.data(),
+                           digital_samples);
 }
 
 void test_master_file_dbit_offset(const Detector &det,
@@ -775,7 +799,8 @@ void test_master_file_dbit_offset(const Detector &det,
     testCtbAcquireInfo test_info;
     auto dbit_offset = test_info.dbit_offset;
 
-    check_master_file<int>(doc, "Dbit Offset", dbit_offset);
+    check_master_file<int>(doc, MasterAttributes::N_DBIT_OFFSET.data(),
+                           dbit_offset);
 }
 
 void test_master_file_dbit_reorder(const Detector &det,
@@ -783,7 +808,8 @@ void test_master_file_dbit_reorder(const Detector &det,
     testCtbAcquireInfo test_info;
     auto dbit_reorder = test_info.dbit_reorder;
 
-    check_master_file<int>(doc, "Dbit Reorder", dbit_reorder);
+    check_master_file<int>(doc, MasterAttributes::N_DBIT_REORDER.data(),
+                           dbit_reorder);
 }
 
 void test_master_file_dbit_bitset(const Detector &det,
@@ -794,7 +820,8 @@ void test_master_file_dbit_bitset(const Detector &det,
         dbit_bitset |= (static_cast<uint64_t>(1) << i);
     }
 
-    check_master_file<uint64_t>(doc, "Dbit Bitset", dbit_bitset);
+    check_master_file<uint64_t>(doc, MasterAttributes::N_DBIT_BITSET.data(),
+                                dbit_bitset);
 }
 
 void test_master_file_transceiver_mask(const Detector &det,
@@ -802,7 +829,8 @@ void test_master_file_transceiver_mask(const Detector &det,
     testCtbAcquireInfo test_info;
     auto trans_mask = test_info.transceiver_mask;
 
-    check_master_file<int>(doc, "Transceiver Mask", trans_mask);
+    check_master_file<int>(doc, MasterAttributes::N_TRANSCEIVER_MASK.data(),
+                           trans_mask);
 }
 
 void test_master_file_transceiver_flag(const Detector &det,
@@ -812,14 +840,15 @@ void test_master_file_transceiver_flag(const Detector &det,
     auto trans = static_cast<int>(romode == defs::DIGITAL_AND_TRANSCEIVER ||
                                   romode == defs::TRANSCEIVER_ONLY);
 
-    check_master_file<int>(doc, "Transceiver Flag", trans);
+    check_master_file<int>(doc, MasterAttributes::N_TRANSCEIVER.data(), trans);
 }
 
 void test_master_file_transceiver_samples(const Detector &det,
                                           const std::optional<Document> &doc) {
     testCtbAcquireInfo test_info;
     auto trans_samples = test_info.num_trans_samples;
-    check_master_file<int>(doc, "Transceiver Samples", trans_samples);
+    check_master_file<int>(doc, MasterAttributes::N_TRANSCEIVER_SAMPLES.data(),
+                           trans_samples);
 }
 
 void test_master_file_common_metadata(const Detector &det,

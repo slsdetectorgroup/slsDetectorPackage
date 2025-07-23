@@ -943,7 +943,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.quad = quadEnable;
             masterAttributes.readNRows = readNRows;
             masterAttributes.ratecorr = rateCorrections;
-            masterAttributes.adcmask = generalData->tengigaEnable
+            masterAttributes.adcMask = generalData->tengigaEnable
                                            ? generalData->adcEnableMaskTenGiga
                                            : generalData->adcEnableMaskOneGiga;
             masterAttributes.analog =
@@ -959,12 +959,12 @@ void Implementation::StartMasterWriter() {
                     ? 1
                     : 0;
             masterAttributes.digitalSamples = generalData->nDigitalSamples;
-            masterAttributes.dbitoffset = generalData->ctbDbitOffset;
-            masterAttributes.dbitreorder = generalData->ctbDbitReorder;
-            masterAttributes.dbitlist = 0;
+            masterAttributes.dbitOffset = generalData->ctbDbitOffset;
+            masterAttributes.dbitReorder = generalData->ctbDbitReorder;
+            masterAttributes.dbitList = 0;
 
             for (auto &i : generalData->ctbDbitList) {
-                masterAttributes.dbitlist |= (static_cast<uint64_t>(1) << i);
+                masterAttributes.dbitList |= (static_cast<uint64_t>(1) << i);
             }
             masterAttributes.transceiverSamples =
                 generalData->nTransceiverSamples;

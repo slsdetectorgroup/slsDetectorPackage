@@ -5,69 +5,7 @@
 
 namespace sls {
 
-void MasterAttributes::GetBinaryAttributes(writer *w) {
-    w->StartObject();
-    GetCommonBinaryAttributes(w);
-    switch (detType) {
-    case slsDetectorDefs::JUNGFRAU:
-        GetJungfrauBinaryAttributes(w);
-        break;
-    case slsDetectorDefs::MOENCH:
-        GetMoenchBinaryAttributes(w);
-        break;
-    case slsDetectorDefs::EIGER:
-        GetEigerBinaryAttributes(w);
-        break;
-    case slsDetectorDefs::MYTHEN3:
-        GetMythen3BinaryAttributes(w);
-        break;
-    case slsDetectorDefs::GOTTHARD2:
-        GetGotthard2BinaryAttributes(w);
-        break;
-    case slsDetectorDefs::CHIPTESTBOARD:
-        GetCtbBinaryAttributes(w);
-        break;
-    case slsDetectorDefs::XILINX_CHIPTESTBOARD:
-        GetXilinxCtbBinaryAttributes(w);
-        break;
-    default:
-        throw RuntimeError("Unknown Detector type to get master attributes");
-    }
-    GetFinalBinaryAttributes(w);
-    w->EndObject();
-}
 
-#ifdef HDF5C
-void MasterAttributes::WriteHDF5Attributes(H5::H5File *fd, H5::Group *group) {
-    WriteCommonHDF5Attributes(fd, group);
-    switch (detType) {
-    case slsDetectorDefs::JUNGFRAU:
-        WriteJungfrauHDF5Attributes(group);
-        break;
-    case slsDetectorDefs::MOENCH:
-        WriteMoenchHDF5Attributes(group);
-        break;
-    case slsDetectorDefs::EIGER:
-        WriteEigerHDF5Attributes(group);
-        break;
-    case slsDetectorDefs::MYTHEN3:
-        WriteMythen3HDF5Attributes(group);
-        break;
-    case slsDetectorDefs::GOTTHARD2:
-        WriteGotthard2HDF5Attributes(group);
-        break;
-    case slsDetectorDefs::CHIPTESTBOARD:
-        WriteCtbHDF5Attributes(group);
-        break;
-    case slsDetectorDefs::XILINX_CHIPTESTBOARD:
-        WriteXilinxCtbHDF5Attributes(group);
-        break;
-    default:
-        throw RuntimeError("Unknown Detector type to get master attributes");
-    }
-    WriteFinalHDF5Attributes(group);
-}
-#endif
 
 void MasterAttributes::WriteBinaryRois(writer *w) {
     w->Key("Receiver Rois");
@@ -278,18 +216,12 @@ void MasterAttributes::WriteHDF5GateDelayArray(H5::Group *group) {
 #endif
 
 void MasterAttributes::GetCommonBinaryAttributes(writer *w) {
-    w->Key("Version");
-    w->SetMaxDecimalPlaces(2);
-    w->Double(BINARY_WRITER_VERSION);
-    {
-        time_t t = std::time(nullptr);
-        std::string sTime(ctime(&t));
-        std::replace(sTime.begin(), sTime.end(), '\n', '\0');
-        WriteBinary(w, "Timestamp", sTime);
-    }
-    WriteBinary(w, "Detector Type", ToString(detType));
-    WriteBinary(w, "Timing Mode", ToString(timingMode));
-    WriteBinaryXY(w, "Geometry", geometry);
+    WriteBinaryVersion(w);
+    WriteBinaryTimestamp(w);
+    WriteBinaryDetectorType(w);
+    WriteBinaryTimingMode(w);
+    WriteBinaryGeometry(w);
+
     WriteBinary(w, "Image Size", imageSize);
     WriteBinaryXY(w, "Pixels", nPixels);
     WriteBinary(w, "Max Frames Per File", maxFramesPerFile);
@@ -307,12 +239,11 @@ void MasterAttributes::GetFinalBinaryAttributes(writer *w) {
 #ifdef HDF5C
 void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
                                                  H5::Group *group) {
-    time_t t = std::time(nullptr);
-    std::string sTime(ctime(&t));
-    WriteHDF5String(group, "Timestamp", sTime);
-    WriteHDF5String(group, "Detector Type", ToString(detType));
-    WriteHDF5String(group, "Timing Mode", ToString(timingMode));
-    WriteHDF5XY(group, "Geometry", geometry);
+    WriteHDF5Timestamp(group);
+    WriteHDF5DetectorType(gtoup);
+    WriteHDF5TimingMode(group);
+    WriteHDF5Geometry(group);
+
     WriteHDF5Int(group, "Image Size", imageSize);
     WriteHDF5XY(group, "Pixels", nPixels);
     WriteHDF5Int(group, "Max Frames Per File", maxFramesPerFile);
@@ -446,6 +377,70 @@ void MasterAttributes::WriteGotthard2HDF5Attributes(H5::Group *group) {
 }
 #endif
 
+void MasterAttributes::GetBinaryAttributes(writer *w) {
+    w->StartObject();
+    GetCommonBinaryAttributes(w);
+    switch (detType) {
+    case slsDetectorDefs::JUNGFRAU:
+        GetJungfrauBinaryAttributes(w);
+        break;
+    case slsDetectorDefs::MOENCH:
+        GetMoenchBinaryAttributes(w);
+        break;
+    case slsDetectorDefs::EIGER:
+        GetEigerBinaryAttributes(w);
+        break;
+    case slsDetectorDefs::MYTHEN3:
+        GetMythen3BinaryAttributes(w);
+        break;
+    case slsDetectorDefs::GOTTHARD2:
+        GetGotthard2BinaryAttributes(w);
+        break;
+    case slsDetectorDefs::CHIPTESTBOARD:
+        GetCtbBinaryAttributes(w);
+        break;
+    case slsDetectorDefs::XILINX_CHIPTESTBOARD:
+        GetXilinxCtbBinaryAttributes(w);
+        break;
+    default:
+        throw RuntimeError("Unknown Detector type to get master attributes");
+    }
+    GetFinalBinaryAttributes(w);
+    w->EndObject();
+}
+
+#ifdef HDF5C
+void MasterAttributes::WriteHDF5Attributes(H5::H5File *fd, H5::Group *group) {
+    WriteCommonHDF5Attributes(fd, group);
+    switch (detType) {
+    case slsDetectorDefs::JUNGFRAU:
+        WriteJungfrauHDF5Attributes(group);
+        break;
+    case slsDetectorDefs::MOENCH:
+        WriteMoenchHDF5Attributes(group);
+        break;
+    case slsDetectorDefs::EIGER:
+        WriteEigerHDF5Attributes(group);
+        break;
+    case slsDetectorDefs::MYTHEN3:
+        WriteMythen3HDF5Attributes(group);
+        break;
+    case slsDetectorDefs::GOTTHARD2:
+        WriteGotthard2HDF5Attributes(group);
+        break;
+    case slsDetectorDefs::CHIPTESTBOARD:
+        WriteCtbHDF5Attributes(group);
+        break;
+    case slsDetectorDefs::XILINX_CHIPTESTBOARD:
+        WriteXilinxCtbHDF5Attributes(group);
+        break;
+    default:
+        throw RuntimeError("Unknown Detector type to get master attributes");
+    }
+    WriteFinalHDF5Attributes(group);
+}
+#endif
+
 void MasterAttributes::GetCtbBinaryAttributes(writer *w) {
     WriteBinary(w, "Exposure Time", ToString(exptime));
     WriteBinary(w, "Acquisition Period", ToString(period));
@@ -483,7 +478,7 @@ void MasterAttributes::WriteCtbHDF5Attributes(H5::Group *group) {
 #endif
 
 void MasterAttributes::GetXilinxCtbBinaryAttributes(writer *w) {
-    WriteBinary(w, "Exposure Time", ToString(exptime));
+    WriteBinaryExposureTme(w);
     WriteBinary(w, "Acquisition Period", ToString(period));
     WriteBinary(w, "ADC Mask", adcmask);
     WriteBinary(w, "Analog Flag", analog);
@@ -500,7 +495,7 @@ void MasterAttributes::GetXilinxCtbBinaryAttributes(writer *w) {
 
 #ifdef HDF5C
 void MasterAttributes::WriteXilinxCtbHDF5Attributes(H5::Group *group) {
-    WriteHDF5String(group, "Exposure Time", ToString(exptime));
+    WriteHDF5ExposureTime(group);
     WriteHDF5String(group, "Acquisition Period", ToString(period));
     WriteHDF5Int(group, "ADC Mask", adcmask);
     WriteHDF5Int(group, "Analog Flag", analog);
@@ -515,4 +510,64 @@ void MasterAttributes::WriteXilinxCtbHDF5Attributes(H5::Group *group) {
     WriteHDF5Int(group, "Transceiver Samples", transceiverSamples);
 }
 #endif
+
+void MasterAttributes::WriteBinaryVersion(writer *w) {
+    w->Key("Version");
+    w->SetMaxDecimalPlaces(2);
+    w->Double(BINARY_WRITER_VERSION);
+}
+
+void MasterAttributes::WriteBinaryTimestamp(writer *w) {
+    time_t t = std::time(nullptr);
+    std::string sTime(ctime(&t));
+    std::replace(sTime.begin(), sTime.end(), '\n', '\0');
+    WriteBinary(w, "Timestamp", sTime);
+}
+
+#ifdef HDF5C
+void MasterAttributes::WriteHDF5Timestamp(H5::Group *group) {
+    time_t t = std::time(nullptr);
+    std::string sTime(ctime(&t));
+    WriteHDF5String(group, "Timestamp", sTime);
+}
+#endif
+
+void MasterAttributes::WriteBinaryDetectorType(writer *w) {
+    WriteBinary(w, "Detector Type", ToString(detType));
+}
+
+#ifdef HDF5C
+void MasterAttributes::WriteHDF5DetectorType(H5::Group *group) {
+    WriteHDF5String(group, "Detector Type", ToString(detType));
+}
+#endif
+
+void MasterAttributes::WriteBinaryExposureTme(writer *w) {
+    WriteBinary(w, "Exposure Time", ToString(exptime));
+}
+
+void MasterAttributes::WriteBinaryTimingMode(writer *w) {
+    WriteBinary(w, "Timing Mode", ToString(timingMode));
+}       
+#ifdef HDF5C
+void MasterAttributes::WriteHDF5TimingMode(H5::Group *group) {
+    WriteHDF5String(group, "Timing Mode", ToString(timingMode));
+}
+#endif
+
+void MasterAttributes::WriteBinaryGeometry(writer *w) {
+    WriteBinaryXY(w, "Geometry", geometry);
+}       
+#ifdef HDF5C
+void MasterAttributes::WriteHDF5Geometry(H5::Group *group) {
+    WriteHDF5XY(group, "Geometry", geometry);
+}
+#endif
+
+#ifdef HDF5C
+void MasterAttributes::WriteHDF5ExposureTime(H5::Group *group) {
+    WriteHDF5String(group, "Exposure Time", ToString(exptime));
+}
+#endif
+
 } // namespace sls

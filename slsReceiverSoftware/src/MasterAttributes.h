@@ -71,10 +71,7 @@ class MasterAttributes {
     MasterAttributes() = default;
     ~MasterAttributes() = default;
 
-    void GetBinaryAttributes(writer *w);
-#ifdef HDF5C
-    void WriteHDF5Attributes(H5::H5File *fd, H5::Group *group);
-#endif
+
 
     template <typename T> void WriteBinaryValue(writer *w, const T &value) {
         if constexpr (std::is_same_v<T, int>) {
@@ -169,6 +166,11 @@ class MasterAttributes {
     void WriteHDF5GateDelayArray(H5::Group *group);
 #endif
 
+    void GetBinaryAttributes(writer *w);
+#ifdef HDF5C
+    void WriteHDF5Attributes(H5::H5File *fd, H5::Group *group);
+#endif
+
     void GetCommonBinaryAttributes(writer *w);
     void GetFinalBinaryAttributes(writer *w);
 
@@ -211,6 +213,31 @@ class MasterAttributes {
 #ifdef HDF5C
     void WriteXilinxCtbHDF5Attributes(H5::Group *group);
 #endif
+
+    void WriteBinaryVersion(writer *w);
+    void WriteBinaryTimestamp(writer *w);
+#ifdef HDF5C
+    void WriteHDF5Timestamp(H5::Group *group);
+#endif
+    void WriteBinaryDetectorType(writer *w);
+#ifdef HDF5C
+    void WriteHDF5DetectorType(H5::Group *group);
+#endif
+    void WriteBinaryTimingMode(writer *w);
+#ifdef HDF5C
+    void WriteHDF5TimingMode(H5::Group *group);
+#endif
+    void WriteBinaryGeometry(writer *w);
+#ifdef HDF5C
+    void WriteHDF5Geometry(H5::Group *group);
+#endif
+
+
+    void WriteBinaryExposureTme(writer *w);
+#ifdef HDF5C
+    void WriteHDF5ExposureTime(H5::Group *group);
+#endif
+
 };
 
 } // namespace sls

@@ -231,6 +231,38 @@ class MasterAttributes {
 #ifdef HDF5C
     void WriteHDF5Geometry(H5::Group *group);
 #endif
+    void WriteBinaryImageSize(writer *w);
+#ifdef HDF5C
+    void WriteHDF5ImageSize(H5::Group *group);
+#endif
+    void WriteBinaryPixels(writer *w);
+#ifdef HDF5C
+    void WriteHDF5Pixels(H5::Group *group);
+#endif
+    void WriteBinaryMaxFramesPerFile(writer *w);
+#ifdef HDF5C
+    void WriteHDF5MaxFramesPerFile(H5::Group *group);
+#endif
+    void WriteBinaryFrameDiscardPolicy(writer *w);
+#ifdef HDF5C
+    void WriteHDF5FrameDiscardPolicy(H5::Group *group);
+#endif
+    void WriteBinaryFramePadding(writer *w);
+#ifdef HDF5C
+    void WriteHDF5FramePadding(H5::Group *group);
+#endif
+    void WriteBinaryScanParameters(writer *w);
+#ifdef HDF5C
+    void WriteHDF5ScanParameters(H5::Group *group);
+#endif
+    void WriteBinaryTotalFrames(writer *w);
+#ifdef HDF5C
+    void WriteHDF5TotalFrames(H5::Group *group);
+#endif
+    void WriteBinaryGeometry(writer *w);
+#ifdef HDF5C
+    void WriteHDF5Geometry(H5::Group *group);
+#endif
 
 
     void WriteBinaryExposureTme(writer *w);

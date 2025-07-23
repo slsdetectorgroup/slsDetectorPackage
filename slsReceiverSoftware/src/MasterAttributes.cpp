@@ -37,23 +37,7 @@ void MasterAttributes::WriteBinaryXY(writer *w, const std::string &name,
     w->EndObject();
 }
 
-void MasterAttributes::WriteBinaryScanParameters(writer *w) {
-    w->Key("Scan Parameters");
-    w->StartObject();
-    w->Key("enable");
-    w->Int(scanParams.enable);
-    w->Key("dacInd");
-    w->Int(scanParams.dacInd);
-    w->Key("start offset");
-    w->Int(scanParams.startOffset);
-    w->Key("stop offset");
-    w->Int(scanParams.stopOffset);
-    w->Key("step size");
-    w->Int(scanParams.stepSize);
-    w->Key("dac settle time ns");
-    w->Int64(scanParams.dacSettleTime_ns);
-    w->EndObject();
-}
+
 
 void MasterAttributes::WriteBinaryJsonHeader(writer *w) {
     w->Key("Additional Json Header");
@@ -221,14 +205,13 @@ void MasterAttributes::GetCommonBinaryAttributes(writer *w) {
     WriteBinaryDetectorType(w);
     WriteBinaryTimingMode(w);
     WriteBinaryGeometry(w);
-
-    WriteBinary(w, "Image Size", imageSize);
-    WriteBinaryXY(w, "Pixels", nPixels);
-    WriteBinary(w, "Max Frames Per File", maxFramesPerFile);
-    WriteBinary(w, "Frame Discard Policy", ToString(frameDiscardMode));
-    WriteBinary(w, "Frame Padding", framePadding);
+    WriteBinaryImageSize(w);
+    WriteBinaryPixels(w);
+    WriteBinaryMaxFramesPerFile(w);
+    WriteBinaryFrameDiscardPolicy(w);
+    WriteBinaryFramePadding(w);
     WriteBinaryScanParameters(w);
-    WriteBinary(w, "Total Frames", totalFrames);
+    WriteBinaryTotalFrames(w);
 }
 
 void MasterAttributes::GetFinalBinaryAttributes(writer *w) {
@@ -243,14 +226,13 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd,
     WriteHDF5DetectorType(gtoup);
     WriteHDF5TimingMode(group);
     WriteHDF5Geometry(group);
-
-    WriteHDF5Int(group, "Image Size", imageSize);
-    WriteHDF5XY(group, "Pixels", nPixels);
-    WriteHDF5Int(group, "Max Frames Per File", maxFramesPerFile);
-    WriteHDF5String(group, "Frame Discard Policy", ToString(frameDiscardMode));
-    WriteHDF5Int(group, "Frame Padding", framePadding);
+    WriteHDF5ImageSize(group);
+    WriteHDF5Pixels(group);
+    WriteHDF5MaxFramesPerFile(group);
+    WriteHDF5FrameDiscardPolicy(group);
+    WriteHDF5FramePadding(group);
     WriteHDF5ScanParameters(group);
-    WriteHDF5Int(group, "Total Frames", totalFrames);
+    WriteHDF5TotalFrames(group);
 }
 
 void MasterAttributes::WriteFinalHDF5Attributes(H5::Group *group) {
@@ -542,10 +524,6 @@ void MasterAttributes::WriteHDF5DetectorType(H5::Group *group) {
 }
 #endif
 
-void MasterAttributes::WriteBinaryExposureTme(writer *w) {
-    WriteBinary(w, "Exposure Time", ToString(exptime));
-}
-
 void MasterAttributes::WriteBinaryTimingMode(writer *w) {
     WriteBinary(w, "Timing Mode", ToString(timingMode));
 }       
@@ -561,6 +539,102 @@ void MasterAttributes::WriteBinaryGeometry(writer *w) {
 #ifdef HDF5C
 void MasterAttributes::WriteHDF5Geometry(H5::Group *group) {
     WriteHDF5XY(group, "Geometry", geometry);
+}
+#endif
+
+void MasterAttributes::WriteBinaryImageSize(writer *w) {
+    WriteBinary(w, "Image Size", imageSize);
+}   
+#ifdef HDF5C
+void MasterAttributes::WriteHDF5ImageSize(H5::Group *group) {
+    WriteHDF5Int(group, "Image Size", imageSize);
+}
+#endif
+void MasterAttributes::WriteBinaryPixels(writer *w) {
+    WriteBinaryXY(w, "Pixels", nPixels);
+}
+#ifdef HDF5C
+void MasterAttributes::WriteHDF5Pixels(H5::Group *group) {
+    WriteHDF5XY(group, "Pixels", nPixels);
+}
+#endif
+
+void MasterAttributes::WriteBinaryMaxFramesPerFile(writer *w) {
+    WriteBinary(w, "Max Frames Per File", maxFramesPerFile);
+}
+#ifdef HDF5C
+void MasterAttributes::WriteHDF5MaxFramesPerFile(H5::Group *group) {
+    WriteHDF5Int(group, "Max Frames Per File", maxFramesPerFile);
+}
+#endif  
+void MasterAttributes::WriteBinaryFrameDiscardPolicy(writer *w) {
+    WriteBinary(w, "Frame Discard Policy", ToString(frameDiscardMode));
+}
+#ifdef HDF5C
+void MasterAttributes::WriteHDF5FrameDiscardPolicy(H5::Group *group) {
+    WriteHDF5String(group, "Frame Discard Policy", ToString(frameDiscardMode));
+}
+#endif
+void MasterAttributes::WriteBinaryFramePadding(writer *w) {
+    WriteBinary(w, "Frame Padding", framePadding);
+}
+#ifdef HDF5C
+void MasterAttributes::WriteHDF5FramePadding(H5::Group *group) {
+    WriteHDF5Int(group, "Frame Padding", framePadding);
+}
+#endif
+
+void MasterAttributes::WriteBinaryScanParameters(writer *w) {
+    w->Key("Scan Parameters");
+    w->StartObject();
+    w->Key("enable");
+    w->Int(scanParams.enable);
+    w->Key("dacInd");
+    w->Int(scanParams.dacInd);
+    w->Key("start offset");
+    w->Int(scanParams.startOffset);
+    w->Key("stop offset");
+    w->Int(scanParams.stopOffset);
+    w->Key("step size");
+    w->Int(scanParams.stepSize);
+    w->Key("dac settle time ns");
+    w->Int64(scanParams.dacSettleTime_ns);
+    w->EndObject();
+}
+
+#ifdef HDF5C
+void MasterAttributes::WriteHDF5ScanParameters(H5::Group *group) {
+    H5::CompType c(sizeof(defs::scanParameters));
+    c.insertMember("enable", HOFFSET(defs::scanParameters, enable),
+                   H5::PredType::NATIVE_INT);
+    c.insertMember("dacInd", HOFFSET(defs::scanParameters, dacInd),
+                   H5::PredType::NATIVE_INT);
+    c.insertMember("startOffset", HOFFSET(defs::scanParameters, startOffset),
+                   H5::PredType::NATIVE_INT);
+    c.insertMember("stopOffset", HOFFSET(defs::scanParameters, stopOffset),
+                   H5::PredType::NATIVE_INT);
+    c.insertMember("stepSize", HOFFSET(defs::scanParameters, stepSize),
+                   H5::PredType::NATIVE_INT);
+    c.insertMember("dacSettleTime_ns",
+                   HOFFSET(defs::scanParameters, dacSettleTime_ns),
+                   H5::PredType::STD_I64LE);
+    H5::DataSpace dataspace(H5S_SCALAR);
+    H5::DataSet dataset = group->createDataSet("Scan Parameters", c, dataspace);
+    dataset.write(&scanParams, c);
+}
+#endif
+
+void MasterAttributes::WriteBinaryExposureTme(writer *w) {
+    WriteBinary(w, "Exposure Time", ToString(exptime));
+}
+
+void MasterAttributes::WriteBinaryTotalFrames(writer *w) {
+    WriteBinary(w, "Total Frames", totalFrames);
+}   
+
+#ifdef HDF5C
+void MasterAttributes::WriteHDF5TotalFrames(H5::Group *group) {
+    WriteHDF5Int(group, "Total Frames", totalFrames);
 }
 #endif
 

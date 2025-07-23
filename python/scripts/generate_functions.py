@@ -145,11 +145,12 @@ def time_return_lambda(node, args):
 def visit(node):
 
     loc = node.location
+    # skipt if ndoe is outside project directory
     if loc.file and not str(loc.file).startswith(str(cargs.build_path.parent)):
-        # Outside your project directory, skip
         return
     
     '''
+    # to see which file was causing the error (not in Detector.h, so skipping others in the above code)
     try:
         kind = node.kind
     except ValueError as e:

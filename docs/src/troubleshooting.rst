@@ -202,6 +202,17 @@ Receiver PC Tuning Options
             ethtool -K xth1 gro
         
 
+    * for persistent settings after reboot
+        .. code-block:: bash
+
+            # edit /etc/sysconfig/network-scripts/ifcfg-[ethernet interface name]
+            # add or modify the following lines
+            ETHTOOL_OPTS="-K ${DEVICE} gro on;-G ${DEVICE} rx 4096;-L ${DEVICE} combined 4;-C ${DEVICE} rx-usecs 100;-C ${DEVICE} adaptive-rx on"
+
+            # restart interface ethernet interface
+            ifdown xth1 && ifup xth1
+            
+
 #. Disable power saving in CPU frequency scaling and set system to performance 
     * Check current policy (default might be powersave or schedutil)
         .. code-block:: bash

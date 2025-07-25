@@ -18,6 +18,110 @@
 
 namespace sls {
 
+struct CtbImageInputs {
+    slsDetectorDefs::readoutMode mode{slsDetectorDefs::ANALOG_ONLY};
+
+    int nAnalogSamples{};
+    uint32_t adcMask{};
+    int nTransceiverSamples{};
+    uint32_t transceiverMask{};
+    int nDigitalSamples{};
+    int dbitOffset{};
+    bool dbitReorder{};
+    std::vector<int> dbitList{};
+};
+
+struct CtbImageOutputs {
+    int nAnalogBytes{};
+    int nDigitalBytes{};
+    int nDigitalBytesReserved{}; // including dbit offset and for 64 bits
+    int nTransceiverBytes{};
+    int nPixelsX{};
+};
+
+inline CtbImageOutputs computeCtbImageSize(const CtbImageInputs &in) {
+    CtbImageOutputs out{};
+
+    constexpr int num_bytes_per_analog_channel = 2;
+    constexpr int num_bytes_per_transceiver_channel = 8;
+    constexpr int max_digital_channels = 64;
+
+    // analog channels (normal, analog/digital readout)
+    if (in.mode == slsDetectorDefs::ANALOG_ONLY ||
+        in.mode == slsDetectorDefs::ANALOG_AND_DIGITAL) {
+        int nAnalogChans = __builtin_popcount(in.adcMask);
+
+        out.nPixelsX += nAnalogChans;
+        out.nAnalogBytes =
+            nAnalogChans * num_bytes_per_analog_channel * in.nAnalogSamples;
+        LOG(logDEBUG1) << " Number of Analog Channels:" << nAnalogChans
+                       << " Databytes: " << out.nAnalogBytes;
+    }
+
+    // digital channels
+    if (in.mode == slsDetectorDefs::DIGITAL_ONLY ||
+        in.mode == slsDetectorDefs::ANALOG_AND_DIGITAL ||
+        in.mode == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
+
+        int nSamples = in.nDigitalSamples;
+        {
+            // allocate enought for 64 bits and dbit offset for now
+            // TODO: to be replaced in the future with the actual reserved and
+            // used
+            int32_t num_bytes_per_bit =
+                (nSamples % 8 == 0) ? (nSamples / 8) : (nSamples / 8 + 1);
+            out.nDigitalBytesReserved =
+                max_digital_channels * num_bytes_per_bit;
+            LOG(logDEBUG1) << "Number of Digital Channels:"
+                           << max_digital_channels << " Databytes reserved: "
+                           << out.nDigitalBytesReserved;
+        }
+
+        // remove offset
+        if (in.dbitOffset > 0) {
+            int nBytesReserved = out.nDigitalBytesReserved - in.dbitOffset;
+            nSamples = nBytesReserved / sizeof(uint64_t);
+        }
+        // calculate channels
+        int nChans = in.dbitList.size();
+        if (nChans == 0) {
+            nChans = max_digital_channels;
+        }
+        out.nPixelsX += nChans;
+
+        // calculate actual bytes
+        if (!in.dbitReorder) {
+            uint32_t nBitsPerSample = nChans;
+            if (nBitsPerSample % 8 != 0) {
+                nBitsPerSample += (8 - (nBitsPerSample % 8));
+            }
+            out.nDigitalBytes = (nBitsPerSample / 8) * nSamples;
+        } else {
+            uint32_t nBitsPerSignal = nSamples;
+            if (nBitsPerSignal % 8 != 0) {
+                nBitsPerSignal += (8 - (nBitsPerSignal % 8));
+            }
+            out.nDigitalBytes = nChans * (nBitsPerSignal / 8);
+        }
+        LOG(logDEBUG1) << "Number of Actual Digital Channels:" << nChans
+                       << " Databytes: " << out.nDigitalBytes;
+    }
+
+    // transceiver channels
+    if (in.mode == slsDetectorDefs::TRANSCEIVER_ONLY ||
+        in.mode == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
+        int nTransceiverChans = __builtin_popcount(in.transceiverMask);
+
+        out.nPixelsX += nTransceiverChans;
+        out.nTransceiverBytes = nTransceiverChans *
+                                num_bytes_per_transceiver_channel *
+                                in.nTransceiverSamples;
+        LOG(logDEBUG1) << "Number of Transceiver Channels:" << nTransceiverChans
+                       << " Databytes: " << out.nTransceiverBytes;
+    }
+    return out;
+}
+
 class GeneralData {
 
   public:
@@ -62,7 +166,8 @@ class GeneralData {
     uint32_t transceiverMask{0};
     slsDetectorDefs::frameDiscardPolicy frameDiscardMode{
         slsDetectorDefs::NO_DISCARD};
-
+    /* actual image size after ctboffset and ctbreorder */
+    uint32_t actualImageSize{0};
     GeneralData(){};
     virtual ~GeneralData(){};
 
@@ -196,6 +301,7 @@ class EigerData : public GeneralData {
         dataSize = (tengigaEnable ? 4096 : 1024);
         packetSize = headerSizeinPacket + dataSize;
         imageSize = int(nPixelsX * nPixelsY * GetPixelDepth());
+        actualImageSize = imageSize;
         packetsPerFrame = imageSize / dataSize;
         fifoDepth = (dynamicRange == 32 ? 100 : 1000);
     };
@@ -226,6 +332,7 @@ class JungfrauData : public GeneralData {
         nPixelsX = (256 * 4);
         nPixelsY = (256 * 2) / numUDPInterfaces;
         imageSize = int(nPixelsX * nPixelsY * GetPixelDepth());
+        actualImageSize = imageSize;
         packetsPerFrame = imageSize / dataSize;
         udpSocketBufferSize = (1000 * 1024 * 1024) / numUDPInterfaces;
     };
@@ -257,6 +364,7 @@ class MoenchData : public GeneralData {
         nPixelsX = (400);
         nPixelsY = (400) / numUDPInterfaces;
         imageSize = int(nPixelsX * nPixelsY * GetPixelDepth());
+        actualImageSize = imageSize;
         packetsPerFrame = imageSize / dataSize;
         udpSocketBufferSize = (1000 * 1024 * 1024) / numUDPInterfaces;
     };
@@ -308,6 +416,7 @@ class Mythen3Data : public GeneralData {
         nPixelsX = (NCHAN * ncounters); // max 1280 channels x 3 counters
         LOG(logINFO) << "nPixelsX: " << nPixelsX;
         imageSize = nPixelsX * nPixelsY * GetPixelDepth();
+        actualImageSize = imageSize;
 
         // 10g
         if (tengigaEnable) {
@@ -374,6 +483,7 @@ class Gotthard2Data : public GeneralData {
     void UpdateImageSize() {
         packetSize = headerSizeinPacket + dataSize;
         imageSize = int(nPixelsX * nPixelsY * GetPixelDepth());
+        actualImageSize = imageSize;
         packetsPerFrame = imageSize / dataSize;
         vetoPacketSize = vetoHsize + vetoDataSize;
         vetoImageSize = vetoDataSize * packetsPerFrame;
@@ -384,8 +494,6 @@ class Gotthard2Data : public GeneralData {
 class ChipTestBoardData : public GeneralData {
   private:
     const int NCHAN_DIGITAL = 64;
-    const int NUM_BYTES_PER_ANALOG_CHANNEL = 2;
-    const int NUM_BYTES_PER_TRANSCEIVER_CHANNEL = 8;
     int nAnalogBytes = 0;
     int nDigitalBytes = 0;
     int nTransceiverBytes = 0;
@@ -394,7 +502,7 @@ class ChipTestBoardData : public GeneralData {
     /** Constructor */
     ChipTestBoardData() {
         detType = slsDetectorDefs::CHIPTESTBOARD;
-        nPixelsY = 1; // number of samples
+        nPixelsY = 1;
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
         frameIndexMask = 0xFFFFFF; // 10g
         frameIndexOffset = 8;      // 10g
@@ -404,29 +512,29 @@ class ChipTestBoardData : public GeneralData {
         standardheader = true;
         ctbDbitReorder = true;
         UpdateImageSize();
-    };
+    }
 
   public:
-    int GetNumberOfAnalogDatabytes() { return nAnalogBytes; };
+    int GetNumberOfAnalogDatabytes() { return nAnalogBytes; }
 
-    int GetNumberOfDigitalDatabytes() { return nDigitalBytes; };
+    int GetNumberOfDigitalDatabytes() { return nDigitalBytes; }
 
-    int GetNumberOfTransceiverDatabytes() { return nTransceiverBytes; };
+    int GetNumberOfTransceiverDatabytes() { return nTransceiverBytes; }
 
     void SetNumberOfAnalogSamples(int n) {
         nAnalogSamples = n;
         UpdateImageSize();
-    };
+    }
 
     void SetNumberOfDigitalSamples(int n) {
         nDigitalSamples = n;
         UpdateImageSize();
-    };
+    }
 
     void SetNumberOfTransceiverSamples(int n) {
         nTransceiverSamples = n;
         UpdateImageSize();
-    };
+    }
 
     void SetctbDbitOffset(const int value) { ctbDbitOffset = value; }
 
@@ -437,83 +545,60 @@ class ChipTestBoardData : public GeneralData {
     void SetOneGigaAdcEnableMask(int n) {
         adcEnableMaskOneGiga = n;
         UpdateImageSize();
-    };
+    }
 
     void SetTenGigaAdcEnableMask(int n) {
         adcEnableMaskTenGiga = n;
         UpdateImageSize();
-    };
+    }
 
     void SetTransceiverEnableMask(int n) {
         transceiverMask = n;
         UpdateImageSize();
-    };
+    }
 
     void SetReadoutMode(slsDetectorDefs::readoutMode r) {
         readoutType = r;
         UpdateImageSize();
-    };
+    }
 
     void SetTenGigaEnable(bool tg) {
         tengigaEnable = tg;
         UpdateImageSize();
-    };
+    }
 
   private:
     void UpdateImageSize() {
-        nAnalogBytes = 0;
-        nDigitalBytes = 0;
-        nTransceiverBytes = 0;
-        int nAnalogChans = 0, nDigitalChans = 0, nTransceiverChans = 0;
-        uint64_t digital_bytes_reserved = 0;
+        // used in calculations so cant remove now - TODO: remove later
+        nDigitalBytes = sizeof(uint64_t) * nDigitalSamples;
 
-        // analog channels (normal, analog/digital readout)
-        if (readoutType == slsDetectorDefs::ANALOG_ONLY ||
-            readoutType == slsDetectorDefs::ANALOG_AND_DIGITAL) {
-            uint32_t adcEnableMask =
-                (tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga);
-            nAnalogChans = __builtin_popcount(adcEnableMask);
+        // calculate image size
+        CtbImageInputs inputs{};
+        inputs.nAnalogSamples = nAnalogSamples;
+        inputs.adcMask =
+            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
+        inputs.nTransceiverSamples = nTransceiverSamples;
+        inputs.transceiverMask = transceiverMask;
+        inputs.nDigitalSamples = nDigitalSamples;
+        inputs.dbitOffset = ctbDbitOffset;
+        inputs.dbitList = ctbDbitList;
+        inputs.dbitReorder = ctbDbitReorder;
+        auto out = computeCtbImageSize(inputs);
+        nPixelsX = out.nPixelsX;
+        imageSize = out.nAnalogBytes + out.nDigitalBytesReserved +
+                    out.nTransceiverBytes;
+        // to write to file: after ctb offset and reorder
+        actualImageSize =
+            out.nAnalogBytes + out.nDigitalBytes + out.nTransceiverBytes;
+        LOG(logDEBUG1) << "Actual image size: " << actualImageSize;
 
-            nAnalogBytes =
-                nAnalogChans * NUM_BYTES_PER_ANALOG_CHANNEL * nAnalogSamples;
-            LOG(logDEBUG1) << " Number of Analog Channels:" << nAnalogChans
-                           << " Databytes: " << nAnalogBytes;
-        }
-        // digital channels
-        if (readoutType == slsDetectorDefs::DIGITAL_ONLY ||
-            readoutType == slsDetectorDefs::ANALOG_AND_DIGITAL ||
-            readoutType == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
-            nDigitalChans = NCHAN_DIGITAL;
-            // allocate enough memory to support reordering of digital bits
-            uint32_t num_bytes_per_bit = (nDigitalSamples % 8 == 0)
-                                             ? nDigitalSamples / 8
-                                             : nDigitalSamples / 8 + 1;
-            digital_bytes_reserved = 64 * num_bytes_per_bit;
-            nDigitalBytes = sizeof(uint64_t) * nDigitalSamples;
-            LOG(logDEBUG1) << "Number of Digital Channels:" << nDigitalChans
-                           << " Databytes: " << nDigitalBytes;
-        }
-        // transceiver channels
-        if (readoutType == slsDetectorDefs::TRANSCEIVER_ONLY ||
-            readoutType == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
-            nTransceiverChans = __builtin_popcount(transceiverMask);
-            ;
-            nTransceiverBytes = nTransceiverChans *
-                                NUM_BYTES_PER_TRANSCEIVER_CHANNEL *
-                                nTransceiverSamples;
-            LOG(logDEBUG1) << "Number of Transceiver Channels:"
-                           << nTransceiverChans
-                           << " Databytes: " << nTransceiverBytes;
-        }
-        nPixelsX = nAnalogChans + nDigitalChans + nTransceiverChans;
+        // calculate network parameters
         dataSize = tengigaEnable ? 8144 : UDP_PACKET_DATA_BYTES;
         packetSize = headerSizeinPacket + dataSize;
-        imageSize = nAnalogBytes + digital_bytes_reserved + nTransceiverBytes;
         packetsPerFrame = ceil((double)imageSize / (double)dataSize);
-
         LOG(logDEBUG1) << "Total Number of Channels:" << nPixelsX
                        << " Databytes: " << imageSize;
-    };
+    }
 };
 
 class XilinxChipTestBoardData : public GeneralData {
@@ -572,11 +657,6 @@ class XilinxChipTestBoardData : public GeneralData {
 
     void SetctbDbitReorder(const bool value) { ctbDbitReorder = value; }
 
-    void SetOneGigaAdcEnableMask(int n) {
-        adcEnableMaskOneGiga = n;
-        UpdateImageSize();
-    };
-
     void SetTenGigaAdcEnableMask(int n) {
         adcEnableMaskTenGiga = n;
         UpdateImageSize();
@@ -594,53 +674,30 @@ class XilinxChipTestBoardData : public GeneralData {
 
   private:
     void UpdateImageSize() {
-        nAnalogBytes = 0;
-        nDigitalBytes = 0;
-        nTransceiverBytes = 0;
-        int nAnalogChans = 0, nDigitalChans = 0, nTransceiverChans = 0;
-        uint64_t digital_bytes_reserved = 0;
+        // used in calculations so cant remove now - TODO: remove later
+        nDigitalBytes = sizeof(uint64_t) * nDigitalSamples;
 
-        // analog channels (normal, analog/digital readout)
-        if (readoutType == slsDetectorDefs::ANALOG_ONLY ||
-            readoutType == slsDetectorDefs::ANALOG_AND_DIGITAL) {
-            uint32_t adcEnableMask = adcEnableMaskTenGiga;
-            nAnalogChans = __builtin_popcount(adcEnableMask);
+        // calculate image size
+        CtbImageInputs inputs{};
+        inputs.nAnalogSamples = nAnalogSamples;
+        inputs.adcMask = adcEnableMaskTenGiga;
+        inputs.nTransceiverSamples = nTransceiverSamples;
+        inputs.transceiverMask = transceiverMask;
+        inputs.nDigitalSamples = nDigitalSamples;
+        inputs.dbitOffset = ctbDbitOffset;
+        inputs.dbitList = ctbDbitList;
+        inputs.dbitReorder = ctbDbitReorder;
+        auto out = computeCtbImageSize(inputs);
+        nPixelsX = out.nPixelsX;
+        imageSize = out.nAnalogBytes + out.nDigitalBytesReserved +
+                    out.nTransceiverBytes;
+        // to write to file: after ctb offset and reorder
+        actualImageSize =
+            out.nAnalogBytes + out.nDigitalBytes + out.nTransceiverBytes;
+        LOG(logDEBUG1) << "Actual image size: " << actualImageSize;
 
-            nAnalogBytes =
-                nAnalogChans * NUM_BYTES_PER_ANALOG_CHANNEL * nAnalogSamples;
-            LOG(logDEBUG1) << " Number of Analog Channels:" << nAnalogChans
-                           << " Databytes: " << nAnalogBytes;
-        }
-        // digital channels
-        if (readoutType == slsDetectorDefs::DIGITAL_ONLY ||
-            readoutType == slsDetectorDefs::ANALOG_AND_DIGITAL ||
-            readoutType == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
-            nDigitalChans = NCHAN_DIGITAL;
-            uint32_t num_bytes_per_bit = (nDigitalSamples % 8 == 0)
-                                             ? nDigitalSamples / 8
-                                             : nDigitalSamples / 8 + 1;
-            digital_bytes_reserved = 64 * num_bytes_per_bit;
-            nDigitalBytes = sizeof(uint64_t) * nDigitalSamples;
-            LOG(logDEBUG1) << "Number of Digital Channels:" << nDigitalChans
-                           << " Databytes: " << nDigitalBytes;
-        }
-        // transceiver channels
-        if (readoutType == slsDetectorDefs::TRANSCEIVER_ONLY ||
-            readoutType == slsDetectorDefs::DIGITAL_AND_TRANSCEIVER) {
-            nTransceiverChans = __builtin_popcount(transceiverMask);
-            ;
-            nTransceiverBytes = nTransceiverChans *
-                                NUM_BYTES_PER_TRANSCEIVER_CHANNEL *
-                                nTransceiverSamples;
-            LOG(logDEBUG1) << "Number of Transceiver Channels:"
-                           << nTransceiverChans
-                           << " Databytes: " << nTransceiverBytes;
-        }
-        nPixelsX = nAnalogChans + nDigitalChans + nTransceiverChans;
-
-        imageSize = nAnalogBytes + digital_bytes_reserved + nTransceiverBytes;
+        // calculate network parameters
         packetsPerFrame = ceil((double)imageSize / (double)dataSize);
-
         LOG(logDEBUG1) << "Total Number of Channels:" << nPixelsX
                        << " Databytes: " << imageSize;
     };

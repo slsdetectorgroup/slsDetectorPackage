@@ -1449,7 +1449,7 @@ class Detector {
                      Positions pos = {});
 
     /** [Gotthard2]  */
-    Result<defs::burstMode> getBurstMode(Positions pos = {});
+    Result<defs::burstMode> getBurstMode(Positions pos = {}) const;
 
     /** [Gotthard2]  BURST_INTERNAL (default), BURST_EXTERNAL,
      * CONTINUOUS_INTERNAL, CONTINUOUS_EXTERNAL. Also changes clkdiv 2, 3, 4 */

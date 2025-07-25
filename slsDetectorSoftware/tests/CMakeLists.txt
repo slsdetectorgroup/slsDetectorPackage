@@ -17,6 +17,8 @@ target_sources(tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-xilinx-chiptestboard.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-moench.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-global.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-acquire.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Caller/test-Caller-master-attributes.cpp
 
     
     ${CMAKE_CURRENT_SOURCE_DIR}/test-Result.cpp
@@ -34,10 +36,17 @@ if (SLS_USE_HDF5)
     )
 endif (SLS_USE_HDF5)
 
+target_compile_options(tests
+    PRIVATE
+    # Suppress warnings for deprecated functions in rapidjson
+        -Wno-deprecated-declarations
+) 
+
 target_include_directories(tests 
     PUBLIC 
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../src>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/sls>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../slsReceiverSoftware/src>"
     PRIVATE
     ${SLS_INTERNAL_RAPIDJSON_DIR}
 )

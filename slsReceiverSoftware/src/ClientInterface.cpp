@@ -221,7 +221,7 @@ int ClientInterface::functionTable(){
     flist[F_GET_RECEIVER_DBIT_REORDER]      =   &ClientInterface::get_dbit_reorder;
     flist[F_SET_RECEIVER_DBIT_REORDER]      =   &ClientInterface::set_dbit_reorder;
     flist[F_RECEIVER_GET_ROI_METADATA]      =   &ClientInterface::get_roi_metadata;
-
+    flist[F_SET_RECEIVER_READOUT_SPEED]     =   &ClientInterface::set_readout_speed;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -411,6 +411,8 @@ int ClientInterface::setup_receiver(Interface &socket) {
             impl()->setReadoutMode(arg.roMode);
             impl()->setTenGigaADCEnableMask(arg.adc10gMask);
             impl()->setTransceiverEnableMask(arg.transceiverMask);
+        } else {
+            impl()->setReadoutSpeed(arg.readoutSpeed);
         }
         if (detType == CHIPTESTBOARD) {
             impl()->setADCEnableMask(arg.adcMask);
@@ -1849,6 +1851,35 @@ int ClientInterface::get_roi_metadata(Interface &socket) {
     if (size > 0)
         socket.Send(retvals);
     return OK;
+}
+
+int ClientInterface::set_readout_speed(Interface &socket) {
+    auto value = socket.Receive<int>();
+    verifyIdle(socket);
+    switch (detType) {
+    case GOTTHARD2:
+        if (value != G2_108MHZ && value != G2_144MHZ)
+            throw RuntimeError("Invalid readout speed for GOTTHARD2: " +
+                               std::to_string(value));
+        break;
+
+    case EIGER:
+    case JUNGFRAU:
+    case MYTHEN3:
+    case MOENCH:
+        if (value < 0 || value > QUARTER_SPEED) {
+            throw RuntimeError("Invalid readout speed: " +
+                               std::to_string(value));
+        }
+        break;
+
+    default:
+        functionNotImplemented();
+    }
+
+    LOG(logDEBUG1) << "Setting readout speed to " << value;
+    impl()->setReadoutSpeed(static_cast<speedLevel>(value));
+    return socket.Send(OK);
 }
 
 } // namespace sls

@@ -908,7 +908,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.detType = generalData->detType;
             masterAttributes.timingMode = timingMode;
             masterAttributes.geometry = numPorts;
-            masterAttributes.imageSize = generalData->imageSize;
+            masterAttributes.imageSize = generalData->actualImageSize;
             masterAttributes.nPixels =
                 xy(generalData->nPixelsX, generalData->nPixelsY);
             masterAttributes.maxFramesPerFile = generalData->framesPerFile;
@@ -943,7 +943,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.quad = quadEnable;
             masterAttributes.readNRows = readNRows;
             masterAttributes.ratecorr = rateCorrections;
-            masterAttributes.adcmask = generalData->tengigaEnable
+            masterAttributes.adcMask = generalData->tengigaEnable
                                            ? generalData->adcEnableMaskTenGiga
                                            : generalData->adcEnableMaskOneGiga;
             masterAttributes.analog =
@@ -959,12 +959,12 @@ void Implementation::StartMasterWriter() {
                     ? 1
                     : 0;
             masterAttributes.digitalSamples = generalData->nDigitalSamples;
-            masterAttributes.dbitoffset = generalData->ctbDbitOffset;
-            masterAttributes.dbitreorder = generalData->ctbDbitReorder;
-            masterAttributes.dbitlist = 0;
+            masterAttributes.dbitOffset = generalData->ctbDbitOffset;
+            masterAttributes.dbitReorder = generalData->ctbDbitReorder;
+            masterAttributes.dbitList = 0;
 
             for (auto &i : generalData->ctbDbitList) {
-                masterAttributes.dbitlist |= (static_cast<uint64_t>(1) << i);
+                masterAttributes.dbitList |= (static_cast<uint64_t>(1) << i);
             }
             masterAttributes.transceiverSamples =
                 generalData->nTransceiverSamples;
@@ -983,6 +983,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.gateDelayArray[2] = gateDelay3;
             masterAttributes.gates = numberOfGates;
             masterAttributes.additionalJsonHeader = additionalJsonHeader;
+            masterAttributes.readoutSpeed = readoutSpeed;
 
             // create master file
             masterFileName = dataProcessor[0]->CreateMasterFile(
@@ -1779,6 +1780,15 @@ void Implementation::setTransceiverEnableMask(uint32_t mask) {
     LOG(logINFO) << "Transceiver Enable Mask: 0x" << std::hex
                  << generalData->transceiverMask << std::dec;
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
+}
+
+slsDetectorDefs::speedLevel Implementation::getReadoutSpeed() const {
+    return readoutSpeed;
+}
+
+void Implementation::setReadoutSpeed(const slsDetectorDefs::speedLevel i) {
+    readoutSpeed = i;
+    LOG(logINFO) << "Readout Speed: " << ToString(readoutSpeed);
 }
 
 /**************************************************

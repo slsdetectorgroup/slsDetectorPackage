@@ -932,9 +932,9 @@ void init_det(py::module &m) {
                            Detector::setRxArping,
                        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getRxROI",
-                       (std::vector<defs::ROI> (Detector::*)(int) const) &
+                       (std::vector<defs::ROI>(Detector::*)(int) const) &
                            Detector::getRxROI,
-                       py::arg());
+                       py::arg() = -1);
     CppDetectorApi.def("setRxROI",
                        (void (Detector::*)(const std::vector<defs::ROI> &)) &
                            Detector::setRxROI,
@@ -1349,10 +1349,11 @@ void init_det(py::module &m) {
         (void (Detector::*)(const int, const std::string &, sls::Positions)) &
             Detector::setVetoFile,
         py::arg(), py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("getBurstMode",
-                       (Result<defs::burstMode>(Detector::*)(sls::Positions)) &
-                           Detector::getBurstMode,
-                       py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getBurstMode",
+        (Result<defs::burstMode>(Detector::*)(sls::Positions) const) &
+            Detector::getBurstMode,
+        py::arg() = Positions{});
     CppDetectorApi.def("setBurstMode",
                        (void (Detector::*)(defs::burstMode, sls::Positions)) &
                            Detector::setBurstMode,

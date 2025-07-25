@@ -7,8 +7,9 @@ This file is used to start up simulators, receivers and test roi for every detec
 import sys, time
 import traceback
 
-from slsdet import Detector
+from slsdet import Detector, burstMode
 from slsdet.defines import DEFAULT_TCP_RX_PORTNO, DEFAULT_UDP_DST_PORTNO
+from datetime import timedelta
 
 
 from utils_for_test import (
@@ -19,6 +20,7 @@ from utils_for_test import (
     startProcessInBackground,
     startDetectorVirtualServer,
     connectToVirtualServers,
+    loadBasicSettings,
     runProcessWithLogFile
 )
 
@@ -88,6 +90,7 @@ def startTestsForAll(fp):
                 startDetectorVirtualServer(server, nmods, fp)
                 startReceiver(nmods, fp)
                 d = loadConfigForRoi(name=server, fp=fp, num_mods=nmods, num_interfaces=ninterfaces)
+                loadBasicSettings(name=server, d=d, fp=fp)
 
                 fname = ROI_TEST_FNAME + server + '.txt'
                 cmd = ['tests', 'rx_roi', '--abort', '-s']

@@ -126,6 +126,9 @@ class slsDetectorDefs {
         int y{0};
         xy() = default;
         xy(int x, int y) : x(x), y(y){};
+        constexpr bool operator==(const xy &other) const {
+            return ((x == other.x) && (y == other.y));
+        }
     } __attribute__((packed));
 #endif
 
@@ -548,7 +551,7 @@ enum streamingInterface {
               stepSize(step) {
             dacSettleTime_ns = t.count();
         }
-        bool operator==(const scanParameters &other) const {
+        constexpr bool operator==(const scanParameters &other) const {
             return ((enable == other.enable) && (dacInd == other.dacInd) &&
                     (startOffset == other.startOffset) &&
                     (stopOffset == other.stopOffset) &&
@@ -663,6 +666,7 @@ enum streamingInterface {
         scanParameters scanParams{};
         int transceiverSamples{0};
         uint32_t transceiverMask{0};
+        speedLevel readoutSpeed{FULL_SPEED};
     } __attribute__((packed));
 #endif
 

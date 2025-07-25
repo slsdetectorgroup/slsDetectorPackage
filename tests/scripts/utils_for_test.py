@@ -7,8 +7,9 @@ This file is used for common utils used for integration tests between simulators
 import sys, subprocess, time, argparse
 from enum import Enum
 from colorama import Fore, Style, init
+from datetime import timedelta
 
-from slsdet import Detector, detectorSettings
+from slsdet import Detector, detectorSettings, burstMode
 from slsdet.defines import DEFAULT_TCP_RX_PORTNO, DEFAULT_UDP_DST_PORTNO
 SERVER_START_PORTNO=1900
 
@@ -156,7 +157,7 @@ def startDetectorVirtualServer(name :str, num_mods, fp):
     for i in range(num_mods):
         port_no = SERVER_START_PORTNO + (i * 2)
         cmd = [name + 'DetectorServer_virtual', '-p', str(port_no)]
-        startProcessInBackgroundWithLogFile(cmd, fp, "/tmp/virtual_det_" + name + str(i) + ".txt")
+        startProcessInBackgroundWithLogFile(cmd, fp, "/tmp/virtual_det_" + name + "_" + str(i) + ".txt")
         match name:
             case 'jungfrau':
                 time.sleep(7)
@@ -215,13 +216,43 @@ def loadConfig(name, rx_hostname, settingsdir, fp, num_mods = 1, num_frames = 1)
             d.setThresholdEnergy(4500, detectorSettings.STANDARD)
 
         d.frames = num_frames
+      
     except Exception as e:
         raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
     
     return d
 
+# for easy acquire
+def loadBasicSettings(name, d, fp):
+    Log(LogLevel.INFO, 'Loading basic settings for ' + name)
+    Log(LogLevel.INFO, 'Loading basic settings for ' + name, fp)
+    try:
+        # basic settings for easy acquire
+        if name == "jungfrau":
+            d.exptime = timedelta(microseconds = 200)
+            d.readnrows = 512
+        elif name == "moench":
+            d.exptime = timedelta(microseconds = 200)
+            d.readnrows = 400
+        elif name == "eiger":
+            d.exptime = timedelta(microseconds = 200)
+            d.readnrows = 256
+            d.dr = 16
+        elif name == "mythen3":
+            d.setExptime(-1, timedelta(microseconds = 200))
+            d.dr = 16
+            d.counters = [0, 1]
+        elif name == "gotthard2":
+            d.exptime = timedelta(microseconds = 200)
+            d.burstmode = burstMode.CONTINUOUS_EXTERNAL
+            d.bursts = 1
+            d.burstperiod = 0
+        d.period = timedelta(milliseconds = 2)
 
-def ParseArguments(description, default_num_mods=1):
+    except Exception as e:
+        raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
+    
+def ParseArguments(description, default_num_mods=1, markers=0):
     parser = argparse.ArgumentParser(description)
 
     parser.add_argument('rx_hostname', nargs='?', default='localhost',
@@ -234,6 +265,9 @@ def ParseArguments(description, default_num_mods=1):
                         help='Number of frames to test with')
     parser.add_argument('-s', '--servers', nargs='*',
                         help='Detector servers to run')
+    if markers == 1:
+        parser.add_argument('-m', '--markers', nargs='?', default ='[.cmdcall]',
+                        help = 'Markers to use for cmd tests, default: [.cmdcall]')
 
     args = parser.parse_args()
 
@@ -249,11 +283,17 @@ def ParseArguments(description, default_num_mods=1):
             'xilinx_ctb'
         ]
 
-    Log(LogLevel.INFO, 'Arguments:\n' + 
-        'rx_hostname: ' + args.rx_hostname + 
-        '\nsettingspath: \'' + args.settingspath + 
-        '\nservers: \'' + ' '.join(args.servers) + 
-        '\nnum_mods: \'' + str(args.num_mods) + 
-        '\nnum_frames: \'' + str(args.num_frames) + '\'') 
+    msg = (
+        'Arguments:\n'
+        f'rx_hostname: {args.rx_hostname}\n'
+        f"settingspath: '{args.settingspath}'\n"
+        f"servers: '{' '.join(args.servers)}'\n"
+        f"num_mods: '{args.num_mods}'\n"
+        f"num_frames: '{args.num_frames}'"
+    )
+    if markers == 1:
+        msg += f"\nmarkers: '{args.markers}'"
+    Log(LogLevel.INFO, msg)
+
 
     return args   

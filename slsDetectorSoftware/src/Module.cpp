@@ -657,9 +657,16 @@ void Module::setExptime(int gateIndex, int64_t value) {
     int64_t args[]{static_cast<int64_t>(gateIndex), value};
     sendToDetector(F_SET_EXPTIME, args, nullptr);
     if (shm()->useReceiverFlag) {
+        // get exact value due to clk
+        if (shm()->detType == MYTHEN3 && gateIndex == -1) {
+            value = getExptime(0); // m3 does not support -1
+        } else {
+            value = getExptime(gateIndex); // others only support -1
+        }
+        args[1] = value;
         sendToReceiver(F_RECEIVER_SET_EXPTIME, args, nullptr);
     }
-    if (prevVal != value) {
+    if (shm()->detType == EIGER && prevVal != value) {
         updateRateCorrection();
     }
 }
@@ -671,6 +678,7 @@ int64_t Module::getPeriod() const {
 void Module::setPeriod(int64_t value) {
     sendToDetector(F_SET_PERIOD, value, nullptr);
     if (shm()->useReceiverFlag) {
+        value = getPeriod(); // get exact value due to clk
         sendToReceiver(F_RECEIVER_SET_PERIOD, value, nullptr);
     }
 }
@@ -749,6 +757,9 @@ slsDetectorDefs::speedLevel Module::getReadoutSpeed() const {
 
 void Module::setReadoutSpeed(speedLevel value) {
     sendToDetector(F_SET_READOUT_SPEED, value, nullptr);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_SET_RECEIVER_READOUT_SPEED, value, nullptr);
+    }
 }
 
 int Module::getClockDivider(int clkIndex) const {
@@ -1777,6 +1788,7 @@ void Module::setSubExptime(int64_t value) {
     }
     sendToDetector(F_SET_SUB_EXPTIME, value, nullptr);
     if (shm()->useReceiverFlag) {
+        value = getSubExptime(); // get exact value due to clk
         sendToReceiver(F_RECEIVER_SET_SUB_EXPTIME, value, nullptr);
     }
     if (prevVal != value) {
@@ -1791,6 +1803,7 @@ int64_t Module::getSubDeadTime() const {
 void Module::setSubDeadTime(int64_t value) {
     sendToDetector(F_SET_SUB_DEADTIME, value, nullptr);
     if (shm()->useReceiverFlag) {
+        value = getSubDeadTime(); // get exact value due to clk
         sendToReceiver(F_RECEIVER_SET_SUB_DEADTIME, value, nullptr);
     }
 }
@@ -2288,6 +2301,8 @@ void Module::setBurstMode(slsDetectorDefs::burstMode value) {
     sendToDetector(F_SET_BURST_MODE, value, nullptr);
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_BURST_MODE, value, nullptr);
+        // changing burst mode may change exptime due to clk change
+        setExptime(-1, getExptime(-1)); // update exact exptime in receiver
     }
 }
 
@@ -2379,6 +2394,9 @@ void Module::setGateDelay(int gateIndex, int64_t value) {
     int64_t args[]{static_cast<int64_t>(gateIndex), value};
     sendToDetector(F_SET_GATE_DELAY, args, nullptr);
     if (shm()->useReceiverFlag) {
+        // get exact value due to clk
+        args[1] =
+            getGateDelay(gateIndex == -1 ? 0 : gateIndex); // m3 doesnt allow -1
         sendToReceiver(F_SET_RECEIVER_GATE_DELAY, args, nullptr);
     }
 }

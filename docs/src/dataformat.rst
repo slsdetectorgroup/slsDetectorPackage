@@ -39,12 +39,12 @@ If both interfaces are enabled using the ``numinterfaces`` command on compatible
 
 The number of files per module equals the active UDP ports—two files per module when both interfaces are used.
 
-Image size per UDP port = 262,144 bytes
+Image size per UDP port or File = 262,144 bytes
     - **Complete Image size / 2**
 
 
 
-Special Cases
+Special Case
 ^^^^^^^^^^^^^^
 
 .. image:: images/Jungfrau_read_rows.png
@@ -69,6 +69,25 @@ Moench
 Eiger
 -------------
 
+Default Configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. image:: images/Eiger_module.png
+   :width: 550px
+   :align: center
+   :alt: Eiger Module Default Configuration
+
+
+Each Eiger module has two independent identical readout systems (other than firmware), each with its own control port and ``hostname`` to be configured with. They are referred to as the 'top' and 'bottom' half modules. The bottom half module is flipped vertically.
+
+Each half module has 2 parallel UDP ports for 2 chips each. The left UDP port is configured with ``udp_dstport``, while the right UDP port is configured with ``udp_dstport2``. This is vice versa for the bottom half module.
+
+The pixel width can be 4, 8, 16 (default) or 32 bits.
+
+Image size per UDP port or File = 262,144 bytes 
+   - 2 chips (2 x 4 grid)
+   - 256 x 256 pixels (chip size)
+   - 2 bytes (default pixel width)
 
 Mythen3 
 -------------

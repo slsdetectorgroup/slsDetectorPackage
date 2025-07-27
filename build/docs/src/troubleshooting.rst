@@ -238,7 +238,7 @@ Receiver PC Tuning Options
 
         2. ``ETHTOOL_OPTS in ifcfg scripts`` (legacy method for RHEL 7 and earlier)
 
-            This method applies only to systems using the legacy network-scripts backend, typically RHEL 7 and earlier. It will not apply on systems using NetworkManager, such as modern Fedora or RHEL 8+.
+            This method applies only to systems using the legacy network-scripts backend, typically RHEL 7 and earlier. 
 
             .. code-block:: bash
 

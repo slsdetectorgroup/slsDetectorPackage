@@ -61,10 +61,65 @@ Total image size = 32,768 bytes
    - **8** x 256 pixels (chip size: **8 rows**)
    - 2 bytes (pixel width)
 
+Note: Still in prototype stage, writes complete image (padded or not depending on ``framepadding`` parameter) to file. Only the summary written to console in the receiver handles the read n rows to calculate complete images received. Only reduces network load, not file size. Use ``rx_roi`` for file size.
 
 Moench
 -------------
 
+Single Port Configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. image:: images/Moench_module.png
+   :width: 550px
+   :align: center
+   :alt: Moench Module Single Port Configuration
+
+By default, only the outer 10GbE interface is enabled, transmitting the full image over a single UDP port. This results in one file per module containing the complete image.
+
+Total image size = 320,000 bytes 
+   - 400 x 400 pixels (chip size)
+   - 2 bytes (pixel width)
+
+
+
+Double Port Configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. image:: images/Moench_two_port.png
+   :width: 400px
+   :align: center
+   :alt: Moench Module Two Port Configuration
+
+If both interfaces are enabled using the ``numinterfaces`` command on compatible hardware and firmware, the image splits into top and bottom halves sent over two UDP ports:
+
+   - The top half transmits via the inner interface (``udp_dstport2`` and ``udp_dstip2``).
+
+   - The bottom half uses the outer interface(``udp_dstport`` and ``udp_dstip``).
+
+The number of files per module equals the active UDP ports—two files per module when both interfaces are used.
+
+Image size per UDP port or File = 160,000 bytes
+    - **Complete Image size / 2**
+
+
+
+Read Partial Rows
+^^^^^^^^^^^^^^^^^^
+
+.. image:: images/Moench_read_rows.png
+   :width: 400px
+   :align: center
+   :alt: Moench Module Read Partial Rows Configuration
+
+
+The number of image rows per port can be adjusted using the ``readnrows`` command. By default, 400 rows are read, but a smaller value centers the readout vertically (e.g., 16 rows reads 8 above and 8 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values are multiples of 16.
+
+
+Total image size = 12,800 bytes 
+   - **16** x 400 pixels (chip size: **16 rows**)
+   - 2 bytes (pixel width)
+
+Note: Still in prototype stage, writes complete image (padded or not depending on ``framepadding`` parameter) to file. Only the summary written to console in the receiver handles the read n rows to calculate complete images received. Only reduces network load, not file size. Use ``rx_roi`` for file size.
 
 Eiger
 -------------
@@ -109,8 +164,7 @@ Reducing network load
 
 Note: Only the activated ports will write data as it does not make sense to write an empty file.
 
-Read Partial Rows
-^^^^^^^^^^^^^^^^^^
+**Read Partial Rows**: The number of image rows per port can be adjusted using the ``readnrows`` command. By default, 256 rows are read, but a smaller value centers the readout vertically (e.g., 8 rows reads 4 above and 4 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values depend on dynamic range and 10GbE enable.
 
 .. image:: images/Eiger_read_rows.png
    :width: 500px
@@ -118,7 +172,6 @@ Read Partial Rows
    :alt: Jungfrau Module Read Partial Rows Configuration
 
 
-The number of image rows per port can be adjusted using the ``readnrows`` command. By default, 256 rows are read, but a smaller value centers the readout vertically (e.g., 8 rows reads 4 above and 4 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values depend on dynamic range and 10GbE enable.
 
 
 Total image size per UDP Port = 8,192 bytes 
@@ -126,6 +179,7 @@ Total image size per UDP Port = 8,192 bytes
    - **8** x 256 pixels (chip size: **8 rows**)
    - 2 bytes (default pixel width)
 
+Note: Still in prototype stage, writes complete image (padded or not depending on ``framepadding`` parameter) to file. Only the summary written to console in the receiver handles the read n rows to calculate complete images received. Only reduces network load, not file size. Use ``rx_roi`` for file size.
 
 Mythen3 
 -------------

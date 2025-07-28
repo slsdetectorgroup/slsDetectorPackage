@@ -10,7 +10,7 @@ Single Port Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. image:: images/Jungfrau_module.png
-   :width: 700px
+   :width: 650px
    :align: center
    :alt: Jungfrau Module Single Port Configuration
 
@@ -44,16 +44,16 @@ Image size per UDP port or File = 262,144 bytes
 
 
 
-Special Case
-^^^^^^^^^^^^^^
+Read Partial Rows
+^^^^^^^^^^^^^^^^^^
 
 .. image:: images/Jungfrau_read_rows.png
-   :width: 500px
+   :width: 550px
    :align: center
    :alt: Jungfrau Module Read Partial Rows Configuration
 
 
-The number of image rows per port can be adjusted using the ``readnrows`` command. By default, 512 rows are read, but a smaller value centers the readout vertically (e.g., 8 rows reads 4 above and 4 below the center). Increasing the value symmetrically expands the region toward the top and bottom.
+The number of image rows per port can be adjusted using the ``readnrows`` command. By default, 512 rows are read, but a smaller value centers the readout vertically (e.g., 8 rows reads 4 above and 4 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values are multiples of 8.
 
 
 Total image size = 32,768 bytes 
@@ -73,7 +73,7 @@ Default Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. image:: images/Eiger_module.png
-   :width: 550px
+   :width: 450px
    :align: center
    :alt: Eiger Module Default Configuration
 
@@ -82,12 +82,50 @@ Each Eiger module has two independent identical readout systems (other than firm
 
 Each half module has 2 parallel UDP ports for 2 chips each. The left UDP port is configured with ``udp_dstport``, while the right UDP port is configured with ``udp_dstport2``. This is vice versa for the bottom half module.
 
-The pixel width can be 4, 8, 16 (default) or 32 bits.
 
 Image size per UDP port or File = 262,144 bytes 
-   - 2 chips (2 x 4 grid)
+   - 2 chips (1 x 2 grid)
    - 256 x 256 pixels (chip size)
    - 2 bytes (default pixel width)
+
+
+Pixel width
+^^^^^^^^^^^^^
+
+The pixel width can be configured to 4, 8, 16 (default) or 32 bits using the command ``dr``. This affects image size per UDP port or file.
+
+Flip rows
+^^^^^^^^^^
+
+One can use the command ``fliprows`` along with a ``true`` to flip the rows vertically for the bottom or top half module. It is sent out to the reciever, but does not flip rows in the output file itself, but rather streams out this info via the json header and thus instructs the GUI to display them correctly.
+
+Reducing network load
+^^^^^^^^^^^^^^^^^^^^^^
+
+**Activate**: By default, the ``hostname`` command activates the half module, and therefore, all UDP ports are enabled. One can deactivate a whole half module (ie. 2 UDP ports) using command  ``activate`` with the ``false`` argument. This will disable both UDP ports of the half module and no data will be transmitted from it.
+
+
+**Datastream**: The ``datastream`` command with arguments ``left`` or ``right``, along with ``false`` can be used to disable the data streaming from one or all of the two UDP ports in a half module. This allows for more flexible configurations, such as reading only two chips or one UDP port of a half module. 
+
+Note: Only the activated ports will write data as it does not make sense to write an empty file.
+
+Read Partial Rows
+^^^^^^^^^^^^^^^^^^
+
+.. image:: images/Eiger_read_rows.png
+   :width: 500px
+   :align: center
+   :alt: Jungfrau Module Read Partial Rows Configuration
+
+
+The number of image rows per port can be adjusted using the ``readnrows`` command. By default, 256 rows are read, but a smaller value centers the readout vertically (e.g., 8 rows reads 4 above and 4 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values depend on dynamic range and 10GbE enable.
+
+
+Total image size per UDP Port = 8,192 bytes 
+   - 2 chips (1 x 2 grid)
+   - **8** x 256 pixels (chip size: **8 rows**)
+   - 2 bytes (default pixel width)
+
 
 Mythen3 
 -------------

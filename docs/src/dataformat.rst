@@ -10,6 +10,7 @@ Single Port Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. image:: images/Jungfrau_module.png
+   :target: _images/Jungfrau_module.png
    :width: 650px
    :align: center
    :alt: Jungfrau Module Single Port Configuration
@@ -27,6 +28,7 @@ Double Port Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. image:: images/Jungfrau_two_port.png
+   :target: _images/Jungfrau_two_port.png
    :width: 500px
    :align: center
    :alt: Jungfrau Module Two Port Configuration
@@ -48,6 +50,7 @@ Read Partial Rows
 ^^^^^^^^^^^^^^^^^^
 
 .. image:: images/Jungfrau_read_rows.png
+   :target: _images/Jungfrau_read_rows.png
    :width: 550px
    :align: center
    :alt: Jungfrau Module Read Partial Rows Configuration
@@ -70,6 +73,7 @@ Single Port Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. image:: images/Moench_module.png
+   :target: _images/Moench_module.png
    :width: 550px
    :align: center
    :alt: Moench Module Single Port Configuration
@@ -86,6 +90,7 @@ Double Port Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. image:: images/Moench_two_port.png
+   :target: _images/Moench_two_port.png
    :width: 400px
    :align: center
    :alt: Moench Module Two Port Configuration
@@ -107,6 +112,7 @@ Read Partial Rows
 ^^^^^^^^^^^^^^^^^^
 
 .. image:: images/Moench_read_rows.png
+   :target: _images/Moench_read_rows.png
    :width: 400px
    :align: center
    :alt: Moench Module Read Partial Rows Configuration
@@ -128,7 +134,8 @@ Default Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. image:: images/Eiger_module.png
-   :width: 450px
+   :target: _images/Eiger_module.png
+   :width: 350px
    :align: center
    :alt: Eiger Module Default Configuration
 
@@ -154,6 +161,11 @@ Flip rows
 
 One can use the command ``fliprows`` along with a ``true`` to flip the rows vertically for the bottom or top half module. It is sent out to the reciever, but does not flip rows in the output file itself, but rather streams out this info via the json header and thus instructs the GUI to display them correctly.
 
+1G/ 10GbE Interfaces
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Each UDP port in the figure above has a 1G and a 10GbE interface. The 1G interface is used for control and configuration, but also for data transmission, while the 10GbE interface is used only for data transmission. The 1GbE interface is enabled by default, but can be enabled using the ``tengiga`` command and updating the appropriate udp_* commands. This setting only affects packetsize and number of packets, but does not affect the total image size. 
+
 Reducing network load
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -167,7 +179,8 @@ Note: Only the activated ports will write data as it does not make sense to writ
 **Read Partial Rows**: The number of image rows per port can be adjusted using the ``readnrows`` command. By default, 256 rows are read, but a smaller value centers the readout vertically (e.g., 8 rows reads 4 above and 4 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values depend on dynamic range and 10GbE enable.
 
 .. image:: images/Eiger_read_rows.png
-   :width: 500px
+   :target: _images/Eiger_read_rows.png
+   :width: 400px
    :align: center
    :alt: Jungfrau Module Read Partial Rows Configuration
 
@@ -185,9 +198,70 @@ Mythen3
 -------------
 
 
+
+Default Configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. image:: images/Mythen3_module.png
+   :target: _images/Mythen3_module.png
+   :align: center
+   :alt: Mythen3 Module Default Configuration
+
+Each Mythen3 module is a 1D detector with 10 chips, each with 128 channels. Each channel has 3 counters that are enabled by default.
+
+Image size = 15,360 bytes 
+   - 10 chips (1 x 10 grid)
+   - 128 channels
+   - 3 counters
+   - 4 bytes (default pixel width)
+
+Counters
+^^^^^^^^^^^
+
+If all 3 counters are enabeld, the frame size for each channel is multiplied by 3. One can disable one or more of the counters using the ``counters`` command. The frame size will then be reduced accordingly.
+
+Image size = 10,240 bytes 
+   - 10 chips (1 x 10 grid)
+   - 128 channels
+   - 2 counters (0, 1 enabled)
+   - 4 bytes (default pixel width)
+
+Pixel width
+^^^^^^^^^^^^^
+
+The pixel width can be configured to 8, 16 or 32 (default) bits using the command ``dr``. 32 bits is actually 24 bits in the chip. This setting does affect image size.
+
+1G/ 10GbE Interfaces
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Each module has a 1G and a 10GbE interface. The 1G interface is used for control and configuration, but also for data transmission, while the 10GbE interface is used only for data transmission. The 10GbE interface is enabled by default, but can be disabled using the ``tengiga`` command and updating the appropriate udp_* commands. This setting only affects packetsize and number of packets, but does not affect the total image size. 
+
 Gotthard2
 -------------
 
 
+Default Configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. image:: images/Gotthard2_module.png
+   :target: _images/Gotthard2_module.png
+   :align: center
+   :alt: Gotthard2 Module Default Configuration
+
+Each Gotthard2 module is a 1D detector with 10 chips, each with 128 channels. 
+
+Image size = 2,560 bytes 
+   - 10 chips (1 x 10 grid)
+   - 128 channels
+   - 2 bytes (pixel width)
+
+Veto Info
+^^^^^^^^^^^
+
+One can enable veto data in the chip of the Gotthard2 module using the ``veto`` command. By default, this is disabled. This does not affect the image size as veto information is not sent out through the same 10GbE interface.
+
+One can either stream out the veto info through the low latency link (2.5 gbps) or for debugging purposes through another 10GbE interface.
+
+For debugging purposes, the veto info can be enabled using the ``numinterfaces`` command and the following parameters are updated: ``udp_dstport2`` and ``udp_dstip2``. The veto data from this port is of course written to a separate file and is not combined in the virtual HDF5 file mapping (complete image mapped).
 
 

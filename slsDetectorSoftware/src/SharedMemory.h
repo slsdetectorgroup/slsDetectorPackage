@@ -10,6 +10,7 @@
  *@short functions basic implemenation of shared memory
  */
 
+#include "sls/TypeTraits.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
 
@@ -33,6 +34,11 @@ struct sharedDetector;
 #define SHM_ENV_NAME        "SLSDETNAME"
 
 template <typename T> class SharedMemory {
+
+    static_assert(has_bool_isValid<T>::value,
+                  "SharedMemory requires the struct to have a bool member "
+                  "named 'isValid'");
+
     static constexpr int NAME_MAX_LENGTH = 255;
     std::string name;
     T *shared_struct{nullptr};

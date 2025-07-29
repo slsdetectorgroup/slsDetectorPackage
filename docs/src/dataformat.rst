@@ -159,7 +159,7 @@ The pixel width can be configured to 4, 8, 16 (default) or 32 bits using the com
 Flip rows
 ^^^^^^^^^^
 
-One can use the command ``fliprows`` along with a ``true`` to flip the rows vertically for the bottom or top half module. It is sent out to the reciever, but does not flip rows in the output file itself, but rather streams out this info via the json header and thus instructs the GUI to display them correctly.
+One can use the command ``fliprows`` to flip the rows vertically for the bottom or top half module. It is sent out to the reciever, but does not flip rows in the output file itself, but rather streams out this info via the json header and thus instructs the GUI to display them correctly.
 
 1GbE/ 10GbE Interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -172,10 +172,10 @@ Reducing network load
 Activate
 ^^^^^^^^^^
 
-By default, the ``hostname`` command activates the respective half module it connects to, enabling all UDP ports. To deactivate an entire half module (i.e., both UDP ports), use the ``activate`` command with the ``false`` argument. This disables both UDP ports for that half module, so no data is transmitted from it — only half of the module is read out. To specify which half module to activate or deactivate, use the module index (for Eiger, each half module has its own module index).
+By default, the ``hostname`` command activates the respective half module it connects to, enabling all UDP ports. To deactivate an entire half module (i.e., both UDP ports), use the ``activate`` command. This disables both UDP ports for that half module, so no data is transmitted from it — only half of the module is read out. To specify which half module to activate or deactivate, use the module index (for Eiger, each half module has its own module index).
 
 
-**Datastream**: The ``datastream`` command with arguments ``left`` or ``right``, along with ``false`` can be used to disable the data streaming from one or both the two UDP ports in a half module. This allows for more flexible configurations, such as reading only two chips or one UDP port of a half module. To specify which half module to activate or deactivate, use the module index (for Eiger, each half module has its own module index).
+**Datastream**: The ``datastream`` command with arguments to specify which port can be used to disable the data streaming from one or both the two UDP ports in a half module. This allows for more flexible configurations, such as reading only two chips or one UDP port of a half module. To specify which half module to activate or deactivate, use the module index (for Eiger, each half module has its own module index).
 
 Note: Only the activated ports will write data as it does not make sense to write an empty file.
 

@@ -26,6 +26,8 @@
 
 namespace sls {
 
+struct sharedDetector;
+
 #define SHM_DETECTOR_PREFIX "/slsDetectorPackage_detector_"
 #define SHM_MODULE_PREFIX   "_module_"
 #define SHM_ENV_NAME        "SLSDETNAME"
@@ -64,16 +66,25 @@ template <typename T> class SharedMemory {
             unmapSharedMemory();
     }
 
+    T *getRawPointer() { return shared_struct; }
+    const T *getRawPointer() const { return shared_struct; }
+
     T *operator()() {
-        if (shared_struct)
-            return shared_struct;
-        throw SharedMemoryError(getNoShmAccessMessage());
+        if (!shared_struct)
+            throw SharedMemoryError(getNoShmAccessMessage());
+        if (!shared_struct->isValid) {
+            throw SharedMemoryError(getInvalidShmMessage());
+        }
+        return shared_struct;
     }
 
     const T *operator()() const {
-        if (shared_struct)
-            return shared_struct;
-        throw SharedMemoryError(getNoShmAccessMessage());
+        if (!shared_struct)
+            throw SharedMemoryError(getNoShmAccessMessage());
+        if (!shared_struct->isValid) {
+            throw SharedMemoryError(getInvalidShmMessage());
+        }
+        return shared_struct;
     }
 
     std::string getName() const { return name; }
@@ -215,9 +226,14 @@ template <typename T> class SharedMemory {
         }
     }
 
-    const char *getNoShmAccessMessage() const {
+    inline const char *getNoShmAccessMessage() const {
         return ("No shared memory to access. Create it first with "
                 "hostname or config command.");
+    };
+
+    inline const char *getInvalidShmMessage() const {
+        return ("Shared memory is invalid or freed. Close resources before "
+                "access.");
     };
 };
 

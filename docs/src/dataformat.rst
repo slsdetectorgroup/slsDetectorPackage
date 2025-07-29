@@ -33,11 +33,11 @@ Double Port Configuration
    :align: center
    :alt: Jungfrau Module Two Port Configuration
 
-If both interfaces are enabled using the ``numinterfaces`` command on compatible hardware and firmware, the image splits into top and bottom halves sent over two UDP ports:
+If both interfaces are enabled using the `numinterfaces <commandline.html#term-numinterfaces-1-2>`_ command on compatible hardware and firmware, the image splits into top and bottom halves sent over two UDP ports:
 
-   - The top half transmits via the inner interface (``udp_dstport2`` and ``udp_dstip2``).
+   - The top half transmits via the inner interface (`udp_dstport2 <commandline.html#term-udp_dstport2-n>`_ and `udp_dstip2 <commandline.html#term-udp_dstip2-x.x.x.x-or-auto>`_).
 
-   - The bottom half uses the outer interface(``udp_dstport`` and ``udp_dstip``).
+   - The bottom half uses the outer interface(`udp_dstport <commandline.html#term-udp_dstport-n>`_ and `udp_dstip <commandline.html#term-udp_dstip-x.x.x.x-or-auto>`_).
 
 The number of files per module equals the active UDP ports—two files per module when both interfaces are used.
 
@@ -56,7 +56,7 @@ Read Partial Rows
    :alt: Jungfrau Module Read Partial Rows Configuration
 
 
-The number of image rows per port can be adjusted using the ``readnrows`` command. By default, 512 rows are read, but a smaller value centers the readout vertically (e.g., 8 rows reads 4 above and 4 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values are multiples of 8.
+The number of image rows per port can be adjusted using the `readnrows <commandline.html#term-readnrows>`_ command. By default, 512 rows are read, but a smaller value centers the readout vertically (e.g., 8 rows reads 4 above and 4 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values are multiples of 8.
 
 
 Total image size = 32,768 bytes 
@@ -64,7 +64,7 @@ Total image size = 32,768 bytes
    - **8** x 256 pixels (chip size: **8 rows**)
    - 2 bytes (pixel width)
 
-Note: Still in prototype stage, writes complete image (padded or not depending on ``framepadding`` parameter) to file. Only the summary written to console in the receiver handles the ``readnrows`` to calculate to calculate complete images received. Only reduces network load, not file size. Use ``rx_roi`` for file size.
+Note: Still in prototype stage, writes complete image (padded or not depending on `rx_padding <commandline.html#term-rx_padding-0-1>`_ parameter) to file. Only the summary written to console in the receiver handles the `readnrows <commandline.html#term-readnrows>`_ to calculate to calculate complete images received. Only reduces network load, not file size. Use `rx_roi <commandline.html#term-rx_roi-xmin-xmax-ymin-ymax>`_ for file size.
 
 Moench
 -------------
@@ -95,11 +95,11 @@ Double Port Configuration
    :align: center
    :alt: Moench Module Two Port Configuration
 
-If both interfaces are enabled using the ``numinterfaces`` command on compatible hardware and firmware, the image splits into top and bottom halves sent over two UDP ports:
+If both interfaces are enabled using the `numinterfaces <commandline.html#term-numinterfaces-1-2>`_ command on compatible hardware and firmware, the image splits into top and bottom halves sent over two UDP ports:
 
-   - The top half transmits via the inner interface (``udp_dstport2`` and ``udp_dstip2``).
+   - The top half transmits via the inner interface (`udp_dstport2 <commandline.html#term-udp_dstport2-n>`_ and `udp_dstip2 <commandline.html#term-udp_dstip2-x.x.x.x-or-auto>`_).
 
-   - The bottom half uses the outer interface(``udp_dstport`` and ``udp_dstip``).
+   - The bottom half uses the outer interface(`udp_dstport <commandline.html#term-udp_dstport-n>`_ and `udp_dstip <commandline.html#term-udp_dstip-x.x.x.x-or-auto>`_).
 
 The number of files per module equals the active UDP ports—two files per module when both interfaces are used.
 
@@ -118,14 +118,14 @@ Read Partial Rows
    :alt: Moench Module Read Partial Rows Configuration
 
 
-The number of image rows per port can be adjusted using the ``readnrows`` command. By default, 400 rows are read, but a smaller value centers the readout vertically (e.g., 16 rows reads 8 above and 8 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values are multiples of 16.
+The number of image rows per port can be adjusted using the `readnrows <commandline.html#term-readnrows>`_ command. By default, 400 rows are read, but a smaller value centers the readout vertically (e.g., 16 rows reads 8 above and 8 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values are multiples of 16.
 
 
 Total image size = 12,800 bytes 
    - **16** x 400 pixels (chip size: **16 rows**)
    - 2 bytes (pixel width)
 
-Note: Still in prototype stage, writes complete image (padded or not depending on ``framepadding`` parameter) to file. Only the summary written to console in the receiver handles the read n rows to calculate complete images received. Only reduces network load, not file size. Use ``rx_roi`` for file size.
+Note: Still in prototype stage, writes complete image (padded or not depending on `rx_padding <commandline.html#term-rx_padding-0-1>`_ parameter) to file. Only the summary written to console in the receiver handles the read n rows to calculate complete images received. Only reduces network load, not file size. Use `rx_roi <commandline.html#term-rx_roi-xmin-xmax-ymin-ymax>`_ for file size.
 
 Eiger
 -------------
@@ -140,9 +140,9 @@ Default Configuration
    :alt: Eiger Module Default Configuration
 
 
-Each Eiger module has two independent identical readout systems (other than firmware), each with its own control port and ``hostname`` to be configured with. They are referred to as the 'top' and 'bottom' half modules. The bottom half module is flipped vertically.
+Each Eiger module has two independent identical readout systems (other than firmware), each with its own control port and `hostname <commandline.html#term-hostname>`_ to be configured with. They are referred to as the 'top' and 'bottom' half modules. The bottom half module is flipped vertically.
 
-Each half module has 2 parallel UDP ports for 2 chips each. The left UDP port is configured with ``udp_dstport``, while the right UDP port is configured with ``udp_dstport2``. This is vice versa for the bottom half module.
+Each half module has 2 parallel UDP ports for 2 chips each. The left UDP port is configured with `udp_dstport <commandline.html#term-udp_dstport-n>`_, while the right UDP port is configured with `udp_dstport2 <commandline.html#term-udp_dstport2-n>`_. This is vice versa for the bottom half module.
 
 
 Image size per UDP port or File = 262,144 bytes 
@@ -154,17 +154,17 @@ Image size per UDP port or File = 262,144 bytes
 Pixel width
 ^^^^^^^^^^^^^
 
-The pixel width can be configured to 4, 8, 16 (default) or 32 bits using the command ``dr``. This affects image size per UDP port or file.
+The pixel width can be configured to 4, 8, 16 (default) or 32 bits using the command `dr <commandline.html#term-dr-value>`_. This affects image size per UDP port or file.
 
 Flip rows
 ^^^^^^^^^^
 
-One can use the command ``fliprows`` to flip the rows vertically for the bottom or top half module. It is sent out to the reciever, but does not flip rows in the output file itself, but rather streams out this info via the json header and thus instructs the GUI to display them correctly.
+One can use the command `fliprows <commandline.html#term-fliprows-0-1>`_ to flip the rows vertically for the bottom or top half module. It is sent out to the reciever, but does not flip rows in the output file itself, but rather streams out this info via the json header and thus instructs the GUI to display them correctly.
 
 1GbE/ 10GbE Interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Both UDP ports ``udp_dstport`` and ``udp_dstport2`` are used in Eiger as shows in the figure. Both of them can be set to use either the 1GbE or the 10GbE interface for data. The 1GbE interface is used also for control and configuration. For data, the 1GbE interface is enabled by default. It can be disabled by enabling the ``tengiga`` command and updating both the ``udp_dstport, udp_dstport2, udp_dstip`` commands to match the 1GbE or 10GbE interface. This setting only affects packetsize and number of packets, but does not affect the total image size. 
+Both UDP ports `udp_dstport <commandline.html#term-udp_dstport-n>`_ and `udp_dstport2 <commandline.html#term-udp_dstport2-n>`_ are used in Eiger as shows in the figure. Both of them can be set to use either the 1GbE or the 10GbE interface for data. The 1GbE interface is used also for control and configuration. For data, the 1GbE interface is enabled by default. It can be disabled by enabling the `tengiga <commandline.html#term-tengiga-0-1>`_ command and updating both the `udp_dstport <commandline.html#term-udp_dstport-n>`_ , `udp_dstport2 <commandline.html#term-udp_dstport2-n>`_ , `udp_dstip <commandline.html#term-udp_dstip-x.x.x.x-or-auto>`_ commands to match the 1GbE or 10GbE interface. This setting only affects packetsize and number of packets, but does not affect the total image size. 
 
 Reducing network load
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -172,14 +172,14 @@ Reducing network load
 Activate
 ^^^^^^^^^^
 
-By default, the ``hostname`` command activates the respective half module it connects to, enabling all UDP ports. To deactivate an entire half module (i.e., both UDP ports), use the ``activate`` command. This disables both UDP ports for that half module, so no data is transmitted from it — only half of the module is read out. To specify which half module to activate or deactivate, use the module index (for Eiger, each half module has its own module index).
+By default, the `hostname <commandline.html#term-hostname>`_ command activates the respective half module it connects to, enabling all UDP ports. To deactivate an entire half module (i.e., both UDP ports), use the `activate <commandline.html#term-activate-0-1>`_ command. This disables both UDP ports for that half module, so no data is transmitted from it — only half of the module is read out. To specify which half module to activate or deactivate, use the module index (for Eiger, each half module has its own module index).
 
 
-**Datastream**: The ``datastream`` command with arguments to specify which port can be used to disable the data streaming from one or both the two UDP ports in a half module. This allows for more flexible configurations, such as reading only two chips or one UDP port of a half module. To specify which half module to activate or deactivate, use the module index (for Eiger, each half module has its own module index).
+**Datastream**: The `datastream <commandline.html#term-datastream-left-right-0-1>`_ command with arguments to specify which port can be used to disable the data streaming from one or both the two UDP ports in a half module. This allows for more flexible configurations, such as reading only two chips or one UDP port of a half module. To specify which half module to activate or deactivate, use the module index (for Eiger, each half module has its own module index).
 
 Note: Only the activated ports will write data as it does not make sense to write an empty file.
 
-**Read Partial Rows**: The number of image rows per port can be adjusted using the ``readnrows`` command. By default, 256 rows are read, but a smaller value centers the readout vertically (e.g., 8 rows reads 4 above and 4 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values depend on dynamic range and 10GbE enable.
+**Read Partial Rows**: The number of image rows per port can be adjusted using the `readnrows <commandline.html#term-readnrows>`_ command. By default, 256 rows are read, but a smaller value centers the readout vertically (e.g., 8 rows reads 4 above and 4 below the center). Increasing the value symmetrically expands the region toward the top and bottom. Permissible values depend on dynamic range and 10GbE enable.
 
 .. image:: images/Eiger_read_rows.png
    :target: _images/Eiger_read_rows.png
@@ -194,7 +194,7 @@ Total image size per UDP Port = 8,192 bytes
    - **8** x 256 pixels (chip size: **8 rows**)
    - 2 bytes (default pixel width)
 
-Note: Still in prototype stage, writes complete image (padded or not depending on ``framepadding`` parameter) to file. Only the summary written to console in the receiver handles the ``readnrows`` to calculate complete images received. Only reduces network load, not file size. Use ``rx_roi`` for file size.
+Note: Still in prototype stage, writes complete image (padded or not depending on `rx_padding <commandline.html#term-rx_padding-0-1>`_ parameter) to file. Only the summary written to console in the receiver handles the `readnrows <commandline.html#term-readnrows>`_ to calculate complete images received. Only reduces network load, not file size. Use `rx_roi <commandline.html#term-rx_roi-xmin-xmax-ymin-ymax>`_ for file size.
 
 Quad
 ^^^^^^
@@ -237,7 +237,7 @@ Image size = 15,360 bytes
 Counters
 ^^^^^^^^^^^
 
-If all 3 counters are enabeld, the frame size for each channel is multiplied by 3. One can disable one or more of the counters using the ``counters`` command. The frame size will then be reduced accordingly.
+If all 3 counters are enabeld, the frame size for each channel is multiplied by 3. One can disable one or more of the counters using the `counters <commandline.html#term-counters-i0-i1-i2-...>`_ command. The frame size will then be reduced accordingly.
 
 Image size = 10,240 bytes 
    - 10 chips (1 x 10 grid)
@@ -248,13 +248,13 @@ Image size = 10,240 bytes
 Pixel width
 ^^^^^^^^^^^^^
 
-The pixel width can be configured to 8, 16 or 32 (default) bits using the command ``dr``. 32 bits is actually 24 bits in the chip. This setting does affect image size.
+The pixel width can be configured to 8, 16 or 32 (default) bits using the command `dr <commandline.html#term-dr-value>`_. 32 bits is actually 24 bits in the chip. This setting does affect image size.
 
 1GbE/ 10GbE Interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-The UDP port can be set to use either the 1GbE or the 10GbE interface for data. The 1GbE interface is used also for control and configuration. For data, the 10GbE interface is enabled by default. It can be disabled by using the ``tengiga`` command and updating the ``udp_dstport`` and ``udp_dstip`` commands to match the 1GbE or 10GbE interface. This setting only affects packetsize and number of packets, but does not affect the total image size. 
+The UDP port can be set to use either the 1GbE or the 10GbE interface for data. The 1GbE interface is used also for control and configuration. For data, the 10GbE interface is enabled by default. It can be disabled by using the `tengiga <commandline.html#term-tengiga-0-1>`_ command and updating the `udp_dstport <commandline.html#term-udp_dstport-n>`_ and `udp_dstip <commandline.html#term-udp_dstip-x.x.x.x-or-auto>`_ commands to match the 1GbE or 10GbE interface. This setting only affects packetsize and number of packets, but does not affect the total image size. 
 
 
 Gotthard2
@@ -279,10 +279,10 @@ Image size = 2,560 bytes
 Veto Info
 ^^^^^^^^^^^
 
-One can enable veto data in the chip of the Gotthard2 module using the ``veto`` command. By default, this is disabled. This does not affect the image size as veto information is not sent out through the same 10GbE interface.
+One can enable veto data in the chip of the Gotthard2 module using the `veto <commandline.html#term-veto-0-1>`_ command. By default, this is disabled. This does not affect the image size as veto information is not sent out through the same 10GbE interface.
 
 One can either stream out the veto info through the low latency link (2.5 gbps) or for debugging purposes through another 10GbE interface.
 
-For debugging purposes, the veto info can be enabled using the ``numinterfaces`` command and the following parameters are updated: ``udp_dstport2`` and ``udp_dstip2``. The veto data from this port is of course written to a separate file and is not combined in the virtual HDF5 file mapping (complete image mapped).
+For debugging purposes, the veto info can be enabled using the `numinterfaces <commandline.html#term-numinterfaces-1-2>`_ command and the following parameters are updated: `udp_dstport2 <commandline.html#term-udp_dstport2-n>`_ and `udp_dstip2 <commandline.html#term-udp_dstip2-x.x.x.x-or-auto>`_. The veto data from this port is of course written to a separate file and is not combined in the virtual HDF5 file mapping (complete image mapped).
 
 

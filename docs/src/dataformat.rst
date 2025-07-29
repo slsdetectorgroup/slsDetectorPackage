@@ -64,7 +64,7 @@ Total image size = 32,768 bytes
    - **8** x 256 pixels (chip size: **8 rows**)
    - 2 bytes (pixel width)
 
-Note: Still in prototype stage, writes complete image (padded or not depending on ``framepadding`` parameter) to file. Only the summary written to console in the receiver handles the read n rows to calculate complete images received. Only reduces network load, not file size. Use ``rx_roi`` for file size.
+Note: Still in prototype stage, writes complete image (padded or not depending on ``framepadding`` parameter) to file. Only the summary written to console in the receiver handles the ``readnrows`` to calculate to calculate complete images received. Only reduces network load, not file size. Use ``rx_roi`` for file size.
 
 Moench
 -------------
@@ -169,10 +169,13 @@ Both UDP ports ``udp_dstport`` and ``udp_dstport2`` are used in Eiger as shows i
 Reducing network load
 ^^^^^^^^^^^^^^^^^^^^^^
 
-**Activate**: By default, the ``hostname`` command activates the half module, and therefore, all UDP ports are enabled. One can deactivate a whole half module (ie. 2 UDP ports) using command  ``activate`` with the ``false`` argument. This will disable both UDP ports of the half module and no data will be transmitted from it.
+Activate
+^^^^^^^^^^
+
+By default, the ``hostname`` command activates the respective half module it connects to, enabling all UDP ports. To deactivate an entire half module (i.e., both UDP ports), use the ``activate`` command with the ``false`` argument. This disables both UDP ports for that half module, so no data is transmitted from it — only half of the module is read out. To specify which half module to activate or deactivate, use the module index (for Eiger, each half module has its own module index).
 
 
-**Datastream**: The ``datastream`` command with arguments ``left`` or ``right``, along with ``false`` can be used to disable the data streaming from one or all of the two UDP ports in a half module. This allows for more flexible configurations, such as reading only two chips or one UDP port of a half module. 
+**Datastream**: The ``datastream`` command with arguments ``left`` or ``right``, along with ``false`` can be used to disable the data streaming from one or both the two UDP ports in a half module. This allows for more flexible configurations, such as reading only two chips or one UDP port of a half module. To specify which half module to activate or deactivate, use the module index (for Eiger, each half module has its own module index).
 
 Note: Only the activated ports will write data as it does not make sense to write an empty file.
 
@@ -191,7 +194,7 @@ Total image size per UDP Port = 8,192 bytes
    - **8** x 256 pixels (chip size: **8 rows**)
    - 2 bytes (default pixel width)
 
-Note: Still in prototype stage, writes complete image (padded or not depending on ``framepadding`` parameter) to file. Only the summary written to console in the receiver handles the read n rows to calculate complete images received. Only reduces network load, not file size. Use ``rx_roi`` for file size.
+Note: Still in prototype stage, writes complete image (padded or not depending on ``framepadding`` parameter) to file. Only the summary written to console in the receiver handles the ``readnrows`` to calculate complete images received. Only reduces network load, not file size. Use ``rx_roi`` for file size.
 
 Quad
 ^^^^^^

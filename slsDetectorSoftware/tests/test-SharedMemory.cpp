@@ -16,6 +16,18 @@ struct Data {
     bool isValid{true};
 };
 
+void freeShm(const int dindex, const int mIndex) {
+    SharedMemory<Data> shm(dindex, mIndex);
+    if (shm.exists()) {
+        shm.openSharedMemory(false);
+        // shm() checks for validity
+        if (auto raw = shm.getRawPointer()) {
+            raw->isValid = false; // mark as invalid
+        }
+        shm.removeSharedMemory();
+    }   
+}
+
 constexpr int shm_id = 10;
 
 TEST_CASE("Create SharedMemory read and write", "[detector]") {
@@ -174,6 +186,17 @@ TEST_CASE("Create create a shared memory with a tag when SLSDETNAME is set") {
         unsetenv(SHM_ENV_NAME);
     else
         setenv(SHM_ENV_NAME, old_slsdetname.c_str(), 1);
+}
+
+
+TEST_CASE("Access to already freed shm object", "[detector]") {
+    SharedMemory<Data> shm(shm_id, -1);
+    shm.createSharedMemory();
+    shm()->x = 10;
+
+    freeShm(shm_id, -1);
+    CHECK(shm.exists() == false);
+    REQUIRE_THROWS(shm()); // trying to access should throw
 }
 
 } // namespace sls

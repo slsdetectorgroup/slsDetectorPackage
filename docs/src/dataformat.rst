@@ -161,10 +161,10 @@ Flip rows
 
 One can use the command ``fliprows`` along with a ``true`` to flip the rows vertically for the bottom or top half module. It is sent out to the reciever, but does not flip rows in the output file itself, but rather streams out this info via the json header and thus instructs the GUI to display them correctly.
 
-1G/ 10GbE Interfaces
+1GbE/ 10GbE Interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Each UDP port in the figure above has a 1G and a 10GbE interface. The 1G interface is used for control and configuration, but also for data transmission, while the 10GbE interface is used only for data transmission. The 1GbE interface is enabled by default, but can be enabled using the ``tengiga`` command and updating the appropriate udp_* commands. This setting only affects packetsize and number of packets, but does not affect the total image size. 
+Both UDP ports ``udp_dstport`` and ``udp_dstport2`` are used in Eiger as shows in the figure. Both of them can be set to use either the 1GbE or the 10GbE interface for data. The 1GbE interface is used also for control and configuration. For data, the 1GbE interface is enabled by default. It can be disabled by enabling the ``tengiga`` command and updating both the ``udp_dstport, udp_dstport2, udp_dstip`` commands to match the 1GbE or 10GbE interface. This setting only affects packetsize and number of packets, but does not affect the total image size. 
 
 Reducing network load
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -182,8 +182,7 @@ Note: Only the activated ports will write data as it does not make sense to writ
    :target: _images/Eiger_read_rows.png
    :width: 400px
    :align: center
-   :alt: Jungfrau Module Read Partial Rows Configuration
-
+   :alt: Eiger Module Read Partial Rows Configuration
 
 
 
@@ -193,6 +192,23 @@ Total image size per UDP Port = 8,192 bytes
    - 2 bytes (default pixel width)
 
 Note: Still in prototype stage, writes complete image (padded or not depending on ``framepadding`` parameter) to file. Only the summary written to console in the receiver handles the read n rows to calculate complete images received. Only reduces network load, not file size. Use ``rx_roi`` for file size.
+
+Quad
+^^^^^^
+
+The Eiger quad is a special hardware configuration that uses only the top half-module to create a quad layout. In this setup, the second half of the top module—normally associated with the right-side UDP port—is used to represent the inverted bottom half of the quad.
+
+As with any standard half-module, it includes one control TCP port (with a hostname) and two UDP data ports (top and bottom). When the quad option is enabled, the firmware automatically flips the second UDP port vertically.
+
+In this configuration, the fliprows command cannot be used to flip the entire half-module. Instead, the receiver automatically includes row-flipping information only for the second UDP port in the JSON header, so the GUI can apply the correct orientation during display
+
+.. image:: images/Eiger_quad.png
+   :target: _images/Eiger_quad.png
+   :width: 300px
+   :align: center
+   :alt: Eiger Quad Configuration
+
+Image size per UDP port = same as a normal Eiger UDP port
 
 Mythen3 
 -------------
@@ -231,10 +247,12 @@ Pixel width
 
 The pixel width can be configured to 8, 16 or 32 (default) bits using the command ``dr``. 32 bits is actually 24 bits in the chip. This setting does affect image size.
 
-1G/ 10GbE Interfaces
+1GbE/ 10GbE Interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Each module has a 1G and a 10GbE interface. The 1G interface is used for control and configuration, but also for data transmission, while the 10GbE interface is used only for data transmission. The 10GbE interface is enabled by default, but can be disabled using the ``tengiga`` command and updating the appropriate udp_* commands. This setting only affects packetsize and number of packets, but does not affect the total image size. 
+
+The UDP port can be set to use either the 1GbE or the 10GbE interface for data. The 1GbE interface is used also for control and configuration. For data, the 10GbE interface is enabled by default. It can be disabled by using the ``tengiga`` command and updating the ``udp_dstport`` and ``udp_dstip`` commands to match the 1GbE or 10GbE interface. This setting only affects packetsize and number of packets, but does not affect the total image size. 
+
 
 Gotthard2
 -------------

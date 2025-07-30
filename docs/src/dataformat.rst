@@ -151,6 +151,49 @@ Image size per UDP port or File = 262,144 bytes
    - 2 bytes (default pixel width)
 
 
+The myth, the legend, the bottom ports: Demystifying them
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+.. figure:: images/Eiger_bottom_1.png
+   :target: _images/Eiger_bottom_1.png
+   :width: 350px
+   :align: center
+   :alt: Eiger Bottom as Firmware gets it
+
+   How the firmware gets the images
+
+
+.. figure:: images/Eiger_bottom_2.png
+   :target: _images/Eiger_bottom_2.png
+   :width: 350px
+   :align: center
+   :alt: Eiger Bottom after the firmware flips it horizontally
+
+   After the firmware flips it horizontally
+
+
+.. figure:: images/Eiger_bottom_3.png
+   :target: _images/Eiger_bottom_3.png
+   :width: 350px
+   :align: center
+   :alt: After the software swaps the udp ports
+
+   After the software swaps the udp ports
+
+
+.. figure:: images/Eiger_bottom_4.png
+   :target: _images/Eiger_bottom_4.png
+   :width: 400px
+   :align: center
+   :alt: After the gui has flipped the bottom vertically
+
+   After the gui has flipped the bottom vertically
+
+
+Note: The same process happens for the bottom 2 udp ports of the quad.
+
+
 Pixel width
 ^^^^^^^^^^^^^
 
@@ -234,7 +277,7 @@ Image size = 15,360 bytes
 Counters
 ^^^^^^^^^^^
 
-If all 3 counters are enabeld, the frame size for each channel is multiplied by 3. One can disable one or more of the counters using the `counters <commandline.html#term-counters-i0-i1-i2-...>`_ command. The frame size will then be reduced accordingly.
+If all 3 counters are enabeld, the frame size for each channel is multiplied by 3. The counters are stored consecutively per channel. One can disable one or more of the counters using the `counters <commandline.html#term-counters-i0-i1-i2-...>`_ command. The frame size will then be reduced accordingly.
 
 Image size = 10,240 bytes 
    - 10 chips (1 x 10 grid)

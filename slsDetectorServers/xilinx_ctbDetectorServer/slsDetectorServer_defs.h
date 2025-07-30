@@ -72,10 +72,6 @@
 #define VIO_MIN_MV      (1200) // for fpga to function
 
 #define TICK_CLK (20) // MHz (trig_timeFromStart, frametime, timeFromStart)
-#define RUN_CLK                                                                \
-    (100) // MHz (framesFromStart, c_swTrigger, run, waitForTrigger, starting,
-          // acquiring, waitForPeriod, internalStop, c_framesFromSTart_reset,
-          // s_start, c_stop, triggerEnable, period, frames, cycles, delay)
 
 /* Defines in the Firmware */
 #define WAIT_TIME_PATTERN_READ  (10)
@@ -158,3 +154,6 @@ typedef struct udp_header_struct {
 
 #define IP_HEADER_SIZE             (20)
 #define UDP_IP_HEADER_LENGTH_BYTES (28)
+
+enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS };
+#define CLK_NAMES "run", "adc", "sync", "dbit"

@@ -13,7 +13,7 @@
 extern enum TLogLevel trimmingPrint;
 extern uint32_t clkDivider[];
 #endif
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
 extern uint32_t clkFrequency[];
 #endif
 
@@ -369,10 +369,8 @@ uint64_t getPatternWaitClocks(int level) {
 uint64_t getPatternWaitInterval(int level) {
     uint64_t numClocks = getPatternWaitClocks(level);
     int runclk = 0;
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     runclk = clkFrequency[RUN_CLK];
-#elif XILINX_CHIPTESTBOARDD
-    runclk = RUN_CLK;
 #elif MYTHEN3D
     runclk = clkDivider[SYSTEM_C0];
 #endif
@@ -466,10 +464,8 @@ void setPatternWaitInterval(int level, uint64_t t) {
         ("Setting Pattern Wait Time (level:%d) :%lld ns\n", level,
          (long long int)t));
     int runclk = 0;
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(XILINX_CHIPTESTBOARDD)
     runclk = clkFrequency[RUN_CLK];
-#elif XILINX_CHIPTESTBOARDD
-    runclk = RUN_CLK;
 #elif MYTHEN3D
         runclk = clkDivider[SYSTEM_C0];
 #endif

@@ -15,7 +15,7 @@ defs = slsDetectorDefs
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable, hostname_list
-from ._slsdet import xy
+from ._slsdet import xy, freeSharedMemory
 from .gaincaps import Mythen3GainCapsWrapper
 from . import utils as ut
 from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
@@ -90,7 +90,7 @@ class Detector(CppDetectorApi):
 
     def free(self):
         """Free detector shared memory"""
-        self.freeSharedMemory()
+        freeSharedMemory(self.getShmId())
 
     @property
     def config(self):

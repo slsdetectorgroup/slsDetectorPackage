@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include "clogger.h"
+#include <math.h>
 
 // https://docs.amd.com/r/en-US/pg065-clk-wiz/Register-Space  (simplified, we leave some things away)
 
@@ -43,12 +44,27 @@ void XILINX_PLL_setFrequency(uint32_t clkIDX, uint32_t freq) {
     base_clk_freq = base_clk_freq / (global_reg & 0xFF);
     
     uint32_t clk_div = base_clk_freq / freq;
+    float clk_div_frac_f = 0;
+    uint32_t clk_div_frac = 0;
     if (clk_div < 1 || clk_div > 256) {
         LOG(logERROR, ("XILINX_PLL: Invalid clock divider, need to change base clock\n"));
         return;
     }
 
-    bus_w_csp2(XILINX_PLL_BASE_ADDR + XILINX_PLL_CLK_CONFIG_BASE_ADDR + clkIDX * XILINX_PLL_CLK_CONFIG_WIDTH * 4 + XILINX_PLL_CLK_DIV_OFFSET, clk_div & 0xFF);
+    // the first clock supports fractional division, increase the precision for that one
+    // fractional divide is not allowed in fixed or dynamic phase shift mode !!!!
+    if(clkIDX == 0){
+        clk_div_frac_f = (float)base_clk_freq / freq - clk_div;
+        clk_div_frac = (uint32_t)round(clk_div_frac_f * 1000);
+        clk_div_frac = ((clk_div_frac + 62) / 125) * 125; // Xilinx documentation suggests way too many divider settings here, go to the closest one that actually does something
+        if(clk_div_frac == 1000){
+            clk_div_frac = 0;
+            clk_div++;
+        }
+    }
+
+    LOG(logINFOBLUE, ("XILINX_PLL: Setting clock divider to %u.%u\n", clk_div, clk_div_frac));
+    bus_w_csp2(XILINX_PLL_BASE_ADDR + XILINX_PLL_CLK_CONFIG_BASE_ADDR + clkIDX * XILINX_PLL_CLK_CONFIG_WIDTH * 4 + XILINX_PLL_CLK_DIV_OFFSET, (clk_div & 0xFF) | ((clk_div_frac & 0x3FF) << 8));
     XILINX_PLL_load();
     XILINX_PLL_waitForLock();
 }
@@ -69,7 +85,7 @@ uint32_t XILINX_PLL_getFrequency(uint32_t clkIDX){
     else    
         counter_val = bus_r_csp2(XILINX_PLL_MEASURE_BASE_ADDR1 + (clkIDX - 2) * 8);
     
-    uint32_t freq_kHz = counter_val/1000;
+    uint32_t freq_kHz = (counter_val+500)/1000; // round to nearest kHz
     return freq_kHz;
 }
 

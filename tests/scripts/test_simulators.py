@@ -73,7 +73,7 @@ def startCmdTestsForAll(args, fp):
 
 
 if __name__ == '__main__':
-    args = ParseArguments('Automated tests with the virtual detector servers', 1, 1)
+    args = ParseArguments(description='Automated tests with the virtual detector servers', default_num_mods=1, markers=1, general_tests_option=True)
     if args.num_mods > 1:
         raise RuntimeException(f'Cannot support multiple modules at the moment (except Eiger).')
 
@@ -81,7 +81,8 @@ if __name__ == '__main__':
 
     with open(MAIN_LOG_FNAME, 'w') as fp:  
         try:
-            startGeneralTests(fp)
+            if args.general_tests:
+                startGeneralTests(fp)
             startCmdTestsForAll(args, fp)
             cleanup(fp)
         except Exception as e:

@@ -4,6 +4,8 @@
 
 #include "Caller.h"
 #include "sls/Detector.h"
+#include "sls/ToString.h"
+#include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
 #include <chrono>
@@ -41,6 +43,23 @@ struct testCtbAcquireInfo {
     std::vector<int> dbit_list{0, 12, 2, 43};
     bool dbit_reorder{false};
     uint32_t transceiver_mask{0x3};
+
+    inline void print() const {
+        LOG(logINFO) << "CTB Acquire Info: "
+                     << "\n\tReadout Mode: " << ToString(readout_mode)
+                     << "\n\tTen Giga: " << ten_giga
+                     << "\n\tADC Enable 1G: " << std::hex << adc_enable_1g
+                     << std::dec << "\n\tADC Enable 10G: " << std::hex
+                     << adc_enable_10g << std::dec
+                     << "\n\tNumber of Analog Samples: " << num_adc_samples
+                     << "\n\tNumber of Digital Samples: " << num_dbit_samples
+                     << "\n\tNumber of Transceiver Samples: "
+                     << num_trans_samples << "\n\tDBIT Offset: " << dbit_offset
+                     << "\n\tDBIT Reorder: " << dbit_reorder
+                     << "\n\tDBIT List: " << ToString(dbit_list)
+                     << "\n\tTransceiver Mask: " << std::hex << transceiver_mask
+                     << std::dec << std::endl;
+    }
 };
 
 void test_valid_port_caller(const std::string &command,
@@ -64,7 +83,7 @@ void test_acquire_with_receiver(Caller &caller, const Detector &det);
 
 void create_files_for_acquire(
     Detector &det, Caller &caller, int64_t num_frames = 1,
-    std::optional<testCtbAcquireInfo> test_info = std::nullopt);
+    const std::optional<testCtbAcquireInfo> &test_info = std::nullopt);
 
 testCtbAcquireInfo get_ctb_config_state(const Detector &det);
 void set_ctb_config_state(Detector &det,

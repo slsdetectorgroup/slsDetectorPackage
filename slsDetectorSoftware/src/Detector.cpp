@@ -1299,7 +1299,7 @@ Result<uint16_t> Detector::getRxPort(Positions pos) const {
 
 void Detector::setRxPort(uint16_t port, int module_id) {
     if (module_id == -1) {
-        validatePortRange(port, size() - 1);
+        validatePortRange(port, size());
 
         std::vector<uint16_t> port_list(size());
         std::iota(std::begin(port_list), std::end(port_list), port);
@@ -2828,7 +2828,7 @@ std::vector<uint16_t> Detector::getValidPortNumbers(uint16_t start_port) {
     int num_sockets_per_detector = getNumberofUDPInterfaces({}).tsquash(
         "Number of UDP Interfaces is not consistent among modules");
 
-    validatePortRange(start_port, (size() - 1) * num_sockets_per_detector);
+    validatePortRange(start_port, size() * num_sockets_per_detector);
 
     std::vector<uint16_t> res;
     res.reserve(size());

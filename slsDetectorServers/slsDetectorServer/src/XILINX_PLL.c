@@ -35,7 +35,7 @@ void XILINX_PLL_setFrequency(uint32_t clkIDX, uint32_t freq) {
     }
 
     if(freq < 10000 || freq > 250000) {
-        LOG(logERROR, ("XILINX_PLL: Frequency out of range\n"));
+        LOG(logERROR, ("XILINX_PLL: Frequency %d kHz is out of range\n", freq));
         return;
     }
     uint32_t global_reg = bus_r_csp2(XILINX_PLL_BASE_ADDR + XILINX_PLL_GLOBAL_CONFIG_REG);

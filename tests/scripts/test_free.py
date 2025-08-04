@@ -113,6 +113,37 @@ def test_exptime_after_passing_ctb_var_should_raise(setup_simulator):
 
 
 
+def free_and_create_shm_returning_ctb():
+    k = Ctb() # opens existing shm if it exists (disregards k as its new Ctb only local to this function)
+    k.hostname = f"localhost:{SERVER_START_PORTNO}" # free and recreate shm, maps to local shm struct
+    return k
+
+
+def test_exptime_after_returning_ctb_should_raise(setup_simulator):
+    Log(LogLevel.INFOBLUE, f'\nRunning test_exptime_after_returning_ctb_should_raise')
+
+    d = Ctb() # creates multi shm (assuming no shm exists)
+
+    d = free_and_create_shm_returning_ctb() # ctb() opens multi shm, hostname command frees and recreates mod shm but shm struct is local but returned. d now maps to the new sturct
+
+    # this should not throw 
+    exptime_val = d.exptime
+
+    Log(LogLevel.INFOGREEN, f"✅ Test passed, exptime was: {exptime_val}")
+    assert isinstance(exptime_val, float)
+
+    free_and_create_shm_returning_ctb() # this time d is not updated, it maps to the old shm struct
+
+    # accessing invalid shm should throw
+    with pytest.raises(Exception) as exc_info:
+        _ = d.exptime
+
+    Log(LogLevel.INFOGREEN, f"✅ Test passed, exception was: {exc_info.value}")
+    assert str(exc_info.value) == "Shared memory is invalid or freed. Close resources before access."
+
+
+
+
 
 
 def test_hostname_twice_acess_old_should_raise(setup_simulator):

@@ -5,8 +5,6 @@
 #include "catch.hpp"
 #include "sls/string_utils.h"
 
-#include <iostream>
-
 namespace sls {
 
 struct Data {
@@ -136,7 +134,6 @@ TEST_CASE("Create several shared memories", "[detector]") {
     std::vector<SharedMemory<Data>> v;
     v.reserve(N);
     for (int i = 0; i != N; ++i) {
-        std::cout << "i:" << i << std::endl;
         v.emplace_back(shm_id + i, -1);
         CHECK(v[i].exists() == false);
         v[i].createSharedMemory();

@@ -1000,7 +1000,7 @@ TEST_CASE("dbitclk", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD) {
-        auto prev_val = det.getRUNClock();
+        auto prev_val = det.getDBITClock();
         {
             std::ostringstream oss;
             caller.call("dbitclk", {"20"}, -1, PUT, oss);
@@ -1017,7 +1017,7 @@ TEST_CASE("dbitclk", "[.cmdcall]") {
             REQUIRE(oss.str() == "dbitclk 10\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setRUNClock(prev_val[i], {i});
+            det.setDBITClock(prev_val[i], {i});
         }
     } else {
         // clock index might work

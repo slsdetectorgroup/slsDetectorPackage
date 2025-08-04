@@ -20,12 +20,9 @@ void freeShm(const int dindex, const int mIndex) {
     SharedMemory<Data> shm(dindex, mIndex);
     if (shm.exists()) {
         shm.openSharedMemory(false);
-        // shm() checks for validity
-        if (auto raw = shm.getRawPointer()) {
-            raw->isValid = false; // mark as invalid
-        }
+        shm()->isValid = false;
         shm.removeSharedMemory();
-    }   
+    }
 }
 
 constexpr int shm_id = 10;
@@ -187,7 +184,6 @@ TEST_CASE("Create create a shared memory with a tag when SLSDETNAME is set") {
     else
         setenv(SHM_ENV_NAME, old_slsdetname.c_str(), 1);
 }
-
 
 TEST_CASE("Access to already freed shm object", "[detector]") {
     SharedMemory<Data> shm(shm_id, -1);

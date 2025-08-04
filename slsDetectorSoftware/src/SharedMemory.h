@@ -72,9 +72,6 @@ template <typename T> class SharedMemory {
             unmapSharedMemory();
     }
 
-    T *getRawPointer() { return shared_struct; }
-    const T *getRawPointer() const { return shared_struct; }
-
     T *operator()() {
         if (!shared_struct)
             throw SharedMemoryError(getNoShmAccessMessage());

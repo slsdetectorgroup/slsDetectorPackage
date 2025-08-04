@@ -30,10 +30,7 @@ void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, moduleIndex);
         if (moduleShm.exists()) {
             moduleShm.openSharedMemory(false);
-            // moduleShm() checks for validity
-            if (auto raw = moduleShm.getRawPointer()) {
-                raw->isValid = false; // mark as invalid
-            }
+            moduleShm()->isValid = false;
             moduleShm.removeSharedMemory();
         }
         return;
@@ -45,11 +42,8 @@ void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
     SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
     if (detectorShm.exists()) {
         detectorShm.openSharedMemory(false);
-        // detectorShm() checks for validity
-        if (auto raw = detectorShm.getRawPointer()) {
-            numDetectors = raw->totalNumberOfModules;
-            raw->isValid = false; // mark as invalid
-        }
+        numDetectors = detectorShm()->totalNumberOfModules;
+        detectorShm()->isValid = false;
         detectorShm.removeSharedMemory();
     }
 
@@ -57,10 +51,7 @@ void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, i);
         if (moduleShm.exists()) {
             moduleShm.openSharedMemory(false);
-            // moduleShm() checks for validity
-            if (auto raw = moduleShm.getRawPointer()) {
-                raw->isValid = false; // mark as invalid
-            }
+            moduleShm()->isValid = false;
         }
         moduleShm.removeSharedMemory();
     }
@@ -69,10 +60,7 @@ void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
     SharedMemory<CtbConfig> ctbShm(detectorIndex, -1, CtbConfig::shm_tag());
     if (ctbShm.exists()) {
         ctbShm.openSharedMemory(false);
-        // ctbShm() checks for validity
-        if (auto raw = ctbShm.getRawPointer()) {
-            raw->isValid = false; // mark as invalid
-        }
+        ctbShm()->isValid = false;
         ctbShm.removeSharedMemory();
     }
 }

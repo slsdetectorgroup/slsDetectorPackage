@@ -73,7 +73,8 @@ std::string Caller::adcclk(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([n_clk in MHz]
-	[Ctb] ADC clock frequency in MHz. )V0G0N"
+	[Ctb] ADC clock frequency in MHz.
+	[xilinx Ctb] ADC clock frequency in kHz. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -2805,7 +2806,8 @@ std::string Caller::dbitclk(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([n_clk in MHz]
-	[Ctb] Clock for latching the digital bits in MHz. )V0G0N"
+	[Ctb] Clock for latching the digital bits in MHz.
+	[xilinx Ctb] Clock for latching the digital bits in kHz. )V0G0N"
            << std::endl;
         return os.str();
     }
@@ -10429,7 +10431,8 @@ std::string Caller::runclk(int action) {
     // print help
     if (action == slsDetectorDefs::HELP_ACTION) {
         os << R"V0G0N([n_clk in MHz]
-	[Ctb] Run clock in MHz. )V0G0N"
+	[Ctb] Run clock in MHz.
+	[xilinx Ctb] Run clock in kHz. )V0G0N"
            << std::endl;
         return os.str();
     }

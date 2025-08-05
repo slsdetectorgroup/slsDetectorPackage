@@ -106,7 +106,8 @@ adcclk:
         store_result_in_t: false
   command_name: adcclk
   function_alias: adcclk
-  help: "[n_clk in MHz]\n\t[Ctb] ADC clock frequency in MHz."
+  help: "[n_clk in MHz]\n\t[Ctb] ADC clock frequency in MHz.\n\t[xilinx Ctb] ADC clock\
+    \ frequency in kHz."
   infer_action: true
   template: true
 adcenable:
@@ -2219,7 +2220,8 @@ dbitclk:
         store_result_in_t: false
   command_name: dbitclk
   function_alias: dbitclk
-  help: "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz."
+  help: "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz.\n\t[xilinx\
+    \ Ctb] Clock for latching the digital bits in kHz."
   infer_action: true
   template: true
 dbitphase:
@@ -8133,7 +8135,7 @@ runclk:
         store_result_in_t: false
   command_name: runclk
   function_alias: runclk
-  help: "[n_clk in MHz]\n\t[Ctb] Run clock in MHz."
+  help: "[n_clk in MHz]\n\t[Ctb] Run clock in MHz.\n\t[xilinx Ctb] Run clock in kHz."
   infer_action: true
   template: true
 runtime:

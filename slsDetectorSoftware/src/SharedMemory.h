@@ -10,6 +10,7 @@
  *@short functions basic implemenation of shared memory
  */
 
+#include "sls/TypeTraits.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
 
@@ -26,11 +27,18 @@
 
 namespace sls {
 
+struct sharedDetector;
+
 #define SHM_DETECTOR_PREFIX "/slsDetectorPackage_detector_"
 #define SHM_MODULE_PREFIX   "_module_"
 #define SHM_ENV_NAME        "SLSDETNAME"
 
 template <typename T> class SharedMemory {
+
+    static_assert(has_bool_isValid<T>::value,
+                  "SharedMemory requires the struct to have a bool member "
+                  "named 'isValid'");
+
     static constexpr int NAME_MAX_LENGTH = 255;
     std::string name;
     T *shared_struct{nullptr};
@@ -65,15 +73,21 @@ template <typename T> class SharedMemory {
     }
 
     T *operator()() {
-        if (shared_struct)
-            return shared_struct;
-        throw SharedMemoryError(getNoShmAccessMessage());
+        if (!shared_struct)
+            throw SharedMemoryError(getNoShmAccessMessage());
+        if (!shared_struct->isValid) {
+            throw SharedMemoryError(getInvalidShmMessage());
+        }
+        return shared_struct;
     }
 
     const T *operator()() const {
-        if (shared_struct)
-            return shared_struct;
-        throw SharedMemoryError(getNoShmAccessMessage());
+        if (!shared_struct)
+            throw SharedMemoryError(getNoShmAccessMessage());
+        if (!shared_struct->isValid) {
+            throw SharedMemoryError(getInvalidShmMessage());
+        }
+        return shared_struct;
     }
 
     std::string getName() const { return name; }
@@ -215,9 +229,14 @@ template <typename T> class SharedMemory {
         }
     }
 
-    const char *getNoShmAccessMessage() const {
+    inline const char *getNoShmAccessMessage() const {
         return ("No shared memory to access. Create it first with "
                 "hostname or config command.");
+    };
+
+    inline const char *getInvalidShmMessage() const {
+        return ("Shared memory is invalid or freed. Close resources before "
+                "access.");
     };
 };
 

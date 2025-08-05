@@ -9,7 +9,7 @@ from enum import Enum
 from colorama import Fore, Style, init
 from datetime import timedelta
 
-from slsdet import Detector, detectorSettings, burstMode
+from slsdet import Detector, Ctb, detectorSettings, burstMode
 from slsdet.defines import DEFAULT_TCP_RX_PORTNO, DEFAULT_UDP_DST_PORTNO
 SERVER_START_PORTNO=1900
 
@@ -167,9 +167,12 @@ def startDetectorVirtualServer(name :str, num_mods, fp):
                 time.sleep(3)
 
 
-def connectToVirtualServers(name, num_mods):
+def connectToVirtualServers(name, num_mods, ctb_object=False):
     try:
-        d = Detector()
+        if ctb_object:
+            d = Ctb()
+        else:
+            d = Detector()
     except Exception as e:
         raise RuntimeException(f'Could not create Detector object for {name}. Error: {str(e)}') from e
 

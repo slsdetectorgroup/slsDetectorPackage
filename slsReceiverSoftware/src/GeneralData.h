@@ -20,7 +20,6 @@ namespace sls {
 
 struct CtbImageInputs {
     slsDetectorDefs::readoutMode mode{slsDetectorDefs::ANALOG_ONLY};
-
     int nAnalogSamples{};
     uint32_t adcMask{};
     int nTransceiverSamples{};
@@ -29,6 +28,21 @@ struct CtbImageInputs {
     int dbitOffset{};
     bool dbitReorder{};
     std::vector<int> dbitList{};
+
+    inline void print() const {
+        LOG(logINFO) << "CTB Image Inputs: "
+                     << "Readout Mode:" << ToString(mode)
+                     << "\n\tNumber of Analog Samples:" << nAnalogSamples
+                     << "\n\tADC Enable 1G:" << std::hex << adcMask << std::dec
+                     << "\n\tNumber of Transceiver Samples:"
+                     << nTransceiverSamples
+                     << "\n\tTransceiver Mask:" << std::hex << transceiverMask
+                     << std::dec
+                     << "\n\tNumber of Digital Samples:" << nDigitalSamples
+                     << "\n\tDBIT Offset:" << dbitOffset
+                     << "\n\tDBIT Reorder:" << dbitReorder
+                     << "\n\tDBIT List:" << ToString(dbitList);
+    }
 };
 
 struct CtbImageOutputs {
@@ -37,14 +51,25 @@ struct CtbImageOutputs {
     int nDigitalBytesReserved{}; // including dbit offset and for 64 bits
     int nTransceiverBytes{};
     int nPixelsX{};
+
+    inline void print() const {
+        LOG(logINFO) << "CTB Image Outputs: "
+                     << "\n\tNumber of Analog Bytes:" << nAnalogBytes
+                     << "\n\tNumber of Actual Digital Bytes:" << nDigitalBytes
+                     << "\n\tNumber of Digital Bytes Reserved:"
+                     << nDigitalBytesReserved
+                     << "\n\tNumber of Transceiver Bytes:" << nTransceiverBytes
+                     << "\n\tNumber of Pixels in X:" << nPixelsX;
+    }
 };
 
 inline CtbImageOutputs computeCtbImageSize(const CtbImageInputs &in) {
     CtbImageOutputs out{};
-
     constexpr int num_bytes_per_analog_channel = 2;
     constexpr int num_bytes_per_transceiver_channel = 8;
     constexpr int max_digital_channels = 64;
+
+    // in.print(); // for debugging
 
     // analog channels (normal, analog/digital readout)
     if (in.mode == slsDetectorDefs::ANALOG_ONLY ||
@@ -536,11 +561,20 @@ class ChipTestBoardData : public GeneralData {
         UpdateImageSize();
     }
 
-    void SetctbDbitOffset(const int value) { ctbDbitOffset = value; }
+    void SetctbDbitOffset(const int value) {
+        ctbDbitOffset = value;
+        UpdateImageSize();
+    }
 
-    void SetctbDbitList(const std::vector<int> &value) { ctbDbitList = value; }
+    void SetctbDbitList(const std::vector<int> &value) {
+        ctbDbitList = std::move(value);
+        UpdateImageSize();
+    }
 
-    void SetctbDbitReorder(const bool value) { ctbDbitReorder = value; }
+    void SetctbDbitReorder(const bool value) {
+        ctbDbitReorder = value;
+        UpdateImageSize();
+    }
 
     void SetOneGigaAdcEnableMask(int n) {
         adcEnableMaskOneGiga = n;
@@ -574,6 +608,7 @@ class ChipTestBoardData : public GeneralData {
 
         // calculate image size
         CtbImageInputs inputs{};
+        inputs.mode = readoutType;
         inputs.nAnalogSamples = nAnalogSamples;
         inputs.adcMask =
             tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
@@ -583,8 +618,13 @@ class ChipTestBoardData : public GeneralData {
         inputs.dbitOffset = ctbDbitOffset;
         inputs.dbitList = ctbDbitList;
         inputs.dbitReorder = ctbDbitReorder;
+
         auto out = computeCtbImageSize(inputs);
+
         nPixelsX = out.nPixelsX;
+        nAnalogBytes = out.nAnalogBytes;
+        nTransceiverBytes = out.nTransceiverBytes;
+
         imageSize = out.nAnalogBytes + out.nDigitalBytesReserved +
                     out.nTransceiverBytes;
         // to write to file: after ctb offset and reorder
@@ -651,11 +691,20 @@ class XilinxChipTestBoardData : public GeneralData {
         UpdateImageSize();
     };
 
-    void SetctbDbitOffset(const int value) { ctbDbitOffset = value; }
+    void SetctbDbitOffset(const int value) {
+        ctbDbitOffset = value;
+        UpdateImageSize();
+    }
 
-    void SetctbDbitList(const std::vector<int> &value) { ctbDbitList = value; }
+    void SetctbDbitList(const std::vector<int> &value) {
+        ctbDbitList = std::move(value);
+        UpdateImageSize();
+    }
 
-    void SetctbDbitReorder(const bool value) { ctbDbitReorder = value; }
+    void SetctbDbitReorder(const bool value) {
+        ctbDbitReorder = value;
+        UpdateImageSize();
+    }
 
     void SetTenGigaAdcEnableMask(int n) {
         adcEnableMaskTenGiga = n;
@@ -679,6 +728,7 @@ class XilinxChipTestBoardData : public GeneralData {
 
         // calculate image size
         CtbImageInputs inputs{};
+        inputs.mode = readoutType;
         inputs.nAnalogSamples = nAnalogSamples;
         inputs.adcMask = adcEnableMaskTenGiga;
         inputs.nTransceiverSamples = nTransceiverSamples;
@@ -687,8 +737,13 @@ class XilinxChipTestBoardData : public GeneralData {
         inputs.dbitOffset = ctbDbitOffset;
         inputs.dbitList = ctbDbitList;
         inputs.dbitReorder = ctbDbitReorder;
+
         auto out = computeCtbImageSize(inputs);
+
         nPixelsX = out.nPixelsX;
+        nAnalogBytes = out.nAnalogBytes;
+        nTransceiverBytes = out.nTransceiverBytes;
+
         imageSize = out.nAnalogBytes + out.nDigitalBytesReserved +
                     out.nTransceiverBytes;
         // to write to file: after ctb offset and reorder

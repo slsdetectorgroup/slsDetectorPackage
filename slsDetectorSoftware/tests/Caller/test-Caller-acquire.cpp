@@ -139,6 +139,7 @@ void test_ctb_file_size_with_acquire(Detector &det, Caller &caller,
                                      int64_t num_frames,
                                      const testCtbAcquireInfo &test_info,
                                      bool isXilinxCtb) {
+
     create_files_for_acquire(det, caller, num_frames, test_info);
 
     // check file size (assuming local pc)
@@ -161,14 +162,14 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
         int num_frames_to_acquire = 2;
         // all the test cases
         {
-            testCtbAcquireInfo test_ctb_config;
+            testCtbAcquireInfo test_ctb_config{};
             test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
             REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
                 det, caller, num_frames_to_acquire, test_ctb_config,
                 isXilinxCtb));
         }
         {
-            testCtbAcquireInfo test_ctb_config;
+            testCtbAcquireInfo test_ctb_config{};
             test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
             test_ctb_config.dbit_offset = 16;
             REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
@@ -176,7 +177,7 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
                 isXilinxCtb));
         }
         {
-            testCtbAcquireInfo test_ctb_config;
+            testCtbAcquireInfo test_ctb_config{};
             test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
             test_ctb_config.dbit_reorder = true;
             REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
@@ -184,7 +185,7 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
                 isXilinxCtb));
         }
         {
-            testCtbAcquireInfo test_ctb_config;
+            testCtbAcquireInfo test_ctb_config{};
             test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
             test_ctb_config.dbit_offset = 16;
             test_ctb_config.dbit_reorder = true;
@@ -193,7 +194,7 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
                 isXilinxCtb));
         }
         {
-            testCtbAcquireInfo test_ctb_config;
+            testCtbAcquireInfo test_ctb_config{};
             test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
             test_ctb_config.dbit_offset = 16;
             test_ctb_config.dbit_list.clear();
@@ -202,50 +203,8 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
                 isXilinxCtb));
         }
         {
-            testCtbAcquireInfo test_ctb_config;
+            testCtbAcquireInfo test_ctb_config{};
             test_ctb_config.readout_mode = defs::ANALOG_AND_DIGITAL;
-            test_ctb_config.dbit_offset = 16;
-            test_ctb_config.dbit_list.clear();
-            test_ctb_config.dbit_reorder = true;
-            REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config,
-                isXilinxCtb));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-            REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config,
-                isXilinxCtb));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-            test_ctb_config.dbit_offset = 16;
-            REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config,
-                isXilinxCtb));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-            test_ctb_config.dbit_list.clear();
-            REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config,
-                isXilinxCtb));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
-            test_ctb_config.dbit_offset = 16;
-            test_ctb_config.dbit_list.clear();
-            REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
-                det, caller, num_frames_to_acquire, test_ctb_config,
-                isXilinxCtb));
-        }
-        {
-            testCtbAcquireInfo test_ctb_config;
-            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
             test_ctb_config.dbit_offset = 16;
             test_ctb_config.dbit_list.clear();
             test_ctb_config.dbit_reorder = true;
@@ -254,7 +213,49 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
                 isXilinxCtb));
         }
         {
-            testCtbAcquireInfo test_ctb_config;
+            testCtbAcquireInfo test_ctb_config{};
+            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+            REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config{};
+            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+            test_ctb_config.dbit_offset = 16;
+            REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config{};
+            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+            test_ctb_config.dbit_list.clear();
+            REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config{};
+            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+            test_ctb_config.dbit_offset = 16;
+            test_ctb_config.dbit_list.clear();
+            REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config{};
+            test_ctb_config.readout_mode = defs::DIGITAL_AND_TRANSCEIVER;
+            test_ctb_config.dbit_offset = 16;
+            test_ctb_config.dbit_list.clear();
+            test_ctb_config.dbit_reorder = true;
+            REQUIRE_NOTHROW(test_ctb_file_size_with_acquire(
+                det, caller, num_frames_to_acquire, test_ctb_config,
+                isXilinxCtb));
+        }
+        {
+            testCtbAcquireInfo test_ctb_config{};
             test_ctb_config.readout_mode = defs::TRANSCEIVER_ONLY;
             test_ctb_config.dbit_offset = 16;
             test_ctb_config.dbit_list.clear();
@@ -264,7 +265,7 @@ TEST_CASE("ctb_acquire_check_file_size", "[.cmdcall][.cmdacquire]") {
                 isXilinxCtb));
         }
         {
-            testCtbAcquireInfo test_ctb_config;
+            testCtbAcquireInfo test_ctb_config{};
             test_ctb_config.readout_mode = defs::ANALOG_ONLY;
             test_ctb_config.dbit_offset = 16;
             test_ctb_config.dbit_list.clear();

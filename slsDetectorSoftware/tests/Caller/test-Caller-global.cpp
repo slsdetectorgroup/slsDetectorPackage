@@ -149,8 +149,9 @@ void test_acquire_with_receiver(Caller &caller, const Detector &det) {
     REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
 }
 
-void create_files_for_acquire(Detector &det, Caller &caller, int64_t num_frames,
-                              std::optional<testCtbAcquireInfo> test_info) {
+void create_files_for_acquire(
+    Detector &det, Caller &caller, int64_t num_frames,
+    const std::optional<testCtbAcquireInfo> &test_info) {
 
     // save previous state
     testFileInfo prev_file_info = get_file_state(det);
@@ -248,7 +249,9 @@ std::pair<uint64_t, int>
 calculate_ctb_image_size(const testCtbAcquireInfo &test_info,
                          bool isXilinxCtb) {
 
+    // test_info.print(); // for debugging
     sls::CtbImageInputs inputs{};
+    inputs.mode = test_info.readout_mode;
     inputs.nAnalogSamples = test_info.num_adc_samples;
     inputs.adcMask = test_info.adc_enable_10g;
     if (!isXilinxCtb && !test_info.ten_giga) {
@@ -258,8 +261,8 @@ calculate_ctb_image_size(const testCtbAcquireInfo &test_info,
     inputs.transceiverMask = test_info.transceiver_mask;
     inputs.nDigitalSamples = test_info.num_dbit_samples;
     inputs.dbitOffset = test_info.dbit_offset;
-    inputs.dbitList = test_info.dbit_list;
     inputs.dbitReorder = test_info.dbit_reorder;
+    inputs.dbitList = test_info.dbit_list;
 
     auto out = computeCtbImageSize(inputs);
     uint64_t image_size =

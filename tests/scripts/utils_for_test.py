@@ -255,7 +255,7 @@ def loadBasicSettings(name, d, fp):
     except Exception as e:
         raise RuntimeException(f'Could not load config for {name}. Error: {str(e)}') from e
     
-def ParseArguments(description, default_num_mods=1, markers=0):
+def ParseArguments(description, default_num_mods=1, markers=False, general_tests_option=False):
     parser = argparse.ArgumentParser(description)
 
     parser.add_argument('rx_hostname', nargs='?', default='localhost',
@@ -268,10 +268,14 @@ def ParseArguments(description, default_num_mods=1, markers=0):
                         help='Number of frames to test with')
     parser.add_argument('-s', '--servers', nargs='*',
                         help='Detector servers to run')
-    if markers == 1:
+    if markers:
         parser.add_argument('-m', '--markers', nargs='?', default ='[.cmdcall]',
                         help = 'Markers to use for cmd tests, default: [.cmdcall]')
 
+    if general_tests_option:
+        parser.add_argument('-g', '--general_tests', action='store_true',
+                        help = 'Enable general tests (no value needed)')
+        
     args = parser.parse_args()
 
     # Set default server list if not provided
@@ -294,8 +298,12 @@ def ParseArguments(description, default_num_mods=1, markers=0):
         f"num_mods: '{args.num_mods}'\n"
         f"num_frames: '{args.num_frames}'"
     )
-    if markers == 1:
+    if markers:
         msg += f"\nmarkers: '{args.markers}'"
+
+    if general_tests_option:
+        msg += f"\ngeneral_tests: '{args.general_tests}'"
+
     Log(LogLevel.INFO, msg)
 
 

@@ -4,6 +4,7 @@
 This file is used for common utils used for integration tests between simulators and receivers.
 '''
 
+from pathlib import Path
 import sys, subprocess, time, argparse
 from enum import Enum
 from colorama import Fore, Style, init
@@ -258,9 +259,11 @@ def loadBasicSettings(name, d, fp):
 def ParseArguments(description, default_num_mods=1, markers=False, general_tests_option=False):
     parser = argparse.ArgumentParser(description)
 
+    default_settings_path = Path(__file__).resolve().parents[2] / "settingsdir"
+
     parser.add_argument('rx_hostname', nargs='?', default='localhost',
                         help='Hostname/IP of the current machine')
-    parser.add_argument('settingspath', nargs='?', default='../../settingsdir',
+    parser.add_argument('settingspath', nargs='?', default=str(default_settings_path),
                         help='Relative or absolute path to the settings directory')
     parser.add_argument('-n', '--num-mods', nargs='?', default=default_num_mods, type=int,
                         help='Number of modules to test with')

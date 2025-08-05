@@ -95,6 +95,7 @@ Welcome to slsDetectorPackage's documentation!
     :caption: Receiver Files
     :maxdepth: 3
 
+    dataformat
     fileformat
     slsreceiverheaderformat
     masterfileattributes

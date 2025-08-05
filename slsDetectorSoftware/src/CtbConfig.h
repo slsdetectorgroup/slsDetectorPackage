@@ -56,6 +56,7 @@ class CtbConfig {
     std::string getSlowADCName(size_t index) const;
     std::vector<std::string> getSlowADCNames() const;
     static const char *shm_tag();
+    bool isValid{true}; // false if freed to block access from python or c++ api
 };
 
 } // namespace sls

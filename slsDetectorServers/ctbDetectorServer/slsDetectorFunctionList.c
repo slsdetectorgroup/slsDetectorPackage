@@ -94,7 +94,10 @@ void basictests() {
     LOG(logINFOBLUE, ("********* Chip Test Board Virtual Server *********\n"));
 #else
     LOG(logINFOBLUE, ("************* Chip Test Board Server *************\n"));
-    enableBlackfinAMCExternalAccessExtension();
+    initError = enableBlackfinAMCExternalAccessExtension(initErrorMessage);
+    if (initError == FAIL) {
+        return;
+    }
     initError = defineGPIOpins(initErrorMessage);
     if (initError == FAIL) {
         return;
@@ -440,31 +443,30 @@ uint32_t getDetectorIP() {
     return res;
 }
 
-void enableBlackfinAMCExternalAccessExtension() {
+int enableBlackfinAMCExternalAccessExtension(char *mess) {
     unsigned int value;
-    const char *file_path = "/sys/kernel/debug/blackfin/ebiu_amc/EBIU_AMBCTL1";
-
+    const char *file_path = BFIN_AMC_ACCESS_EXTENSION_FNAME;
     FILE *file = fopen(file_path, "r");
     if (!file) {
-        LOG(logERROR, ("Failed to read EBIU_AMBCTL1\n"));
-        return;
+        strcpy(mess, "Failed to enable blackfin AMC access extension. Could "
+                     "not read EBIU_AMBCTL1\n");
+        LOG(logERROR, (mess));
+        return FAIL;
     }
     fscanf(file, "%x", &value);
     fclose(file);
 
-    // enable support for ARDY signal on interface to FPGA
-    // needed to properly translate avalon_mm_waitrequest in the CTB firmware
-    // https://www.analog.com/media/en/dsp-documentation/processor-manuals/bf537_hwr_Rev3.2.pdf
-    // page 274
-    value |= 0x3;
-
+    value |= BFIN_AMC_ACCESS_EXTENSION_ENA_VAL;
     file = fopen(file_path, "w");
     if (!file) {
-        LOG(logERROR, ("Failed to enable blackfin AMC access extension\n"));
-        return;
+        strcpy(mess, "Failed to enable blackfin AMC access extension. Could "
+                     "not write EBIU_AMBCTL1\n");
+        LOG(logERROR, (mess));
+        return FAIL;
     }
     fprintf(file, "0x%x", value);
     fclose(file);
+    return OK;
 }
 
 /* initialization */

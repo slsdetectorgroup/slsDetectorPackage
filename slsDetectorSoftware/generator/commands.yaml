@@ -2598,11 +2598,7 @@ rx_roi:
         GET:
           argc: 0
         PUT:
-          args:
-            - argc: 2
-              arg_types: [ int, int ]
-            - argc: 4
-              arg_types: [ int, int, int, int ]
+          argc: -1
 
 ratecorr:
     is_description: true

@@ -1,24 +1,24 @@
-Receivers
+Custom Receiver
 =================
 
-Receiver processes can be run on same or different machines as the client, receives the data from the detector (via UDP packets).
-When using the slsReceiver/ slsMultiReceiver, they can be further configured by the client control software (via TCP/IP) to set file name, file path, progress of acquisition etc.
+The receiver essentially listens to UDP data packets sent out by the detector.
+
+To know more about detector receiver setup in the config file, please check out :ref:`the detector-receiver UDP configuration in the config file<detector udp header config>` and the :ref:`detector udp format<detector udp header>`.
 
 
-To know more about detector receiver configuration, please check out :ref:`detector udp header and udp commands in the config file <detector udp header>`
+| Please note the following when using a custom receiver:
 
-Custom Receiver
-----------------
+* **udp_dstmac** must be configured in the config file. This parameter is not required when using an in-built receiver.
 
-| When using  custom receiver with our package, ensure that **udp_dstmac** is also configured in the config file. This parameter is not required when using slsReceiver.
+* Cannot use "auto" for **udp_dstip**.
 
-| Cannot use "auto" for **udp_dstip**.
+* No **rx_** commands in the config file. These commands are for configuring the slsReceiver.
 
-| Also ensure that there are no **rx_** commands in the config file. These commands are for configuring the slsReceiver.
+
+
+The main difference is the lack of **rx_** commands or file commands (eg. **f**write, **f**path) and the **udp_dstmac** is required in config file.
 
 Example of a custom receiver config file
-
-* The main difference is the lack of **rx_** commands or file commands (eg. fwrite, fpath) and the udp_dstmac is required in config file.
 
 .. code-block:: bash
 

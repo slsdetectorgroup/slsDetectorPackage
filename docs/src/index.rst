@@ -29,6 +29,12 @@ Welcome to slsDetectorPackage's documentation!
     examples
 
 .. toctree::
+    :caption: how to
+    :maxdepth: 2
+
+    multidet
+
+.. toctree::
     :caption: Python API
     :maxdepth: 2
 
@@ -81,13 +87,15 @@ Welcome to slsDetectorPackage's documentation!
     :caption: Receiver
     :maxdepth: 2
 
-    receivers
     slsreceiver
+    receivers
+    
 
 .. toctree::
     :caption: Receiver Files
     :maxdepth: 3
 
+    dataformat
     fileformat
     slsreceiverheaderformat
     masterfileattributes

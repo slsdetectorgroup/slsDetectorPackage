@@ -657,9 +657,16 @@ void Module::setExptime(int gateIndex, int64_t value) {
     int64_t args[]{static_cast<int64_t>(gateIndex), value};
     sendToDetector(F_SET_EXPTIME, args, nullptr);
     if (shm()->useReceiverFlag) {
+        // get exact value due to clk
+        if (shm()->detType == MYTHEN3 && gateIndex == -1) {
+            value = getExptime(0); // m3 does not support -1
+        } else {
+            value = getExptime(gateIndex); // others only support -1
+        }
+        args[1] = value;
         sendToReceiver(F_RECEIVER_SET_EXPTIME, args, nullptr);
     }
-    if (prevVal != value) {
+    if (shm()->detType == EIGER && prevVal != value) {
         updateRateCorrection();
     }
 }
@@ -671,6 +678,7 @@ int64_t Module::getPeriod() const {
 void Module::setPeriod(int64_t value) {
     sendToDetector(F_SET_PERIOD, value, nullptr);
     if (shm()->useReceiverFlag) {
+        value = getPeriod(); // get exact value due to clk
         sendToReceiver(F_RECEIVER_SET_PERIOD, value, nullptr);
     }
 }
@@ -749,6 +757,9 @@ slsDetectorDefs::speedLevel Module::getReadoutSpeed() const {
 
 void Module::setReadoutSpeed(speedLevel value) {
     sendToDetector(F_SET_READOUT_SPEED, value, nullptr);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_SET_RECEIVER_READOUT_SPEED, value, nullptr);
+    }
 }
 
 int Module::getClockDivider(int clkIndex) const {
@@ -1521,17 +1532,94 @@ void Module::setRxArping(bool enable) {
     sendToReceiver(F_SET_RECEIVER_ARPING, static_cast<int>(enable), nullptr);
 }
 
-defs::ROI Module::getRxROI() const {
-    return sendToReceiver<slsDetectorDefs::ROI>(F_RECEIVER_GET_RECEIVER_ROI);
+std::vector<defs::ROI> Module::getRxROI() const {
+    LOG(logDEBUG1) << "Getting receiver ROI for Module " << moduleIndex;
+    // check number of ports
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("No receiver to get ROI.");
+    }
+    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    client.Send(F_RECEIVER_GET_RECEIVER_ROI);
+    client.setFnum(F_RECEIVER_GET_RECEIVER_ROI);
+    auto nPorts = client.Receive<int>();
+    std::vector<ROI> retval(nPorts);
+    if (nPorts > 0)
+        client.Receive(retval);
+    if (nPorts != shm()->numUDPInterfaces) {
+        throw RuntimeError(
+            "Invalid number of rois: " + std::to_string(nPorts) +
+            ". Expected: " + std::to_string(shm()->numUDPInterfaces));
+    }
+    LOG(logDEBUG1) << "ROI of Receiver" << moduleIndex << ": "
+                   << ToString(retval);
+    return retval;
 }
 
-void Module::setRxROI(const slsDetectorDefs::ROI arg) {
-    LOG(logDEBUG) << moduleIndex << ": " << arg;
-    sendToReceiver(F_RECEIVER_SET_RECEIVER_ROI, arg, nullptr);
+void Module::setRxROI(const std::vector<defs::ROI> &portRois) {
+    LOG(logDEBUG) << "Sending to receiver " << moduleIndex
+                  << " [roi: " << ToString(portRois) << ']';
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("No receiver to set ROI.");
+    }
+    if ((int)portRois.size() != shm()->numUDPInterfaces) {
+        throw RuntimeError(
+            "Invalid number of ROIs: " + std::to_string(portRois.size()) +
+            ". Expected: " + std::to_string(shm()->numUDPInterfaces));
+    }
+    // check number of ports
+    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    client.Send(F_RECEIVER_SET_RECEIVER_ROI);
+    client.setFnum(F_RECEIVER_SET_RECEIVER_ROI);
+    int size = static_cast<int>(portRois.size());
+    client.Send(size);
+    if (size > 0)
+        client.Send(portRois);
+    if (client.Receive<int>() == FAIL) {
+        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
+                            " returned error: " + client.readErrorMessage());
+    }
 }
 
-void Module::setRxROIMetadata(const slsDetectorDefs::ROI arg) {
-    sendToReceiver(F_RECEIVER_SET_RECEIVER_ROI_METADATA, arg, nullptr);
+std::vector<slsDetectorDefs::ROI> Module::getRxROIMetadata() const {
+    LOG(logDEBUG1) << "Getting receiver ROI metadata for Module "
+                   << moduleIndex;
+    // check number of ports
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("No receiver to get ROI metadata.");
+    }
+    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    client.Send(F_RECEIVER_GET_ROI_METADATA);
+    client.setFnum(F_RECEIVER_GET_ROI_METADATA);
+    auto size = client.Receive<int>();
+    std::vector<slsDetectorDefs::ROI> retval(size);
+    if (size > 0)
+        client.Receive(retval);
+    if (size == 0) {
+        throw RuntimeError("Invalid number of ROI metadata: " +
+                           std::to_string(size) + ". Min: 1.");
+    }
+    LOG(logDEBUG1) << "ROI metadata of Receiver: " << ToString(retval);
+    return retval;
+}
+
+void Module::setRxROIMetadata(const std::vector<slsDetectorDefs::ROI> &args) {
+    LOG(logDEBUG) << "Sending to receiver " << moduleIndex
+                  << " [roi metadata: " << ToString(args) << ']';
+    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    receiver.Send(F_RECEIVER_SET_RECEIVER_ROI_METADATA);
+    receiver.setFnum(F_RECEIVER_SET_RECEIVER_ROI_METADATA);
+    int size = static_cast<int>(args.size());
+    receiver.Send(size);
+    if (size > 0)
+        receiver.Send(args);
+    if (size < 1) {
+        throw RuntimeError("Invalid number of ROI metadata: " +
+                           std::to_string(size) + ". Min: 1.");
+    }
+    if (receiver.Receive<int>() == FAIL) {
+        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
+                            " returned error: " + receiver.readErrorMessage());
+    }
 }
 
 // File
@@ -1700,6 +1788,7 @@ void Module::setSubExptime(int64_t value) {
     }
     sendToDetector(F_SET_SUB_EXPTIME, value, nullptr);
     if (shm()->useReceiverFlag) {
+        value = getSubExptime(); // get exact value due to clk
         sendToReceiver(F_RECEIVER_SET_SUB_EXPTIME, value, nullptr);
     }
     if (prevVal != value) {
@@ -1714,6 +1803,7 @@ int64_t Module::getSubDeadTime() const {
 void Module::setSubDeadTime(int64_t value) {
     sendToDetector(F_SET_SUB_DEADTIME, value, nullptr);
     if (shm()->useReceiverFlag) {
+        value = getSubDeadTime(); // get exact value due to clk
         sendToReceiver(F_RECEIVER_SET_SUB_DEADTIME, value, nullptr);
     }
 }
@@ -2211,6 +2301,8 @@ void Module::setBurstMode(slsDetectorDefs::burstMode value) {
     sendToDetector(F_SET_BURST_MODE, value, nullptr);
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_BURST_MODE, value, nullptr);
+        // changing burst mode may change exptime due to clk change
+        setExptime(-1, getExptime(-1)); // update exact exptime in receiver
     }
 }
 
@@ -2302,6 +2394,9 @@ void Module::setGateDelay(int gateIndex, int64_t value) {
     int64_t args[]{static_cast<int64_t>(gateIndex), value};
     sendToDetector(F_SET_GATE_DELAY, args, nullptr);
     if (shm()->useReceiverFlag) {
+        // get exact value due to clk
+        args[1] =
+            getGateDelay(gateIndex == -1 ? 0 : gateIndex); // m3 doesnt allow -1
         sendToReceiver(F_SET_RECEIVER_GATE_DELAY, args, nullptr);
     }
 }

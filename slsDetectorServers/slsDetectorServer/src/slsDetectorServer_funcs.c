@@ -7257,7 +7257,8 @@ int get_receiver_parameters(int file_des) {
     // dynamic range
     ret = getDynamicRange(&i32);
     if (ret == FAIL) {
-        i32 = 0;
+        sprintf(mess, "Could not get dynamic range.\n");
+        return sendError(file_des);
     }
     n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)
@@ -7436,6 +7437,20 @@ int get_receiver_parameters(int file_des) {
     u32 = 0;
 #endif
     n += sendData(file_des, &u32, sizeof(u32), INT32);
+    if (n < 0)
+        return printSocketReadError();
+
+        // readout speed
+#if !defined(CHIPTESTBOARDD) && !defined(XILINX_CHIPTESTBOARDD)
+    ret = getReadoutSpeed(&i32);
+    if (ret == FAIL) {
+        sprintf(mess, "Could not get readout speed.\n");
+        return sendError(file_des);
+    }
+#else
+    i32 = 0;
+#endif
+    n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)
         return printSocketReadError();
 

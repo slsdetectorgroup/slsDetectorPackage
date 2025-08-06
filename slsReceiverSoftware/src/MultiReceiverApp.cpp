@@ -2,15 +2,16 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 /* Creates the slsMultiReceiver for running multiple receivers form a single
  * binary */
+#include "CommandLineOptions.h"
 #include "sls/Receiver.h"
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
+#include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
 
 #include <csignal> //SIGINT
 #include <cstring>
-#include <iostream>
 #include <semaphore.h>
 #include <sys/wait.h> //wait
 #include <unistd.h>
@@ -25,28 +26,6 @@
  * recievers */
 #define PRINT_IN_COLOR(c, f, ...)                                              \
     printf("\033[%dm" f RESET, 30 + c + 1, ##__VA_ARGS__)
-
-sem_t semaphore;
-
-/**
- * Control+C Interrupt Handler
- * to let all the processes know to exit properly
- */
-void sigInterruptHandler(int p) { sem_post(&semaphore); }
-
-/**
- * prints usage of this example program
- */
-std::string getHelpMessage() {
-    std::ostringstream os;
-    os << "\nUsage:\n"
-       << "./slsMultiReceiver [start tcp port] [num recevers] [call back "
-          "option (optional)]\n"
-       << "\t - tcp port has to be non-zero and 16 bit\n"
-       << "\t - call back option is 0 (disabled) by default, 1 prints frame "
-          "header for debugging\n";
-    return os.str();
-}
 
 /**
  * Start Acquisition Call back (slsMultiReceiver writes data if file write
@@ -146,99 +125,48 @@ void GetData(slsDetectorDefs::sls_receiver_header &header,
         // header->packetsMask.to_string().c_str(),
         ((uint8_t)(*((uint8_t *)(dataPointer)))), imageSize);
 
-    // // example of how to use roi or modify data that is later written to file
-    // slsDetectorDefs::ROI roi{0, 10, 0, 20};
-    // int width = roi.xmax - roi.xmin;
-    // int height = roi.ymax - roi.ymin;
-    // uint8_t *destPtr = (uint8_t *)dataPointer;
-    // for (int irow = roi.ymin; irow < roi.ymax; ++irow) {
-    //     memcpy(destPtr,
-    //            ((uint8_t *)(dataPointer + irow * callbackHeader.shape.x +
-    //                         roi.xmin)),
-    //            width);
-    //     destPtr += width;
-    // }
-    // memcpy((uint8_t*)dataPointer, (uint8_t*)dataPointer
-    // // setting roi for eg. changes size
-    // imageSize = width * height;
+    // if data is modified, can affect size
+    // only reduction in size allowed, not increase
+    // imageSize = 26000;
 }
 
+sem_t semaphore;
+
 /**
- * Example of main program using the Receiver class
- *
- * - Defines in file for:
- *  	- Default Number of receivers is 1
- *  	- Default Start TCP port is 1954
+ * Control+C Interrupt Handler
+ * to let all the processes know to exit properly
+ * All child processes will call the handler (parent process set to ignore)
  */
+void sigInterruptHandler(int signal) {
+    (void)signal; // suppress unused warning if needed
+    sem_post(&semaphore);
+}
+
 int main(int argc, char *argv[]) {
 
-    /**	- set default values */
-    int numReceivers = 1;
-    uint16_t startTCPPort = DEFAULT_TCP_RX_PORTNO;
-    int withCallback = 0;
+    CommandLineOptions cli(AppType::MultiReceiver);
+    ParsedOptions opts;
+    try {
+        opts = cli.parse(argc, argv);
+    } catch (sls::RuntimeError &e) {
+        return EXIT_FAILURE;
+    }
+    auto &m = std::get<MultiReceiverOptions>(opts);
+    if (m.versionRequested || m.helpRequested) {
+        return EXIT_SUCCESS;
+    }
+
+    LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';
+
+    // close files on ctrl+c
+    sls::setupSignalHandler(SIGINT, sigInterruptHandler);
+    // handle locally on socket crash
+    sls::setupSignalHandler(SIGPIPE, SIG_IGN);
+
     sem_init(&semaphore, 1, 0);
 
-    /**	- get number of receivers and start tcp port from command line
-     * arguments */
-    if (argc > 1) {
-        try {
-            if (argc == 3 || argc == 4) {
-                startTCPPort = sls::StringTo<uint16_t>(argv[1]);
-                if (startTCPPort == 0) {
-                    throw std::runtime_error("Invalid start tcp port");
-                }
-                numReceivers = std::stoi(argv[2]);
-                if (numReceivers > 1024) {
-                    cprintf(RED,
-                            "Did you mix up the order of the arguments?\n%s\n",
-                            getHelpMessage().c_str());
-                    return EXIT_FAILURE;
-                }
-                if (numReceivers == 0) {
-                    cprintf(RED, "Invalid number of receivers.\n%s\n",
-                            getHelpMessage().c_str());
-                    return EXIT_FAILURE;
-                }
-                if (argc == 4) {
-                    withCallback = std::stoi(argv[3]);
-                }
-            } else
-                throw std::runtime_error("Invalid number of arguments");
-        } catch (const std::exception &e) {
-            cprintf(RED, "Error: %s\n%s\n", e.what(), getHelpMessage().c_str());
-            return EXIT_FAILURE;
-        }
-    }
-
-    cprintf(BLUE, "Parent Process Created [ Tid: %ld ]\n", (long)gettid());
-    cprintf(RESET, "Number of Receivers: %d\n", numReceivers);
-    cprintf(RESET, "Start TCP Port: %hu\n", startTCPPort);
-    cprintf(RESET, "Callback Enable: %d\n", withCallback);
-
-    /** - Catch signal SIGINT to close files and call destructors properly */
-    struct sigaction sa;
-    sa.sa_flags = 0;                     // no flags
-    sa.sa_handler = sigInterruptHandler; // handler function
-    sigemptyset(&sa.sa_mask); // dont block additional signals during invocation
-                              // of handler
-    if (sigaction(SIGINT, &sa, nullptr) == -1) {
-        cprintf(RED, "Could not set handler function for SIGINT\n");
-    }
-
-    /** - Ignore SIG_PIPE, prevents global signal handler, handle locally,
-       instead of a server crashing due to client crash when writing, it just
-       gives error */
-    struct sigaction asa;
-    asa.sa_flags = 0;          // no flags
-    asa.sa_handler = SIG_IGN;  // handler function
-    sigemptyset(&asa.sa_mask); // dont block additional signals during
-                               // invocation of handler
-    if (sigaction(SIGPIPE, &asa, nullptr) == -1) {
-        cprintf(RED, "Could not set handler function for SIGPIPE\n");
-    }
-
-    /** - loop over number of receivers */
-    for (int i = 0; i < numReceivers; ++i) {
+    /** - loop over receivers */
+    for (int i = 0; i < m.numReceivers; ++i) {
 
         /**	- fork process to create child process */
         pid_t pid = fork();
@@ -246,86 +174,89 @@ int main(int argc, char *argv[]) {
         /**	- if fork failed, raise SIGINT and properly destroy all child
          * processes */
         if (pid < 0) {
-            cprintf(RED, "fork() failed. Killing all the receiver objects\n");
+            LOG(sls::logERROR)
+                << "fork() failed. Killing all the receiver objects";
             raise(SIGINT);
         }
 
         /**	- if child process */
         else if (pid == 0) {
-            cprintf(BLUE, "Child process %d [ Tid: %ld ]\n", i, (long)gettid());
+            LOG(sls::logINFOBLUE)
+                << "Child process " << i << " [ Tid: " << gettid() << ']';
 
-            std::unique_ptr<sls::Receiver> receiver = nullptr;
             try {
-                receiver = sls::make_unique<sls::Receiver>(startTCPPort + i);
+                uint16_t port = m.port + i;
+                sls::Receiver receiver(port);
+
+                /**	- register callbacks. remember to set file write enable
+                 * to 0 (using the client) if we should not write files and you
+                 * will write data using the callbacks */
+                if (m.callbackEnabled) {
+
+                    /** - Call back for start acquisition */
+                    LOG(sls::logINFOBLUE) << "Registering StartAcq()";
+                    receiver.registerCallBackStartAcquisition(StartAcq,
+                                                              nullptr);
+
+                    /** - Call back for acquisition finished */
+                    LOG(sls::logINFOBLUE)
+                        << "Registering AcquisitionFinished()";
+                    receiver.registerCallBackAcquisitionFinished(
+                        AcquisitionFinished, nullptr);
+
+                    /* 	- Call back for raw data */
+                    LOG(sls::logINFOBLUE) << "Registering GetData()";
+                    receiver.registerCallBackRawDataReady(GetData, nullptr);
+                }
+
+                /**	- as long as no Ctrl+C */
+                // each child process gets a copy of the semaphore
+                sem_wait(&semaphore);
+                sem_destroy(&semaphore);
+                LOG(sls::logINFOBLUE)
+                    << "Exiting Child Process [ Tid: " << gettid() << ']';
+                exit(EXIT_SUCCESS);
             } catch (...) {
+                sem_destroy(&semaphore);
                 LOG(sls::logINFOBLUE)
                     << "Exiting Child Process [ Tid: " << gettid() << " ]";
-                throw;
+                exit(EXIT_FAILURE);
             }
-            /**	- register callbacks. remember to set file write enable to 0
-             * (using the client) if we should not write files and you will
-             * write data using the callbacks */
-            if (withCallback) {
-
-                /** - Call back for start acquisition */
-                cprintf(BLUE, "Registering StartAcq()\n");
-                receiver->registerCallBackStartAcquisition(StartAcq, nullptr);
-
-                /** - Call back for acquisition finished */
-                cprintf(BLUE, "Registering AcquisitionFinished()\n");
-                receiver->registerCallBackAcquisitionFinished(
-                    AcquisitionFinished, nullptr);
-
-                /* 	- Call back for raw data */
-                cprintf(BLUE, "Registering GetData() \n");
-                receiver->registerCallBackRawDataReady(GetData, nullptr);
-            }
-
-            /**	- as long as no Ctrl+C */
-            sem_wait(&semaphore);
-            sem_destroy(&semaphore);
-            cprintf(BLUE, "Exiting Child Process [ Tid: %ld ]\n",
-                    (long)gettid());
-            exit(EXIT_SUCCESS);
-            break;
         }
     }
 
-    /** - Parent process ignores SIGINT (exits only when all child process
-     * exits) */
-    sa.sa_flags = 0;          // no flags
-    sa.sa_handler = SIG_IGN;  // handler function
-    sigemptyset(&sa.sa_mask); // dont block additional signals during invocation
-                              // of handler
-    if (sigaction(SIGINT, &sa, nullptr) == -1) {
-        cprintf(RED, "Could not set handler function for SIGINT\n");
-    }
+    /** - Parent process ignores SIGINT and waits for all the child processes to
+     * handle the signal */
+    sls::setupSignalHandler(SIGINT, SIG_IGN);
 
     /** - Print Ready and Instructions how to exit */
     std::cout << "Ready ... \n";
-    cprintf(RESET, "\n[ Press \'Ctrl+c\' to exit ]\n");
+    LOG(sls::logINFO) << "\n[ Press \'Ctrl+c\' to exit ]";
 
     /** - Parent process waits for all child processes to exit */
     for (;;) {
-        pid_t childPid = waitpid(-1, nullptr, 0);
+        int status;
+        pid_t childPid = waitpid(-1, &status, 0);
 
         // no child closed
         if (childPid == -1) {
             if (errno == ECHILD) {
-                cprintf(GREEN, "All Child Processes have been closed\n");
+                LOG(sls::logINFOGREEN)
+                    << "All Child Processes have been closed";
                 break;
             } else {
-                cprintf(RED, "Unexpected error from waitpid(): (%s)\n",
-                        strerror(errno));
+                LOG(sls::logERROR)
+                    << "Unexpected error from waitpid(): " << strerror(errno);
                 break;
             }
         }
 
-        // child closed
-        cprintf(BLUE, "Exiting Child Process [ Tid: %ld ]\n",
-                (long int)childPid);
+        if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
+            std::cerr << "Child " << childPid << " failed\n";
+            kill(0, SIGINT); // signal other children to exit
+        }
     }
 
     std::cout << "Goodbye!\n";
-    return 0;
+    return EXIT_SUCCESS;
 }

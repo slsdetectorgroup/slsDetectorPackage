@@ -719,49 +719,133 @@ std::string Caller::rx_zmqip(int action) {
     }
     return os.str();
 }
+
 std::string Caller::rx_roi(int action) {
     std::ostringstream os;
+    std::string helpMessage =
+        std::string("[xmin] [xmax] [ymin] [ymax]\n") +
+        "\tDefines a single region of interest (ROI) in the receiver.\n"
+        "\tFor example, to set a single ROI: 0 100 20 30\n\n"
+
+        "\tTo specify multiple ROIs, use square brackets between ROIs and "
+        "commas inside for each ROI. \n"
+        "\tInside each bracket, no spaces allowed.\n\n"
+
+        "\tIf you use semicolon (along with '['and ']' to separate rois), \n"
+        "\tenclose the entire list in quotes.\n"
+        "\tExamples:\n"
+        "\t  [0,100,0,100] [200,300,0,100]\n"
+        "\t  \"[0,100,0,100];[200,300,0,100]\"\n\n"
+
+        "\tNotes:\n"
+        "\t- ROIs can only be set at the multi-module level.\n"
+        "\t- If multi module ROIs ends up with more then 1 ROI per UDP "
+        "port or if they overlap each other, it will throw an error.\n"
+        "\t- ROIs coordinates assume no gap pixels, even if they are enabled "
+        "in gui.\n"
+        "\t- To retrieve ROIs per port, specify the module ID when using the "
+        "get command.\n"
+        "\t- Use the command 'rx_clearroi' to clear all ROIs.\n"
+        "\t- Changing the number of UDP interfaces will automatically clear "
+        "the current ROIs.\n\n"
+        "\t- Cannot be set for CTB or Xilinx CTB.\n";
+
     if (action == defs::HELP_ACTION) {
-        os << "[xmin] [xmax] [ymin] [ymax]\n\tRegion of interest in "
-              "receiver.\n\tOnly allowed at multi module level and without gap "
-              "pixels."
-           << '\n';
+        os << helpMessage;
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        if (det_id == -1) {
-            auto t = det->getRxROI();
-            os << t << '\n';
-        } else {
-            auto t = det->getIndividualRxROIs(std::vector<int>{det_id});
-            os << t << '\n';
-        }
+        auto t = det->getRxROI(det_id);
+        os << ToString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        defs::ROI t;
-        // 2 or 4 arguments
-        if (args.size() != 2 && args.size() != 4) {
-            WrongNumberOfParameters(2);
-        }
-        if (args.size() == 2 || args.size() == 4) {
-            t.xmin = StringTo<int>(args[0]);
-            t.xmax = StringTo<int>(args[1]);
-        }
-        if (args.size() == 4) {
-            t.ymin = StringTo<int>(args[2]);
-            t.ymax = StringTo<int>(args[3]);
-        }
-        // only multi level
         if (det_id != -1) {
-            throw RuntimeError("Cannot execute receiver ROI at module level");
+            throw RuntimeError("Cannot set receiver ROI at module level");
         }
-        det->setRxROI(t);
-        os << t << '\n';
+        // Support multiple args with bracketed ROIs, or single arg with
+        // semicolon-separated vector in quotes
+        bool isVectorInput =
+            std::all_of(args.begin(), args.end(), [](const std::string &a) {
+                return a.find('[') != std::string::npos &&
+                       a.find(']') != std::string::npos;
+            });
+        std::vector<defs::ROI> rois;
+        try {
+            // single roi in previous format: [xmin,xmax,ymin,ymax]
+            if (!isVectorInput) {
+                auto t = parseRoi(args);
+                rois.emplace_back(t);
+            }
+            // multiple roi or single roi with brackets
+            // multiple roi: multiple args with bracketed ROIs, or single arg
+            // with semicolon-bracketed Rois in quotes
+            else {
+                for (const auto &arg : args) {
+                    auto subRois = parseRoiVector(arg);
+                    rois.insert(rois.end(), subRois.begin(), subRois.end());
+                }
+            }
+        } catch (const std::exception &e) {
+            throw RuntimeError("Could not parse ROI: Did you use spaces inside "
+                               "the brackets? Use sls_detector_help " +
+                               cmd + " to get the right syntax expected.");
+        }
+
+        det->setRxROI(rois);
+        os << ToString(rois) << '\n';
     } else {
         throw RuntimeError("Unknown action");
     }
     return os.str();
 }
+
+std::vector<defs::ROI> Caller::parseRoiVector(const std::string &input) {
+    std::vector<defs::ROI> rois;
+    std::stringstream ss(input);
+    std::string token;
+
+    while (std::getline(ss, token, ']')) {
+        // remove spaces and semicolons
+        token.erase(
+            std::remove_if(token.begin(), token.end(),
+                           [](char c) { return std::isspace(c) || c == ';'; }),
+            token.end());
+        if (token.empty())
+            continue;
+        if (token.front() != '[') {
+            throw RuntimeError("Each ROI must be enclosed in square brackets: "
+                               "[xmin,xmax,ymin,ymax]");
+        }
+        token = token.substr(1, token.size() - 1); // remove brackets
+        std::vector<std::string> parts;
+        std::stringstream inner(token);
+        std::string num;
+        while (std::getline(inner, num, ',')) {
+            parts.push_back(num);
+        }
+
+        auto roi = parseRoi(parts);
+        rois.emplace_back(roi);
+    }
+    return rois;
+}
+
+defs::ROI Caller::parseRoi(const std::vector<std::string> &parts) {
+    if (parts.size() != 2 && parts.size() != 4) {
+        throw RuntimeError(
+            "Could not parse ROI. A ROI must have 2 or 4 integers");
+    }
+
+    defs::ROI roi;
+    roi.xmin = StringTo<int>(parts[0]);
+    roi.xmax = StringTo<int>(parts[1]);
+    if (parts.size() == 4) {
+        roi.ymin = StringTo<int>(parts[2]);
+        roi.ymax = StringTo<int>(parts[3]);
+    }
+    return roi;
+}
+
 std::string Caller::ratecorr(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {

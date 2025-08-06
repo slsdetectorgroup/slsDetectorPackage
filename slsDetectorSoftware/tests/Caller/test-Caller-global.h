@@ -2,12 +2,15 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
-class Caller;
+#include "Caller.h"
 #include "sls/Detector.h"
+#include "sls/ToString.h"
+#include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
 #include <chrono>
 #include <filesystem>
+#include <optional>
 #include <thread>
 
 namespace sls {
@@ -18,13 +21,14 @@ struct testFileInfo {
     bool file_write{true};
     bool file_overwrite{true};
     slsDetectorDefs::fileFormat file_format{slsDetectorDefs::BINARY};
-};
-
-struct testCommonDetAcquireInfo {
-    slsDetectorDefs::timingMode timing_mode{slsDetectorDefs::AUTO_TIMING};
-    int64_t num_frames_to_acquire{2};
-    int64_t num_triggers{1};
-    std::chrono::nanoseconds period{std::chrono::milliseconds{2}};
+    std::string getMasterFileNamePrefix() const {
+        return file_path + "/" + file_prefix + "_master_" +
+               std::to_string(file_acq_index);
+    }
+    std::string getVirtualFileName() const {
+        return file_path + "/" + file_prefix + "_virtual_" +
+               std::to_string(file_acq_index) + ".h5";
+    }
 };
 
 struct testCtbAcquireInfo {
@@ -39,6 +43,23 @@ struct testCtbAcquireInfo {
     std::vector<int> dbit_list{0, 12, 2, 43};
     bool dbit_reorder{false};
     uint32_t transceiver_mask{0x3};
+
+    inline void print() const {
+        LOG(logINFO) << "CTB Acquire Info: "
+                     << "\n\tReadout Mode: " << ToString(readout_mode)
+                     << "\n\tTen Giga: " << ten_giga
+                     << "\n\tADC Enable 1G: " << std::hex << adc_enable_1g
+                     << std::dec << "\n\tADC Enable 10G: " << std::hex
+                     << adc_enable_10g << std::dec
+                     << "\n\tNumber of Analog Samples: " << num_adc_samples
+                     << "\n\tNumber of Digital Samples: " << num_dbit_samples
+                     << "\n\tNumber of Transceiver Samples: "
+                     << num_trans_samples << "\n\tDBIT Offset: " << dbit_offset
+                     << "\n\tDBIT Reorder: " << dbit_reorder
+                     << "\n\tDBIT List: " << ToString(dbit_list)
+                     << "\n\tTransceiver Mask: " << std::hex << transceiver_mask
+                     << std::dec << std::endl;
+    }
 };
 
 void test_valid_port_caller(const std::string &command,
@@ -60,16 +81,14 @@ void test_frames_caught(const Detector &det, int num_frames_to_acquire);
 
 void test_acquire_with_receiver(Caller &caller, const Detector &det);
 
-testCommonDetAcquireInfo get_common_acquire_config_state(const Detector &det);
-void set_common_acquire_config_state(
-    Detector &det, const testCommonDetAcquireInfo &det_config_info);
+void create_files_for_acquire(
+    Detector &det, Caller &caller, int64_t num_frames = 1,
+    const std::optional<testCtbAcquireInfo> &test_info = std::nullopt);
 
 testCtbAcquireInfo get_ctb_config_state(const Detector &det);
 void set_ctb_config_state(Detector &det,
                           const testCtbAcquireInfo &ctb_config_info);
-uint64_t calculate_ctb_image_size(const testCtbAcquireInfo &test_info);
-void test_ctb_acquire_with_receiver(const testCtbAcquireInfo &test_info,
-                                    int64_t num_frames_to_acquire,
-                                    Detector &det, Caller &caller);
+std::pair<uint64_t, int>
+calculate_ctb_image_size(const testCtbAcquireInfo &test_info, bool isXilinxCtb);
 
 } // namespace sls

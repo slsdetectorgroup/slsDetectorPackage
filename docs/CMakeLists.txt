@@ -42,6 +42,7 @@ set(SPHINX_SOURCE_FILES
   src/pyexamples.rst
   src/pyPatternGenerator.rst
   src/servers.rst
+  src/multidet.rst
   src/receiver_api.rst
   src/result.rst
   src/type_traits.rst
@@ -66,6 +67,7 @@ set(SPHINX_SOURCE_FILES
   src/binaryfileformat.rst
   src/hdf5fileformat.rst
   src/zmqjsonheaderformat.rst
+  src/dataformat.rst
 )
 
 foreach(filename ${SPHINX_SOURCE_FILES})
@@ -83,10 +85,15 @@ configure_file(
   "${SPHINX_BUILD}/gen_server_doc.py"
   @ONLY)
 
-  configure_file(
+configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/static/extra.css"
   "${SPHINX_BUILD}/static/css/extra.css"
   @ONLY)
+
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/images
+     DESTINATION ${SPHINX_BUILD}/src)
+     
 
 add_custom_target(server_rst python gen_server_doc.py)  
 

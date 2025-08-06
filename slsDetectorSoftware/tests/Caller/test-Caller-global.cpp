@@ -2,6 +2,7 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "test-Caller-global.h"
 #include "Caller.h"
+#include "GeneralData.h"
 #include "catch.hpp"
 #include "sls/Detector.h"
 #include "sls/logger.h"
@@ -148,20 +149,53 @@ void test_acquire_with_receiver(Caller &caller, const Detector &det) {
     REQUIRE_NOTHROW(caller.call("rx_stop", {}, -1, PUT));
 }
 
-testCommonDetAcquireInfo get_common_acquire_config_state(const Detector &det) {
-    return testCommonDetAcquireInfo{
-        det.getTimingMode().tsquash("Inconsistent timing mode"),
-        det.getNumberOfFrames().tsquash("Inconsistent number of frames"),
-        det.getNumberOfTriggers().tsquash("Inconsistent number of triggers"),
-        det.getPeriod().tsquash("Inconsistent period")};
-}
+void create_files_for_acquire(
+    Detector &det, Caller &caller, int64_t num_frames,
+    const std::optional<testCtbAcquireInfo> &test_info) {
 
-void set_common_acquire_config_state(
-    Detector &det, const testCommonDetAcquireInfo &det_config_info) {
-    det.setTimingMode(det_config_info.timing_mode);
-    det.setNumberOfFrames(det_config_info.num_frames_to_acquire);
-    det.setNumberOfTriggers(det_config_info.num_triggers);
-    det.setPeriod(det_config_info.period);
+    // save previous state
+    testFileInfo prev_file_info = get_file_state(det);
+    auto prev_num_frames = det.getNumberOfFrames().tsquash(
+        "Inconsistent number of frames to acquire");
+    std::optional<testCtbAcquireInfo> prev_ctb_config_info{};
+    if (test_info) {
+        prev_ctb_config_info = get_ctb_config_state(det);
+    }
+
+    // set state for acquire
+    testFileInfo test_file_info;
+    set_file_state(det, test_file_info);
+    det.setNumberOfFrames(num_frames);
+    if (test_info) {
+        set_ctb_config_state(det, *test_info);
+    }
+
+    // acquire and get num frames caught
+    test_acquire_with_receiver(caller, det);
+    auto frames_caught = det.getFramesCaught().tsquash(
+        "Inconsistent number of frames caught")[0];
+    REQUIRE(frames_caught == num_frames);
+
+    // hdf5
+#ifdef HDF5C
+    test_file_info.file_format = defs::HDF5;
+    test_file_info.file_acq_index = 0;
+    set_file_state(det, test_file_info);
+
+    // acquire and get num frames caught
+    test_acquire_with_receiver(caller, det);
+    frames_caught = det.getFramesCaught().tsquash(
+        "Inconsistent number of frames caught")[0];
+    REQUIRE(frames_caught == num_frames);
+#endif
+
+    // restore previous state
+    // file
+    set_file_state(det, prev_file_info);
+    det.setNumberOfFrames(prev_num_frames);
+    if (test_info) {
+        set_ctb_config_state(det, *prev_ctb_config_info);
+    }
 }
 
 testCtbAcquireInfo get_ctb_config_state(const Detector &det) {
@@ -211,105 +245,32 @@ void set_ctb_config_state(Detector &det,
     det.setTransceiverEnableMask(ctb_config_info.transceiver_mask);
 }
 
-uint64_t calculate_ctb_image_size(const testCtbAcquireInfo &test_info) {
-    uint64_t num_analog_bytes = 0, num_digital_bytes = 0,
-             num_transceiver_bytes = 0;
-    if (test_info.readout_mode == defs::ANALOG_ONLY ||
-        test_info.readout_mode == defs::ANALOG_AND_DIGITAL) {
-        uint32_t adc_enable_mask =
-            (test_info.ten_giga ? test_info.adc_enable_10g
-                                : test_info.adc_enable_1g);
-        int num_analog_chans = __builtin_popcount(adc_enable_mask);
-        const int num_bytes_per_sample = 2;
-        num_analog_bytes =
-            num_analog_chans * num_bytes_per_sample * test_info.num_adc_samples;
-        LOG(logDEBUG1) << "[Analog Databytes: " << num_analog_bytes << ']';
-    }
+std::pair<uint64_t, int>
+calculate_ctb_image_size(const testCtbAcquireInfo &test_info,
+                         bool isXilinxCtb) {
 
-    // digital channels
-    if (test_info.readout_mode == defs::DIGITAL_ONLY ||
-        test_info.readout_mode == defs::ANALOG_AND_DIGITAL ||
-        test_info.readout_mode == defs::DIGITAL_AND_TRANSCEIVER) {
-        int num_digital_samples = test_info.num_dbit_samples;
-        if (test_info.dbit_offset > 0) {
-            uint64_t num_digital_bytes_reserved =
-                num_digital_samples * sizeof(uint64_t);
-            num_digital_bytes_reserved -= test_info.dbit_offset;
-            num_digital_samples = num_digital_bytes_reserved / sizeof(uint64_t);
-        }
-        int num_digital_chans = test_info.dbit_list.size();
-        if (num_digital_chans == 0) {
-            num_digital_chans = 64;
-        }
-        if (!test_info.dbit_reorder) {
-            uint32_t num_bits_per_sample = num_digital_chans;
-            if (num_bits_per_sample % 8 != 0) {
-                num_bits_per_sample += (8 - (num_bits_per_sample % 8));
-            }
-            num_digital_bytes = (num_bits_per_sample / 8) * num_digital_samples;
-        } else {
-            uint32_t num_bits_per_bit = num_digital_samples;
-            if (num_bits_per_bit % 8 != 0) {
-                num_bits_per_bit += (8 - (num_bits_per_bit % 8));
-            }
-            num_digital_bytes = num_digital_chans * (num_bits_per_bit / 8);
-        }
-        LOG(logDEBUG1) << "[Digital Databytes: " << num_digital_bytes << ']';
+    // test_info.print(); // for debugging
+    sls::CtbImageInputs inputs{};
+    inputs.mode = test_info.readout_mode;
+    inputs.nAnalogSamples = test_info.num_adc_samples;
+    inputs.adcMask = test_info.adc_enable_10g;
+    if (!isXilinxCtb && !test_info.ten_giga) {
+        inputs.adcMask = test_info.adc_enable_1g;
     }
-    // transceiver channels
-    if (test_info.readout_mode == defs::TRANSCEIVER_ONLY ||
-        test_info.readout_mode == defs::DIGITAL_AND_TRANSCEIVER) {
-        int num_transceiver_chans =
-            __builtin_popcount(test_info.transceiver_mask);
-        const int num_bytes_per_channel = 8;
-        num_transceiver_bytes = num_transceiver_chans * num_bytes_per_channel *
-                                test_info.num_trans_samples;
-        LOG(logDEBUG1) << "[Transceiver Databytes: " << num_transceiver_bytes
-                       << ']';
-    }
+    inputs.nTransceiverSamples = test_info.num_trans_samples;
+    inputs.transceiverMask = test_info.transceiver_mask;
+    inputs.nDigitalSamples = test_info.num_dbit_samples;
+    inputs.dbitOffset = test_info.dbit_offset;
+    inputs.dbitReorder = test_info.dbit_reorder;
+    inputs.dbitList = test_info.dbit_list;
 
+    auto out = computeCtbImageSize(inputs);
     uint64_t image_size =
-        num_analog_bytes + num_digital_bytes + num_transceiver_bytes;
+        out.nAnalogBytes + out.nDigitalBytes + out.nTransceiverBytes;
     LOG(logDEBUG1) << "Expected image size: " << image_size;
-    return image_size;
-}
-
-void test_ctb_acquire_with_receiver(const testCtbAcquireInfo &test_info,
-                                    int64_t num_frames_to_acquire,
-                                    Detector &det, Caller &caller) {
-
-    // save previous state
-    testFileInfo prev_file_info = get_file_state(det);
-    testCommonDetAcquireInfo prev_det_config_info =
-        // overwrite exptime if not using virtual ctb server
-        get_common_acquire_config_state(det);
-    testCtbAcquireInfo prev_ctb_config_info = get_ctb_config_state(det);
-
-    // defaults
-    testFileInfo test_file_info;
-    set_file_state(det, test_file_info);
-    testCommonDetAcquireInfo det_config;
-    det_config.num_frames_to_acquire = num_frames_to_acquire;
-    set_common_acquire_config_state(det, det_config);
-
-    // set ctb config
-    set_ctb_config_state(det, test_info);
-
-    // acquire
-    REQUIRE_NOTHROW(test_acquire_with_receiver(caller, det));
-
-    // check frames caught
-    REQUIRE_NOTHROW(test_frames_caught(det, num_frames_to_acquire));
-
-    // check file size (assuming local pc)
-    uint64_t expected_image_size = calculate_ctb_image_size(test_info);
-    REQUIRE_NOTHROW(test_acquire_binary_file_size(
-        test_file_info, num_frames_to_acquire, expected_image_size));
-
-    // restore previous state
-    set_file_state(det, prev_file_info);
-    set_common_acquire_config_state(det, prev_det_config_info);
-    set_ctb_config_state(det, prev_ctb_config_info);
+    int npixelx = out.nPixelsX;
+    LOG(logDEBUG1) << "Expected number of pixels in x: " << npixelx;
+    return std::make_pair(image_size, npixelx);
 }
 
 } // namespace sls

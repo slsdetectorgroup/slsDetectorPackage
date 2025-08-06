@@ -19,7 +19,7 @@ namespace sls {
 class ServerInterface;
 
 #define MODULE_SHMAPIVERSION 0x190726
-#define MODULE_SHMVERSION    0x230913
+#define MODULE_SHMVERSION    0x250729
 
 /**
  * @short structure allocated in shared memory to store Module settings for
@@ -32,6 +32,7 @@ struct sharedModule {
     int shmversion;
     char hostname[MAX_STR_LENGTH];
     slsDetectorDefs::detectorType detType;
+    bool isValid{true}; // false if freed to block access from python or c++ api
 
     /** END OF FIXED PATTERN -----------------------------------------------*/
 
@@ -301,9 +302,10 @@ class Module : public virtual slsDetectorDefs {
     std::array<pid_t, NUM_RX_THREAD_IDS> getReceiverThreadIds() const;
     bool getRxArping() const;
     void setRxArping(bool enable);
-    defs::ROI getRxROI() const;
-    void setRxROI(const slsDetectorDefs::ROI arg);
-    void setRxROIMetadata(const slsDetectorDefs::ROI arg);
+    std::vector<defs::ROI> getRxROI() const;
+    void setRxROI(const std::vector<slsDetectorDefs::ROI> &portRois);
+    void setRxROIMetadata(const std::vector<slsDetectorDefs::ROI> &args);
+    std::vector<slsDetectorDefs::ROI> getRxROIMetadata() const;
 
     /**************************************************
      *                                                *

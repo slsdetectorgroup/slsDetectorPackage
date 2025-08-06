@@ -53,7 +53,14 @@ void DataStreamer::SetAdditionalJsonHeader(
     isAdditionalJsonUpdated = true;
 }
 
-void DataStreamer::SetReceiverROI(ROI roi) { receiverRoi = roi; }
+void DataStreamer::SetPortROI(ROI roi) {
+    if (roi.completeRoi()) { // TODO: just not send zmq if not in roi?
+        portRoi =
+            ROI(0, generalData->nPixelsX - 1, 0, generalData->nPixelsY - 1);
+    } else {
+        portRoi = roi;
+    }
+}
 
 void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
     StopRunning();
@@ -210,7 +217,7 @@ int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size,
         isAdditionalJsonUpdated = false;
     }
     zHeader.addJsonHeader = localAdditionalJsonHeader;
-    zHeader.rx_roi = receiverRoi.getIntArray();
+    zHeader.rx_roi = portRoi.getIntArray();
 
     return zmqSocket->SendHeader(index, zHeader);
 }

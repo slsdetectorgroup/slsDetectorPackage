@@ -21,7 +21,8 @@ std::string CreateMasterBinaryFile(const std::string &filePath,
 void LinkHDF5FileInMaster(std::string &masterFileName,
                           std::string &dataFilename,
                           std::vector<std::string> parameterNames,
-                          const bool silentMode, std::mutex *hdf5LibMutex);
+                          const bool silentMode, std::mutex *hdf5LibMutex,
+                          size_t multiRoiSize);
 
 std::string CreateMasterHDF5File(const std::string &filePath,
                                  const std::string &fileNamePrefix,
@@ -29,17 +30,21 @@ std::string CreateMasterHDF5File(const std::string &filePath,
                                  const bool overWriteEnable,
                                  const bool silentMode, MasterAttributes *attr,
                                  std::mutex *hdf5LibMutex);
+defs::ROI GetGlobalPortRoi(const int iPort, const defs::xy portSize,
+                           const int numPortsY);
+int GetNumPortsInRoi(const defs::ROI roi, const defs::xy portSize);
 
 std::string CreateVirtualHDF5File(
     const std::string &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numUnitsPerReadout,
-    const uint32_t maxFramesPerFile, const uint32_t nPixelsX,
-    const uint32_t nPixelsY, const uint32_t dynamicRange,
-    const uint64_t numImagesCaught, const int numModX, const int numModY,
-    const H5::DataType dataType, const std::vector<std::string> parameterNames,
+    const uint32_t maxFramesPerFile, const int nPixelsX, const int nPixelsY,
+    const uint32_t dynamicRange, const uint64_t numImagesCaught,
+    const int numModX, const int numModY, const H5::DataType dataType,
+    const std::vector<std::string> parameterNames,
     const std::vector<H5::DataType> parameterDataTypes,
-    std::mutex *hdf5LibMutex, bool gotthard25um);
+    std::mutex *hdf5LibMutex, bool gotthard25um,
+    std::vector<defs::ROI> multiRoi);
 #endif
 } // namespace masterFileUtility
 

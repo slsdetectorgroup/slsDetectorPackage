@@ -90,4 +90,5 @@ MacAddr InterfaceNameToMac(const std::string &inf);
 IpAddr InterfaceNameToIp(const std::string &ifn);
 void validatePortNumber(uint16_t port);
 void validatePortRange(uint16_t startPort, int numPorts);
+void setupSignalHandler(int signal, void (*handler)(int));
 } // namespace sls

@@ -109,6 +109,13 @@ void init_det(py::module &m) {
                        (Result<defs::xy>(Detector::*)(sls::Positions) const) &
                            Detector::getModuleSize,
                        py::arg() = Positions{});
+    CppDetectorApi.def("getPortPerModuleGeometry",
+                       (defs::xy(Detector::*)() const) &
+                           Detector::getPortPerModuleGeometry);
+    CppDetectorApi.def("getPortSize",
+                       (Result<defs::xy>(Detector::*)(sls::Positions) const) &
+                           Detector::getPortSize,
+                       py::arg() = Positions{});
     CppDetectorApi.def("getDetectorSize", (defs::xy(Detector::*)() const) &
                                               Detector::getDetectorSize);
     CppDetectorApi.def("setDetectorSize",
@@ -924,15 +931,14 @@ void init_det(py::module &m) {
                        (void (Detector::*)(bool, sls::Positions)) &
                            Detector::setRxArping,
                        py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("getIndividualRxROIs",
-                       (Result<defs::ROI>(Detector::*)(sls::Positions) const) &
-                           Detector::getIndividualRxROIs,
-                       py::arg());
     CppDetectorApi.def("getRxROI",
-                       (defs::ROI(Detector::*)() const) & Detector::getRxROI);
-    CppDetectorApi.def(
-        "setRxROI", (void (Detector::*)(const defs::ROI)) & Detector::setRxROI,
-        py::arg());
+                       (std::vector<defs::ROI>(Detector::*)(int) const) &
+                           Detector::getRxROI,
+                       py::arg() = -1);
+    CppDetectorApi.def("setRxROI",
+                       (void (Detector::*)(const std::vector<defs::ROI> &)) &
+                           Detector::setRxROI,
+                       py::arg());
     CppDetectorApi.def("clearRxROI",
                        (void (Detector::*)()) & Detector::clearRxROI);
     CppDetectorApi.def(
@@ -1343,10 +1349,11 @@ void init_det(py::module &m) {
         (void (Detector::*)(const int, const std::string &, sls::Positions)) &
             Detector::setVetoFile,
         py::arg(), py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("getBurstMode",
-                       (Result<defs::burstMode>(Detector::*)(sls::Positions)) &
-                           Detector::getBurstMode,
-                       py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getBurstMode",
+        (Result<defs::burstMode>(Detector::*)(sls::Positions) const) &
+            Detector::getBurstMode,
+        py::arg() = Positions{});
     CppDetectorApi.def("setBurstMode",
                        (void (Detector::*)(defs::burstMode, sls::Positions)) &
                            Detector::setBurstMode,

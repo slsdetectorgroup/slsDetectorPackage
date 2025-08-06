@@ -822,6 +822,17 @@ void startPattern() {
     LOG(logINFOBLUE, ("Pattern done\n"));
 }
 #endif
+#ifdef XILINX_CHIPTESTBOARDD
+void startPattern() {
+    LOG(logINFOBLUE, ("Starting Pattern\n"));
+    bus_w(FLOW_CONTROL_REG, bus_r(FLOW_CONTROL_REG) | START_F_MSK);
+    usleep(1);
+    while (bus_r(FLOW_CONTROL_REG) & RSM_BUSY_MSK) {
+        usleep(1);
+    }
+    LOG(logINFOBLUE, ("Pattern done\n"));
+}
+#endif
 
 char *getPatternFileName() { return clientPatternfile; }
 

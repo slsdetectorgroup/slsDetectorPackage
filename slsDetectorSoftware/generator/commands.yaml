@@ -1791,7 +1791,7 @@ defaultpattern:
 
 patternstart:
   inherit_actions: EXECUTE_SET_COMMAND
-  help: "\n\t[Mythen3] Starts Pattern"
+  help: "\n\t[Mythen3][Xilinx Ctb] Starts Pattern"
   actions:
     PUT:
       function: startPattern

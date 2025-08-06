@@ -245,7 +245,7 @@ def loadBasicSettings(name, d, fp):
         elif name == "mythen3":
             d.setExptime(-1, timedelta(microseconds = 200))
             d.dr = 16
-            d.counters = [0, 1]
+            d.counters = [0, 1, 2]
         elif name == "gotthard2":
             d.exptime = timedelta(microseconds = 200)
             d.burstmode = burstMode.CONTINUOUS_EXTERNAL

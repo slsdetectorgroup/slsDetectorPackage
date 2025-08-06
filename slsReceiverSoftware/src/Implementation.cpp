@@ -421,7 +421,7 @@ void Implementation::setPortROIs(const std::vector<defs::ROI> &args) {
             continue; // valid
         }
         if (it.xmin < 0 || it.xmax < 0 || it.xmin >= nx || it.xmax >= nx) {
-            throw RuntimeError("Invalid ROIvx coordinates: " + ToString(it));
+            throw RuntimeError("Invalid ROI x coordinates: " + ToString(it));
         }
         if (ny > 1 &&
             (it.ymin < 0 || it.ymax < 0 || it.ymin >= ny || it.ymax >= ny)) {

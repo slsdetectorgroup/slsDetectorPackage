@@ -27,8 +27,97 @@ This document describes the differences between v10.0.0 and v9.1.0
 1 New, Changed or Resolved Features
 =====================================
 
+- Tests
+  - test for Frame Synchronizer, relative path for settingsdir in test_simulator.py
+  - build on RH8 and RH9 using PSI gitea workflows (gitea docker)
 
+
+- Versioning
+   - versionApi.h now has '0.0.0' instead of 'developer' 
+
+- Compilation
+   - Find PATCH command required (needed for lib zeromq patching)
+
+- Documentation
+   - detector index and considerations for multiple users using same client pc [SLSDETNAME, some parameters] => multidet.rst
+   - 10g receiver pc tuning permanent ethtool settings https://github.com/slsdetectorgroup/slsDetectorPackage/pull/1247/files
+   - data format for each detector type with images
+
+
+Post processing:
+ Fixed no interpolation for Moench03
  
+
+- Conda
+   - automati version number in conda metadata and toml file.
+ 
+
+- Python
+   - automatic release on pypi (added workflow for python wheels)
+   - free shm exposed in python =>slsdet.freeSharedMemory() or d.free()
+   - shm outlives free if scope of variable still exists and one can access an invalid one that has no file name on system. so now calling free also sets the shm to invalid. so accessing it will throw.
+
+
+Receiver
+ - added readout speed parameter in master file in json
+
+
+- Breaking Change
+   - Updated C++ standard from C++11 to C++17 ////HAVE TO UPDATE DOCUMENTATION DEPENDENCIES////****
+   - Drop Gotthard1 support
+   - File path used to be '/'. Now empty on default and will throw if unchanged before an acquisition.
+   - [mythne3]: patternX back to => pattern to load pattern
+   - multiple rois per UDP port allowed (vectors instead of ROI)
+https://github.com/slsdetectorgroup/slsDetectorPackage/pull/1242
+
+ - master file in receiver consistent and change to use arrays instead of toString, also renamed 
+https://github.com/slsdetectorgroup/slsDetectorPackage/pull/1245
+- hdf5 changes https://github.com/slsdetectorgroup/slsDetectorPackage/issues/1238
+
+
+
+
+   Not breaking change: -> but what it does internally for ctrl +c etc
+   https://github.com/slsdetectorgroup/slsDetectorPackage/pull/1167
+   - Receiver ////// Update?? with futures?///  also update documentation!
+   Updated command line options for slsReceiver, slsMultiReceiver and slsFrameSynchronizer
+
+Usage: slsReceiver Options:
+	-v, --version       : Version.
+	-p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
+	-u, --uid           : Set effective user id if receiver started with privileges. 
+
+Deprecated option -t still works
+
+
+$  slsMultiReceiver -h
+
+Usage: slsMultiReceiver Options:
+	-v, --version       : Version.
+	-n, --num-receivers : Number of receivers.
+	-p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
+	-c, --callback      : Enable dummy callbacks for debugging. Disabled by default. 
+	-u, --uid           : Set effective user id if receiver started with privileges. 
+
+
+terminate called after throwing an instance of 'std::bad_variant_access'
+  what():  std::get: wrong index for variant
+Aborted (core dumped) ///////////////////////?******************
+
+Usage: slsFrameSynchronizer Options:
+	-v, --version       : Version.
+	-n, --num-receivers : Number of receivers.
+	-p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
+	-c, --print-headers : Print callback headers for debugging. Disabled by default.
+	-u, --uid           : Set effective user id if receiver started with privileges. 
+
+
+terminate called after throwing an instance of 'std::bad_variant_access'
+  what():  std::get: wrong index for variant
+Aborted (core dumped)///////////////////////?******************
+
+Deprecated arguments for slsMultiReceiver and slsFrameSynchronizer
+
 
 
 2  On-board Detector Server Compatibility

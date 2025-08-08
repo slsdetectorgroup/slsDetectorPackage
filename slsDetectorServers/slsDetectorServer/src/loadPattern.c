@@ -223,6 +223,7 @@ int validate_getPatternWaitAddresses(char *message, int level, int *addr) {
 }
 
 int getPatternWaitAddress(int level) {
+#ifdef CHIPTESTBOARDD
     switch (level) {
     case 0:
         return ((bus_r(PATTERN_WAIT_0_ADDR_REG) & PATTERN_WAIT_0_ADDR_MSK) >>
@@ -233,7 +234,6 @@ int getPatternWaitAddress(int level) {
     case 2:
         return ((bus_r(PATTERN_WAIT_2_ADDR_REG) & PATTERN_WAIT_2_ADDR_MSK) >>
                 PATTERN_WAIT_2_ADDR_OFST);
-#ifndef MYTHEN3D
     case 3:
         return ((bus_r(PATTERN_WAIT_3_ADDR_REG) & PATTERN_WAIT_3_ADDR_MSK) >>
                 PATTERN_WAIT_3_ADDR_OFST);
@@ -243,10 +243,16 @@ int getPatternWaitAddress(int level) {
     case 5:
         return ((bus_r(PATTERN_WAIT_5_ADDR_REG) & PATTERN_WAIT_5_ADDR_MSK) >>
                 PATTERN_WAIT_5_ADDR_OFST);
-#endif
     default:
         return -1;
     }
+#else // MYTHEN or XILINX_CHIPTESTBOARDD
+    if (level < 0 || level >= MAX_LEVELS) {
+        return -1;
+    } else {
+        return ((bus_r(PATTERN_LOOPDEF_BASE + (PATTERN_WAIT_ADDR_WORD + level * PATTERN_LOOPDEF_NWORDS) * REG_OFFSET) & PATTERN_WAIT_ADDR_MSK) >> PATTERN_WAIT_ADDR_OFST);
+    }
+#endif
 }
 
 int validate_setPatternWaitAddresses(char *message, int level, int addr) {
@@ -289,6 +295,8 @@ void setPatternWaitAddress(int level, int addr) {
     LOG(logINFO,
 #endif
         ("Setting Pattern Wait Address (level:%d, addr:0x%x)\n", level, addr));
+
+#ifdef CHIPTESTBOARDD
     switch (level) {
     case 0:
         bus_w(PATTERN_WAIT_0_ADDR_REG,
@@ -302,7 +310,6 @@ void setPatternWaitAddress(int level, int addr) {
         bus_w(PATTERN_WAIT_2_ADDR_REG,
               ((addr << PATTERN_WAIT_2_ADDR_OFST) & PATTERN_WAIT_2_ADDR_MSK));
         break;
-#ifndef MYTHEN3D
     case 3:
         bus_w(PATTERN_WAIT_3_ADDR_REG,
               ((addr << PATTERN_WAIT_3_ADDR_OFST) & PATTERN_WAIT_3_ADDR_MSK));
@@ -315,10 +322,16 @@ void setPatternWaitAddress(int level, int addr) {
         bus_w(PATTERN_WAIT_5_ADDR_REG,
               ((addr << PATTERN_WAIT_5_ADDR_OFST) & PATTERN_WAIT_5_ADDR_MSK));
         break;
-#endif
     default:
         return;
     }
+#else // MYTHEN or XILINX_CHIPTESTBOARDD
+    if (level < 0 || level >= MAX_LEVELS) {
+        return;
+    } else {
+        bus_w(PATTERN_LOOPDEF_BASE + (PATTERN_WAIT_ADDR_WORD + level * PATTERN_LOOPDEF_NWORDS) * REG_OFFSET, ((addr << PATTERN_WAIT_ADDR_OFST) & PATTERN_WAIT_ADDR_MSK));
+    }
+#endif
 }
 
 int validate_getPatternWaitClocksAndInterval(char *message, int level,
@@ -340,6 +353,7 @@ int validate_getPatternWaitClocksAndInterval(char *message, int level,
 }
 
 uint64_t getPatternWaitClocks(int level) {
+#ifdef CHIPTESTBOARDD
     switch (level) {
     case 0:
         return getU64BitReg(PATTERN_WAIT_TIMER_0_LSB_REG,
@@ -350,7 +364,6 @@ uint64_t getPatternWaitClocks(int level) {
     case 2:
         return getU64BitReg(PATTERN_WAIT_TIMER_2_LSB_REG,
                             PATTERN_WAIT_TIMER_2_MSB_REG);
-#ifndef MYTHEN3D
     case 3:
         return getU64BitReg(PATTERN_WAIT_TIMER_3_LSB_REG,
                             PATTERN_WAIT_TIMER_3_MSB_REG);
@@ -360,10 +373,17 @@ uint64_t getPatternWaitClocks(int level) {
     case 5:
         return getU64BitReg(PATTERN_WAIT_TIMER_5_LSB_REG,
                             PATTERN_WAIT_TIMER_5_MSB_REG);
-#endif
     default:
         return -1;
     }
+#else // MYTHEN or XILINX_CHIPTESTBOARDD
+    if (level < 0 || level >= MAX_LEVELS){
+        return -1;
+    }else{
+        return getU64BitReg(PATTERN_LOOPDEF_BASE + (PATTERN_WAIT_TIMER_LSB_WORD + level * PATTERN_LOOPDEF_NWORDS) * REG_OFFSET,
+                            PATTERN_LOOPDEF_BASE + (PATTERN_WAIT_TIMER_MSB_WORD + level * PATTERN_LOOPDEF_NWORDS) * REG_OFFSET);
+    }
+#endif
 }
 
 uint64_t getPatternWaitInterval(int level) {
@@ -423,6 +443,8 @@ void setPatternWaitClocks(int level, uint64_t t) {
 #endif
         ("Setting Pattern Wait Time in clocks (level:%d) :%lld\n", level,
          (long long int)t));
+
+#ifdef CHIPTESTBOARDD
     switch (level) {
     case 0:
         setU64BitReg(t, PATTERN_WAIT_TIMER_0_LSB_REG,
@@ -436,7 +458,6 @@ void setPatternWaitClocks(int level, uint64_t t) {
         setU64BitReg(t, PATTERN_WAIT_TIMER_2_LSB_REG,
                      PATTERN_WAIT_TIMER_2_MSB_REG);
         break;
-#ifndef MYTHEN3D
     case 3:
         setU64BitReg(t, PATTERN_WAIT_TIMER_3_LSB_REG,
                      PATTERN_WAIT_TIMER_3_MSB_REG);
@@ -449,10 +470,17 @@ void setPatternWaitClocks(int level, uint64_t t) {
         setU64BitReg(t, PATTERN_WAIT_TIMER_5_LSB_REG,
                      PATTERN_WAIT_TIMER_5_MSB_REG);
         break;
-#endif
     default:
         return;
     }
+#else // MYTHEN or XILINX_CHIPTESTBOARDD
+    if (level < 0 || level >= MAX_LEVELS){
+        return;
+    }else{
+        return setU64BitReg(t,PATTERN_LOOPDEF_BASE + (PATTERN_WAIT_TIMER_LSB_WORD + level * PATTERN_LOOPDEF_NWORDS) * REG_OFFSET,
+                                PATTERN_LOOPDEF_BASE + (PATTERN_WAIT_TIMER_MSB_WORD + level * PATTERN_LOOPDEF_NWORDS) * REG_OFFSET);
+    }
+#endif
 }
 
 void setPatternWaitInterval(int level, uint64_t t) {
@@ -487,6 +515,7 @@ int validate_getPatternLoopCycles(char *message, int level, int *numLoops) {
 }
 
 int getPatternLoopCycles(int level) {
+#ifdef CHIPTESTBOARDD
     switch (level) {
     case 0:
         return bus_r(PATTERN_LOOP_0_ITERATION_REG);
@@ -494,17 +523,22 @@ int getPatternLoopCycles(int level) {
         return bus_r(PATTERN_LOOP_1_ITERATION_REG);
     case 2:
         return bus_r(PATTERN_LOOP_2_ITERATION_REG);
-#ifndef MYTHEN3D
     case 3:
         return bus_r(PATTERN_LOOP_3_ITERATION_REG);
     case 4:
         return bus_r(PATTERN_LOOP_4_ITERATION_REG);
     case 5:
         return bus_r(PATTERN_LOOP_5_ITERATION_REG);
-#endif
     default:
         return -1;
     }
+#else // MYTHEN or XILINX_CHIPTESTBOARDD
+    if (level < 0 || level >= MAX_LEVELS) {
+        return -1;
+    } else {
+        return bus_r(PATTERN_LOOPDEF_BASE + (PATTERN_LOOP_ITERATION_WORD + level * PATTERN_LOOPDEF_NWORDS) * REG_OFFSET);
+    }
+#endif
 }
 
 int validate_setPatternLoopCycles(char *message, int level, int numLoops) {
@@ -542,6 +576,7 @@ void setPatternLoopCycles(int level, int nLoop) {
     LOG(logINFO,
 #endif
         ("Setting Pattern Loop Cycles(level:%d, nLoop:%d)\n", level, nLoop));
+#ifdef CHIPTESTBOARDD
     switch (level) {
     case 0:
         bus_w(PATTERN_LOOP_0_ITERATION_REG, nLoop);
@@ -552,7 +587,6 @@ void setPatternLoopCycles(int level, int nLoop) {
     case 2:
         bus_w(PATTERN_LOOP_2_ITERATION_REG, nLoop);
         break;
-#ifndef MYTHEN3D
     case 3:
         bus_w(PATTERN_LOOP_3_ITERATION_REG, nLoop);
         break;
@@ -562,10 +596,16 @@ void setPatternLoopCycles(int level, int nLoop) {
     case 5:
         bus_w(PATTERN_LOOP_5_ITERATION_REG, nLoop);
         break;
-#endif
     default:
         return;
     }
+#else // MYTHEN or XILINX_CHIPTESTBOARDD
+    if (level < 0 || level >= MAX_LEVELS) {
+        return;
+    } else {
+        bus_w(PATTERN_LOOPDEF_BASE + (PATTERN_LOOP_ITERATION_WORD + level * PATTERN_LOOPDEF_NWORDS) * REG_OFFSET, nLoop);
+    }
+#endif
 }
 
 void validate_getPatternLoopLimits(int *startAddr, int *stopAddr) {
@@ -635,6 +675,7 @@ int validate_getPatternLoopAddresses(char *message, int level, int *startAddr,
 }
 
 void getPatternLoopAddresses(int level, int *startAddr, int *stopAddr) {
+#ifdef CHIPTESTBOARDD
     switch (level) {
     case 0:
         *startAddr =
@@ -660,7 +701,6 @@ void getPatternLoopAddresses(int level, int *startAddr, int *stopAddr) {
             ((bus_r(PATTERN_LOOP_2_ADDR_REG) & PATTERN_LOOP_2_ADDR_STP_MSK) >>
              PATTERN_LOOP_2_ADDR_STP_OFST);
         break;
-#ifndef MYTHEN3D
     case 3:
         *startAddr =
             ((bus_r(PATTERN_LOOP_3_ADDR_REG) & PATTERN_LOOP_3_ADDR_STRT_MSK) >>
@@ -685,10 +725,18 @@ void getPatternLoopAddresses(int level, int *startAddr, int *stopAddr) {
             ((bus_r(PATTERN_LOOP_5_ADDR_REG) & PATTERN_LOOP_5_ADDR_STP_MSK) >>
              PATTERN_LOOP_5_ADDR_STP_OFST);
         break;
-#endif
     default:
         return;
     }
+#else // MYTHEN or XILINX_CHIPTESTBOARDD
+    if (level < 0 || level >= MAX_LEVELS) {
+        *startAddr = -1;
+        *stopAddr = -1;
+    } else {
+        *startAddr = ((bus_r(PATTERN_LOOPDEF_BASE + (PATTERN_LOOP_ADDR_WORD + level * PATTERN_LOOPDEF_NWORDS) * REG_OFFSET) & PATTERN_LOOP_ADDR_STRT_MSK) >> PATTERN_LOOP_ADDR_STRT_OFST);
+        *stopAddr = ((bus_r(PATTERN_LOOPDEF_BASE + (PATTERN_LOOP_ADDR_WORD + level * PATTERN_LOOPDEF_NWORDS) * REG_OFFSET) & PATTERN_LOOP_ADDR_STP_MSK) >> PATTERN_LOOP_ADDR_STP_OFST);
+    }
+#endif
 }
 
 int validate_setPatternLoopAddresses(char *message, int level, int startAddr,
@@ -743,6 +791,7 @@ void setPatternLoopAddresses(int level, int startAddr, int stopAddr) {
         ("Setting Pattern Loop Address (level:%d, startaddr:0x%x, "
          "stopaddr:0x%x)\n",
          level, startAddr, stopAddr));
+#ifdef CHIPTESTBOARDD
     switch (level) {
     case 0:
         bus_w(PATTERN_LOOP_0_ADDR_REG,
@@ -765,7 +814,6 @@ void setPatternLoopAddresses(int level, int startAddr, int stopAddr) {
                   ((stopAddr << PATTERN_LOOP_2_ADDR_STP_OFST) &
                    PATTERN_LOOP_2_ADDR_STP_MSK));
         break;
-#ifndef MYTHEN3D
     case 3:
         bus_w(PATTERN_LOOP_3_ADDR_REG,
               ((startAddr << PATTERN_LOOP_3_ADDR_STRT_OFST) &
@@ -787,10 +835,18 @@ void setPatternLoopAddresses(int level, int startAddr, int stopAddr) {
                   ((stopAddr << PATTERN_LOOP_5_ADDR_STP_OFST) &
                    PATTERN_LOOP_5_ADDR_STP_MSK));
         break;
-#endif
     default:
         return;
     }
+#else // MYTHEN or XILINX_CHIPTESTBOARDD
+    if (level < 0 || level >= MAX_LEVELS) {
+        return;
+    } else {
+        bus_w(PATTERN_LOOPDEF_BASE + (PATTERN_LOOP_ADDR_WORD + level * PATTERN_LOOPDEF_NWORDS) * REG_OFFSET,
+              ((startAddr << PATTERN_LOOP_ADDR_STRT_OFST) & PATTERN_LOOP_ADDR_STRT_MSK) |
+                  ((stopAddr << PATTERN_LOOP_ADDR_STP_OFST) & PATTERN_LOOP_ADDR_STP_MSK));
+    }
+#endif
 }
 
 void setPatternMask(uint64_t mask) {

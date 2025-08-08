@@ -14,7 +14,7 @@
 #define CSP0          (0xB0080000)
 #define CSP1          (0xB0050000) // udp
 #define CSP2          (0xA0000000)
-#define MEM_SIZE_CSP0 (0x10000)
+#define MEM_SIZE_CSP0 (0x20000)
 #define MEM_SIZE_CSP1 (0x2000) // smaller size for udp
 #define MEM_SIZE_CSP2 (0x4000)
 

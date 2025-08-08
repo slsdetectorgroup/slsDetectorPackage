@@ -122,7 +122,7 @@ int validate_readPatternWord(char *message, int addr, uint64_t *word) {
 }
 
 uint64_t readPatternWord(int addr) {
-#ifdef MYTHEN3D
+#if defined(MYTHEN3D) || defined(XILINX_CHIPTESTBOARDD) 
     LOG(logDEBUG1, ("  Reading Pattern Word (addr:0x%x)\n", addr));
     // the first word in RAM as base plus the offset of the word to write (addr)
     uint32_t reg_lsb = PATTERN_STEP0_LSB_REG + addr * REG_OFFSET * 2;
@@ -182,7 +182,7 @@ void writePatternWord(int addr, uint64_t word) {
     LOG(logDEBUG1, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n", addr,
                     (long long int)word));
 
-#ifndef MYTHEN3D
+#if !defined(MYTHEN3D) && !defined(XILINX_CHIPTESTBOARDD)
     uint32_t reg = PATTERN_CNTRL_REG;
 
     // write word

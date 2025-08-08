@@ -2,7 +2,9 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
-#define PATTERN_RAM_BASE_ADDR (0x0000)
+#define REG_OFFSET (4)
+#define PATTERN_STEP0_MSB_REG (0x10004)
+#define PATTERN_STEP0_LSB_REG (0x10000)
 
 #define CTRL_REG (0x8000)
 
@@ -253,25 +255,9 @@
 
 #define PERIOD_IN_REG_2 (0xB050)
 
-#define DELAY_OUT_REG_1 (0xB054)
+#define PATTERN_TEST_REG (0xB054)
 
-#define DELAY_OUT_REG_2 (0xB058)
-
-#define CYCLES_OUT_REG_1 (0xB05C)
-
-#define CYCLES_OUT_REG_2 (0xB060)
-
-#define FRAMES_OUT_REG_1 (0xB064)
-
-#define FRAMES_OUT_REG_2 (0xB068)
-
-#define PERIOD_OUT_REG_1 (0xB06C)
-
-#define PERIOD_OUT_REG_2 (0xB070)
-
-#define PATTERN_TEST_REG (0xB074)
-
-#define PATTERN_FIRMWARE_REG (0xB078)
+#define PATTERN_FIRMWARE_REG (0xB058)
 
 #define PATTERN_WIDTH_OFST (0)
 #define PATTERN_WIDTH_MSK  (0x000000ff << PATTERN_WIDTH_OFST)
@@ -282,17 +268,17 @@
 #define DIRECT_PATTERN_RAM_OFST (24)
 #define DIRECT_PATTERN_RAM_MSK  (0x00000001 << DIRECT_PATTERN_RAM_OFST)
 
-#define TIME_FROM_START_OUT_REG_1 (0xB07C)
+#define TIME_FROM_START_OUT_REG_1 (0xB05C)
 
-#define TIME_FROM_START_OUT_REG_2 (0xB080)
+#define TIME_FROM_START_OUT_REG_2 (0xB060)
 
-#define FRAMES_FROM_START_OUT_REG_1 (0xB084)
+#define FRAMES_FROM_START_OUT_REG_1 (0xB064)
 
-#define FRAMES_FROM_START_OUT_REG_2 (0xB088)
+#define FRAMES_FROM_START_OUT_REG_2 (0xB068)
 
-#define FRAME_TIME_OUT_REG_1 (0xB08C)
+#define FRAME_TIME_OUT_REG_1 (0xB06C)
 
-#define FRAME_TIME_OUT_REG_2 (0xB090)
+#define FRAME_TIME_OUT_REG_2 (0xB070)
 
 #define PATTERN_LOOPDEF_START_REG (0xB080)
 
@@ -454,13 +440,24 @@
 #define RXDATACH3_OFST (0)
 #define RXDATACH3_MSK  (0x0000ffff << RXDATACH3_OFST)
 
+#define DELAY_OUT_REG_1 (0xB054)
 
+#define DELAY_OUT_REG_2 (0xB058)
 
+#define CYCLES_OUT_REG_1 (0xB05C)
+
+#define CYCLES_OUT_REG_2 (0xB060)
+
+#define FRAMES_OUT_REG_1 (0xB064)
+
+#define FRAMES_OUT_REG_2 (0xB068)
+
+#define PERIOD_OUT_REG_1 (0xB06C)
+
+#define PERIOD_OUT_REG_2 (0xB070)
 
 // ----------------------------------------------------
 // TODO: remove these:
-
-
 //-----------------------------------
 #define PINIOCTRLREG (0xB028)
 

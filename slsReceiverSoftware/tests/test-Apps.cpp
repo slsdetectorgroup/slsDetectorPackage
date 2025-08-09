@@ -2,6 +2,7 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "CommandLineOptions.h"
 #include "catch.hpp"
+#include "sls/logger.h"
 #include "sls/versionAPI.h"
 
 #include <unistd.h>
@@ -12,7 +13,7 @@ template <typename T, typename U> constexpr bool is_type() {
     return std::is_same_v<std::decay_t<U>, T>;
 }
 
-TEST_CASE("CommandLineOption construction", "[.rxcmdcall]") {
+TEST_CASE("CommandLineOption construction", "[detector]") {
     CommandLineOptions s(AppType::SingleReceiver);
     REQUIRE(s.getTypeString() == "slsReceiver");
     REQUIRE(s.getVersion() ==
@@ -32,7 +33,22 @@ TEST_CASE("CommandLineOption construction", "[.rxcmdcall]") {
     REQUIRE_NOTHROW(f.getHelpMessage());
 }
 
-TEST_CASE("Validate common options", "[.rxcmdcall]") {
+TEST_CASE("Parse Help", "[detector]") {
+    for (auto app : {AppType::SingleReceiver, AppType::MultiReceiver,
+                     AppType::FrameSynchronizer}) {
+        CommandLineOptions s(app);
+        ParsedOptions opts = s.parse({"", "-h"});
+        if (app == AppType::SingleReceiver) {
+            REQUIRE_NOTHROW(std::get<CommonOptions>(opts).helpRequested);
+        } else if (app == AppType::MultiReceiver) {
+            REQUIRE_NOTHROW(std::get<MultiReceiverOptions>(opts).helpRequested);
+        } else if (app == AppType::FrameSynchronizer) {
+            REQUIRE_NOTHROW(std::get<FrameSyncOptions>(opts).helpRequested);
+        }
+    }
+}
+
+TEST_CASE("Validate common options", "[detector]") {
     std::string uidStr = std::to_string(getuid());
 
     for (auto app : {AppType::SingleReceiver, AppType::MultiReceiver,
@@ -48,7 +64,7 @@ TEST_CASE("Validate common options", "[.rxcmdcall]") {
     }
 }
 
-TEST_CASE("Validate specific options", "[.rxcmdcall]") {
+TEST_CASE("Validate specific options", "[detector]") {
     std::string uidStr = std::to_string(getuid());
 
     CommandLineOptions s(AppType::SingleReceiver);
@@ -68,7 +84,7 @@ TEST_CASE("Validate specific options", "[.rxcmdcall]") {
     }
 }
 
-TEST_CASE("Parse version and help", "[.rxcmdcall]") {
+TEST_CASE("Parse version and help", "[detector]") {
     for (auto app : {AppType::SingleReceiver, AppType::MultiReceiver,
                      AppType::FrameSynchronizer}) {
         CommandLineOptions s(app);
@@ -99,7 +115,7 @@ TEST_CASE("Parse version and help", "[.rxcmdcall]") {
         opts = s.parse({"", "-h", "-v"});
         std::visit(
             [](const auto &o) {
-                REQUIRE(o.versionRequested == false); // exits after help
+                REQUIRE(o.versionRequested == true);
                 REQUIRE(o.helpRequested == true);
             },
             opts);
@@ -107,7 +123,7 @@ TEST_CASE("Parse version and help", "[.rxcmdcall]") {
         opts = s.parse({"", "-v", "-h"});
         std::visit(
             [](const auto &o) {
-                REQUIRE(o.helpRequested == false); // exits after version
+                REQUIRE(o.helpRequested == true);
                 REQUIRE(o.versionRequested == true);
             },
             opts);
@@ -115,14 +131,14 @@ TEST_CASE("Parse version and help", "[.rxcmdcall]") {
         opts = s.parse({"", "-v", "-h", "sdfsf"}); // ignores extra args
         std::visit(
             [](const auto &o) {
-                REQUIRE(o.helpRequested == false); // exits after version
+                REQUIRE(o.helpRequested == true);
                 REQUIRE(o.versionRequested == true);
             },
             opts);
     }
 }
 
-TEST_CASE("Parse port and uid", "[.rxcmdcall]") {
+TEST_CASE("Parse port and uid", "[detector]") {
     uid_t uid = getuid();
     std::string uidStr = std::to_string(uid);
     uid_t invalidUid = uid + 1000;
@@ -161,7 +177,7 @@ TEST_CASE("Parse port and uid", "[.rxcmdcall]") {
     }
 }
 
-TEST_CASE("Parse num receivers and opt arg (Specific opt)", "[.rxcmdcall]") {
+TEST_CASE("Parse num receivers and opt arg (Specific opt)", "[detector]") {
     for (auto app : {AppType::MultiReceiver, AppType::FrameSynchronizer}) {
         CommandLineOptions s(app);
 
@@ -216,7 +232,7 @@ TEST_CASE("Parse num receivers and opt arg (Specific opt)", "[.rxcmdcall]") {
     }
 }
 
-TEST_CASE("Parse deprecated options", "[.rxcmdcall]") {
+TEST_CASE("Parse deprecated options", "[detector]") {
     for (auto app : {AppType::SingleReceiver, AppType::MultiReceiver,
                      AppType::FrameSynchronizer}) {
         CommandLineOptions s(app);

@@ -1,114 +1,216 @@
 SLS Detector Package Major Release 10.0.0 released on xx.08.2025
 ================================================================
 
-This document describes the differences between v10.0.0 and v9.1.0   
+This document describes the differences between v10.0.0 and v9.2.0   
 
 
 
     CONTENTS
     --------
-    1           New, Changed or Resolved Features
-        1.1     Compilation
-        1.2     Callback
-        1.3     Python
-        1.4     Client
-        1.5     Detector Server
-        1.6     Simulator
-        1.7     Receiver
-        1.8     Gui
-    2           On-board Detector Server Compatibility
-    3           Firmware Requirements
-    4           Kernel Requirements
-    5           Download, Documentation & Support
+    1           Compilation Changes
+    2.1         New or Changed Features
+        2.1     Breaking API
+        2.2     Resolved or Changed Features
+        2.3     New Features
+    3           On-board Detector Server Compatibility
+    4           Firmware Requirements
+    5           Kernel Requirements
+    6           Download, Documentation & Support
 
 
 
 
-1 New, Changed or Resolved Features
-=====================================
+1 Compilation Changes
+======================
 
-- Tests
-  - test for Frame Synchronizer, relative path for settingsdir in test_simulator.py
-  - build on RH8 and RH9 using PSI gitea workflows (gitea docker)
+    *   C++ standard
+        Bumped up C++ standard from 11 to 17.
 
 
-- Versioning
-   - versionApi.h now has '0.0.0' instead of 'developer' 
+    *   GotthardI
+        Dropped support for GotthardI from v10.0.0.
 
-- Compilation
-   - Find PATCH command required (needed for lib zeromq patching)
 
-- Documentation
+    *   PATCH 
+        Find PATCH command required for compilation. Needed for lib zeromq patching.
+
+    
+
+2 New or Changed Features
+=========================
+
+
+
+2.1 Breaking API
+================
+
+
+    Client
+    ------
+
+
+    *   Shared Memory Version
+        Version has changed and will throw when using an earlier version of 
+        shared memory without freeing it first.
+
+
+    *   [Mythen3] patternX
+        This command has been changed back to 'pattern' as before.
+
+
+    *   TCP API Incompatibility
+        The size of the expected structure has changed when setting rx_hostname compared to previous versions. This change makes it incompatible.
+
+
+
+    Receiver
+    --------
+
+    
+    *   Multiple ROIs
+        Previously, only one ROI was allowed per detector.
+        Now, multiple ROIs are allowed, but restricted to a single ROI per
+        UDP port. More details on its help.
+        
+        As before, this ROI is cut out at the receiver level before 
+        writing to file. It does not affect network load, but reduces file size.
+        
+        Please note that the signature has changed in the Detector API as it now expects a vector. getRxROI returns detector level vector of ROIs for
+        the entire detector or port level vector of ROIs for the module index
+        provided.
+        
+        Command line: rx_roi, rx_clearroi
+        C++ API: get/setRxROI, clearRxROI 
+
+  
+    *   Master File Version
+        Binary Master Version: 7.3 => 8.0
+        HDF5 Master Version: 6.7 => 7.0
+
+
+    *   Master File Attributes
+        - Fixed master file inconsistencies between binary and hdf5 format.
+            So the parameter names might differ in master file.
+        - Fixed time inconsistencies due to tolerance for gotthardII.
+        - Replaced many of the values that was simply writted usign 'toString'
+            with array-based output.
+        - JSON additional header always written.
+        - HDF5 master file reads 'Version', instead of 'version'.    
+
+
+
+2.2 Resolved or Changed Features
+================================
+
+
+    Python
+    ------
+
+
+    *   Shared Memory outliving free
+        Depending on a variable’s scope, it was possible to access an invalid
+        object and its shared memory even after calling free, since resources
+        were not fully released. Shared memory structures now include a flag
+        indicating invalidity and will throw an error if accessed after being
+        freed.
+
+    
+    Receiver
+    --------
+
+
+    *   [Mythen3] Master File Attributes
+        Previously, did not create HDF5 Master file without crashing. Fixed now.
+
+
+    *   Default File Path
+        It used to be '/'. Now, changed to empty and will throw if still 
+        unchanged before an acquisition.
+
+
+    *   Command Line Arguments
+        They have been refactored for slsReceiver, slsMultiReceiver and 
+        slsFrameSynchronizer. Existing commands remain fully supported for now.
+
+        Usage: slsReceiver Options:
+            -v, --version       : Version.
+            -p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
+            -u, --uid           : Set effective user id if receiver started with privileges. 
+
+
+        Usage: slsMultiReceiver Options:
+            -v, --version       : Version.
+            -n, --num-receivers : Number of receivers.
+            -p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
+            -c, --callback      : Enable dummy callbacks for debugging. Disabled by default. 
+            -u, --uid           : Set effective user id if receiver started with privileges. 
+
+
+        Usage: slsFrameSynchronizer Options:
+            -v, --version       : Version.
+            -n, --num-receivers : Number of receivers.
+            -p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
+            -c, --print-headers : Print callback headers for debugging. Disabled by default.
+            -u, --uid           : Set effective user id if receiver started with privileges. 
+
+
+    *   [Moench] No intertpolation
+        Fixed no interpolation for Moench03.
+
+
+
+2.3 New Features
+================
+
+
+    Compilation
+    -----------
+
+
+    *   Conda and pypi
+        Automatic release on both upon release.
+
+
+    Python
+    ------
+
+
+    *   Exposing Free Shared Memory
+        One can do either `slsdet.freeSharedMemory()` or `d.free()`
+
+
+    Client
+    ------
+
+
+    *   Port size and Port per Module Geometry in Detector class
+        C++ API: getPortSize, getPortPerModuleGeometry
+
+
+    *   ROI structure
+        Added 'overlap' function to check if it overlaps with another.
+
+
+    Receiver
+    --------
+
+
+    *   HDF5 Virtual File with ROI
+        Previously, virtual file was not created with ROI. It is now.
+
+
+    *   Readout speed added to Master File
+        
+
+    Documentation
+    -------------
+
+
    - detector index and considerations for multiple users using same client pc [SLSDETNAME, some parameters] => multidet.rst
    - 10g receiver pc tuning permanent ethtool settings https://github.com/slsdetectorgroup/slsDetectorPackage/pull/1247/files
    - data format for each detector type with images
 
 
-Post processing:
- Fixed no interpolation for Moench03
- 
-
-- Conda
-   - automati version number in conda metadata and toml file.
- 
-
-- Python
-   - automatic release on pypi (added workflow for python wheels)
-   - free shm exposed in python =>slsdet.freeSharedMemory() or d.free()
-   - shm outlives free if scope of variable still exists and one can access an invalid one that has no file name on system. so now calling free also sets the shm to invalid. so accessing it will throw.
-
-
-Receiver
- - added readout speed parameter in master file in json
-
-
-- Breaking Change
-   - Updated C++ standard from C++11 to C++17 
-   - Drop Gotthard1 support
-   - File path used to be '/'. Now empty on default and will throw if unchanged before an acquisition.
-   - [mythne3]: patternX back to => pattern to load pattern
-   - multiple rois per UDP port allowed (vectors instead of ROI)
-https://github.com/slsdetectorgroup/slsDetectorPackage/pull/1242
-
- - master file in receiver consistent and change to use arrays instead of toString, also renamed 
-https://github.com/slsdetectorgroup/slsDetectorPackage/pull/1245
-- hdf5 changes https://github.com/slsdetectorgroup/slsDetectorPackage/issues/1238
-
-
-
-
-   Not breaking change: -> but what it does internally for ctrl +c etc
-   https://github.com/slsdetectorgroup/slsDetectorPackage/pull/1167
-   - Receiver ////// Update?? with futures?///  also update documentation!
-   Updated command line options for slsReceiver, slsMultiReceiver and slsFrameSynchronizer
-
-Usage: slsReceiver Options:
-	-v, --version       : Version.
-	-p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
-	-u, --uid           : Set effective user id if receiver started with privileges. 
-
-Deprecated option -t still works
-
-
-$  slsMultiReceiver -h
-
-Usage: slsMultiReceiver Options:
-	-v, --version       : Version.
-	-n, --num-receivers : Number of receivers.
-	-p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
-	-c, --callback      : Enable dummy callbacks for debugging. Disabled by default. 
-	-u, --uid           : Set effective user id if receiver started with privileges. 
-
-
-Usage: slsFrameSynchronizer Options:
-	-v, --version       : Version.
-	-n, --num-receivers : Number of receivers.
-	-p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
-	-c, --print-headers : Print callback headers for debugging. Disabled by default.
-	-u, --uid           : Set effective user id if receiver started with privileges. 
-
-
-Deprecated arguments for slsMultiReceiver and slsFrameSynchronizer
 
 
 

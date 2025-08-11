@@ -14,7 +14,7 @@ the shared libraries these are needed:
 
  * Linux, preferably recent kernel (currently no cross platform support)
  * CMake >= 3.14 
- * C++11 compatible compiler. (We test with gcc and clang)
+ * C++17 compatible compiler. (We test with gcc and clang)
 
 -----------------------
 Python bindings

@@ -16,6 +16,9 @@ the shared libraries these are needed:
  * CMake >= 3.14 
  * C++17 compatible compiler. (We test with gcc and clang)
 
+> **Note:** For v9.x.x of slsDetectorPackage and older, C++11 compatible compiler.
+
+
 -----------------------
 Python bindings
 -----------------------

@@ -1,24 +1,33 @@
 ## Dependencies
-Before building from source make sure that you have the [software wiki](https://slsdetectorgroup.github.io/devdoc/dependencies.html) installed. If installing using conda, conda will manage the dependencies. Avoid also installing packages with pip. 
+Before building from source make sure that you have the [dependencies](https://slsdetectorgroup.github.io/devdoc/dependencies.html) installed. If installing using conda, conda will manage the dependencies. Avoid also installing dependency packages with pip. 
 
 ## Documentaion
 Detailed documentation including installation can be found in the [software wiki](https://slsdetectorgroup.github.io/devdoc/index.html).
 
-Different releases can be found on the [official site](https://www.psi.ch/en/lxn/software-releases).
+List of releases can be found on the [official site](https://www.psi.ch/en/lxn/software-releases).
 
 Firmware compatiblity can be found in [firmware page](https://github.com/slsdetectorgroup/slsDetectorFirmware)
 
 ## Installation
 
-### 1. Install binaries using conda
+The slsDetectorPackage provides core detector software implemented in C++, along with Python bindings packaged as the slsdet Python extension module. Choose the option that best fits your environment and use case.
+
+1. **Install pre-built binaries using conda (Recommended)**: Install pre-built binaries for the C++ client, receiver, GUI and the Python API (`slsdet`), simplifying setup across platforms.
+
+2. **Pip**: Install only the Python extension module, either by downloading the pre-built library from PyPI or by building the extension locally from source. Available only from v9.2.0 onwards.
+
+3. **Build from source**: Compile the entire package yourself, including both the C++ core and the Python bindings, for maximum control and customization. However, make sure that you have the dependencies installed. If installing using conda, conda will manage the dependencies. Avoid installing packages with pip and conda simultaneously.
+
+### 1. Install pre-built binaries using conda (Recommended)
 Conda is not only useful to manage python environments but can also
 be used as a user space package manager. Dates in the tag (for eg. 2020.07.23.dev0) 
 are from the developer branch. Please use released tags for stability.
 
 We have three different packages available:
-* **slsdetlib** shared libraries and command line utilities 
+* **slsdetlib** Shared libraries and command line utilities 
 * **slsdetgui** GUI
 * **slsdet** Python bindings
+* **moenchzmq** Moench
 
 ```
 #Add channels for dependencies and our library
@@ -44,11 +53,26 @@ conda search slsdetlib
 conda search slsdet
 # gui
 conda search slsdetgui
+# moench
+conda search moenchzmq
 ```
 
-## 2. Build from source
+## 2. Pip
+The Python extension module `slsdet` can be installed using pip. This is available from v9.2.0 onwards.
 
-### 2.1 Download Source Code from github
+```
+#Install the Python extension module from PyPI
+pip install slsdet
+
+# or install the python extension locally from source
+git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 9.2.0
+cd slsDetectorPackage
+pip install .
+```
+
+## 3. Build from source
+
+### 3.1. Download Source Code from github
 ```
 git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 7.0.0
 ```
@@ -56,10 +80,11 @@ git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 7.
 > **Note:** For v6.x.x of slsDetectorPackage and older, refer [pybind11 notes on cloning](#Pybind-and-Zeromq).
 
 
-### 2.2 Build from source
+### 3.2. Build from source
 
+One can either build using cmake or use the in-built cmk.sh script.
 
-### Build using CMake
+### 3.2.1. Build using CMake
 
 ```
 # outside slsDetecorPackage folder
@@ -99,7 +124,7 @@ ccmake ..
 
 > **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for cmake option to hint library location](#Pybind-and-Zeromq).
 
-### Build using in-built cmk.sh script
+### 3.2.2. Build using in-built cmk.sh script
 
 ```
 The binaries are generated in slsDetectorPackage/build/bin directory.
@@ -144,7 +169,7 @@ Usage: $0 [-b] [-c] [-d <HDF5 directory>] [-e] [-g] [-h] [-i]
 
 > **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for cmk script option to hint library location](#Pybind-and-Zeromq).
 
-### Build on old distributions
+### 3.3. Build on old distributions using conda
 
 If your linux distribution doesn't come with a C++17 compiler (gcc>4.8) then 
 it's possible to install a newer gcc using conda and build the slsDetectorPackage
@@ -164,7 +189,7 @@ make -j12
 > **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for dependencies for conda](#Pybind-and-Zeromq).
 
 
-### Build slsDetectorGui (Qt5)
+### 3.4. Build slsDetectorGui (Qt5)
 
 1. Using pre-built binary on conda
 ```
@@ -215,7 +240,7 @@ cd slsDetectorPackage
 
 > **Note:** For v7.x.x of slsDetectorPackage and older, refer [zeromq notes for dependencies for conda](#Pybind-and-Zeromq).
 
-### Build documentation from package
+### 3.5. Build documentation from package
 The documentation for the slsDetectorPackage is build using a combination 
 of Doxygen, Sphinx and Breathe. The easiest way to install the dependencies
 is to use conda 
@@ -236,7 +261,7 @@ make rst # rst only, saves time in case the API did not change
 
 
 
-## Pybind and Zeromq
+## 4. Pybind and Zeromq
 
 ### Pybind11 for Python
 **v8.0.0+**:
@@ -279,3 +304,4 @@ zeromq-devel must be installed and one can hint its location using
 ## Support
     dhanya.thattil@psi.ch
     erik.frojdh@psi.ch
+    alice.mazzoleni@psi.ch

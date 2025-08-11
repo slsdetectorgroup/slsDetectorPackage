@@ -33,7 +33,8 @@ Welcome to slsDetectorPackage's documentation!
     :maxdepth: 2
 
     multidet
-
+    quick_start_guide
+    
 .. toctree::
     :caption: Python API
     :maxdepth: 2
@@ -50,7 +51,7 @@ Welcome to slsDetectorPackage's documentation!
     :maxdepth: 1
 
     commandline  
-    quick_start_guide
+
 
 .. toctree::
     :caption: Developer

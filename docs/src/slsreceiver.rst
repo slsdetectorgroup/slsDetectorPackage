@@ -38,18 +38,41 @@ There are three main receiver types. How to start them is described :ref:`below<
 +----------------------+--------------------+-----------------------------------------+--------------------------------+
 
 
-
-
 .. _Starting up the Receiver:
 
 Starting up the Receiver
 -------------------------
+
+.. code-block:: bash  
+
+    Usage: slsReceiver Options:
+        -v, --version       : Version.
+        -p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
+        -u, --uid           : Set effective user id if receiver started with privileges. 
+
+    Usage: slsMultiReceiver Options:
+        -v, --version       : Version.
+        -n, --num-receivers : Number of receivers.
+        -p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
+        -c, --callback      : Enable dummy callbacks for debugging. Disabled by default. 
+        -u, --uid           : Set effective user id if receiver started with privileges. 
+
+    Usage: slsFrameSynchronizer Options:
+        -v, --version       : Version.
+        -n, --num-receivers : Number of receivers.
+        -p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
+        -c, --print-headers : Print callback headers for debugging. Disabled by default.
+        -u, --uid           : Set effective user id if receiver started with privileges. 
+
+
+
+
 For a Single Module
     .. code-block:: bash  
         
         slsReceiver # default port 1954
 
-        slsReceiver -t2012 # custom port 2012
+        slsReceiver -p 2012 # custom port 2012
 
 
 For Multiple Modules
@@ -59,13 +82,13 @@ For Multiple Modules
 
         # option 1 (one for each module)
         slsReceiver
-        slsReceiver -t1955
+        slsReceiver -p 1955
 
         # option 2
-        slsMultiReceiver 2012 2
+        slsMultiReceiver -p 2012 -n 2
 
         # option 3
-        slsFrameSynchronizer 2012 2
+        slsFrameSynchronizer -p 2012 -n 2
 
 
 

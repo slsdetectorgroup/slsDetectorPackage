@@ -63,7 +63,7 @@ Receiver
 
 
 - Breaking Change
-   - Updated C++ standard from C++11 to C++17 ////HAVE TO UPDATE DOCUMENTATION DEPENDENCIES////****
+   - Updated C++ standard from C++11 to C++17 
    - Drop Gotthard1 support
    - File path used to be '/'. Now empty on default and will throw if unchanged before an acquisition.
    - [mythne3]: patternX back to => pattern to load pattern
@@ -100,10 +100,6 @@ Usage: slsMultiReceiver Options:
 	-u, --uid           : Set effective user id if receiver started with privileges. 
 
 
-terminate called after throwing an instance of 'std::bad_variant_access'
-  what():  std::get: wrong index for variant
-Aborted (core dumped) ///////////////////////?******************
-
 Usage: slsFrameSynchronizer Options:
 	-v, --version       : Version.
 	-n, --num-receivers : Number of receivers.
@@ -112,11 +108,8 @@ Usage: slsFrameSynchronizer Options:
 	-u, --uid           : Set effective user id if receiver started with privileges. 
 
 
-terminate called after throwing an instance of 'std::bad_variant_access'
-  what():  std::get: wrong index for variant
-Aborted (core dumped)///////////////////////?******************
-
 Deprecated arguments for slsMultiReceiver and slsFrameSynchronizer
+
 
 
 

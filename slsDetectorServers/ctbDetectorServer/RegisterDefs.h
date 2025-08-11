@@ -5,6 +5,7 @@
 
 /* Definitions for FPGA */
 #define MEM_MAP_SHIFT 1
+#define REG_OFFSET (2)
 
 /* FPGA Version RO register */
 #define FPGA_VERSION_REG (0x00 << MEM_MAP_SHIFT)
@@ -401,60 +402,21 @@
 #define PATTERN_LIMIT_STP_OFST  (16)
 #define PATTERN_LIMIT_STP_MSK   (0x00001FFF << PATTERN_LIMIT_STP_OFST)
 
-/* Pattern Loop 0 Address RW regiser */
-#define PATTERN_LOOP_0_ADDR_REG (0xA0 << MEM_MAP_SHIFT)
+/** Pattern Loop and Wait Definitions, 5 regs each */
+#define PATTERN_LOOPDEF_BASE            (0xA0 << MEM_MAP_SHIFT)
+#define PATTERN_LOOPDEF_NWORDS_OFST      (5)
+#define PATTERN_WAIT_TIMER_LSB_WORD_OFST (3)
+#define PATTERN_WAIT_TIMER_MSB_WORD_OFST (4)
+#define PATTERN_WAIT_ADDR_WORD_OFST      (2)
+#define PATTERN_LOOP_ITERATION_WORD_OFST (1)
+#define PATTERN_LOOP_ADDR_WORD_OFST      (0)
 
-#define PATTERN_LOOP_0_ADDR_STRT_OFST (0)
-#define PATTERN_LOOP_0_ADDR_STRT_MSK                                           \
-    (0x00001FFF << PATTERN_LOOP_0_ADDR_STRT_OFST)
-#define PATTERN_LOOP_0_ADDR_STP_OFST (16)
-#define PATTERN_LOOP_0_ADDR_STP_MSK  (0x00001FFF << PATTERN_LOOP_0_ADDR_STP_OFST)
-
-/* Pattern Loop 0 Iteration RW regiser */
-#define PATTERN_LOOP_0_ITERATION_REG (0xA1 << MEM_MAP_SHIFT)
-
-/* Pattern Loop 1 Address RW regiser */
-#define PATTERN_LOOP_1_ADDR_REG (0xA5 << MEM_MAP_SHIFT)
-
-#define PATTERN_LOOP_1_ADDR_STRT_OFST (0)
-#define PATTERN_LOOP_1_ADDR_STRT_MSK                                           \
-    (0x00001FFF << PATTERN_LOOP_1_ADDR_STRT_OFST)
-#define PATTERN_LOOP_1_ADDR_STP_OFST (16)
-#define PATTERN_LOOP_1_ADDR_STP_MSK  (0x00001FFF << PATTERN_LOOP_1_ADDR_STP_OFST)
-
-/* Pattern Loop 1 Iteration RW regiser */
-#define PATTERN_LOOP_1_ITERATION_REG (0xA6 << MEM_MAP_SHIFT)
-
-/* Pattern Loop 2 Address RW regiser */
-#define PATTERN_LOOP_2_ADDR_REG (0xAA << MEM_MAP_SHIFT)
-
-#define PATTERN_LOOP_2_ADDR_STRT_OFST (0)
-#define PATTERN_LOOP_2_ADDR_STRT_MSK                                           \
-    (0x00001FFF << PATTERN_LOOP_2_ADDR_STRT_OFST)
-#define PATTERN_LOOP_2_ADDR_STP_OFST (16)
-#define PATTERN_LOOP_2_ADDR_STP_MSK  (0x00001FFF << PATTERN_LOOP_2_ADDR_STP_OFST)
-
-/* Pattern Loop 2 Iteration RW regiser */
-#define PATTERN_LOOP_2_ITERATION_REG (0xAB << MEM_MAP_SHIFT)
-
-/* Pattern Wait 0 RW regiser */
-#define PATTERN_WAIT_0_ADDR_REG (0xA2 << MEM_MAP_SHIFT)
-
-#define PATTERN_WAIT_0_ADDR_OFST (0)
-#define PATTERN_WAIT_0_ADDR_MSK  (0x00001FFF << PATTERN_WAIT_0_ADDR_OFST)
-// FIXME: is mask 3FF
-
-/* Pattern Wait 1 RW regiser */
-#define PATTERN_WAIT_1_ADDR_REG (0xA7 << MEM_MAP_SHIFT)
-
-#define PATTERN_WAIT_1_ADDR_OFST (0)
-#define PATTERN_WAIT_1_ADDR_MSK  (0x00001FFF << PATTERN_WAIT_1_ADDR_OFST)
-
-/* Pattern Wait 2 RW regiser */
-#define PATTERN_WAIT_2_ADDR_REG (0xAC << MEM_MAP_SHIFT)
-
-#define PATTERN_WAIT_2_ADDR_OFST (0)
-#define PATTERN_WAIT_2_ADDR_MSK  (0x00001FFF << PATTERN_WAIT_2_ADDR_OFST)
+#define PATTERN_WAIT_ADDR_OFST          (0)
+#define PATTERN_WAIT_ADDR_MSK           (0x00001FFF << PATTERN_WAIT_ADDR_OFST)
+#define PATTERN_LOOP_ADDR_STRT_OFST     (0)
+#define PATTERN_LOOP_ADDR_STRT_MSK      (0x00001FFF << PATTERN_LOOP_ADDR_STRT_OFST)
+#define PATTERN_LOOP_ADDR_STP_OFST      (16)
+#define PATTERN_LOOP_ADDR_STP_MSK       (0x00001FFF << PATTERN_LOOP_ADDR_STP_OFST)
 
 /* Samples RW register */
 #define SAMPLES_REG (0x32 << MEM_MAP_SHIFT)
@@ -513,18 +475,6 @@
 #define PATTERN_IN_LSB_REG (0x82 << MEM_MAP_SHIFT)
 #define PATTERN_IN_MSB_REG (0x83 << MEM_MAP_SHIFT)
 
-/* Pattern Wait Timer 0 64 bit RW register. t = PWT1 x T run clock */
-#define PATTERN_WAIT_TIMER_0_LSB_REG (0xA3 << MEM_MAP_SHIFT)
-#define PATTERN_WAIT_TIMER_0_MSB_REG (0xA4 << MEM_MAP_SHIFT)
-
-/* Pattern Wait Timer 1 64 bit RW register. t = PWT2 x T run clock */
-#define PATTERN_WAIT_TIMER_1_LSB_REG (0xA8 << MEM_MAP_SHIFT)
-#define PATTERN_WAIT_TIMER_1_MSB_REG (0xA9 << MEM_MAP_SHIFT)
-
-/* Pattern Wait Timer 2 64 bit RW register. t = PWT3 x T run clock */
-#define PATTERN_WAIT_TIMER_2_LSB_REG (0xAD << MEM_MAP_SHIFT)
-#define PATTERN_WAIT_TIMER_2_MSB_REG (0xAE << MEM_MAP_SHIFT)
-
 /* Readout enable RW register */
 #define READOUT_10G_ENABLE_REG (0x3C << MEM_MAP_SHIFT)
 
@@ -570,72 +520,6 @@
 /** Pattern Set 64 bit RW regiser */
 #define PATTERN_SET_LSB_REG (0x86 << MEM_MAP_SHIFT)
 #define PATTERN_SET_MSB_REG (0x87 << MEM_MAP_SHIFT)
-
-/* Pattern Loop 3 Address RW regiser */
-#define PATTERN_LOOP_3_ADDR_REG (0xAF << MEM_MAP_SHIFT)
-
-#define PATTERN_LOOP_3_ADDR_STRT_OFST (0)
-#define PATTERN_LOOP_3_ADDR_STRT_MSK                                           \
-    (0x00001FFF << PATTERN_LOOP_3_ADDR_STRT_OFST)
-#define PATTERN_LOOP_3_ADDR_STP_OFST (16)
-#define PATTERN_LOOP_3_ADDR_STP_MSK  (0x00001FFF << PATTERN_LOOP_3_ADDR_STP_OFST)
-
-/* Pattern Loop 3 Iteration RW regiser */
-#define PATTERN_LOOP_3_ITERATION_REG (0xB0 << MEM_MAP_SHIFT)
-
-/* Pattern Loop 4 Address RW regiser */
-#define PATTERN_LOOP_4_ADDR_REG (0xB4 << MEM_MAP_SHIFT)
-
-#define PATTERN_LOOP_4_ADDR_STRT_OFST (0)
-#define PATTERN_LOOP_4_ADDR_STRT_MSK                                           \
-    (0x00001FFF << PATTERN_LOOP_4_ADDR_STRT_OFST)
-#define PATTERN_LOOP_4_ADDR_STP_OFST (16)
-#define PATTERN_LOOP_4_ADDR_STP_MSK  (0x00001FFF << PATTERN_LOOP_4_ADDR_STP_OFST)
-
-/* Pattern Loop 4 Iteration RW regiser */
-#define PATTERN_LOOP_4_ITERATION_REG (0xB5 << MEM_MAP_SHIFT)
-
-/* Pattern Loop 5 Address RW regiser */
-#define PATTERN_LOOP_5_ADDR_REG (0xB9 << MEM_MAP_SHIFT)
-
-#define PATTERN_LOOP_5_ADDR_STRT_OFST (0)
-#define PATTERN_LOOP_5_ADDR_STRT_MSK                                           \
-    (0x00001FFF << PATTERN_LOOP_5_ADDR_STRT_OFST)
-#define PATTERN_LOOP_5_ADDR_STP_OFST (16)
-#define PATTERN_LOOP_5_ADDR_STP_MSK  (0x00001FFF << PATTERN_LOOP_5_ADDR_STP_OFST)
-
-/* Pattern Loop 5 Iteration RW regiser */
-#define PATTERN_LOOP_5_ITERATION_REG (0xBA << MEM_MAP_SHIFT)
-
-/* Pattern Wait 3 RW regiser */
-#define PATTERN_WAIT_3_ADDR_REG (0xB1 << MEM_MAP_SHIFT)
-
-#define PATTERN_WAIT_3_ADDR_OFST (0)
-#define PATTERN_WAIT_3_ADDR_MSK  (0x00001FFF << PATTERN_WAIT_3_ADDR_OFST)
-
-/* Pattern Wait 4 RW regiser */
-#define PATTERN_WAIT_4_ADDR_REG (0xB6 << MEM_MAP_SHIFT)
-
-#define PATTERN_WAIT_4_ADDR_OFST (0)
-#define PATTERN_WAIT_4_ADDR_MSK  (0x00001FFF << PATTERN_WAIT_4_ADDR_OFST)
-
-/* Pattern Wait 5 RW regiser */
-#define PATTERN_WAIT_5_ADDR_REG (0xBB << MEM_MAP_SHIFT)
-
-#define PATTERN_WAIT_5_ADDR_OFST (0)
-#define PATTERN_WAIT_5_ADDR_MSK  (0x00001FFF << PATTERN_WAIT_5_ADDR_OFST)
-
-/* Pattern Wait Timer 3 64 bit RW register. t = PWT1 x T run clock */
-#define PATTERN_WAIT_TIMER_3_LSB_REG (0xB2 << MEM_MAP_SHIFT)
-#define PATTERN_WAIT_TIMER_3_MSB_REG (0xB3 << MEM_MAP_SHIFT)
-
-/* Pattern Wait Timer 4 64 bit RW register. t = PWT1 x T run clock */
-#define PATTERN_WAIT_TIMER_4_LSB_REG (0xB7 << MEM_MAP_SHIFT)
-#define PATTERN_WAIT_TIMER_4_MSB_REG (0xB8 << MEM_MAP_SHIFT)
-
-/* Pattern Wait Timer 5 64 bit RW register. t = PWT1 x T run clock */
-#define PATTERN_WAIT_TIMER_5_LSB_REG (0xBC << MEM_MAP_SHIFT)
-#define PATTERN_WAIT_TIMER_5_MSB_REG (0xBD << MEM_MAP_SHIFT)
 
 /* Slow ADC SPI Value RO register */
 #define ADC_SLOW_DATA_REG (0x41 << MEM_MAP_SHIFT)

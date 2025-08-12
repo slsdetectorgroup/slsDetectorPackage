@@ -206,11 +206,21 @@ This document describes the differences between v10.0.0 and v9.2.0
     -------------
 
 
-   - detector index and considerations for multiple users using same client pc [SLSDETNAME, some parameters] => multidet.rst
-   - 10g receiver pc tuning permanent ethtool settings https://github.com/slsdetectorgroup/slsDetectorPackage/pull/1247/files
-   - data format for each detector type with images
+    *   Multi Detector and Multi user
+        Documentation on multi detector index and multi user considerations for
+        using the same client system.
+            https://slsdetectorgroup.github.io/devdoc/multidet.html
+
+   
+    *   10GbE PC tuning
+        Further information for permanent ethtool settings updated.
+            https://slsdetectorgroup.github.io/devdoc/troubleshooting.html#receiver-pc-tuning-options
 
 
+    *   Image Size and Output Characteristics
+        Information for different detector types and different parameters that
+        affect image size and characteristics have been added.
+            https://slsdetectorgroup.github.io/devdoc/dataformat.html
 
 
 

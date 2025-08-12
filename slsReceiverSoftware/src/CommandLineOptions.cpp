@@ -235,7 +235,7 @@ void CommandLineOptions::handleAppSpecificOption(int opt, const char *optarg,
 
     case 't':
         LOG(sls::logWARNING) << "Deprecated option '-t' and '--rx_tcport'. Use "
-                                "'p' or '--port' instead.";
+                                "'--p' or '--port' instead.";
         base.port = parsePort(optarg);
         break;
     }

@@ -23,6 +23,7 @@ This document describes the differences between v10.0.0 and v9.2.0
 1 Compilation Changes
 ======================
 
+
     *   C++ standard
         Bumped up C++ standard from 11 to 17.
 
@@ -60,7 +61,6 @@ This document describes the differences between v10.0.0 and v9.2.0
 
     *   TCP API Incompatibility
         The size of the expected structure has changed when setting rx_hostname compared to previous versions. This change makes it incompatible.
-
 
 
     Receiver
@@ -137,14 +137,12 @@ This document describes the differences between v10.0.0 and v9.2.0
             -p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
             -u, --uid           : Set effective user id if receiver started with privileges. 
 
-
         Usage: slsMultiReceiver Options:
             -v, --version       : Version.
             -n, --num-receivers : Number of receivers.
             -p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
             -c, --callback      : Enable dummy callbacks for debugging. Disabled by default. 
             -u, --uid           : Set effective user id if receiver started with privileges. 
-
 
         Usage: slsFrameSynchronizer Options:
             -v, --version       : Version.
@@ -380,6 +378,14 @@ This document describes the differences between v10.0.0 and v9.2.0
         https://slsdetectorgroup.github.io/devdoc/udpheader.html
         https://slsdetectorgroup.github.io/devdoc/udpdetspec.html
 
+    Output Data:
+        https://slsdetectorgroup.github.io/devdoc/dataformat.html
+        https://slsdetectorgroup.github.io/devdoc/fileformat.html
+        https://slsdetectorgroup.github.io/devdoc/slsreceiverheaderformat.html
+        https://slsdetectorgroup.github.io/devdoc/masterfileattributes.html
+        https://slsdetectorgroup.github.io/devdoc/binaryfileformat.html
+        https://slsdetectorgroup.github.io/devdoc/hdf5fileformat.html
+
     slsReceiver Zmq Format:
         https://slsdetectorgroup.github.io/devdoc/slsreceiver.html#zmq-json-header-format
 
@@ -399,3 +405,4 @@ This document describes the differences between v10.0.0 and v9.2.0
 
         dhanya.thattil@psi.ch
         erik.frojdh@psi.ch
+        alice.mazzoleni@psi.ch

@@ -220,7 +220,7 @@ Example cmake options               Comment
 3.3. Build on old distributions using conda
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If your linux distribution doesn't come with a C++11 compiler (gcc>4.8) then 
+If your linux distribution doesn't come with a C++17 compiler (gcc>8) then 
 it's possible to install a newer gcc using conda and build the slsDetectorPackage
 using this compiler
 

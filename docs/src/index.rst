@@ -34,6 +34,7 @@ Welcome to slsDetectorPackage's documentation!
 
     multidet
     quick_start_guide
+    softwarearchitecture
     
 .. toctree::
     :caption: Python API

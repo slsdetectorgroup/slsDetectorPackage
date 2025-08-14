@@ -1,3 +1,5 @@
+.. _using multiple detectors:
+
 Using multiple detectors
 ==========================
 

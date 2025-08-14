@@ -140,7 +140,7 @@ Data
 
 Check out the :ref:`UDP header section<detector udp header>` for details on output UDP header data format.`
 
-Check out the :ref:`Data format section<data format>`  for details on output data format.
+Check out the :ref:`Detector image size and format section<data format>`  for details on output data format.
 
 
 Receiver

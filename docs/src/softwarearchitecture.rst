@@ -116,4 +116,19 @@ Client
 
    Client Architecture
 
-The client is the main interface to control the detector and receiver(s).....
+Users can control the detector and receivers through four interfaces: 
+
+* their C++ API, 
+* their Python API, 
+* the command-line interface, or 
+* the Qt-based GUI. 
+
+Regardless of the interface, each ultimately invokes our Detector class—either directly (CLI and GUI) or through our C++/Python libraries (when using their APIs). The Detector class then calls the appropriate module functions, either for a specific module or in parallel for all modules. Each module object sends requests over TCP to its corresponding module and, if needed, to the receiver.
+
+**Shared Memory**: As the command-line interface is supported, shared memory is used to store essential information such as the module hostname and TCP port, or the receiver hostname and TCP port. This ensures the system knows which components to communicate with, without requiring the user to re-enter this information for every command-line call.
+
+.. note::
+   
+   Only the client maintains shared memory. Care must be taken when multiple users operate from the same PC. See :ref:`multi detector and user section <using multiple detectors>` for more details.
+
+   

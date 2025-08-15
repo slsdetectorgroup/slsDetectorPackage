@@ -25,6 +25,7 @@ Welcome to slsDetectorPackage's documentation!
     :maxdepth: 2
 
     softwarearchitecture
+    configcommands
     quick_start_guide
     dataformat
     multidet

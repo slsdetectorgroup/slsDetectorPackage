@@ -162,7 +162,7 @@ As it is a one-way communication (module to receiver with no reply or acknowledg
 
 **UDP source port** - This is hardcoded in every module to the same value in the detector server and cannot be changed.
 
-Note: If there is a second UDP port on the module, use 'udp_srcport' or 'udp_dstip2'etc. More `here <https://slsdetectorgroup.github.io/devdoc/dataformat.html>`_ for more detector specific info. 
+Note: If there is a second UDP port on the module, use 'udp_srcport' or 'udp_dstip2'etc. See `here <https://slsdetectorgroup.github.io/devdoc/dataformat.html>`_ for more detector specific info. 
 
 Receiver to GUI
 -----------------

@@ -35,9 +35,11 @@ struct sharedDetector;
 
 template <typename T> class SharedMemory {
 
+#ifndef DISABLE_STATIC_ASSERT
     static_assert(has_bool_isValid<T>::value,
                   "SharedMemory requires the struct to have a bool member "
                   "named 'isValid'");
+#endif
 
     static constexpr int NAME_MAX_LENGTH = 255;
     std::string name;
@@ -87,6 +89,13 @@ template <typename T> class SharedMemory {
         if (!shared_struct->isValid) {
             throw SharedMemoryError(getInvalidShmMessage());
         }
+        return shared_struct;
+    }
+
+    /** required for freeing shm that does not have isValid yet  */
+    T *getRawPointer() const {
+        if (!shared_struct)
+            throw SharedMemoryError(getNoShmAccessMessage());
         return shared_struct;
     }
 

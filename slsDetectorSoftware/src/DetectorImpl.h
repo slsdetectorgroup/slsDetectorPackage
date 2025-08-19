@@ -51,16 +51,16 @@ struct sharedDetector {
     int totalNumberOfModules;
     slsDetectorDefs::detectorType detType;
 
-    bool isValid{true}; // false if freed to block access from python or c++ api
-
-    /** END OF FIXED PATTERN
-     * -----------------------------------------------*/
-
     /** Number of modules operated at once */
     slsDetectorDefs::xy numberOfModules;
 
     /**  max number of channels for complete detector*/
     slsDetectorDefs::xy numberOfChannels;
+
+    bool isValid{true}; // false if freed to block access from python or c++ api
+
+    /** END OF FIXED PATTERN
+     * -----------------------------------------------*/
 
     bool acquiringFlag;
     bool initialChecks;

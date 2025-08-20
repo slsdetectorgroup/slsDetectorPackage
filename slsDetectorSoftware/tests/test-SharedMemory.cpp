@@ -5,11 +5,12 @@
 #include "SharedMemory.h"
 #include "catch.hpp"
 #include "sls/string_utils.h"
+#include <filesystem>
 
 namespace sls {
 
 struct Data {
-    int version{3};
+    int shmversion{SHM_IS_VALID_CHECK_VERSION};
     int x;
     double y;
     char mess[50];
@@ -17,83 +18,75 @@ struct Data {
 };
 
 struct ObsoleteData {
-    int version{2};
+    int shmversion{SHM_IS_VALID_CHECK_VERSION - 10};
     int x;
     double y;
     char mess[50];
 };
 
-int freeShmWithoutRawPointers(const int dindex, const int mIndex) {
-    bool is_obsolete = true;
-    SharedMemory<Data> shm(dindex, mIndex);
-    if (shm.exists()) {
-        shm.openSharedMemory(false);
-        if (shm()->version >= 3) {
-            shm()->isValid = false;
-            is_obsolete = false;
-        }
-        shm.removeSharedMemory();
-    }
-    return is_obsolete;
-}
+struct ObsoleteCtbData {
+    int x;
+    double y;
+    char mess[50];
+};
 
-int freeShm(const int dindex, const int mIndex) {
-    bool is_obsolete = true;
+void freeShm(const int dindex, const int mIndex) {
     SharedMemory<Data> shm(dindex, mIndex);
     if (shm.exists()) {
         shm.openSharedMemory(false);
-        auto rawPointer = shm.getRawPointer();
-        if (rawPointer->version >= 3) {
-            rawPointer->isValid = false;
-            is_obsolete = false;
-        }
         shm.removeSharedMemory();
     }
-    return is_obsolete;
 }
 
 constexpr int shm_id = 10;
+const std::string file_path =
+    std::string("/dev/shm/slsDetectorPackage_detector_") +
+    std::to_string(shm_id);
 
 TEST_CASE("Free obsolete (without isValid)", "[detector][shm]") {
+
     // ensure its clean to start
     freeShm(shm_id, -1);
 
-    bool is_obs = true;
-    // free current one without raw pointers => works
     {
-        // create actual shm
+        // create actual shm and free
         SharedMemory<Data> shm(shm_id, -1);
         shm.createSharedMemory();
-        REQUIRE_NOTHROW(is_obs = freeShmWithoutRawPointers(shm_id, -1));
-        REQUIRE(is_obs == false);
+        REQUIRE(std::filesystem::exists(file_path) == true);
+        REQUIRE(shm.memoryHasValidFlag() == true);
+        REQUIRE_NOTHROW(freeShm(shm_id, -1));
     }
 
-    // free current one with raw pointers => works
     {
-        // create actual shm
-        SharedMemory<Data> shm(shm_id, -1);
+        // create obsolete and free
+        SharedMemory<ObsoleteData> shm(shm_id, -1);
         shm.createSharedMemory();
-        is_obs = true;
-        REQUIRE_NOTHROW(is_obs = freeShm(shm_id, -1));
-        REQUIRE(is_obs == false);
+        REQUIRE(std::filesystem::exists(file_path) == true);
+        shm.unmapSharedMemory();
     }
 
-    // create obsolete
     {
-        SharedMemory<ObsoleteData> obs_shm(shm_id, -1);
-        obs_shm.createSharedMemory();
-        obs_shm.unmapSharedMemory();
+        SharedMemory<Data> shm(shm_id, -1);
+        shm.openSharedMemory(false);
+        REQUIRE(shm.memoryHasValidFlag() == false);
+        REQUIRE_NOTHROW(freeShm(shm_id, -1));
     }
 
-    // trying to free without using raw pointers should throw
-    is_obs = true;
-    REQUIRE_THROWS(is_obs = freeShmWithoutRawPointers(shm_id, -1));
-    REQUIRE(is_obs == true);
+    {
+        // create obsolete ctb (without shmversion) and free
+        SharedMemory<ObsoleteCtbData> shm(shm_id, -1);
+        shm.createSharedMemory();
+        REQUIRE(std::filesystem::exists(file_path) == true);
+        shm.unmapSharedMemory();
+    }
+    {
+        SharedMemory<Data> shm(shm_id, -1);
+        shm.openSharedMemory(false);
+        REQUIRE(shm.memoryHasValidFlag() == false);
+        REQUIRE_NOTHROW(freeShm(shm_id, -1));
+    }
 
-    // freeing using raw pointers (not checking isValid)
-    is_obs = true;
-    REQUIRE_NOTHROW(is_obs = freeShm(shm_id, -1));
-    REQUIRE(is_obs == true);
+    freeShm(shm_id, -1);
 }
 
 TEST_CASE("Create SharedMemory read and write", "[detector][shm]") {
@@ -107,7 +100,6 @@ TEST_CASE("Create SharedMemory read and write", "[detector][shm]") {
     std::string env_name = env_p ? ("_" + std::string(env_p)) : "";
     CHECK(shm.getName() == std::string("/slsDetectorPackage_detector_") +
                                std::to_string(shm_id) + env_name);
-
     shm()->x = 3;
     shm()->y = 5.7;
     strcpy_safe(shm()->mess, "Some string");
@@ -116,7 +108,6 @@ TEST_CASE("Create SharedMemory read and write", "[detector][shm]") {
     CHECK(shm()->y == 5.7);
     CHECK(std::string(shm()->mess) == "Some string");
 
-    shm.unmapSharedMemory();
     shm.removeSharedMemory();
 
     CHECK(shm.exists() == false);

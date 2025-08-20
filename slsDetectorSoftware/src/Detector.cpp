@@ -21,8 +21,6 @@
 #include <set>
 #include <thread>
 
-#define SHM_IS_VALID_CHECK_VERSION 0x250729
-
 namespace sls {
 
 void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
@@ -32,28 +30,18 @@ void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, moduleIndex);
         if (moduleShm.exists()) {
             moduleShm.openSharedMemory(false);
-            auto rawPointer = moduleShm.getRawPointer();
-            if (rawPointer->shmversion >= SHM_IS_VALID_CHECK_VERSION) {
-                rawPointer->isValid = false;
-            }
             moduleShm.removeSharedMemory();
         }
         return;
     }
 
     int numDetectors = 0;
-    bool ctb_valid_check = false;
 
     // detector - multi module - get number of detectors from shm
     SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
     if (detectorShm.exists()) {
         detectorShm.openSharedMemory(false);
-        auto rawPointer = detectorShm.getRawPointer();
-        numDetectors = rawPointer->totalNumberOfModules;
-        if (rawPointer->shmversion >= SHM_IS_VALID_CHECK_VERSION) {
-            rawPointer->isValid = false;
-            ctb_valid_check = true;
-        }
+        numDetectors = detectorShm()->totalNumberOfModules;
         detectorShm.removeSharedMemory();
     }
 
@@ -61,22 +49,14 @@ void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, i);
         if (moduleShm.exists()) {
             moduleShm.openSharedMemory(false);
-            auto rawPointer = moduleShm.getRawPointer();
-            if (rawPointer->shmversion >= SHM_IS_VALID_CHECK_VERSION) {
-                rawPointer->isValid = false;
-            }
+            moduleShm.removeSharedMemory();
         }
-        moduleShm.removeSharedMemory();
     }
 
     // Ctb configuration
     SharedMemory<CtbConfig> ctbShm(detectorIndex, -1, CtbConfig::shm_tag());
     if (ctbShm.exists()) {
         ctbShm.openSharedMemory(false);
-        auto rawPointer = ctbShm.getRawPointer();
-        if (ctb_valid_check) {
-            rawPointer->isValid = false;
-        }
         ctbShm.removeSharedMemory();
     }
 }

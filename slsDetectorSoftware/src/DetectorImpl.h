@@ -24,7 +24,7 @@ class detectorData;
 class Module;
 
 #define DETECTOR_SHMAPIVERSION 0x190809
-#define DETECTOR_SHMVERSION    0x250729
+#define DETECTOR_SHMVERSION    0x250820
 #define SHORT_STRING_LENGTH    50
 
 /**

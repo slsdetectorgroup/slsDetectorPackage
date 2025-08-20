@@ -55,6 +55,7 @@ TEST_CASE("Free obsolete (without isValid)", "[detector][shm]") {
         REQUIRE(std::filesystem::exists(file_path) == true);
         REQUIRE(shm.memoryHasValidFlag() == true);
         REQUIRE_NOTHROW(freeShm(shm_id, -1));
+        REQUIRE(std::filesystem::exists(file_path) == false);
     }
 
     {
@@ -70,6 +71,7 @@ TEST_CASE("Free obsolete (without isValid)", "[detector][shm]") {
         shm.openSharedMemory(false);
         REQUIRE(shm.memoryHasValidFlag() == false);
         REQUIRE_NOTHROW(freeShm(shm_id, -1));
+        REQUIRE(std::filesystem::exists(file_path) == false);
     }
 
     {
@@ -84,9 +86,8 @@ TEST_CASE("Free obsolete (without isValid)", "[detector][shm]") {
         shm.openSharedMemory(false);
         REQUIRE(shm.memoryHasValidFlag() == false);
         REQUIRE_NOTHROW(freeShm(shm_id, -1));
+        REQUIRE(std::filesystem::exists(file_path) == false);
     }
-
-    freeShm(shm_id, -1);
 }
 
 TEST_CASE("Create SharedMemory read and write", "[detector][shm]") {

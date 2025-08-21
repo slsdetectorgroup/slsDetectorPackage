@@ -1,3 +1,5 @@
+.. _binary file format:
+
 Binary File Format
 ====================
 
@@ -31,6 +33,7 @@ Data File
 
 * Each frame includes a :ref:`**sls_receiver_header** <sls receiver header format>` structure, followed by the actual frame data.
 
+* More details on :ref:`slsReceiverHeader<sls receiver header format>` and the actual image data is described in the :ref:`Detector Image Size and Format <data format>` section.
 
 
 .. _json master file examples:

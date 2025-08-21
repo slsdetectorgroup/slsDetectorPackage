@@ -19,7 +19,7 @@ namespace sls {
 class ServerInterface;
 
 #define MODULE_SHMAPIVERSION 0x190726
-#define MODULE_SHMVERSION    0x250729
+#define MODULE_SHMVERSION    0x250820
 
 /**
  * @short structure allocated in shared memory to store Module settings for

@@ -24,7 +24,7 @@ class detectorData;
 class Module;
 
 #define DETECTOR_SHMAPIVERSION 0x190809
-#define DETECTOR_SHMVERSION    0x250729
+#define DETECTOR_SHMVERSION    0x250820
 #define SHORT_STRING_LENGTH    50
 
 /**
@@ -51,16 +51,16 @@ struct sharedDetector {
     int totalNumberOfModules;
     slsDetectorDefs::detectorType detType;
 
-    bool isValid{true}; // false if freed to block access from python or c++ api
-
-    /** END OF FIXED PATTERN
-     * -----------------------------------------------*/
-
     /** Number of modules operated at once */
     slsDetectorDefs::xy numberOfModules;
 
     /**  max number of channels for complete detector*/
     slsDetectorDefs::xy numberOfChannels;
+
+    bool isValid{true}; // false if freed to block access from python or c++ api
+
+    /** END OF FIXED PATTERN
+     * -----------------------------------------------*/
 
     bool acquiringFlag;
     bool initialChecks;

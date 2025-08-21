@@ -49,8 +49,10 @@ Each physical module has its own unique IP address. As the IPs are already diffe
 
 .. code-block:: bash  
 
-    hostname localhost:1952+localhost:1954+
+    # Therefore, one can use 
     virtual 2 1952
+    # instead of 
+    hostname localhost:1952+localhost:1954+
 
 
 
@@ -74,9 +76,12 @@ The client can configure and control receivers via the 1 GbE public TCP interfac
 * If the command cannot connect to the port (`rx_hostname command <commandline.html#term-rx_hostname-hostname-or-ip-address>`_ failed), the receivers may not have started yet.
 
 
-Since multiple receiver processes typically run on the same PC, they share the same IP. Each receiver process must use a different TCP port. By default, the TCP port (`rx_tcpport <commandline.html#term-rx_tcpport-port>`_) starts at 1954 and increments in shared memory.
+Since multiple receiver processes typically run on the same PC, they share the same IP. Here, each receiver process must use a different TCP port for a unique connection. 
 
 * 1954 - Default Receiver TCP port
+
+Configuring the receiver with the command `rx_hostname command <commandline.html#term-rx_hostname-hostname-or-ip-address>`_, sets up a receiver for every module in shared memory automatically ie. every module's receiver TCP port will automatically increment in shared memory. The starting port is defined by the command `rx_tcpport <commandline.html#term-rx_tcpport-port>`_ with the default being 1954.
+
 
 A multi-module command (without colon or module index) sets incremental ports starting from the specified port number.
 
@@ -94,9 +99,12 @@ For example, using default TCP ports (1954, 1955):
     rx_hostname localhost
     # Equivalent to:
     rx_hostname localhost:1954+localhost:1955+
-    # or:
-    rx_tcpport 1954 # then
+    
+    # or set to another set of ports (automatically incremented)
+    rx_tcpport 1984
     rx_hostname localhost
+    # instead of
+    rx_hostname localhost:1984+localhost:1985+
 
 
 
@@ -129,13 +137,13 @@ Unlike TCP, the module (hardware) requires explicit configuration for sending im
 
 **UDP Destination**
 
-Info on where to send the image from the receiver to.
+Info on where to send the image from the module to.
 
-UDP Desination IP - The IP of the receiver PC's 10 GbE interface, usually found via `ifconfig`. Command: `udp_dstip <commandline.html#term-udp_dstip-x.x.x.x-or-auto>`_ 
+**UDP Desination IP** - The IP of the receiver PC's 10 GbE interface, usually found via `ifconfig`. Command: `udp_dstip <commandline.html#term-udp_dstip-x.x.x.x-or-auto>`_. For 1GbE interface and for this command, one can use 'auto' as an argument, which will pick up the IP from the `rx_hostname command <commandline.html#term-rx_hostname-hostname-or-ip-address>`_.
 
-UDP desintation MAC - Also obtained from the interface using `ifconfig`. For built-in receivers, the module configures this automatically from the `UDP destination IP`. For custom receivers, it must be explicitly provided. Command: `udp_dstmac <commandline.html#term-udp_dstmac-x-x-x-x-x-x>`_
+**UDP desintation MAC** - Also obtained from the interface using `ifconfig`. For built-in receivers, the module configures this automatically from the `UDP destination IP`. For custom receivers, it must be explicitly provided. Command: `udp_dstmac <commandline.html#term-udp_dstmac-x-x-x-x-x-x>`_
 
-UDP destination port - Ensure uniqueness if multiple users share the interface. Command: `udp_dstport <commandline.html#term-udp_dstport-n>`_
+**UDP destination port** - Ensure uniqueness if multiple users share the interface. Command: `udp_dstport <commandline.html#term-udp_dstport-n>`_
 
 * 50001 - Default Receiver UDP port
 
@@ -144,25 +152,28 @@ UDP destination port - Ensure uniqueness if multiple users share the interface. 
 
 As it is a one-way communication (module to receiver with no reply or acknowledgements), info on the source of the image is more for debugging purposes and prevent packet rejection.
 
-**UDP source IP** - Must be on the same subnet as the destination IP (same first three octets) to prevent packet rejection by the receiver interface. Using `auto` picks up the IP from the `rx_hostname command <commandline.html#term-rx_hostname-hostname-or-ip-address>`_ (common for 1 GbE interfaces). Command: `udp_srcip <commandline.html#term-udp_srcip-x.x.x.x-or-auto>`_
+**UDP source IP** - Must be on the same subnet as the destination IP (same first three octets) to prevent packet rejection by the receiver interface. For 1GbE interface and for this command (except for Eiger), one can use `auto` as an argument, which will pick up the IP from the `hostname command <commandline.html#term-hostname>`_. Command: `udp_srcip <commandline.html#term-udp_srcip-x.x.x.x-or-auto>`_
 
 .. code-block:: bash  
 
     # 10 GbE interface
+    hostname bchip100
     udp_dstip 10.0.2.1
     udp_srcip 10.0.2.19
     rx_hostname localhost
 
     # 1 GbE interface
+    hostname bchip100
     rx_hostname localhost
-    udp_dstip auto # this command comes after rx_hostname to use its IP
+    udp_dstip auto # this command uses IP from rx_hostname. So, it comes after.
+    udp_srcip auto # this command uses IP from hostname
 
 **UDP source MAC** - By default, it is set to `aa:bb:cc:dd:xx:yy` where `xx` and `yy` are module row and column indices to differentiate the modules while debugging. Command: `udp_srcmac <commandline.html#term-udp_srcmac-x-x-x-x-x-x>`_
 
 
 **UDP source port** - This is hardcoded in every module to the same value in the detector server and cannot be changed.
 
-Note: If there is a second UDP port on the module, use 'udp_srcport' or 'udp_dstip2'etc. See `here <https://slsdetectorgroup.github.io/devdoc/dataformat.html>`_ for more detector specific info. 
+Note: If there is a second UDP port on the module, use 'udp_dstport2' or 'udp_dstip2'etc. See `here <https://slsdetectorgroup.github.io/devdoc/dataformat.html>`_ for more detector specific info. 
 
 Receiver to GUI
 -----------------
@@ -175,7 +186,7 @@ Receiver to GUI
    Receiver GUI Commands
 
 
-Enabling the GUI automatically streams images from the receiver via ZMQ sockets. Even without the GUI, streaming can be activated explicitly using the command`rx_zmqstream <commandline.html#term-rx_zmqstream-0-1>`_. ZMQ streaming uses TCP/IP, so the ports must be configured appropriately.
+Enabling the GUI automatically streams images from the receiver via ZMQ sockets. Even without the GUI, streaming can be activated explicitly using the command `rx_zmqstream <commandline.html#term-rx_zmqstream-0-1>`_. ZMQ streaming uses TCP/IP, so the ports must be configured appropriately.
 
 **Receiver ZMQ Port** - Port from which the receiver streams ZMQ packets. Command: `rx_zmqport <commandline.html#term-rx_zmqport-port>`_
 

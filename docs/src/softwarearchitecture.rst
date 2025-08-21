@@ -26,7 +26,7 @@ Each module sends its data via UDP over distinct ports. Since UDP does not provi
 
 **Receiver** 
 
-UDP data is received by one or more receivers—either built-in or custom. In the diagram above, there is one built-in receiver per module (1:1). For example, a detector with two modules (two hostnames) will have two built-in receivers. Each receiver could listen to one or two UDP ports (as the module it listens to). For each UDP port, the receiver reassembles these packets into sub-images and optionally saved to file.
+UDP data is received by one or more receivers—either built-in or custom. In the diagram above, there is one built-in receiver per module (1:1). For example, a detector with two modules (two hostnames) will have two built-in receivers. Each receiver could listen to one or two UDP ports (depending on the module it listens to). For each UDP port, the receiver reassembles these packets into sub-images and optionally saved to file.
 
 **ZMQ** 
 

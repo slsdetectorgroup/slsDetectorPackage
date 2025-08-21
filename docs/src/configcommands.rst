@@ -28,7 +28,7 @@ Client to Module
 
 The client configures and controls modules via the 1 GbE public TCP interface.
 
-* Should be able to ping the module’s hostname from any PC on the network.
+* Should be able to ping the module's hostname from any PC on the network.
 * If one cannot ping, ensure that it is powered on.
 * If the command cannot connect to the port (`hostname command <commandline.html#term-hostname>`_ failed), the onboard servers may not have started yet.
 
@@ -139,9 +139,9 @@ Unlike TCP, the module (hardware) requires explicit configuration for sending im
 
 Info on where to send the image from the module to.
 
-**UDP Desination IP** - The IP of the receiver PC's 10 GbE interface, usually found via `ifconfig`. Command: `udp_dstip <commandline.html#term-udp_dstip-x.x.x.x-or-auto>`_. For 1GbE interface and for this command, one can use 'auto' as an argument, which will pick up the IP from the `rx_hostname command <commandline.html#term-rx_hostname-hostname-or-ip-address>`_.
+**UDP Desination IP** - The IP of the receiver PC's 10 GbE interface, usually found via ``ifconfig``. Command: `udp_dstip <commandline.html#term-udp_dstip-x.x.x.x-or-auto>`_. For 1GbE interface and for this command, one can use 'auto' as an argument, which will pick up the IP from the `rx_hostname command <commandline.html#term-rx_hostname-hostname-or-ip-address>`_.
 
-**UDP desintation MAC** - Also obtained from the interface using `ifconfig`. For built-in receivers, the module configures this automatically from the `UDP destination IP`. For custom receivers, it must be explicitly provided. Command: `udp_dstmac <commandline.html#term-udp_dstmac-x-x-x-x-x-x>`_
+**UDP desintation MAC** - Also obtained from the interface using ``ifconfig``. For built-in receivers, the module configures this automatically from the ``UDP destination IP``. For custom receivers, it must be explicitly provided. Command: `udp_dstmac <commandline.html#term-udp_dstmac-x-x-x-x-x-x>`_
 
 **UDP destination port** - Ensure uniqueness if multiple users share the interface. Command: `udp_dstport <commandline.html#term-udp_dstport-n>`_
 
@@ -152,7 +152,7 @@ Info on where to send the image from the module to.
 
 As it is a one-way communication (module to receiver with no reply or acknowledgements), info on the source of the image is more for debugging purposes and prevent packet rejection.
 
-**UDP source IP** - Must be on the same subnet as the destination IP (same first three octets) to prevent packet rejection by the receiver interface. For 1GbE interface and for this command (except for Eiger), one can use `auto` as an argument, which will pick up the IP from the `hostname command <commandline.html#term-hostname>`_. Command: `udp_srcip <commandline.html#term-udp_srcip-x.x.x.x-or-auto>`_
+**UDP source IP** - Must be on the same subnet as the destination IP (same first three octets) to prevent packet rejection by the receiver interface. For 1GbE interface and for this command (except for Eiger), one can use ``auto`` as an argument, which will pick up the IP from the `hostname command <commandline.html#term-hostname>`_. Command: `udp_srcip <commandline.html#term-udp_srcip-x.x.x.x-or-auto>`_
 
 .. code-block:: bash  
 
@@ -168,7 +168,7 @@ As it is a one-way communication (module to receiver with no reply or acknowledg
     udp_dstip auto # this command uses IP from rx_hostname. So, it comes after.
     udp_srcip auto # this command uses IP from hostname
 
-**UDP source MAC** - By default, it is set to `aa:bb:cc:dd:xx:yy` where `xx` and `yy` are module row and column indices to differentiate the modules while debugging. Command: `udp_srcmac <commandline.html#term-udp_srcmac-x-x-x-x-x-x>`_
+**UDP source MAC** - By default, it is set to ``aa:bb:cc:dd:xx:yy`` where ``xx`` and ``yy`` are module row and column indices to differentiate the modules while debugging. Command: `udp_srcmac <commandline.html#term-udp_srcmac-x-x-x-x-x-x>`_
 
 
 **UDP source port** - This is hardcoded in every module to the same value in the detector server and cannot be changed.
@@ -196,7 +196,7 @@ Enabling the GUI automatically streams images from the receiver via ZMQ sockets.
 
 * 30001 - Default Client ZMQ Port (listens to)
 
-**Client ZMQ IP** - IP address the client ZMQ socket listens to. Command: `zmqip <commandline.html#term-zmqip-x.x.x.x>`_. By default, this is set to the IP of `rx_hostname`, but can be set to any IP address that the client can reach.
+**Client ZMQ IP** - IP address the client ZMQ socket listens to. Command: `zmqip <commandline.html#term-zmqip-x.x.x.x>`_. By default, this is set to the IP of ``rx_hostname``, but can be set to any IP address that the client can reach.
 
 * Default: Receiver’s hostname (rx_hostname)
 
@@ -228,6 +228,6 @@ Images from the receiver can also be streamed to an external processing chain fo
 
 * 30001 - Default Client ZMQ Port (listens to)
 
-**Client ZMQ IP** - IP address the client ZMQ socket listens to. Command: `zmqip <commandline.html#term-zmqip-x.x.x.x>`_. By default, this is set to the IP of `rx_hostname`, but in this set up, it should listen to the zmq IP that the external process is streaming out from.
+**Client ZMQ IP** - IP address the client ZMQ socket listens to. Command: `zmqip <commandline.html#term-zmqip-x.x.x.x>`_. By default, this is set to the IP of ``rx_hostname``, but in this set up, it should listen to the zmq IP that the external process is streaming out from.
 
 * Default: Receiver’s hostname (rx_hostname)

@@ -41,7 +41,7 @@ A single client can configure and control individual modules and receivers, or m
 
 It can also listen to multiple ZMQ sockets from the Receiver(s) or the external processing chain to assemble the full image for GUI display or Client call backs.
 
-Next, each component in detail is examined in detail.
+Next, each component is examined in detail.
 
 Module
 -------

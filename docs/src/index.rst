@@ -18,6 +18,17 @@ Welcome to slsDetectorPackage's documentation!
     installation
     dependencies
     consuming
+
+
+.. toctree::
+    :caption: how to
+    :maxdepth: 2
+
+    softwarearchitecture
+    configcommands
+    quick_start_guide
+    dataformat
+    multidet
    
 .. toctree::
     :caption: C++ API
@@ -28,12 +39,8 @@ Welcome to slsDetectorPackage's documentation!
     receiver_api
     examples
 
-.. toctree::
-    :caption: how to
-    :maxdepth: 2
 
-    multidet
-    quick_start_guide
+
     
 .. toctree::
     :caption: Python API
@@ -96,9 +103,9 @@ Welcome to slsDetectorPackage's documentation!
     :caption: Receiver Files
     :maxdepth: 3
 
-    dataformat
     fileformat
     slsreceiverheaderformat
+    dataformat
     masterfileattributes
     binaryfileformat
     hdf5fileformat

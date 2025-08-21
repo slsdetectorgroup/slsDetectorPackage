@@ -2184,6 +2184,7 @@ class Detector(CppDetectorApi):
 
         :setter: It loads trim files from settingspath.\n [Mythen3] An energy of -1 will pick up values from detector.
         """
+        
         if self.type == detectorType.MYTHEN3:
             return self.getAllThresholdEnergy()
         return self.getThresholdEnergy()

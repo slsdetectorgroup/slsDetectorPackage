@@ -1,3 +1,5 @@
+.. _detector_servers:
+
 Getting Started
 ===============
 

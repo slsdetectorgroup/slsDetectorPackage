@@ -16316,48 +16316,6 @@ std::string Caller::updatemode(int action) {
     return os.str();
 }
 
-std::string Caller::user(int action) {
-
-    std::ostringstream os;
-    // print help
-    if (action == slsDetectorDefs::HELP_ACTION) {
-        os << R"V0G0N(
-	User details from shared memory (hostname, type, PID, User, Date). )V0G0N"
-           << std::endl;
-        return os.str();
-    }
-
-    // check if action and arguments are valid
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (1 && args.size() != 0) {
-            throw RuntimeError("Wrong number of arguments for action GET");
-        }
-
-        if (args.size() == 0) {
-        }
-
-    }
-
-    else {
-
-        throw RuntimeError(
-            "INTERNAL ERROR: Invalid action: supported actions are ['GET']");
-    }
-
-    // generate code for each action
-    if (action == slsDetectorDefs::GET_ACTION) {
-        if (args.size() == 0) {
-            if (det_id != -1) {
-                throw RuntimeError("Cannot execute user at module level");
-            }
-            auto t = det->getUserDetails();
-            os << t << '\n';
-        }
-    }
-
-    return os.str();
-}
-
 std::string Caller::v_a(int action) {
 
     std::ostringstream os;

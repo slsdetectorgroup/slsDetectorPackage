@@ -22,6 +22,10 @@ class IpAddr;
 // shm by mistake
 void freeSharedMemory(const int detectorIndex = 0, const int moduleIndex = -1);
 
+// Free function to avoid dependence on class
+// and get user details directly from shm
+std::string getUserDetails(const int detectorIndex = 0);
+
 /**
  * \class Detector
  */

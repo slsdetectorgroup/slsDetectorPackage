@@ -2141,10 +2141,6 @@ class Detector {
      * start [Gotthard2] not in burst and auto mode */
     Result<ns> getMeasurementTime(Positions pos = {}) const;
 
-    /** get user details from shared memory  (hostname, type, PID, User, Date)
-     */
-    std::string getUserDetails() const;
-
     ///@}
 
   private:

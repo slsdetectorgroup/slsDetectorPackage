@@ -25,6 +25,9 @@ void init_det(py::module &m) {
           (void (*)(const int, const int)) & sls::freeSharedMemory,
           py::arg() = 0, py::arg() = -1);
 
+    m.def("getUserDetails", (std::string(*)(const int)) & sls::getUserDetails,
+          py::arg() = 0);
+
     py::class_<Detector> CppDetectorApi(m, "CppDetectorApi");
     CppDetectorApi.def(py::init<int>());
 
@@ -2063,7 +2066,5 @@ void init_det(py::module &m) {
                        (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                            Detector::getMeasurementTime,
                        py::arg() = Positions{});
-    CppDetectorApi.def("getUserDetails", (std::string(Detector::*)() const) &
-                                             Detector::getUserDetails);
     ;
 }

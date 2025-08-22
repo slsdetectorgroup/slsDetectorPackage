@@ -61,6 +61,10 @@ int main(int argc, char *argv[]) {
         // Get user details from shared memory should work also without a
         // detector
         if (parser.command() == "user") {
+            if (action == slsDetectorDefs::PUT_ACTION) {
+                std::cout << "Cannot set user details\n";
+                return EXIT_FAILURE;
+            }
             if (parser.detector_id() != -1)
                 std::cout << "Cannot get user details of only a sub-detector\n";
             else

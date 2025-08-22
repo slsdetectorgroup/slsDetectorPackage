@@ -3601,7 +3601,7 @@ TEST_CASE("user", "[.cmdcall]") {
     REQUIRE(oss2.str() == oss3.str());
 
     // This is a get only command
-    //REQUIRE_THROWS(caller.call("user", {}, -1, PUT)); exit with failure
+    // REQUIRE_THROWS(caller.call("user", {}, -1, PUT)); exit with failure
     REQUIRE_NOTHROW(caller.call("user", {}, -1, GET));
 }
 

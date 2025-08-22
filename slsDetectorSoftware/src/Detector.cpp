@@ -61,6 +61,62 @@ void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
     }
 }
 
+std::string getUserDetails(const int detectorIndex) {
+
+    int numModules = 0;
+    defs::detectorType type = defs::GENERIC;
+    pid_t pid = -1;
+    std::string hostname = "Unknown";
+    std::string user = "Unknown";
+    std::string date = "Unknown";
+
+    {
+        SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
+        if (!detectorShm.exists()) {
+            throw SharedMemoryError("No detector with index " +
+                                    std::to_string(detectorIndex) +
+                                    " in shared memory!");
+        }
+        detectorShm.openSharedMemory(false);
+        if (detectorShm()->shmversion < DETECTOR_SHMAPIVERSION) {
+            detectorShm.unmapSharedMemory();
+            throw SharedMemoryError(
+                "Detector Shared memory version too old to get user details!");
+        }
+        numModules = detectorShm()->totalNumberOfModules;
+        type = detectorShm()->detType;
+        pid = detectorShm()->lastPID;
+        user = detectorShm()->lastUser;
+        date = detectorShm()->lastDate;
+
+        detectorShm.unmapSharedMemory();
+    }
+
+    for (int imod = 0; imod != numModules; ++imod) {
+        SharedMemory<sharedModule> moduleShm(detectorIndex, imod);
+        if (moduleShm.exists()) {
+            moduleShm.openSharedMemory(false);
+            if (moduleShm()->shmversion < MODULE_SHMAPIVERSION) {
+                LOG(logWARNING)
+                    << "Module Shared Memory too old to get hostname";
+            } else {
+                hostname = moduleShm()->hostname;
+            }
+            moduleShm.unmapSharedMemory();
+        }
+    }
+
+    std::ostringstream userDetails;
+    userDetails << "Detector Index: " << detectorIndex << "\n"
+                << "Number of Modules: " << numModules << "\n"
+                << "Type: " << type << "\n"
+                << "PID: " << pid << "\n"
+                << "User: " << user << "\n"
+                << "Date: " << date << "\n"
+                << "Hostname: " << hostname << "\n";
+    return userDetails.str();
+}
+
 using defs = slsDetectorDefs;
 
 Detector::Detector(int shm_id) : pimpl(make_unique<DetectorImpl>(shm_id)) {}
@@ -2827,8 +2883,6 @@ Result<ns> Detector::getActualTime(Positions pos) const {
 Result<ns> Detector::getMeasurementTime(Positions pos) const {
     return pimpl->Parallel(&Module::getMeasurementTime, pos);
 }
-
-std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
 
 std::vector<uint16_t> Detector::getValidPortNumbers(uint16_t start_port) {
     int num_sockets_per_detector = getNumberofUDPInterfaces({}).tsquash(

@@ -67,14 +67,11 @@ class Module : public virtual slsDetectorDefs {
      *                                                *
      * ************************************************/
 
-    /** creating new shared memory
-    verify is if shared memory version matches existing one */
-    explicit Module(detectorType type, int det_id = 0, int module_index = 0,
-                    bool verify = true);
+    /** creating new shared memory */
+    explicit Module(detectorType type, int det_id = 0, int module_index = 0);
 
-    /** opening existing shared memory
-    verify is if shared memory version matches existing one */
-    explicit Module(int det_id = 0, int module_index = 0, bool verify = true);
+    /** opening existing shared memory */
+    explicit Module(int det_id = 0, int module_index = 0);
 
     bool isFixedPatternSharedMemoryCompatible() const;
     std::string getHostname() const;
@@ -738,13 +735,8 @@ class Module : public virtual slsDetectorDefs {
     template <typename Ret, typename Arg>
     Ret sendToReceiver(int fnum, const Arg &args) const;
 
-    /** Get Detector Type from Shared Memory
-    verify is if shm size matches existing one */
-    detectorType getDetectorTypeFromShm(int det_id, bool verify = true);
-
-    /** Initialize shared memory
-    verify is if shm size matches existing one  */
-    void initSharedMemory(detectorType type, int det_id, bool verify = true);
+    void createSharedMemory(detectorType type, int det_id);
+    void openSharedMemory(int det_id);
 
     /** Initialize module structure to defaults,
     Called when new shared memory is created */

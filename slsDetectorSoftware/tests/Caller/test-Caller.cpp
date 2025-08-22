@@ -3592,11 +3592,8 @@ TEST_CASE("frametime", "[.cmdcall]") {
 TEST_CASE("user", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    caller.call("user", {}, -1, GET);
-
-    // This is a get only command
-    REQUIRE_THROWS(caller.call("user", {}, -1, PUT));
-    REQUIRE_NOTHROW(caller.call("user", {}, -1, GET));
+    // caller only has help. cmdApp takes care of put and get
+    REQUIRE_NOTHROW(caller.call("user", {}, -1, defs::HELP_ACTION));
 }
 
 TEST_CASE("sleep", "[.cmdcall]") {

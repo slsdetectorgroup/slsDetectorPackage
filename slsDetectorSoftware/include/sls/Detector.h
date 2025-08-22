@@ -22,6 +22,10 @@ class IpAddr;
 // shm by mistake
 void freeSharedMemory(const int detectorIndex = 0, const int moduleIndex = -1);
 
+// Free function to avoid dependence on class
+// and get user details directly from shm
+std::string getUserDetails(const int detectorIndex = 0);
+
 /**
  * \class Detector
  */
@@ -2136,10 +2140,6 @@ class Detector {
     /** [Jungfrau][Moench][Mythen3][CTB][Xilinx CTB] Get timestamp at a frame
      * start [Gotthard2] not in burst and auto mode */
     Result<ns> getMeasurementTime(Positions pos = {}) const;
-
-    /** get user details from shared memory  (hostname, type, PID, User, Date)
-     */
-    std::string getUserDetails() const;
 
     ///@}
 

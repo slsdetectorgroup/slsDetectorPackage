@@ -4158,7 +4158,9 @@ int InferAction::updatemode() {
 int InferAction::user() {
 
     if (args.size() == 0) {
-        return slsDetectorDefs::GET_ACTION;
+        throw RuntimeError(
+            "sls_detector is disabled for command: user with number of "
+            "arguments 0. Use sls_detector_get or sls_detector_put");
     }
 
     else {

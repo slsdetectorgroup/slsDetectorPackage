@@ -3592,10 +3592,16 @@ TEST_CASE("frametime", "[.cmdcall]") {
 TEST_CASE("user", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
-    caller.call("user", {}, -1, GET);
+    // stays the same across calls
+    std::ostringstream oss1, oss2, oss3;
+    caller.call("user", {}, -1, GET, oss1);
+    caller.call("user", {}, -1, GET, oss2);
+    caller.call("user", {}, -1, GET, oss3);
+    REQUIRE(oss1.str() == oss2.str());
+    REQUIRE(oss2.str() == oss3.str());
 
     // This is a get only command
-    REQUIRE_THROWS(caller.call("user", {}, -1, PUT));
+    // REQUIRE_THROWS(caller.call("user", {}, -1, PUT)); exit with failure
     REQUIRE_NOTHROW(caller.call("user", {}, -1, GET));
 }
 

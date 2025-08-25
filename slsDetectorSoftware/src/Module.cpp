@@ -3396,11 +3396,11 @@ void Module::createSharedMemory(detectorType type, int det_id) {
 
     // ensure shared memory was not created before
     if (shm.exists()) {
-        throw SharedMemoryError(
-            "This shared memory " + shm.getName() +
-            " should have been deleted before! Free it to continue.");
+        LOG(logWARNING)
+            << "This shared memory " + shm.getName() +
+                   " should have been deleted before! Freeing it to continue.";
+        shm.removeSharedMemory();
     }
-
     shm.createSharedMemory();
     initializeModuleStructure(type);
 }

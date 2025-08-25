@@ -35,6 +35,8 @@ This document describes the differences between v10.0.0 and v9.2.0
     *   PATCH 
         Find PATCH command required for compilation. Needed for lib zeromq patching.
 
+
+    *   pmodules support discontinued
     
 
 2 New or Changed Features
@@ -62,6 +64,13 @@ This document describes the differences between v10.0.0 and v9.2.0
     *   TCP API Incompatibility
         The size of the expected structure has changed when setting rx_hostname compared to previous versions. This change makes it incompatible.
 
+
+    *   User details
+        One can get user or detector details directly from shared memory without
+        creating the Detector class. It is now a free function.
+        C++ API: getUserDetails
+        python/ command line: user
+        
 
     Receiver
     --------

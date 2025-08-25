@@ -57,6 +57,8 @@ template <typename T> class SharedMemory {
         name = constructSharedMemoryName(detectorId, moduleIndex, tag);
     }
 
+    explicit SharedMemory(const std::string &shm_name) : name(shm_name) {}
+
     // Disable copy, since we refer to a unique location
     SharedMemory(const SharedMemory &) = delete;
     SharedMemory &operator=(const SharedMemory &other) = delete;
@@ -81,8 +83,12 @@ template <typename T> class SharedMemory {
     }
 
     bool memoryHasValidFlag() const {
+        if (shared_struct == nullptr) {
+            throw SharedMemoryError(
+                "Shared memory not mapped. Cannot check validity.");
+        }
+        // CtbConfig did not have shmversion before, so exact value check
         if constexpr (is_type<CtbConfig, T>()) {
-            // CtbConfig did not have shmversion before, so exact value check
             if (shared_struct->shmversion == SHM_IS_VALID_CHECK_VERSION) {
                 return true;
             }
@@ -99,11 +105,18 @@ template <typename T> class SharedMemory {
     }
 
     void invalidate() {
+        bool wasValid = true;
+        if (shared_struct == nullptr) {
+            wasValid = false;
+            openSharedMemory(false);
+        }
         // also called by obsolete shm test structure (so check added)
         if constexpr (has_bool_isValid<T>::value) {
             if (memoryHasValidFlag())
                 shared_struct->isValid = false;
         }
+        if (!wasValid)
+            unmapSharedMemory();
     }
 
     T *operator()() {

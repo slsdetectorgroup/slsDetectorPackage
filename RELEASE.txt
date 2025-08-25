@@ -7,11 +7,12 @@ This document describes the differences between v10.0.0 and v9.2.0
 
     CONTENTS
     --------
-    1           Compilation Changes
-    2.1         New or Changed Features
-        2.1     Breaking API
-        2.2     Resolved or Changed Features
-        2.3     New Features
+    1           Changes
+    1.1         Compilation Changes
+    1.2         New or Changed Features
+        1.2.1   Breaking API
+        1.2.2   Resolved or Changed Features
+        1.2.3   New Features
     3           On-board Detector Server Compatibility
     4           Firmware Requirements
     5           Kernel Requirements
@@ -20,8 +21,13 @@ This document describes the differences between v10.0.0 and v9.2.0
 
 
 
-1 Compilation Changes
-======================
+1 Changes
+==========
+
+
+
+1.1 Compilation Changes
+========================
 
 
     *   C++ standard
@@ -35,15 +41,17 @@ This document describes the differences between v10.0.0 and v9.2.0
     *   PATCH 
         Find PATCH command required for compilation. Needed for lib zeromq patching.
 
+
+    *   pmodules support discontinued
     
 
-2 New or Changed Features
-=========================
+1.2 New or Changed Features
+============================
 
 
 
-2.1 Breaking API
-================
+1.2.1 Breaking API
+===================
 
 
     Client
@@ -62,6 +70,13 @@ This document describes the differences between v10.0.0 and v9.2.0
     *   TCP API Incompatibility
         The size of the expected structure has changed when setting rx_hostname compared to previous versions. This change makes it incompatible.
 
+
+    *   User details
+        One can get user or detector details directly from shared memory without
+        creating the Detector class. It is now a free function.
+        C++ API: getUserDetails
+        python/ command line: user
+        
 
     Receiver
     --------
@@ -99,8 +114,8 @@ This document describes the differences between v10.0.0 and v9.2.0
 
 
 
-2.2 Resolved or Changed Features
-================================
+1.2.2 Resolved or Changed Features
+===================================
 
 
     Python
@@ -157,8 +172,8 @@ This document describes the differences between v10.0.0 and v9.2.0
 
 
 
-2.3 New Features
-================
+1.2.3 New Features
+===================
 
 
     Compilation

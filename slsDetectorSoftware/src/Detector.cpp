@@ -29,7 +29,6 @@ void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
     if (moduleIndex >= 0) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, moduleIndex);
         if (moduleShm.exists()) {
-            moduleShm.openSharedMemory(false);
             moduleShm.removeSharedMemory();
         }
         return;
@@ -48,7 +47,6 @@ void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
     for (int i = 0; i < numDetectors; ++i) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, i);
         if (moduleShm.exists()) {
-            moduleShm.openSharedMemory(false);
             moduleShm.removeSharedMemory();
         }
     }
@@ -56,7 +54,6 @@ void freeSharedMemory(const int detectorIndex, const int moduleIndex) {
     // Ctb configuration
     SharedMemory<CtbConfig> ctbShm(detectorIndex, -1, CtbConfig::shm_tag());
     if (ctbShm.exists()) {
-        ctbShm.openSharedMemory(false);
         ctbShm.removeSharedMemory();
     }
 }

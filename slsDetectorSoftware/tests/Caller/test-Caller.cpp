@@ -3272,9 +3272,12 @@ TEST_CASE("adcreg", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
         det_type == defs::CHIPTESTBOARD) {
-        std::ostringstream oss;
-        caller.call("adcreg", {"0x8", "0x3"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "adcreg [0x8, 0x3]\n");
+        if (det.isVirtualDetectorServer().tsquash(
+                "Inconsistent virtual detector server to test adcreg")) {
+            std::ostringstream oss;
+            caller.call("adcreg", {"0x8", "0x3"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcreg [0x8, 0x3]\n");
+        }
         // This is a put only command
         REQUIRE_THROWS(caller.call("adcreg", {}, -1, GET));
     } else {

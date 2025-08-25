@@ -479,6 +479,8 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
         defs::xy detsize = det.getDetectorSize();
         auto portSize = det.getPortSize()[0];
         int delta = 50;
+        int numinterfaces = det.getNumberofUDPInterfaces().tsquash(
+            "inconsistent number of interfaces");
 
         // 1d
         if (det_type == defs::GOTTHARD2 || det_type == defs::MYTHEN3) {
@@ -554,6 +556,12 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                                               "]]\n");
                 }
             }
+            // valid roi before acquiring
+            else {
+                std::ostringstream oss;
+                caller.call("rx_roi", {"10", "15"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "rx_roi [[10, 15]]\n");
+            }
         }
         // 2d eiger, jungfrau, moench
         else {
@@ -613,9 +621,6 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
             REQUIRE_THROWS(caller.call(
                 "rx_roi", {"[0, 10, 0, 10] [0, 10, 9, 11]"}, -1, PUT));
 
-            int numinterfaces = det.getNumberofUDPInterfaces().tsquash(
-                "inconsistent number of interfaces");
-
             // multiple ports horizontally
             if (det_type == defs::EIGER ||
                 (det.size() == 2 && det.getModuleGeometry().x > 1)) {
@@ -666,6 +671,19 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
                                     ", 20, 30]]\n");
                     }
                 }
+            }
+            // valid roi before acquiring
+            else {
+                std::ostringstream oss;
+                caller.call("rx_roi",
+                            {"1", std::to_string(detsize.x - 5), "1",
+                             std::to_string(detsize.y - 5)},
+                            -1, PUT, oss);
+                REQUIRE(oss.str() == std::string("rx_roi [[1, ") +
+                                         std::to_string(detsize.x - 5) +
+                                         std::string(", 1, ") +
+                                         std::to_string(detsize.y - 5) +
+                                         std::string("]]\n"));
             }
 
             // multiple ports vertically
@@ -738,7 +756,7 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
         // check master file creation
         // TODO: check roi in master file
         {
-            create_files_for_acquire(det, caller);
+            REQUIRE_NOTHROW(create_files_for_acquire(det, caller));
             testFileInfo file_info;
             std::string master_file_prefix =
                 file_info.getMasterFileNamePrefix();
@@ -748,8 +766,10 @@ TEST_CASE("rx_roi", "[.cmdcall]") {
 #ifdef HDF5C
             fname = master_file_prefix + ".h5";
             REQUIRE(std::filesystem::exists(fname) == true);
-            fname = file_info.getVirtualFileName();
-            REQUIRE(std::filesystem::exists(fname) == true);
+            if (det.size() > 1 || numinterfaces > 1) {
+                fname = file_info.getVirtualFileName();
+                REQUIRE(std::filesystem::exists(fname) == true);
+            }
 #endif
         }
 

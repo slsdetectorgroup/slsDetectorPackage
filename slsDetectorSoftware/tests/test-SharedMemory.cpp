@@ -33,7 +33,6 @@ struct ObsoleteCtbData {
 void freeShm(const int dindex, const int mIndex) {
     SharedMemory<Data> shm(dindex, mIndex);
     if (shm.exists()) {
-        shm.openSharedMemory(false);
         shm.removeSharedMemory();
     }
 }

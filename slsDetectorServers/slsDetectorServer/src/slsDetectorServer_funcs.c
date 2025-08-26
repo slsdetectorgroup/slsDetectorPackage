@@ -5342,7 +5342,8 @@ int set_dest_udp_mac(int file_des) {
 
     if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting udp destination mac: 0x%lx\n", arg));
+    LOG(logINFO,
+        ("Setting udp destination mac: 0x%llx\n", (long long unsigned)arg));
 
     // only set
     if (Server_VerifyLock() == OK) {
@@ -5363,7 +5364,8 @@ int get_dest_udp_mac(int file_des) {
     LOG(logDEBUG1, ("Getting udp destination mac\n"));
     // get only
     retval = udpDetails[0].dstmac;
-    LOG(logDEBUG1, ("udp destination mac retval: 0x%lx\n", retval));
+    LOG(logDEBUG1,
+        ("udp destination mac retval: 0x%llx\n", (long long unsigned)retval));
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 

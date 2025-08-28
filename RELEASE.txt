@@ -114,6 +114,16 @@ This document describes the differences between v10.0.0 and v9.2.0
         indicating invalidity and will throw an error if accessed after being
         freed.
 
+
+    Client
+    ------
+
+
+    *   UDP Destination List
+        CLI: udp_dstlist
+        C++ API: getDestinationUDPList
+        Was returning incorrect values. Fixed.
+        
     
     Receiver
     --------

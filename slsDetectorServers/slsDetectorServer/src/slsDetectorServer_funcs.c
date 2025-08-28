@@ -9192,7 +9192,7 @@ int get_dest_udp_list(int file_des) {
     memset(mess, 0, sizeof(mess));
     uint32_t arg = 0;
     uint16_t retvals16[2] = {};
-    uint32_t retvals32[3] = {};
+    uint32_t retvals32[2] = {};
     uint64_t retvals64[2] = {};
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)

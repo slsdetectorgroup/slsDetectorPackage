@@ -201,6 +201,15 @@ Enabling the GUI automatically streams images from the receiver via ZMQ sockets.
 * Default: Receiver’s hostname (rx_hostname)
 
 
+.. note ::   
+
+    ``zmqport`` and ``zmqip`` need to be set up in shared memory before starting up the Gui. If the Gui is already running, change it in the Advanced Tab directly in the Gui.
+    
+    ``rx_zmqstream`` is set to 1 when the GUI is started, but has to be manually set back to 0 to disable zmq streaming in the receiver for better performance when not using the Gui.
+    
+    The GUI hwm values are set to a low number (from default library default of possibly 1000 to 2) to reduce the zmq buffer to display only some of the images. Resetting it back to -1 or 1000 should only matter if one plans to not use the Gui and still zmq stream without wanting to drop zmq images (eg. for external processing chain). 
+
+
 
 
 

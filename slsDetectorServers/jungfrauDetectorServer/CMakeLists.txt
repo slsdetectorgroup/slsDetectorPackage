@@ -36,8 +36,9 @@ set_target_properties(jungfrauDetectorServer_virtual PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-target_compile_options(jungfrauDetectorServer_virtual PRIVATE -m32)
-target_link_options(jungfrauDetectorServer_virtual PRIVATE -m32)
+# to compile fore 32 bit on a 64 bit machine
+#target_compile_options(jungfrauDetectorServer_virtual PRIVATE -m32)
+#target_link_options(jungfrauDetectorServer_virtual PRIVATE -m32)
 
 install(TARGETS jungfrauDetectorServer_virtual
     EXPORT "${TARGETS_EXPORT_NAME}"

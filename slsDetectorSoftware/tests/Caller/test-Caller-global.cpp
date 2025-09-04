@@ -171,7 +171,7 @@ void create_files_for_acquire(
     }
 
     // acquire and get num frames caught
-    test_acquire_with_receiver(caller, det);
+    REQUIRE_NOTHROW(test_acquire_with_receiver(caller, det));
     auto frames_caught = det.getFramesCaught().tsquash(
         "Inconsistent number of frames caught")[0];
     REQUIRE(frames_caught == num_frames);

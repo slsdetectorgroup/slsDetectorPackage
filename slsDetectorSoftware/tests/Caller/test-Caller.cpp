@@ -2565,6 +2565,12 @@ TEST_CASE("numinterfaces", "[.cmdcall]") {
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         auto prev_val = det.getNumberofUDPInterfaces().tsquash(
             "inconsistent numinterfaces to test");
+        UdpDestination prev_udp_dest{};
+        IpAddr prev_src_ip2{};
+        if (prev_val == 2 && det_type != defs::EIGER) {
+            prev_udp_dest = det.getDestinationUDPList(0)[0];
+            prev_src_ip2 = det.getSourceUDPIP2()[0];
+        }
         {
             std::ostringstream oss;
             caller.call("numinterfaces", {"2"}, -1, PUT, oss);
@@ -2579,6 +2585,10 @@ TEST_CASE("numinterfaces", "[.cmdcall]") {
             std::ostringstream oss;
             caller.call("numinterfaces", {}, -1, GET, oss);
             REQUIRE(oss.str() == "numinterfaces 1\n");
+        }
+        if (prev_val == 2 && det_type != defs::EIGER) {
+            det.setDestinationUDPList({prev_udp_dest}, 0);
+            det.setSourceUDPIP2({prev_src_ip2}, {0});
         }
         det.setNumberofUDPInterfaces(prev_val);
     } else if (det_type == defs::EIGER) {
@@ -3272,9 +3282,12 @@ TEST_CASE("adcreg", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
         det_type == defs::CHIPTESTBOARD) {
-        std::ostringstream oss;
-        caller.call("adcreg", {"0x8", "0x3"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "adcreg [0x8, 0x3]\n");
+        if (det.isVirtualDetectorServer().tsquash(
+                "Inconsistent virtual detector server to test adcreg")) {
+            std::ostringstream oss;
+            caller.call("adcreg", {"0x8", "0x3"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcreg [0x8, 0x3]\n");
+        }
         // This is a put only command
         REQUIRE_THROWS(caller.call("adcreg", {}, -1, GET));
     } else {

@@ -130,12 +130,21 @@ One can either build using cmake or use the in-built cmk.sh script.
 
     # configure & generate Makefiles using cmake
     # by listing all your options (alternately use ccmake described below)
-    # cmake3 for some systems
+    # cmake3 instead of cmake for some systems
+
+    # examples:
+    # gui
+    cmake ../slsDetectorPacakge -DSLS_USE_GUI=ON
+    # or python in virtual env, hdf5 and simulator
+    cmake ../slsDetectorPackage -DSLS_USE_PYTHON=ON -DPython_FIND_VIRTUALENV=ONLY -DSLS_USE_HDF5=ON -DSLS_USE_SIMULATOR=ON
+    # or to install in a custom clean directory 
+    # to use libraries and headers in your project
     cmake ../slsDetectorPackage -DCMAKE_INSTALL_PREFIX=/your/install/path
 
     # compiled to the build/bin directory
     make -j12 #or whatever number of cores you are using to build
 
+    # only if cmake_install_prefix set up in previous steps
     # install headers and libs in /your/install/path directory
     make install
 

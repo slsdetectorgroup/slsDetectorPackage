@@ -10,6 +10,7 @@
 #include <chrono>
 #include <sstream>
 #include <thread>
+#include <variant>
 
 #include "tests/globals.h"
 #include <filesystem>
@@ -819,7 +820,7 @@ TEST_CASE("exptime", "[.cmdcall][.time]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    std::chrono::nanoseconds prev_val;
+    ns prev_val;
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -1358,6 +1359,22 @@ TEST_CASE("clkdiv", "[.cmdcall]") {
         REQUIRE_THROWS(caller.call("clkdiv", {"7", "4"}, -1, PUT));
         REQUIRE_THROWS(caller.call("clkdiv", {"0", "1"}, -1, PUT));
         auto prev_val = det.getClockDivider(0);
+        auto prev_period = det.getPeriod().tsquash("Inconsistent period");
+        auto prev_delay =
+            det.getDelayAfterTrigger().tsquash("Inconsistent delay");
+        std::variant<ns, std::array<ns, 3>> prev_exptime{};
+        std::array<ns, 3> prev_gate_delay{};
+        ns prev_burst_period{};
+        if (det_type == defs::MYTHEN3) {
+            prev_exptime =
+                det.getExptimeForAllGates().tsquash("Inconsistent exptime");
+            prev_gate_delay = det.getGateDelayForAllGates().tsquash(
+                "Inconsistent gate delay");
+        } else {
+            prev_exptime = det.getExptime().tsquash("Inconsistent exptime");
+            prev_burst_period =
+                det.getBurstPeriod().tsquash("Inconsistent burst period");
+        }
         {
             std::ostringstream oss1, oss2;
             caller.call("clkdiv", {"0", "3"}, -1, PUT, oss1);
@@ -1367,6 +1384,19 @@ TEST_CASE("clkdiv", "[.cmdcall]") {
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setClockDivider(0, prev_val[i], {i});
+        }
+        det.setPeriod(prev_period);
+        det.setDelayAfterTrigger(prev_delay);
+        if (det_type == defs::MYTHEN3) {
+            auto exptimes = std::get<std::array<ns, 3>>(prev_exptime);
+            for (int iCounter = 0; iCounter != 3; ++iCounter) {
+                det.setExptime(iCounter, exptimes[iCounter]);
+                det.setGateDelay(iCounter, prev_gate_delay[iCounter]);
+            }
+        } else {
+            auto exptime = std::get<ns>(prev_exptime);
+            det.setExptime(exptime);
+            det.setBurstPeriod(prev_burst_period);
         }
         // other clocks removed for m3 (setting not supported)
         if (det_type == defs::MYTHEN3) {
@@ -2199,7 +2229,7 @@ TEST_CASE("start", "[.cmdcall]") {
     // PUT only command
     REQUIRE_THROWS(caller.call("start", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
-    std::chrono::nanoseconds prev_val;
+    ns prev_val;
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -2238,7 +2268,7 @@ TEST_CASE("stop", "[.cmdcall]") {
     // PUT only command
     REQUIRE_THROWS(caller.call("stop", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
-    std::chrono::nanoseconds prev_val;
+    ns prev_val;
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -2281,7 +2311,7 @@ TEST_CASE("status", "[.cmdcall]") {
     Detector det;
     Caller caller(&det);
     auto det_type = det.getDetectorType().squash();
-    std::chrono::nanoseconds prev_val;
+    ns prev_val;
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {

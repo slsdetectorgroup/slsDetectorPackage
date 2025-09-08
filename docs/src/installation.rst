@@ -123,30 +123,40 @@ One can either build using cmake or use the in-built cmk.sh script.
 3.2.1. Build using CMake
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+
 .. code-block:: bash
 
     # outside slsDetecorPackage folder
     mkdir build && cd build
 
-    # configure & generate Makefiles using cmake
-    # by listing all your options (alternately use ccmake described below)
+    # configure & generate Makefiles using cmake by listing all your options 
+    # (alternately use ccmake described below)
     # cmake3 instead of cmake for some systems
-
-    # examples:
-    # gui
+    
+    # eg. enable gui option (without conda)
     cmake ../slsDetectorPacakge -DSLS_USE_GUI=ON
-    # or python in virtual env, hdf5 and simulator
+    # eg. enable python from virtual env, hdf5 and simulator options
     cmake ../slsDetectorPackage -DSLS_USE_PYTHON=ON -DPython_FIND_VIRTUALENV=ONLY -DSLS_USE_HDF5=ON -DSLS_USE_SIMULATOR=ON
-    # or to install in a custom clean directory 
-    # to use libraries and headers in your project
-    cmake ../slsDetectorPackage -DCMAKE_INSTALL_PREFIX=/your/install/path
 
     # compiled to the build/bin directory
     make -j12 #or whatever number of cores you are using to build
 
-    # only if cmake_install_prefix set up in previous steps
+
+To install in a custom clean directory and to use the slsDetectorPackage 
+libraries and headers inyour project, specify the install directory 
+(eg. /your/install/path)
+
+.. code-block:: bash
+
+    # outside slsDetecorPackage folder
+    mkdir build && cd build
+    # configure & generate Makefiles
+    cmake ../slsDetectorPackage -DCMAKE_INSTALL_PREFIX=/your/install/path
+    # compile
+    make -j12
     # install headers and libs in /your/install/path directory
     make install
+
 
 
 Instead of the cmake command, one can use ccmake to get a list of options to configure and generate Makefiles at ease.

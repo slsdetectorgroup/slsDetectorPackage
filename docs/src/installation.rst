@@ -142,9 +142,9 @@ One can either build using cmake or use the in-built cmk.sh script.
     make -j12 #or whatever number of cores you are using to build
 
 
-To install in a custom clean directory and to use the slsDetectorPackage 
-libraries and headers inyour project, specify the install directory 
-(eg. /your/install/path)
+To install in a clean custom directory and to use the slsDetectorPackage 
+libraries and headers in your project, specify the install directory 
+(eg. /your/install/path). 
 
 .. code-block:: bash
 
@@ -157,7 +157,11 @@ libraries and headers inyour project, specify the install directory
     # install headers and libs in /your/install/path directory
     make install
 
+.. note ::   
 
+    Please refer to `api examples <https://github.com/slsdetectorgroup/api-examples>`__ 
+    on how to compile your project using the installed headers and libs.
+    
 
 Instead of the cmake command, one can use ccmake to get a list of options to configure and generate Makefiles at ease.
 

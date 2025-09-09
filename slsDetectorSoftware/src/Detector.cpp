@@ -67,8 +67,13 @@ std::string getUserDetails(const int detectorIndex) {
     std::string user = "Unknown";
     std::string date = "Unknown";
 
-    SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
-    if (detectorShm.exists()) {
+    {
+        SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
+        if (!detectorShm.exists()) {
+            throw SharedMemoryError("No detector with index " +
+                                    std::to_string(detectorIndex) +
+                                    " in shared memory!");
+        }
         detectorShm.openSharedMemory(false);
         if (detectorShm()->shmversion < DETECTOR_SHMAPIVERSION) {
             detectorShm.unmapSharedMemory();
@@ -86,13 +91,16 @@ std::string getUserDetails(const int detectorIndex) {
 
     for (int imod = 0; imod != numModules; ++imod) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, imod);
-        moduleShm.openSharedMemory(false);
-        if (moduleShm()->shmversion < MODULE_SHMAPIVERSION) {
-            LOG(logWARNING) << "Module Shared Memory too old to get hostname";
-        } else {
-            hostname = moduleShm()->hostname;
+        if (moduleShm.exists()) {
+            moduleShm.openSharedMemory(false);
+            if (moduleShm()->shmversion < MODULE_SHMAPIVERSION) {
+                LOG(logWARNING)
+                    << "Module Shared Memory too old to get hostname";
+            } else {
+                hostname = moduleShm()->hostname;
+            }
+            moduleShm.unmapSharedMemory();
         }
-        moduleShm.unmapSharedMemory();
     }
 
     std::ostringstream userDetails;

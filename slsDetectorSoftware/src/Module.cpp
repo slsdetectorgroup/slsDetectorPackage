@@ -3579,6 +3579,10 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
         for (int i = 0; i != module.ndac; ++i) {
             int dacMin = 0;
             int dacMax = 2800;
+            if (i == M_VTH1 || i == M_VTH2 || i == M_VTH3) {
+                dacMin = 200;
+                dacMax = 2400;
+            }
             if (module.dacs[i] < dacMin) {
                 module.dacs[i] = dacMin;
                 out_of_range = true;

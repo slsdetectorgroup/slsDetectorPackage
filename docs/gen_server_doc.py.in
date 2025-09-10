@@ -21,7 +21,7 @@ print('\n\n\n\n SERVER CSV')
 
 src = Path('@CMAKE_SOURCE_DIR@')/'slsDetectorServers/'
 detectors = ['Mythen3', 'Gotthard2', 'Eiger', 
-            'Jungfrau', 'Moench', 'Gotthard', 'Ctb']
+            'Jungfrau', 'Moench', 'Ctb']
 
 
 for det in detectors:

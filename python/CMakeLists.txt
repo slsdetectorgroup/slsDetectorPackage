@@ -27,6 +27,7 @@ set_target_properties(_slsdet PROPERTIES
 set( PYTHON_FILES
     slsdet/__init__.py
     slsdet/adcs.py
+    slsdet/bits.py
     slsdet/dacs.py
     slsdet/powers.py
     slsdet/decorators.py
@@ -37,8 +38,8 @@ set( PYTHON_FILES
     slsdet/enums.py
     slsdet/errors.py
     slsdet/gaincaps.py
-    slsdet/gotthard.py
     slsdet/pattern.py
+    slsdet/PatternGenerator.py
     slsdet/gotthard2.py
     slsdet/moench.py
     slsdet/proxy.py
@@ -65,8 +66,7 @@ configure_file( scripts/test_virtual.py
 )
 
 configure_file(scripts/frameSynchronizerPullSocket.py 
-    ${CMAKE_BINARY_DIR}/bin/frameSynchronizerPullSocket.py COPYONLY)
-
+   ${CMAKE_BINARY_DIR}/bin/frameSynchronizerPullSocket.py COPYONLY)
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/../VERSION  
     ${CMAKE_BINARY_DIR}/bin/slsdet/VERSION

@@ -39,7 +39,6 @@ class InferAction {
     int chipversion();
     int clearbit();
     int clearbusy();
-    int clearroi();
     int clientversion();
     int clkdiv();
     int clkfreq();
@@ -77,7 +76,6 @@ class InferAction {
     int exptime1();
     int exptime2();
     int exptime3();
-    int exptimel();
     int extrastoragecells();
     int extsampling();
     int extsamplingsrc();
@@ -161,9 +159,6 @@ class InferAction {
     int patwait1();
     int patwait2();
     int patwaittime();
-    int patwaittime0();
-    int patwaittime1();
-    int patwaittime2();
     int patword();
     int pedestalmode();
     int period();
@@ -190,7 +185,6 @@ class InferAction {
     int reg();
     int resetdacs();
     int resetfpga();
-    int roi();
     int romode();
     int row();
     int runclk();
@@ -199,6 +193,7 @@ class InferAction {
     int rx_clearroi();
     int rx_dbitlist();
     int rx_dbitoffset();
+    int rx_dbitreorder();
     int rx_discardpolicy();
     int rx_fifodepth();
     int rx_frameindex();
@@ -376,7 +371,6 @@ class InferAction {
         {"chipversion", &InferAction::chipversion},
         {"clearbit", &InferAction::clearbit},
         {"clearbusy", &InferAction::clearbusy},
-        {"clearroi", &InferAction::clearroi},
         {"clientversion", &InferAction::clientversion},
         {"clkdiv", &InferAction::clkdiv},
         {"clkfreq", &InferAction::clkfreq},
@@ -414,7 +408,6 @@ class InferAction {
         {"exptime1", &InferAction::exptime1},
         {"exptime2", &InferAction::exptime2},
         {"exptime3", &InferAction::exptime3},
-        {"exptimel", &InferAction::exptimel},
         {"extrastoragecells", &InferAction::extrastoragecells},
         {"extsampling", &InferAction::extsampling},
         {"extsamplingsrc", &InferAction::extsamplingsrc},
@@ -491,16 +484,16 @@ class InferAction {
         {"patnloop1", &InferAction::patnloop1},
         {"patnloop2", &InferAction::patnloop2},
         {"patsetbit", &InferAction::patsetbit},
-        {"patternX", &InferAction::pattern},
+        {"pattern", &InferAction::pattern},
         {"patternstart", &InferAction::patternstart},
         {"patwait", &InferAction::patwait},
         {"patwait0", &InferAction::patwait0},
         {"patwait1", &InferAction::patwait1},
         {"patwait2", &InferAction::patwait2},
         {"patwaittime", &InferAction::patwaittime},
-        {"patwaittime0", &InferAction::patwaittime0},
-        {"patwaittime1", &InferAction::patwaittime1},
-        {"patwaittime2", &InferAction::patwaittime2},
+        {"patwaittime0", &InferAction::patwaittime},
+        {"patwaittime1", &InferAction::patwaittime},
+        {"patwaittime2", &InferAction::patwaittime},
         {"patword", &InferAction::patword},
         {"pedestalmode", &InferAction::pedestalmode},
         {"period", &InferAction::period},
@@ -527,7 +520,6 @@ class InferAction {
         {"reg", &InferAction::reg},
         {"resetdacs", &InferAction::resetdacs},
         {"resetfpga", &InferAction::resetfpga},
-        {"roi", &InferAction::roi},
         {"romode", &InferAction::romode},
         {"row", &InferAction::row},
         {"runclk", &InferAction::runclk},
@@ -536,6 +528,7 @@ class InferAction {
         {"rx_clearroi", &InferAction::rx_clearroi},
         {"rx_dbitlist", &InferAction::rx_dbitlist},
         {"rx_dbitoffset", &InferAction::rx_dbitoffset},
+        {"rx_dbitreorder", &InferAction::rx_dbitreorder},
         {"rx_discardpolicy", &InferAction::rx_discardpolicy},
         {"rx_fifodepth", &InferAction::rx_fifodepth},
         {"rx_frameindex", &InferAction::rx_frameindex},

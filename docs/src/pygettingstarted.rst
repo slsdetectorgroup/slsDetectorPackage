@@ -123,6 +123,47 @@ in a large detector.
     # Set exposure time for module 1, 5 and 7
     d.setExptime(0.1, [1,5,7])
 
+
+
+.. _py-module-index-label:
+
+----------------------------------
+Accessing individual modules
+----------------------------------
+
+Using the C++ like API you can access individual modules in a large detector
+by passing in the module index as an argument to the function.
+
+::
+    
+    # Read the UDP destination port for all modules
+    >>> d.getDestinationUDPPort()
+    [50001, 50002, 50003]
+
+
+    # Read it for module 0 and 1
+    >>> d.getDestinationUDPPort([0, 1])
+    [50001, 50002]
+
+    >>> d.setDestinationUDPPort(50010, 1)
+    >>> d.getDestinationUDPPort()
+    [50001, 50010, 50003]
+
+From the more pythonic API there is no way to read from only one module but you can read 
+and then use list slicing to get the values for the modules you are interested in.
+
+::
+
+    >>> d.udp_dstport
+    [50001, 50010, 50003]
+    >>> d.udp_dstport[0]
+    50001
+
+    #For some but not all properties you can also pass in a dictionary with module index as key
+    >>> ip = IpAddr('127.0.0.1')
+    >>> d.udp_dstip = {1:ip}
+
+
 --------------------
 Finding functions 
 --------------------

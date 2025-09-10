@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 /* slsReceiver */
+#include "CommandLineOptions.h"
 #include "sls/Receiver.h"
+#include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
+#include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
 
 #include <csignal> //SIGINT
@@ -18,44 +21,49 @@
 
 sem_t semaphore;
 
-void sigInterruptHandler(int p) { sem_post(&semaphore); }
+/**
+ * Control+C Interrupt Handler
+ * to let all the other process know to exit properly
+ */
+void sigInterruptHandler(int signal) {
+    (void)signal; // suppress unused warning if needed
+    sem_post(&semaphore);
+}
 
 int main(int argc, char *argv[]) {
 
+    CommandLineOptions cli(AppType::SingleReceiver);
+    ParsedOptions opts;
+    try {
+        opts = cli.parse(argc, argv);
+    } catch (sls::RuntimeError &e) {
+        return EXIT_FAILURE;
+    }
+    auto &o = std::get<CommonOptions>(opts);
+    if (o.versionRequested || o.helpRequested) {
+        return EXIT_SUCCESS;
+    }
+
+    LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << " ]";
+
+    // close files on ctrl+c
+    sls::setupSignalHandler(SIGINT, sigInterruptHandler);
+    // handle locally on socket crash
+    sls::setupSignalHandler(SIGPIPE, SIG_IGN);
+
     sem_init(&semaphore, 1, 0);
 
-    LOG(sls::logINFOBLUE) << "Created [ Tid: " << gettid() << " ]";
-
-    // Catch signal SIGINT to close files and call destructors properly
-    struct sigaction sa;
-    sa.sa_flags = 0;                     // no flags
-    sa.sa_handler = sigInterruptHandler; // handler function
-    sigemptyset(&sa.sa_mask); // dont block additional signals during invocation
-                              // of handler
-    if (sigaction(SIGINT, &sa, nullptr) == -1) {
-        LOG(sls::logERROR) << "Could not set handler function for SIGINT";
-    }
-
-    // if socket crash, ignores SISPIPE, prevents global signal handler
-    // subsequent read/write to socket gives error - must handle locally
-    struct sigaction asa;
-    asa.sa_flags = 0;          // no flags
-    asa.sa_handler = SIG_IGN;  // handler function
-    sigemptyset(&asa.sa_mask); // dont block additional signals during
-                               // invocation of handler
-    if (sigaction(SIGPIPE, &asa, nullptr) == -1) {
-        LOG(sls::logERROR) << "Could not set handler function for SIGPIPE";
-    }
-
     try {
-        sls::Receiver r(argc, argv);
+        sls::Receiver r(o.port);
         LOG(sls::logINFO) << "[ Press \'Ctrl+c\' to exit ]";
         sem_wait(&semaphore);
         sem_destroy(&semaphore);
     } catch (...) {
-        // pass
+        sem_destroy(&semaphore);
+        LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
+        throw;
     }
     LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
     LOG(sls::logINFO) << "Exiting Receiver";
-    return 0;
+    return EXIT_SUCCESS;
 }

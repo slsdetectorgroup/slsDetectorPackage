@@ -60,7 +60,7 @@ enum detFuncs {
     F_SET_STORAGE_CELL_DELAY,
     F_GET_FRAMES_LEFT,
     F_GET_TRIGGERS_LEFT,
-    F_GET_EXPTIME_LEFT,
+    F_GET_EXPTIME_LEFT /** deprecated, kept for backward compatibility */,
     F_GET_PERIOD_LEFT,
     F_GET_DELAY_AFTER_TRIGGER_LEFT,
     F_GET_MEASURED_PERIOD,
@@ -69,8 +69,8 @@ enum detFuncs {
     F_GET_ACTUAL_TIME,
     F_GET_MEASUREMENT_TIME,
     F_SET_DYNAMIC_RANGE,
-    F_SET_ROI,
-    F_GET_ROI,
+    F_SET_ROI /** deprecated, kept for backward compatibility */,
+    F_GET_ROI /** deprecated, kept for backward compatibility */,
     F_LOCK_SERVER,
     F_GET_LAST_CLIENT_IP,
     F_ENABLE_TEN_GIGA,
@@ -80,7 +80,7 @@ enum detFuncs {
     F_SET_PATTERN_LOOP_ADDRESSES,
     F_SET_PATTERN_LOOP_CYCLES,
     F_SET_PATTERN_WAIT_ADDR,
-    F_SET_PATTERN_WAIT_TIME,
+    F_SET_PATTERN_WAIT_CLOCKS,
     F_SET_PATTERN_MASK,
     F_GET_PATTERN_MASK,
     F_SET_PATTERN_BIT_MASK,
@@ -297,6 +297,8 @@ enum detFuncs {
     F_SET_TIMING_INFO_DECODER,
     F_GET_COLLECTION_MODE,
     F_SET_COLLECTION_MODE,
+    F_GET_PATTERN_WAIT_INTERVAL,
+    F_SET_PATTERN_WAIT_INTERVAL,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 512, /**< detector function should not exceed this
@@ -408,6 +410,10 @@ enum detFuncs {
     F_RECEIVER_SET_TRANSCEIVER_MASK,
     F_RECEIVER_SET_ROW,
     F_RECEIVER_SET_COLUMN,
+    F_GET_RECEIVER_DBIT_REORDER,
+    F_SET_RECEIVER_DBIT_REORDER,
+    F_RECEIVER_GET_ROI_METADATA,
+    F_SET_RECEIVER_READOUT_SPEED,
 
     NUM_REC_FUNCTIONS
 };
@@ -486,7 +492,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_PATTERN_LOOP_ADDRESSES:		return "F_SET_PATTERN_LOOP_ADDRESSES";
 	case F_SET_PATTERN_LOOP_CYCLES:			return "F_SET_PATTERN_LOOP_CYCLES";
 	case F_SET_PATTERN_WAIT_ADDR:			return "F_SET_PATTERN_WAIT_ADDR";
-	case F_SET_PATTERN_WAIT_TIME:			return "F_SET_PATTERN_WAIT_TIME";
+	case F_SET_PATTERN_WAIT_CLOCKS:			return "F_SET_PATTERN_WAIT_CLOCKS";
 	case F_SET_PATTERN_MASK:				return "F_SET_PATTERN_MASK";
 	case F_GET_PATTERN_MASK:				return "F_GET_PATTERN_MASK";
 	case F_SET_PATTERN_BIT_MASK:			return "F_SET_PATTERN_BIT_MASK";
@@ -701,6 +707,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_TIMING_INFO_DECODER:         return "F_SET_TIMING_INFO_DECODER";
     case F_GET_COLLECTION_MODE:             return "F_GET_COLLECTION_MODE";
     case F_SET_COLLECTION_MODE:             return "F_SET_COLLECTION_MODE";
+    case F_GET_PATTERN_WAIT_INTERVAL:       return "F_GET_PATTERN_WAIT_INTERVAL";
+    case F_SET_PATTERN_WAIT_INTERVAL:       return "F_SET_PATTERN_WAIT_INTERVAL";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
@@ -812,7 +820,10 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_RECEIVER_SET_TRANSCEIVER_MASK:   return "F_RECEIVER_SET_TRANSCEIVER_MASK";
     case F_RECEIVER_SET_ROW:                return "F_RECEIVER_SET_ROW";
     case F_RECEIVER_SET_COLUMN:             return "F_RECEIVER_SET_COLUMN";
-
+    case F_GET_RECEIVER_DBIT_REORDER:       return "F_GET_RECEIVER_DBIT_REORDER";
+    case F_SET_RECEIVER_DBIT_REORDER:       return "F_SET_RECEIVER_DBIT_REORDER";
+    case F_RECEIVER_GET_ROI_METADATA:       return "F_RECEIVER_GET_ROI_METADATA";
+    case F_SET_RECEIVER_READOUT_SPEED:      return "F_SET_RECEIVER_READOUT_SPEED";
 
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";

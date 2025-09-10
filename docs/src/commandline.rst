@@ -6,6 +6,8 @@ Usage
 
 The syntax is *'[detector index]-[module index]:[command]'*, where the indices are by default '0', when not specified.
 
+.. _cl-module-index-label:
+
 Module index
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Modules are indexed based on their order in the hostname command. They are used to configure a specific module within a detector and are followed by a ':' in syntax.

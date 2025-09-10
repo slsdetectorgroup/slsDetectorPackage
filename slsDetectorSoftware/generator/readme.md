@@ -4,10 +4,36 @@ used to generate C++ cli commands. and bash autocompletion scripts.
 
 ### Overview
 
+
+If any changes to enums in slsDetectorDefs
+```sh
+# to generate the dump.json file
+cd slsSupportLib/src
+clang++ -Xclang -ast-dump=json -Xclang -ast-dump-filter -Xclang StringTo -c ToString.cpp -I ../include/ -std=gnu++11 > ../../slsDetectorSoftware/generator/autocomplete/dump.json 
+cd ../../slsDetectorSoftware/generator/autocomplete
+python autocomplete.py -f
+```
+To Generate command line commands
+```sh
+python gen_commands.py -pgf
+```
+To generate autocomplete 
+```sh
+python gen_commands.py -agf
+source bash_autocomplete.sh
+```
+Always clang-format at the end
+```sh
+cd slsDetectorPackage/build
+make format
+```
+
+### Details
 Looks through the `dump.json` file for the different values of an enum and stores them in the dictionary `type_values`.  
 ```sh
 # To print the different values for enums 
 python gen_commands.py -a
+
 ```
 
 also the autocomplete.py generates shell autocompletion scripts for both bash and zsh. It uses the template file `bash_autocomplete.in.sh` and adds the necessary code in an output file `bash_autocomplete.sh` (same for zsh).  
@@ -29,6 +55,8 @@ The dump.json is the AST of the file `slsDetectorPackage/slsSupportLib/src/ToStr
 # to generate the dump.json file
 cd slsSupportLib/src
 clang++ -Xclang -ast-dump=json -Xclang -ast-dump-filter -Xclang StringTo -c ToString.cpp -I ../include/ -std=gnu++11 > ../../slsDetectorSoftware/generator/autocomplete/dump.json 
+cd ../../slsDetectorSoftware/generator/autocomplete
+python autocomplete.py -f
 # clang version used: 14.0.0-1ubuntu1.1
 ```
 

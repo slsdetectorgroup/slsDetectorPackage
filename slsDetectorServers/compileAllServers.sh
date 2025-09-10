@@ -2,7 +2,6 @@
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 
 det_list=("ctbDetectorServer  
-	gotthardDetectorServer  
 	gotthard2DetectorServer 
 	jungfrauDetectorServer 
 	mythen3DetectorServer 

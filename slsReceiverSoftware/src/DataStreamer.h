@@ -38,7 +38,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     void SetNumberofTotalFrames(uint64_t value);
     void
     SetAdditionalJsonHeader(const std::map<std::string, std::string> &json);
-    void SetReceiverROI(ROI roi);
+    void SetPortROI(ROI roi);
 
     void ResetParametersforNewAcquisition(const std::string &fname);
     /**
@@ -88,11 +88,10 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     const GeneralData *generalData{nullptr};
     Fifo *fifo{nullptr};
     ZmqSocket *zmqSocket{nullptr};
-    int adcConfigured{-1};
     uint64_t fileIndex{0};
     bool flipRows{false};
     std::map<std::string, std::string> additionalJsonHeader;
-    ROI receiverRoi{};
+    ROI portRoi{};
 
     /** Used by streamer thread to update local copy (reduce number of locks
      * during streaming) */
@@ -107,8 +106,6 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     bool startedFlag{false};
     uint64_t firstIndex{0};
     std::string fileNametoStream;
-    /** Complete buffer used for detectorRoi, eg. shortGotthard */
-    char *completeBuffer{nullptr};
 
     xy numPorts{1, 1};
     bool quadEnable{false};

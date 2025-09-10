@@ -66,12 +66,12 @@ struct UdpDestination {
     uint32_t entry{};
     uint16_t port{};
     uint16_t port2{};
-    IpAddr ip;
-    IpAddr ip2;
-    MacAddr mac;
-    MacAddr mac2;
-    std::string str() const;
+    IpAddr ip{};
+    IpAddr ip2{};
+    MacAddr mac{};
+    MacAddr mac2{};
 
+    std::string str() const;
     constexpr bool operator==(const UdpDestination &other) const {
         return ((entry == other.entry) && (port == other.port) &&
                 (port2 == other.port2) && (ip == other.ip) &&
@@ -90,4 +90,5 @@ MacAddr InterfaceNameToMac(const std::string &inf);
 IpAddr InterfaceNameToIp(const std::string &ifn);
 void validatePortNumber(uint16_t port);
 void validatePortRange(uint16_t startPort, int numPorts);
+void setupSignalHandler(int signal, void (*handler)(int));
 } // namespace sls

@@ -39,14 +39,13 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     void SetUdpPortNumber(const uint16_t portNumber);
     void SetActivate(bool enable);
-    void SetReceiverROI(ROI roi);
+    void SetPortROI(const ROI arg);
+    void setMultiROIMetadata(const std::vector<slsDetectorDefs::ROI> &args);
     void SetDataStreamEnable(bool enable);
     void SetStreamingFrequency(uint32_t value);
     void SetStreamingTimerInMs(uint32_t value);
     void SetStreamingStartFnum(uint32_t value);
     void SetFramePadding(bool enable);
-    void SetCtbDbitList(std::vector<int> value);
-    void SetCtbDbitOffset(int value);
     void SetQuadEnable(bool value);
     void SetFlipRows(bool fd);
     void SetNumberofTotalFrames(uint64_t value);
@@ -71,7 +70,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                                   const bool overWriteEnable,
                                   const bool silentMode, const int modulePos,
                                   const int numModX, const int numModY,
-                                  std::mutex *hdf5LibMutex);
+                                  std::mutex *hdf5LibMutex, bool gotthard25um);
     void LinkFileInMaster(const std::string &masterFileName,
                           const std::string &virtualFileName,
                           const bool silentMode, std::mutex *hdf5LibMutex);
@@ -90,6 +89,20 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                                                    dataCallbackHeader, char *,
                                                    size_t &, void *),
                                       void *arg);
+
+  protected:
+    /**
+     * Align corresponding digital bits together (CTB only if ctbDbitlist is not
+     * empty)
+     * set variable reorder to true if data should be rearranged such that
+     * it groups each signal (0-63) from all the different samples together
+     */
+    void ArrangeDbitData(size_t &size, char *data);
+
+    /**
+     * remove trailing bits in digital data stream
+     */
+    void RemoveTrailingBits(size_t &size, char *data);
 
   private:
     void RecordFirstIndex(uint64_t fnum);
@@ -137,12 +150,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     void PadMissingPackets(sls_receiver_header header, char *data);
 
-    /**
-     * Align corresponding digital bits together (CTB only if ctbDbitlist is not
-     * empty)
-     */
-    void RearrangeDbitData(size_t &size, char *data);
-
     void CropImage(size_t &size, char *data);
 
     static const std::string typeName;
@@ -153,9 +160,11 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     uint16_t udpPortNumber{0};
     bool dataStreamEnable;
     bool activated{false};
-    ROI receiverRoi{};
-    bool receiverRoiEnabled{false};
-    bool receiverNoRoi{false};
+    ROI portRoi{};
+    bool isPartiallyInRoi{false};
+    bool isOutsideRoi{false};
+    std::vector<ROI> multiRoiMetadata{};
+
     std::unique_ptr<char[]> completeImageToStreamBeforeCropping;
     /** if 0, sending random images with a timer */
     uint32_t streamingFrequency;
@@ -164,8 +173,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     uint32_t currentFreqCount{0};
     struct timespec timerbegin {};
     bool framePadding;
-    std::vector<int> ctbDbitList;
-    int ctbDbitOffset;
     std::atomic<bool> startedFlag{false};
     std::atomic<uint64_t> firstIndex{0};
     bool quadEnable{false};

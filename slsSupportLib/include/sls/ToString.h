@@ -47,6 +47,8 @@ std::string ToString(const defs::polarity s);
 std::string ToString(const defs::timingInfoDecoder s);
 std::string ToString(const defs::collectionMode s);
 
+std::string ToString(bool value);
+
 std::string ToString(const slsDetectorDefs::xy &coord);
 std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::xy &coord);
 std::string ToString(const slsDetectorDefs::ROI &roi);

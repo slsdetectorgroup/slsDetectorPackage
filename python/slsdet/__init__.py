@@ -9,12 +9,14 @@ from .detector import Detector
 from .jungfrau import Jungfrau
 from .mythen3 import Mythen3
 from .gotthard2 import Gotthard2
-from .gotthard import Gotthard
 from .moench import Moench
 from .pattern import Pattern, patternParameters
 from .gaincaps import Mythen3GainCapsWrapper
+from .PatternGenerator import PatternGenerator
 
 from . import _slsdet
+from ._slsdet import freeSharedMemory, getUserDetails
+
 xy = _slsdet.xy
 defs = _slsdet.slsDetectorDefs
 

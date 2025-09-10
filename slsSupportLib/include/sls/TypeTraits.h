@@ -112,4 +112,12 @@ struct Conjunction<B1, Bn...>
 template <typename T, typename... Ts>
 using AllSame =
     typename std::enable_if<Conjunction<std::is_same<T, Ts>...>::value>::type;
+
+// Trait to detect if T has a bool member named 'isValid'
+template <typename, typename = std::void_t<>>
+struct has_bool_isValid : std::false_type {};
+
+template <typename T>
+struct has_bool_isValid<T, std::void_t<decltype(std::declval<T>().isValid)>>
+    : std::is_same<decltype(std::declval<T>().isValid), bool> {};
 } // namespace sls

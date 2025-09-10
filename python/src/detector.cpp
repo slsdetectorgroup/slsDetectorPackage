@@ -25,6 +25,9 @@ void init_det(py::module &m) {
           (void (*)(const int, const int)) & sls::freeSharedMemory,
           py::arg() = 0, py::arg() = -1);
 
+    m.def("getUserDetails", (std::string(*)(const int)) & sls::getUserDetails,
+          py::arg() = 0);
+
     py::class_<Detector> CppDetectorApi(m, "CppDetectorApi");
     CppDetectorApi.def(py::init<int>());
 
@@ -108,6 +111,13 @@ void init_det(py::module &m) {
     CppDetectorApi.def("getModuleSize",
                        (Result<defs::xy>(Detector::*)(sls::Positions) const) &
                            Detector::getModuleSize,
+                       py::arg() = Positions{});
+    CppDetectorApi.def("getPortPerModuleGeometry",
+                       (defs::xy(Detector::*)() const) &
+                           Detector::getPortPerModuleGeometry);
+    CppDetectorApi.def("getPortSize",
+                       (Result<defs::xy>(Detector::*)(sls::Positions) const) &
+                           Detector::getPortSize,
                        py::arg() = Positions{});
     CppDetectorApi.def("getDetectorSize", (defs::xy(Detector::*)() const) &
                                               Detector::getDetectorSize);
@@ -924,15 +934,14 @@ void init_det(py::module &m) {
                        (void (Detector::*)(bool, sls::Positions)) &
                            Detector::setRxArping,
                        py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("getIndividualRxROIs",
-                       (Result<defs::ROI>(Detector::*)(sls::Positions) const) &
-                           Detector::getIndividualRxROIs,
-                       py::arg());
     CppDetectorApi.def("getRxROI",
-                       (defs::ROI(Detector::*)() const) & Detector::getRxROI);
-    CppDetectorApi.def(
-        "setRxROI", (void (Detector::*)(const defs::ROI)) & Detector::setRxROI,
-        py::arg());
+                       (std::vector<defs::ROI>(Detector::*)(int) const) &
+                           Detector::getRxROI,
+                       py::arg() = -1);
+    CppDetectorApi.def("setRxROI",
+                       (void (Detector::*)(const std::vector<defs::ROI> &)) &
+                           Detector::setRxROI,
+                       py::arg());
     CppDetectorApi.def("clearRxROI",
                        (void (Detector::*)()) & Detector::clearRxROI);
     CppDetectorApi.def(
@@ -1293,20 +1302,6 @@ void init_det(py::module &m) {
         (void (Detector::*)(defs::collectionMode, sls::Positions)) &
             Detector::setCollectionMode,
         py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("getROI",
-                       (Result<defs::ROI>(Detector::*)(sls::Positions) const) &
-                           Detector::getROI,
-                       py::arg() = Positions{});
-    CppDetectorApi.def("setROI",
-                       (void (Detector::*)(defs::ROI, int)) & Detector::setROI,
-                       py::arg(), py::arg());
-    CppDetectorApi.def(
-        "clearROI", (void (Detector::*)(sls::Positions)) & Detector::clearROI,
-        py::arg() = Positions{});
-    CppDetectorApi.def("getExptimeLeft",
-                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
-                           Detector::getExptimeLeft,
-                       py::arg() = Positions{});
     CppDetectorApi.def("getNumberOfBursts",
                        (Result<int64_t>(Detector::*)(sls::Positions) const) &
                            Detector::getNumberOfBursts,
@@ -1357,10 +1352,11 @@ void init_det(py::module &m) {
         (void (Detector::*)(const int, const std::string &, sls::Positions)) &
             Detector::setVetoFile,
         py::arg(), py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("getBurstMode",
-                       (Result<defs::burstMode>(Detector::*)(sls::Positions)) &
-                           Detector::getBurstMode,
-                       py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getBurstMode",
+        (Result<defs::burstMode>(Detector::*)(sls::Positions) const) &
+            Detector::getBurstMode,
+        py::arg() = Positions{});
     CppDetectorApi.def("setBurstMode",
                        (void (Detector::*)(defs::burstMode, sls::Positions)) &
                            Detector::setBurstMode,
@@ -1678,6 +1674,14 @@ void init_det(py::module &m) {
                        (void (Detector::*)(int, sls::Positions)) &
                            Detector::setRxDbitOffset,
                        py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("getRxDbitReorder",
+                       (Result<bool>(Detector::*)(sls::Positions) const) &
+                           Detector::getRxDbitReorder,
+                       py::arg() = Positions{});
+    CppDetectorApi.def("setRxDbitReorder",
+                       (void (Detector::*)(bool, sls::Positions)) &
+                           Detector::setRxDbitReorder,
+                       py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("setDigitalIODelay",
                        (void (Detector::*)(uint64_t, int, sls::Positions)) &
                            Detector::setDigitalIODelay,
@@ -1861,13 +1865,22 @@ void init_det(py::module &m) {
                            Detector::setPatternWaitAddr,
                        py::arg(), py::arg(), py::arg() = Positions{});
     CppDetectorApi.def(
-        "getPatternWaitTime",
+        "getPatternWaitClocks",
         (Result<uint64_t>(Detector::*)(int, sls::Positions) const) &
-            Detector::getPatternWaitTime,
+            Detector::getPatternWaitClocks,
         py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def("setPatternWaitTime",
+    CppDetectorApi.def("setPatternWaitClocks",
                        (void (Detector::*)(int, uint64_t, sls::Positions)) &
-                           Detector::setPatternWaitTime,
+                           Detector::setPatternWaitClocks,
+                       py::arg(), py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getPatternWaitInterval",
+        (Result<sls::ns>(Detector::*)(int, sls::Positions) const) &
+            Detector::getPatternWaitInterval,
+        py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("setPatternWaitInterval",
+                       (void (Detector::*)(int, sls::ns, sls::Positions)) &
+                           Detector::setPatternWaitInterval,
                        py::arg(), py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getPatternMask",
                        (Result<uint64_t>(Detector::*)(sls::Positions)) &
@@ -2053,7 +2066,5 @@ void init_det(py::module &m) {
                        (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                            Detector::getMeasurementTime,
                        py::arg() = Positions{});
-    CppDetectorApi.def("getUserDetails", (std::string(Detector::*)() const) &
-                                             Detector::getUserDetails);
     ;
 }

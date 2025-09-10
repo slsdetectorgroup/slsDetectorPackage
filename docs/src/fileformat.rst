@@ -1,3 +1,5 @@
+.. _file format:
+
 File format
 ================================
 
@@ -60,3 +62,14 @@ There are 2 file formats supported by the receiver:
 
 The default is binary. HDF5 can be enabled by compiling the package with HDF5 option enabled. The file format is set using the command `fformat <commandline.html#term-fformat-binary-hdf5>`_.
 
+
+Content
+--------
+
+| `Master File`: Contains the metadata of the acquisition. The content is described in :ref:`master file attributes <master file attributes>`.
+
+
+| `Data File`: Contains the metadata for each image (:ref:`slsReceiverHeader<sls receiver header format>`) and the `data of the image` transmitted over that port. The image data is described in :ref:`Detector Image Size and Format <data format>` section.
+
+
+| More content and examples are found in the :ref:`HDF5 file format <hdf5 file format>` and :ref:`Binary file format <binary file format>` sections.

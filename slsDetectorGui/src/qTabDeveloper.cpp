@@ -34,15 +34,6 @@ void qTabDeveloper::SetupWidgetWindow() {
                     new qDacWidget(this, det, false, sls::ToString(it), it));
             }
             break;
-        case slsDetectorDefs::GOTTHARD:
-            ind = slsDetectorDefs::TEMPERATURE_ADC;
-            adcWidgets.push_back(
-                new qDacWidget(this, det, false, sls::ToString(ind), ind));
-            ind = slsDetectorDefs::TEMPERATURE_FPGA;
-            adcWidgets.push_back(
-                new qDacWidget(this, det, false, sls::ToString(ind), ind));
-            break;
-
         case slsDetectorDefs::JUNGFRAU:
             ind = slsDetectorDefs::TEMPERATURE_ADC;
             adcWidgets.push_back(

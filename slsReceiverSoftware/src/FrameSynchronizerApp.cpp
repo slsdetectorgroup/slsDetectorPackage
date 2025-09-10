@@ -5,17 +5,17 @@
  * reconstructing image. Sample python script for pull socket for this combiner
  * in python/scripts folder. TODO: Not handling empty frames from one socket
  */
+#include "CommandLineOptions.h"
 #include "sls/Receiver.h"
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
+#include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
-#include "sls/versionAPI.h"
 
 #include <csignal> //SIGINT
 #include <cstdio>
 #include <cstring>
-#include <iostream>
 #include <mutex>
 #include <ostream>
 #include <semaphore.h>
@@ -29,8 +29,13 @@
 #include <zmq.h>
 
 std::vector<std::thread> threads;
-std::vector<sem_t *> semaphores;
 sls::TLogLevel printHeadersLevel = sls::logDEBUG;
+
+// gettid added in glibc 2.30
+#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
+#include <sys/syscall.h>
+#define gettid() syscall(SYS_gettid)
+#endif
 
 /** Define Colors to print data call back in different colors for different
  * recievers */
@@ -58,16 +63,6 @@ struct FrameStatus {
 };
 FrameStatus *global_frame_status = nullptr;
 
-/**
- * Control+C Interrupt Handler
- * to let all the processes know to exit properly
- */
-void sigInterruptHandler(int p) {
-    for (size_t i = 0; i != semaphores.size(); ++i) {
-        sem_post(semaphores[i]);
-    }
-}
-
 void cleanup() {
     if (global_frame_status) {
         std::lock_guard<std::mutex> lock(global_frame_status->mtx);
@@ -85,21 +80,6 @@ void cleanup() {
         }
         global_frame_status->frames.clear();
     }
-}
-
-/**
- * prints usage of this example program
- */
-std::string getHelpMessage() {
-    std::ostringstream os;
-    os << "\nUsage:\n"
-       << "./slsFrameSynchronizer --version or -v\n"
-       << "\t - Gets the slsFrameSynchronizer version\n\n"
-       << "./slsFrameSynchronizer [start tcp port] [num recevers] [print "
-          "callback headers (optional)]\n"
-       << "\t - tcp port has to be non-zero and 16 bit\n"
-       << "\t - print callback headers option is 0 (disabled) by default\n";
-    return os.str();
 }
 
 void zmq_free(void *data, void *hint) { delete[] static_cast<char *>(data); }
@@ -282,7 +262,7 @@ void Correlate(FrameStatus *stat) {
     zmq_ctx_destroy(context);
 }
 
-int StartAcquisitionCallback(
+void StartAcquisitionCallback(
     const slsDetectorDefs::startCallbackHeader callbackHeader,
     void *objectPointer) {
     LOG(printHeadersLevel)
@@ -354,7 +334,6 @@ int StartAcquisitionCallback(
         }
     }
     sem_post(&stat->available);
-    return slsDetectorDefs::OK; // TODO: change return to void
 }
 
 void AcquisitionFinishedCallback(
@@ -516,93 +495,46 @@ void GetDataCallback(slsDetectorDefs::sls_receiver_header &header,
     sem_post(&stat->available);
 }
 
+std::vector<sem_t> semaphores;
+
 /**
- * Example of main program using the Receiver class
- *
- * - Defines in file for:
- *  	- Default Number of receivers is 1
- *  	- Default Start TCP port is 1954
+ * Control+C Interrupt Handler
+ * to let all the processes know to exit properly
+ * Only the main thread will call this handler
  */
+void sigInterruptHandler(int p) {
+    (void)signal; // suppress unused warning if needed
+    for (auto &s : semaphores) {
+        sem_post(&s);
+    }
+}
+
 int main(int argc, char *argv[]) {
-
-    // version
-    if (argc == 2) {
-        std::string sargv1 = std::string(argv[1]);
-        if (sargv1 == "--version" || sargv1 == "-v") {
-            std::cout << "slsFrameSynchronizer Version: " << APIRECEIVER
-                      << std::endl;
-            exit(EXIT_SUCCESS);
-        }
+    CommandLineOptions cli(AppType::FrameSynchronizer);
+    ParsedOptions opts;
+    try {
+        opts = cli.parse(argc, argv);
+    } catch (sls::RuntimeError &e) {
+        return EXIT_FAILURE;
+    }
+    auto &f = std::get<FrameSyncOptions>(opts);
+    if (f.versionRequested || f.helpRequested) {
+        return EXIT_SUCCESS;
     }
 
-    /**	- set default values */
-    int numReceivers = 1;
-    uint16_t startTCPPort = DEFAULT_TCP_RX_PORTNO;
-    bool printHeaders = false;
+    LOG(sls::logINFOBLUE) << "Current Process [ Tid: " << gettid() << ']';
 
-    /**	- get number of receivers and start tcp port from command line
-     * arguments */
-    if (argc > 1) {
-        try {
-            if (argc == 3 || argc == 4) {
-                startTCPPort = sls::StringTo<uint16_t>(argv[1]);
-                if (startTCPPort == 0) {
-                    throw std::runtime_error("Invalid start tcp port");
-                }
-                numReceivers = std::stoi(argv[2]);
-                if (numReceivers > 1024) {
-                    cprintf(RED,
-                            "Did you mix up the order of the arguments?\n%s\n",
-                            getHelpMessage().c_str());
-                    return EXIT_FAILURE;
-                }
-                if (numReceivers == 0) {
-                    cprintf(RED, "Invalid number of receivers.\n%s\n",
-                            getHelpMessage().c_str());
-                    return EXIT_FAILURE;
-                }
-                if (argc == 4) {
-                    printHeaders = sls::StringTo<bool>(argv[3]);
-                    if (printHeaders) {
-                        printHeadersLevel = sls::logINFOBLUE;
-                    }
-                }
-            } else
-                throw std::runtime_error("Invalid number of arguments");
-        } catch (const std::exception &e) {
-            cprintf(RED, "Error: %s\n%s\n", e.what(), getHelpMessage().c_str());
-            return EXIT_FAILURE;
-        }
+    // close files on ctrl+c
+    sls::setupSignalHandler(SIGINT, sigInterruptHandler);
+    // handle locally on socket crash
+    sls::setupSignalHandler(SIGPIPE, SIG_IGN);
+
+    semaphores.resize(f.numReceivers);
+    for (auto &s : semaphores) {
+        sem_init(&s, 0, 0);
     }
 
-    cprintf(RESET, "Number of Receivers: %d\n", numReceivers);
-    cprintf(RESET, "Start TCP Port: %hu\n", startTCPPort);
-    cprintf(RESET, "Print Callback Headers: %s\n\n",
-            (printHeaders ? "Enabled" : "Disabled"));
-
-    /** - Catch signal SIGINT to close files and call destructors properly */
-    struct sigaction sa;
-    sa.sa_flags = 0;                     // no flags
-    sa.sa_handler = sigInterruptHandler; // handler function
-    sigemptyset(&sa.sa_mask); // dont block additional signals during invocation
-                              // of handler
-    if (sigaction(SIGINT, &sa, nullptr) == -1) {
-        cprintf(RED, "Could not set handler function for SIGINT\n");
-    }
-
-    /** - Ignore SIG_PIPE, prevents global signal handler, handle locally,
-       instead of a server crashing due to client crash when writing, it just
-       gives error */
-    struct sigaction asa;
-    asa.sa_flags = 0;          // no flags
-    asa.sa_handler = SIG_IGN;  // handler function
-    sigemptyset(&asa.sa_mask); // dont block additional signals during
-                               // invocation of handler
-    if (sigaction(SIGPIPE, &asa, nullptr) == -1) {
-        cprintf(RED, "Could not set handler function for SIGPIPE\n");
-    }
-
-    FrameStatus stat{true, false, numReceivers};
+    FrameStatus stat{true, false, f.numReceivers};
     // store pointer for signal handler
     global_frame_status = &stat;
 
@@ -610,33 +542,43 @@ int main(int argc, char *argv[]) {
     void *user_data = static_cast<void *>(&stat);
     std::thread combinerThread(Correlate, &stat);
 
-    for (int i = 0; i != numReceivers; ++i) {
-        sem_t *semaphore = new sem_t;
-        sem_init(semaphore, 1, 0);
-        semaphores.push_back(semaphore);
+    std::exception_ptr threadException = nullptr;
+    for (int i = 0; i != f.numReceivers; ++i) {
+        uint16_t port = f.port + i;
+        sem_t *semaphore = &semaphores[i];
+        threads.emplace_back(
+            [i, semaphore, port, user_data, &threadException]() {
+                LOG(sls::logINFOBLUE)
+                    << "Thread " << i << " [ Tid: " << gettid() << ']';
+                try {
+                    sls::Receiver receiver(port);
+                    receiver.registerCallBackStartAcquisition(
+                        StartAcquisitionCallback, user_data);
+                    receiver.registerCallBackAcquisitionFinished(
+                        AcquisitionFinishedCallback, user_data);
+                    receiver.registerCallBackRawDataReady(GetDataCallback,
+                                                          user_data);
 
-        uint16_t port = startTCPPort + i;
-        threads.emplace_back([i, semaphore, port, user_data]() {
-            sls::Receiver receiver(port);
-            receiver.registerCallBackStartAcquisition(StartAcquisitionCallback,
-                                                      user_data);
-            receiver.registerCallBackAcquisitionFinished(
-                AcquisitionFinishedCallback, user_data);
-            receiver.registerCallBackRawDataReady(GetDataCallback, user_data);
-            /**	- as long as no Ctrl+C */
-            sem_wait(semaphore);
-            sem_destroy(semaphore);
-            delete semaphore;
-
-            // clean up frames
-            if (i == 0)
-                cleanup();
-        });
+                    /**	- as long as no Ctrl+C */
+                    // each child shares the common semaphore
+                    sem_wait(semaphore);
+                } catch (...) {
+                    // capture exception and raise SIGINT to exit gracefully
+                    threadException = std::current_exception();
+                    raise(SIGINT);
+                }
+                LOG(sls::logINFOBLUE)
+                    << "Exiting Thread " << i << " [ Tid: " << gettid() << " ]";
+            });
     }
 
-    for (auto &thread : threads) {
-        thread.join();
+    for (auto &t : threads) {
+        t.join();
     }
+
+    for (auto &s : semaphores)
+        sem_destroy(&s);
+    cleanup();
 
     {
         std::lock_guard<std::mutex> lock(stat.mtx);
@@ -645,6 +587,19 @@ int main(int argc, char *argv[]) {
     }
     combinerThread.join();
     sem_destroy(&stat.available);
+
+    if (threadException) {
+        try {
+            std::rethrow_exception(threadException);
+        } catch (const std::exception &e) {
+            LOG(sls::logERROR)
+                << "Unhandled exception from thread: " << e.what();
+            return EXIT_FAILURE;
+        } catch (...) {
+            LOG(sls::logERROR) << "Unknown exception occurred in thread";
+            return EXIT_FAILURE;
+        }
+    }
 
     LOG(sls::logINFOBLUE) << "Goodbye!";
     return EXIT_SUCCESS;

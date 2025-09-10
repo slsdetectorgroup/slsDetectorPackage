@@ -5,6 +5,8 @@
 
 #include "SlsQt1DZoomer.h"
 #include "sls/ansi.h"
+#include "sls/sls_detector_defs.h"
+
 #include <array>
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
@@ -141,8 +143,9 @@ class SlsQt1DPlot : public QwtPlot {
     void SetLogX(bool yes = 1);
     void SetLogY(bool yes = 1);
 
-    void EnableRoiBox(std::array<int, 4> roi);
-    void DisableRoiBox();
+    void EnableRoiBoxes(std::vector<slsDetectorDefs::ROI> roi, int ymin,
+                        int ymax);
+    void DisableRoiBoxes();
 
   private:
     bool gainPlot{false};
@@ -169,6 +172,7 @@ class SlsQt1DPlot : public QwtPlot {
     friend void SlsQtH1D::Attach(SlsQt1DPlot *p);
     friend void SlsQtH1D::Detach(SlsQt1DPlot *p);
 
+    std::vector<std::unique_ptr<QwtPlotShapeItem>> roiBoxes{};
     QwtPlotShapeItem *roiBox{nullptr};
 
   signals:

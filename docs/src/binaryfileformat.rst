@@ -1,3 +1,5 @@
+.. _binary file format:
+
 Binary File Format
 ====================
 
@@ -31,6 +33,7 @@ Data File
 
 * Each frame includes a :ref:`**sls_receiver_header** <sls receiver header format>` structure, followed by the actual frame data.
 
+* More details on :ref:`slsReceiverHeader<sls receiver header format>` and the actual image data is described in the :ref:`Detector Image Size and Format <data format>` section.
 
 
 .. _json master file examples:
@@ -320,61 +323,6 @@ Moench
         }
     }
 
-Gotthard I
-^^^^^^^^^^^
-
-.. code-block:: text
-
-    {
-        "Version": 7.2,
-        "Timestamp": "Wed Nov 13 15:16:19 2024",
-        "Detector Type": "Gotthard",
-        "Timing Mode": "auto",
-        "Geometry": {
-            "x": 1,
-            "y": 1
-        },
-        "Image Size in bytes": 2560,
-        "Pixels": {
-            "x": 1280,
-            "y": 1
-        },
-        "Max Frames Per File": 20000,
-        "Frame Discard Policy": "nodiscard",
-        "Frame Padding": 1,
-        "Scan Parameters": "[disabled]",
-        "Total Frames": 1,
-        "Receiver Roi": {
-            "xmin": 4294967295,
-            "xmax": 4294967295,
-            "ymin": 4294967295,
-            "ymax": 4294967295
-        },
-        "Exptime": "1.00001ms",
-        "Period": "1s",
-        "Detector Roi": {
-            "xmin": 4294967295,
-            "xmax": 4294967295
-        },
-        "Frames in File": 1,
-        "Frame Header Format": {
-            "Frame Number": "8 bytes",
-            "SubFrame Number/ExpLength": "4 bytes",
-            "Packet Number": "4 bytes",
-            "Bunch ID": "8 bytes",
-            "Timestamp": "8 bytes",
-            "Module Id": "2 bytes",
-            "Row": "2 bytes",
-            "Column": "2 bytes",
-            "Reserved": "2 bytes",
-            "Debug": "4 bytes",
-            "Round Robin Number": "2 bytes",
-            "Detector Type": "1 byte",
-            "Header Version": "1 byte",
-            "Packets Caught Mask": "64 bytes"
-        }
-    }
-
 Chip Test Board
 ^^^^^^^^^^^^^^^
 
@@ -414,6 +362,7 @@ Chip Test Board
         "Digital Flag": 0,
         "Digital Samples": 1000,
         "Dbit Offset": 0,
+        "Dbit Reorder": 1, 
         "Dbit Bitset": 0,
         "Transceiver Mask": "0x3",
         "Transceiver Flag": 0,

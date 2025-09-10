@@ -1,4 +1,4 @@
-
+.. _hdf5 file format:
 
 HDF5 File Format
 ================================
@@ -75,6 +75,8 @@ Data File
 -----------
 
 * File Name: [fpath]/[fname]_dx_fy_[findex].h5 :ref:`Details here<file name format>`
+
+* More details on :ref:`slsReceiverHeader<sls receiver header format>` and the actual image data is described in the :ref:`Detector Image Size and Format <data format>` section.
 
 
 Virtual Data File

@@ -1,5 +1,5 @@
 // This file is used as input to generate the caller class
-
+#pragma once
 #include "CmdParser.h"
 #include "HelpDacs.h"
 #include "sls/Detector.h"
@@ -19,11 +19,10 @@ class Caller {
     IpAddr getDstIpFromAuto();
     IpAddr getSrcIpFromAuto();
     UdpDestination getUdpEntry();
-    void GetLevelAndUpdateArgIndex(int action,
-                                   std::string levelSeparatedCommand,
-                                   int &level, int &iArg, size_t nGetArgs,
-                                   size_t nPutArgs);
+    int GetLevelAndInsertIntoArgs(std::string levelSeparatedCommand);
     void WrongNumberOfParameters(size_t expected);
+    std::vector<defs::ROI> parseRoiVector(const std::string &input);
+    defs::ROI parseRoi(const std::vector<std::string> &args);
 
     template <typename V> std::string OutStringHex(const V &value) {
         if (value.equal())
@@ -85,7 +84,6 @@ class Caller {
     std::string chipversion(int action);
     std::string clearbit(int action);
     std::string clearbusy(int action);
-    std::string clearroi(int action);
     std::string clientversion(int action);
     std::string clkdiv(int action);
     std::string clkfreq(int action);
@@ -123,7 +121,6 @@ class Caller {
     std::string exptime1(int action);
     std::string exptime2(int action);
     std::string exptime3(int action);
-    std::string exptimel(int action);
     std::string extrastoragecells(int action);
     std::string extsampling(int action);
     std::string extsamplingsrc(int action);
@@ -207,9 +204,6 @@ class Caller {
     std::string patwait1(int action);
     std::string patwait2(int action);
     std::string patwaittime(int action);
-    std::string patwaittime0(int action);
-    std::string patwaittime1(int action);
-    std::string patwaittime2(int action);
     std::string patword(int action);
     std::string pedestalmode(int action);
     std::string period(int action);
@@ -236,7 +230,6 @@ class Caller {
     std::string reg(int action);
     std::string resetdacs(int action);
     std::string resetfpga(int action);
-    std::string roi(int action);
     std::string romode(int action);
     std::string row(int action);
     std::string runclk(int action);
@@ -245,6 +238,7 @@ class Caller {
     std::string rx_clearroi(int action);
     std::string rx_dbitlist(int action);
     std::string rx_dbitoffset(int action);
+    std::string rx_dbitreorder(int action);
     std::string rx_discardpolicy(int action);
     std::string rx_fifodepth(int action);
     std::string rx_frameindex(int action);
@@ -434,7 +428,6 @@ class Caller {
         {"chipversion", &Caller::chipversion},
         {"clearbit", &Caller::clearbit},
         {"clearbusy", &Caller::clearbusy},
-        {"clearroi", &Caller::clearroi},
         {"clientversion", &Caller::clientversion},
         {"clkdiv", &Caller::clkdiv},
         {"clkfreq", &Caller::clkfreq},
@@ -472,7 +465,6 @@ class Caller {
         {"exptime1", &Caller::exptime1},
         {"exptime2", &Caller::exptime2},
         {"exptime3", &Caller::exptime3},
-        {"exptimel", &Caller::exptimel},
         {"extrastoragecells", &Caller::extrastoragecells},
         {"extsampling", &Caller::extsampling},
         {"extsamplingsrc", &Caller::extsamplingsrc},
@@ -549,16 +541,16 @@ class Caller {
         {"patnloop1", &Caller::patnloop1},
         {"patnloop2", &Caller::patnloop2},
         {"patsetbit", &Caller::patsetbit},
-        {"patternX", &Caller::pattern},
+        {"pattern", &Caller::pattern},
         {"patternstart", &Caller::patternstart},
         {"patwait", &Caller::patwait},
         {"patwait0", &Caller::patwait0},
         {"patwait1", &Caller::patwait1},
         {"patwait2", &Caller::patwait2},
         {"patwaittime", &Caller::patwaittime},
-        {"patwaittime0", &Caller::patwaittime0},
-        {"patwaittime1", &Caller::patwaittime1},
-        {"patwaittime2", &Caller::patwaittime2},
+        {"patwaittime0", &Caller::patwaittime},
+        {"patwaittime1", &Caller::patwaittime},
+        {"patwaittime2", &Caller::patwaittime},
         {"patword", &Caller::patword},
         {"pedestalmode", &Caller::pedestalmode},
         {"period", &Caller::period},
@@ -585,7 +577,6 @@ class Caller {
         {"reg", &Caller::reg},
         {"resetdacs", &Caller::resetdacs},
         {"resetfpga", &Caller::resetfpga},
-        {"roi", &Caller::roi},
         {"romode", &Caller::romode},
         {"row", &Caller::row},
         {"runclk", &Caller::runclk},
@@ -594,6 +585,7 @@ class Caller {
         {"rx_clearroi", &Caller::rx_clearroi},
         {"rx_dbitlist", &Caller::rx_dbitlist},
         {"rx_dbitoffset", &Caller::rx_dbitoffset},
+        {"rx_dbitreorder", &Caller::rx_dbitreorder},
         {"rx_discardpolicy", &Caller::rx_discardpolicy},
         {"rx_fifodepth", &Caller::rx_fifodepth},
         {"rx_frameindex", &Caller::rx_frameindex},
@@ -790,13 +782,9 @@ class Caller {
         {"vishaper", "dac"},
         {"iodelay", "dac"},
         {"vref_ds", "dac"},
-        {"vcascn_pb", "dac"},
-        {"vcascp_pb", "dac"},
         {"vout_cm", "dac"},
-        {"vcasc_out", "dac"},
         {"vin_cm", "dac"},
         {"vref_comp", "dac"},
-        {"ib_test_c", "dac"},
         {"vrshaper_n", "dac"},
         {"vipre", "dac"},
         {"vdcsh", "dac"},
@@ -878,6 +866,7 @@ class Caller {
         {"i_c", "im_c"},
         {"i_d", "im_d"},
         {"i_io", "im_io"},
+        {"patternX", "pattern"},
         {"copydetectorserver", "updatedetectorserver"},
         {"nframes", "framecounter"},
         {"now", "runtime"},

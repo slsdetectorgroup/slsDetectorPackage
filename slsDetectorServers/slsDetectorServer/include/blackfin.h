@@ -5,6 +5,23 @@
 #include <inttypes.h>
 #include <sys/types.h>
 
+/** enable support for ARDY signal on interface to FPGA
+ * needed to properly translate avalon_mm_waitrequest in the CTB firmware
+ * https://www.analog.com/media/en/dsp-documentation/processor-manuals/bf537_hwr_Rev3.2.pdf
+ * page 274
+ * */
+#define BFIN_EBIU_AMBCTL1_B2_ARDY_ENA_OFST (0)
+#define BFIN_EBIU_AMBCTL1_B2_ARDY_ENA_MSK                                      \
+    (1 << BFIN_EBIU_AMBCTL1_B2_ARDY_ENA_OFST)
+#define BFIN_EBIU_AMBCTL1_B2_ARDY_POL_OFST (1)
+#define BFIN_EBIU_AMBCTL1_B2_ARDY_POL_MSK                                      \
+    (1 << BFIN_EBIU_AMBCTL1_B2_ARDY_POL_OFST)
+
+#define BFIN_AMC_ACCESS_EXTENSION_ENA_VAL                                      \
+    (BFIN_EBIU_AMBCTL1_B2_ARDY_ENA_MSK | BFIN_EBIU_AMBCTL1_B2_ARDY_POL_MSK)
+#define BFIN_AMC_ACCESS_EXTENSION_FNAME                                        \
+    "/sys/kernel/debug/blackfin/ebiu_amc/EBIU_AMBCTL1"
+
 /** I2C defines */
 #define I2C_CLOCK_MHZ (131.25)
 

@@ -43,7 +43,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     void SetEthernetInterface(const std::string e);
     void SetActivate(bool enable);
     void SetDetectorDatastream(bool enable);
-    void SetNoRoi(bool enable);
+    void SetIsOutsideRoi(bool enable);
     void SetSilentMode(bool enable);
 
     void ResetParametersforNewAcquisition();
@@ -116,7 +116,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     std::string eth;
     bool activated{false};
     bool detectorDataStream{true};
-    bool noRoi{false};
+    bool isOutsideRoi{false};
     bool silentMode;
     bool disabledPort{false};
 
@@ -156,12 +156,6 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     // for print progress during acquisition*/
     uint32_t numPacketsStatistic{0};
     uint32_t numFramesStatistic{0};
-
-    /**
-     * starting packet number is odd or even, accordingly increment frame number
-     * to get first packet number as 0
-     * (pecific to gotthard, can vary between modules, hence defined here) */
-    bool oddStartingPacket{true};
 };
 
 } // namespace sls

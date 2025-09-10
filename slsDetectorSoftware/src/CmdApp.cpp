@@ -50,14 +50,27 @@ int main(int argc, char *argv[]) {
         action = slsDetectorDefs::HELP_ACTION;
     else {
         // Free shared memory should work also without a detector
-        // if we have an option for verify in the detector constructor
-        // we could avoid this but clutter the code
         if (parser.command() == "free") {
             if (parser.detector_id() != -1)
                 std::cout << "Cannot free shared memory of sub-detector\n";
             else
                 sls::freeSharedMemory(parser.multi_id());
-            return 0;
+            return EXIT_SUCCESS;
+        }
+
+        // Get user details from shared memory should work also without a
+        // detector
+        if (parser.command() == "user") {
+            if (action == slsDetectorDefs::PUT_ACTION) {
+                std::cout << "Cannot set user details\n";
+                return EXIT_FAILURE;
+            }
+            if (parser.detector_id() != -1)
+                std::cout << "Cannot get user details of only a sub-detector\n";
+            else
+                std::cout << sls::getUserDetails(parser.multi_id())
+                          << std::endl;
+            return EXIT_SUCCESS;
         }
     }
 
@@ -84,7 +97,7 @@ int main(int argc, char *argv[]) {
         c.call(parser.command(), parser.arguments(), parser.detector_id(),
                action, std::cout, parser.receiver_id());
     } catch (sls::RuntimeError &e) {
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
-    exit(EXIT_SUCCESS);
+    return EXIT_SUCCESS;
 }

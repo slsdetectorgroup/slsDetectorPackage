@@ -119,17 +119,11 @@ class CodeGenerator:
     def write_check_arg(self):
         pass
 
+
     def write_arg(self, args, action, command_name):
         for arg in args:
             if arg['argc'] != -1:
                 if_block(f'args.size() == {arg["argc"]}',).__enter__()
-            if 'pattern_command' in arg and arg['pattern_command']:
-                self.write_line(f'int level = -1, iArg = 0, '
-                                f'nGetArgs = {arg["pattern_command"]["nGetArgs"]},'
-                                f' nPutArgs = {arg["pattern_command"]["nPutArgs"]};\nGetLevelAndUpdateArgIndex(action, '
-                                f'"{arg["pattern_command"]["command_name"]}", level, iArg, nGetArgs,nPutArgs);'
-                                )
-
             if 'extra_variables' in arg:
                 for var in arg['extra_variables']:
                     codegen.write_line(f'{var["type"]} {var["name"]} = {var["value"]};')

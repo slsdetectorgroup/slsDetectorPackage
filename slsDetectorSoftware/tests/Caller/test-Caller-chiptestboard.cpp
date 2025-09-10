@@ -530,15 +530,6 @@ TEST_CASE("dac", "[.cmdcall][.dacs]") {
         REQUIRE_THROWS(caller.call("dac", {"vb_ds"}, -1, GET));
         REQUIRE_THROWS(caller.call("dac", {"vref_ds"}, -1, GET));
         REQUIRE_THROWS(caller.call("dac", {"vref_comp"}, -1, GET));
-        // gotthard
-        REQUIRE_THROWS(caller.call("dac", {"vref_ds"}, -1, GET));
-        REQUIRE_THROWS(caller.call("dac", {"vcascn_pb"}, -1, GET));
-        REQUIRE_THROWS(caller.call("dac", {"vcascp_pb"}, -1, GET));
-        REQUIRE_THROWS(caller.call("dac", {"vout_cm"}, -1, GET));
-        REQUIRE_THROWS(caller.call("dac", {"vcasc_out"}, -1, GET));
-        REQUIRE_THROWS(caller.call("dac", {"vin_cm"}, -1, GET));
-        REQUIRE_THROWS(caller.call("dac", {"vref_comp"}, -1, GET));
-        REQUIRE_THROWS(caller.call("dac", {"ib_test_c"}, -1, GET));
         // mythen3
         REQUIRE_THROWS(caller.call("dac", {"vrpreamp"}, -1, GET));
         REQUIRE_THROWS(caller.call("dac", {"vrshaper"}, -1, GET));
@@ -1009,7 +1000,7 @@ TEST_CASE("dbitclk", "[.cmdcall]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD) {
-        auto prev_val = det.getRUNClock();
+        auto prev_val = det.getDBITClock();
         {
             std::ostringstream oss;
             caller.call("dbitclk", {"20"}, -1, PUT, oss);
@@ -1026,7 +1017,7 @@ TEST_CASE("dbitclk", "[.cmdcall]") {
             REQUIRE(oss.str() == "dbitclk 10\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setRUNClock(prev_val[i], {i});
+            det.setDBITClock(prev_val[i], {i});
         }
     } else {
         // clock index might work

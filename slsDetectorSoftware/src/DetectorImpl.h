@@ -24,7 +24,7 @@ class detectorData;
 class Module;
 
 #define DETECTOR_SHMAPIVERSION 0x190809
-#define DETECTOR_SHMVERSION    0x220505
+#define DETECTOR_SHMVERSION    0x250820
 #define SHORT_STRING_LENGTH    50
 
 /**
@@ -51,33 +51,27 @@ struct sharedDetector {
     int totalNumberOfModules;
     slsDetectorDefs::detectorType detType;
 
-    /** END OF FIXED PATTERN
-     * -----------------------------------------------*/
-
     /** Number of modules operated at once */
     slsDetectorDefs::xy numberOfModules;
 
     /**  max number of channels for complete detector*/
     slsDetectorDefs::xy numberOfChannels;
 
+    bool isValid{true}; // false if freed to block access from python or c++ api
+
+    /** END OF FIXED PATTERN
+     * -----------------------------------------------*/
+
     bool acquiringFlag;
     bool initialChecks;
     bool gapPixels;
     /** high water mark of listening tcp port (only data) */
     int zmqHwm;
-    /** in shm for gui purposes */
-    defs::ROI rx_roi{};
 };
 
 class DetectorImpl : public virtual slsDetectorDefs {
   public:
-    /**
-     * @param verify true to verify if shared memory version matches existing
-     * one
-     * @param update true to update last user pid, date etc
-     */
-    explicit DetectorImpl(int detector_index = 0, bool verify = true,
-                          bool update = true);
+    explicit DetectorImpl(int detector_index = 0);
 
     template <class CT> struct NonDeduced {
         using type = CT;
@@ -195,9 +189,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
     /** return detector index in shared memory */
     int getDetectorIndex() const;
 
-    /** Get user details of shared memory */
-    std::string getUserDetails();
-
     bool getInitialChecks() const;
 
     /** initial compaibility and other server start up checks
@@ -303,8 +294,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
     std::vector<std::pair<std::string, uint16_t>>
     verifyUniqueRxHost(const std::vector<std::string> &names) const;
 
-    defs::ROI getRxROI() const;
-    void setRxROI(const defs::ROI arg);
+    defs::xy getPortGeometry() const;
+    std::vector<defs::ROI> getRxROI(int module_id = -1) const;
+    void setRxROI(const std::vector<defs::ROI> &args);
     void clearRxROI();
 
     void getBadChannels(const std::string &fname, Positions pos) const;
@@ -340,26 +332,20 @@ class DetectorImpl : public virtual slsDetectorDefs {
     /**
      * Creates/open shared memory, initializes detector structure and members
      * Called by constructor/ set hostname / read config file
-     * @param verify true to verify if shared memory version matches existing
-     * one
-     * @param update true to update last user pid, date etc
      */
-    void setupDetector(bool verify = true, bool update = true);
+    void setupDetector();
 
     /**
      * Creates shm and initializes shm structure OR
      * Open shm and maps to structure
-     * @param verify true to verify if shm size matches existing one
      */
-    void initSharedMemory(bool verify = true);
+    void initSharedMemory();
 
     /** Initialize detector structure for the shared memory just created */
     void initializeDetectorStructure();
 
-    /** Initialize members (eg. modules from shm, zmqsockets)
-     * @param verify true to verify if shm size matches existing one
-     */
-    void initializeMembers(bool verify = true);
+    /** Initialize members (eg. modules from shm, zmqsockets)  */
+    void initializeMembers();
 
     /** Update in shm */
     void updateUserdetails();
@@ -422,11 +408,16 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     int kbhit();
 
-    defs::xy getPortGeometry() const;
-    defs::xy calculatePosition(int moduleIndex, defs::xy geometry) const;
-
     void verifyUniqueHost(
         bool isDet, std::vector<std::pair<std::string, uint16_t>> &hosts) const;
+
+    bool roisOverlap(const defs::ROI &a, const defs::ROI &b) const;
+    void validateROIs(const std::vector<defs::ROI> &rois);
+    defs::xy calculatePosition(int moduleIndex) const;
+    defs::ROI getModuleROI(int moduleIndex) const;
+    void convertGlobalRoiToPortLevel(const defs::ROI &userRoi,
+                                     const defs::ROI &moduleRoi,
+                                     std::vector<defs::ROI> &portRois) const;
 
     const int detectorIndex{0};
     SharedMemory<sharedDetector> shm{0, -1};

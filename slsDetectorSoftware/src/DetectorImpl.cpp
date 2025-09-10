@@ -31,21 +31,16 @@
 
 namespace sls {
 
-DetectorImpl::DetectorImpl(int detector_index, bool verify, bool update)
+DetectorImpl::DetectorImpl(int detector_index)
     : detectorIndex(detector_index), shm(detector_index, -1),
       ctb_shm(detector_index, -1, CtbConfig::shm_tag()) {
-    setupDetector(verify, update);
+    setupDetector();
 }
 
-void DetectorImpl::setupDetector(bool verify, bool update) {
-    initSharedMemory(verify);
-    initializeMembers(verify);
-    if (update) {
-        updateUserdetails();
-    }
-
-    if (ctb_shm.exists())
-        ctb_shm.openSharedMemory(verify);
+void DetectorImpl::setupDetector() {
+    initSharedMemory();
+    initializeMembers();
+    updateUserdetails();
 }
 
 bool DetectorImpl::isAllPositions(Positions pos) const {
@@ -57,64 +52,45 @@ void DetectorImpl::setAcquiringFlag(bool flag) { shm()->acquiringFlag = flag; }
 
 int DetectorImpl::getDetectorIndex() const { return detectorIndex; }
 
-std::string DetectorImpl::getUserDetails() {
-    if (modules.empty()) {
-        return std::string("none");
-    }
-
-    std::ostringstream sstream;
-    sstream << "\nHostname: ";
-    for (auto &module : modules) {
-        sstream << (module->isFixedPatternSharedMemoryCompatible()
-                        ? module->getHostname()
-                        : "Unknown")
-                << "+";
-    }
-    sstream << "\nType: ";
-    // get type from detector version shm
-    if (shm()->shmversion >= DETECTOR_SHMAPIVERSION) {
-        sstream << ToString(shm()->detType);
-    }
-    // get type from module shm
-    else {
-        for (auto &module : modules) {
-            sstream << (module->isFixedPatternSharedMemoryCompatible()
-                            ? ToString(module->getDetectorType())
-                            : "Unknown")
-                    << "+";
-        }
-    }
-
-    sstream << "\nPID: " << shm()->lastPID << "\nUser: " << shm()->lastUser
-            << "\nDate: " << shm()->lastDate << std::endl;
-
-    return sstream.str();
-}
-
 bool DetectorImpl::getInitialChecks() const { return shm()->initialChecks; }
 
 void DetectorImpl::setInitialChecks(const bool value) {
     shm()->initialChecks = value;
 }
 
-void DetectorImpl::initSharedMemory(bool verify) {
+void DetectorImpl::initSharedMemory() {
+    // creating new shm
     if (!shm.exists()) {
         shm.createSharedMemory();
         initializeDetectorStructure();
-    } else {
-        shm.openSharedMemory(verify);
-        if (verify && shm()->shmversion != DETECTOR_SHMVERSION) {
+    }
+
+    // opening existing shm
+    else {
+        shm.openSharedMemory(true);
+        if (shm()->shmversion != DETECTOR_SHMVERSION) {
             LOG(logERROR) << "Detector shared memory (" << detectorIndex
                           << ") version mismatch "
                              "(expected 0x"
                           << std::hex << DETECTOR_SHMVERSION << " but got 0x"
                           << shm()->shmversion << std::dec
-                          << ". Clear Shared memory to continue.";
-            throw SharedMemoryError("Shared memory version mismatch!");
+                          << ". Free Shared memory to continue.";
+            shm.unmapSharedMemory();
+            throw SharedMemoryError("Detector Shared memory version mismatch!");
+        }
+        if (ctb_shm.exists()) {
+            ctb_shm.openSharedMemory(true);
+            if (ctb_shm()->shmversion != CTB_SHMVERSION) {
+                LOG(logERROR)
+                    << "CTB shared memory version mismatch (expected 0x"
+                    << std::hex << CTB_SHMVERSION << " but got 0x"
+                    << ctb_shm()->shmversion << std::dec
+                    << ". Free Shared memory to continue.";
+                ctb_shm.unmapSharedMemory();
+                throw SharedMemoryError("Ctb Shared memory version mismatch!");
+            }
         }
     }
-
-    // std::cout <<
 }
 
 void DetectorImpl::initializeDetectorStructure() {
@@ -130,20 +106,16 @@ void DetectorImpl::initializeDetectorStructure() {
     shm()->gapPixels = false;
     // zmqlib default
     shm()->zmqHwm = -1;
-    shm()->rx_roi.xmin = -1;
-    shm()->rx_roi.xmax = -1;
-    shm()->rx_roi.ymin = -1;
-    shm()->rx_roi.ymax = -1;
 }
 
-void DetectorImpl::initializeMembers(bool verify) {
+void DetectorImpl::initializeMembers() {
     // DetectorImpl
     zmqSocket.clear();
 
     // get objects from single det shared memory (open)
     for (int i = 0; i < shm()->totalNumberOfModules; i++) {
         try {
-            modules.push_back(make_unique<Module>(detectorIndex, i, verify));
+            modules.push_back(make_unique<Module>(detectorIndex, i));
         } catch (...) {
             modules.clear();
             throw;
@@ -214,10 +186,12 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
 
     if (shm()->detType == defs::CHIPTESTBOARD ||
         shm()->detType == defs::XILINX_CHIPTESTBOARD) {
-        if (ctb_shm.exists())
-            ctb_shm.openSharedMemory(true);
-        else
-            ctb_shm.createSharedMemory();
+        if (ctb_shm.exists()) {
+            throw SharedMemoryError(
+                "This shared memory " + ctb_shm.getName() +
+                " should have been deleted before! Free it to continue.");
+        }
+        ctb_shm.createSharedMemory();
     }
 }
 
@@ -230,14 +204,14 @@ void DetectorImpl::addModule(const std::string &name) {
     // get type by connecting
     detectorType type = Module::getTypeFromDetector(hostname, port);
 
-    // gotthard cannot have more than 2 modules (50um=1, 25um=2
-    if ((type == GOTTHARD || type == GOTTHARD2) && modules.size() > 2) {
-        throw RuntimeError("Gotthard cannot have more than 2 modules. Please "
+    // gotthard2 cannot have more than 2 modules (50um=1, 25um=2
+    if (type == GOTTHARD2 && modules.size() > 2) {
+        throw RuntimeError("GotthardII cannot have more than 2 modules. Please "
                            "free the shared memory and start again.");
     }
 
     auto pos = modules.size();
-    modules.emplace_back(make_unique<Module>(type, detectorIndex, pos, false));
+    modules.emplace_back(make_unique<Module>(type, detectorIndex, pos));
     shm()->totalNumberOfModules = modules.size();
     modules[pos]->setControlPort(port);
     modules[pos]->setStopPort(port + 1);
@@ -539,7 +513,6 @@ void DetectorImpl::readFrameFromReceiver() {
     bool quadEnable = false;
     // to flip image
     bool eiger = false;
-    std::array<int, 4> rxRoi = shm()->rx_roi.getIntArray();
 
     std::vector<bool> runningList(zmqSocket.size());
     std::vector<bool> connectList(zmqSocket.size());
@@ -736,7 +709,7 @@ void DetectorImpl::readFrameFromReceiver() {
             thisData = new detectorData(currentProgress, currentFileName,
                                         nDetActualPixelsX, nDetActualPixelsY,
                                         callbackImage, imagesize, dynamicRange,
-                                        currentFileIndex, completeImage, rxRoi);
+                                        currentFileIndex, completeImage);
             try {
                 dataReady(
                     thisData, currentFrameIndex,
@@ -1177,19 +1150,9 @@ int DetectorImpl::acquire() {
         if (dataReady == nullptr) {
             setJoinThreadFlag(true);
         } else if (receiver) {
-            // wait for postprocessor to process dummies
-            if (dataReady != nullptr) {
-                // process dummy from stop receier
-                if (numZmqRunning != 0)
-                    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-                while (numZmqRunning != 0) {
-                    Parallel(&Module::restreamStopFromReceiver, {});
-                    // time to process restream dummy
-                    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-                    // increase time for fewer dummies and to catch up
-                    if (numZmqRunning != 0)
-                        std::this_thread::sleep_for(std::chrono::seconds(2));
-                }
+            while (numZmqRunning != 0) {
+                Parallel(&Module::restreamStopFromReceiver, {});
+                std::this_thread::sleep_for(std::chrono::milliseconds(200));
             }
         }
         dataProcessingThread.join();
@@ -1197,11 +1160,6 @@ int DetectorImpl::acquire() {
         if (acquisition_finished != nullptr) {
             // status
             auto statusList = Parallel(&Module::getRunStatus, {});
-            // if any slave still waiting, wait up to 1s (gotthard)
-            for (int i = 0; i != 20 && statusList.any(WAITING); ++i) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(50));
-                statusList = Parallel(&Module::getRunStatus, {});
-            }
             runStatus status = statusList.squash(ERROR);
             // inconsistent status (squash error), but none of them in error
             if (status == ERROR && (!statusList.any(ERROR))) {
@@ -1245,7 +1203,6 @@ bool DetectorImpl::handleSynchronization(Positions pos) {
         switch (shm()->detType) {
         case defs::MYTHEN3:
         case defs::GOTTHARD2:
-        case defs::GOTTHARD:
             handleSync = true;
             break;
         case defs::JUNGFRAU:
@@ -1300,11 +1257,6 @@ void DetectorImpl::startAcquisition(const bool blocking, Positions pos) {
             // ensure all status normal (slaves not blocking)
             // to catch those slaves that are still 'waiting'
             auto statusList = Parallel(&Module::getRunStatus, pos);
-            // if any slave still waiting, wait up to 1s (gotthard)
-            for (int i = 0; i != 20 && statusList.any(WAITING); ++i) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(50));
-                statusList = Parallel(&Module::getRunStatus, pos);
-            }
             if (!statusList.contains_only(IDLE, STOPPED, RUN_FINISHED)) {
                 throw RuntimeError("Acquisition not successful. "
                                    "Unexpected detector status");
@@ -1452,7 +1404,6 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         }
         break;
     case EIGER:
-    case GOTTHARD:
         throw RuntimeError("programfpga not implemented for this detector");
     default:
         throw RuntimeError(
@@ -1568,31 +1519,6 @@ Result<int> DetectorImpl::getDefaultDac(defs::dacIndex index,
 void DetectorImpl::setDefaultDac(defs::dacIndex index, int defaultValue,
                                  defs::detectorSettings sett, Positions pos) {
     Parallel(&Module::setDefaultDac, pos, index, defaultValue, sett);
-}
-
-defs::xy DetectorImpl::getPortGeometry() const {
-    defs::xy portGeometry(1, 1);
-    switch (shm()->detType) {
-    case EIGER:
-        portGeometry.x = modules[0]->getNumberofUDPInterfacesFromShm();
-        break;
-    case JUNGFRAU:
-    case MOENCH:
-        portGeometry.y = modules[0]->getNumberofUDPInterfacesFromShm();
-        break;
-    default:
-        break;
-    }
-    return portGeometry;
-}
-
-defs::xy DetectorImpl::calculatePosition(int moduleIndex,
-                                         defs::xy geometry) const {
-    defs::xy pos{};
-    int maxYMods = shm()->numberOfModules.y;
-    pos.y = (moduleIndex % maxYMods) * geometry.y;
-    pos.x = (moduleIndex / maxYMods) * geometry.x;
-    return pos;
 }
 
 void DetectorImpl::verifyUniqueDetHost(const uint16_t port,
@@ -1718,7 +1644,7 @@ void DetectorImpl::verifyUniqueHost(
     }
 }
 
-defs::ROI DetectorImpl::getRxROI() const {
+std::vector<defs::ROI> DetectorImpl::getRxROI(int module_id) const {
     if (shm()->detType == CHIPTESTBOARD ||
         shm()->detType == defs::XILINX_CHIPTESTBOARD) {
         throw RuntimeError("RxRoi not implemented for this Detector");
@@ -1726,75 +1652,164 @@ defs::ROI DetectorImpl::getRxROI() const {
     if (modules.size() == 0) {
         throw RuntimeError("No Modules added");
     }
-    // complete detector in roi
-    auto t = Parallel(&Module::getRxROI, {});
-    if (t.equal() && t.front().completeRoi()) {
-        LOG(logDEBUG) << "no roi";
-        return defs::ROI(0, shm()->numberOfChannels.x - 1, 0,
-                         shm()->numberOfChannels.y - 1);
+    if (module_id >= (int)modules.size()) {
+        throw RuntimeError("Invalid module id: " + std::to_string(module_id));
+    }
+    if (module_id >= 0) {
+        return modules[module_id]->getRxROI();
     }
 
-    defs::xy numChansPerMod = modules[0]->getNumberOfChannels();
-    bool is2D = (numChansPerMod.y > 1 ? true : false);
-    defs::xy geometry = getPortGeometry();
-
-    defs::ROI retval{};
-    for (size_t iModule = 0; iModule != modules.size(); ++iModule) {
-
-        defs::ROI moduleRoi = modules[iModule]->getRxROI();
-        if (moduleRoi.noRoi()) {
-            LOG(logDEBUG) << iModule << ": no roi";
-        } else {
-            // expand complete roi
-            if (moduleRoi.completeRoi()) {
-                moduleRoi.xmin = 0;
-                moduleRoi.xmax = numChansPerMod.x;
-                if (is2D) {
-                    moduleRoi.ymin = 0;
-                    moduleRoi.ymax = numChansPerMod.y;
-                }
-            }
-            LOG(logDEBUG) << iModule << ": " << moduleRoi;
-
-            // get roi at detector level
-            defs::xy pos = calculatePosition(iModule, geometry);
-            defs::ROI moduleFullRoi{};
-            moduleFullRoi.xmin = numChansPerMod.x * pos.x + moduleRoi.xmin;
-            moduleFullRoi.xmax = numChansPerMod.x * pos.x + moduleRoi.xmax;
-            if (is2D) {
-                moduleFullRoi.ymin = numChansPerMod.y * pos.y + moduleRoi.ymin;
-                moduleFullRoi.ymax = numChansPerMod.y * pos.y + moduleRoi.ymax;
-            }
-            LOG(logDEBUG) << iModule << ": (full roi)" << moduleFullRoi;
-
-            // get min and max
-            if (retval.xmin == -1 || moduleFullRoi.xmin < retval.xmin) {
-                LOG(logDEBUG) << iModule << ": xmin updated";
-                retval.xmin = moduleFullRoi.xmin;
-            }
-            if (retval.xmax == -1 || moduleFullRoi.xmax > retval.xmax) {
-                LOG(logDEBUG) << iModule << ": xmax updated";
-                retval.xmax = moduleFullRoi.xmax;
-            }
-            if (retval.ymin == -1 || moduleFullRoi.ymin < retval.ymin) {
-                LOG(logDEBUG) << iModule << ": ymin updated";
-                retval.ymin = moduleFullRoi.ymin;
-            }
-            if (retval.ymax == -1 || moduleFullRoi.ymax > retval.ymax) {
-                LOG(logDEBUG) << iModule << ": ymax updated";
-                retval.ymax = moduleFullRoi.ymax;
-            }
-        }
-        LOG(logDEBUG) << iModule << ": (retval): " << retval;
-    }
-    if (retval.ymin == -1) {
-        retval.ymin = 0;
-        retval.ymax = 0;
-    }
-    return retval;
+    return modules[0]->getRxROIMetadata();
 }
 
-void DetectorImpl::setRxROI(const defs::ROI arg) {
+void DetectorImpl::validateROIs(const std::vector<defs::ROI> &rois) {
+    for (size_t i = 0; i < rois.size(); ++i) {
+        const auto &roi = rois[i];
+
+        if (roi.noRoi()) {
+            throw RuntimeError("Invalid Roi of size 0. Roi: " + ToString(roi));
+        }
+        bool is2D = (modules[0]->getNumberOfChannels().y > 1 ? true : false);
+        if (roi.completeRoi()) {
+            std::ostringstream oss;
+            oss << "Did you mean the clear roi command (API: clearRxROI, cmd: "
+                   "rx_clearroi) Roi: [ -1, -1 ";
+            oss << (is2D ? ", -1, -1 ]?" : "]?");
+            throw RuntimeError(oss.str());
+        }
+        if (roi.xmin > roi.xmax || roi.ymin > roi.ymax) {
+            throw RuntimeError(
+                "Invalid Roi. xmin/ymin exceeds xmax/ymax. Roi: " +
+                ToString(roi));
+        }
+
+        if (roi.xmin < 0 || roi.xmax >= shm()->numberOfChannels.x) {
+            throw RuntimeError(
+                "ROI x-dimension outside detector bounds. Roi: " +
+                ToString(roi));
+        }
+
+        if (is2D) {
+            if (roi.ymin < 0 || roi.ymax >= shm()->numberOfChannels.y) {
+                throw RuntimeError(
+                    "ROI y-dimension outside detector bounds. Roi: " +
+                    ToString(roi));
+            }
+        } else {
+            if ((roi.ymin != -1 && roi.ymin != 0) ||
+                (roi.ymax != -1 && roi.ymax != 0)) {
+                throw RuntimeError(
+                    "Invalid Y range for 1D detector: should be -1. Roi: " +
+                    ToString(roi));
+            }
+        }
+
+        for (size_t j = i + 1; j < rois.size(); ++j) {
+            if (rois[i].overlap(rois[j])) {
+                throw RuntimeError("Invalid Overlapping Rois.");
+            }
+        }
+    }
+}
+
+defs::xy DetectorImpl::getPortGeometry() const {
+    defs::xy portGeometry(1, 1);
+    switch (shm()->detType) {
+    case EIGER:
+        portGeometry.x = modules[0]->getNumberofUDPInterfacesFromShm();
+        break;
+    case JUNGFRAU:
+    case MOENCH:
+        portGeometry.y = modules[0]->getNumberofUDPInterfacesFromShm();
+        break;
+    case GOTTHARD2: // 2nd port if used is for veto, not data
+    default:
+        break;
+    }
+    return portGeometry;
+}
+
+defs::xy DetectorImpl::calculatePosition(int moduleIndex) const {
+    int maxYMods = shm()->numberOfModules.y;
+    int y = (moduleIndex % maxYMods);
+    int x = (moduleIndex / maxYMods);
+    return defs::xy{x, y};
+}
+
+defs::ROI DetectorImpl::getModuleROI(int moduleIndex) const {
+    const defs::xy modSize = modules[0]->getNumberOfChannels();
+    // calculate module position (not taking into account port geometry)
+    const defs::xy modPos = calculatePosition(moduleIndex);
+    const int xmin = modSize.x * modPos.x;
+    const int xmax = xmin + modSize.x - 1;
+    int ymin = -1, ymax = -1;
+    if (modSize.y > 1) {
+        ymin = modSize.y * modPos.y;
+        ymax = ymin + modSize.y - 1;
+    }
+    return defs::ROI{xmin, xmax, ymin, ymax};
+}
+
+void DetectorImpl::convertGlobalRoiToPortLevel(
+    const defs::ROI &userRoi, const defs::ROI &moduleRoi,
+    std::vector<defs::ROI> &portRois) const {
+    const defs::xy modSize = modules[0]->getNumberOfChannels();
+    const defs::xy portGeometry = getPortGeometry();
+    const int numPortsPerModule = portGeometry.x * portGeometry.y;
+
+    if (numPortsPerModule > 2) {
+        throw RuntimeError("Only up to 2 ports per module supported.");
+    }
+    if (numPortsPerModule != (int)portRois.size()) {
+        throw RuntimeError("Number of port ROIs does not match number of ports "
+                           "in module. Expected: " +
+                           std::to_string(numPortsPerModule) +
+                           ", got: " + std::to_string(portRois.size()));
+    }
+
+    for (int port = 0; port != numPortsPerModule; ++port) {
+        defs::ROI portRoi = moduleRoi;
+        // Recalculate port ROI boundaries (split vertically or horizontally)
+        if (portGeometry.x == 2) {
+            int midX = (moduleRoi.xmin + moduleRoi.xmax) / 2;
+            if (port == 0)
+                portRoi.xmax = midX;
+            else
+                portRoi.xmin = midX + 1;
+        } else if (portGeometry.y == 2) {
+            int midY = (moduleRoi.ymin + moduleRoi.ymax) / 2;
+            if (port == 0)
+                portRoi.ymax = midY;
+            else
+                portRoi.ymin = midY + 1;
+        }
+
+        // find overlapped roi (port vs user roi)
+        if (userRoi.overlap(portRoi)) {
+            defs::ROI clipped{};
+            // Clip user ROI to port ROI
+            clipped.xmin = std::max(userRoi.xmin, portRoi.xmin) - portRoi.xmin;
+            clipped.xmax = std::min(userRoi.xmax, portRoi.xmax) - portRoi.xmin;
+            if (modSize.y > 1) {
+                clipped.ymin =
+                    std::max(userRoi.ymin, portRoi.ymin) - portRoi.ymin;
+                clipped.ymax =
+                    std::min(userRoi.ymax, portRoi.ymax) - portRoi.ymin;
+            }
+
+            // Check if port ROI already exists for this port (from another user
+            // roi)
+            if (!portRois[port].completeRoi() && !portRois[port].noRoi()) {
+                throw RuntimeError(
+                    "Multiple ROIs specified for the same port " +
+                    std::to_string(port) + " with ROI: " + ToString(userRoi));
+            }
+            portRois[port] = clipped;
+        }
+    }
+}
+
+void DetectorImpl::setRxROI(const std::vector<defs::ROI> &args) {
     if (shm()->detType == CHIPTESTBOARD ||
         shm()->detType == defs::XILINX_CHIPTESTBOARD) {
         throw RuntimeError("RxRoi not implemented for this Detector");
@@ -1802,118 +1817,41 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
     if (modules.size() == 0) {
         throw RuntimeError("No Modules added");
     }
-    if (arg.noRoi()) {
-        throw RuntimeError("Invalid Roi of size 0.");
-    }
-    if (arg.completeRoi()) {
-        throw RuntimeError("Did you mean the clear roi command (API: "
-                           "clearRxROI, cmd: rx_clearroi)?");
-    }
-    if (arg.xmin > arg.xmax || arg.ymin > arg.ymax) {
-        throw RuntimeError(
-            "Invalid Receiver Roi. xmin/ymin exceeds xmax/ymax.");
+
+    if (args.empty()) {
+        return clearRxROI();
     }
 
-    defs::xy numChansPerMod = modules[0]->getNumberOfChannels();
-    bool is2D = (numChansPerMod.y > 1 ? true : false);
-    defs::xy geometry = getPortGeometry();
+    validateROIs(args);
+    int nPortsPerModule =
+        Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
+            .tsquash("Inconsistent number of udp ports set up per module");
 
-    if (!is2D && ((arg.ymin != -1 && arg.ymin != 0) ||
-                  (arg.ymax != -1 && arg.ymax != 0))) {
-        throw RuntimeError(
-            "Invalid Receiver roi. Cannot set 2d roi for a 1d detector.");
-    }
+    for (size_t iModule = 0; iModule < modules.size(); ++iModule) {
+        auto moduleGlobalRoi = getModuleROI(iModule);
+        // at most 2 rois per module (for each port)
+        std::vector<defs::ROI> portRois(nPortsPerModule);
 
-    if (arg.xmin < 0 || arg.xmax >= shm()->numberOfChannels.x ||
-        (is2D && (arg.ymin < 0 || arg.ymax >= shm()->numberOfChannels.y))) {
-        throw RuntimeError("Invalid Receiver Roi. Outside detector range.");
-    }
-
-    for (size_t iModule = 0; iModule != modules.size(); ++iModule) {
-        // default init = complete roi
-        defs::ROI moduleRoi{};
-
-        // incomplete roi
-        if (!arg.completeRoi()) {
-            // multi module Gotthard2
-            if (shm()->detType == GOTTHARD2 && size() > 1) {
-                moduleRoi.xmin = arg.xmin / 2;
-                moduleRoi.xmax = arg.xmax / 2;
-                if (iModule == 0) {
-                    // all should be even
-                    if (arg.xmin % 2 != 0) {
-                        ++moduleRoi.xmin;
-                    }
-                } else if (iModule == 1) {
-                    // all should be odd
-                    if (arg.xmax % 2 == 0) {
-                        --moduleRoi.xmax;
-                    }
-                } else {
-                    throw RuntimeError("Cannot have more than 2 modules for a "
-                                       "Gotthard2 detector");
-                }
-            } else {
-                // get module limits
-                defs::xy pos = calculatePosition(iModule, geometry);
-                defs::ROI moduleFullRoi{};
-                moduleFullRoi.xmin = numChansPerMod.x * pos.x;
-                moduleFullRoi.xmax = numChansPerMod.x * (pos.x + 1) - 1;
-                if (is2D) {
-                    moduleFullRoi.ymin = numChansPerMod.y * pos.y;
-                    moduleFullRoi.ymax = numChansPerMod.y * (pos.y + 1) - 1;
-                }
-
-                // no roi
-                if (arg.xmin > moduleFullRoi.xmax ||
-                    arg.xmax < moduleFullRoi.xmin ||
-                    (is2D && (arg.ymin > moduleFullRoi.ymax ||
-                              arg.ymax < moduleFullRoi.ymin))) {
-                    moduleRoi.setNoRoi();
-                }
-                // incomplete module roi
-                else if (arg.xmin > moduleFullRoi.xmin ||
-                         arg.xmax < moduleFullRoi.xmax ||
-                         (is2D && (arg.ymin > moduleFullRoi.ymin ||
-                                   arg.ymax < moduleFullRoi.ymax))) {
-                    moduleRoi.xmin = (arg.xmin <= moduleFullRoi.xmin)
-                                         ? 0
-                                         : (arg.xmin % numChansPerMod.x);
-                    moduleRoi.xmax = (arg.xmax >= moduleFullRoi.xmax)
-                                         ? numChansPerMod.x - 1
-                                         : (arg.xmax % numChansPerMod.x);
-                    if (is2D) {
-                        moduleRoi.ymin = (arg.ymin <= moduleFullRoi.ymin)
-                                             ? 0
-                                             : (arg.ymin % numChansPerMod.y);
-                        moduleRoi.ymax = (arg.ymax >= moduleFullRoi.ymax)
-                                             ? numChansPerMod.y - 1
-                                             : (arg.ymax % numChansPerMod.y);
-                    }
-                }
+        // check overlap with module
+        for (const auto &arg : args) {
+            if (arg.overlap(moduleGlobalRoi)) {
+                convertGlobalRoiToPortLevel(arg, moduleGlobalRoi, portRois);
             }
         }
-        modules[iModule]->setRxROI(moduleRoi);
+        modules[iModule]->setRxROI(portRois);
     }
-    // updating shm rx_roi for gui purposes
-    shm()->rx_roi = arg;
-
     // metadata
-    if (arg.completeRoi()) {
-        modules[0]->setRxROIMetadata(defs::ROI(0, shm()->numberOfChannels.x - 1,
-                                               0,
-                                               shm()->numberOfChannels.y - 1));
-    } else {
-        modules[0]->setRxROIMetadata(arg);
-    }
+    modules[0]->setRxROIMetadata(args);
 }
 
 void DetectorImpl::clearRxROI() {
-    Parallel(&Module::setRxROI, {}, defs::ROI{});
-    shm()->rx_roi.xmin = -1;
-    shm()->rx_roi.ymin = -1;
-    shm()->rx_roi.xmax = -1;
-    shm()->rx_roi.ymax = -1;
+    int nPortsPerModule =
+        Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
+            .tsquash("Inconsistent number of udp ports set up per module");
+    for (size_t iModule = 0; iModule < modules.size(); ++iModule) {
+        modules[iModule]->setRxROI(std::vector<defs::ROI>(nPortsPerModule));
+    }
+    modules[0]->setRxROIMetadata(std::vector<defs::ROI>(1));
 }
 
 void DetectorImpl::getBadChannels(const std::string &fname,

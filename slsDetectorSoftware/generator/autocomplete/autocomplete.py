@@ -78,6 +78,9 @@ def get_literal(ifstmt):
         stringliteral = implicitCastExpr['inner'][0]['value'][1:-1]
 
     retstmt = get_object_by_kind(ifstmt['inner'], 'ReturnStmt')
+    if retstmt is None:
+        print(f"Error: No 'ReturnStmt' found in: {ifstmt['inner']}")
+        exit(1)
     declrefexpt = get_object_by_kind(retstmt['inner'], 'DeclRefExpr')
     enum_val = declrefexpt["referencedDecl"]["name"]
 

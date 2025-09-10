@@ -83,9 +83,7 @@ void qDrawPlot::SetupWidgetWindow() {
         fileSaveName = "Image";
     }
 
-    gotthard25 = ((detType == slsDetectorDefs::GOTTHARD2 ||
-                   detType == slsDetectorDefs::GOTTHARD) &&
-                  det->size() == 2);
+    gotthard25 = (detType == slsDetectorDefs::GOTTHARD2 && det->size() == 2);
 
     SetupPlots();
     SetDataCallBack(true);
@@ -610,7 +608,6 @@ void qDrawPlot::StartAcquisition() {
     currentFrame = 0;
     boxPlot->setTitle("Old Plot");
     det->clearAcquiringFlag(); // (from previous exit) or if running
-    isRxRoiDisplayed = false;
 
     // ensure data streaming in receiver (if plot enabled)
     if (isPlot) {
@@ -632,6 +629,34 @@ void qDrawPlot::StartAcquisition() {
     QtConcurrent::run(this, &qDrawPlot::AcquireThread);
 
     LOG(logDEBUG) << "End of Starting Acquisition in qDrawPlot";
+}
+
+void qDrawPlot::UpdateROI() {
+    try {
+        std::lock_guard<std::mutex> lock(mPlots);
+        roi = det->getRxROI();
+        roiDisplayInitialized = false;
+        // roi enabled
+        if (roi.size() > 1 || !roi[0].completeRoi()) {
+            hasRoi = true;
+            // update gap pixels
+            // hardcoded gap pixels because only for eiger and jungfrau
+            if (isGapPixels) {
+                for (auto &r : roi) {
+                    r.xmin += ((r.xmin / 1024) * 6 + (r.xmin / 256) * 2);
+                    r.xmax += ((r.xmax / 1024) * 6 + (r.xmax / 256) * 2);
+                    r.ymin += ((r.ymin / 512) * 34 + (r.ymin / 256) * 2);
+                    r.ymax += ((r.ymax / 512) * 34 + (r.ymax / 256) * 2);
+                }
+                LOG(logINFO)
+                    << "Roi recalculated with gap pixels: " << ToString(roi);
+            }
+        } else {
+            hasRoi = false;
+        }
+        LOG(logDEBUG) << "Roi: " << ToString(roi);
+    }
+    CATCH_DISPLAY("Could not get reciver ROI.", "qDrawPlot::UpdateRoi")
 }
 
 void qDrawPlot::AcquireThread() {
@@ -711,7 +736,6 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
                   << "  \t dynamic range: " << data->dynamicRange << std::endl
                   << "  \t file index: " << data->fileIndex << std::endl
                   << "  \t complete image: " << data->completeImage << std::endl
-                  << "  \t rx Roi: " << ToString(data->rxRoi) << std::endl
                   << "  ]";
 
     progress = data->progressIndex;
@@ -719,22 +743,6 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
     currentFrame = frameIndex;
     LOG(logDEBUG) << "[ Progress:" << progress << "%, Frame:" << currentFrame
                   << " ]";
-    if (!isRxRoiDisplayed) {
-        rxRoi.xmin = data->rxRoi[0];
-        rxRoi.xmax = data->rxRoi[1];
-        rxRoi.ymin = data->rxRoi[2];
-        rxRoi.ymax = data->rxRoi[3];
-        // only for 2d anyway
-        if (isGapPixels) {
-            rxRoi.xmin += ((rxRoi.xmin / 1024) * 6 + (rxRoi.xmin / 256) * 2);
-            rxRoi.xmax += ((rxRoi.xmax / 1024) * 6 + (rxRoi.xmax / 256) * 2);
-            rxRoi.ymin += ((rxRoi.ymin / 512) * 34 + (rxRoi.ymin / 256) * 2);
-            rxRoi.ymax += ((rxRoi.ymax / 512) * 34 + (rxRoi.ymax / 256) * 2);
-            LOG(logINFO) << "Rx_roi recalculated with gap pixels: "
-                         << ToString(rxRoi);
-        }
-        LOG(logDEBUG) << "Rx_roi: " << ToString(rxRoi);
-    }
 
     // 1d check if npixelX has changed (m3 for different counters enabled)
     if (is1d && static_cast<int>(nPixelsX) != data->nx) {
@@ -973,30 +981,27 @@ void qDrawPlot::Update1dPlot() {
         xyRangeChanged = false;
     }
     plot1d->DisableZoom(disableZoom);
-    if (!isRxRoiDisplayed) {
-        isRxRoiDisplayed = true;
-        if (rxRoi.completeRoi()) {
-            plot1d->DisableRoiBox();
+    if (!roiDisplayInitialized) {
+        roiDisplayInitialized = true;
+        if (!hasRoi) {
+            plot1d->DisableRoiBoxes();
             if (isGainDataExtracted) {
-                gainplot1d->DisableRoiBox();
+                gainplot1d->DisableRoiBoxes();
             }
             lblRxRoiEnabled->hide();
         } else {
-            plot1d->EnableRoiBox(std::array<int, 4>{
-                rxRoi.xmin, rxRoi.xmax, (int)plot1d->GetYMinimum(),
-                (int)plot1d->GetYMaximum()});
+            plot1d->EnableRoiBoxes(roi, (int)plot1d->GetYMinimum(),
+                                   (int)plot1d->GetYMaximum());
             if (isGainDataExtracted) {
-                gainplot1d->EnableRoiBox(
-                    std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, 0, 3});
+                gainplot1d->EnableRoiBoxes(roi, 0, 3);
             }
             lblRxRoiEnabled->show();
         }
     }
     // ymin and ymax could change (so replot roi every time)
-    if (!rxRoi.completeRoi()) {
-        plot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax,
-                                                (int)plot1d->GetYMinimum(),
-                                                (int)plot1d->GetYMaximum()});
+    if (hasRoi) {
+        plot1d->EnableRoiBoxes(roi, (int)plot1d->GetYMinimum(),
+                               (int)plot1d->GetYMaximum());
     }
 }
 
@@ -1027,18 +1032,18 @@ void qDrawPlot::Update2dPlot() {
     }
     plot2d->DisableZoom(disableZoom);
     plot2d->SetZRange(isZRange[0], isZRange[1], zRange[0], zRange[1]);
-    if (!isRxRoiDisplayed) {
-        isRxRoiDisplayed = true;
-        if (rxRoi.completeRoi()) {
-            plot2d->DisableRoiBox();
+    if (!roiDisplayInitialized) {
+        roiDisplayInitialized = true;
+        if (!hasRoi) {
+            plot2d->DisableRoiBoxes();
             if (isGainDataExtracted) {
-                gainplot2d->DisableRoiBox();
+                gainplot2d->DisableRoiBoxes();
             }
             lblRxRoiEnabled->hide();
         } else {
-            plot2d->EnableRoiBox(rxRoi.getIntArray());
+            plot2d->EnableRoiBoxes(roi);
             if (isGainDataExtracted) {
-                gainplot2d->EnableRoiBox(rxRoi.getIntArray());
+                gainplot2d->EnableRoiBoxes(roi);
             }
             lblRxRoiEnabled->show();
         }

@@ -21,6 +21,7 @@ from utils_for_test import (
     runProcessWithLogFile,
     startDetectorVirtualServer,
     loadConfig,
+    loadBasicSettings,
     ParseArguments
 )
 
@@ -56,14 +57,15 @@ def startCmdTestsForAll(args, fp):
         try:
             num_mods = 2 if server == 'eiger' else 1
             fname = CMD_TEST_LOG_PREFIX_FNAME + server + '.txt'
-            cmd = ['tests', '--abort', '[.cmdcall]', '-s']
+            cmd = ['tests', '--abort', args.markers, '-s']
 
             Log(LogLevel.INFOBLUE, f'Starting Cmd Tests for {server}')
             cleanup(fp)
             startDetectorVirtualServer(name=server, num_mods=num_mods, fp=fp)
             startReceiver(num_mods, fp)
-            loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, fp=fp, num_mods=num_mods)
-            runProcessWithLogFile('Cmd Tests for ' + server, cmd, fp, fname)
+            d = loadConfig(name=server, rx_hostname=args.rx_hostname, settingsdir=args.settingspath, fp=fp, num_mods=num_mods)
+            loadBasicSettings(name=server, d=d, fp=fp)
+            runProcessWithLogFile('Cmd Tests (' + args.markers + ') for ' + server, cmd, fp, fname)
         except Exception as e:
             raise RuntimeException(f'Cmd Tests failed for {server}.') from e
 
@@ -71,7 +73,7 @@ def startCmdTestsForAll(args, fp):
 
 
 if __name__ == '__main__':
-    args = ParseArguments('Automated tests with the virtual detector servers')
+    args = ParseArguments(description='Automated tests with the virtual detector servers', default_num_mods=1, markers=True, general_tests_option=True)
     if args.num_mods > 1:
         raise RuntimeException(f'Cannot support multiple modules at the moment (except Eiger).')
 
@@ -79,7 +81,8 @@ if __name__ == '__main__':
 
     with open(MAIN_LOG_FNAME, 'w') as fp:  
         try:
-            startGeneralTests(fp)
+            if args.general_tests:
+                startGeneralTests(fp)
             startCmdTestsForAll(args, fp)
             cleanup(fp)
         except Exception as e:

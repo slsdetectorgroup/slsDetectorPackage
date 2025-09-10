@@ -93,35 +93,19 @@ std::string GetHelpDac(std::string dac) {
     }
     if (dac == "vref_ds") {
         return std::string("[dac or mV value][(optional unit) mV] "
-                           "\n\t[Gotthard][Jungfrau] Dac for ??");
-    }
-    if (dac == "vcascn_pb") {
-        return std::string(
-            "[dac or mV value][(optional unit) mV] \n\t[Gotthard] Dac for ??");
-    }
-    if (dac == "vcascp_pb") {
-        return std::string(
-            "[dac or mV value][(optional unit) mV] \n\t[Gotthard] Dac for ??");
+                           "\n\t[Jungfrau] Dac for ??");
     }
     if (dac == "vout_cm") {
         return std::string("[dac or mV value][(optional unit) mV] "
-                           "\n\t[Gotthard] Dac for ??\n\t[Moench] Dac for 5");
-    }
-    if (dac == "vcasc_out") {
-        return std::string(
-            "[dac or mV value][(optional unit) mV] \n\t[Gotthard] Dac for ??");
+                           "\n\t[Moench] Dac for 5");
     }
     if (dac == "vin_cm") {
         return std::string("[dac or mV value][(optional unit) mV] "
-                           "\n\t[Gotthard] Dac for ??\n\t[Moench] Dac for 2");
+                           "\n\t[Moench] Dac for 2");
     }
     if (dac == "vref_comp") {
         return std::string("[dac or mV value][(optional unit) mV] "
-                           "\n\t[Gotthard][Jungfrau] Dac for ??");
-    }
-    if (dac == "ib_test_c") {
-        return std::string(
-            "[dac or mV value][(optional unit) mV] \n\t[Gotthard] Dac for ??");
+                           "\n\t[Jungfrau] Dac for ??");
     }
     if (dac == "vrshaper_n") {
         return std::string(

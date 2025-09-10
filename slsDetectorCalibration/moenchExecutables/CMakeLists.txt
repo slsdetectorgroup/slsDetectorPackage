@@ -48,8 +48,9 @@ add_executable(moench03Interpolation moench03Interpolation.cpp)
 #no compile defs
 list(APPEND MOENCH_EXECUTABLES moench03Interpolation)
 
-add_executable(moench03NoInterpolation moench03NoInterpolation.cpp)
+add_executable(moench03NoInterpolation moench03Interpolation.cpp)
 #no compile defs
+target_compile_definitions(moench03NoInterpolation PRIVATE  NOINTERPOLATION)
 list(APPEND MOENCH_EXECUTABLES moench03NoInterpolation)
 
 

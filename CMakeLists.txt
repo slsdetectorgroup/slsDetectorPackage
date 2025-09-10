@@ -21,6 +21,7 @@ if (${CMAKE_VERSION} VERSION_GREATER "3.24")
 endif()
 include(cmake/project_version.cmake)
 include(cmake/SlsAddFlag.cmake)
+include(cmake/helpers.cmake)
 
 
 
@@ -44,6 +45,10 @@ endif()
 # Patch is applied in the FetchContent_Declare
 set(SLS_LIBZMQ_VERSION "4.3.4")
 
+find_program(PATCH_EXECUTABLE patch)
+if(NOT PATCH_EXECUTABLE)
+    message(FATAL_ERROR "The 'patch' tool is required for patching lib zeromq. Please install it.")
+endif()
 
 if(SLS_FETCH_ZMQ_FROM_GITHUB)
     # Opt in to pull down a zmq version from github instead of
@@ -189,11 +194,9 @@ find_package(ClangFormat)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "No build type selected, default to Release")
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (default Release)" FORCE)
-endif()
-
+default_build_type("Release")
+set_std_fs_lib()
+message(STATUS "Extra linking to fs lib:${STD_FS_LIB}")
 
 #Enable LTO if available
 include(CheckIPOSupported)
@@ -216,7 +219,7 @@ endif()
 # to control options for the libraries
 if(NOT TARGET slsProjectOptions)
     add_library(slsProjectOptions INTERFACE)
-   target_compile_features(slsProjectOptions INTERFACE cxx_std_11)
+   target_compile_features(slsProjectOptions INTERFACE cxx_std_17)
 endif()
 
 if (NOT TARGET slsProjectWarnings)
@@ -329,7 +332,8 @@ if (SLS_USE_INTEGRATION_TESTS)
 endif (SLS_USE_INTEGRATION_TESTS)
 
 if (SLS_USE_PYTHON)
-    find_package (Python 3.8 COMPONENTS Interpreter Development)
+    find_package (Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)
+    set(PYBIND11_FINDPYTHON ON) # Needed for RH8
     if(SLS_FETCH_PYBIND11_FROM_GITHUB)
         FetchContent_Declare(
             pybind11

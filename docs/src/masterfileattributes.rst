@@ -288,56 +288,6 @@ Moench
    | Frame Header Format   | Expected frame header format for the data files |
    +-----------------------+-------------------------------------------------+
 
-Gotthard I
-^^^^^^^^^^^
-
-   +-----------------------+-------------------------------------------------+
-   | **Key**               | **Description**                                 |
-   +-----------------------+-------------------------------------------------+
-   | Version               | Version of the master file                      |
-   |                       | Current value:8.0                               |
-   +-----------------------+-------------------------------------------------+
-   | Timestamp             | Timestamp of creation of master file            |
-   +-----------------------+-------------------------------------------------+
-   | Detector Type         | Detector type                                   |
-   +-----------------------+-------------------------------------------------+
-   | Timing Mode           | Timing Mode                                     |
-   +-----------------------+-------------------------------------------------+
-   | Geometry              | Number of UDP ports in x and y dimension for    |
-   |                       | complete detector                               |
-   +-----------------------+-------------------------------------------------+
-   | Image Size in bytes   | Image size in bytes per UDP port                |
-   +-----------------------+-------------------------------------------------+
-   | Pixels                | Number of pixels in x and y dimension           |
-   |                       | per UDP port                                    |
-   +-----------------------+-------------------------------------------------+
-   | Max Frames Per File   | Maximum frames per file                         |
-   +-----------------------+-------------------------------------------------+
-   | Frame Discard Policy  | Receiever Frame discard policy                  |
-   |                       | for partial frames                              |
-   +-----------------------+-------------------------------------------------+
-   | Frame Padding         | Receiver Frame padding enable                   |
-   |                       | for partial frames                              |
-   +-----------------------+-------------------------------------------------+
-   | Scan Parameters       | Scanning mode on detector                       |
-   +-----------------------+-------------------------------------------------+
-   | Total Frames          | Total number of frames and triggers expected    |
-   +-----------------------+-------------------------------------------------+
-   | Receiver Roi          | Receiver ROI in file including xmax and ymax    |
-   +-----------------------+-------------------------------------------------+
-   | Exptime               | Exposure time                                   |
-   +-----------------------+-------------------------------------------------+
-   | Period                | Period between frames                           |
-   +-----------------------+-------------------------------------------------+
-   | Detector Roi          | Roi in detector restricted to an ADC.           |
-   |                       | Includes xmax                                   |
-   +-----------------------+-------------------------------------------------+
-   | Burst Mode            | Burst mode of detector                          |
-   +-----------------------+-------------------------------------------------+
-   | Frames in File        | Number of frames written to file by Receiver 0  |
-   +-----------------------+-------------------------------------------------+
-   | Frame Header Format   | Expected frame header format for the data files |
-   +-----------------------+-------------------------------------------------+
 
 Chip Test Board
 ^^^^^^^^^^^^^^^
@@ -394,6 +344,9 @@ Chip Test Board
    | Digital Samples       | Number of digital samples                       |
    +-----------------------+-------------------------------------------------+
    | Dbit Offset           | Digital offset of valid data in bytes           |
+   +-----------------------+-------------------------------------------------+
+   | Dbit Reorder          | Reorder such that it groups each signal (0-63)  |
+   |                       | from all the different samples together         |                 
    +-----------------------+-------------------------------------------------+
    | Dbit Bitset           | Digital 64 bit mask of bits enabled in receiver |
    +-----------------------+-------------------------------------------------+

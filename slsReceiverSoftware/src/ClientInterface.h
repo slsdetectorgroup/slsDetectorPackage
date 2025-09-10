@@ -34,9 +34,8 @@ class ClientInterface : private virtual slsDetectorDefs {
 
     //***callback functions***
     /** params: file path, file name, file index, image size */
-    void registerCallBackStartAcquisition(int (*func)(const startCallbackHeader,
-                                                      void *),
-                                          void *arg);
+    void registerCallBackStartAcquisition(
+        void (*func)(const startCallbackHeader, void *), void *arg);
 
     /** params: total frames caught */
     void registerCallBackAcquisitionFinished(
@@ -64,7 +63,6 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_version(ServerInterface &socket);
     int setup_receiver(ServerInterface &socket);
     void setDetectorType(detectorType arg);
-    int set_detector_roi(ServerInterface &socket);
     int set_num_frames(ServerInterface &socket);
     int set_num_triggers(ServerInterface &socket);
     int set_num_bursts(ServerInterface &socket);
@@ -166,6 +164,10 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_transceiver_mask(ServerInterface &socket);
     int set_row(ServerInterface &socket);
     int set_column(ServerInterface &socket);
+    int get_dbit_reorder(ServerInterface &socket);
+    int set_dbit_reorder(ServerInterface &socket);
+    int get_roi_metadata(ServerInterface &socket);
+    int set_readout_speed(ServerInterface &socket);
 
     Implementation *impl() {
         if (receiver != nullptr) {
@@ -180,8 +182,8 @@ class ClientInterface : private virtual slsDetectorDefs {
 
     //***callback parameters***
 
-    int (*startAcquisitionCallBack)(const startCallbackHeader,
-                                    void *) = nullptr;
+    void (*startAcquisitionCallBack)(const startCallbackHeader,
+                                     void *) = nullptr;
     void *pStartAcquisition{nullptr};
     void (*acquisitionFinishedCallBack)(const endCallbackHeader,
                                         void *) = nullptr;

@@ -30,27 +30,15 @@
 namespace sls {
 
 // creating new shm
-Module::Module(detectorType type, int det_id, int module_index, bool verify)
+Module::Module(detectorType type, int det_id, int module_index)
     : moduleIndex(module_index), shm(det_id, module_index) {
-
-    // ensure shared memory was not created before
-    if (shm.exists()) {
-        LOG(logWARNING) << "This shared memory should have been "
-                           "deleted before! "
-                        << shm.getName() << ". Freeing it again";
-        shm.removeSharedMemory();
-    }
-
-    initSharedMemory(type, det_id, verify);
+    createSharedMemory(type, det_id);
 }
 
 // opening existing shm
-Module::Module(int det_id, int module_index, bool verify)
+Module::Module(int det_id, int module_index)
     : moduleIndex(module_index), shm(det_id, module_index) {
-
-    // getDetectorType From shm will check if existing
-    detectorType type = getDetectorTypeFromShm(det_id, verify);
-    initSharedMemory(type, det_id, verify);
+    openSharedMemory(det_id);
 }
 
 bool Module::isFixedPatternSharedMemoryCompatible() const {
@@ -634,10 +622,22 @@ void Module::setNumberOfTriggers(int64_t value) {
 }
 
 int64_t Module::getExptime(int gateIndex) const {
+    if (shm()->detType == CHIPTESTBOARD ||
+        shm()->detType == XILINX_CHIPTESTBOARD) {
+        LOG(logWARNING)
+            << "Exposure time is deprecated and will be removed for this "
+               "detector. Please migrate to patwaittime.";
+    }
     return sendToDetector<int64_t>(F_GET_EXPTIME, gateIndex);
 }
 
 void Module::setExptime(int gateIndex, int64_t value) {
+    if (shm()->detType == CHIPTESTBOARD ||
+        shm()->detType == XILINX_CHIPTESTBOARD) {
+        LOG(logWARNING)
+            << "Exposure time is deprecated and will be removed for this "
+               "detector. Please migrate to patwaittime.";
+    }
     int64_t prevVal = value;
     if (shm()->detType == EIGER) {
         prevVal = getExptime(-1);
@@ -645,9 +645,16 @@ void Module::setExptime(int gateIndex, int64_t value) {
     int64_t args[]{static_cast<int64_t>(gateIndex), value};
     sendToDetector(F_SET_EXPTIME, args, nullptr);
     if (shm()->useReceiverFlag) {
+        // get exact value due to clk
+        if (shm()->detType == MYTHEN3 && gateIndex == -1) {
+            value = getExptime(0); // m3 does not support -1
+        } else {
+            value = getExptime(gateIndex); // others only support -1
+        }
+        args[1] = value;
         sendToReceiver(F_RECEIVER_SET_EXPTIME, args, nullptr);
     }
-    if (prevVal != value) {
+    if (shm()->detType == EIGER && prevVal != value) {
         updateRateCorrection();
     }
 }
@@ -659,6 +666,7 @@ int64_t Module::getPeriod() const {
 void Module::setPeriod(int64_t value) {
     sendToDetector(F_SET_PERIOD, value, nullptr);
     if (shm()->useReceiverFlag) {
+        value = getPeriod(); // get exact value due to clk
         sendToReceiver(F_RECEIVER_SET_PERIOD, value, nullptr);
     }
 }
@@ -737,6 +745,9 @@ slsDetectorDefs::speedLevel Module::getReadoutSpeed() const {
 
 void Module::setReadoutSpeed(speedLevel value) {
     sendToDetector(F_SET_READOUT_SPEED, value, nullptr);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_SET_RECEIVER_READOUT_SPEED, value, nullptr);
+    }
 }
 
 int Module::getClockDivider(int clkIndex) const {
@@ -905,13 +916,8 @@ void Module::startReceiver() {
 }
 
 void Module::stopReceiver() {
-    auto rxStatusPrior = getReceiverStatus();
     sendToReceiver(F_STOP_RECEIVER, static_cast<int>(shm()->stoppedFlag),
                    nullptr);
-
-    if (rxStatusPrior == IDLE && getReceiverStreaming()) {
-        restreamStopFromReceiver();
-    }
 }
 
 void Module::startAcquisition() {
@@ -925,8 +931,26 @@ void Module::startReadout() {
 }
 
 void Module::stopAcquisition() {
+
+    // get det status before stopping acq
+    runStatus detStatus = ERROR;
+    try {
+        detStatus = getRunStatus();
+    } catch (...) {
+    }
+
     sendToDetectorStop(F_STOP_ACQUISITION);
     shm()->stoppedFlag = true;
+
+    // restream dummy header, if rxr streaming and det idle before stop
+    try {
+        if (shm()->useReceiverFlag && getReceiverStreaming()) {
+            if (detStatus == IDLE && getReceiverStatus() == IDLE) {
+                restreamStopFromReceiver();
+            }
+        }
+    } catch (...) {
+    }
 }
 
 void Module::restreamStopFromReceiver() {
@@ -1496,17 +1520,94 @@ void Module::setRxArping(bool enable) {
     sendToReceiver(F_SET_RECEIVER_ARPING, static_cast<int>(enable), nullptr);
 }
 
-defs::ROI Module::getRxROI() const {
-    return sendToReceiver<slsDetectorDefs::ROI>(F_RECEIVER_GET_RECEIVER_ROI);
+std::vector<defs::ROI> Module::getRxROI() const {
+    LOG(logDEBUG1) << "Getting receiver ROI for Module " << moduleIndex;
+    // check number of ports
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("No receiver to get ROI.");
+    }
+    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    client.Send(F_RECEIVER_GET_RECEIVER_ROI);
+    client.setFnum(F_RECEIVER_GET_RECEIVER_ROI);
+    auto nPorts = client.Receive<int>();
+    std::vector<ROI> retval(nPorts);
+    if (nPorts > 0)
+        client.Receive(retval);
+    if (nPorts != shm()->numUDPInterfaces) {
+        throw RuntimeError(
+            "Invalid number of rois: " + std::to_string(nPorts) +
+            ". Expected: " + std::to_string(shm()->numUDPInterfaces));
+    }
+    LOG(logDEBUG1) << "ROI of Receiver" << moduleIndex << ": "
+                   << ToString(retval);
+    return retval;
 }
 
-void Module::setRxROI(const slsDetectorDefs::ROI arg) {
-    LOG(logDEBUG) << moduleIndex << ": " << arg;
-    sendToReceiver(F_RECEIVER_SET_RECEIVER_ROI, arg, nullptr);
+void Module::setRxROI(const std::vector<defs::ROI> &portRois) {
+    LOG(logDEBUG) << "Sending to receiver " << moduleIndex
+                  << " [roi: " << ToString(portRois) << ']';
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("No receiver to set ROI.");
+    }
+    if ((int)portRois.size() != shm()->numUDPInterfaces) {
+        throw RuntimeError(
+            "Invalid number of ROIs: " + std::to_string(portRois.size()) +
+            ". Expected: " + std::to_string(shm()->numUDPInterfaces));
+    }
+    // check number of ports
+    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    client.Send(F_RECEIVER_SET_RECEIVER_ROI);
+    client.setFnum(F_RECEIVER_SET_RECEIVER_ROI);
+    int size = static_cast<int>(portRois.size());
+    client.Send(size);
+    if (size > 0)
+        client.Send(portRois);
+    if (client.Receive<int>() == FAIL) {
+        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
+                            " returned error: " + client.readErrorMessage());
+    }
 }
 
-void Module::setRxROIMetadata(const slsDetectorDefs::ROI arg) {
-    sendToReceiver(F_RECEIVER_SET_RECEIVER_ROI_METADATA, arg, nullptr);
+std::vector<slsDetectorDefs::ROI> Module::getRxROIMetadata() const {
+    LOG(logDEBUG1) << "Getting receiver ROI metadata for Module "
+                   << moduleIndex;
+    // check number of ports
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("No receiver to get ROI metadata.");
+    }
+    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    client.Send(F_RECEIVER_GET_ROI_METADATA);
+    client.setFnum(F_RECEIVER_GET_ROI_METADATA);
+    auto size = client.Receive<int>();
+    std::vector<slsDetectorDefs::ROI> retval(size);
+    if (size > 0)
+        client.Receive(retval);
+    if (size == 0) {
+        throw RuntimeError("Invalid number of ROI metadata: " +
+                           std::to_string(size) + ". Min: 1.");
+    }
+    LOG(logDEBUG1) << "ROI metadata of Receiver: " << ToString(retval);
+    return retval;
+}
+
+void Module::setRxROIMetadata(const std::vector<slsDetectorDefs::ROI> &args) {
+    LOG(logDEBUG) << "Sending to receiver " << moduleIndex
+                  << " [roi metadata: " << ToString(args) << ']';
+    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    receiver.Send(F_RECEIVER_SET_RECEIVER_ROI_METADATA);
+    receiver.setFnum(F_RECEIVER_SET_RECEIVER_ROI_METADATA);
+    int size = static_cast<int>(args.size());
+    receiver.Send(size);
+    if (size > 0)
+        receiver.Send(args);
+    if (size < 1) {
+        throw RuntimeError("Invalid number of ROI metadata: " +
+                           std::to_string(size) + ". Min: 1.");
+    }
+    if (receiver.Receive<int>() == FAIL) {
+        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
+                            " returned error: " + receiver.readErrorMessage());
+    }
 }
 
 // File
@@ -1675,6 +1776,7 @@ void Module::setSubExptime(int64_t value) {
     }
     sendToDetector(F_SET_SUB_EXPTIME, value, nullptr);
     if (shm()->useReceiverFlag) {
+        value = getSubExptime(); // get exact value due to clk
         sendToReceiver(F_RECEIVER_SET_SUB_EXPTIME, value, nullptr);
     }
     if (prevVal != value) {
@@ -1689,6 +1791,7 @@ int64_t Module::getSubDeadTime() const {
 void Module::setSubDeadTime(int64_t value) {
     sendToDetector(F_SET_SUB_DEADTIME, value, nullptr);
     if (shm()->useReceiverFlag) {
+        value = getSubDeadTime(); // get exact value due to clk
         sendToReceiver(F_RECEIVER_SET_SUB_DEADTIME, value, nullptr);
     }
 }
@@ -1942,29 +2045,6 @@ void Module::setCollectionMode(const defs::collectionMode value) {
     sendToDetector(F_SET_COLLECTION_MODE, static_cast<int>(value), nullptr);
 }
 
-// Gotthard Specific
-
-slsDetectorDefs::ROI Module::getROI() const {
-    return sendToDetector<slsDetectorDefs::ROI>(F_GET_ROI);
-}
-
-void Module::setROI(slsDetectorDefs::ROI arg) {
-    if (arg.xmin < 0 || arg.xmax >= getNumberOfChannels().x) {
-        arg.xmin = -1;
-        arg.xmax = -1;
-    }
-    sendToDetector(F_SET_ROI, arg, nullptr);
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_RECEIVER_SET_DETECTOR_ROI, arg, nullptr);
-    }
-}
-
-void Module::clearROI() { setROI(slsDetectorDefs::ROI{}); }
-
-int64_t Module::getExptimeLeft() const {
-    return sendToDetectorStop<int64_t>(F_GET_EXPTIME_LEFT);
-}
-
 // Gotthard2 Specific
 
 int64_t Module::getNumberOfBursts() const {
@@ -2209,6 +2289,8 @@ void Module::setBurstMode(slsDetectorDefs::burstMode value) {
     sendToDetector(F_SET_BURST_MODE, value, nullptr);
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_BURST_MODE, value, nullptr);
+        // changing burst mode may change exptime due to clk change
+        setExptime(-1, getExptime(-1)); // update exact exptime in receiver
     }
 }
 
@@ -2300,6 +2382,9 @@ void Module::setGateDelay(int gateIndex, int64_t value) {
     int64_t args[]{static_cast<int64_t>(gateIndex), value};
     sendToDetector(F_SET_GATE_DELAY, args, nullptr);
     if (shm()->useReceiverFlag) {
+        // get exact value due to clk
+        args[1] =
+            getGateDelay(gateIndex == -1 ? 0 : gateIndex); // m3 doesnt allow -1
         sendToReceiver(F_SET_RECEIVER_GATE_DELAY, args, nullptr);
     }
 }
@@ -2507,6 +2592,15 @@ void Module::setReceiverDbitOffset(int value) {
     sendToReceiver(F_SET_RECEIVER_DBIT_OFFSET, value, nullptr);
 }
 
+bool Module::getReceiverDbitReorder() const {
+    return sendToReceiver<int>(F_GET_RECEIVER_DBIT_REORDER);
+}
+
+void Module::setReceiverDbitReorder(bool reorder) {
+    sendToReceiver(F_SET_RECEIVER_DBIT_REORDER, static_cast<int>(reorder),
+                   nullptr);
+}
+
 void Module::setDigitalIODelay(uint64_t pinMask, int delay) {
     uint64_t args[]{pinMask, static_cast<uint64_t>(delay)};
     sendToDetector(F_DIGITAL_IO_DELAY, args, nullptr);
@@ -2608,15 +2702,23 @@ void Module::setPatternWaitAddr(int level, int addr) {
     sendToDetector<int>(F_SET_PATTERN_WAIT_ADDR, args);
 }
 
-uint64_t Module::getPatternWaitTime(int level) const {
+uint64_t Module::getPatternWaitClocks(int level) const {
     uint64_t args[]{static_cast<uint64_t>(level),
                     static_cast<uint64_t>(GET_FLAG)};
-    return sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_TIME, args);
+    return sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_CLOCKS, args);
 }
 
-void Module::setPatternWaitTime(int level, uint64_t t) {
+void Module::setPatternWaitClocks(int level, uint64_t t) {
     uint64_t args[]{static_cast<uint64_t>(level), t};
-    sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_TIME, args);
+    sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_CLOCKS, args);
+}
+
+uint64_t Module::getPatternWaitInterval(int level) const {
+    return sendToDetector<uint64_t>(F_GET_PATTERN_WAIT_INTERVAL, level);
+}
+void Module::setPatternWaitInterval(int level, uint64_t t) {
+    uint64_t args[]{static_cast<uint64_t>(level), t};
+    sendToDetector(F_SET_PATTERN_WAIT_INTERVAL, args, nullptr);
 }
 
 uint64_t Module::getPatternMask() const {
@@ -3289,42 +3391,38 @@ Ret Module::sendToReceiver(int fnum, const Arg &args) {
     return static_cast<const Module &>(*this).sendToReceiver<Ret>(fnum, args);
 }
 
-slsDetectorDefs::detectorType Module::getDetectorTypeFromShm(int det_id,
-                                                             bool verify) {
+void Module::createSharedMemory(detectorType type, int det_id) {
+    shm = SharedMemory<sharedModule>(det_id, moduleIndex);
+
+    // ensure shared memory was not created before
+    if (shm.exists()) {
+        LOG(logWARNING)
+            << "This shared memory " + shm.getName() +
+                   " should have been deleted before! Freeing it to continue.";
+        shm.removeSharedMemory();
+    }
+    shm.createSharedMemory();
+    initializeModuleStructure(type);
+}
+
+void Module::openSharedMemory(int det_id) {
+    shm = SharedMemory<sharedModule>(det_id, moduleIndex);
+
     if (!shm.exists()) {
         throw SharedMemoryError("Shared memory " + shm.getName() +
                                 " does not exist.\n Corrupted Multi Shared "
                                 "memory. Please free shared memory.");
     }
 
-    shm.openSharedMemory(verify);
-    if (verify && shm()->shmversion != MODULE_SHMVERSION) {
+    shm.openSharedMemory(true);
+    if (shm()->shmversion != MODULE_SHMVERSION) {
         std::ostringstream ss;
-        ss << "Single shared memory (" << det_id << "-" << moduleIndex
-           << ":)version mismatch (expected 0x" << std::hex << MODULE_SHMVERSION
-           << " but got 0x" << shm()->shmversion << ")" << std::dec
-           << ". Clear Shared memory to continue.";
+        ss << "Module shared memory (" << det_id << "-" << moduleIndex
+           << ":) version mismatch (expected 0x" << std::hex
+           << MODULE_SHMVERSION << " but got 0x" << shm()->shmversion << ")"
+           << std::dec << ". Clear Shared memory to continue.";
         shm.unmapSharedMemory();
         throw SharedMemoryError(ss.str());
-    }
-    return shm()->detType;
-}
-
-void Module::initSharedMemory(detectorType type, int det_id, bool verify) {
-    shm = SharedMemory<sharedModule>(det_id, moduleIndex);
-    if (!shm.exists()) {
-        shm.createSharedMemory();
-        initializeModuleStructure(type);
-    } else {
-        shm.openSharedMemory(verify);
-        if (verify && shm()->shmversion != MODULE_SHMVERSION) {
-            std::ostringstream ss;
-            ss << "Single shared memory (" << det_id << "-" << moduleIndex
-               << ":) version mismatch (expected 0x" << std::hex
-               << MODULE_SHMVERSION << " but got 0x" << shm()->shmversion << ")"
-               << std::dec << ". Clear Shared memory to continue.";
-            throw SharedMemoryError(ss.str());
-        }
     }
 }
 
@@ -3407,8 +3505,6 @@ const std::string Module::getDetectorAPI() const {
         return APIEIGER;
     case JUNGFRAU:
         return APIJUNGFRAU;
-    case GOTTHARD:
-        return APIGOTTHARD;
     case CHIPTESTBOARD:
         return APICTB;
     case MOENCH:

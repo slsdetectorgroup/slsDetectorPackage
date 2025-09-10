@@ -4,7 +4,7 @@
 #include "RegisterDefs.h"
 #include "sls/sls_detector_defs.h"
 
-#define REQRD_FRMWRE_VRSN (0x230710)
+#define REQRD_FRMWRE_VRSN (0x250203)
 #define KERNEL_DATE_VRSN  "Wed Nov 29 17:32:14 CET 2023"
 
 #define LINKED_SERVER_NAME "xilinx_ctbDetectorServer"
@@ -39,6 +39,9 @@
 #define DAC_POWERDOWN_DRIVER_FILE_NAME CURRENT_BOARD_LINKS_FOLDER "/ao%d_pd"
 #define SLOWADC_DRIVER_FILE_NAME       CURRENT_BOARD_LINKS_FOLDER "/ai%d"
 #define TEMP_DRIVER_FILE_NAME          DEVICE_TREE_DST "0/in_temp7_input"
+
+#define CONFIG_CHIP_FILE "chip_config_xilinx.txt"
+#define RESET_CHIP_FILE  "reset_chip_xilinx.txt"
 
 /** Default Parameters */
 #define DEFAULT_NUM_FRAMES            (1)

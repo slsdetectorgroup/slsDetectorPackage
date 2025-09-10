@@ -1,36 +1,260 @@
-SLS Detector Package Minor Release 9.2.0 released on 02.06.2025
-==================================================================
+SLS Detector Package Major Release 10.0.0 released on 10.09.2025
+================================================================
 
-This document describes the differences between v9.2.0 and v9.1.1
+This document describes the differences between v10.0.0 and v9.2.0   
 
 
 
     CONTENTS
     --------
-    1           New or Changed Features
-    2           On-board Detector Server Compatibility
-    3           Firmware Requirements
-    4           Kernel Requirements
-    5           Download, Documentation & Support
+    1           Changes
+    1.1         Compilation Changes
+    1.2         New or Changed Features
+        1.2.1   Breaking API
+        1.2.2   Resolved or Changed Features
+        1.2.3   New Features
+    3           On-board Detector Server Compatibility
+    4           Firmware Requirements
+    5           Kernel Requirements
+    6           Download, Documentation & Support
 
 
 
 
-1 New or Changed Features
-=========================
+1 Changes
+==========
+
+
+
+1.1 Compilation Changes
+========================
+
+
+    *   C++ standard
+        Bumped up C++ standard from 11 (gcc4.8+) to 17 (gcc8+).
+
+
+    *   GotthardI
+        Dropped support for GotthardI from v10.0.0.
+
+
+    *   PATCH 
+        Find PATCH command required for compilation. Needed for lib zeromq patching.
+
+
+    *   pmodules support discontinued
+    
+
+1.2 New or Changed Features
+============================
+
+
+
+1.2.1 Breaking API
+===================
+
+
+    Client
+    ------
+
+
+    *   Shared Memory Version
+        Version has changed and will throw when using an earlier version of 
+        shared memory without freeing it first.
+
+
+    *   [Mythen3] patternX
+        This command has been changed back to 'pattern' as before.
+
+
+    *   TCP API Incompatibility
+        The size of the expected structure has changed when setting rx_hostname compared to previous versions. This change makes it incompatible.
+
+
+    *   User details
+        One can get user or detector details directly from shared memory without
+        creating the Detector class. It is now a free function.
+        C++ API: getUserDetails
+        python/ command line: user
+        
+
+    Receiver
+    --------
+
+    
+    *   Multiple ROIs
+        Previously, only one ROI was allowed per detector.
+        Now, multiple ROIs are allowed, but restricted to a single ROI per
+        UDP port. More details on its help.
+        
+        As before, this ROI is cut out at the receiver level before 
+        writing to file. It does not affect network load, but reduces file size.
+        
+        Please note that the signature has changed in the Detector API as it now expects a vector. getRxROI returns detector level vector of ROIs for
+        the entire detector or port level vector of ROIs for the module index
+        provided.
+        
+        Command line: rx_roi, rx_clearroi
+        C++ API: get/setRxROI, clearRxROI 
+
+  
+    *   Master File Version
+        Binary Master Version: 7.3 => 8.0
+        HDF5 Master Version: 6.7 => 7.0
+
+
+    *   Master File Attributes
+        - Fixed master file inconsistencies between binary and hdf5 format.
+            So the parameter names might differ in master file.
+        - Fixed time inconsistencies due to tolerance for gotthardII.
+        - Replaced many of the values that was simply writted usign 'toString'
+            with array-based output.
+        - JSON additional header always written.
+        - HDF5 master file reads 'Version', instead of 'version'.    
+
+
+
+1.2.2 Resolved or Changed Features
+===================================
 
 
     Python
     ------
 
 
-    *   Python module is now built using scikit-build-core
+    *   Shared Memory outliving free
+        Depending on a variable’s scope, it was possible to access an invalid
+        object and its shared memory even after calling free, since resources
+        were not fully released. Shared memory structures now include a flag
+        indicating invalidity and will throw an error if accessed after being
+        freed.
+
+
+    Client
+    ------
+
+
+    *   UDP Destination List
+        CLI: udp_dstlist
+        C++ API: getDestinationUDPList
+        Was returning incorrect values. Fixed.
+        
     
+    Receiver
+    --------
 
-    *   slsdet is available on PyPI from this release onwards
+
+    *   [Mythen3] Master File Attributes
+        Previously, did not create HDF5 Master file without crashing. Fixed now.
 
 
-    *   Updated documentation on python module installation
+    *   Default File Path
+        It used to be '/'. Now, changed to empty and will throw if still 
+        unchanged before an acquisition.
+
+
+    *   Command Line Arguments
+        They have been refactored for slsReceiver, slsMultiReceiver and 
+        slsFrameSynchronizer. Existing commands remain fully supported for now.
+
+        Usage: slsReceiver Options:
+            -v, --version       : Version.
+            -p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
+            -u, --uid           : Set effective user id if receiver started with privileges. 
+
+        Usage: slsMultiReceiver Options:
+            -v, --version       : Version.
+            -n, --num-receivers : Number of receivers.
+            -p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
+            -c, --callback      : Enable dummy callbacks for debugging. Disabled by default. 
+            -u, --uid           : Set effective user id if receiver started with privileges. 
+
+        Usage: slsFrameSynchronizer Options:
+            -v, --version       : Version.
+            -n, --num-receivers : Number of receivers.
+            -p, --port          : TCP port to communicate with client for configuration. Non-zero and 16 bit.
+            -c, --print-headers : Print callback headers for debugging. Disabled by default.
+            -u, --uid           : Set effective user id if receiver started with privileges. 
+
+
+    *   [Moench] No intertpolation
+        Fixed no interpolation for Moench03.
+
+
+
+1.2.3 New Features
+===================
+
+
+    Compilation
+    -----------
+
+
+    *   Conda and pypi
+        Automatic release on both upon release.
+
+
+    Python
+    ------
+
+
+    *   Exposing Free Shared Memory
+        One can do either `slsdet.freeSharedMemory()` or `d.free()`
+
+
+    Client
+    ------
+
+
+    *   Port size and Port per Module Geometry in Detector class
+        C++ API: getPortSize, getPortPerModuleGeometry
+
+
+    *   ROI structure
+        Added 'overlap' function to check if it overlaps with another.
+
+
+    Receiver
+    --------
+
+
+    *   HDF5 Virtual File with ROI
+        Previously, virtual file was not created with ROI. It is now.
+
+
+    *   Readout speed added to Master File
+        
+
+    Documentation
+    -------------
+
+
+    *   Multi Detector and Multi user
+        Documentation on multi detector index and multi user considerations for
+        using the same client system.
+            https://slsdetectorgroup.github.io/devdoc/multidet.html
+
+   
+    *   10GbE PC tuning
+        Further information for permanent ethtool settings updated.
+            https://slsdetectorgroup.github.io/devdoc/troubleshooting.html#receiver-pc-tuning-options
+
+
+    *   Image Size and Output Characteristics
+        Information for different detector types and different parameters that
+        affect image size and characteristics have been added.
+            https://slsdetectorgroup.github.io/devdoc/dataformat.html
+
+
+    *   'How To' section added
+        Software Architecture
+            https://slsdetectorgroup.github.io/devdoc/softwarearchitecture.html
+
+        Set up commands most often used in the config file
+            https://slsdetectorgroup.github.io/devdoc/configcommands.html
+
+        Quick start guide has been updated
+            https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
 
 
 
@@ -38,12 +262,11 @@ This document describes the differences between v9.2.0 and v9.1.1
 ==========================================
 
 
-    Eiger       9.0.0
-    Jungfrau    9.1.0
-    Mythen3     9.1.1
-    Gotthard2   9.0.0
-    Gotthard    9.0.0
-    Moench      9.0.0
+    Eiger       10.0.0
+    Jungfrau    10.0.0
+    Mythen3     10.0.0
+    Gotthard2   10.0.0
+    Moench      10.0.0
   
 
     On-board Detector Server Upgrade
@@ -66,7 +289,6 @@ This document describes the differences between v9.2.0 and v9.1.1
 3 Firmware Requirements
 ========================
 
-
     Eiger       02.10.2023 (v32)                    (updated in 7.0.3)
     
     Jungfrau    09.02.2025 (v1.6, HW v1.0)          (updated in 9.1.0)
@@ -77,9 +299,6 @@ This document describes the differences between v9.2.0 and v9.1.1
     Gotthard2   03.10.2024 (v1.0)                   (updated in 9.0.0)
 
     Moench      26.10.2023 (v2.0)                   (updated in 8.0.2)
-
-    Gotthard    08.02.2018 (50um and 25um Master)
-                09.02.2018 (25 um Slave) 
 
 
     Detector Upgrade
@@ -92,8 +311,6 @@ This document describes the differences between v9.2.0 and v9.1.1
     Mythen3    via command <.rbf>
     Gotthard2  via command <.rbf>
     Moench     via command <.pof>
-
-    Gotthard cannot be upgraded remotely  
 
     Except Eiger, 
         upgrade 
@@ -157,7 +374,7 @@ This document describes the differences between v9.2.0 and v9.1.1
 
     Quick Start Guide:
         https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
-        
+
     Firmware Upgrade:
         https://slsdetectorgroup.github.io/devdoc/firmware.html
 
@@ -170,6 +387,15 @@ This document describes the differences between v9.2.0 and v9.1.1
     Consuming slsDetectorPackage:
         https://slsdetectorgroup.github.io/devdoc/consuming.html
         
+    Software Architecture
+        https://slsdetectorgroup.github.io/devdoc/softwarearchitecture.html
+
+    Set up commands in config file
+        https://slsdetectorgroup.github.io/devdoc/configcommands.html
+        
+    Image Size and Output Characteristics
+        https://slsdetectorgroup.github.io/devdoc/dataformat.html
+
     API Examples:
         https://github.com/slsdetectorgroup/api-examples
 
@@ -195,6 +421,14 @@ This document describes the differences between v9.2.0 and v9.1.1
     Detector UDP Header:
         https://slsdetectorgroup.github.io/devdoc/udpheader.html
         https://slsdetectorgroup.github.io/devdoc/udpdetspec.html
+
+    Output Data:
+        https://slsdetectorgroup.github.io/devdoc/dataformat.html
+        https://slsdetectorgroup.github.io/devdoc/fileformat.html
+        https://slsdetectorgroup.github.io/devdoc/slsreceiverheaderformat.html
+        https://slsdetectorgroup.github.io/devdoc/masterfileattributes.html
+        https://slsdetectorgroup.github.io/devdoc/binaryfileformat.html
+        https://slsdetectorgroup.github.io/devdoc/hdf5fileformat.html
 
     slsReceiver Zmq Format:
         https://slsdetectorgroup.github.io/devdoc/slsreceiver.html#zmq-json-header-format

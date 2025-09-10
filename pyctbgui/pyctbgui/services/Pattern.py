@@ -10,6 +10,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 from pyctbgui.utils.defines import Defines
 from pyctbgui.utils.plotPattern import PlotPattern
 
+from slsdet import DurationWrapper
 
 class PatternTab(QtWidgets.QWidget):
 
@@ -61,7 +62,10 @@ class PatternTab(QtWidgets.QWidget):
             getattr(self.view, f"lineEditLoop{i}Wait").editingFinished.connect(partial(self.setPatLoopWaitAddress, i))
             getattr(self.view,
                     f"spinBoxLoop{i}Repetition").editingFinished.connect(partial(self.setPatLoopRepetition, i))
-            getattr(self.view, f"spinBoxLoop{i}WaitTime").editingFinished.connect(partial(self.setPatLoopWaitTime, i))
+            getattr(self.view, f"doubleSpinBoxLoop{i}WaitClocks").editingFinished.connect(partial(self.setPatLoopWaitClocks, i))
+            getattr(self.view, f"spinBoxLoop{i}WaitInterval").editingFinished.connect(partial(self.setPatLoopWaitInterval, i))
+            getattr(self.view, f"comboBoxLoop{i}WaitInterval").currentIndexChanged.connect(partial(self.setPatLoopWaitInterval, i))
+        self.view.toolButtonTogglePageWaitTime.clicked.connect(self.setTogglePageWaitTime)
         self.view.pushButtonCompiler.clicked.connect(self.setCompiler)
         self.view.pushButtonUncompiled.clicked.connect(self.setUncompiledPatternFile)
         self.view.pushButtonPatternFile.clicked.connect(self.setPatternFile)
@@ -91,7 +95,8 @@ class PatternTab(QtWidgets.QWidget):
             self.getPatLoopStartStopAddress(i)
             self.getPatLoopWaitAddress(i)
             self.getPatLoopRepetition(i)
-            self.getPatLoopWaitTime(i)
+            self.getPatLoopWaitClocks(i)
+            self.getPatLoopWaitInterval(i)
 
     # Pattern Tab functions
 
@@ -182,17 +187,67 @@ class PatternTab(QtWidgets.QWidget):
         self.det.patnloop[level] = spinBox.value()
         self.getPatLoopRepetition(level)
 
-    def getPatLoopWaitTime(self, level):
+    def getPatLoopWaitClocks(self, level):
         retval = self.det.patwaittime[level]
-        spinBox = getattr(self.view, f"spinBoxLoop{level}WaitTime")
+        spinBox = getattr(self.view, f"doubleSpinBoxLoop{level}WaitClocks")
         spinBox.editingFinished.disconnect()
         spinBox.setValue(retval)
-        spinBox.editingFinished.connect(partial(self.setPatLoopWaitTime, level))
+        spinBox.editingFinished.connect(partial(self.setPatLoopWaitClocks, level))
 
-    def setPatLoopWaitTime(self, level):
-        spinBox = getattr(self.view, f"spinBoxLoop{level}WaitTime")
-        self.det.patwaittime[level] = spinBox.value()
-        self.getPatLoopWaitTime(level)
+    def setPatLoopWaitClocks(self, level):
+        spinBox = getattr(self.view, f"doubleSpinBoxLoop{level}WaitClocks")
+        self.det.patwaittime[level] = int(spinBox.value())
+        self.getPatLoopWaitClocks(level)
+
+    def getPatLoopWaitInterval(self, level):
+        retval = self.det.getPatternWaitInterval(level)[0].count()
+        spinBox = getattr(self.view, f"spinBoxLoop{level}WaitInterval")
+        comboBox = getattr(self.view, f"comboBoxLoop{level}WaitInterval")
+        spinBox.editingFinished.disconnect()
+        comboBox.currentIndexChanged.disconnect()
+        # Converting to right time unit for period
+        if retval >= 1e9:
+            comboBox.setCurrentIndex(0)
+            spinBox.setValue(retval / 1e9)
+        elif retval >= 1e6:
+            comboBox.setCurrentIndex(1)
+            spinBox.setValue(retval / 1e6)
+        elif retval >= 1e3:
+            comboBox.setCurrentIndex(2)
+            spinBox.setValue(retval / 1e3)
+        else:
+            comboBox.setCurrentIndex(3)
+            spinBox.setValue(retval)
+        spinBox.editingFinished.connect(partial(self.setPatLoopWaitInterval, level))
+        comboBox.currentIndexChanged.connect(partial(self.setPatLoopWaitInterval, level))
+
+    def setPatLoopWaitInterval(self, level):
+        spinBox = getattr(self.view, f"spinBoxLoop{level}WaitInterval")
+        comboBox = getattr(self.view, f"comboBoxLoop{level}WaitInterval")
+        value = spinBox.value()
+        if comboBox.currentIndex() == 0:
+            value *= 1e9
+        elif comboBox.currentIndex() == 1:
+            value *= 1e6
+        elif  comboBox.currentIndex() == 2:
+            value *= 1e3
+        t = DurationWrapper()
+        t.set_count(int(value))
+        self.det.patwaittime[level] =  t    
+        self.getPatLoopWaitInterval(level)
+
+    def setTogglePageWaitTime(self):
+        if self.view.stackedWidgetWaitTime.currentIndex() == 0:
+            self.view.stackedWidgetWaitTime.setCurrentIndex(1)
+            self.view.labelWaitTime.setText("Time")
+            for i in range(Defines.pattern.loops_count):
+                self.getPatLoopWaitInterval(i)
+        else:
+            self.view.stackedWidgetWaitTime.setCurrentIndex(0)
+            self.view.labelWaitTime.setText("Clocks")
+            for i in range(Defines.pattern.loops_count):
+                self.getPatLoopWaitClocks(i)
+
 
     def setCompiler(self):
         response = QtWidgets.QFileDialog.getOpenFileName(
@@ -450,7 +505,7 @@ class PatternTab(QtWidgets.QWidget):
                             f"{getattr(self.view, f'lineEditLoop{i}Stop').text()}")
 
             commands.append(f"patwait {i} {getattr(self.view, f'lineEditLoop{i}Wait').text()}")
-            commands.append(f"patwaittime {i} {getattr(self.view, f'spinBoxLoop{i}WaitTime').text()}")
+            commands.append(f"patwaittime {i} {getattr(self.view, f'doubleSpinBoxLoop{i}WaitClocks').text()}")
         commands.append(f"patlimits {self.view.lineEditStartAddress.text()}, {self.view.lineEditStopAddress.text()}")
         # commands.append(f"patfname {self.view.lineEditPatternFile.text()}")
         return commands

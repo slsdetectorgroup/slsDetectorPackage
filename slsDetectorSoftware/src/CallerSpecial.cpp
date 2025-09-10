@@ -73,6 +73,7 @@ std::string Caller::list(int action) {
     }
     if (args.empty()) {
         std::string ret = "free\n";
+        ret += "user\n";
         for (auto &f : functions) {
             ret += f.first + "\n";
         }
@@ -112,10 +113,6 @@ IpAddr Caller::getDstIpFromAuto() {
 }
 
 IpAddr Caller::getSrcIpFromAuto() {
-    if (det->getDetectorType().squash() == defs::GOTTHARD) {
-        throw RuntimeError(
-            "Cannot use 'auto' for udp_srcip for GotthardI Detector.");
-    }
     std::string hostname =
         det->getHostname(std::vector<int>{det_id}).squash("none");
     // Hostname could be ip try to decode otherwise look up the hostname
@@ -175,33 +172,27 @@ void Caller::WrongNumberOfParameters(size_t expected) {
                        std::to_string(args.size()) + "\n");
 }
 
-void Caller::GetLevelAndUpdateArgIndex(int action,
-                                       std::string levelSeparatedCommand,
-                                       int &level, int &iArg, size_t nGetArgs,
-                                       size_t nPutArgs) {
-    if (cmd == levelSeparatedCommand) {
-        ++nGetArgs;
-        ++nPutArgs;
-    } else {
+int Caller::GetLevelAndInsertIntoArgs(std::string levelSeparatedCommand) {
+    if (cmd != levelSeparatedCommand) {
         LOG(logWARNING) << "This command is deprecated and will be removed. "
                            "Please migrate to "
                         << levelSeparatedCommand;
+        int level = cmd[cmd.find_first_of("012")] - '0';
+        args.insert(args.begin(), std::to_string(level));
+        return true;
     }
-    if (action == defs::GET_ACTION && args.size() != nGetArgs) {
-        WrongNumberOfParameters(nGetArgs);
-    } else if (action == defs::PUT_ACTION && args.size() != nPutArgs) {
-        WrongNumberOfParameters(nPutArgs);
-    }
-    if (cmd == levelSeparatedCommand) {
-        level = StringTo<int>(args[iArg++]);
-    } else {
-        level = cmd[cmd.find_first_of("012")] - '0';
-    }
+    return false;
 }
 
 std::string Caller::free(int action) {
     // This  function is purely for help, actual functionality is in the caller
     return "free\n\tFree detector shared memory\n";
+}
+
+std::string Caller::user(int action) {
+    // This  function is purely for help, actual functionality is in the caller
+    return "user\n\tUser details from shared memory (hostname, type, PID, "
+           "User, Date).\n";
 }
 
 std::string Caller::hostname(int action) {
@@ -523,7 +514,7 @@ std::string Caller::udp_srcip(int action) {
               "ip.\n\t[Eiger] Set only for 10G. For 1G, detector will replace "
               "with its own DHCP IP address. \n\tOne can also set this to "
               "'auto' for 1 GbE data and virtual detectors. It will set to IP "
-              "of detector. Not available for GotthardI"
+              "of detector."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         auto t = det->getSourceUDPIP(std::vector<int>{det_id});
@@ -735,49 +726,133 @@ std::string Caller::rx_zmqip(int action) {
     }
     return os.str();
 }
+
 std::string Caller::rx_roi(int action) {
     std::ostringstream os;
+    std::string helpMessage =
+        std::string("[xmin] [xmax] [ymin] [ymax]\n") +
+        "\tDefines a single region of interest (ROI) in the receiver.\n"
+        "\tFor example, to set a single ROI: 0 100 20 30\n\n"
+
+        "\tTo specify multiple ROIs, use square brackets between ROIs and "
+        "commas inside for each ROI. \n"
+        "\tInside each bracket, no spaces allowed.\n\n"
+
+        "\tIf you use semicolon (along with '['and ']' to separate rois), \n"
+        "\tenclose the entire list in quotes.\n"
+        "\tExamples:\n"
+        "\t  [0,100,0,100] [200,300,0,100]\n"
+        "\t  \"[0,100,0,100];[200,300,0,100]\"\n\n"
+
+        "\tNotes:\n"
+        "\t- ROIs can only be set at the multi-module level.\n"
+        "\t- If multi module ROIs ends up with more then 1 ROI per UDP "
+        "port or if they overlap each other, it will throw an error.\n"
+        "\t- ROIs coordinates assume no gap pixels, even if they are enabled "
+        "in gui.\n"
+        "\t- To retrieve ROIs per port, specify the module ID when using the "
+        "get command.\n"
+        "\t- Use the command 'rx_clearroi' to clear all ROIs.\n"
+        "\t- Changing the number of UDP interfaces will automatically clear "
+        "the current ROIs.\n\n"
+        "\t- Cannot be set for CTB or Xilinx CTB.\n";
+
     if (action == defs::HELP_ACTION) {
-        os << "[xmin] [xmax] [ymin] [ymax]\n\tRegion of interest in "
-              "receiver.\n\tOnly allowed at multi module level and without gap "
-              "pixels."
-           << '\n';
+        os << helpMessage;
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        if (det_id == -1) {
-            auto t = det->getRxROI();
-            os << t << '\n';
-        } else {
-            auto t = det->getIndividualRxROIs(std::vector<int>{det_id});
-            os << t << '\n';
-        }
+        auto t = det->getRxROI(det_id);
+        os << ToString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        defs::ROI t;
-        // 2 or 4 arguments
-        if (args.size() != 2 && args.size() != 4) {
-            WrongNumberOfParameters(2);
-        }
-        if (args.size() == 2 || args.size() == 4) {
-            t.xmin = StringTo<int>(args[0]);
-            t.xmax = StringTo<int>(args[1]);
-        }
-        if (args.size() == 4) {
-            t.ymin = StringTo<int>(args[2]);
-            t.ymax = StringTo<int>(args[3]);
-        }
-        // only multi level
         if (det_id != -1) {
-            throw RuntimeError("Cannot execute receiver ROI at module level");
+            throw RuntimeError("Cannot set receiver ROI at module level");
         }
-        det->setRxROI(t);
-        os << t << '\n';
+        // Support multiple args with bracketed ROIs, or single arg with
+        // semicolon-separated vector in quotes
+        bool isVectorInput =
+            std::all_of(args.begin(), args.end(), [](const std::string &a) {
+                return a.find('[') != std::string::npos &&
+                       a.find(']') != std::string::npos;
+            });
+        std::vector<defs::ROI> rois;
+        try {
+            // single roi in previous format: [xmin,xmax,ymin,ymax]
+            if (!isVectorInput) {
+                auto t = parseRoi(args);
+                rois.emplace_back(t);
+            }
+            // multiple roi or single roi with brackets
+            // multiple roi: multiple args with bracketed ROIs, or single arg
+            // with semicolon-bracketed Rois in quotes
+            else {
+                for (const auto &arg : args) {
+                    auto subRois = parseRoiVector(arg);
+                    rois.insert(rois.end(), subRois.begin(), subRois.end());
+                }
+            }
+        } catch (const std::exception &e) {
+            throw RuntimeError("Could not parse ROI: Did you use spaces inside "
+                               "the brackets? Use sls_detector_help " +
+                               cmd + " to get the right syntax expected.");
+        }
+
+        det->setRxROI(rois);
+        os << ToString(rois) << '\n';
     } else {
         throw RuntimeError("Unknown action");
     }
     return os.str();
 }
+
+std::vector<defs::ROI> Caller::parseRoiVector(const std::string &input) {
+    std::vector<defs::ROI> rois;
+    std::stringstream ss(input);
+    std::string token;
+
+    while (std::getline(ss, token, ']')) {
+        // remove spaces and semicolons
+        token.erase(
+            std::remove_if(token.begin(), token.end(),
+                           [](char c) { return std::isspace(c) || c == ';'; }),
+            token.end());
+        if (token.empty())
+            continue;
+        if (token.front() != '[') {
+            throw RuntimeError("Each ROI must be enclosed in square brackets: "
+                               "[xmin,xmax,ymin,ymax]");
+        }
+        token = token.substr(1, token.size() - 1); // remove brackets
+        std::vector<std::string> parts;
+        std::stringstream inner(token);
+        std::string num;
+        while (std::getline(inner, num, ',')) {
+            parts.push_back(num);
+        }
+
+        auto roi = parseRoi(parts);
+        rois.emplace_back(roi);
+    }
+    return rois;
+}
+
+defs::ROI Caller::parseRoi(const std::vector<std::string> &parts) {
+    if (parts.size() != 2 && parts.size() != 4) {
+        throw RuntimeError(
+            "Could not parse ROI. A ROI must have 2 or 4 integers");
+    }
+
+    defs::ROI roi;
+    roi.xmin = StringTo<int>(parts[0]);
+    roi.xmax = StringTo<int>(parts[1]);
+    if (parts.size() == 4) {
+        roi.ymin = StringTo<int>(parts[2]);
+        roi.ymax = StringTo<int>(parts[3]);
+    }
+    return roi;
+}
+
 std::string Caller::ratecorr(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
@@ -1017,6 +1092,81 @@ std::string Caller::slowadc(int action) {
 
     } else if (action == defs::PUT_ACTION) {
         throw RuntimeError("cannot put");
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+std::string Caller::patwaittime(int action) {
+    std::ostringstream os;
+
+    if (action == defs::HELP_ACTION) {
+        os << "[0-6] [n_clk] \n\t[Ctb][Mythen3][Xilinx Ctb] Wait time in clock "
+              "cycles for the loop provided.\n\t[Mythen3] Level options: 0-3 "
+              "only."
+           << '\n';
+        return os.str();
+    }
+
+    // parse level
+    bool deprecated_cmd = GetLevelAndInsertIntoArgs("patwaittime");
+    int level = 0;
+    try {
+        if (args.size() > 0)
+            level = StringTo<int>(args[0]);
+    } catch (const std::exception &e) {
+        LOG(logERROR) << "Could not scan level.";
+        throw;
+    }
+    if (!deprecated_cmd && args.size() >= 1)
+        os << args[0] << ' ';
+
+    if (action == defs::GET_ACTION) {
+        if (args.size() != 1 && args.size() != 2)
+            WrongNumberOfParameters(1);
+        // with time unit
+        if (args.size() == 2) {
+            auto t =
+                det->getPatternWaitInterval(level, std::vector<int>{det_id});
+            os << OutString(t, args[1]) << '\n';
+        }
+        // in clocks
+        else {
+            auto t = det->getPatternWaitClocks(level, std::vector<int>{det_id});
+            os << OutString(t) << '\n';
+        }
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 2 && args.size() != 3)
+            WrongNumberOfParameters(2);
+        // clocks (all digits)
+        if (args.size() == 2 &&
+            std::all_of(args[1].begin(), args[1].end(), ::isdigit)) {
+            uint64_t waittime = StringTo<uint64_t>(args[1]);
+            det->setPatternWaitClocks(level, waittime,
+                                      std::vector<int>{det_id});
+            os << waittime << '\n';
+        }
+        // time
+        else {
+            time::ns converted_time{0};
+            try {
+                if (args.size() == 2) {
+                    std::string tmp_time(args[1]);
+                    std::string unit = RemoveUnit(tmp_time);
+                    converted_time = StringTo<time::ns>(tmp_time, unit);
+                } else {
+                    converted_time = StringTo<time::ns>(args[1], args[2]);
+                }
+            } catch (...) {
+                throw RuntimeError("Could not convert argument to time::ns");
+            }
+            det->setPatternWaitInterval(level, converted_time,
+                                        std::vector<int>{det_id});
+            os << args[1];
+            if (args.size() == 3)
+                os << ' ' << args[2];
+            os << '\n';
+        }
     } else {
         throw RuntimeError("Unknown action");
     }

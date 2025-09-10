@@ -59,15 +59,6 @@ TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmdcall][.dacs]") {
         REQUIRE_THROWS(caller.call("vcn", {}, -1, GET));
         REQUIRE_THROWS(caller.call("vishaper", {}, -1, GET));
         REQUIRE_THROWS(caller.call("iodelay", {}, -1, GET));
-        // gotthard
-        // REQUIRE_THROWS(caller.call("vref_ds", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("vcascn_pb", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("vcascp_pb", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("vout_cm", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("vcasc_out", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("vin_cm", {}, -1, GET));
-        // REQUIRE_THROWS(caller.call("vref_comp", {}, -1, GET));
-        REQUIRE_THROWS(caller.call("ib_test_c", {}, -1, GET));
         // mythen3
         REQUIRE_THROWS(caller.call("vrpreamp", {}, -1, GET));
         REQUIRE_THROWS(caller.call("vrshaper", {}, -1, GET));

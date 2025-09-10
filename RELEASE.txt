@@ -1,4 +1,4 @@
-SLS Detector Package Major Release 10.0.0 released on xx.08.2025
+SLS Detector Package Major Release 10.0.0 released on 10.09.2025
 ================================================================
 
 This document describes the differences between v10.0.0 and v9.2.0   
@@ -246,6 +246,16 @@ This document describes the differences between v10.0.0 and v9.2.0
             https://slsdetectorgroup.github.io/devdoc/dataformat.html
 
 
+    *   'How To' section added
+        Software Architecture
+            https://slsdetectorgroup.github.io/devdoc/softwarearchitecture.html
+
+        Set up commands most often used in the config file
+            https://slsdetectorgroup.github.io/devdoc/configcommands.html
+
+        Quick start guide has been updated
+            https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
+
 
 
 2  On-board Detector Server Compatibility
@@ -364,7 +374,7 @@ This document describes the differences between v10.0.0 and v9.2.0
 
     Quick Start Guide:
         https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
-        
+
     Firmware Upgrade:
         https://slsdetectorgroup.github.io/devdoc/firmware.html
 
@@ -377,6 +387,15 @@ This document describes the differences between v10.0.0 and v9.2.0
     Consuming slsDetectorPackage:
         https://slsdetectorgroup.github.io/devdoc/consuming.html
         
+    Software Architecture
+        https://slsdetectorgroup.github.io/devdoc/softwarearchitecture.html
+
+    Set up commands in config file
+        https://slsdetectorgroup.github.io/devdoc/configcommands.html
+        
+    Image Size and Output Characteristics
+        https://slsdetectorgroup.github.io/devdoc/dataformat.html
+
     API Examples:
         https://github.com/slsdetectorgroup/api-examples
 

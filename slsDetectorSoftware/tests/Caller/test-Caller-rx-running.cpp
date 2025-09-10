@@ -49,7 +49,19 @@ auto get_test_parameters() {
         std::make_tuple("rx_dbitoffset", std::vector<std::string>{"5"}),
         std::make_tuple("findex", std::vector<std::string>{"2"}),
         std::make_tuple("fwrite", std::vector<std::string>{"0"}),
-        std::make_tuple("bursts", std::vector<std::string>{"20"}));
+        std::make_tuple("bursts", std::vector<std::string>{"20"}),
+        std::make_tuple("counters", std::vector<std::string>{"0 1 2"}),
+        std::make_tuple("dr", std::vector<std::string>{"32"}),
+        std::make_tuple("tengiga", std::vector<std::string>{"1"}),
+        std::make_tuple("romode", std::vector<std::string>{"digital"}),
+        std::make_tuple("transceivermask", std::vector<std::string>{"0x3"}),
+        std::make_tuple("adcenable10g", std::vector<std::string>{"0xFF00FFFF"}),
+        std::make_tuple("adcenable", std::vector<std::string>{"0xFFFFFF00"}),
+        std::make_tuple("rx_fifodepth", std::vector<std::string>{"1000"}),
+        std::make_tuple("numinterfaces", std::vector<std::string>{"2"})
+        /*,std::make_tuple("rx_hostname",
+           std::vector<std::string>{"localhost"})*/
+    );
 }
 
 TEST_CASE("cant put if receiver is not idle", "[.cmdcall][.rx]") {
